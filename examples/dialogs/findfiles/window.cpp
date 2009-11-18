@@ -76,7 +76,7 @@ Window::Window(QWidget *parent)
     mainLayout->addWidget(directoryComboBox, 2, 1);
     mainLayout->addWidget(browseButton, 2, 2);
     mainLayout->addWidget(filesTable, 3, 0, 1, 3);
-    mainLayout->addWidget(filesFoundLabel, 4, 0);
+    mainLayout->addWidget(filesFoundLabel, 4, 0, 1, 3);
     mainLayout->addLayout(buttonsLayout, 5, 0, 1, 3);
     setLayout(mainLayout);
 
