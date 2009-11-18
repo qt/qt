@@ -503,7 +503,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
         return;
     from -= buffer;
     to += buffer;
-    int modelIndex = 0;
+    int modelIndex = visibleIndex;
     qreal itemEnd = visiblePos-1;
     if (!visibleItems.isEmpty()) {
         visiblePos = visibleItems.first()->position();
@@ -1169,6 +1169,9 @@ void QmlGraphicsListView::setDelegate(QmlComponent *delegate)
     if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
         if (isComponentComplete()) {
+            for (int i = 0; i < d->visibleItems.count(); ++i)
+                d->releaseItem(d->visibleItems.at(i));
+            d->visibleItems.clear();
             refill();
             d->moveReason = QmlGraphicsListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
@@ -1268,9 +1271,10 @@ void QmlGraphicsListView::setHighlight(QmlComponent *highlight)
 {
     Q_D(QmlGraphicsListView);
     if (highlight != d->highlightComponent) {
-        delete d->highlightComponent;
         d->highlightComponent = highlight;
-        d->updateCurrent(d->currentIndex);
+        d->createHighlight();
+        if (d->currentItem)
+            d->updateHighlight();
     }
 }
 

@@ -950,7 +950,6 @@ void QmlGraphicsGridView::setHighlight(QmlComponent *highlight)
 {
     Q_D(QmlGraphicsGridView);
     if (highlight != d->highlightComponent) {
-        delete d->highlightComponent;
         d->highlightComponent = highlight;
         d->updateCurrent(d->currentIndex);
     }
