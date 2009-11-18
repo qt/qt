@@ -379,10 +379,11 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     }
 }
 
-void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t)
+void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)
 {
     // We don't use extensions for anything in abld
     Q_UNUSED(t);
+    Q_UNUSED(iconTargetFile);
 }
 
 bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
