@@ -67,6 +67,7 @@
 #include "qtoolbar.h"
 #include "qtoolbutton.h"
 #include "qfocusframe.h"
+#include "qformlayout.h"
 
 #include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
@@ -2400,6 +2401,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             break;
         case SH_RequestSoftwareInputPanel:
             retValue = RSIP_OnMouseClickAndAlreadyFocused;
+            break;
+        case SH_FormLayoutWrapPolicy:
+            retValue = QFormLayout::WrapLongRows;
             break;
         default:
             break;
