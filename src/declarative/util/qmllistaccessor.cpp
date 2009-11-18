@@ -77,8 +77,6 @@ void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
         m_type = VariantList;
     } else if (d.canConvert(QVariant::Int)) {
         m_type = Integer;
-    } else if (d.type() != QVariant::UserType) {
-        m_type = Instance;
     } else if ((!enginePrivate && QmlMetaType::isObject(d.userType())) ||
                (enginePrivate && enginePrivate->isObject(d.userType()))) {
         QObject *data = 0;
@@ -89,18 +87,15 @@ void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
                (enginePrivate && enginePrivate->isQmlList(d.userType()))) {
         m_type = QmlList;
     } else if (QmlMetaType::isList(d.userType())) {
-        m_type = QList;
+        m_type = QListPtr;
     } else {
-        m_type = Invalid;
-        d = QVariant();
+        m_type = Instance;
     }
 }
 
 int QmlListAccessor::count() const
 {
     switch(m_type) {
-    case Invalid:
-        return 0;
     case StringList:
         return qvariant_cast<QStringList>(d).count();
     case VariantList:
@@ -110,23 +105,25 @@ int QmlListAccessor::count() const
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
             return li->count();
         }
-    case QList:
-        return QmlMetaType::listCount(d);
+    case QListPtr:
+        {
+            QList<void *> *li = *(QList<void *> **)d.constData();
+            return li->count();
+        }
     case Instance:
         return 1;
     case Integer:
         return d.toInt();
+    default:
+    case Invalid:
+        return 0;
     }
-
-    return 0;
 }
 
 QVariant QmlListAccessor::at(int idx) const
 {
     Q_ASSERT(idx >= 0 && idx < count());
     switch(m_type) {
-    case Invalid:
-        return QVariant();
     case StringList:
         return QVariant::fromValue(qvariant_cast<QStringList>(d).at(idx));
     case VariantList:
@@ -138,142 +135,119 @@ QVariant QmlListAccessor::at(int idx) const
             li->at(idx, ptr);
             return QVariant::fromValue((QObject*)ptr[0]);
         }
-    case QList:
-        return QmlMetaType::listAt(d, idx);
+    case QListPtr:
+        {
+            QList<void *> *li = *(QList<void *> **)d.constData();
+            void *ptr = li->at(idx);
+            return QVariant::fromValue((QObject*)ptr);
+        }
     case Instance:
         return d;
     case Integer:
+        return QVariant(idx);
+    default:
+    case Invalid:
         return QVariant();
     }
-
-    return QVariant();
 }
 
-void QmlListAccessor::append(const QVariant &value)
+bool QmlListAccessor::append(const QVariant &value)
 {
     switch(m_type) {
-    case Invalid:
-        break;
-    case StringList:
-        {
-            const QString &str = value.toString();
-            qvariant_cast<QStringList>(d).append(str);
-            break;
-        }
-    case VariantList:
-        {
-            qvariant_cast<QVariantList>(d).append(value);
-            break;
-        }
     case QmlList:
         {
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
-            li->append(const_cast<void *>(value.constData()));  //XXX
-            break;
+            li->append(const_cast<void *>(value.constData()));  //XXX Typesafety
+            return true;
         }
-    case QList:
-        QmlMetaType::append(d, value);
-        break;
+    case QListPtr:
+        {
+            QList<void *> *li = *(QList<void *> **)d.constData();
+            li->append(*reinterpret_cast<void **>(const_cast<void *>(value.constData())));  //XXX Typesafety
+            return true;
+        }
+    case StringList:
+    case VariantList:
+    case Invalid:
     case Instance:
     case Integer:
-        //do nothing
-        break;
+    default:
+        return false;
     }
 }
 
-void QmlListAccessor::insert(int index, const QVariant &value)
+bool QmlListAccessor::insert(int index, const QVariant &value)
 {
     switch(m_type) {
-    case Invalid:
-        break;
-    case StringList:
-        {
-            const QString &str = value.toString();
-            qvariant_cast<QStringList>(d).insert(index, str);
-            break;
-        }
-    case VariantList:
-        {
-            qvariant_cast<QVariantList>(d).insert(index, value);
-            break;
-        }
     case QmlList:
         {
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
-            li->insert(index, const_cast<void *>(value.constData()));   //XXX
-            break;
+            li->insert(index, const_cast<void *>(value.constData()));   //XXX Typesafety
+            return true;
         }
-    case QList:
-        //XXX needs implementation
-        qWarning() << "insert function not yet implemented for QLists";
-        break;
+    case QListPtr:
+        {
+            QList<void *> *li = *(QList<void *>**)d.constData();
+            li->insert(index, *reinterpret_cast<void **>(const_cast<void *>(value.constData())));  //XXX Typesafety
+            return true;
+        }
+    case StringList:
+    case VariantList:
+    case Invalid:
     case Instance:
-        //XXX do nothing?
-        if (index == 0)
-            setList(value);
-        break;
     case Integer:
-        break;
+    default:
+        return false;
     }
 }
 
-void QmlListAccessor::removeAt(int index)
+bool QmlListAccessor::removeAt(int index)
 {
     switch(m_type) {
-    case Invalid:
-        break;
-    case StringList:
-        qvariant_cast<QStringList>(d).removeAt(index);
-        break;
-    case VariantList:
-        qvariant_cast<QVariantList>(d).removeAt(index);
-        break;
     case QmlList:
         {
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
             li->removeAt(index);
-            break;
+            return true;
         }
-    case QList:
-        //XXX needs implementation
-        qWarning() << "removeAt function not yet implemented for QLists";
-        break;
+    case QListPtr:
+        {
+            QList<void *> *li = *(QList<void *>**)d.constData();
+            li->removeAt(index);
+            return true;
+        }
+    case StringList:
+    case VariantList:
+    case Invalid:
     case Instance:
-        //XXX do nothing?
-        if (index == 0)
-            setList(QVariant());
-        break;
     case Integer:
-        break;
+    default:
+        return false;
     }
 }
 
-void QmlListAccessor::clear()
+bool QmlListAccessor::clear()
 {
     switch(m_type) {
-    case Invalid:
-        break;
-    case StringList:
-        qvariant_cast<QStringList>(d).clear();
-        break;
-    case VariantList:
-        qvariant_cast<QVariantList>(d).clear();
-        break;
     case QmlList:
         {
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
             li->clear();
-            break;
+            return true;
         }
-    case QList:
-        QmlMetaType::clear(d);
-        break;
+    case QListPtr:
+        {
+            QList<void *> *li = *(QList<void *>**)d.constData();
+            li->clear();
+            return true;
+        }
+    case StringList:
+    case VariantList:
+    case Invalid:
     case Instance:
-        //XXX what should we do here?
-        setList(QVariant());
-        break;
     case Integer:
-        d = 0;
+    default:
+        return false;
     }
 }
 
