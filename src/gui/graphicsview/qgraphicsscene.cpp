@@ -4422,9 +4422,12 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         bool allowPartialCacheExposure = !viewRect.contains(deviceRect);
 #else
         // Only if deviceRect is 20% taller or wider than the desktop.
-        QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
-        bool allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
-                                          || desktopRect.height() * 1.2 < deviceRect.height());
+        bool allowPartialCacheExposure = false;
+        if (widget) {
+            QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
+            allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
+                                         || desktopRect.height() * 1.2 < deviceRect.height());
+        }
 #endif
         QRegion scrollExposure;
         if (deviceData->cacheIndent != QPoint() || allowPartialCacheExposure) {
