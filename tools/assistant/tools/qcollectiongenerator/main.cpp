@@ -87,6 +87,7 @@ public:
     QStringList filesToRegister() const { return m_filesToRegister; }
 
     QString cacheDirectory() const { return m_cacheDirectory; }
+    bool cacheDirRelativeToCollection() const { return m_cacheDirRelativeToCollection; }
 
 private:
     void raiseErrorWithLine();
@@ -115,6 +116,7 @@ private:
     QMap<QString, QString> m_filesToGenerate;
     QStringList m_filesToRegister;
     QString m_cacheDirectory;
+    bool m_cacheDirRelativeToCollection;
 };
 
 void CollectionConfigReader::raiseErrorWithLine()
@@ -198,6 +200,9 @@ void CollectionConfigReader::readAssistantSettings()
             } else if (name() == QLatin1String("aboutDialog")) {
                 readAboutDialog();
             } else if (name() == "cacheDirectory") {
+                m_cacheDirRelativeToCollection =
+                    attributes().value(QLatin1String("base"))
+                    == QLatin1String("collection");
                 m_cacheDirectory = readElementText();
             } else {
                 raiseErrorWithLine();
@@ -461,8 +466,11 @@ int main(int argc, char *argv[])
     if (!config.currentFilter().isEmpty())
         helpEngine.setCustomValue(QLatin1String("CurrentFilter"), config.currentFilter());
 
-    if (!config.cacheDirectory().isEmpty())
+    if (!config.cacheDirectory().isEmpty()) {
         helpEngine.setCustomValue(QLatin1String("CacheDirectory"), config.cacheDirectory());
+        helpEngine.setCustomValue(QLatin1String("CacheDirRelativeToCollection"),
+                                  config.cacheDirRelativeToCollection());
+    }
 
     helpEngine.setCustomValue(QLatin1String("EnableFilterFunctionality"),
         config.enableFilterFunctionality());

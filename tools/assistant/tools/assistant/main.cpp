@@ -293,9 +293,14 @@ int main(int argc, char *argv[])
         }
 
         QString fileName = QFileInfo(cmdCollectionFile).fileName();
-        QString dir = MainWindow::collectionFileDirectory(false,
+        const QString &cacheDir =
             caller.customValue(QLatin1String("CacheDirectory"),
-            QString()).toString());
+                               QString()).toString();
+        const QString dir = !cacheDir.isEmpty()
+            && caller.customValue(QLatin1String("CacheDirRelativeToCollection")).toBool()
+            ? QFileInfo(cmdCollectionFile).dir().absolutePath()
+                + QDir::separator() + cacheDir
+            : MainWindow::collectionFileDirectory(false, cacheDir);
 
         bool collectionFileExists = true;
         QFileInfo fi(dir + QDir::separator() + fileName);
