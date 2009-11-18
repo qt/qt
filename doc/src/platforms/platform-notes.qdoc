@@ -416,7 +416,7 @@
 
     \section1 Multimedia and Phonon Support
 
-    Qt provides a backend for Qt's multimedia module, Phonon, which supports
+    Qt provides a backend for Qt's Phonon module, which supports
     video and sound playback through Symbian's Multimedia Framework, MMF.
 
     In this release the support is experimental. Video playback may have
@@ -429,7 +429,11 @@
 
     In addition, there exists a backend for the Helix framework. However, due
     to it not shipping with Qt, its availability depends on the Symbian
-    platform in use. If available, it is loaded instead of the MMF plugin.
+    platform in use. If available, it is loaded in preference over the MMF
+    plugin. The Helix plugin requires Symbian signed capabilities. If the
+    application does not have those capabilities, the MMF plugin, if present on
+    the device, will be loaded instead. The capabilities the Helix backend
+    requires are AllFiles, DiskAdmin and MultimediaDD.
 
 */
 
