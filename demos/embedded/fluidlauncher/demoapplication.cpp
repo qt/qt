@@ -60,8 +60,8 @@ DemoApplication::DemoApplication(QString executableName, QString caption, QStrin
 
     process.setProcessChannelMode(QProcess::ForwardedChannels);
 
-    QObject::connect( &process, SIGNAL(finished(int, QProcess::ExitStatus)), 
-                      this, SLOT(processFinished(int, QProcess::ExitStatus)));
+    QObject::connect( &process, SIGNAL(finished(int,QProcess::ExitStatus)), 
+                      this, SLOT(processFinished(int,QProcess::ExitStatus)));
 
     QObject::connect( &process, SIGNAL(error(QProcess::ProcessError)), 
                       this, SLOT(processError(QProcess::ProcessError)));

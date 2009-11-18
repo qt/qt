@@ -49,8 +49,8 @@ AddressWidget::AddressWidget(QWidget *parent)
 {
     table = new TableModel(this);
     newAddressTab = new NewAddressTab(this);
-    connect(newAddressTab, SIGNAL(sendDetails(QString, QString)),
-        this, SLOT(addEntry(QString, QString))); 
+    connect(newAddressTab, SIGNAL(sendDetails(QString,QString)),
+        this, SLOT(addEntry(QString,QString))); 
 
     addTab(newAddressTab, "Address Book");    
 
@@ -186,8 +186,8 @@ void AddressWidget::setupTabs()
         proxyModel->sort(0, Qt::AscendingOrder);
     
         connect(tableView->selectionModel(),
-            SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-            this, SIGNAL(selectionChanged(const QItemSelection &)));
+            SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this, SIGNAL(selectionChanged(QItemSelection)));
 
         addTab(tableView, str);
     }

@@ -1302,7 +1302,7 @@ QScript::QObjectData *QScriptEnginePrivate::qobjectData(QObject *object)
     QScript::QObjectData *data = new QScript::QObjectData(this);
     m_qobjectData.insert(object, data);
     QObject::connect(object, SIGNAL(destroyed(QObject*)),
-                     q_func(), SLOT(_q_objectDestroyed(QObject *)));
+                     q_func(), SLOT(_q_objectDestroyed(QObject*)));
     return data;
 }
 

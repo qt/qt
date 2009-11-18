@@ -140,8 +140,8 @@ void View::showInformation(ImageItem *image)
         InformationWindow *window;
         window = new InformationWindow(id, officeTable, this);
 
-        connect(window, SIGNAL(imageChanged(int, QString)),
-                this, SLOT(updateImage(int, QString)));
+        connect(window, SIGNAL(imageChanged(int,QString)),
+                this, SLOT(updateImage(int,QString)));
 
 #ifndef Q_OS_SYMBIAN
         window->move(pos() + QPoint(20, 40));

@@ -92,7 +92,7 @@ void QEventDispatcherS60::saveInputEvent(QSymbianControl *control, QWidget *widg
 {
     DeferredInputEvent inputEvent = {control, widget, event};
     m_deferredInputEvents.append(inputEvent);
-    connect(widget, SIGNAL(destroyed(QObject *)), SLOT(removeInputEventsForWidget(QObject *)));
+    connect(widget, SIGNAL(destroyed(QObject*)), SLOT(removeInputEventsForWidget(QObject*)));
 }
 
 bool QEventDispatcherS60::sendDeferredInputEvents()

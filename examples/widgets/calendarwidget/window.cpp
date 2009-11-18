@@ -196,7 +196,7 @@ void Window::createPreviewGroupBox()
     calendar->setMaximumDate(QDate(3000, 1, 1));
     calendar->setGridVisible(true);
 
-    connect(calendar, SIGNAL(currentPageChanged(int, int)),
+    connect(calendar, SIGNAL(currentPageChanged(int,int)),
             this, SLOT(reformatCalendarPage()));
 
     previewLayout = new QGridLayout;
@@ -357,14 +357,14 @@ void Window::createDatesGroupBox()
     maximumDateLabel->setBuddy(maximumDateEdit);
 
 //! [13] //! [14]
-    connect(currentDateEdit, SIGNAL(dateChanged(const QDate &)),
-            calendar, SLOT(setSelectedDate(const QDate &)));
+    connect(currentDateEdit, SIGNAL(dateChanged(QDate)),
+            calendar, SLOT(setSelectedDate(QDate)));
     connect(calendar, SIGNAL(selectionChanged()),
             this, SLOT(selectedDateChanged()));
-    connect(minimumDateEdit, SIGNAL(dateChanged(const QDate &)),
-            this, SLOT(minimumDateChanged(const QDate &)));
-    connect(maximumDateEdit, SIGNAL(dateChanged(const QDate &)),
-            this, SLOT(maximumDateChanged(const QDate &)));
+    connect(minimumDateEdit, SIGNAL(dateChanged(QDate)),
+            this, SLOT(minimumDateChanged(QDate)));
+    connect(maximumDateEdit, SIGNAL(dateChanged(QDate)),
+            this, SLOT(maximumDateChanged(QDate)));
 
 //! [14]
     QGridLayout *dateBoxLayout = new QGridLayout;
@@ -418,7 +418,7 @@ void Window::createTextFormatsGroupBox()
             this, SLOT(weekdayFormatChanged()));
     connect(weekendColorCombo, SIGNAL(currentIndexChanged(int)),
             this, SLOT(weekendFormatChanged()));
-    connect(headerTextFormatCombo, SIGNAL(currentIndexChanged(const QString &)),
+    connect(headerTextFormatCombo, SIGNAL(currentIndexChanged(QString)),
             this, SLOT(reformatHeaders()));
     connect(firstFridayCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(reformatCalendarPage()));

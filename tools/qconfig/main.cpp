@@ -171,11 +171,11 @@ Main::Main()
     splitter->addWidget(textBrowser);
     textBrowser->show();
 
-    connect(textBrowser, SIGNAL(featureClicked(const QString&)),
-            this, SLOT(showInfo(const QString&)));
+    connect(textBrowser, SIGNAL(featureClicked(QString)),
+            this, SLOT(showInfo(QString)));
     connect(featureTree, SIGNAL(activated(QModelIndex)),
 	    this, SLOT(showInfo(QModelIndex)));
-    connect(featureModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)),
+    connect(featureModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(modelChanged()));
     connect(featureTree, SIGNAL(clicked(QModelIndex)),
             this, SLOT(showInfo(QModelIndex)));

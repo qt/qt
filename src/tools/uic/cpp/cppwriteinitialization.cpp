@@ -2706,11 +2706,11 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
     m_output << m_indent << "QObject::connect("
         << sender
         << ", "
-        << "SIGNAL(" << connection->elementSignal() << ')'
+        << "SIGNAL("<<connection->elementSignal()<<')'
         << ", "
         << receiver
         << ", "
-        << "SLOT(" << connection->elementSlot() << ')'
+        << "SLOT("<<connection->elementSlot()<<')'
         << ");\n";
 }
 

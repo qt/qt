@@ -95,8 +95,8 @@ MediaObject::MediaObject(Backend *backend, QObject *parent)
         m_backend->addBusWatcher(this);
         connect(m_tickTimer, SIGNAL(timeout()), SLOT(emitTick()));
     }
-    connect(this, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 
-            this, SLOT(notifyStateChange(Phonon::State, Phonon::State)));
+    connect(this, SIGNAL(stateChanged(Phonon::State,Phonon::State)), 
+            this, SLOT(notifyStateChange(Phonon::State,Phonon::State)));
 
 }
 

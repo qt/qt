@@ -232,8 +232,8 @@ void Window::createFilesTable()
     filesTable->verticalHeader()->hide();
     filesTable->setShowGrid(false);
 
-    connect(filesTable, SIGNAL(cellActivated(int, int)),
-            this, SLOT(openFileOfItem(int, int)));
+    connect(filesTable, SIGNAL(cellActivated(int,int)),
+            this, SLOT(openFileOfItem(int,int)));
 }
 //! [11]
 
