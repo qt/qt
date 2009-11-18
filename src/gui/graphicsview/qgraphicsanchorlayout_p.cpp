@@ -633,16 +633,25 @@ AnchorData *QGraphicsAnchorLayoutPrivate::addAnchorMaybeParallel(AnchorData *new
             AnchorData *child = children[i];
             QList<QSimplexConstraint *> *childConstraints = childrenConstraints[i];
 
+            // We need to fix the second child constraints if the parallel group will have the
+            // opposite direction of the second child anchor. For the point of view of external
+            // entities, this anchor was reversed. So if at some point we say that the parallel
+            // has a value of 20, this mean that the second child (when reversed) will be
+            // assigned -20.
+            const bool needsReverse = i == 1 && !parallel->secondForward();
+
             if (!child->isCenterAnchor)
                 continue;
 
             parallel->isCenterAnchor = true;
 
-            for (int i = 0; i < constraints.count(); ++i) {
-                QSimplexConstraint *c = constraints[i];
+            for (int j = 0; j < constraints.count(); ++j) {
+                QSimplexConstraint *c = constraints[j];
                 if (c->variables.contains(child)) {
                     childConstraints->append(c);
                     qreal v = c->variables.take(child);
+                    if (needsReverse)
+                        v *= -1;
                     c->variables.insert(parallel, v);
                 }
             }
@@ -1165,9 +1174,15 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedConstraints(ParallelAnchorDa
         c->variables.insert(parallel->firstEdge, v);
     }
 
+    // When restoring, we might have to revert constraints back. See comments on
+    // addAnchorMaybeParallel().
+    const bool needsReverse = !parallel->secondForward();
+
     for (int i = 0; i < parallel->m_secondConstraints.count(); ++i) {
         QSimplexConstraint *c = parallel->m_secondConstraints.at(i);
         qreal v = c->variables[parallel];
+        if (needsReverse)
+            v *= -1;
         c->variables.remove(parallel);
         c->variables.insert(parallel->secondEdge, v);
     }
@@ -1209,7 +1224,24 @@ void QGraphicsAnchorLayoutPrivate::restoreVertices(Orientation orientation)
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
     QList<AnchorVertexPair *> &toRestore = simplifiedVertices[orientation];
 
-    // We will restore the vertices in the inverse order of creation, this way we ensure that
+    // Since we keep a list of parallel anchors and vertices that were created during vertex
+    // simplification, we can now iterate on those lists instead of traversing the graph
+    // recursively.
+
+    // First, restore the constraints changed when we created parallel anchors. Note that this
+    // works at this point because the constraints doesn't depend on vertex information and at
+    // this point it's always safe to identify whether the second child is forward or backwards.
+    // In the next step, we'll change the anchors vertices so that would not be possible anymore.
+    QList<AnchorData *> &parallelAnchors = anchorsFromSimplifiedVertices[orientation];
+
+    for (int i = parallelAnchors.count() - 1; i >= 0; --i) {
+        ParallelAnchorData *parallel = static_cast<ParallelAnchorData *>(parallelAnchors.at(i));
+        restoreSimplifiedConstraints(parallel);
+        delete parallel;
+    }
+    parallelAnchors.clear();
+
+    // Then, we will restore the vertices in the inverse order of creation, this way we ensure that
     // the vertex being restored was not wrapped by another simplification.
     for (int i = toRestore.count() - 1; i >= 0; --i) {
         AnchorVertexPair *pair = toRestore.at(i);
@@ -1254,19 +1286,6 @@ void QGraphicsAnchorLayoutPrivate::restoreVertices(Orientation orientation)
         delete pair;
     }
     toRestore.clear();
-
-    // The restoration process for vertex simplification also restored the effect of the
-    // parallel anchors created during vertex simplification, so we just need to restore
-    // the constraints in case of parallels that contain center anchors. For the same
-    // reason as above, order matters here.
-    QList<AnchorData *> &parallelAnchors = anchorsFromSimplifiedVertices[orientation];
-
-    for (int i = parallelAnchors.count() - 1; i >= 0; --i) {
-        ParallelAnchorData *parallel = static_cast<ParallelAnchorData *>(parallelAnchors.at(i));
-        restoreSimplifiedConstraints(parallel);
-        delete parallel;
-    }
-    parallelAnchors.clear();
 }
 
 QGraphicsAnchorLayoutPrivate::Orientation
