@@ -1371,6 +1371,7 @@ void tst_QWebPage::inputMethods()
     else
         QVERIFY2(false, "Unknown view type");
 
+    page->settings()->setFontFamily(QWebSettings::SerifFont, "FooSerifFont");
     page->mainFrame()->setHtml("<html><body>" \
                                             "<input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/><br>" \
                                             "<input type='password'/>" \
@@ -1404,9 +1405,9 @@ void tst_QWebPage::inputMethods()
     QVERIFY(inputs.at(0).geometry().contains(variant.toRect().topLeft()));
 
     //ImFont
-    //variant = page->inputMethodQuery(Qt::ImFont);
-    //QFont font = variant.value<QFont>();
-    //QCOMPARE(QString("-webkit-serif"), font.family());
+    variant = page->inputMethodQuery(Qt::ImFont);
+    QFont font = variant.value<QFont>();
+    QCOMPARE(page->settings()->fontFamily(QWebSettings::SerifFont), font.family());
 
     QList<QInputMethodEvent::Attribute> inputAttributes;
 
