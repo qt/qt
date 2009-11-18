@@ -144,20 +144,23 @@ void tst_sql::testQml_data()
     QTest::newRow("iteration-index") << "data/4-iteration-index.js" << "passed" << 1 << true; // Some HTML5 documents say to use rows by index, others by item() function
     QTest::newRow("iteration-iterator") << "data/5-iteration-iterator.js" << "passed" << 1 << true; // As with previous, WebKit doesn't give an array
     QTest::newRow("iteration-efficient") << "data/6-iteration-efficient.js" << "passed" << 1 << true; // It's very inefficient to find the total number of results, here is a solution
+    QTest::newRow("error-a") << "data/7a-error.js" << "passed" << 1 << false;
 }
 
 void tst_sql::validateAgainstWebkit_data()
 {
-    testQml_data();
+    QTest::addColumn<QString>("jsfile"); // The input file
+    QTest::addColumn<QString>("result"); // The required output from the js test() function
+    QTest::addColumn<int>("databases");  // The number of databases that should have been created
+    QTest::addColumn<bool>("qmlextension"); // Things WebKit can't do
+    QTest::newRow("creation") << "data/1-creation.js" << "passed" << 1 << false;
 }
 
 void tst_sql::validateAgainstWebkit()
 {
     // Validates tests against WebKit (HTML5) support.
     //
-    // WebKit SQL is asynchronous, so tests are divided into code plus a test()
-    // function which is executed "later" (via QTRY_).
-    //
+
     QFETCH(QString, jsfile);
     QFETCH(QString, result);
     QFETCH(int, databases);
@@ -174,14 +177,15 @@ void tst_sql::validateAgainstWebkit()
     webpage.settings()->setOfflineStoragePath(dbDir());
     webpage.settings()->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled, true);
 
-    webpage.mainFrame()->evaluateJavaScript(js);
-    QTest::qWait(200); // WebKit db access is asynchronous
-    QTRY_COMPARE(webpage.mainFrame()->evaluateJavaScript("test()").toString(),result);
-    QTest::qWait(200); // WebKit crashes if you quit it too fast
+    QEXPECT_FAIL("","WebKit doesn't support openDatabaseSync yet", Continue);
+    QCOMPARE(webpage.mainFrame()->evaluateJavaScript(js).toString(),result);
+    /*
+    QTest::qWait(100); // WebKit crashes if you quit it too fast
 
     QWebSecurityOrigin origin = webpage.mainFrame()->securityOrigin();
     QList<QWebDatabase> dbs = origin.databases();
     QCOMPARE(dbs.count(), databases);
+    */
 }
 
 void tst_sql::testQml()

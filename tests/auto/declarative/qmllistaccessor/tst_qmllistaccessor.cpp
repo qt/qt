@@ -50,29 +50,169 @@ public:
     tst_QmlListAccessor() {}
 
 private slots:
+    void invalid();
     void qmllist();
-    //void qlist();
+    void qlist();
     void qstringlist();
+    void qvariantlist();
+    void qobject();
+    void instance();
+    void integer();
 };
+
+void tst_QmlListAccessor::invalid()
+{
+    QmlListAccessor accessor;
+
+    QCOMPARE(accessor.list(), QVariant());
+    QVERIFY(!accessor.isValid());
+    QCOMPARE(accessor.type(), QmlListAccessor::Invalid);
+
+    QCOMPARE(accessor.count(), 0);
+    QCOMPARE(accessor.at(0), QVariant());
+    QCOMPARE(accessor.at(4), QVariant());
+    QVERIFY(!accessor.append(QVariant(10)));
+    QVERIFY(!accessor.insert(0, QVariant(10)));
+    QVERIFY(!accessor.removeAt(0));
+    QVERIFY(!accessor.clear());
+
+    accessor.setList(QVariant());
+
+    QCOMPARE(accessor.list(), QVariant());
+    QVERIFY(!accessor.isValid());
+    QCOMPARE(accessor.type(), QmlListAccessor::Invalid);
+
+    QCOMPARE(accessor.count(), 0);
+    QCOMPARE(accessor.at(0), QVariant());
+    QCOMPARE(accessor.at(4), QVariant());
+    QVERIFY(!accessor.append(QVariant(10)));
+    QVERIFY(!accessor.insert(0, QVariant(10)));
+    QVERIFY(!accessor.removeAt(0));
+    QVERIFY(!accessor.clear());
+}
 
 void tst_QmlListAccessor::qmllist()
 {
     QmlConcreteList<QObject*> list;
-    QObject *obj = new QObject;
+    QObject *obj = new QObject(this);
+    QObject *obj2 = new QObject(this);
+    QObject *obj3 = new QObject(this);
+
     list.append(obj);
     QVERIFY(list.count() == 1);
     QCOMPARE(list.at(0), obj);
 
     QmlListAccessor accessor;
     accessor.setList(qVariantFromValue((QmlList<QObject*>*)&list));
+    QCOMPARE(accessor.list(), qVariantFromValue((QmlList<QObject*>*)&list));
 
+    // type
+    QCOMPARE(accessor.type(), QmlListAccessor::QmlList);
+
+    // isValid
     QVERIFY(accessor.isValid());
-    QVERIFY(accessor.count() == 1);
 
-    QVariant v = accessor.at(0);
-    QCOMPARE(qvariant_cast<QObject*>(v), obj);
+    // count
+    QCOMPARE(accessor.count(), 1);
 
+    // at
+    QCOMPARE(qvariant_cast<QObject*>(accessor.at(0)), obj);
+
+    // append
+    accessor.append(qVariantFromValue(obj2));
     QVERIFY(accessor.isValid());
+    QCOMPARE(accessor.count(), 2);
+    QCOMPARE(qvariant_cast<QObject*>(accessor.at(1)), obj2);
+    QCOMPARE(list.count(), 2);
+    QCOMPARE(list.at(0), obj);
+    QCOMPARE(list.at(1), obj2);
+
+    // insert
+    accessor.insert(1, qVariantFromValue(obj3));
+    QVERIFY(accessor.isValid());
+    QCOMPARE(accessor.count(), 3);
+    QCOMPARE(qvariant_cast<QObject*>(accessor.at(1)), obj3);
+    QCOMPARE(list.count(), 3);
+    QCOMPARE(list.at(0), obj);
+    QCOMPARE(list.at(1), obj3);
+    QCOMPARE(list.at(2), obj2);
+
+    // removeAt
+    accessor.removeAt(1);
+    QVERIFY(accessor.isValid());
+    QCOMPARE(accessor.count(), 2);
+    QCOMPARE(qvariant_cast<QObject*>(accessor.at(1)), obj2);
+    QCOMPARE(list.count(), 2);
+    QCOMPARE(list.at(0), obj);
+    QCOMPARE(list.at(1), obj2);
+
+    // clear
+    accessor.clear();
+    QVERIFY(accessor.isValid());
+    QCOMPARE(accessor.count(), 0);
+    QCOMPARE(list.count(), 0);
+}
+
+void tst_QmlListAccessor::qlist()
+{
+    QList<QObject*> list;
+    QObject *obj = new QObject(this);
+    QObject *obj2 = new QObject(this);
+    QObject *obj3 = new QObject(this);
+
+    list.append(obj);
+    QVERIFY(list.count() == 1);
+    QCOMPARE(list.at(0), obj);
+
+    QmlListAccessor accessor;
+    accessor.setList(qVariantFromValue((QList<QObject*>*)&list));
+    QCOMPARE(accessor.list(), qVariantFromValue((QList<QObject*>*)&list));
+
+    // type
+    QCOMPARE(accessor.type(), QmlListAccessor::QListPtr);
+
+    // isValid
+    QVERIFY(accessor.isValid());
+
+    // count
+    QCOMPARE(accessor.count(), 1);
+
+    // at
+    QCOMPARE(qvariant_cast<QObject*>(accessor.at(0)), obj);
+
+    // append
+    accessor.append(qVariantFromValue(obj2));
+    QVERIFY(accessor.isValid());
+    QCOMPARE(accessor.count(), 2);
+    QCOMPARE(qvariant_cast<QObject*>(accessor.at(1)), obj2);
+    QCOMPARE(list.count(), 2);
+    QCOMPARE(list.at(0), obj);
+    QCOMPARE(list.at(1), obj2);
+
+    // insert
+    accessor.insert(1, qVariantFromValue(obj3));
+    QVERIFY(accessor.isValid());
+    QCOMPARE(accessor.count(), 3);
+    QCOMPARE(qvariant_cast<QObject*>(accessor.at(1)), obj3);
+    QCOMPARE(list.count(), 3);
+    QCOMPARE(list.at(0), obj);
+    QCOMPARE(list.at(1), obj3);
+    QCOMPARE(list.at(2), obj2);
+
+    // removeAt
+    accessor.removeAt(1);
+    QVERIFY(accessor.isValid());
+    QCOMPARE(accessor.count(), 2);
+    QCOMPARE(qvariant_cast<QObject*>(accessor.at(1)), obj2);
+    QCOMPARE(list.count(), 2);
+    QCOMPARE(list.at(0), obj);
+    QCOMPARE(list.at(1), obj2);
+
+    // clear
+    accessor.clear();
+    QVERIFY(accessor.isValid());
+    QCOMPARE(accessor.count(), 0);
+    QCOMPARE(list.count(), 0);
 }
 
 void tst_QmlListAccessor::qstringlist()
@@ -85,16 +225,231 @@ void tst_QmlListAccessor::qstringlist()
     QmlListAccessor accessor;
     accessor.setList(list);
 
+    // type
+    QCOMPARE(accessor.type(), QmlListAccessor::StringList);
+
+    // isValid
     QVERIFY(accessor.isValid());
+
+    // count
     QVERIFY(accessor.count() == 2);
 
-    QVariant v = accessor.at(0);
-    QCOMPARE(qvariant_cast<QString>(v), QLatin1String("Item1"));
+    // at
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
 
-    v = accessor.at(1);
-    QCOMPARE(qvariant_cast<QString>(v), QLatin1String("Item2"));
+    // append
+    QVERIFY(!accessor.append(QVariant("Item3")));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 2);
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
+
+    // insert
+    QVERIFY(!accessor.insert(1, QVariant("MiddleItem")));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 2);
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
+
+    // removeAt
+    QVERIFY(!accessor.removeAt(1));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 2);
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
+
+    // clear
+    QVERIFY(!accessor.clear());
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 2);
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
 }
 
+void tst_QmlListAccessor::qvariantlist()
+{
+    QVariantList list;
+    list.append(QLatin1String("Item1"));
+    list.append(QLatin1String("Item2"));
+    QVERIFY(list.count() == 2);
+
+    QmlListAccessor accessor;
+    accessor.setList(list);
+
+    // type
+    QCOMPARE(accessor.type(), QmlListAccessor::VariantList);
+
+    // isValid
+    QVERIFY(accessor.isValid());
+
+    // count
+    QVERIFY(accessor.count() == 2);
+
+    // at
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
+
+    // append
+    QVERIFY(!accessor.append(QVariant("Item3")));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 2);
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
+
+    // insert
+    QVERIFY(!accessor.insert(1, QVariant("MiddleItem")));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 2);
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
+
+    // removeAt
+    QVERIFY(!accessor.removeAt(1));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 2);
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
+
+    // clear
+    QVERIFY(!accessor.clear());
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 2);
+    QCOMPARE(qvariant_cast<QString>(accessor.at(0)), QLatin1String("Item1"));
+    QCOMPARE(qvariant_cast<QString>(accessor.at(1)), QLatin1String("Item2"));
+}
+
+void tst_QmlListAccessor::qobject()
+{
+    QObject *obj = new QObject(this);
+
+    QmlListAccessor accessor;
+    accessor.setList(qVariantFromValue(obj));
+
+    // type
+    QCOMPARE(accessor.type(), QmlListAccessor::Instance);
+
+    // isValid
+    QVERIFY(accessor.isValid());
+
+    // count
+    QVERIFY(accessor.count() == 1);
+
+    // at
+    QCOMPARE(accessor.at(0), qVariantFromValue(obj));
+
+    // append
+    QVERIFY(!accessor.append(qVariantFromValue((QObject *)0)));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 1);
+    QCOMPARE(accessor.at(0), qVariantFromValue(obj));
+
+    // insert
+    QVERIFY(!accessor.insert(0, qVariantFromValue((QObject *)0)));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 1);
+    QCOMPARE(accessor.at(0), qVariantFromValue(obj));
+
+    // removeAt
+    QVERIFY(!accessor.removeAt(0));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 1);
+    QCOMPARE(accessor.at(0), qVariantFromValue(obj));
+
+    // clear
+    QVERIFY(!accessor.clear());
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 1);
+    QCOMPARE(accessor.at(0), qVariantFromValue(obj));
+}
+
+void tst_QmlListAccessor::instance()
+{
+    QRect r;
+
+    QmlListAccessor accessor;
+    accessor.setList(r);
+
+    // type
+    QCOMPARE(accessor.type(), QmlListAccessor::Instance);
+
+    // isValid
+    QVERIFY(accessor.isValid());
+
+    // count
+    QVERIFY(accessor.count() == 1);
+
+    // at
+    QCOMPARE(accessor.at(0), qVariantFromValue(r));
+
+    // append
+    QVERIFY(!accessor.append(qVariantFromValue(r)));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 1);
+    QCOMPARE(accessor.at(0), qVariantFromValue(r));
+
+    // insert
+    QVERIFY(!accessor.insert(0, qVariantFromValue(r)));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 1);
+    QCOMPARE(accessor.at(0), qVariantFromValue(r));
+
+    // removeAt
+    QVERIFY(!accessor.removeAt(0));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 1);
+    QCOMPARE(accessor.at(0), qVariantFromValue(r));
+
+    // clear
+    QVERIFY(!accessor.clear());
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 1);
+    QCOMPARE(accessor.at(0), qVariantFromValue(r));
+}
+
+void tst_QmlListAccessor::integer()
+{
+    int r = 13;
+
+    QmlListAccessor accessor;
+    accessor.setList(r);
+
+    // type
+    QCOMPARE(accessor.type(), QmlListAccessor::Integer);
+
+    // isValid
+    QVERIFY(accessor.isValid());
+
+    // count
+    QVERIFY(accessor.count() == 13);
+
+    // at
+    QCOMPARE(accessor.at(4), qVariantFromValue(4));
+
+    // append
+    QVERIFY(!accessor.append(qVariantFromValue(r)));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 13);
+    QCOMPARE(accessor.at(4), qVariantFromValue(4));
+
+    // insert
+    QVERIFY(!accessor.insert(0, qVariantFromValue(r)));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 13);
+    QCOMPARE(accessor.at(4), qVariantFromValue(4));
+
+    // removeAt
+    QVERIFY(!accessor.removeAt(0));
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 13);
+    QCOMPARE(accessor.at(4), qVariantFromValue(4));
+
+    // clear
+    QVERIFY(!accessor.clear());
+    QVERIFY(accessor.isValid());
+    QVERIFY(accessor.count() == 13);
+    QCOMPARE(accessor.at(4), qVariantFromValue(4));
+}
 
 QTEST_MAIN(tst_QmlListAccessor)
 

@@ -595,7 +595,7 @@ void QmlAbstractAnimation::timelineComplete()
 /*!
     \qmlclass PauseAnimation QmlPauseAnimation
     \inherits Animation
-    \brief The PauseAnimation provides a pause for an animation.
+    \brief The PauseAnimation element provides a pause for an animation.
 
     When used in a SequentialAnimation, PauseAnimation is a step when
     nothing happens, for a specified duration.
@@ -668,7 +668,7 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 /*!
     \qmlclass ColorAnimation QmlColorAnimation
     \inherits PropertyAnimation
-    \brief The ColorAnimation allows you to animate color changes.
+    \brief The ColorAnimation element allows you to animate color changes.
 
     \code
     ColorAnimation { from: "white"; to: "#c0c0c0"; duration: 100 }
@@ -676,7 +676,7 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 
     When used in a transition, ColorAnimation will by default animate
     all properties of type color that are changing. If a property or properties
-    are explicity set for the animation, then those will be used instead.
+    are explicitly set for the animation, then those will be used instead.
 */
 /*!
     \internal
@@ -731,7 +731,7 @@ QML_DEFINE_TYPE(Qt,4,6,ColorAnimation,QmlColorAnimation)
 /*!
     \qmlclass ScriptAction QmlScriptAction
     \inherits Animation
-    \brief The ScriptAction allows scripts to be run during an animation.
+    \brief The ScriptAction element allows scripts to be run during an animation.
 
 */
 /*!
@@ -837,7 +837,7 @@ QML_DEFINE_TYPE(Qt,4,6,ScriptAction,QmlScriptAction)
 /*!
     \qmlclass PropertyAction QmlPropertyAction
     \inherits Animation
-    \brief The PropertyAction allows immediate property changes during animation.
+    \brief The PropertyAction element allows immediate property changes during animation.
 
     Explicitly set \c theimage.smooth=true during a transition:
     \code
@@ -1303,7 +1303,7 @@ QML_DEFINE_TYPE(Qt,4,6,ParentAction,QmlParentAction)
 /*!
     \qmlclass NumberAnimation QmlNumberAnimation
     \inherits PropertyAnimation
-    \brief The NumberAnimation allows you to animate changes in properties of type qreal.
+    \brief The NumberAnimation element allows you to animate changes in properties of type qreal.
 
     Animate a set of properties over 200ms, from their values in the start state to
     their values in the end state of the transition:
@@ -1381,7 +1381,7 @@ QmlList<QmlAbstractAnimation *> *QmlAnimationGroup::animations()
 /*!
     \qmlclass SequentialAnimation QmlSequentialAnimation
     \inherits Animation
-    \brief The SequentialAnimation allows you to run animations sequentially.
+    \brief The SequentialAnimation element allows you to run animations sequentially.
 
     Animations controlled in SequentialAnimation will be run one after the other.
 
@@ -1456,7 +1456,7 @@ QML_DEFINE_TYPE(Qt,4,6,SequentialAnimation,QmlSequentialAnimation)
 /*!
     \qmlclass ParallelAnimation QmlParallelAnimation
     \inherits Animation
-    \brief The ParallelAnimation allows you to run animations in parallel.
+    \brief The ParallelAnimation element allows you to run animations in parallel.
 
     Animations contained in ParallelAnimation will be run at the same time.
 
@@ -1580,14 +1580,12 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 /*!
     \qmlclass PropertyAnimation QmlPropertyAnimation
     \inherits Animation
-    \brief The PropertyAnimation allows you to animate property changes.
+    \brief The PropertyAnimation element allows you to animate property changes.
 
     Animate a size property over 200ms, from its current size to 20-by-20:
     \code
-    VariantAnimation { property: "size"; to: "20x20"; duration: 200 }
+    PropertyAnimation { property: "size"; to: "20x20"; duration: 200 }
     \endcode
-
-    \a qmlanimation.html
 */
 
 QmlPropertyAnimation::QmlPropertyAnimation(QObject *parent)
