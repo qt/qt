@@ -55,9 +55,10 @@ QT_BEGIN_NAMESPACE
 class QmlBindPrivate : public QObjectPrivate
 {
 public:
-    QmlBindPrivate() : when(true), obj(0) {}
+    QmlBindPrivate() : when(true), componentComplete(false), obj(0) {}
 
-    bool when;
+    bool when : 1;
+    bool componentComplete : 1;
     QObject *obj;
     QString prop;
     QmlNullableValue<QVariant> value;
@@ -176,10 +177,17 @@ void QmlBind::setValue(const QVariant &v)
     eval();
 }
 
+void QmlBind::componentComplete()
+{
+    Q_D(QmlBind);
+    d->componentComplete = true;
+    eval();
+}
+
 void QmlBind::eval()
 {
     Q_D(QmlBind);
-    if (!d->obj || d->value.isNull || !d->when)
+    if (!d->obj || d->value.isNull || !d->when || !d->componentComplete)
         return;
 
     QmlMetaProperty prop(d->obj, d->prop);
