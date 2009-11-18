@@ -55,7 +55,7 @@ class Q_DECLARATIVE_EXPORT QmlListAccessor
 {
 public:
     QmlListAccessor();
-    virtual ~QmlListAccessor();
+    ~QmlListAccessor();
 
     QVariant list() const;
     void setList(const QVariant &, QmlEngine * = 0);
@@ -65,12 +65,12 @@ public:
     int count() const;
     QVariant at(int) const;
 
-    virtual void append(const QVariant &);
-    virtual void insert(int, const QVariant &);
-    virtual void removeAt(int);
-    virtual void clear();
+    bool append(const QVariant &);
+    bool insert(int, const QVariant &);
+    bool removeAt(int);
+    bool clear();
 
-    enum Type { Invalid, StringList, VariantList, QmlList, QList, Instance, Integer };
+    enum Type { Invalid, StringList, VariantList, QmlList, QListPtr, Instance, Integer };
     Type type() const { return m_type; }
 
 private:
