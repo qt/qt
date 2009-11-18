@@ -212,7 +212,8 @@ struct ParallelAnchorData : public AnchorData
         Q_ASSERT(((first->from == second->from) && (first->to == second->to)) ||
                  ((first->from == second->to) && (first->to == second->from)));
 
-        // We arbitrarily choose the direction of the first child as "our" direction
+        // Our convention will be that the parallel group anchor will have the same
+        // direction as the first anchor.
         from = first->from;
         to = first->to;
 #ifdef QT_DEBUG
@@ -222,6 +223,13 @@ struct ParallelAnchorData : public AnchorData
 
     virtual void updateChildrenSizes();
     bool calculateSizeHints();
+
+    bool secondForward() const {
+        // We have the convention that the first children will define the direction of the
+        // pararell group. Note that we can't rely on 'this->from' or 'this->to'  because they
+        // might be changed by vertex simplification.
+        return firstEdge->from == secondEdge->from;
+    }
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
