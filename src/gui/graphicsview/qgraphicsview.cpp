@@ -1517,6 +1517,8 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
             QEvent windowDeactivate(QEvent::WindowDeactivate);
             QApplication::sendEvent(d->scene, &windowDeactivate);
         }
+        if(hasFocus())
+            d->scene->clearFocus();
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).
@@ -3275,13 +3277,10 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Determine the exposed region
     d->exposedRegion = event->region();
-    if (d->exposedRegion.isEmpty())
-        d->exposedRegion = viewport()->rect();
     QRectF exposedSceneRect = mapToScene(d->exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
     QPainter painter(viewport());
-    painter.setClipRect(event->rect(), Qt::IntersectClip);
 #ifndef QT_NO_RUBBERBAND
     if (d->rubberBanding && !d->rubberBandRect.isEmpty())
         painter.save();

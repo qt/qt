@@ -1014,9 +1014,12 @@ bool QKeySequence::isEmpty() const
 */
 QKeySequence QKeySequence::mnemonic(const QString &text)
 {
-    if(qt_sequence_no_mnemonics)
-	return QKeySequence();
+    QKeySequence ret;
 
+    if(qt_sequence_no_mnemonics)
+        return ret;
+
+    bool found = false;
     int p = 0;
     while (p >= 0) {
         p = text.indexOf(QLatin1Char('&'), p) + 1;
@@ -1025,13 +1028,22 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
         if (text.at(p) != QLatin1Char('&')) {
             QChar c = text.at(p);
             if (c.isPrint()) {
-                c = c.toUpper();
-                return QKeySequence(c.unicode() + Qt::ALT);
+                if (!found) {
+                    c = c.toUpper();
+                    ret = QKeySequence(c.unicode() + Qt::ALT);
+#ifdef QT_NO_DEBUG
+                    return ret;
+#else
+                    found = true;
+                } else {
+                    qWarning("QKeySequence::mnemonic: \"%s\" contains multiple occurences of '&'", qPrintable(text));
+#endif
+                }
             }
         }
         p++;
     }
-    return QKeySequence();
+    return ret;
 }
 
 /*!

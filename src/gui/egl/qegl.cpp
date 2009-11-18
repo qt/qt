@@ -62,6 +62,7 @@ QEglContext::QEglContext()
     , currentSurface(EGL_NO_SURFACE)
     , current(false)
     , ownsContext(true)
+    , sharing(false)
 {
 }
 
@@ -174,6 +175,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     if (apiType == QEgl::OpenGL)
         contextProps.setValue(EGL_CONTEXT_CLIENT_VERSION, 2);
 #endif
+    sharing = false;
     if (shareContext && shareContext->ctx == EGL_NO_CONTEXT)
         shareContext = 0;
     if (shareContext) {
@@ -181,6 +183,8 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
         if (ctx == EGL_NO_CONTEXT) {
             qWarning() << "QEglContext::createContext(): Could not share context:" << errorString(eglGetError());
             shareContext = 0;
+        } else {
+            sharing = true;
         }
     }
     if (ctx == EGL_NO_CONTEXT) {

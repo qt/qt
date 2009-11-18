@@ -48,9 +48,7 @@
 #include "qlocale_p.h"
 #include "qunicodetables_p.h"
 #include "qscopedpointer.h"
-#ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
-#endif
 
 #ifndef QT_NO_COMPRESS
 #include <zlib.h>
@@ -2640,7 +2638,7 @@ void QByteArray::clear()
     d->ref.ref();
 }
 
-#ifndef QT_NO_DATASTREAM
+#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 
 /*! \relates QByteArray
 

@@ -1170,22 +1170,10 @@ void QLabelPrivate::updateShortcut()
     // But then we do want to hide the ampersands, so we can't use shortcutId.
     hasShortcut = false;
 
-    if (control) {
-        ensureTextPopulated();
-        // Underline the first character that follows an ampersand
-        shortcutCursor = control->document()->find(QLatin1String("&"));
-        if (shortcutCursor.isNull())
-            return;
-        hasShortcut = true;
-        shortcutId = q->grabShortcut(QKeySequence::mnemonic(text));
-        shortcutCursor.deleteChar(); // remove the ampersand
-        shortcutCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
-    } else {
-        if (!text.contains(QLatin1Char('&')))
-            return;
-        hasShortcut = true;
-        shortcutId = q->grabShortcut(QKeySequence::mnemonic(text));
-    }
+    if (!text.contains(QLatin1Char('&')))
+        return;
+    hasShortcut = true;
+    shortcutId = q->grabShortcut(QKeySequence::mnemonic(text));
 }
 
 #endif // QT_NO_SHORTCUT
@@ -1456,6 +1444,24 @@ void QLabelPrivate::ensureTextPopulated() const
             doc->setPlainText(text);
 #endif
             doc->setUndoRedoEnabled(false);
+
+#ifndef QT_NO_SHORTCUT
+            if (hasShortcut) {
+                // Underline the first character that follows an ampersand (and remove the others ampersands)
+                int from = 0;
+                bool found = false;
+                QTextCursor cursor;
+                while (!(cursor = control->document()->find((QLatin1String("&")), from)).isNull()) {
+                    cursor.deleteChar(); // remove the ampersand
+                    cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+                    from = cursor.position();
+                    if (!found && cursor.selectedText() != QLatin1String("&")) { //not a second &
+                        found = true;
+                        shortcutCursor = cursor;
+                    }
+                }
+            }
+#endif
         }
     }
     textDirty = false;

@@ -664,16 +664,16 @@ void tst_QGraphicsLinearLayout::invalidate()
     widget->show();
 
     layout.setContentsMargins(1, 2, 3, 4);
-    qApp->processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(layout.layoutRequest, 1);
 
     layout.setOrientation(Qt::Vertical);
-    qApp->processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(layout.layoutRequest, 2);
 
     for (int i = 0; i < count; ++i)
         layout.invalidate();        // Event is compressed, should only get one layoutrequest
-    qApp->processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(layout.layoutRequest, count ? 3 : 2);
     delete widget;
 }

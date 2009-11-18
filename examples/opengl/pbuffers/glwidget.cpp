@@ -175,7 +175,11 @@ void GLWidget::perspectiveProjection()
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+#ifdef QT_OPENGL_ES
+    glFrustumf(-aspect, +aspect, -1.0, +1.0, 4.0, 15.0);
+#else
     glFrustum(-aspect, +aspect, -1.0, +1.0, 4.0, 15.0);
+#endif
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -183,7 +187,11 @@ void GLWidget::orthographicProjection()
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+#ifdef QT_OPENGL_ES
+    glOrthof(-1.0, +1.0, -1.0, +1.0, -90.0, +90.0);
+#else
     glOrtho(-1.0, +1.0, -1.0, +1.0, -90.0, +90.0);
+#endif
     glMatrixMode(GL_MODELVIEW);
 }
 

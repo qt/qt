@@ -2673,7 +2673,10 @@ void QWidgetPrivate::transferChildren()
                     // site disabled until it is part of the new hierarchy.
                     bool oldRegistered = w->testAttribute(Qt::WA_DropSiteRegistered);
                     w->setAttribute(Qt::WA_DropSiteRegistered, false);
+                    [qt_mac_nativeview_for(w) retain];
+                    [qt_mac_nativeview_for(w) removeFromSuperview];
                     [qt_mac_nativeview_for(q) addSubview:qt_mac_nativeview_for(w)];
+                    [qt_mac_nativeview_for(w) release];
                     w->setAttribute(Qt::WA_DropSiteRegistered, oldRegistered);
 #endif
                 }
