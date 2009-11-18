@@ -51,7 +51,7 @@
 class BlurPicker: public QGraphicsView
 {
     Q_OBJECT
-    Q_PROPERTY(qreal index READ index WRITE setIndex);
+    Q_PROPERTY(qreal index READ index WRITE setIndex)
 
 public:
     BlurPicker(QWidget *parent = 0);
