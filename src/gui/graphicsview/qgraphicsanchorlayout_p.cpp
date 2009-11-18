@@ -190,6 +190,9 @@ void AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
             maxSize = QWIDGETSIZE_MAX;
             if (isCenterAnchor)
                 maxSize /= 2;
+
+            minPrefSize = prefSize;
+            maxPrefSize = maxSize;
             return;
         } else {
             if (orientation == QGraphicsAnchorLayoutPrivate::Horizontal) {
@@ -247,6 +250,9 @@ void AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
     applySizePolicy(policy, minSizeHint, prefSizeHint, maxSizeHint,
                     &minSize, &prefSize, &maxSize);
 
+    minPrefSize = prefSize;
+    maxPrefSize = maxSize;
+
     // Set the anchor effective sizes to preferred.
     //
     // Note: The idea here is that all items should remain at their
@@ -279,29 +285,38 @@ void ParallelAnchorData::updateChildrenSizes()
     secondEdge->updateChildrenSizes();
 }
 
+/*
+  \internal
+
+  Initialize the parallel anchor size hints using the sizeHint information from
+  its children.
+
+  Note that parallel groups can lead to unfeasibility, so during calculation, we can
+  find out one unfeasibility. Because of that this method return boolean. This can't
+  happen in sequential, so there the method is void.
+ */
 bool ParallelAnchorData::calculateSizeHints()
 {
-    // Note that parallel groups can lead to unfeasibility, so during calculation, we can
-    // find out one unfeasibility. Because of that this method return boolean. This can't
-    // happen in sequential, so there the method is void.
-
-    // Account for parallel anchors where the second edge is backwards.
-    // We rely on the fact that a forward anchor of sizes min, pref, max is equivalent
-    // to a backwards anchor of size (-max, -pref, -min)
-
-    // Also see comments in updateChildrenSizes().
-
+    // Normalize second child sizes.
+    // A negative anchor of sizes min, minPref, pref, maxPref and max, is equivalent
+    // to a forward anchor of sizes -max, -maxPref, -pref, -minPref, -min
     qreal secondMin;
+    qreal secondMinPref;
     qreal secondPref;
+    qreal secondMaxPref;
     qreal secondMax;
 
     if (secondForward()) {
         secondMin = secondEdge->minSize;
+        secondMinPref = secondEdge->minPrefSize;
         secondPref = secondEdge->prefSize;
+        secondMaxPref = secondEdge->maxPrefSize;
         secondMax = secondEdge->maxSize;
     } else {
         secondMin = -secondEdge->maxSize;
+        secondMinPref = -secondEdge->maxPrefSize;
         secondPref = -secondEdge->prefSize;
+        secondMaxPref = -secondEdge->minPrefSize;
         secondMax = -secondEdge->minSize;
     }
 
@@ -315,23 +330,72 @@ bool ParallelAnchorData::calculateSizeHints()
         return false;
     }
 
-    // The equivalent preferred Size of a parallel anchor is calculated as to
-    // reduce the deviation from the original preferred sizes _and_ to avoid shrinking
-    // items below their preferred sizes, unless strictly needed.
+    // Preferred size calculation
+    // The calculation of preferred size is done as follows:
+    //
+    // 1) Check whether one of the child anchors is the layout structural anchor
+    //    If so, we can simply copy the preferred information from the other child,
+    //    after bounding it to our minimum and maximum sizes.
+    //    If not, then we proceed with the actual calculations.
+    //
+    // 2) The whole algorithm for preferred size calculation is based on the fact
+    //    that, if a given anchor cannot remain at its preferred size, it'd rather
+    //    grow than shrink.
+    //
+    //    What happens though is that while this affirmative is true for simple
+    //    anchors, it may not be true for sequential anchors that have one or more
+    //    reversed anchors inside it. That happens because when a sequential anchor
+    //    grows, any reversed anchors inside it may be required to shrink, something
+    //    we try to avoid, as said above.
+    //
+    //    To overcome this, besides their actual preferred size "prefSize", each anchor
+    //    exports what we call "minPrefSize" and "maxPrefSize". These two values define
+    //    a surrounding interval where, if required to move, the anchor would rather
+    //    remain inside.
+    //
+    //    For standard anchors, this area simply represents the region between
+    //    prefSize and maxSize, which makes sense since our first affirmation.
+    //    For composed anchors, these values are calculated as to reduce the global
+    //    "damage", that is, to reduce the total deviation and the total amount of
+    //    anchors that had to shrink.
 
-    // ### This logic only holds if all anchors in the layout are "well-behaved" in the
-    // following terms:
-    //
-    // - There are no negative-sized anchors
-    // - All sequential anchors are composed of children in the same direction as the
-    //   sequential anchor itself
-    //
-    // With these assumptions we can grow a child knowing that no hidden items will
-    // have to shrink as the result of that.
-    // If any of these does not hold, we have a situation where the ParallelAnchor
-    // does not have enough information to calculate its equivalent prefSize.
-    prefSize = qMax(firstEdge->prefSize, secondPref);
-    prefSize = qMin(prefSize, maxSize);
+    if (firstEdge->isLayoutAnchor) {
+        prefSize = qBound(minSize, secondPref, maxSize);
+        minPrefSize = qBound(minSize, secondMinPref, maxSize);
+        maxPrefSize = qBound(minSize, secondMaxPref, maxSize);
+    } else if (secondEdge->isLayoutAnchor) {
+        prefSize = qBound(minSize, firstEdge->prefSize, maxSize);
+        minPrefSize = qBound(minSize, firstEdge->minPrefSize, maxSize);
+        maxPrefSize = qBound(minSize, firstEdge->maxPrefSize, maxSize);
+    } else {
+        // Calculate the intersection between the "preferred" regions of each child
+        const qreal lowerBoundary =
+            qBound(minSize, qMax(firstEdge->minPrefSize, secondMinPref), maxSize);
+        const qreal upperBoundary =
+            qBound(minSize, qMin(firstEdge->maxPrefSize, secondMaxPref), maxSize);
+        const qreal prefMean =
+            qBound(minSize, (firstEdge->prefSize + secondPref) / 2, maxSize);
+
+        if (lowerBoundary < upperBoundary) {
+            // If there is an intersection between the two regions, this intersection
+            // will be used as the preferred region of the parallel anchor itself.
+            // The preferred size will be the bounded average between the two preferred
+            // sizes.
+            prefSize = qBound(lowerBoundary, prefMean, upperBoundary);
+            minPrefSize = lowerBoundary;
+            maxPrefSize = upperBoundary;
+        } else {
+            // If there is no intersection, we have to attribute "damage" to at least
+            // one of the children. The minimum total damage is achieved in points
+            // inside the region that extends from (1) the upper boundary of the lower
+            // region to (2) the lower boundary of the upper region.
+            // Then, we expose this region as _our_ preferred region and once again,
+            // use the bounded average as our preferred size.
+            prefSize = qBound(upperBoundary, prefMean, lowerBoundary);
+            minPrefSize = upperBoundary;
+            maxPrefSize = lowerBoundary;
+        }
+    }
 
     // See comment in AnchorData::refreshSizeHints() about sizeAt* values
     sizeAtMinimum = prefSize;
@@ -349,19 +413,28 @@ bool ParallelAnchorData::calculateSizeHints()
      1 is at Maximum
 */
 static QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> getFactor(qreal value, qreal min,
-                                                                      qreal pref, qreal max)
+                                                                      qreal minPref, qreal pref,
+                                                                      qreal maxPref, qreal max)
 {
     QGraphicsAnchorLayoutPrivate::Interval interval;
     qreal lower;
     qreal upper;
 
-    if (value < pref) {
-        interval = QGraphicsAnchorLayoutPrivate::MinToPreferred;
+    if (value < minPref) {
+        interval = QGraphicsAnchorLayoutPrivate::MinimumToMinPreferred;
         lower = min;
+        upper = minPref;
+    } else if (value < pref) {
+        interval = QGraphicsAnchorLayoutPrivate::MinPreferredToPreferred;
+        lower = minPref;
         upper = pref;
-    } else {
-        interval = QGraphicsAnchorLayoutPrivate::PreferredToMax;
+    } else if (value < maxPref) {
+        interval = QGraphicsAnchorLayoutPrivate::PreferredToMaxPreferred;
         lower = pref;
+        upper = maxPref;
+    } else {
+        interval = QGraphicsAnchorLayoutPrivate::MaxPreferredToMaximum;
+        lower = maxPref;
         upper = max;
     }
 
@@ -376,19 +449,26 @@ static QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> getFactor(qreal valu
 }
 
 static qreal interpolate(const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> &factor,
-                         qreal min, qreal pref,
-                         qreal max)
+                         qreal min, qreal minPref, qreal pref, qreal maxPref, qreal max)
 {
     qreal lower;
     qreal upper;
 
     switch (factor.first) {
-    case QGraphicsAnchorLayoutPrivate::MinToPreferred:
+    case QGraphicsAnchorLayoutPrivate::MinimumToMinPreferred:
         lower = min;
+        upper = minPref;
+        break;
+    case QGraphicsAnchorLayoutPrivate::MinPreferredToPreferred:
+        lower = minPref;
         upper = pref;
         break;
-    case QGraphicsAnchorLayoutPrivate::PreferredToMax:
+    case QGraphicsAnchorLayoutPrivate::PreferredToMaxPreferred:
         lower = pref;
+        upper = maxPref;
+        break;
+    case QGraphicsAnchorLayoutPrivate::MaxPreferredToMaximum:
+        lower = maxPref;
         upper = max;
         break;
     }
@@ -414,11 +494,11 @@ void SequentialAnchorData::updateChildrenSizes()
     // band (the lower band) or the Preferred To Maximum (the upper band).
 
     const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> minFactor =
-        getFactor(sizeAtMinimum, minSize, prefSize, maxSize);
+        getFactor(sizeAtMinimum, minSize, minPrefSize, prefSize, maxPrefSize, maxSize);
     const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> prefFactor =
-        getFactor(sizeAtPreferred, minSize, prefSize, maxSize);
+        getFactor(sizeAtPreferred, minSize, minPrefSize, prefSize, maxPrefSize, maxSize);
     const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> maxFactor =
-        getFactor(sizeAtMaximum, minSize, prefSize, maxSize);
+        getFactor(sizeAtMaximum, minSize, minPrefSize, prefSize, maxPrefSize, maxSize);
 
     // XXX This is not safe if Vertex simplification takes place after the sequential
     // anchor is created. In that case, "prev" will be a group-vertex, different from
@@ -430,15 +510,21 @@ void SequentialAnchorData::updateChildrenSizes()
 
         const bool edgeIsForward = (e->from == prev);
         if (edgeIsForward) {
-            e->sizeAtMinimum = interpolate(minFactor, e->minSize, e->prefSize, e->maxSize);
-            e->sizeAtPreferred = interpolate(prefFactor, e->minSize, e->prefSize, e->maxSize);
-            e->sizeAtMaximum = interpolate(maxFactor, e->minSize, e->prefSize, e->maxSize);
+            e->sizeAtMinimum = interpolate(minFactor, e->minSize, e->minPrefSize,
+                                           e->prefSize, e->maxPrefSize, e->maxSize);
+            e->sizeAtPreferred = interpolate(prefFactor, e->minSize, e->minPrefSize,
+                                           e->prefSize, e->maxPrefSize, e->maxSize);
+            e->sizeAtMaximum = interpolate(maxFactor, e->minSize, e->minPrefSize,
+                                           e->prefSize, e->maxPrefSize, e->maxSize);
             prev = e->to;
         } else {
             Q_ASSERT(prev == e->to);
-            e->sizeAtMinimum = interpolate(minFactor, e->maxSize, e->prefSize, e->minSize);
-            e->sizeAtPreferred = interpolate(prefFactor, e->maxSize, e->prefSize, e->minSize);
-            e->sizeAtMaximum = interpolate(maxFactor, e->maxSize, e->prefSize, e->minSize);
+            e->sizeAtMinimum = interpolate(minFactor, e->maxSize, e->maxPrefSize,
+                                           e->prefSize, e->minPrefSize, e->minSize);
+            e->sizeAtPreferred = interpolate(prefFactor, e->maxSize, e->maxPrefSize,
+                                           e->prefSize, e->minPrefSize, e->minSize);
+            e->sizeAtMaximum = interpolate(maxFactor, e->maxSize, e->maxPrefSize,
+                                           e->prefSize, e->minPrefSize, e->minSize);
             prev = e->from;
         }
 
@@ -451,6 +537,8 @@ void SequentialAnchorData::calculateSizeHints()
     minSize = 0;
     prefSize = 0;
     maxSize = 0;
+    minPrefSize = 0;
+    maxPrefSize = 0;
 
     AnchorVertex *prev = from;
 
@@ -462,12 +550,16 @@ void SequentialAnchorData::calculateSizeHints()
             minSize += edge->minSize;
             prefSize += edge->prefSize;
             maxSize += edge->maxSize;
+            minPrefSize += edge->minPrefSize;
+            maxPrefSize += edge->maxPrefSize;
             prev = edge->to;
         } else {
             Q_ASSERT(prev == edge->to);
             minSize -= edge->maxSize;
             prefSize -= edge->prefSize;
             maxSize -= edge->minSize;
+            minPrefSize -= edge->maxPrefSize;
+            maxPrefSize -= edge->minPrefSize;
             prev = edge->from;
         }
     }
@@ -2690,6 +2782,8 @@ void QGraphicsAnchorLayoutPrivate::setupEdgesInterpolation(
     result = getFactor(current,
                        sizeHints[orientation][Qt::MinimumSize],
                        sizeHints[orientation][Qt::PreferredSize],
+                       sizeHints[orientation][Qt::PreferredSize],
+                       sizeHints[orientation][Qt::PreferredSize],
                        sizeHints[orientation][Qt::MaximumSize]);
 
     interpolationInterval[orientation] = result.first;
@@ -2718,6 +2812,7 @@ void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base, AnchorDat
                                         interpolationProgress[orientation]);
 
     qreal edgeDistance = interpolate(factor, edge->sizeAtMinimum, edge->sizeAtPreferred,
+                                     edge->sizeAtPreferred, edge->sizeAtPreferred,
                                      edge->sizeAtMaximum);
 
     Q_ASSERT(edge->from == base || edge->to == base);

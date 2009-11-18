@@ -123,6 +123,7 @@ struct AnchorData : public QSimplexVariable {
     AnchorData()
         : QSimplexVariable(), from(0), to(0),
           minSize(0), prefSize(0), maxSize(0),
+          minPrefSize(0), maxPrefSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
           sizeAtMaximum(0), item(0), graphicsAnchor(0),
           type(Normal), isLayoutAnchor(false),
@@ -152,6 +153,9 @@ struct AnchorData : public QSimplexVariable {
     qreal minSize;
     qreal prefSize;
     qreal maxSize;
+
+    qreal minPrefSize;
+    qreal maxPrefSize;
 
     // Calculated sizes
     // These attributes define which sizes should that anchor be in when the
@@ -371,8 +375,10 @@ public:
     //
     // Interval represents which interpolation interval are we operating in.
     enum Interval {
-        MinToPreferred = 0,
-        PreferredToMax
+        MinimumToMinPreferred = 0,
+        MinPreferredToPreferred,
+        PreferredToMaxPreferred,
+        MaxPreferredToMaximum
     };
 
     // Several structures internal to the layout are duplicated to handle
