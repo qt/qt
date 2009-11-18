@@ -30,7 +30,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "abstractplayer.h"
 #include "mmf_medianode.h"
 #include "defs.h"
-#include "volumeobserver.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -46,7 +45,6 @@ class VideoOutput;
  */
 class MediaObject : public MediaNode
                   , public MediaObjectInterface
-                  , public VolumeObserver
 {
     Q_OBJECT
     Q_INTERFACES(Phonon::MediaObjectInterface)
@@ -77,9 +75,6 @@ public:
     virtual qint32 transitionTime() const;
     virtual void setTransitionTime(qint32);
 
-    // VolumeObserver
-    void volumeChanged(qreal volume);
-
     /**
      * This class owns the AbstractPlayer, and will delete it upon
      * destruction.
@@ -89,6 +84,9 @@ public:
     void setVideoOutput(VideoOutput* videoOutput);
 
     virtual bool activateOnMediaObject(MediaObject *);
+
+public Q_SLOTS:
+    void volumeChanged(qreal volume);
 
 Q_SIGNALS:
     void totalTimeChanged(qint64 length);
