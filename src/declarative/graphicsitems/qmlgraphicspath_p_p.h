@@ -64,7 +64,7 @@ class QmlGraphicsPathPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlGraphicsPath)
 
 public:
-    QmlGraphicsPathPrivate() : startX(0), startY(0) { }
+    QmlGraphicsPathPrivate() : startX(0), startY(0), closed(false) { }
 
     QPainterPath _path;
     QList<QmlGraphicsPathElement*> _pathElements;
@@ -73,6 +73,7 @@ public:
     QStringList _attributes;
     int startX;
     int startY;
+    bool closed;
 };
 
 QT_END_NAMESPACE

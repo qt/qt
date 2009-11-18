@@ -199,7 +199,9 @@ void QmlGraphicsRepeater::setModel(const QVariant &model)
     \qmlproperty Component Repeater::delegate
     \default
 
-    The delegate provides a template describing what each item instantiated by the repeater should look and act like.
+    The delegate provides a template defining each item instantiated by the repeater.
+    The index is exposed as an accessible \c index property.  Properties of the
+    model are also available depending upon the type of \l {qmlmodels}{Data Model}.
  */
 QmlComponent *QmlGraphicsRepeater::delegate() const
 {

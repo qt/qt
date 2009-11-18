@@ -45,6 +45,10 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
+#include <QtDeclarative/qmlview.h>
+#include <QtDeclarative/private/qmlgraphicstext_p.h>
+#include <QAbstractListModel>
+#include <QFile>
 #include <private/qmlvaluetype_p.h>
 #include "../../../shared/util.h"
 
@@ -56,9 +60,107 @@ public:
 
 private slots:
     void initValues();
+    void dataModel();
     void pathview2();
     void pathview3();
     void path();
+
+private:
+    QmlView *createView(const QString &filename);
+    template<typename T>
+    T *findItem(QmlGraphicsItem *parent, const QString &objectName, int index=-1);
+    template<typename T>
+    QList<T*> findItems(QmlGraphicsItem *parent, const QString &objectName);
+};
+
+class TestObject : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(bool error READ error WRITE setError)
+    Q_PROPERTY(bool useModel READ useModel NOTIFY useModelChanged)
+    Q_PROPERTY(int pathItemCount READ pathItemCount NOTIFY pathItemCountChanged)
+
+public:
+    TestObject() : QObject(), mError(true), mUseModel(true), mPathItemCount(-1) {}
+
+    bool error() const { return mError; }
+    void setError(bool err) { mError = err; }
+
+    bool useModel() const { return mUseModel; }
+    void setUseModel(bool use) { mUseModel = use; emit useModelChanged(); }
+
+    int pathItemCount() const { return mPathItemCount; }
+    void setPathItemCount(int count) { mPathItemCount = count; emit pathItemCountChanged(); }
+
+signals:
+    void useModelChanged();
+    void pathItemCountChanged();
+
+private:
+    bool mError;
+    bool mUseModel;
+    int mPathItemCount;
+};
+
+class TestModel : public QAbstractListModel
+{
+public:
+    enum Roles { Name = Qt::UserRole+1, Number = Qt::UserRole+2 };
+
+    TestModel(QObject *parent=0) : QAbstractListModel(parent) {
+        QHash<int, QByteArray> roles;
+        roles[Name] = "name";
+        roles[Number] = "number";
+        setRoleNames(roles);
+    }
+
+    int rowCount(const QModelIndex &parent=QModelIndex()) const { return list.count(); }
+    QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const {
+        QVariant rv;
+        if (role == Name)
+            rv = list.at(index.row()).first;
+        else if (role == Number)
+            rv = list.at(index.row()).second;
+
+        return rv;
+    }
+
+    int count() const { return rowCount(); }
+    QString name(int index) const { return list.at(index).first; }
+    QString number(int index) const { return list.at(index).second; }
+
+    void addItem(const QString &name, const QString &number) {
+        emit beginInsertRows(QModelIndex(), list.count(), list.count());
+        list.append(QPair<QString,QString>(name, number));
+        emit endInsertRows();
+    }
+
+    void insertItem(int index, const QString &name, const QString &number) {
+        emit beginInsertRows(QModelIndex(), index, index);
+        list.insert(index, QPair<QString,QString>(name, number));
+        emit endInsertRows();
+    }
+
+    void removeItem(int index) {
+        emit beginRemoveRows(QModelIndex(), index, index);
+        list.removeAt(index);
+        emit endRemoveRows();
+    }
+
+    void moveItem(int from, int to) {
+        emit beginMoveRows(QModelIndex(), from, from, QModelIndex(), to);
+        list.move(from, to);
+        emit endMoveRows();
+    }
+
+    void modifyItem(int idx, const QString &name, const QString &number) {
+        list[idx] = QPair<QString,QString>(name, number);
+        emit dataChanged(index(idx,0), index(idx,0));
+    }
+
+private:
+    QList<QPair<QString,QString> > list;
 };
 
 
@@ -163,6 +265,145 @@ void tst_QmlGraphicsPathView::path()
     QCOMPARE(cubic->control1Y(), 90.);
     QCOMPARE(cubic->control2X(), 210.);
     QCOMPARE(cubic->control2Y(), 90.);
+}
+
+void tst_QmlGraphicsPathView::dataModel()
+{
+    QmlView *canvas = createView(SRCDIR "/data/datamodel.qml");
+
+    QmlContext *ctxt = canvas->rootContext();
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    TestModel model;
+    model.addItem("red", "1");
+    model.addItem("green", "2");
+    model.addItem("blue", "3");
+    model.addItem("purple", "4");
+    model.addItem("gray", "5");
+    model.addItem("brown", "6");
+    model.addItem("yellow", "7");
+    model.addItem("thistle", "8");
+    model.addItem("cyan", "9");
+
+    ctxt->setContextProperty("testData", &model);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsPathView *pathview = qobject_cast<QmlGraphicsPathView*>(canvas->root());
+    QVERIFY(pathview != 0);
+
+    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QVERIFY(testObject->error() == false);
+
+    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(pathview, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(item->x(), 110.0);
+    QCOMPARE(item->y(), 10.0);
+
+    model.insertItem(4, "orange", "10");
+
+    int itemCount = findItems<QmlGraphicsItem>(pathview, "wrapper").count();
+    QCOMPARE(itemCount, 10);
+
+    QmlGraphicsText *text = findItem<QmlGraphicsText>(pathview, "myText", 4);
+    QVERIFY(text);
+    QCOMPARE(text->text(), model.name(4));
+
+    model.removeItem(2);
+    text = findItem<QmlGraphicsText>(pathview, "myText", 2);
+    QVERIFY(text);
+    QCOMPARE(text->text(), model.name(2));
+
+    testObject->setPathItemCount(5);
+    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QVERIFY(testObject->error() == false);
+
+    itemCount = findItems<QmlGraphicsItem>(pathview, "wrapper").count();
+    QCOMPARE(itemCount, 5);
+
+    model.insertItem(2, "pink", "2");
+
+    itemCount = findItems<QmlGraphicsItem>(pathview, "wrapper").count();
+    QCOMPARE(itemCount, 5);
+
+    text = findItem<QmlGraphicsText>(pathview, "myText", 2);
+    QVERIFY(text);
+    QCOMPARE(text->text(), model.name(2));
+
+    model.removeItem(3);
+    itemCount = findItems<QmlGraphicsItem>(pathview, "wrapper").count();
+    QCOMPARE(itemCount, 5);
+    text = findItem<QmlGraphicsText>(pathview, "myText", 3);
+    QVERIFY(text);
+    QCOMPARE(text->text(), model.name(3));
+
+    delete canvas;
+}
+
+QmlView *tst_QmlGraphicsPathView::createView(const QString &filename)
+{
+    QmlView *canvas = new QmlView(0);
+    canvas->setFixedSize(240,320);
+
+    QFile file(filename);
+    file.open(QFile::ReadOnly);
+    QString qml = file.readAll();
+    canvas->setQml(qml, filename);
+
+    return canvas;
+}
+
+/*
+   Find an item with the specified objectName.  If index is supplied then the
+   item must also evaluate the {index} expression equal to index
+ */
+template<typename T>
+T *tst_QmlGraphicsPathView::findItem(QmlGraphicsItem *parent, const QString &objectName, int index)
+{
+    const QMetaObject &mo = T::staticMetaObject;
+    //qDebug() << parent->QGraphicsObject::children().count() << "children";
+    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+        if(!item)
+            continue;
+        //qDebug() << "try" << item;
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
+            if (index != -1) {
+                QmlExpression e(qmlContext(item), "index", item);
+                e.setTrackChange(false);
+                if (e.value().toInt() == index)
+                    return static_cast<T*>(item);
+            } else {
+                return static_cast<T*>(item);
+            }
+        }
+        item = findItem<T>(item, objectName, index);
+        if (item)
+            return static_cast<T*>(item);
+    }
+
+    return 0;
+}
+
+template<typename T>
+QList<T*> tst_QmlGraphicsPathView::findItems(QmlGraphicsItem *parent, const QString &objectName)
+{
+    QList<T*> items;
+    const QMetaObject &mo = T::staticMetaObject;
+    //qDebug() << parent->QGraphicsObject::children().count() << "children";
+    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+        if(!item)
+            continue;
+        //qDebug() << "try" << item;
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName))
+            items.append(static_cast<T*>(item));
+        items += findItems<T>(item, objectName);
+    }
+
+    return items;
 }
 
 QTEST_MAIN(tst_QmlGraphicsPathView)

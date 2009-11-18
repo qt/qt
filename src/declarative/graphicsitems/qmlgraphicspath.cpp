@@ -107,7 +107,7 @@ QmlGraphicsPath::~QmlGraphicsPath()
 /*!
     \qmlproperty real Path::startX
     \qmlproperty real Path::startY
-    This property holds the starting position of the path.
+    These properties hold the starting position of the path.
 */
 qreal QmlGraphicsPath::startX() const
 {
@@ -131,6 +131,16 @@ void QmlGraphicsPath::setStartY(qreal y)
 {
     Q_D(QmlGraphicsPath);
     d->startY = y;
+}
+
+/*!
+    \qmlproperty bool Path::closed
+    This property holds whether the start and end of the path are identical.
+*/
+bool QmlGraphicsPath::isClosed() const
+{
+    Q_D(const QmlGraphicsPath);
+    return d->closed;
 }
 
 /*!
@@ -220,12 +230,14 @@ void QmlGraphicsPath::processPath()
 
     d->_path.moveTo(d->startX, d->startY);
 
+    QmlGraphicsCurve *lastCurve = 0;
     foreach (QmlGraphicsPathElement *pathElement, d->_pathElements) {
         if (QmlGraphicsCurve *curve = qobject_cast<QmlGraphicsCurve *>(pathElement)) {
             curve->addToPath(d->_path);
             AttributePoint p;
             p.origpercent = d->_path.length();
             d->_attributePoints << p;
+            lastCurve = curve;
         } else if (QmlGraphicsPathAttribute *attribute = qobject_cast<QmlGraphicsPathAttribute *>(pathElement)) {
             AttributePoint &point = d->_attributePoints.last();
             point.values[attribute->name()] = attribute->value();
@@ -265,6 +277,8 @@ void QmlGraphicsPath::processPath()
             d->_attributePoints[ii].percent = d->_attributePoints[ii].origpercent;
         }
     }
+
+    d->closed = lastCurve && d->startX == lastCurve->x() && d->startY == lastCurve->y();
 
     emit changed();
 }

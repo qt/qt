@@ -216,7 +216,7 @@ Item {
                 preferredHeight: flickable.height
                 zoomFactor: flickable.width > 980 ? 1 : flickable.width/980
 
-                onUrlChanged: { if (url != null) { webBrowser.urlString = url.toString(); } }
+                onUrlChanged: { if (url != null) { editUrl.text = url.toString(); } }
                 onDoubleClick: {
                                 if (!heuristicZoom(clickX,clickY,2.5)) {
                                     var zf = flickable.width > 980 ? 1 : flickable.width/980;

@@ -280,8 +280,10 @@ void tst_QmlGraphicsRepeater::dataModel()
     QCOMPARE(container->childItems().count(), 4);
 
     testModel.addItem("four", "4");
-
     QCOMPARE(container->childItems().count(), 5);
+
+    testModel.removeItem(2);
+    QCOMPARE(container->childItems().count(), 4);
 }
 
 void tst_QmlGraphicsRepeater::itemModel()
@@ -346,4 +348,4 @@ T *tst_QmlGraphicsRepeater::findItem(QObject *parent, const QString &objectName)
 
 QTEST_MAIN(tst_QmlGraphicsRepeater)
 
-#include "tst_repeater.moc"
+#include "tst_qmlgraphicsrepeater.moc"

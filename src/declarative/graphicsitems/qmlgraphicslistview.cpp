@@ -503,7 +503,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
         return;
     from -= buffer;
     to += buffer;
-    int modelIndex = 0;
+    int modelIndex = visibleIndex;
     qreal itemEnd = visiblePos-1;
     if (!visibleItems.isEmpty()) {
         visiblePos = visibleItems.first()->position();
@@ -1139,7 +1139,9 @@ void QmlGraphicsListView::setModel(const QVariant &model)
 /*!
     \qmlproperty component ListView::delegate
 
-    The delegate provides a template describing what each item in the view should look and act like.
+    The delegate provides a template defining each item instantiated by the view.
+    The index is exposed as an accessible \c index property.  Properties of the
+    model are also available depending upon the type of \l {qmlmodels}{Data Model}.
 
     Here is an example delegate:
     \snippet doc/src/snippets/declarative/listview/listview.qml 0
@@ -1167,6 +1169,9 @@ void QmlGraphicsListView::setDelegate(QmlComponent *delegate)
     if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
         if (isComponentComplete()) {
+            for (int i = 0; i < d->visibleItems.count(); ++i)
+                d->releaseItem(d->visibleItems.at(i));
+            d->visibleItems.clear();
             refill();
             d->moveReason = QmlGraphicsListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
@@ -1266,9 +1271,10 @@ void QmlGraphicsListView::setHighlight(QmlComponent *highlight)
 {
     Q_D(QmlGraphicsListView);
     if (highlight != d->highlightComponent) {
-        delete d->highlightComponent;
         d->highlightComponent = highlight;
-        d->updateCurrent(d->currentIndex);
+        d->createHighlight();
+        if (d->currentItem)
+            d->updateHighlight();
     }
 }
 

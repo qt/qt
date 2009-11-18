@@ -2,7 +2,7 @@ load(qttest_p4)
 contains(QT_CONFIG,declarative): QT += declarative
 macx:CONFIG -= app_bundle
 
-SOURCES += tst_repeater.cpp
+SOURCES += tst_qmlgraphicsrepeater.cpp
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"
