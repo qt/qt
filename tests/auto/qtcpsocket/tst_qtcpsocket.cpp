@@ -371,7 +371,6 @@ void tst_QTcpSocket::constructing()
     QCOMPARE(socket->socketType(), QTcpSocket::TcpSocket);
 
     char c;
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
     QCOMPARE(socket->getChar(&c), false);
     QCOMPARE((int) socket->bytesAvailable(), 0);
     QCOMPARE(socket->canReadLine(), false);
@@ -830,7 +829,6 @@ void tst_QTcpSocket::openCloseOpenClose()
         QVERIFY(socket->socketType() == QTcpSocket::TcpSocket);
 
         char c;
-        QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
         QCOMPARE(socket->getChar(&c), false);
         QCOMPARE((int) socket->bytesAvailable(), 0);
         QCOMPARE(socket->canReadLine(), false);
@@ -1959,7 +1957,6 @@ void tst_QTcpSocket::zeroAndMinusOneReturns()
     QCOMPARE(socket->write("BLUBBER"), qint64(-1));
     QCOMPARE(socket->read(c, 16), qint64(-1));
     QCOMPARE(socket->readLine(c, 16), qint64(-1));
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
     QVERIFY(!socket->getChar(c));
     QVERIFY(!socket->putChar('a'));
 
