@@ -440,10 +440,10 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
         if (QSqlDatabase::connectionNames().contains(dbid)) {
             database = QSqlDatabase::database(dbid);
         } else {
+            created = !QFile::exists(basename+QLatin1String(".sqlite"));
             database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
             QDir().mkpath(basename);
-            if (!QFile::exists(basename+QLatin1String(".sqlite"))) {
-                created = true;
+            if (created) {
                 ini.setValue(QLatin1String("Name"), dbname);
                 if (dbcreationCallback.isFunction())
                     version = QString();
