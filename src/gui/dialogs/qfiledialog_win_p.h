@@ -39,10 +39,9 @@
 **
 ****************************************************************************/
 
-#ifndef QFILEDIAG_WIN_P_H
-
 #include <shlobj.h>
 #include <objbase.h>
+#if !defined(QFILEDIAG_WIN_P_H) && !defined(__shobjidl_h__)
 
 //these are the interface declarations needed for the file dialog on Vista and up
 
