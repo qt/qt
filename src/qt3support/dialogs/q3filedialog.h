@@ -69,8 +69,6 @@ class QUrlInfo;
 
 #ifndef QT_NO_FILEDIALOG
 
-#ifndef QT_MAC_USE_COCOA
-
 class Q_COMPAT_EXPORT Q3FileIconProvider : public QObject
 {
     Q_OBJECT
@@ -338,8 +336,6 @@ private:
                                             bool = true, bool = false);
 #endif
 };
-
-#endif // QT_MAC_USE_COCOA
 
 #endif // QT_NO_FILEDIALOG
 
