@@ -47,109 +47,105 @@
 #include "ui_settings.h"
 
 
-class MediaVideoWidget : public Phonon::VideoWidget
+MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
+    Phonon::VideoWidget(parent), m_player(player), m_action(this)
 {
-public:
-    MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0) : 
-        Phonon::VideoWidget(parent), m_player(player), m_action(this)
-    {
-        m_action.setCheckable(true);
-        m_action.setChecked(false);
-        m_action.setShortcut(QKeySequence( Qt::AltModifier + Qt::Key_Return));
-        m_action.setShortcutContext(Qt::WindowShortcut);
-        connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
-        addAction(&m_action);
-        setAcceptDrops(true);
-    }
+    m_action.setCheckable(true);
+    m_action.setChecked(false);
+    m_action.setShortcut(QKeySequence( Qt::AltModifier + Qt::Key_Return));
+    m_action.setShortcutContext(Qt::WindowShortcut);
+    connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
+    addAction(&m_action);
+    setAcceptDrops(true);
+}
 
-protected:
-    void mouseDoubleClickEvent(QMouseEvent *e)
-    {
-        Phonon::VideoWidget::mouseDoubleClickEvent(e);
-        setFullScreen(!isFullScreen());
-    }
+void MediaVideoWidget::setFullScreen(bool enabled)
+{
+    Phonon::VideoWidget::setFullScreen(enabled);
+    emit fullScreenChanged(enabled);
+}
 
-    void keyPressEvent(QKeyEvent *e)
-    {
-        if (e->key() == Qt::Key_Space && !e->modifiers()) {
-            m_player->playPause();
-            e->accept();
-            return;
-        } else if (e->key() == Qt::Key_Escape && !e->modifiers()) {
-            setFullScreen(false);
-            e->accept();
-            return;
-        }
-        Phonon::VideoWidget::keyPressEvent(e);        
-    }
+void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    Phonon::VideoWidget::mouseDoubleClickEvent(e);
+    setFullScreen(!isFullScreen());
+}
 
-    bool event(QEvent *e)
+void MediaVideoWidget::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Space && !e->modifiers()) {
+        m_player->playPause();
+        e->accept();
+        return;
+    } else if (e->key() == Qt::Key_Escape && !e->modifiers()) {
+        setFullScreen(false);
+        e->accept();
+        return;
+    }
+    Phonon::VideoWidget::keyPressEvent(e);
+}
+
+bool MediaVideoWidget::event(QEvent *e)
+{
+    switch(e->type())
     {
-        switch(e->type())
+    case QEvent::Close:
+        //we just ignore the cose events on the video widget
+        //this prevents ALT+F4 from having an effect in fullscreen mode
+        e->ignore();
+        return true;
+    case QEvent::MouseMove:
+#ifndef QT_NO_CURSOR
+        unsetCursor();
+#endif
+        //fall through
+    case QEvent::WindowStateChange:
         {
-        case QEvent::Close:
-            //we just ignore the cose events on the video widget
-            //this prevents ALT+F4 from having an effect in fullscreen mode
-            e->ignore(); 
-            return true;
-        case QEvent::MouseMove:
+            //we just update the state of the checkbox, in case it wasn't already
+            m_action.setChecked(windowState() & Qt::WindowFullScreen);
+            const Qt::WindowFlags flags = m_player->windowFlags();
+            if (windowState() & Qt::WindowFullScreen) {
+                m_timer.start(1000, this);
+            } else {
+                m_timer.stop();
 #ifndef QT_NO_CURSOR
-            unsetCursor();
+                unsetCursor();
 #endif
-            //fall through
-        case QEvent::WindowStateChange:
-            {
-                //we just update the state of the checkbox, in case it wasn't already
-                m_action.setChecked(windowState() & Qt::WindowFullScreen);
-                const Qt::WindowFlags flags = m_player->windowFlags();
-                if (windowState() & Qt::WindowFullScreen) {
-                    m_timer.start(1000, this);
-                } else {
-                    m_timer.stop();
-#ifndef QT_NO_CURSOR
-                    unsetCursor();
-#endif
-                }
             }
-            break;
-        default:
-            break;
         }
-
-        return Phonon::VideoWidget::event(e);
+        break;
+    default:
+        break;
     }
 
-    void timerEvent(QTimerEvent *e)
-    {
-        if (e->timerId() == m_timer.timerId()) {
-            //let's store the cursor shape
+    return Phonon::VideoWidget::event(e);
+}
+
+void MediaVideoWidget::timerEvent(QTimerEvent *e)
+{
+    if (e->timerId() == m_timer.timerId()) {
+        //let's store the cursor shape
 #ifndef QT_NO_CURSOR
-            setCursor(Qt::BlankCursor);
+        setCursor(Qt::BlankCursor);
 #endif
-        }
-        Phonon::VideoWidget::timerEvent(e);
     }
+    Phonon::VideoWidget::timerEvent(e);
+}
 
-    void dropEvent(QDropEvent *e)
-    {
-        m_player->handleDrop(e);
-    }
+void MediaVideoWidget::dropEvent(QDropEvent *e)
+{
+    m_player->handleDrop(e);
+}
 
-    void dragEnterEvent(QDragEnterEvent *e) {
-        if (e->mimeData()->hasUrls())
-            e->acceptProposedAction();
-    }
-
-private:
-    MediaPlayer *m_player;
-    QBasicTimer m_timer;
-    QAction m_action;
-};
+void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
+    if (e->mimeData()->hasUrls())
+        e->acceptProposedAction();
+}
 
 
 MediaPlayer::MediaPlayer(const QString &filePath,
                          const bool hasSmallScreen) :
-        playButton(0), nextEffect(0), settingsDialog(0), ui(0), 
+        playButton(0), nextEffect(0), settingsDialog(0), ui(0),
             m_AudioOutput(Phonon::VideoCategory),
             m_videoWidget(new MediaVideoWidget(this)),
             m_hasSmallScreen(hasSmallScreen)
@@ -297,22 +293,30 @@ MediaPlayer::MediaPlayer(const QString &filePath,
     QAction *scaleActionCrop = scaleMenu->addAction(tr("Scale and crop"));
     scaleActionCrop->setCheckable(true);
     scaleGroup->addAction(scaleActionCrop);
-    
-    fileMenu->addSeparator();    
+
+    m_fullScreenAction = fileMenu->addAction(tr("Full screen video"));
+    m_fullScreenAction->setCheckable(true);
+    m_fullScreenAction->setEnabled(false); // enabled by hasVideoChanged
+    bool b = connect(m_fullScreenAction, SIGNAL(toggled(bool)), m_videoWidget, SLOT(setFullScreen(bool)));
+    Q_ASSERT(b);
+    b = connect(m_videoWidget, SIGNAL(fullScreenChanged(bool)), m_fullScreenAction, SLOT(setChecked(bool)));
+    Q_ASSERT(b);
+
+    fileMenu->addSeparator();
     QAction *settingsAction = fileMenu->addAction(tr("&Settings..."));
-    
+
     // Setup signal connections:
     connect(rewindButton, SIGNAL(clicked()), this, SLOT(rewind()));
     //connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
     openButton->setMenu(fileMenu);
-    
+
     connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
     connect(forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
     //connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
     connect(settingsAction, SIGNAL(triggered(bool)), this, SLOT(showSettingsDialog()));
     connect(openUrlAction, SIGNAL(triggered(bool)), this, SLOT(openUrl()));
     connect(openFileAction, SIGNAL(triggered(bool)), this, SLOT(openFile()));
-    
+
     connect(m_videoWidget, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
     connect(&m_MediaObject, SIGNAL(metaDataChanged()), this, SLOT(updateInfo()));
@@ -874,4 +878,5 @@ void MediaPlayer::hasVideoChanged(bool bHasVideo)
 {
     info->setVisible(!bHasVideo);
     m_videoWindow.setVisible(bHasVideo);
+    m_fullScreenAction->setEnabled(bHasVideo);
 }
