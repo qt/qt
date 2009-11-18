@@ -119,7 +119,7 @@ public:
                 QSqlRecord r = query.record();
                 QScriptValue row = engine()->newObject();
                 for (int j=0; j<r.count(); ++j) {
-                    row.setProperty(r.fieldName(j), QScriptValue(engine(),r.value(j).toString())); // XXX only strings
+                    row.setProperty(r.fieldName(j), QScriptValue(engine(),r.value(j).toString()));
                 }
                 return row;
             }
@@ -221,6 +221,45 @@ QScriptClassPropertyIterator *QmlSqlQueryScriptClass::newIterator(const QScriptV
     return new QmlSqlQueryScriptClassPropertyIterator(object);
 }
 
+enum SqlException {
+    UNKNOWN_ERR,
+    DATABASE_ERR,
+    VERSION_ERR,
+    TOO_LARGE_ERR,
+    QUOTA_ERR,
+    SYNTAX_ERR,
+    CONSTRAINT_ERR,
+    TIMEOUT_ERR
+};
+
+static const char* sqlerror[] = {
+    "UNKNOWN_ERR",
+    "DATABASE_ERR",
+    "VERSION_ERR",
+    "TOO_LARGE_ERR",
+    "QUOTA_ERR",
+    "SYNTAX_ERR",
+    "CONSTRAINT_ERR",
+    "TIMEOUT_ERR",
+    0
+};
+
+#define THROW_SQL(error, desc) \
+{ \
+    QScriptValue errorValue = context->throwError(desc); \
+    errorValue.setProperty(QLatin1String("code"), error); \
+    return errorValue; \
+}
+
+
+static QString databaseFile(const QString& connectionName, QScriptEngine *engine)
+{
+    QString basename = QmlEnginePrivate::get(engine)->offlineStoragePath
+                + QDir::separator() + QLatin1String("Databases") + QDir::separator();
+    basename += connectionName;
+    return basename;
+}
+
 
 
 static QScriptValue qmlsqldatabase_item(QScriptContext *context, QScriptEngine *engine)
@@ -242,80 +281,142 @@ static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEn
 {
     QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
     QString sql = context->argument(0).toString();
-    QScriptValue values = context->argument(1);
-    QScriptValue cb = context->argument(2);
-    QScriptValue cberr = context->argument(3);
     QSqlQuery query(db);
     bool err = false;
+
+    QScriptValue result;
+
     if (query.prepare(sql)) {
-        if (values.isObject()) {
-            for (QScriptValueIterator it(values); it.hasNext();) {
-                it.next();
-                query.bindValue(it.name(),it.value().toVariant());
+        if (context->argumentCount() > 1) {
+            QScriptValue values = context->argument(1);
+            if (values.isObject()) {
+                for (QScriptValueIterator it(values); it.hasNext();) {
+                    it.next();
+                    query.bindValue(it.name(),it.value().toVariant());
+                }
+            } else {
+                query.bindValue(0,values.toVariant());
             }
-        } else {
-            query.bindValue(0,values.toVariant());
         }
         if (query.exec()) {
-            QScriptValue rs = engine->newObject();
+            result = engine->newObject();
             if (!QmlEnginePrivate::get(engine)->sqlQueryClass)
                 QmlEnginePrivate::get(engine)->sqlQueryClass= new QmlSqlQueryScriptClass(engine);
             QScriptValue rows = engine->newObject(QmlEnginePrivate::get(engine)->sqlQueryClass);
             rows.setData(engine->newVariant(qVariantFromValue(query)));
             rows.setProperty(QLatin1String("item"), engine->newFunction(qmlsqldatabase_item,1), QScriptValue::SkipInEnumeration);
-            rs.setProperty(QLatin1String("rows"),rows);
-            rs.setProperty(QLatin1String("rowsAffected"),query.numRowsAffected());
-            rs.setProperty(QLatin1String("insertId"),query.lastInsertId().toString()); // XXX only string
-            cb.call(QScriptValue(), QScriptValueList() << context->thisObject() << rs);
+            result.setProperty(QLatin1String("rows"),rows);
+            result.setProperty(QLatin1String("rowsAffected"),query.numRowsAffected());
+            result.setProperty(QLatin1String("insertId"),query.lastInsertId().toString());
         } else {
             err = true;
         }
     } else {
         err = true;
     }
-    if (err) {
-        QScriptValue error = engine->newObject();
-        error.setProperty(QLatin1String("message"), query.lastError().text());
-        cberr.call(QScriptValue(), QScriptValueList() << context->thisObject() << error);
+    if (err)
+        THROW_SQL(DATABASE_ERR,query.lastError().text());
+    return result;
+}
+
+static QScriptValue qmlsqldatabase_executeSql_readonly(QScriptContext *context, QScriptEngine *engine)
+{
+    QString sql = context->argument(0).toString();
+    if (sql.startsWith(QLatin1String("SELECT"),Qt::CaseInsensitive)) {
+        qmlsqldatabase_executeSql(context,engine);
+    } else {
+        THROW_SQL(SYNTAX_ERR,QmlEngine::tr("Read-only Transaction"))
     }
+    return engine->undefinedValue();
+}
+
+static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() < 2)
+        return engine->undefinedValue();
+
+    QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
+    QString from_version = context->argument(0).toString();
+    QString to_version = context->argument(1).toString();
+    QScriptValue callback = context->argument(2);
+
+    QScriptValue instance = engine->newObject();
+    instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql,1));
+    QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
+
+    if (from_version!=context->thisObject().property(QLatin1String("version")).toString()) {
+        THROW_SQL(2,QmlEngine::tr("Version mismatch"));
+        return engine->undefinedValue();
+    }
+
+    if (callback.isFunction()) {
+        db.transaction();
+        callback.call(QScriptValue(), QScriptValueList() << tx);
+        if (engine->hasUncaughtException()) {
+            db.rollback();
+        } else {
+            if (!db.commit()) {
+                db.rollback();
+                THROW_SQL(0,QmlEngine::tr("SQL transaction failed"));
+            } else {
+                context->thisObject().setProperty(QLatin1String("version"), to_version, QScriptValue::ReadOnly);
+                QSettings ini(databaseFile(db.connectionName(),engine)+QLatin1String(".ini"),QSettings::IniFormat);
+                ini.setValue(QLatin1String("Version"), to_version);
+            }
+        }
+    }
+
     return engine->undefinedValue();
 }
 
 static QScriptValue qmlsqldatabase_transaction(QScriptContext *context, QScriptEngine *engine)
 {
     QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
-    if (context->argumentCount() < 1)
-        return engine->undefinedValue();
-    QScriptValue cb = context->argument(0);
-    if (!cb.isFunction())
-        return engine->undefinedValue();
+    QScriptValue callback = context->argument(0);
+    if (!callback.isFunction())
+        THROW_SQL(UNKNOWN_ERR,QmlEngine::tr("transaction: missing callback"));
 
-    // Call synchronously...  - XXX could do asynch with threads
     QScriptValue instance = engine->newObject();
-    instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql,4));
+    instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql,1));
     QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
 
     db.transaction();
-    cb.call(QScriptValue(), QScriptValueList() << tx);
+    callback.call(QScriptValue(), QScriptValueList() << tx);
     if (engine->hasUncaughtException()) {
         db.rollback();
-        QScriptValue cb = context->argument(1);
-        if (cb.isFunction())
-            cb.call();
     } else {
-        db.commit();
-        QScriptValue cb = context->argument(2);
-        if (cb.isFunction())
-            cb.call();
+        if (!db.commit())
+            db.rollback();
     }
     return engine->undefinedValue();
 }
 
+static QScriptValue qmlsqldatabase_read_transaction(QScriptContext *context, QScriptEngine *engine)
+{
+    QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
+    QScriptValue callback = context->argument(0);
+    if (!callback.isFunction())
+        return engine->undefinedValue();
+
+    QScriptValue instance = engine->newObject();
+    instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql_readonly,1));
+    QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
+
+    db.transaction();
+    callback.call(QScriptValue(), QScriptValueList() << tx);
+    if (engine->hasUncaughtException()) {
+        db.rollback();
+    } else {
+        if (!db.commit())
+            db.rollback();
+    }
+    return engine->undefinedValue();
+}
 
 /*
     Currently documented in doc/src/declarastive/globalobject.qdoc
 */
-static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEngine *engine)
 {
     QSqlDatabase database;
 
@@ -323,43 +424,71 @@ static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *
     QString dbversion = context->argument(1).toString();
     QString dbdescription = context->argument(2).toString();
     int dbestimatedsize = context->argument(3).toNumber();
+    QScriptValue dbcreationCallback = context->argument(4);
 
     QCryptographicHash md5(QCryptographicHash::Md5);
     md5.addData(dbname.toUtf8());
-    md5.addData(dbversion.toUtf8());
     QString dbid(QLatin1String(md5.result().toHex()));
 
-    // Uses SQLLITE (like HTML5), but any could be used.
+    QString basename = databaseFile(dbid,engine);
+    bool created = false;
+    QString version = dbversion;
 
-    if (QSqlDatabase::connectionNames().contains(dbid)) {
-        database = QSqlDatabase::database(dbid);
-    } else {
-        database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
-    }
-    if (!database.isOpen()) {
-        QString basename = QmlEnginePrivate::get(engine)->offlineStoragePath
-            + QDir::separator() + QLatin1String("Databases") + QDir::separator();
-        QDir().mkpath(basename);
-        basename += dbid;
-        database.setDatabaseName(basename+QLatin1String(".sqlite"));
+    {
         QSettings ini(basename+QLatin1String(".ini"),QSettings::IniFormat);
-        ini.setValue(QLatin1String("Name"), dbname);
-        ini.setValue(QLatin1String("Version"), dbversion);
-        ini.setValue(QLatin1String("Description"), dbdescription);
-        ini.setValue(QLatin1String("EstimatedSize"), dbestimatedsize);
-        ini.setValue(QLatin1String("DbType"), QLatin1String("QSQLITE"));
-        database.open();
+
+        if (QSqlDatabase::connectionNames().contains(dbid)) {
+            database = QSqlDatabase::database(dbid);
+        } else {
+            database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
+            QDir().mkpath(basename);
+            if (!QFile::exists(basename+QLatin1String(".sqlite"))) {
+                created = true;
+                ini.setValue(QLatin1String("Name"), dbname);
+                if (dbcreationCallback.isFunction())
+                    version = QString();
+                ini.setValue(QLatin1String("Version"), version);
+                ini.setValue(QLatin1String("Description"), dbdescription);
+                ini.setValue(QLatin1String("EstimatedSize"), dbestimatedsize);
+                ini.setValue(QLatin1String("Driver"), QLatin1String("QSQLITE"));
+            } else {
+                if (!dbversion.isEmpty() && ini.value(QLatin1String("Version")) != dbversion) {
+                    // Incompatible
+                    THROW_SQL(VERSION_ERR,QmlEngine::tr("SQL: database version mismatch"));
+                }
+            }
+            database.setDatabaseName(basename+QLatin1String(".sqlite"));
+        }
+        if (!database.isOpen())
+            database.open();
     }
 
     QScriptValue instance = engine->newObject();
-    instance.setProperty(QLatin1String("transaction"), engine->newFunction(qmlsqldatabase_transaction,3));
-    return engine->newVariant(instance,qVariantFromValue(database));
+    instance.setProperty(QLatin1String("transaction"), engine->newFunction(qmlsqldatabase_transaction,1));
+    instance.setProperty(QLatin1String("readTransaction"), engine->newFunction(qmlsqldatabase_read_transaction,1));
+    instance.setProperty(QLatin1String("version"), version, QScriptValue::ReadOnly);
+    instance.setProperty(QLatin1String("changeVersion"), engine->newFunction(qmlsqldatabase_change_version,3));
+
+    QScriptValue result = engine->newVariant(instance,qVariantFromValue(database));
+
+    if (created && dbcreationCallback.isFunction()) {
+        dbcreationCallback.call(QScriptValue(), QScriptValueList() << result);
+    }
+
+    return result;
 }
 
 void qt_add_qmlsqldatabase(QScriptEngine *engine)
 {
-    QScriptValue openDatabase = engine->newFunction(qmlsqldatabase_open, 4);
-    engine->globalObject().setProperty(QLatin1String("openDatabase"), openDatabase);
+    QScriptValue openDatabase = engine->newFunction(qmlsqldatabase_open_sync, 4);
+    engine->globalObject().setProperty(QLatin1String("openDatabaseSync"), openDatabase);
+
+    QScriptValue sqlExceptionPrototype = engine->newObject();
+    for (int i=0; sqlerror[i]; ++i)
+        sqlExceptionPrototype.setProperty(QLatin1String(sqlerror[i]),
+            i,QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+
+    engine->globalObject().setProperty(QLatin1String("SQLException"), sqlExceptionPrototype);
 }
 
 /*

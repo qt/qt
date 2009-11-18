@@ -1,26 +1,20 @@
-var db = openDatabase("QmlTestDB", "", "Test database from Qt autotests", 1000000);
-var r=0;
+function test() {
+    var db = openDatabaseSync("QmlTestDB", "", "Test database from Qt autotests", 1000000);
+    var r="transaction_not_finished";
 
-db.transaction(
-    function(tx) {
-        tx.executeSql('SELECT * FROM NotExists', [],
-            function(tx, rs) {
+    try {
+        db.transaction(
+            function(tx) {
+                var rs = tx.executeSql('SELECT * FROM NotExists');
                 r = "SHOULD NOT SUCCEED";
-            },
-            function(tx, error) {
-                if (error.message == "no such table: NotExists Unable to execute statement" // QML
-                 || error.message == "no such table: NotExists") r="passed" // WebKit
-                else r="WRONG ERROR:"+error.message
             }
         );
-    },
-    function(tx, error) { if (r==0) r="TRANSACTION FAILED: "+error.message },
-    function(tx, result) { if (r==0) r="SHOULD NOT SUCCEED2" }
-);
+    } catch (err) {
+        if (err.message == "no such table: NotExists Unable to execute statement")
+            r = "passed";
+        else
+            r = "WRONG ERROR="+err.message;
+    }
 
-
-function test()
-{
-    if (r == 0) r = "transaction_not_finished";
     return r;
 }
