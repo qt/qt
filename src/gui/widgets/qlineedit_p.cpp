@@ -149,6 +149,11 @@ void QLineEditPrivate::init(const QString& txt)
 #endif
     QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
             q, SLOT(updateMicroFocus()));
+    
+#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
+    QObject::connect(control, SIGNAL(textChanged(const QString &)),
+            q, SLOT(updateMicroFocus()));
+#endif
 
     // for now, going completely overboard with updates.
     QObject::connect(control, SIGNAL(selectionChanged()),
