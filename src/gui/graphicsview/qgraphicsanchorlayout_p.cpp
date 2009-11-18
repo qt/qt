@@ -2269,13 +2269,21 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
         layoutEdge = graph[orient].edgeData(layoutFirstVertex[orient], layoutCentralVertex[orient]);
     } else {
         layoutEdge = graph[orient].edgeData(layoutFirstVertex[orient], layoutLastVertex[orient]);
+    }
 
-        // If maxSize is less then "infinite", that means there are other anchors
-        // grouped together with this one. We can't ignore its maximum value so we
-        // set back the variable to NULL to prevent the continue condition from being
-        // satisfied in the loop below.
-        if (layoutEdge->maxSize < QWIDGETSIZE_MAX)
-            layoutEdge = 0;
+    // If maxSize is less then "infinite", that means there are other anchors
+    // grouped together with this one. We can't ignore its maximum value so we
+    // set back the variable to NULL to prevent the continue condition from being
+    // satisfied in the loop below.
+    const qreal expectedMax = layoutCentralVertex[orient] ? QWIDGETSIZE_MAX / 2 : QWIDGETSIZE_MAX;
+    qreal actualMax;
+    if (layoutEdge->from == layoutFirstVertex[orient]) {
+        actualMax = layoutEdge->maxSize;
+    } else {
+        actualMax = -layoutEdge->minSize;
+    }
+    if (actualMax != expectedMax) {
+        layoutEdge = 0;
     }
 
     // For each variable, create constraints based on size hints
