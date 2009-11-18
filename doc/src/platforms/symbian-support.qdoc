@@ -60,11 +60,11 @@
 
     As with every supported platform, we will strive to maintain
     application behavior and binary compatibility throughout the lifetime of
-    the Qt 4.x series. However, due to the fact that Symbian support is
-    newly added in 4.6.0, it is possible that minor corrections to the
-    behavior and to the ABI in 4.6.1 will be required in order to ensure
-    compatibility going forward. If we break the binary compatiblity promise,
-    we will document such changes in the 4.6.1 release.
+    the Qt 4.x series. However, due to the fact that Symbian support is newly
+    added in 4.6.0, there is a slight possibility that minor corrections to the
+    ABI might be required in 4.6.1, in order to ensure compatibility going
+    forward. Any such change will be clearly documented in the release notes
+    for 4.6.1.
 
     \section1 Supported Devices
 
@@ -99,11 +99,11 @@
     \header \o Technology
             \o Note
     \row    \o QtConcurrent
-            \o
+            \o Planned for some future release
     \row    \o QtDBus
             \o No current plans to support this feature.
-    \row    \o QtOpenGL
-            \o Support for OpenGL ES planned for a future release.
+    \row    \o QtOpenGL ES
+            \o Planned for some future release
     \row    \o Printing support
             \o No current plans to support this feature.
     \row    \o Qt3Support
@@ -119,7 +119,8 @@
             \o The only driver supported is SQLite.
     \row    \o QtMultimedia
             \o Although the module itself is supported, no backend for Symbian
-               is available. However, there is a backend available for Phonon.
+               is currently available. However, there is a backend available
+               for Phonon.
     \endtable
 
     \section1 Known Issues
