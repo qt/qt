@@ -116,6 +116,8 @@ QML_DEFINE_TYPE(Qt,4,6,Loader,QmlGraphicsLoader)
     \endcode
 
     unloads "Page1.qml" and frees resources consumed by it.
+
+    \sa {dynamic-object-creation}{Dynamic Object Creation}
 */
 
 /*!

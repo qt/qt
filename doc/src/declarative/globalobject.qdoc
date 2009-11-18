@@ -131,7 +131,7 @@ The following functions on the global object allow you to dynamically create QML
 items from files or strings. 
 
 You can also dynamically create objects in a declarative manner, using items
-such as ListView, Repeater and Loader. 
+such as ListView, \l Repeater and \l Loader.
 
 \section2 createComponent(url file)
     This function takes the URL of a QML file as its only argument. It returns
