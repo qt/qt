@@ -252,11 +252,9 @@ void QmlGraphicsWebView::pageUrlChanged()
 {
     Q_D(QmlGraphicsWebView);
 
-    if (d->preferredwidth) {
-        page()->setViewportSize(QSize(d->preferredwidth,-1));
-    } else {
-        page()->setViewportSize(QSize(-1,-1));
-    }
+    page()->setViewportSize(QSize(
+        d->preferredwidth>0 ? d->preferredwidth : width(),
+        d->preferredheight>0 ? d->preferredheight : height()));
     expandToWebPage();
 
     if ((d->url.isEmpty() && page()->mainFrame()->url() != QUrl(QLatin1String("about:blank")))
@@ -310,11 +308,11 @@ void QmlGraphicsWebView::setUrl(const QUrl &url)
 
     if (isComponentComplete()) {
         d->url = url;
-        if (d->preferredwidth) {
-            page()->setViewportSize(QSize(d->preferredwidth,-1));
-        } else {
-            page()->setViewportSize(QSize(-1,-1));
-        }
+        page()->setViewportSize(QSize(
+            d->preferredwidth>0 ? d->preferredwidth : width(),
+            d->preferredheight>0 ? d->preferredheight : height()));
+        if (d->preferredwidth > 0 && d->preferredheight > 0)
+            page()->setPreferredContentsSize(QSize(d->preferredwidth,d->preferredheight));
         QUrl seturl = url;
         if (seturl.isEmpty())
             seturl = QUrl(QLatin1String("about:blank"));
@@ -388,6 +386,11 @@ void QmlGraphicsWebView::focusChanged(bool hasFocus)
     QmlGraphicsItem::focusChanged(hasFocus);
 }
 
+void QmlGraphicsWebView::initialLayout()
+{
+    // nothing useful to do at this point
+}
+
 void QmlGraphicsWebView::contentsSizeChanged(const QSize&)
 {
     expandToWebPage();
@@ -397,9 +400,10 @@ void QmlGraphicsWebView::expandToWebPage()
 {
     Q_D(QmlGraphicsWebView);
     QSize cs = page()->mainFrame()->contentsSize();
-    qreal zoom = zoomFactor();
-    if (cs.width() < d->preferredwidth*zoom)
-        cs.setWidth(d->preferredwidth*zoom);
+    if (cs.width() < d->preferredwidth)
+        cs.setWidth(d->preferredwidth);
+    if (cs.height() < d->preferredheight)
+        cs.setHeight(d->preferredheight);
     if (widthValid())
         cs.setWidth(width());
     if (heightValid())
@@ -828,7 +832,9 @@ void QmlGraphicsWebView::setZoomFactor(qreal factor)
         return;
 
     page()->mainFrame()->setZoomFactor(factor);
-    page()->setViewportSize(QSize(d->preferredwidth ? d->preferredwidth : -1,-1));
+    page()->setViewportSize(QSize(
+        d->preferredwidth>0 ? d->preferredwidth*factor : width()*factor,
+        d->preferredheight>0 ? d->preferredheight*factor : height()*factor));
     expandToWebPage();
 
     emit zoomFactorChanged();
@@ -952,7 +958,8 @@ void QmlGraphicsWebView::setPage(QWebPage *page)
     }
     d->page = page;
     d->page->setViewportSize(QSize(
-        d->preferredwidth>0 ? d->preferredwidth : -1, -1));
+        d->preferredwidth>0 ? d->preferredwidth : width(),
+        d->preferredheight>0 ? d->preferredheight : height()));
     d->page->mainFrame()->setScrollBarPolicy(Qt::Horizontal,Qt::ScrollBarAlwaysOff);
     d->page->mainFrame()->setScrollBarPolicy(Qt::Vertical,Qt::ScrollBarAlwaysOff);
     connect(d->page,SIGNAL(repaintRequested(QRect)),this,SLOT(paintPage(QRect)));
@@ -960,6 +967,7 @@ void QmlGraphicsWebView::setPage(QWebPage *page)
     connect(d->page->mainFrame(), SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
     connect(d->page->mainFrame(), SIGNAL(iconChanged()), this, SIGNAL(iconChanged()));
     connect(d->page->mainFrame(), SIGNAL(contentsSizeChanged(QSize)), this, SLOT(contentsSizeChanged(QSize)));
+    connect(d->page->mainFrame(), SIGNAL(initialLayoutCompleted()), this, SLOT(initialLayout()));
 
     connect(d->page,SIGNAL(loadStarted()),this,SLOT(doLoadStarted()));
     connect(d->page,SIGNAL(loadProgress(int)),this,SLOT(doLoadProgress(int)));
@@ -1023,7 +1031,8 @@ void QmlGraphicsWebView::setHtml(const QString &html, const QUrl &baseUrl)
 {
     Q_D(QmlGraphicsWebView);
     page()->setViewportSize(QSize(
-        d->preferredwidth>0 ? d->preferredwidth : width(), height()));
+        d->preferredwidth>0 ? d->preferredwidth : width(),
+        d->preferredheight>0 ? d->preferredheight : height()));
     if (isComponentComplete())
         page()->mainFrame()->setHtml(html, baseUrl);
     else {
@@ -1037,7 +1046,8 @@ void QmlGraphicsWebView::setContent(const QByteArray &data, const QString &mimeT
 {
     Q_D(QmlGraphicsWebView);
     page()->setViewportSize(QSize(
-        d->preferredwidth>0 ? d->preferredwidth : width(), height()));
+        d->preferredwidth>0 ? d->preferredwidth : width(),
+        d->preferredheight>0 ? d->preferredheight : height()));
 
     if (isComponentComplete())
         page()->mainFrame()->setContent(data,mimeType,qmlContext(this)->resolvedUrl(baseUrl));
