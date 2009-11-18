@@ -348,4 +348,4 @@ T *tst_QmlGraphicsRepeater::findItem(QObject *parent, const QString &objectName)
 
 QTEST_MAIN(tst_QmlGraphicsRepeater)
 
-#include "tst_repeater.moc"
+#include "tst_qmlgraphicsrepeater.moc"
