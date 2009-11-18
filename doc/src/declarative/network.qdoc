@@ -153,8 +153,9 @@ compiled into the executable.
 
 \section1 Limitations
 
-The \c import statement only works network transparently if it has an "as" clause.
+The \c import statement is only network transparent if it has an "as" clause.
 
+More specifically:
 \list
 \o \c{import "dir"} only works on local file systems
 \o \c{import libraryUri} only works on local file systems
