@@ -108,6 +108,10 @@
     missing API, See the _patches directory in the archive for
     details.
 
+    \note A MinGW installation is only needed to build against the
+    binary pacakge, not to run the pre-compiled binaries that are in
+    the package.
+
     \section2 GCC 4.0.0
 
     The released package of the compiler has some bugs that lead to
