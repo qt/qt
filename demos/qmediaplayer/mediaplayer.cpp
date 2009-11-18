@@ -73,14 +73,23 @@ void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
 
 void MediaVideoWidget::keyPressEvent(QKeyEvent *e)
 {
-    if (e->key() == Qt::Key_Space && !e->modifiers()) {
-        m_player->playPause();
-        e->accept();
-        return;
-    } else if (e->key() == Qt::Key_Escape && !e->modifiers()) {
-        setFullScreen(false);
-        e->accept();
-        return;
+    if(!e->modifiers()) {
+        // On non-QWERTY Symbian key-based devices, there is no space key.
+        // The zero key typically is marked with a space character.
+        if (e->key() == Qt::Key_Space || e->key() == Qt::Key_0) {
+            m_player->playPause();
+            e->accept();
+            return;
+        }
+
+        // On Symbian devices, there is no key which maps to Qt::Key_Escape
+        // On devices which lack a backspace key (i.e. non-QWERTY devices),
+        // the 'C' key maps to Qt::Key_Backspace
+        else if (e->key() == Qt::Key_Escape || e->key() == Qt::Key_Backspace) {
+            setFullScreen(false);
+            e->accept();
+            return;
+        }
     }
     Phonon::VideoWidget::keyPressEvent(e);
 }
