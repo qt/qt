@@ -692,9 +692,14 @@ QmlComponent *QmlGraphicsVisualDataModel::delegate() const
 void QmlGraphicsVisualDataModel::setDelegate(QmlComponent *delegate)
 {
     Q_D(QmlGraphicsVisualDataModel);
+    bool wasValid = d->m_delegate != 0;
     d->m_delegate = delegate;
-    if (d->modelCount()) {
+    if (!wasValid && d->modelCount() && d->m_delegate) {
         emit itemsInserted(0, d->modelCount());
+        emit countChanged();
+    }
+    if (wasValid && !d->m_delegate && d->modelCount()) {
+        emit itemsRemoved(0, d->modelCount());
         emit countChanged();
     }
 }
