@@ -363,12 +363,12 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
             }
             QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             break;
-        case Phonon::PausedState:
+
         case Phonon::StoppedState:
-            playButton->setIcon(playIcon);
-
             m_videoWidget->setFullScreen(false);
-
+            // Fall through
+        case Phonon::PausedState:
+            playButton->setIcon(playIcon);
             if (m_MediaObject.currentSource().type() != Phonon::MediaSource::Invalid){
                 playButton->setEnabled(true);
                 rewindButton->setEnabled(true);
