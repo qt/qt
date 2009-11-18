@@ -2242,7 +2242,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const
         feasible = solveMinMax(allConstraints, path, &min, &max);
 
         if (feasible) {
-            solvePreferred(allConstraints, variables);
+            solvePreferred(constraints, variables);
 
             // Calculate and set the preferred size for the layout,
             // from the edge sizes that were calculated above.
@@ -2291,12 +2291,8 @@ bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const
 bool QGraphicsAnchorLayoutPrivate::calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
                                                      const QList<AnchorData *> &variables)
 {
-    QList<QSimplexConstraint *> sizeHintConstraints = constraintsFromSizeHints(variables);
-
-    shiftConstraints(sizeHintConstraints, limit);
     shiftConstraints(constraints, limit);
-
-    bool feasible = solvePreferred(constraints + sizeHintConstraints, variables);
+    bool feasible = solvePreferred(constraints, variables);
 
     if (feasible) {
         // Propagate size at preferred to other sizes. Semi-floats always will be
@@ -2309,10 +2305,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateNonTrunk(const QList<QSimplexConstra
         }
     }
 
-    qDeleteAll(sizeHintConstraints);
-
     shiftConstraints(constraints, -limit);
-
     return feasible;
 }
 
@@ -2869,6 +2862,21 @@ bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *>
     return feasible;
 }
 
+enum slackType { Grower = -1, Shrinker = 1 };
+static QPair<QSimplexVariable *, QSimplexConstraint *> createSlack(QSimplexConstraint *sizeConstraint,
+                                                                   qreal interval, slackType type)
+{
+    QSimplexVariable *slack = new QSimplexVariable;
+    sizeConstraint->variables.insert(slack, type);
+
+    QSimplexConstraint *limit = new QSimplexConstraint;
+    limit->variables.insert(slack, 1.0);
+    limit->ratio = QSimplexConstraint::LessOrEqual;
+    limit->constant = interval;
+
+    return qMakePair(slack, limit);
+}
+
 bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint *> &constraints,
                                                   const QList<AnchorData *> &variables)
 {
@@ -2879,7 +2887,8 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
     // Fill the objective coefficients for this variable. In the
     // end the objective function will be
     //
-    //     z = n * (A_shrink + B_shrink + ...) + (A_grower + B_grower + ...)
+    //     z = n * (A_shrinker_hard + A_grower_hard + B_shrinker_hard + B_grower_hard + ...) +
+    //             (A_shrinker_soft + A_grower_soft + B_shrinker_soft + B_grower_soft + ...)
     //
     // where n is the number of variables that have
     // slacks. Note that here we use the number of variables
@@ -2891,7 +2900,7 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
     // and we now fill the values for the slack constraints (one per variable),
     // which have this form (the constant A_pref was set when creating the slacks):
     //
-    //      A + A_shrinker - A_grower = A_pref
+    //      A + A_shrinker_hard + A_shrinker_soft - A_grower_hard - A_grower_soft = A_pref
     //
     for (int i = 0; i < variables.size(); ++i) {
         AnchorData *ad = variables.at(i);
@@ -2900,22 +2909,58 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
         if (ad->isLayoutAnchor)
             continue;
 
-        QSimplexVariable *grower = new QSimplexVariable;
-        QSimplexVariable *shrinker = new QSimplexVariable;
-        QSimplexConstraint *c = new QSimplexConstraint;
-        c->variables.insert(ad, 1.0);
-        c->variables.insert(shrinker, 1.0);
-        c->variables.insert(grower, -1.0);
-        c->constant = ad->prefSize + limit;
+        // By default, all variables are equal to their preferred size. If they have room to
+        // grow or shrink, such flexibility will be added by the additional variables below.
+        QSimplexConstraint *sizeConstraint = new QSimplexConstraint;
+        preferredConstraints += sizeConstraint;
+        sizeConstraint->variables.insert(ad, 1.0);
+        sizeConstraint->constant = ad->prefSize + limit;
 
-        preferredConstraints += c;
-        preferredVariables += grower;
-        preferredVariables += shrinker;
+        // Can easily shrink
+        QPair<QSimplexVariable *, QSimplexConstraint *> slack;
+        const qreal softShrinkInterval = ad->prefSize - ad->minPrefSize;
+        if (softShrinkInterval) {
+            slack = createSlack(sizeConstraint, softShrinkInterval, Shrinker);
+            preferredVariables += slack.first;
+            preferredConstraints += slack.second;
 
-        objective.variables.insert(grower, 1.0);
-        objective.variables.insert(shrinker, variables.size());
+            // Add to objective with ratio == 1 (soft)
+            objective.variables.insert(slack.first, 1.0);
+        }
+
+        // Can easily grow
+        const qreal softGrowInterval = ad->maxPrefSize - ad->prefSize;
+        if (softGrowInterval) {
+            slack = createSlack(sizeConstraint, softGrowInterval, Grower);
+            preferredVariables += slack.first;
+            preferredConstraints += slack.second;
+
+            // Add to objective with ratio == 1 (soft)
+            objective.variables.insert(slack.first, 1.0);
+        }
+
+        // Can shrink if really necessary
+        const qreal hardShrinkInterval = ad->minPrefSize - ad->minSize;
+        if (hardShrinkInterval) {
+            slack = createSlack(sizeConstraint, hardShrinkInterval, Shrinker);
+            preferredVariables += slack.first;
+            preferredConstraints += slack.second;
+
+            // Add to objective with ratio == N (hard)
+            objective.variables.insert(slack.first, variables.size());
+        }
+
+        // Can grow if really necessary
+        const qreal hardGrowInterval = ad->maxSize - ad->maxPrefSize;
+        if (hardGrowInterval) {
+            slack = createSlack(sizeConstraint, hardGrowInterval, Grower);
+            preferredVariables += slack.first;
+            preferredConstraints += slack.second;
+
+            // Add to objective with ratio == N (hard)
+            objective.variables.insert(slack.first, variables.size());
+        }
     }
-
 
     QSimplex *simplex = new QSimplex;
     bool feasible = simplex->setConstraints(constraints + preferredConstraints);
