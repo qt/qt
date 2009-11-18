@@ -194,7 +194,7 @@ public:
             int property;
             int owner;
             int castValue;
-        } assignValueInterceptor;   //### merge with above
+        } assignValueInterceptor;
         struct {
             int property;
             int value;

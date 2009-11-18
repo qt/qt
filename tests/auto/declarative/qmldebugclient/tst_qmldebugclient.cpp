@@ -52,7 +52,7 @@
 #include <private/qmldebugclient_p.h>
 #include <private/qmldebugservice_p.h>
 
-#include "../debugutil_p.h"
+#include "../shared/debugutil_p.h"
 
 class tst_QmlDebugClient : public QObject
 {

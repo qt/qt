@@ -157,6 +157,14 @@ public:
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
 
+    QmlGraphicsAnchorLine left() const;
+    QmlGraphicsAnchorLine right() const;
+    QmlGraphicsAnchorLine horizontalCenter() const;
+    QmlGraphicsAnchorLine top() const;
+    QmlGraphicsAnchorLine bottom() const;
+    QmlGraphicsAnchorLine verticalCenter() const;
+    QmlGraphicsAnchorLine baseline() const;
+
 Q_SIGNALS:
     void widthChanged();
     void heightChanged();
@@ -193,15 +201,6 @@ protected:
     QmlGraphicsItem(QmlGraphicsItemPrivate &dd, QmlGraphicsItem *parent = 0);
 
 private:
-    // ### public?
-    QmlGraphicsAnchorLine left() const;
-    QmlGraphicsAnchorLine right() const;
-    QmlGraphicsAnchorLine horizontalCenter() const;
-    QmlGraphicsAnchorLine top() const;
-    QmlGraphicsAnchorLine bottom() const;
-    QmlGraphicsAnchorLine verticalCenter() const;
-    QmlGraphicsAnchorLine baseline() const;
-
     friend class QmlStatePrivate;
     friend class QmlGraphicsAnchors;
     Q_DISABLE_COPY(QmlGraphicsItem)

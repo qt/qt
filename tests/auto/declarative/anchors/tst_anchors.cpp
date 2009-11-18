@@ -46,6 +46,9 @@
 #include <private/qmlgraphicstext_p.h>
 #include <QtDeclarative/private/qmlgraphicsanchors_p_p.h>
 
+Q_DECLARE_METATYPE(QmlGraphicsAnchors::UsedAnchor)
+Q_DECLARE_METATYPE(QmlGraphicsAnchorLine::AnchorLine)
+
 
 class tst_anchors : public QObject
 {
@@ -60,8 +63,11 @@ private slots:
     void basicAnchors();
     void loops();
     void illegalSets();
+    void illegalSets_data();
     void reset();
+    void reset_data();
     void nullItem();
+    void nullItem_data();
     void crash1();
 };
 
@@ -143,6 +149,11 @@ void tst_anchors::basicAnchors()
    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->width(), 86.0);
    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->height(), 10.0);
 
+   // offsets
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect24"))->x(), 26.0);
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect25"))->y(), 60.0);
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect26"))->y(), 5.0);
+
     //baseline
     QmlGraphicsText *text1 = findItem<QmlGraphicsText>(view->root(), QLatin1String("text1"));
     QmlGraphicsText *text2 = findItem<QmlGraphicsText>(view->root(), QLatin1String("text2"));
@@ -185,68 +196,149 @@ void tst_anchors::loops()
 
 void tst_anchors::illegalSets()
 {
-    {
-        QmlView *view = new QmlView;
+    QFETCH(QString, qml);
+    QFETCH(QString, warning);
 
-        view->setUrl(QUrl("file://" SRCDIR "/data/illegal1.qml"));
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
 
-        QString expect = "QML QmlGraphicsRectangle (" + view->url().toString() + ":7:5" + ") Can't specify left, right, and hcenter anchors.";
-        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
-        view->execute();
-        qApp->processEvents();
+    QmlEngine engine;
+    QmlComponent component(&engine, QByteArray("import Qt 4.6\n" + qml.toUtf8()), QUrl("file://"));
+    if (!component.isReady())
+        qWarning() << "Test errors:" << component.errors();
+    QVERIFY(component.isReady());
+    QObject *o = component.create();
+    delete o;
+}
 
-        delete view;
+void tst_anchors::illegalSets_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("warning");
+
+    QTest::newRow("H - too many anchors")
+        << "Rectangle { id: rect; Rectangle { anchors.left: rect.left; anchors.right: rect.right; anchors.horizontalCenter: rect.horizontalCenter } }"
+        << "QML QmlGraphicsRectangle (file::2:23) Can't specify left, right, and hcenter anchors.";
+
+    foreach (const QString &side, QStringList() << "left" << "right") {
+        QTest::newRow("H - anchor to V")
+            << QString("Rectangle { Rectangle { anchors.%1: parent.top } }").arg(side)
+            << "QML QmlGraphicsRectangle (file::2:13) Can't anchor a horizontal edge to a vertical edge.";
+
+        QTest::newRow("H - anchor to non parent/sibling")
+            << QString("Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.%1: rect.%1 } }").arg(side)
+            << "QML QmlGraphicsRectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
+
+        QTest::newRow("H - anchor to self")
+            << QString("Rectangle { id: rect; anchors.%1: rect.%1 }").arg(side)
+            << "QML QmlGraphicsRectangle (file::2:1) Can't anchor item to self.";
     }
 
-    {
-        QmlView *view = new QmlView;
 
-        view->setUrl(QUrl("file://" SRCDIR "/data/illegal2.qml"));
+    QTest::newRow("V - too many anchors")
+        << "Rectangle { id: rect; Rectangle { anchors.top: rect.top; anchors.bottom: rect.bottom; anchors.verticalCenter: rect.verticalCenter } }"
+        << "QML QmlGraphicsRectangle (file::2:23) Can't specify top, bottom, and vcenter anchors.";
 
-        QString expect = "QML QmlGraphicsText (" + view->url().toString() + ":7:5" + ") Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
-        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
-        view->execute();
-        //qApp->processEvents();
+    QTest::newRow("V - too many anchors with baseline")
+        << "Rectangle { Text { id: text1; text: \"Hello\" } Text { anchors.baseline: text1.baseline; anchors.top: text1.top; } }"
+        << "QML QmlGraphicsText (file::2:47) Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
 
-        delete view;
+    foreach (const QString &side, QStringList() << "top" << "bottom" << "baseline") {
+
+        QTest::newRow("V - anchor to H")
+            << QString("Rectangle { Rectangle { anchors.%1: parent.left } }").arg(side)
+            << "QML QmlGraphicsRectangle (file::2:13) Can't anchor a vertical edge to a horizontal edge.";
+
+        QTest::newRow("V - anchor to non parent/sibling")
+            << QString("Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.%1: rect.%1 } }").arg(side)
+            << "QML QmlGraphicsRectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
+
+        QTest::newRow("V - anchor to self")
+            << QString("Rectangle { id: rect; anchors.%1: rect.%1 }").arg(side)
+            << "QML QmlGraphicsRectangle (file::2:1) Can't anchor item to self.";
     }
 
-    {
-        QmlView *view = new QmlView;
 
-        view->setUrl(QUrl("file://" SRCDIR "/data/illegal3.qml"));
+    QTest::newRow("centerIn - anchor to non parent/sibling")
+        << "Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.centerIn: rect} }"
+        << "QML QmlGraphicsRectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
 
-        QString expect = "QML QmlGraphicsRectangle (" + view->url().toString() + ":9:5" + ") Can't anchor to an item that isn't a parent or sibling.";
-        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
-        view->execute();
-        //qApp->processEvents();
 
-        delete view;
-    }
+    QTest::newRow("fill - anchor to non parent/sibling")
+        << "Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.fill: rect} }"
+        << "QML QmlGraphicsRectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
 }
 
 void tst_anchors::reset()
 {
-    QmlGraphicsItem *aItem = new QmlGraphicsItem;
+    QFETCH(QString, side);
+    QFETCH(QmlGraphicsAnchorLine::AnchorLine, anchorLine);
+    QFETCH(QmlGraphicsAnchors::UsedAnchor, usedAnchor);
+
+    QmlGraphicsItem *baseItem = new QmlGraphicsItem;
+
     QmlGraphicsAnchorLine anchor;
-    anchor.item = aItem;
-    anchor.anchorLine = QmlGraphicsAnchorLine::Top;
+    anchor.item = baseItem;
+    anchor.anchorLine = anchorLine;
 
     QmlGraphicsItem *item = new QmlGraphicsItem;
-    item->anchors()->setBottom(anchor);
-    QCOMPARE(item->anchors()->usedAnchors().testFlag(QmlGraphicsAnchors::HasBottomAnchor), true);
 
-    item->anchors()->resetBottom();
-    QCOMPARE(item->anchors()->usedAnchors().testFlag(QmlGraphicsAnchors::HasBottomAnchor), false);
+    const QMetaObject *meta = item->anchors()->metaObject();
+    QMetaProperty p = meta->property(meta->indexOfProperty(side.toUtf8().constData()));
+
+    QVERIFY(p.write(item->anchors(), qVariantFromValue(anchor)));
+    QCOMPARE(item->anchors()->usedAnchors().testFlag(usedAnchor), true);
+
+    QVERIFY(p.reset(item->anchors()));
+    QCOMPARE(item->anchors()->usedAnchors().testFlag(usedAnchor), false);
+
+    delete item;
+    delete baseItem;
+}
+
+void tst_anchors::reset_data()
+{
+    QTest::addColumn<QString>("side");
+    QTest::addColumn<QmlGraphicsAnchorLine::AnchorLine>("anchorLine");
+    QTest::addColumn<QmlGraphicsAnchors::UsedAnchor>("usedAnchor");
+
+    QTest::newRow("left") << "left" << QmlGraphicsAnchorLine::Left << QmlGraphicsAnchors::HasLeftAnchor;
+    QTest::newRow("top") << "top" << QmlGraphicsAnchorLine::Top << QmlGraphicsAnchors::HasTopAnchor;
+    QTest::newRow("right") << "right" << QmlGraphicsAnchorLine::Right << QmlGraphicsAnchors::HasRightAnchor;
+    QTest::newRow("bottom") << "bottom" << QmlGraphicsAnchorLine::Bottom << QmlGraphicsAnchors::HasBottomAnchor;
+
+    QTest::newRow("hcenter") << "horizontalCenter" << QmlGraphicsAnchorLine::HCenter << QmlGraphicsAnchors::HasHCenterAnchor;
+    QTest::newRow("vcenter") << "verticalCenter" << QmlGraphicsAnchorLine::VCenter << QmlGraphicsAnchors::HasVCenterAnchor;
+    QTest::newRow("baseline") << "baseline" << QmlGraphicsAnchorLine::Baseline << QmlGraphicsAnchors::HasBaselineAnchor;
 }
 
 void tst_anchors::nullItem()
 {
+    QFETCH(QString, side);
+
     QmlGraphicsAnchorLine anchor;
+    QmlGraphicsItem *item = new QmlGraphicsItem;
+
+    const QMetaObject *meta = item->anchors()->metaObject();
+    QMetaProperty p = meta->property(meta->indexOfProperty(side.toUtf8().constData()));
 
     QTest::ignoreMessage(QtWarningMsg, "QML QmlGraphicsItem (unknown location) Can't anchor to a null item.");
-    QmlGraphicsItem *item = new QmlGraphicsItem;
-    item->anchors()->setBottom(anchor);
+    QVERIFY(p.write(item->anchors(), qVariantFromValue(anchor)));
+
+    delete item;
+}
+
+void tst_anchors::nullItem_data()
+{
+    QTest::addColumn<QString>("side");
+
+    QTest::newRow("left") << "left";
+    QTest::newRow("top") << "top";
+    QTest::newRow("right") << "right";
+    QTest::newRow("bottom") << "bottom";
+
+    QTest::newRow("hcenter") << "horizontalCenter";
+    QTest::newRow("vcenter") << "verticalCenter";
+    QTest::newRow("baseline") << "baseline";
 }
 
 void tst_anchors::crash1()

@@ -48,7 +48,7 @@
 
 #include <private/qpacketprotocol_p.h>
 
-#include "../debugutil_p.h"
+#include "../shared/debugutil_p.h"
 
 class tst_QPacketProtocol : public QObject
 {

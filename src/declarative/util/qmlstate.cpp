@@ -362,6 +362,8 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             }
             if (!found || action.event != d->revertList.at(jj).event)
                 action.event->saveOriginals();
+            else if (action.event->isRewindable())
+                action.event->saveCurrentValues();
         } else {
             action.fromBinding = action.property.binding();
 
@@ -422,6 +424,8 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             a.specifiedProperty = d->revertList.at(ii).specifiedProperty;
             a.event = d->revertList.at(ii).event;
             a.reverseEvent = d->revertList.at(ii).reverseEvent;
+            if (a.event && a.event->isRewindable())
+                a.event->saveCurrentValues();
             applyList << a;
             // Store these special reverts in the reverting list
             d->reverting << d->revertList.at(ii).property;

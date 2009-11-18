@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,48 +38,40 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <qtest.h>
+#include <QFile>
+#include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlcomponent.h>
+#include <private/graphicswidgets_p.h>
 
-#ifndef QMLLISTACCESSOR_H
-#define QMLLISTACCESSOR_H
+class tst_graphicswidgets : public QObject
 
-#include <QtCore/QVariant>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QmlEngine;
-class Q_DECLARATIVE_EXPORT QmlListAccessor
 {
+    Q_OBJECT
 public:
-    QmlListAccessor();
-    virtual ~QmlListAccessor();
+    tst_graphicswidgets();
 
-    QVariant list() const;
-    void setList(const QVariant &, QmlEngine * = 0);
-
-    bool isValid() const;
-
-    int count() const;
-    QVariant at(int) const;
-
-    virtual void append(const QVariant &);
-    virtual void insert(int, const QVariant &);
-    virtual void removeAt(int);
-    virtual void clear();
-
-    enum Type { Invalid, StringList, VariantList, QmlList, QList, Instance, Integer };
-    Type type() const { return m_type; }
-
-private:
-    Type m_type;
-    QVariant d;
+private slots:
+    void widgets();
 };
 
-QT_END_NAMESPACE
+tst_graphicswidgets::tst_graphicswidgets()
+{
+}
 
-QT_END_HEADER
+void tst_graphicswidgets::widgets()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/graphicswidgets.qml"));
+    QGraphicsView *obj = qobject_cast<QGraphicsView*>(c.create());
 
-#endif // QMLLISTACCESSOR_H
+    QVERIFY(obj != 0);
+    QVERIFY(obj->scene() != 0);
+    QList<QObject*> list;
+    QVERIFY(obj->scene()->children() != list);
+    delete obj;
+}
+
+QTEST_MAIN(tst_graphicswidgets)
+
+#include "tst_graphicswidgets.moc"

@@ -130,6 +130,24 @@ Rectangle {
         anchors.bottom: masterRect.bottom
         anchors.bottomMargin: 5
     }
+    Rectangle {
+        id: rect24; objectName: "rect24"
+        width: 10; height: 10
+        anchors.horizontalCenter: masterRect.left
+        anchors.horizontalCenterOffset: width/2
+    }
+    Rectangle {
+        id: rect25; objectName: "rect25"
+        width: 10; height: 10
+        anchors.verticalCenter: rect12.top
+        anchors.verticalCenterOffset: height/2
+    }
+    Rectangle {
+        id: rect26; objectName: "rect26"
+        width: 10; height: 10
+        anchors.baseline: masterRect.top
+        anchors.baselineOffset: height/2
+    }
     Text {
         id: text1; objectName: "text1"
         y: 200;

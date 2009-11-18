@@ -57,12 +57,15 @@ class QmlParentChangePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlParentChange)
 public:
-    QmlParentChangePrivate() : target(0), parent(0), origParent(0), origStackBefore(0) {}
+    QmlParentChangePrivate() : target(0), parent(0), origParent(0), origStackBefore(0),
+                               rewindParent(0), rewindStackBefore(0) {}
 
     QmlGraphicsItem *target;
     QmlGraphicsItem *parent;
     QGuard<QmlGraphicsItem> origParent;
     QGuard<QmlGraphicsItem> origStackBefore;
+    QmlGraphicsItem *rewindParent;
+    QmlGraphicsItem *rewindStackBefore;
 
     void doChange(QmlGraphicsItem *targetParent, QmlGraphicsItem *stackBefore = 0);
 };
@@ -222,31 +225,9 @@ public:
 void QmlParentChange::saveOriginals()
 {
     Q_D(QmlParentChange);
-    if (!d->target) {
-        d->origParent = 0;
-        d->origStackBefore = 0;
-        return;
-    }
-
-    d->origParent = d->target->parentItem();
-
-    if (!d->origParent) {
-        d->origStackBefore = 0;
-        return;
-    }
-
-    //try to determine the item's original stack position so we can restore it
-    int siblingIndex = ((AccessibleFxItem*)d->target)->siblingIndex() + 1;
-    QList<QGraphicsItem*> children = d->origParent->childItems();
-    for (int i = 0; i < children.count(); ++i) {
-        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem*>(children.at(i));
-        if (!child)
-            continue;
-        if (((AccessibleFxItem*)child)->siblingIndex() == siblingIndex) {
-            d->origStackBefore = child;
-            break;
-        }
-    }
+    saveCurrentValues();
+    d->origParent = d->rewindParent;
+    d->origStackBefore = d->rewindStackBefore;
 }
 
 void QmlParentChange::execute()
@@ -279,6 +260,42 @@ bool QmlParentChange::override(ActionEvent*other)
     if (QmlParentChange *otherPC = static_cast<QmlParentChange*>(other))
         return (d->target == otherPC->object());
     return false;
+}
+
+void QmlParentChange::saveCurrentValues()
+{
+    Q_D(QmlParentChange);
+    if (!d->target) {
+        d->rewindParent = 0;
+        d->rewindStackBefore = 0;
+        return;
+    }
+
+    d->rewindParent = d->target->parentItem();
+
+    if (!d->rewindParent) {
+        d->rewindStackBefore = 0;
+        return;
+    }
+
+    //try to determine the item's original stack position so we can restore it
+    int siblingIndex = ((AccessibleFxItem*)d->target)->siblingIndex() + 1;
+    QList<QGraphicsItem*> children = d->rewindParent->childItems();
+    for (int i = 0; i < children.count(); ++i) {
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem*>(children.at(i));
+        if (!child)
+            continue;
+        if (((AccessibleFxItem*)child)->siblingIndex() == siblingIndex) {
+            d->rewindStackBefore = child;
+            break;
+        }
+    }
+}
+
+void QmlParentChange::rewind()
+{
+    Q_D(QmlParentChange);
+    d->doChange(d->rewindParent, d->rewindStackBefore);
 }
 
 class QmlStateChangeScriptPrivate : public QObjectPrivate
@@ -399,10 +416,19 @@ public:
     QmlGraphicsAnchorLine origBottom;
     QmlGraphicsAnchorLine origVCenter;
     QmlGraphicsAnchorLine origBaseline;
-    qreal origX;
-    qreal origY;
-    qreal origWidth;
-    qreal origHeight;
+
+    QmlGraphicsAnchorLine rewindLeft;
+    QmlGraphicsAnchorLine rewindRight;
+    QmlGraphicsAnchorLine rewindHCenter;
+    QmlGraphicsAnchorLine rewindTop;
+    QmlGraphicsAnchorLine rewindBottom;
+    QmlGraphicsAnchorLine rewindVCenter;
+    QmlGraphicsAnchorLine rewindBaseline;
+
+    qreal fromX;
+    qreal fromY;
+    qreal fromWidth;
+    qreal fromHeight;
 };
 
 /*!
@@ -449,6 +475,8 @@ void QmlAnchorChanges::setReset(const QString &reset)
     Q_D(QmlAnchorChanges);
     d->resetString = reset;
     d->resetList = d->resetString.split(QLatin1Char(','));
+    for (int i = 0; i < d->resetList.count(); ++i)
+        d->resetList[i] = d->resetList.at(i).trimmed();
 }
 
 /*!
@@ -613,19 +641,19 @@ QList<Action> QmlAnchorChanges::extraActions()
     //    we shouldn't set explicit width if there wasn't one before.
     if (d->target) {
         Action a;
-        a.fromValue = d->origX;
+        a.fromValue = d->fromX;
         a.property = QmlMetaProperty(d->target, QLatin1String("x"));
         extra << a;
 
-        a.fromValue = d->origY;
+        a.fromValue = d->fromY;
         a.property = QmlMetaProperty(d->target, QLatin1String("y"));
         extra << a;
 
-        a.fromValue = d->origWidth;
+        a.fromValue = d->fromWidth;
         a.property = QmlMetaProperty(d->target, QLatin1String("width"));
         extra << a;
 
-        a.fromValue = d->origHeight;
+        a.fromValue = d->fromHeight;
         a.property = QmlMetaProperty(d->target, QLatin1String("height"));
         extra << a;
     }
@@ -648,15 +676,17 @@ void QmlAnchorChanges::saveOriginals()
     d->origBottom = d->target->anchors()->bottom();
     d->origVCenter = d->target->anchors()->verticalCenter();
     d->origBaseline = d->target->anchors()->baseline();
+
+    saveCurrentValues();
 }
 
 void QmlAnchorChanges::clearForwardBindings()
 {
     Q_D(QmlAnchorChanges);
-    d->origX = d->target->x();
-    d->origY = d->target->y();
-    d->origWidth = d->target->width();
-    d->origHeight = d->target->height();
+    d->fromX = d->target->x();
+    d->fromY = d->target->y();
+    d->fromWidth = d->target->width();
+    d->fromHeight = d->target->height();
 
     //reset any anchors that have been specified
     if (d->resetList.contains(QLatin1String("left")))
@@ -694,10 +724,10 @@ void QmlAnchorChanges::clearForwardBindings()
 void QmlAnchorChanges::clearReverseBindings()
 {
     Q_D(QmlAnchorChanges);
-    d->origX = d->target->x();
-    d->origY = d->target->y();
-    d->origWidth = d->target->width();
-    d->origHeight = d->target->height();
+    d->fromX = d->target->x();
+    d->fromY = d->target->y();
+    d->fromWidth = d->target->width();
+    d->fromHeight = d->target->height();
 
     //reset any anchors that were set in the state
     if (d->left.anchorLine != QmlGraphicsAnchorLine::Invalid)
@@ -738,9 +768,44 @@ bool QmlAnchorChanges::override(ActionEvent*other)
         return false;
     if (static_cast<ActionEvent*>(this) == other)
         return true;
-    //### can we do any other meaningful comparison? Do we need to attempt to merge the two
-    //    somehow if they have the same target and some of the same anchors?
+    if (static_cast<QmlAnchorChanges*>(other)->object() == object())
+        return true;
     return false;
+}
+
+void QmlAnchorChanges::rewind()
+{
+    Q_D(QmlAnchorChanges);
+    if (!d->target)
+        return;
+
+    //restore previous anchors
+    if (d->rewindLeft.anchorLine != QmlGraphicsAnchorLine::Invalid)
+        d->target->anchors()->setLeft(d->rewindLeft);
+    if (d->rewindRight.anchorLine != QmlGraphicsAnchorLine::Invalid)
+        d->target->anchors()->setRight(d->rewindRight);
+    if (d->rewindHCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
+        d->target->anchors()->setHorizontalCenter(d->rewindHCenter);
+    if (d->rewindTop.anchorLine != QmlGraphicsAnchorLine::Invalid)
+        d->target->anchors()->setTop(d->rewindTop);
+    if (d->rewindBottom.anchorLine != QmlGraphicsAnchorLine::Invalid)
+        d->target->anchors()->setBottom(d->rewindBottom);
+    if (d->rewindVCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
+        d->target->anchors()->setVerticalCenter(d->rewindVCenter);
+    if (d->rewindBaseline.anchorLine != QmlGraphicsAnchorLine::Invalid)
+        d->target->anchors()->setBaseline(d->rewindBaseline);
+}
+
+void QmlAnchorChanges::saveCurrentValues()
+{
+    Q_D(QmlAnchorChanges);
+    d->rewindLeft = d->target->anchors()->left();
+    d->rewindRight = d->target->anchors()->right();
+    d->rewindHCenter = d->target->anchors()->horizontalCenter();
+    d->rewindTop = d->target->anchors()->top();
+    d->rewindBottom = d->target->anchors()->bottom();
+    d->rewindVCenter = d->target->anchors()->verticalCenter();
+    d->rewindBaseline = d->target->anchors()->baseline();
 }
 
 #include "qmlstateoperations.moc"

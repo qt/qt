@@ -197,12 +197,12 @@ void QmlCompiledData::dumpInstructions()
 {
     if (!name.isEmpty())
         qWarning() << name;
-    qWarning() << "Index\tLine\tOperation\t\tData1\tData2\t\tComments";
-    qWarning() << "-------------------------------------------------------------------------------";
+    qWarning().nospace() << "Index\tLine\tOperation\t\tData1\tData2\tData3\tComments";
+    qWarning().nospace() << "-------------------------------------------------------------------------------";
     for (int ii = 0; ii < bytecode.count(); ++ii) {
         dump(&bytecode[ii], ii);
     }
-    qWarning() << "-------------------------------------------------------------------------------";
+    qWarning().nospace() << "-------------------------------------------------------------------------------";
 }
 
 

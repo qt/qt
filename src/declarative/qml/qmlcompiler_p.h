@@ -73,7 +73,7 @@ class QmlComponent;
 class QmlContext;
 
 class QScriptProgram;
-class QmlCompiledData : public QmlRefCount
+class Q_AUTOTEST_EXPORT QmlCompiledData : public QmlRefCount
 {
 public:
     QmlCompiledData();
