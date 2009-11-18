@@ -39,12 +39,12 @@
     <message>
         <location/>
         <source>Bookmark:</source>
-        <translation>Signet :</translation>
+        <translation>Signet :</translation>
     </message>
     <message>
         <location/>
         <source>Add in Folder:</source>
-        <translation>Ajouter dans le dossier :</translation>
+        <translation>Ajouter dans le dossier :</translation>
     </message>
     <message>
         <location/>
@@ -91,7 +91,7 @@
     <message>
         <location line="+1"/>
         <source>You are going to delete a Folder, this will also&lt;br&gt;remove it&apos;s content. Are you sure to continue?</source>
-        <translation>Vous allez supprimer un dossier, ceci va aussi&lt;br&gt;supprimer son contenu. Voulez-vous continuer?</translation>
+        <translation>Vous allez supprimer un dossier, ceci va aussi&lt;br&gt;supprimer son contenu. Voulez-vous continuer ?</translation>
     </message>
     <message>
         <location line="+143"/>
@@ -135,7 +135,7 @@
     <message>
         <location line="+38"/>
         <source>Filter:</source>
-        <translation>Filtre :</translation>
+        <translation>Filtre :</translation>
     </message>
     <message>
         <location line="+24"/>
@@ -220,7 +220,7 @@
     <message>
         <location/>
         <source>Filter Name:</source>
-        <translation>Nom du filtre :</translation>
+        <translation>Nom du filtre :</translation>
     </message>
 </context>
 <context>
@@ -325,7 +325,7 @@
     <message>
         <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+66"/>
         <source>&amp;Look for:</source>
-        <translation>&amp;Rechercher :</translation>
+        <translation>&amp;Rechercher :</translation>
     </message>
     <message>
         <location line="+68"/>
@@ -349,7 +349,7 @@
     <message>
         <location/>
         <source>Available Documentation:</source>
-        <translation>Documentation disponible :</translation>
+        <translation>Documentation disponible :</translation>
     </message>
     <message>
         <location/>
@@ -369,7 +369,7 @@
     <message>
         <location/>
         <source>Installation Path:</source>
-        <translation>Chemin d&apos;installation :</translation>
+        <translation>Chemin d&apos;installation :</translation>
     </message>
     <message>
         <location/>
@@ -396,12 +396,12 @@
     <message>
         <location line="-90"/>
         <source>The file %1 already exists. Do you want to overwrite it?</source>
-        <translation>Le fichier %1 existe déjà. Voulez-vous l&apos;écraser?</translation>
+        <translation>Le fichier %1 existe déjà. Voulez-vous l&apos;écraser ?</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Unable to save the file %1: %2.</source>
-        <translation>Impossible de sauver le fichier %1 : %2.</translation>
+        <translation>Impossible de sauver le fichier %1 : %2.</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -413,17 +413,17 @@
         <location line="+42"/>
         <location line="+38"/>
         <source>Download failed: %1.</source>
-        <translation>Échec du téléchargement : %1.</translation>
+        <translation>Échec du téléchargement : %1.</translation>
     </message>
     <message>
         <location line="-70"/>
         <source>Documentation info file is corrupt!</source>
-        <translation>Le fichier d&apos;information de documentation est corrompu!</translation>
+        <translation>Le fichier d&apos;information de documentation est corrompu !</translation>
     </message>
     <message>
         <location line="+37"/>
         <source>Download failed: Downloaded file is corrupted.</source>
-        <translation>Échec du téléchargement : le fichier téléchargé est corrompu.</translation>
+        <translation>Échec du téléchargement : le fichier téléchargé est corrompu.</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -434,7 +434,7 @@
         <location line="+22"/>
         <source>Error while installing documentation:
 %1</source>
-        <translation>Erreur durant l&apos;installation de la documentation :
+        <translation>Erreur durant l&apos;installation de la documentation :
 %1</translation>
     </message>
 </context>
@@ -599,7 +599,7 @@
     <message>
         <location line="+2"/>
         <source>&amp;Go</source>
-        <translation>&amp;Aller</translation>
+        <translation>A&amp;ller</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -654,7 +654,7 @@
     <message>
         <location line="+3"/>
         <source>&amp;Bookmarks</source>
-        <translation>&amp;Signets</translation>
+        <translation>Si&amp;gnets</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -669,7 +669,7 @@
     <message>
         <location line="+2"/>
         <source>&amp;Help</source>
-        <translation>&amp;Aide</translation>
+        <translation>Ai&amp;de</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -714,7 +714,7 @@
     <message>
         <location line="+2"/>
         <source>Filtered by:</source>
-        <translation>Filtre :</translation>
+        <translation>Filtre :</translation>
     </message>
     <message>
         <location line="+25"/>
@@ -724,7 +724,7 @@
     <message>
         <location line="+4"/>
         <source>Address:</source>
-        <translation>Adresse :</translation>
+        <translation>Adresse :</translation>
     </message>
     <message>
         <location line="+114"/>
@@ -759,12 +759,12 @@
     <message>
         <location line="+29"/>
         <source>The namespace %1 is already registered!</source>
-        <translation>L&apos;espace de nom %1 existe déjà!</translation>
+        <translation>L&apos;espace de nom %1 existe déjà !</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>The specified file is not a valid Qt Help File!</source>
-        <translation>Le fichier spécifié n&apos;est pas un fichier d&apos;aide Qt valide!</translation>
+        <translation>Le fichier spécifié n&apos;est pas un fichier d&apos;aide Qt valide !</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -807,7 +807,7 @@
     <message>
         <location/>
         <source>Font settings:</source>
-        <translation>Configuration des polices :</translation>
+        <translation>Configuration des polices :</translation>
     </message>
     <message>
         <location/>
@@ -827,12 +827,12 @@
     <message>
         <location/>
         <source>Filter:</source>
-        <translation>Filtre :</translation>
+        <translation>Filtre :</translation>
     </message>
     <message>
         <location/>
         <source>Attributes:</source>
-        <translation>Attributs :</translation>
+        <translation>Attributs :</translation>
     </message>
     <message>
         <location/>
@@ -858,7 +858,7 @@
         <location/>
         <source>Registered Documentation:</source>
         <translatorcomment>documentation enregistrée ? ← je préfère référencée pour les deux...</translatorcomment>
-        <translation>Documentation référencée :</translation>
+        <translation>Documentation référencée :</translation>
     </message>
     <message>
         <location/>
@@ -873,7 +873,7 @@
     <message>
         <location/>
         <source>On help start:</source>
-        <translation>Au démarrage :</translation>
+        <translation>Au démarrage :</translation>
     </message>
     <message>
         <location/>
@@ -916,58 +916,58 @@
     <message>
         <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+112"/>
         <source>The specified collection file does not exist!</source>
-        <translation>Le fichier de collection spécifié n&apos;existe pas!</translation>
+        <translation>Le fichier de collection spécifié n&apos;existe pas !</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Missing collection file!</source>
-        <translation>Fichier de collection manquant!</translation>
+        <translation>Fichier de collection manquant !</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Invalid URL!</source>
-        <translation>URL invalide!</translation>
+        <translation>URL invalide !</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Missing URL!</source>
-        <translation>URL manquante!</translation>
+        <translation>URL manquante !</translation>
     </message>
     <message>
         <location line="+17"/>
         <location line="+19"/>
         <location line="+19"/>
         <source>Unknown widget: %1</source>
-        <translation>Widget inconnu : %1</translation>
+        <translation>Widget inconnu : %1</translation>
     </message>
     <message>
         <location line="-34"/>
         <location line="+19"/>
         <location line="+19"/>
         <source>Missing widget!</source>
-        <translation>Widget manquant!</translation>
+        <translation>Widget manquant !</translation>
     </message>
     <message>
         <location line="+7"/>
         <location line="+12"/>
         <source>The specified Qt help file does not exist!</source>
-        <translation>Le fichier d&apos;aide Qt spécifié n&apos;existe pas!</translation>
+        <translation>Le fichier d&apos;aide Qt spécifié n&apos;existe pas !</translation>
     </message>
     <message>
         <location line="-7"/>
         <location line="+12"/>
         <source>Missing help file!</source>
-        <translation>Fichier d&apos;aide manquant!</translation>
+        <translation>Fichier d&apos;aide manquant !</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Missing filter argument!</source>
-        <translation>Argument de filtre manquant!</translation>
+        <translation>Argument de filtre manquant !</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Unknown option: %1</source>
-        <translation>Option inconnue : %1</translation>
+        <translation>Option inconnue : %1</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -985,7 +985,7 @@ Reason:
         <translation>Impossible d&apos;enregistrer le fichier de documentation
 %1
 
-Raison :
+Raison :
 %2</translation>
     </message>
     <message>
@@ -1008,18 +1008,18 @@ Reason:
         <translation>Impossible d&apos;enregistrer le fichier de documentation
 %1
 
-Raison :
+Raison :
 %2</translation>
     </message>
     <message>
         <location line="+37"/>
         <source>Cannot load sqlite database driver!</source>
-        <translation>Impossible de charger le driver de la base de données sqlite!</translation>
+        <translation>Impossible de charger le driver de la base de données sqlite !</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>The specified collection file could not be read!</source>
-        <translation>Le fichier de collection spécifié ne peut pas être lu!</translation>
+        <translation>Le fichier de collection spécifié ne peut pas être lu !</translation>
     </message>
 </context>
 <context>
@@ -1032,7 +1032,7 @@ Raison :
     <message>
         <location line="+1"/>
         <source>Received Command: %1 %2</source>
-        <translation>Commande reçue : %1 %2</translation>
+        <translation>Commande reçue : %1 %2</translation>
     </message>
 </context>
 <context>
@@ -1083,7 +1083,7 @@ Raison :
     <message>
         <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+54"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;:</source>
-        <translation>Choisir le domaine pour &lt;b&gt;%1&lt;/b&gt; :</translation>
+        <translation>Choisir le domaine pour &lt;b&gt;%1&lt;/b&gt; :</translation>
     </message>
 </context>
 </TS>
