@@ -54,7 +54,7 @@ SUBDIRS += \
            qmltimer \               # Cover
            qmlxmllistmodel \        # Cover
            qpacketprotocol \        # Cover
-           repeater \               # Cover
+           qmlgraphicsrepeater \    # Cover
            sql \                    # Cover
            states \                 # Cover
            valuetypes \             # Cover

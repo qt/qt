@@ -318,12 +318,21 @@ void tst_QmlGraphicsListView::items()
     testObject->setAnimate(true);
     QMetaObject::invokeMethod(canvas->root(), "checkProperties");
     QVERIFY(testObject->error() == false);
+    QVERIFY(listview->currentItem());
 
     // set invalid highlight
     testObject->setInvalidHighlight(true);
     QMetaObject::invokeMethod(canvas->root(), "checkProperties");
     QVERIFY(testObject->error() == false);
+    QVERIFY(listview->currentItem());
     QVERIFY(listview->highlightItem() == 0);
+
+    // back to normal highlight
+    testObject->setInvalidHighlight(false);
+    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QVERIFY(testObject->error() == false);
+    QVERIFY(listview->currentItem());
+    QVERIFY(listview->highlightItem() != 0);
 
     // set an empty model and confirm that items are destroyed
     T model2;
