@@ -298,7 +298,9 @@ void QmlGraphicsPathView::setDragMargin(qreal dragMargin)
 /*!
     \qmlproperty component PathView::delegate
 
-    The delegate provides a template describing what each item in the view should look and act like.
+    The delegate provides a template defining each item instantiated by the view.
+    The index is exposed as an accessible \c index property.  Properties of the
+    model are also available depending upon the type of \l {qmlmodels}{Data Model}.
 
     Here is an example delegate:
     \snippet doc/src/snippets/declarative/pathview/pathview.qml 1
