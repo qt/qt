@@ -76,7 +76,7 @@ void QVNCCursor::setCursor(Qt::CursorShape shape)
     if (useVncCursor) {
         server->setDirtyCursor();
     } else {
-        screen->setDirty(QRect(QRect(0,0,1,1));
+        screen->setDirty(QRect(QRect(0,0,1,1)));
     }
 }
 
