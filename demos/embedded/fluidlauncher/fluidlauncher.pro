@@ -59,7 +59,7 @@ symbian {
     load(data_caging_paths)
 
     TARGET.UID3 = 0xA000A641
-    ICON = ../../../src/s60installs/qt.svg
+    ICON = $$QT_SOURCE_TREE/src/s60installs/qt.svg
 
     executables.sources = \
         styledemo.exe \
@@ -121,42 +121,66 @@ symbian {
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/lightmaps.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/flightinfo.rsc
 
-    
+
     resource.path = $$APP_RESOURCE_DIR
 
     mifs.sources = \
-        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/0xA000A641.mif \ #fluidlauncher
-	$${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/0xA000C611.mif   #desktopservices
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/fluidlauncher.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/styledemo.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/deform.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/pathstroke.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/wiggly.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qftp.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/saxbookmarks.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/desktopservices.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/fridgemagnets.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/softkeys.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/raycasting.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/flickable.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/digiflip.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/lightmaps.mif \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/flightinfo.mif
     mifs.path = $$APP_RESOURCE_DIR
 
-    contains(QT_CONFIG, svg) { 
-        executables.sources += \ 
+    contains(QT_CONFIG, svg) {
+        executables.sources += \
             embeddedsvgviewer.exe \
             weatherinfo.exe
-            
+
         reg_resource.sources += \
             $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/embeddedsvgviewer_reg.rsc \
             $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/weatherinfo_reg.rsc
-            
+
         resource.sources += \
             $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/embeddedsvgviewer.rsc \
             $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/weatherinfo.rsc
+
+        mifs.sources += \
+            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/embeddedsvgviewer.mif \
+            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/weatherinfo.mif
+
     }
     contains(QT_CONFIG, webkit) {
         executables.sources += anomaly.exe
         reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/anomaly_reg.rsc
         resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/anomaly.rsc
+        mifs.sources += \
+            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/anomaly.mif
     }
 
     contains(QT_CONFIG, phonon) {
         executables.sources += qmediaplayer.exe
         resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qmediaplayer.rsc
+        mifs.sources += \
+            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qmediaplayer.mif
     }
 
     contains(QT_CONFIG, script) {
-        executables.sources += context2d.exe    
+        executables.sources += context2d.exe
         reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/context2d_reg.rsc
         resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/context2d.rsc
+        mifs.sources += \
+            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/context2d.mif
     }
 
     files.sources = $$PWD/screenshots $$PWD/slides
