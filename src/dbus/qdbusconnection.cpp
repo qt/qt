@@ -1005,6 +1005,9 @@ void QDBusConnectionPrivate::setBusService(const QDBusConnection &connection)
     busService = new QDBusConnectionInterface(connection, this);
     ref.deref(); // busService has increased the refcounting to us
                  // avoid cyclic refcounting
+//    if (mode != PeerMode)
+    QObject::connect(busService, SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+                     this, SIGNAL(serviceOwnerChanged(QString,QString,QString)));
 
     QObject::connect(this, SIGNAL(callWithCallbackFailed(QDBusError,QDBusMessage)),
                      busService, SIGNAL(callWithCallbackFailed(QDBusError,QDBusMessage)),
