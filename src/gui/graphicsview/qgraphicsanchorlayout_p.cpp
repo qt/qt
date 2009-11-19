@@ -138,10 +138,10 @@ qreal QGraphicsAnchorPrivate::spacing() const
 }
 
 
-static void internalSizeHints(QSizePolicy::Policy policy,
-                              qreal minSizeHint, qreal prefSizeHint, qreal maxSizeHint,
-                              qreal *minSize, qreal *prefSize,
-                              qreal *maxSize)
+static void applySizePolicy(QSizePolicy::Policy policy,
+                            qreal minSizeHint, qreal prefSizeHint, qreal maxSizeHint,
+                            qreal *minSize, qreal *prefSize,
+                            qreal *maxSize)
 {
     // minSize, prefSize and maxSize are initialized
     // with item's preferred Size: this is QSizePolicy::Fixed.
@@ -224,14 +224,18 @@ void AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
         // It is a user-created anchor, fetch size information from the associated QGraphicsAnchor
         Q_ASSERT(graphicsAnchor);
         QGraphicsAnchorPrivate *anchorPrivate = graphicsAnchor->d_func();
+
+        // Policy, min and max sizes are straightforward
         policy = anchorPrivate->sizePolicy;
         minSizeHint = 0;
+        maxSizeHint = QWIDGETSIZE_MAX;
+
+        // Preferred Size
         if (anchorPrivate->hasSize) {
-            // One can only configure the preferred size of a normal anchor. Their minimum and
-            // maximum "size hints" are always 0 and QWIDGETSIZE_MAX, correspondingly. However,
-            // their effective size hints might be narrowed down due to their size policies.
+            // Anchor has user-defined size
             prefSizeHint = anchorPrivate->preferredSize;
         } else {
+            // Fetch size information from style
             const Qt::Orientation orient = Qt::Orientation(QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge) + 1);
             qreal s = styleInfo->defaultSpacing(orient);
             if (s < 0) {
@@ -247,10 +251,11 @@ void AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
             }
             prefSizeHint = s;
         }
-        maxSizeHint = QWIDGETSIZE_MAX;
     }
-    internalSizeHints(policy, minSizeHint, prefSizeHint, maxSizeHint,
-                      &minSize, &prefSize, &maxSize);
+
+    // Fill minSize, prefSize and maxSize based on policy and sizeHints
+    applySizePolicy(policy, minSizeHint, prefSizeHint, maxSizeHint,
+                    &minSize, &prefSize, &maxSize);
 
     // Set the anchor effective sizes to preferred.
     //
