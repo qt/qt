@@ -50,11 +50,11 @@ MainWindow::MainWindow()
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setCentralWidget(mdiArea);
-    connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow *)),
+    connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),
             this, SLOT(updateMenus()));
     windowMapper = new QSignalMapper(this);
-    connect(windowMapper, SIGNAL(mapped(QWidget *)),
-            this, SLOT(setActiveSubWindow(QWidget *)));
+    connect(windowMapper, SIGNAL(mapped(QWidget*)),
+            this, SLOT(setActiveSubWindow(QWidget*)));
 
     createActions();
     createMenus();

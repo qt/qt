@@ -54,8 +54,8 @@ WateringConfigDialog::WateringConfigDialog()
     m_widgetInfo.insert(m_ui.sourceComboBox, tr("water source"));
     m_widgetInfo.insert(m_ui.filterCheckBox, tr("water filtering"));
 
-    connect(qApp, SIGNAL(focusChanged(QWidget*, QWidget*)),
-        this, SLOT(focusChanged(QWidget*, QWidget*)));
+    connect(qApp, SIGNAL(focusChanged(QWidget*,QWidget*)),
+        this, SLOT(focusChanged(QWidget*,QWidget*)));
 }
 
 void WateringConfigDialog::focusChanged(QWidget *, QWidget *now)

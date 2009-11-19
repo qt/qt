@@ -72,19 +72,19 @@ HttpWindow::HttpWindow(QWidget *parent)
 
     http = new QHttp(this);
 
-    connect(urlLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(urlLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableDownloadButton()));
-    connect(http, SIGNAL(requestFinished(int, bool)),
-            this, SLOT(httpRequestFinished(int, bool)));
-    connect(http, SIGNAL(dataReadProgress(int, int)),
-            this, SLOT(updateDataReadProgress(int, int)));
-    connect(http, SIGNAL(responseHeaderReceived(const QHttpResponseHeader &)),
-            this, SLOT(readResponseHeader(const QHttpResponseHeader &)));
-    connect(http, SIGNAL(authenticationRequired(const QString &, quint16, QAuthenticator *)),
-            this, SLOT(slotAuthenticationRequired(const QString &, quint16, QAuthenticator *)));
+    connect(http, SIGNAL(requestFinished(int,bool)),
+            this, SLOT(httpRequestFinished(int,bool)));
+    connect(http, SIGNAL(dataReadProgress(int,int)),
+            this, SLOT(updateDataReadProgress(int,int)));
+    connect(http, SIGNAL(responseHeaderReceived(QHttpResponseHeader)),
+            this, SLOT(readResponseHeader(QHttpResponseHeader)));
+    connect(http, SIGNAL(authenticationRequired(QString,quint16,QAuthenticator*)),
+            this, SLOT(slotAuthenticationRequired(QString,quint16,QAuthenticator*)));
 #ifndef QT_NO_OPENSSL
-    connect(http, SIGNAL(sslErrors(const QList<QSslError> &)),
-            this, SLOT(sslErrors(const QList<QSslError> &)));
+    connect(http, SIGNAL(sslErrors(QList<QSslError>)),
+            this, SLOT(sslErrors(QList<QSslError>)));
 #endif
     connect(progressDialog, SIGNAL(canceled()), this, SLOT(cancelDownload()));
     connect(downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));

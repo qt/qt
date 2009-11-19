@@ -76,7 +76,7 @@ QDBusViewer::QDBusViewer(const QDBusConnection &connection, QWidget *parent)  :
     tree = new QTreeView;
     tree->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(tree, SIGNAL(activated(const QModelIndex&)), this, SLOT(activate(const QModelIndex&)));
+    connect(tree, SIGNAL(activated(QModelIndex)), this, SLOT(activate(QModelIndex)));
 
     refreshAction = new QAction(tr("&Refresh"), tree);
     refreshAction->setData(42); // increase the amount of 42 used as magic number by one

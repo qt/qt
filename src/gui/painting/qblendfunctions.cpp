@@ -739,10 +739,6 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     quint32 basex;
     quint32 srcy;
 
-    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
-    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
-
-
     if (sx < 0) {
         int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
         basex = quint32(srcRect.right() * 65536) + dstx;
