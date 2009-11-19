@@ -2300,7 +2300,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                           << "&nbsp;</b>";
                 }
                 out() << "</td>\n";
-                    
+
+                out() << "<td>";
                 if ((currentParagraphNo[i] < NumParagraphs) &&
                     !paragraphName[currentParagraphNo[i]].isEmpty()) {
                     NodeMap::Iterator it;
@@ -2308,7 +2309,6 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     for (j = 0; j < currentOffsetInParagraph[i]; j++)
                         ++it;
 
-                    out() << "<td>";
                     // Previously, we used generateFullName() for this, but we
                     // require some special formatting.
                     out() << "<a href=\""
@@ -2322,8 +2322,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                         generateFullName(it.value()->parent(), relative, marker);
                         out() << ")";
                     }
-                    out() << "</td>\n";
-                 }
+                }
+                out() << "</td>\n";
 
                 currentOffset[i]++;
                 currentOffsetInParagraph[i]++;

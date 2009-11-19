@@ -177,7 +177,7 @@ namespace Phonon
 
         void WorkerThread::handleTask()
         {
-            QMutexLocker locker(Backend::directShowMutex());
+            QMutexLocker locker(Backend::directShowMutex);
             {
                 QMutexLocker locker(&m_mutex);
                 if (m_finished || m_queue.isEmpty()) {

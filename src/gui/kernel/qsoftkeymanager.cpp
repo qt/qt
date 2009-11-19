@@ -210,6 +210,10 @@ bool QSoftKeyManager::event(QEvent *e)
 #ifdef Q_WS_S60
 void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
 {
+    // lets not update softkeys if s60 native dialog or menu is shown
+    if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog())
+        return;
+
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
     nativeContainer->DrawableWindow()->SetOrdinalPosition(0);
     nativeContainer->DrawableWindow()->SetPointerCapturePriority(1); //keep softkeys available in modal dialog

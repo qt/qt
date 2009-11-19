@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,34 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef QDATASTREAM_P_H
-#define QDATASTREAM_P_H
+#ifndef WINDOWMANAGER_H
+#define WINDOWMANAGER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/QSharedPointer>
+#include <QtCore/QString>
+#include <QtCore/QProcess>
 
-#include <qdatastream.h>
+/* WindowManager: Provides functions to retrieve the top level window of
+ * an application and send it a close event. */
 
-QT_BEGIN_NAMESPACE
-
-#if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
-class QDataStreamPrivate
+class WindowManager
 {
+    Q_DISABLE_COPY(WindowManager)
 public:
-    QDataStreamPrivate() : floatingPointPrecision(QDataStream::DoublePrecision) { }
+    static QSharedPointer<WindowManager> create();
 
-    QDataStream::FloatingPointPrecision floatingPointPrecision;
+    virtual ~WindowManager();
+
+    bool openDisplay(QString *errorMessage);
+    bool isDisplayOpen() const;
+
+    // Count: Number of toplevels, 1 for normal apps, 2 for apps with a splash screen
+    QString waitForTopLevelWindow(unsigned count, Q_PID pid, int timeOutMS, QString *errorMessage);
+    bool sendCloseEvent(const QString &winId, Q_PID pid, QString *errorMessage);
+
+    static void sleepMS(int milliSeconds);
+
+protected:
+    WindowManager();
+
+    virtual bool openDisplayImpl(QString *errorMessage);
+    virtual bool isDisplayOpenImpl() const;
+    virtual QString waitForTopLevelWindowImpl(unsigned count, Q_PID pid, int timeOutMS, QString *errorMessage);
+    virtual bool sendCloseEventImpl(const QString &winId, Q_PID pid, QString *errorMessage);
 };
-#endif
 
-QT_END_NAMESPACE
-
-#endif // QDATASTREAM_P_H
+#endif // WINDOWMANAGER_H

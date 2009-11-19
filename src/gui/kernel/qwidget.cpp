@@ -4677,8 +4677,10 @@ void QWidgetPrivate::resolveLayoutDirection()
     By default, this property is set to Qt::LeftToRight.
 
     When the layout direction is set on a widget, it will propagate to
-    the widget's children. Children added after the call to \c
-    setLayoutDirection() will not inherit the parent's layout
+    the widget's children, but not to a child that is a window and not
+    to a child for which setLayoutDirection() has been explicitly
+    called. Also, child widgets added \e after setLayoutDirection()
+    has been called for the parent do not inherit the parent's layout
     direction.
 
     \sa QApplication::layoutDirection
@@ -11869,8 +11871,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     isVisible() returns false for a widget, that widget cannot call
     grabMouse().
 
-    \sa releaseMouse() grabKeyboard() releaseKeyboard() grabKeyboard()
-    focusWidget()
+    \sa releaseMouse() grabKeyboard() releaseKeyboard()
 */
 
 /*!
