@@ -1230,6 +1230,7 @@ bool QDBusConnectionPrivate::prepareHook(QDBusConnectionPrivate::SignalHook &hoo
     hook.owner = owner; // we don't care if the service has an owner yet
     hook.path = path;
     hook.obj = receiver;
+    hook.argumentMatch = argMatch;
 
     // build the D-Bus signal name and signature
     // This should not happen for QDBusConnection::connect, use buildSignature here, since
@@ -1502,6 +1503,24 @@ void QDBusConnectionPrivate::handleSignal(const QString &key, const QDBusMessage
             continue;
         if (hook.signature.isEmpty() && !hook.signature.isNull() && !msg.signature().isEmpty())
             continue;
+        if (!hook.argumentMatch.isEmpty()) {
+            const QVariantList arguments = msg.arguments();
+            if (hook.argumentMatch.size() > arguments.size())
+                continue;
+
+            bool matched = true;
+            for (int i = 0; i < hook.argumentMatch.size(); ++i) {
+                const QString &param = hook.argumentMatch.at(i);
+                if (param.isNull())
+                    continue;   // don't try to match against this
+                if (param == arguments.at(i).toString())
+                    continue;   // matched
+                matched = false;
+                break;
+            }
+            if (!matched)
+                continue;
+        }
 
         activateSignal(hook, msg);
     }
