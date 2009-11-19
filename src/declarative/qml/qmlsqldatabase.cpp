@@ -107,8 +107,11 @@ public:
             int s = query.size();
             if (s<0) {
                 // Inefficient.
-                query.last();
-                return query.at()+1;
+                if (query.last()) {
+                    return query.at()+1;
+                } else {
+                    return 0;
+                }
             } else {
                 return s;
             }
@@ -145,13 +148,14 @@ public:
         return QScriptValue::Undeletable;
     }
 
-    QScriptClassPropertyIterator *newIterator(const QScriptValue &object);
+    //QScriptClassPropertyIterator *newIterator(const QScriptValue &object);
 
 private:
     QScriptString str_length;
     QScriptString str_forwardOnly;
 };
 
+/*
 class QmlSqlQueryScriptClassPropertyIterator : public QScriptClassPropertyIterator
 {
 public:
@@ -220,6 +224,7 @@ QScriptClassPropertyIterator *QmlSqlQueryScriptClass::newIterator(const QScriptV
 {
     return new QmlSqlQueryScriptClassPropertyIterator(object);
 }
+*/
 
 enum SqlException {
     UNKNOWN_ERR,
@@ -349,7 +354,9 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
         return engine->undefinedValue();
     }
 
+    bool ok = true;
     if (callback.isFunction()) {
+        ok = false;
         db.transaction();
         callback.call(QScriptValue(), QScriptValueList() << tx);
         if (engine->hasUncaughtException()) {
@@ -359,11 +366,15 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
                 db.rollback();
                 THROW_SQL(0,QmlEngine::tr("SQL transaction failed"));
             } else {
-                context->thisObject().setProperty(QLatin1String("version"), to_version, QScriptValue::ReadOnly);
-                QSettings ini(databaseFile(db.connectionName(),engine)+QLatin1String(".ini"),QSettings::IniFormat);
-                ini.setValue(QLatin1String("Version"), to_version);
+                ok = true;
             }
         }
+    }
+
+    if (ok) {
+        context->thisObject().setProperty(QLatin1String("version"), to_version, QScriptValue::ReadOnly);
+        QSettings ini(databaseFile(db.connectionName(),engine)+QLatin1String(".ini"),QSettings::IniFormat);
+        ini.setValue(QLatin1String("Version"), to_version);
     }
 
     return engine->undefinedValue();
@@ -439,6 +450,7 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
 
         if (QSqlDatabase::connectionNames().contains(dbid)) {
             database = QSqlDatabase::database(dbid);
+            version = ini.value(QLatin1String("Version")).toString();
         } else {
             created = !QFile::exists(basename+QLatin1String(".sqlite"));
             database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
@@ -456,6 +468,7 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
                     // Incompatible
                     THROW_SQL(VERSION_ERR,QmlEngine::tr("SQL: database version mismatch"));
                 }
+                version = ini.value("Version").toString();
             }
             database.setDatabaseName(basename+QLatin1String(".sqlite"));
         }
