@@ -52,6 +52,8 @@
 #endif
 #ifdef Q_WS_LITE
 # include <private/qpixmap_raster_p.h>
+# include <qapplication.h>
+# include <qdesktopwidget.h>
 #endif
 #ifdef Q_WS_S60
 # include <private/qpixmap_s60_p.h>
