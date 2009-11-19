@@ -118,6 +118,8 @@ private:
     QPaintEngine *pengine;
     uchar* bytes;
 
+    bool formatLocked;
+
     friend class QPixmap;
     friend class QS60WindowSurface;
     friend class QS60PaintEngine;

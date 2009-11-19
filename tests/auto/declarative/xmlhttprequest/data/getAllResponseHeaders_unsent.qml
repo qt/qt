@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property bool test: false
 
     Component.onCompleted: {

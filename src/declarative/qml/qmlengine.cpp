@@ -99,7 +99,7 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
 
-QML_DEFINE_TYPE(Qt,4,6,Object,QObject)
+QML_DEFINE_TYPE(Qt,4,6,QtObject,QObject)
 
 struct StaticQtMetaObject : public QObject
 {

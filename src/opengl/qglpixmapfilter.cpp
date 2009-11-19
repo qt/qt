@@ -989,7 +989,7 @@ bool QGLPixmapDropShadowFilter::processGL(QPainter *painter, const QPointF &pos,
         // ensure GL_LINEAR filtering is used
         painter->setRenderHint(QPainter::SmoothPixmapTransform);
         filter->setOnPainter(painter);
-        engine->drawTexture(targetRect, fbo->texture(), fbo->size(), src.rect().translated(0, fbo->height() - src.height()));
+        engine->drawTexture(targetRect, fbo->texture(), fbo->size(), QRectF(0, fbo->height() - targetRect.height(), targetRect.width(), targetRect.height()));
         filter->removeFromPainter(painter);
         painter->restore();
 

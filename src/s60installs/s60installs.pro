@@ -101,12 +101,12 @@ symbian: {
        qtlibraries.sources += QtXmlPatterns.dll
     }
 
-    contains(QT_CONFIG, webkit): {
-        qtlibraries.sources += QtWebKit.dll
+    contains(QT_CONFIG, declarative): {
+        qtlibraries.sources += QtDeclarative.dll
     }
 
-    contains(QT_CONFIG, xmlpatterns): {
-        qtlibraries.sources += QtXmlPatterns.dll
+    contains(QT_CONFIG, webkit): {
+        qtlibraries.sources += QtWebKit.dll
     }
 
     contains(QT_CONFIG, declarative): {

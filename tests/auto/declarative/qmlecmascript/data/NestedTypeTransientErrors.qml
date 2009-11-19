@@ -1,10 +1,10 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property int b: obj.prop.a
 
     property var prop;
-    prop: Object {
+    prop: QtObject {
         property int a: 10
     }
 }

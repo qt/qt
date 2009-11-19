@@ -2193,8 +2193,10 @@ YY_RULE_SETUP
 ECHO;
 	YY_BREAK
 #line 2745 "<stdout>"
-case YY_STATE_EOF(INITIAL):
 case YY_END_OF_BUFFER:
+	yy_c_buf_p = yy_cp - 1;
+	yy_cp = yy_c_buf_p;
+case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(mediaquery):
 case YY_STATE_EOF(forkeyword):
 	yyterminate();

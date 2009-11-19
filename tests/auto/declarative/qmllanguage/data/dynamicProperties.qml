@@ -1,6 +1,6 @@
 import Test 1.0
 import Qt 4.6
-Object {
+QtObject {
     default property int intProperty : 10
     property bool boolProperty: false
     property double doubleProperty: -10.1

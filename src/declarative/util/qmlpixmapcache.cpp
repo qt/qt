@@ -213,23 +213,34 @@ bool QmlPixmapCache::find(const QUrl& url, QPixmap *pixmap)
 
     The returned QNetworkReply will be deleted when all get() calls are
     matched by a corresponding find() call.
+
+    If the \a ok parameter is passed and \a url is a local file,
+    its value will be set to false if the pixmap could not be loaded;
+    otherwise the pixmap was loaded and *ok will be true.
 */
-QNetworkReply *QmlPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
+QNetworkReply *QmlPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap, bool *ok)
 {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     QString lf = toLocalFileOrQrc(url);
     if (!lf.isEmpty()) {
         QString key = url.toString();
         if (!QPixmapCache::find(key,pixmap)) {
+            bool loaded = true;
             QFile f(lf);
             if (f.open(QIODevice::ReadOnly)) {
                 if (!readImage(&f, pixmap)) {
                     qWarning() << "Format error loading" << url;
                     *pixmap = QPixmap();
+                    loaded = false;
                 }
-            } else
+            } else {
+                qWarning() << "Cannot open" << url;
                 *pixmap = QPixmap();
-            QPixmapCache::insert(key, *pixmap);
+                loaded = false;
+            }
+            if (loaded)
+                QPixmapCache::insert(key, *pixmap);
+            if (ok) *ok = loaded;
         }
         return 0;
     }

@@ -163,7 +163,9 @@ extern "C" {
 #endif // QT_NO_XRENDER
 
 #ifndef QT_NO_XSYNC
+extern "C" {
 #  include "X11/extensions/sync.h"
+}
 #endif
 
 // #define QT_NO_XKB

@@ -1,7 +1,7 @@
 import Test 1.0
 import Qt 4.6
 
-Object {
+QtObject {
     property var other
     other: MyTypeObject { id: obj }
     property alias enumAlias: obj.enumProperty;

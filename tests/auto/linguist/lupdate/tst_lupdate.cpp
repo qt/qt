@@ -80,8 +80,8 @@ private:
 void tst_lupdate::doCompare(const QStringList &actual, const QString &expectedFn, bool err)
 {
     QFile file(expectedFn);
-    QVERIFY(file.open(QIODevice::ReadOnly));
-    QStringList expected = QString(file.readAll()).trimmed().remove('\r').split('\n');
+    QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    QStringList expected = QString(file.readAll()).trimmed().split('\n');
 
     int i = 0, ei = expected.size(), gi = actual.size();
     for (; ; i++) {
@@ -141,8 +141,8 @@ void tst_lupdate::doCompare(const QStringList &actual, const QString &expectedFn
 void tst_lupdate::doCompare(const QString &actualFn, const QString &expectedFn, bool err)
 {
     QFile afile(actualFn);
-    QVERIFY(afile.open(QIODevice::ReadOnly));
-    QStringList actual = QString(afile.readAll()).trimmed().remove('\r').split('\n');
+    QVERIFY(afile.open(QIODevice::ReadOnly | QIODevice::Text));
+    QStringList actual = QString(afile.readAll()).trimmed().split('\n');
 
     doCompare(actual, expectedFn, err);
 }
@@ -180,7 +180,7 @@ void tst_lupdate::good()
     QString lupdatecmd;
     QFile file(dir + "/lupdatecmd");
     if (file.exists()) {
-        QVERIFY(file.open(QIODevice::ReadOnly));
+        QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
         while (!file.atEnd()) {
             QByteArray cmdstring = file.readLine().simplified();
             if (cmdstring.startsWith('#'))
@@ -226,7 +226,7 @@ void tst_lupdate::output_ts()
     QString lupdatecmd;
     QFile file(dir + "/lupdatecmd");
     if (file.exists()) {
-        QVERIFY(file.open(QIODevice::ReadOnly));
+        QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
         while (!file.atEnd()) {
         QByteArray cmdstring = file.readLine().simplified();
             if (cmdstring.startsWith('#'))

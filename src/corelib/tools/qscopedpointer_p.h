@@ -76,6 +76,16 @@ public:
         return this->d;
     }
 
+    inline bool operator==(const QCustomScopedPointer<T, Cleanup> &other) const
+    {
+        return this->d == other.d;
+    }
+
+    inline bool operator!=(const QCustomScopedPointer<T, Cleanup> &other) const
+    {
+        return this->d != other.d;
+    }
+
 private:
     Q_DISABLE_COPY(QCustomScopedPointer)
 };
@@ -118,6 +128,16 @@ public:
         T *oldD = this->d;
         this->d = other;
         QScopedPointerSharedDeleter<T>::cleanup(oldD);
+    }
+
+    inline bool operator==(const QScopedSharedPointer<T> &other) const
+    {
+        return this->d == other.d;
+    }
+
+    inline bool operator!=(const QScopedSharedPointer<T> &other) const
+    {
+        return this->d != other.d;
     }
 
 private:

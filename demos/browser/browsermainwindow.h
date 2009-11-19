@@ -68,7 +68,6 @@ public:
     QSize sizeHint() const;
 
 public:
-    static QUrl guessUrlFromString(const QString &url);
     TabWidget *tabWidget() const;
     WebView *currentTab() const;
     QByteArray saveState(bool withTabs = true) const;

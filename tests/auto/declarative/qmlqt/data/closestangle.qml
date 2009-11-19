@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property var testSame: Qt.closestAngle(0,1)
     property var testLess: Qt.closestAngle(0,-359)
     property var testMore: Qt.closestAngle(0,361)

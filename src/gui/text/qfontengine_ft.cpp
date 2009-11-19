@@ -755,9 +755,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph
         load_flags = FT_LOAD_NO_BITMAP;
 
     // apply our matrix to this, but note that the metrics will not be affected by this.
-    FT_Matrix matrix = freetype->matrix;
     FT_Face face = lockFace();
-    matrix = this->matrix;
+    FT_Matrix matrix = this->matrix;
     FT_Matrix_Multiply(&set->transformationMatrix, &matrix);
     FT_Set_Transform(face, &matrix, 0);
     freetype->matrix = matrix;

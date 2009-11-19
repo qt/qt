@@ -3867,22 +3867,27 @@ QRegion::QRegion(const QRect &r, RegionType t)
 QRegion::QRegion(const QPolygon &a, Qt::FillRule fillRule)
 {
     if (a.count() > 2) {
-        d =  new QRegionData;
-        d->ref = 1;
+        QRegionPrivate *qt_rgn = PolygonRegion(a.constData(), a.size(),
+                                               fillRule == Qt::WindingFill ? WindingRule : EvenOddRule);
+        if (qt_rgn) {
+            d =  new QRegionData;
+            d->ref = 1;
 #if defined(Q_WS_X11)
-        d->rgn = 0;
-        d->xrectangles = 0;
+            d->rgn = 0;
+            d->xrectangles = 0;
 #elif defined(Q_WS_WIN)
-        d->rgn = 0;
+            d->rgn = 0;
 #endif
-        d->qt_rgn = PolygonRegion(a.constData(), a.size(),
-                                  fillRule == Qt::WindingFill ? WindingRule : EvenOddRule);
+            d->qt_rgn = qt_rgn;
+        } else {
+            d = &shared_empty;
+            d->ref.ref();
+        }
     } else {
         d = &shared_empty;
         d->ref.ref();
     }
 }
-
 
 QRegion::QRegion(const QRegion &r)
 {

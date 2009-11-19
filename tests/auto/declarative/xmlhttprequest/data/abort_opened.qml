@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property string url: "testdocument.html"
 
     property bool readyState: false

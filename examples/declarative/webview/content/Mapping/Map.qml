@@ -9,7 +9,7 @@ Item {
         id: map
         anchors.fill: parent
         url: "map.html"
-        javaScriptWindowObjects: Object {
+        javaScriptWindowObjects: QtObject {
             WebView.windowObjectName: "qml"
             property real lat: page.latitude
             property real lng: page.longitude
