@@ -478,18 +478,6 @@ static qreal interpolate(const QPair<QGraphicsAnchorLayoutPrivate::Interval, qre
 
 void SequentialAnchorData::updateChildrenSizes()
 {
-    // ### REMOVE ME
-    // ### check whether we are guarantee to get those or we need to warn stuff at this
-    // point.
-    Q_ASSERT(sizeAtMinimum > minSize || qAbs(sizeAtMinimum - minSize) < 0.00000001);
-    Q_ASSERT(sizeAtPreferred > minSize || qAbs(sizeAtPreferred - minSize) < 0.00000001);
-    Q_ASSERT(sizeAtMaximum > minSize || qAbs(sizeAtMaximum - minSize) < 0.00000001);
-
-    // These may be false if this anchor was in parallel with the layout stucture
-    // Q_ASSERT(sizeAtMinimum < maxSize || qAbs(sizeAtMinimum - maxSize) < 0.00000001);
-    // Q_ASSERT(sizeAtPreferred < maxSize || qAbs(sizeAtPreferred - maxSize) < 0.00000001);
-    // Q_ASSERT(sizeAtMaximum < maxSize || qAbs(sizeAtMaximum - maxSize) < 0.00000001);
-
     // Band here refers if the value is in the Minimum To Preferred
     // band (the lower band) or the Preferred To Maximum (the upper band).
 
@@ -2844,8 +2832,6 @@ bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *>
         for (int i = 0; i < variables.size(); ++i) {
             AnchorData *ad = static_cast<AnchorData *>(variables.at(i));
             ad->sizeAtMinimum = ad->result - limit;
-            Q_ASSERT(ad->sizeAtMinimum >= ad->minSize ||
-                     qAbs(ad->sizeAtMinimum - ad->minSize) < 0.00000001);
         }
 
         // Calculate maximum values
@@ -2855,8 +2841,6 @@ bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *>
         for (int i = 0; i < variables.size(); ++i) {
             AnchorData *ad = static_cast<AnchorData *>(variables.at(i));
             ad->sizeAtMaximum = ad->result - limit;
-            // Q_ASSERT(ad->sizeAtMaximum <= ad->maxSize ||
-            //          qAbs(ad->sizeAtMaximum - ad->maxSize) < 0.00000001);
         }
     }
     return feasible;
