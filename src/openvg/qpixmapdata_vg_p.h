@@ -89,10 +89,10 @@ public:
 
     // Return the VGImage form of this pixmap, creating it if necessary.
     // This assumes that there is a VG context current.
-    VGImage toVGImage();
+    virtual VGImage toVGImage();
 
     // Return the VGImage form for a specific opacity setting.
-    VGImage toVGImage(qreal opacity);
+    virtual VGImage toVGImage(qreal opacity);
 
     QSize size() const { return QSize(w, h); }
 
@@ -108,7 +108,7 @@ protected:
     void cleanup();
 #endif
 
-private:
+protected:
     VGImage vgImage;
     VGImage vgImageOpacity;
     qreal cachedOpacity;

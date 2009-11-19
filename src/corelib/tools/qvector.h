@@ -69,6 +69,7 @@ struct Q_CORE_EXPORT QVectorData
     // workaround for bug in gcc 3.4.2
     uint sharable;
     uint capacity;
+    uint reserved;
 #else
     uint sharable : 1;
     uint capacity : 1;

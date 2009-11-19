@@ -61,6 +61,7 @@ module core {
         DOMString localizedStringsURL();
         DOMString hiddenPanels();
         DOMString platform();
+        DOMString port();
         void startTimelineProfiler();
         void stopTimelineProfiler();
         boolean timelineProfilerEnabled();

@@ -3713,7 +3713,7 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("add scheme-0") << "example.org" << QUrl("http://example.org");
     QTest::newRow("add scheme-1") << "www.example.org" << QUrl("http://www.example.org");
     QTest::newRow("add scheme-2") << "ftp.example.org" << QUrl("ftp://ftp.example.org");
-    QTest::newRow("add scheme-3") << "webkit" << QUrl("webkit");
+    QTest::newRow("add scheme-3") << "hostname" << QUrl("http://hostname");
 
     // QUrl's tolerant parser should already handle this
     QTest::newRow("not-encoded-0") << "http://example.org/test page.html" << QUrl::fromEncoded("http://example.org/test%20page.html");
@@ -3723,6 +3723,9 @@ void tst_QUrl::fromUserInput_data()
     portUrl.setPort(80);
     QTest::newRow("port-0") << "example.org:80" << portUrl;
     QTest::newRow("port-1") << "http://example.org:80" << portUrl;
+    portUrl.setPath("path");
+    QTest::newRow("port-1") << "example.org:80/path" << portUrl;
+    QTest::newRow("port-1") << "http://example.org:80/path" << portUrl;
 
     // mailto doesn't have a ://, but is valid
     QUrl mailto("ben@example.net");
@@ -3730,10 +3733,11 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("mailto") << "mailto:ben@example.net" << mailto;
 
     // misc
-    QTest::newRow("localhost-0") << "localhost" << QUrl("http://localhost");
     QTest::newRow("localhost-1") << "localhost:80" << QUrl("http://localhost:80");
     QTest::newRow("spaces-0") << "  http://example.org/test page.html " << QUrl("http://example.org/test%20page.html");
     QTest::newRow("trash-0") << "example.org/test?someData=42%&someOtherData=abcde#anchor" << QUrl::fromEncoded("http://example.org/test?someData=42%25&someOtherData=abcde#anchor");
+    QTest::newRow("other-scheme-0") << "spotify:track:0hO542doVbfGDAGQULMORT" << QUrl("spotify:track:0hO542doVbfGDAGQULMORT");
+    QTest::newRow("other-scheme-1") << "weirdscheme:80:otherstuff" << QUrl("weirdscheme:80:otherstuff");
 
     // FYI: The scheme in the resulting url user
     QUrl authUrl("user:pass@domain.com");

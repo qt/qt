@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -473,7 +473,7 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     Q_UNUSED(app)
     QPalette applicationPalette = QApplication::palette();
     applicationPalette.setBrush(QPalette::Window, backgroundTexture());
-    setThemePalette(app);
+    setThemePalette(&applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
@@ -668,7 +668,7 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
         s60Color(QS60StyleEnums::CL_QsnTextColors, 55, 0));
     palette->setColor(QPalette::BrightText, palette->color(QPalette::WindowText).lighter());
     palette->setColor(QPalette::HighlightedText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 10, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     palette->setColor(QPalette::Link,
         s60Color(QS60StyleEnums::CL_QsnHighlightColors, 3, 0));
     palette->setColor(QPalette::LinkVisited, palette->color(QPalette::Link).darker());
@@ -783,6 +783,14 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     widgetPalette.setBrush(QPalette::Window, QBrush());
     QApplication::setPalette(widgetPalette, "QScrollArea");
     widgetPalette = *palette;
+
+    //Webpages should not use S60 theme colors as they are designed to work
+    //with themeBackground and do not generally mesh well with web page backgrounds.
+    QPalette webPalette = *palette;
+    webPalette.setColor(QPalette::WindowText, Qt::black);
+    webPalette.setColor(QPalette::Text, Qt::black);
+    QApplication::setPalette(webPalette, "QWebView");
+    QApplication::setPalette(webPalette, "QGraphicsWebView");
 }
 
 QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlags flags)
@@ -799,6 +807,9 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafTabPassiveR:
         case QS60StyleEnums::SP_QgnGrafTabPassiveL:
         case QS60StyleEnums::SP_QgnGrafTabActiveL:
+            //Returned QSize for tabs must not be square, but narrow rectangle with width:height
+            //ratio of 1:2 for horizontal tab bars (and 2:1 for vertical ones).
+            result.setWidth(10);
             break;
         case QS60StyleEnums::SP_QgnIndiSliderEdit:
             result.scale(pixelMetric(QStyle::PM_SliderLength),
@@ -809,7 +820,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
             result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
             break;
-            
+
         case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
@@ -2004,7 +2015,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             buttonRect.adjust(0,-newY,0,-newY);
 
             painter->save();
-            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnIconColors, 13, option);
+            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnTextColors, 6, option);
             QColor buttonTextColor = option->palette.buttonText().color();
             if (themeColor != buttonTextColor)
                 painter->setPen(buttonTextColor);

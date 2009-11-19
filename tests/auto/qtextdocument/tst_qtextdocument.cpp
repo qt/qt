@@ -2615,6 +2615,17 @@ void tst_QTextDocument::testUndoCommandAdded()
     cf.setFontItalic(true);
     cursor.mergeCharFormat(cf);
     QCOMPARE(spy.count(), 1);
+
+    spy.clear();
+    doc->undo();
+    QCOMPARE(spy.count(), 0);
+    doc->undo();
+    QCOMPARE(spy.count(), 0);
+    spy.clear();
+    doc->redo();
+    QCOMPARE(spy.count(), 0);
+    doc->redo();
+    QCOMPARE(spy.count(), 0);
 }
 
 void tst_QTextDocument::testUndoBlocks()

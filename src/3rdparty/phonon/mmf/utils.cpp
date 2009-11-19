@@ -24,16 +24,24 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
-/*! \namespace MMF::Utils
+/*! \namespace Phonon::MMF::Utils
   \internal
 */
 
-/*! \class MMF::TTraceContext
+/*! \class Phonon::MMF::TTraceContext
   \internal
 */
 
-/*! \class MMF::Utils
-  \internal
+/*! \enum Phonon::MMF::PanicCode
+ \internal
+*/
+
+/*! \enum Phonon::MMF::TTraceCategory
+ \internal
+*/
+
+/*! \enum Phonon::MMF::MediaType
+ \internal
 */
 
 _LIT(PanicCategory, "Phonon::MMF");
