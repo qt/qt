@@ -107,8 +107,11 @@ public:
             int s = query.size();
             if (s<0) {
                 // Inefficient.
-                query.last();
-                return query.at()+1;
+                if (query.last()) {
+                    return query.at()+1;
+                } else {
+                    return 0;
+                }
             } else {
                 return s;
             }
