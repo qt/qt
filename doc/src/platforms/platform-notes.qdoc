@@ -406,17 +406,102 @@
     \page platform-notes-symbian.html
     \title Platform Notes - Symbian
     \contentspage Platform Notes
+    \ingroup platform-specific
+    \brief Information about the state of support for the Symbian platform.
 
-    This page contains information about the Symbian platforms Qt is currently known
-    to run on. More information about the combinations of platforms and compilers
-    supported by Qt can be found on the \l{Supported Platforms} page.
+    As with any port, the maturity for Qt for Symbian has not yet reached the
+    same level as other established Qt ports. This page documents the current
+    notes for the Symbian port.
 
-    For information about mixing exceptions with Symbian leaves,
-    see \l{Exception Safety with Symbian}
+    \section1 Source Compatibility
+
+    Qt for Symbian provides the same level of source compatibility guarantee as
+    given for other platforms.  That is, a program which compiles against a given
+    version of Qt for Symbian will also compile against all future versions of the
+    same major release.
+
+    \section1 Binary Compatibility
+
+    As with every supported platform, we will strive to maintain
+    application behavior and binary compatibility throughout the lifetime of
+    the Qt 4.x series. However, due to the fact that Symbian support is newly
+    added in 4.6.0, there is a slight possibility that minor corrections to the
+    application binary interface (ABI) might be required in 4.6.1, in order to
+    ensure compatibility going forward. Any such change will be clearly
+    documented in the release notes for 4.6.1.
+
+    \section1 Supported Devices
+
+    Qt is designed to work on any device which runs one of the following
+    versions of Symbian:
+
+    \table
+    \header \o Symbian Version
+    \row \o S60 3.1
+    \row \o S60 3.2
+    \row \o S60 5.0 (Symbian ^1)
+    \endtable
+
+    Qt has received \l{Tier 1 Platforms}{Tier 1} testing on the following phone models:
+
+    \table
+    \header \o Phone
+    \row    \o Nokia 5800
+    \row    \o Nokia E71
+    \row    \o Nokia E72
+    \row    \o Nokia N78
+    \row    \o Nokia N95
+    \row    \o Nokia N97
+    \row    \o Samsung i8910
+    \endtable
+
+    \section1 Supported Functionality
+
+    The following technologies and classes are not currently supported:
+
+    \table
+    \header \o Technology
+            \o Note
+    \row    \o QtConcurrent
+            \o Planned for future release.
+    \row    \o QtDBus
+            \o No current plans to support this feature.
+    \row    \o QtOpenGL ES
+            \o Planned for future release.
+    \row    \o Printing support
+            \o No current plans to support this feature.
+    \row    \o Qt3Support
+            \o No current plans to support this feature.
+    \endtable
+
+    The following technologies have limited support:
+
+    \table
+    \header \o Technology
+            \o Note
+    \row    \o QtSql
+            \o The only driver supported is SQLite.
+    \row    \o QtMultimedia
+            \o Although the module itself is supported, no backend for Symbian
+               is currently available. However, there is a backend available
+               for Phonon.
+    \endtable
+
+    \section1 Known Issues
+
+    Known issues can be found by visiting the
+    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues}{wiki page} with an
+    up-to-date list of known issues, and the list of bugs can be found by
+    \l{http://bugreports.qt.nokia.com/browse/QTBUG/component/19171}{browsing} the
+    S60 component in Qt's public task tracker, located at
+    \l{http://bugreports.qt.nokia.com/}{http://bugreports.qt.nokia.com/}.
+
+    For information about mixing exceptions with Symbian leaves, see
+    \l{Exception Safety with Symbian}.
 
     \section1 Multimedia and Phonon Support
 
-    Qt provides a backend for Qt's multimedia module, Phonon, which supports
+    Qt provides a backend for Qt's Phonon module, which supports
     video and sound playback through Symbian's Multimedia Framework, MMF.
 
     In this release the support is experimental. Video playback may have
@@ -429,7 +514,11 @@
 
     In addition, there exists a backend for the Helix framework. However, due
     to it not shipping with Qt, its availability depends on the Symbian
-    platform in use. If available, it is loaded instead of the MMF plugin.
+    platform in use. If available, it is loaded in preference over the MMF
+    plugin. The Helix plugin requires Symbian signed capabilities. If the
+    application does not have those capabilities, the MMF plugin, if present on
+    the device, will be loaded instead. The capabilities the Helix backend
+    requires are AllFiles, DiskAdmin and MultimediaDD.
 
 */
 
