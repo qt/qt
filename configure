@@ -460,11 +460,11 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
 	    ;;
     esac
     case "$PlatformCode,$PLATFORM_MAC,$PLATFORM_QWS" in
-        X9,* | XC,* | XU,* | XW,*)
+        X9,* | XC,* | XU,* | XW,* | XM,*)
             # Qt All-OS
             LICENSE_EXTENSION="-ALLOS"
             ;;
-        8M,* | S9,* | SC,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
+        8M,* | KM,* | S9,* | SC,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
             # Qt for Embedded Linux
             LICENSE_EXTENSION="-EMBEDDED"
             ;;
