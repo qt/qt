@@ -57,6 +57,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QTimer>
 #include <QtCore/QDebug>
+#include <QtCore/QFileSystemWatcher>
 #include <QtCore/QResource>
 #include <QtCore/QByteArray>
 #include <QtCore/QTextStream>
@@ -93,6 +94,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     , m_cmdLine(cmdLine)
     , m_progressWidget(0)
     , m_qtDocInstaller(0)
+    , m_qchWatcher(new QFileSystemWatcher(this))
     , m_connectedInitSignals(false)
 {
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
@@ -198,7 +200,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
 
         QTimer::singleShot(0, this, SLOT(insertLastPages()));
         if (m_cmdLine->enableRemoteControl())
-            (void)new RemoteControl(this, m_helpEngine);
+            (void)new RemoteControl(this, m_helpEngine, m_qchWatcher);
 
         if (m_cmdLine->contents() == CmdLineParser::Show)
             showContents();
@@ -237,6 +239,13 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
             QTimer::singleShot(0, this, SLOT(lookForNewQtDocumentation()));
         else
             checkInitState();
+
+        foreach(const QString &ns, m_helpEngine->registeredDocumentations()) {
+            const QString &docFile = m_helpEngine->documentationFileName(ns);
+            m_qchWatcher->addPath(docFile);
+            connect(m_qchWatcher, SIGNAL(fileChanged(QString)), this,
+                    SLOT(qchFileChanged(QString)));
+        }
     }
     setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 }
@@ -297,8 +306,11 @@ bool MainWindow::initHelpDB()
         }
         QHelpEngineCore hc(fi.absoluteFilePath());
         hc.setupData();
-        hc.unregisterDocumentation(intern);
-        hc.registerDocumentation(helpFile);
+        const QString internalFile = hc.documentationFileName(intern);
+        if (hc.unregisterDocumentation(intern))
+            m_qchWatcher->removePath(internalFile);
+        if (hc.registerDocumentation(helpFile))
+            m_qchWatcher->addPath(helpFile);
         needsSetup = true;
     }
 
@@ -317,14 +329,18 @@ bool MainWindow::initHelpDB()
         needsSetup = true;
     }
 
-    if (needsSetup)
+    if (needsSetup) {
         m_helpEngine->setupData();
+        Q_ASSERT(m_qchWatcher->files().count()
+                 == m_helpEngine->registeredDocumentations().count());
+    }
     return true;
 }
 
 void MainWindow::lookForNewQtDocumentation()
 {
-    m_qtDocInstaller = new QtDocInstaller(m_helpEngine->collectionFile());
+    m_qtDocInstaller =
+        new QtDocInstaller(m_helpEngine->collectionFile(), m_qchWatcher);
     connect(m_qtDocInstaller, SIGNAL(errorMessage(QString)), this,
         SLOT(displayInstallationError(QString)));
     connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)), this,
@@ -783,7 +799,7 @@ void MainWindow::showTopicChooser(const QMap<QString, QUrl> &links,
 
 void MainWindow::showPreferences()
 {
-    PreferencesDialog dia(m_helpEngine, this);
+    PreferencesDialog dia(m_helpEngine, m_qchWatcher, this);
 
     connect(&dia, SIGNAL(updateApplicationFont()), this,
         SLOT(updateApplicationFont()));
@@ -1123,6 +1139,35 @@ void MainWindow::currentFilterChanged(const QString &filter)
     const int index = m_filterCombo->findText(filter);
     Q_ASSERT(index != -1);
     m_filterCombo->setCurrentIndex(index);
+}
+
+void MainWindow::qchFileChanged(const QString &fileName)
+{
+    /*
+     * We don't use QHelpEngineCore::namespaceName(fileName), because the file
+     * may not exist anymore or contain a different namespace.
+     */
+    QString ns;
+    foreach (const QString &curNs, m_helpEngine->registeredDocumentations()) {
+        if (m_helpEngine->documentationFileName(curNs) == fileName) {
+            ns = curNs;
+            break;
+        }
+    }
+
+    /*
+     * We can't do an assertion here, because QFileSystemWatcher may send the
+     * signal more than  once.
+     */
+    if (ns.isEmpty())
+        return;
+
+    CentralWidget* widget = CentralWidget::instance();
+    widget->closeTabs(widget->currentSourceFileList().keys(ns));
+    if (m_helpEngine->unregisterDocumentation(ns) &&
+        (!QFileInfo(fileName).exists()
+         || !m_helpEngine->registerDocumentation(fileName)))
+        m_qchWatcher->removePath(fileName);
 }
 
 QT_END_NAMESPACE

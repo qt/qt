@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 class FontPanel;
+class QFileSystemWatcher;
 class QHelpEngineCore;
 
 enum {
@@ -61,7 +62,8 @@ class PreferencesDialog : public QDialog
     Q_OBJECT
 
 public:
-    PreferencesDialog(QHelpEngineCore *helpEngine, QWidget *parent = 0);
+    PreferencesDialog(QHelpEngineCore *helpEngine,
+                      QFileSystemWatcher *qchWatcher, QWidget *parent = 0);
     ~PreferencesDialog();
 
     void showDialog();
@@ -107,6 +109,7 @@ private:
     FontPanel *m_browserFontPanel;
     bool m_appFontChanged;
     bool m_browserFontChanged;
+    QFileSystemWatcher * const m_qchWatcher;
 };
 
 QT_END_NAMESPACE

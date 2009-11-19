@@ -42,12 +42,15 @@
 #include <QtCore/QDir>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDateTime>
+#include <QtCore/QFileSystemWatcher>
 #include <QtHelp/QHelpEngineCore>
 #include "qtdocinstaller.h"
 
 QT_BEGIN_NAMESPACE
 
-QtDocInstaller::QtDocInstaller(const QString &collectionFile)
+QtDocInstaller::QtDocInstaller(const QString &collectionFile,
+                               QFileSystemWatcher *qchWatcher)
+    : m_qchWatcher(qchWatcher)
 {
     m_abort = false;
     m_collectionFile = collectionFile;
@@ -131,14 +134,23 @@ bool QtDocInstaller::installDoc(const QString &name, QHelpEngineCore *helpEngine
             if (namespaceName.isEmpty())
                 continue;
 
-            if (helpEngine->registeredDocumentations().contains(namespaceName))
-                helpEngine->unregisterDocumentation(namespaceName);
+            if (helpEngine->registeredDocumentations().contains(namespaceName)) {
+                const QString docFile =
+                    helpEngine->documentationFileName(namespaceName);
+                if (helpEngine->unregisterDocumentation(namespaceName))
+                    m_qchWatcher->removePath(docFile);
+            }
 
             if (!helpEngine->registerDocumentation(fi.absoluteFilePath())) {
                 emit errorMessage(
                     tr("The file %1 could not be registered successfully!\n\nReason: %2")
                     .arg(fi.absoluteFilePath()).arg(helpEngine->error()));
+            } else {
+                m_qchWatcher->addPath(fi.absoluteFilePath());
             }
+
+            Q_ASSERT(m_qchWatcher->files().count()
+                     == helpEngine->registeredDocumentations().count());
 
             helpEngine->setCustomValue(versionKey, fi.lastModified().toString(Qt::ISODate)
                 + QLatin1String("|") + fi.absoluteFilePath());

@@ -46,7 +46,8 @@
 #include "centralwidget.h"
 #include "aboutdialog.h"
 
-#include <QtAlgorithms>
+#include <QtCore/QtAlgorithms>
+#include <QtCore/QFileSystemWatcher>
 
 #include <QtGui/QHeaderView>
 #include <QtGui/QFileDialog>
@@ -60,11 +61,13 @@
 
 QT_BEGIN_NAMESPACE
 
-PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine, QWidget *parent)
+PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine,
+    QFileSystemWatcher *qchWatcher, QWidget *parent)
     : QDialog(parent)
     , m_helpEngine(helpEngine)
     , m_appFontChanged(false)
     , m_browserFontChanged(false)
+    , m_qchWatcher(qchWatcher)
 {
     m_ui.setupUi(this);
 
@@ -275,7 +278,11 @@ void PreferencesDialog::addDocumentationLocal()
                 continue;
         }
 
-        m_helpEngine->registerDocumentation(fileName);
+        if (m_helpEngine->registerDocumentation(fileName)) {
+            m_qchWatcher->addPath(fileName);
+            Q_ASSERT(m_qchWatcher->files().count()
+                     == m_helpEngine->registeredDocumentations().count());
+        }
         m_ui.registeredDocsListWidget->addItem(nameSpace);
         m_regDocs.append(nameSpace);
         m_unregDocs.removeAll(nameSpace);
@@ -380,10 +387,13 @@ void PreferencesDialog::applyChanges()
 
     CentralWidget::instance()->closeTabs(m_TabsToClose);
 
-    if (m_unregDocs.count()) {
-        foreach (const QString &doc, m_unregDocs)
-            m_helpEngine->unregisterDocumentation(doc);
+    foreach (const QString &doc, m_unregDocs) {
+        const QString docFile = m_helpEngine->documentationFileName(doc);
+        if (m_helpEngine->unregisterDocumentation(doc))
+            m_qchWatcher->removePath(docFile);
     }
+    Q_ASSERT(m_qchWatcher->files().count()
+             == m_helpEngine->registeredDocumentations().count());
 
     if (filtersWereChanged || m_regDocs.count() || m_unregDocs.count())
         m_helpEngine->setupData();

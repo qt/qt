@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 class QAction;
+class QFileSystemWatcher;
 class QLineEdit;
 class QComboBox;
 class QMenu;
@@ -119,6 +120,7 @@ private slots:
     void displayInstallationError(const QString &errorMessage);
     void qtDocumentationInstalled(bool newDocsInstalled);
     void checkInitState();
+    void qchFileChanged(const QString &fileName);
 
     void updateBookmarkMenu();
     void showBookmark(QAction *action);
@@ -177,6 +179,7 @@ private:
 
     QWidget *m_progressWidget;
     QtDocInstaller *m_qtDocInstaller;
+    QFileSystemWatcher * const m_qchWatcher;
 
     bool m_connectedInitSignals;
 };
