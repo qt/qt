@@ -159,9 +159,6 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void timerEvent(QTimerEvent *event);
 
-    qreal visibleX() const;
-    qreal visibleY() const;
-
     QmlGraphicsFlickableVisibleArea *visibleArea();
 
 protected Q_SLOTS:
