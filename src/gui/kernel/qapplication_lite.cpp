@@ -56,7 +56,8 @@
 #include <qdesktopwidget.h>
 
 #include <qinputcontext.h>
-
+#include "private/qgraphicssystem_p.h"
+#include "qgraphicssystemcursor.h"
 #include <qdebug.h>
 
 
@@ -354,19 +355,14 @@ void QApplication::restoreOverrideCursor()
 
 QWidget *QApplication::topLevelAt(const QPoint &pos)
 {
-//### We have to implement a windowsystem-aware way to do this
-
-    //fallback implementation assuming widgets are in stacking order
-
-    QWidgetList list = topLevelWidgets();
-    for (int i = list.size()-1; i >= 0; --i) {
-        QWidget *w = list[i];
-        //### mask is ignored
-        if (w != QApplication::desktop() && w->isVisible() && w->geometry().contains(pos))
-            return w;
-    }
-
-    return 0;
+    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
+    if (!gs)
+        return 0;
+    QGraphicsSystemScreen *screen = gs->screens().first();
+    if (!screen)
+        return 0;
+    QWidget *w = screen->topLevelAt(pos);
+    return w;
 }
 
 void QApplication::beep()
@@ -529,6 +525,9 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
 
     static QWidget *implicit_mouse_grabber=0;
+
+    if (QGraphicsSystemCursor::instance)
+        QGraphicsSystemCursor::instance->pointerEvent(ev);
 
     QPoint localPoint = ev.pos();
     QPoint globalPoint = ev.globalPos();

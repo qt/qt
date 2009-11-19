@@ -56,6 +56,8 @@
 #include "private/qpixmapdata_p.h"
 #include "private/qwindowsurface_p.h"
 
+#include <qdebug.h>
+
 QT_BEGIN_NAMESPACE
 
 class QPixmapFilter;
@@ -73,8 +75,8 @@ public:
     virtual int depth() const = 0;
     virtual QImage::Format format() const = 0;
     virtual QSize physicalSize() const = 0;
-    virtual void setDirty(QRect) { }
-    virtual void pointerEvent(QMouseEvent &) { }
+    virtual void setDirty(const QRect &) {}
+    virtual QWidget *topLevelAt(const QPoint &point) const;
 };
 #endif // Q_WS_LITE
 

@@ -835,8 +835,7 @@ void QVNCServer::pointerEvent()
         if (buttonChange(buttons, ev.buttons, &button, &isPress))
             type = isPress ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
         QMouseEvent me(type, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), button, ev.buttons, keymod);
-        if(cursor)
-            cursor->pointerEvent(me);
+        QApplicationPrivate::handleMouseEvent(0, me);
         buttons = ev.buttons;
         handleMsg = false;
     }

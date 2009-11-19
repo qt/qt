@@ -57,8 +57,7 @@ QGraphicsSystemCursor::QGraphicsSystemCursor(QGraphicsSystemScreen *scr )
 {
     graphic = new QGraphicsSystemCursorImage(0, 0, 0, 0, 0, 0);
     instance = this;
-    QWidget * widget = QApplication::widgetAt(QCursor::pos());
-    changeCursor(widget);
+    setCursor(Qt::ArrowCursor);
 }
 
 QGraphicsSystemCursor::~QGraphicsSystemCursor()
@@ -95,13 +94,12 @@ QRect QGraphicsSystemCursor::drawCursor(QPainter & painter)
     return prevRect;
 }
 
-void QGraphicsSystemCursor::pointerEvent(QMouseEvent & e)
+void QGraphicsSystemCursor::pointerEvent(const QMouseEvent & e)
 {
     currentRect = graphic->image()->rect().translated(-graphic->hotspot().x(),
                                                       -graphic->hotspot().y());
     currentRect.translate(e.pos());
-
-    screen->pointerEvent(e);
+    screen->setDirty(QRect(QRect(e.pos(), QSize(1, 1))));
 }
 
 void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor)
