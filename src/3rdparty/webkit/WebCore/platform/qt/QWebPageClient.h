@@ -30,9 +30,12 @@
 
 class QWebPageClient {
 public:
+    virtual ~QWebPageClient() { }
+        
     virtual void scroll(int dx, int dy, const QRect&) = 0;
     virtual void update(const QRect&) = 0;
     virtual void setInputMethodEnabled(bool enable) = 0;
+    virtual bool inputMethodEnabled() const = 0;
 #if QT_VERSION >= 0x040600
     virtual void setInputMethodHint(Qt::InputMethodHint hint, bool enable) = 0;
 #endif

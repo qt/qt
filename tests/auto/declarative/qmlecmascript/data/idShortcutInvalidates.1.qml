@@ -6,7 +6,7 @@ MyQmlObject {
 
     property var obj
 
-    obj: Object {
+    obj: QtObject {
         id: OtherObject
     }
 }

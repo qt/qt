@@ -568,18 +568,6 @@ QmlGraphicsItem *QmlGraphicsFlickable::viewport()
     return d->viewport;
 }
 
-qreal QmlGraphicsFlickable::visibleX() const
-{
-    Q_D(const QmlGraphicsFlickable);
-    return -d->_moveX.value();
-}
-
-qreal QmlGraphicsFlickable::visibleY() const
-{
-    Q_D(const QmlGraphicsFlickable);
-    return -d->_moveY.value();
-}
-
 QmlGraphicsFlickableVisibleArea *QmlGraphicsFlickable::visibleArea()
 {
     Q_D(QmlGraphicsFlickable);

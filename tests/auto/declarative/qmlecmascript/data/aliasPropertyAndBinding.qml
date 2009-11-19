@@ -5,7 +5,7 @@ MyQmlObject {
     property alias c1: MyObject.c1
     property int c2: 3
     property int c3: c2 
-    objectProperty: Object { 
+    objectProperty: QtObject { 
         id: MyObject 
         property int c1
     }

@@ -1,7 +1,7 @@
 import Test 1.0
 import Qt 4.6
 
-Object {
+QtObject {
     MyQmlObject.foo: 10
 }
 

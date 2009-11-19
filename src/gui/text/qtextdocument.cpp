@@ -64,6 +64,7 @@
 
 #include "qtextdocument_p.h"
 #include <private/qprinter_p.h>
+#include <private/qabstracttextdocumentlayout_p.h>
 
 #include <limits.h>
 
@@ -1721,6 +1722,9 @@ void QTextDocument::print(QPrinter *printer) const
 
         QAbstractTextDocumentLayout *layout = doc->documentLayout();
         layout->setPaintDevice(p.device());
+
+        // copy the custom object handlers
+        layout->d_func()->handlers = documentLayout()->d_func()->handlers;
 
         int dpiy = p.device()->logicalDpiY();
         int margin = 0;

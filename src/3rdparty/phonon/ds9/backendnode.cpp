@@ -58,7 +58,24 @@ namespace Phonon
         BackendNode::~BackendNode()
         {
             //this will remove the filter from the graph
-            mediaObjectDestroyed();
+            FILTER_INFO info;
+            for(int i = 0; i < FILTER_COUNT; ++i) {
+                const Filter &filter = m_filters[i];
+                if (!filter)
+                    continue;
+                filter->QueryFilterInfo(&info);
+                if (info.pGraph) {
+                    HRESULT hr = info.pGraph->RemoveFilter(filter);
+
+                    if (hr == VFW_E_NOT_STOPPED && m_mediaObject) {
+                        m_mediaObject->ensureStopped();
+
+                        hr = info.pGraph->RemoveFilter(filter);
+                    }
+                    Q_ASSERT(SUCCEEDED(hr));
+                    info.pGraph->Release();
+                }
+            }
         }
 
         void BackendNode::setMediaObject(MediaObject *mo)

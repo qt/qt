@@ -176,12 +176,10 @@ void QmlGraphicsBorderImage::setSource(const QUrl &url)
     if (url.isEmpty()) {
         d->pix = QPixmap();
         d->status = Null;
-        d->progress = 1.0;
         setImplicitWidth(0);
         setImplicitHeight(0);
         emit statusChanged(d->status);
         emit sourceChanged(d->url);
-        emit progressChanged(1.0);
         update();
     } else {
         d->status = Loading;
@@ -219,7 +217,7 @@ void QmlGraphicsBorderImage::setSource(const QUrl &url)
                 d->progress = 1.0;
                 emit statusChanged(d->status);
                 emit sourceChanged(d->url);
-                emit progressChanged(1.0);
+                emit progressChanged(d->progress);
                 update();
             }
         }
@@ -395,7 +393,8 @@ void QmlGraphicsBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem *
     if (d->smooth)
         p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
-    QMargins margins(border()->top(), border()->left(), border()->bottom(), border()->right());
+    const QmlGraphicsScaleGrid *border = d->getScaleGrid();
+    QMargins margins(border->top(), border->left(), border->bottom(), border->right());
     QTileRules rules((Qt::TileRule)d->horizontalTileMode, (Qt::TileRule)d->verticalTileMode);
     qDrawBorderPixmap(p, QRect(0, 0, (int)d->width, (int)d->height), margins, d->pix, d->pix.rect(), margins, rules);
     if (d->smooth) {

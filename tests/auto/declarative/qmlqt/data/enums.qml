@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property int test1: Qt.Key_Escape
     property int test2: Qt.DescendingOrder
     property int test3: Qt.ElideMiddle

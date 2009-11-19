@@ -6,7 +6,7 @@
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA 
+    successor approved by the membership of KDE e.V.), Nokia Corporation 
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -75,10 +75,12 @@ bool BackendCapabilities::isMimeTypeAvailable(const QString &mimeType)
 QList<AudioOutputDevice> BackendCapabilities::availableAudioOutputDevices()
 {
     QList<AudioOutputDevice> ret;
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     const QList<int> deviceIndexes = GlobalConfig().audioOutputDeviceListFor(Phonon::NoCategory);
     for (int i = 0; i < deviceIndexes.count(); ++i) {
         ret.append(AudioOutputDevice::fromIndex(deviceIndexes.at(i)));
     }
+#endif //QT_NO_PHONON_SETTINGSGROUP
     return ret;
 }
 

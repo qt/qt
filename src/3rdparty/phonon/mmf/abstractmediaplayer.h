@@ -56,8 +56,6 @@ public:
     virtual MediaSource source() const;
     virtual void setFileSource(const Phonon::MediaSource&, RFile&);
     virtual void setNextSource(const MediaSource &source);
-
-    // VolumeObserver
     virtual void volumeChanged(qreal volume);
 
 protected:

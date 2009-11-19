@@ -5,8 +5,8 @@ Item {
 
     Item {
         id: myObject
-        property Object object;
-        object: Object {
+        property QtObject object;
+        object: QtObject {
             property int a: 10
         }
     }

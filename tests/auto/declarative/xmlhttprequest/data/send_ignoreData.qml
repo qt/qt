@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property string reqType
     property string url
 

@@ -1192,6 +1192,35 @@ QmlGraphicsWebPage::~QmlGraphicsWebPage()
 {
 }
 
+void QmlGraphicsWebPage::javaScriptConsoleMessage(const QString& message, int lineNumber, const QString& sourceID)
+{
+    qWarning() << sourceID << ":" << lineNumber << ":" << message;
+}
+
+QString QmlGraphicsWebPage::chooseFile(QWebFrame *originatingFrame, const QString& oldFile)
+{
+    // Not supported (it's modal)
+    return oldFile;
+}
+
+void QmlGraphicsWebPage::javaScriptAlert(QWebFrame *originatingFrame, const QString& msg)
+{
+    emit viewItem()->alert(msg);
+}
+
+bool QmlGraphicsWebPage::javaScriptConfirm(QWebFrame *originatingFrame, const QString& msg)
+{
+    // Not supported (it's modal)
+    return false;
+}
+
+bool QmlGraphicsWebPage::javaScriptPrompt(QWebFrame *originatingFrame, const QString& msg, const QString& defaultValue, QString* result)
+{
+    // Not supported (it's modal)
+    return false;
+}
+
+
 /*
     Qt WebKit does not understand non-QWidget plugins, so dummy widgets
     are created, parented to a single dummy tool window.

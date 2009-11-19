@@ -6,7 +6,7 @@
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA 
+    successor approved by the membership of KDE e.V.), Nokia Corporation 
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -178,13 +178,15 @@ QList<int> GlobalConfig::audioOutputDeviceListFor(Phonon::Category category, int
 
     return listSortedByConfig(backendConfig, category, defaultList);
 }
-#endif //QT_NO_SETTINGSGROUPS
+#endif //QT_NO_PHONON_SETTINGSGROUP
 int GlobalConfig::audioOutputDeviceFor(Phonon::Category category, int override) const
 {
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     QList<int> ret = audioOutputDeviceListFor(category, override);
-    if (ret.isEmpty())
-        return -1;
-    return ret.first();
+    if (!ret.isEmpty())
+        return ret.first();
+#endif //QT_NO_PHONON_SETTINGSGROUP
+    return -1;
 }
 
 #ifndef QT_NO_PHONON_AUDIOCAPTURE

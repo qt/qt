@@ -56,7 +56,7 @@ class QNetworkReply;
 class Q_DECLARATIVE_EXPORT QmlPixmapCache
 {
 public:
-    static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap);
+    static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap, bool *ok=0);
     static void cancelGet(const QUrl& url, QObject* obj);
 
     static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QmlPixmapCache::get, and any returned reply finished.

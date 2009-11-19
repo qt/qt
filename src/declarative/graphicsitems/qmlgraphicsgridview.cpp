@@ -1302,12 +1302,21 @@ void QmlGraphicsGridView::trackedPositionChanged()
     if (!d->trackedItem)
         return;
     if (!isFlicking() && !d->moving && d->moveReason != QmlGraphicsGridViewPrivate::Mouse) {
-        if (d->trackedItem->rowPos() < d->position()) {
-            d->setPosition(d->trackedItem->rowPos());
-        } else if (d->trackedItem->endRowPos() > d->position() + d->size()) {
-            qreal pos = d->trackedItem->endRowPos() - d->size();
-            if (d->rowSize() > d->size())
-                pos = d->trackedItem->rowPos();
+        const qreal viewPos = d->position();
+        if (d->trackedItem->rowPos() < viewPos && d->currentItem->rowPos() < viewPos) {
+            d->setPosition(d->currentItem->rowPos() < d->trackedItem->rowPos() ? d->trackedItem->rowPos() : d->currentItem->rowPos());
+        } else if (d->trackedItem->endRowPos() > viewPos + d->size()
+                && d->currentItem->endRowPos() > viewPos + d->size()) {
+            qreal pos;
+            if (d->trackedItem->endRowPos() < d->currentItem->endRowPos()) {
+                pos = d->trackedItem->endRowPos() - d->size();
+                if (d->rowSize() > d->size())
+                    pos = d->trackedItem->rowPos();
+            } else {
+                pos = d->currentItem->endRowPos() - d->size();
+                if (d->rowSize() > d->size())
+                    pos = d->currentItem->rowPos();
+            }
             d->setPosition(pos);
         }
     }

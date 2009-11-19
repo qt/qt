@@ -6,7 +6,7 @@
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA
+    successor approved by the membership of KDE e.V.), Nokia Corporation
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -29,7 +29,7 @@
 #include "phononnamespace_p.h"
 #include "platform_p.h"
 
-#include <qmath.h>
+#include <QtCore/qmath.h>
 
 #define PHONON_CLASSNAME AudioOutput
 #define IFACES2 AudioOutputInterface42
@@ -126,7 +126,9 @@ void AudioOutput::setName(const QString &newName)
     d->name = newName;
     setVolume(Platform::loadVolume(newName));
 #ifndef QT_NO_DBUS
-    emit d->adaptor->nameChanged(newName);
+    if (d->adaptor) {
+        emit d->adaptor->nameChanged(newName);
+    }
 #endif
 }
 
@@ -257,6 +259,7 @@ void AudioOutputPrivate::setupBackendObject()
     // set up attributes
     pINTERFACE_CALL(setVolume(pow(volume, VOLTAGE_TO_LOUDNESS_EXPONENT)));
 
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     // if the output device is not available and the device was not explicitly set
     if (!callSetOutputDevice(this, device) && !outputDeviceOverridden) {
         // fall back in the preference list of output devices
@@ -276,6 +279,7 @@ void AudioOutputPrivate::setupBackendObject()
         callSetOutputDevice(this, none);
         handleAutomaticDeviceChange(none, FallbackChange);
     }
+#endif //QT_NO_PHONON_SETTINGSGROUP
 }
 
 void AudioOutputPrivate::_k_volumeChanged(qreal newVolume)
@@ -305,6 +309,7 @@ void AudioOutputPrivate::_k_audioDeviceFailed()
     pDebug() << Q_FUNC_INFO;
     // outputDeviceIndex identifies a failing device
     // fall back in the preference list of output devices
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     const QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings | GlobalConfig::HideUnavailableDevices);
     for (int i = 0; i < deviceList.count(); ++i) {
         const int devIndex = deviceList.at(i);
@@ -317,6 +322,7 @@ void AudioOutputPrivate::_k_audioDeviceFailed()
             }
         }
     }
+#endif //QT_NO_PHONON_SETTINGSGROUP
     // if we get here there is no working output device. Tell the backend.
     const AudioOutputDevice none;
     callSetOutputDevice(this, none);
@@ -326,6 +332,7 @@ void AudioOutputPrivate::_k_audioDeviceFailed()
 void AudioOutputPrivate::_k_deviceListChanged()
 {
     pDebug() << Q_FUNC_INFO;
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     // let's see if there's a usable device higher in the preference list
     const QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings);
     DeviceChangeType changeType = HigherPreferenceChange;
@@ -351,6 +358,7 @@ void AudioOutputPrivate::_k_deviceListChanged()
             break; // found one with higher preference that works
         }
     }
+#endif //QT_NO_PHONON_SETTINGSGROUP
 }
 
 static struct
@@ -403,7 +411,9 @@ void AudioOutputPrivate::handleAutomaticDeviceChange(const AudioOutputDevice &de
 AudioOutputPrivate::~AudioOutputPrivate()
 {
 #ifndef QT_NO_DBUS
-    emit adaptor->outputDestroyed();
+    if (adaptor) {
+        emit adaptor->outputDestroyed();
+    }
 #endif
 }
 

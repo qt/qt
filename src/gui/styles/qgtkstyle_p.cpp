@@ -202,12 +202,16 @@ Ptr_gnome_vfs_init QGtkStylePrivate::gnome_vfs_init = 0;
 
 typedef int (*x11ErrorHandler)(Display*, XErrorEvent*);
 
-static void gtkStyleSetCallback(GtkWidget*, QGtkStylePrivate* stylePrivate)
+Q_DECLARE_METATYPE(QGtkStylePrivate*);
+
+static void gtkStyleSetCallback(GtkWidget*)
 {
+    qRegisterMetaType<QGtkStylePrivate *>();
+
     // We have to let this function return and complete the event
     // loop to ensure that all gtk widgets have been styled before
     // updating
-    QMetaObject::invokeMethod(styleScheduler(), "updateTheme", Qt::QueuedConnection, Q_ARG(QGtkStylePrivate*, stylePrivate));
+    QMetaObject::invokeMethod(styleScheduler(), "updateTheme", Qt::QueuedConnection);
 }
 
 static void update_toolbar_style(GtkWidget *gtkToolBar, GParamSpec *, gpointer)
@@ -251,10 +255,18 @@ bool QGtkStyleFilter::eventFilter(QObject *obj, QEvent *e)
     return QObject::eventFilter(obj, e);
 }
 
+QList<QGtkStylePrivate *> QGtkStylePrivate::instances;
+
 QGtkStylePrivate::QGtkStylePrivate()
   : QCleanlooksStylePrivate()
   , filter(this)
 {
+    instances.append(this);
+}
+
+QGtkStylePrivate::~QGtkStylePrivate()
+{
+    instances.removeOne(this);
 }
 
 void QGtkStylePrivate::init()
@@ -285,7 +297,7 @@ GtkStyle* QGtkStylePrivate::gtkStyle(const QString &path)
 /*! \internal
  *  Get references to gtk functions after we dynamically load the library.
  */
-void QGtkStylePrivate::resolveGtk()
+void QGtkStylePrivate::resolveGtk() const
 {
     // enforce the "0" suffix, so we'll open libgtk-x11-2.0.so.0
     QLibrary libgtk(QLS("gtk-x11-2.0"), 0, 0);
@@ -413,7 +425,7 @@ void QGtkStylePrivate::resolveGtk()
  * Initializes a number of gtk menu widgets.
  * The widgets are cached.
  */
-void QGtkStylePrivate::initGtkMenu()
+void QGtkStylePrivate::initGtkMenu() const
 {
     // Create menubar
     GtkWidget *gtkMenuBar = QGtkStylePrivate::gtk_menu_bar_new();
@@ -444,7 +456,7 @@ void QGtkStylePrivate::initGtkMenu()
 }
 
 
-void QGtkStylePrivate::initGtkTreeview()
+void QGtkStylePrivate::initGtkTreeview() const
 {
     GtkWidget *gtkTreeView = gtk_tree_view_new();
     gtk_tree_view_append_column((GtkTreeView*)gtkTreeView, gtk_tree_view_column_new());
@@ -458,7 +470,7 @@ void QGtkStylePrivate::initGtkTreeview()
  * Initializes a number of gtk widgets that we can later on use to determine some of our styles.
  * The widgets are cached.
  */
-void QGtkStylePrivate::initGtkWidgets()
+void QGtkStylePrivate::initGtkWidgets() const
 {
     // From gtkmain.c
     uid_t ruid = getuid ();
@@ -509,7 +521,7 @@ void QGtkStylePrivate::initGtkWidgets()
         if (!gtkWidgetMap()->contains(QLS("GtkButton"))) {
             GtkWidget *gtkButton = QGtkStylePrivate::gtk_button_new();
             addWidget(gtkButton);
-            g_signal_connect(gtkButton, "style-set", G_CALLBACK(gtkStyleSetCallback), this);
+            g_signal_connect(gtkButton, "style-set", G_CALLBACK(gtkStyleSetCallback), 0);
             addWidget(QGtkStylePrivate::gtk_tool_button_new(NULL, NULL));
             addWidget(QGtkStylePrivate::gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE));
             addWidget(QGtkStylePrivate::gtk_hbutton_box_new());
@@ -613,7 +625,7 @@ bool QGtkStylePrivate::getGConfBool(const QString &key, bool fallback)
     return retVal;
 }
 
-QString QGtkStylePrivate::getThemeName() const
+QString QGtkStylePrivate::getThemeName()
 {
     QString themeName;
     // We try to parse the gtkrc file first
@@ -730,7 +742,7 @@ void QGtkStylePrivate::addAllSubWidgets(GtkWidget *widget, gpointer v)
 }
 
 // Updates window/windowtext palette based on the indicated gtk widget
-QPalette QGtkStylePrivate::gtkWidgetPalette(const QString &gtkWidgetName)
+QPalette QGtkStylePrivate::gtkWidgetPalette(const QString &gtkWidgetName) const
 {
     GtkWidget *gtkWidget = QGtkStylePrivate::gtkWidget(gtkWidgetName);
     Q_ASSERT(gtkWidget);
@@ -751,7 +763,7 @@ QPalette QGtkStylePrivate::gtkWidgetPalette(const QString &gtkWidgetName)
 }
 
 
-void QGtkStyleUpdateScheduler::updateTheme( QGtkStylePrivate* stylePrivate )
+void QGtkStyleUpdateScheduler::updateTheme()
 {
     static QString oldTheme(QLS("qt_not_set"));
     QPixmapCache::clear();
@@ -760,20 +772,22 @@ void QGtkStyleUpdateScheduler::updateTheme( QGtkStylePrivate* stylePrivate )
     if (QApplication::font() != font)
         qApp->setFont(font);
 
-    if (oldTheme != stylePrivate->getThemeName()) {
-        oldTheme = stylePrivate->getThemeName();
-        QPalette newPalette = qApp->style()->standardPalette();
-        QApplicationPrivate::setSystemPalette(newPalette);
-        QApplication::setPalette(newPalette);
-        stylePrivate->initGtkWidgets();
-        stylePrivate->applyCustomPaletteHash();
-        QList<QWidget*> widgets = QApplication::allWidgets();
-        // Notify all widgets that size metrics might have changed
-        foreach (QWidget *widget, widgets) {
-            QEvent e(QEvent::StyleChange);
-            QApplication::sendEvent(widget, &e);
-        }
-    }
+      if (oldTheme != QGtkStylePrivate::getThemeName()) {
+          oldTheme = QGtkStylePrivate::getThemeName();
+          QPalette newPalette = qApp->style()->standardPalette();
+          QApplicationPrivate::setSystemPalette(newPalette);
+          QApplication::setPalette(newPalette);
+          if (!QGtkStylePrivate::instances.isEmpty()) {
+              QGtkStylePrivate::instances.last()->initGtkWidgets();
+              QGtkStylePrivate::instances.last()->applyCustomPaletteHash();
+          }
+          QList<QWidget*> widgets = QApplication::allWidgets();
+          // Notify all widgets that size metrics might have changed
+          foreach (QWidget *widget, widgets) {
+              QEvent e(QEvent::StyleChange);
+              QApplication::sendEvent(widget, &e);
+          }
+      }
     QIconLoader::instance()->updateSystemTheme();
 }
 

@@ -4,6 +4,6 @@ Item {
     id: myId
     Component {
         id: myId
-        Object {}
+        QtObject {}
     }
 }

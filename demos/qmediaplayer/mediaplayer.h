@@ -111,6 +111,8 @@ private slots:
     void hasVideoChanged(bool);
 
 private:
+    void playPauseForDialog();
+
     QIcon playIcon;
     QIcon pauseIcon;
     QMenu *fileMenu;

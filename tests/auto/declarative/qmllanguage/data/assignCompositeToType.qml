@@ -1,11 +1,11 @@
 import Qt 4.6
 import Test 1.0
 
-Object {
-    property Object myProperty
-    property Object myProperty2
-    property Object myProperty3
-    property Object myProperty4
+QtObject {
+    property QtObject myProperty
+    property QtObject myProperty2
+    property QtObject myProperty3
+    property QtObject myProperty4
     property MyQmlObject myProperty5
     property MyQmlObject myProperty6
 

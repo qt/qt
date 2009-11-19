@@ -50,6 +50,7 @@
 #include <private/qmlgraphicsimagebase_p.h>
 #include <private/qmlgraphicsscalegrid_p_p.h>
 #include <private/qmlgraphicsloader_p.h>
+#include <QtDeclarative/qmlcontext.h>
 
 #include "../shared/testhttpserver.h"
 
@@ -78,6 +79,7 @@ private slots:
     void noSource();
     void imageSource();
     void imageSource_data();
+    void clearSource();
     void resized();
     void smooth();
     void tileModes();
@@ -145,6 +147,25 @@ void tst_qmlgraphicsborderimage::imageSource()
 
     delete obj;
     delete server;
+}
+
+void tst_qmlgraphicsborderimage::clearSource()
+{
+    QString componentStr = "import Qt 4.6\nBorderImage { source: srcImage }";
+    QmlContext *ctxt = engine.rootContext();
+    ctxt->setContextProperty("srcImage", SRCDIR "/data/colors.png");
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
+    QVERIFY(obj != 0);
+    QVERIFY(obj->status() == QmlGraphicsBorderImage::Ready);
+    QCOMPARE(obj->width(), 120.);
+    QCOMPARE(obj->height(), 120.);
+
+    ctxt->setContextProperty("srcImage", "");
+    QVERIFY(obj->source().isEmpty());
+    QVERIFY(obj->status() == QmlGraphicsBorderImage::Null);
+    QCOMPARE(obj->width(), 0.);
+    QCOMPARE(obj->height(), 0.);
 }
 
 void tst_qmlgraphicsborderimage::imageSource_data()

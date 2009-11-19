@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property bool incorrectArgCount1: false
     property bool incorrectArgCount2: false
     property bool emptyArg: false

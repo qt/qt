@@ -1615,7 +1615,8 @@ inline bool HTMLTokenizer::continueProcessing(int& processedCount, double startT
             m_timer.startOneShot(0);
 #ifdef INSTRUMENT_LAYOUT_SCHEDULING
             if (currentTime() - startTime > m_tokenizerTimeDelay)
-                printf("Deferring processing of data because 500ms elapsed away from event loop.\n");
+                printf("Deferring processing of data because %dms elapsed away from event loop.\n",
+                        int(m_tokenizerTimeDelay * 1000));
 #endif
             return false;
         }

@@ -610,19 +610,10 @@ void SymbianMakefileGenerator::initMmpVariables()
     incpaths << project->values("UI_HEADERS_DIR");
     incpaths << project->values("UI_DIR");
 
-    QString epocPath("epoc32");
     for (int j = 0; j < incpaths.size(); ++j) {
         QString includepath = canonizePath(incpaths.at(j));
         appendIfnotExist(sysincspaths, includepath);
-        // As a workaround for Symbian toolchain insistence to treat include
-        // statements as relative to source file rather than the file they appear in,
-        // we generate extra temporary include directories to make
-        // relative include paths used in various headers to work properly.
-        // Note that this is not a fix-all solution; it's just a stop-gap measure
-        // to make Qt itself build until toolchain can support relative includes in
-        // a way that Qt expects.
-        if (!includepath.contains(epocPath)) // No temp dirs for epoc includes
-            appendIfnotExist(sysincspaths, includepath + QString("/" QT_EXTRA_INCLUDE_DIR));
+        appendAbldTempDirs(sysincspaths, includepath);
     }
 
     // Remove duplicate include path entries
