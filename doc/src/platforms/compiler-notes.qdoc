@@ -287,4 +287,9 @@
     Make sure you have the
     \l{http://www-1.ibm.com/support/search.wss?rs=32&amp;tc=SSEP5D&amp;dc=D400}{latest upgrades}
     installed.
+
+    \section2 GCCE (Symbian)
+
+    GCCE cannot be used to compile Qt libaries for the Symbian platform, but GCCE is supported
+    when compiling Qt applications for Symbian platform.
 */
