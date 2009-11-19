@@ -359,19 +359,21 @@ bool QHelpEngineCore::unregisterDocumentation(const QString &namespaceName)
 */
 QString QHelpEngineCore::documentationFileName(const QString &namespaceName)
 {
-    QString res;
-    if (!d->setup())
-        return res;
-    const QHelpCollectionHandler::DocInfoList docList = d->collectionHandler->registeredDocumentations();
-    foreach(const QHelpCollectionHandler::DocInfo info, docList) {
-        if (info.namespaceName == namespaceName) {
-            QFileInfo fi(d->collectionHandler->collectionFile());
-            fi.setFile(fi.absolutePath() + QDir::separator() + info.fileName);
-            res = QDir::cleanPath(fi.absoluteFilePath());
-            break;
+    if (d->setup()) {
+        const QHelpCollectionHandler::DocInfoList docList =
+            d->collectionHandler->registeredDocumentations();
+        foreach(const QHelpCollectionHandler::DocInfo info, docList) {
+            if (info.namespaceName == namespaceName) {
+                if (QDir::isAbsolutePath(info.fileName))
+                    return QDir::cleanPath(info.fileName);
+
+                QFileInfo fi(d->collectionHandler->collectionFile());
+                fi.setFile(fi.absolutePath() + QDir::separator() + info.fileName);
+                return QDir::cleanPath(fi.absoluteFilePath());
+            }
         }
     }
-    return res;
+    return QString();
 }
 
 /*!
