@@ -75,6 +75,7 @@ public:
     virtual QSize physicalSize() const = 0;
     virtual void setDirty(QRect) { }
     virtual void pointerEvent(QMouseEvent &) { }
+    virtual QWidget *topLevelAt(const QPoint &point) const;
 };
 #endif // Q_WS_LITE
 

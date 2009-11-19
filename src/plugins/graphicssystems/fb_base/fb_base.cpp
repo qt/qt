@@ -144,7 +144,7 @@ void QGraphicsSystemFbScreen::pointerEvent(QMouseEvent & me)
     QApplicationPrivate::handleMouseEvent(widget, e);
 }
 
-QWidget * QGraphicsSystemFbScreen::topLevelAt(QPoint p)
+QWidget * QGraphicsSystemFbScreen::topLevelAt(const QPoint & p) const
 {
     for(int i = 0; i < windowStack.size(); i++) {
         if (windowStack[i]->geometry().contains(p, false) &&

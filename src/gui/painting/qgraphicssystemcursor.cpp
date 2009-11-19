@@ -57,8 +57,7 @@ QGraphicsSystemCursor::QGraphicsSystemCursor(QGraphicsSystemScreen *scr )
 {
     graphic = new QGraphicsSystemCursorImage(0, 0, 0, 0, 0, 0);
     instance = this;
-    QWidget * widget = QApplication::widgetAt(QCursor::pos());
-    changeCursor(widget);
+    setCursor(Qt::ArrowCursor);
 }
 
 QGraphicsSystemCursor::~QGraphicsSystemCursor()

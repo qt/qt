@@ -85,6 +85,19 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
 }
 
 #ifdef Q_WS_LITE
+QWidget *QGraphicsSystemScreen::topLevelAt(const QPoint & pos) const
+{
+    QWidgetList list = QApplication::topLevelWidgets();
+    for (int i = list.size()-1; i >= 0; --i) {
+        QWidget *w = list[i];
+        //### mask is ignored
+        if (w != QApplication::desktop() && w->isVisible() && w->geometry().contains(pos))
+            return w;
+    }
+
+    return 0;
+}
+
 QList<QGraphicsSystemScreen *> QGraphicsSystem::screens() const
 {
     return QList<QGraphicsSystemScreen *>();
