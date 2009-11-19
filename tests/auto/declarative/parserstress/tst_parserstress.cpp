@@ -115,7 +115,7 @@ void tst_parserstress::ecmascript()
 
     QString qml = "import Qt 4.6\n";
             qml+= "\n";
-            qml+= "Object {\n";
+            qml+= "QtObject {\n";
             qml+= "    property int test\n";
             qml+= "    test: {\n";
             qml+= dataStr + "\n";

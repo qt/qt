@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property int index_size_err: DOMException.INDEX_SIZE_ERR
     property int domstring_size_err: DOMException.DOMSTRING_SIZE_ERR
     property int hierarchy_request_err: DOMException.HIERARCHY_REQUEST_ERR

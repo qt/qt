@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property color test1: Qt.rgba(1, 0, 0, 0.8);
     property color test2: Qt.rgba(1, 0.5, 0.3);
     property color test3: Qt.rgba(1, 1);

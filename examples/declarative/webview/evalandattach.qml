@@ -37,12 +37,12 @@ Item {
         focus: true
         settings.pluginsEnabled: true
         javaScriptWindowObjects: [
-        Object {
+        QtObject {
             id: txt
             WebView.windowObjectName: "statusText1"
             property string text: "Click me!"
         },
-        Object {
+        QtObject {
             id: txt2
             WebView.windowObjectName: "statusText2"
             property string text: ""

@@ -1,7 +1,7 @@
 import Qt 4.6
 import Test 1.0
 
-Object {
+QtObject {
     property alias otherAlias: otherObject
 
     property var other 

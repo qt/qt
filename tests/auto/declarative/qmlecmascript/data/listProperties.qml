@@ -5,14 +5,14 @@ MyQmlObject {
     id: root
 
     objectListProperty: [
-        Object { property int a: 10 },
-        Object { property int a: 11 }
+        QtObject { property int a: 10 },
+        QtObject { property int a: 11 }
     ]
 
     objectQmlListProperty: [
-        Object { property int a: 10 },
-        Object { property int a: 1 },
-        Object { property int a: 39 }
+        QtObject { property int a: 10 },
+        QtObject { property int a: 1 },
+        QtObject { property int a: 39 }
     ]
 
     Script {
