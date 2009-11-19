@@ -1153,3 +1153,10 @@ Qt for Windows CE
     X11: LIBS += -lX11
     Mac: LIBS += -framework AppKit -framework Carbon
 
+- QtScript: Behavior changes due to using JavaScriptCore in the back-end:
+  * QDateTime is no longer used for date parsing and string conversion of
+    Date objects; instead the (more compliant) date processing from
+    JavaScriptCore is used.
+  * RegExp objects are no longer thin wrappers around QRegExp; they are now
+    "proper" JavaScript RegExp objects.
+
