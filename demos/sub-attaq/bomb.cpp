@@ -74,7 +74,7 @@ void Bomb::launch(Bomb::Direction direction)
     anim->setEndValue(QPointF(x() + delta*2,scene()->height()));
     anim->setDuration(y()/2*60);
     launchAnimation->addAnimation(anim);
-    connect(anim,SIGNAL(valueChanged(const QVariant &)),this,SLOT(onAnimationLaunchValueChanged(const QVariant &)));
+    connect(anim,SIGNAL(valueChanged(QVariant)),this,SLOT(onAnimationLaunchValueChanged(QVariant)));
     connect(this, SIGNAL(bombExploded()), launchAnimation, SLOT(stop()));
     //We setup the state machine of the bomb
     QStateMachine *machine = new QStateMachine(this);

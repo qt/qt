@@ -448,7 +448,7 @@ void tst_QWebPage::modified()
     m_page->mainFrame()->setUrl(QUrl("data:text/html,<body>This is fourth page"));
     QVERIFY(m_page->history()->count() == 2);
     m_page->mainFrame()->setUrl(QUrl("data:text/html,<body>This is fifth page"));
-    QVERIFY(::waitForSignal(m_page, SIGNAL(saveFrameStateRequested(QWebFrame*, QWebHistoryItem*))));
+    QVERIFY(::waitForSignal(m_page, SIGNAL(saveFrameStateRequested(QWebFrame*,QWebHistoryItem*))));
 }
 
 void tst_QWebPage::contextMenuCrash()
@@ -484,7 +484,7 @@ void tst_QWebPage::database()
         QFile::remove(dbFileName);
 
     qRegisterMetaType<QWebFrame*>("QWebFrame*");
-    QSignalSpy spy(m_page, SIGNAL(databaseQuotaExceeded(QWebFrame *, QString)));
+    QSignalSpy spy(m_page, SIGNAL(databaseQuotaExceeded(QWebFrame*,QString)));
     m_view->setHtml(QString("<html><head><script>var db; db=openDatabase('testdb', '1.0', 'test database API', 50000); </script></head><body><div></div></body></html>"), QUrl("http://www.myexample.com"));
     QTRY_COMPARE(spy.count(), 1);
     m_page->mainFrame()->evaluateJavaScript("var db2; db2=openDatabase('testdb', '1.0', 'test database API', 50000);");
@@ -1371,6 +1371,7 @@ void tst_QWebPage::inputMethods()
     else
         QVERIFY2(false, "Unknown view type");
 
+    page->settings()->setFontFamily(QWebSettings::SerifFont, "FooSerifFont");
     page->mainFrame()->setHtml("<html><body>" \
                                             "<input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/><br>" \
                                             "<input type='password'/>" \
@@ -1406,7 +1407,7 @@ void tst_QWebPage::inputMethods()
     //ImFont
     variant = page->inputMethodQuery(Qt::ImFont);
     QFont font = variant.value<QFont>();
-    QCOMPARE(QString("-webkit-serif"), font.family());
+    QCOMPARE(page->settings()->fontFamily(QWebSettings::SerifFont), font.family());
 
     QList<QInputMethodEvent::Attribute> inputAttributes;
 
@@ -1656,6 +1657,22 @@ void tst_QWebPage::errorPageExtension()
     QCOMPARE(page->history()->currentItem().url(), QUrl("http://non.existent/url"));
     QCOMPARE(page->history()->canGoBack(), true);
     QCOMPARE(page->history()->canGoForward(), false);
+
+    page->triggerAction(QWebPage::Back);
+    QTest::qWait(2000);
+    QCOMPARE(page->history()->canGoBack(), false);
+    QCOMPARE(page->history()->canGoForward(), true);
+
+    page->triggerAction(QWebPage::Forward);
+    QTest::qWait(2000);
+    QCOMPARE(page->history()->canGoBack(), true);
+    QCOMPARE(page->history()->canGoForward(), false);
+
+    page->triggerAction(QWebPage::Back);
+    QTest::qWait(2000);
+    QCOMPARE(page->history()->canGoBack(), false);
+    QCOMPARE(page->history()->canGoForward(), true);
+    QCOMPARE(page->history()->currentItem().url(), QUrl("qrc:///frametest/index.html"));
 
     m_view->setPage(0);
 }

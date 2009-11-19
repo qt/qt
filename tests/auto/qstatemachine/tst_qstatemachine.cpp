@@ -209,6 +209,7 @@ private slots:
     void task260403_clonedSignals();
     void postEventFromOtherThread();
     void eventFilterForApplication();
+    void eventClassesExported();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -4305,6 +4306,13 @@ void tst_QStateMachine::eventFilterForApplication()
 
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s2));
+}
+
+void tst_QStateMachine::eventClassesExported()
+{
+    // make sure this links
+    QStateMachine::WrappedEvent *wrappedEvent = new QStateMachine::WrappedEvent(0, 0);
+    QStateMachine::SignalEvent *signalEvent = new QStateMachine::SignalEvent(0, 0, QList<QVariant>());
 }
 
 QTEST_MAIN(tst_QStateMachine)

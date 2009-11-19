@@ -217,6 +217,9 @@
 // Session Manager
 //#define QT_NO_SESSIONMANAGER
 
+// QSettings
+//#define QT_NO_SETTINGS
+
 // QSharedMemory
 //#define QT_NO_SHAREDMEMORY
 
@@ -352,6 +355,11 @@
 #define QT_NO_IMAGEFORMAT_XPM
 #endif
 
+// QLibrary
+#if !defined(QT_NO_LIBRARY) && (defined(QT_NO_SETTINGS))
+#define QT_NO_LIBRARY
+#endif
+
 // QMenu
 #if !defined(QT_NO_MENU) && (defined(QT_NO_ACTION))
 #define QT_NO_MENU
@@ -365,6 +373,11 @@
 // Phonon::SeekSlider
 #if !defined(QT_NO_PHONON_SEEKSLIDER) && (defined(QT_NO_SLIDER))
 #define QT_NO_PHONON_SEEKSLIDER
+#endif
+
+// Phonon::AbstractMediaStream
+#if !defined(QT_NO_PHONON_SETTINGSGROUP) && (defined(QT_NO_SETTINGS))
+#define QT_NO_PHONON_SETTINGSGROUP
 #endif
 
 // Phonon::VideoPlayer
@@ -420,11 +433,6 @@
 // QScrollBar
 #if !defined(QT_NO_SCROLLBAR) && (defined(QT_NO_SLIDER))
 #define QT_NO_SCROLLBAR
-#endif
-
-// QSettings
-#if !defined(QT_NO_SETTINGS) && (defined(QT_NO_TEXTSTREAM))
-#define QT_NO_SETTINGS
 #endif
 
 //  SOCKS5
@@ -507,14 +515,14 @@
 #define QT_NO_HTTP
 #endif
 
-// QLibrary
-#if !defined(QT_NO_LIBRARY) && (defined(QT_NO_SETTINGS))
-#define QT_NO_LIBRARY
+// QInputContext
+#if !defined(QT_NO_IM) && (defined(QT_NO_LIBRARY))
+#define QT_NO_IM
 #endif
 
-// Phonon::AbstractMediaStream
-#if !defined(QT_NO_PHONON_SETTINGSGROUP) && (defined(QT_NO_SETTINGS))
-#define QT_NO_PHONON_SETTINGSGROUP
+// Phonon::PlatformPlugin
+#if !defined(QT_NO_PHONON_PLATFORMPLUGIN) && (defined(QT_NO_LIBRARY))
+#define QT_NO_PHONON_PLATFORMPLUGIN
 #endif
 
 // QScrollArea
@@ -562,19 +570,9 @@
 #define QT_NO_GRAPHICSVIEW
 #endif
 
-// QInputContext
-#if !defined(QT_NO_IM) && (defined(QT_NO_LIBRARY))
-#define QT_NO_IM
-#endif
-
 // QMdiArea
 #if !defined(QT_NO_MDIAREA) && (defined(QT_NO_SCROLLAREA))
 #define QT_NO_MDIAREA
-#endif
-
-// Phonon::PlatformPlugin
-#if !defined(QT_NO_PHONON_PLATFORMPLUGIN) && (defined(QT_NO_LIBRARY))
-#define QT_NO_PHONON_PLATFORMPLUGIN
 #endif
 
 // Phonon::VolumeSlider
@@ -585,6 +583,11 @@
 // QPrinter
 #if !defined(QT_NO_PRINTER) && (defined(QT_NO_TEXTSTREAM) || defined(QT_NO_PICTURE) || defined(QT_NO_TEMPORARYFILE))
 #define QT_NO_PRINTER
+#endif
+
+// QWSInputMethod
+#if !defined(QT_NO_QWS_INPUTMETHODS) && (defined(QT_NO_IM))
+#define QT_NO_QWS_INPUTMETHODS
 #endif
 
 // QSpinBox
@@ -627,6 +630,11 @@
 #define QT_NO_TABDIALOG
 #endif
 
+// QTextCodecPlugin
+#if !defined(QT_NO_TEXTCODECPLUGIN) && (defined(QT_NO_TEXTCODEC) || defined(QT_NO_LIBRARY))
+#define QT_NO_TEXTCODECPLUGIN
+#endif
+
 // QColorDialog
 #if !defined(QT_NO_COLORDIALOG) && (defined(QT_NO_SPINBOX))
 #define QT_NO_COLORDIALOG
@@ -647,11 +655,6 @@
 #define QT_NO_MENUBAR
 #endif
 
-// QWSInputMethod
-#if !defined(QT_NO_QWS_INPUTMETHODS) && (defined(QT_NO_IM))
-#define QT_NO_QWS_INPUTMETHODS
-#endif
-
 // Sound Server
 #if !defined(QT_NO_QWS_SOUNDSERVER) && (defined(QT_NO_SOUND) || defined(QT_NO_HOSTINFO) || defined(QT_NO_QWS_MULTIPROCESS))
 #define QT_NO_QWS_SOUNDSERVER
@@ -670,11 +673,6 @@
 // QTabWidget
 #if !defined(QT_NO_TABWIDGET) && (defined(QT_NO_TABBAR) || defined(QT_NO_STACKEDWIDGET))
 #define QT_NO_TABWIDGET
-#endif
-
-// QTextCodecPlugin
-#if !defined(QT_NO_TEXTCODECPLUGIN) && (defined(QT_NO_TEXTCODEC) || defined(QT_NO_LIBRARY))
-#define QT_NO_TEXTCODECPLUGIN
 #endif
 
 // QTextEdit
@@ -757,6 +755,11 @@
 #define QT_NO_COMPLETER
 #endif
 
+// Common UNIX Printing System
+#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
+#define QT_NO_CUPS
+#endif
+
 // QDataWidgetMapper
 #if !defined(QT_NO_DATAWIDGETMAPPER) && (defined(QT_NO_ITEMVIEWS) || defined(QT_NO_PROPERTIES))
 #define QT_NO_DATAWIDGETMAPPER
@@ -785,11 +788,6 @@
 // QTreeWidget
 #if !defined(QT_NO_TREEWIDGET) && (defined(QT_NO_TREEVIEW))
 #define QT_NO_TREEWIDGET
-#endif
-
-// Common UNIX Printing System
-#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
-#define QT_NO_CUPS
 #endif
 
 // QDirModel

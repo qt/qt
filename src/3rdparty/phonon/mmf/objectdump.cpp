@@ -16,6 +16,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#ifndef QT_NO_DEBUG
+
 #include <QByteArray>
 #include <QDebug>
 #include <QHash>
@@ -523,5 +525,5 @@ void dumpAncestors(const QObject& leaf, QVisitor& visitor)
 
 QT_END_NAMESPACE
 
-
+#endif
 

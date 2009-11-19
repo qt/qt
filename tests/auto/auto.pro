@@ -10,7 +10,8 @@ TEMPLATE = subdirs
            linguist \
            moc \
            uic \
-           uic3
+           uic3 \
+           guiapplauncher	   
 Q3SUBDIRS += \
            q3accel \
            q3action \
@@ -58,9 +59,15 @@ Q3SUBDIRS += \
            q3toolbar \
            q3urloperator \
            q3valuelist \
-           q3valuevector
+           q3valuevector \
+           q3combobox \
+           q3frame \
+           q3uridrag \
+           q3widgetstack
 
 SUBDIRS += \
+#           exceptionsafety_objects \ shouldn't enable it
+           languagechange \
            collections \
            exceptionsafety \
            mediaobject \
@@ -402,8 +409,55 @@ SUBDIRS += \
            symbols \
            qrand \
            utf8 \
-           gestures
-           
+           gestures \
+           qabstractnetworkcache \
+           qabstractproxymodel \
+           qbytearraymatcher \
+           qcalendarwidget \
+           qcolumnview \
+           qcommandlinkbutton \
+           qdbuscontext \
+           qdbusserver \
+           qdbusservicewatcher \
+           qdiriterator \
+           qeasingcurve \
+           qfileiconprovider \
+           qformlayout \
+           q_func_info \
+           qfuture \
+           qfuturewatcher \
+           qguard \
+           qhttpsocketengine \
+           qinputcontext \
+           qlocalsocket \
+           qmacstyle \
+           qmargins \
+           qnetworkaddressentry \
+           qnetworkcachemetadata \
+           qnetworkdiskcache \
+           qobjectperformance \
+           qpainterpathstroker \
+           qplugin \
+           qpluginloader \
+           qscrollbar \
+           qsharedmemory \
+           qsidebar \
+           qsizegrip \
+           qsoftkeymanager \
+           qsqldriver \
+           qsystemsemaphore \
+           qtconcurrentfilter \
+           qtconcurrentiteratekernel \
+           qtconcurrentmap \
+           qtconcurrentrun \
+           qtconcurrentthreadengine \
+           qthreadpool \
+           qtokenautomaton \
+           qtouchevent \
+           qwidget_window \
+           rcc \
+           windowsmobile
+
 !wince*:SUBDIRS += $$Q3SUBDIRS
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter

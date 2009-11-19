@@ -177,15 +177,20 @@ typedef HashMap<FontPlatformDataCacheKey, FontPlatformData*, FontPlatformDataCac
 // using Q_GLOBAL_STATIC leads to crash. TODO investigate the way to fix this.
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
 
-FontPlatformData* FontCache::getCachedFontPlatformData(const FontDescription& description, const AtomicString&, bool)
+FontPlatformData* FontCache::getCachedFontPlatformData(const FontDescription& description, const AtomicString& family, bool)
 {
     if (!gFontPlatformDataCache)
         gFontPlatformDataCache = new FontPlatformDataCache;
 
-    FontPlatformDataCacheKey key(description);
+    FontDescription descriptionWithResolvedFamily(description);
+    FontFamily resolvedFamily;
+    resolvedFamily.setFamily(family);
+    descriptionWithResolvedFamily.setFamily(resolvedFamily);
+
+    FontPlatformDataCacheKey key(descriptionWithResolvedFamily);
     FontPlatformData* platformData = gFontPlatformDataCache->get(key);
     if (!platformData) {
-        platformData = new FontPlatformData(description);
+        platformData = new FontPlatformData(descriptionWithResolvedFamily);
         gFontPlatformDataCache->add(key, platformData);
     }
     return platformData;

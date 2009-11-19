@@ -670,10 +670,13 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     m_layoutWidget = false;
     if (className == QLatin1String("QWidget") && !node->hasAttributeNative()) {
-        if (m_widgetChain.top()
-            && m_widgetChain.top()->attributeClass() != QLatin1String("QMainWindow")
-            && !m_uic->isContainer(m_widgetChain.top()->attributeClass()))
+        if (const DomWidget* parentWidget = m_widgetChain.top()) {
+            const QString parentClass = parentWidget->attributeClass();
+            if (parentClass != QLatin1String("QMainWindow")
+                && !m_uic->isCustomWidgetContainer(parentClass)
+                && !m_uic->isContainer(parentClass))
             m_layoutWidget = true;
+        }
     }
     m_widgetChain.push(node);
     m_layoutChain.push(0);
@@ -718,7 +721,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
             m_output << m_indent << parentWidget << "->addDockWidget(" << area << varName << ");\n";
         } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"))) {
             m_output << m_indent << parentWidget << "->setStatusBar(" << varName << ");\n";
-        } else if (className == QLatin1String("QWidget")) {
+        } else {
             m_output << m_indent << parentWidget << "->setCentralWidget(" << varName << ");\n";
         }
     }
@@ -2706,11 +2709,11 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
     m_output << m_indent << "QObject::connect("
         << sender
         << ", "
-        << "SIGNAL(" << connection->elementSignal() << ')'
+        << "SIGNAL("<<connection->elementSignal()<<')'
         << ", "
         << receiver
         << ", "
-        << "SLOT(" << connection->elementSlot() << ')'
+        << "SLOT("<<connection->elementSlot()<<')'
         << ");\n";
 }
 

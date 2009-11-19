@@ -37,6 +37,7 @@
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "DocumentLoader.h"
+#include "JSDOMWindowBase.h"
 #include "MIMETypeRegistry.h"
 #include "ResourceResponse.h"
 #include "Page.h"
@@ -176,8 +177,8 @@ void FrameLoaderClientQt::setFrame(QWebFrame* webFrame, Frame* frame)
             m_webFrame->page(), SIGNAL(loadFinished(bool)));
     connect(this, SIGNAL(loadFinished(bool)),
             m_webFrame, SIGNAL(loadFinished(bool)));
-    connect(this, SIGNAL(titleChanged(const QString&)),
-            m_webFrame, SIGNAL(titleChanged(const QString&)));
+    connect(this, SIGNAL(titleChanged(QString)),
+            m_webFrame, SIGNAL(titleChanged(QString)));
 }
 
 QWebFrame* FrameLoaderClientQt::webFrame() const
@@ -770,8 +771,16 @@ bool FrameLoaderClientQt::shouldFallBack(const WebCore::ResourceError&)
 WTF::PassRefPtr<WebCore::DocumentLoader> FrameLoaderClientQt::createDocumentLoader(const WebCore::ResourceRequest& request, const SubstituteData& substituteData)
 {
     RefPtr<DocumentLoader> loader = DocumentLoader::create(request, substituteData);
-    if (substituteData.isValid())
+    if (substituteData.isValid()) {
         loader->setDeferMainResourceDataLoad(false);
+        // Use the default timeout interval for JS as the HTML tokenizer delay. This ensures
+        // that long-running JavaScript will still allow setHtml() to be synchronous, while
+        // still giving a reasonable timeout to prevent deadlock.
+        double delay = JSDOMWindowBase::commonJSGlobalData()->timeoutChecker.timeoutInterval() / 1000.0f;
+        m_frame->page()->setCustomHTMLTokenizerTimeDelay(delay);
+    } else {
+        m_frame->page()->setCustomHTMLTokenizerTimeDelay(-1);
+    }
     return loader.release();
 }
 
@@ -1088,7 +1097,11 @@ const unsigned numqStyleSheetProperties = sizeof(qstyleSheetProperties) / sizeof
 class QtPluginWidget: public Widget
 {
 public:
-    QtPluginWidget(QWidget* w = 0): Widget(w) {}
+    QtPluginWidget(QWidget* w = 0)
+        : Widget(w)
+        , m_visible(false)
+    {}
+
     ~QtPluginWidget()
     {
         if (platformWidget())
@@ -1119,10 +1132,37 @@ public:
         QRegion clipRegion = QRegion(clipRect);
         platformWidget()->setMask(clipRegion);
 
+        handleVisibility();
+    }
+
+    virtual void hide()
+    {
+        m_visible = false;
+        Widget::hide();
+    }
+
+    virtual void show()
+    {
+        m_visible = true;
+        if (!platformWidget())
+            return;
+
+        handleVisibility();    
+    }
+
+private:
+    void handleVisibility()
+    {
+        if (!m_visible)
+            return;
+
         // if setMask is set with an empty QRegion, no clipping will
         // be performed, so in that case we hide the platformWidget
-        platformWidget()->setVisible(!clipRegion.isEmpty());
+        QRegion mask = platformWidget()->mask();
+        platformWidget()->setVisible(!mask.isEmpty());
     }
+
+    bool m_visible;
 };
 
 #if QT_VERSION >= 0x040600
@@ -1238,6 +1278,7 @@ PassRefPtr<Widget> FrameLoaderClientQt::createPlugin(const IntSize& pluginSize, 
                     parentWidget = qobject_cast<QWidget*>(m_webFrame->page()->d->client->pluginParent());
                 if (parentWidget) // don't reparent to nothing (i.e. keep whatever parent QWebPage::createPlugin() chose.
                     widget->setParent(parentWidget);
+                widget->hide();
                 RefPtr<QtPluginWidget> w = adoptRef(new QtPluginWidget());
                 w->setPlatformWidget(widget);
                 // Make sure it's invisible until properly placed into the layout

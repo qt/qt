@@ -41,6 +41,7 @@ public:
         , page(0)
     {}
 
+    virtual ~QGraphicsWebViewPrivate();
     virtual void scroll(int dx, int dy, const QRect&);
     virtual void update(const QRect& dirtyRect);
     virtual void setInputMethodEnabled(bool enable);
@@ -65,6 +66,10 @@ public:
     QGraphicsWebView* q;
     QWebPage* page;
 };
+
+QGraphicsWebViewPrivate::~QGraphicsWebViewPrivate()
+{
+}
 
 void QGraphicsWebViewPrivate::_q_doLoadFinished(bool success)
 {
@@ -159,9 +164,9 @@ QObject* QGraphicsWebViewPrivate::pluginParent() const
     An instance of this class renders Web content from a URL or supplied as data, using
     features of the QtWebKit module.
 
-    If the width and height of the item is not set, they will dynamically adjust to
-    a size appropriate for the content. This width may be large (e.g., 980 pixels or
-    more) for typical online Web pages.
+    If the width and height of the item are not set, they will default to 800 and 600,
+    respectively. If the Web page contents is larger than that, scrollbars will be shown
+    if not disabled explicitly.
 
     \section1 Browser Features
 
@@ -198,12 +203,6 @@ QObject* QGraphicsWebViewPrivate::pluginParent() const
 */
 
 /*!
-    \fn void QGraphicsWebView::statusChanged()
-
-    This signal is emitted when the status bar text is changed by the page.
-*/
-
-/*!
     \fn void QGraphicsWebView::iconChanged()
 
     This signal is emitted whenever the icon of the page is loaded or changes.
@@ -219,7 +218,7 @@ QObject* QGraphicsWebViewPrivate::pluginParent() const
 
     This signal is emitted when a new load of the page is started.
 
-    \sa progressChanged(), loadFinished()
+    \sa loadProgress(), loadFinished()
 */
 
 /*!
@@ -230,22 +229,6 @@ QObject* QGraphicsWebViewPrivate::pluginParent() const
 
     \sa loadStarted()
 */
-
-/*!
-    \fn void QGraphicsWebView::progressChanged(qreal progress)
-
-    This signal is emitted every time an element in the web page
-    completes loading and the overall loading progress advances.
-
-    This signal tracks the progress of all child frames.
-
-    The current value is provided by \a progress and scales from 0.0 to 1.0,
-    which is the default range of QProgressBar.
-
-    \sa loadStarted(), loadFinished()
-*/
-
-
 
 /*!
     Constructs an empty QGraphicsWebView with parent \a parent.
@@ -436,22 +419,22 @@ void QGraphicsWebView::setPage(QWebPage* page)
 
     QWebFrame* mainFrame = d->page->mainFrame();
 
-    connect(mainFrame, SIGNAL(titleChanged(const QString&)),
-            this, SIGNAL(titleChanged(const QString&)));
+    connect(mainFrame, SIGNAL(titleChanged(QString)),
+            this, SIGNAL(titleChanged(QString)));
     connect(mainFrame, SIGNAL(iconChanged()),
             this, SIGNAL(iconChanged()));
-    connect(mainFrame, SIGNAL(urlChanged(const QUrl&)),
-            this, SIGNAL(urlChanged(const QUrl&)));
+    connect(mainFrame, SIGNAL(urlChanged(QUrl)),
+            this, SIGNAL(urlChanged(QUrl)));
     connect(d->page, SIGNAL(loadStarted()),
             this, SIGNAL(loadStarted()));
     connect(d->page, SIGNAL(loadProgress(int)),
             this, SIGNAL(loadProgress(int)));
     connect(d->page, SIGNAL(loadFinished(bool)),
             this, SLOT(_q_doLoadFinished(bool)));
-    connect(d->page, SIGNAL(statusBarMessage(const QString&)),
-            this, SIGNAL(statusBarMessage(const QString&)));
-    connect(d->page, SIGNAL(linkClicked(const QUrl &)),
-            this, SIGNAL(linkClicked(const QUrl &)));
+    connect(d->page, SIGNAL(statusBarMessage(QString)),
+            this, SIGNAL(statusBarMessage(QString)));
+    connect(d->page, SIGNAL(linkClicked(QUrl)),
+            this, SIGNAL(linkClicked(QUrl)));
 }
 
 /*!
@@ -746,7 +729,7 @@ void QGraphicsWebView::triggerPageAction(QWebPage::WebAction action, bool checke
 
     Returns true if \a subString was found; otherwise returns false.
 
-    \sa selectedText(), selectionChanged()
+    \sa QWebPage::selectedText(), QWebPage::selectionChanged()
 */
 bool QGraphicsWebView::findText(const QString &subString, QWebPage::FindFlags options)
 {
@@ -994,6 +977,26 @@ void QGraphicsWebView::inputMethodEvent(QInputMethodEvent* ev)
     if (!ev->isAccepted())
         QGraphicsItem::inputMethodEvent(ev);
 }
+
+/*!
+    \fn void QGraphicsWebView::statusBarMessage(const QString& text)
+
+    This signal is emitted when the statusbar \a text is changed by the page.
+*/
+
+/*!
+    \fn void QGraphicsWebView::loadProgress(int progress)
+
+    This signal is emitted every time an element in the web page
+    completes loading and the overall loading progress advances.
+
+    This signal tracks the progress of all child frames.
+
+    The current value is provided by \a progress and scales from 0 to 100,
+    which is the default range of QProgressBar.
+
+    \sa loadStarted(), loadFinished()
+*/
 
 /*!
     \fn void QGraphicsWebView::linkClicked(const QUrl &url)

@@ -591,6 +591,7 @@ private slots:
     void setHtml();
     void setHtmlWithResource();
     void setHtmlWithBaseURL();
+    void setHtmlWithJSAlert();
     void ipv6HostEncoding();
     void metaData();
     void popupFocus();
@@ -2290,7 +2291,7 @@ void tst_QWebFrame::requestedUrl()
     qRegisterMetaType<QList<QSslError> >("QList<QSslError>");
     qRegisterMetaType<QNetworkReply* >("QNetworkReply*");
 
-    QSignalSpy spy2(page.networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)));
+    QSignalSpy spy2(page.networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
     frame->setUrl(QUrl("qrc:/fake-ssl-error.html"));
     QTest::qWait(200);
     QCOMPARE(spy2.count(), 1);
@@ -2396,6 +2397,33 @@ void tst_QWebFrame::setHtmlWithBaseURL()
 
     // no history item has to be added.
     QCOMPARE(m_view->page()->history()->count(), 0);
+}
+
+class MyPage : public QWebPage
+{
+public:
+    MyPage() :  QWebPage(), alerts(0) {}
+    int alerts;
+
+protected:
+    virtual void javaScriptAlert(QWebFrame*, const QString& msg)
+    {
+        alerts++;
+        QCOMPARE(msg, QString("foo"));
+        // Should not be enough to trigger deferred loading, since we've upped the HTML
+        // tokenizer delay in the Qt frameloader. See HTMLTokenizer::continueProcessing()
+        QTest::qWait(1000);
+    }
+};
+
+void tst_QWebFrame::setHtmlWithJSAlert()
+{
+    QString html("<html><head></head><body><script>alert('foo');</script><p>hello world</p></body></html>");
+    MyPage page;
+    m_view->setPage(&page);
+    page.mainFrame()->setHtml(html);
+    QCOMPARE(page.alerts, 1);
+    QCOMPARE(m_view->page()->mainFrame()->toHtml(), html);
 }
 
 class TestNetworkManager : public QNetworkAccessManager
@@ -2752,7 +2780,7 @@ void tst_QWebFrame::evaluateWillCauseRepaint()
     view.page()->mainFrame()->evaluateJavaScript(
         "document.getElementById('junk').style.display = 'none';");
 
-    ::waitForSignal(view.page(), SIGNAL(repaintRequested( const QRect &)));
+    ::waitForSignal(view.page(), SIGNAL(repaintRequested(QRect)));
 
     QTest::qWait(2000);
 }

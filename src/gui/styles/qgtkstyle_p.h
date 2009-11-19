@@ -255,16 +255,17 @@ class QGtkStylePrivate : public QCleanlooksStylePrivate
     Q_DECLARE_PUBLIC(QGtkStyle)
 public:
     QGtkStylePrivate();
+    ~QGtkStylePrivate();
 
     QGtkStyleFilter filter;
 
     static GtkWidget* gtkWidget(const QString &path);
     static GtkStyle* gtkStyle(const QString &path = QLatin1String("GtkWindow"));
 
-    virtual void resolveGtk();
-    virtual void initGtkMenu();
-    virtual void initGtkTreeview();
-    virtual void initGtkWidgets();
+    virtual void resolveGtk() const;
+    virtual void initGtkMenu() const;
+    virtual void initGtkTreeview() const;
+    virtual void initGtkWidgets() const;
 
     static void cleanupGtkWidgets();
 
@@ -276,7 +277,7 @@ public:
     static bool getGConfBool(const QString &key, bool fallback = 0);
     static QString getGConfString(const QString &key, const QString &fallback = QString());
 
-    virtual QString getThemeName() const;
+    static QString getThemeName();
     virtual int getSpinboxArrowSize() const;
 
     static void setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
@@ -412,7 +413,7 @@ public:
     static Ptr_gnome_icon_lookup_sync gnome_icon_lookup_sync;
     static Ptr_gnome_vfs_init gnome_vfs_init;
 
-    virtual QPalette gtkWidgetPalette(const QString &gtkWidgetName);
+    virtual QPalette gtkWidgetPalette(const QString &gtkWidgetName) const;
 
 protected:
     typedef QHash<QString, GtkWidget*> WidgetMap;
@@ -434,6 +435,10 @@ protected:
     static void addWidget(GtkWidget *widget);
 
     virtual void init();
+
+private:
+    static QList<QGtkStylePrivate *> instances;
+    friend class QGtkStyleUpdateScheduler;
 };
 
 // Helper to ensure that we have polished all our gtk widgets
@@ -442,7 +447,7 @@ class QGtkStyleUpdateScheduler : public QObject
 {
     Q_OBJECT
 public slots:
-    void updateTheme( QGtkStylePrivate* stylePrivate );
+    void updateTheme();
 };
 
 QT_END_NAMESPACE

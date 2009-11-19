@@ -270,7 +270,7 @@ MediaPlayer::MediaPlayer(const QString &filePath,
     fileMenu->addSeparator();  
     QMenu *aspectMenu = fileMenu->addMenu(tr("&Aspect ratio"));
     QActionGroup *aspectGroup = new QActionGroup(aspectMenu);
-    connect(aspectGroup, SIGNAL(triggered(QAction *)), this, SLOT(aspectChanged(QAction *)));
+    connect(aspectGroup, SIGNAL(triggered(QAction*)), this, SLOT(aspectChanged(QAction*)));
     aspectGroup->setExclusive(true);
     QAction *aspectActionAuto = aspectMenu->addAction(tr("Auto"));
     aspectActionAuto->setCheckable(true);
@@ -288,7 +288,7 @@ MediaPlayer::MediaPlayer(const QString &filePath,
 
     QMenu *scaleMenu = fileMenu->addMenu(tr("&Scale mode"));
     QActionGroup *scaleGroup = new QActionGroup(scaleMenu);
-    connect(scaleGroup, SIGNAL(triggered(QAction *)), this, SLOT(scaleChanged(QAction *)));
+    connect(scaleGroup, SIGNAL(triggered(QAction*)), this, SLOT(scaleChanged(QAction*)));
     scaleGroup->setExclusive(true);
     QAction *scaleActionFit = scaleMenu->addAction(tr("Fit in view"));
     scaleActionFit->setCheckable(true);
@@ -313,13 +313,13 @@ MediaPlayer::MediaPlayer(const QString &filePath,
     connect(openUrlAction, SIGNAL(triggered(bool)), this, SLOT(openUrl()));
     connect(openFileAction, SIGNAL(triggered(bool)), this, SLOT(openFile()));
     
-    connect(m_videoWidget, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
-    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
+    connect(m_videoWidget, SIGNAL(customContextMenuRequested(QPoint)), SLOT(showContextMenu(QPoint)));
+    connect(this, SIGNAL(customContextMenuRequested(QPoint)), SLOT(showContextMenu(QPoint)));
     connect(&m_MediaObject, SIGNAL(metaDataChanged()), this, SLOT(updateInfo()));
     connect(&m_MediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(updateTime()));
     connect(&m_MediaObject, SIGNAL(tick(qint64)), this, SLOT(updateTime()));
     connect(&m_MediaObject, SIGNAL(finished()), this, SLOT(finished()));
-    connect(&m_MediaObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State)));
+    connect(&m_MediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(stateChanged(Phonon::State,Phonon::State)));
     connect(&m_MediaObject, SIGNAL(bufferStatus(int)), this, SLOT(bufferStatus(int)));
     connect(&m_MediaObject, SIGNAL(hasVideoChanged(bool)), this, SLOT(hasVideoChanged(bool)));
 
@@ -355,13 +355,13 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 
     switch (newstate) {
         case Phonon::ErrorState:
-            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             if (m_MediaObject.errorType() == Phonon::FatalError) {
                 playButton->setEnabled(false);
                 rewindButton->setEnabled(false);
             } else {
                 m_MediaObject.pause();
             }
+            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             break;
         case Phonon::PausedState:
         case Phonon::StoppedState:
@@ -471,6 +471,8 @@ void MediaPlayer::effectChanged()
 
 void MediaPlayer::showSettingsDialog()
 {
+    playPauseForDialog();
+
     if (!settingsDialog)
         initSettingsDialog();
 
@@ -516,6 +518,8 @@ void MediaPlayer::showSettingsDialog()
         m_videoWidget->setScaleMode(oldScale);
         ui->audioEffectsCombo->setCurrentIndex(currentEffect);
     }
+
+    playPauseForDialog();
 }
 
 void MediaPlayer::initVideoWindow()
@@ -652,10 +656,25 @@ void MediaPlayer::setFile(const QString &fileName)
     m_MediaObject.play();
 }
 
+void MediaPlayer::playPauseForDialog()
+{
+    // If we're running on a small screen, we want to pause the video
+    // when popping up dialogs.
+    if (m_hasSmallScreen &&
+        (Phonon::PlayingState == m_MediaObject.state() ||
+         Phonon::PausedState == m_MediaObject.state()))
+        playPause();
+}
+
 void MediaPlayer::openFile()
 {
+    playPauseForDialog();
+
     QStringList fileNames = QFileDialog::getOpenFileNames(this, QString(),
                                                           QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+
+    playPauseForDialog();
+
     m_MediaObject.clearQueue();
     if (fileNames.size() > 0) {
         QString fileName = fileNames[0];

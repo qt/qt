@@ -374,7 +374,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     union { QGLContext **ctxPtr; void **voidPtr; };
 
-    connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(deleted(QObject *)));
+    connect(widget, SIGNAL(destroyed(QObject*)), this, SLOT(deleted(QObject*)));
 
     voidPtr = &widgetPrivate->extraData()->glContext;
     d_ptr->contexts << ctxPtr;

@@ -70,9 +70,9 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 //! [0]
 
 //! [1]
-    connect(styleComboBox, SIGNAL(activated(const QString &)),
+    connect(styleComboBox, SIGNAL(activated(QString)),
 //! [1] //! [2]
-            this, SLOT(changeStyle(const QString &)));
+            this, SLOT(changeStyle(QString)));
     connect(useStylePaletteCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(changePalette()));
     connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),

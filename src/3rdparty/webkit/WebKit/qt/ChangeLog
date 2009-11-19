@@ -1,4 +1,222 @@
+2009-11-18  Paul Olav Tvete  <paul.tvete@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Make the QWebElement::render() test pass when pixmaps aren't 32 bit.
+
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::render):
+
+2009-11-18  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Clarify and simplify the legal section in the overview documentation,
+        after review with our legal team.
+
+        * docs/qtwebkit.qdoc:
+
+2009-11-18  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed and suggested by Tor Arne Vestbø.
+
+        Fix the autotest after commit ecbb2c0dd21bfc197e1f7b53150ec9b1a1d8cb8f
+        to compare the Qt::ImFont property's family against an explicitly
+        previously configured family.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods):
+
+2009-11-16  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        API documentation fixes.
+
+        * Api/qgraphicswebview.cpp: Removed duplicate docs.
+        * Api/qwebelement.cpp: Added missing docs.
+        * Api/qwebsettings.cpp: Ditto.
+
+2009-11-14  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Antti Koivisto.
+
+        [Qt] Broken back/forward after using ErrorPageExtension to set error page
+        https://bugs.webkit.org/show_bug.cgi?id=30573
+
+        Implemented autotests for covering the back/forward
+        reset problem involving error pages.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::errorPageExtension):
+
+2009-11-16  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Qt] Do not show the QWidget when the WebCore::Widget is hidden
+        https://bugs.webkit.org/show_bug.cgi?id=31203
+
+        The clipping code was making a QWidget visible even if the
+        WebCore::Widget was hidden. Fix the bug by calling setVisible
+        only if the WebCore::Widget is shown.
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::QtPluginWidget::show): Override WebCore::Widget
+        (WebCore::QtPluginWidget::hide): Override WebCore::Widget
+        (WebCore::QtPluginWidget::handleVisibility): New method to call setVisible when we are visible
+        (FrameLoaderClientQt::createPlugin): Hide the QWidget by default
+
+2009-11-09  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30628
+        Add an API to get all the attributes from a QWebElement.
+
+        * Api/qwebelement.cpp:
+        (QWebElement::attributesName):
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::listAttributes):
+
+2009-11-13  Andras Becsi  <becsi.andras@stud.u-szeged.hu>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Enable Page Cache if setMaximumPagesInCache needs it.
+        This fixes https://bugs.webkit.org/show_bug.cgi?id=31266.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        (QWebSettings::setMaximumPagesInCache):
+
+2009-11-13  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Update documentation for the Qt API
+
+        * Api/qgraphicswebview.cpp:
+        * Api/qwebelement.cpp:
+        * Api/qwebframe.cpp:
+        * Api/qwebsettings.cpp:
+        * Api/qwebview.cpp:
+
+2009-11-13  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Use correct install-path when running qdoc3
+
+        * docs/docs.pri:
+
+2009-11-12  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Jan Alonzo.
+
+        [Qt] Various doc fixes
+        https://bugs.webkit.org/show_bug.cgi?id=31358
+
+        QWebPage's constructor docs are mentioning "QWebView":
+        "Constructs an empty QWebView with parent".
+
+        * Api/qwebpage.cpp:
+
+2009-11-11  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Kenneth Christiansen.
+
+        [Qt] Various doc fixes
+        https://bugs.webkit.org/show_bug.cgi?id=31358
+
+        Fixed wrong documentation: item's dimensions do fit to Web page
+        content by default.
+
+        Kenneth agreed to land this as a followup patch to the
+        just landed documentation patch.
+
+        * Api/qgraphicswebview.cpp:
+
+2009-11-11  David Boddie  <dboddie@trolltech.com>
+
+        Reviewed by Kenneth Christiansen.
+
+        [Qt] Various doc fixes
+        https://bugs.webkit.org/show_bug.cgi?id=31323
+
+        Fixed and synchronized QWebView related documentation.
+
+        * Api/qgraphicswebview.cpp:
+        * Api/qwebview.cpp:
+
+2009-11-09  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Few classes have virtual functions but non-virtual destructor
+        https://bugs.webkit.org/show_bug.cgi?id=31269
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::~QGraphicsWebViewPrivate): Add virtual
+        destructor.
+
+2009-10-30  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Qt] Use the default timeout interval for JS as the HTML tokenizer delay for setHtml()
+
+        This ensures that long-running JavaScript (for example due to a modal alert() dialog),
+        will not trigger a deferred load after only 500ms (the default tokenizer delay) while
+        still giving a reasonable timeout (10 seconds) to prevent deadlock.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29381
+
+        * Api/qwebframe.cpp: Document the behaviour
+        * WebCoreSupport/FrameLoaderClientQt.cpp: set the custom tokenizer delay for substitute loads
+        * tests/qwebframe/tst_qwebframe.cpp: Add test
+
+2009-11-13  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Fix initial QWebView focus behavior.
+
+        focusController->setFocused(true) was not always called.
+        https://bugs.webkit.org/show_bug.cgi?id=31466
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::focusInEvent):
+
+2009-11-12  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Custom printing shrink factors
+        https://bugs.webkit.org/show_bug.cgi?id=29042
+
+        This reverts commit r49769. The public API for this needs to be reviewed
+        before its inclusion in Qt.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        (QWebSettings::QWebSettings):
+        * Api/qwebsettings.h:
+
 2009-11-11  Liang QI  <liang.qi@nokia.com>
+        Update documentation for the Qt API
+
+        * Api/qgraphicswebview.cpp:
+        * Api/qwebelement.cpp:
+        * Api/qwebframe.cpp:
+        * Api/qwebsettings.cpp:
+        * Api/qwebview.cpp:
+
+2009-11-13  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
 
         [Qt] Fix tst_qwebpage and tst_qwebframe compilation on Symbian.
 

@@ -276,6 +276,7 @@ private slots:
     void task176178_itemIndexMethodBreaksSceneRect();
     void task160653_selectionChanged();
     void task250680_childClip();
+    void taskQTBUG_5904_crashWithDeviceCoordinateCache();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -3983,20 +3984,28 @@ void tst_QGraphicsScene::isActive()
 
         QVERIFY(!scene1.isActive()); //it is hidden;
         QVERIFY(scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(scene2.hasFocus());
 
         view1->show();
         QVERIFY(scene1.isActive());
         QVERIFY(scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(scene2.hasFocus());
 
         view2->hide();
 
         QVERIFY(scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         toplevel1.hide();
-        QTest::qWait(12);
+        QTest::qWait(50);
         QTRY_VERIFY(!scene1.isActive());
         QTRY_VERIFY(!scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         toplevel1.show();
         QApplication::setActiveWindow(&toplevel1);
@@ -4005,14 +4014,21 @@ void tst_QGraphicsScene::isActive()
 
         QTRY_VERIFY(scene1.isActive());
         QTRY_VERIFY(!scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         view2->show();
         QVERIFY(scene1.isActive());
         QVERIFY(scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
     }
 
     QVERIFY(!scene1.isActive());
     QVERIFY(!scene2.isActive());
+    QVERIFY(!scene1.hasFocus());
+    QVERIFY(!scene2.hasFocus());
+
 
     {
         QWidget toplevel2;
@@ -4025,6 +4041,8 @@ void tst_QGraphicsScene::isActive()
 
         QVERIFY(!scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         toplevel2.show();
         QApplication::setActiveWindow(&toplevel2);
@@ -4033,66 +4051,89 @@ void tst_QGraphicsScene::isActive()
 
         QVERIFY(scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         view2->setScene(&scene2);
 
         QVERIFY(scene1.isActive());
         QVERIFY(scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         view1->setScene(&scene2);
         QVERIFY(!scene1.isActive());
         QVERIFY(scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(scene2.hasFocus());
 
         view1->hide();
         QVERIFY(!scene1.isActive());
         QVERIFY(scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(scene2.hasFocus());
 
         view1->setScene(&scene1);
         QVERIFY(!scene1.isActive());
         QVERIFY(scene2.isActive());
-
-        view1->show();
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(scene2.hasFocus());
 
         view1->show();
         QVERIFY(scene1.isActive());
         QVERIFY(scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(scene2.hasFocus());
 
         view2->hide();
         QVERIFY(scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         QGraphicsView topLevelView;
         topLevelView.show();
         QApplication::setActiveWindow(&topLevelView);
+        topLevelView.setFocus();
         QTest::qWaitForWindowShown(&topLevelView);
         QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&topLevelView));
 
         QVERIFY(!scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         topLevelView.setScene(&scene1);
         QVERIFY(scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         view2->show();
         QVERIFY(scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         view1->hide();
         QVERIFY(scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         QApplication::setActiveWindow(&toplevel2);
         QTRY_COMPARE(QApplication::activeWindow(), &toplevel2);
 
         QVERIFY(!scene1.isActive());
         QVERIFY(scene2.isActive());
-
-
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(scene2.hasFocus());
     }
 
     QVERIFY(!scene1.isActive());
     QVERIFY(!scene2.isActive());
+    QVERIFY(!scene1.hasFocus());
+    QVERIFY(!scene2.hasFocus());
 
     {
         QWidget toplevel3;
@@ -4104,6 +4145,9 @@ void tst_QGraphicsScene::isActive()
 
         QVERIFY(!scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
+
 
         toplevel3.show();
         QApplication::setActiveWindow(&toplevel3);
@@ -4112,23 +4156,45 @@ void tst_QGraphicsScene::isActive()
 
         QVERIFY(scene1.isActive());
         QVERIFY(!scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         layout->addWidget(view2);
         QApplication::processEvents();
         QVERIFY(scene1.isActive());
         QVERIFY(scene2.isActive());
+        QVERIFY(scene1.hasFocus());
+        QVERIFY(!scene2.hasFocus());
 
         view1->setParent(0);
         QVERIFY(!scene1.isActive());
         QVERIFY(scene2.isActive());
+        QVERIFY(!scene1.hasFocus());
+        QVERIFY(scene2.hasFocus());
         delete view1;
     }
 
     QVERIFY(!scene1.isActive());
     QVERIFY(!scene2.isActive());
+    QVERIFY(!scene1.hasFocus());
+    QVERIFY(!scene2.hasFocus());
 
 }
 
+void tst_QGraphicsScene::taskQTBUG_5904_crashWithDeviceCoordinateCache()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rectItem = scene.addRect(QRectF(0, 0, 100, 200), QPen(Qt::black), QBrush(Qt::green));
+
+    rectItem->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+
+    QPixmap pixmap(100,200);
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+    // No crash, then it passed!
+}
 
 QTEST_MAIN(tst_QGraphicsScene)
 #include "tst_qgraphicsscene.moc"

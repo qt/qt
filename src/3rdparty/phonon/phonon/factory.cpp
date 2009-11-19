@@ -469,7 +469,7 @@ GET_STRING_PROPERTY(backendWebsite)
 QObject *Factory::registerQObject(QObject *o)
 {
     if (o) {
-        QObject::connect(o, SIGNAL(destroyed(QObject *)), globalFactory, SLOT(objectDestroyed(QObject *)), Qt::DirectConnection);
+        QObject::connect(o, SIGNAL(destroyed(QObject*)), globalFactory, SLOT(objectDestroyed(QObject*)), Qt::DirectConnection);
         globalFactory->objects.append(o);
     }
     return o;

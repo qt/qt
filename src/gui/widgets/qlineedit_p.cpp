@@ -131,12 +131,12 @@ void QLineEditPrivate::init(const QString& txt)
     Q_Q(QLineEdit);
     control = new QLineControl(txt);
     control->setFont(q->font());
-    QObject::connect(control, SIGNAL(textChanged(const QString &)),
-            q, SIGNAL(textChanged(const QString &)));
-    QObject::connect(control, SIGNAL(textEdited(const QString &)),
-            q, SLOT(_q_textEdited(const QString &)));
-    QObject::connect(control, SIGNAL(cursorPositionChanged(int, int)),
-            q, SLOT(_q_cursorPositionChanged(int, int)));
+    QObject::connect(control, SIGNAL(textChanged(QString)),
+            q, SIGNAL(textChanged(QString)));
+    QObject::connect(control, SIGNAL(textEdited(QString)),
+            q, SLOT(_q_textEdited(QString)));
+    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
+            q, SLOT(_q_cursorPositionChanged(int,int)));
     QObject::connect(control, SIGNAL(selectionChanged()),
             q, SIGNAL(selectionChanged()));
     QObject::connect(control, SIGNAL(accepted()),
@@ -147,17 +147,17 @@ void QLineEditPrivate::init(const QString& txt)
     QObject::connect(control, SIGNAL(editFocusChange(bool)),
             q, SLOT(_q_editFocusChange(bool)));
 #endif
-    QObject::connect(control, SIGNAL(cursorPositionChanged(int, int)),
+    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
             q, SLOT(updateMicroFocus()));
 
     // for now, going completely overboard with updates.
     QObject::connect(control, SIGNAL(selectionChanged()),
             q, SLOT(update()));
 
-    QObject::connect(control, SIGNAL(displayTextChanged(const QString &)),
+    QObject::connect(control, SIGNAL(displayTextChanged(QString)),
             q, SLOT(update()));
 
-    QObject::connect(control, SIGNAL(updateNeeded(const QRect &)),
+    QObject::connect(control, SIGNAL(updateNeeded(QRect)),
             q, SLOT(update()));
 
     QStyleOptionFrameV2 opt;

@@ -592,8 +592,8 @@ void MainWindow::setupActions()
         SLOT(updateNavigationItems()));
     connect(m_centralWidget, SIGNAL(highlighted(QString)), statusBar(),
         SLOT(showMessage(QString)));
-    connect(m_centralWidget, SIGNAL(addNewBookmark(QString, QString)), this,
-        SLOT(addNewBookmark(QString, QString)));
+    connect(m_centralWidget, SIGNAL(addNewBookmark(QString,QString)), this,
+        SLOT(addNewBookmark(QString,QString)));
 
     // bookmarks
     connect(m_bookmarkWidget, SIGNAL(requestShowLink(QUrl)), m_centralWidget,
@@ -604,8 +604,8 @@ void MainWindow::setupActions()
     // index window
     connect(m_indexWindow, SIGNAL(linkActivated(QUrl)), m_centralWidget,
         SLOT(setSource(QUrl)));
-    connect(m_indexWindow, SIGNAL(linksActivated(QMap<QString, QUrl>, QString)),
-        this, SLOT(showTopicChooser(QMap<QString, QUrl>, QString)));
+    connect(m_indexWindow, SIGNAL(linksActivated(QMap<QString,QUrl>,QString)),
+        this, SLOT(showTopicChooser(QMap<QString,QUrl>,QString)));
     connect(m_indexWindow, SIGNAL(escapePressed()), this,
         SLOT(activateCurrentCentralWidgetTab()));
 

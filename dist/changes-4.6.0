@@ -19,14 +19,20 @@ Merge Request: http://qt.gitorious.org
 *                           General                                        *
 ****************************************************************************
 
- - QtDBus
-   * The minimum required version of the D-Bus reference library is
-     now 0.93.
-   * Support for reading and writing of custom property types added.
-   * Support for getting return arguments in remote method invocation
-     via QMetaMethod::invokeMethod.
+New features
+------------
 
- - [MR#1742] Added new multimedia keys to the Qt::Key enum.
+ - QState, QStateMachine
+    * New classes for state machine framework added to QtCore.
+
+ - QAbstractAnimation
+    * New animation framework added to QtCore
+
+ - QTouchEvent
+    * New class for handling multitouch events added to QtGui
+
+ - QGesture, QGestureRecognizer
+    * New gesture framework added to QtGui
 
  - QMatrix4x4, QGenericMatrix, QVector2D, QVector3D, QVector4D, QQuaternion
     * New classes to support 3D applications.
@@ -37,13 +43,8 @@ Merge Request: http://qt.gitorious.org
  - QGraphicsEffect
     * New classes for applying graphics effects to graphics items and widgets.
 
- - Boxes demo ported to use new 3D math and shader program classes.
-
- - OpenVG graphics system added.
-
- - Added 800x480 screen mode to qvfb configuration dialog.
-
- - Improved support for input methods in graphics view.
+ - QWebElement
+    * New class for DOM access added to QtWebKit
 
  - QAudioInput, QAudioOutput
     * New audio input and output classes.
@@ -51,22 +52,35 @@ Merge Request: http://qt.gitorious.org
  - QAbstractVideoSurface, QVideoFrame
     * New abstract video output classes.
 
- - New state machine framework added to QtCore.
+ - OpenVG graphics system added.
+
+ - Added 800x480 screen mode to qvfb configuration dialog.
+
+ - Improved support for input methods in graphics view.
+
+ - [MR#1742] Added new multimedia keys to the Qt::Key enum.
+
+ - Boxes demo ported to use new 3D math and shader program classes.
 
  - QtTest now supports outputting XUnit XML documents, for integrating
    with existing continuous integration systems. This is enabled by
    running the test program with the -xunitxml option.
 
-Third party components
-----------------------
+ - QtDBus
+   * The minimum required version of the D-Bus reference library is
+     now 0.93.
+   * Support for reading and writing of custom property types added.
+   * Support for getting return arguments in remote method invocation
+     via QMetaMethod::invokeMethod.
 
- - Updated FreeType to version 2.3.9.
 
- - Updated harfbuzz to the latest version from fd.org.
+Optimizations
+-------------
 
- - Updated sqlite to version 3.6.19.
+ - Optimized rendering strategy in QGraphicsView
+    * See list of Important Behavior Changes below
 
- - Updated libpng to version 1.2.40
+ - Improved delivery of posted events on Windows
 
 
 ****************************************************************************
@@ -74,6 +88,7 @@ Third party components
 ****************************************************************************
 
 QtCore
+------
 
  - QByteArray
     * New overloads for QByteArray::insert() and QByteArray::prepend().
@@ -170,6 +185,7 @@ QtCore
     * [256468] Fixed comment indentation.
 
 QtGui
+-----
 
  - Qt::escape
     * Now escape the double quote (&quot;).
@@ -435,6 +451,7 @@ QtGui
       with Qt::WA_NoSystemBackground and window opacity set.
 
 QtDBus
+------
 
  - QDBusConnection
     * Made sending of invalid/incomplete messages consistently fail with error
@@ -447,6 +464,7 @@ QtDBus
       deleted or to change owners.
 
 QtNetwork
+---------
 
  - QAbstractSocket
     * Only disconnect from host when all bytes have been written.
@@ -483,6 +501,7 @@ QtNetwork
       cases the connection stalled when a buffer limit was used.
 
 QtOpenGL
+--------
 
  - QGLColormap
     * setEntry() was inserting entries instead of replacing them.
@@ -531,6 +550,7 @@ QtOpenGL
  - Added lots of OpenGL autotests.
 
 QtScript
+--------
 
  - Many optimizations.
  - Improved ECMA script compliance.
@@ -538,6 +558,7 @@ QtScript
    to a QtScript array index.
 
 QtSql
+-----
 
  - [QTBUG-3162] Views for Sql table models should not reset state on failed
    queries.
@@ -571,6 +592,7 @@ QtSql
  - Add proper iODBC linking support.
 
 QtSvg
+-----
 
  - QSvgHandler
    * [245602] [204686] Fixed gradient and solid-color referencing.
@@ -582,6 +604,7 @@ QtSvg
    * [257052] Changed drawImage() to ignore aspect ratio.
 
 QtWebKit
+--------
 
  - Many bug fixes.
 
@@ -608,66 +631,48 @@ QtWebKit
    * New functions for defining local URL schemes.
 
  - QWebSettings
-   * New options for text encoding, printing shrink factor and off-line web
-     application cache (HTML5).
+   * New options for text encoding and off-line web application cache (HTML5).
 
  - QWebView
    * Support for render hints.
 
 QtXml
+-----
 
  - QDomDocument
     * Set the codec to UTF-8 if codec not present or unknown.
 
 QtXmlPatterns
+-------------
 
  - QXmlQuery
     * [245219] Added QXmlQuery::setFocus(const QString &focus).
 
 Qt Plugins
+----------
 
  - Tiff plugin
     * [258526] Rotate the image if the tiff file contains an orientation tag.
     * [254317] Add support for mono and indexed format
 
- - QPlainTextEdit
-    * Fixed crash when clicking on a text edit which was smaller than the 
-      height of the font used.
-	  
- - QPrinter 
-    * [QTBUG-4497] Removed redundant SetPen command in the postscript code 
-      when reusing a QPrinter object.
+Third party components
+----------------------
 
- - QTextLayout
-    * [QTBUG-4468] Count tabs as multiple characters when applying a fixed
-      column width.
-	* [176401] Take into account the negative right bearing of the last 
-      character in an item of text if the glyph extends beyond its ascent.
-	
- - QTextDocument
-    * [207189] Support setting font size using short hand syntax in the 
-      CSS "font" property.
-	* [201228] Remove implicit margin on bullet lists when exporting to 
-      HTML.
-	* [240086] Fixed bug which caused floating objects which span several
-      pages to float into the second page of the document even when it's
-      the only existing object, causing the document to contain a blank
-      first page.
-	* [240325] Even when wrap mode is set to Qt::TextWordWrap, the layout
-      would sometimes break outside word boundaries when floating objects
-      affected the width available to the text. This has been fixed.
- 
- - QFontEngine 
-    * [QTBUG-2354] Support certain 'Microsoft' platform symbol fonts which 
-      also contain a regular unicode table for exactly the symbol range of
-      code points.
-	  
- - QFontMetrics	  
-    * [176401] Account for right bearing in bounding rect.
+ - Updated FreeType to version 2.3.9.
+
+ - Updated harfbuzz to the latest version from fd.org.
+
+ - Updated sqlite to version 3.6.19.
+
+ - Updated libpng to version 1.2.40
+
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
+
+ - Added support for the Symbian platform with integration for the S60
+   framework.
 
  - Added community supported Qt ports for QNX and VxWorks. See platform
    notes in the Qt documentation for details.
@@ -905,6 +910,60 @@ Qt for Embedded Linux
 
  - Add powerpc mkspec and remove "empty" ppc mkspec .
 
+DirectFB
+--------
+
+ - When running Qt/DirectFB the DirectFB window id of a top level QWidget can
+   be queried using property("_q_DirectFBWindowID")
+
+ - Allow setting the background color of the primary layer in DirectFB with
+   connect options. QWS_DISPLAY=directfb:bgcolor=red or
+   QWS_DISPLAY=directfb:bgcolor=\#aabbccdd
+
+ - Add support for rendering mouse cursor using a top level window when cursor
+   support is not working in IDirectFBDisplayLayer. Define
+   QT_DIRECTFB_WINDOW_AS_CURSOR to enable.
+
+ - Add experimental support for optimized locking/unlocking of surfaces. Enable
+   by defining QT_DIRECTFB_SUBSURFACE.
+
+ - Fix a bug to conceptually allow using QDirectFBScreen as a subscreen of a
+   proxy screen. Don't make QDirectFBScreen::instance() assume that
+   QScreen::instance() is a QDirectFBScreen.
+
+ - Optimize move/resize operations with DirectFB. With a properly configured
+   DirectFB these operations are handled for us and we don't need to force a
+   repaint of the window.
+
+ - Support top level window opacity in DirectFB
+
+ - Fix a bug when loading RGB32 images that would lead to rendering issues.
+
+ - Fix a bug when painting with invalid pens/brushes.
+
+ - Fix a bug that would show up when QWidget::scroll is called.
+
+ - Implement support for loading pixmaps using IDirectFBImageProvider.
+
+ - Disable color table support by default. This seems to work incorrectly on
+   most boards and loading these images will generally require an image
+   conversion anyway.
+
+ - Fix a crash when resizing windows.
+
+ - Compile with versions < 1.0. We still recommend using newer versions.
+
+ - Considerable code cleanup
+
+ - Various optimizations regarding painting, loading of images and creation of
+   surfaces.
+
+ - Allow forcibly falling back to raster engine for painting operations by
+   exporting QT_DIRECTFB_FORCE_RASTER=1
+
+ - Reenable support for RGB32 primary surface.
+
+
 Qt for Windows CE
 -----------------
 
@@ -971,61 +1030,6 @@ Qt for Windows CE
      - Add --sort-contexts option.
      - Add --locations option (complementing lupdate).
      - Add --no-ui-lines option (complementing lupdate).
-
-
-****************************************************************************
-*                               DirectFB                                   *
-****************************************************************************
-
- - When running Qt/DirectFB the DirectFB window id of a top level QWidget can
-   be queried using property("_q_DirectFBWindowID")
-
- - Allow setting the background color of the primary layer in DirectFB with
-   connect options. QWS_DISPLAY=directfb:bgcolor=red or
-   QWS_DISPLAY=directfb:bgcolor=\#aabbccdd
-
- - Add support for rendering mouse cursor using a top level window when cursor
-   support is not working in IDirectFBDisplayLayer. Define
-   QT_DIRECTFB_WINDOW_AS_CURSOR to enable.
-
- - Add experimental support for optimized locking/unlocking of surfaces. Enable
-   by defining QT_DIRECTFB_SUBSURFACE.
-
- - Fix a bug to conceptually allow using QDirectFBScreen as a subscreen of a
-   proxy screen. Don't make QDirectFBScreen::instance() assume that
-   QScreen::instance() is a QDirectFBScreen.
-
- - Optimize move/resize operations with DirectFB. With a properly configured
-   DirectFB these operations are handled for us and we don't need to force a
-   repaint of the window.
-
- - Support top level window opacity in DirectFB
-
- - Fix a bug when loading RGB32 images that would lead to rendering issues.
-
- - Fix a bug when painting with invalid pens/brushes.
-
- - Fix a bug that would show up when QWidget::scroll is called.
-
- - Implement support for loading pixmaps using IDirectFBImageProvider.
-
- - Disable color table support by default. This seems to work incorrectly on
-   most boards and loading these images will generally require an image
-   conversion anyway.
-
- - Fix a crash when resizing windows.
-
- - Compile with versions < 1.0. We still recommend using newer versions.
-
- - Considerable code cleanup
-
- - Various optimizations regarding painting, loading of images and creation of
-   surfaces.
-
- - Allow forcibly falling back to raster engine for painting operations by
-   exporting QT_DIRECTFB_FORCE_RASTER=1
-
- - Reenable support for RGB32 primary surface.
 
 
 ****************************************************************************
@@ -1148,4 +1152,11 @@ Qt for Windows CE
 
     X11: LIBS += -lX11
     Mac: LIBS += -framework AppKit -framework Carbon
+
+- QtScript: Behavior changes due to using JavaScriptCore in the back-end:
+  * QDateTime is no longer used for date parsing and string conversion of
+    Date objects; instead the (more compliant) date processing from
+    JavaScriptCore is used.
+  * RegExp objects are no longer thin wrappers around QRegExp; they are now
+    "proper" JavaScript RegExp objects.
 

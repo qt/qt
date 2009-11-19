@@ -78,6 +78,8 @@ public:
 
     bool extends(const QString &className, const QLatin1String &baseClassName) const;
 
+    bool isCustomWidgetContainer(const QString &className) const;
+
 private:
     typedef QMap<QString, DomCustomWidget*> NameCustomWidgetMap;
     NameCustomWidgetMap m_customWidgets;

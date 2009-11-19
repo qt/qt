@@ -56,8 +56,8 @@ DropSiteWindow::DropSiteWindow()
 
 //! [constructor part2]
     dropArea = new DropArea;
-    connect(dropArea, SIGNAL(changed(const QMimeData *)),
-            this, SLOT(updateFormatsTable(const QMimeData *)));
+    connect(dropArea, SIGNAL(changed(const QMimeData*)),
+            this, SLOT(updateFormatsTable(const QMimeData*)));
 //! [constructor part2]
 
 //! [constructor part3]

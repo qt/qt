@@ -314,8 +314,43 @@
 
 	\snippet doc/src/snippets/code/doc_src_qtscript.qdoc 1
 
+        For detailed information on how to make your application
+        scriptable with QtScript, see \l{Making Applications
+        Scriptable}.
+
 	The QtScript module is part of the \l{Qt Full Framework Edition} and the
 	\l{Open Source Versions of Qt}.
+
+        \section1 License Information
+
+        Qt Commercial Edition licensees that wish to distribute applications that
+        use the QtScript module need to be aware of their obligations under the
+        GNU Library General Public License (LGPL).
+
+        Developers using the Open Source Edition can choose to redistribute
+        the module under the appropriate version of the GNU LGPL.
+
+        \legalese
+        QtScript is licensed under the GNU Library General Public License.
+        Individual contributor names and copyright dates can be found
+        inline in the code.
+
+        This library is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Library General Public
+        License as published by the Free Software Foundation; either
+        version 2 of the License, or (at your option) any later version.
+
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+        Library General Public License for more details.
+
+        You should have received a copy of the GNU Library General Public License
+        along with this library; see the file COPYING.LIB.  If not, write to
+        the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+        Boston, MA 02110-1301, USA.
+        \endlegalese
+
 */
 
 /*!
