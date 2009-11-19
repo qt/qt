@@ -1,7 +1,7 @@
 import Test 1.0 as Namespace
 import Qt 4.6
 
-Object {
+QtObject {
     Namespace.madeUpClass.foo: 10
 }
 

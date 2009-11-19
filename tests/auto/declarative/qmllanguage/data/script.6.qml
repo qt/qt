@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     Script {
         source: "test.js"
         function helloWorld() {}

@@ -1,5 +1,5 @@
 import Qt 4.6
 
-Object {
+QtObject {
     objectName: "Hello" + "World"
 }

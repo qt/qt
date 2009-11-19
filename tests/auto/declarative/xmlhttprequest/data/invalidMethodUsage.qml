@@ -1,6 +1,6 @@
 import Qt 4.6 
 
-Object {
+QtObject {
     property bool onreadystatechange: false
     property bool readyState: false
     property bool status: false

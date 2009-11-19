@@ -6,7 +6,7 @@ MyQmlObject {
     property alias test1: myObject.test1
     property alias test2: myObject.test2
 
-    objectProperty: Object {
+    objectProperty: QtObject {
         id: myObject
         property real test1: base
         property real test2: Math.max(0, base)
