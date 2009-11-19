@@ -243,11 +243,14 @@ void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
 }
 #endif // Q_WS_S60
 
-void QMenuBarPrivate::symbianCommands(int command)
+int QMenuBarPrivate::symbianCommands(int command)
 {
+    int ret = 0;
+
     if (command == contexMenuCommand && !widgetWithContextMenu.isNull()) {
         QContextMenuEvent* event = new QContextMenuEvent(QContextMenuEvent::Keyboard, QPoint(0,0));
         QCoreApplication::postEvent(widgetWithContextMenu, event);
+        ret = 1;
     }
 
     int size = nativeMenuBars.size();
@@ -258,8 +261,11 @@ void QMenuBarPrivate::symbianCommands(int command)
 
         emit nativeMenuBars.at(i)->triggered(menu->action);
         menu->action->activate(QAction::Trigger);
+        ret = 1;
         break;
     }
+
+    return ret;
 }
 
 void QMenuBarPrivate::symbianCreateMenuBar(QWidget *parent)

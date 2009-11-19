@@ -10,4 +10,4 @@ QT += network
 CONFIG += release
 
 # Input
-SOURCES += main.cpp
+SOURCES += tst_qnetworkreply.cpp

@@ -60,7 +60,7 @@ struct CSSParserValue {
     PassRefPtr<CSSValue> createCSSValue();
 };
 
-class CSSParserValueList {
+class CSSParserValueList : public FastAllocBase {
 public:
     CSSParserValueList()
         : m_current(0)
@@ -88,7 +88,7 @@ private:
     unsigned m_variablesCount;
 };
 
-struct CSSParserFunction {
+struct CSSParserFunction : FastAllocBase {
     CSSParserString name;
     CSSParserValueList* args;
 

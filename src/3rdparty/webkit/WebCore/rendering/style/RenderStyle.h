@@ -462,7 +462,7 @@ public:
             return font().lineSpacing();
 
         if (lh.isPercent())
-            return lh.calcMinValue(fontSize());
+            return lh.calcMinValue(fontSize(), true);
 
         return lh.value();
     }
@@ -1182,6 +1182,7 @@ public:
     static float initialPerspective() { return 0; }
     static Length initialPerspectiveOriginX() { return Length(50.0, Percent); }
     static Length initialPerspectiveOriginY() { return Length(50.0, Percent); }
+    static Color initialBackgroundColor() { return Color::transparent; }
 
     // Keep these at the end.
     static int initialLineClamp() { return -1; }

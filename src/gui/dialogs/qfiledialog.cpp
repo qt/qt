@@ -777,7 +777,7 @@ void QFileDialog::setDirectory(const QString &directory)
     QModelIndex root = d->model->setRootPath(newDirectory);
     d->qFileDialogUi->newFolderButton->setEnabled(d->model->flags(root) & Qt::ItemIsDropEnabled);
     if (root != d->rootIndex()) {
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
     if (directory.endsWith(QLatin1Char('/')))
         d->completer->setCompletionPrefix(newDirectory);
     else
@@ -2177,12 +2177,12 @@ void QFileDialogPrivate::createWidgets()
 #ifndef QT_NO_SHORTCUT
     qFileDialogUi->fileNameLabel->setBuddy(qFileDialogUi->fileNameEdit);
 #endif
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
     completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
             q, SLOT(_q_autoCompleteFileName(QString)));
-#endif // QT_NO_COMPLETER
+#endif // QT_NO_FSCOMPLETER
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
                      q, SLOT(_q_updateOkButton()));
 
@@ -2302,7 +2302,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         proxyModel->setSourceModel(d->model);
         d->qFileDialogUi->listView->setModel(d->proxyModel);
         d->qFileDialogUi->treeView->setModel(d->proxyModel);
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
         d->completer->setModel(d->proxyModel);
         d->completer->proxyModel = d->proxyModel;
 #endif
@@ -2312,7 +2312,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         d->proxyModel = 0;
         d->qFileDialogUi->listView->setModel(d->model);
         d->qFileDialogUi->treeView->setModel(d->model);
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
         d->completer->setModel(d->model);
         d->completer->sourceModel = d->model;
         d->completer->proxyModel = 0;
@@ -3022,12 +3022,6 @@ bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
     case Qt::Key_Escape:
         q->hide();
         return true;
-#ifdef QT_KEYPAD_NAVIGATION
-    case Qt::Key_Down:
-    case Qt::Key_Up:
-        return (QApplication::navigationMode() != Qt::NavigationModeKeypadTabOrder
-                && QApplication::navigationMode() != Qt::NavigationModeKeypadDirectional);
-#endif
     default:
         break;
     }
@@ -3145,20 +3139,16 @@ QSize QFileDialogListView::sizeHint() const
 
 void QFileDialogListView::keyPressEvent(QKeyEvent *e)
 {
-    if (!d_ptr->itemViewKeyboardEvent(e)) {
-        QListView::keyPressEvent(e);
-    }
 #ifdef QT_KEYPAD_NAVIGATION
-    else if ((QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
-         || QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional)
-         && !hasEditFocus()) {
-         e->ignore();
-    } else {
-        e->accept();
+    if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
+        QListView::keyPressEvent(e);
+        return;
     }
-#else
+#endif // QT_KEYPAD_NAVIGATION
+
+    if (!d_ptr->itemViewKeyboardEvent(e))
+        QListView::keyPressEvent(e);
     e->accept();
-#endif
 }
 
 QFileDialogTreeView::QFileDialogTreeView(QWidget *parent) : QTreeView(parent)
@@ -3184,9 +3174,15 @@ void QFileDialogTreeView::init(QFileDialogPrivate *d_pointer)
 
 void QFileDialogTreeView::keyPressEvent(QKeyEvent *e)
 {
-    if (!d_ptr->itemViewKeyboardEvent(e)) {
+#ifdef QT_KEYPAD_NAVIGATION
+    if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
         QTreeView::keyPressEvent(e);
+        return;
     }
+#endif // QT_KEYPAD_NAVIGATION
+
+    if (!d_ptr->itemViewKeyboardEvent(e))
+        QTreeView::keyPressEvent(e);
     e->accept();
 }
 
@@ -3203,13 +3199,16 @@ QSize QFileDialogTreeView::sizeHint() const
 */
 void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 {
+#ifdef QT_KEYPAD_NAVIGATION
+    if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
+        QLineEdit::keyPressEvent(e);
+        return;
+    }
+#endif // QT_KEYPAD_NAVIGATION
+
     int key = e->key();
     QLineEdit::keyPressEvent(e);
-    if (key != Qt::Key_Escape
-#ifdef QT_KEYPAD_NAVIGATION
-        && QApplication::navigationMode() == Qt::NavigationModeNone
-#endif
-        )
+    if (key != Qt::Key_Escape)
         e->accept();
     if (hideOnEsc && (key == Qt::Key_Escape || key == Qt::Key_Return || key == Qt::Key_Enter)) {
         e->accept();
@@ -3218,7 +3217,7 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
     }
 }
 
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
 
 QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
 {

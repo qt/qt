@@ -24,6 +24,7 @@
 
 #include "JSSVGElement.h"
 
+#include "HTMLNames.h"
 #include "JSSVGElement.h"
 #include "JSSVGSVGElement.h"
 #include "KURL.h"
@@ -104,7 +105,7 @@ JSValue jsSVGElementId(ExecState* exec, const Identifier&, const PropertySlot& s
     JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
-    return jsString(exec, imp->id());
+    return jsString(exec, imp->getAttribute(HTMLNames::idAttr));
 }
 
 JSValue jsSVGElementXmlbase(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -140,7 +141,7 @@ void setJSSVGElementId(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
-    imp->setId(valueToStringWithNullCheck(exec, value), ec);
+    imp->setAttribute(HTMLNames::idAttr, valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
 }
 

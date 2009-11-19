@@ -409,6 +409,7 @@ DEFINE_GLOBAL(QualifiedName, objectAttr, nullAtom, "object", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onabortAttr, nullAtom, "onabort", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onbeforecopyAttr, nullAtom, "onbeforecopy", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onbeforecutAttr, nullAtom, "onbeforecut", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onbeforeloadAttr, nullAtom, "onbeforeload", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onbeforepasteAttr, nullAtom, "onbeforepaste", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onbeforeunloadAttr, nullAtom, "onbeforeunload", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onblurAttr, nullAtom, "onblur", xhtmlNamespaceURI);
@@ -441,7 +442,6 @@ DEFINE_GLOBAL(QualifiedName, onkeyupAttr, nullAtom, "onkeyup", xhtmlNamespaceURI
 DEFINE_GLOBAL(QualifiedName, onloadAttr, nullAtom, "onload", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onloadeddataAttr, nullAtom, "onloadeddata", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onloadedmetadataAttr, nullAtom, "onloadedmetadata", xhtmlNamespaceURI);
-DEFINE_GLOBAL(QualifiedName, onloadendAttr, nullAtom, "onloadend", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onloadstartAttr, nullAtom, "onloadstart", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onmousedownAttr, nullAtom, "onmousedown", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onmousemoveAttr, nullAtom, "onmousemove", xhtmlNamespaceURI);
@@ -661,6 +661,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onabortAttr,
         (WebCore::QualifiedName*)&onbeforecopyAttr,
         (WebCore::QualifiedName*)&onbeforecutAttr,
+        (WebCore::QualifiedName*)&onbeforeloadAttr,
         (WebCore::QualifiedName*)&onbeforepasteAttr,
         (WebCore::QualifiedName*)&onbeforeunloadAttr,
         (WebCore::QualifiedName*)&onblurAttr,
@@ -693,7 +694,6 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onloadAttr,
         (WebCore::QualifiedName*)&onloadeddataAttr,
         (WebCore::QualifiedName*)&onloadedmetadataAttr,
-        (WebCore::QualifiedName*)&onloadendAttr,
         (WebCore::QualifiedName*)&onloadstartAttr,
         (WebCore::QualifiedName*)&onmousedownAttr,
         (WebCore::QualifiedName*)&onmousemoveAttr,
@@ -1166,6 +1166,7 @@ void init()
     const char *onabortAttrString = "onabort";
     const char *onbeforecopyAttrString = "onbeforecopy";
     const char *onbeforecutAttrString = "onbeforecut";
+    const char *onbeforeloadAttrString = "onbeforeload";
     const char *onbeforepasteAttrString = "onbeforepaste";
     const char *onbeforeunloadAttrString = "onbeforeunload";
     const char *onblurAttrString = "onblur";
@@ -1198,7 +1199,6 @@ void init()
     const char *onloadAttrString = "onload";
     const char *onloadeddataAttrString = "onloadeddata";
     const char *onloadedmetadataAttrString = "onloadedmetadata";
-    const char *onloadendAttrString = "onloadend";
     const char *onloadstartAttrString = "onloadstart";
     const char *onmousedownAttrString = "onmousedown";
     const char *onmousemoveAttrString = "onmousemove";
@@ -1413,6 +1413,7 @@ void init()
     new ((void*)&onabortAttr) QualifiedName(nullAtom, onabortAttrString, nullAtom);
     new ((void*)&onbeforecopyAttr) QualifiedName(nullAtom, onbeforecopyAttrString, nullAtom);
     new ((void*)&onbeforecutAttr) QualifiedName(nullAtom, onbeforecutAttrString, nullAtom);
+    new ((void*)&onbeforeloadAttr) QualifiedName(nullAtom, onbeforeloadAttrString, nullAtom);
     new ((void*)&onbeforepasteAttr) QualifiedName(nullAtom, onbeforepasteAttrString, nullAtom);
     new ((void*)&onbeforeunloadAttr) QualifiedName(nullAtom, onbeforeunloadAttrString, nullAtom);
     new ((void*)&onblurAttr) QualifiedName(nullAtom, onblurAttrString, nullAtom);
@@ -1445,7 +1446,6 @@ void init()
     new ((void*)&onloadAttr) QualifiedName(nullAtom, onloadAttrString, nullAtom);
     new ((void*)&onloadeddataAttr) QualifiedName(nullAtom, onloadeddataAttrString, nullAtom);
     new ((void*)&onloadedmetadataAttr) QualifiedName(nullAtom, onloadedmetadataAttrString, nullAtom);
-    new ((void*)&onloadendAttr) QualifiedName(nullAtom, onloadendAttrString, nullAtom);
     new ((void*)&onloadstartAttr) QualifiedName(nullAtom, onloadstartAttrString, nullAtom);
     new ((void*)&onmousedownAttr) QualifiedName(nullAtom, onmousedownAttrString, nullAtom);
     new ((void*)&onmousemoveAttr) QualifiedName(nullAtom, onmousemoveAttrString, nullAtom);

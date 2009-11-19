@@ -121,6 +121,9 @@ QPixmap QPixmap::grabWindow(WId winId, int x, int y, int w, int h )
 
 HBITMAP QPixmap::toWinHBITMAP(HBitmapFormat format) const
 {
+    if (isNull())
+        return 0;
+
     HBITMAP bitmap = 0;
     if (data->classId() == QPixmapData::RasterClass) {
         QRasterPixmapData* d = static_cast<QRasterPixmapData*>(data.data());

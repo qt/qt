@@ -76,12 +76,34 @@ static inline int areaDiff(const QSize &size, const QGLFramebufferObject *fbo)
     return qAbs(size.width() * size.height() - fbo->width() * fbo->height());
 }
 
-QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat)
+extern int qt_next_power_of_two(int v);
+
+static inline QSize maybeRoundToNextPowerOfTwo(const QSize &sz)
+{
+#ifdef QT_OPENGL_ES_2
+    QSize rounded(qt_next_power_of_two(sz.width()), qt_next_power_of_two(sz.height()));
+    if (rounded.width() * rounded.height() < 1.20 * sz.width() * sz.height())
+        return rounded;
+#endif
+    return sz;
+}
+
+
+QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat, bool strictSize)
 {
     QGLFramebufferObject *chosen = 0;
     QGLFramebufferObject *candidate = 0;
     for (int i = 0; !chosen && i < m_fbos.size(); ++i) {
         QGLFramebufferObject *fbo = m_fbos.at(i);
+
+        if (strictSize) {
+            if (fbo->size() == requestSize && fbo->format() == requestFormat) {
+                chosen = fbo;
+                break;
+            } else {
+                continue;
+            }
+        }
 
         if (fbo->format() == requestFormat) {
             // choose the fbo with a matching format and the closest size
@@ -106,7 +128,7 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
 
             if (sz != fboSize) {
                 delete candidate;
-                candidate = new QGLFramebufferObject(sz, requestFormat);
+                candidate = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(sz), requestFormat);
             }
 
             chosen = candidate;
@@ -114,7 +136,10 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
     }
 
     if (!chosen) {
-        chosen = new QGLFramebufferObject(requestSize, requestFormat);
+        if (strictSize)
+            chosen = new QGLFramebufferObject(requestSize, requestFormat);
+        else
+            chosen = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(requestSize), requestFormat);
     }
 
     if (!chosen->isValid()) {
@@ -127,7 +152,8 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
 
 void QGLFramebufferObjectPool::release(QGLFramebufferObject *fbo)
 {
-    m_fbos << fbo;
+    if (fbo)
+        m_fbos << fbo;
 }
 
 
@@ -238,6 +264,11 @@ QGLPixmapData::~QGLPixmapData()
         QGLShareContextScope ctx(shareWidget->context());
         glDeleteTextures(1, &m_texture.id);
     }
+}
+
+QPixmapData *QGLPixmapData::createCompatiblePixmapData() const
+{
+    return new QGLPixmapData(pixelType());
 }
 
 bool QGLPixmapData::isValid() const
@@ -421,6 +452,10 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
     if (pixelType() == BitmapType) {
         img = QImage(w, h, QImage::Format_MonoLSB);
 
+        img.setColorCount(2);
+        img.setColor(0, QColor(Qt::color0).rgba());
+        img.setColor(1, QColor(Qt::color1).rgba());
+
         if (color == Qt::color1)
             img.fill(1);
         else
@@ -559,6 +594,7 @@ QPaintEngine* QGLPixmapData::paintEngine() const
     return m_source.paintEngine();
 }
 
+extern QRgb qt_gl_convertToGLFormat(QRgb src_pixel, GLenum texture_format);
 
 // If copyBack is true, bind will copy the contents of the render
 // FBO to the texture (which is not bound to the texture, as it's
@@ -568,17 +604,26 @@ GLuint QGLPixmapData::bind(bool copyBack) const
     if (m_renderFbo && copyBack) {
         copyBackFromRenderFbo(true);
     } else {
-        if (m_hasFillColor) {
-            m_dirty = true;
-            m_source = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
-            m_source.fill(PREMUL(m_fillColor.rgba()));
-            m_hasFillColor = false;
-        }
         ensureCreated();
     }
 
     GLuint id = m_texture.id;
     glBindTexture(GL_TEXTURE_2D, id);
+
+    if (m_hasFillColor) {
+        if (!useFramebufferObjects()) {
+            m_source = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
+            m_source.fill(PREMUL(m_fillColor.rgba()));
+        }
+
+        m_hasFillColor = false;
+
+        GLenum format = qt_gl_preferredTextureFormat();
+        QImage tx(w, h, QImage::Format_ARGB32_Premultiplied);
+        tx.fill(qt_gl_convertToGLFormat(m_fillColor.rgba(), format));
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, format, GL_UNSIGNED_BYTE, tx.bits());
+    }
+
     return id;
 }
 

@@ -327,7 +327,7 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
 
 void QFreetypeFace::computeSize(const QFontDef &fontDef, int *xsize, int *ysize, bool *outline_drawing)
 {
-    *ysize = fontDef.pixelSize << 6;
+    *ysize = qRound(fontDef.pixelSize * 64);
     *xsize = *ysize * fontDef.stretch / 100;
     *outline_drawing = false;
 
@@ -387,7 +387,9 @@ QFontEngine::Properties QFreetypeFace::properties() const
         p.descent = QFixed::fromFixed(-face->size->metrics.descender);
         p.leading = QFixed::fromFixed(face->size->metrics.height - face->size->metrics.ascender + face->size->metrics.descender);
         p.emSquare = face->size->metrics.y_ppem;
-        p.boundingBox = QRectF(-p.ascent.toReal(), 0, (p.ascent + p.descent).toReal(), face->size->metrics.max_advance/64.);
+//        p.boundingBox = QRectF(-p.ascent.toReal(), 0, (p.ascent + p.descent).toReal(), face->size->metrics.max_advance/64.);
+        p.boundingBox = QRectF(0, -p.ascent.toReal(),
+                               face->size->metrics.max_advance/64, (p.ascent + p.descent).toReal() );
     }
     p.italicAngle = 0;
     p.capHeight = p.ascent;
@@ -709,6 +711,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format)
     hbFace = freetype->hbFace;
 
     metrics = face->size->metrics;
+
 #if defined(Q_WS_QWS)
     /*
        TrueType fonts with embedded bitmaps may have a bitmap font specific
@@ -752,9 +755,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph
         load_flags = FT_LOAD_NO_BITMAP;
 
     // apply our matrix to this, but note that the metrics will not be affected by this.
-    FT_Matrix matrix = freetype->matrix;
     FT_Face face = lockFace();
-    matrix = this->matrix;
+    FT_Matrix matrix = this->matrix;
     FT_Matrix_Multiply(&set->transformationMatrix, &matrix);
     FT_Set_Transform(face, &matrix, 0);
     freetype->matrix = matrix;
@@ -1219,7 +1221,8 @@ QFixed QFontEngineFT::ascent() const
 
 QFixed QFontEngineFT::descent() const
 {
-    return QFixed::fromFixed(-metrics.descender);
+    // subtract a pixel to work around QFontMetrics's built-in + 1
+    return QFixed::fromFixed(-metrics.descender - 64);
 }
 
 QFixed QFontEngineFT::leading() const

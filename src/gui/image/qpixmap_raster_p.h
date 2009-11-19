@@ -68,6 +68,8 @@ public:
     QRasterPixmapData(PixelType type);
     ~QRasterPixmapData();
 
+    QPixmapData *createCompatiblePixmapData() const;
+
     void resize(int width, int height);
     void fromFile(const QString &filename, Qt::ImageConversionFlags flags);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);

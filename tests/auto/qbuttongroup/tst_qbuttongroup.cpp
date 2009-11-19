@@ -128,14 +128,15 @@ void tst_QButtonGroup::cleanup()
 {
 }
 
+QT_BEGIN_NAMESPACE
+extern bool Q_GUI_EXPORT qt_tab_all_widgets;
+QT_END_NAMESPACE
+
+
 void tst_QButtonGroup::arrowKeyNavigation()
 {
-#ifdef Q_WS_MAC
-    QSettings appleSettings(QLatin1String("apple.com"));
-    QVariant appleValue = appleSettings.value(QLatin1String("AppleKeyboardUIMode"), 0);
-    if (!(appleValue.toInt() & 0x2))
+    if (!qt_tab_all_widgets)
         QSKIP("This test requires full keyboard control to be enabled.", SkipAll);
-#endif
 
     QDialog dlg(0);
     QHBoxLayout layout(&dlg);

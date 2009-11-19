@@ -69,6 +69,9 @@
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
 
+#include <QtGui/QGraphicsView>
+#include <QtGui/QGraphicsProxyWidget>
+
 #include "../../shared/util.h"
 
 
@@ -239,7 +242,12 @@ private slots:
     void setFixedSize();
 
     void ensureCreated();
+    void winIdChangeEvent();
+#ifdef Q_OS_SYMBIAN
+    void reparentCausesChildWinIdChange();
+#else
     void persistentWinId();
+#endif
     void qobject_castInDestroyedSlot();
 
     void showHideEvent_data();
@@ -285,6 +293,7 @@ private slots:
 #ifdef Q_WS_X11
     void minAndMaxSizeWithX11BypassWindowManagerHint();
     void showHideShow();
+    void clean_qt_x11_enforce_cursor();
 #endif
 
     void compatibilityChildInsertedEvents();
@@ -323,6 +332,7 @@ private slots:
     void doubleRepaint();
 #ifndef Q_WS_MAC
     void resizeInPaintEvent();
+    void opaqueChildren();
 #endif
 
     void setMaskInResizeEvent();
@@ -377,6 +387,8 @@ private slots:
 #ifdef Q_OS_SYMBIAN
     void cbaVisibility();
 #endif
+
+    void focusProxyAndInputMethods();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -2973,7 +2985,7 @@ void tst_QWidget::stackUnder()
             qApp->processEvents();
 #endif
 #ifndef Q_WS_MAC
-            QEXPECT_FAIL(0, "Task 153869", Continue);
+            QEXPECT_FAIL(0, "See QTBUG-493", Continue);
 #endif
             QCOMPARE(child->numPaintEvents, 0);
         } else {
@@ -3318,9 +3330,10 @@ void tst_QWidget::widgetAt()
     w2->lower();
     qApp->processEvents();
     QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
-    QCOMPARE(wr->objectName(), QString("w1"));
-
+    const bool match = (wr->objectName() == QString("w1"));
     w2->raise();
+    QVERIFY(match);
+
     qApp->processEvents();
     QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
     QCOMPARE(wr->objectName(), QString("w2"));
@@ -4348,6 +4361,161 @@ void tst_QWidget::ensureCreated()
     }
 }
 
+class WinIdChangeWidget : public QWidget {
+public:
+    WinIdChangeWidget(QWidget *p = 0)
+        : QWidget(p)
+        , m_winIdChangeEventCount(0)
+    {
+
+    }
+protected:
+    bool event(QEvent *e)
+    {
+        if (e->type() == QEvent::WinIdChange) {
+            ++m_winIdChangeEventCount;
+            return true;
+        }
+        return QWidget::event(e);
+    }
+public:
+    int m_winIdChangeEventCount;
+};
+
+void tst_QWidget::winIdChangeEvent()
+{
+    {
+        // Transforming an alien widget into a native widget
+        WinIdChangeWidget widget;
+        const WId winIdBefore = widget.internalWinId();
+        const WId winIdAfter = widget.winId();
+        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(widget.m_winIdChangeEventCount, 1);
+    }
+
+    {
+        // Changing parent of a native widget
+        // Should cause winId of child to change, on all platforms
+        QWidget parent1, parent2;
+        WinIdChangeWidget child(&parent1);
+        const WId winIdBefore = child.winId();
+        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        child.setParent(&parent2);
+        const WId winIdAfter = child.internalWinId();
+        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 2);
+    }
+
+    {
+        // Changing grandparent of a native widget
+        // Should cause winId of grandchild to change only on Symbian
+        QWidget grandparent1, grandparent2;
+        QWidget parent(&grandparent1);
+        WinIdChangeWidget child(&parent);
+        const WId winIdBefore = child.winId();
+        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        parent.setParent(&grandparent2);
+        const WId winIdAfter = child.internalWinId();
+#ifdef Q_OS_SYMBIAN
+        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 2);
+#else
+        QCOMPARE(winIdBefore, winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 1);
+#endif
+    }
+
+    {
+        // Changing parent of an alien widget
+        QWidget parent1, parent2;
+        WinIdChangeWidget child(&parent1);
+        const WId winIdBefore = child.internalWinId();
+        child.setParent(&parent2);
+        const WId winIdAfter = child.internalWinId();
+        QCOMPARE(winIdBefore, winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 0);
+    }
+
+    {
+        // Making native child widget into a top-level window
+        QWidget parent;
+        WinIdChangeWidget child(&parent);
+        child.winId();
+        const WId winIdBefore = child.internalWinId();
+        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        const Qt::WindowFlags flags = child.windowFlags();
+        child.setWindowFlags(flags | Qt::Window);
+        const WId winIdAfter = child.internalWinId();
+        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 2);
+    }
+}
+
+#ifdef Q_OS_SYMBIAN
+void tst_QWidget::reparentCausesChildWinIdChange()
+{
+    QWidget *parent = new QWidget;
+    QWidget *w1 = new QWidget;
+    QWidget *w2 = new QWidget;
+    QWidget *w3 = new QWidget;
+    w1->setParent(parent);
+    w2->setParent(w1);
+    w3->setParent(w2);
+
+    WId winId1 = w1->winId();
+    WId winId2 = w2->winId();
+    WId winId3 = w3->winId();
+
+    // reparenting causes winIds of the widget being reparented, and all of its children, to change
+    w1->setParent(0);
+    QVERIFY(w1->winId() != winId1);
+    winId1 = w1->winId();
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w1->setParent(parent);
+    QVERIFY(w1->winId() != winId1);
+    winId1 = w1->winId();
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w2->setParent(0);
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w2->setParent(parent);
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w2->setParent(w1);
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w3->setParent(0);
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w3->setParent(w1);
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w3->setParent(w2);
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    delete parent;
+}
+#else
 void tst_QWidget::persistentWinId()
 {
     QWidget *parent = new QWidget;
@@ -4404,6 +4572,7 @@ void tst_QWidget::persistentWinId()
 
     delete parent;
 }
+#endif // Q_OS_SYMBIAN
 
 class ShowHideEventWidget : public QWidget
 {
@@ -4524,9 +4693,6 @@ void tst_QWidget::update()
         QCOMPARE(child.paintedRegion, child.visibleRegion());
         QCOMPARE(w.numPaintEvents, 1);
         QCOMPARE(w.visibleRegion(), QRegion(w.rect()));
-#ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor paints the content view", Continue);
-#endif
         QCOMPARE(w.paintedRegion, child.visibleRegion().translated(childOffset));
 
         w.reset();
@@ -5136,15 +5302,6 @@ void tst_QWidget::windowMoveResize()
         // now hide
         widget.hide();
         QTest::qWait(10);
-#if defined (Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
-        QEXPECT_FAIL("130,100 0x200, flags 800",
-                     "Cocoa's Delegate sends a spurios move event when the window has a width of zero and non-zero height",
-                     Abort);
-
-        QEXPECT_FAIL("130,100 0x200, flags 0",
-                     "Cocoa's Delegate sends a spurios move event when the window has a width of zero and non-zero height",
-                     Abort);
-#endif
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -6060,6 +6217,35 @@ void tst_QWidget::showHideShow()
 
     QVERIFY(w.gotExpectedMapNotify);
 }
+
+void tst_QWidget::clean_qt_x11_enforce_cursor()
+{
+    {
+        QWidget window;
+        QWidget *w = new QWidget(&window);
+        QWidget *child = new QWidget(w);
+        child->setAttribute(Qt::WA_SetCursor, true);
+
+        window.show();
+        QApplication::setActiveWindow(&window);
+        QTest::qWaitForWindowShown(&window);
+        QTest::qWait(100);
+        QCursor::setPos(window.geometry().center());
+        QTest::qWait(100);
+
+        child->setFocus();
+        QApplication::processEvents();
+        QTest::qWait(100);
+
+        delete w;
+    }
+
+    QGraphicsScene scene;
+    QLineEdit *edit = new QLineEdit;
+    scene.addWidget(edit);
+
+    // If the test didn't crash, then it passed.
+}
 #endif
 
 class EventRecorder : public QObject
@@ -6137,6 +6323,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         widget.show();
         expected =
             EventRecorder::EventList()
+            << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
@@ -6222,6 +6409,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         widget.show();
         expected =
             EventRecorder::EventList()
+            << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
 #ifdef QT_HAS_QT3SUPPORT
             << qMakePair(&widget, QEvent::ChildInserted)
@@ -6319,6 +6507,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         widget.show();
         expected =
             EventRecorder::EventList()
+            << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
 #ifdef QT_HAS_QT3SUPPORT
             << qMakePair(&widget, QEvent::ChildInserted)
@@ -7466,16 +7655,16 @@ void tst_QWidget::updateWhileMinimized()
     UpdateWidget widget;
    // Filter out activation change and focus events to avoid update() calls in QWidget.
     widget.updateOnActivationChangeAndFocusIn = false;
-    widget.show();
     widget.reset();
+    widget.show();
     QTest::qWaitForWindowShown(&widget);
     QApplication::processEvents();
     QTRY_VERIFY(widget.numPaintEvents > 0);
-    QTest::qWait(50);
+    QTest::qWait(150);
 
     // Minimize window.
     widget.showMinimized();
-    QTest::qWait(70);
+    QTest::qWait(110);
 
     widget.reset();
 
@@ -8090,6 +8279,47 @@ void tst_QWidget::resizeInPaintEvent()
     // Make sure the resize triggers another update.
     QTRY_COMPARE(widget.numPaintEvents, 1);
 }
+
+void tst_QWidget::opaqueChildren()
+{
+    QWidget widget;
+    widget.resize(200, 200);
+
+    QWidget child(&widget);
+    child.setGeometry(-700, -700, 200, 200);
+
+    QWidget grandChild(&child);
+    grandChild.resize(200, 200);
+
+    QWidget greatGrandChild(&grandChild);
+    greatGrandChild.setGeometry(50, 50, 200, 200);
+    greatGrandChild.setPalette(Qt::red);
+    greatGrandChild.setAutoFillBackground(true); // Opaque child widget.
+
+    widget.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&widget);
+#endif
+    QTest::qWait(100);
+
+    // Child, grandChild and greatGrandChild are outside the ancestor clip.
+    QRegion expectedOpaqueRegion(50, 50, 150, 150);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), expectedOpaqueRegion);
+
+    // Now they are all inside the ancestor clip.
+    child.setGeometry(50, 50, 150, 150);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), expectedOpaqueRegion);
+
+    // Set mask on greatGrandChild.
+    const QRegion mask(10, 10, 50, 50);
+    greatGrandChild.setMask(mask);
+    expectedOpaqueRegion &= mask.translated(50, 50);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), expectedOpaqueRegion);
+
+    // Make greatGrandChild "transparent".
+    greatGrandChild.setAutoFillBackground(false);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), QRegion());
+}
 #endif
 
 
@@ -8176,7 +8406,7 @@ public:
 
         static bool firstTime = true;
         if (firstTime)
-            QTimer::singleShot(150, this, SLOT(resizeMe()));
+            QTimer::singleShot(250, this, SLOT(resizeMe()));
 
         firstTime = false;
     }
@@ -8193,7 +8423,7 @@ void tst_QWidget::moveInResizeEvent()
     testWidget.setGeometry(50, 50, 200, 200);
     testWidget.show();
     QTest::qWaitForWindowShown(&testWidget);
-    QTest::qWait(160);
+    QTest::qWait(300);
 
     QRect expectedGeometry(100,100, 100, 100);
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);
@@ -9267,7 +9497,8 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
     QPixmap correct(main.size());
     correct.fill(Qt::green);
 
-    QTRY_COMPARE(QPixmap::grabWindow(main.winId()).toImage(), correct.toImage());
+    QTRY_COMPARE(QPixmap::grabWindow(main.winId()).toImage().convertToFormat(QImage::Format_RGB32),
+                 correct.toImage().convertToFormat(QImage::Format_RGB32));
     QApplication::restoreOverrideCursor();
 }
 
@@ -9389,6 +9620,63 @@ void tst_QWidget::cbaVisibility()
     QVERIFY(buttonGroup->IsVisible());
 }
 #endif
+
+class InputContextTester : public QInputContext
+{
+    Q_OBJECT
+public:
+    QString identifierName() { return QString(); }
+    bool isComposing() const { return false; }
+    QString language() { return QString(); }
+    void reset() { ++resets; }
+    int resets;
+};
+
+void tst_QWidget::focusProxyAndInputMethods()
+{
+    InputContextTester *inputContext = new InputContextTester;
+    QWidget *toplevel = new QWidget(0, Qt::X11BypassWindowManagerHint);
+    toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
+    toplevel->setInputContext(inputContext); // ownership is transferred
+
+    QWidget *child = new QWidget(toplevel);
+    child->setFocusProxy(toplevel);
+    child->setAttribute(Qt::WA_InputMethodEnabled, true);
+
+    toplevel->setFocusPolicy(Qt::WheelFocus);
+    child->setFocusPolicy(Qt::WheelFocus);
+
+    QVERIFY(!child->hasFocus());
+    QVERIFY(!toplevel->hasFocus());
+
+    toplevel->show();
+    QTest::qWaitForWindowShown(toplevel);
+    QApplication::setActiveWindow(toplevel);
+    QVERIFY(toplevel->hasFocus());
+    QVERIFY(child->hasFocus());
+
+    // verify that toggling input methods on the child widget
+    // correctly propagate to the focus proxy's input method
+    // and that the input method gets the focus proxy passed
+    // as the focus widget instead of the child widget.
+    // otherwise input method queries go to the wrong widget
+
+    QCOMPARE(inputContext->focusWidget(), toplevel);
+
+    child->setAttribute(Qt::WA_InputMethodEnabled, false);
+    QVERIFY(!inputContext->focusWidget());
+
+    child->setAttribute(Qt::WA_InputMethodEnabled, true);
+    QCOMPARE(inputContext->focusWidget(), toplevel);
+
+    child->setEnabled(false);
+    QVERIFY(!inputContext->focusWidget());
+
+    child->setEnabled(true);
+    QCOMPARE(inputContext->focusWidget(), toplevel);
+
+    delete toplevel;
+}
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"

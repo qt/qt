@@ -54,8 +54,8 @@ QT_BEGIN_NAMESPACE
 QVGWindowSurface::QVGWindowSurface(QWidget *window)
     : QWindowSurface(window)
 {
-    d_ptr = QVGEGLWindowSurfacePrivate::create
-        (QVGEGLWindowSurfacePrivate::WindowSurface, this);
+    // Create the default type of EGL window surface for windows.
+    d_ptr = new QVGEGLWindowSurfaceDirect(this);
 }
 
 QVGWindowSurface::QVGWindowSurface
@@ -111,7 +111,7 @@ QPaintEngine *QVGWindowSurface::paintEngine() const
 
 int QVGWindowSurface::metric(PaintDeviceMetric met) const
 {
-    return window()->metric(met);
+    return qt_paint_device_metric(window(), met);
 }
 
 QT_END_NAMESPACE

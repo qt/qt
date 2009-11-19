@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -61,6 +61,7 @@
 #include <AknFontAccess.h>
 #include <AknLayoutFont.h>
 #include <aknutils.h>
+#include <aknnavi.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
@@ -98,26 +99,25 @@ public:
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QPixmap skinnedGraphics(QS60StylePrivate::SkinFrameElements frameElement, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QPixmap colorSkinnedGraphics(const QS60StyleEnums::SkinParts &stylepart,
-        const QSize &size, QS60StylePrivate::SkinElementFlags flags);
+        const QSize &size, QPainter *painter, QS60StylePrivate::SkinElementFlags flags);
     static QColor colorValue(const TAknsItemID &colorGroup, int colorIndex);
     static QPixmap fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask, QS60StylePrivate::SkinElementFlags flags, QImage::Format format);
     static bool disabledPartGraphic(QS60StyleEnums::SkinParts &part);
     static bool disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame);
     static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
+    static QSize naviPaneSize();
 
 private:
     static QPixmap createSkinnedGraphicsLX(QS60StyleEnums::SkinParts part,
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QPixmap createSkinnedGraphicsLX(QS60StylePrivate::SkinFrameElements frameElement, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QPixmap colorSkinnedGraphicsLX(const QS60StyleEnums::SkinParts &stylepart,
-        const QSize &size, QS60StylePrivate::SkinElementFlags flags);
+        const QSize &size, QPainter *painter, QS60StylePrivate::SkinElementFlags flags);
     static void frameIdAndCenterId(QS60StylePrivate::SkinFrameElements frameElement, TAknsItemID &frameId, TAknsItemID &centerId);
     static TRect innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect);
     static void checkAndUnCompressBitmapL(CFbsBitmap*& aOriginalBitmap);
     static void checkAndUnCompressBitmap(CFbsBitmap*& aOriginalBitmap);
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
-    static void colorGroupAndIndex(QS60StyleEnums::SkinParts skinID,
-        TAknsItemID &colorGroup, int &colorIndex);
     static void fallbackInfo(const QS60StyleEnums::SkinParts &stylepart, TDes& fallbackFileName, TInt& fallbackIndex);
     static bool checkSupport(const int supportedRelease);
     static TAknsItemID checkAndUpdateReleaseSpecificGraphics(int part);
@@ -319,16 +319,6 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b8},
     /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9},
 
-    /* SP_QsnFrNotepadCornerTl */        {KAknsIIDQsnFrNotepadContCornerTl,     ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerTr */        {KAknsIIDQsnFrNotepadContCornerTr,     ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerBl */        {KAknsIIDQsnFrNotepadCornerBl,         ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerBr */        {KAknsIIDQsnFrNotepadCornerBr,         ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideT */           {KAknsIIDQsnFrNotepadContSideT,        ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideB */           {KAknsIIDQsnFrNotepadSideB,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideL */           {KAknsIIDQsnFrNotepadSideL,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideR */           {KAknsIIDQsnFrNotepadSideR,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCenter */          {KAknsIIDQsnFrNotepadCenter,           EDrawIcon,   ES60_AllReleases,    -1,-1},
-
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
@@ -359,11 +349,11 @@ QPixmap QS60StyleModeSpecifics::skinnedGraphics(
 }
 
 QPixmap QS60StyleModeSpecifics::colorSkinnedGraphics(
-    const QS60StyleEnums::SkinParts &stylepart,
-    const QSize &size, QS60StylePrivate::SkinElementFlags flags)
+    const QS60StyleEnums::SkinParts &stylepart, const QSize &size, QPainter *painter, 
+    QS60StylePrivate::SkinElementFlags flags)
 {
     QPixmap colorGraphics;
-    TRAPD(error, QT_TRYCATCH_LEAVING(colorGraphics = colorSkinnedGraphicsLX(stylepart, size, flags)));
+    TRAPD(error, QT_TRYCATCH_LEAVING(colorGraphics = colorSkinnedGraphicsLX(stylepart, size, painter, flags)));
     return error ? QPixmap() : colorGraphics;
 }
 
@@ -523,7 +513,7 @@ void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &style
 
 QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
     const QS60StyleEnums::SkinParts &stylepart,
-    const QSize &size, QS60StylePrivate::SkinElementFlags flags)
+    const QSize &size, QPainter *painter, QS60StylePrivate::SkinElementFlags flags)
 {
     // this function can throw both exceptions and leaves. There are no cleanup dependencies between Qt and Symbian parts.
     const int stylepartIndex = (int)stylepart;
@@ -535,8 +525,13 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
     fallbackInfo(stylepart, fileNamePtr, fallbackGraphicID);
 
     TAknsItemID colorGroup = KAknsIIDQsnIconColors;
-    int colorIndex = 0;
-    colorGroupAndIndex(stylepart, colorGroup, colorIndex);
+    TRgb defaultColor = KRgbBlack;
+    int colorIndex = -1; //set a bogus value to color index to ensure that painter color is used
+                         //to color the icon
+    if (painter) {
+        QRgb widgetColor = painter->pen().color().rgb();
+        defaultColor = TRgb(qRed(widgetColor), qGreen(widgetColor), qBlue(widgetColor));
+    }
 
     const bool rotatedBy90or270 =
         (flags & (QS60StylePrivate::SF_PointEast | QS60StylePrivate::SF_PointWest));
@@ -548,7 +543,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
         fallbackGraphicID == KErrNotFound?KErrNotFound:fallbackGraphicID+1; //masks are auto-generated as next in mif files
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
     AknsUtils::CreateColorIconLC(
-        skinInstance, skinId, colorGroup, colorIndex, icon, iconMask, fileNamePtr, fallbackGraphicID , fallbackGraphicsMaskID, KRgbBlack);
+        skinInstance, skinId, colorGroup, colorIndex, icon, iconMask, fileNamePtr, fallbackGraphicID , fallbackGraphicsMaskID, defaultColor);
     User::LeaveIfError(AknIconUtils::SetSize(icon, targetSize, EAspectRatioNotPreserved));
     User::LeaveIfError(AknIconUtils::SetSize(iconMask, targetSize, EAspectRatioNotPreserved));
     QPixmap result = fromFbsBitmap(icon, iconMask, flags, qt_TDisplayMode2Format(icon->DisplayMode()));
@@ -650,8 +645,8 @@ QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 }
 
 QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
-    QS60StyleEnums::SkinParts part,
-    const QSize &size, QS60StylePrivate::SkinElementFlags flags)
+    QS60StyleEnums::SkinParts part, const QSize &size, 
+    QS60StylePrivate::SkinElementFlags flags)
 {
     // this function can throw both exceptions and leaves. There are no cleanup dependencies between Qt and Symbian parts.
     if (!size.isValid())
@@ -698,13 +693,13 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
             CleanupStack::PushL(background);
             User::LeaveIfError(background->Create(targetSize, EColor16MA));
 
-            CFbsBitmapDevice* dev = CFbsBitmapDevice::NewL(background);
+            CFbsBitmapDevice *dev = CFbsBitmapDevice::NewL(background);
             CleanupStack::PushL(dev);
-            CFbsBitGc* gc = NULL;
+            CFbsBitGc *gc = NULL;
             User::LeaveIfError(dev->CreateContext(gc));
             CleanupStack::PushL(gc);
 
-            CAknsBasicBackgroundControlContext* bgContext = CAknsBasicBackgroundControlContext::NewL(
+            CAknsBasicBackgroundControlContext *bgContext = CAknsBasicBackgroundControlContext::NewL(
                 skinId,
                 targetSize,
                 EFalse);
@@ -747,9 +742,8 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
     QPixmap result;
 
 //        QS60WindowSurface::unlockBitmapHeap();
-    static const bool canDoEColor16MAP = !(QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
-    static const TDisplayMode displayMode = canDoEColor16MAP ? TDisplayMode(13) : EColor16MA; // 13 = EColor16MAP
-    static const TInt drawParam = canDoEColor16MAP ? KAknsDrawParamDefault : KAknsDrawParamNoClearUnderImage|KAknsDrawParamRGBOnly;
+    static const TDisplayMode displayMode = S60->supportsPremultipliedAlpha ? Q_SYMBIAN_ECOLOR16MAP : EColor16MA;
+    static const TInt drawParam = S60->supportsPremultipliedAlpha ? KAknsDrawParamDefault : KAknsDrawParamNoClearUnderImage|KAknsDrawParamRGBOnly;
 
     CFbsBitmap *frame = new (ELeave) CFbsBitmap(); //offscreen
     CleanupStack::PushL(frame);
@@ -776,7 +770,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
                            frameSkinID, centerSkinID,
                            drawParam );
 
-    if (canDoEColor16MAP) {
+    if (S60->supportsPremultipliedAlpha) {
         if (drawn)
             result = fromFbsBitmap(frame, NULL, flags, QImage::Format_ARGB32_Premultiplied);
     } else {
@@ -847,10 +841,6 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             // remove center piece for panel graphics, so that only border is drawn
             centerId.Set(KAknsIIDNone);
             frameId.Set(KAknsIIDQsnFrSetOpt);
-            break;
-        case QS60StylePrivate::SF_Editor:
-            centerId.Set(KAknsIIDQsnFrNotepadCenter);
-            frameId.Set(KAknsIIDQsnFrNotepadCont);
             break;
         default:
             // center should be correct here
@@ -1024,23 +1014,6 @@ QS60StylePrivate::QS60StylePrivate()
     setActiveLayout();
 }
 
-void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
-{
-    if (QLatin1String(name) == QLatin1String("foo")) {
-        // BaR
-    } else {
-        setStyleProperty(name, value);
-    }
-}
-
-QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
-{
-    if (QLatin1String(name) == QLatin1String("foo"))
-        return QLatin1String("Bar");
-    else
-        return styleProperty(name);
-}
-
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
     int index, const QStyleOption *option)
 {
@@ -1144,12 +1117,12 @@ QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::Skin
 }
 
 QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
-    const QSize &size, SkinElementFlags flags)
+    const QSize &size, QPainter *painter, SkinElementFlags flags)
 {
     QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
 
     QPixmap result = (flags & SF_ColorSkinned)?
-          QS60StyleModeSpecifics::colorSkinnedGraphics(part, size, flags)
+          QS60StyleModeSpecifics::colorSkinnedGraphics(part, size, painter, flags)
         : QS60StyleModeSpecifics::skinnedGraphics(part, size, flags);
 
     lock.relock();
@@ -1188,7 +1161,7 @@ QPixmap QS60StylePrivate::backgroundTexture()
 {
     if (!m_background) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
-                QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), SkinElementFlags());
+                QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), 0, SkinElementFlags());
         m_background = new QPixmap(background);
     }
     return *m_background;
@@ -1342,26 +1315,6 @@ QSize QS60StylePrivate::screenSize()
     return QSize(screenSize.iWidth, screenSize.iHeight);
 }
 
-void QS60StyleModeSpecifics::colorGroupAndIndex(
-    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int &colorIndex)
-{
-    switch(skinID) {
-        case QS60StyleEnums::SP_QgnIndiSubMenu:
-            colorGroup = KAknsIIDQsnIconColors;
-            colorIndex = EAknsCIQsnIconColorsCG1;
-            break;
-        case QS60StyleEnums::SP_QgnIndiRadiobuttOff:
-        case QS60StyleEnums::SP_QgnIndiRadiobuttOn:
-        case QS60StyleEnums::SP_QgnIndiCheckboxOff:
-        case QS60StyleEnums::SP_QgnIndiCheckboxOn:
-            colorGroup = KAknsIIDQsnIconColors;
-            colorIndex = EAknsCIQsnIconColorsCG14;
-            break;
-        default:
-            break;
-    }
-}
-
 QS60Style::QS60Style()
     : QCommonStyle(*new QS60StylePrivate)
 {
@@ -1389,6 +1342,24 @@ void QS60StylePrivate::handleSkinChange()
         topLevelWidget->ensurePolished();
     }
 }
+
+QSize QS60StylePrivate::naviPaneSize()
+{
+    return QS60StyleModeSpecifics::naviPaneSize();
+}
+
+QSize QS60StyleModeSpecifics::naviPaneSize()
+{
+    CAknNavigationControlContainer* naviContainer;
+    if (S60->statusPane()) {
+        TRAPD(err, naviContainer = static_cast<CAknNavigationControlContainer*>
+            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi))));
+        if (err==KErrNone)
+            return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
+    }
+    return QSize(0,0);
+}
+
 #endif // Q_WS_S60
 
 QT_END_NAMESPACE

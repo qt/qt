@@ -605,6 +605,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                    this, SLOT(_q_modelDestroyed()));
         disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                    this, SLOT(dataChanged(QModelIndex,QModelIndex)));
+        disconnect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
+                   this, SLOT(_q_headerDataChanged()));
         disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                    this, SLOT(rowsInserted(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
@@ -637,6 +639,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                 this, SLOT(_q_modelDestroyed()));
         connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                 this, SLOT(dataChanged(QModelIndex,QModelIndex)));
+        connect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
+                this, SLOT(_q_headerDataChanged()));
         connect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                 this, SLOT(rowsInserted(QModelIndex,int,int)));
         connect(d->model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
@@ -1697,7 +1701,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     if ((event->buttons() & Qt::LeftButton) && d->selectionAllowed(index) && d->selectionModel) {
         setState(DragSelectingState);
         QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
-        if (command.testFlag(QItemSelectionModel::Toggle)) {
+        if (d->ctrlDragSelectionFlag != QItemSelectionModel::NoUpdate && command.testFlag(QItemSelectionModel::Toggle)) {
             command &= ~QItemSelectionModel::Toggle;
             command |= d->ctrlDragSelectionFlag;
         }
@@ -3029,7 +3033,7 @@ void QAbstractItemView::update(const QModelIndex &index)
         //this test is important for peformance reason
         //For example in dataChanged we simply update all the cells without checking
         //it can be a major bottleneck to update rects that aren't even part of the viewport
-        if (d->viewport->geometry().intersects(rect))
+        if (d->viewport->rect().intersects(rect))
             d->viewport->update(rect);
     }
 }
@@ -3637,7 +3641,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
             const bool controlKeyPressed = modifiers & Qt::ControlModifier;
             if (((index == pressedIndex && selectionModel->isSelected(index))
                 || !index.isValid()) && state != QAbstractItemView::DragSelectingState
-                && !shiftKeyPressed && !controlKeyPressed && !rightButtonPressed)
+                && !shiftKeyPressed && !controlKeyPressed && (!rightButtonPressed || !index.isValid()))
                 return QItemSelectionModel::ClearAndSelect|selectionBehaviorFlags();
             return QItemSelectionModel::NoUpdate;
         }

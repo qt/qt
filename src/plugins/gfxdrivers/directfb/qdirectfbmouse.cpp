@@ -207,7 +207,7 @@ void QDirectFBMouseHandlerPrivate::readMouseData()
         int wheel = 0;
 
         if (input.type == DIET_AXISMOTION) {
-#ifdef QT_NO_DIRECTFB_LAYER
+#if defined(QT_NO_DIRECTFB_LAYER) || defined(QT_DIRECTFB_WINDOW_AS_CURSOR)
             if (input.flags & DIEF_AXISABS) {
                 switch (input.axis) {
                 case DIAI_X: x = input.axisabs; break;

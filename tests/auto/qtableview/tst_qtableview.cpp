@@ -41,6 +41,7 @@
 
 
 #include <QtGui/QtGui>
+#include <private/qtablewidget_p.h>
 #include <QtTest/QtTest>
 #include "../../shared/util.h"
 #include "private/qapplication_p.h"
@@ -57,6 +58,13 @@
             QTest::qWait(step); \
         } \
     } while(0)
+
+#ifdef QT_BUILD_INTERNAL
+#define VERIFY_SPANS_CONSISTENCY(TEST_VIEW_) \
+    QVERIFY(static_cast<QTableViewPrivate*>(QObjectPrivate::get(TEST_VIEW_))->spans.checkConsistency())
+#else
+#define VERIFY_SPANS_CONSISTENCY(TEST_VIEW_) (void)false
+#endif
 
 typedef QList<int> IntList;
 Q_DECLARE_METATYPE(IntList)
@@ -188,11 +196,16 @@ private slots:
     void task248688_autoScrollNavigation();
     void task259308_scrollVerticalHeaderSwappedSections();
     void task191545_dragSelectRows();
+    void taskQTBUG_5062_spansInconsistency();
+    void taskQTBUG_4516_clickOnRichTextLabel();
 
     void mouseWheel_data();
     void mouseWheel();
 
     void addColumnWhileEditing();
+    void task234926_setHeaderSorting();
+
+    void changeHeaderData();
 };
 
 // Testing get/set functions
@@ -1194,6 +1207,13 @@ void tst_QTableView::moveCursorStrikesBack_data()
             << 0 << 5 << (IntList() << int(QtTestTableView::MoveNext))
             << 1 << 0;
 
+    QTest::newRow("Last column disabled. Task QTBUG-3878") << -1 << -1
+            << IntList()
+            << (IntList() << 6)
+            << QRect()
+            << 1 << 0 << (IntList() << int(QtTestTableView::MovePrevious))
+            << 0 << 5;
+
     QTest::newRow("Span, anchor column hidden") << -1 << 1
             << IntList()
             << IntList()
@@ -1249,6 +1269,24 @@ void tst_QTableView::moveCursorStrikesBack_data()
             << QRect(1, 2, 2, 3)
             << 5 << 2 << (IntList() << int(QtTestTableView::MoveUp) << int(QtTestTableView::MoveUp))
             << 1 << 2;
+
+    IntList fullList;
+    for (int i = 0; i < 7; ++i)
+        fullList << i;
+
+    QTest::newRow("All disabled, wrap forward. Timeout => FAIL") << -1 << -1
+            << fullList
+            << fullList
+            << QRect()
+            << 1 << 0 << (IntList() << int(QtTestTableView::MoveNext))
+            << 1 << 0;
+
+    QTest::newRow("All disabled, wrap backwards. Timeout => FAIL") << -1 << -1
+            << fullList
+            << fullList
+            << QRect()
+            << 1 << 0 << (IntList() << int(QtTestTableView::MovePrevious))
+            << 1 << 0;
 }
 
 void tst_QTableView::moveCursorStrikesBack()
@@ -1271,17 +1309,17 @@ void tst_QTableView::moveCursorStrikesBack()
     view.hideRow(hideRow);
     view.hideColumn(hideColumn);
 
-    foreach (int row, disableRows)
-        model.disableRow(row);
-    foreach (int column, disableColumns)
-        model.disableColumn(column);
-
     if (span.height() && span.width())
         view.setSpan(span.top(), span.left(), span.height(), span.width());
     view.show();
 
     QModelIndex index = model.index(startRow, startColumn);
     view.setCurrentIndex(index);
+
+    foreach (int row, disableRows)
+        model.disableRow(row);
+    foreach (int column, disableColumns)
+        model.disableColumn(column);
 
     int newRow = -1;
     int newColumn = -1;
@@ -1991,8 +2029,9 @@ void tst_QTableView::resizeRowsToContents()
     view.resizeRowsToContents();
 
     QCOMPARE(resizedSpy.count(), model.rowCount());
-    for (int r = 0; r < model.rowCount(); ++r)
+    for (int r = 0; r < model.rowCount(); ++r) {
         QCOMPARE(view.rowHeight(r), rowHeight);
+    }
 }
 
 void tst_QTableView::resizeColumnsToContents_data()
@@ -2702,6 +2741,7 @@ void tst_QTableView::indexAt()
     QtTestTableView view;
 
     view.show();
+    QTest::qWaitForWindowShown(&view);
 
     //some styles change the scroll mode in their polish
     view.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
@@ -2717,9 +2757,10 @@ void tst_QTableView::indexAt()
     for (int c = 0; c < columnCount; ++c)
         view.setColumnWidth(c, columnWidth);
 
-    QTest::qWait(0); // ### needed to pass the test
+    QTest::qWait(20);
     view.horizontalScrollBar()->setValue(horizontalScroll);
     view.verticalScrollBar()->setValue(verticalScroll);
+    QTest::qWait(20);
 
     QModelIndex index = view.indexAt(QPoint(x, y));
     QCOMPARE(index.row(), expectedRow);
@@ -2870,6 +2911,8 @@ void tst_QTableView::span()
     view.clearSpans();
     QCOMPARE(view.rowSpan(row, column), 1);
     QCOMPARE(view.columnSpan(row, column), 1);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 typedef QVector<QRect> SpanList;
@@ -3005,6 +3048,8 @@ void tst_QTableView::spans()
 
     QCOMPARE(view.columnSpan(pos.x(), pos.y()), expectedColumnSpan);
     QCOMPARE(view.rowSpan(pos.x(), pos.y()), expectedRowSpan);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 void tst_QTableView::spansAfterRowInsertion()
@@ -3039,6 +3084,8 @@ void tst_QTableView::spansAfterRowInsertion()
     view.model()->insertRows(12, 2);
     QCOMPARE(view.rowSpan(7, 3), 5);
     QCOMPARE(view.columnSpan(7, 3), 3);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 void tst_QTableView::spansAfterColumnInsertion()
@@ -3073,6 +3120,8 @@ void tst_QTableView::spansAfterColumnInsertion()
     view.model()->insertColumns(12, 2);
     QCOMPARE(view.rowSpan(3, 7), 3);
     QCOMPARE(view.columnSpan(3, 7), 5);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 void tst_QTableView::spansAfterRowRemoval()
@@ -3110,6 +3159,8 @@ void tst_QTableView::spansAfterRowRemoval()
         QCOMPARE(view.columnSpan(span.top(), span.left()), span.width());
         QCOMPARE(view.rowSpan(span.top(), span.left()), span.height());
     }
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 void tst_QTableView::spansAfterColumnRemoval()
@@ -3148,6 +3199,8 @@ void tst_QTableView::spansAfterColumnRemoval()
         QCOMPARE(view.columnSpan(span.left(), span.top()), span.height());
         QCOMPARE(view.rowSpan(span.left(), span.top()), span.width());
     }
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 class Model : public QAbstractTableModel {
@@ -3239,19 +3292,25 @@ void tst_QTableView::resizeToContents()
 
     //now let's check the row/col sizes
     for(int i = 0;i<table.columnCount();i++) {
-        QVERIFY( table.columnWidth(i) == table2.columnWidth(i));
-        QVERIFY( table2.columnWidth(i) == table3.columnWidth(i));
+        QCOMPARE( table.columnWidth(i), table2.columnWidth(i));
+        QCOMPARE( table2.columnWidth(i), table3.columnWidth(i));
     }
     for(int i = 0;i<table.rowCount();i++) {
-        QVERIFY( table.rowHeight(i) == table2.rowHeight(i));
-        QVERIFY( table2.rowHeight(i) == table3.rowHeight(i));
+        QCOMPARE( table.rowHeight(i), table2.rowHeight(i));
+        QCOMPARE( table2.rowHeight(i), table3.rowHeight(i));
     }
 
 }
 
+QT_BEGIN_NAMESPACE
+extern bool Q_GUI_EXPORT qt_tab_all_widgets; // qapplication.cpp
+QT_END_NAMESPACE
 
 void tst_QTableView::tabFocus()
 {
+    if (!qt_tab_all_widgets)
+        QSKIP("This test requires full keyboard control to be enabled.", SkipAll);
+
     // QTableView enables tabKeyNavigation by default, but you should be able
     // to change focus on an empty table view, or on a table view that doesn't
     // have this property set.
@@ -3773,6 +3832,96 @@ void tst_QTableView::task191545_dragSelectRows()
             }
     }
 }
+
+void tst_QTableView::task234926_setHeaderSorting()
+{
+    QStringListModel model;
+    QStringList data;
+    data << "orange" << "apple" << "banana" << "lemon" << "pumpkin";
+    QStringList sortedDataA = data;
+    QStringList sortedDataD = data;
+    qSort(sortedDataA);
+    qSort(sortedDataD.begin(), sortedDataD.end(), qGreater<QString>());
+    model.setStringList(data);
+    QTableView view;
+    view.setModel(&model);
+//    view.show();
+    QTest::qWait(20);
+    QCOMPARE(model.stringList(), data);
+    view.setSortingEnabled(true);
+    view.sortByColumn(0, Qt::AscendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataA);
+
+    view.horizontalHeader()->setSortIndicator(0, Qt::DescendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataD);
+
+    QHeaderView *h = new QHeaderView(Qt::Horizontal);
+    h->setModel(&model);
+    view.setHorizontalHeader(h);
+    h->setSortIndicator(0, Qt::AscendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataA);
+
+    h->setSortIndicator(0, Qt::DescendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataD);
+}
+
+void tst_QTableView::taskQTBUG_5062_spansInconsistency()
+{
+    const int nRows = 5;
+    const int nColumns = 5;
+
+    QtTestTableModel model(nRows, nColumns);
+    QtTestTableView view;
+    view.setModel(&model);
+
+    for (int i = 0; i < nRows; ++i)
+       view.setSpan(i, 0, 1, nColumns);
+    view.setSpan(2, 0, 1, 1);
+    view.setSpan(3, 0, 1, 1);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
+}
+
+void tst_QTableView::taskQTBUG_4516_clickOnRichTextLabel()
+{
+    QTableView view;
+    QStandardItemModel model(5,5);
+    view.setModel(&model);
+    QLabel label("rich text");
+    label.setTextFormat(Qt::RichText);
+    view.setIndexWidget(model.index(1,1), &label);
+    view.setCurrentIndex(model.index(0,0));
+    QCOMPARE(view.currentIndex(), model.index(0,0));
+
+    QTest::mouseClick(&label, Qt::LeftButton);
+    QCOMPARE(view.currentIndex(), model.index(1,1));
+
+
+}
+
+
+void tst_QTableView::changeHeaderData()
+{
+    QTableView view;
+    QStandardItemModel model(5,5);
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QString text = "long long long text";
+    const int textWidth = view.fontMetrics().width(text);
+    QVERIFY(view.verticalHeader()->width() < textWidth);
+
+    model.setHeaderData(2, Qt::Vertical, text);
+    QTest::qWait(100); //leave time for layout
+
+    QVERIFY(view.verticalHeader()->width() > textWidth);
+}
+
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"

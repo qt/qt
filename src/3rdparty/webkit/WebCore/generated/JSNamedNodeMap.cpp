@@ -80,8 +80,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSNamedNodeMapConstructor::s_info = { "NamedNodeMapConstructor", 0, &JSNamedNodeMapConstructorTable, 0 };
@@ -144,7 +147,7 @@ JSNamedNodeMap::JSNamedNodeMap(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 
 JSNamedNodeMap::~JSNamedNodeMap()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSNamedNodeMap::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

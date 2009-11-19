@@ -245,12 +245,6 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     Q_D(QErrorMessage);
     QGridLayout * grid = new QGridLayout(this);
     d->icon = new QLabel(this);
-#ifdef QT_SOFTKEYS_ENABLED
-    d->okAction = new QAction(this);
-    d->okAction->setSoftKeyRole(QAction::PositiveSoftKey);
-    connect(d->okAction, SIGNAL(triggered()), this, SLOT(accept()));
-    addAction(d->okAction);
-#endif
 #ifndef QT_NO_MESSAGEBOX
     d->icon->setPixmap(QMessageBox::standardIcon(QMessageBox::Information));
     d->icon->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
@@ -262,6 +256,13 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     d->again->setChecked(true);
     grid->addWidget(d->again, 1, 1, Qt::AlignTop);
     d->ok = new QPushButton(this);
+#ifdef QT_SOFTKEYS_ENABLED
+    d->okAction = new QAction(d->ok);
+    d->okAction->setSoftKeyRole(QAction::PositiveSoftKey);
+    connect(d->okAction, SIGNAL(triggered()), this, SLOT(accept()));
+    addAction(d->okAction);
+#endif
+
 
 #if defined(Q_WS_WINCE) || defined(Q_WS_S60)
     d->ok->setFixedSize(0,0);

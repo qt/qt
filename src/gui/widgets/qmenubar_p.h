@@ -196,6 +196,7 @@ public:
             return 0;
         }
     } *mac_menubar;
+    bool macWidgetHasNativeMenubar(QWidget *widget);
     void macCreateMenuBar(QWidget *);
     void macDestroyMenuBar();
     OSMenuRef macMenu();
@@ -265,7 +266,7 @@ public:
         void insertNativeMenuItems(const QList<QAction*> &actions);
 
     } *symbian_menubar;
-    static void symbianCommands(int command);
+    static int symbianCommands(int command);
 
 #endif
 };

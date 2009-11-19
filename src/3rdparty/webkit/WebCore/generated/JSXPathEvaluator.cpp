@@ -86,8 +86,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
     static JSObject* constructXPathEvaluator(ExecState* exec, JSObject* constructor, const ArgList&)
     {
         return asObject(toJS(exec, static_cast<JSXPathEvaluatorConstructor*>(constructor)->globalObject(), XPathEvaluator::create()));
@@ -155,7 +158,7 @@ JSXPathEvaluator::JSXPathEvaluator(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSXPathEvaluator::~JSXPathEvaluator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXPathEvaluator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -87,8 +87,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSWorkerLocationConstructor::s_info = { "WorkerLocationConstructor", 0, &JSWorkerLocationConstructorTable, 0 };
@@ -153,7 +156,7 @@ JSWorkerLocation::JSWorkerLocation(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSWorkerLocation::~JSWorkerLocation()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSWorkerLocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

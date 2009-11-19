@@ -80,6 +80,14 @@ Q_DECLARE_METATYPE(QVariant)
 
 void tst_QDBusPerformance::initTestCase()
 {
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    QDBusServiceWatcher watcher(serviceName, con,
+                                QDBusServiceWatcher::WatchForRegistration);
+    connect(&watcher, SIGNAL(serviceRegistered(QString)),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+
 #ifdef Q_OS_WIN
     proc.start("server");
 #else
@@ -87,19 +95,7 @@ void tst_QDBusPerformance::initTestCase()
 #endif
     QVERIFY(proc.waitForStarted());
 
-    QDBusConnection con = QDBusConnection::sessionBus();
-    QVERIFY(con.isConnected());
-
-    connect(con.interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-            &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTime timer;
-    timer.start();
-
-    while (timer.elapsed() < 5000) {
-        QTestEventLoop::instance().enterLoop(5);
-        if (con.interface()->isServiceRegistered(serviceName))
-            break;
-    }
+    QTestEventLoop::instance().enterLoop(5);
     QVERIFY(con.interface()->isServiceRegistered(serviceName));
 
     remote = new QDBusInterface(serviceName, "/", "com.trolltech.autotests.Performance", con, this);

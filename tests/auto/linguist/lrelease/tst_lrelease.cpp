@@ -60,6 +60,7 @@ private slots:
     void mixedcodecs();
     void compressed();
     void idbased();
+    void markuntranslated();
     void dupes();
 
 private:
@@ -71,8 +72,8 @@ private:
 void tst_lrelease::doCompare(const QStringList &actual, const QString &expectedFn)
 {
     QFile file(expectedFn);
-    QVERIFY(file.open(QIODevice::ReadOnly));
-    QStringList expected = QString(file.readAll()).trimmed().remove('\r').split('\n');
+    QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    QStringList expected = QString(file.readAll()).trimmed().split('\n');
 
     int i = 0, ei = expected.size(), gi = actual.size();
     for (; ; i++) {
@@ -210,13 +211,25 @@ void tst_lrelease::idbased()
     QCOMPARE(qtTrId("untranslated_id"), QString::fromAscii("This has no translation."));
 }
 
+void tst_lrelease::markuntranslated()
+{
+    QVERIFY(!QProcess::execute(binDir + "/lrelease -markuntranslated # -idbased testdata/idbased.ts"));
+
+    QTranslator translator;
+    QVERIFY(translator.load("testdata/idbased.qm"));
+    qApp->installTranslator(&translator);
+
+    QCOMPARE(qtTrId("test_id"), QString::fromAscii("This is a test string."));
+    QCOMPARE(qtTrId("untranslated_id"), QString::fromAscii("#This has no translation."));
+}
+
 void tst_lrelease::dupes()
 {
     QProcess proc;
-    proc.start(binDir + "/lrelease testdata/dupes.ts");
+    proc.start(binDir + "/lrelease testdata/dupes.ts", QIODevice::ReadWrite | QIODevice::Text);
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
-    doCompare(QString(proc.readAllStandardError()).trimmed().remove('\r').split('\n'), "testdata/dupes.errors");
+    doCompare(QString(proc.readAllStandardError()).trimmed().split('\n'), "testdata/dupes.errors");
 }
 
 QTEST_MAIN(tst_lrelease)

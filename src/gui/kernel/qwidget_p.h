@@ -63,7 +63,9 @@
 #include "QtGui/qstyle.h"
 #include "QtGui/qapplication.h"
 #include <private/qgraphicseffect_p.h>
-
+#include "QtGui/qgraphicsproxywidget.h"
+#include "QtGui/qgraphicsscene.h"
+#include "QtGui/qgraphicsview.h"
 #include <private/qgesture_p.h>
 
 #ifdef Q_WS_WIN
@@ -180,7 +182,9 @@ struct QWExtra {
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     void *glContext; // if the widget is hijacked by QGLWindowSurface
     QTLWExtra *topextra; // only useful for TLWs
+#ifndef QT_NO_GRAPHICSVIEW
     QGraphicsProxyWidget *proxyWidget; // if the widget is embedded
+#endif
 #ifndef QT_NO_CURSOR
     QCursor *curs;
 #endif
@@ -234,6 +238,24 @@ struct QWExtra {
     uint disableBlit : 1;
 #endif
 };
+
+/*!
+    \internal
+
+    Returns true if \a p or any of its parents enable the
+    Qt::BypassGraphicsProxyWidget window flag. Used in QWidget::show() and
+    QWidget::setParent() to determine whether it's necessary to embed the
+    widget into a QGraphicsProxyWidget or not.
+*/
+static inline bool bypassGraphicsProxyWidget(const QWidget *p)
+{
+    while (p) {
+        if (p->windowFlags() & Qt::BypassGraphicsProxyWidget)
+            return true;
+        p = p->parentWidget();
+    }
+    return false;
+}
 
 class Q_GUI_EXPORT QWidgetPrivate : public QObjectPrivate
 {
@@ -296,7 +318,8 @@ public:
     void setMask_sys(const QRegion &);
 #ifdef Q_OS_SYMBIAN
     void setSoftKeys_sys(const QList<QAction*> &softkeys);
-    void activateSymbianWindow();
+    void activateSymbianWindow(WId wid = 0);
+    void _q_delayedDestroy(WId winId);
 #endif
 
     void raise_sys();
@@ -344,7 +367,9 @@ public:
 
     QPainter *beginSharedPainter();
     bool endSharedPainter();
-    static QGraphicsProxyWidget * nearestGraphicsProxyWidget(QWidget *origin);
+#ifndef QT_NO_GRAPHICSVIEW
+    static QGraphicsProxyWidget * nearestGraphicsProxyWidget(const QWidget *origin);
+#endif
     QWindowSurface *createDefaultWindowSurface();
     QWindowSurface *createDefaultWindowSurface_sys();
     void repaint_sys(const QRegion &rgn);
@@ -359,8 +384,10 @@ public:
     void setOpaque(bool opaque);
     void updateIsTranslucent();
     bool paintOnScreen() const;
+#ifndef QT_NO_GRAPHICSEFFECT
+    void invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
 
-    QRegion getOpaqueRegion() const;
     const QRegion &getOpaqueChildren() const;
     void setDirtyOpaqueRegion();
 
@@ -438,8 +465,39 @@ public:
     void setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt = 0);
 
     QInputContext *inputContext() const;
+    inline QWidget *effectiveFocusWidget() {
+        QWidget *w = q_func();
+        while (w->focusProxy())
+            w = w->focusProxy();
+        return w;
+    }
 
     void setModal_sys();
+
+    // This is an helper function that return the available geometry for
+    // a widget and takes care is this one is in QGraphicsView.
+    // If the widget is not embed in a scene then the geometry available is
+    // null, we let QDesktopWidget decide for us.
+    static QRect screenGeometry(const QWidget *widget)
+    {
+        QRect screen;
+#ifndef QT_NO_GRAPHICSVIEW
+        QGraphicsProxyWidget *ancestorProxy = widget->d_func()->nearestGraphicsProxyWidget(widget);
+        //It's embedded if it has an ancestor
+        if (ancestorProxy) {
+            if (!bypassGraphicsProxyWidget(widget) && ancestorProxy->scene() != 0) {
+                // One view, let be smart and return the viewport rect then the popup is aligned
+                if (ancestorProxy->scene()->views().size() == 1) {
+                    QGraphicsView *view = ancestorProxy->scene()->views().at(0);
+                    screen = view->mapToScene(view->viewport()->rect()).boundingRect().toRect();
+                } else {
+                    screen = ancestorProxy->scene()->sceneRect().toRect();
+                }
+            }
+        }
+#endif
+        return screen;
+    }
 
     inline void setRedirected(QPaintDevice *replacement, const QPoint &offset)
     {
@@ -480,8 +538,10 @@ public:
 
     inline QRect effectiveRectFor(const QRect &rect) const
     {
+#ifndef QT_NO_GRAPHICSEFFECT
         if (graphicsEffect && graphicsEffect->isEnabled())
             return graphicsEffect->boundingRectFor(rect).toAlignedRect();
+#endif //QT_NO_GRAPHICSEFFECT
         return rect;
     }
 
@@ -580,7 +640,7 @@ public:
 #ifndef QT_NO_ACTION
     QList<QAction*> actions;
 #endif
-    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
+    QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
     // Bit fields.
     uint high_attributes[3]; // the low ones are in QWidget::widget_attributes
@@ -730,11 +790,12 @@ struct QWidgetPaintContext
     QPainter *painter;
 };
 
+#ifndef QT_NO_GRAPHICSEFFECT
 class QWidgetEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
     QWidgetEffectSourcePrivate(QWidget *widget)
-        : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0)
+        : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0), updateDueToGraphicsEffect(false)
     {}
 
     inline void detach()
@@ -747,7 +808,11 @@ public:
     { return m_widget; }
 
     inline void update()
-    { m_widget->update(); }
+    {
+        updateDueToGraphicsEffect = true;
+        m_widget->update();
+        updateDueToGraphicsEffect = false;
+    }
 
     inline bool isPixmap() const
     { return false; }
@@ -759,7 +824,7 @@ public:
         if (QWidget *parent = m_widget->parentWidget())
             parent->update();
         else
-            m_widget->update();
+            update();
     }
 
     inline const QStyleOption *styleOption() const
@@ -770,11 +835,15 @@ public:
 
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *p);
-    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset,
+                   QGraphicsEffect::PixmapPadMode mode) const;
 
     QWidget *m_widget;
     QWidgetPaintContext *context;
+    QTransform lastEffectTransform;
+    bool updateDueToGraphicsEffect;
 };
+#endif //QT_NO_GRAPHICSEFFECT
 
 inline QWExtra *QWidgetPrivate::extraData() const
 {

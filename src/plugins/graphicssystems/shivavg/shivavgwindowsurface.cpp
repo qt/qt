@@ -350,21 +350,9 @@ QPaintEngine *ShivaVGWindowSurface::paintEngine() const
     return d_ptr->engine;
 }
 
-// We need to get access to QWidget::metric() from ShivaVGWindowSurface::metric,
-// but it is not a friend of QWidget.  To get around this, we create a
-// fake QX11PaintEngine class, which is a friend.
-class QX11PaintEngine
-{
-public:
-    static int metric(const QWidget *widget, QPaintDevice::PaintDeviceMetric met)
-    {
-        return widget->metric(met);
-    }
-};
-
 int ShivaVGWindowSurface::metric(PaintDeviceMetric met) const
 {
-    return QX11PaintEngine::metric(window(), met);
+    return qt_paint_device_metric(window(), met);
 }
 
 QT_END_NAMESPACE

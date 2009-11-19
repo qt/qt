@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -361,7 +361,6 @@ public:
         SF_ToolBarButtonPressed,
         SF_PanelBackground,
         SF_ButtonInactive,
-        SF_Editor,
     };
 
     enum SkinElementFlag {
@@ -372,7 +371,7 @@ public:
 
         SF_StateEnabled =     0x0010, // Enabled = the default
         SF_StateDisabled =    0x0020,
-        SF_ColorSkinned =     0x0040,
+        SF_ColorSkinned =     0x0040, // pixmap is colored with foreground pen color
     };
 
     enum CacheClearReason {
@@ -389,14 +388,6 @@ public:
     // draws a specific skin part
     static void drawSkinPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
-    // sets style property
-    void setStyleProperty(const char *name, const QVariant &value);
-    // sets specific style property
-    void setStyleProperty_specific(const char *name, const QVariant &value);
-    // gets style property
-    QVariant styleProperty(const char *name) const;
-    // gets specific style property
-    QVariant styleProperty_specific(const char *name) const;
     // gets pixel metrics value
     static short pixelMetric(int metric);
     // gets color. 'index' is NOT 0-based.
@@ -460,6 +451,8 @@ public:
     void handleSkinChange();
 #endif // Q_WS_S60
 
+    static QSize naviPaneSize();
+
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
@@ -470,7 +463,7 @@ private:
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
 
     static QPixmap cachedPart(QS60StyleEnums::SkinParts part, const QSize &size,
-        SkinElementFlags flags = KDefaultSkinElementFlags);
+        QPainter *painter, SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap cachedFrame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
 
@@ -487,7 +480,7 @@ private:
     static QSize partSize(QS60StyleEnums::SkinParts part,
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
-        SkinElementFlags flags = KDefaultSkinElementFlags);
+        QPainter *painter, SkinElementFlags flags = KDefaultSkinElementFlags);
 
     static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize);
 

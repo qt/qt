@@ -1421,7 +1421,7 @@ QRegion QTransform::map(const QRegion &r) const
         return copy;
     }
 
-    if (t == TxScale && r.numRects() == 1)
+    if (t == TxScale && r.rectCount() == 1)
         return QRegion(mapRect(r.boundingRect()));
 
     QPainterPath p = map(qt_regionToPath(r));
@@ -2214,12 +2214,14 @@ bool qt_scaleForTransform(const QTransform &transform, qreal *scale)
 {
     const QTransform::TransformationType type = transform.type();
     if (type <= QTransform::TxTranslate) {
-        *scale = 1;
+        if (scale)
+            *scale = 1;
         return true;
     } else if (type == QTransform::TxScale) {
         const qreal xScale = qAbs(transform.m11());
         const qreal yScale = qAbs(transform.m22());
-        *scale = qMax(xScale, yScale);
+        if (scale)
+            *scale = qMax(xScale, yScale);
         return qFuzzyCompare(xScale, yScale);
     }
 
@@ -2227,7 +2229,8 @@ bool qt_scaleForTransform(const QTransform &transform, qreal *scale)
                          + transform.m21() * transform.m21();
     const qreal yScale = transform.m12() * transform.m12()
                          + transform.m22() * transform.m22();
-    *scale = qSqrt(qMax(xScale, yScale));
+    if (scale)
+        *scale = qSqrt(qMax(xScale, yScale));
     return type == QTransform::TxRotate && qFuzzyCompare(xScale, yScale);
 }
 

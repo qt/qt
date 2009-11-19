@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2006, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -50,12 +48,17 @@ namespace WebCore {
 
         virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 
-    protected:
-        virtual const SVGElement* contextElement() const { return this; }
-
     private:
         ANIMATED_PROPERTY_DECLARATIONS(SVGCursorElement, SVGNames::cursorTagString, SVGNames::xAttrString, SVGLength, X, x)
         ANIMATED_PROPERTY_DECLARATIONS(SVGCursorElement, SVGNames::cursorTagString, SVGNames::yAttrString, SVGLength, Y, y)
+
+        // SVGURIReference
+        ANIMATED_PROPERTY_DECLARATIONS(SVGCursorElement, SVGURIReferenceIdentifier, XLinkNames::hrefAttrString, String, Href, href)
+
+        // SVGExternalResourcesRequired
+        ANIMATED_PROPERTY_DECLARATIONS(SVGCursorElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
 
         HashSet<SVGElement*> m_clients;
     };

@@ -37,9 +37,9 @@ symbian-abld: {
 symbian-sbsv2: {
     TARGET.CAPABILITY=ALL -TCB
     QMAKE_POST_LINK = \
-    $(GNUCP) $${EPOCROOT}epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/mylib.dll  $${EPOCROOT}epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/mylib.dl2 && \
-    $(GNUCP) $${EPOCROOT}epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/mylib.dll  $${EPOCROOT}epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/system.trolltech.test.mylib.dll && \
-    if test $(PLATFORM) != WINSCW;then $(GNUCP) $${EPOCROOT}epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/mylib.dll $${PWD}/../tst/mylib.dl2; fi
+    $(GNUCP) $(EPOCROOT)epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/mylib.dll  $(EPOCROOT)epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/mylib.dl2 && \
+    $(GNUCP) $(EPOCROOT)epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/mylib.dll  $(EPOCROOT)epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/system.trolltech.test.mylib.dll && \
+    if test $(PLATFORM) != WINSCW;then $(GNUCP) $(EPOCROOT)epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/mylib.dll $${PWD}/../tst/mylib.dl2; fi
 }
 
 #no special install rule for the library used by test

@@ -123,6 +123,8 @@ QWidget *QFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidget)
     QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
     if (!fb->parentWidgetIsSet())
         fb->setParentWidget(parentWidget);
+    // Is this a QLayoutWidget with a margin of 0: Not a known page-based
+    // container and no method for adding pages registered.
     fb->setProcessingLayoutWidget(false);
     if (ui_widget->attributeClass() == QFormBuilderStrings::instance().qWidgetClass && !ui_widget->hasAttributeNative()
             && parentWidget
@@ -147,8 +149,11 @@ QWidget *QFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidget)
 #ifndef QT_NO_DOCKWIDGET
             && !qobject_cast<QDockWidget *>(parentWidget)
 #endif
-            )
-        fb->setProcessingLayoutWidget(true);
+        ) {
+        const QString parentClassName = QLatin1String(parentWidget->metaObject()->className());
+        if (!fb->isCustomWidgetContainer(parentClassName))
+            fb->setProcessingLayoutWidget(true);
+    }
     return QAbstractFormBuilder::create(ui_widget, parentWidget);
 }
 

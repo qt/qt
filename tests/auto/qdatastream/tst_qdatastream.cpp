@@ -320,8 +320,7 @@ void tst_QDataStream::getSetCheck()
 
 tst_QDataStream::tst_QDataStream()
 {
-    svgFile = QLatin1String(SRCDIR) + QLatin1String("/") +
-              QLatin1String(SVGFILE);
+    svgFile = QLatin1String(SRCDIR SVGFILE);
 }
 
 tst_QDataStream::~tst_QDataStream()
@@ -1461,7 +1460,7 @@ void tst_QDataStream::readQImage(QDataStream *s)
     QVERIFY(d12.width() == ref.width());
     QVERIFY(d12.height() == ref.height());
     QVERIFY(d12.depth() == ref.depth());
-    QVERIFY(d12.numColors() == ref.numColors());
+    QVERIFY(d12.colorCount() == ref.colorCount());
 #ifdef QT3_SUPPORT
     QVERIFY(d12.hasAlphaBuffer() == ref.hasAlphaBuffer());
 #else
@@ -3100,22 +3099,6 @@ void tst_QDataStream::streamToAndFromQByteArray()
 
 void tst_QDataStream::streamRealDataTypes()
 {
-#if defined(Q_OS_WINCE)
-    // Note: Probably actually same 'qreal being typedeffed as float instead of double' issue as in Symbian
-    // instead of what CE skip message says.
-    QSKIP("Skipped on CE as it demands too much memory and fragments", SkipAll);
-#elif defined(Q_OS_SYMBIAN)
-    // qreal is typedeffed float in symbian instead of double like in most platforms, so reference stream
-    // gets corrupted. Basically this test is flawed, as one shouldn't use naked typedeffed types in
-    // streams that are meant to work cross-platform.
-    // As this test also tests other floating point using classes, we do not simply skip it, but work around
-    // the qreal issue by redefining qreal as double for the duration of this function.
-    // Note that streaming classes works because they do explicitly use double instead of qreal when
-    // writing/reading to/from stream.
-#   define qreal double
-    qWarning("Note: streamRealDataTypes test redefines qreal as double in symbian!!!");
-#endif
-
     // Generate QPicture from SVG.
     QSvgRenderer renderer(svgFile);
     QVERIFY(renderer.isValid());
@@ -3163,7 +3146,6 @@ void tst_QDataStream::streamRealDataTypes()
             file.close();
         }
 
-        qreal a, b, c, d, e, f;
         QPointF point;
         QRectF rect;
         QPolygonF polygon;
@@ -3180,28 +3162,50 @@ void tst_QDataStream::streamRealDataTypes()
         QDataStream stream(&file);
         stream.setVersion(QDataStream::Qt_4_2);
 
-        stream >> a >> b >> c >> d >> e >> f >> point
-               >> rect >> polygon >> matrix >> p;
-        if (i == 1)
-            stream >> pict;
-        stream >> textLength >> col >> rGrad >> cGrad
-               >> pen;
-
-        QCOMPARE(stream.status(), QDataStream::Ok);
-
-        QCOMPARE(a, qreal(0));
-        QCOMPARE(b, qreal(1.0));
-        QCOMPARE(c, qreal(1.1));
-        QCOMPARE(d, qreal(3.14));
-        QCOMPARE(e, qreal(-3.14));
-        QCOMPARE(f, qreal(-1));
-        QCOMPARE(point, QPointF(3, 5));
-        QCOMPARE(rect, QRectF(-1, -2, 3, 4));
-        QCOMPARE((QVector<QPointF> &)polygon, (QPolygonF() << QPointF(0, 0) << QPointF(1, 2)));
-        QCOMPARE(matrix, QMatrix().rotate(90).scale(2, 2));
-        QCOMPARE(p, path);
-
         if (i == 0) {
+            // the reference stream for 4.2 contains doubles,
+            // so we must read them out as doubles!
+            double a, b, c, d, e, f;
+            stream >> a;
+            QCOMPARE(a, 0.0);
+            stream >> b;
+            QCOMPARE(b, 1.0);
+            stream >> c;
+            QCOMPARE(c, 1.1);
+            stream >> d;
+            QCOMPARE(d, 3.14);
+            stream >> e;
+            QCOMPARE(e, -3.14);
+            stream >> f;
+            QCOMPARE(f, -1.0);
+        } else {
+            qreal a, b, c, d, e, f;
+            stream >> a;
+            QCOMPARE(a, qreal(0));
+            stream >> b;
+            QCOMPARE(b, qreal(1.0));
+            stream >> c;
+            QCOMPARE(c, qreal(1.1));
+            stream >> d;
+            QCOMPARE(d, qreal(3.14));
+            stream >> e;
+            QCOMPARE(e, qreal(-3.14));
+            stream >> f;
+            QCOMPARE(f, qreal(-1));
+        }
+        stream >> point;
+        QCOMPARE(point, QPointF(3, 5));
+        stream >> rect;
+        QCOMPARE(rect, QRectF(-1, -2, 3, 4));
+        stream >> polygon;
+        QCOMPARE((QVector<QPointF> &)polygon, (QPolygonF() << QPointF(0, 0) << QPointF(1, 2)));
+        stream >> matrix;
+        QCOMPARE(matrix, QMatrix().rotate(90).scale(2, 2));
+        stream >> p;
+        QCOMPARE(p, path);
+        if (i == 1) {
+            stream >> pict;
+
             QByteArray pictA, pictB;
             QBuffer bufA, bufB;
             QVERIFY(bufA.open(QIODevice::ReadWrite));
@@ -3212,8 +3216,11 @@ void tst_QDataStream::streamRealDataTypes()
 
             QCOMPARE(pictA, pictB);
         }
+        stream >> textLength;
         QCOMPARE(textLength, QTextLength(QTextLength::VariableLength, 1.5));
+        stream >> col;
         QCOMPARE(col, color);
+        stream >> rGrad;
         QCOMPARE(rGrad.style(), radialBrush.style());
         QCOMPARE(rGrad.matrix(), radialBrush.matrix());
         QCOMPARE(rGrad.gradient()->type(), radialBrush.gradient()->type());
@@ -3222,6 +3229,7 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(((QRadialGradient *)rGrad.gradient())->center(), ((QRadialGradient *)radialBrush.gradient())->center());
         QCOMPARE(((QRadialGradient *)rGrad.gradient())->focalPoint(), ((QRadialGradient *)radialBrush.gradient())->focalPoint());
         QCOMPARE(((QRadialGradient *)rGrad.gradient())->radius(), ((QRadialGradient *)radialBrush.gradient())->radius());
+        stream >> cGrad;
         QCOMPARE(cGrad.style(), conicalBrush.style());
         QCOMPARE(cGrad.matrix(), conicalBrush.matrix());
         QCOMPARE(cGrad.gradient()->type(), conicalBrush.gradient()->type());
@@ -3231,11 +3239,11 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(((QConicalGradient *)cGrad.gradient())->angle(), ((QConicalGradient *)conicalBrush.gradient())->angle());
 
         QCOMPARE(cGrad, conicalBrush);
+        stream >> pen;
         QCOMPARE(pen.widthF(), qreal(1.5));
+
+        QCOMPARE(stream.status(), QDataStream::Ok);
     }
-#if defined(Q_OS_SYMBIAN)
-    #undef qreal
-#endif
 }
 
 #ifdef QT3_SUPPORT

@@ -68,9 +68,6 @@
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
-#include "qlineedit.h"
-#include "qlistview.h"
-#include "qtextedit.h"
 #include <QtGui/qgraphicsproxywidget.h>
 
 #include "qinputcontext.h"
@@ -157,14 +154,6 @@ bool QApplicationPrivate::autoSipEnabled = false;
 bool QApplicationPrivate::autoSipEnabled = true;
 #endif
 
-QGestureManager* QGestureManager::instance()
-{
-    QApplicationPrivate *d = qApp->d_func();
-    if (!d->gestureManager)
-        d->gestureManager = new QGestureManager(qApp);
-    return d->gestureManager;
-}
-
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
 {
@@ -188,7 +177,7 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
     directPainters = 0;
 #endif
 
-    gestureManager = 0;
+    gestureWidget = 0;
 
     if (!self)
         self = this;
@@ -477,9 +466,6 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
-bool QApplicationPrivate::inSizeMove = false;
-#endif
 #ifdef QT_KEYPAD_NAVIGATION
 #  ifdef Q_OS_SYMBIAN
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
@@ -807,7 +793,8 @@ void QApplicationPrivate::construct(
     }
 
     //make sure the plugin is loaded
-    qt_guiPlatformPlugin();
+    if (qt_is_gui_used)
+        qt_guiPlatformPlugin();
 #endif
 }
 
@@ -945,11 +932,7 @@ void QApplicationPrivate::initialize()
     graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
 #endif
 #ifndef QT_NO_WHEELEVENT
-#ifdef Q_OS_MAC
-    QApplicationPrivate::wheel_scroll_lines = 1;
-#else
     QApplicationPrivate::wheel_scroll_lines = 3;
-#endif
 #endif
 
     initializeMultitouch();
@@ -2090,7 +2073,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
         }
         QWidget *prev = focus_widget;
         focus_widget = focus;
-
+#ifndef QT_NO_IM
         if (prev && ((reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason
             && prev->testAttribute(Qt::WA_InputMethodEnabled))
             // Do reset the input context, in case the new focus widget won't accept keyboard input
@@ -2103,6 +2086,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 qic->setFocusWidget(0);
             }
         }
+#endif //QT_NO_IM
 
         if(focus_widget)
             focus_widget->d_func()->setFocus_sys();
@@ -2134,12 +2118,14 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                     QApplication::sendEvent(that->style(), &out);
             }
             if(focus && QApplicationPrivate::focus_widget == focus) {
+#ifndef QT_NO_IM
                 if (focus->testAttribute(Qt::WA_InputMethodEnabled)) {
                     QInputContext *qic = focus->inputContext();
                     if (qic && focus->testAttribute(Qt::WA_WState_Created)
                         && focus->isEnabled())
                         qic->setFocusWidget(focus);
                 }
+#endif //QT_NO_IM
                 QFocusEvent in(QEvent::FocusIn, reason);
                 QPointer<QWidget> that = focus;
                 QApplication::sendEvent(focus, &in);
@@ -2500,9 +2486,12 @@ void QApplication::setActiveWindow(QWidget* act)
 /*!internal
  * Helper function that returns the new focus widget, but does not set the focus reason.
  * Returns 0 if a new focus widget could not be found.
+ * Shared with QGraphicsProxyWidgetPrivate::findFocusChild()
 */
 QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next)
 {
+    uint focus_flag = qt_tab_all_widgets ? Qt::TabFocus : Qt::StrongFocus;
+
     QWidget *f = toplevel->focusWidget();
     if (!f)
         f = toplevel;
@@ -2510,22 +2499,11 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
     QWidget *w = f;
     QWidget *test = f->d_func()->focus_next;
     while (test && test != f) {
-        if ((test->focusPolicy() & Qt::TabFocus)
+        if ((test->focusPolicy() & focus_flag) == focus_flag
             && !(test->d_func()->extra && test->d_func()->extra->focus_proxy)
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
-            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))
-            && (qt_tab_all_widgets
-#ifndef QT_NO_LINEEDIT
-                || qobject_cast<QLineEdit*>(test)
-#endif
-#ifndef QT_NO_TEXTEDIT
-                || qobject_cast<QTextEdit*>(test)
-#endif
-#ifndef QT_NO_ITEMVIEWS
-                || qobject_cast<QListView*>(test)
-#endif
-                )) {
+            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))) {
             w = test;
             if (next)
                 break;
@@ -2664,7 +2642,10 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
         if (!isAlien(w))
             break;
         if (w->testAttribute(Qt::WA_SetCursor)) {
-            parentOfLeavingCursor = w->parentWidget();
+            QWidget *parent = w->parentWidget();
+            while (parent && parent->d_func()->data.in_destructor)
+                parent = parent->parentWidget();
+            parentOfLeavingCursor = parent;
             //continue looping, we need to find the downest alien widget with a cursor.
             // (downest on the screen)
         }
@@ -3654,9 +3635,14 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     }
 
     // walk through parents and check for gestures
-    if (d->gestureManager) {
-        if (d->gestureManager->filterEvent(receiver, e))
-            return true;
+    if (qt_gestureManager) {
+        if (receiver->isWidgetType()) {
+            if (qt_gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
+                return true;
+        } else if (QGesture *gesture = qobject_cast<QGesture *>(receiver)) {
+            if (qt_gestureManager->filterEvent(gesture, e))
+                return true;
+        }
     }
 
 
@@ -4167,7 +4153,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         if (receiver->isWidgetType()) {
             QWidget *w = static_cast<QWidget *>(receiver);
             QGestureEvent *gestureEvent = static_cast<QGestureEvent *>(e);
-            QList<QGesture *> allGestures = gestureEvent->allGestures();
+            QList<QGesture *> allGestures = gestureEvent->gestures();
 
             bool eventAccepted = gestureEvent->isAccepted();
             bool wasAccepted = eventAccepted;
@@ -4178,43 +4164,49 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 for (int i = 0; i < allGestures.size();) {
                     QGesture *g = allGestures.at(i);
                     Qt::GestureType type = g->gestureType();
-                    if (wd->gestureContext.contains(type)) {
+                    QMap<Qt::GestureType, Qt::GestureFlags>::iterator contextit =
+                            wd->gestureContext.find(type);
+                    bool deliver = contextit != wd->gestureContext.end() &&
+                        (g->state() == Qt::GestureStarted || w == receiver ||
+                         (contextit.value() & Qt::ReceivePartialGestures));
+                    if (deliver) {
                         allGestures.removeAt(i);
                         gestures.append(g);
-                        gestureEvent->setAccepted(g, false);
                     } else {
                         ++i;
                     }
                 }
-                if (!gestures.isEmpty()) {
+                if (!gestures.isEmpty()) { // we have gestures for this w
                     QGestureEvent ge(gestures);
                     ge.t = gestureEvent->t;
                     ge.spont = gestureEvent->spont;
                     ge.m_accept = wasAccepted;
+                    ge.d_func()->accepted = gestureEvent->d_func()->accepted;
                     res = d->notify_helper(w, &ge);
                     gestureEvent->spont = false;
                     eventAccepted = ge.isAccepted();
-                    if (res && eventAccepted)
-                        break;
-                    if (!eventAccepted) {
-                        // ### two ways to ignore the event/gesture
-
-                        // if the whole event wasn't accepted, put back those
-                        // gestures that were not accepted.
-                        for (int i = 0; i < gestures.size(); ++i) {
-                            QGesture *g = gestures.at(i);
-                            if (!ge.isAccepted(g))
-                                allGestures.append(g);
+                    for (int i = 0; i < gestures.size(); ++i) {
+                        QGesture *g = gestures.at(i);
+                        if ((res && eventAccepted) || (!eventAccepted && ge.isAccepted(g))) {
+                            // if the gesture was accepted, mark the target widget for it
+                            gestureEvent->d_func()->targetWidgets[g->gestureType()] = w;
+                            gestureEvent->setAccepted(g, true);
+                        } else if (!eventAccepted && !ge.isAccepted(g)) {
+                            // if the gesture was explicitly ignored by the application,
+                            // put it back so a parent can get it
+                            allGestures.append(g);
                         }
                     }
                 }
-                if (allGestures.isEmpty())
+                if (allGestures.isEmpty()) // everything delivered
                     break;
                 if (w->isWindow())
                     break;
                 w = w->parentWidget();
             }
-            gestureEvent->m_accept = eventAccepted;
+            foreach (QGesture *g, allGestures)
+                gestureEvent->setAccepted(g, false);
+            gestureEvent->m_accept = false; // to make sure we check individual gestures
         } else {
             res = d->notify_helper(receiver, e);
         }
@@ -5625,37 +5617,6 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
                                             const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
     QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints);
-}
-
-/*!
-    \since 4.6
-
-    Registers the given \a recognizer in the gesture framework and returns a gesture ID
-    for it.
-
-    The application takes ownership of the \a recognizer and returns the gesture type
-    ID associated with it. For gesture recognizers which handle custom QGesture
-    objects (i.e., those which return Qt::CustomGesture in a QGesture::gestureType()
-    function) the return value is a gesture ID between Qt::CustomGesture and
-    Qt::LastGestureType, inclusive.
-
-    \sa unregisterGestureRecognizer(), QGestureRecognizer::createGesture(), QGesture
-*/
-Qt::GestureType QApplication::registerGestureRecognizer(QGestureRecognizer *recognizer)
-{
-    return QGestureManager::instance()->registerGestureRecognizer(recognizer);
-}
-
-/*!
-    \since 4.6
-
-    Unregisters all gesture recognizers of the specified \a type.
-
-    \sa registerGestureRecognizer
-*/
-void QApplication::unregisterGestureRecognizer(Qt::GestureType type)
-{
-    QGestureManager::instance()->unregisterGestureRecognizer(type);
 }
 
 QT_END_NAMESPACE

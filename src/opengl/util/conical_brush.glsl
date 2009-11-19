@@ -20,7 +20,7 @@ vec4 brush()
 /*     float val = fmod((atan2(-A.y, A.x) + angle) / (2.0 * M_PI), 1); */
     if (abs(A.y) == abs(A.x))
  	A.y += 0.002;
-    float t = (atan2(-A.y, A.x) + angle) / (2.0 * M_PI);
+    float t = (atan(-A.y, A.x) + angle) / (2.0 * M_PI);
     float val = t - floor(t);
     return texture1D(palette, val);
 }

@@ -42,6 +42,7 @@
 #include "qgl.h"
 #include <private/qt_x11_p.h>
 #include <private/qpixmap_x11_p.h>
+#include <private/qimagepixmapcleanuphooks_p.h>
 #include <private/qgl_p.h>
 #include <private/qpaintengine_opengl_p.h>
 #include "qgl_egl_p.h"
@@ -114,6 +115,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         d->eglContext = 0;
         return false;
     }
+    d->sharing = d->eglContext->isSharing();
+    if (d->sharing && shareContext)
+        const_cast<QGLContext *>(shareContext)->d_func()->sharing = true;
 
 #if defined(EGL_VERSION_1_1)
     if (d->glFormat.swapInterval() != -1 && devType == QInternal::Widget)
@@ -513,14 +517,25 @@ bool Q_OPENGL_EXPORT qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnl
                                            pixmapConfig,
                                            (EGLNativePixmapType) pixmapData->handle(),
                                            pixmapAttribs.properties());
+//    qDebug("qt_createEGLSurfaceForPixmap() created surface 0x%x for pixmap 0x%x",
+//           pixmapSurface, pixmapData->handle());
     if (pixmapSurface == EGL_NO_SURFACE) {
-        qWarning("Failed to create a pixmap surface using config %d", (int)pixmapConfig);
+        qWarning() << "Failed to create a pixmap surface using config" << (int)pixmapConfig
+                   << ":" << QEglContext::errorString(eglGetError());
         return false;
+    }
+
+    static bool doneOnce = false;
+    if (!doneOnce) {
+        // Make sure QGLTextureCache is instanciated so it can install cleanup hooks
+        // which cleanup the EGL surface.
+        QGLTextureCache::instance();
+        doneOnce = true;
     }
 
     Q_ASSERT(sizeof(Qt::HANDLE) >= sizeof(EGLSurface)); // Just to make totally sure!
     pixmapData->gl_surface = (Qt::HANDLE)pixmapSurface;
-    pixmapData->is_cached = true; // Make sure the cleanup hook gets called
+    QImagePixmapCleanupHooks::enableCleanupHooks(pixmapData); // Make sure the cleanup hook gets called
 
     return true;
 }
@@ -578,7 +593,6 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
 
     GLuint textureId;
     glGenTextures(1, &textureId);
-    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
     // bind the egl pixmap surface to a texture

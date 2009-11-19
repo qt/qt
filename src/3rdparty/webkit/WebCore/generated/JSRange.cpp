@@ -100,8 +100,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSRangeConstructor::s_info = { "RangeConstructor", 0, &JSRangeConstructorTable, 0 };
@@ -191,7 +194,7 @@ JSRange::JSRange(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* glob
 
 JSRange::~JSRange()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSRange::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

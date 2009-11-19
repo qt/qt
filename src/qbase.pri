@@ -36,7 +36,7 @@ CONFIG		+= qt warn_on depend_includepath
 CONFIG          += qmake_cache target_qt 
 CONFIG          -= fix_output_dirs
 win32|mac:!macx-xcode:CONFIG += debug_and_release
-linux-g++*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+linux*-g++*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 unix:contains(QT_CONFIG, reduce_relocations):CONFIG += bsymbolic_functions
@@ -101,16 +101,25 @@ symbian {
         "DEFFILE ../s60installs/eabi/$${TARGET}.def" \
         "$${LITERAL_HASH}endif"
 
-        #with defBlock enabled, removed exported symbols are treated as errors
-        #and there is binary compatibility between successive builds.
-        #with defBlock disabled, binary compatibility is broken every time you build
-        #MMP_RULES += defBlock
-        
-        #with EXPORTUNFROZEN enabled, new exports are included in the dll without
-        #needing to run abld freeze, however binary compatibility is only maintained
-        #for symbols that are frozen (and only if defBlock is also enabled)
-        #the downside of EXPORTUNFROZEN is that the linker gets run twice
-        MMP_RULES += EXPORTUNFROZEN
+        contains(QT_CONFIG, private_tests) {
+            #When building autotest configuration, there are extra exports from
+            #the Qt DLLs, which we don't want in the frozen DEF files.
+            MMP_RULES += EXPORTUNFROZEN
+        } else {
+            #When building without autotests, DEF files are used by default.
+            #This is to maintain binary compatibility with previous releases.
+            
+            #with defBlock enabled, removed exported symbols are treated as errors
+            #and there is binary compatibility between successive builds.
+            #with defBlock disabled, binary compatibility is broken every time you build
+            MMP_RULES += defBlock
+
+            #with EXPORTUNFROZEN enabled, new exports are included in the dll without
+            #needing to run abld freeze, however binary compatibility is only maintained
+            #for symbols that are frozen (and only if defBlock is also enabled)
+            #the downside of EXPORTUNFROZEN is that the linker gets run twice
+            #MMP_RULES += EXPORTUNFROZEN
+        }
     }
     load(armcc_warnings)
 }

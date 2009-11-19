@@ -62,11 +62,14 @@ QT_BEGIN_NAMESPACE
 
 struct QTreeViewItem
 {
-    QTreeViewItem() : expanded(false), spanning(false), total(0), level(0), height(0) {}
+    QTreeViewItem() : expanded(false), spanning(false), hasChildren(false),
+                      hasMoreSiblings(false), total(0), level(0), height(0) {}
     QModelIndex index; // we remove items whenever the indexes are invalidated
     uint expanded : 1;
     uint spanning : 1;
-    uint total : 30; // total number of children visible
+    uint hasChildren : 1; // if the item has visible children (even if collapsed)
+    uint hasMoreSiblings : 1;
+    uint total : 28; // total number of children visible
     uint level : 16; // indentation
     int height : 16; // row height
 };
@@ -102,7 +105,7 @@ public:
         int top() const { return startValue().toInt(); }
         QRect rect() const { QRect rect = viewport->rect(); rect.moveTop(top()); return rect; }
         void updateCurrentValue(const QVariant &) { viewport->update(rect()); }
-        void updateState(State, State state) { if (state == Stopped) before = after = QPixmap(); }
+        void updateState(State state, State) { if (state == Stopped) before = after = QPixmap(); }
     } animatedOperation;
     void prepareAnimatedOperation(int item, QVariantAnimation::Direction d);
     void beginAnimatedOperation();

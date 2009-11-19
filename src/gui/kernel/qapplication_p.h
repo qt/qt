@@ -84,7 +84,6 @@ class QInputContext;
 class QObject;
 class QWidget;
 class QSocketNotifier;
-class QGestureManager;
 
 extern bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
@@ -441,9 +440,6 @@ public:
 #ifdef Q_WS_MAC
     static bool native_modal_dialog_active;
 #endif
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
-    static bool inSizeMove;
-#endif
 
     static void setSystemPalette(const QPalette &pal);
     static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
@@ -503,12 +499,17 @@ public:
     static void setNavigationMode(Qt::NavigationMode mode);
     static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
     QSet<WId> nativeWindows;
+
+    int symbianProcessWsEvent(const TWsEvent *event);
+    int symbianHandleCommand(int command);
+    int symbianResourceChange(int type);
+
 #endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_LITE)
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
-    QGestureManager *gestureManager;
+    QWidget *gestureWidget;
 
     QMap<int, QWidget *> widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;

@@ -1,8 +1,6 @@
 /*
     Copyright (C) 2007 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -36,8 +34,10 @@ namespace WebCore {
 SVGViewSpec::SVGViewSpec(const SVGSVGElement* contextElement)
     : SVGFitToViewBox()
     , SVGZoomAndPan()
-    , m_transform(SVGTransformList::create(SVGNames::transformAttr))
     , m_contextElement(contextElement)
+    , m_viewBox(this, SVGNames::viewBoxAttr)
+    , m_preserveAspectRatio(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create())
+    , m_transform(SVGTransformList::create(SVGNames::transformAttr))
 {
 }
 
@@ -55,7 +55,7 @@ void SVGViewSpec::setViewBoxString(const String& viewBox)
     float x, y, w, h;
     const UChar* c = viewBox.characters();
     const UChar* end = c + viewBox.length();
-    if (!parseViewBox(c, end, x, y, w, h, false))
+    if (!parseViewBox(m_contextElement->document(), c, end, x, y, w, h, false))
         return;
     setViewBoxBaseValue(FloatRect(x, y, w, h));
 }
@@ -74,12 +74,7 @@ void SVGViewSpec::setViewTargetString(const String& viewTargetString)
 
 SVGElement* SVGViewSpec::viewTarget() const
 {
-    return static_cast<SVGElement*>(m_contextElement->ownerDocument()->getElementById(m_viewTargetString));
-}
-
-const SVGElement* SVGViewSpec::contextElement() const
-{
-    return m_contextElement;
+    return static_cast<SVGElement*>(m_contextElement->document()->getElementById(m_viewTargetString));
 }
 
 static const UChar svgViewSpec[] = {'s', 'v', 'g', 'V', 'i', 'e', 'w'};
@@ -111,7 +106,7 @@ bool SVGViewSpec::parseViewSpec(const String& viewSpec)
                     return false;
                 currViewSpec++;
                 float x, y, w, h;
-                if (!parseViewBox(currViewSpec, end, x, y, w, h, false))
+                if (!parseViewBox(m_contextElement->document(), currViewSpec, end, x, y, w, h, false))
                     return false;
                 setViewBoxBaseValue(FloatRect(x, y, w, h));
                 if (currViewSpec >= end || *currViewSpec != ')')

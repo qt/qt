@@ -638,9 +638,11 @@ class Q_GUI_EXPORT QFileOpenEvent : public QEvent
 {
 public:
     QFileOpenEvent(const QString &file);
+    QFileOpenEvent(const QUrl &url);
     ~QFileOpenEvent();
 
     inline QString file() const { return f; }
+    QUrl url() const;
 private:
     QString f;
 };
@@ -820,12 +822,14 @@ protected:
 };
 
 class QGesture;
+class QGestureEventPrivate;
 class Q_GUI_EXPORT QGestureEvent : public QEvent
 {
 public:
     QGestureEvent(const QList<QGesture *> &gestures);
+    ~QGestureEvent();
 
-    QList<QGesture *> allGestures() const;
+    QList<QGesture *> gestures() const;
     QGesture *gesture(Qt::GestureType type) const;
 
     QList<QGesture *> activeGestures() const;
@@ -849,8 +853,24 @@ public:
     void ignore(QGesture *);
     bool isAccepted(QGesture *) const;
 
+    void setAccepted(Qt::GestureType, bool);
+    void accept(Qt::GestureType);
+    void ignore(Qt::GestureType);
+    bool isAccepted(Qt::GestureType) const;
+
+    void setWidget(QWidget *widget);
+    QWidget *widget() const;
+
+#ifndef QT_NO_GRAPHICSVIEW
+    QPointF mapToGraphicsScene(const QPointF &gesturePoint) const;
+#endif
+
 private:
-    QList<QGesture *> gestures_;
+    QGestureEventPrivate *d_func();
+    const QGestureEventPrivate *d_func() const;
+
+    friend class QApplication;
+    friend class QGestureManager;
 };
 
 QT_END_NAMESPACE

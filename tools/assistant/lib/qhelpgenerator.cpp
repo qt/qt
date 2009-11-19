@@ -528,7 +528,7 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
         QByteArray data = fi.readAll();
         if (fileName.endsWith(QLatin1String(".html"))
             || fileName.endsWith(QLatin1String(".htm"))) {
-                charSet = QHelpGlobal::charsetFromData(data);
+                charSet = QHelpGlobal::codecFromData(data);
                 QTextStream stream(&data);
                 stream.setCodec(QTextCodec::codecForName(charSet.toLatin1().constData()));
                 title = QHelpGlobal::documentTitle(stream.readAll());

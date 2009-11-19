@@ -190,13 +190,14 @@ public:
     QRect actionRect(QAction *) const;
 
     mutable QVector<QRect> actionRects;
-    mutable QWidgetList widgetItems;
+    mutable QHash<QAction *, QWidget *> widgetItems;
     void updateActionRects() const;
-    QRect popupGeometry(int screen=-1) const;
+    QRect popupGeometry(const QWidget *widget) const;
+    QRect popupGeometry(int screen = -1) const;
     mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
 
-    uint activationRecursionGuard : 1;
+    bool activationRecursionGuard;
 
     //selection
     static QPointer<QMenu> mouseDown;
@@ -214,6 +215,7 @@ public:
         SelectedFromKeyboard,
         SelectedFromElsewhere
     };
+    QWidget *topCausedWidget() const;
     QAction *actionAt(QPoint p) const;
     void setFirstActionActive();
     void setCurrentAction(QAction *, int popup = -1, SelectionReason reason = SelectedFromElsewhere, bool activateFirst = false);

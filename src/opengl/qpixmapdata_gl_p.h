@@ -69,7 +69,7 @@ class QGLPixmapData;
 class QGLFramebufferObjectPool
 {
 public:
-    QGLFramebufferObject *acquire(const QSize &size, const QGLFramebufferObjectFormat &format);
+    QGLFramebufferObject *acquire(const QSize &size, const QGLFramebufferObjectFormat &format, bool strictSize = false);
     void release(QGLFramebufferObject *fbo);
 
 private:
@@ -100,6 +100,8 @@ class QGLPixmapData : public QPixmapData
 public:
     QGLPixmapData(PixelType type);
     ~QGLPixmapData();
+
+    QPixmapData *createCompatiblePixmapData() const;
 
     // Re-implemented from QPixmapData:
     void resize(int width, int height);

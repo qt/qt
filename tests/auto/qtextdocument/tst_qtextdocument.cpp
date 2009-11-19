@@ -59,6 +59,7 @@
 #include <qfontmetrics.h>
 #include <qimage.h>
 #include <qtextlayout.h>
+#include <QDomDocument>
 #include "common.h"
 
 
@@ -175,6 +176,8 @@ private slots:
     void testUndoBlocks();
 
     void receiveCursorPositionChangedAfterContentsChange();
+    void escape_data();
+    void escape();
 
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
@@ -576,7 +579,7 @@ void tst_QTextDocument::task240325()
 }
 
 void tst_QTextDocument::stylesheetFont_data()
-{    
+{
     QTest::addColumn<QString>("stylesheet");
     QTest::addColumn<QFont>("font");
 
@@ -732,7 +735,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertText("Blah", fmt);
 
         QTest::newRow("font-family-with-quotes1") << QTextDocumentFragment(&doc)
-                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:\"Foo's Family\";\">Blah</span></p>");
+                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:&quot;Foo's Family&quot;;\">Blah</span></p>");
     }
 
     {
@@ -743,7 +746,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertText("Blah", fmt);
 
         QTest::newRow("font-family-with-quotes2") << QTextDocumentFragment(&doc)
-                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:'Foo\"s Family';\">Blah</span></p>");
+                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:'Foo&quot;s Family';\">Blah</span></p>");
     }
 
     {
@@ -969,6 +972,30 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("href anchor") << QTextDocumentFragment(&doc)
                                   << QString("<p DEFAULTBLOCKSTYLE><a href=\"http://www.kde.org/\">Blah</a></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
+        fmt.setAnchor(true);
+        fmt.setAnchorHref("http://www.kde.org/?a=1&b=2");
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("href anchor with &") << QTextDocumentFragment(&doc)
+                                  << QString("<p DEFAULTBLOCKSTYLE><a href=\"http://www.kde.org/?a=1&amp;b=2\">Blah</a></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
+        fmt.setAnchor(true);
+        fmt.setAnchorHref("http://www.kde.org/?a='&b=\"");
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("href anchor with ' and \"") << QTextDocumentFragment(&doc)
+                                  << QString("<p DEFAULTBLOCKSTYLE><a href=\"http://www.kde.org/?a='&amp;b=&quot;\">Blah</a></p>");
     }
 
     {
@@ -1541,6 +1568,9 @@ void tst_QTextDocument::toHtml()
     QString output = doc->toHtml();
 
     QCOMPARE(output, expectedOutput);
+
+    QDomDocument document;
+    QVERIFY2(document.setContent(output), "Output was not valid XML");
 }
 
 void tst_QTextDocument::toHtml2()
@@ -1691,21 +1721,21 @@ void tst_QTextDocument::capitalizationHtmlInExport()
 
     const QString smallcaps = doc->toHtml();
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("font-variant:small-caps;"));
 
     cf.setFontCapitalization(QFont::AllUppercase);
     cursor.mergeCharFormat(cf);
     const QString uppercase = doc->toHtml();
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("text-transform:uppercase;"));
 
     cf.setFontCapitalization(QFont::AllLowercase);
     cursor.mergeCharFormat(cf);
     const QString lowercase = doc->toHtml();
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("text-transform:lowercase;"));
 
     doc->setHtml(smallcaps);
@@ -1731,14 +1761,14 @@ void tst_QTextDocument::wordspacingHtmlExport()
     cursor.mergeCharFormat(cf);
 
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("word-spacing:4px;"));
 
     cf.setFontWordSpacing(-8.5);
     cursor.mergeCharFormat(cf);
 
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("word-spacing:-8.5px;"));
 }
 
@@ -2585,6 +2615,17 @@ void tst_QTextDocument::testUndoCommandAdded()
     cf.setFontItalic(true);
     cursor.mergeCharFormat(cf);
     QCOMPARE(spy.count(), 1);
+
+    spy.clear();
+    doc->undo();
+    QCOMPARE(spy.count(), 0);
+    doc->undo();
+    QCOMPARE(spy.count(), 0);
+    spy.clear();
+    doc->redo();
+    QCOMPARE(spy.count(), 0);
+    doc->redo();
+    QCOMPARE(spy.count(), 0);
 }
 
 void tst_QTextDocument::testUndoBlocks()
@@ -2650,6 +2691,26 @@ void tst_QTextDocument::receiveCursorPositionChangedAfterContentsChange()
             &rec, SLOT(contentsChange()));
     cursor.insertText("Hello World");
     QCOMPARE(rec.first, QString("contentsChanged"));
+}
+
+void tst_QTextDocument::escape_data()
+{
+    QTest::addColumn<QString>("original");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("1") << "Hello World\n" << "Hello World\n";
+    QTest::newRow("2") << "#include <QtCore>" << "#include &lt;QtCore&gt;";
+    QTest::newRow("3") << "<p class=\"cool\"><a href=\"http://example.com/?foo=bar&amp;bar=foo\">plop --&gt; </a></p>"
+                       << "&lt;p class=&quot;cool&quot;&gt;&lt;a href=&quot;http://example.com/?foo=bar&amp;amp;bar=foo&quot;&gt;plop --&amp;gt; &lt;/a&gt;&lt;/p&gt;";
+    QTest::newRow("4") << QString::fromUtf8("<\320\222\321\201>") << QString::fromUtf8("&lt;\320\222\321\201&gt;");
+}
+
+void tst_QTextDocument::escape()
+{
+    QFETCH(QString, original);
+    QFETCH(QString, expected);
+
+    QCOMPARE(Qt::escape(original), expected);
 }
 
 QTEST_MAIN(tst_QTextDocument)

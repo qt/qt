@@ -668,6 +668,7 @@ void QEventDispatcherSymbian::closingDown()
 bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags flags )
 {
     bool handledAnyEvent = false;
+    bool oldNoSocketEventsValue = m_noSocketEvents;
 
     QT_TRY {
         Q_D(QAbstractEventDispatcher);
@@ -686,7 +687,6 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             block = false;
         }
 
-        bool oldNoSocketEventsValue = m_noSocketEvents;
         if (flags & QEventLoop::ExcludeSocketNotifiers) {
             m_noSocketEvents = true;
         } else {
@@ -762,13 +762,13 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         };
 
         emit awake();
-
-        m_noSocketEvents = oldNoSocketEventsValue;
     } QT_CATCH (const std::exception& ex) {
 #ifndef QT_NO_EXCEPTIONS
         CActiveScheduler::Current()->Error(qt_symbian_exception2Error(ex));
 #endif
     }
+
+    m_noSocketEvents = oldNoSocketEventsValue;
 
     return handledAnyEvent;
 }

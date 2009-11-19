@@ -4121,6 +4121,7 @@ void QWindowsMobileStylePrivate::setupWindowsMobileStyle65()
 
 void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOptionTab *tab)
 {
+#ifndef QT_NO_TABBAR
 #ifdef Q_WS_WINCE_WM
     if (wm65) {
         tintImagesButton(tab->palette.button().color());
@@ -4207,6 +4208,7 @@ void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOp
         }
     }
     painter->restore();
+#endif //QT_NO_TABBAR
 }
 
 void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect)
@@ -4412,7 +4414,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleUp(QPainter *p, QStyleOption
 
 void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOptionSlider *opt, bool completeFrame, bool secondScrollBar)
 {
-
+#ifndef QT_NO_SCROLLBAR
 #ifdef Q_WS_WINCE_WM
     if (wm65) {
         tintImagesHigh(opt->palette.highlight().color());
@@ -4469,10 +4471,12 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOpti
             arrowOpt.rect.adjust(1, 0, 1, 0);
         q_func()->proxy()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &arrowOpt, p, 0);
     }
+#endif //QT_NO_SCROLLBAR
 }
 
 void QWindowsMobileStylePrivate::drawScrollbarGroove(QPainter *p,const QStyleOptionSlider *opt)
 {
+#ifndef QT_NO_SCROLLBAR
 #ifdef Q_OS_WINCE_WM
     if (wm65) {
         p->fillRect(opt->rect, QColor(231, 231, 231));
@@ -4498,6 +4502,7 @@ void QWindowsMobileStylePrivate::drawScrollbarGroove(QPainter *p,const QStyleOpt
               fill = opt->palette.light();
             }
             p->fillRect(opt->rect, fill);
+#endif //QT_NO_SCROLLBAR
 }
 
 QWindowsMobileStyle::QWindowsMobileStyle(QWindowsMobileStylePrivate &dd) : QWindowsStyle(dd) {
@@ -5347,10 +5352,8 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
         painter->drawLines(a);
         break; }
     case PE_Frame:
-       if (d->doubleControls)
-            qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),2,&option->palette.light());
-        else
-            qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),1,&option->palette.light());
+        qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),
+                       d->doubleControls ? 2 : 1, &option->palette.background());
         break;
     case PE_FrameLineEdit:
     case PE_FrameMenu:
@@ -5592,8 +5595,43 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
                          painter->drawLine(rect.bottomLeft(), rect.bottomRight());
              }
 #endif // QT_NO_SCROLLAREA
-            break; }
+            break;
+        }
+#ifndef QT_NO_COMBOBOX
+    case CE_ComboBoxLabel:
+        // This is copied from qcommonstyle.cpp with the difference, that
+        // the editRect isn't adjusted when calling drawItemText.
+        if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
+            QRect editRect = proxy()->subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, widget);
+            painter->save();
+            painter->setClipRect(editRect);
+            if (!cb->currentIcon.isNull()) {
+                QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal
+                                                             : QIcon::Disabled;
+                QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, mode);
+                QRect iconRect(editRect);
+                iconRect.setWidth(cb->iconSize.width() + 4);
+                iconRect = alignedRect(cb->direction,
+                                       Qt::AlignLeft | Qt::AlignVCenter,
+                                       iconRect.size(), editRect);
+                if (cb->editable)
+                    painter->fillRect(iconRect, option->palette.brush(QPalette::Base));
+                proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
 
+                if (cb->direction == Qt::RightToLeft)
+                    editRect.translate(-4 - cb->iconSize.width(), 0);
+                else
+                    editRect.translate(cb->iconSize.width() + 4, 0);
+            }
+            if (!cb->currentText.isEmpty() && !cb->editable) {
+                proxy()->drawItemText(painter, editRect,
+                             visualAlignment(cb->direction, Qt::AlignLeft | Qt::AlignVCenter),
+                             cb->palette, cb->state & State_Enabled, cb->currentText);
+            }
+            painter->restore();
+        }
+        break;
+#endif // QT_NO_COMBOBOX
 #ifndef QT_NO_DOCKWIDGET
     case CE_DockWidgetTitle:
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(option)) {
@@ -6003,7 +6041,7 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
         }
         painter->restore();
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_NO_SCROLLBAR
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolbutton
                 = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
@@ -6154,24 +6192,24 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
                 qDrawPlainRect(painter, option->rect, option->palette.shadow().color(), proxy()->pixelMetric(PM_ComboBoxFrameWidth, option, widget), &editBrush);
             else
                 painter->fillRect(option->rect, editBrush);
-                State flags = State_None;
-                QRect ar = proxy()->subControlRect(CC_ComboBox, cmb, SC_ComboBoxArrow, widget);
-                if ((option->state & State_On)) {
-                  painter->fillRect(ar.adjusted(0, 0, 1, 1),cmb->palette.brush(QPalette::Shadow));
-                }
-                if (d->doubleControls)
-                  ar.adjust(5, 0, 5, 0);
-                else
-                  ar.adjust(2, 0, -2, 0);
-                if (option->state & State_Enabled)
-                    flags |= State_Enabled;
-                if (option->state & State_On)
-                    flags |= State_Sunken;
-                QStyleOption arrowOpt(0);
-                arrowOpt.rect = ar;
-                arrowOpt.palette = cmb->palette;
-                arrowOpt.state = flags;
-                proxy()->drawPrimitive(PrimitiveElement(PE_IndicatorArrowDownBig), &arrowOpt, painter, widget);
+            State flags = State_None;
+            QRect ar = proxy()->subControlRect(CC_ComboBox, cmb, SC_ComboBoxArrow, widget);
+            if ((option->state & State_On)) {
+                painter->fillRect(ar.adjusted(0, 0, 1, 1),cmb->palette.brush(QPalette::Shadow));
+            }
+            if (d->doubleControls)
+                ar.adjust(5, 0, 5, 0);
+            else
+                ar.adjust(2, 0, -2, 0);
+            if (option->state & State_Enabled)
+                flags |= State_Enabled;
+            if (option->state & State_On)
+                flags |= State_Sunken;
+            QStyleOption arrowOpt(0);
+            arrowOpt.rect = ar;
+            arrowOpt.palette = cmb->palette;
+            arrowOpt.state = flags;
+            proxy()->drawPrimitive(PrimitiveElement(PE_IndicatorArrowDownBig), &arrowOpt, painter, widget);
             if (cmb->subControls & SC_ComboBoxEditField) {
                 QRect re = proxy()->subControlRect(CC_ComboBox, cmb, SC_ComboBoxEditField, widget);
                 if (cmb->state & State_HasFocus && !cmb->editable)
@@ -6292,16 +6330,20 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
     switch (type) {
     case CT_PushButton:
        if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            newSize = QWindowsStyle::sizeFromContents(type, option, size, widget);
+            newSize = QCommonStyle::sizeFromContents(type, option, size, widget);
             int w = newSize.width(),
                 h = newSize.height();
             int defwidth = 0;
             if (button->features & QStyleOptionButton::AutoDefaultButton)
                 defwidth = 2 * proxy()->pixelMetric(PM_ButtonDefaultIndicator, button, widget);
-            if (w < 75 + defwidth && button->icon.isNull())
-                w = 75 + defwidth;
-            if (h < 23 + defwidth)
-                h = 23 + defwidth;
+
+            int minwidth = int(QStyleHelper::dpiScaled(55.0f));
+            int minheight = int(QStyleHelper::dpiScaled(19.0f));
+
+            if (w < minwidth + defwidth && button->icon.isNull())
+                w = minwidth + defwidth;
+            if (h < minheight + defwidth)
+                h = minheight + defwidth;
             newSize = QSize(w + 4, h + 4);
         }
         break;
@@ -6335,7 +6377,7 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
     case CT_ComboBox:
         if (const QStyleOptionComboBox *comboBox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             int fw = comboBox->frame ? proxy()->pixelMetric(PM_ComboBoxFrameWidth, option, widget) * 2 : 0;
-            newSize = QSize(newSize.width() + fw + 9, newSize.height() + fw-4); //Nine is a magic Number - See CommonStyle for real magic (23)
+            newSize = QSize(newSize.width() + fw + 9, newSize.height() + fw); //Nine is a magic Number - See CommonStyle for real magic (23)
         }
         break;
 #endif
@@ -6618,14 +6660,21 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
         switch (subControl) {
         case SC_ComboBoxArrow:
             rect.setRect(xpos, y + bmarg, he - 2*bmarg, he - 2*bmarg);
-            rect.setRect(xpos, y + bmarg, int((he - 2*bmarg)), he - 2*bmarg);
             break;
-         case SC_ComboBoxEditField:
-             rect.setRect(x + margin+4, y + margin+2, wi - 4 * margin - int((he - 2*bmarg) * 0.84f) -2, he - 2 * margin-4);
-             break;
-          case SC_ComboBoxFrame:
-              rect = comboBox->rect;
-              break;
+        case SC_ComboBoxEditField:
+            rect.setRect(x + margin, y + margin, wi - 2 * margin - int((he - 2*bmarg) * 0.84f), he - 2 * margin);
+            if (d->doubleControls) {
+                if (comboBox->editable)
+                    rect.adjust(2, 0, 0, 0);
+                else
+                    rect.adjust(4, 2, 0, -2);
+            } else if (!comboBox->editable) {
+                rect.adjust(2, 1, 0, -1);
+            }
+            break;
+        case SC_ComboBoxFrame:
+            rect = comboBox->rect;
+            break;
         default:
         break;
         }
@@ -6798,34 +6847,11 @@ void QWindowsMobileStyle::polish(QWidget *widget) {
     else
 #endif //QT_NO_TOOLBAR
 
-#ifndef QT_NO_PROPERTIES
-        if (QAbstractButton *pushButton = qobject_cast<QAbstractButton*>(widget)) {
-            QVariant oldFont = widget->property("_q_styleWindowsMobileFont");
-            if (!oldFont.isValid()) {
-                QFont f = pushButton->font();
-                widget->setProperty("_q_styleWindowsMobileFont", f);
-                f.setBold(true);
-                int p = f.pointSize();
-                if (p > 2)
-                    f.setPointSize(p-1);
-                pushButton->setFont(f);
-            }
-        }
-#endif
-        QWindowsStyle::polish(widget);
+    QWindowsStyle::polish(widget);
 }
 
 void QWindowsMobileStyle::unpolish(QWidget *widget)
 {
-#ifndef QT_NO_PROPERTIES
-    if (QAbstractButton *pushButton = qobject_cast<QAbstractButton*>(widget)) {
-        QVariant oldFont = widget->property("_q_styleWindowsMobileFont");
-        if (oldFont.isValid()) {
-            widget->setFont(qVariantValue<QFont>(oldFont));
-        widget->setProperty("_q_styleWindowsMobileFont", QVariant());
-        }
-    }
-#endif
     QWindowsStyle::unpolish(widget);
 }
 
@@ -6999,7 +7025,7 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
        } else {
            d->doubleControls ? ret = 36 : ret = 18;
        }
-        break;        
+        break;
    case PM_ScrollBarExtent: {
        
        if (d->smartphone)
@@ -7055,7 +7081,7 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
         break;
     case PM_TextCursorWidth:
         ret = 2;
-        break;        
+        break;
     case PM_TabBar_ScrollButtonOverlap:
         ret = 0;
         break;
@@ -7089,7 +7115,7 @@ int QWindowsMobileStyle::styleHint(StyleHint hint, const QStyleOption *opt, cons
 #endif
     case SH_ToolBar_Movable:
         ret = false;
-        break;    
+        break;
     case SH_ScrollBar_ContextMenu:
         ret = false;
         break;

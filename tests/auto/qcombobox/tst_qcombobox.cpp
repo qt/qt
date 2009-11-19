@@ -57,6 +57,7 @@
 #include <qtreewidget.h>
 #include <qtablewidget.h>
 #include <qscrollbar.h>
+#include <qboxlayout.h>
 #ifdef Q_WS_MAC
 #include <qmacstyle_mac.h>
 #elif defined Q_WS_X11
@@ -151,6 +152,10 @@ private slots:
     void subControlRectsWithOffset_data();
     void subControlRectsWithOffset();
     void task260974_menuItemRectangleForComboBoxPopup();
+    void removeItem();
+    void resetModel();
+    void keyBoardNavigationWithMouse();
+    void task_QTBUG_1071_changingFocusEmitsActivated();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -810,21 +815,25 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
 
     // case insensitive
     testWidget->clearEditText();
+    QSignalSpy spyReturn(testWidget, SIGNAL(activated(int)));
     testWidget->setAutoCompletionCaseSensitivity(Qt::CaseInsensitive);
     QVERIFY(testWidget->autoCompletionCaseSensitivity() == Qt::CaseInsensitive);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_A);
     qApp->processEvents();
     QCOMPARE(testWidget->currentText(), QString("aww"));
+    QCOMPARE(spyReturn.count(), 0);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_B);
     qApp->processEvents();
     // autocompletions preserve userkey-case from 4.2
     QCOMPARE(testWidget->currentText(), QString("abCDEF"));
+    QCOMPARE(spyReturn.count(), 0);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
     qApp->processEvents();
     QCOMPARE(testWidget->currentText(), QString("aBCDEF")); // case restored to item's case
+    QCOMPARE(spyReturn.count(), 1);
 
     testWidget->clearEditText();
     QTest::keyClick(testWidget->lineEdit(), 'c');
@@ -2396,6 +2405,135 @@ void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
         QTRY_VERIFY(style.discoveredRect.width() <= comboBox.width());
     }
 #endif
+}
+
+void tst_QComboBox::removeItem()
+{
+    QComboBox cb;
+    cb.removeItem(-1);
+    cb.removeItem(1);
+    cb.removeItem(0);
+    QCOMPARE(cb.count(), 0);
+
+    cb.addItem("foo");
+    cb.removeItem(-1);
+    QCOMPARE(cb.count(), 1);
+    cb.removeItem(1);
+    QCOMPARE(cb.count(), 1);
+    cb.removeItem(0);
+    QCOMPARE(cb.count(), 0);
+}
+
+void tst_QComboBox::resetModel()
+{
+    class StringListModel : public QStringListModel
+    {
+    public:
+        StringListModel(const QStringList &list) : QStringListModel(list)
+        {
+        }
+
+        void reset()
+        {
+            QStringListModel::reset();
+        }
+    };
+    QComboBox cb;
+    StringListModel model( QStringList() << "1" << "2");
+    QSignalSpy spy(&cb, SIGNAL(currentIndexChanged(int)));
+    QCOMPARE(spy.count(), 0);
+    QCOMPARE(cb.currentIndex(), -1); //no selection
+
+    cb.setModel(&model);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(cb.currentIndex(), 0); //first item selected
+
+    model.reset();
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(cb.currentIndex(), -1); //no selection
+
+}
+
+void tst_QComboBox::keyBoardNavigationWithMouse()
+{
+    QComboBox combo;
+    combo.setEditable(false);
+    for (int i = 0; i < 80; i++)
+        combo.addItem( QString::number(i));
+    combo.show();
+    QApplication::setActiveWindow(&combo);
+    QTest::qWaitForWindowShown(&combo);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
+
+    QCOMPARE(combo.currentText(), QLatin1String("0"));
+
+    combo.setFocus();
+    QTRY_VERIFY(combo.hasFocus());
+
+    QTest::keyClick(testWidget->lineEdit(), Qt::Key_Space);
+    QTest::qWait(30);
+    QTRY_VERIFY(combo.view());
+    QTRY_VERIFY(combo.view()->isVisible());
+    QTest::qWait(130);
+
+    QCOMPARE(combo.currentText(), QLatin1String("0"));
+
+#ifdef Q_OS_WINCE
+    QSKIP("When calling cursor function, Windows CE responds with: This function is not supported on this system.", SkipAll);
+#endif
+
+    QCursor::setPos(combo.view()->mapToGlobal(combo.view()->rect().center()));
+    QTest::qWait(200);
+
+#define GET_SELECTION(SEL) \
+    QCOMPARE(combo.view()->selectionModel()->selection().count(), 1); \
+    QCOMPARE(combo.view()->selectionModel()->selection().indexes().count(), 1); \
+    SEL = combo.view()->selectionModel()->selection().indexes().first().row()
+
+    int selection;
+    GET_SELECTION(selection);
+
+    //since we moved the mouse is in the middle it should even be around 5;
+    QVERIFY(selection > 3);
+
+    static const int final = 40;
+    for (int i = selection + 1;  i <= final; i++)
+    {
+        QTest::keyClick(combo.view(), Qt::Key_Down);
+        QTest::qWait(20);
+        GET_SELECTION(selection);
+        QCOMPARE(selection, i);
+    }
+
+    QTest::keyClick(combo.view(), Qt::Key_Enter);
+    QTRY_COMPARE(combo.currentText(), QString::number(final));
+}
+
+void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
+{
+    QWidget w;
+    QVBoxLayout layout(&w);
+    QComboBox cb;
+    cb.setEditable(true);
+    QSignalSpy spy(&cb, SIGNAL(activated(int)));
+    cb.addItem("0");
+    cb.addItem("1");
+    cb.addItem("2");
+    QLineEdit edit;
+    layout.addWidget(&cb);
+    layout.addWidget(&edit);
+
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    cb.clearEditText();
+    cb.setFocus();
+    QApplication::processEvents();
+    QTest::keyClick(0, '1');
+    QCOMPARE(spy.count(), 0);
+    edit.setFocus();
+    QTRY_VERIFY(edit.hasFocus());
+    QTRY_COMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_QComboBox)

@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-    \example video/videowidget
+    \example multimedia/videowidget
     \title Video Widget Example
 
     The Video Widget example shows how to implement a video widget using
@@ -50,7 +50,7 @@
 
     \section1 VideoWidgetSurface Class Definition
 
-    \snippet examples/video/videowidget/videowidgetsurface.h 0
+    \snippet examples/multimedia/videowidget/videowidgetsurface.h 0
 
     The VideoWidgetSurface class inherits QAbstractVideoSurface and paints
     video frames on a QWidget.  This is a separate class to VideoWidget as both
@@ -62,7 +62,7 @@
 
     \section1 VideoWidgetSurface Class Implementation
 
-    \snippet examples/video/videowidget/videowidgetsurface.cpp 0
+    \snippet examples/multimedia/videowidget/videowidgetsurface.cpp 0
 
     From the supportedPixelFormats() function we return a list of pixel formats
     the surface can paint. The order of the list hints at which formats are
@@ -74,7 +74,7 @@
     return any pixel formats if handleType is not
     QAbstractVideoBuffer::NoHandle.
 
-    \snippet examples/video/videowidget/videowidgetsurface.cpp 1
+    \snippet examples/multimedia/videowidget/videowidgetsurface.cpp 1
 
     In isFormatSupported() we test if the frame type of a surface format maps
     to a valid QImage format, that the frame size is not empty, and the handle
@@ -85,7 +85,7 @@
     that the size is not empty so a reimplementation wasn't strictly necessary
     in this case.
 
-    \snippet examples/video/videowidget/videowidgetsurface.cpp 2
+    \snippet examples/multimedia/videowidget/videowidgetsurface.cpp 2
 
     To start our surface we'll extract the image format and size from the
     selected video format and save it for use in the paint() function.  If the
@@ -94,7 +94,7 @@
     by calling QAbstractVideoSurface::start(). Finally since the video size may
     have changed we'll trigger an update of the widget, and video geometry.
 
-    \snippet examples/video/videowidget/videowidgetsurface.cpp 5
+    \snippet examples/multimedia/videowidget/videowidgetsurface.cpp 5
 
     The updateVideoRect() function calculates the region within the widget the
     video occupies.  The \l {QVideoSurfaceFormat::sizeHint()}{size hint} of the
@@ -105,7 +105,7 @@
     size in the center of the widget.  Otherwise we shrink the size maintaining
     the aspect ratio so that it does fit.
 
-    \snippet examples/video/videowidget/videowidgetsurface.cpp 4
+    \snippet examples/multimedia/videowidget/videowidgetsurface.cpp 4
 
     We can't paint from outside a paint event, so when a new frame is received
     in present() we save a reference to it and force an immediate repaint of
@@ -118,7 +118,7 @@
     \l {QAbstractVideoSurface::UnsupportedFormatError}{UnsupportedFormatError}
     on our surface and stop it immediately.
 
-    \snippet examples/video/videowidget/videowidgetsurface.cpp 6
+    \snippet examples/multimedia/videowidget/videowidgetsurface.cpp 6
 
     The paint() function is called by the video widget to paint the current
     video frame.  Before we draw the frame first we'll check the format for
@@ -128,7 +128,7 @@
     construct a new QImage from the current video frame, and draw it to the
     the widget.
 
-    \snippet examples/video/videowidget/videowidgetsurface.cpp 3
+    \snippet examples/multimedia/videowidget/videowidgetsurface.cpp 3
 
     When the surface is stopped we need to release the current frame and
     invalidate the video region.   Then we confirm the surface has been
@@ -141,7 +141,7 @@
     The VideoWidget class uses the VideoWidgetSurface class to implement a
     video widget.
 
-    \snippet examples/video/videowidget/videowidget.h 0
+    \snippet examples/multimedia/videowidget/videowidget.h 0
 
     The VideoWidget QWidget implementation is minimal with just the sizeHint(),
     paintEvent(), and resizeEvent() functions in addition to the constructor,
@@ -149,7 +149,7 @@
 
     \section1 VideoWidget Class Implementation
 
-    \snippet examples/video/videowidget/videowidget.cpp 0
+    \snippet examples/multimedia/videowidget/videowidget.cpp 0
 
     In the VideoWidget constructor we set some flags to speed up re-paints a
     little.  Setting the Qt::WA_NoSystemBackground flag and disabling automatic
@@ -162,17 +162,17 @@
 
     Finally we construct an instance of the VideoWidgetSurface class.
 
-    \snippet examples/video/videowidget/videowidget.cpp 1
+    \snippet examples/multimedia/videowidget/videowidget.cpp 1
 
     In the destructor we simply delete the VideoWidgetSurface instance.
 
-    \snippet examples/video/videowidget/videowidget.cpp 2
+    \snippet examples/multimedia/videowidget/videowidget.cpp 2
 
     We get the size hint for the widget from the video format of the surface
     which is calculated from viewport and pixel aspect ratio of the video
     format.
 
-    \snippet examples/video/videowidget/videowidget.cpp 3
+    \snippet examples/multimedia/videowidget/videowidget.cpp 3
 
     When the video widget receives a paint event we first check if the surface
     is started,  if not then we simply fill the widget with the background
@@ -180,7 +180,7 @@
     by the paint region, before calling paint on the video surface to draw the
     current frame.
 
-    \snippet examples/video/videowidget/videowidget.cpp 4
+    \snippet examples/multimedia/videowidget/videowidget.cpp 4
 
     The resizeEvent() function is reimplemented to trigger an update of the
     video region when the widget is resized.

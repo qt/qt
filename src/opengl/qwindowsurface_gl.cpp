@@ -49,12 +49,12 @@
 #include <qglpixelbuffer.h>
 #include <qcolormap.h>
 #include <qdesktopwidget.h>
+#include <private/qwidget_p.h>
 #include "qdebug.h"
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #include <qx11info_x11.h>
-#include <private/qwidget_p.h>
 
 #ifndef QT_OPENGL_ES
 #include <GL/glx.h>
@@ -195,6 +195,9 @@ public:
         if (!initializing && !widget && !cleanedUp) {
             initializing = true;
             widget = new QGLWidget;
+            // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+            if (QWidgetPrivate::allWidgets)
+                QWidgetPrivate::allWidgets->remove(widget);
             initializing = false;
         }
         return widget;
@@ -280,22 +283,12 @@ QGLContext* QGLWindowSurfaceGLPaintDevice::context() const
 
 int QGLWindowSurfaceGLPaintDevice::metric(PaintDeviceMetric m) const
 {
-    return d->q_ptr->window()->metric(m);
+    return qt_paint_device_metric(d->q_ptr->window(), m);
 }
-
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
-
-#if !defined (QT_OPENGL_ES_2)
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
-#endif
 
 QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (!qt_gl_preferGL2Engine())
-        return qt_gl_window_surface_engine();
-#endif
-    return qt_gl_window_surface_2_engine();
+    return qt_qgl_paint_engine();
 }
 
 QGLWindowSurface::QGLWindowSurface(QWidget *window)
@@ -374,6 +367,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
         qWarning() << "hijackWindow() could not create EGL surface";
     }
+    qDebug("QGLWindowSurface - using EGLConfig %d", reinterpret_cast<int>(ctxpriv->eglContext->config()));
 #endif
 
     widgetPrivate->extraData()->glContext = ctx;
@@ -427,6 +421,12 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         qWarning("No native child widget support in GL window surface without FBOs or pixel buffers");
         return;
     }
+
+    //### Find out why d_ptr->geometry_updated isn't always false.
+    // flush() should not be called when d_ptr->geometry_updated is true. It assumes that either
+    // d_ptr->fbo or d_ptr->pb is allocated and has the correct size.
+    if (d_ptr->geometry_updated)
+        return;
 
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
@@ -625,7 +625,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
         QGLShaderProgram *blitProgram =
             QGLEngineSharedShaders::shadersForContext(ctx)->blitProgram();
-        blitProgram->enable();
+        blitProgram->bind();
         blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
 
         // The shader manager's blit program does not multiply the

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -55,6 +55,12 @@
 #ifdef Q_WS_S60
 #include <aknappui.h>
 #endif
+
+// This is necessary in order to be able to perform delayed invokation on slots
+// which take arguments of type WId.  One example is
+// QWidgetPrivate::_q_delayedDestroy, which is used to delay destruction of
+// CCoeControl objects until after the CONE event handler has finished running.
+Q_DECLARE_METATYPE(WId)
 
 QT_BEGIN_NAMESPACE
 
@@ -207,6 +213,15 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     if ((q->windowType() == Qt::Desktop))
         return;
+
+    QPoint oldPos(q->pos());
+    QSize oldSize(q->size());
+    QRect oldGeom(data.crect);
+
+    // Lose maximized status if deliberate resize
+    if (w != oldSize.width() || h != oldSize.height())
+        data.window_state &= ~Qt::WindowMaximized;
+
     if (extra) {                                // any size restrictions?
         w = qMin(w,extra->maxw);
         h = qMin(h,extra->maxh);
@@ -222,16 +237,9 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         data.window_state = s;
     }
 
-    QPoint oldPos(q->pos());
-    QSize oldSize(q->size());
-    QRect oldGeom(data.crect);
-
     bool isResize = w != oldSize.width() || h != oldSize.height();
     if (!isMove && !isResize)
         return;
-
-    if (isResize)
-        data.window_state &= ~Qt::WindowMaximized;
 
     if (q->isWindow()) {
         if (w == 0 || h == 0) {
@@ -318,8 +326,6 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     bool desktop = (type == Qt::Desktop);
     //bool tool = (type == Qt::Tool || type == Qt::Drawer);
 
-    WId id = 0;
-
     if (popup)
         flags |= Qt::WindowStaysOnTopHint; // a popup stays on top
 
@@ -341,13 +347,10 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         data.crect.setSize(QSize(width, height));
     }
 
-    CCoeControl *destroyw = 0;
+    CCoeControl *const destroyw = destroyOldWindow ? data.winid : 0;
 
     createExtra();
     if (window) {
-        if (destroyOldWindow)
-            destroyw = data.winid;
-        id = window;
         setWinId(window);
         TRect tr = window->Rect();
         data.crect.setRect(tr.iTl.iX, tr.iTl.iY, tr.Width(), tr.Height());
@@ -355,10 +358,16 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     } else if (topLevel) {
         if (!q->testAttribute(Qt::WA_Moved) && !q->testAttribute(Qt::WA_DontShowOnScreen))
             data.crect.moveTopLeft(QPoint(clientRect.iTl.iX, clientRect.iTl.iY));
-        QSymbianControl *control= q_check_ptr(new QSymbianControl(q));
-        id = (WId)control;
-        setWinId(id);
-        QT_TRAP_THROWING(control->ConstructL(true,desktop));
+
+        QScopedPointer<QSymbianControl> control( q_check_ptr(new QSymbianControl(q)) );
+        QT_TRAP_THROWING(control->ConstructL(true, desktop));
+        control->SetMopParent(static_cast<CEikAppUi*>(S60->appUi()));
+
+        // Symbian windows are always created in an inactive state
+        // We perform this assignment for the case where the window is being re-created
+        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // ancestors.
+        extra->activated = 0;
 
         if (!desktop) {
             TInt stackingFlags;
@@ -368,7 +377,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
                 stackingFlags = ECoeStackFlagStandard;
             }
             control->MakeVisible(false);
-            QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
+            QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control.data(), ECoeStackPriorityDefault, stackingFlags));
             // Avoid keyboard focus to a hidden window.
             control->setFocusSafely(false);
 
@@ -391,10 +400,21 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         int x, y, w, h;
         data.crect.getRect(&x, &y, &w, &h);
         control->SetRect(TRect(TPoint(x, y), TSize(w, h)));
+
+        // We wait until the control is fully constructed before calling setWinId, because
+        // this generates a WinIdChanged event.
+        setWinId(control.take());
+
     } else if (q->testAttribute(Qt::WA_NativeWindow) || paintOnScreen()) { // create native child widget
-        QSymbianControl *control = new QSymbianControl(q);
-        setWinId(control);
+
+        QScopedPointer<QSymbianControl> control( q_check_ptr(new QSymbianControl(q)) );
         QT_TRAP_THROWING(control->ConstructL(!parentWidget));
+
+        // Symbian windows are always created in an inactive state
+        // We perform this assignment for the case where the window is being re-created
+        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // ancestors.
+        extra->activated = 0;
 
         TInt stackingFlags;
         if ((q->windowType() & Qt::Popup) == Qt::Popup) {
@@ -403,7 +423,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             stackingFlags = ECoeStackFlagStandard;
         }
         control->MakeVisible(false);
-        QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
+        QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control.data(), ECoeStackPriorityDefault, stackingFlags));
         // Avoid keyboard focus to a hidden window.
         control->setFocusSafely(false);
 
@@ -417,13 +437,24 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         drawableWindow->PointerFilter(EPointerFilterEnterExit
             | EPointerFilterMove | EPointerFilterDrag, 0);
 
-        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
-            activateSymbianWindow();
+        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped)) {
+            activateSymbianWindow(control.data());
+            control->MakeVisible(true);
+        }
+
+        // We wait until the control is fully constructed before calling setWinId, because
+        // this generates a WinIdChanged event.
+        setWinId(control.take());
     }
 
     if (destroyw) {
         destroyw->ControlEnv()->AppUi()->RemoveFromStack(destroyw);
-        CBase::Delete(destroyw);
+
+        // Delay deletion of the control in case this function is called in the
+        // context of a CONE event handler such as
+        // CCoeControl::ProcessPointerEventL
+        QMetaObject::invokeMethod(q, "_q_delayedDestroy",
+            Qt::QueuedConnection, Q_ARG(WId, destroyw));
     }
 
     if (q->testAttribute(Qt::WA_AcceptTouchEvents))
@@ -468,7 +499,7 @@ void QWidgetPrivate::show_sys()
     invalidateBuffer(q->rect());
 }
 
-void QWidgetPrivate::activateSymbianWindow()
+void QWidgetPrivate::activateSymbianWindow(WId wid)
 {
     Q_Q(QWidget);
 
@@ -476,8 +507,12 @@ void QWidgetPrivate::activateSymbianWindow()
     Q_ASSERT(q->testAttribute(Qt::WA_Mapped));
     Q_ASSERT(!extra->activated);
 
-    WId id = q->internalWinId();
-    QT_TRAP_THROWING(id->ActivateL());
+    if(!wid)
+        wid = q->internalWinId();
+
+    Q_ASSERT(wid);
+
+    QT_TRAP_THROWING(wid->ActivateL());
     extra->activated = 1;
 }
 
@@ -520,8 +555,13 @@ void QWidgetPrivate::raise_sys()
     Q_Q(QWidget);
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    if (q->internalWinId())
+    if (q->internalWinId()) {
         q->internalWinId()->DrawableWindow()->SetOrdinalPosition(0);
+
+        // If toplevel widget, raise app to foreground
+        if (q->isWindow())
+            S60->wsSession().SetWindowGroupOrdinalPosition(S60->windowGroup().Identifier(), 0);
+    }
 }
 
 void QWidgetPrivate::lower_sys()
@@ -529,8 +569,13 @@ void QWidgetPrivate::lower_sys()
     Q_Q(QWidget);
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    if (q->internalWinId())
-        q->internalWinId()->DrawableWindow()->SetOrdinalPosition(-1);
+    if (q->internalWinId()) {
+        // If toplevel widget, lower app to background
+        if (q->isWindow())
+            S60->wsSession().SetWindowGroupOrdinalPosition(S60->windowGroup().Identifier(), -1);
+        else
+            q->internalWinId()->DrawableWindow()->SetOrdinalPosition(-1);
+    }
 
     if (!q->isWindow())
         invalidateBuffer(q->rect());
@@ -571,8 +616,14 @@ void QWidgetPrivate::reparentChildren()
                 w->d_func()->invalidateBuffer(w->rect());
                 WId parent = q->effectiveWinId();
                 WId child = w->effectiveWinId();
-                if (parent != child)
-                    child->SetParent(parent);
+                if (parent != child) {
+                    // Child widget is native.  Because Symbian windows cannot be
+                    // re-parented, we must re-create the window.
+                    const WId window = 0;
+                    const bool initializeWindow = false;
+                    const bool destroyOldWindow = true;
+                    w->d_func()->create_sys(window, initializeWindow, destroyOldWindow);
+                }
                 // ### TODO: We probably also need to update the component array here
                 w->d_func()->reparentChildren();
             } else {
@@ -670,62 +721,6 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         window->SetTransparentRegion(TRegionFix<1>());
 }
 
-CFbsBitmap* qt_pixmapToNativeBitmap(QPixmap pixmap, bool invert)
-{
-    CFbsBitmap* fbsBitmap = q_check_ptr(new CFbsBitmap);    // CBase derived object needs check on new
-    TSize size(pixmap.size().width(), pixmap.size().height());
-    TDisplayMode mode(EColor16MU);
-
-    bool isNull = pixmap.isNull();
-    int depth = pixmap.depth();
-
-    // TODO: dummy assumptions from bit amounts for each color
-    // Will fix later on when native pixmap is implemented
-    switch(pixmap.depth()) {
-    case 1:
-        mode = EGray2;
-        break;
-    case 4:
-        mode = EColor16;
-        break;
-    case 8:
-        mode = EColor256;
-        break;
-    case 12:
-        mode = EColor4K;
-        break;
-    case 16:
-        mode = EColor64K;
-        break;
-    case 24:
-        mode = EColor16M;
-        break;
-    case 32:
-        case EColor16MU:
-        break;
-    default:
-        qFatal("Unsupported pixmap depth");
-        break;
-    }
-
-    qt_symbian_throwIfError(fbsBitmap->Create(size, mode));
-    fbsBitmap->LockHeap();
-    QImage image = pixmap.toImage();
-
-    if (invert)
-        image.invertPixels();
-
-    int height = pixmap.size().height();
-    for(int i=0;i<height;i++ )
-        {
-        TPtr8 scanline(image.scanLine(i), image.bytesPerLine(), image.bytesPerLine());
-        fbsBitmap->SetScanLine( scanline, i );
-        }
-
-    fbsBitmap->UnlockHeap();
-    return fbsBitmap;
-}
-
 void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
 {
 #ifdef Q_WS_S60
@@ -754,12 +749,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 mask.fill(Qt::color1);
             }
 
-            // Convert to CFbsBitmp
-            // TODO: When QPixmap is adapted to use native CFbsBitmap,
-            // it could be set directly to context pane
-            CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
-            CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
-
+            CFbsBitmap* nBitmap = pm.toSymbianCFbsBitmap();
+            CFbsBitmap* nMask = mask.toSymbianCFbsBitmap();
             contextPane->SetPicture(nBitmap,nMask);
         } else {
             // Icon set to null -> set context pane picture to default
@@ -790,12 +781,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                     mask.fill(Qt::color1);
                 }
 
-                // Convert to CFbsBitmp
-                // TODO: When QPixmap is adapted to use native CFbsBitmap,
-                // it could be set directly to context pane
-                CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
-                CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
-
+                CFbsBitmap* nBitmap = pm.toSymbianCFbsBitmap();
+                CFbsBitmap* nMask = mask.toSymbianCFbsBitmap();
                 titlePane->SetSmallPicture( nBitmap, nMask, ETrue );
             } else {
                 // Icon set to null -> set context pane picture to default
@@ -1251,7 +1238,7 @@ void QWidget::releaseKeyboard()
 
 void QWidget::grabMouse()
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
@@ -1268,7 +1255,7 @@ void QWidget::grabMouse()
 #ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));

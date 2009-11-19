@@ -82,6 +82,14 @@ Q_DECLARE_METATYPE(QRectF)
 #define Q_CHECK_PAINTEVENTS
 #endif
 
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+// On mac (cocoa) we always get full update.
+// So check that the expected region is contained inside the actual
+#define COMPARE_REGIONS(ACTUAL, EXPECTED) QVERIFY((EXPECTED).subtracted(ACTUAL).isEmpty())
+#else
+#define COMPARE_REGIONS QTRY_COMPARE
+#endif
+
 static void sendMousePress(QGraphicsScene *scene, const QPointF &point, Qt::MouseButton button = Qt::LeftButton)
 {
     QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
@@ -364,6 +372,7 @@ private slots:
     void itemUsesExtendedStyleOption();
     void itemSendsGeometryChanges();
     void moveItem();
+    void moveLineItem();
     void sorting_data();
     void sorting();
     void itemHasNoContents();
@@ -382,6 +391,7 @@ private slots:
     void moveWhileDeleting();
     void ensureDirtySceneTransform();
     void focusScope();
+    void focusScope2();
     void stackBefore();
     void sceneModality();
     void panelModality();
@@ -390,6 +400,8 @@ private slots:
     void modality_mouseGrabber();
     void modality_clickFocus();
     void modality_keyEvents();
+    void itemIsInFront();
+    void scenePosChange();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -401,6 +413,7 @@ private slots:
     void task243707_addChildBeforeParent();
     void task197802_childrenVisibility();
     void QTBUG_4233_updateCachedWithSceneRect();
+    void QTBUG_5418_textItemSetDefaultColor();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -3100,7 +3113,7 @@ void tst_QGraphicsItem::boundingRects()
 void tst_QGraphicsItem::boundingRects2()
 {
     QGraphicsPixmapItem pixmap(QPixmap::fromImage(QImage(100, 100, QImage::Format_ARGB32_Premultiplied)));
-    QCOMPARE(pixmap.boundingRect(), QRectF(-0.5, -0.5, 101, 101));
+    QCOMPARE(pixmap.boundingRect(), QRectF(0, 0, 100, 100));
 
     QGraphicsLineItem line(0, 0, 100, 0);
     line.setPen(QPen(Qt::black, 1));
@@ -4030,7 +4043,7 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsPixmapItem()
     item.setOffset(QPointF(-10, -10));
     QCOMPARE(item.offset(), QPointF(-10, -10));
 
-    QCOMPARE(item.boundingRect(), QRectF(-10.5, -10.5, 301, 201));
+    QCOMPARE(item.boundingRect(), QRectF(-10, -10, 300, 200));
 }
 
 void tst_QGraphicsItem::defaultItemTest_QGraphicsTextItem()
@@ -4065,8 +4078,11 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsTextItem()
 
     QCOMPARE(text->pos(), QPointF(10, 10));
 
+    text->setTextInteractionFlags(Qt::NoTextInteraction);
+    QVERIFY(!(text->flags() & QGraphicsItem::ItemAcceptsInputMethod));
     text->setTextInteractionFlags(Qt::TextEditorInteraction);
     QCOMPARE(text->textInteractionFlags(), Qt::TextInteractionFlags(Qt::TextEditorInteraction));
+    QVERIFY(text->flags() & QGraphicsItem::ItemAcceptsInputMethod);
 
     {
         QGraphicsSceneMouseEvent event2(QEvent::GraphicsSceneMouseMove);
@@ -4217,6 +4233,8 @@ protected:
             oldValues << opacity();
             break;
         case QGraphicsItem::ItemOpacityHasChanged:
+            break;
+        case QGraphicsItem::ItemScenePositionHasChanged:
             break;
         }
         return itemChangeReturnValue.isValid() ? itemChangeReturnValue : value;
@@ -6290,7 +6308,7 @@ void tst_QGraphicsItem::opacityZeroUpdates()
     QRegion expectedRegion = parentDeviceBoundingRect.adjusted(-2, -2, 2, 2);
     expectedRegion += childDeviceBoundingRect.adjusted(-2, -2, 2, 2);
 
-    QTRY_COMPARE(view.paintedRegion, expectedRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedRegion);
 }
 
 class StacksBehindParentHelper : public QGraphicsRectItem
@@ -7117,7 +7135,7 @@ void tst_QGraphicsItem::update()
     qApp->processEvents();
     QCOMPARE(item->repaints, 1);
     QCOMPARE(view.repaints, 1);
-    QCOMPARE(view.paintedRegion, expectedRegion + expectedRegion.translated(50, 50));
+    COMPARE_REGIONS(view.paintedRegion, expectedRegion + expectedRegion.translated(50, 50));
 
     // Make sure moving a parent item triggers an update on the children
     // (even though the parent itself is outside the viewport).
@@ -7392,7 +7410,7 @@ void tst_QGraphicsItem::moveItem()
     QRegion expectedParentRegion = parentDeviceBoundingRect; // old position
     parentDeviceBoundingRect.translate(20, 20);
     expectedParentRegion += parentDeviceBoundingRect; // new position
-    QCOMPARE(view.paintedRegion, expectedParentRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedParentRegion);
 
     RESET_COUNTERS
 
@@ -7402,7 +7420,7 @@ void tst_QGraphicsItem::moveItem()
     QCOMPARE(child->repaints, 1);
     QCOMPARE(view.repaints, 1);
     const QRegion expectedChildRegion = expectedParentRegion.translated(20, 20);
-    QCOMPARE(view.paintedRegion, expectedChildRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedChildRegion);
 
     RESET_COUNTERS
 
@@ -7413,7 +7431,7 @@ void tst_QGraphicsItem::moveItem()
     QCOMPARE(grandChild->repaints, 1);
     QCOMPARE(view.repaints, 1);
     const QRegion expectedGrandChildRegion = expectedParentRegion.translated(40, 40);
-    QCOMPARE(view.paintedRegion, expectedGrandChildRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedGrandChildRegion);
 
     RESET_COUNTERS
 
@@ -7426,7 +7444,40 @@ void tst_QGraphicsItem::moveItem()
     expectedParentRegion.translate(20, 20);
     expectedParentRegion += expectedChildRegion.translated(20, 20);
     expectedParentRegion += expectedGrandChildRegion.translated(20, 20);
-    QCOMPARE(view.paintedRegion, expectedParentRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedParentRegion);
+}
+
+void tst_QGraphicsItem::moveLineItem()
+{
+    QGraphicsScene scene;
+    scene.setSceneRect(0, 0, 200, 200);
+    QGraphicsLineItem *item = new QGraphicsLineItem(0, 0, 100, 0);
+    item->setPos(50, 50);
+    scene.addItem(item);
+
+    MyGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+    view.reset();
+
+    const QRect itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
+                                         .mapRect(item->boundingRect()).toRect();
+    QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2); // antialiasing
+
+    // Make sure the calculated region is correct.
+    item->update();
+    QTest::qWait(10);
+    QTRY_COMPARE(view.paintedRegion, expectedRegion);
+    view.reset();
+
+    // Old position: (50, 50)
+    item->setPos(50, 100);
+    expectedRegion += expectedRegion.translated(0, 50);
+    QTest::qWait(10);
+    QCOMPARE(view.paintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsItem::sorting_data()
@@ -7631,20 +7682,6 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     items = scene.items(QPointF(80, 80));
     QCOMPARE(items.size(), 1);
     QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
-
-    item1->repaints = 0;
-    item2->repaints = 0;
-    item3->repaints = 0;
-
-    view.viewport()->update(75, 75, 20, 20);
-    QTest::qWait(50);
-
-    // item1 is the effect source and must therefore be repainted.
-    // item2 intersects with the exposed region
-    // item3 is just another child outside the exposed region
-    QCOMPARE(item1->repaints, 1);
-    QCOMPARE(item2->repaints, 1);
-    QCOMPARE(item3->repaints, 0);
 
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     QTest::qWait(100);
@@ -8422,7 +8459,7 @@ void tst_QGraphicsItem::focusScope()
     QVERIFY(!scope2->focusScopeItem());
     scope3->setParentItem(scope2);
     QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
-    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope2);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
 
     QGraphicsRectItem *scope1 = new QGraphicsRectItem;
     scope1->setData(0, "scope1");
@@ -8431,9 +8468,9 @@ void tst_QGraphicsItem::focusScope()
     QVERIFY(!scope1->focusScopeItem());
     scope2->setParentItem(scope1);
 
-    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope1);
-    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)0);
-    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)scope3);
     QCOMPARE(scope1->focusScopeItem(), (QGraphicsItem *)scope2);
     QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
@@ -8484,11 +8521,13 @@ void tst_QGraphicsItem::focusScope()
     rect5->setFocus();
     rect5->setParentItem(rect4);
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)rect5);
-    QVERIFY(!rect5->hasFocus());
+    QVERIFY(rect5->hasFocus());
 
     rect4->setParentItem(0);
+    QVERIFY(rect5->hasFocus());
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
-    QVERIFY(scope3->hasFocus());
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)0);
+    QVERIFY(!scope3->hasFocus());
 
     QGraphicsRectItem *rectA = new QGraphicsRectItem;
     QGraphicsRectItem *scopeA = new QGraphicsRectItem(rectA);
@@ -8499,12 +8538,82 @@ void tst_QGraphicsItem::focusScope()
     scopeB->setFocus();
 
     scene.addItem(rectA);
-    QVERIFY(!rect5->hasFocus());
+    QVERIFY(rect5->hasFocus());
     QVERIFY(!scopeB->hasFocus());
 
     scopeA->setFocus();
     QVERIFY(scopeB->hasFocus());
     QCOMPARE(scopeB->focusItem(), (QGraphicsItem *)scopeB);
+}
+
+void tst_QGraphicsItem::focusScope2()
+{
+    QGraphicsRectItem *child1 = new QGraphicsRectItem;
+    child1->setFlags(QGraphicsItem::ItemIsFocusable);
+    child1->setFocus();
+    QCOMPARE(child1->focusItem(), (QGraphicsItem *)child1);
+
+    QGraphicsRectItem *child2 = new QGraphicsRectItem;
+    child2->setFlags(QGraphicsItem::ItemIsFocusable);
+
+    QGraphicsRectItem *rootFocusScope = new QGraphicsRectItem;
+    rootFocusScope->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    rootFocusScope->setFocus();
+    QCOMPARE(rootFocusScope->focusItem(), (QGraphicsItem *)rootFocusScope);
+
+    child1->setParentItem(rootFocusScope);
+    child2->setParentItem(rootFocusScope);
+
+    QCOMPARE(rootFocusScope->focusScopeItem(), (QGraphicsItem *)child1);
+    QCOMPARE(rootFocusScope->focusItem(), (QGraphicsItem *)child1);
+
+    QGraphicsRectItem *siblingChild1 = new QGraphicsRectItem;
+    siblingChild1->setFlags(QGraphicsItem::ItemIsFocusable);
+    siblingChild1->setFocus();
+
+    QGraphicsRectItem *siblingChild2 = new QGraphicsRectItem;
+    siblingChild2->setFlags(QGraphicsItem::ItemIsFocusable);
+
+    QGraphicsRectItem *siblingFocusScope = new QGraphicsRectItem;
+    siblingFocusScope->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+
+    siblingChild1->setParentItem(siblingFocusScope);
+    siblingChild2->setParentItem(siblingFocusScope);
+
+    QCOMPARE(siblingFocusScope->focusScopeItem(), (QGraphicsItem *)siblingChild1);
+    QCOMPARE(siblingFocusScope->focusItem(), (QGraphicsItem *)0);
+
+    QGraphicsItem *root = new QGraphicsRectItem;
+    rootFocusScope->setParentItem(root);
+    siblingFocusScope->setParentItem(root);
+
+    QCOMPARE(root->focusItem(), (QGraphicsItem *)child1);
+
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    QEvent activate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &activate);
+    scene.setFocus();
+
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *)child1);
+
+    // You cannot set focus on a descendant of a focus scope directly;
+    // this will only change the scope's focus scope item pointer. If
+    // you want to give true input focus, you must set it directly on
+    // the scope itself
+    siblingChild2->setFocus();
+    QVERIFY(!siblingChild2->hasFocus());
+    QVERIFY(!siblingChild2->focusItem());
+    QCOMPARE(siblingFocusScope->focusScopeItem(), (QGraphicsItem *)siblingChild2);
+    QCOMPARE(siblingFocusScope->focusItem(), (QGraphicsItem *)0);
+
+    // Set focus on the scope; focus is forwarded to the focus scope item.
+    siblingFocusScope->setFocus();
+    QVERIFY(siblingChild2->hasFocus());
+    QVERIFY(siblingChild2->focusItem());
+    QCOMPARE(siblingFocusScope->focusScopeItem(), (QGraphicsItem *)siblingChild2);
+    QCOMPARE(siblingFocusScope->focusItem(), (QGraphicsItem *)siblingChild2);
 }
 
 void tst_QGraphicsItem::stackBefore()
@@ -8526,24 +8635,24 @@ void tst_QGraphicsItem::stackBefore()
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child1 << child3 << child4 << child2));
 
     // Move child2 before child1
-    child2->stackBefore(child1);
+    child2->stackBefore(child1); // 2134
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child2->stackBefore(child2);
+    child2->stackBefore(child2); // 2134
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child1->setZValue(1);
+    child1->setZValue(1); // 2341
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
-    child1->stackBefore(child2); // no effect
+    child1->stackBefore(child2); // 2341
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
-    child1->setZValue(0);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child4->stackBefore(child1);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child4 << child1 << child3));
-    child4->setZValue(1);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child3->stackBefore(child1);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child3 << child1 << child4));
-    child4->setZValue(0);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child4 << child3 << child1));
+    child1->setZValue(0); // 1234
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+    child4->stackBefore(child1); // 4123
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child4 << child1 << child2 << child3));
+    child4->setZValue(1); // 1234 (4123)
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+    child3->stackBefore(child1); // 3124 (4312)
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child3 << child1 << child2 << child4));
+    child4->setZValue(0); // 4312
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child4 << child3 << child1 << child2));
 
     // Make them all toplevels
     child1->setParentItem(0);
@@ -8565,24 +8674,24 @@ void tst_QGraphicsItem::stackBefore()
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child1 << child3 << child4 << child2));
 
     // Move child2 before child1
-    child2->stackBefore(child1);
+    child2->stackBefore(child1); // 2134
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child2->stackBefore(child2);
+    child2->stackBefore(child2); // 2134
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child1->setZValue(1);
+    child1->setZValue(1); // 2341
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
-    child1->stackBefore(child2); // no effect
+    child1->stackBefore(child2); // 2341
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
-    child1->setZValue(0);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child4->stackBefore(child1);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child4 << child1 << child3));
-    child4->setZValue(1);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child3->stackBefore(child1);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child1 << child4));
-    child4->setZValue(0);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child4 << child3 << child1));
+    child1->setZValue(0); // 1234
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+    child4->stackBefore(child1); // 4123
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child4 << child1 << child2 << child3));
+    child4->setZValue(1); // 1234 (4123)
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+    child3->stackBefore(child1); // 3124 (4312)
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child3 << child1 << child2 << child4));
+    child4->setZValue(0); // 4312
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child4 << child3 << child1 << child2));
 }
 
 void tst_QGraphicsItem::QTBUG_4233_updateCachedWithSceneRect()
@@ -9531,6 +9640,176 @@ void tst_QGraphicsItem::modality_keyEvents()
     QCOMPARE(rect1childSpy.counts[QEvent::KeyRelease], 0);
     QCOMPARE(rect1Spy.counts[QEvent::KeyPress], 0);
     QCOMPARE(rect1Spy.counts[QEvent::KeyRelease], 0);
+}
+
+void tst_QGraphicsItem::itemIsInFront()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect1 = new QGraphicsRectItem;
+    rect1->setData(0, "rect1");
+    scene.addItem(rect1);
+
+    QGraphicsRectItem *rect1child1 = new QGraphicsRectItem(rect1);
+    rect1child1->setZValue(1);
+    rect1child1->setData(0, "rect1child1");
+
+    QGraphicsRectItem *rect1child2 = new QGraphicsRectItem(rect1);
+    rect1child2->setParentItem(rect1);
+    rect1child2->setData(0, "rect1child2");
+
+    QGraphicsRectItem *rect1child1_1 = new QGraphicsRectItem(rect1child1);
+    rect1child1_1->setData(0, "rect1child1_1");
+
+    QGraphicsRectItem *rect1child1_2 = new QGraphicsRectItem(rect1child1);
+    rect1child1_2->setFlag(QGraphicsItem::ItemStacksBehindParent);
+    rect1child1_2->setData(0, "rect1child1_2");
+
+    QGraphicsRectItem *rect2 = new QGraphicsRectItem;
+    rect2->setData(0, "rect2");
+    scene.addItem(rect2);
+
+    QGraphicsRectItem *rect2child1 = new QGraphicsRectItem(rect2);
+    rect2child1->setData(0, "rect2child1");
+
+    QCOMPARE(qt_closestItemFirst(rect1, rect1), false);
+    QCOMPARE(qt_closestItemFirst(rect1, rect2), false);
+    QCOMPARE(qt_closestItemFirst(rect1child1, rect2child1), false);
+    QCOMPARE(qt_closestItemFirst(rect1child1, rect1child2), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_1, rect1child2), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_1, rect1child1), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect1child2), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect1child1), false);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect1), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect2), false);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect2child1), false);
+}
+
+class ScenePosChangeTester : public ItemChangeTester
+{
+public:
+    ScenePosChangeTester()
+    { }
+    ScenePosChangeTester(QGraphicsItem *parent) : ItemChangeTester(parent)
+    { }
+};
+
+void tst_QGraphicsItem::scenePosChange()
+{
+    ScenePosChangeTester* root = new ScenePosChangeTester;
+    ScenePosChangeTester* child1 = new ScenePosChangeTester(root);
+    ScenePosChangeTester* grandChild1 = new ScenePosChangeTester(child1);
+    ScenePosChangeTester* child2 = new ScenePosChangeTester(root);
+    ScenePosChangeTester* grandChild2 = new ScenePosChangeTester(child2);
+
+    child1->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+    grandChild2->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    // ignore uninteresting changes
+    child1->clear();
+    child2->clear();
+    grandChild1->clear();
+    grandChild2->clear();
+
+    // move whole tree
+    root->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+
+    // move subtree
+    child2->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 2);
+
+    // reparent
+    grandChild2->setParentItem(child1);
+    child1->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 2);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
+
+    // change flags
+    grandChild1->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+    grandChild2->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, false);
+    QCoreApplication::processEvents(); // QGraphicsScenePrivate::_q_updateScenePosDescendants()
+    child1->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
+
+    // remove
+    scene.removeItem(grandChild1);
+    delete grandChild2; grandChild2 = 0;
+    QCoreApplication::processEvents(); // QGraphicsScenePrivate::_q_updateScenePosDescendants()
+    root->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 4);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+}
+
+void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
+{
+    struct Item : public QGraphicsTextItem
+    {
+        bool painted;
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *opt, QWidget *wid)
+        {
+            painted = true;
+            QGraphicsTextItem::paint(painter, opt, wid);
+        }
+    };
+
+    Item *i = new Item;
+    i->painted = false;
+    i->setPlainText("I AM A TROLL");
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    scene.addItem(i);
+    QApplication::processEvents();
+    QTRY_VERIFY(i->painted);
+    QApplication::processEvents();
+
+    i->painted = false;
+    QColor col(Qt::red);
+    i->setDefaultTextColor(col);
+    QApplication::processEvents();
+    QTRY_VERIFY(i->painted); //check that changing the color force an update
+
+    i->painted = false;
+    QImage image(400, 200, QImage::Format_RGB32);
+    image.fill(0);
+    QPainter painter(&image);
+    scene.render(&painter);
+    painter.end();
+    QVERIFY(i->painted);
+
+    int numRedPixel = 0;
+    QRgb rgb = col.rgb();
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            // Because of antialiasing we allow a certain range of errors here.
+            QRgb pixel = image.pixel(x, y);
+            if (qAbs((int)(pixel & 0xff) - (int)(rgb & 0xff)) +
+                qAbs((int)((pixel & 0xff00) >> 8) - (int)((rgb & 0xff00) >> 8)) +
+                qAbs((int)((pixel & 0xff0000) >> 16) - (int)((rgb & 0xff0000) >> 16)) <= 50) {
+                if (++numRedPixel >= 10) {
+                    return;
+                }
+            }
+        }
+    }
+    QCOMPARE(numRedPixel, -1); //color not found, FAIL!
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

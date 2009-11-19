@@ -6,7 +6,7 @@ Copyright (C) 2006-2008 Matthias Kretz <kretz@kde.org>
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA 
+    successor approved by the membership of KDE e.V.), Nokia Corporation 
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -46,7 +46,9 @@ namespace Phonon
             AdvancedDevicesFromSettings = 2,
             HideUnavailableDevices = 4
         };
+#ifndef QT_NO_PHONON_SETTINGSGROUP
         QList<int> audioOutputDeviceListFor(Phonon::Category category, int override = AdvancedDevicesFromSettings) const;
+#endif //QT_NO_PHONON_SETTINGSGROUP
         int audioOutputDeviceFor(Phonon::Category category, int override = AdvancedDevicesFromSettings) const;
 
 #ifndef QT_NO_PHONON_AUDIOCAPTURE
@@ -55,7 +57,9 @@ namespace Phonon
 #endif //QT_NO_PHONON_AUDIOCAPTURE
 
     protected:
+#ifndef QT_NO_SETTINGS
         QSettings m_config;
+#endif //QT_NO_SETTINGS
     };
 } // namespace Phonon
 

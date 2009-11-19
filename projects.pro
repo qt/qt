@@ -8,7 +8,11 @@ TEMPLATE = subdirs
 cross_compile: CONFIG += nostrip
 
 isEmpty(QT_BUILD_PARTS) { #defaults
-   QT_BUILD_PARTS = libs tools examples demos docs translations
+    symbian {
+       QT_BUILD_PARTS = libs tools examples demos
+    } else {
+       QT_BUILD_PARTS = libs tools examples demos docs translations
+    }
 } else { #make sure the order makes sense
    contains(QT_BUILD_PARTS, translations) {
        QT_BUILD_PARTS -= translations
@@ -28,10 +32,6 @@ isEmpty(QT_BUILD_PARTS) { #defaults
    }
 }
 
-symbian {
-   QT_BUILD_PARTS = libs tools examples demos
-}
-
 #process the projects
 for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
     isEqual(PROJECT, tools) {
@@ -45,7 +45,12 @@ for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
     } else:isEqual(PROJECT, docs) {
        contains(QT_BUILD_PARTS, tools):include(doc/doc.pri)
     } else:isEqual(PROJECT, translations) {
-       contains(QT_BUILD_PARTS, tools):include(translations/translations.pri)
+       contains(QT_BUILD_PARTS, tools) {
+          include(translations/translations.pri)  # ts targets
+       } else {
+          SUBDIRS += tools/linguist/lrelease
+       }
+       SUBDIRS += translations                    # qm build step
     } else:isEqual(PROJECT, qmake) {
 #      SUBDIRS += qmake
     } else {

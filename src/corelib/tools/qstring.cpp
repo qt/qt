@@ -1590,12 +1590,12 @@ QString &QString::append(QChar ch)
 */
 QString &QString::remove(int pos, int len)
 {
-    if (pos < 0)
+    if (pos < 0)  // count from end of string
         pos += d->size;
     if (pos < 0 || pos >= d->size) {
         // range problems
-    } else if (pos + len >= d->size) {  // pos ok
-        resize(pos);
+    } else if (len >= d->size - pos) {
+        resize(pos); // truncate
     } else if (len > 0) {
         detach();
         memmove(d->data + pos, d->data + pos + len,
@@ -2681,7 +2681,7 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
     realloc();
 
     int index = 0;
-    int numCaptures = rx2.numCaptures();
+    int numCaptures = rx2.captureCount();
     int al = after.length();
     QRegExp::CaretMode caretMode = QRegExp::CaretAtZero;
 
@@ -7204,7 +7204,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
 */
 
 
-#ifndef QT_NO_DATASTREAM
+#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 /*!
     \fn QDataStream &operator<<(QDataStream &stream, const QString &string)
     \relates QString

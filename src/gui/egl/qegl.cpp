@@ -61,6 +61,8 @@ QEglContext::QEglContext()
     , cfg(0)
     , currentSurface(EGL_NO_SURFACE)
     , current(false)
+    , ownsContext(true)
+    , sharing(false)
 {
 }
 
@@ -173,6 +175,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     if (apiType == QEgl::OpenGL)
         contextProps.setValue(EGL_CONTEXT_CLIENT_VERSION, 2);
 #endif
+    sharing = false;
     if (shareContext && shareContext->ctx == EGL_NO_CONTEXT)
         shareContext = 0;
     if (shareContext) {
@@ -180,6 +183,8 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
         if (ctx == EGL_NO_CONTEXT) {
             qWarning() << "QEglContext::createContext(): Could not share context:" << errorString(eglGetError());
             shareContext = 0;
+        } else {
+            sharing = true;
         }
     }
     if (ctx == EGL_NO_CONTEXT) {
@@ -206,7 +211,7 @@ void QEglContext::destroySurface(EGLSurface surface)
 // Destroy the context.  Note: this does not destroy the surface.
 void QEglContext::destroy()
 {
-    if (ctx != EGL_NO_CONTEXT)
+    if (ctx != EGL_NO_CONTEXT && ownsContext)
         eglDestroyContext(dpy, ctx);
     dpy = EGL_NO_DISPLAY;
     ctx = EGL_NO_CONTEXT;

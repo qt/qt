@@ -119,6 +119,7 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
     , m_theme(RenderTheme::themeForPage(this))
     , m_editorClient(editorClient)
     , m_frameCount(0)
+    , m_openedByDOM(false)
     , m_tabKeyCyclesThroughElements(true)
     , m_defersLoading(false)
     , m_inLowQualityInterpolationMode(false)
@@ -136,7 +137,6 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
     , m_customHTMLTokenizerTimeDelay(-1)
     , m_customHTMLTokenizerChunkSize(-1)
     , m_canStartPlugins(true)
-    , m_pluginHalterClient(pluginHalterClient)
 {
 #if !ENABLE(CONTEXT_MENUS)
     UNUSED_PARAM(contextMenuClient);
@@ -156,7 +156,10 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
     ASSERT(!allPages->contains(this));
     allPages->add(this);
 
-    pluginHalterEnabledStateChanged();
+    if (pluginHalterClient) {
+        m_pluginHalter.set(new PluginHalter(pluginHalterClient));
+        m_pluginHalter->setPluginAllowedRunTime(m_settings->pluginAllowedRunTime());
+    }
 
 #if ENABLE(JAVASCRIPT_DEBUGGER)
     JavaScriptDebugServer::shared().pageCreated(this);
@@ -201,6 +204,16 @@ void Page::setMainFrame(PassRefPtr<Frame> mainFrame)
     m_mainFrame = mainFrame;
 }
 
+bool Page::openedByDOM() const
+{
+    return m_openedByDOM;
+}
+
+void Page::setOpenedByDOM()
+{
+    m_openedByDOM = true;
+}
+
 BackForwardList* Page::backForwardList()
 {
     return m_backForwardList.get();
@@ -228,6 +241,40 @@ bool Page::goForward()
     return false;
 }
 
+bool Page::canGoBackOrForward(int distance) const
+{
+    if (distance == 0)
+        return true;
+    if (distance > 0 && distance <= m_backForwardList->forwardListCount())
+        return true;
+    if (distance < 0 && -distance <= m_backForwardList->backListCount())
+        return true;
+    return false;
+}
+
+void Page::goBackOrForward(int distance)
+{
+    if (distance == 0)
+        return;
+
+    HistoryItem* item = m_backForwardList->itemAtIndex(distance);
+    if (!item) {
+        if (distance > 0) {
+            int forwardListCount = m_backForwardList->forwardListCount();
+            if (forwardListCount > 0) 
+                item = m_backForwardList->itemAtIndex(forwardListCount);
+        } else {
+            int backListCount = m_backForwardList->backListCount();
+            if (backListCount > 0)
+                item = m_backForwardList->itemAtIndex(-backListCount);
+        }
+    }
+
+    ASSERT(item); // we should not reach this line with an empty back/forward list
+    if (item)
+        goToItem(item, FrameLoadTypeIndexedBackForward);
+}
+
 void Page::goToItem(HistoryItem* item, FrameLoadType type)
 {
     // Abort any current load if we're going to a history item
@@ -244,7 +291,12 @@ void Page::goToItem(HistoryItem* item, FrameLoadType type)
         databasePolicy = DatabasePolicyContinue;
 #endif
     m_mainFrame->loader()->stopAllLoaders(databasePolicy);
-    m_mainFrame->loader()->goToItem(item, type);
+    m_mainFrame->loader()->history()->goToItem(item, type);
+}
+
+int Page::getHistoryLength()
+{
+    return m_backForwardList->backListCount() + 1;
 }
 
 void Page::setGlobalHistoryItem(HistoryItem* item)
@@ -682,16 +734,6 @@ InspectorTimelineAgent* Page::inspectorTimelineAgent() const
     return m_inspectorController->timelineAgent();
 }
 #endif
-
-void Page::pluginHalterEnabledStateChanged()
-{
-    if (m_settings->pluginHalterEnabled()) {
-        ASSERT(!m_pluginHalter);
-        m_pluginHalter.set(new PluginHalter(m_pluginHalterClient));
-        m_pluginHalter->setPluginAllowedRunTime(m_settings->pluginAllowedRunTime());
-    } else
-        m_pluginHalter = 0;
-}
 
 void Page::pluginAllowedRunTimeChanged()
 {

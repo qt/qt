@@ -535,7 +535,13 @@ static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
         // Vietnamese,
     { 0, 127 }, // same as latin1
         // Other,
-    { 126, 127 }
+    { 126, 127 },
+        // Ogham,
+    { 78, 127 },
+        // Runic,
+    { 79, 127 },
+        // Nko,
+    { 14, 127 },
 };
 
 #define SimplifiedChineseCsbBit 18
@@ -875,7 +881,8 @@ static const int scriptForWritingSystem[] = {
     QUnicodeTables::Common, // Braille
     QUnicodeTables::Common, // Symbol
     QUnicodeTables::Ogham,  // Ogham
-    QUnicodeTables::Runic // Runic
+    QUnicodeTables::Runic, // Runic
+    QUnicodeTables::Nko // Nko
 };
 
 
@@ -883,12 +890,12 @@ static const int scriptForWritingSystem[] = {
 static inline bool requiresOpenType(int writingSystem)
 {
     return ((writingSystem >= QFontDatabase::Syriac && writingSystem <= QFontDatabase::Sinhala)
-            || writingSystem == QFontDatabase::Khmer);
+            || writingSystem == QFontDatabase::Khmer || writingSystem == QFontDatabase::Nko);
 }
 static inline bool scriptRequiresOpenType(int script)
 {
     return ((script >= QUnicodeTables::Syriac && script <= QUnicodeTables::Sinhala)
-            || script == QUnicodeTables::Khmer);
+            || script == QUnicodeTables::Khmer || script == QUnicodeTables::Nko);
 }
 #endif
 
@@ -1333,7 +1340,7 @@ static void match(int script, const QFontDef &request,
              "    family: %s [%s], script: %d\n"
              "    weight: %d, style: %d\n"
              "    stretch: %d\n"
-             "    pixelSize: %d\n"
+             "    pixelSize: %g\n"
              "    pitch: %c",
              family_name.isEmpty() ? "-- first in script --" : family_name.toLatin1().constData(),
              foundry_name.isEmpty() ? "-- any --" : foundry_name.toLatin1().constData(),
@@ -1560,6 +1567,7 @@ QFontDatabase::QFontDatabase()
     \value Other (the same as Symbol)
     \value Ogham
     \value Runic
+    \value Nko
 
     \omitvalue WritingSystemsCount
 */
@@ -2234,6 +2242,9 @@ QString QFontDatabase::writingSystemName(WritingSystem writingSystem)
     case Runic:
         name = QT_TRANSLATE_NOOP("QFontDatabase", "Runic");
         break;
+    case Nko:
+        name = QT_TRANSLATE_NOOP("QFontDatabase", "N'Ko");
+        break;
     default:
         Q_ASSERT_X(false, "QFontDatabase::writingSystemName", "invalid 'writingSystem' parameter");
         break;
@@ -2446,6 +2457,12 @@ QString QFontDatabase::writingSystemSample(WritingSystem writingSystem)
         sample += QChar(0x16a1);
         sample += QChar(0x16a2);
         sample += QChar(0x16a3);
+        break;
+    case Nko:
+        sample += QChar(0x7ca);
+        sample += QChar(0x7cb);
+        sample += QChar(0x7cc);
+        sample += QChar(0x7cd);
         break;
     default:
         break;

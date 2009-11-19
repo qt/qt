@@ -15,14 +15,7 @@ contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles1cl):CONFIG += opengles1cl
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
-
-contains(QT_CONFIG, opengles.*) {
-	for(p, QMAKE_LIBDIR_EGL) {
-		exists($$p):LIBS_PRIVATE += -L$$p
-	}
-	!isEmpty(QMAKE_INCDIR_EGL): INCLUDEPATH += $$QMAKE_INCDIR_EGL
-	!isEmpty(QMAKE_LIBS_EGL): LIBS_PRIVATE += $$QMAKE_LIBS_EGL
-}
+contains(QT_CONFIG, egl):CONFIG += egl
 
 HEADERS += qgl.h \
 	   qgl_p.h \
@@ -60,7 +53,8 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qgl2pexvertexarray_p.h \
                 gl2paintengineex/qpaintengineex_opengl2_p.h \
                 gl2paintengineex/qglengineshadersource_p.h \
-                gl2paintengineex/qglcustomshaderstage_p.h
+                gl2paintengineex/qglcustomshaderstage_p.h \
+                gl2paintengineex/qtriangulatingstroker_p.h
 
     SOURCES +=  qglshaderprogram.cpp \
                 qglpixmapfilter.cpp \
@@ -72,7 +66,8 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qglengineshadermanager.cpp \
                 gl2paintengineex/qgl2pexvertexarray.cpp \
                 gl2paintengineex/qpaintengineex_opengl2.cpp \
-                gl2paintengineex/qglcustomshaderstage.cpp
+                gl2paintengineex/qglcustomshaderstage.cpp \
+                gl2paintengineex/qtriangulatingstroker.cpp
 
 }
 
@@ -80,9 +75,13 @@ x11 {
     contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles1cl)|contains(QT_CONFIG, opengles2) {
         SOURCES +=  qgl_x11egl.cpp \
                     qglpixelbuffer_egl.cpp \
-                    qgl_egl.cpp
+                    qgl_egl.cpp \
+                    qpixmapdata_x11gl_egl.cpp \
+                    qwindowsurface_x11gl.cpp
 
-        HEADERS +=  qgl_egl_p.h
+        HEADERS +=  qgl_egl_p.h \
+                    qpixmapdata_x11gl_p.h \
+                    qwindowsurface_x11gl_p.h
 
     } else {
         SOURCES +=  qgl_x11.cpp \
@@ -97,7 +96,7 @@ x11 {
             LIBS_PRIVATE += -lfreetype
         } else {
             ### Note: how does this compile with a non-system freetype?
-	    # This probably doesn't compile
+	    # This probably does not compile
         }
     } else {
         DEFINES *= QT_NO_FREETYPE
@@ -126,14 +125,12 @@ wince*: {
 
 embedded {
     SOURCES += qgl_qws.cpp \
-               qglpaintdevice_qws.cpp \
                qglpixelbuffer_egl.cpp \
                qglscreen_qws.cpp \
                qglwindowsurface_qws.cpp \
                qgl_egl.cpp
 
-    HEADERS += qglpaintdevice_qws_p.h \
-               qglscreen_qws.h \
+    HEADERS += qglscreen_qws.h \
                qglwindowsurface_qws_p.h \
                qgl_egl_p.h
 
@@ -145,19 +142,3 @@ embedded {
 }
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src
-
-wince*: {
-    contains(QT_CONFIG,opengles1) {
-        QMAKE_LIBS += "libGLES_CM.lib"
-    }
-    contains(QT_CONFIG,opengles1cl) {
-        QMAKE_LIBS += "libGLES_CL.lib"
-    }
-    contains(QT_CONFIG,opengles2) {
-        QMAKE_LIBS += "libGLESv2.lib"
-    }
-
-} else {
-    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL
-    LIBS += $$QMAKE_LFLAGS_OPENGL
-}

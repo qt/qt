@@ -132,12 +132,6 @@ bool CSSParser::parseSVGValue(int propId, bool important)
             valid_primitive = true;
         break;
 
-    case CSSPropertyTextRendering:   // auto | optimizeSpeed | optimizeLegibility | geometricPrecision | inherit
-        if (id == CSSValueAuto || id == CSSValueOptimizespeed || id == CSSValueOptimizelegibility ||
-       id == CSSValueGeometricprecision)
-            valid_primitive = true;
-        break;
-
     case CSSPropertyImageRendering:  // auto | optimizeSpeed |
     case CSSPropertyColorRendering:  // optimizeQuality | inherit
         if (id == CSSValueAuto || id == CSSValueOptimizespeed ||
@@ -263,6 +257,11 @@ bool CSSParser::parseSVGValue(int propId, bool important)
                 m_valueList->next();
         }
         break;
+    case CSSPropertyWebkitShadow:
+        if (id == CSSValueNone)
+            valid_primitive = true;
+        else
+            return parseShadow(propId, important);
 
     /* shorthand properties */
     case CSSPropertyMarker:

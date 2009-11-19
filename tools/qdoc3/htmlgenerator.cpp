@@ -1240,7 +1240,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     generateHeader(title, inner, marker, true);
     generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
 
-#ifdef QDOC_QML    
+#ifdef QDOC_QML
     if (classe && !classe->qmlElement().isEmpty()) {
         generateInstantiatedBy(classe,marker);
     }
@@ -2300,7 +2300,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                           << "&nbsp;</b>";
                 }
                 out() << "</td>\n";
-                    
+
+                out() << "<td>";
                 if ((currentParagraphNo[i] < NumParagraphs) &&
                     !paragraphName[currentParagraphNo[i]].isEmpty()) {
                     NodeMap::Iterator it;
@@ -2308,7 +2309,6 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     for (j = 0; j < currentOffsetInParagraph[i]; j++)
                         ++it;
 
-                    out() << "<td>";
                     // Previously, we used generateFullName() for this, but we
                     // require some special formatting.
                     out() << "<a href=\""
@@ -2322,8 +2322,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                         generateFullName(it.value()->parent(), relative, marker);
                         out() << ")";
                     }
-                    out() << "</td>\n";
-                 }
+                }
+                out() << "</td>\n";
 
                 currentOffset[i]++;
                 currentOffsetInParagraph[i]++;
@@ -3467,13 +3467,16 @@ QString HtmlGenerator::refForNode(const Node *node)
                 ref += "-" + QString::number(func->overloadNumber());
         }
         break;
-    case Node::Property:
 #ifdef QDOC_QML        
+    case Node::Fake:
+        if (node->subType() != Node::QmlPropertyGroup)
+            break;
     case Node::QmlProperty:
 #endif        
+    case Node::Property:
         ref = node->name() + "-prop";
         break;
-#ifdef QDOC_QML        
+#ifdef QDOC_QML
     case Node::QmlSignal:
         ref = node->name() + "-signal";
         break;
@@ -3512,9 +3515,9 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     // ### reintroduce this test, without breaking .dcf files
     if (fn != outFileName())
 #endif
-        link += fn;
+    link += fn;
 
-    if (!node->isInnerNode()) {
+    if (!node->isInnerNode() || node->subType() == Node::QmlPropertyGroup) {
         ref = refForNode(node);
         if (relative && fn == fileName(relative) && ref == refForNode(relative))
             return QString();
@@ -4077,7 +4080,7 @@ void HtmlGenerator::generateMacRef(const Node *node, CodeMarker *marker)
 
     QStringList macRefs = marker->macRefsForNode(node);
     foreach (const QString &macRef, macRefs)
-        out() << "<a name=\"" << "//apple_ref/" << macRef << "\" />\n";
+        out() << "<a name=\"" << "//apple_ref/" << macRef << "\"></a>\n";
 }
 
 void HtmlGenerator::beginLink(const QString &link,
@@ -4189,13 +4192,15 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().begin();
         out() << "<div class=\"qmlproto\">";
-        out() << "<table class=\"qmlname\">";
+        out() << "<table width=\"100%\" class=\"qmlname\">";
 
         while (p != qpgn->childNodes().end()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
                 out() << "<tr><td>";
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
+                if (!qpn->isWritable())
+                    out() << "<span class=\"qmlreadonly\">read-only</span>";
                 generateQmlItem(qpn, relative, marker, false);
                 out() << "</td></tr>";
                 if (qpgn->isDefault()) {
@@ -4214,23 +4219,24 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "</div>";
     }
     else if (node->type() == Node::QmlSignal) {
-        const QmlSignalNode* qsn = static_cast<const QmlSignalNode*>(node);
+        const FunctionNode* qsn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
         out() << "<tr><td>";
         out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
-        generateQmlItem(qsn,relative,marker,false);
+        generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
+        //generateQmlItem(qsn,relative,marker,false);
         out() << "</td></tr>";
         out() << "</table>";
         out() << "</div>";
     }
     else if (node->type() == Node::QmlMethod) {
-        const QmlMethodNode* qmn = static_cast<const QmlMethodNode*>(node);
+        const FunctionNode* qmn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
         out() << "<tr><td>";
         out() << "<a name=\"" + refForNode(qmn) + "\"></a>";
-        generateQmlItem(qmn,relative,marker,false);
+        generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);
         out() << "</td></tr>";
         out() << "</table>";
         out() << "</div>";
@@ -4276,7 +4282,7 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
 }
 
 /*!
-  Output the "[Xxx instantiates the C++ class QFxXxx]"
+  Output the "[Xxx instantiates the C++ class QmlGraphicsXxx]"
   line for the QML element, if there should be one.
 
   If there is no class node, or if the class node status
@@ -4306,7 +4312,7 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
 }
 
 /*!
-  Output the "[QFxXxx is instantiated by QML element Xxx]"
+  Output the "[QmlGraphicsXxx is instantiated by QML element Xxx]"
   line for the class, if there should be one.
 
   If there is no QML element, or if the class node status

@@ -42,6 +42,7 @@
 #ifndef SIMPLEWIDGETS_H
 #define SIMPLEWIDGETS_H
 
+#include <QtCore/qcoreapplication.h>
 #include <QtGui/qaccessible2.h>
 #include <QtGui/qaccessiblewidget.h>
 
@@ -52,9 +53,12 @@ QT_BEGIN_NAMESPACE
 class QAbstractButton;
 class QLineEdit;
 class QToolButton;
+class QProgressBar;
 
-class QAccessibleButton : public QAccessibleWidgetEx
+class QAccessibleButton : public QAccessibleWidgetEx, public QAccessibleActionInterface
 {
+    Q_ACCESSIBLE_OBJECT
+    Q_DECLARE_TR_FUNCTIONS(QAccessibleButton)
 public:
     QAccessibleButton(QWidget *w, Role r);
 
@@ -63,6 +67,14 @@ public:
 
     QString actionText(int action, Text text, int child) const;
     bool doAction(int action, int child, const QVariantList &params);
+
+    // QAccessibleActionInterface
+    int actionCount();
+    void doAction(int actionIndex);
+    QString description(int actionIndex);
+    QString name(int actionIndex);
+    QString localizedName(int actionIndex);
+    QStringList keyBindings(int actionIndex);
 
 protected:
     QAbstractButton *button() const;
@@ -99,8 +111,9 @@ protected:
 };
 #endif // QT_NO_TOOLBUTTON
 
-class QAccessibleDisplay : public QAccessibleWidgetEx
+class QAccessibleDisplay : public QAccessibleWidgetEx, public QAccessibleImageInterface
 {
+    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleDisplay(QWidget *w, Role role = StaticText);
 
@@ -109,6 +122,11 @@ public:
 
     Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
     int navigate(RelationFlag, int entry, QAccessibleInterface **target) const;
+
+    // QAccessibleImageInterface
+    QString imageDescription();
+    QSize imageSize();
+    QRect imagePosition(QAccessible2::CoordinateType coordType);
 };
 
 #ifndef QT_NO_LINEEDIT
@@ -149,6 +167,24 @@ protected:
     QLineEdit *lineEdit() const;
 };
 #endif // QT_NO_LINEEDIT
+
+#ifndef QT_NO_PROGRESSBAR
+class QAccessibleProgressBar : public QAccessibleDisplay, public QAccessibleValueInterface
+{
+    Q_ACCESSIBLE_OBJECT
+public:
+    explicit QAccessibleProgressBar(QWidget *o);
+
+    // QAccessibleValueInterface
+    QVariant currentValue();
+    QVariant maximumValue();
+    QVariant minimumValue();
+    inline void setCurrentValue(const QVariant &) {}
+
+protected:
+    QProgressBar *progressBar() const;
+};
+#endif
 
 #endif // QT_NO_ACCESSIBILITY
 

@@ -101,6 +101,8 @@ private slots:
     void saveAndRestore_data();
     void saveAndRestore();
 
+    void drawBorderPixmap();
+
     void drawLine_data();
     void drawLine();
     void drawLine_clipped();
@@ -238,8 +240,13 @@ private slots:
 
     void taskQT4444_dontOverflowDashOffset();
 
+    void painterBegin();
+    void setPenColorOnImage();
+    void setPenColorOnPixmap();
+
 private:
     void fillData();
+    void setPenColor(QPainter& p);
     QColor baseColor( int k, int intensity=255 );
     QImage getResImage( const QString &dir, const QString &addition, const QString &extension );
     QBitmap getBitmap( const QString &dir, const QString &filename, bool mask );
@@ -966,6 +973,18 @@ void tst_QPainter::initFrom()
     QCOMPARE(p.background(), pal.background());
 
     delete widget;
+}
+
+void tst_QPainter::drawBorderPixmap()
+{
+    QPixmap src(79,79);
+    src.fill(Qt::transparent);
+
+    QImage pm(200,200,QImage::Format_RGB32);
+    QPainter p(&pm);
+    p.setTransform(QTransform(-1,0,0,-1,173.5,153.5));
+    qDrawBorderPixmap(&p, QRect(0,0,75,105), QMargins(39,39,39,39), src, QRect(0,0,79,79), QMargins(39,39,39,39),
+                       QTileRules(Qt::StretchTile,Qt::StretchTile), 0);
 }
 
 void tst_QPainter::drawLine_data()
@@ -2913,7 +2932,7 @@ void tst_QPainter::monoImages()
 
             QImage img(2, 2, format);
 
-            if (img.numColors() > 0) {
+            if (img.colorCount() > 0) {
                 img.setColor(0, QColor(colorPairs[j][0]).rgba());
                 img.setColor(1, QColor(colorPairs[j][1]).rgba());
             }
@@ -2935,7 +2954,7 @@ void tst_QPainter::monoImages()
             // should not change the image
             QCOMPARE(original, img);
 
-            if (img.numColors() == 0)
+            if (img.colorCount() == 0)
                 continue;
 
             for (int k = 0; k < 2; ++k) {
@@ -4191,9 +4210,9 @@ void tst_QPainter::extendedBlendModes()
 
     QVERIFY(testCompositionMode(255, 255, 255, QPainter::CompositionMode_SoftLight));
     QVERIFY(testCompositionMode(  0,   0,   0, QPainter::CompositionMode_SoftLight));
-    QVERIFY(testCompositionMode(127, 127, 127, QPainter::CompositionMode_SoftLight));
-    QVERIFY(testCompositionMode( 63,  63,  86, QPainter::CompositionMode_SoftLight));
-    QVERIFY(testCompositionMode(127,  63,  63, QPainter::CompositionMode_SoftLight));
+    QVERIFY(testCompositionMode(127, 127, 126, QPainter::CompositionMode_SoftLight));
+    QVERIFY(testCompositionMode( 63,  63,  39, QPainter::CompositionMode_SoftLight));
+    QVERIFY(testCompositionMode(127,  63,  62, QPainter::CompositionMode_SoftLight));
 
     QVERIFY(testCompositionMode(255, 255,   0, QPainter::CompositionMode_Difference));
     QVERIFY(testCompositionMode(  0,   0,   0, QPainter::CompositionMode_Difference));
@@ -4312,5 +4331,79 @@ void tst_QPainter::taskQT4444_dontOverflowDashOffset()
     QVERIFY(true); // Don't crash
 }
 
+void tst_QPainter::painterBegin()
+{
+    QImage nullImage;
+    QImage indexed8Image(16, 16, QImage::Format_Indexed8);
+    QImage rgb32Image(16, 16, QImage::Format_RGB32);
+    QImage argb32Image(16, 16, QImage::Format_ARGB32_Premultiplied);
+
+    QPainter p;
+
+    // Painting on null image should fail.
+    QVERIFY(!p.begin(&nullImage));
+
+    // Check that the painter is not messed up by using it on another image.
+    QVERIFY(p.begin(&rgb32Image));
+    QVERIFY(p.end());
+
+    // If painting on indexed8 image fails, the painter state should still be OK.
+    if (p.begin(&indexed8Image))
+        QVERIFY(p.end());
+    QVERIFY(p.begin(&rgb32Image));
+    QVERIFY(p.end());
+
+    // Try opening a painter on the two different images.
+    QVERIFY(p.begin(&rgb32Image));
+    QVERIFY(!p.begin(&argb32Image));
+    QVERIFY(p.end());
+
+    // Try opening two painters on the same image.
+    QVERIFY(p.begin(&rgb32Image));
+    QPainter q;
+    QVERIFY(!q.begin(&rgb32Image));
+    QVERIFY(!q.end());
+    QVERIFY(p.end());
+
+    // Try ending an inactive painter.
+    QVERIFY(!p.end());
+}
+
+void tst_QPainter::setPenColor(QPainter& p)
+{
+    p.setPen(Qt::NoPen);
+
+    // Setting color, then style
+    // Should work even though the pen is "NoPen with color", temporarily.
+    QPen newPen(p.pen());
+    newPen.setColor(Qt::red);
+    QCOMPARE(p.pen().style(), newPen.style());
+    QCOMPARE(p.pen().style(), Qt::NoPen);
+    p.setPen(newPen);
+
+    QCOMPARE(p.pen().color().name(), QString("#ff0000"));
+
+    QPen newPen2(p.pen());
+    newPen2.setStyle(Qt::SolidLine);
+    p.setPen(newPen2);
+
+    QCOMPARE(p.pen().color().name(), QString("#ff0000"));
+}
+
+void tst_QPainter::setPenColorOnImage()
+{
+    QImage img(QSize(10, 10), QImage::Format_ARGB32_Premultiplied);
+    QPainter p(&img);
+    setPenColor(p);
+}
+
+void tst_QPainter::setPenColorOnPixmap()
+{
+    QPixmap pix(10, 10);
+    QPainter p(&pix);
+    setPenColor(p);
+}
+
 QTEST_MAIN(tst_QPainter)
+
 #include "tst_qpainter.moc"

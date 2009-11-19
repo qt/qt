@@ -22,8 +22,8 @@ EXPORTS
 	_ZN11QVideoFrame10setEndTimeEx @ 21 NONAME
 	_ZN11QVideoFrame12setFieldTypeENS_9FieldTypeE @ 22 NONAME
 	_ZN11QVideoFrame12setStartTimeEx @ 23 NONAME
-	_ZN11QVideoFrame21equivalentImageFormatENS_11PixelFormatE @ 24 NONAME
-	_ZN11QVideoFrame21equivalentPixelFormatEN6QImage6FormatE @ 25 NONAME
+	_ZN11QVideoFrame21equivalentImageFormatENS_11PixelFormatE @ 24 NONAME ABSENT
+	_ZN11QVideoFrame21equivalentPixelFormatEN6QImage6FormatE @ 25 NONAME ABSENT
 	_ZN11QVideoFrame3mapEN20QAbstractVideoBuffer7MapModeE @ 26 NONAME
 	_ZN11QVideoFrame4bitsEv @ 27 NONAME
 	_ZN11QVideoFrame5unmapEv @ 28 NONAME
@@ -73,7 +73,7 @@ EXPORTS
 	_ZN12QAudioOutputD0Ev @ 72 NONAME
 	_ZN12QAudioOutputD1Ev @ 73 NONAME
 	_ZN12QAudioOutputD2Ev @ 74 NONAME
-	_ZN16QAudioDeviceInfo10deviceListEN6QAudio4ModeE @ 75 NONAME
+	_ZN16QAudioDeviceInfo10deviceListEN6QAudio4ModeE @ 75 NONAME ABSENT
 	_ZN16QAudioDeviceInfo18defaultInputDeviceEv @ 76 NONAME
 	_ZN16QAudioDeviceInfo19defaultOutputDeviceEv @ 77 NONAME
 	_ZN16QAudioDeviceInfoC1ERK7QStringRK10QByteArrayN6QAudio4ModeE @ 78 NONAME
@@ -115,11 +115,11 @@ EXPORTS
 	_ZN19QAbstractAudioInput6notifyEv @ 114 NONAME
 	_ZN19QVideoSurfaceFormat11setPropertyEPKcRK8QVariant @ 115 NONAME
 	_ZN19QVideoSurfaceFormat11setViewportERK5QRect @ 116 NONAME
-	_ZN19QVideoSurfaceFormat12setFrameRateERK5QPairIiiE @ 117 NONAME
-	_ZN19QVideoSurfaceFormat12setFrameRateEii @ 118 NONAME
-	_ZN19QVideoSurfaceFormat12setFrameSizeERK5QSizeNS_12ViewportModeE @ 119 NONAME
-	_ZN19QVideoSurfaceFormat12setFrameSizeEiiNS_12ViewportModeE @ 120 NONAME
-	_ZN19QVideoSurfaceFormat16setYuvColorSpaceENS_13YuvColorSpaceE @ 121 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameRateERK5QPairIiiE @ 117 NONAME ABSENT
+	_ZN19QVideoSurfaceFormat12setFrameRateEii @ 118 NONAME ABSENT
+	_ZN19QVideoSurfaceFormat12setFrameSizeERK5QSizeNS_12ViewportModeE @ 119 NONAME ABSENT
+	_ZN19QVideoSurfaceFormat12setFrameSizeEiiNS_12ViewportModeE @ 120 NONAME ABSENT
+	_ZN19QVideoSurfaceFormat16setYuvColorSpaceENS_13YuvColorSpaceE @ 121 NONAME ABSENT
 	_ZN19QVideoSurfaceFormat19setPixelAspectRatioERK5QSize @ 122 NONAME
 	_ZN19QVideoSurfaceFormat19setPixelAspectRatioEii @ 123 NONAME
 	_ZN19QVideoSurfaceFormat20setScanLineDirectionENS_9DirectionE @ 124 NONAME
@@ -145,7 +145,7 @@ EXPORTS
 	_ZN20QAbstractVideoBufferD2Ev @ 144 NONAME
 	_ZN21QAbstractVideoSurface11qt_metacallEN11QMetaObject4CallEiPPv @ 145 NONAME
 	_ZN21QAbstractVideoSurface11qt_metacastEPKc @ 146 NONAME
-	_ZN21QAbstractVideoSurface14startedChangedEb @ 147 NONAME
+	_ZN21QAbstractVideoSurface14startedChangedEb @ 147 NONAME ABSENT
 	_ZN21QAbstractVideoSurface16staticMetaObjectE @ 148 NONAME DATA 16
 	_ZN21QAbstractVideoSurface19getStaticMetaObjectEv @ 149 NONAME
 	_ZN21QAbstractVideoSurface20surfaceFormatChangedERK19QVideoSurfaceFormat @ 150 NONAME
@@ -167,11 +167,11 @@ EXPORTS
 	_ZNK11QAudioInput10metaObjectEv @ 166 NONAME
 	_ZNK11QAudioInput10periodSizeEv @ 167 NONAME
 	_ZNK11QAudioInput14notifyIntervalEv @ 168 NONAME
-	_ZNK11QAudioInput5clockEv @ 169 NONAME
+	_ZNK11QAudioInput5clockEv @ 169 NONAME ABSENT
 	_ZNK11QAudioInput5errorEv @ 170 NONAME
 	_ZNK11QAudioInput5stateEv @ 171 NONAME
 	_ZNK11QAudioInput6formatEv @ 172 NONAME
-	_ZNK11QAudioInput9totalTimeEv @ 173 NONAME
+	_ZNK11QAudioInput9totalTimeEv @ 173 NONAME ABSENT
 	_ZNK11QVideoFrame10handleTypeEv @ 174 NONAME
 	_ZNK11QVideoFrame10isReadableEv @ 175 NONAME
 	_ZNK11QVideoFrame10isWritableEv @ 176 NONAME
@@ -186,13 +186,13 @@ EXPORTS
 	_ZNK11QVideoFrame7isValidEv @ 185 NONAME
 	_ZNK11QVideoFrame7mapModeEv @ 186 NONAME
 	_ZNK11QVideoFrame8isMappedEv @ 187 NONAME
-	_ZNK11QVideoFrame8numBytesEv @ 188 NONAME
+	_ZNK11QVideoFrame8numBytesEv @ 188 NONAME ABSENT
 	_ZNK11QVideoFrame9fieldTypeEv @ 189 NONAME
 	_ZNK11QVideoFrame9startTimeEv @ 190 NONAME
 	_ZNK12QAudioFormat10sampleSizeEv @ 191 NONAME
 	_ZNK12QAudioFormat10sampleTypeEv @ 192 NONAME
 	_ZNK12QAudioFormat5codecEv @ 193 NONAME
-	_ZNK12QAudioFormat6isNullEv @ 194 NONAME
+	_ZNK12QAudioFormat6isNullEv @ 194 NONAME ABSENT
 	_ZNK12QAudioFormat8channelsEv @ 195 NONAME
 	_ZNK12QAudioFormat9byteOrderEv @ 196 NONAME
 	_ZNK12QAudioFormat9frequencyEv @ 197 NONAME
@@ -202,12 +202,12 @@ EXPORTS
 	_ZNK12QAudioOutput10metaObjectEv @ 201 NONAME
 	_ZNK12QAudioOutput10periodSizeEv @ 202 NONAME
 	_ZNK12QAudioOutput14notifyIntervalEv @ 203 NONAME
-	_ZNK12QAudioOutput5clockEv @ 204 NONAME
+	_ZNK12QAudioOutput5clockEv @ 204 NONAME ABSENT
 	_ZNK12QAudioOutput5errorEv @ 205 NONAME
 	_ZNK12QAudioOutput5stateEv @ 206 NONAME
 	_ZNK12QAudioOutput6formatEv @ 207 NONAME
 	_ZNK12QAudioOutput9bytesFreeEv @ 208 NONAME
-	_ZNK12QAudioOutput9totalTimeEv @ 209 NONAME
+	_ZNK12QAudioOutput9totalTimeEv @ 209 NONAME ABSENT
 	_ZNK16QAudioDeviceInfo10deviceNameEv @ 210 NONAME
 	_ZNK16QAudioDeviceInfo13nearestFormatERK12QAudioFormat @ 211 NONAME
 	_ZNK16QAudioDeviceInfo15preferredFormatEv @ 212 NONAME
@@ -231,7 +231,7 @@ EXPORTS
 	_ZNK19QVideoSurfaceFormat11frameHeightEv @ 230 NONAME
 	_ZNK19QVideoSurfaceFormat11pixelFormatEv @ 231 NONAME
 	_ZNK19QVideoSurfaceFormat13propertyNamesEv @ 232 NONAME
-	_ZNK19QVideoSurfaceFormat13yuvColorSpaceEv @ 233 NONAME
+	_ZNK19QVideoSurfaceFormat13yuvColorSpaceEv @ 233 NONAME ABSENT
 	_ZNK19QVideoSurfaceFormat16pixelAspectRatioEv @ 234 NONAME
 	_ZNK19QVideoSurfaceFormat17scanLineDirectionEv @ 235 NONAME
 	_ZNK19QVideoSurfaceFormat7isValidEv @ 236 NONAME
@@ -247,9 +247,9 @@ EXPORTS
 	_ZNK20QAbstractVideoBuffer6handleEv @ 246 NONAME
 	_ZNK21QAbstractVideoSurface10metaObjectEv @ 247 NONAME
 	_ZNK21QAbstractVideoSurface13surfaceFormatEv @ 248 NONAME
-	_ZNK21QAbstractVideoSurface17isFormatSupportedERK19QVideoSurfaceFormatPS0_ @ 249 NONAME
+	_ZNK21QAbstractVideoSurface17isFormatSupportedERK19QVideoSurfaceFormatPS0_ @ 249 NONAME ABSENT
 	_ZNK21QAbstractVideoSurface5errorEv @ 250 NONAME
-	_ZNK21QAbstractVideoSurface9isStartedEv @ 251 NONAME
+	_ZNK21QAbstractVideoSurface9isStartedEv @ 251 NONAME ABSENT
 	_ZNK24QAbstractAudioDeviceInfo10metaObjectEv @ 252 NONAME
 	_ZTI11QAudioInput @ 253 NONAME
 	_ZTI12QAudioOutput @ 254 NONAME
@@ -275,4 +275,24 @@ EXPORTS
 	_ZThn8_N18QAudioEnginePluginD0Ev @ 274 NONAME
 	_ZThn8_N18QAudioEnginePluginD1Ev @ 275 NONAME
 	_Zls6QDebugRK19QVideoSurfaceFormat @ 276 NONAME
+	_ZN11QAudioInput5startEv @ 277 NONAME
+	_ZN11QVideoFrame26imageFormatFromPixelFormatENS_11PixelFormatE @ 278 NONAME
+	_ZN11QVideoFrame26pixelFormatFromImageFormatEN6QImage6FormatE @ 279 NONAME
+	_ZN12QAudioOutput5startEv @ 280 NONAME
+	_ZN16QAudioDeviceInfo16availableDevicesEN6QAudio4ModeE @ 281 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameRateEf @ 282 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameSizeERK5QSize @ 283 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameSizeEii @ 284 NONAME
+	_ZN19QVideoSurfaceFormat18setYCbCrColorSpaceENS_15YCbCrColorSpaceE @ 285 NONAME
+	_ZN21QAbstractVideoSurface13activeChangedEb @ 286 NONAME
+	_ZNK11QAudioInput12elapsedUSecsEv @ 287 NONAME
+	_ZNK11QAudioInput14processedUSecsEv @ 288 NONAME
+	_ZNK11QVideoFrame11mappedBytesEv @ 289 NONAME
+	_ZNK12QAudioFormat7isValidEv @ 290 NONAME
+	_ZNK12QAudioOutput12elapsedUSecsEv @ 291 NONAME
+	_ZNK12QAudioOutput14processedUSecsEv @ 292 NONAME
+	_ZNK19QVideoSurfaceFormat15yCbCrColorSpaceEv @ 293 NONAME
+	_ZNK21QAbstractVideoSurface13nearestFormatERK19QVideoSurfaceFormat @ 294 NONAME
+	_ZNK21QAbstractVideoSurface17isFormatSupportedERK19QVideoSurfaceFormat @ 295 NONAME
+	_ZNK21QAbstractVideoSurface8isActiveEv @ 296 NONAME
 

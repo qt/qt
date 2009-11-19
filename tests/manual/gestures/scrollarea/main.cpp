@@ -50,7 +50,7 @@ public:
     ScrollArea(QWidget *parent = 0)
         : QScrollArea(parent), outside(false)
     {
-        viewport()->grabGesture(Qt::PanGesture);
+        viewport()->grabGesture(Qt::PanGesture, Qt::ReceivePartialGestures);
     }
 
 protected:
@@ -73,11 +73,11 @@ protected:
         QPanGesture *pan = static_cast<QPanGesture *>(event->gesture(Qt::PanGesture));
         if (pan) {
             switch(pan->state()) {
-            case Qt::GestureStarted: qDebug("area: Pan: started"); break;
-            case Qt::GestureFinished: qDebug("area: Pan: finished"); break;
-            case Qt::GestureCanceled: qDebug("area: Pan: canceled"); break;
+            case Qt::GestureStarted: qDebug() << this << "Pan: started"; break;
+            case Qt::GestureFinished: qDebug() << this << "Pan: finished"; break;
+            case Qt::GestureCanceled: qDebug() << this << "Pan: canceled"; break;
             case Qt::GestureUpdated: break;
-            default: qDebug("area: Pan: <unknown state>"); break;
+            default: qDebug() << this << "Pan: <unknown state>"; break;
             }
 
             if (pan->state() == Qt::GestureStarted)
@@ -87,23 +87,23 @@ protected:
             if (outside)
                 return;
 
-            const QSizeF offset = pan->offset();
-            const QSizeF totalOffset = pan->totalOffset();
+            const QPointF delta = pan->delta();
+            const QPointF totalOffset = pan->offset();
             QScrollBar *vbar = verticalScrollBar();
             QScrollBar *hbar = horizontalScrollBar();
 
-            if ((vbar->value() == vbar->minimum() && totalOffset.height() > 10) ||
-                (vbar->value() == vbar->maximum() && totalOffset.height() < -10)) {
+            if ((vbar->value() == vbar->minimum() && totalOffset.y() > 10) ||
+                (vbar->value() == vbar->maximum() && totalOffset.y() < -10)) {
                 outside = true;
                 return;
             }
-            if ((hbar->value() == hbar->minimum() && totalOffset.width() > 10) ||
-                (hbar->value() == hbar->maximum() && totalOffset.width() < -10)) {
+            if ((hbar->value() == hbar->minimum() && totalOffset.x() > 10) ||
+                (hbar->value() == hbar->maximum() && totalOffset.x() < -10)) {
                 outside = true;
                 return;
             }
-            vbar->setValue(vbar->value() - offset.height());
-            hbar->setValue(hbar->value() - offset.width());
+            vbar->setValue(vbar->value() - delta.y());
+            hbar->setValue(hbar->value() - delta.x());
             event->accept(pan);
         }
     }
@@ -134,11 +134,11 @@ protected:
         QPanGesture *pan = static_cast<QPanGesture *>(event->gesture(Qt::PanGesture));
         if (pan) {
             switch (pan->state()) {
-            case Qt::GestureStarted: qDebug("slider: Pan: started"); break;
-            case Qt::GestureFinished: qDebug("slider: Pan: finished"); break;
-            case Qt::GestureCanceled: qDebug("slider: Pan: canceled"); break;
+            case Qt::GestureStarted: qDebug() << this << "Pan: started"; break;
+            case Qt::GestureFinished: qDebug() << this << "Pan: finished"; break;
+            case Qt::GestureCanceled: qDebug() << this << "Pan: canceled"; break;
             case Qt::GestureUpdated: break;
-            default: qDebug("slider: Pan: <unknown state>"); break;
+            default: qDebug() << this << "Pan: <unknown state>"; break;
             }
 
             if (pan->state() == Qt::GestureStarted)
@@ -147,28 +147,28 @@ protected:
             event->ignore(pan);
             if (outside)
                 return;
-            const QSizeF offset = pan->offset();
-            const QSizeF totalOffset = pan->totalOffset();
+            const QPointF delta = pan->delta();
+            const QPointF totalOffset = pan->offset();
             if (orientation() == Qt::Horizontal) {
-                if ((value() == minimum() && totalOffset.width() < -10) ||
-                    (value() == maximum() && totalOffset.width() > 10)) {
+                if ((value() == minimum() && totalOffset.x() < -10) ||
+                    (value() == maximum() && totalOffset.x() > 10)) {
                     outside = true;
                     return;
                 }
-                if (totalOffset.height() < 40 && totalOffset.height() > -40) {
-                    setValue(value() + offset.width());
+                if (totalOffset.y() < 40 && totalOffset.y() > -40) {
+                    setValue(value() + delta.x());
                     event->accept(pan);
                 } else {
                     outside = true;
                 }
             } else if (orientation() == Qt::Vertical) {
-                if ((value() == maximum() && totalOffset.height() < -10) ||
-                    (value() == minimum() && totalOffset.height() > 10)) {
+                if ((value() == maximum() && totalOffset.y() < -10) ||
+                    (value() == minimum() && totalOffset.y() > 10)) {
                     outside = true;
                     return;
                 }
-                if (totalOffset.width() < 40 && totalOffset.width() > -40) {
-                    setValue(value() - offset.height());
+                if (totalOffset.x() < 40 && totalOffset.x() > -40) {
+                    setValue(value() - delta.y());
                     event->accept(pan);
                 } else {
                     outside = true;
@@ -186,6 +186,7 @@ public:
     MainWindow()
     {
         rootScrollArea = new ScrollArea;
+        rootScrollArea->setObjectName(QLatin1String("rootScrollArea"));
         setCentralWidget(rootScrollArea);
 
         QWidget *root = new QWidget;
@@ -193,14 +194,17 @@ public:
         rootScrollArea->setWidget(root);
 
         Slider *verticalSlider = new Slider(Qt::Vertical, root);
+        verticalSlider->setObjectName(QLatin1String("verticalSlider"));
         verticalSlider ->move(650, 1100);
         Slider *horizontalSlider = new Slider(Qt::Horizontal, root);
+        horizontalSlider->setObjectName(QLatin1String("horizontalSlider"));
         horizontalSlider ->move(600, 1000);
 
         childScrollArea = new ScrollArea(root);
+        childScrollArea->setObjectName(QLatin1String("childScrollArea"));
         childScrollArea->move(500, 500);
         QWidget *w = new QWidget;
-        w->setMinimumWidth(400);
+        w->setMinimumWidth(700);
         QVBoxLayout *l = new QVBoxLayout(w);
         l->setMargin(20);
         for (int i = 0; i < 100; ++i) {
@@ -211,6 +215,14 @@ public:
             l->addWidget(w);
         }
         childScrollArea->setWidget(w);
+#if defined(Q_OS_WIN)
+        // Windows can force Qt to create a native window handle for an
+        // intermediate widget and that will block gesture to get touch events.
+        // So this hack to make sure gestures get all touch events they need.
+        foreach (QObject *w, children())
+            if (w->isWidgetType())
+                static_cast<QWidget *>(w)->setAttribute(Qt::WA_AcceptTouchEvents);
+#endif
     }
 private:
     ScrollArea *rootScrollArea;
@@ -220,7 +232,7 @@ private:
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    app.registerGestureRecognizer(new MousePanGestureRecognizer);
+    QGestureRecognizer::registerRecognizer(new MousePanGestureRecognizer);
     MainWindow w;
     w.show();
     return app.exec();

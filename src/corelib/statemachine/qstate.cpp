@@ -124,7 +124,9 @@ QT_BEGIN_NAMESPACE
 */
 
 QStatePrivate::QStatePrivate()
-    : errorState(0), initialState(0), childMode(QState::ExclusiveStates)
+    : QAbstractStatePrivate(StandardState),
+      errorState(0), initialState(0), childMode(QState::ExclusiveStates),
+      childStatesListNeedsRefresh(true), transitionsListNeedsRefresh(true)
 {
 }
 
@@ -138,10 +140,10 @@ void QStatePrivate::emitFinished()
     emit q->finished();
 }
 
-void QStatePrivate::emitPolished()
+void QStatePrivate::emitPropertiesAssigned()
 {
     Q_Q(QState);
-    emit q->polished();
+    emit q->propertiesAssigned();
 }
 
 /*!
@@ -180,15 +182,18 @@ QState::~QState()
 
 QList<QAbstractState*> QStatePrivate::childStates() const
 {
-    QList<QAbstractState*> result;
-    QList<QObject*>::const_iterator it;
-    for (it = children.constBegin(); it != children.constEnd(); ++it) {
-        QAbstractState *s = qobject_cast<QAbstractState*>(*it);
-        if (!s || qobject_cast<QHistoryState*>(s))
-            continue;
-        result.append(s);
+    if (childStatesListNeedsRefresh) {
+        childStatesList.clear();
+        QList<QObject*>::const_iterator it;
+        for (it = children.constBegin(); it != children.constEnd(); ++it) {
+            QAbstractState *s = qobject_cast<QAbstractState*>(*it);
+            if (!s || qobject_cast<QHistoryState*>(s))
+                continue;
+            childStatesList.append(s);
+        }
+        childStatesListNeedsRefresh = false;
     }
-    return result;
+    return childStatesList;
 }
 
 QList<QHistoryState*> QStatePrivate::historyStates() const
@@ -205,14 +210,17 @@ QList<QHistoryState*> QStatePrivate::historyStates() const
 
 QList<QAbstractTransition*> QStatePrivate::transitions() const
 {
-    QList<QAbstractTransition*> result;
-    QList<QObject*>::const_iterator it;
-    for (it = children.constBegin(); it != children.constEnd(); ++it) {
-        QAbstractTransition *t = qobject_cast<QAbstractTransition*>(*it);
-        if (t)
-            result.append(t);
+    if (transitionsListNeedsRefresh) {
+        transitionsList.clear();
+        QList<QObject*>::const_iterator it;
+        for (it = children.constBegin(); it != children.constEnd(); ++it) {
+            QAbstractTransition *t = qobject_cast<QAbstractTransition*>(*it);
+            if (t)
+                transitionsList.append(t);
+        }
+        transitionsListNeedsRefresh = false;
     }
-    return result;
+    return transitionsList;
 }
 
 #ifndef QT_NO_PROPERTIES
@@ -221,7 +229,7 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
   Instructs this state to set the property with the given \a name of the given
   \a object to the given \a value when the state is entered.
 
-  \sa polished()
+  \sa propertiesAssigned()
 */
 void QState::assignProperty(QObject *object, const char *name,
                             const QVariant &value)
@@ -279,15 +287,14 @@ void QState::setErrorState(QAbstractState *state)
 
 /*!
   Adds the given \a transition. The transition has this state as the source.
-  This state takes ownership of the transition. If the transition is successfully
-  added, the function will return the \a transition pointer. Otherwise it will return null.
+  This state takes ownership of the transition. 
 */
-QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
+void QState::addTransition(QAbstractTransition *transition)
 {
     Q_D(QState);
     if (!transition) {
         qWarning("QState::addTransition: cannot add null transition");
-        return 0;
+        return ;
     }
 
     transition->setParent(this);
@@ -296,18 +303,17 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
         QAbstractState *t = targets.at(i).data();
         if (!t) {
             qWarning("QState::addTransition: cannot add transition to null state");
-            return 0;
+            return ;
         }
         if ((QAbstractStatePrivate::get(t)->machine() != d->machine())
             && QAbstractStatePrivate::get(t)->machine() && d->machine()) {
             qWarning("QState::addTransition: cannot add transition "
                      "to a state in a different state machine");
-            return 0;
+            return ;
         }
     }
     if (machine() != 0 && machine()->configuration().contains(this))
         QStateMachinePrivate::get(machine())->registerTransitions(this);
-    return transition;
 }
 
 /*!
@@ -372,7 +378,8 @@ QAbstractTransition *QState::addTransition(QAbstractState *target)
         return 0;
     }
     UnconditionalTransition *trans = new UnconditionalTransition(target);
-    return addTransition(trans);
+    addTransition(trans);
+    return trans;
 }
 
 /*!
@@ -468,6 +475,11 @@ void QState::setChildMode(ChildMode mode)
 */
 bool QState::event(QEvent *e)
 {
+    Q_D(QState);
+    if ((e->type() == QEvent::ChildAdded) || (e->type() == QEvent::ChildRemoved)) {
+        d->childStatesListNeedsRefresh = true;
+        d->transitionsListNeedsRefresh = true;
+    }
     return QAbstractState::event(e);
 }
 
@@ -480,9 +492,15 @@ bool QState::event(QEvent *e)
 */
 
 /*!
-  \fn QState::polished()
+  \fn QState::propertiesAssigned()
 
-  This signal is emitted when all properties have been assigned their final value.
+  This signal is emitted when all properties have been assigned their final value. If the state
+  assigns a value to one or more properties for which an animation exists (either set on the
+  transition or as a default animation on the state machine), then the signal will not be emitted
+  until all such animations have finished playing.
+
+  If there are no relevant animations, or no property assignments defined for the state, then
+  the signal will be emitted immediately before the state is entered.
 
   \sa QState::assignProperty(), QAbstractTransition::addAnimation()
 */

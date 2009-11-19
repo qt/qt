@@ -104,6 +104,7 @@
 #include "qdir.h"
 #include "qdebug.h"
 #include "qtimer.h"
+#include "qurl.h"
 #include "private/qmacinputcontext_p.h"
 #include "private/qpaintengine_mac_p.h"
 #include "private/qcursor_p.h"
@@ -203,6 +204,8 @@ static EventHandlerRef tablet_proximity_handler = 0;
 static EventHandlerUPP tablet_proximity_UPP = 0;
 bool QApplicationPrivate::native_modal_dialog_active;
 
+Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
+
 /*****************************************************************************
   External functions
  *****************************************************************************/
@@ -221,6 +224,12 @@ extern bool qt_sendSpontaneousEvent(QObject *obj, QEvent *event); // qapplicatio
 // Forward Decls
 void onApplicationWindowChangedActivation( QWidget*widget, bool activated );
 void onApplicationChangedActivation( bool activated );
+
+static void qt_mac_read_fontsmoothing_settings()
+{
+    NSInteger appleFontSmoothing = [[NSUserDefaults standardUserDefaults] integerForKey:@"AppleFontSmoothing"];
+    qt_applefontsmoothing_enabled = (appleFontSmoothing > 0);
+}
 
 Q_GUI_EXPORT bool qt_mac_execute_apple_script(const char *script, long script_len, AEDesc *ret) {
     OSStatus err;
@@ -958,7 +967,8 @@ struct QMacAppleEventTypeSpec {
     AEEventID mac_id;
 } app_apple_events[] = {
     { kCoreEventClass, kAEQuitApplication },
-    { kCoreEventClass, kAEOpenDocuments }
+    { kCoreEventClass, kAEOpenDocuments },
+    { kInternetEventClass, kAEGetURL },
 };
 
 #ifndef QT_MAC_USE_COCOA
@@ -1193,7 +1203,7 @@ void qt_init(QApplicationPrivate *priv, int)
             app_proc_ae_handlerUPP = AEEventHandlerUPP(QApplicationPrivate::globalAppleEventProcessor);
             for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i)
                 AEInstallEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
-                        app_proc_ae_handlerUPP, SRefCon(qApp), true);
+                        app_proc_ae_handlerUPP, SRefCon(qApp), false);
         }
 
         if (QApplicationPrivate::app_style) {
@@ -1203,6 +1213,9 @@ void qt_init(QApplicationPrivate *priv, int)
     }
     if (QApplication::desktopSettingsAware())
         QApplicationPrivate::qt_mac_apply_settings();
+
+    qt_mac_read_fontsmoothing_settings();
+
     // Cocoa application delegate
 #ifdef QT_MAC_USE_COCOA
     NSApplication *cocoaApp = [NSApplication sharedApplication];
@@ -1226,6 +1239,10 @@ void qt_init(QApplicationPrivate *priv, int)
         [cocoaApp setMenu:[qtMenuLoader menu]];
         [newDelegate setMenuLoader:qtMenuLoader];
         [qtMenuLoader release];
+
+        NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
+        [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
+          forEventClass:kInternetEventClass andEventID:kAEGetURL];
     }
 #endif
     // Register for Carbon tablet proximity events on the event monitor target.
@@ -1686,15 +1703,14 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             // (actually two events; one for horizontal and one for vertical).
             // As a results of this, and to make sure we dont't receive duplicate events,
             // we try to detect when this happend by checking the 'compatibilityEvent'. 
-            const int scrollFactor = 4 * 8;
             SInt32 mdelt = 0;
             GetEventParameter(event, kEventParamMouseWheelSmoothHorizontalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
-            wheel_deltaX = mdelt * scrollFactor;
+            wheel_deltaX = mdelt;
             mdelt = 0;
             GetEventParameter(event, kEventParamMouseWheelSmoothVerticalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
-            wheel_deltaY = mdelt * scrollFactor;
+            wheel_deltaY = mdelt;
             GetEventParameter(event, kEventParamEventRef, typeEventRef, 0,
                               sizeof(compatibilityEvent), 0, &compatibilityEvent);
         } else if (ekind == kEventMouseWheelMoved) {
@@ -1707,31 +1723,11 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                 GetEventParameter(event, kEventParamMouseWheelAxis, typeMouseWheelAxis, 0,
                         sizeof(axis), 0, &axis);
 
-                // The 'new' event has acceleration applied by the OS, while the old (on
-                // Carbon only), has not. So we introduce acceleration here to be consistent.
-                // The acceleration is trying to respect both pixel based and line scrolling,
-                // which turns out to be rather difficult.
-                int linesToScroll = mdelt > 0 ? 1 : -1;
-                static QTime t;
-                int elapsed = t.elapsed();
-                t.restart();
-                if (elapsed < 20)
-                    linesToScroll *= 120;
-                else if (elapsed < 30)
-                    linesToScroll *= 60;
-                else if (elapsed < 50)
-                    linesToScroll *= 30;
-                else if (elapsed < 100)
-                    linesToScroll *= 6;
-                else if (elapsed < 200)
-                    linesToScroll *= 3;
-                else if (elapsed < 300)
-                    linesToScroll *= 2;
-
+                // Remove acceleration, and use either -120 or 120 as delta:
                 if (axis == kEventMouseWheelAxisX)
-                    wheel_deltaX = linesToScroll * 120;
+                    wheel_deltaX = qBound(-120, int(mdelt * 10000), 120);
                 else
-                    wheel_deltaY = linesToScroll * 120;
+                    wheel_deltaY = qBound(-120, int(mdelt * 10000), 120);
             }
         }
 
@@ -2487,6 +2483,22 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
         default:
             break;
         }
+    } else if (aeClass == kInternetEventClass) {
+        switch (aeID) {
+        case kAEGetURL: {
+            char urlData[1024];
+            Size actualSize;
+            if (AEGetParamPtr(ae, keyDirectObject, typeChar, 0, urlData,
+                    sizeof(urlData) - 1, &actualSize) == noErr) {
+                urlData[actualSize] = 0;
+                QFileOpenEvent ev(QUrl(QString::fromUtf8(urlData)));
+                QApplication::sendSpontaneousEvent(app, &ev);
+            }
+            break;
+        }
+        default:
+            break;
+        }
     }
 #ifdef DEBUG_EVENTS
     qDebug("Qt: internal: %shandled Apple event! %c%c%c%c %c%c%c%c", handled_event ? "(*)" : "",
@@ -2684,11 +2696,7 @@ int QApplication::keyboardInputInterval()
 
 void QApplication::setWheelScrollLines(int n)
 {
-    Q_UNUSED(n);
-    // On Mac, acceleration is handled by the OS. Multiplying wheel scroll
-    // deltas with n will not be as cross platform as one might think! So
-    // we choose to go native in this case (and let wheel_scroll_lines == 1).
-    //    QApplicationPrivate::wheel_scroll_lines = n;
+    QApplicationPrivate::wheel_scroll_lines = n;
 }
 
 int QApplication::wheelScrollLines()

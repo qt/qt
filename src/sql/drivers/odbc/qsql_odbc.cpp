@@ -1455,7 +1455,7 @@ bool QODBCResult::exec()
                 else
 #endif
                 {
-                    QByteArray str = val.toString().toUtf8();
+                    QByteArray str = val.toString().toAscii();
                     if (*ind != SQL_NULL_DATA)
                         *ind = str.length();
                     int strSize = str.length();

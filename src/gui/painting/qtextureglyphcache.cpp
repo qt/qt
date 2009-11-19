@@ -229,8 +229,8 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
 
 int QImageTextureGlyphCache::glyphMargin() const
 {
-#ifdef Q_WS_MAC
-    return 2;
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+    return 0;
 #else
     return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;
 #endif

@@ -1641,6 +1641,9 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         savedState.clear();
         currentGapPos.clear();
         pluggingWidget = 0;
+        //applying the state will make sure that the currentGap is updated correctly
+        //and all the geometries (especially the one from the central widget) is correct
+        layoutState.apply(false);
     }
 
     if (!widgetAnimator.animating()) {

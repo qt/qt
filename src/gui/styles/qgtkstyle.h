@@ -45,6 +45,7 @@
 #include <QtGui/QCleanlooksStyle>
 #include <QtGui/QPalette>
 #include <QtGui/QFont>
+#include <QtGui/QFileDialog>
 
 QT_BEGIN_HEADER
 
@@ -64,6 +65,8 @@ class Q_GUI_EXPORT QGtkStyle : public QCleanlooksStyle
 
 public:
     QGtkStyle();
+    QGtkStyle(QGtkStylePrivate &dd);
+
     ~QGtkStyle();
 
     QPalette standardPalette() const;
@@ -107,11 +110,14 @@ public:
     void unpolish(QWidget *widget);
     void unpolish(QApplication *app);
 
+    static bool getGConfBool(const QString &key, bool fallback = 0);
+    static QString getGConfString(const QString &key, const QString &fallback = QString());
+
+
 protected Q_SLOTS:
     QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
                                      const QWidget *widget = 0) const;
 };
-
 
 #endif //!defined(QT_NO_STYLE_QGTK)
 

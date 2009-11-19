@@ -571,6 +571,8 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
         colItems.remove(oldRow);
         vit = sortedInsertionIterator(vit, colItems.end(), order, item);
         int newRow = qMax((int)(vit - colItems.begin()), 0);
+        if ((newRow < oldRow) && !(*item < *colItems.at(oldRow - 1)) && !(*colItems.at(oldRow - 1) < *item))
+            newRow = oldRow;
         vit = colItems.insert(vit, item);
         if (newRow != oldRow) {
             changed = true;
@@ -2456,7 +2458,7 @@ const QTableWidgetItem *QTableWidget::itemPrototype() const
 
     The table widget will use the item prototype clone function when it needs
     to create a new table item.  For example when the user is editing
-    editing in an empty cell.  This is useful when you have a QTableWidgetItem
+    in an empty cell.  This is useful when you have a QTableWidgetItem
     subclass and want to make sure that QTableWidget creates instances of
     your subclass.
 

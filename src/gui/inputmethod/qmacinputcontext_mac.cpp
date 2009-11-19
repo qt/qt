@@ -217,7 +217,11 @@ QMacInputContext::globalEventProcessor(EventHandlerCallRef, EventRef event, void
     case kEventClassTextInput: {
         handled_event = false;
         QWidget *widget = QApplicationPrivate::focus_widget;
-        if(!widget || (context && widget->inputContext() != context)) {
+        bool canCompose = widget && (!context || widget->inputContext() == context)
+                && !(widget->inputMethodHints() & Qt::ImhDigitsOnly
+                || widget->inputMethodHints() & Qt::ImhFormattedNumbersOnly
+                || widget->inputMethodHints() & Qt::ImhHiddenText);
+        if(!canCompose) {
             handled_event = false;
         } else if(ekind == kEventTextInputOffsetToPos) {
             if(!widget->testAttribute(Qt::WA_InputMethodEnabled)) {

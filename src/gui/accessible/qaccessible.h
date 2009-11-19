@@ -310,7 +310,9 @@ namespace QAccessible2
         TextInterface,
         EditableTextInterface,
         ValueInterface,
-        TableInterface
+        TableInterface,
+        ActionInterface,
+        ImageInterface
     };
 }
 
@@ -319,6 +321,8 @@ class QAccessibleTextInterface;
 class QAccessibleEditableTextInterface;
 class QAccessibleValueInterface;
 class QAccessibleTableInterface;
+class QAccessibleActionInterface;
+class QAccessibleImageInterface;
 
 class Q_GUI_EXPORT QAccessibleInterface : public QAccessible
 {
@@ -375,6 +379,12 @@ public:
 
     inline QAccessibleTableInterface *tableInterface()
     { return reinterpret_cast<QAccessibleTableInterface *>(cast_helper(QAccessible2::TableInterface)); }
+
+    inline QAccessibleActionInterface *actionInterface()
+    { return reinterpret_cast<QAccessibleActionInterface *>(cast_helper(QAccessible2::ActionInterface)); }
+
+    inline QAccessibleImageInterface *imageInterface()
+    { return reinterpret_cast<QAccessibleImageInterface *>(cast_helper(QAccessible2::ImageInterface)); }
 
 private:
     QAccessible2Interface *cast_helper(QAccessible2::InterfaceType);

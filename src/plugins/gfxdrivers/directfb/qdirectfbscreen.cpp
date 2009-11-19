@@ -99,7 +99,10 @@ public:
     qint64 cursorImageKey;
 
     QDirectFBScreen *q;
+    static QDirectFBScreen *instance;
 };
+
+QDirectFBScreen *QDirectFBScreenPrivate::instance = 0;
 
 QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
     : QWSGraphicsSystem(qptr), dfb(0), flipFlags(DSFLIP_NONE),
@@ -211,7 +214,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
             const int height = image.height();
             const int bplQt = image.bytesPerLine();
             if (bplQt == bplDFB && bplQt == (image.width() * image.depth() / 8)) {
-                memcpy(mem, image.bits(), image.numBytes());
+                memcpy(mem, image.bits(), image.byteCount());
             } else {
                 for (int i=0; i<height; ++i) {
                     memcpy(mem, image.scanLine(i), bplQt);
@@ -222,7 +225,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
         }
     }
 #ifdef QT_DIRECTFB_PALETTE
-    if (image.numColors() != 0 && surface)
+    if (image.colorCount() != 0 && surface)
         QDirectFBScreen::setSurfaceColorTable(surface, image);
 #endif
     return surface;
@@ -494,7 +497,7 @@ void QDirectFBScreen::setSurfaceColorTable(IDirectFBSurface *surface,
     if (!surface)
         return;
 
-    const int numColors = image.numColors();
+    const int numColors = image.colorCount();
     if (numColors == 0)
         return;
 
@@ -802,11 +805,19 @@ void QDirectFBScreenCursor::set(const QImage &image, int hotx, int hoty)
 QDirectFBScreen::QDirectFBScreen(int display_id)
     : QScreen(display_id, DirectFBClass), d_ptr(new QDirectFBScreenPrivate(this))
 {
+    QDirectFBScreenPrivate::instance = this;
 }
 
 QDirectFBScreen::~QDirectFBScreen()
 {
+    if (QDirectFBScreenPrivate::instance == this)
+        QDirectFBScreenPrivate::instance = 0;
     delete d_ptr;
+}
+
+QDirectFBScreen *QDirectFBScreen::instance()
+{
+    return QDirectFBScreenPrivate::instance;
 }
 
 int QDirectFBScreen::depth(DFBSurfacePixelFormat format)
@@ -1050,6 +1061,26 @@ static inline bool setIntOption(const QStringList &arguments, const QString &var
     return false;
 }
 
+static inline QColor colorFromName(const QString &name)
+{
+    QRegExp rx("#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])");
+    rx.setCaseSensitivity(Qt::CaseInsensitive);
+    if (rx.exactMatch(name)) {
+        Q_ASSERT(rx.captureCount() == 4);
+        int ints[4];
+        int i;
+        for (i=0; i<4; ++i) {
+            bool ok;
+            ints[i] = rx.cap(i + 1).toUInt(&ok, 16);
+            if (!ok || ints[i] > 255)
+                break;
+        }
+        if (i == 4)
+            return QColor(ints[0], ints[1], ints[2], ints[3]);
+    }
+    return QColor(name);
+}
+
 bool QDirectFBScreen::connect(const QString &displaySpec)
 {
     DFBResult result = DFB_OK;
@@ -1282,18 +1313,50 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 #endif
 #ifdef QT_DIRECTFB_WM
     surface->Release(surface);
+    QColor backgroundColor;
 #else
-    QRegExp backgroundColorRegExp(QLatin1String("bgcolor=?(.+)"));
+    QColor &backgroundColor = d_ptr->backgroundColor;
+#endif
+
+    QRegExp backgroundColorRegExp(QLatin1String("bgcolor=(.+)"));
     backgroundColorRegExp.setCaseSensitivity(Qt::CaseInsensitive);
     if (displayArgs.indexOf(backgroundColorRegExp) != -1) {
-        d_ptr->backgroundColor.setNamedColor(backgroundColorRegExp.cap(1));
+        backgroundColor = colorFromName(backgroundColorRegExp.cap(1));
     }
-    if (!d_ptr->backgroundColor.isValid())
-        d_ptr->backgroundColor = Qt::green;
-    d_ptr->primarySurface->Clear(d_ptr->primarySurface, d_ptr->backgroundColor.red(),
-                                 d_ptr->backgroundColor.green(), d_ptr->backgroundColor.blue(),
-                                 d_ptr->backgroundColor.alpha());
+#ifdef QT_NO_DIRECTFB_WM
+    if (!backgroundColor.isValid())
+        backgroundColor = Qt::green;
+    d_ptr->primarySurface->Clear(d_ptr->primarySurface, backgroundColor.red(),
+                                 backgroundColor.green(), backgroundColor.blue(),
+                                 backgroundColor.alpha());
     d_ptr->primarySurface->Flip(d_ptr->primarySurface, 0, d_ptr->flipFlags);
+#else
+    if (backgroundColor.isValid()) {
+        DFBResult result = d_ptr->dfbLayer->SetCooperativeLevel(d_ptr->dfbLayer, DLSCL_ADMINISTRATIVE);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreen::connect "
+                          "Unable to set cooperative level", result);
+        }
+        result = d_ptr->dfbLayer->SetBackgroundColor(d_ptr->dfbLayer, backgroundColor.red(), backgroundColor.green(),
+                                                     backgroundColor.blue(), backgroundColor.alpha());
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::connect: "
+                          "Unable to set background color", result);
+        }
+
+        result = d_ptr->dfbLayer->SetBackgroundMode(d_ptr->dfbLayer, DLBM_COLOR);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::connect: "
+                          "Unable to set background mode", result);
+        }
+
+        result = d_ptr->dfbLayer->SetCooperativeLevel(d_ptr->dfbLayer, DLSCL_SHARED);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreen::connect "
+                          "Unable to set cooperative level", result);
+        }
+
+    }
 #endif
 
     return true;
@@ -1501,7 +1564,7 @@ void QDirectFBScreen::exposeRegion(QRegion r, int)
             primary->SetColor(primary, 0xff, 0xff, 0xff, cmd.windowOpacity);
         }
         const QRegion &region = cmd.source;
-        const int rectCount = region.numRects();
+        const int rectCount = region.rectCount();
         DFBRectangle source;
         if (rectCount == 1) {
             ::initParameters(source, region.boundingRect(), cmd.windowPosition);
@@ -1556,7 +1619,7 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
     d_ptr->primarySurface->SetColor(d_ptr->primarySurface,
                                     color.red(), color.green(), color.blue(),
                                     color.alpha());
-    const int n = region.numRects();
+    const int n = region.rectCount();
     if (n == 1) {
         const QRect r = region.boundingRect();
         d_ptr->primarySurface->FillRectangle(d_ptr->primarySurface, r.x(), r.y(), r.width(), r.height());
@@ -1617,7 +1680,7 @@ void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags
     if (!(flipFlags & DSFLIP_BLIT)) {
         surface->Flip(surface, 0, flipFlags);
     } else {
-        if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.numRects() > 1) {
+        if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.rectCount() > 1) {
             const QVector<QRect> rects = region.rects();
             const DFBSurfaceFlipFlags nonWaitFlags = flipFlags & ~DSFLIP_WAIT;
             for (int i=0; i<rects.size(); ++i) {

@@ -43,11 +43,26 @@
 #include <QtCore/qbuffer.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qimagereader.h>
+#include <private/qgraphicssystem_p.h>
+#include <private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
 const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
                                      0x10, 0x20, 0x40, 0x80 };
+
+QPixmapData *QPixmapData::create(int w, int h, PixelType type)
+{
+    QPixmapData *data;
+    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
+    if (gs)
+        data = gs->createPixmapData(static_cast<QPixmapData::PixelType>(type));
+    else
+        data = QGraphicsSystem::createDefaultPixmapData(static_cast<QPixmapData::PixelType>(type));
+    data->resize(w, h);
+    return data;
+}
+
 
 QPixmapData::QPixmapData(PixelType pixelType, int objectId)
     : w(0),
@@ -65,6 +80,17 @@ QPixmapData::QPixmapData(PixelType pixelType, int objectId)
 
 QPixmapData::~QPixmapData()
 {
+}
+
+QPixmapData *QPixmapData::createCompatiblePixmapData() const
+{
+    QPixmapData *d;
+    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
+    if (gs)
+        d = gs->createPixmapData(pixelType());
+    else
+        d = QGraphicsSystem::createDefaultPixmapData(pixelType());
+    return d;
 }
 
 static QImage makeBitmapCompliantIfNeeded(QPixmapData *d, const QImage &image, Qt::ImageConversionFlags flags)
@@ -175,7 +201,7 @@ QBitmap QPixmapData::mask() const
     if (mask.isNull()) // allocation failed
         return QBitmap();
 
-    mask.setNumColors(2);
+    mask.setColorCount(2);
     mask.setColor(0, QColor(Qt::color0).rgba());
     mask.setColor(1, QColor(Qt::color1).rgba());
 

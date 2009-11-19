@@ -135,7 +135,7 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
             return false;
     }
 
-    outImage->setNumColors(2);
+    outImage->setColorCount(2);
     outImage->setColor(0, qRgb(255,255,255));        // white
     outImage->setColor(1, qRgb(0,0,0));                // black
 

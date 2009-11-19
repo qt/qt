@@ -56,6 +56,7 @@
 #include <private/qwindowsurface_raster_p.h>
 #include <private/qapplication_p.h>
 #include <private/qpaintengine_raster_p.h>
+#include <private/qgraphicseffect_p.h>
 
 #include "qgraphicssystem_p.h"
 
@@ -497,18 +498,6 @@ static inline void sendUpdateRequest(QWidget *widget, bool updateImmediately)
     if (!widget)
         return;
 
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
-    if (QApplicationPrivate::inSizeMove && widget->internalWinId() && !updateImmediately
-        && !widget->testAttribute(Qt::WA_DontShowOnScreen)) {
-        // Tell Windows to send us a paint event if we're in WM_SIZE/WM_MOVE; posted events
-        // are blocked until the mouse button is released. See task 146849.
-        const QRegion rgn(qt_dirtyRegion(widget));
-        InvalidateRgn(widget->internalWinId(), rgn.handle(), false);
-        qt_widget_private(widget)->dirty = QRegion();
-        return;
-    }
-#endif
-
     if (updateImmediately) {
         QEvent event(QEvent::UpdateRequest);
         QApplication::sendEvent(widget, &event);
@@ -540,6 +529,10 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
     Q_ASSERT(widget->window() == tlw);
     Q_ASSERT(!rgn.isEmpty());
 
+#ifndef QT_NO_GRAPHICSEFFECT
+    widget->d_func()->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
+
     if (widget->d_func()->paintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {
             widget->d_func()->dirty = rgn;
@@ -568,9 +561,11 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
 
     if (invalidateBuffer) {
         const bool eventAlreadyPosted = !dirty.isEmpty();
+#ifndef QT_NO_GRAPHICSEFFECT
         if (widget->d_func()->graphicsEffect)
             dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect()).translated(offset);
         else
+#endif //QT_NO_GRAPHICSEFFECT
             dirty += rgn.translated(offset);
         if (!eventAlreadyPosted || updateImmediately)
             sendUpdateRequest(tlw, updateImmediately);
@@ -585,9 +580,11 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
 
     if (widget->d_func()->inDirtyList) {
         if (!qt_region_strictContains(widget->d_func()->dirty, widgetRect)) {
+#ifndef QT_NO_GRAPHICSEFFECT
             if (widget->d_func()->graphicsEffect)
                 widget->d_func()->dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect());
             else
+#endif //QT_NO_GRAPHICSEFFECT
                 widget->d_func()->dirty += rgn;
         }
     } else {
@@ -614,6 +611,10 @@ void QWidgetBackingStore::markDirty(const QRect &rect, QWidget *widget, bool upd
     Q_ASSERT(widget->isVisible() && widget->updatesEnabled());
     Q_ASSERT(widget->window() == tlw);
     Q_ASSERT(!rect.isEmpty());
+
+#ifndef QT_NO_GRAPHICSEFFECT
+    widget->d_func()->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
 
     if (widget->d_func()->paintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {
@@ -889,7 +890,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     const QRect parentRect(rect & clipR);
 
     bool accelerateMove = accelEnv && isOpaque
-#ifndef QT_NO_GRAPHICSCVIEW
+#ifndef QT_NO_GRAPHICSVIEW
                           // No accelerate move for proxy widgets.
                           && !tlw->d_func()->extra->proxyWidget
 #endif
@@ -1187,7 +1188,7 @@ void QWidgetBackingStore::sync()
                                            : wd->dirty);
         toClean += widgetDirty;
 
-#ifndef QT_NO_GRAPHICSCVIEW
+#ifndef QT_NO_GRAPHICSVIEW
         if (tlw->d_func()->extra->proxyWidget) {
             resetWidget(w);
             continue;

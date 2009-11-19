@@ -109,12 +109,12 @@ void MMF::AbstractMediaPlayer::pause()
     case GroundState:
     case LoadingState:
     case PausedState:
-    case ErrorState:
         // Do nothing
         break;
 
     case StoppedState:
     case PlayingState:
+    case ErrorState:
     case BufferingState:
         doPause();
         stopTickTimer();
@@ -289,10 +289,6 @@ void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
 }
 
 
-//-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
-
 void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::volumeChanged, EAudioInternal);
@@ -318,7 +314,8 @@ void MMF::AbstractMediaPlayer::doVolumeChanged()
     case PausedState:
     case PlayingState:
     case BufferingState: {
-        const int err = setDeviceVolume(m_volume * m_mmfMaxVolume);
+        const qreal volume = (m_volume * m_mmfMaxVolume) + 0.5;
+        const int err = setDeviceVolume(volume);
 
         if (KErrNone != err) {
             setError(NormalError);
@@ -359,49 +356,60 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
     return in.Int64() / 1000;
 }
 
-void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
-{
-    TRACE_CONTEXT(AbstractPlayer::changeState, EAudioInternal);
-    TRACE_ENTRY("state %d newState %d", privateState(), newState);
-
-    // TODO: add some invariants to check that the transition is valid
-
-    const Phonon::State oldPhononState = phononState(privateState());
-    const Phonon::State newPhononState = phononState(newState);
-    if (oldPhononState != newPhononState) {
-        TRACE("emit stateChanged(%d, %d)", newPhononState, oldPhononState);
-        emit stateChanged(newPhononState, oldPhononState);
-    }
-
-    setState(newState);
-
-    if (
-		LoadingState == oldPhononState
-		and StoppedState == newPhononState
-	) {
-		// Ensure initial volume is set on MMF API before starting playback
-		doVolumeChanged();
-	
-		// Check whether play() was called while clip was being loaded.  If so,
-	    // playback should be started now
-	    if (m_playPending) {
-	        TRACE_0("play was called while loading; starting playback now");
-	        m_playPending = false;
-	        play();
-	    }
-	}
-
-    TRACE_EXIT_0();
-}
-
 //-----------------------------------------------------------------------------
 // Slots
 //-----------------------------------------------------------------------------
 
 void MMF::AbstractMediaPlayer::tick()
 {
-	// For the MWC compiler, we need to qualify the base class.
+    // For the MWC compiler, we need to qualify the base class.
     emit MMF::AbstractPlayer::tick(currentTime());
+}
+
+void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
+{
+    TRACE_CONTEXT(AbstractMediaPlayer::changeState, EAudioInternal);
+
+    const Phonon::State oldPhononState = phononState(privateState());
+    const Phonon::State newPhononState = phononState(newState);
+
+    // TODO: add some invariants to check that the transition is valid
+    AbstractPlayer::changeState(newState);
+
+    if (LoadingState == oldPhononState && StoppedState == newPhononState) {
+        // Ensure initial volume is set on MMF API before starting playback
+        doVolumeChanged();
+
+        // Check whether play() was called while clip was being loaded.  If so,
+        // playback should be started now
+        if (m_playPending) {
+            TRACE_0("play was called while loading; starting playback now");
+            m_playPending = false;
+            play();
+        }
+    }
+}
+
+void MMF::AbstractMediaPlayer::updateMetaData()
+{
+    TRACE_CONTEXT(AbstractMediaPlayer::updateMetaData, EAudioInternal);
+    TRACE_ENTRY_0();
+
+    m_metaData.clear();
+
+    const int numberOfEntries = numberOfMetaDataEntries();
+    for(int i=0; i<numberOfEntries; ++i) {
+        const QPair<QString, QString> entry = metaDataEntry(i);
+
+        // Note that we capitalize the key, as required by the Ogg Vorbis
+        // metadata standard to which Phonon adheres:
+        // http://xiph.org/vorbis/doc/v-comment.html
+        m_metaData.insert(entry.first.toUpper(), entry.second);
+    }
+
+    emit metaDataChanged(m_metaData);
+
+    TRACE_EXIT_0();
 }
 
 QT_END_NAMESPACE

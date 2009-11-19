@@ -101,6 +101,11 @@ QVGPixmapData::~QVGPixmapData()
 #endif
 }
 
+QPixmapData *QVGPixmapData::createCompatiblePixmapData() const
+{
+    return new QVGPixmapData(pixelType());
+}
+
 bool QVGPixmapData::isValid() const
 {
     return (w > 0 && h > 0);
@@ -364,6 +369,8 @@ QImage::Format QVGPixmapData::sourceFormat() const
 Q_OPENVG_EXPORT VGImage qPixmapToVGImage(const QPixmap& pixmap)
 {
     QPixmapData *pd = pixmap.pixmapData();
+    if (!pd)
+        return VG_INVALID_HANDLE; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
         if (vgpd->isValid())

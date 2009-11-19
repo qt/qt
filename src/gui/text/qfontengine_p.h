@@ -448,12 +448,13 @@ public:
     virtual bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
     virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
     virtual qreal minRightBearing() const;
     virtual qreal minLeftBearing() const;
 
 
-
 private:
+    QImage imageForGlyph(glyph_t glyph, int margin, bool colorful);
     CTFontRef ctfont;
     CGFontRef cgFont;
     QCoreTextFontEngineMulti *parentEngine;

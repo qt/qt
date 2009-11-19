@@ -456,7 +456,7 @@ int QDockWidgetLayout::titleHeight() const
 
     int mw = q->style()->pixelMetric(QStyle::PM_DockWidgetTitleMargin, 0, q);
 
-    return qMax(buttonHeight + 2, titleFontMetrics.lineSpacing() + 2*mw);
+    return qMax(buttonHeight + 2, titleFontMetrics.height() + 2*mw);
 }
 
 void QDockWidgetLayout::setGeometry(const QRect &geometry)
@@ -685,8 +685,6 @@ void QDockWidgetPrivate::_q_toggleTopLevel()
 
 void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
 {
-    Q_Q(QDockWidget);
-
     if (state != 0)
         return;
 
@@ -694,8 +692,6 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
     Q_ASSERT(win != 0);
     QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
     Q_ASSERT(layout != 0);
-    if (layout->layoutState.indexOf(q).isEmpty()) //The dock widget has not been added into the main window
-        return;
     if (layout->pluggingWidget != 0) // the main window is animating a docking operation
         return;
 
@@ -1012,6 +1008,12 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
 {
     Q_Q(QDockWidget);
 
+    if (!floating && parent) {
+        QMainWindowLayout *mwlayout = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
+        if (!mwlayout || mwlayout->dockWidgetArea(q) == Qt::NoDockWidgetArea)
+            return; // this dockwidget can't be redocked
+    }
+
     bool wasFloating = q->isFloating();
     bool hidden = q->isHidden();
 
@@ -1223,6 +1225,7 @@ void QDockWidget::setFeatures(QDockWidget::DockWidgetFeatures features)
     features &= DockWidgetFeatureMask;
     if (d->features == features)
         return;
+    const bool closableChanged = (d->features ^ features) & DockWidgetClosable;
     d->features = features;
     QDockWidgetLayout *layout
         = qobject_cast<QDockWidgetLayout*>(this->layout());
@@ -1231,6 +1234,10 @@ void QDockWidget::setFeatures(QDockWidget::DockWidgetFeatures features)
     d->toggleViewAction->setEnabled((d->features & DockWidgetClosable) == DockWidgetClosable);
     emit featuresChanged(d->features);
     update();
+    if (closableChanged && layout->nativeWindowDeco()) {
+        //this ensures the native decoration is drawn
+        d->setWindowState(true /*floating*/, true /*unplug*/);
+    }
 }
 
 QDockWidget::DockWidgetFeatures QDockWidget::features() const

@@ -367,3 +367,53 @@
     \externalpage http://www.kde.org
     \title KDE
 */
+
+/*!
+    \externalpage http://www.directfb.org/index.php?path=Main%2FDownloads&amp;page=1
+    \title DirectFB - df_window example
+*/
+
+/*!
+    \externalpage http://www.directfb.org/docs/DirectFB_Reference_1_4/IDirectFBPalette.html
+    \title DirectFB - IDirectFBPalette
+*/
+
+/*!
+    \externalpage http://www.cplusplus.com/reference/clibrary/cstring/memcpy/
+    \title C++ Reference - memcpy
+*/
+
+/*!
+    \externalpage http://www.directfb.org/docs/DirectFB_Reference_1_4/IDirectFB_CreateInputEventBuffer.html
+    \title DirectFB - CreateInputEventBuffer
+*/
+
+/*!
+    \externalpage http://www.directfb.org/docs/DirectFB_Reference_1_4/types.html#DFBSurfaceBlittingFlags
+    \title DirectFB - DFBSurfaceBlittingFlags
+*/
+
+/*!
+    \externalpage http://directfb.org/docs/DirectFB_Reference_1_4/IDirectFBImageProvider.html
+    \title DirectFB - IDirectFBImageProvider
+*/
+
+/*!
+    \externalpage http://www.directfb.org/docs/DirectFB_Reference_1_4/IDirectFBSurface.html
+    \title DirectFB - IDirectFBSurface
+*/
+
+/*!
+    \externalpage http://www.directfb.org/docs/DirectFB_Reference_1_4/IDirectFBWindow
+    \title DirectFB - IDirectFBWindow
+*/
+
+/*!
+    \externalpage http://www.directfb.org/docs/DirectFB_Reference_1_4/types.html#DFBSurfaceDescription
+    \title DirectFB - DFBSurfaceDescription
+*/
+
+/*!
+    \externalpage http://www.w3.org/TR/REC-CSS2/selector.html#q1
+    \title Standard CSS2 selector
+*/

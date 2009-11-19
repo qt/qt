@@ -690,7 +690,7 @@ bool QRegion::intersects(const QRegion &region) const
 
     if (!rect_intersects(boundingRect(), region.boundingRect()))
         return false;
-    if (numRects() == 1 && region.numRects() == 1)
+    if (rectCount() == 1 && region.rectCount() == 1)
         return true;
 
     const QVector<QRect> myRects = rects();
@@ -717,7 +717,7 @@ bool QRegion::intersects(const QRect &rect) const
     const QRect r = rect.normalized();
     if (!rect_intersects(boundingRect(), r))
         return false;
-    if (numRects() == 1)
+    if (rectCount() == 1)
         return true;
 
     const QVector<QRect> myRects = rects();
@@ -739,8 +739,16 @@ QRegion QRegion::intersect(const QRect &r) const
 #endif
 
 /*!
+    \obsolete
     \fn int QRegion::numRects() const
     \since 4.4
+
+    Returns the number of rectangles that will be returned in rects().
+*/
+
+/*!
+    \fn int QRegion::rectCount() const
+    \since 4.6
 
     Returns the number of rectangles that will be returned in rects().
 */
@@ -1027,7 +1035,7 @@ void addSegmentsToPath(Segment *segment, QPainterPath &path)
 Q_AUTOTEST_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
 {
     QPainterPath result;
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         result.addRect(region.boundingRect());
         return result;
     }
@@ -3859,22 +3867,27 @@ QRegion::QRegion(const QRect &r, RegionType t)
 QRegion::QRegion(const QPolygon &a, Qt::FillRule fillRule)
 {
     if (a.count() > 2) {
-        d =  new QRegionData;
-        d->ref = 1;
+        QRegionPrivate *qt_rgn = PolygonRegion(a.constData(), a.size(),
+                                               fillRule == Qt::WindingFill ? WindingRule : EvenOddRule);
+        if (qt_rgn) {
+            d =  new QRegionData;
+            d->ref = 1;
 #if defined(Q_WS_X11)
-        d->rgn = 0;
-        d->xrectangles = 0;
+            d->rgn = 0;
+            d->xrectangles = 0;
 #elif defined(Q_WS_WIN)
-        d->rgn = 0;
+            d->rgn = 0;
 #endif
-        d->qt_rgn = PolygonRegion(a.constData(), a.size(),
-                                  fillRule == Qt::WindingFill ? WindingRule : EvenOddRule);
+            d->qt_rgn = qt_rgn;
+        } else {
+            d = &shared_empty;
+            d->ref.ref();
+        }
     } else {
         d = &shared_empty;
         d->ref.ref();
     }
 }
-
 
 QRegion::QRegion(const QRegion &r)
 {
@@ -4316,6 +4329,12 @@ int QRegion::numRects() const
 {
     return (d->qt_rgn ? d->qt_rgn->numRects : 0);
 }
+
+int QRegion::rectCount() const
+{
+    return (d->qt_rgn ? d->qt_rgn->numRects : 0);
+}
+
 
 bool QRegion::operator==(const QRegion &r) const
 {

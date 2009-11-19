@@ -81,6 +81,7 @@ public:
 
     bool isValid() const;
     bool isCurrent() const;
+    bool isSharing() const { return sharing; }
 
     QEgl::API api() const { return apiType; }
     void setApi(QEgl::API api) { apiType = api; }
@@ -110,7 +111,7 @@ public:
     EGLDisplay display() const { return dpy; }
 
     EGLContext context() const { return ctx; }
-    void setContext(EGLContext context) { ctx = context; }
+    void setContext(EGLContext context) { ctx = context; ownsContext = false;}
 
     EGLConfig config() const { return cfg; }
     void setConfig(EGLConfig config) { cfg = config; }
@@ -131,6 +132,8 @@ private:
     EGLConfig cfg;
     EGLSurface currentSurface;
     bool current;
+    bool ownsContext;
+    bool sharing;
 
     static EGLDisplay getDisplay(QPaintDevice *device);
 

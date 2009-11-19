@@ -90,6 +90,10 @@ public:
     bool setSocketDescriptor(int socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
 
+    // ### Qt 5: Make virtual
+    void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
+    QVariant socketOption(QAbstractSocket::SocketOption option);
+
     SslMode mode() const;
     bool isEncrypted() const;
 
@@ -203,6 +207,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_readyReadSlot())
     Q_PRIVATE_SLOT(d_func(), void _q_bytesWrittenSlot(qint64))
     Q_PRIVATE_SLOT(d_func(), void _q_flushWriteBuffer())
+    Q_PRIVATE_SLOT(d_func(), void _q_flushReadBuffer())
     friend class QSslSocketBackendPrivate;
 };
 

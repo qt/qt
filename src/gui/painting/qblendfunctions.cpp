@@ -223,11 +223,24 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
-    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
-    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
 
-    quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
-    quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;
+    quint32 basex;
+    quint32 srcy;
+
+    if (sx < 0) {
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        basex = quint32(srcRect.right() * 65536) + dstx;
+    } else {
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        basex = quint32(srcRect.left() * 65536) + dstx;
+    }
+    if (sy < 0) {
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        srcy = quint32(srcRect.bottom() * 65536) + dsty;
+    } else {
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        srcy = quint32(srcRect.top() * 65536) + dsty;
+    }
 
     quint16 *dst = ((quint16 *) (destPixels + ty1 * dbpl)) + tx1;
 
@@ -374,9 +387,9 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
         const uchar *src = srcPixels + y * sbpl;
         const uchar *srcEnd = src + srcOffset;
         while (src < srcEnd) {
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_POWERPC) || defined(QT_ARCH_SH) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_))
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_POWERPC) || defined(QT_ARCH_SH) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_)) || (defined(QT_ARCH_SPARC) && defined(Q_CC_GNU))
             // non-16-bit aligned memory access is not possible on PowerPC,
-            // ARM <v6 (QT_ARCH_ARMV6) & SH & AVR32
+            // ARM <v6 (QT_ARCH_ARMV6) & SH & AVR32 & SPARC w/GCC
             quint16 spix = (quint16(src[2])<<8) + src[1];
 #else
             quint16 spix = *(quint16 *) (src + 1);
@@ -723,11 +736,27 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
+    quint32 basex;
+    quint32 srcy;
+
     const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
     const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
 
-    quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
-    quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;
+
+    if (sx < 0) {
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        basex = quint32(srcRect.right() * 65536) + dstx;
+    } else {
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        basex = quint32(srcRect.left() * 65536) + dstx;
+    }
+    if (sy < 0) {
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        srcy = quint32(srcRect.bottom() * 65536) + dsty;
+    } else {
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        srcy = quint32(srcRect.top() * 65536) + dsty;
+    }
 
     quint32 *dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
 

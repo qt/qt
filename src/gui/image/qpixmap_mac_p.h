@@ -65,6 +65,8 @@ public:
     QMacPixmapData(PixelType type);
     ~QMacPixmapData();
 
+    QPixmapData *createCompatiblePixmapData() const;
+
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
     void copy(const QPixmapData *data, const QRect &rect);

@@ -310,7 +310,7 @@ struct QBoolToType
 template <typename T>
 void qScanConvert(QScanConverter &d, T allVertical)
 {
-    qSort(d.m_lines.data(), d.m_lines.data() + d.m_lines.size(), topOrder);
+    qSort(d.m_lines.data(), d.m_lines.data() + d.m_lines.size(), QT_PREPEND_NAMESPACE(topOrder));
     int line = 0;
     for (int y = d.m_lines.first().top; y <= d.m_bottom; ++y) {
         for (; line < d.m_lines.size() && d.m_lines.at(line).top == y; ++line) {
@@ -319,7 +319,7 @@ void qScanConvert(QScanConverter &d, T allVertical)
                 QScanConverter::Line *l = &d.m_lines.at(line);
                 d.m_active.resize(d.m_active.size() + 1);
                 int j;
-                for (j = d.m_active.size() - 2; j >= 0 && xOrder(l, d.m_active.at(j)); --j)
+                for (j = d.m_active.size() - 2; j >= 0 && QT_PREPEND_NAMESPACE(xOrder)(l, d.m_active.at(j)); --j)
                     d.m_active.at(j+1) = d.m_active.at(j);
                 d.m_active.at(j+1) = l;
             } else {
@@ -334,7 +334,7 @@ void qScanConvert(QScanConverter &d, T allVertical)
             for (int i = 1; i < numActive; ++i) {
                 QScanConverter::Line *l = d.m_active.at(i);
                 int j;
-                for (j = i-1; j >= 0 && xOrder(l, d.m_active.at(j)); --j)
+                for (j = i-1; j >= 0 && QT_PREPEND_NAMESPACE(xOrder)(l, d.m_active.at(j)); --j)
                     d.m_active.at(j+1) = d.m_active.at(j);
                 d.m_active.at(j+1) = l;
             }

@@ -112,7 +112,7 @@ MMF::MediaType MMF::MediaObject::fileMediaType
     MediaType result = MediaTypeUnknown;
 
     if (openRecognizer()) {
-        
+
         const QHBufC fileNameSymbian(QDir::toNativeSeparators(fileName));
 
         m_file.Close();
@@ -239,6 +239,7 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     const bool oldPlayerSeekable = oldPlayer->isSeekable();
 
     Phonon::ErrorType error = NoError;
+    QString errorMessage;
 
     // Determine media type
     switch (source.type()) {
@@ -253,7 +254,7 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
                 mediaType = fileMediaType(url.toLocalFile());
             }
             else {
-                TRACE_0("Network streaming not supported yet");
+                errorMessage = QLatin1String("Network streaming not supported yet");
                 error = NormalError;
             }
         }
@@ -286,7 +287,8 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
             newPlayer = new DummyPlayer();
         }
 
-        newPlayer->setError(NormalError);
+        error = NormalError;
+        errorMessage = tr("Media type could not be determined");
         break;
 
     case MediaTypeAudio:
@@ -320,10 +322,13 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
     connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
     connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
+    connect(m_player.data(), SIGNAL(metaDataChanged(const QMultiMap<QString, QString>&)), SIGNAL(metaDataChanged(const QMultiMap<QString, QString>&)));
 
-    if (error != NoError ) {
-        newPlayer = new DummyPlayer();
-        newPlayer->setError(error);
+    // We need to call setError() after doing the connects, otherwise the
+    // error won't be received.
+    if (error != NoError) {
+        Q_ASSERT(m_player);
+        m_player->setError(error, errorMessage);
     }
 
     TRACE_EXIT_0();
@@ -353,11 +358,6 @@ void MMF::MediaObject::setTransitionTime(qint32 time)
 {
     m_player->setTransitionTime(time);
 }
-
-
-//-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
 
 void MMF::MediaObject::volumeChanged(qreal volume)
 {

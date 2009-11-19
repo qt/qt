@@ -194,6 +194,8 @@ private slots:
     void acceptDrops();
     void optimizationFlags();
     void optimizationFlags_dontSavePainterState();
+    void optimizationFlags_dontSavePainterState2_data();
+    void optimizationFlags_dontSavePainterState2();
     void levelOfDetail_data();
     void levelOfDetail();
     void scrollBarRanges_data();
@@ -2210,9 +2212,11 @@ void tst_QGraphicsView::viewportUpdateMode()
 
     // The view gets two updates for the update scene updates.
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
+#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
     QCOMPARE(view.lastUpdateRegions.last().rects().size(), 2);
     QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(15, 15));
     QCOMPARE(view.lastUpdateRegions.last().rects().at(1).size(), QSize(15, 15));
+#endif
 
     // Set full update mode.
     view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -2451,6 +2455,57 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
     painter2.setOptimizationFlag(QGraphicsView::DontSavePainterState,true);
     painter2.show();
     QTest::qWaitForWindowShown(&painter2);
+}
+
+void tst_QGraphicsView::optimizationFlags_dontSavePainterState2_data()
+{
+    QTest::addColumn<bool>("savePainter");
+    QTest::newRow("With painter state protection") << true;
+    QTest::newRow("Without painter state protection") << false;
+}
+
+void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
+{
+    QFETCH(bool, savePainter);
+
+    class MyScene : public QGraphicsScene
+    {
+    public:
+        void drawBackground(QPainter *p, const QRectF &)
+        { transformInDrawBackground = p->worldTransform(); }
+
+        void drawForeground(QPainter *p, const QRectF &)
+        { transformInDrawForeground = p->worldTransform(); }
+
+        QTransform transformInDrawBackground;
+        QTransform transformInDrawForeground;
+    };
+
+    MyScene scene;
+    // Add transformed dummy items to make sure the painter's worldTransform() is changed in drawItems.
+    scene.addRect(0, 0, 20, 20)->setTransform(QTransform::fromScale(2, 2));
+    scene.addRect(50, 50, 20, 20)->setTransform(QTransform::fromTranslate(200, 200));
+
+    CustomView view(&scene);
+    if (!savePainter)
+        view.setOptimizationFlag(QGraphicsView::DontSavePainterState);
+    view.rotate(45);
+    view.scale(1.5, 1.5);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+
+    // Make sure the view is repainted; otherwise the tests below will fail.
+    view.viewport()->repaint();
+    QTest::qWait(200);
+    QVERIFY(view.painted);
+
+    // Make sure the painter's world transform is preserved after drawItems.
+    const QTransform expectedTransform = view.viewportTransform();
+    QVERIFY(!expectedTransform.isIdentity());
+    QCOMPARE(scene.transformInDrawForeground, expectedTransform);
+    QCOMPARE(scene.transformInDrawBackground, expectedTransform);
 }
 
 class LodItem : public QGraphicsRectItem
@@ -3431,10 +3486,12 @@ void tst_QGraphicsView::exposeRegion()
 
     // Make sure it triggers correct repaint on the view.
     QTRY_COMPARE(view.lastUpdateRegions.size(), 1);
-    QTRY_COMPARE(view.lastUpdateRegions.at(0), expectedExposeRegion);
+    COMPARE_REGIONS(view.lastUpdateRegions.at(0), expectedExposeRegion);
 
     // Make sure the item didn't get any repaints.
+#ifndef QT_MAC_USE_COCOA
     QCOMPARE(item->paints, 0);
+#endif
 }
 
 void tst_QGraphicsView::update_data()
@@ -3543,6 +3600,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
     item->setFlag(QGraphicsItem::ItemIsFocusable);
     scene.addItem(item);
     scene.setFocusItem(item);
+    QCOMPARE(scene.focusItem(), item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
 
     item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
@@ -3557,27 +3615,35 @@ void tst_QGraphicsView::inputMethodSensitivity()
     scene.addItem(item2);
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), item2);
 
     scene.setFocusItem(item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(scene.focusItem(), item);
 
     view.setScene(0);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), item);
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(scene.focusItem(), item);
 
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), item2);
 
     view.setScene(0);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), item2);
 
     scene.setFocusItem(item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), item);
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(scene.focusItem(), item);
 }
 
 class InputContextTester : public QInputContext
@@ -3660,6 +3726,10 @@ void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()
 
 void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
 {
+#if defined(Q_OS_WINCE)
+    QSKIP("Qt/CE does not implement mouse tracking at this point", SkipAll);
+#endif
+
     QGraphicsScene scene(-100, -100, 200, 200);
     scene.addRect(QRectF(-50, -50, 100, 100), QPen(Qt::black), QBrush(Qt::blue));
 
@@ -3727,7 +3797,7 @@ void tst_QGraphicsView::task259503_scrollingArtifacts()
             {
 //                qDebug() << event->region();
 //                qDebug() << updateRegion;
-                QEXPECT_FAIL("", "The event region doesn't include the original item position region. See task #259503.", Continue);
+                QEXPECT_FAIL("", "The event region doesn't include the original item position region. See QTBUG-4416", Continue);
                 QCOMPARE(event->region(), updateRegion);
             }
         }

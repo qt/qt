@@ -96,6 +96,9 @@ tst_Bic::tst_Bic()
 
     /* QtOpenGL includes qt_windows.h, and some SDKs dont have these structs present */
     bic.addBlacklistedClass(QLatin1String("tagTITLEBARINFO"));
+    bic.addBlacklistedClass(QLatin1String("tagMENUITEMINFOA"));
+    bic.addBlacklistedClass(QLatin1String("tagMENUITEMINFOW"));
+    bic.addBlacklistedClass(QLatin1String("tagENHMETAHEADER"));
 
     /* some bug in gcc also reported template instanciations */
     bic.addBlacklistedClass(QLatin1String("QTypeInfo<*>"));
@@ -115,6 +118,7 @@ tst_Bic::tst_Bic()
     bic.addBlacklistedClass(QLatin1String("QObjectData"));
     bic.addBlacklistedClass(QLatin1String("QAtomic"));
     bic.addBlacklistedClass(QLatin1String("QBasicAtomic"));
+    bic.addBlacklistedClass(QLatin1String("QRegion::QRegionData"));
 
     /* Jambi-related classes in Designer */
     bic.addBlacklistedClass(QLatin1String("QDesignerLanguageExtension"));

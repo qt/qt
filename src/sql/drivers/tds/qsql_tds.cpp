@@ -164,13 +164,13 @@ Q_GLOBAL_STATIC(QTDSErrorHash, errs)
 
 extern "C" {
 static int CS_PUBLIC qTdsMsgHandler (DBPROCESS* dbproc,
-                            DBINT /*msgno*/,
+                            DBINT msgno,
                             int msgstate,
                             int severity,
                             char* msgtext,
-                            char* /*srvname*/,
+                            char* srvname,
                             char* /*procname*/,
-                            int /*line*/)
+                            int line)
 {
     QTDSResultPrivate* p = errs()->value(dbproc);
 
@@ -181,9 +181,20 @@ static int CS_PUBLIC qTdsMsgHandler (DBPROCESS* dbproc,
     }
 
     if (severity > 0) {
-        QString errMsg = QString::fromLatin1("%1 (%2)").arg(QString::fromAscii(msgtext)).arg(
-                                    msgstate);
+        QString errMsg = QString::fromLatin1("%1 (Msg %2, Level %3, State %4, Server %5, Line %6)")
+                         .arg(QString::fromAscii(msgtext))
+                         .arg(msgno)
+                         .arg(severity)
+                         .arg(msgstate)
+                         .arg(QString::fromAscii(srvname))
+                         .arg(line);
         p->addErrorMsg(errMsg);
+        if (severity > 10) {
+            // Severe messages are really errors in the sense of lastError
+            errMsg = p->getErrorMsgs();
+            p->lastError = qMakeError(errMsg, QSqlError::UnknownError, msgno);
+            p->clearErrorMsgs();
+        }
     }
 
     return INT_CANCEL;

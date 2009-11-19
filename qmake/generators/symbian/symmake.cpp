@@ -74,6 +74,9 @@
 #define MMP_OPTION_CW "OPTION CW"
 #define MMP_OPTION_ARMCC "OPTION ARMCC"
 #define MMP_OPTION_GCCE "OPTION GCCE"
+#define MMP_LINKEROPTION_CW "LINKEROPTION CW"
+#define MMP_LINKEROPTION_ARMCC "LINKEROPTION ARMCC"
+#define MMP_LINKEROPTION_GCCE "LINKEROPTION GCCE"
 
 #define SIS_TARGET "sis"
 #define OK_SIS_TARGET "ok_sis"
@@ -607,19 +610,10 @@ void SymbianMakefileGenerator::initMmpVariables()
     incpaths << project->values("UI_HEADERS_DIR");
     incpaths << project->values("UI_DIR");
 
-    QString epocPath("epoc32");
     for (int j = 0; j < incpaths.size(); ++j) {
         QString includepath = canonizePath(incpaths.at(j));
         appendIfnotExist(sysincspaths, includepath);
-        // As a workaround for Symbian toolchain insistence to treat include
-        // statements as relative to source file rather than the file they appear in,
-        // we generate extra temporary include directories to make
-        // relative include paths used in various headers to work properly.
-        // Note that this is not a fix-all solution; it's just a stop-gap measure
-        // to make Qt itself build until toolchain can support relative includes in
-        // a way that Qt expects.
-        if (!includepath.contains(epocPath)) // No temp dirs for epoc includes
-            appendIfnotExist(sysincspaths, includepath + QString("/" QT_EXTRA_INCLUDE_DIR));
+        appendAbldTempDirs(sysincspaths, includepath);
     }
 
     // Remove duplicate include path entries
@@ -655,8 +649,7 @@ void SymbianMakefileGenerator::initMmpVariables()
 
     // Check MMP_RULES for singleton keywords that are overridden
     QStringList overridableMmpKeywords;
-    overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE) << QLatin1String(MMP_OPTION_CW)
-        << QLatin1String(MMP_OPTION_ARMCC) << QLatin1String(MMP_OPTION_GCCE);
+    overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE);
 
     foreach (QString item, project->values("MMP_RULES")) {
         if (project->values(item).isEmpty()) {
@@ -971,6 +964,7 @@ void SymbianMakefileGenerator::writeMmpFileCapabilityPart(QTextStream& t)
 void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
 {
     QString cw, armcc, gcce;
+    QString cwlink, armlink, gccelink;
 
     if (0 != project->values("QMAKE_CXXFLAGS.CW").size()) {
         cw.append(project->values("QMAKE_CXXFLAGS.CW").join(" "));
@@ -1020,12 +1014,42 @@ void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
         gcce.append(" ");
     }
 
+    if (0 != project->values("QMAKE_LFLAGS.CW").size()) {
+        cwlink.append(project->values("QMAKE_LFLAGS.CW").join(" "));
+        cwlink.append(" ");
+    }
+
+    if (0 != project->values("QMAKE_LFLAGS.ARMCC").size()) {
+        armlink.append(project->values("QMAKE_LFLAGS.ARMCC").join(" "));
+        armlink.append(" ");
+    }
+
+    if (0 != project->values("QMAKE_LFLAGS.GCCE").size()) {
+        gccelink.append(project->values("QMAKE_LFLAGS.GCCE").join(" "));
+        gccelink.append(" ");
+    }
+
+    if (0 != project->values("QMAKE_LFLAGS").size()) {
+        cwlink.append(project->values("QMAKE_LFLAGS").join(" "));
+        cwlink.append(" ");
+        armlink.append(project->values("QMAKE_LFLAGS").join(" "));
+        armlink.append(" ");
+        gccelink.append(project->values("QMAKE_LFLAGS").join(" "));
+        gccelink.append(" ");
+    }
+
     if (!cw.isEmpty() && cw[cw.size()-1] == ' ')
         cw.chop(1);
     if (!armcc.isEmpty() && armcc[armcc.size()-1] == ' ')
         armcc.chop(1);
     if (!gcce.isEmpty() && gcce[gcce.size()-1] == ' ')
         gcce.chop(1);
+    if (!cwlink.isEmpty() && cwlink[cwlink.size()-1] == ' ')
+        cwlink.chop(1);
+    if (!armlink.isEmpty() && armlink[armlink.size()-1] == ' ')
+        armlink.chop(1);
+    if (!gccelink.isEmpty() && gccelink[gccelink.size()-1] == ' ')
+        gccelink.chop(1);
 
     if (!cw.isEmpty() && !overriddenMmpKeywords.contains(MMP_OPTION_CW))
         t << MMP_OPTION_CW " " << cw <<  endl;
@@ -1033,6 +1057,13 @@ void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
         t << MMP_OPTION_ARMCC " " << armcc <<  endl;
     if (!gcce.isEmpty() && !overriddenMmpKeywords.contains(MMP_OPTION_GCCE))
         t << MMP_OPTION_GCCE " " << gcce <<  endl;
+
+    if (!cwlink.isEmpty() && !overriddenMmpKeywords.contains(MMP_LINKEROPTION_CW))
+        t << MMP_LINKEROPTION_CW " " << cwlink <<  endl;
+    if (!armlink.isEmpty() && !overriddenMmpKeywords.contains(MMP_LINKEROPTION_ARMCC))
+        t << MMP_LINKEROPTION_ARMCC " " << armlink <<  endl;
+    if (!gccelink.isEmpty() && !overriddenMmpKeywords.contains(MMP_LINKEROPTION_GCCE))
+        t << MMP_LINKEROPTION_GCCE " " << gccelink <<  endl;
 
     t <<  endl;
 }
@@ -1092,6 +1123,7 @@ void SymbianMakefileGenerator::writeMmpFileRulesPart(QTextStream& t)
 void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension)
 {
     // Read user defined bld inf rules
+
     QMap<QString, QStringList> userBldInfRules;
     for (QMap<QString, QStringList>::iterator it = project->variables().begin(); it != project->variables().end(); ++it) {
         if (it.key().startsWith(BLD_INF_RULES_BASE)) {
@@ -1122,58 +1154,44 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     QString mmpfilename = escapeFilePath(fileFixify(project->projectFile()));
     mmpfilename = mmpfilename.replace(mmpfilename.lastIndexOf("."), 4, Option::mmp_ext);
     QString currentPath = qmake_getpwd();
+    QDir directory(currentPath);
 
-    if (!currentPath.endsWith(QString("/")))
-        currentPath.append("/");
-
-    QStringList mmpProjects = project->values("MMPFILES_DIRECT_DEPENDS");
-    QStringList shadowProjects = project->values("SHADOW_BLD_INFS");
-
-    removeDuplicatedStrings(mmpProjects);
-    removeDuplicatedStrings(shadowProjects);
-
-    // Go in reverse order as that is the way how we build the list
-    QListIterator<QString> iT(mmpProjects);
-    iT.toBack();
-    while (iT.hasPrevious()) {
-        QString fullMmpName = iT.previous();
-        QString relativePath;
-        QString bldinfFilename;
-
-        QString fullProFilename = fullMmpName;
-        fullProFilename.replace(Option::mmp_ext, Option::pro_ext);
-        QString uid = generate_uid(fullProFilename);
-
-        QString cleanMmpName = fullProFilename;
-        cleanMmpName.replace(Option::pro_ext, QString(""));
-        cleanMmpName.replace(0, cleanMmpName.lastIndexOf("/") + 1, QString(""));
-
-        if (shadowProjects.contains(BLD_INF_FILENAME "." + cleanMmpName)) { // shadow project
-            QDir directory(currentPath);
-            relativePath = directory.relativeFilePath(fullProFilename);
-            bldinfFilename = BLD_INF_FILENAME "." + cleanMmpName;
-            if (relativePath.contains("/")) {
-                // Shadow .pro not in same directory as parent .pro
-                if (relativePath.startsWith("..")) {
-                    // Shadow .pro out of parent .pro
-                    relativePath.replace(relativePath.lastIndexOf("/"), relativePath.length(), QString(""));
-                    bldinfFilename.prepend("/").prepend(relativePath);
-                } else {
-                    relativePath.replace(relativePath.lastIndexOf("/"), relativePath.length(), QString(""));
-                    bldinfFilename.prepend("/").prepend(relativePath);
-                }
-            } else {
-                // Shadow .pro and parent .pro in same directory
-                bldinfFilename.prepend("./");
-            }
-        } else { // regular project
-            QDir directory(currentPath);
-            relativePath = directory.relativeFilePath(fullProFilename);
-            relativePath.replace(relativePath.lastIndexOf("/"), relativePath.length(), QString(""));
-            bldinfFilename = relativePath.append("/").append(BLD_INF_FILENAME);
+    const QStringList &subdirs = project->values("SUBDIRS");
+    foreach(QString item, subdirs) {
+        QString fixedItem;
+        if (!project->isEmpty(item + ".file")) {
+            fixedItem = project->first(item + ".file");
+        } else if (!project->isEmpty(item + ".subdir")) {
+            fixedItem = project->first(item + ".subdir");
+        } else {
+            fixedItem = item;
         }
 
-        QString bldinfDefine = QString("BLD_INF_") + cleanMmpName + QString("_") + uid;
+        QFileInfo subdir(fileInfo(fixedItem));
+        QString relativePath = directory.relativeFilePath(fixedItem);
+        QString subdirFileName = subdir.completeBaseName();
+        QString fullProName = subdir.absoluteFilePath();;
+        QString bldinfFilename;
+
+        if (subdir.isDir()) {
+            // Subdir is a regular project
+            bldinfFilename = relativePath + QString("/") + QString(BLD_INF_FILENAME);
+            fullProName += QString("/") + subdirFileName + Option::pro_ext;
+        } else {
+            // Subdir is actually a .pro file
+            if (relativePath.contains("/")) {
+                // .pro not in same directory as parent .pro
+                relativePath.remove(relativePath.lastIndexOf("/") + 1, relativePath.length());
+                bldinfFilename = relativePath;
+            } else {
+                // .pro and parent .pro in same directory
+                bldinfFilename = QString("./");
+            }
+            bldinfFilename += QString(BLD_INF_FILENAME ".") + subdirFileName;
+        }
+
+        QString uid = generate_uid(fullProName);
+        QString bldinfDefine = QString("BLD_INF_") + subdirFileName + QString("_") + uid;
         bldinfDefine = bldinfDefine.toUpper();
         removeSpecialCharacters(bldinfDefine);
 
@@ -1195,6 +1213,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     t << endl;
 
     // Add project mmps and old style extension makefiles
+
     QString mmpTag;
     if (project->values("CONFIG").contains("symbian_test", Qt::CaseInsensitive))
         mmpTag = QLatin1String(BLD_INF_TAG_TESTMMPFILES);
@@ -1204,9 +1223,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     t << endl << mmpTag << endl << endl;
 
     writeBldInfMkFilePart(t, addDeploymentExtension);
-    if (targetType == TypeSubdirs) {
-        mmpProjects.removeOne(mmpfilename);
-    } else {
+    if (targetType != TypeSubdirs) {
         QString shortProFilename = project->projectFile();
         shortProFilename.replace(0, shortProFilename.lastIndexOf("/") + 1, QString(""));
         shortProFilename.replace(Option::pro_ext, QString(""));
@@ -1224,6 +1241,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     t << endl << BLD_INF_TAG_EXTENSIONS << endl << endl;
 
     // Generate extension rules
+
     writeBldInfExtensionRulesPart(t);
 
     userItems = userBldInfRules.value(BLD_INF_TAG_EXTENSIONS);
@@ -1698,8 +1716,8 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
                           .arg(MAKE_CACHE_NAME)
                           .arg(OK_SIS_TARGET)
                           .arg(FAIL_SIS_NOCACHE_TARGET)
-                          .arg(FAIL_SIS_NOPKG_TARGET);    
-    t << siscommand << endl;         
+                          .arg(FAIL_SIS_NOPKG_TARGET);
+    t << siscommand << endl;
     t << endl;
 
     t << OK_SIS_TARGET ":" << endl;
@@ -1710,15 +1728,15 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
                           .arg("pkg");
     t << pkgcommand << endl;
     t << endl;
-    
-    t << FAIL_SIS_NOPKG_TARGET ":" << endl;  
-    t << "\t$(error PKG file does not exist, 'SIS' target is only supported for executables or projects with DEPLOYMENT statement)" << endl;  
+
+    t << FAIL_SIS_NOPKG_TARGET ":" << endl;
+    t << "\t$(error PKG file does not exist, 'SIS' target is only supported for executables or projects with DEPLOYMENT statement)" << endl;
     t << endl;
-    
-    t << FAIL_SIS_NOCACHE_TARGET ":" << endl;  
-    t << "\t$(error Project has to be build before calling 'SIS' target)" << endl;  
+
+    t << FAIL_SIS_NOCACHE_TARGET ":" << endl;
+    t << "\t$(error Project has to be build before calling 'SIS' target)" << endl;
     t << endl;
-    
+
 
     t << RESTORE_BUILD_TARGET ":" << endl;
     t << "-include " MAKE_CACHE_NAME << endl;
@@ -1728,7 +1746,8 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
 {
     t << "dodistclean:" << endl;
-    foreach(QString item, project->values("SUBDIRS")) {
+    const QStringList &subdirs = project->values("SUBDIRS");
+    foreach(QString item, subdirs) {
         bool fromFile = false;
         QString fixedItem;
         if (!project->isEmpty(item + ".file")) {

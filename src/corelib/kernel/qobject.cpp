@@ -582,7 +582,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     QObjects organize themselves in object trees. When you create a
     QObject with another object as parent, the object will
     automatically add itself to the parent's children() list. The
-    parent takes ownership of the object i.e. it will automatically
+    parent takes ownership of the object; i.e., it will automatically
     delete its children in its destructor. You can look for an object
     by name and optionally type using findChild() or findChildren().
 
@@ -646,7 +646,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     to be stored in one of the container classes. You must store
     pointers.
 
-    \section2 Auto-Connection
+    \section1 Auto-Connection
 
     Qt's meta-object system provides a mechanism to automatically connect
     signals and slots between QObject subclasses and their children. As long
@@ -660,7 +660,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     given in the \l{Using a Designer UI File in Your Application} section of
     the \QD manual.
 
-    \section2 Dynamic Properties
+    \section1 Dynamic Properties
 
     From Qt 4.2, dynamic properties can be added to and removed from QObject
     instances at run-time. Dynamic properties do not need to be declared at
@@ -672,6 +672,15 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     \l{Qt Designer's Widget Editing Mode#The Property Editor}{Qt Designer},
     and both standard Qt widgets and user-created forms can be given dynamic
     properties.
+
+    \section1 Internationalization (i18n)
+
+    All QObject subclasses support Qt's translation features, making it possible
+    to translate an application's user interface into different languages.
+
+    To make user-visible text translatable, it must be wrapped in calls to
+    the tr() function. This is explained in detail in the
+    \l{Writing Source Code for Translation} document.
 
     \sa QMetaObject, QPointer, QObjectCleanupHandler, Q_DISABLE_COPY()
         {Object Trees and Object Ownership}
@@ -835,14 +844,7 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
 QObject::~QObject()
 {
     Q_D(QObject);
-    if (d->wasDeleted) {
-#if defined(QT_DEBUG)
-        qWarning("QObject: Double deletion detected");
-#endif
-        return;
-    }
     d->wasDeleted = true;
-
     d->blockSig = 0; // unblock signals so we always emit destroyed()
 
     if (!d->isWidget) {
@@ -2157,64 +2159,9 @@ void QObject::deleteLater()
     otherwise returns \a sourceText itself if no appropriate translated string
     is available.
 
-    See the sections below on Disambiguation and Handling Plurals for more
-    information about the optional \a disambiguation and \a n parameters.
-
-    QObject and its subclasses obtain translated strings from any translator
-    objects that have been installed on the application object; see the
-    QTranslator documentation for details about this mechanism.
-
-    A translatable string is referenced by its translation context;
-    this is the name of the QObject subclass whose tr() function is invoked,
-    as in the following example:
-
+    Example:
     \snippet mainwindows/sdi/mainwindow.cpp implicit tr context
     \dots
-
-    Here, the context is \c MainWindow because it is the \c MainWindow::tr()
-    function that is invoked. Translation contexts can be given explicitly
-    by fully qualifying the call to tr(); for example:
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp explicit tr context
-
-    This call obtains the translated text for "Page up" from the \c QScrollBar
-    context.
-
-    \section1 Defining Translation Contexts
-
-    The translation context for QObject and each QObject subclass is the
-    class name itself. Developers subclassing QObject must use the
-    Q_OBJECT macro in their class definition to override the translation
-    context. This macro sets the context to the name of the subclass.
-
-    If Q_OBJECT is not used in a class definition, the context will be
-    inherited from the base class. For example, since all QObject-based
-    classes in Qt provide a context, a new QWidget subclass defined without
-    a Q_OBJECT macro will use the "QWidget" context if its tr() function
-    is invoked.
-
-    \section1 Translator Comments
-
-    Developers can include information about each translatable string to
-    help translators with the translation process. These are extracted
-    when \l lupdate is used to process the source files. The recommended
-    way to add comments is to annotate the tr() calls in your code with
-    comments of the form:
-
-    \tt{//: ...}
-
-    or
-
-    \tt{\begincomment: ... \endcomment}
-
-    Examples:
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 40
-
-    In these examples, the comments will be associated with the strings
-    passed to tr() in the context of each call.
-
-    \section1 Disambiguation
 
     If the same \a sourceText is used in different roles within the
     same context, an additional identifying string may be passed in
@@ -2224,76 +2171,12 @@ void QObject::deleteLater()
     Example:
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 17
+    \dots
 
-    \section1 Meta Data
-
-    Additional data can be attached to each translatable message.
-    The syntax:
-
-    \tt{//= <id>}
-
-    can be used to give the message a unique identifier to support tools
-    which need it.
-    The syntax:
-
-    \tt{//~ <field name> <field contents>}
-
-    can be used to attach meta data to the message. The field name should consist
-    of a domain prefix (possibly the conventional file extension of the file format
-    the field is inspired by), a hyphen and the actual field name in
-    underscore-delimited notation. For storage in TS files, the field name together
-    with the prefix "extra-" will form an XML element name. The field contents will
-    be XML-escaped, but otherwise appear verbatim as the element's contents.
-    Any number of unique fields can be added to each message.
-
-    Example:
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp meta data
-
-    Meta data appearing right in front of a magic TRANSLATOR comment applies to the
-    whole TS file.
-
-    \section1 Character Encodings
-
-    You can set the encoding for \a sourceText by calling QTextCodec::setCodecForTr().
-    By default \a sourceText is assumed to be in Latin-1 encoding.
-
-    \section1 Handling Plurals
-
-    If \a n >= 0, all occurrences of \c %n in the resulting string
-    are replaced with a decimal representation of \a n. In addition,
-    depending on \a n's value, the translation text may vary.
-
-    Example:
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 18
-
-    The table below shows what string is returned depending on the
-    active translation:
-
-    \table
-    \header \o      \o{3,1} Active Translation
-    \header \o \a n \o No Translation        \o French                                 \o English
-    \row    \o 0    \o "0 message(s) saved"  \o "0 message sauvegard\unicode{0xE9}"    \o "0 message\bold{s} saved"
-    \row    \o 1    \o "1 message(s) saved"  \o "1 message sauvegard\unicode{0xE9}"    \o "1 message saved"
-    \row    \o 2    \o "2 message(s) saved"  \o "2 message\bold{s} sauvegard\unicode{0xE9}\bold{s}"  \o "2 message\bold{s} saved"
-    \row    \o 37   \o "37 message(s) saved" \o "37 message\bold{s} sauvegard\unicode{0xE9}\bold{s}" \o "37 message\bold{s} saved"
-    \endtable
-
-    This idiom is more flexible than the traditional approach; e.g.,
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 19
-
-    because it also works with target languages that have several
-    plural forms (e.g., Irish has a special "dual" form that should
-    be used when \c n is 2), and it handles the \e n == 0 case
-    correctly for languages such as French that require the singular.
-    See the \l{Qt Linguist Manual} for details.
-
-    Instead of \c %n, you can use \c %Ln to produce a localized
-    representation of \a n. The conversion uses the default locale,
-    set using QLocale::setDefault(). (If no default locale was
-    specified, the "C" locale is used.)
+    See \l{Writing Source Code for Translation} for a detailed description of
+    Qt's translation mechanisms in general, and the
+    \l{Writing Source Code for Translation#Disambiguation}{Disambiguation}
+    section for information on disambiguation.
 
     \warning This method is reentrant only if all translators are
     installed \e before calling this method. Installing or removing
@@ -3332,6 +3215,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 
     QObjectConnectionListVector *connectionLists = sender->d_func()->connectionLists;
     if (!connectionLists) {
+        locker.unlock();
         if (qt_signal_spy_callback_set.signal_end_callback != 0)
             qt_signal_spy_callback_set.signal_end_callback(sender, signal_absolute_index);
         return;
@@ -3401,10 +3285,10 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
             }
 #endif
 
-            locker.relock();
-
             if (qt_signal_spy_callback_set.slot_end_callback != 0)
                 qt_signal_spy_callback_set.slot_end_callback(receiver, method);
+
+            locker.relock();
 
             QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
 

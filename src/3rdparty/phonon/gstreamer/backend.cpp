@@ -49,18 +49,26 @@ Backend::Backend(QObject *parent, const QVariantList &)
         , m_debugLevel(Warning)
         , m_isValid(false)
 {
+    // In order to support reloading, we only set the app name once...
+    static bool first = true;
+    if (first) {
+        first = false;
+        g_set_application_name(qApp->applicationName().toUtf8());
+    }
+
     GError *err = 0;
     bool wasInit = gst_init_check(0, 0, &err);  //init gstreamer: must be called before any gst-related functions
     if (err)
         g_error_free(err);
 
     qRegisterMetaType<Message>("Message");
-
+#ifndef QT_NO_PROPERTIES
     setProperty("identifier",     QLatin1String("phonon_gstreamer"));
     setProperty("backendName",    QLatin1String("Gstreamer"));
     setProperty("backendComment", QLatin1String("Gstreamer plugin for Phonon"));
     setProperty("backendVersion", QLatin1String("0.2"));
     setProperty("backendWebsite", QLatin1String("http://qt.nokia.com/"));
+#endif //QT_NO_PROPERTIES
 
     //check if we should enable debug output
     QString debugLevelString = qgetenv("PHONON_GST_DEBUG");
@@ -84,7 +92,6 @@ Backend::Backend(QObject *parent, const QVariantList &)
 
 Backend::~Backend() 
 {
-    gst_deinit();
 }
 
 gboolean Backend::busCall(GstBus *bus, GstMessage *msg, gpointer data)
@@ -117,13 +124,15 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
             m_audioOutputs.append(ao);
             return ao;
         }
+#ifndef QT_NO_PHONON_EFFECT
     case EffectClass:
         return new AudioEffect(this, args[0].toInt(), parent);
-
+#endif //QT_NO_PHONON_EFFECT
     case AudioDataOutputClass:
         logMessage("createObject() : AudioDataOutput not implemented");
         break;
 
+#ifndef QT_NO_PHONON_VIDEO
     case VideoDataOutputClass:
         logMessage("createObject() : VideoDataOutput not implemented");
         break;
@@ -132,9 +141,11 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
             QWidget *widget =  qobject_cast<QWidget*>(parent);
             return new VideoWidget(this, widget);
         }
-
+#endif //QT_NO_PHONON_VIDEO
+#ifndef QT_NO_PHONON_VOLUMEFADEREFFECT
     case VolumeFaderEffectClass:
         return new VolumeFaderEffect(this, parent);
+#endif //QT_NO_PHONON_VOLUMEFADEREFFECT
 
     case VisualizationClass:  //Fall through
     default:
@@ -203,8 +214,15 @@ QStringList Backend::availableMimeTypes() const
         GstPluginFeature *feature = GST_PLUGIN_FEATURE(iter->data);
         QString klass = gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature));
 
-        if (klass == QLatin1String("Codec/Decoder/Audio") || 
-            klass == QLatin1String("Codec/Decoder/Video")) {
+        if (klass == QLatin1String("Codec/Decoder") ||
+            klass == QLatin1String("Codec/Decoder/Audio") ||
+            klass == QLatin1String("Codec/Decoder/Video") ||
+            klass == QLatin1String("Codec/Demuxer") ||
+            klass == QLatin1String("Codec/Demuxer/Audio") ||
+            klass == QLatin1String("Codec/Demuxer/Video") ||
+            klass == QLatin1String("Codec/Parser") ||
+            klass == QLatin1String("Codec/Parser/Audio") ||
+            klass == QLatin1String("Codec/Parser/Video")) {
 
             const GList *static_templates;
             GstElementFactory *factory = GST_ELEMENT_FACTORY(feature);
@@ -276,10 +294,13 @@ QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(ObjectDescripti
     switch (type) {
     case Phonon::AudioOutputDeviceType: {
             QList<AudioDevice> audioDevices = deviceManager()->audioOutputDevices();
-            if (index >= 0 && index < audioDevices.size()) {
-                ret.insert("name", audioDevices[index].gstId);
-                ret.insert("description", audioDevices[index].description);
-                ret.insert("icon", QLatin1String("audio-card"));
+            foreach(const AudioDevice &device, audioDevices) {
+                if (device.id == index) {
+                    ret.insert("name", device.gstId);
+                    ret.insert("description", device.description);
+                    ret.insert("icon", QLatin1String("audio-card"));
+                    break;
+                }
             }
         }
         break;

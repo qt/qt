@@ -19,8 +19,11 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_BACKEND_H
 #define PHONON_MMF_BACKEND_H
 
+#include "ancestormovemonitor.h"
+
 #include <Phonon/MediaSource>
 #include <Phonon/BackendInterface>
+#include <QScopedPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -47,6 +50,10 @@ public:
 
 Q_SIGNALS:
     void objectDescriptionChanged(ObjectDescriptionType);
+
+private:
+    QScopedPointer<AncestorMoveMonitor> m_ancestorMoveMonitor;
+
 };
 }
 }

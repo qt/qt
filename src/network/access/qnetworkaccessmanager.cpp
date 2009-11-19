@@ -52,6 +52,7 @@
 #include "qnetworkaccessfilebackend_p.h"
 #include "qnetworkaccessdatabackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
+#include "qfilenetworkreply_p.h"
 
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
@@ -95,9 +96,10 @@ static void ensureInitialized()
 /*!
     \class QNetworkAccessManager
     \brief The QNetworkAccessManager class allows the application to
-    post network requests and receive replies
+    send network requests and receive replies
     \since 4.4
 
+    \ingroup network
     \inmodule QtNetwork
     \reentrant
 
@@ -680,6 +682,17 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
                                                     QIODevice *outgoingData)
 {
     Q_D(QNetworkAccessManager);
+
+    // fast path for GET on file:// URLs
+    // Also if the scheme is empty we consider it a file.
+    // The QNetworkAccessFileBackend will right now only be used
+    // for PUT or qrc://
+    if (op == QNetworkAccessManager::GetOperation
+         && (req.url().scheme() == QLatin1String("file")
+             || req.url().scheme().isEmpty())) {
+        return new QFileNetworkReply(this, req);
+    }
+
     QNetworkRequest request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
         outgoingData && !outgoingData->isSequential()) {

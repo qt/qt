@@ -33,6 +33,7 @@
 
 #if ENABLE(INSPECTOR)
 
+#include "Cache.h"
 #include "CachedResource.h"
 #include "DocLoader.h"
 #include "DocumentLoader.h"
@@ -59,6 +60,8 @@ InspectorResource::InspectorResource(long long identifier, DocumentLoader* loade
     , m_startTime(-1.0)
     , m_responseReceivedTime(-1.0)
     , m_endTime(-1.0)
+    , m_loadEventTime(-1.0)
+    , m_domContentEventTime(-1.0)
     , m_isMainResource(false)
 {
 }
@@ -200,6 +203,10 @@ void InspectorResource::updateScriptObject(InspectorFrontend* frontend)
             jsonObject.set("responseReceivedTime", m_responseReceivedTime);
         if (m_endTime > 0)
             jsonObject.set("endTime", m_endTime);
+        if (m_loadEventTime > 0)
+            jsonObject.set("loadEventTime", m_loadEventTime);
+        if (m_domContentEventTime > 0)
+            jsonObject.set("domContentEventTime", m_domContentEventTime);
         jsonObject.set("didTimingChange", true);
     }
     if (!frontend->updateResource(m_identifier, jsonObject))
@@ -221,6 +228,18 @@ void InspectorResource::releaseScriptObject(InspectorFrontend* frontend, bool ca
     frontend->removeResource(m_identifier);
 }
 
+CachedResource* InspectorResource::cachedResource() const
+{
+    // Try hard to find a corresponding CachedResource. During preloading, DocLoader may not have the resource in document resources set yet,
+    // but Inspector will already try to fetch data that is only available via CachedResource (and it won't update once the resource is added,
+    // because m_changes will not have the appropriate bits set).
+    const String& url = requestURL();
+    CachedResource* cachedResource = m_frame->document()->docLoader()->cachedResource(url);
+    if (!cachedResource)
+        cachedResource = cache()->resourceForURL(url);
+    return cachedResource;
+}
+
 InspectorResource::Type InspectorResource::type() const
 {
     if (!m_xmlHttpResponseText.isNull())
@@ -232,7 +251,7 @@ InspectorResource::Type InspectorResource::type() const
     if (m_loader->frameLoader() && m_requestURL == m_loader->frameLoader()->iconURL())
         return Image;
 
-    CachedResource* cachedResource = m_frame->document()->docLoader()->cachedResource(requestURL());
+    CachedResource* cachedResource = this->cachedResource();
     if (!cachedResource)
         return Other;
 
@@ -275,13 +294,14 @@ String InspectorResource::sourceString() const
     return encoding.decode(buffer->data(), buffer->size());
 }
 
-PassRefPtr<SharedBuffer> InspectorResource::resourceData(String* textEncodingName) const {
+PassRefPtr<SharedBuffer> InspectorResource::resourceData(String* textEncodingName) const
+{
     if (m_requestURL == m_loader->requestURL()) {
         *textEncodingName = m_frame->document()->inputEncoding();
         return m_loader->mainResourceData();
     }
 
-    CachedResource* cachedResource = m_frame->document()->docLoader()->cachedResource(requestURL());
+    CachedResource* cachedResource = this->cachedResource();
     if (!cachedResource)
         return 0;
 
@@ -318,6 +338,18 @@ void InspectorResource::endTiming()
     m_finished = true;
     m_changes.set(TimingChange);
     m_changes.set(CompletionChange);
+}
+
+void InspectorResource::markDOMContentEventTime()
+{
+    m_domContentEventTime = currentTime();
+    m_changes.set(TimingChange);
+}
+
+void InspectorResource::markLoadEventTime()
+{
+    m_loadEventTime = currentTime();
+    m_changes.set(TimingChange);
 }
 
 void InspectorResource::markFailed()

@@ -252,14 +252,19 @@ QT_USE_NAMESPACE
     delete mQtColor;
     mQtColor = new QColor();
     NSColor *color = [mColorPanel color];
-    NSString *colorSpace = [color colorSpaceName];
-    if (colorSpace == NSDeviceCMYKColorSpace) {
-        CGFloat cyan, magenta, yellow, black, alpha;
+    NSString *colorSpaceName = [color colorSpaceName];
+    if (colorSpaceName == NSDeviceCMYKColorSpace) {
+        CGFloat cyan = 0, magenta = 0, yellow = 0, black = 0, alpha = 0;
         [color getCyan:&cyan magenta:&magenta yellow:&yellow black:&black alpha:&alpha];
         mQtColor->setCmykF(cyan, magenta, yellow, black, alpha);
-    } else if (colorSpace == NSCalibratedRGBColorSpace || colorSpace == NSDeviceRGBColorSpace)  {
-        CGFloat red, green, blue, alpha;
+    } else if (colorSpaceName == NSCalibratedRGBColorSpace || colorSpaceName == NSDeviceRGBColorSpace)  {
+        CGFloat red = 0, green = 0, blue = 0, alpha = 0;
         [color getRed:&red green:&green blue:&blue alpha:&alpha];
+        mQtColor->setRgbF(red, green, blue, alpha);
+    } else if (colorSpaceName == NSNamedColorSpace) {
+        NSColor *tmpColor = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+        CGFloat red = 0, green = 0, blue = 0, alpha = 0;
+        [tmpColor getRed:&red green:&green blue:&blue alpha:&alpha];
         mQtColor->setRgbF(red, green, blue, alpha);
     } else {
         NSColorSpace *colorSpace = [color colorSpace];
@@ -269,7 +274,7 @@ QT_USE_NAMESPACE
             mQtColor->setCmykF(components[0], components[1], components[2], components[3], components[4]);
         } else {
             NSColor *tmpColor = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
-            CGFloat red, green, blue, alpha;
+            CGFloat red = 0, green = 0, blue = 0, alpha = 0;
             [tmpColor getRed:&red green:&green blue:&blue alpha:&alpha];
             mQtColor->setRgbF(red, green, blue, alpha);
         }
@@ -319,7 +324,18 @@ QT_USE_NAMESPACE
     QBoolBlocker nativeDialogOnTop(QApplicationPrivate::native_modal_dialog_active);
     QMacCocoaAutoReleasePool pool;
     mDialogIsExecuting = true;
-    [NSApp runModalForWindow:mColorPanel];
+    bool modalEnded = false;
+    while (!modalEnded) {
+        @try {
+            [NSApp runModalForWindow:mColorPanel];
+            modalEnded = true;
+        } @catch (NSException *) {
+            // For some reason, NSColorPanel throws an exception when
+            // clicking on 'SelectedMenuItemColor' from the 'Developer'
+            // palette (tab three).
+        }
+    }
+
     QAbstractEventDispatcher::instance()->interrupt();
     if (mResultCode == NSCancelButton)
         mPriv->colorDialog()->reject();

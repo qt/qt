@@ -77,7 +77,7 @@ private:
 void tst_QAudioDeviceInfo::initTestCase()
 {
     // Only perform tests if audio output device exists!
-    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     if(devices.size() > 0)
         available = true;
     else {
@@ -90,7 +90,7 @@ void tst_QAudioDeviceInfo::checkAvailableDefaultInput()
 {
     // Only perform tests if audio input device exists!
     bool storeAvailable = available;
-    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     if(devices.size() > 0)
         available = true;
     else {
@@ -111,7 +111,7 @@ void tst_QAudioDeviceInfo::checkAvailableDefaultOutput()
 void tst_QAudioDeviceInfo::outputList()
 {
     if(available) {
-        QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
+        QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
         QVERIFY(devices.size() > 0);
         device = new QAudioDeviceInfo(devices.at(0));
     }

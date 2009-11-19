@@ -288,6 +288,10 @@ public:
     void setMaximumWidth(int maxw);
     void setMaximumHeight(int maxh);
 
+#ifdef Q_QDOC
+    void setupUi(QWidget *widget);
+#endif
+
     QSize sizeIncrement() const;
     void setSizeIncrement(const QSize &);
     void setSizeIncrement(int w, int h);
@@ -351,10 +355,13 @@ public:
                 const QRegion &sourceRegion = QRegion(),
                 RenderFlags renderFlags = RenderFlags(DrawWindowBackground | DrawChildren));
 
+#ifndef QT_NO_GRAPHICSEFFECT
     QGraphicsEffect *graphicsEffect() const;
     void setGraphicsEffect(QGraphicsEffect *effect);
+#endif //QT_NO_GRAPHICSEFFECT
 
-    void grabGesture(Qt::GestureType type, Qt::GestureContext context = Qt::WidgetWithChildrenGesture);
+    void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
+    void ungrabGesture(Qt::GestureType type);
 
 public Q_SLOTS:
     void setWindowTitle(const QString &);
@@ -726,14 +733,11 @@ private:
     friend class QGLContext;
     friend class QGLWidget;
     friend class QGLWindowSurface;
-    friend class QGLWindowSurfaceGLPaintDevice;
-    friend class QVGWindowSurface;
     friend class QX11PaintEngine;
     friend class QWin32PaintEngine;
     friend class QShortcutPrivate;
     friend class QShortcutMap;
     friend class QWindowSurface;
-    friend class QD3DWindowSurface;
     friend class QGraphicsProxyWidget;
     friend class QGraphicsProxyWidgetPrivate;
     friend class QStyleSheetStyle;
@@ -776,6 +780,9 @@ private:
 private:
     Q_DISABLE_COPY(QWidget)
     Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
+#ifdef Q_OS_SYMBIAN
+    Q_PRIVATE_SLOT(d_func(), void _q_delayedDestroy(WId winId))
+#endif
 
     QWidgetData *data;
 

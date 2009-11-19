@@ -56,6 +56,12 @@
 #    endif /* XP_WIN */
 #endif /* _WIN32 */
 
+#ifdef __SYMBIAN32__
+#   ifndef XP_SYMBIAN
+#       define XP_SYMBIAN 1
+#   endif
+#endif  /* __SYMBIAN32__ */
+
 #ifdef __MWERKS__
 #    define _declspec __declspec
 #    ifdef macintosh
@@ -64,19 +70,14 @@
 #        endif /* XP_MAC */
 #    endif /* macintosh */
 #    ifdef __INTEL__
-#        undef NULL
-#        ifndef XP_WIN
-#            define XP_WIN 1
-#        endif /* __INTEL__ */
-#    endif /* XP_PC */
+#       ifndef XP_SYMBIAN
+#           undef NULL
+#           ifndef XP_WIN
+#               define XP_WIN 1
+#           endif /* XP_WIN */
+#       endif /* XP_SYMBIAN */
+#    endif /* __INTEL__ */
 #endif /* __MWERKS__ */
-
-#ifdef __SYMBIAN32__
-#   ifndef XP_SYMBIAN
-#       define XP_SYMBIAN 1
-#       undef XP_WIN
-#   endif
-#endif  /* __SYMBIAN32__ */
 
 #if defined(__APPLE_CC__) && !defined(__MACOS_CLASSIC__) && !defined(XP_UNIX)
 #   define XP_MACOSX
@@ -104,6 +105,11 @@
     #include <X11/Xlib.h>
     #include <X11/Xutil.h>
     #include <stdio.h>
+#endif
+
+#if defined(XP_SYMBIAN)
+    #include <QEvent>
+    #include <QRegion>
 #endif
 
 #ifdef XP_WIN
@@ -526,9 +532,9 @@ typedef struct _NPWindow
     uint32    height;
     NPRect    clipRect;    /* Clipping rectangle in port coordinates */
                         /* Used by MAC only.              */
-#ifdef XP_UNIX
+#if defined(XP_UNIX) || defined(XP_SYMBIAN)
     void *    ws_info;    /* Platform-dependent additonal data */
-#endif /* XP_UNIX */
+#endif /* XP_UNIX || XP_SYMBIAN */
     NPWindowType type;    /* Is this a window or a drawable? */
 } NPWindow;
 
@@ -578,6 +584,8 @@ typedef enum {
 typedef EventRecord    NPEvent;
 #endif
 
+#elif defined(XP_SYMBIAN)
+typedef QEvent NPEvent;
 #elif defined(XP_WIN)
 typedef struct _NPEvent
 {
@@ -608,6 +616,8 @@ typedef CGPathRef NPCGRegion;
 typedef HRGN NPRegion;
 #elif defined(XP_UNIX)
 typedef Region NPRegion;
+#elif defined(XP_SYMBIAN)
+typedef QRegion* NPRegion;
 #else
 typedef void *NPRegion;
 #endif /* XP_MAC */

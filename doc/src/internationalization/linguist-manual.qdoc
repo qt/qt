@@ -62,7 +62,7 @@
     software engineers and the translator. The chapter describes the
     use of two tools. The \l{lupdate} tool is used to synchronize
     source code and translations. The \l{lrelease} tool is used to
-    create runtime translation files for use by the released
+    create run-time translation files for use by the released
     application.
 
     The \l{linguist-translators.html}{Translators} chapter is for
@@ -119,7 +119,7 @@
 
     \o Phrases that contain variables, for example, "The 25 files
     selected will take 63 seconds to process", where the two numbers
-    are inserted programmatically at runtime may need to be reworded
+    are inserted programmatically at run-time may need to be reworded
     because in a different language the word order and therefore the
     placement of the variables may have to change.
 
@@ -147,7 +147,7 @@
 
     \row \o{1,2} \inlineimage wVista-Cert-border-small.png
     \o \e{Qt Linguist 4.3 is Certified for Windows Vista}
-    
+
     \row \o Windows Vista and the Windows Vista Start button are
     trademarks or registered trademarks of Microsoft Corporation in
     the United States and/or other countries.
@@ -327,7 +327,7 @@
     area}. The \l{Context Window} {context list} is normally shown
     on the left, and the \l{Sources and Forms Window} {source code},
     \l{Strings Window} {string list}, and either the \l{Phrases and 
-    Guesses Window} {prhrases and guesses}, or the \l{Warnings Window} 
+    Guesses Window} {phrases and guesses}, or the \l{Warnings Window}
     {warnings} are shown above and below the \l{The Translation Area}
     {translations area}.
 
@@ -355,7 +355,7 @@
     translation "guesses" have been read from phrase books
     (\menu{Phrases|Open Phrase Book...}).  The current string's
     current translation is also shown here. To select a guess, double
-    click it in the prases and guesses window or use the keyboard
+    click it in the phrases and guesses window or use the keyboard
     shortcut shown to the right of the guess.
 
     \QL can automatically check whether your translation strings pass
@@ -508,7 +508,7 @@
     translation. The state is reset to \inlineimage linguist-danger.png 
     , and the number of accepted translations in the \e{Items} column 
     of the \l{Context Window} {context list} is decremented by 1. 
-    
+
     \row
     \o Not Accepted
     \o \inlineimage linguist-check-off.png
@@ -764,7 +764,7 @@
     and \e{N}.
 
     Each Ctrl key accelerator is shown in the \l{Strings Window}
-    {string list} as a separte string, e.g. \key{Ctrl+Enter}. Since
+    {string list} as a separate string, e.g. \key{Ctrl+Enter}. Since
     the string doesn't have a context to give it meaning, e.g. like
     the context of the phrase in which an Alt key accelerator appears,
     the translator must rely on the UI developer to include a
@@ -781,7 +781,7 @@
     changed. Whichever character (alpha or digit) is chosen, the
     translation must be in the form "Ctrl+" followed by the upper case
     character.  \e{Qt} will automatically display the correct name at
-    runtime. As with Alt key accelerators, if the translator changes
+    run-time. As with Alt key accelerators, if the translator changes
     the character, the new character must not conflict with any other
     Ctrl key accelerator.
 
@@ -790,14 +790,14 @@
     supported languages, \e {Qt} automatically translates these
     strings.
 
-    \section2 Handling Numbered Arguments
+    \section2 Handling Numbered Arguments and Plurals
 
     Some phrases contain numbered arguments. A numbered argument is a
-    placeholder that will be replaced with text at runtime. A numbered
+    placeholder that will be replaced with text at run-time. A numbered
     argument appears in a source string as a percent sign followed by
     a digit. Consider an example: \c{After processing file %1, file %2
     is next in line}. In this string to be translated, \c{%1} and
-    \c{%2} are numbered arguments. At runtime, \c{%1} and \c{%2} will
+    \c{%2} are numbered arguments. At run-time, \c{%1} and \c{%2} will
     be replaced with the first and next file names respectively. The
     same numbered arguments must appear in the translation, but not
     necessarily in the same order. A German translation of the string
@@ -807,6 +807,15 @@
     replaced by the same text in the translation stringss, regardless
     of where argument \e{i} appears in the argument sequence in the
     source string.
+
+    The use of numbered arguments is often accompanied by the use of
+    plurals in the source text. In many languages, the form of the
+    text will depend on the value shown, and more than one translation
+    is required. If the developers have marked up the source text in
+    correct way, fields for each of the possible plural forms will be
+    available in the translation area. (The
+    \l{Writing Source Code for Translation#Handling Plurals}{Writing Source Code for Translation}
+    document contains details about this feature for developers.)
 
     \section2 Reusing Translations
 
@@ -826,7 +835,7 @@
     {translation area}, and adapts the number of input fields for
     plural forms accordingly. If not explicitly set, \QL guesses the
     target language and country by evaluating the translation source
-    file name: E.g. \c app_de.ts sets the target language to German,
+    file name. For example, \c app_de.ts sets the target language to German,
     and \c app_de_ch.ts sets the target language to German and the
     target country to Switzerland (this also helps loading
     translations for the current locale automatically; see
@@ -956,7 +965,7 @@
     can be used to edit XLIFF files generated by other programs. For standard
     Qt projects, however, only the TS file format is used.
     \o QM \e {Qt message files} \BR are binary files that contain
-    translations used by an application at runtime. These files are
+    translations used by an application at run-time. These files are
     generated by \l lrelease, but can also be generated by \QL.
     \o \c .qph \e {Qt phrase book files} \BR are human-readable XML
     files containing standard phrases and their translations. These files
@@ -1085,7 +1094,7 @@
 
         \endlist
 
-  \o \gui {Tools}
+    \o \gui {Tools}
         \list
 
         \o \gui {Batch Translation...} \BR Opens a \l{Batch
@@ -1096,7 +1105,7 @@
         Preview}.  This window let you instantly see translations for
         forms created with \QD.  \endlist
 
-  \o \gui {View}
+    \o \gui {View}
         \list
 
         \o \gui {Revert Sorting} \BR puts the items in the \l{Context
@@ -1118,7 +1127,7 @@
 
         \endlist
 
-  \o \gui {Help}
+    \o \gui {Help}
         \list
         \o \gui {Manual F1} \BR opens this manual.
         \o \gui {About Qt Linguist} \BR Shows information about \QL.
@@ -1290,7 +1299,7 @@
     \code
         CODECFORTR = UTF-8
     \endcode
-    
+
     See the \l lupdate and \l lrelease sections.
 
     \section2 Loading Translations
@@ -1352,7 +1361,7 @@
 
     \snippet doc/src/snippets/code/doc_src_linguist-manual.qdoc 9
 
-    \section2 Distinguishing Identical Strings That Require Different Translations
+    \section2 Distinguishing Between Identical Translatable Strings
 
     The \l lupdate program automatically provides a \e context for every
     source text. This context is the class name of the class that contains

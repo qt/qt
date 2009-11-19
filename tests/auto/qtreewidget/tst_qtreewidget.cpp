@@ -49,6 +49,9 @@
 #include <qheaderview.h>
 #include <qlineedit.h>
 #include <QScrollBar>
+#include <QStyledItemDelegate>
+
+#include "../../shared/util.h"
 
 
 //TESTED_CLASS=
@@ -163,6 +166,8 @@ private slots:
     void task217309();
     void setCurrentItemExpandsParent();
     void task239150_editorWidth();
+    void setTextUpdate();
+    void taskQTBUG2844_visualItemRect();
 
 public slots:
     void itemSelectionChanged();
@@ -597,9 +602,9 @@ void tst_QTreeWidget::setItemHidden()
     testWidget->scrollToItem(child);
 
     QVERIFY(testWidget->visualItemRect(parent).isValid()
-           && testWidget->viewport()->rect().contains(testWidget->visualItemRect(parent)));
+           && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(parent)));
     QVERIFY(testWidget->visualItemRect(child).isValid()
-           && testWidget->viewport()->rect().contains(testWidget->visualItemRect(child)));
+           && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(child)));
 
     QVERIFY(!testWidget->isItemHidden(parent));
     QVERIFY(!testWidget->isItemHidden(child));
@@ -607,9 +612,9 @@ void tst_QTreeWidget::setItemHidden()
     testWidget->setItemHidden(parent, true);
 
     QVERIFY(!(testWidget->visualItemRect(parent).isValid()
-             && testWidget->viewport()->rect().contains(testWidget->visualItemRect(parent))));
+             && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(parent))));
     QVERIFY(!(testWidget->visualItemRect(child).isValid()
-             && testWidget->viewport()->rect().contains(testWidget->visualItemRect(child))));
+             && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(child))));
 
     QVERIFY(testWidget->isItemHidden(parent));
     QVERIFY(!testWidget->isItemHidden(child));
@@ -3229,6 +3234,60 @@ void tst_QTreeWidget::task239150_editorWidth()
         QVERIFY(tree.itemWidget(&item, 0));
         QVERIFY(tree.itemWidget(&item, 0)->width() >= minWidth + tree.fontMetrics().width(item.text(0)));
     }
+}
+
+
+
+void tst_QTreeWidget::setTextUpdate()
+{
+    QTreeWidget treeWidget;
+    treeWidget.setColumnCount(2);
+
+    class MyItemDelegate : public QStyledItemDelegate
+    {
+    public:
+        MyItemDelegate() : numPaints(0) { }
+        void paint(QPainter *painter,
+               const QStyleOptionViewItem &option, const QModelIndex &index) const
+        {
+            numPaints++;
+            QStyledItemDelegate::paint(painter, option, index);
+        }
+
+        mutable int numPaints;
+    } delegate;
+
+    treeWidget.setItemDelegate(&delegate);
+    treeWidget.show();
+    QStringList strList;
+    strList << "variable1" << "0";
+    QTreeWidgetItem *item = new QTreeWidgetItem(strList);
+    treeWidget.insertTopLevelItem(0, item);
+    QTest::qWait(50);
+    QTRY_VERIFY(delegate.numPaints > 0);
+    delegate.numPaints = 0;
+
+    item->setText(1, "42");
+    QApplication::processEvents();
+    QTRY_VERIFY(delegate.numPaints > 0);
+}
+
+void tst_QTreeWidget::taskQTBUG2844_visualItemRect()
+{
+    CustomTreeWidget tree;
+    tree.resize(150, 100);
+    tree.setColumnCount(3);
+    QTreeWidgetItem item(&tree);
+
+    QRect itemRect = tree.visualItemRect(&item);
+
+    QRect rectCol0 = tree.visualRect(tree.indexFromItem(&item, 0));
+    QRect rectCol1 = tree.visualRect(tree.indexFromItem(&item, 1));
+    QRect rectCol2 = tree.visualRect(tree.indexFromItem(&item, 2));
+
+    QCOMPARE(tree.visualItemRect(&item), rectCol0 | rectCol2);
+    tree.setColumnHidden(2, true);
+    QCOMPARE(tree.visualItemRect(&item), rectCol0 | rectCol1);
 }
 
 

@@ -624,7 +624,7 @@ QSize QLineEdit::sizeHint() const
     Q_D(const QLineEdit);
     ensurePolished();
     QFontMetrics fm(font());
-    int h = qMax(fm.lineSpacing(), 14) + 2*d->verticalMargin
+    int h = qMax(fm.height(), 14) + 2*d->verticalMargin
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
     int w = fm.width(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
@@ -1102,6 +1102,17 @@ void QLineEdit::setTextMargins(int left, int top, int right, int bottom)
 }
 
 /*!
+    \since 4.6
+    Sets the \a margins around the text inside the frame.
+
+    See also textMargins().
+*/
+void QLineEdit::setTextMargins(const QMargins &margins)
+{
+    setTextMargins(margins.left(), margins.top(), margins.right(), margins.bottom());
+}
+
+/*!
     Returns the widget's text margins for \a left, \a top, \a right, and \a bottom.
     \since 4.5
 
@@ -1118,6 +1129,18 @@ void QLineEdit::getTextMargins(int *left, int *top, int *right, int *bottom) con
         *right = d->rightTextMargin;
     if (bottom)
         *bottom = d->bottomTextMargin;
+}
+
+/*!
+    \since 4.6
+    Returns the widget's text margins.
+
+    \sa setTextMargins()
+*/
+QMargins QLineEdit::textMargins() const
+{
+    Q_D(const QLineEdit);
+    return QMargins(d->leftTextMargin, d->topTextMargin, d->rightTextMargin, d->bottomTextMargin);
 }
 
 /*!
@@ -1492,7 +1515,8 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
     }
 #endif
 
-    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    if (!isReadOnly())
+        d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
 
@@ -1571,7 +1595,9 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
                         && !isReadOnly())
                     {
                         setEditFocus(true);
+#ifndef Q_OS_SYMBIAN
                         clear();
+#endif
                     } else {
                         event->ignore();
                         return;
@@ -1628,7 +1654,9 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
         && hasFocus() && !hasEditFocus()
         && !e->preeditString().isEmpty()) {
         setEditFocus(true);
+#ifndef Q_OS_SYMBIAN
         selectAll();        // so text is replaced rather than appended to
+#endif
     }
 #endif
 

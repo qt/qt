@@ -312,7 +312,7 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+747"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+748"/>
         <source>Dropped %n message(s) which had no ID.</source>
         <translation>
             <numerusform>Opuszczono %n wyrażenie które nie miało identyfikatora.</numerusform>
@@ -1511,32 +1511,32 @@ Wszystkie pliki (*)</translation>
     <message>
         <location line="+30"/>
         <source>Russian</source>
-        <translation>Rosyjskie</translation>
+        <translation>rosyjski</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>German</source>
-        <translation>Niemieckie</translation>
+        <translation>niemiecki</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Japanese</source>
-        <translation>Japońskie</translation>
+        <translation>japoński</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>French</source>
-        <translation>Francuskie</translation>
+        <translation>francuski</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Polish</source>
-        <translation>Polskie</translation>
+        <translation>polski</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Chinese</source>
-        <translation>Chińskie</translation>
+        <translation>chiński</translation>
     </message>
     <message>
         <location line="+53"/>
@@ -1581,7 +1581,7 @@ Wszystkie pliki (*)</translation>
     <message>
         <location line="+232"/>
         <source>%1 translation (%2)</source>
-        <translation>%1 tłumaczenie (%2)</translation>
+        <translation>Tłumaczenie na język %1 (%2)</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -1591,7 +1591,7 @@ Wszystkie pliki (*)</translation>
     <message>
         <location line="+5"/>
         <source>%1 translation</source>
-        <translation>%1 tłumaczenie</translation>
+        <translation>Tłumaczenie na język %1</translation>
     </message>
     <message>
         <location line="+1"/>

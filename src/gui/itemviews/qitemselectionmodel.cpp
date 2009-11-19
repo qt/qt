@@ -599,7 +599,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
             while (itParent.isValid() && itParent.parent() != parent)
                 itParent = itParent.parent();
 
-            if (parent.isValid() && start <= itParent.row() && itParent.row() <= end) {
+            if (itParent.isValid() && start <= itParent.row() && itParent.row() <= end) {
                 deselected.append(*it);
                 it = ranges.erase(it);
             } else {
@@ -730,13 +730,14 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
     savedPersistentIndexes.clear();
     savedPersistentCurrentIndexes.clear();
 
-    // special case for when all indexes are selected
+    // optimisation for when all indexes are selected
+    // (only if there is lots of items (1000) because this is not entirely correct)
     if (ranges.isEmpty() && currentSelection.count() == 1) {
         QItemSelectionRange range = currentSelection.first();
         QModelIndex parent = range.parent();
         tableRowCount = model->rowCount(parent);
         tableColCount = model->columnCount(parent);
-        if (tableRowCount * tableColCount > 100
+        if (tableRowCount * tableColCount > 1000
             && range.top() == 0
             && range.left() == 0
             && range.bottom() == tableRowCount - 1
@@ -1587,7 +1588,8 @@ void QItemSelectionModel::emitSelectionChanged(const QItemSelection &newSelectio
         }
     }
 
-    emit selectionChanged(selected, deselected);
+    if (!selected.isEmpty() || !deselected.isEmpty())
+        emit selectionChanged(selected, deselected);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

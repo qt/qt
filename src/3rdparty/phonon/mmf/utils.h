@@ -54,7 +54,7 @@ void panic(PanicCode code);
  */
 MediaType mimeTypeToMediaType(const TDesC& mimeType);
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 /**
  * Retrieve color of specified pixel from the screen.
  */
@@ -138,16 +138,16 @@ public:
 #define _TRACE_MODULE Phonon::MMF
 
 // Macros available for use by implementation code
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 #define TRACE_CONTEXT(_fn, _cat) const ::Phonon::MMF::TTraceContext _tc((TText*)L ## #_fn, (TUint)this, _cat);
-#define TRACE_ENTRY_0() { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x]"), _tc.iFunction, _tc.iAddr); }
-#define TRACE_ENTRY(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
-#define TRACE_EXIT_0() { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "- Phonon::MMF::%s [0x%08x]"), _tc.iFunction, _tc.iAddr); }
-#define TRACE_EXIT(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "- Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
-#define TRACE_RETURN(string, result) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "r Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, result); } return result;
+#define TRACE_ENTRY_0() { if (_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x]"), _tc.iFunction, _tc.iAddr); }
+#define TRACE_ENTRY(string, args...) { if (_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
+#define TRACE_EXIT_0() { if (_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "- Phonon::MMF::%s [0x%08x]"), _tc.iFunction, _tc.iAddr); }
+#define TRACE_EXIT(string, args...) { if (_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "- Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
+#define TRACE_RETURN(string, result) { if (_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "r Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, result); } return result;
 #define TRACE_PANIC(code) { _TRACE_PRINT(_TRACE_TEXT(L ## "! Phonon::MMF::%s [0x%08x] panic %d"), _tc.iFunction, _tc.iAddr, code); } Utils::panic(code);
-#define TRACE_0(string) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "  Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr); }
-#define TRACE(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "  Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
+#define TRACE_0(string) { if (_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "  Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr); }
+#define TRACE(string, args...) { if (_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "  Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
 #else
 #define TRACE_CONTEXT(_fn, _cat)
 #define TRACE_ENTRY_0()

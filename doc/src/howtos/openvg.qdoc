@@ -292,8 +292,8 @@
 
     \section2 Pixmap filters
 
-    Convolution, colorize, and drop shadow filters are accelerated using
-    OpenVG operations.
+    Convolution, colorize, drop shadow, and blur filters are accelerated
+    using OpenVG operations.
 
     \section1 Known issues
 

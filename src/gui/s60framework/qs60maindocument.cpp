@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 /*!
   \class QS60MainDocument
   \since 4.6
-  \brief Helper class for S60 migration
+  \brief The QS60MainDocument class is a helper class for S60 migration.
 
   \warning This class is provided only to get access to S60 specific
   functionality in the application framework classes. It is not

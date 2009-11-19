@@ -39,62 +39,17 @@
 **
 ****************************************************************************/
 
-// This is included in various .cpp files as a compile test for various scenarios
-// depending on NO_CAST_*  and  QT_USE_FAST_OPERATOR_PLUS and QT_USE_FAST_CONCATENATION
-
-#if SCENARIO == 1
-// this is the "no harm done" version. Only operator% is active,
-// with NO_CAST * defined
-#define P %
-#undef QT_USE_FAST_OPERATOR_PLUS
-#undef QT_USE_FAST_CONCATENATION
-#define QT_NO_CAST_FROM_ASCII
-#define QT_NO_CAST_TO_ASCII
-#endif
-
-
-#if SCENARIO == 2
-// this is the "full" version. Operator+ is replaced by a QStringBuilder
-// based version
-// with NO_CAST * defined
-#define P +
-#define QT_USE_FAST_OPERATOR_PLUS
-#define QT_USE_FAST_CONCATENATION
-#define QT_NO_CAST_FROM_ASCII
-#define QT_NO_CAST_TO_ASCII
-#endif
-
-#if SCENARIO == 3
-// this is the "no harm done" version. Only operator% is active,
-// with NO_CAST * _not_ defined
-#define P %
-#undef QT_USE_FAST_OPERATOR_PLUS
-#undef QT_USE_FAST_CONCATENATION
-#undef QT_NO_CAST_FROM_ASCII
-#undef QT_NO_CAST_TO_ASCII
-#endif
-
-#if SCENARIO == 4
-// this is the "full" version. Operator+ is replaced by a QStringBuilder
-// based version
-// with NO_CAST * _not_ defined
-#define P +
-#define QT_USE_FAST_OPERATOR_PLUS
-#define QT_USE_FAST_CONCATENATION
-#undef QT_NO_CAST_FROM_ASCII
-#undef QT_NO_CAST_TO_ASCII
-#endif
-
-#include <QtTest/QtTest>
-#include "stringbuilder.h"
-
-//TESTED_CLASS=QStringBuilder
-//TESTED_FILES=qstringbuilder.cpp
-
 #define LITERAL "some literal"
 
-void tst_QStringBuilder::scenario()
+// "some literal", but replacing all vocals by their umlauted UTF-8 string :)
+#define UTF8_LITERAL "s\xc3\xb6m\xc3\xab l\xc3\xaft\xc3\xabr\xc3\xa4l"
+
+void runScenario()
 {
+    // set codec for C strings to 0, enforcing Latin1
+    QTextCodec::setCodecForCStrings(0);
+    QVERIFY(!QTextCodec::codecForCStrings());
+
     QLatin1Literal l1literal(LITERAL);
     QLatin1String l1string(LITERAL);
     QString string(l1string);
@@ -127,7 +82,24 @@ void tst_QStringBuilder::scenario()
     QCOMPARE(r, r2);
     r = string P ba;
     QCOMPARE(r, r2);
+
+    // now test with codec for C strings set
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    QVERIFY(QTextCodec::codecForCStrings());
+    QCOMPARE(QTextCodec::codecForCStrings()->name(), QByteArray("UTF-8"));
+
+    string = QString::fromUtf8(UTF8_LITERAL);
+    r2 = QString::fromUtf8(UTF8_LITERAL UTF8_LITERAL);
+    ba = UTF8_LITERAL;
+
+    r = string P UTF8_LITERAL;
+    QCOMPARE(r.size(), r2.size());
+    QCOMPARE(r, r2);
+    r = UTF8_LITERAL P string;
+    QCOMPARE(r, r2);
+    r = ba P string;
+    QCOMPARE(r, r2);
+    r = string P ba;
+    QCOMPARE(r, r2);
 #endif
 }
-
-QTEST_APPLESS_MAIN(tst_QStringBuilder)

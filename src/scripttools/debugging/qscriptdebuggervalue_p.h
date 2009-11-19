@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/private/qscopedpointer_p.h>
 #include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE

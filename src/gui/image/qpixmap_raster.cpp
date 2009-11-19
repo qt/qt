@@ -55,6 +55,29 @@ QT_BEGIN_NAMESPACE
 const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
                                      0x10, 0x20, 0x40, 0x80 };
 
+QPixmap qt_toRasterPixmap(const QImage &image)
+{
+    QPixmapData *data =
+        new QRasterPixmapData(image.depth() == 1
+                           ? QPixmapData::BitmapType
+                           : QPixmapData::PixmapType);
+
+    data->fromImage(image, Qt::AutoColor);
+
+    return QPixmap(data);
+}
+
+QPixmap qt_toRasterPixmap(const QPixmap &pixmap)
+{
+    if (pixmap.isNull())
+        return QPixmap();
+
+    if (QPixmap(pixmap).data_ptr()->classId() == QPixmapData::RasterClass)
+        return pixmap;
+
+    return qt_toRasterPixmap(pixmap.toImage());
+}
+
 QRasterPixmapData::QRasterPixmapData(PixelType type)
     : QPixmapData(type, RasterClass)
 {
@@ -62,6 +85,11 @@ QRasterPixmapData::QRasterPixmapData(PixelType type)
 
 QRasterPixmapData::~QRasterPixmapData()
 {
+}
+
+QPixmapData *QRasterPixmapData::createCompatiblePixmapData() const
+{
+    return new QRasterPixmapData(pixelType());
 }
 
 void QRasterPixmapData::resize(int width, int height)
@@ -91,7 +119,7 @@ void QRasterPixmapData::resize(int width, int height)
     is_null = (w <= 0 || h <= 0);
 
     if (pixelType() == BitmapType && !image.isNull()) {
-        image.setNumColors(2);
+        image.setColorCount(2);
         image.setColor(0, QColor(Qt::color0).rgba());
         image.setColor(1, QColor(Qt::color1).rgba());
     }

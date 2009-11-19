@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/****************************************************************************
-** Please remember to update the corresponding INSTALL files.
-****************************************************************************/
-
 /*!
 \group installation
 \title Installation
@@ -484,6 +480,7 @@ in the \l{Qt for Windows CE Requirements} document.
         \o \l{Windows CE - Introduction to using Qt}
         \o \l{Windows CE - Working with Custom SDKs}
         \o \l{Windows CE - Using shadow builds}
+        \o \l{Windows CE - Signing}
         \endlist
 
         Information on feature and performance tuning for embedded builds can
@@ -498,10 +495,9 @@ in the \l{Qt for Windows CE Requirements} document.
 */
 
 /*! \page install-Symbian-installer.html
-
-\title Installing Qt on the Symbian platform using binary package
+\title Installing Qt on the Symbian Platform from a Binary Package
 \ingroup qts60
-\brief How to install Qt on the Symbian platform using the binary package.
+\brief How to install Qt on the Symbian platform from a binary package.
 
 \note Qt for Symbian platform has some requirements that are given in more detail
 in the \l{Qt for Symbian platform Requirements} document.
@@ -528,9 +524,9 @@ in the \l{Qt for Symbian platform Requirements} document.
 
         To run the demos and examples on the emulator, you need to build them first.
         Open the "Qt for Symbian platform Command Prompt" from the Start menu and type:
-        
+
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 25
-        
+
         To run the demos on the emulator simply navigate to the directory of the demo 
         you want to see and run:
 
@@ -538,7 +534,7 @@ in the \l{Qt for Symbian platform Requirements} document.
 
         For more information about building and running Qt programs on the
 Symbian platform,
-        see \l{Symbian platform - Introduction to using Qt}.
+        see \l{Symbian platform - Introduction to Qt}.
 
     We hope you will enjoy using Qt.
 
@@ -546,19 +542,18 @@ Symbian platform,
 
 */
 /*! \page install-Symbian.html
-
-\title Installing Qt on the Symbian platform
+\title Installing Qt on the Symbian Platform
 \ingroup installation
 \ingroup qts60
-\brief How to install Qt for the Symbian platform
+\brief How to install Qt on the Symbian platform.
 
 \note Qt for the Symbian platform has some requirements that are given in more detail
-in the \l{Qt for Symbian platform Requirements} document.
+in the \l{Qt for Symbian Platform Requirements} document.
 
 \note \bold {This document describes how to install and configure Qt for
 the Symbian platform from scratch. 
-If you are using pre-built binaries, follow the instructions
-\l{Installing Qt on the Symbian platform using binary package}{here}.}
+If you are using pre-built binaries, follow the instructions given in the
+\l{Installing Qt on the Symbian Platform from a Binary Package} document.}
 
 \list 1
 
@@ -608,7 +603,7 @@ If you are using pre-built binaries, follow the instructions
         To build Qt for the device, type:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 28
-        
+
         Congratulations, Qt is now ready to use.
 
     \o  Running Qt demos
@@ -617,7 +612,7 @@ If you are using pre-built binaries, follow the instructions
         to try out. An excellent starting point is the "fluidlauncher"
         demo. To run the demo on a real device, you first have to install
         the Qt libraries on the device:
-        
+
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 29
 
         \note You will need to supply certificate that allows installation 
@@ -629,14 +624,14 @@ If you are using pre-built binaries, follow the instructions
 
         This will create a self-signed \c fluidlauncher_armv5_urel.sis and
         install it to your device.
-        
+
         To run the demos on the emulator simply navigate to the directory of the demo 
         you want to see and run:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 27
 
         For more information about building and running Qt programs on the
-Symbian platform, see \l{Symbian platform - Introduction to using Qt}.
+Symbian platform, see \l{Symbian platform - Introduction to Qt}.
 
     We hope you will enjoy using Qt.
 
@@ -956,23 +951,30 @@ Symbian platform, see \l{Symbian platform - Introduction to using Qt}.
 
 /*!
     \page requirements-symbian.html
-    \title Qt for Symbian platform Requirements
+    \title Qt for Symbian Platform Requirements
     \ingroup installation
     \brief Setting up the Symbian platform environment for Qt.
     \previouspage General Qt Requirements
 
     Qt for Symbian platform requires the following software installed on your development PC:
     \list
-        \o \l{http://www.mingw.org/}{MinGW 3.4.5 or higher}, or another windows compiler to build the tools.
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}           
            \list
            \o \bold{Note:} It may be necessary to update the Carbide compiler.
               See \l{http://pepper.troll.no/s60prereleases/patches/}{here} for instructions how to check your
               compiler version and how to patch it, if needed.
            \endlist
+        \o \l{http://downloads.activestate.com/ActivePerl/Windows/5.6/ActivePerl-5.6.1.638-MSWin32-x86.msi}{ActivePerl v5.6.1 build 638}
+           \list
+           \o \bold{Note:} According to Symbian, version 5.6.1 build 638 is mandatory. Using later versions may result in unexplained errors.
+           \endlist
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
         \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}. 
            Install this to all Symbian SDKs you plan to use Qt with.
+        \o Building Qt tools from scratch requires \l{http://www.mingw.org/}{MinGW 3.4.5 or higher}, or another windows compiler.
+           \list
+           \o \bold{Note:} This is not required if you are using pre-built binary package.
+           \endlist
         \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} 2.2 [build 686] or later,
            which is not available free of charge. 
     \endlist

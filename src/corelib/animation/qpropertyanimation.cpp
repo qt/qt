@@ -58,12 +58,12 @@
     an example:
 
     \code
-        QPropertyAnimation animation(myWidget, "geometry");
-        animation.setDuration(10000);
-        animation.setStartValue(QRect(0, 0, 100, 30));
-        animation.setEndValue(QRect(250, 250, 100, 30));
+        QPropertyAnimation *animation = new QPropertyAnimation(myWidget, "geometry");
+        animation->setDuration(10000);
+        animation->setStartValue(QRect(0, 0, 100, 30));
+        animation->setEndValue(QRect(250, 250, 100, 30));
 
-        animation.start();
+        animation->start();
     \endcode
 
     The property name and the QObject instance of which property
@@ -250,8 +250,8 @@ void QPropertyAnimation::updateCurrentValue(const QVariant &value)
     If the startValue is not defined when the state of the animation changes from Stopped to Running,
     the current property value is used as the initial value for the animation.
 */
-void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
-                                     QAbstractAnimation::State newState)
+void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
+                                     QAbstractAnimation::State oldState)
 {
     Q_D(QPropertyAnimation);
 
@@ -260,7 +260,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
         return;
     }
 
-    QVariantAnimation::updateState(oldState, newState);
+    QVariantAnimation::updateState(newState, oldState);
 
     QPropertyAnimation *animToStop = 0;
     {

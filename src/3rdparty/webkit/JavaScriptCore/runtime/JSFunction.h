@@ -61,16 +61,19 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype) 
         { 
-            return Structure::create(prototype, TypeInfo(ObjectType, ImplementsHasInstance)); 
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags)); 
         }
 
         NativeFunction nativeFunction()
         {
-            return *reinterpret_cast<NativeFunction*>(m_data);
+            return *WTF::bitwise_cast<NativeFunction*>(m_data);
         }
 
         virtual ConstructType getConstructData(ConstructData&);
         virtual CallType getCallData(CallData&);
+
+    protected:
+        const static unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | OverridesMarkChildren | OverridesGetPropertyNames | InternalFunction::StructureFlags;
 
     private:
         JSFunction(NonNullPassRefPtr<Structure>);
@@ -94,7 +97,7 @@ namespace JSC {
         ScopeChain& scopeChain()
         {
             ASSERT(!isHostFunctionNonInline());
-            return *reinterpret_cast<ScopeChain*>(m_data);
+            return *WTF::bitwise_cast<ScopeChain*>(m_data);
         }
         void clearScopeChain()
         {
@@ -109,11 +112,11 @@ namespace JSC {
         void setScopeChain(const ScopeChain& sc)
         {
             ASSERT(!isHostFunctionNonInline());
-            *reinterpret_cast<ScopeChain*>(m_data) = sc;
+            *WTF::bitwise_cast<ScopeChain*>(m_data) = sc;
         }
         void setNativeFunction(NativeFunction func)
         {
-            *reinterpret_cast<NativeFunction*>(m_data) = func;
+            *WTF::bitwise_cast<NativeFunction*>(m_data) = func;
         }
         unsigned char m_data[sizeof(void*)];
     };

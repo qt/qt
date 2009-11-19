@@ -63,7 +63,7 @@
     You can access each item in the layout by calling count() and itemAt(). Calling
     removeAt() will remove an item from the layout, without
     destroying it.
-    
+
     \sa QGraphicsLinearLayout, QGraphicsWidget
 */
 
@@ -89,7 +89,7 @@ public:
     QLayoutStyleInfo styleInfo() const;
 
     QGridLayoutEngine engine;
-#ifdef QT_DEBUG    
+#ifdef QT_DEBUG
     void dump(int indent) const;
 #endif
 };
@@ -121,7 +121,7 @@ QGraphicsGridLayout::~QGraphicsGridLayout()
     for (int i = count() - 1; i >= 0; --i) {
         QGraphicsLayoutItem *item = itemAt(i);
         // The following lines can be removed, but this removes the item
-        // from the layout more efficiently than the implementation of 
+        // from the layout more efficiently than the implementation of
         // ~QGraphicsLayoutItem.
         removeAt(i);
         if (item) {
@@ -141,18 +141,22 @@ void QGraphicsGridLayout::addItem(QGraphicsLayoutItem *item, int row, int column
 {
     Q_D(QGraphicsGridLayout);
     if (row < 0 || column < 0) {
-	qWarning("QGraphicsGridLayout::addItem: invalid row/column: %d",
-		 row < 0 ? row : column);
-	return;
+        qWarning("QGraphicsGridLayout::addItem: invalid row/column: %d",
+                 row < 0 ? row : column);
+        return;
     }
     if (columnSpan < 1 || rowSpan < 1) {
-	qWarning("QGraphicsGridLayout::addItem: invalid row span/column span: %d",
-		 rowSpan < 1 ? rowSpan : columnSpan);
-	return;
+        qWarning("QGraphicsGridLayout::addItem: invalid row span/column span: %d",
+                 rowSpan < 1 ? rowSpan : columnSpan);
+        return;
     }
     if (!item) {
-	qWarning("QGraphicsGridLayout::addItem: cannot add null item");
-	return;
+        qWarning("QGraphicsGridLayout::addItem: cannot add null item");
+        return;
+    }
+    if (item == this) {
+        qWarning("QGraphicsGridLayout::addItem: cannot insert itself");
+        return;
     }
 
     d->addChildLayoutItem(item);
@@ -647,5 +651,5 @@ QSizePolicy::ControlTypes QGraphicsGridLayout::controlTypes(LayoutSide side) con
 #endif
 
 QT_END_NAMESPACE
-        
-#endif //QT_NO_GRAPHICSVIEW        
+
+#endif //QT_NO_GRAPHICSVIEW

@@ -377,6 +377,9 @@ bool QImageData::checkForAlphaPixels() const
     \note If you would like to load QImage objects in a static build of Qt,
     refer to the \l{How To Create Qt Plugins#Static Plugins}{Plugin HowTo}.
 
+    \warning Painting on a QImage with the format
+    QImage::Format_Indexed8 is not supported.
+
     \tableofcontents
 
     \section1 Reading and Writing Image Files
@@ -446,7 +449,7 @@ bool QImageData::checkForAlphaPixels() const
     to the pixel() function.  The pixel() function returns the color
     as a QRgb value indepedent of the image's format.
 
-    In case of monochrome and 8-bit images, the numColors() and
+    In case of monochrome and 8-bit images, the colorCount() and
     colorTable() functions provide information about the color
     components used to store the image data: The colorTable() function
     returns the image's entire color table. To obtain a single entry,
@@ -481,7 +484,7 @@ bool QImageData::checkForAlphaPixels() const
     depths are 1 (monochrome), 8 and 32 (for more information see the
     \l {QImage#Image Formats}{Image Formats} section).
 
-    The format(), bytesPerLine(), and numBytes() functions provide
+    The format(), bytesPerLine(), and byteCount() functions provide
     low-level information about the data stored in the image.
 
     The cacheKey() function returns a number that uniquely
@@ -543,11 +546,7 @@ bool QImageData::checkForAlphaPixels() const
     Each pixel stored in a QImage is represented by an integer. The
     size of the integer varies depending on the format. QImage
     supports several image formats described by the \l Format
-    enum. The monochrome (1-bit), 8-bit and 32-bit images are
-    available in all versions of Qt. In addition Qt for Embedded Linux
-    also supports 2-bit, 4-bit, and 16-bit images. For more information
-    about the Qt Extended specific formats, see the documentation of the \l
-    Format enum.
+    enum.
 
     Monochrome images are stored using 1-bit indexes into a color table
     with at most two colors. There are two different types of
@@ -624,7 +623,7 @@ bool QImageData::checkForAlphaPixels() const
     \o Sets the color table used to translate color indexes. Only
     monochrome and 8-bit formats.
     \row
-    \o setNumColors()
+    \o setColorCount()
     \o Resizes the color table. Only monochrome and 8-bit formats.
 
     \endtable
@@ -704,9 +703,20 @@ bool QImageData::checkForAlphaPixels() const
                             packed with the most significant bit (MSB) first.
     \value Format_MonoLSB   The image is stored using 1-bit per pixel. Bytes are
                             packed with the less significant bit (LSB) first.
-    \value Format_Indexed8  The image is stored using 8-bit indexes into a colormap.
+
+    \value Format_Indexed8  The image is stored using 8-bit indexes
+                            into a colormap. \warning Drawing into a
+                            QImage with Indexed8 format is not
+                            supported.
+
     \value Format_RGB32     The image is stored using a 32-bit RGB format (0xffRRGGBB).
-    \value Format_ARGB32    The image is stored using a 32-bit ARGB format (0xAARRGGBB).
+
+    \value Format_ARGB32    The image is stored using a 32-bit ARGB
+                            format (0xAARRGGBB). \warning Do not
+                            render into ARGB32 images using
+                            QPainter. Format_ARGB32_Premultiplied is
+                            significantly faster.
+
     \value Format_ARGB32_Premultiplied  The image is stored using a premultiplied 32-bit
                             ARGB format (0xAARRGGBB), i.e. the red,
                             green, and blue channels are multiplied
@@ -715,7 +725,9 @@ bool QImageData::checkForAlphaPixels() const
                             undefined.) Certain operations (such as image composition
                             using alpha blending) are faster using premultiplied ARGB32
                             than with plain ARGB32.
+
     \value Format_RGB16     The image is stored using a 16-bit RGB format (5-6-5).
+
     \value Format_ARGB8565_Premultiplied  The image is stored using a
                             premultiplied 24-bit ARGB format (8-5-6-5).
     \value Format_RGB666    The image is stored using a 24-bit RGB format (6-6-6).
@@ -894,7 +906,7 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
 
     If \a format is an indexed color format, the image color table is
     initially empty and must be sufficiently expanded with
-    setNumColors() or setColorTable() before the image is used.
+    setColorCount() or setColorTable() before the image is used.
 */
 QImage::QImage(uchar* data, int width, int height, Format format)
     : QPaintDevice()
@@ -916,7 +928,7 @@ QImage::QImage(uchar* data, int width, int height, Format format)
 
     If \a format is an indexed color format, the image color table is
     initially empty and must be sufficiently expanded with
-    setNumColors() or setColorTable() before the image is used.
+    setColorCount() or setColorTable() before the image is used.
 
     Unlike the similar QImage constructor that takes a non-const data buffer,
     this version will never alter the contents of the buffer.  For example,
@@ -942,7 +954,7 @@ QImage::QImage(const uchar* data, int width, int height, Format format)
 
     If \a format is an indexed color format, the image color table is
     initially empty and must be sufficiently expanded with
-    setNumColors() or setColorTable() before the image is used.
+    setColorCount() or setColorTable() before the image is used.
 */
 QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format format)
     :QPaintDevice()
@@ -962,7 +974,7 @@ QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format form
 
     If \a format is an indexed color format, the image color table is
     initially empty and must be sufficiently expanded with
-    setNumColors() or setColorTable() before the image is used.
+    setColorCount() or setColorTable() before the image is used.
 
     Unlike the similar QImage constructor that takes a non-const data buffer,
     this version will never alter the contents of the buffer.  For example,
@@ -1114,7 +1126,7 @@ QImage::QImage(const QImage &image)
 
     Use the constructor that accepts a width, a height and a format
     (i.e. specifying the depth and bit order), in combination with the
-    setNumColors() function, instead.
+    setColorCount() function, instead.
 
     \oldcode
         QImage image(width, height, depth, numColors);
@@ -1123,15 +1135,15 @@ QImage::QImage(const QImage &image)
 
         // For 8 bit images the default number of colors is 256. If
         // another number of colors is required it can be specified
-        // using the setNumColors() function.
-        image.setNumColors(numColors);
+        // using the setColorCount() function.
+        image.setColorCount(numColors);
     \endcode
 */
 
-QImage::QImage(int w, int h, int depth, int numColors, Endian bitOrder)
+QImage::QImage(int w, int h, int depth, int colorCount, Endian bitOrder)
     : QPaintDevice()
 {
-    d = QImageData::create(QSize(w, h), formatFor(depth, bitOrder), numColors);
+    d = QImageData::create(QSize(w, h), formatFor(depth, bitOrder), colorCount);
 }
 
 /*!
@@ -1140,7 +1152,7 @@ QImage::QImage(int w, int h, int depth, int numColors, Endian bitOrder)
 
     Use the constructor that accepts a size and a format
     (i.e. specifying the depth and bit order), in combination with the
-    setNumColors() function, instead.
+    setColorCount() function, instead.
 
     \oldcode
         QSize mySize(width, height);
@@ -1151,8 +1163,8 @@ QImage::QImage(int w, int h, int depth, int numColors, Endian bitOrder)
 
         // For 8 bit images the default number of colors is 256. If
         // another number of colors is required it can be specified
-        // using the setNumColors() function.
-        image.setNumColors(numColors);
+        // using the setColorCount() function.
+        image.setColorCount(numColors);
     \endcode
 */
 QImage::QImage(const QSize& size, int depth, int numColors, Endian bitOrder)
@@ -1220,7 +1232,7 @@ QImage::QImage(uchar* data, int w, int h, int depth, const QRgb* colortable, int
         for (int i = 0; i < numColors; ++i)
             d->colortable[i] = colortable[i];
     } else if (numColors) {
-        setNumColors(numColors);
+        setColorCount(numColors);
     }
 }
 
@@ -1271,7 +1283,7 @@ QImage::QImage(uchar* data, int w, int h, int depth, int bpl, const QRgb* colort
         for (int i = 0; i < numColors; ++i)
             d->colortable[i] = colortable[i];
     } else if (numColors) {
-        setNumColors(numColors);
+        setColorCount(numColors);
     }
 }
 #endif // Q_WS_QWS
@@ -1580,17 +1592,31 @@ int QImage::depth() const
 }
 
 /*!
+    \obsolete
     \fn int QImage::numColors() const
 
     Returns the size of the color table for the image.
 
-    Notice that numColors() returns 0 for 32-bpp images because these
+    \sa setColorCount()
+*/
+int QImage::numColors() const
+{
+    return d ? d->colortable.size() : 0;
+}
+
+/*!
+    \since 4.6
+    \fn int QImage::colorCount() const
+
+    Returns the size of the color table for the image.
+
+    Notice that colorCount() returns 0 for 32-bpp images because these
     images do not use color tables, but instead encode pixel values as
     ARGB quadruplets.
 
-    \sa setNumColors(), {QImage#Image Information}{Image Information}
+    \sa setColorCount(), {QImage#Image Information}{Image Information}
 */
-int QImage::numColors() const
+int QImage::colorCount() const
 {
     return d ? d->colortable.size() : 0;
 }
@@ -1699,7 +1725,7 @@ void QImage::setColorTable(const QVector<QRgb> colors)
     Returns a list of the colors contained in the image's color table,
     or an empty list if the image does not have a color table
 
-    \sa setColorTable(), numColors(), color()
+    \sa setColorTable(), colorCount(), color()
 */
 QVector<QRgb> QImage::colorTable() const
 {
@@ -1708,10 +1734,10 @@ QVector<QRgb> QImage::colorTable() const
 
 
 /*!
+    \obsolete
     Returns the number of bytes occupied by the image data.
 
-    \sa bytesPerLine(), bits(), {QImage#Image Information}{Image
-    Information}
+    \sa byteCount()
 */
 int QImage::numBytes() const
 {
@@ -1719,9 +1745,21 @@ int QImage::numBytes() const
 }
 
 /*!
+    \since 4.6
+    Returns the number of bytes occupied by the image data.
+
+    \sa bytesPerLine(), bits(), {QImage#Image Information}{Image
+    Information}
+*/
+int QImage::byteCount() const
+{
+    return d ? d->nbytes : 0;
+}
+
+/*!
     Returns the number of bytes per image scanline.
 
-    This is equivalent to numBytes()/ height().
+    This is equivalent to byteCount() / height().
 
     \sa scanLine()
 */
@@ -1744,7 +1782,7 @@ int QImage::bytesPerLine() const
 */
 QRgb QImage::color(int i) const
 {
-    Q_ASSERT(i < numColors());
+    Q_ASSERT(i < colorCount());
     return d ? d->colortable.at(i) : QRgb(uint(-1));
 }
 
@@ -1755,9 +1793,9 @@ QRgb QImage::color(int i) const
     given to \a colorValue. The color value is an ARGB quadruplet.
 
     If \a index is outside the current size of the color table, it is
-    expanded with setNumColors().
+    expanded with setColorCount().
 
-    \sa color(), numColors(), setColorTable(), {QImage#Pixel Manipulation}{Pixel
+    \sa color(), colorCount(), setColorTable(), {QImage#Pixel Manipulation}{Pixel
     Manipulation}
 */
 void QImage::setColor(int i, QRgb c)
@@ -1775,7 +1813,7 @@ void QImage::setColor(int i, QRgb c)
         return;
 
     if (i >= d->colortable.size())
-        setNumColors(i+1);
+        setColorCount(i+1);
     d->colortable[i] = c;
     d->has_alpha_clut |= (qAlpha(c) != 255);
 }
@@ -1832,7 +1870,7 @@ const uchar *QImage::scanLine(int i) const
     data, thus ensuring that this QImage is the only one using the
     current return value.
 
-    \sa scanLine(), numBytes()
+    \sa scanLine(), byteCount()
 */
 uchar *QImage::bits()
 {
@@ -2013,7 +2051,20 @@ void QImage::invertPixels(InvertMode mode)
 #endif
 
 /*!
+    \obsolete
     Resizes the color table to contain \a numColors entries.
+
+    \sa setColorCount()
+*/
+
+void QImage::setNumColors(int numColors)
+{
+    setColorCount(numColors);
+}
+
+/*!
+    \since 4.6
+    Resizes the color table to contain \a colorCount entries.
 
     If the color table is expanded, all the extra colors will be set to
     transparent (i.e qRgba(0, 0, 0, 0)).
@@ -2022,14 +2073,14 @@ void QImage::invertPixels(InvertMode mode)
     have entries for all the pixel/index values present in the image,
     otherwise the results are undefined.
 
-    \sa numColors(), colorTable(), setColor(), {QImage#Image
+    \sa colorCount(), colorTable(), setColor(), {QImage#Image
     Transformations}{Image Transformations}
 */
 
-void QImage::setNumColors(int numColors)
+void QImage::setColorCount(int colorCount)
 {
     if (!d) {
-        qWarning("QImage::setNumColors: null image");
+        qWarning("QImage::setColorCount: null image");
         return;
     }
 
@@ -2039,17 +2090,16 @@ void QImage::setNumColors(int numColors)
     if (!d)
         return;
 
-    if (numColors == d->colortable.size())
+    if (colorCount == d->colortable.size())
         return;
-    if (numColors <= 0) {                        // use no color table
+    if (colorCount <= 0) {                        // use no color table
         d->colortable = QVector<QRgb>();
         return;
     }
     int nc = d->colortable.size();
-    d->colortable.resize(numColors);
-    for (int i = nc; i < numColors; ++i)
+    d->colortable.resize(colorCount);
+    for (int i = nc; i < colorCount; ++i)
         d->colortable[i] = 0;
-
 }
 
 /*!
@@ -3662,7 +3712,7 @@ QRgb QImage::pixel(int x, int y) const
     otherwise the parameter must be a QRgb value.
 
     If \a position is not a valid coordinate pair in the image, or if
-    \a index_or_rgb >= numColors() in the case of monochrome and
+    \a index_or_rgb >= colorCount() in the case of monochrome and
     8-bit images, the result is undefined.
 
     \warning This function is expensive due to the call of the internal
@@ -3823,7 +3873,7 @@ bool QImage::allGray() const
     } else {
         if (d->colortable.isEmpty())
             return true;
-        for (int i = 0; i < numColors(); i++)
+        for (int i = 0; i < colorCount(); i++)
             if (!qIsGray(d->colortable.at(i)))
                 return false;
     }
@@ -3850,7 +3900,7 @@ bool QImage::isGrayscale() const
     case 16:
         return allGray();
     case 8: {
-        for (int i = 0; i < numColors(); i++)
+        for (int i = 0; i < colorCount(); i++)
             if (d->colortable.at(i) != qRgb(i,i,i))
                 return false;
         return true;
@@ -4071,7 +4121,8 @@ QImage QImage::createAlphaMask(Qt::ImageConversionFlags flags) const
     }
 
     QImage mask(d->width, d->height, Format_MonoLSB);
-    dither_to_Mono(mask.d, d, flags, true);
+    if (!mask.isNull())
+        dither_to_Mono(mask.d, d, flags, true);
     return mask;
 }
 
@@ -4115,7 +4166,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
     int w = width();
     int h = height();
     QImage m(w, h, Format_MonoLSB);
-    m.setNumColors(2);
+    m.setColorCount(2);
     m.setColor(0, QColor(Qt::color0).rgba());
     m.setColor(1, QColor(Qt::color1).rgba());
     m.fill(0xff);
@@ -5690,7 +5741,7 @@ QImage QImage::alphaChannel() const
     int h = d->height;
 
     QImage image(w, h, Format_Indexed8);
-    image.setNumColors(256);
+    image.setColorCount(256);
 
     // set up gray scale table.
     for (int i=0; i<256; ++i)
@@ -5820,7 +5871,7 @@ static QImage smoothScaled(const QImage &source, int w, int h) {
 
 static QImage rotated90(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
-    if (image.numColors() > 0)
+    if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
     int h = image.height();
@@ -5859,7 +5910,7 @@ static QImage rotated90(const QImage &image) {
         break;
     default:
         for (int y=0; y<h; ++y) {
-            if (image.numColors())
+            if (image.colorCount())
                 for (int x=0; x<w; ++x)
                     out.setPixel(h-y-1, x, image.pixelIndex(x, y));
             else
@@ -5879,7 +5930,7 @@ static QImage rotated180(const QImage &image) {
 
 static QImage rotated270(const QImage &image) {
     QImage out(image.height(), image.width(), image.format());
-    if (image.numColors() > 0)
+    if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
     int h = image.height();
@@ -5918,7 +5969,7 @@ static QImage rotated270(const QImage &image) {
         break;
     default:
         for (int y=0; y<h; ++y) {
-            if (image.numColors())
+            if (image.colorCount())
                 for (int x=0; x<w; ++x)
                     out.setPixel(y, w-x-1, image.pixelIndex(x, y));
             else
@@ -6058,16 +6109,16 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
             if (dImage.d->colortable.size() < 256) {
                 // colors are left in the color table, so pick that one as transparent
                 dImage.d->colortable.append(0x0);
-                memset(dImage.bits(), dImage.d->colortable.size() - 1, dImage.numBytes());
+                memset(dImage.bits(), dImage.d->colortable.size() - 1, dImage.byteCount());
             } else {
-                memset(dImage.bits(), 0, dImage.numBytes());
+                memset(dImage.bits(), 0, dImage.byteCount());
             }
             break;
         case 1:
         case 16:
         case 24:
         case 32:
-            memset(dImage.bits(), 0x00, dImage.numBytes());
+            memset(dImage.bits(), 0x00, dImage.byteCount());
             break;
     }
 

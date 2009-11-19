@@ -1020,14 +1020,15 @@ bool QFile::open(OpenMode mode)
 
     \bold{Warning:}
     \list 1
-        \o If \a fh is \c stdin, \c stdout, or \c stderr, you may not be able
-           to seek(). See QIODevice::isSequential() for more information.
+        \o If \a fh does not refer to a regular file, e.g., it is \c stdin,
+           \c stdout, or \c stderr, you may not be able to seek(). size()
+           returns \c 0 in those cases. See QIODevice::isSequential() for
+           more information.
         \o Since this function opens the file without specifying the file name,
            you cannot use this QFile with a QFileInfo.
     \endlist
 
-    \note For Windows CE you may not be able to call seek() and resize().
-    Also, size() is set to \c 0.
+    \note For Windows CE you may not be able to call resize().
 
     \sa close(), {qmake Variable Reference#CONFIG}{qmake Variable Reference}
 
@@ -1064,7 +1065,7 @@ bool QFile::open(FILE *fh, OpenMode mode)
         if (mode & Append) {
             seek(size());
         } else {
-            long pos = ftell(fh);
+            qint64 pos = (qint64)QT_FTELL(fh);
             if (pos != -1)
                 seek(pos);
         }
@@ -1081,7 +1082,7 @@ bool QFile::open(FILE *fh, OpenMode mode)
 /*!
     \overload
 
-    Opens the existing file descripter \a fd in the given \a mode.
+    Opens the existing file descriptor \a fd in the given \a mode.
     Returns true if successful; otherwise returns false.
 
     When a QFile is opened using this function, close() does not
@@ -1092,12 +1093,13 @@ bool QFile::open(FILE *fh, OpenMode mode)
     are slow. If you run into performance issues, you should try to
     use one of the other open functions.
 
-    \warning If \a fd is 0 (\c stdin), 1 (\c stdout), or 2 (\c
-    stderr), you may not be able to seek(). size() is set to \c
-    LLONG_MAX (in \c <climits>).
+    \warning If \a fd is not a regular file, e.g, it is 0 (\c stdin),
+    1 (\c stdout), or 2 (\c stderr), you may not be able to seek(). In
+    those cases, size() returns \c 0.  See QIODevice::isSequential()
+    for more information.
 
     \warning For Windows CE you may not be able to call seek(), setSize(),
-    fileTime(). size() is set to \c 0.
+    fileTime(). size() returns \c 0.
 
     \warning Since this function opens the file without specifying the file name,
              you cannot use this QFile with a QFileInfo.
@@ -1120,8 +1122,13 @@ bool QFile::open(int fd, OpenMode mode)
     }
     if(d->openExternalFile(mode, fd)) {
         QIODevice::open(mode);
-        if (mode & Append)
+        if (mode & Append) {
             seek(size());
+        } else {
+            qint64 pos = (qint64)QT_LSEEK(fd, QT_OFF_T(0), SEEK_CUR);
+            if (pos != -1)
+                seek(pos);
+        }
         return true;
     }
     return false;
@@ -1332,7 +1339,7 @@ QFile::setPermissions(const QString &fileName, Permissions permissions)
 
 static inline qint64 _qfile_writeData(QAbstractFileEngine *engine, QRingBuffer *buffer)
 {
-    qint64 ret = engine->write(buffer->readPointer(), buffer->size());
+    qint64 ret = engine->write(buffer->readPointer(), buffer->nextDataBlockSize());
     if (ret > 0)
         buffer->free(ret);
     return ret;

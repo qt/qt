@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -73,6 +73,7 @@
 #include <akntitle.h>               // CAknTitlePane
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
+#include <aknpopupfader.h>          // MAknFadedComponent and TAknPopupFader
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -80,6 +81,9 @@ QT_BEGIN_NAMESPACE
 // Application internal HandleResourceChangeL events,
 // system events seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
+
+//this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
+#define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
 
 class QS60Data
 {
@@ -108,9 +112,10 @@ public:
     int mouseInteractionEnabled : 1;
     int virtualMouseRequired : 1;
     int qtOwnsS60Environment : 1;
+    int supportsPremultipliedAlpha : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
-	static inline RWsSession& wsSession();
+    static inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
     static inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
@@ -120,6 +125,8 @@ public:
     static inline CAknTitlePane* titlePane();
     static inline CAknContextPane* contextPane();
     static inline CEikButtonGroupContainer* buttonGroupContainer();
+
+    TTrapHandler *s60InstalledTrapHandler;
 #endif
 };
 
@@ -134,7 +141,11 @@ public:
 };
 class QLongTapTimer;
 
+
 class QSymbianControl : public CCoeControl, public QAbstractLongTapObserver
+#ifdef Q_WS_S60
+, public MAknFadedComponent
+#endif
 {
 public:
     DECLARE_TYPE_ID(0x51740000) // Fun fact: the two first values are "Qt" in ASCII.
@@ -159,6 +170,17 @@ public:
 
     void setFocusSafely(bool focus);
 
+#ifdef Q_WS_S60
+    void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }
+
+protected: // from MAknFadedComponent
+    TInt CountFadedComponents() {return 1;}
+    CCoeControl* FadedComponent(TInt /*aIndex*/) {return this;}
+#else
+    #warning No fallback implementation for QSymbianControl::FadeBehindPopup
+    void FadeBehindPopup(bool /*fade*/){ }
+#endif
+
 protected:
     void Draw(const TRect& aRect) const;
     void SizeChanged();
@@ -180,9 +202,14 @@ private:
 
 private:
     QWidget *qwidget;
-    bool m_ignoreFocusChanged;
     QLongTapTimer* m_longTapDetector;
-    bool m_previousEventLongTap;
+    bool m_ignoreFocusChanged : 1;
+    bool m_symbianPopupIsOpen : 1;
+
+#ifdef Q_WS_S60
+    // Fader object used to fade everything except this menu and the CBA.
+    TAknPopupFader popupFader;
+#endif
 };
 
 inline QS60Data::QS60Data()
@@ -199,7 +226,7 @@ inline void QS60Data::updateScreenSize()
     S60->screenHeightInPixels = params.iPixelSize.iHeight;
     S60->screenWidthInTwips = params.iTwipsSize.iWidth;
     S60->screenHeightInTwips = params.iTwipsSize.iHeight;
-    
+
     S60->virtualMouseMaxAccel = qMax(S60->screenHeightInPixels, S60->screenWidthInPixels) / 20;
 
     TReal inches = S60->screenHeightInTwips / (TReal)KTwipsPerInch;
@@ -302,11 +329,9 @@ static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
     case EColor16MA:
         format = QImage::Format_ARGB32;
         break;
-#if !defined(__SERIES60_31__) && !defined(__S60_32__)
-    case EColor16MAP:
+    case Q_SYMBIAN_ECOLOR16MAP:
         format = QImage::Format_ARGB32_Premultiplied;
         break;
-#endif
     default:
         format = QImage::Format_Invalid;
         break;

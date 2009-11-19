@@ -33,6 +33,7 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "ResourceHandle.h"
+#include "SecurityOrigin.h"
 #include "SubresourceLoaderClient.h"
 #include <wtf/RefCountedLeakCounter.h>
 
@@ -72,13 +73,13 @@ PassRefPtr<SubresourceLoader> SubresourceLoader::create(Frame* frame, Subresourc
     ResourceRequest newRequest = request;
 
     if (!skipCanLoadCheck
-            && FrameLoader::restrictAccessToLocal()
-            && !FrameLoader::canLoad(request.url(), String(), frame->document())) {
+            && SecurityOrigin::restrictAccessToLocal()
+            && !SecurityOrigin::canLoad(request.url(), String(), frame->document())) {
         FrameLoader::reportLocalLoadFailed(frame, request.url().string());
         return 0;
     }
     
-    if (FrameLoader::shouldHideReferrer(request.url(), fl->outgoingReferrer()))
+    if (SecurityOrigin::shouldHideReferrer(request.url(), fl->outgoingReferrer()))
         newRequest.clearHTTPReferrer();
     else if (!request.httpReferrer())
         newRequest.setHTTPReferrer(fl->outgoingReferrer());

@@ -138,7 +138,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, ExceptionCode& ec)
         return String();
     }
 
-    if (m_size.isEmpty())
+    if (m_size.isEmpty() || !buffer())
         return String("data:,");
 
     if (mimeType.isNull() || !MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType))
@@ -166,16 +166,17 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type)
     }
 #if ENABLE(3D_CANVAS)    
     Settings* settings = document()->settings();
-    if (settings && settings->experimentalWebGLEnabled()) {
+    if (settings && settings->webGLEnabled()) {
         if ((type == "webkit-3d") ||
             (type == "GL")) {
             if (m_context && !m_context->is3d())
                 return 0;
             if (!m_context) {
-                m_context = new CanvasRenderingContext3D(this);
-
-                // Need to make sure a RenderLayer and compositing layer get created for the Canvas
-                setNeedsStyleRecalc(SyntheticStyleChange);
+                m_context = CanvasRenderingContext3D::create(this);
+                if (m_context) {
+                    // Need to make sure a RenderLayer and compositing layer get created for the Canvas
+                    setNeedsStyleRecalc(SyntheticStyleChange);
+                }
             }
             return m_context.get();
         }

@@ -10,7 +10,8 @@ TEMPLATE = subdirs
            linguist \
            moc \
            uic \
-           uic3
+           uic3 \
+           guiapplauncher	   
 Q3SUBDIRS += \
            q3accel \
            q3action \
@@ -127,6 +128,7 @@ SUBDIRS += \
            qexplicitlyshareddatapointer \
            qfile \
            qfiledialog \
+           qfiledialog2 \
            qfileinfo \
            qfilesystemwatcher \
            qfilesystemmodel \
@@ -134,6 +136,7 @@ SUBDIRS += \
            qfocusevent \
            qfocusframe \
            qfont \
+           qfontcombobox \
            qfontdatabase \
            qfontdialog \
            qfontmetrics \
@@ -500,3 +503,5 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebhistoryinterface \
            qwebelement \
            qwebhistory
+
+contains(QT_CONFIG, declarative): SUBDIRS += declarative

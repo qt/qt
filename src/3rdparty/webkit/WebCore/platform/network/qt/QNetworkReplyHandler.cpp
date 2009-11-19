@@ -112,21 +112,9 @@ qint64 FormDataIODevice::writeData(const char*, qint64)
     return -1;
 }
 
-void FormDataIODevice::setParent(QNetworkReply* reply)
-{
-    QIODevice::setParent(reply);
-
-    connect(reply, SIGNAL(finished()), SLOT(slotFinished()), Qt::QueuedConnection);
-}
-
 bool FormDataIODevice::isSequential() const
 {
     return true;
-}
-
-void FormDataIODevice::slotFinished()
-{
-    deleteLater();
 }
 
 QNetworkReplyHandler::QNetworkReplyHandler(ResourceHandle* handle, LoadMode loadMode)
@@ -152,10 +140,14 @@ QNetworkReplyHandler::QNetworkReplyHandler(ResourceHandle* handle, LoadMode load
         m_method = QNetworkAccessManager::PostOperation;
     else if (r.httpMethod() == "PUT")
         m_method = QNetworkAccessManager::PutOperation;
+#if QT_VERSION >= 0x040600
+    else if (r.httpMethod() == "DELETE")
+        m_method = QNetworkAccessManager::DeleteOperation;
+#endif
     else
         m_method = QNetworkAccessManager::UnknownOperation;
 
-    m_request = r.toNetworkRequest();
+    m_request = r.toNetworkRequest(m_resourceHandle->getInternal()->m_frame);
 
     if (m_loadMode == LoadNormal)
         start();
@@ -187,8 +179,8 @@ void QNetworkReplyHandler::abort()
         QNetworkReply* reply = release();
         reply->abort();
         reply->deleteLater();
-        deleteLater();
     }
+    deleteLater();
 }
 
 QNetworkReply* QNetworkReplyHandler::release()
@@ -200,6 +192,7 @@ QNetworkReply* QNetworkReplyHandler::release()
         // posted meta call events that were the result of a signal emission
         // don't reach the slots in our instance.
         QCoreApplication::removePostedEvents(this, QEvent::MetaCall);
+        m_reply->setParent(0);
         m_reply = 0;
     }
     return reply;
@@ -224,9 +217,7 @@ void QNetworkReplyHandler::finish()
     if (m_shouldFinish)
         return;
 
-    // FIXME: Investigate if this check should be moved into sendResponseIfNeeded()
-    if (!m_reply->error())
-        sendResponseIfNeeded();
+    sendResponseIfNeeded();
 
     if (!m_resourceHandle)
         return;
@@ -236,19 +227,20 @@ void QNetworkReplyHandler::finish()
         m_reply = 0;
         return;
     }
+
     QNetworkReply* oldReply = m_reply;
+
     if (m_redirected) {
         resetState();
         start();
     } else if (!m_reply->error() || ignoreHttpError(m_reply, m_responseDataSent)) {
         client->didFinishLoading(m_resourceHandle);
     } else {
-        int code = m_reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-
         QUrl url = m_reply->url();
+        int httpStatusCode = m_reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-        if (code) {
-            ResourceError error("HTTP", code, url.toString(), m_reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString());
+        if (httpStatusCode) {
+            ResourceError error("HTTP", httpStatusCode, url.toString(), m_reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString());
             client->didFail(m_resourceHandle, error);
         } else {
             ResourceError error("QtNetwork", m_reply->error(), url.toString(), m_reply->errorString());
@@ -265,6 +257,9 @@ void QNetworkReplyHandler::sendResponseIfNeeded()
 {
     m_shouldSendResponse = (m_loadMode != LoadNormal);
     if (m_shouldSendResponse)
+        return;
+
+    if (m_reply->error() && !ignoreHttpError(m_reply, m_responseDataSent))
         return;
 
     if (m_responseSent || !m_resourceHandle)
@@ -290,40 +285,34 @@ void QNetworkReplyHandler::sendResponseIfNeeded()
     }
 
     KURL url(m_reply->url());
-    String suggestedFilename = filenameFromHTTPContentDisposition(QString::fromAscii(m_reply->rawHeader("Content-Disposition")));
-
-    if (suggestedFilename.isEmpty())
-        suggestedFilename = url.lastPathComponent();
-
     ResourceResponse response(url, mimeType,
                               m_reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(),
-                              encoding,
-                              suggestedFilename);
+                              encoding, String());
 
-    const bool isLocalFileReply = (m_reply->url().scheme() == QLatin1String("file"));
+    if (url.isLocalFile()) {
+        client->didReceiveResponse(m_resourceHandle, response);
+        return;
+    }
+
+    // The status code is equal to 0 for protocols not in the HTTP family.
     int statusCode = m_reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    if (!isLocalFileReply) {
+
+    if (url.protocolInHTTPFamily()) {
+        String suggestedFilename = filenameFromHTTPContentDisposition(QString::fromAscii(m_reply->rawHeader("Content-Disposition")));
+
+        if (!suggestedFilename.isEmpty())
+            response.setSuggestedFilename(suggestedFilename);
+        else
+            response.setSuggestedFilename(url.lastPathComponent());
+
         response.setHTTPStatusCode(statusCode);
         response.setHTTPStatusText(m_reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray().constData());
+
+        // Add remaining headers.
+        foreach (const QByteArray& headerName, m_reply->rawHeaderList()) {
+            response.setHTTPHeaderField(QString::fromAscii(headerName), QString::fromAscii(m_reply->rawHeader(headerName)));
+        }
     }
-    else if (m_reply->error() == QNetworkReply::ContentNotFoundError)
-        response.setHTTPStatusCode(404);
-
-
-    /* Fill in the other fields
-     * For local file requests remove the content length and the last-modified
-     * headers as required by fast/dom/xmlhttprequest-get.xhtml
-     */
-    foreach (const QByteArray& headerName, m_reply->rawHeaderList()) {
-        if (isLocalFileReply
-            && (headerName == "Content-Length" || headerName == "Last-Modified"))
-            continue;
-
-        response.setHTTPHeaderField(QString::fromAscii(headerName), QString::fromAscii(m_reply->rawHeader(headerName)));
-    }
-
-    if (isLocalFileReply)
-        response.setHTTPHeaderField(QString::fromAscii("Cache-Control"), QString::fromAscii("no-cache"));
 
     QUrl redirection = m_reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
     if (redirection.isValid()) {
@@ -338,10 +327,11 @@ void QNetworkReplyHandler::sendResponseIfNeeded()
 
         client->willSendRequest(m_resourceHandle, newRequest, response);
         m_redirected = true;
-        m_request = newRequest.toNetworkRequest();
-    } else {
-        client->didReceiveResponse(m_resourceHandle, response);
+        m_request = newRequest.toNetworkRequest(m_resourceHandle->getInternal()->m_frame);
+        return;
     }
+
+    client->didReceiveResponse(m_resourceHandle, response);
 }
 
 void QNetworkReplyHandler::forwardData()
@@ -407,6 +397,12 @@ void QNetworkReplyHandler::start()
             putDevice->setParent(m_reply);
             break;
         }
+#if QT_VERSION >= 0x040600
+        case QNetworkAccessManager::DeleteOperation: {
+            m_reply = manager->deleteResource(m_request);
+            break;
+        }
+#endif
         case QNetworkAccessManager::UnknownOperation: {
             m_reply = 0;
             ResourceHandleClient* client = m_resourceHandle->client();

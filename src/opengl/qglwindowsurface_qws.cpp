@@ -43,7 +43,6 @@
 #include <QtGui/QWidget>
 #include <QtOpenGL/QGLWidget>
 #include "private/qglwindowsurface_qws_p.h"
-#include "private/qglpaintdevice_qws_p.h"
 #include "private/qpaintengine_opengl_p.h"
 
 QT_BEGIN_NAMESPACE

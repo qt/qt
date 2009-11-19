@@ -132,6 +132,10 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 extern bool qt_cleartype_enabled;
 #endif
 
+#ifdef Q_WS_MAC
+extern bool qt_applefontsmoothing_enabled;
+#endif
+
 
 /********************************************************************************
  * Span functions
@@ -508,7 +512,7 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 #if defined(Q_WS_WIN)
     else if (qt_cleartype_enabled)
 #elif defined (Q_WS_MAC)
-    else if (true)
+    else if (qt_applefontsmoothing_enabled)
 #else
     else if (false)
 #endif
@@ -1358,7 +1362,7 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 
     Q_D(QRasterPaintEngine);
 
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         clip(region.boundingRect(), op);
         return;
     }
@@ -1682,7 +1686,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     if (!s->penData.blend)
         return;
 
-    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint
+    if (s->flags.fast_pen && !path.isCurved()
         && s->lastPen.brush().isOpaque()) {
         int count = path.elementCount();
         QPointF *points = (QPointF *) path.points();
@@ -1735,8 +1739,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
-            if (path.shape() == QVectorPath::LinesHint)
-                dashOffset = s->lastPen.dashOffset();
+            dashOffset = s->lastPen.dashOffset();
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
@@ -2376,6 +2379,7 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
             if (s->matrix.type() <= QTransform::TxTranslate) {
+                ensurePen();
                 drawBitmap(pos + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
             } else {
                 drawImage(pos, d->rasterBuffer->colorizeBitmap(image, s->pen.color()));
@@ -2389,6 +2393,7 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
             if (s->matrix.type() <= QTransform::TxTranslate) {
+                ensurePen();
                 drawBitmap(pos + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
             } else {
                 drawImage(pos, d->rasterBuffer->colorizeBitmap(image, s->pen.color()));
@@ -4213,13 +4218,6 @@ void QRasterBuffer::prepare(QCustomRasterPaintDevice *device)
         drawHelper = qDrawHelper + format;
 }
 
-class MetricAccessor : public QWidget {
-public:
-    int metric(PaintDeviceMetric m) {
-        return QWidget::metric(m);
-    }
-};
-
 int QCustomRasterPaintDevice::metric(PaintDeviceMetric m) const
 {
     switch (m) {
@@ -4231,7 +4229,7 @@ int QCustomRasterPaintDevice::metric(PaintDeviceMetric m) const
         break;
     }
 
-    return (static_cast<MetricAccessor*>(widget)->metric(m));
+    return qt_paint_device_metric(widget, m);
 }
 
 int QCustomRasterPaintDevice::bytesPerLine() const
@@ -4538,7 +4536,7 @@ void QClipData::setClipRect(const QRect &rect)
  */
 void QClipData::setClipRegion(const QRegion &region)
 {
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         setClipRect(region.rects().at(0));
         return;
     }
@@ -5121,6 +5119,9 @@ void QSpanData::adjustSpanMethods()
 #else
         unclipped_blend = qBlendTexture;
 #endif
+        if (!texture.imageData)
+            unclipped_blend = 0;
+
         break;
     }
     // setup clipping

@@ -82,8 +82,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSPositionErrorConstructor::s_info = { "PositionErrorConstructor", 0, &JSPositionErrorConstructorTable, 0 };
@@ -143,7 +146,7 @@ JSPositionError::JSPositionError(NonNullPassRefPtr<Structure> structure, JSDOMGl
 
 JSPositionError::~JSPositionError()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSPositionError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

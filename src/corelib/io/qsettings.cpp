@@ -2565,8 +2565,9 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     Example:
     \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 10
 
-    The scope is QSettings::UserScope and the format is
-    QSettings::NativeFormat.
+    The scope is set to QSettings::UserScope, and the format is
+    set to QSettings::NativeFormat (i.e. calling setDefaultFormat()
+    before calling this constructor has no effect).
 
     \sa setDefaultFormat(), {Fallback Mechanism}
 */
@@ -2583,11 +2584,12 @@ QSettings::QSettings(const QString &organization, const QString &application, QO
 
     If \a scope is QSettings::UserScope, the QSettings object searches
     user-specific settings first, before it searches system-wide
-    settings as a fallback. If \a scope is
-    QSettings::SystemScope, the QSettings object ignores user-specific
-    settings and provides access to system-wide settings.
+    settings as a fallback. If \a scope is QSettings::SystemScope, the
+    QSettings object ignores user-specific settings and provides
+    access to system-wide settings.
 
-    The storage format is QSettings::NativeFormat.
+    The storage format is set to QSettings::NativeFormat (i.e. calling
+    setDefaultFormat() before calling this constructor has no effect).
 
     If no application name is given, the QSettings object will
     only access the organization-wide \l{Fallback Mechanism}{locations}.
@@ -2668,6 +2670,8 @@ QSettings::QSettings(const QString &fileName, Format format, QObject *parent)
 
     The scope is QSettings::UserScope and the format is
     defaultFormat() (QSettings::NativeFormat by default).
+    Use setDefaultFormat() before calling this constructor
+    to change the default format used by this constructor.
 
     The code
 
@@ -3352,10 +3356,12 @@ QVariant QSettings::value(const QString &key, const QVariant &defaultValue) cons
 /*!
     \since 4.4
 
-    Sets the default file format to the given \a format, used for storing
-    settings for the QSettings(QObject *) constructor.
+    Sets the default file format to the given \a format, which is used
+    for storing settings for the QSettings(QObject *) constructor.
 
-    If no default format is set, QSettings::NativeFormat is used.
+    If no default format is set, QSettings::NativeFormat is used. See
+    the documentation for the QSettings constructor you are using to
+    see if that constructor will ignore this function.
 
     \sa format()
 */

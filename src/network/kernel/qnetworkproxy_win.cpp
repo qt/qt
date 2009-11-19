@@ -399,7 +399,12 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     if (isBypassed(query.peerHostName(), sp->proxyBypass))
         return sp->defaultResult;
 
-    return parseServerList(query, sp->proxyServerList);
+    QList<QNetworkProxy> result = parseServerList(query, sp->proxyServerList);
+    // In some cases, this was empty. See SF task 00062670
+    if (result.isEmpty())
+        return sp->defaultResult;
+
+    return result;
 }
 
 QT_END_NAMESPACE

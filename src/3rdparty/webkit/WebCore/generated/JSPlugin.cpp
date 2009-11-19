@@ -85,8 +85,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSPluginConstructor::s_info = { "PluginConstructor", 0, &JSPluginConstructorTable, 0 };
@@ -144,7 +147,7 @@ JSPlugin::JSPlugin(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* gl
 
 JSPlugin::~JSPlugin()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSPlugin::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

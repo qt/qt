@@ -1,7 +1,7 @@
 TEMPLATE      = \
               subdirs
 SUBDIRS       = \
-              imageviewer
+              imagegestures
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/gestures

@@ -321,6 +321,7 @@ MediaPlayer::MediaPlayer(const QString &filePath,
     connect(&m_MediaObject, SIGNAL(finished()), this, SLOT(finished()));
     connect(&m_MediaObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State)));
     connect(&m_MediaObject, SIGNAL(bufferStatus(int)), this, SLOT(bufferStatus(int)));
+    connect(&m_MediaObject, SIGNAL(hasVideoChanged(bool)), this, SLOT(hasVideoChanged(bool)));
 
     rewindButton->setEnabled(false);
     playButton->setEnabled(false);
@@ -339,8 +340,6 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     Q_UNUSED(oldstate);
 
     if (oldstate == Phonon::LoadingState) {
-        m_videoWindow.setVisible(m_MediaObject.hasVideo());
-        info->setVisible(!m_MediaObject.hasVideo());        
         QRect videoHintRect = QRect(QPoint(0, 0), m_videoWindow.sizeHint());
         QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
         if (!m_hasSmallScreen) {
@@ -356,17 +355,20 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 
     switch (newstate) {
         case Phonon::ErrorState:
-            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             if (m_MediaObject.errorType() == Phonon::FatalError) {
                 playButton->setEnabled(false);
                 rewindButton->setEnabled(false);
             } else {
                 m_MediaObject.pause();
             }
+            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             break;
         case Phonon::PausedState:
         case Phonon::StoppedState:
             playButton->setIcon(playIcon);
+
+            m_videoWidget->setFullScreen(false);
+
             if (m_MediaObject.currentSource().type() != Phonon::MediaSource::Invalid){
                 playButton->setEnabled(true);
                 rewindButton->setEnabled(true);
@@ -469,6 +471,8 @@ void MediaPlayer::effectChanged()
 
 void MediaPlayer::showSettingsDialog()
 {
+    playPauseForDialog();
+
     if (!settingsDialog)
         initSettingsDialog();
 
@@ -514,6 +518,8 @@ void MediaPlayer::showSettingsDialog()
         m_videoWidget->setScaleMode(oldScale);
         ui->audioEffectsCombo->setCurrentIndex(currentEffect);
     }
+
+    playPauseForDialog();
 }
 
 void MediaPlayer::initVideoWindow()
@@ -650,10 +656,25 @@ void MediaPlayer::setFile(const QString &fileName)
     m_MediaObject.play();
 }
 
+void MediaPlayer::playPauseForDialog()
+{
+    // If we're running on a small screen, we want to pause the video
+    // when popping up dialogs.
+    if (m_hasSmallScreen &&
+        (Phonon::PlayingState == m_MediaObject.state() ||
+         Phonon::PausedState == m_MediaObject.state()))
+        playPause();
+}
+
 void MediaPlayer::openFile()
 {
+    playPauseForDialog();
+
     QStringList fileNames = QFileDialog::getOpenFileNames(this, QString(),
                                                           QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+
+    playPauseForDialog();
+
     m_MediaObject.clearQueue();
     if (fileNames.size() > 0) {
         QString fileName = fileNames[0];
@@ -843,3 +864,8 @@ void MediaPlayer::aspectChanged(QAction *act)
         m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatioAuto);    
 }
 
+void MediaPlayer::hasVideoChanged(bool bHasVideo)
+{
+    info->setVisible(!bHasVideo);
+    m_videoWindow.setVisible(bHasVideo);
+}

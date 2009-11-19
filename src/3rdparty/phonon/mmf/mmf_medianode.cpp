@@ -74,7 +74,7 @@ bool MMF::MediaNode::applyNodesOnMediaObject(MediaNode *)
     // data(length of the graph) which typically is very small.
 
     // First, we go to the very beginning of the graph.
-	MMF::MediaNode *current = this;
+    MMF::MediaNode *current = this;
     do {
         MediaNode *const candidate = current->source();
         if (candidate)

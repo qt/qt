@@ -88,6 +88,14 @@ bool CustomWidgetsInfo::extends(const QString &classNameIn, const QLatin1String 
     return false;
 }
 
+bool CustomWidgetsInfo::isCustomWidgetContainer(const QString &className) const
+{
+    if (const DomCustomWidget *dcw = m_customWidgets.value(className, 0))
+        if (dcw->hasElementContainer())
+            return dcw->elementContainer() != 0;
+    return false;
+}
+
 QString CustomWidgetsInfo::realClassName(const QString &className) const
 {
     if (className == QLatin1String("Line"))

@@ -158,6 +158,7 @@ public:
         if (tos + extraCapacity + 1 > cap) {
             cap = qMax(tos + extraCapacity + 1, cap << 1 );
             data = reinterpret_cast<T *>(qRealloc(data, cap * sizeof(T)));
+            Q_CHECK_PTR(data);
         }
     }
 
@@ -243,7 +244,7 @@ public:
 
 
 class QXmlStreamEntityResolver;
-
+#ifndef QT_NO_XMLSTREAMREADER
 class QXmlStreamReaderPrivate : public QXmlStreamReader_Table, public QXmlStreamPrivateTagStack{
     QXmlStreamReader *q_ptr;
     Q_DECLARE_PUBLIC(QXmlStreamReader)
@@ -1840,4 +1841,6 @@ nmtoken ::= COLON;
     }
     return false;
 }
+#endif //QT_NO_XMLSTREAMREADER.xml
+
 ./

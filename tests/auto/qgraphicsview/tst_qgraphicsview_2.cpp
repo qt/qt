@@ -43,6 +43,20 @@
 #include <QRectF>
 #include <QTransform>
 
+#ifdef Q_OS_WINCE
+#include <qguifunctions_wince.h>
+
+bool qt_wince_is_high_dpi() {
+    HDC deviceContext = GetDC(0);
+    int dpi = GetDeviceCaps(deviceContext, LOGPIXELSX);
+    ReleaseDC(0, deviceContext);
+    if ((dpi < 1000) && (dpi > 0))
+        return dpi > 96;
+    else
+        return false;
+}
+#endif
+
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
 Q_DECLARE_METATYPE(QMatrix)
@@ -51,7 +65,7 @@ Q_DECLARE_METATYPE(QPointF)
 Q_DECLARE_METATYPE(QRectF)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 
-static void _scrollBarRanges_data_1()
+static void _scrollBarRanges_data_1(int offset)
 {    
     // No motif, flat frame
     QTest::newRow("1") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
@@ -59,73 +73,73 @@ static void _scrollBarRanges_data_1()
                        << 0 << 0 << 0 << 0 << false << false;
     QTest::newRow("2") << QSize(150, 100) << QRectF(0, 0, 200, 100) << QTransform()
                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                       << 0 << (50 + 16) << 0 << 16 << false << false;
+                       << 0 << (50 + offset) << 0 << offset  << false << false;
     QTest::newRow("3") << QSize(150, 100) << QRectF(0, 0, 200, 200) << QTransform()
                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                       << 0 << (50 + 16) << 0 << (100 + 16) << false << false;
+                       << 0 << (50 + offset) << 0 << (100 + offset) << false << false;
     QTest::newRow("4") << QSize(150, 100) << QRectF(-100, -100, 150, 100) << QTransform()
                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
                        << 0 << 0 << 0 << 0 << false << false;
     QTest::newRow("5") << QSize(150, 100) << QRectF(-100, -100, 200, 100) << QTransform()
                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                       << -100 << (16-50) << -100 << (-100 + 16) << false << false;
+                       << -100 << (offset -50) << -100 << (-100 + offset) << false << false;
     QTest::newRow("6") << QSize(150, 100) << QRectF(-100, -100, 200, 200) << QTransform()
                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                       << -100 << (16-50) << -100 << 16 << false << false;
+                       << -100 << (offset -50) << -100 << offset << false << false;
     QTest::newRow("7") << QSize(150, 100) << QRectF(0, 0, 151, 101) << QTransform()
                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                       << 0 << 17 << 0 << 17 << false << false;
+                       << 0 << (offset + 1)  << 0 << offset + 1 << false << false;
     QTest::newRow("8") << QSize(150, 100) << QRectF(0, 0, 201, 101) << QTransform()
                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                       << 0 << (50 + 17) << 0 << 17 << false << false;
+                       << 0 << (50 + offset + 1) << 0 << offset + 1 << false << false;
     QTest::newRow("9") << QSize(150, 100) << QRectF(0, 0, 201, 201) << QTransform()
                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                       << 0 << (50 + 17) << 0 << (100 + 17) << false << false;
+                       << 0 << (50 + offset + 1) << 0 << (100 + offset + 1) << false << false;
     QTest::newRow("10") << QSize(150, 100) << QRectF(-101, -101, 151, 101) << QTransform()
                         << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                        << -101 << (-100 + 16) << -101 << (-100 + 16) << false << false;
+                        << -101 << (-100 + offset) << -101 << (-100 + offset) << false << false;
     QTest::newRow("11") << QSize(150, 100) << QRectF(-101, -101, 201, 101) << QTransform()
                         << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                        << (-101) << (16-50) << -101 << (-100 + 16) << false << false;
+                        << (-101) << (offset + -50) << -101 << (-100 + offset) << false << false;
     QTest::newRow("12") << QSize(150, 100) << QRectF(-101, -101, 201, 201) << QTransform()
                         << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                        << (-101) << (16-50) << (-101) << 16 << false << false;
+                        << (-101) << (offset -50) << (-101) << offset << false << false;
     QTest::newRow("13") << QSize(150, 100) << QRectF(0, 0, 166, 116) << QTransform()
                         << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                        << 0 << (16 + 16) << 0 << (16 + 16) << false << false;
+                        << 0 << (offset + 16) << 0 << (offset + 16) << false << false;
     QTest::newRow("14") << QSize(150, 100) << QRectF(0, 0, 216, 116) << QTransform()
                         << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                        << 0 << (50 + 16 + 16) << 0 << (16 + 16) << false << false;
+                        << 0 << (50 + offset + 16) << 0 << (offset + 16) << false << false;
     QTest::newRow("15") << QSize(150, 100) << QRectF(0, 0, 216, 216) << QTransform()
                         << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                        << 0 << (50 + 16 + 16) << 0 << (100 + 16 + 16) << false << false;
+                        << 0 << (50 + offset + 16) << 0 << (100 + offset + 16) << false << false;
     QTest::newRow("16") << QSize(150, 100) << QRectF(-116, -116, 166, 116) << QTransform()
                         << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                        << (-100 - 16) << (-100 + 16) << (-100 - 16) << (-100 + 16) << false << false;
+                        << (-100 - 16) << (-100 + offset) << (-100 - 16 ) << (-100 + offset) << false << false;
     QTest::newRow("17") << QSize(150, 100) << QRectF(-116, -116, 216, 116) << QTransform()
                         << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                        << (-100 - 16) << (16-50) << (-100 - 16) << (-100 + 16) << false << false;
+                        << (-100 - 16) << (offset -50) << (-100 - 16) << (-100 + offset) << false << false;
     QTest::newRow("18") << QSize(150, 100) << QRectF(-116, -116, 216, 216) << QTransform()
                         << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                        << (-100 - 16) << (16-50) << (-100 - 16) << 16 << false << false;
+                        << (-100 - 16) << (offset -50) << (-100 - 16) << offset << false << false;
     QTest::newRow("1 x2") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform().scale(2, 2)
                           << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                          << 0 << (150 + 16) << 0 << (100 + 16) << false << false;
+                          << 0 << (150 + offset) << 0 << (100 + offset) << false << false;
     QTest::newRow("2 x2") << QSize(150, 100) << QRectF(0, 0, 200, 100) << QTransform().scale(2, 2)
                           << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                          << 0 << (250 + 16) << 0 << (100 + 16) << false << false;
+                          << 0 << (250 + offset) << 0 << (100 + offset) << false << false;
     QTest::newRow("3 x2") << QSize(150, 100) << QRectF(0, 0, 200, 200) << QTransform().scale(2, 2)
                           << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                          << 0 << (250 + 16) << 0 << (300 + 16) << false << false;
+                          << 0 << (250 + offset) << 0 << (300 + offset) << false << false;
     QTest::newRow("4 x2") << QSize(150, 100) << QRectF(-100, -100, 150, 100) << QTransform().scale(2, 2)
                           << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                          << -200 << (-50 + 16) << -200 << (-100 + 16) << false << false;
+                          << -200 << (-50 + offset) << -200 << (-100 + offset) << false << false;
     QTest::newRow("5 x2") << QSize(150, 100) << QRectF(-100, -100, 200, 100) << QTransform().scale(2, 2)
                           << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                          << -200 << (50 + 16) << -200 << (-100 + 16) << false << false;
+                          << -200 << (50 + offset) << -200 << (-100 + offset) << false << false;
     QTest::newRow("6 x2") << QSize(150, 100) << QRectF(-100, -100, 200, 200) << QTransform().scale(2, 2)
                           << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                          << -200 << (50 + 16) << -200 << (100 + 16) << false << false;
+                          << -200 << (50 + offset) << -200 << (100 + offset) << false << false;
     QTest::newRow("1 No ScrollBars") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
                                      << Qt::ScrollBarAlwaysOff << Qt::ScrollBarAlwaysOff
                                      << 0 << 0 << 0 << 0 << false << false;
@@ -272,7 +286,7 @@ static void _scrollBarRanges_data_1()
                                             << -200 << (50 + 16) << -200 << (100 + 16) << false << false;
 }
 
-static void _scrollBarRanges_data_2()
+static void _scrollBarRanges_data_2(int offset)
 {
     // Motif, flat frame
     QTest::newRow("Motif, 1") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
@@ -280,73 +294,73 @@ static void _scrollBarRanges_data_2()
                               << 0 << 0 << 0 << 0 << true << false;
     QTest::newRow("Motif, 2") << QSize(150, 100) << QRectF(0, 0, 200, 100) << QTransform()
                               << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                              << 0 << (50 + 16) << 0 << 16 << true << false;
+                              << 0 << (50 + offset) << 0 << offset << true << false;
     QTest::newRow("Motif, 3") << QSize(150, 100) << QRectF(0, 0, 200, 200) << QTransform()
                               << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                              << 0 << (50 + 16) << 0 << (100 + 16) << true << false;
+                              << 0 << (50 + offset) << 0 << (100 + offset) << true << false;
     QTest::newRow("Motif, 4") << QSize(150, 100) << QRectF(-100, -100, 150, 100) << QTransform()
                               << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
                               << 0 << 0 << 0 << 0 << true << false;
     QTest::newRow("Motif, 5") << QSize(150, 100) << QRectF(-100, -100, 200, 100) << QTransform()
                               << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                              << -100 << (16-50) << -100 << (-100 + 16) << true << false;
+                              << -100 << (offset-50) << -100 << (-100 + offset) << true << false;
     QTest::newRow("Motif, 6") << QSize(150, 100) << QRectF(-100, -100, 200, 200) << QTransform()
                               << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                              << -100 << (16-50) << -100 << 16 << true << false;
+                              << -100 << (offset-50) << -100 << offset << true << false;
     QTest::newRow("Motif, 7") << QSize(150, 100) << QRectF(0, 0, 151, 101) << QTransform()
                               << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                              << 0 << 17 << 0 << 17 << true << false;
+                              << 0 << offset + 1 << 0 << offset + 1 << true << false;
     QTest::newRow("Motif, 8") << QSize(150, 100) << QRectF(0, 0, 201, 101) << QTransform()
                               << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                              << 0 << (50 + 17) << 0 << 17 << true << false;
+                              << 0 << (50 + offset + 1) << 0 << offset + 1 << true << false;
     QTest::newRow("Motif, 9") << QSize(150, 100) << QRectF(0, 0, 201, 201) << QTransform()
                               << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                              << 0 << (50 + 17) << 0 << (100 + 17) << true << false;
+                              << 0 << (50 + offset + 1) << 0 << (100 + offset + 1) << true << false;
     QTest::newRow("Motif, 10") << QSize(150, 100) << QRectF(-101, -101, 151, 101) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << -101 << (-100 + 16) << -101 << (-100 + 16) << true << false;
+                               << -101 << (-100 + offset) << -101 << (-100 + offset) << true << false;
     QTest::newRow("Motif, 11") << QSize(150, 100) << QRectF(-101, -101, 201, 101) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << (-101) << (16-50) << -101 << (-100 + 16) << true << false;
+                               << (-101) << (offset-50) << -101 << (-100 + offset) << true << false;
     QTest::newRow("Motif, 12") << QSize(150, 100) << QRectF(-101, -101, 201, 201) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << (-101) << (16-50) << (-101) << 16 << true << false;
+                               << (-101) << (offset-50) << (-101) << offset << true << false;
     QTest::newRow("Motif, 13") << QSize(150, 100) << QRectF(0, 0, 166, 116) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << 0 << (16 + 16) << 0 << (16 + 16) << true << false;
+                               << 0 << (offset + 16) << 0 << (offset + 16) << true << false;
     QTest::newRow("Motif, 14") << QSize(150, 100) << QRectF(0, 0, 216, 116) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << 0 << (50 + 16 + 16) << 0 << (16 + 16) << true << false;
+                               << 0 << (50 + offset + 16) << 0 << (offset + 16) << true << false;
     QTest::newRow("Motif, 15") << QSize(150, 100) << QRectF(0, 0, 216, 216) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << 0 << (50 + 16 + 16) << 0 << (100 + 16 + 16) << true << false;
+                               << 0 << (50 + offset + 16) << 0 << (100 + offset + 16) << true << false;
     QTest::newRow("Motif, 16") << QSize(150, 100) << QRectF(-116, -116, 166, 116) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << (-100 - 16) << (-100 + 16) << (-100 - 16) << (-100 + 16) << true << false;
+                               << (-100 - 16) << (-100 + offset) << (-100 - 16) << (-100 + offset) << true << false;
     QTest::newRow("Motif, 17") << QSize(150, 100) << QRectF(-116, -116, 216, 116) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << (-100 - 16) << (16-50) << (-100 - 16) << (-100 + 16) << true << false;
+                               << (-100 - 16) << (offset-50) << (-100 - 16) << (-100 + offset) << true << false;
     QTest::newRow("Motif, 18") << QSize(150, 100) << QRectF(-116, -116, 216, 216) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << (-100 - 16) << (16-50) << (-100 - 16) << 16 << true << false;
+                               << (-100 - 16) << (offset-50) << (-100 - 16) << offset << true << false;
     QTest::newRow("Motif, 1 x2") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform().scale(2, 2)
                                  << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                 << 0 << (150 + 16) << 0 << (100 + 16) << true << false;
+                                 << 0 << (150 + offset) << 0 << (100 + offset) << true << false;
     QTest::newRow("Motif, 2 x2") << QSize(150, 100) << QRectF(0, 0, 200, 100) << QTransform().scale(2, 2)
                                  << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                 << 0 << (250 + 16) << 0 << (100 + 16) << true << false;
+                                 << 0 << (250 + offset) << 0 << (100 + offset) << true << false;
     QTest::newRow("Motif, 3 x2") << QSize(150, 100) << QRectF(0, 0, 200, 200) << QTransform().scale(2, 2)
                                  << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                 << 0 << (250 + 16) << 0 << (300 + 16) << true << false;
+                                 << 0 << (250 + offset) << 0 << (300 + offset) << true << false;
     QTest::newRow("Motif, 4 x2") << QSize(150, 100) << QRectF(-100, -100, 150, 100) << QTransform().scale(2, 2)
                                  << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                 << -200 << (-50 + 16) << -200 << (-100 + 16) << true << false;
+                                 << -200 << (-50 + offset) << -200 << (-100 + offset) << true << false;
     QTest::newRow("Motif, 5 x2") << QSize(150, 100) << QRectF(-100, -100, 200, 100) << QTransform().scale(2, 2)
                                  << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                 << -200 << (50 + 16) << -200 << (-100 + 16) << true << false;
+                                 << -200 << (50 + offset) << -200 << (-100 + offset) << true << false;
     QTest::newRow("Motif, 6 x2") << QSize(150, 100) << QRectF(-100, -100, 200, 200) << QTransform().scale(2, 2)
                                  << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                 << -200 << (50 + 16) << -200 << (100 + 16) << true << false;
+                                 << -200 << (50 + offset) << -200 << (100 + offset) << true << false;
     QTest::newRow("Motif, 1 No ScrollBars") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
                                             << Qt::ScrollBarAlwaysOff << Qt::ScrollBarAlwaysOff
                                             << 0 << 0 << 0 << 0 << true << false;
@@ -493,7 +507,7 @@ static void _scrollBarRanges_data_2()
                                                    << -200 << (50 + 16) << -200 << (100 + 16) << true << false;
 }
 
-static void _scrollBarRanges_data_3()
+static void _scrollBarRanges_data_3(int offset)
 {
     // No motif, styled panel
     QTest::newRow("Styled, 1") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
@@ -501,73 +515,73 @@ static void _scrollBarRanges_data_3()
                                << 0 << 0 << 0 << 0 << false << true;
     QTest::newRow("Styled, 2") << QSize(150, 100) << QRectF(0, 0, 200, 100) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << 0 << (50 + 16) << 0 << 16 << false << true;
+                               << 0 << (50 + offset) << 0 << offset << false << true;
     QTest::newRow("Styled, 3") << QSize(150, 100) << QRectF(0, 0, 200, 200) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << 0 << (50 + 16) << 0 << (100 + 16) << false << true;
+                               << 0 << (50 + offset) << 0 << (100 + offset) << false << true;
     QTest::newRow("Styled, 4") << QSize(150, 100) << QRectF(-100, -100, 150, 100) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
                                << 0 << 0 << 0 << 0 << false << true;
     QTest::newRow("Styled, 5") << QSize(150, 100) << QRectF(-100, -100, 200, 100) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << -100 << (16-50) << -100 << (-100 + 16) << false << true;
+                               << -100 << (offset-50) << -100 << (-100 + offset) << false << true;
     QTest::newRow("Styled, 6") << QSize(150, 100) << QRectF(-100, -100, 200, 200) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << -100 << (16-50) << -100 << 16 << false << true;
+                               << -100 << (offset-50) << -100 << offset << false << true;
     QTest::newRow("Styled, 7") << QSize(150, 100) << QRectF(0, 0, 151, 101) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << 0 << 17 << 0 << 17 << false << true;
+                               << 0 << offset + 1 << 0 << offset + 1 << false << true;
     QTest::newRow("Styled, 8") << QSize(150, 100) << QRectF(0, 0, 201, 101) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << 0 << (50 + 17) << 0 << 17 << false << true;
+                               << 0 << (50 + offset + 1) << 0 << offset + 1 << false << true;
     QTest::newRow("Styled, 9") << QSize(150, 100) << QRectF(0, 0, 201, 201) << QTransform()
                                << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                               << 0 << (50 + 17) << 0 << (100 + 17) << false << true;
+                               << 0 << (50 + offset + 1) << 0 << (100 + offset + 1) << false << true;
     QTest::newRow("Styled, 10") << QSize(150, 100) << QRectF(-101, -101, 151, 101) << QTransform()
                                 << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                << -101 << (-100 + 16) << -101 << (-100 + 16) << false << true;
+                                << -101 << (-100 + offset) << -101 << (-100 + offset) << false << true;
     QTest::newRow("Styled, 11") << QSize(150, 100) << QRectF(-101, -101, 201, 101) << QTransform()
                                 << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                << (-101) << (16-50) << -101 << (-100 + 16) << false << true;
+                                << (-101) << (offset-50) << -101 << (-100 + offset) << false << true;
     QTest::newRow("Styled, 12") << QSize(150, 100) << QRectF(-101, -101, 201, 201) << QTransform()
                                 << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                << (-101) << (16-50) << (-101) << 16 << false << true;
+                                << (-101) << (offset-50) << (-101) << offset << false << true;
     QTest::newRow("Styled, 13") << QSize(150, 100) << QRectF(0, 0, 166, 116) << QTransform()
                                 << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                << 0 << (16 + 16) << 0 << (16 + 16) << false << true;
+                                << 0 << (offset + 16) << 0 << (offset + 16) << false << true;
     QTest::newRow("Styled, 14") << QSize(150, 100) << QRectF(0, 0, 216, 116) << QTransform()
                                 << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                << 0 << (50 + 16 + 16) << 0 << (16 + 16) << false << true;
+                                << 0 << (50 + offset + 16) << 0 << (offset + 16) << false << true;
     QTest::newRow("Styled, 15") << QSize(150, 100) << QRectF(0, 0, 216, 216) << QTransform()
                                 << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                << 0 << (50 + 16 + 16) << 0 << (100 + 16 + 16) << false << true;
+                                << 0 << (50 + offset + 16) << 0 << (100 + offset + 16) << false << true;
     QTest::newRow("Styled, 16") << QSize(150, 100) << QRectF(-116, -116, 166, 116) << QTransform()
                                 << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                << (-100 - 16) << (-100 + 16) << (-100 - 16) << (-100 + 16) << false << true;
+                                << (-100 - 16) << (-100 + offset) << (-100 - 16) << (-100 + offset) << false << true;
     QTest::newRow("Styled, 17") << QSize(150, 100) << QRectF(-116, -116, 216, 116) << QTransform()
                                 << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                << (-100 - 16) << (16-50) << (-100 - 16) << (-100 + 16) << false << true;
+                                << (-100 - 16) << (offset-50) << (-100 - 16) << (-100 + offset) << false << true;
     QTest::newRow("Styled, 18") << QSize(150, 100) << QRectF(-116, -116, 216, 216) << QTransform()
                                 << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                << (-100 - 16) << (16-50) << (-100 - 16) << 16 << false << true;
+                                << (-100 - 16) << (offset-50) << (-100 - 16) << offset << false << true;
     QTest::newRow("Styled, 1 x2") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform().scale(2, 2)
                                   << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                  << 0 << (150 + 16) << 0 << (100 + 16) << false << true;
+                                  << 0 << (150 + offset) << 0 << (100 + offset) << false << true;
     QTest::newRow("Styled, 2 x2") << QSize(150, 100) << QRectF(0, 0, 200, 100) << QTransform().scale(2, 2)
                                   << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                  << 0 << (250 + 16) << 0 << (100 + 16) << false << true;
+                                  << 0 << (250 + offset) << 0 << (100 + offset) << false << true;
     QTest::newRow("Styled, 3 x2") << QSize(150, 100) << QRectF(0, 0, 200, 200) << QTransform().scale(2, 2)
                                   << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                  << 0 << (250 + 16) << 0 << (300 + 16) << false << true;
+                                  << 0 << (250 + offset) << 0 << (300 + offset) << false << true;
     QTest::newRow("Styled, 4 x2") << QSize(150, 100) << QRectF(-100, -100, 150, 100) << QTransform().scale(2, 2)
                                   << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                  << -200 << (-50 + 16) << -200 << (-100 + 16) << false << true;
+                                  << -200 << (-50 + offset) << -200 << (-100 + offset) << false << true;
     QTest::newRow("Styled, 5 x2") << QSize(150, 100) << QRectF(-100, -100, 200, 100) << QTransform().scale(2, 2)
                                   << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                  << -200 << (50 + 16) << -200 << (-100 + 16) << false << true;
+                                  << -200 << (50 + offset) << -200 << (-100 + offset) << false << true;
     QTest::newRow("Styled, 6 x2") << QSize(150, 100) << QRectF(-100, -100, 200, 200) << QTransform().scale(2, 2)
                                   << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                  << -200 << (50 + 16) << -200 << (100 + 16) << false << true;
+                                  << -200 << (50 + offset) << -200 << (100 + offset) << false << true;
     QTest::newRow("Styled, 1 No ScrollBars") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
                                              << Qt::ScrollBarAlwaysOff << Qt::ScrollBarAlwaysOff
                                              << 0 << 0 << 0 << 0 << false << true;
@@ -714,7 +728,7 @@ static void _scrollBarRanges_data_3()
                                                     << -200 << (50 + 16) << -200 << (100 + 16) << false << true;
 }
 
-static void _scrollBarRanges_data_4()
+static void _scrollBarRanges_data_4(int offset)
 {
     // Motif, styled panel
     QTest::newRow("Motif, Styled, 1") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
@@ -722,73 +736,73 @@ static void _scrollBarRanges_data_4()
                                       << 0 << 0 << 0 << 0 << true << true;
     QTest::newRow("Motif, Styled, 2") << QSize(150, 100) << QRectF(0, 0, 200, 100) << QTransform()
                                       << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                      << 0 << (50 + 16 + 4) << 0 << (16 + 4) << true << true;
+                                      << 0 << (50 + offset + 4) << 0 << (offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 3") << QSize(150, 100) << QRectF(0, 0, 200, 200) << QTransform()
                                       << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                      << 0 << (50 + 16 + 4) << 0 << (100 + 16 + 4) << true << true;
+                                      << 0 << (50 + offset + 4) << 0 << (100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 4") << QSize(150, 100) << QRectF(-100, -100, 150, 100) << QTransform()
                                       << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
                                       << 0 << 0 << 0 << 0 << true << true;
     QTest::newRow("Motif, Styled, 5") << QSize(150, 100) << QRectF(-100, -100, 200, 100) << QTransform()
                                       << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                      << -100 << (16 + 4 - 50) << -100 << (-100 + 16 + 4) << true << true;
+                                      << -100 << (offset + 4 - 50) << -100 << (-100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 6") << QSize(150, 100) << QRectF(-100, -100, 200, 200) << QTransform()
                                       << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                      << -100 << (16 + 4 - 50) << -100 << (16 + 4) << true << true;
+                                      << -100 << (offset + 4 - 50) << -100 << (offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 7") << QSize(150, 100) << QRectF(0, 0, 151, 101) << QTransform()
                                       << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                      << 0 << (17 + 4) << 0 << (17 + 4) << true << true;
+                                      << 0 << (offset + 1 + 4) << 0 << (offset + 1 + 4) << true << true;
     QTest::newRow("Motif, Styled, 8") << QSize(150, 100) << QRectF(0, 0, 201, 101) << QTransform()
                                       << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                      << 0 << (50 + 17 + 4) << 0 << (17 + 4) << true << true;
+                                      << 0 << (50 + offset + 1 + 4) << 0 << (offset + 1 + 4) << true << true;
     QTest::newRow("Motif, Styled, 9") << QSize(150, 100) << QRectF(0, 0, 201, 201) << QTransform()
                                       << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                      << 0 << (50 + 17 + 4) << 0 << (100 + 17 + 4) << true << true;
+                                      << 0 << (50 + offset + 1 + 4) << 0 << (100 + offset + 1 + 4) << true << true;
     QTest::newRow("Motif, Styled, 10") << QSize(150, 100) << QRectF(-101, -101, 151, 101) << QTransform()
                                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                       << -101 << (-100 + 16 + 4) << -101 << (-100 + 16 + 4) << true << true;
+                                       << -101 << (-100 + offset + 4) << -101 << (-100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 11") << QSize(150, 100) << QRectF(-101, -101, 201, 101) << QTransform()
                                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                       << (-101) << (16 + 4 - 50) << -101 << (-100 + 16 + 4) << true << true;
+                                       << (-101) << (offset + 4 - 50) << -101 << (-100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 12") << QSize(150, 100) << QRectF(-101, -101, 201, 201) << QTransform()
                                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                       << (-101) << (16 + 4 - 50) << (-101) << (16 + 4) << true << true;
+                                       << (-101) << (offset + 4 - 50) << (-101) << (offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 13") << QSize(150, 100) << QRectF(0, 0, 166, 116) << QTransform()
                                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                       << 0 << (16 + 16 + 4) << 0 << (16 + 16 + 4) << true << true;
+                                       << 0 << (offset + 16 + 4) << 0 << (offset + 16 + 4) << true << true;
     QTest::newRow("Motif, Styled, 14") << QSize(150, 100) << QRectF(0, 0, 216, 116) << QTransform()
                                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                       << 0 << (50 + 16 + 16 + 4) << 0 << (16 + 16 + 4) << true << true;
+                                       << 0 << (50 + offset + 16 + 4) << 0 << (offset + 16 + 4) << true << true;
     QTest::newRow("Motif, Styled, 15") << QSize(150, 100) << QRectF(0, 0, 216, 216) << QTransform()
                                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                       << 0 << (50 + 16 + 16 + 4) << 0 << (100 + 16 + 16 + 4) << true << true;
+                                       << 0 << (50 + offset + 16 + 4) << 0 << (100 + offset + 16 + 4) << true << true;
     QTest::newRow("Motif, Styled, 16") << QSize(150, 100) << QRectF(-116, -116, 166, 116) << QTransform()
                                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                       << (-100 - 16) << (-100 + 16 + 4) << (-100 - 16) << (-100 + 16 + 4) << true << true;
+                                       << (-100 - 16) << (-100 + offset + 4) << (-100 - 16) << (-100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 17") << QSize(150, 100) << QRectF(-116, -116, 216, 116) << QTransform()
                                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                       << (-100 - 16) << (16 + 4 - 50) << (-100 - 16) << (-100 + 16 + 4) << true << true;
+                                       << (-100 - 16) << (offset + 4 - 50) << (-100 - 16) << (-100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 18") << QSize(150, 100) << QRectF(-116, -116, 216, 216) << QTransform()
                                        << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                       << (-100 - 16) << (16 + 4 - 50) << (-100 - 16) << (16 + 4) << true << true;
+                                       << (-100 - 16) << (offset + 4 - 50) << (-100 - 16) << (offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 1 x2") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform().scale(2, 2)
                                          << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                         << 0 << (150 + 16 + 4) << 0 << (100 + 16 + 4) << true << true;
+                                         << 0 << (150 + offset + 4) << 0 << (100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 2 x2") << QSize(150, 100) << QRectF(0, 0, 200, 100) << QTransform().scale(2, 2)
                                          << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                         << 0 << (250 + 16 + 4) << 0 << (100 + 16 + 4) << true << true;
+                                         << 0 << (250 + offset + 4) << 0 << (100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 3 x2") << QSize(150, 100) << QRectF(0, 0, 200, 200) << QTransform().scale(2, 2)
                                          << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                         << 0 << (250 + 16 + 4) << 0 << (300 + 16 + 4) << true << true;
+                                         << 0 << (250 + offset + 4) << 0 << (300 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 4 x2") << QSize(150, 100) << QRectF(-100, -100, 150, 100) << QTransform().scale(2, 2)
                                          << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                         << -200 << (-50 + 16 + 4) << -200 << (-100 + 16 + 4) << true << true;
+                                         << -200 << (-50 + offset + 4) << -200 << (-100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 5 x2") << QSize(150, 100) << QRectF(-100, -100, 200, 100) << QTransform().scale(2, 2)
                                          << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                         << -200 << (50 + 16 + 4) << -200 << (-100 + 16 + 4) << true << true;
+                                         << -200 << (50 + offset + 4) << -200 << (-100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 6 x2") << QSize(150, 100) << QRectF(-100, -100, 200, 200) << QTransform().scale(2, 2)
                                          << Qt::ScrollBarAsNeeded << Qt::ScrollBarAsNeeded
-                                         << -200 << (50 + 16 + 4) << -200 << (100 + 16 + 4) << true << true;
+                                         << -200 << (50 + offset + 4) << -200 << (100 + offset + 4) << true << true;
     QTest::newRow("Motif, Styled, 1 No ScrollBars") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
                                                     << Qt::ScrollBarAlwaysOff << Qt::ScrollBarAlwaysOff
                                                     << 0 << 0 << 0 << 0 << true << true;
@@ -949,8 +963,14 @@ void _scrollBarRanges_data()
     QTest::addColumn<bool>("useMotif");
     QTest::addColumn<bool>("useStyledPanel");
 
-    _scrollBarRanges_data_1();
-    _scrollBarRanges_data_2();
-    _scrollBarRanges_data_3();
-    _scrollBarRanges_data_4();
+    int offset = 16;
+#ifdef Q_OS_WINCE
+    if (qt_wince_is_high_dpi())
+        offset *= 2;
+#endif
+
+    _scrollBarRanges_data_1(offset);
+    _scrollBarRanges_data_2(offset);
+    _scrollBarRanges_data_3(offset);
+    _scrollBarRanges_data_4(offset);
 }

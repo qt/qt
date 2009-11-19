@@ -2,7 +2,10 @@
 # Copyright (C) 1999-2002, 2006 Glenn Randers-Pehrson
 # Copyright (C) 1995 Guy Eric Schalnat, Group 42
 # contributed by Jim Rice and updated by Chris Schleicher, Hewlett Packard
-# For conditions of distribution and use, see copyright notice in png.h
+
+# This code is released under the libpng license.
+# For conditions of distribution and use, see the disclaimer
+# and license in png.h
 
 # Where the zlib library and include files are located
 ZLIBLIB=/opt/zlib/lib
@@ -18,7 +21,7 @@ ZLIBINC=/opt/zlib/include
 # Library name:
 LIBNAME = libpng12
 PNGMAJ = 0
-PNGMIN = 1.2.29
+PNGMIN = 1.2.40
 PNGVER = $(PNGMAJ).$(PNGMIN)
 
 # Shared library names:
@@ -224,9 +227,10 @@ pngget.o: png.h pngconf.h
 pngread.o: png.h pngconf.h
 pngrtran.o: png.h pngconf.h
 pngrutil.o: png.h pngconf.h
-pngtest.o: png.h pngconf.h
 pngtrans.o: png.h pngconf.h
 pngwrite.o: png.h pngconf.h
 pngwtran.o: png.h pngconf.h
 pngwutil.o: png.h pngconf.h
 pngpread.o: png.h pngconf.h
+
+pngtest.o: png.h pngconf.h

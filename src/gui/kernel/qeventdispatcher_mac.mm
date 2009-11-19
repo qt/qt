@@ -136,14 +136,19 @@ void QEventDispatcherMacPrivate::activateTimer(CFRunLoopTimerRef, void *info)
     if (tmr == 0 || tmr->pending == true)
         return; // Can't send another timer event if it's pending.
 
-    tmr->pending = true;
-    QTimerEvent e(tmr->id);
-    qt_sendSpontaneousEvent(tmr->obj, &e);
 
-    // Get the value again in case the timer gets unregistered during the sendEvent.
-    tmr = macTimerHash.value(timerID);
-    if (tmr != 0)
-        tmr->pending = false;
+    if (blockSendPostedEvents) {
+        QCoreApplication::postEvent(tmr->obj, new QTimerEvent(tmr->id));
+    } else {
+        tmr->pending = true;
+        QTimerEvent e(tmr->id);
+        qt_sendSpontaneousEvent(tmr->obj, &e);
+        // Get the value again in case the timer gets unregistered during the sendEvent.
+        tmr = macTimerHash.value(timerID);
+        if (tmr != 0)
+            tmr->pending = false;
+    }
+
 }
 
 void QEventDispatcherMac::registerTimer(int timerId, int interval, QObject *obj)
@@ -566,6 +571,12 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, false);
                 while (!d->interrupt && [NSApp runModalSession:session] == NSRunContinuesResponse)
                     qt_mac_waitForMoreModalSessionEvents();
+                if (!d->interrupt && session == d->currentModalSessionCached) {
+                    // Someone called e.g. [NSApp stopModal:] from outside the event
+                    // dispatcher (e.g to stop a native dialog). But that call wrongly stopped
+                    // 'session' as well. As a result, we need to restart all internal sessions:
+                    d->temporarilyStopAllModalSessions();
+                }
             } else {
                 d->nsAppRunCalledByQt = true;
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, true);
@@ -767,7 +778,7 @@ NSModalSession QEventDispatcherMacPrivate::currentModalSession()
         // Sadly, we need to introduce this little event flush
         // to stop dialogs from blinking/poping in front if a 
         // modal session restart was needed:
-        while (NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask
+        while (NSEvent *event = [NSApp nextEventMatchingMask:0
                 untilDate:nil
                 inMode:NSDefaultRunLoopMode
                 dequeue: YES]) {

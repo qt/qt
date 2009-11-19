@@ -92,6 +92,7 @@ private slots:
     void task252069_rowIntersectsSelection();
     void task232634_childrenDeselectionSignal();
     void task260134_layoutChangedWithAllSelected();
+    void QTBUG5671_layoutChangedWithAllSelected();
 
 private:
     QAbstractItemModel *model;
@@ -2025,24 +2026,24 @@ void tst_QItemSelectionModel::task220420_selectedIndexes()
 class QtTestTableModel: public QAbstractTableModel
 {
     Q_OBJECT
-    
+
     public:
         QtTestTableModel(int rows = 0, int columns = 0, QObject *parent = 0)
         : QAbstractTableModel(parent),
         row_count(rows),
         column_count(columns) {}
-        
+
         int rowCount(const QModelIndex& = QModelIndex()) const { return row_count; }
         int columnCount(const QModelIndex& = QModelIndex()) const { return column_count; }
         bool isEditable(const QModelIndex &) const { return true; }
-        
+
         QVariant data(const QModelIndex &idx, int role) const
         {
             if (role == Qt::DisplayRole || role == Qt::EditRole)
                 return QString("[%1,%2]").arg(idx.row()).arg(idx.column());
             return QVariant();
         }
-        
+
         int row_count;
         int column_count;
         friend class tst_QItemSelectionModel;
@@ -2055,7 +2056,7 @@ void tst_QItemSelectionModel::task240734_layoutChanged()
     QItemSelectionModel selectionModel(&model);
     selectionModel.select(model.index(0,0), QItemSelectionModel::Select);
     QCOMPARE(selectionModel.selectedIndexes().count() , 1);
-    
+
     emit model.layoutAboutToBeChanged();
     model.row_count = 5;
     emit model.layoutChanged();
@@ -2107,7 +2108,7 @@ void tst_QItemSelectionModel::merge_data()
         << QItemSelection(model->index(2, 2) , model->index(3, 4))
         << int(QItemSelectionModel::Deselect)
         << QItemSelection(model->index(2, 1) , model->index(3, 1));
-  
+
     QItemSelection r1(model->index(2, 1) , model->index(3, 1));
     r1.select(model->index(2, 4) , model->index(3, 4));
     QTest::newRow("Toggle")
@@ -2273,6 +2274,58 @@ void tst_QItemSelectionModel::task260134_layoutChangedWithAllSelected()
         QVERIFY(selection.isSelected(index));
 }
 
+
+void tst_QItemSelectionModel::QTBUG5671_layoutChangedWithAllSelected()
+{
+    struct MyFilterModel : public QSortFilterProxyModel
+    {     // Override sort filter proxy to remove even numbered rows.
+        bool filtering;
+        virtual bool filterAcceptsRow( int source_row, const QModelIndex& source_parent ) const
+        {
+            return !filtering || !( source_row & 1 );
+        }
+    };
+
+    //same as task260134_layoutChangedWithAllSelected but with a sightly bigger model
+
+    enum { cNumRows=30, cNumCols=20 };
+
+    QStandardItemModel model(cNumRows, cNumCols);
+    MyFilterModel proxy;
+    proxy.filtering = true;
+    proxy.setSourceModel(&model);
+    QItemSelectionModel selection(&proxy);
+
+    // Populate the tree view.
+    for (unsigned int i = 0; i < cNumCols; i++)
+        model.setHeaderData( i, Qt::Horizontal, QString::fromLatin1("Column %1").arg(i));
+
+    for (unsigned int r = 0; r < cNumRows; r++) {
+        for (unsigned int c = 0; c < cNumCols; c++) {
+            model.setData(model.index(r, c, QModelIndex()),
+                          QString::fromLatin1("r:%1/c:%2").arg(r, c));
+        }
+    }
+
+
+    QCOMPARE(model.rowCount(), int(cNumRows));
+    QCOMPARE(proxy.rowCount(), int(cNumRows/2));
+
+    selection.select( QItemSelection(proxy.index(0,0), proxy.index(proxy.rowCount() - 1, proxy.columnCount() - 1)), QItemSelectionModel::Select);
+
+    QList<QPersistentModelIndex> indexList;
+    foreach(const QModelIndex &id, selection.selectedIndexes())
+        indexList << id;
+
+    proxy.filtering = false;
+    proxy.invalidate();
+    QCOMPARE(proxy.rowCount(), int(cNumRows));
+
+    //let's check the selection hasn't changed
+    QCOMPARE(selection.selectedIndexes().count(), indexList.count());
+    foreach(QPersistentModelIndex index, indexList)
+        QVERIFY(selection.isSelected(index));
+}
 
 QTEST_MAIN(tst_QItemSelectionModel)
 #include "tst_qitemselectionmodel.moc"

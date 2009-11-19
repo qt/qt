@@ -233,7 +233,7 @@ static void arts_sink_init (ArtsSink * src, ArtsSinkClass * g_class)
     Q_UNUSED(g_class);
     GST_DEBUG_OBJECT (src, "initializing artssink");
     src->stream = 0;
-
+#ifndef QT_NO_LIBRARY
     p_arts_init =  (Ptr_arts_init)QLibrary::resolve(QLatin1String("artsc"), 0, "arts_init");
     p_arts_play_stream =  (Ptr_arts_play_stream)QLibrary::resolve(QLatin1String("artsc"), 0, "arts_play_stream");
     p_arts_close_stream =  (Ptr_arts_close_stream)QLibrary::resolve(QLatin1String("artsc"), 0, "arts_close_stream");
@@ -250,6 +250,7 @@ static void arts_sink_init (ArtsSink * src, ArtsSinkClass * g_class)
         }
     }
     sinkCount ++;
+#endif //QT_NO_LIBRARY
 }
 
 static void arts_sink_dispose (GObject * object)

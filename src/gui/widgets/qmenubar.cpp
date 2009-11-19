@@ -332,34 +332,31 @@ void QMenuBarPrivate::popupAction(QAction *action, bool activateFirst)
         QPoint pos(q->mapToGlobal(QPoint(adjustedActionRect.left(), adjustedActionRect.bottom() + 1)));
         QSize popup_size = activeMenu->sizeHint();
 
-        QRect screenRect = QApplication::desktop()->screenGeometry(pos);
+        //we put the popup menu on the screen containing the bottom-center of the action rect
+        QRect screenRect = QApplication::desktop()->screenGeometry(pos + QPoint(adjustedActionRect.width() / 2, 0));
+        pos = QPoint(qMax(pos.x(), screenRect.x()), qMax(pos.y(), screenRect.y()));
 
         const bool fitUp = (q->mapToGlobal(adjustedActionRect.topLeft()).y() >= popup_size.height());
         const bool fitDown = (pos.y() + popup_size.height() <= screenRect.bottom());
+        const bool rtl = q->isRightToLeft();
         const int actionWidth = adjustedActionRect.width();
 
         if (!fitUp && !fitDown) { //we should shift the menu
-            bool shouldShiftToRight = !q->isRightToLeft();
-            if (q->isRightToLeft() && popup_size.width() > pos.x())
+            bool shouldShiftToRight = !rtl;
+            if (rtl && popup_size.width() > pos.x())
                 shouldShiftToRight = true;
             else if (actionWidth + popup_size.width() + pos.x() > screenRect.right())
                 shouldShiftToRight = false;
 
-            if (shouldShiftToRight)
-                pos.rx() += actionWidth;
-            else
-                pos.rx() -= popup_size.width();
-        } else if (q->isRightToLeft()) {
-            pos.setX(pos.x()-(popup_size.width() - actionWidth));
-        }
-
-        if(pos.x() < screenRect.x()) {
-            pos.setX(screenRect.x());
-        } else {
-            const int off = pos.x()+popup_size.width() - screenRect.right();
-            if(off > 0)
-                pos.setX(qMax(screenRect.x(), pos.x()-off));
-
+            if (shouldShiftToRight) {
+                pos.rx() += actionWidth + (rtl ? popup_size.width() : 0);
+            } else {
+                //shift to left
+                if (!rtl)
+                    pos.rx() -= popup_size.width();
+            }
+        } else if (rtl) {
+            pos.rx() += actionWidth;
         }
 
         if(!defaultPopDown || (fitUp && !fitDown))
@@ -1370,8 +1367,13 @@ void QMenuBarPrivate::handleReparent()
     oldWindow = newWindow;
 
 #ifdef Q_WS_MAC
-    macDestroyMenuBar();
-    macCreateMenuBar(newParent);
+    if (q->isNativeMenuBar() && !macWidgetHasNativeMenubar(newParent)) {
+        // If the new parent got a native menubar from before, keep that
+        // menubar rather than replace it with this one (because a parents
+        // menubar has precedence over children menubars).
+        macDestroyMenuBar();
+        macCreateMenuBar(newParent);
+    }
 #endif
 
 #ifdef Q_WS_WINCE

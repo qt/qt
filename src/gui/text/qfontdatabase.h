@@ -108,6 +108,7 @@ public:
 
         Ogham,
         Runic,
+        Nko,
 
         WritingSystemsCount
     };

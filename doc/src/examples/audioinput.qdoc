@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-    \example multimedia/audio/audioinput
+    \example multimedia/audioinput
     \title AudioInput Example
 
     The Audio Input example demonstrates the basic use of QAudioInput class

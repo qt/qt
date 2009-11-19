@@ -381,7 +381,6 @@ symbian {
         SOURCES += painting/qwindowsurface_s60.cpp
         armccIfdefBlock = \
         "$${LITERAL_HASH}if defined(ARMV6)" \
-        "MACRO QT_HAVE_ARMV6" \
         "SOURCEPATH 	painting" \
         "SOURCE			qblendfunctions_armv6_rvct.s" \
         "SOURCE			qdrawhelper_armv6_rvct.s" \

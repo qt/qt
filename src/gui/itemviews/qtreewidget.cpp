@@ -623,7 +623,7 @@ void QTreeModel::ensureSorted(int column, Qt::SortOrder order,
         lit = sortedInsertionIterator(lit, lst.end(), order, item);
         int newRow = qMax(lit - lst.begin(), 0);
 
-        if ((newRow < oldRow) && !(*item < *lst.at(oldRow - 1)))
+        if ((newRow < oldRow) && !(*item < *lst.at(oldRow - 1)) && !(*lst.at(oldRow - 1) < *item ))
             newRow = oldRow;
 
         lit = lst.insert(lit, item);
@@ -2851,7 +2851,14 @@ QTreeWidgetItem *QTreeWidget::itemAt(const QPoint &p) const
 QRect QTreeWidget::visualItemRect(const QTreeWidgetItem *item) const
 {
     Q_D(const QTreeWidget);
-    return visualRect(d->index(item));
+    //the visual rect for an item is across all columns. So we need to determine
+	//what is the first and last column and get their visual index rects
+    QModelIndex base = d->index(item);
+    const int firstVisiblesection = header()->logicalIndexAt(- header()->offset());
+    const int lastVisibleSection = header()->logicalIndexAt(header()->length() - header()->offset() - 1);
+    QModelIndex first = base.sibling(base.row(), header()->logicalIndex(firstVisiblesection));
+    QModelIndex last = base.sibling(base.row(), header()->logicalIndex(lastVisibleSection));
+    return visualRect(first) | visualRect(last);
 }
 
 /*!

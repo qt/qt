@@ -258,7 +258,7 @@
       <widget class="QComboBox" name="sourceComboBox" >
        <item>
         <property name="text" >
-         <string>Foundain</string>
+         <string>Fountain</string>
         </property>
        </item>
        <item>

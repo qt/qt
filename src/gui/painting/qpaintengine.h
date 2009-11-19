@@ -282,6 +282,7 @@ private:
     friend class QWin32PaintEnginePrivate;
     friend class QMacCGContext;
     friend class QPreviewPaintEngine;
+    friend class QX11GLPixmapData;
 };
 
 

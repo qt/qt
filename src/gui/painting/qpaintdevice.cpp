@@ -67,4 +67,9 @@ int QPaintDevice::metric(PaintDeviceMetric) const
 }
 #endif
 
+Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, QPaintDevice::PaintDeviceMetric metric)
+{
+    return device->metric(metric);
+}
+
 QT_END_NAMESPACE

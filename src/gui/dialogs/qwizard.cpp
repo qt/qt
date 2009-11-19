@@ -1340,7 +1340,7 @@ bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const
             pushButton->setText(buttonDefaultText(wizStyle, which, this));
 
 #ifdef QT_SOFTKEYS_ENABLED
-        QAction *softKey = new QAction(pushButton->text(), antiFlickerWidget);
+        QAction *softKey = new QAction(pushButton->text(), pushButton);
         QAction::SoftKeyRole softKeyRole;
         switch(which) {
         case QWizard::NextButton:
@@ -1537,7 +1537,9 @@ void QWizardPrivate::handleAeroStyleChange()
         vistaHelper->backButton()->show();
     } else {
         q->setMouseTracking(true); // ### original value possibly different
+#ifndef QT_NO_CURSOR
         q->unsetCursor(); // ### ditto
+#endif
         antiFlickerWidget->move(0, 0);
         vistaHelper->hideBackButton();
         vistaHelper->setTitleBarIconAndCaptionVisible(true);

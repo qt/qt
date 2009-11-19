@@ -114,7 +114,7 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
 
 QRgb* QPixmap::clut() const
 {
-    if (data->classId() == QPixmapData::RasterClass) {
+    if (data && data->classId() == QPixmapData::RasterClass) {
         const QRasterPixmapData *d = static_cast<const QRasterPixmapData*>(data.data());
         return d->image.colorTable().data();
     }
@@ -124,9 +124,14 @@ QRgb* QPixmap::clut() const
 
 int QPixmap::numCols() const
 {
-    if (data->classId() == QPixmapData::RasterClass) {
+    return colorCount();
+}
+
+int QPixmap::colorCount() const
+{
+    if (data && data->classId() == QPixmapData::RasterClass) {
         const QRasterPixmapData *d = static_cast<const QRasterPixmapData*>(data.data());
-        return d->image.numColors();
+        return d->image.colorCount();
     }
 
     return 0;
@@ -134,7 +139,7 @@ int QPixmap::numCols() const
 
 const uchar* QPixmap::qwsBits() const
 {
-    if (data->classId() == QPixmapData::RasterClass) {
+    if (data && data->classId() == QPixmapData::RasterClass) {
         const QRasterPixmapData *d = static_cast<const QRasterPixmapData*>(data.data());
         return d->image.bits();
     }
@@ -144,7 +149,7 @@ const uchar* QPixmap::qwsBits() const
 
 int QPixmap::qwsBytesPerLine() const
 {
-    if (data->classId() == QPixmapData::RasterClass) {
+    if (data && data->classId() == QPixmapData::RasterClass) {
         const QRasterPixmapData *d = static_cast<const QRasterPixmapData*>(data.data());
         return d->image.bytesPerLine();
     }

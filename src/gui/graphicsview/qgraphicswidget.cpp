@@ -318,6 +318,12 @@ void QGraphicsWidget::resize(const QSizeF &size)
 */
 
 /*!
+    \property QGraphicsWidget::sizePolicy
+    \brief the size policy for the widget
+    \sa sizePolicy(), setSizePolicy(), QWidget::sizePolicy()
+*/
+
+/*!
     \property QGraphicsWidget::geometry
     \brief the geometry of the widget
 
@@ -407,6 +413,27 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     \a x, \a y, \a w, \a h)).
 
     \sa geometry(), resize()
+*/
+
+/*!
+    \property QGraphicsWidget::minimumSize
+    \brief the minimum size of the widget
+
+    \sa setMinimumSize(), minimumSize(), preferredSize, maximumSize
+*/
+
+/*!
+    \property QGraphicsWidget::preferredSize
+    \brief the preferred size of the widget
+
+    \sa setPreferredSize(), preferredSize(), minimumSize, maximumSize
+*/
+
+/*!
+    \property QGraphicsWidget::maximumSize
+    \brief the maximum size of the widget
+
+    \sa setMaximumSize(), maximumSize(), minimumSize, preferredSize
 */
 
 /*!
@@ -1352,6 +1379,8 @@ void QGraphicsWidget::changeEvent(QEvent *event)
     case QEvent::StyleChange:
         // ### Don't unset if the margins are explicitly set.
         unsetWindowFrameMargins();
+        if (d->layout)
+            d->layout->invalidate();
     case QEvent::FontChange:
         update();
         updateGeometry();

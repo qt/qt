@@ -32,6 +32,7 @@ namespace WebCore {
     macro(abort) \
     macro(beforecopy) \
     macro(beforecut) \
+    macro(beforeload) \
     macro(beforepaste) \
     macro(beforeunload) \
     macro(blur) \
@@ -63,7 +64,6 @@ namespace WebCore {
     macro(keypress) \
     macro(keyup) \
     macro(load) \
-    macro(loadend) \
     macro(loadstart) \
     macro(message) \
     macro(mousedown) \

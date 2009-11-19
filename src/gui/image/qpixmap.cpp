@@ -113,13 +113,10 @@ void QPixmap::init(int w, int h, Type type)
 
 void QPixmap::init(int w, int h, int type)
 {
-    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        data = gs->createPixmapData(static_cast<QPixmapData::PixelType>(type));
+    if ((w > 0 && h > 0) || type == QPixmapData::BitmapType)
+        data = QPixmapData::create(w, h, (QPixmapData::PixelType) type);
     else
-        data = QGraphicsSystem::createDefaultPixmapData(static_cast<QPixmapData::PixelType>(type));
-
-    data->resize(w, h);
+        data = 0;
 }
 
 /*!
@@ -307,7 +304,7 @@ QPixmap::QPixmap(const char * const xpm[])
 
     QImage image(xpm);
     if (!image.isNull()) {
-        if (data->pixelType() == QPixmapData::BitmapType)
+        if (data && data->pixelType() == QPixmapData::BitmapType)
             *this = QBitmap::fromImage(image);
         else
             *this = fromImage(image);
@@ -322,8 +319,9 @@ QPixmap::QPixmap(const char * const xpm[])
 
 QPixmap::~QPixmap()
 {
-    if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapHooks(this);
+    Q_ASSERT(!data || data->ref >= 1); // Catch if ref-counting changes again
+    if (data && data->is_cached && data->ref == 1) // ref will be decrememnted after destructor returns
+        QImagePixmapCleanupHooks::executePixmapDestructionHooks(this);
 }
 
 /*!
@@ -361,13 +359,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
 
     const QRect r = rect.isEmpty() ? QRect(0, 0, width(), height()) : rect;
 
-    QPixmapData *d;
-    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        d = gs->createPixmapData(data->pixelType());
-    else
-        d = QGraphicsSystem::createDefaultPixmapData(data->pixelType());
-
+    QPixmapData *d = data->createCompatiblePixmapData();
     d->copy(data.data(), r);
     return QPixmap(d);
 }
@@ -475,9 +467,11 @@ QPixmap::operator QVariant() const
     conversion fails.
 
     If the pixmap has 1-bit depth, the returned image will also be 1
-    bit deep. If the pixmap has 2- to 8-bit depth, the returned image
-    has 8-bit depth. If the pixmap has greater than 8-bit depth, the
-    returned image has 32-bit depth.
+    bit deep. Images with more bits will be returned in a format
+    closely represents the underlying system. Usually this will be
+    QImage::Format_ARGB32_Premultiplied for pixmaps with an alpha and
+    QImage::Format_RGB32 or QImage::Format_RGB16 for pixmaps without
+    alpha.
 
     Note that for the moment, alpha masks on monochrome images are
     ignored.
@@ -547,7 +541,7 @@ bool QPixmap::isQBitmap() const
 */
 bool QPixmap::isNull() const
 {
-    return data->isNull();
+    return !data || data->isNull();
 }
 
 /*!
@@ -559,7 +553,7 @@ bool QPixmap::isNull() const
 */
 int QPixmap::width() const
 {
-    return data->width();
+    return data ? data->width() : 0;
 }
 
 /*!
@@ -571,7 +565,7 @@ int QPixmap::width() const
 */
 int QPixmap::height() const
 {
-    return data->height();
+    return data ? data->height() : 0;
 }
 
 /*!
@@ -584,7 +578,7 @@ int QPixmap::height() const
 */
 QSize QPixmap::size() const
 {
-    return QSize(data->width(), data->height());
+    return data ? QSize(data->width(), data->height()) : QSize();
 }
 
 /*!
@@ -596,7 +590,7 @@ QSize QPixmap::size() const
 */
 QRect QPixmap::rect() const
 {
-    return QRect(0, 0, data->width(), data->height());
+    return data ? QRect(0, 0, data->width(), data->height()) : QRect();
 }
 
 /*!
@@ -612,7 +606,7 @@ QRect QPixmap::rect() const
 */
 int QPixmap::depth() const
 {
-    return data->depth();
+    return data ? data->depth() : 0;
 }
 
 /*!
@@ -642,16 +636,16 @@ void QPixmap::resize_helper(const QSize &s)
         return;
 
     // Create new pixmap
-    QPixmap pm(QSize(w, h), data->type);
+    QPixmap pm(QSize(w, h), data ? data->type : QPixmapData::PixmapType);
     bool uninit = false;
 #if defined(Q_WS_X11)
-    QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data.data()) : 0;
+    QX11PixmapData *x11Data = data && data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data.data()) : 0;
     if (x11Data) {
         pm.x11SetScreen(x11Data->xinfo.screen());
         uninit = x11Data->flags & QX11PixmapData::Uninitialized;
     }
 #elif defined(Q_WS_MAC)
-    QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
+    QMacPixmapData *macData = data && data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
     if (macData)
         uninit = macData->uninit;
 #endif
@@ -730,6 +724,9 @@ void QPixmap::setMask(const QBitmap &mask)
         qWarning("QPixmap::setMask() mask size differs from pixmap size");
         return;
     }
+
+    if (isNull())
+        return;
 
     if (static_cast<const QPixmap &>(mask).data == data) // trying to selfmask
        return;
@@ -829,10 +826,13 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
     QFileInfo info(fileName);
     QString key = QLatin1String("qt_pixmap_") + info.absoluteFilePath() + QLatin1Char('_') + QString::number(info.lastModified().toTime_t()) + QLatin1Char('_') +
-                  QString::number(info.size()) + QLatin1Char('_') + QString::number(data->pixelType());
+        QString::number(info.size()) + QLatin1Char('_') + QString::number(data ? data->pixelType() : QPixmapData::PixmapType);
 
     if (QPixmapCache::find(key, *this))
         return true;
+
+    if (!data)
+        data = QPixmapData::create(0, 0, QPixmapData::PixmapType);
 
     if (data->fromFile(fileName, format, flags)) {
         QPixmapCache::insert(key, *this);
@@ -863,6 +863,12 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
 bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
+    if (len == 0 || buf == 0)
+        return false;
+
+    if (!data)
+        data = QPixmapData::create(0, 0, QPixmapData::PixmapType);
+
     return data->fromData(buf, len, format, flags);
 }
 
@@ -947,6 +953,9 @@ bool QPixmap::doImageIO(QImageWriter *writer, int quality) const
 /*!
     Fills the pixmap with the given \a color.
 
+    The effect of this function is undefined when the pixmap is
+    being painted on.
+
     \sa {QPixmap#Pixmap Transformations}{Pixmap Transformations}
 */
 
@@ -955,7 +964,24 @@ void QPixmap::fill(const QColor &color)
     if (isNull())
         return;
 
-    detach();
+    // Some people are probably already calling fill while a painter is active, so to not break
+    // their programs, only print a warning and return when the fill operation could cause a crash.
+    if (paintingActive() && (color.alpha() != 255) && !hasAlphaChannel()) {
+        qWarning("QPixmap::fill: Cannot fill while pixmap is being painted on");
+        return;
+    }
+
+    if (data->ref == 1) {
+        // detach() will also remove this pixmap from caches, so
+        // it has to be called even when ref == 1.
+        detach();
+    } else {
+        // Don't bother to make a copy of the data object, since
+        // it will be filled with new pixel data anyway.
+        QPixmapData *d = data->createCompatiblePixmapData();
+        d->resize(data->width(), data->height());
+        data = d;
+    }
     data->fill(color);
 }
 
@@ -988,6 +1014,9 @@ int QPixmap::serialNumber() const
 */
 qint64 QPixmap::cacheKey() const
 {
+    if (isNull())
+        return 0;
+
     int classKey = data->classId();
     if (classKey >= 1024)
         classKey = -(classKey >> 10);
@@ -1204,7 +1233,7 @@ QPixmap::QPixmap(const QImage& image)
 
 QPixmap &QPixmap::operator=(const QImage &image)
 {
-    if (data->pixelType() == QPixmapData::BitmapType)
+    if (data && data->pixelType() == QPixmapData::BitmapType)
         *this = QBitmap::fromImage(image);
     else
         *this = fromImage(image);
@@ -1234,7 +1263,7 @@ bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Color
 */
 bool QPixmap::convertFromImage(const QImage &image, ColorMode mode)
 {
-    if (data->pixelType() == QPixmapData::BitmapType)
+    if (data && data->pixelType() == QPixmapData::BitmapType)
         *this = QBitmap::fromImage(image, colorModeToFlags(mode));
     else
         *this = fromImage(image, colorModeToFlags(mode));
@@ -1321,7 +1350,7 @@ Q_GUI_EXPORT void copyBlt(QPixmap *dst, int dx, int dy,
 
 bool QPixmap::isDetached() const
 {
-    return data->ref == 1;
+    return data && data->ref == 1;
 }
 
 /*! \internal
@@ -1663,10 +1692,10 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     identifies the contents of the QPixmap object.
 
     The x11Info() function returns information about the configuration
-    of the X display used to display the widget.  The
-    x11PictureHandle() function returns the X11 Picture handle of the
-    pixmap for XRender support. Note that the two latter functions are
-    only available on x11.
+    of the X display used by the screen to which the pixmap currently
+    belongs. The x11PictureHandle() function returns the X11 Picture
+    handle of the pixmap for XRender support. Note that the two latter
+    functions are only available on x11.
 
     \endtable
 
@@ -1733,7 +1762,7 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
 */
 bool QPixmap::hasAlpha() const
 {
-    return (data->hasAlphaChannel() || !data->mask().isNull());
+    return data && (data->hasAlphaChannel() || !data->mask().isNull());
 }
 
 /*!
@@ -1744,7 +1773,7 @@ bool QPixmap::hasAlpha() const
 */
 bool QPixmap::hasAlphaChannel() const
 {
-    return data->hasAlphaChannel();
+    return data && data->hasAlphaChannel();
 }
 
 /*!
@@ -1752,7 +1781,7 @@ bool QPixmap::hasAlphaChannel() const
 */
 int QPixmap::metric(PaintDeviceMetric metric) const
 {
-    return data->metric(metric);
+    return data ? data->metric(metric) : 0;
 }
 
 /*!
@@ -1824,7 +1853,7 @@ void QPixmap::setAlphaChannel(const QPixmap &alphaChannel)
 */
 QPixmap QPixmap::alphaChannel() const
 {
-    return data->alphaChannel();
+    return data ? data->alphaChannel() : QPixmap();
 }
 
 /*!
@@ -1832,7 +1861,7 @@ QPixmap QPixmap::alphaChannel() const
 */
 QPaintEngine *QPixmap::paintEngine() const
 {
-    return data->paintEngine();
+    return data ? data->paintEngine() : 0;
 }
 
 /*!
@@ -1847,7 +1876,7 @@ QPaintEngine *QPixmap::paintEngine() const
 */
 QBitmap QPixmap::mask() const
 {
-    return data->mask();
+    return data ? data->mask() : QBitmap();
 }
 
 /*!
@@ -1898,6 +1927,9 @@ int QPixmap::defaultDepth()
 */
 void QPixmap::detach()
 {
+    if (!data)
+        return;
+
     QPixmapData::ClassId id = data->classId();
     if (id == QPixmapData::RasterClass) {
         QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data.data());
@@ -1905,7 +1937,7 @@ void QPixmap::detach()
     }
 
     if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapHooks(this);
+        QImagePixmapCleanupHooks::executePixmapModificationHooks(this);
 
 #if defined(Q_WS_MAC)
     QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
@@ -2086,7 +2118,7 @@ QPixmapData* QPixmap::pixmapData() const
 
 /*! \fn const QX11Info &QPixmap::x11Info() const
     \bold{X11 only:} Returns information about the configuration of
-    the X display used to display the widget.
+    the X display used by the screen to which the pixmap currently belongs.
 
     \warning This function is only available on X11.
 
@@ -2120,6 +2152,13 @@ QPixmapData* QPixmap::pixmapData() const
 */
 
 /*! \fn int QPixmap::numCols() const
+    \obsolete
+    \internal
+    \sa colorCount()
+*/
+
+/*! \fn int QPixmap::colorCount() const
+    \since 4.6
     \internal
 */
 

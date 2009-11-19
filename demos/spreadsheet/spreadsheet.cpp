@@ -523,6 +523,7 @@ void SpreadSheet::setupContents()
     table->setItem(8, 2, new SpreadSheetItem("1240"));
 
     table->setItem(9, 2, new SpreadSheetItem());
+    table->item(9, 2)->setBackgroundColor(Qt::lightGray);
 
     // column 3
     table->setItem(0, 3, new SpreadSheetItem("Currency"));

@@ -28,9 +28,10 @@
 
 #include "Identifier.h"
 #include "JSObject.h"
+#include "JSPropertyNameIterator.h"
+#include "Lookup.h"
 #include "PropertyNameArray.h"
 #include "StructureChain.h"
-#include "Lookup.h"
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/RefPtr.h>
 
@@ -159,9 +160,9 @@ Structure::~Structure()
             m_previous->table.removeAnonymousSlotTransition(m_anonymousSlotsInPrevious);
 
     }
-
-    if (m_cachedPropertyNameArrayData)
-        m_cachedPropertyNameArrayData->setCachedStructure(0);
+    
+    if (m_enumerationCache)
+        m_enumerationCache->setCachedStructure(0);
 
     if (m_propertyTable) {
         unsigned entryCount = m_propertyTable->keyCount + m_propertyTable->deletedSentinelCount;
@@ -282,59 +283,6 @@ void Structure::materializePropertyMap()
     }
 }
 
-void Structure::getOwnEnumerablePropertyNames(ExecState* exec, PropertyNameArray& propertyNames, JSObject* baseObject)
-{
-    getEnumerableNamesFromPropertyTable(propertyNames);
-    getEnumerableNamesFromClassInfoTable(exec, baseObject->classInfo(), propertyNames);
-}
-
-void Structure::getEnumerablePropertyNames(ExecState* exec, PropertyNameArray& propertyNames, JSObject* baseObject)
-{
-    bool shouldCache = propertyNames.shouldCache() && !(propertyNames.size() || isDictionary());
-
-    if (shouldCache && m_cachedPropertyNameArrayData) {
-        if (m_cachedPropertyNameArrayData->cachedPrototypeChain() == prototypeChain(exec)) {
-            propertyNames.setData(m_cachedPropertyNameArrayData);
-            return;
-        }
-        clearEnumerationCache();
-    }
-
-    baseObject->getOwnPropertyNames(exec, propertyNames);
-
-    if (m_prototype.isObject()) {
-        propertyNames.setShouldCache(false); // No need for our prototypes to waste memory on caching, since they're not being enumerated directly.
-        JSObject* prototype = asObject(m_prototype);
-        while(1) {
-            if (!prototype->structure()->typeInfo().hasDefaultGetPropertyNames()) {
-                prototype->getPropertyNames(exec, propertyNames);
-                break;
-            }
-            prototype->getOwnPropertyNames(exec, propertyNames);
-            JSValue nextProto = prototype->prototype();
-            if (!nextProto.isObject())
-                break;
-            prototype = asObject(nextProto);
-        }
-    }
-
-    if (shouldCache) {
-        StructureChain* protoChain = prototypeChain(exec);
-        m_cachedPropertyNameArrayData = propertyNames.data();
-        if (!protoChain->isCacheable())
-            return;
-        m_cachedPropertyNameArrayData->setCachedPrototypeChain(protoChain);
-        m_cachedPropertyNameArrayData->setCachedStructure(this);
-    }
-}
-
-void Structure::clearEnumerationCache()
-{
-    if (m_cachedPropertyNameArrayData)
-        m_cachedPropertyNameArrayData->setCachedStructure(0);
-    m_cachedPropertyNameArrayData.clear();
-}
-
 void Structure::growPropertyStorageCapacity()
 {
     if (m_propertyStorageCapacity == JSObject::inlineStorageCapacity)
@@ -427,6 +375,7 @@ PassRefPtr<Structure> Structure::addPropertyTransition(Structure* structure, con
     transition->m_specificValueInPrevious = specificValue;
     transition->m_propertyStorageCapacity = structure->m_propertyStorageCapacity;
     transition->m_hasGetterSetterProperties = structure->m_hasGetterSetterProperties;
+    transition->m_hasNonEnumerableProperties = structure->m_hasNonEnumerableProperties;
 
     if (structure->m_propertyTable) {
         if (structure->m_isPinnedPropertyTable)
@@ -469,6 +418,7 @@ PassRefPtr<Structure> Structure::changePrototypeTransition(Structure* structure,
 
     transition->m_propertyStorageCapacity = structure->m_propertyStorageCapacity;
     transition->m_hasGetterSetterProperties = structure->m_hasGetterSetterProperties;
+    transition->m_hasNonEnumerableProperties = structure->m_hasNonEnumerableProperties;
 
     // Don't set m_offset, as one can not transition to this.
 
@@ -485,6 +435,7 @@ PassRefPtr<Structure> Structure::despecifyFunctionTransition(Structure* structur
 
     transition->m_propertyStorageCapacity = structure->m_propertyStorageCapacity;
     transition->m_hasGetterSetterProperties = structure->m_hasGetterSetterProperties;
+    transition->m_hasNonEnumerableProperties = structure->m_hasNonEnumerableProperties;
 
     // Don't set m_offset, as one can not transition to this.
 
@@ -516,6 +467,7 @@ PassRefPtr<Structure> Structure::addAnonymousSlotsTransition(Structure* structur
     transition->m_specificValueInPrevious = 0;
     transition->m_propertyStorageCapacity = structure->m_propertyStorageCapacity;
     transition->m_hasGetterSetterProperties = structure->m_hasGetterSetterProperties;
+    transition->m_hasNonEnumerableProperties = structure->m_hasNonEnumerableProperties;
 
     if (structure->m_propertyTable) {
         if (structure->m_isPinnedPropertyTable)
@@ -544,6 +496,7 @@ PassRefPtr<Structure> Structure::getterSetterTransition(Structure* structure)
     RefPtr<Structure> transition = create(structure->storedPrototype(), structure->typeInfo());
     transition->m_propertyStorageCapacity = structure->m_propertyStorageCapacity;
     transition->m_hasGetterSetterProperties = transition->m_hasGetterSetterProperties;
+    transition->m_hasNonEnumerableProperties = structure->m_hasNonEnumerableProperties;
 
     // Don't set m_offset, as one can not transition to this.
 
@@ -562,6 +515,7 @@ PassRefPtr<Structure> Structure::toDictionaryTransition(Structure* structure, Di
     transition->m_dictionaryKind = kind;
     transition->m_propertyStorageCapacity = structure->m_propertyStorageCapacity;
     transition->m_hasGetterSetterProperties = structure->m_hasGetterSetterProperties;
+    transition->m_hasNonEnumerableProperties = structure->m_hasNonEnumerableProperties;
     
     structure->materializePropertyMapIfNecessary();
     transition->m_propertyTable = structure->copyPropertyTable();
@@ -598,25 +552,28 @@ PassRefPtr<Structure> Structure::fromDictionaryTransition(Structure* structure)
 
 size_t Structure::addPropertyWithoutTransition(const Identifier& propertyName, unsigned attributes, JSCell* specificValue)
 {
+    ASSERT(!m_enumerationCache);
     materializePropertyMapIfNecessary();
 
     m_isPinnedPropertyTable = true;
+    if (attributes & DontEnum)
+        m_hasNonEnumerableProperties = true;
+
     size_t offset = put(propertyName, attributes, specificValue);
     if (propertyStorageSize() > propertyStorageCapacity())
         growPropertyStorageCapacity();
-    clearEnumerationCache();
     return offset;
 }
 
 size_t Structure::removePropertyWithoutTransition(const Identifier& propertyName)
 {
     ASSERT(isUncacheableDictionary());
+    ASSERT(!m_enumerationCache);
 
     materializePropertyMapIfNecessary();
 
     m_isPinnedPropertyTable = true;
     size_t offset = remove(propertyName);
-    clearEnumerationCache();
     return offset;
 }
 
@@ -1057,7 +1014,7 @@ static int comparePropertyMapEntryIndices(const void* a, const void* b)
     return 0;
 }
 
-void Structure::getEnumerableNamesFromPropertyTable(PropertyNameArray& propertyNames)
+void Structure::getEnumerablePropertyNames(PropertyNameArray& propertyNames)
 {
     materializePropertyMapIfNecessary();
     if (!m_propertyTable)
@@ -1111,25 +1068,6 @@ void Structure::getEnumerableNamesFromPropertyTable(PropertyNameArray& propertyN
     } else {
         for (size_t i = 0; i < sortedEnumerables.size(); ++i)
             propertyNames.add(sortedEnumerables[i]->key);
-    }
-}
-
-void Structure::getEnumerableNamesFromClassInfoTable(ExecState* exec, const ClassInfo* classInfo, PropertyNameArray& propertyNames)
-{
-    // Add properties from the static hashtables of properties
-    for (; classInfo; classInfo = classInfo->parentClass) {
-        const HashTable* table = classInfo->propHashTable(exec);
-        if (!table)
-            continue;
-        table->initializeIfNeeded(exec);
-        ASSERT(table->table);
-
-        int hashSizeMask = table->compactSize - 1;
-        const HashEntry* entry = table->table;
-        for (int i = 0; i <= hashSizeMask; ++i, ++entry) {
-            if (entry->key() && !(entry->attributes() & DontEnum))
-                propertyNames.add(entry->key());
-        }
     }
 }
 

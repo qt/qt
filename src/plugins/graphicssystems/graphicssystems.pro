@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += trace
-contains(QT_CONFIG, opengl):SUBDIRS += opengl
+!wince*:contains(QT_CONFIG, opengl):SUBDIRS += opengl
 contains(QT_CONFIG, openvg):contains(QT_CONFIG, egl) {
     embedded_lite {
         SUBDIRS += openvglite

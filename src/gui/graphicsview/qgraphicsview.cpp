@@ -281,6 +281,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qinputcontext.h>
 #ifdef Q_WS_X11
+#include <QtGui/qpaintengine.h>
 #include <private/qt_x11_p.h>
 #endif
 
@@ -977,7 +978,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     // Step 2) If the expose region is a simple rect and the view is only
     // translated or scaled, search for items using
     // QGraphicsScene::items(QRectF).
-    bool simpleRectLookup =  exposedRegion.numRects() == 1 && matrix.type() <= QTransform::TxScale;
+    bool simpleRectLookup =  exposedRegion.rectCount() == 1 && matrix.type() <= QTransform::TxScale;
     if (simpleRectLookup) {
         return scene->items(exposedRegionSceneBounds,
                             Qt::IntersectsItemBoundingRect,
@@ -1511,6 +1512,13 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
                    this, SLOT(updateSceneRect(QRectF)));
         d->scene->d_func()->removeView(this);
         d->connectedToScene = false;
+
+        if (isActiveWindow() && isVisible()) {
+            QEvent windowDeactivate(QEvent::WindowDeactivate);
+            QApplication::sendEvent(d->scene, &windowDeactivate);
+        }
+        if(hasFocus())
+            d->scene->clearFocus();
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).
@@ -1532,6 +1540,11 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         // enable touch events if any items is interested in them
         if (!d->scene->d_func()->allItemsIgnoreTouchEvents)
             d->viewport->setAttribute(Qt::WA_AcceptTouchEvents);
+
+        if (isActiveWindow() && isVisible()) {
+            QEvent windowActivate(QEvent::WindowActivate);
+            QApplication::sendEvent(d->scene, &windowActivate);
+        }
     } else {
         d->recalculateContentSize();
     }
@@ -2637,6 +2650,19 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.first());
         QApplication::sendEvent(d->scene, event);
         break;
+    case QEvent::Show:
+        if (d->scene && isActiveWindow()) {
+            QEvent windowActivate(QEvent::WindowActivate);
+            QApplication::sendEvent(d->scene, &windowActivate);
+        }
+        break;
+    case QEvent::Hide:
+        // spontaneous event will generate a WindowDeactivate.
+        if (!event->spontaneous() && d->scene && isActiveWindow()) {
+            QEvent windowDeactivate(QEvent::WindowDeactivate);
+            QApplication::sendEvent(d->scene, &windowDeactivate);
+        }
+        break;
     case QEvent::Leave:
         // ### This is a temporary fix for until we get proper mouse grab
         // events. activeMouseGrabberItem should be set to 0 if we lose the
@@ -2699,6 +2725,19 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             (void) QApplication::sendEvent(d->scene, touchEvent);
         }
 
+        return true;
+    }
+    case QEvent::Gesture:
+    case QEvent::GestureOverride:
+    {
+        if (!isEnabled())
+            return false;
+
+        if (d->scene && d->sceneInteractionAllowed) {
+            QGestureEvent *gestureEvent = static_cast<QGestureEvent *>(event);
+            gestureEvent->setWidget(viewport());
+            (void) QApplication::sendEvent(d->scene, gestureEvent);
+        }
         return true;
     }
     default:
@@ -3281,7 +3320,12 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
             if (viewTransformed)
                 backgroundPainter.setTransform(viewTransform);
-            backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
+#ifdef Q_WS_X11
+#undef X11
+            if (backgroundPainter.paintEngine()->type() != QPaintEngine::X11)
+#define X11 qt_x11Data
+#endif
+                backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
             drawBackground(&backgroundPainter, exposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
@@ -3306,6 +3350,14 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     if (!(d->optimizationFlags & IndirectPainting)) {
         d->scene->d_func()->drawItems(&painter, viewTransformed ? &viewTransform : 0,
                                       &d->exposedRegion, viewport());
+        // Make sure the painter's world transform is restored correctly when
+        // drawing without painter state protection (DontSavePainterState).
+        // We only change the worldTransform() so there's no need to do a full-blown
+        // save() and restore(). Also note that we don't have to do this in case of
+        // IndirectPainting (the else branch), because in that case we always save()
+        // and restore() in QGraphicsScene::drawItems().
+        if (!d->scene->d_func()->painterStateProtection)
+            painter.setWorldTransform(viewTransform);
     } else {
         // Find all exposed items
         bool allItems = false;

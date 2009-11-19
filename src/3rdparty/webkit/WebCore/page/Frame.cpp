@@ -123,6 +123,7 @@ Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoaderClient*
     : m_page(page)
     , m_treeNode(this, parentFromOwnerElement(ownerElement))
     , m_loader(this, frameLoaderClient)
+    , m_redirectScheduler(this)
     , m_ownerElement(ownerElement)
     , m_script(this)
     , m_selectionGranularity(CharacterGranularity)
@@ -197,6 +198,7 @@ Frame::~Frame()
 
     if (m_domWindow)
         m_domWindow->disconnectFrame();
+    script()->clearWindowShell();
 
     HashSet<DOMWindow*>::iterator end = m_liveFormerWindows.end();
     for (HashSet<DOMWindow*>::iterator it = m_liveFormerWindows.begin(); it != end; ++it)
@@ -218,6 +220,11 @@ void Frame::init()
 FrameLoader* Frame::loader() const
 {
     return &m_loader;
+}
+
+RedirectScheduler* Frame::redirectScheduler() const
+{
+    return &m_redirectScheduler;
 }
 
 FrameView* Frame::view() const
@@ -875,12 +882,11 @@ void Frame::injectUserScriptsForWorld(unsigned worldID, const UserScriptVector& 
     if (!doc)
         return;
 
-    // FIXME: Need to implement pattern checking.
     Vector<ScriptSourceCode> sourceCode;
     unsigned count = userScripts.size();
     for (unsigned i = 0; i < count; ++i) {
         UserScript* script = userScripts[i].get();
-        if (script->injectionTime() == injectionTime && UserContentURLPattern::matchesPatterns(doc->url(), script->patterns()))
+        if (script->injectionTime() == injectionTime && UserContentURLPattern::matchesPatterns(doc->url(), script->whitelist(), script->blacklist()))
             sourceCode.append(ScriptSourceCode(script->source(), script->url()));
     }
     script()->evaluateInIsolatedWorld(worldID, sourceCode);

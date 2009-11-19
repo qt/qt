@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(QT_SHIVAVG)
 
-class Q_OPENVG_EXPORT QVGPixmapConvolutionFilter : public QPixmapConvolutionFilter
+class QVGPixmapConvolutionFilter : public QPixmapConvolutionFilter
 {
     Q_OBJECT
 public:
@@ -71,7 +71,7 @@ public:
     void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const;
 };
 
-class Q_OPENVG_EXPORT QVGPixmapColorizeFilter : public QPixmapColorizeFilter
+class QVGPixmapColorizeFilter : public QPixmapColorizeFilter
 {
     Q_OBJECT
 public:
@@ -79,14 +79,9 @@ public:
     ~QVGPixmapColorizeFilter();
 
     void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const;
-
-private:
-    mutable VGfloat matrix[5][4];
-    mutable QColor prevColor;
-    mutable bool firstTime;
 };
 
-class Q_OPENVG_EXPORT QVGPixmapDropShadowFilter : public QPixmapDropShadowFilter
+class QVGPixmapDropShadowFilter : public QPixmapDropShadowFilter
 {
     Q_OBJECT
 public:
@@ -94,14 +89,9 @@ public:
     ~QVGPixmapDropShadowFilter();
 
     void draw(QPainter *p, const QPointF &pos, const QPixmap &px, const QRectF &src) const;
-
-private:
-    mutable VGfloat matrix[5][4];
-    mutable QColor prevColor;
-    mutable bool firstTime;
 };
 
-class Q_OPENVG_EXPORT QVGPixmapBlurFilter : public QPixmapBlurFilter
+class QVGPixmapBlurFilter : public QPixmapBlurFilter
 {
     Q_OBJECT
 public:

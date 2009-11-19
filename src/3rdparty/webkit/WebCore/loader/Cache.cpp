@@ -34,6 +34,7 @@
 #include "FrameView.h"
 #include "Image.h"
 #include "ResourceHandle.h"
+#include "SecurityOrigin.h"
 #include <stdio.h>
 #include <wtf/CurrentTime.h>
 
@@ -104,7 +105,7 @@ CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Typ
     if (resource && requestIsPreload && !resource->isPreloaded())
         return 0;
     
-    if (FrameLoader::restrictAccessToLocal() && !FrameLoader::canLoad(url, String(), docLoader->doc())) {
+    if (SecurityOrigin::restrictAccessToLocal() && !SecurityOrigin::canLoad(url, String(), docLoader->doc())) {
         Document* doc = docLoader->doc();
         if (doc && !requestIsPreload)
             FrameLoader::reportLocalLoadFailed(doc->frame(), url.string());
@@ -274,6 +275,12 @@ void Cache::pruneLiveResources()
     
     // Destroy any decoded data in live objects that we can.
     // Start from the tail, since this is the least recently accessed of the objects.
+
+    // The list might not be sorted by the m_lastDecodedAccessTime. The impact
+    // of this weaker invariant is minor as the below if statement to check the
+    // elapsedTime will evaluate to false as the currentTime will be a lot
+    // greater than the current->m_lastDecodedAccessTime.
+    // For more details see: https://bugs.webkit.org/show_bug.cgi?id=30209
     CachedResource* current = m_liveDecodedResources.m_tail;
     while (current) {
         CachedResource* prev = current->m_prevInLiveResourcesList;

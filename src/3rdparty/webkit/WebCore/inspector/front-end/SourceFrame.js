@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2009 Joseph Pecoraro
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -216,12 +217,18 @@ WebInspector.SourceFrame.prototype = {
             headElement = this.element.contentDocument.createElement("head");
             this.element.contentDocument.documentElement.insertBefore(headElement, this.element.contentDocument.documentElement.firstChild);
         }
+        
+        var linkElement = this.element.contentDocument.createElement("link");
+        linkElement.type = "text/css";
+        linkElement.rel = "stylesheet";
+        linkElement.href = "inspectorSyntaxHighlight.css";
+        headElement.appendChild(linkElement);
 
         var styleElement = this.element.contentDocument.createElement("style");
         headElement.appendChild(styleElement);
 
         // Add these style rules here since they are specific to the Inspector. They also behave oddly and not
-        // all properties apply if added to view-source.css (becuase it is a user agent sheet.)
+        // all properties apply if added to view-source.css (because it is a user agent sheet.)
         var styleText = ".webkit-line-number { background-repeat: no-repeat; background-position: right 1px; }\n";
         styleText += ".webkit-execution-line .webkit-line-number { color: transparent; background-image: -webkit-canvas(program-counter); }\n";
 
@@ -240,10 +247,6 @@ WebInspector.SourceFrame.prototype = {
         styleText += ".webkit-line-content { background-color: white; }\n";
         styleText += "@-webkit-keyframes fadeout {from {background-color: rgb(255, 255, 120);} to { background-color: white;}}\n";
         styleText += ".webkit-highlighted-line .webkit-line-content { background-color: rgb(255, 255, 120); -webkit-animation: 'fadeout' 2s 500ms}\n";
-        styleText += ".webkit-javascript-comment { color: rgb(0, 116, 0); }\n";
-        styleText += ".webkit-javascript-keyword { color: rgb(170, 13, 145); }\n";
-        styleText += ".webkit-javascript-number { color: rgb(28, 0, 207); }\n";
-        styleText += ".webkit-javascript-string, .webkit-javascript-regexp { color: rgb(196, 26, 22); }\n";
 
         // TODO: Move these styles into inspector.css once https://bugs.webkit.org/show_bug.cgi?id=28913 is fixed and popup moved into the top frame.
         styleText += ".popup-content { position: absolute; z-index: 10000; padding: 4px; background-color: rgb(203, 226, 255); -webkit-border-radius: 7px; border: 2px solid rgb(169, 172, 203); }";
@@ -253,7 +256,7 @@ WebInspector.SourceFrame.prototype = {
         styleText += ".popup-content input#bp-condition { font-family: monospace; margin: 0; border: 1px inset rgb(190, 190, 190) !important; width: 100%; box-shadow: none !important; outline: none !important; -webkit-user-modify: read-write; }";
         // This class is already in inspector.css
         styleText += ".hidden { display: none !important; }";
-        
+
         styleElement.textContent = styleText;
 
         this._needsProgramCounterImage = true;
@@ -311,11 +314,11 @@ WebInspector.SourceFrame.prototype = {
         var sourceRow = event.target.enclosingNodeOrSelfWithNodeName("tr");
         if (!sourceRow._breakpointObject && this.addBreakpointDelegate)
             this.addBreakpointDelegate(this.lineNumberForSourceRow(sourceRow));
-        
+
         var breakpoint = sourceRow._breakpointObject;
         if (!breakpoint)
             return;
-        
+
         this._editBreakpointCondition(event.target, sourceRow, breakpoint);
         event.preventDefault();
     },
@@ -340,7 +343,7 @@ WebInspector.SourceFrame.prototype = {
         // TODO: Migrate the popup to the top-level document and remove the blur listener from conditionElement once https://bugs.webkit.org/show_bug.cgi?id=28913 is fixed.
         var popupDocument = this.element.contentDocument;
         this._showBreakpointConditionPopup(eventTarget, breakpoint.line, popupDocument);
-        
+
         function committed(element, newText)
         {
             breakpoint.condition = newText;
@@ -359,7 +362,7 @@ WebInspector.SourceFrame.prototype = {
 
         var dismissedHandler = dismissed.bind(this);
         this._conditionEditorElement.addEventListener("blur", dismissedHandler, false);
-        
+
         WebInspector.startEditing(this._conditionEditorElement, committed.bind(this), dismissedHandler);
         this._conditionEditorElement.value = breakpoint.condition;
         this._conditionEditorElement.select();
@@ -422,7 +425,7 @@ WebInspector.SourceFrame.prototype = {
             return;
 
         var expression = selection.getRangeAt(0).toString().trimWhitespace();
-        WebInspector.panels.scripts.evaluateInSelectedCallFrame(expression, false, function(result, exception) {
+        WebInspector.panels.scripts.evaluateInSelectedCallFrame(expression, false, "console", function(result, exception) {
             WebInspector.showConsole();
             var commandMessage = new WebInspector.ConsoleCommand(expression);
             WebInspector.console.addMessage(commandMessage);
@@ -716,191 +719,639 @@ WebInspector.SourceFrame.prototype = {
         if (!table)
             return;
 
-        function deleteContinueFlags(cell)
-        {
-            if (!cell)
-                return;
-            delete cell._commentContinues;
-            delete cell._singleQuoteStringContinues;
-            delete cell._doubleQuoteStringContinues;
-            delete cell._regexpContinues;
-        }
+        var jsSyntaxHighlighter = new WebInspector.JavaScriptSourceSyntaxHighlighter(table, this);
+        jsSyntaxHighlighter.process();
+    },
 
-        function createSpan(content, className)
-        {
-            var span = document.createElement("span");
-            span.className = className;
-            span.appendChild(document.createTextNode(content));
-            return span;
-        }
+    syntaxHighlightCSS: function()
+    {
+        var table = this.element.contentDocument.getElementsByTagName("table")[0];
+        if (!table)
+            return;
 
-        function generateFinder(regex, matchNumber, className)
-        {
-            return function(str) {
-                var match = regex.exec(str);
-                if (!match)
-                    return null;
-                previousMatchLength = match[matchNumber].length;
-                return createSpan(match[matchNumber], className);
-            };
-        }
+        var cssSyntaxHighlighter = new WebInspector.CSSSourceSyntaxHighligher(table, this);
+        cssSyntaxHighlighter.process();
+    }
+}
 
-        var findNumber = generateFinder(/^(-?(\d+\.?\d*([eE][+-]\d+)?|0[xX]\h+|Infinity)|NaN)(?:\W|$)/, 1, "webkit-javascript-number");
-        var findKeyword = generateFinder(/^(null|true|false|break|case|catch|const|default|finally|for|instanceof|new|var|continue|function|return|void|delete|if|this|do|while|else|in|switch|throw|try|typeof|with|debugger|class|enum|export|extends|import|super|get|set)(?:\W|$)/, 1, "webkit-javascript-keyword");
-        var findSingleLineString = generateFinder(/^"(?:[^"\\]|\\.)*"|^'([^'\\]|\\.)*'/, 0, "webkit-javascript-string"); // " this quote keeps Xcode happy
-        var findMultilineCommentStart = generateFinder(/^\/\*.*$/, 0, "webkit-javascript-comment");
-        var findMultilineCommentEnd = generateFinder(/^.*?\*\//, 0, "webkit-javascript-comment");
-        var findMultilineSingleQuoteStringStart = generateFinder(/^'(?:[^'\\]|\\.)*\\$/, 0, "webkit-javascript-string");
-        var findMultilineSingleQuoteStringEnd = generateFinder(/^(?:[^'\\]|\\.)*?'/, 0, "webkit-javascript-string");
-        var findMultilineDoubleQuoteStringStart = generateFinder(/^"(?:[^"\\]|\\.)*\\$/, 0, "webkit-javascript-string");
-        var findMultilineDoubleQuoteStringEnd = generateFinder(/^(?:[^"\\]|\\.)*?"/, 0, "webkit-javascript-string");
-        var findMultilineRegExpEnd = generateFinder(/^(?:[^\/\\]|\\.)*?\/([gim]{0,3})/, 0, "webkit-javascript-regexp");
-        var findSingleLineComment = generateFinder(/^\/\/.*|^\/\*.*?\*\//, 0, "webkit-javascript-comment");
+WebInspector.SourceFrame.prototype.__proto__ = WebInspector.Object.prototype;
 
-        function findMultilineRegExpStart(str)
-        {
-            var match = /^\/(?:[^\/\\]|\\.)*\\$/.exec(str);
-            if (!match || !/\\|\$|\.[\?\*\+]|[^\|]\|[^\|]/.test(match[0]))
+WebInspector.SourceSyntaxHighligher = function(table, sourceFrame)
+{
+    this.table = table;
+    this.sourceFrame = sourceFrame;
+}
+
+WebInspector.SourceSyntaxHighligher.prototype = {
+    createSpan: function(content, className)
+    {
+        var span = document.createElement("span");
+        span.className = className;
+        span.appendChild(document.createTextNode(content));
+        return span;
+    },
+
+    generateFinder: function(regex, matchNumber, className)
+    {
+        return function(str) {
+            var match = regex.exec(str);
+            if (!match)
                 return null;
-            var node = createSpan(match[0], "webkit-javascript-regexp");
-            previousMatchLength = match[0].length;
-            return node;
-        }
+            this.previousMatchLength = match[matchNumber].length;
+            return this.createSpan(match[matchNumber], className);
+        };
+    },
 
-        function findSingleLineRegExp(str)
-        {
-            var match = /^(\/(?:[^\/\\]|\\.)*\/([gim]{0,3}))(.?)/.exec(str);
-            if (!match || !(match[2].length > 0 || /\\|\$|\.[\?\*\+]|[^\|]\|[^\|]/.test(match[1]) || /\.|;|,/.test(match[3])))
-                return null;
-            var node = createSpan(match[1], "webkit-javascript-regexp");
-            previousMatchLength = match[1].length;
-            return node;
-        }
-
-        function syntaxHighlightJavascriptLine(line, prevLine)
-        {
-            var messageBubble = line.lastChild;
-            if (messageBubble && messageBubble.nodeType === Node.ELEMENT_NODE && messageBubble.hasStyleClass("webkit-html-message-bubble"))
-                line.removeChild(messageBubble);
-            else
-                messageBubble = null;
-
-            var code = line.textContent;
-
-            while (line.firstChild)
-                line.removeChild(line.firstChild);
-
-            var token;
-            var tmp = 0;
-            var i = 0;
-            previousMatchLength = 0;
-
-            if (prevLine) {
-                if (prevLine._commentContinues) {
-                    if (!(token = findMultilineCommentEnd(code))) {
-                        token = createSpan(code, "webkit-javascript-comment");
-                        line._commentContinues = true;
-                    }
-                } else if (prevLine._singleQuoteStringContinues) {
-                    if (!(token = findMultilineSingleQuoteStringEnd(code))) {
-                        token = createSpan(code, "webkit-javascript-string");
-                        line._singleQuoteStringContinues = true;
-                    }
-                } else if (prevLine._doubleQuoteStringContinues) {
-                    if (!(token = findMultilineDoubleQuoteStringEnd(code))) {
-                        token = createSpan(code, "webkit-javascript-string");
-                        line._doubleQuoteStringContinues = true;
-                    }
-                } else if (prevLine._regexpContinues) {
-                    if (!(token = findMultilineRegExpEnd(code))) {
-                        token = createSpan(code, "webkit-javascript-regexp");
-                        line._regexpContinues = true;
-                    }
-                }
-                if (token) {
-                    i += previousMatchLength ? previousMatchLength : code.length;
-                    tmp = i;
-                    line.appendChild(token);
-                }
-            }
-
-            for ( ; i < code.length; ++i) {
-                var codeFragment = code.substr(i);
-                var prevChar = code[i - 1];
-                token = findSingleLineComment(codeFragment);
-                if (!token) {
-                    if ((token = findMultilineCommentStart(codeFragment)))
-                        line._commentContinues = true;
-                    else if (!prevChar || /^\W/.test(prevChar)) {
-                        token = findNumber(codeFragment, code[i - 1]) ||
-                                findKeyword(codeFragment, code[i - 1]) ||
-                                findSingleLineString(codeFragment) ||
-                                findSingleLineRegExp(codeFragment);
-                        if (!token) {
-                            if (token = findMultilineSingleQuoteStringStart(codeFragment))
-                                line._singleQuoteStringContinues = true;
-                            else if (token = findMultilineDoubleQuoteStringStart(codeFragment))
-                                line._doubleQuoteStringContinues = true;
-                            else if (token = findMultilineRegExpStart(codeFragment))
-                                line._regexpContinues = true;
-                        }
-                    }
-                }
-
-                if (token) {
-                    if (tmp !== i)
-                        line.appendChild(document.createTextNode(code.substring(tmp, i)));
-                    line.appendChild(token);
-                    i += previousMatchLength - 1;
-                    tmp = i + 1;
-                }
-            }
-
-            if (tmp < code.length)
-                line.appendChild(document.createTextNode(code.substring(tmp, i)));
-
-            if (messageBubble)
-                line.appendChild(messageBubble);
-        }
-
-        var i = 0;
-        var rows = table.rows;
-        var rowsLength = rows.length;
-        var previousCell = null;
-        var previousMatchLength = 0;
-        var sourceFrame = this;
-
+    process: function()
+    {
         // Split up the work into chunks so we don't block the
         // UI thread while processing.
 
+        var i = 0;
+        var rows = this.table.rows;
+        var rowsLength = rows.length;
+        var previousCell = null;
+        const linesPerChunk = 10;
+
         function processChunk()
         {
-            for (var end = Math.min(i + 10, rowsLength); i < end; ++i) {
+            for (var end = Math.min(i + linesPerChunk, rowsLength); i < end; ++i) {
                 var row = rows[i];
                 if (!row)
                     continue;
                 var cell = row.cells[1];
                 if (!cell)
                     continue;
-                syntaxHighlightJavascriptLine(cell, previousCell);
+                this.syntaxHighlightLine(cell, previousCell);
                 if (i < (end - 1))
-                    deleteContinueFlags(previousCell);
+                    this.deleteContinueFlags(previousCell);
                 previousCell = cell;
             }
 
             if (i >= rowsLength && processChunkInterval) {
-                deleteContinueFlags(previousCell);
+                this.deleteContinueFlags(previousCell);
+                delete this.previousMatchLength;
                 clearInterval(processChunkInterval);
 
-                sourceFrame.dispatchEventToListeners("syntax highlighting complete");
+                this.sourceFrame.dispatchEventToListeners("syntax highlighting complete");
             }
         }
 
-        processChunk();
-
-        var processChunkInterval = setInterval(processChunk, 25);
+        var boundProcessChunk = processChunk.bind(this);
+        var processChunkInterval = setInterval(boundProcessChunk, 25);
+        boundProcessChunk();
     }
 }
 
-WebInspector.SourceFrame.prototype.__proto__ = WebInspector.Object.prototype;
+WebInspector.CSSSourceSyntaxHighligher = function(table, sourceFrame) {
+    WebInspector.SourceSyntaxHighligher.call(this, table, sourceFrame);
 
+    this.findNumber = this.generateFinder(/^((-?(\d+|\d*\.\d+))|^(#[a-fA-F0-9]{3,6}))(?:\D|$)/, 1, "webkit-css-number");
+    this.findUnits = this.generateFinder(/^(px|em|pt|in|cm|mm|pc|ex)(?:\W|$)/, 1, "webkit-css-unit");
+    this.findKeyword = this.generateFinder(/^(rgba?|hsla?|var)(?:\W|$)/, 1, "webkit-css-keyword");
+    this.findSingleLineString = this.generateFinder(/^"(?:[^"\\]|\\.)*"|^'([^'\\]|\\.)*'/, 0, "webkit-css-string"); // " this quote keeps Xcode happy
+    this.findSingleLineComment = this.generateFinder(/^\/\*.*?\*\//, 0, "webkit-css-comment");
+    this.findMultilineCommentStart = this.generateFinder(/^\/\*.*$/, 0, "webkit-css-comment");
+    this.findMultilineCommentEnd = this.generateFinder(/^.*?\*\//, 0, "webkit-css-comment");
+    this.findSelector = this.generateFinder(/^([#\.]?[_a-zA-Z].*?)(?:\W|$)/, 1, "webkit-css-selector");
+    this.findProperty = this.generateFinder(/^(-?[_a-z0-9][_a-z0-9-]*\s*)(?:\:)/, 1, "webkit-css-property");
+    this.findGenericIdent = this.generateFinder(/^([@-]?[_a-z0-9][_a-z0-9-]*)(?:\W|$)/, 1, "webkit-css-string");
+}
+
+WebInspector.CSSSourceSyntaxHighligher.prototype = {
+    deleteContinueFlags: function(cell)
+    {
+        if (!cell)
+            return;
+        delete cell._commentContinues;
+        delete cell._inSelector;
+    },
+
+    findPseudoClass: function(str)
+    {
+        var match = /^(::?)([_a-z0-9][_a-z0-9-]*)/.exec(str);
+        if (!match)
+            return null;
+        this.previousMatchLength = match[0].length;
+        var span = document.createElement("span");
+        span.appendChild(document.createTextNode(match[1]));
+        span.appendChild(this.createSpan(match[2], "webkit-css-pseudo-class"));
+        return span;
+    },
+
+    findURL: function(str)
+    {
+        var match = /^(?:local|url)\(([^\)]*?)\)/.exec(str);
+        if (!match)
+            return null;
+        this.previousMatchLength = match[0].length;
+        var innerUrlSpan = this.createSpan(match[1], "webkit-css-url");
+        var outerSpan = document.createElement("span");
+        outerSpan.appendChild(this.createSpan("url", "webkit-css-keyword"));
+        outerSpan.appendChild(document.createTextNode("("));
+        outerSpan.appendChild(innerUrlSpan);
+        outerSpan.appendChild(document.createTextNode(")"));
+        return outerSpan;
+    },
+
+    findAtRule: function(str)
+    {
+        var match = /^@[_a-z0-9][_a-z0-9-]*(?:\W|$)/.exec(str);
+        if (!match)
+            return null;
+        this.previousMatchLength = match[0].length;
+        return this.createSpan(match[0], "webkit-css-at-rule");
+    },
+
+    syntaxHighlightLine: function(line, prevLine)
+    {
+        var code = line.textContent;
+        while (line.firstChild)
+            line.removeChild(line.firstChild);
+
+        var token;
+        var tmp = 0;
+        var i = 0;
+        this.previousMatchLength = 0;
+
+        if (prevLine) {
+            if (prevLine._commentContinues) {
+                if (!(token = this.findMultilineCommentEnd(code))) {
+                    token = this.createSpan(code, "webkit-javascript-comment");
+                    line._commentContinues = true;
+                }
+            }
+            if (token) {
+                i += this.previousMatchLength ? this.previousMatchLength : code.length;
+                tmp = i;
+                line.appendChild(token);
+            }
+        }
+
+        var inSelector = (prevLine && prevLine._inSelector); // inside a selector, we can now parse properties and values
+        var inAtRuleBlock = (prevLine && prevLine._inAtRuleBlock); // inside an @rule block, but not necessarily inside a selector yet
+        var atRuleStarted = (prevLine && prevLine._atRuleStarted); // we received an @rule, we may stop the @rule at a semicolon or open a block and become inAtRuleBlock
+        var atRuleIsSelector = (prevLine && prevLine._atRuleIsSelector); // when this @rule opens a block it immediately goes into parsing properties and values instead of selectors
+
+        for ( ; i < code.length; ++i) {
+            var codeFragment = code.substr(i);
+            var prevChar = code[i - 1];
+            var currChar = codeFragment[0];
+            token = this.findSingleLineComment(codeFragment);
+            if (!token) {
+                if ((token = this.findMultilineCommentStart(codeFragment)))
+                    line._commentContinues = true;
+                else if (currChar === ";" && !inAtRuleBlock)
+                    atRuleStarted = false;
+                else if (currChar === "}") {
+                    if (inSelector && inAtRuleBlock && atRuleIsSelector) {
+                        inSelector = false;
+                        inAtRuleBlock = false;
+                        atRuleStarted = false;
+                    } else if (inSelector) {
+                        inSelector = false;
+                    } else if (inAtRuleBlock) {
+                        inAtRuleBlock = false;
+                        atRuleStarted = false;
+                    }
+                } else if (currChar === "{") {
+                    if (!atRuleStarted || inAtRuleBlock) {
+                        inSelector = true;
+                    } else if (!inAtRuleBlock && atRuleIsSelector) {
+                        inAtRuleBlock = true;
+                        inSelector = true;
+                    } else if (!inAtRuleBlock) {
+                        inAtRuleBlock = true;
+                        inSelector = false;
+                    }
+                } else if (inSelector) {
+                    if (!prevChar || /^\d/.test(prevChar)) {
+                        token = this.findUnits(codeFragment);
+                    } else if (!prevChar || /^\W/.test(prevChar)) {
+                        token = this.findNumber(codeFragment) ||
+                                this.findKeyword(codeFragment) ||
+                                this.findURL(codeFragment) ||
+                                this.findProperty(codeFragment) ||
+                                this.findAtRule(codeFragment) ||
+                                this.findGenericIdent(codeFragment) ||
+                                this.findSingleLineString(codeFragment);
+                    }
+                } else if (!inSelector) {
+                    if (atRuleStarted && !inAtRuleBlock)
+                        token = this.findURL(codeFragment); // for @import
+                    if (!token) {
+                        token = this.findSelector(codeFragment) ||
+                                this.findPseudoClass(codeFragment) ||
+                                this.findAtRule(codeFragment);
+                    }
+                }
+            }
+
+            if (token) {
+                if (currChar === "@") {
+                    atRuleStarted = true;
+
+                    // The @font-face, @page, and @variables at-rules do not contain selectors like other at-rules
+                    // instead it acts as a selector and contains properties and values.
+                    var text = token.textContent;
+                    atRuleIsSelector = /font-face/.test(text) || /page/.test(text) || /variables/.test(text);
+                }
+
+                if (tmp !== i)
+                    line.appendChild(document.createTextNode(code.substring(tmp, i)));
+                line.appendChild(token);
+                i += this.previousMatchLength - 1;
+                tmp = i + 1;
+            }
+        }
+
+        line._inSelector = inSelector;
+        line._inAtRuleBlock = inAtRuleBlock;
+        line._atRuleStarted = atRuleStarted;
+        line._atRuleIsSelector = atRuleIsSelector;
+
+        if (tmp < code.length)
+            line.appendChild(document.createTextNode(code.substring(tmp, i)));
+    }
+}
+
+WebInspector.CSSSourceSyntaxHighligher.prototype.__proto__ = WebInspector.SourceSyntaxHighligher.prototype;
+
+WebInspector.JavaScriptSourceSyntaxHighlighter = function(table, sourceFrame) {
+    WebInspector.SourceSyntaxHighligher.call(this, table, sourceFrame);
+
+    this.LexState = {
+        Initial: 1,
+        DivisionAllowed: 2,
+    };
+    this.ContinueState = {
+        None: 0,
+        Comment: 1,
+        SingleQuoteString: 2,
+        DoubleQuoteString: 3,
+        RegExp: 4
+    };
+    
+    this.nonToken = "";
+    this.cursor = 0;
+    this.lineIndex = -1;
+    this.lineCode = "";
+    this.lineFragment = null;
+    this.lexState = this.LexState.Initial;
+    this.continueState = this.ContinueState.None;
+    
+    this.rules = [{
+            pattern: /^(?:\/\/.*)/,
+            action: singleLineCommentAction
+        }, {
+            pattern: /^(?:\/\*(?:[^\*]|\*[^\/])*\*+\/)/,
+            action: multiLineSingleLineCommentAction
+        }, {
+            pattern: /^(?:\/\*(?:[^\*]|\*[^\/])*)/,
+            action: multiLineCommentStartAction
+        }, {
+            pattern: /^(?:(?:[^\*]|\*[^\/])*\*+\/)/,
+            action: multiLineCommentEndAction,
+            continueStateCondition: this.ContinueState.Comment
+        }, {
+            pattern: /^.*/,
+            action: multiLineCommentMiddleAction,
+            continueStateCondition: this.ContinueState.Comment
+        }, {
+            pattern: /^(?:(?:0|[1-9]\d*)\.\d+?(?:[eE](?:\d+|\+\d+|-\d+))?|\.\d+(?:[eE](?:\d+|\+\d+|-\d+))?|(?:0|[1-9]\d*)(?:[eE](?:\d+|\+\d+|-\d+))?|0x[0-9a-fA-F]+|0X[0-9a-fA-F]+)/,
+            action: numericLiteralAction
+        }, {
+            pattern: /^(?:"(?:[^"\\]|\\(?:['"\bfnrtv]|[^'"\bfnrtv0-9xu]|0|x[0-9a-fA-F][0-9a-fA-F]|(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))*"|'(?:[^'\\]|\\(?:['"\bfnrtv]|[^'"\bfnrtv0-9xu]|0|x[0-9a-fA-F][0-9a-fA-F]|(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))*')/,
+            action: stringLiteralAction
+        }, {
+            pattern: /^(?:'(?:[^'\\]|\\(?:['"\bfnrtv]|[^'"\bfnrtv0-9xu]|0|x[0-9a-fA-F][0-9a-fA-F]|(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))*)\\$/,
+            action: singleQuoteStringStartAction
+        }, {
+            pattern: /^(?:(?:[^'\\]|\\(?:['"\bfnrtv]|[^'"\bfnrtv0-9xu]|0|x[0-9a-fA-F][0-9a-fA-F]|(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))*')/,
+            action: singleQuoteStringEndAction,
+            continueStateCondition: this.ContinueState.SingleQuoteString
+        }, {
+            pattern: /^(?:(?:[^'\\]|\\(?:['"\bfnrtv]|[^'"\bfnrtv0-9xu]|0|x[0-9a-fA-F][0-9a-fA-F]|(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))*)\\$/,
+            action: singleQuoteStringMiddleAction,
+            continueStateCondition: this.ContinueState.SingleQuoteString
+        }, {
+            pattern: /^(?:"(?:[^"\\]|\\(?:['"\bfnrtv]|[^'"\bfnrtv0-9xu]|0|x[0-9a-fA-F][0-9a-fA-F]|(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))*)\\$/,
+            action: doubleQuoteStringStartAction
+        }, {
+            pattern: /^(?:(?:[^"\\]|\\(?:['"\bfnrtv]|[^'"\bfnrtv0-9xu]|0|x[0-9a-fA-F][0-9a-fA-F]|(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))*")/,
+            action: doubleQuoteStringEndAction,
+            continueStateCondition: this.ContinueState.DoubleQuoteString
+        }, {
+            pattern: /^(?:(?:[^"\\]|\\(?:['"\bfnrtv]|[^'"\bfnrtv0-9xu]|0|x[0-9a-fA-F][0-9a-fA-F]|(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])))*)\\$/,
+            action: doubleQuoteStringMiddleAction,
+            continueStateCondition: this.ContinueState.DoubleQuoteString
+        }, {
+            pattern: /^(?:(?:[a-zA-Z]|[$_]|\\(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]))(?:(?:[a-zA-Z]|[$_]|\\(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]))|[0-9])*)/,
+            action: identOrKeywordAction,
+            dontAppendNonToken: true
+        }, {
+            pattern: /^\)/,
+            action: rightParenAction,
+            dontAppendNonToken: true
+        }, {
+            pattern: /^(?:<=|>=|===|==|!=|!==|\+\+|\-\-|<<|>>|>>>|&&|\|\||\+=|\-=|\*=|%=|<<=|>>=|>>>=|&=|\|=|^=|[{}\(\[\]\.;,<>\+\-\*%&\|\^!~\?:=])/,
+            action: punctuatorAction,
+            dontAppendNonToken: true
+        }, {
+            pattern: /^(?:\/=?)/,
+            action: divPunctuatorAction,
+            stateCondition: this.LexState.DivisionAllowed,
+            dontAppendNonToken: true
+        }, {
+            pattern: /^(?:\/(?:(?:\\.)|[^\\*\/])(?:(?:\\.)|[^\\/])*\/(?:(?:[a-zA-Z]|[$_]|\\(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]))|[0-9])*)/,
+            action: regExpLiteralAction
+        }, {
+            pattern: /^(?:\/(?:(?:\\.)|[^\\*\/])(?:(?:\\.)|[^\\/])*)\\$/,
+            action: regExpStartAction
+        }, {
+            pattern: /^(?:(?:(?:\\.)|[^\\/])*\/(?:(?:[a-zA-Z]|[$_]|\\(?:u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]))|[0-9])*)/,
+            action: regExpEndAction,
+            continueStateCondition: this.ContinueState.RegExp
+        }, {
+            pattern: /^(?:(?:(?:\\.)|[^\\/])*)\\$/,
+            action: regExpMiddleAction,
+            continueStateCondition: this.ContinueState.RegExp
+        }];
+    
+    function singleLineCommentAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-comment"));
+    }
+    
+    function multiLineSingleLineCommentAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-comment"));
+    }
+    
+    function multiLineCommentStartAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-comment"));
+        this.continueState = this.ContinueState.Comment;
+    }
+    
+    function multiLineCommentEndAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-comment"));
+        this.continueState = this.ContinueState.None;
+    }
+    
+    function multiLineCommentMiddleAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-comment"));
+    }
+    
+    function numericLiteralAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-number"));
+        this.lexState = this.LexState.DivisionAllowed;
+    }
+    
+    function stringLiteralAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-string"));
+        this.lexState = this.LexState.Initial;
+    }
+    
+    function singleQuoteStringStartAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-string"));
+        this.continueState = this.ContinueState.SingleQuoteString;
+    }
+    
+    function singleQuoteStringEndAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-string"));
+        this.continueState = this.ContinueState.None;
+    }
+    
+    function singleQuoteStringMiddleAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-string"));
+    }
+    
+    function doubleQuoteStringStartAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-string"));
+        this.continueState = this.ContinueState.DoubleQuoteString;
+    }
+    
+    function doubleQuoteStringEndAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-string"));
+        this.continueState = this.ContinueState.None;
+    }
+    
+    function doubleQuoteStringMiddleAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-string"));
+    }
+    
+    function regExpLiteralAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-regexp"));
+        this.lexState = this.LexState.Initial;
+    }
+
+    function regExpStartAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-regexp"));
+        this.continueState = this.ContinueState.RegExp;
+    }
+
+    function regExpEndAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-regexp"));
+        this.continueState = this.ContinueState.None;
+    }
+
+    function regExpMiddleAction(token)
+    {
+        this.cursor += token.length;
+        this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-regexp"));
+    }
+    
+    function identOrKeywordAction(token)
+    {
+        const keywords = ["null", "true", "false", "break", "case", "catch", "const", "default", "finally", "for", "instanceof", "new", "var", "continue", "function", "return", "void", "delete", "if", "this", "do", "while", "else", "in", "switch", "throw", "try", "typeof", "with", "debugger", "class", "enum", "export", "extends", "import", "super", "get", "set"];
+        this.cursor += token.length;
+        if (keywords.indexOf(token) === -1) {
+            this.nonToken += token;
+            this.lexState = this.LexState.DivisionAllowed;
+        } else {
+            this.appendNonToken();
+            this.lineFragment.appendChild(this.createSpan(token, "webkit-javascript-keyword"));
+            this.lexState = this.LexState.Initial;
+        }
+    }
+    
+    function divPunctuatorAction(token)
+    {
+        this.cursor += token.length;
+        this.nonToken += token;
+        this.lexState = this.LexState.Initial;
+    }
+    
+    function rightParenAction(token)
+    {
+        this.cursor += token.length;
+        this.nonToken += token;
+        this.lexState = this.LexState.DivisionAllowed;
+    }
+    
+    function punctuatorAction(token)
+    {
+        this.cursor += token.length;
+        this.nonToken += token;
+        this.lexState = this.LexState.Initial;
+    }
+}
+
+WebInspector.JavaScriptSourceSyntaxHighlighter.prototype = {
+    process: function()
+    {
+        // Split up the work into chunks so we don't block the
+        // UI thread while processing.
+
+        var rows = this.table.rows;
+        var rowsLength = rows.length;
+        const tokensPerChunk = 100;
+        const lineLengthLimit = 20000;
+        
+        var boundProcessChunk = processChunk.bind(this);
+        var processChunkInterval = setInterval(boundProcessChunk, 25);
+        boundProcessChunk();
+        
+        function processChunk()
+        {
+            for (var i = 0; i < tokensPerChunk; i++) {
+                if (this.cursor >= this.lineCode.length)
+                    moveToNextLine.call(this);
+                if (this.lineIndex >= rowsLength) {
+                    this.sourceFrame.dispatchEventToListeners("syntax highlighting complete");
+                    return;
+                }
+                if (this.cursor > lineLengthLimit) {
+                    var codeFragment = this.lineCode.substring(this.cursor);
+                    this.nonToken += codeFragment;
+                    this.cursor += codeFragment.length;
+                }
+
+                this.lex();
+            }
+        }
+        
+        function moveToNextLine()
+        {
+            this.appendNonToken();
+            
+            var row = rows[this.lineIndex];
+            var line = row ? row.cells[1] : null;
+            if (line && this.lineFragment) {
+                var messageBubble = null;
+                if (line.lastChild && line.lastChild.nodeType === Node.ELEMENT_NODE && line.lastChild.hasStyleClass("webkit-html-message-bubble")) {
+                    messageBubble = line.lastChild;
+                    line.removeChild(messageBubble);
+                }
+                
+                Element.prototype.removeChildren.call(line);
+                
+                line.appendChild(this.lineFragment);
+                if (messageBubble)
+                    line.appendChild(messageBubble);
+                this.lineFragment = null;
+            }
+            this.lineIndex++;
+            if (this.lineIndex >= rowsLength && processChunkInterval) {
+                clearInterval(processChunkInterval);
+                this.sourceFrame.dispatchEventToListeners("syntax highlighting complete");
+                return;
+            }
+            row = rows[this.lineIndex];
+            line = row ? row.cells[1] : null;
+            this.lineCode = line.textContent;
+            this.lineFragment = document.createDocumentFragment();
+            this.cursor = 0;
+            if (!line)
+                moveToNextLine();
+        }
+    },
+    
+    lex: function()
+    {
+        var token = null;
+        var codeFragment = this.lineCode.substring(this.cursor);
+        
+        for (var i = 0; i < this.rules.length; i++) {
+            var rule = this.rules[i];
+            var ruleContinueStateCondition = typeof rule.continueStateCondition === "undefined" ? this.ContinueState.None : rule.continueStateCondition;
+            if (this.continueState === ruleContinueStateCondition) {
+                if (typeof rule.stateCondition !== "undefined" && this.lexState !== rule.stateCondition)
+                    continue;
+                var match = rule.pattern.exec(codeFragment);
+                if (match) {
+                    token = match[0];
+                    if (token) {
+                        if (!rule.dontAppendNonToken)
+                            this.appendNonToken();
+                        return rule.action.call(this, token);
+                    }
+                }
+            }
+        }
+        this.nonToken += codeFragment[0];
+        this.cursor++;
+    },
+    
+    appendNonToken: function ()
+    {
+        if (this.nonToken.length > 0) {
+            this.lineFragment.appendChild(document.createTextNode(this.nonToken));
+            this.nonToken = "";
+        }
+    },
+    
+    syntaxHighlightNode: function(node)
+    {
+        this.lineCode = node.textContent;
+        this.lineFragment = document.createDocumentFragment();
+        this.cursor = 0;
+        while (true) {
+            if (this.cursor >= this.lineCode.length) {
+                var codeFragment = this.lineCode.substring(this.cursor);
+                this.nonToken += codeFragment;
+                this.cursor += codeFragment.length;
+                this.appendNonToken();
+                while (node.firstChild)
+                    node.removeChild(node.firstChild);
+                node.appendChild(this.lineFragment);
+                this.lineFragment =null;
+                return;
+            }
+
+            this.lex();
+        }
+    }
+}
+
+WebInspector.JavaScriptSourceSyntaxHighlighter.prototype.__proto__ = WebInspector.SourceSyntaxHighligher.prototype;

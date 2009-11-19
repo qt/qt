@@ -73,7 +73,8 @@ static QGLScreen *glScreenForDevice(QPaintDevice *device)
             screenNumber = 0;
         screen = screen->subScreens()[screenNumber];
     }
-    while (screen->classId() == QScreen::ProxyClass) {
+    while (screen->classId() == QScreen::ProxyClass ||
+           screen->classId() == QScreen::TransformedClass) {
         screen = static_cast<QProxyScreen *>(screen)->screen();
     }
     if (screen->classId() == QScreen::GLClass)
@@ -205,6 +206,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         d->eglContext = 0;
         return false;
     }
+    d->sharing = d->eglContext->isSharing();
+    if (d->sharing && shareContext)
+        const_cast<QGLContext *>(shareContext)->d_func()->sharing = true;
 
 #if defined(EGL_VERSION_1_1)
     if (d->glFormat.swapInterval() != -1 && devType == QInternal::Widget)

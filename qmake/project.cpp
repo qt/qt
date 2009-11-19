@@ -519,7 +519,7 @@ static isForSymbian_enum isForSymbian_value = isForSymbian_NOT_SET;
 // Checking for symbian build is primarily determined from the qmake spec,
 // but if that is not specified, detect if symbian is the default spec
 // by checking the MAKEFILE_GENERATOR variable value.
-static void init_isForSymbian(const QMap<QString, QStringList>& vars)
+static void init_symbian(const QMap<QString, QStringList>& vars)
 {
     if (isForSymbian_value != isForSymbian_NOT_SET)
         return;
@@ -527,26 +527,27 @@ static void init_isForSymbian(const QMap<QString, QStringList>& vars)
     QString spec = QFileInfo(Option::mkfile::qmakespec).fileName();
     if (spec.startsWith("symbian-abld", Qt::CaseInsensitive)) {
         isForSymbian_value = isForSymbian_ABLD;
-        return;
-    }
-    if (spec.startsWith("symbian-sbsv2", Qt::CaseInsensitive)) {
+    } else if (spec.startsWith("symbian-sbsv2", Qt::CaseInsensitive)) {
         isForSymbian_value = isForSymbian_SBSV2;
-        return;
-    }
-
-    QStringList generatorList = vars["MAKEFILE_GENERATOR"];
-
-    if (!generatorList.isEmpty()) {
-        QString generator = generatorList.first();
-        if (generator.startsWith("SYMBIAN_ABLD"))
-            isForSymbian_value = isForSymbian_ABLD;
-        else if (generator.startsWith("SYMBIAN_SBSV2"))
-            isForSymbian_value = isForSymbian_SBSV2;
-        else
-            isForSymbian_value = isForSymbian_FALSE;
     } else {
-        isForSymbian_value = isForSymbian_FALSE;
+        QStringList generatorList = vars["MAKEFILE_GENERATOR"];
+
+        if (!generatorList.isEmpty()) {
+            QString generator = generatorList.first();
+            if (generator.startsWith("SYMBIAN_ABLD"))
+                isForSymbian_value = isForSymbian_ABLD;
+            else if (generator.startsWith("SYMBIAN_SBSV2"))
+                isForSymbian_value = isForSymbian_SBSV2;
+            else
+                isForSymbian_value = isForSymbian_FALSE;
+        } else {
+            isForSymbian_value = isForSymbian_FALSE;
+        }
     }
+
+    // Force recursive on Symbian, as non-recursive is not really a viable option there
+    if (isForSymbian_value != isForSymbian_FALSE)
+        Option::recursive = true;
 }
 
 bool isForSymbian()
@@ -554,9 +555,9 @@ bool isForSymbian()
     // If isForSymbian_value has not been initialized explicitly yet,
     // call initializer with dummy map to check qmake spec.
     if (isForSymbian_value == isForSymbian_NOT_SET)
-        init_isForSymbian(QMap<QString, QStringList>());
+        init_symbian(QMap<QString, QStringList>());
 
-    return (isForSymbian_value == isForSymbian_ABLD || isForSymbian_value == isForSymbian_SBSV2);
+    return (isForSymbian_value != isForSymbian_FALSE);
 }
 
 bool isForSymbianSbsv2()
@@ -564,7 +565,7 @@ bool isForSymbianSbsv2()
     // If isForSymbian_value has not been initialized explicitly yet,
     // call initializer with dummy map to check qmake spec.
     if (isForSymbian_value == isForSymbian_NOT_SET)
-        init_isForSymbian(QMap<QString, QStringList>());
+        init_symbian(QMap<QString, QStringList>());
 
     return (isForSymbian_value == isForSymbian_SBSV2);
 }
@@ -1463,7 +1464,7 @@ QMakeProject::read(uchar cmd)
                 return false;
             }
 
-            init_isForSymbian(base_vars);
+            init_symbian(base_vars);
 
             if(Option::mkfile::do_cache && !Option::mkfile::cachefile.isEmpty()) {
                 debug_msg(1, "QMAKECACHE file: reading %s", Option::mkfile::cachefile.toLatin1().constData());
@@ -1715,7 +1716,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
         if(file.indexOf(Option::dir_sep) == -1 || !QFile::exists(file)) {
             static QStringList *feature_roots = 0;
             if(!feature_roots) {
-                init_isForSymbian(base_vars);
+                init_symbian(base_vars);
                 feature_roots = new QStringList(qmake_feature_paths(prop));
                 qmakeAddCacheClear(qmakeDeleteCacheClear_QStringList, (void**)&feature_roots);
             }

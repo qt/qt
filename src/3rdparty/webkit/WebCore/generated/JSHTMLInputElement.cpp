@@ -43,7 +43,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLInputElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLInputElementTableValues[31] =
+static const HashTableValue JSHTMLInputElementTableValues[33] =
 {
     { "defaultValue", DontDelete, (intptr_t)jsHTMLInputElementDefaultValue, (intptr_t)setJSHTMLInputElementDefaultValue },
     { "defaultChecked", DontDelete, (intptr_t)jsHTMLInputElementDefaultChecked, (intptr_t)setJSHTMLInputElementDefaultChecked },
@@ -57,7 +57,9 @@ static const HashTableValue JSHTMLInputElementTableValues[31] =
     { "checked", DontDelete, (intptr_t)jsHTMLInputElementChecked, (intptr_t)setJSHTMLInputElementChecked },
     { "disabled", DontDelete, (intptr_t)jsHTMLInputElementDisabled, (intptr_t)setJSHTMLInputElementDisabled },
     { "autofocus", DontDelete, (intptr_t)jsHTMLInputElementAutofocus, (intptr_t)setJSHTMLInputElementAutofocus },
+    { "max", DontDelete, (intptr_t)jsHTMLInputElementMax, (intptr_t)setJSHTMLInputElementMax },
     { "maxLength", DontDelete, (intptr_t)jsHTMLInputElementMaxLength, (intptr_t)setJSHTMLInputElementMaxLength },
+    { "min", DontDelete, (intptr_t)jsHTMLInputElementMin, (intptr_t)setJSHTMLInputElementMin },
     { "multiple", DontDelete, (intptr_t)jsHTMLInputElementMultiple, (intptr_t)setJSHTMLInputElementMultiple },
     { "name", DontDelete, (intptr_t)jsHTMLInputElementName, (intptr_t)setJSHTMLInputElementName },
     { "pattern", DontDelete, (intptr_t)jsHTMLInputElementPattern, (intptr_t)setJSHTMLInputElementPattern },
@@ -82,7 +84,7 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLInputElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSHTMLInputElementTableValues, 0 };
 #else
-    { 72, 63, JSHTMLInputElementTableValues, 0 };
+    { 73, 63, JSHTMLInputElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -113,8 +115,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSHTMLInputElementConstructor::s_info = { "HTMLInputElementConstructor", 0, &JSHTMLInputElementConstructorTable, 0 };
@@ -283,12 +288,28 @@ JSValue jsHTMLInputElementAutofocus(ExecState* exec, const Identifier&, const Pr
     return jsBoolean(imp->autofocus());
 }
 
+JSValue jsHTMLInputElementMax(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::maxAttr));
+}
+
 JSValue jsHTMLInputElementMaxLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
     return jsNumber(exec, imp->maxLength());
+}
+
+JSValue jsHTMLInputElementMin(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSHTMLInputElement* castedThis = static_cast<JSHTMLInputElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::minAttr));
 }
 
 JSValue jsHTMLInputElementMultiple(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -483,12 +504,24 @@ void setJSHTMLInputElementAutofocus(ExecState* exec, JSObject* thisObject, JSVal
     imp->setAutofocus(value.toBoolean(exec));
 }
 
+void setJSHTMLInputElementMax(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(thisObject)->impl());
+    imp->setAttribute(HTMLNames::maxAttr, value.toString(exec));
+}
+
 void setJSHTMLInputElementMaxLength(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setMaxLength(value.toInt32(exec), ec);
     setDOMException(exec, ec);
+}
+
+void setJSHTMLInputElementMin(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(thisObject)->impl());
+    imp->setAttribute(HTMLNames::minAttr, value.toString(exec));
 }
 
 void setJSHTMLInputElementMultiple(ExecState* exec, JSObject* thisObject, JSValue value)

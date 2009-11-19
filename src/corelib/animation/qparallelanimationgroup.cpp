@@ -182,11 +182,11 @@ void QParallelAnimationGroup::updateCurrentTime(int currentTime)
 /*!
     \reimp
 */
-void QParallelAnimationGroup::updateState(QAbstractAnimation::State oldState,
-                                          QAbstractAnimation::State newState)
+void QParallelAnimationGroup::updateState(QAbstractAnimation::State newState,
+                                          QAbstractAnimation::State oldState)
 {
     Q_D(QParallelAnimationGroup);
-    QAnimationGroup::updateState(oldState, newState);
+    QAnimationGroup::updateState(newState, oldState);
 
     switch (newState) {
     case Stopped:

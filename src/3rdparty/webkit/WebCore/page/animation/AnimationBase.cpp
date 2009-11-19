@@ -361,6 +361,10 @@ public:
     {
         Color fromColor = (a->*m_getter)();
         Color toColor = (b->*m_getter)();
+
+        if (!fromColor.isValid() && !toColor.isValid())
+            return true;
+
         if (!fromColor.isValid())
             fromColor = a->color();
         if (!toColor.isValid())
@@ -373,6 +377,10 @@ public:
     {
         Color fromColor = (a->*m_getter)();
         Color toColor = (b->*m_getter)();
+
+        if (!fromColor.isValid() && !toColor.isValid())
+            return;
+
         if (!fromColor.isValid())
             fromColor = a->color();
         if (!toColor.isValid())
@@ -460,6 +468,7 @@ public:
                 m_fillLayerPropertyWrapper = new FillLayerPropertyWrapper<Length>(&FillLayer::yPosition, &FillLayer::setYPosition);
                 break;
             case CSSPropertyBackgroundSize:
+            case CSSPropertyWebkitBackgroundSize:
             case CSSPropertyWebkitMaskSize:
                 m_fillLayerPropertyWrapper = new FillLayerPropertyWrapper<LengthSize>(&FillLayer::sizeLength, &FillLayer::setSizeLength);
                 break;
@@ -584,6 +593,7 @@ static void ensurePropertyMap()
         gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundPositionX, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
         gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundPositionY, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
         gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundSize, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
+        gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitBackgroundSize, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
 
         gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskPositionX, &RenderStyle::maskLayers, &RenderStyle::accessMaskLayers));
         gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskPositionY, &RenderStyle::maskLayers, &RenderStyle::accessMaskLayers));
@@ -635,7 +645,7 @@ static void ensurePropertyMap()
         gPropertyWrappers->append(new PropertyWrapperMaybeInvalidColor(CSSPropertyOutlineColor, &RenderStyle::outlineColor, &RenderStyle::setOutlineColor));
 
         // These are for shadows
-        gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyBoxShadow, &RenderStyle::boxShadow, &RenderStyle::setBoxShadow));
+        gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyWebkitBoxShadow, &RenderStyle::boxShadow, &RenderStyle::setBoxShadow));
         gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyTextShadow, &RenderStyle::textShadow, &RenderStyle::setTextShadow));
 
 #if ENABLE(SVG)
