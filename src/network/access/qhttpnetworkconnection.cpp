@@ -194,11 +194,20 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 
     // some websites mandate an accept-language header and fail
     // if it is not sent. This is a problem with the website and
-    // not with us, but we work around this by setting a
-    // universal one always.
+    // not with us, but we work around this by setting
+    // one always.
     value = request.headerField("accept-language");
-    if (value.isEmpty())
-        request.setHeaderField("accept-language", "en,*");
+    if (value.isEmpty()) {
+        QString systemLocale = QLocale::system().name().replace(QChar::fromAscii('_'),QChar::fromAscii('-'));
+        QString acceptLanguage;
+        if (systemLocale == QLatin1String("C"))
+            acceptLanguage = QString::fromAscii("en,*");
+        else if (systemLocale.startsWith(QLatin1String("en-")))
+            acceptLanguage = QString::fromAscii("%1,*").arg(systemLocale);
+        else
+            acceptLanguage = QString::fromAscii("%1,en,*").arg(systemLocale);
+        request.setHeaderField("Accept-Language", acceptLanguage.toAscii());
+    }
 
     // set the User Agent
     value = request.headerField("user-agent");

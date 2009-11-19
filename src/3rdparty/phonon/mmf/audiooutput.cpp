@@ -24,7 +24,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "defs.h"
 #include "mediaobject.h"
 #include "utils.h"
-#include "volumeobserver.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -41,7 +40,6 @@ using namespace Phonon::MMF;
 
 MMF::AudioOutput::AudioOutput(Backend *, QObject *parent) : MediaNode(parent)
         , m_volume(InitialVolume)
-        , m_observer(0)
 {
 
 }
@@ -59,12 +57,9 @@ qreal MMF::AudioOutput::volume() const
 void MMF::AudioOutput::setVolume(qreal volume)
 {
     TRACE_CONTEXT(AudioOutput::setVolume, EAudioApi);
-    TRACE_ENTRY("observer 0x%08x volume %f", m_observer, volume);
+    TRACE_ENTRY("volume %f", volume);
 
     if (volume != m_volume) {
-        if (m_observer) {
-            m_observer->volumeChanged(volume);
-        }
 
         m_volume = volume;
         TRACE("emit volumeChanged(%f)", volume)
@@ -86,17 +81,12 @@ bool MMF::AudioOutput::setOutputDevice(int index)
     return true;
 }
 
-void MMF::AudioOutput::setVolumeObserver(VolumeObserver* observer)
-{
-    m_observer = observer;
-    if (m_observer) {
-        m_observer->volumeChanged(m_volume);
-    }
-}
-
 bool MMF::AudioOutput::activateOnMediaObject(MediaObject *mo)
 {
-    setVolumeObserver(mo);
+    // Ensure that the MediaObject has the correct initial volume
+    mo->volumeChanged(m_volume);
+    // Connect MediaObject to receive future volume changes
+    connect(this, SIGNAL(volumeChanged(qreal)), mo, SLOT(volumeChanged(qreal)));
     return true;
 }
 

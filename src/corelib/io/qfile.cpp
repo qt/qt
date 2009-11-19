@@ -1339,7 +1339,7 @@ QFile::setPermissions(const QString &fileName, Permissions permissions)
 
 static inline qint64 _qfile_writeData(QAbstractFileEngine *engine, QRingBuffer *buffer)
 {
-    qint64 ret = engine->write(buffer->readPointer(), buffer->size());
+    qint64 ret = engine->write(buffer->readPointer(), buffer->nextDataBlockSize());
     if (ret > 0)
         buffer->free(ret);
     return ret;

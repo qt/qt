@@ -884,7 +884,7 @@
 
     \value WA_InputMethodEnabled Enables input methods for Asian languages.
     Must be set when creating custom text editing widgets.
-    On Windows CE this flag can be used in addition to
+    On Windows CE and Symbian this flag can be used in addition to
     QApplication::autoSipEnabled to automatically display the SIP when
     entering a widget.
 

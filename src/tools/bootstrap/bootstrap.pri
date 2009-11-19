@@ -38,7 +38,7 @@ DEPENDPATH	+= $$INCLUDEPATH \
                    $$QT_SOURCE_TREE/src/xml
 
 hpux-acc*|hpuxi-acc* {
-    LIBS += ../bootstrap/libbootstrap.a
+    LIBS += $$QT_BUILD_TREE/src/tools/bootstrap/libbootstrap.a
 } else {
     contains(CONFIG, debug_and_release_target) {
         CONFIG(debug, debug|release) {

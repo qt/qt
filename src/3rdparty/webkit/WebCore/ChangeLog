@@ -1,3 +1,252 @@
+2009-11-14  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Antti Koivisto.
+
+        [Qt] Broken back/forward after using ErrorPageExtension to set error page
+        https://bugs.webkit.org/show_bug.cgi?id=30573
+
+        Make FrameLoader::checkLoadCompleteForThisFrame method
+        to check for any working DocumentLoader instance (through
+        activeDocumentLoader()) instead of only checking for
+        'm_provisionalDocumentLoader' in order to decide to if
+        it is going to reset of not the back and forward history.
+        after an error page has been loaded.
+
+        Test: LayoutTests/fast/history/back-forward-reset-after-error-handling.html
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::checkLoadCompleteForThisFrame):
+
+2009-11-09  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Few classes have virtual functions but non-virtual destructor
+        https://bugs.webkit.org/show_bug.cgi?id=31269
+
+        No new tests as there is no functional change.
+
+        * platform/qt/QWebPageClient.h:
+        (QWebPageClient::~QWebPageClient): Add virtual destructor.
+
+2009-11-09  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Allow setting HTTP headers with empty value in XMLHTTPRequest
+        https://bugs.webkit.org/show_bug.cgi?id=31140
+
+        QtNetwork interprets null string as request to remove the header, not add it.
+        Replace null values with empty values before passing them to QtNetwork.
+
+        Test: http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html
+
+        * platform/network/qt/ResourceRequestQt.cpp:
+        (WebCore::ResourceRequest::toNetworkRequest):
+
+2009-11-05  Jakub Wieczorek  <faw217@gmail.com>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] The XML tokenizer reports a parse error twice if it occurs before the document element is found.
+        https://bugs.webkit.org/show_bug.cgi?id=31144
+
+        XMLTokenizer::doEnd() uses an additional logic to report a parse failure in
+        documents that end prematurely but are not considered invalid by QXmlStream.
+        This is to stay compatible with the libxml2 implementation.
+        However, that code path would be also hit in situations when it should not,
+        i.e. the error would have already been caught and handled. As a result, the
+        same error would be reported twice.
+
+        No new tests, because the problem is already covered by
+        fast/parser/xml-declaration-missing-ending-mark.html.
+
+        * dom/XMLTokenizerQt.cpp:
+        (WebCore::XMLTokenizer::doEnd):
+
+2009-11-05  Yuta Kitamura  <yutak@chromium.org>
+
+        Reviewed by Eric Seidel.
+
+        Fix ASSERT(currentStyle = renderStyle()).
+        https://bugs.webkit.org/show_bug.cgi?id=31152
+
+        * dom/Element.cpp:
+        (WebCore::Element::pseudoStyleCacheIsInvalid): We should have used "==" instead of "=".
+
+2009-11-04  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] ASSERT failure when receiving 401 HTTP Authentication response.
+        https://bugs.webkit.org/show_bug.cgi?id=31077
+
+        Allow sending the response body under the same conditions that we
+        allow it to finish without reporting an error.
+
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+        (WebCore::QNetworkReplyHandler::sendResponseIfNeeded):
+
+2009-11-03  Evan Martin  <evan@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Fix an off-by-one in the CSS lexer that causes memory corruption in
+        hard-to-trigger circumstances.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30827
+
+        Test: fast/css/end-of-buffer-crash.html
+
+        * css/maketokenizer: Add comments, fix off-by-one.
+
+2009-11-02  Darin Adler  <darin@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        Crash due to double-destroy related to CSS run-in property
+        https://bugs.webkit.org/show_bug.cgi?id=31034
+        rdar://problem/7328458
+
+        Test: fast/css/run-in-crash.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::destroy): Reorder destruction so the
+        continuation is destroyed after anonymous children. See comment
+        in the code for more details of why this is right.
+        * rendering/RenderInline.cpp:
+        (WebCore::RenderInline::destroy): Ditto.
+
+2009-10-30  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Holger Hans Peter Freyther.
+
+        If the owner widget of the page has a palette set, we
+        should use that one. This was only working when the
+        owner was a QWebView. This patch fixes that.
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::applyTheme):
+
+2009-10-29  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Oliver Hunt.
+
+        [GTK] Threading problems with some of the tests
+        https://bugs.webkit.org/show_bug.cgi?id=30814
+
+        Create strings shared among threads with crossThreadString
+        constructor method.
+
+        * storage/Database.cpp:
+        (WebCore::Database::Database):
+
+2009-10-30  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Qt] Use the default timeout interval for JS as the HTML tokenizer delay for setHtml()
+
+        This ensures that long-running JavaScript (for example due to a modal alert() dialog),
+        will not trigger a deferred load after only 500ms (the default tokenizer delay) while
+        still giving a reasonable timeout (10 seconds) to prevent deadlock.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29381
+
+        * html/HTMLTokenizer.cpp: Change debug output to print the actual tokenizer delay
+
+2009-10-30  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        Clear the initial request when loading synchronously to prevent duplicate loads
+
+        MainResourceLoader uses the member m_initialRequest to store a request for future
+        deferred loads. When doing a synchronous load, in handleDataLoadNow(), we therefore
+        have to clear this request so that subsequent entries into the loader will not start
+        yet another load.
+
+        This can for example happen in setDefersLoading() as a result of a PageGroupLoadDeferrer
+        going out of scope when returning from Chrome::runJavaScriptAlert(), where the alert()
+        came from a script executed as part of the first/original load.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30879
+
+        * loader/MainResourceLoader.cpp:
+        (WebCore::MainResourceLoader::handleDataLoadNow): clear m_initialRequest
+
+2009-11-04  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Timothy Hatcher.
+
+        WebInspector: Use a different method to identify the webkit port in
+        InspectorBackent::platform().
+        This corrects the inspector expected behavior with Qt on Windows.
+        https://bugs.webkit.org/show_bug.cgi?id=31116
+
+        * inspector/InspectorBackend.cpp:
+        (WebCore::InspectorBackend::platform):
+        (WebCore::InspectorBackend::port):
+        * inspector/InspectorBackend.h:
+        * inspector/InspectorBackend.idl:
+        * inspector/front-end/InspectorControllerStub.js:
+        (.WebInspector.InspectorControllerStub.prototype.port):
+        * inspector/front-end/inspector.css:
+        * inspector/front-end/inspector.js:
+        (WebInspector.loaded):
+        (WebInspector.toolbarDragStart):
+
+2009-11-12  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Custom printing shrink factors
+        https://bugs.webkit.org/show_bug.cgi?id=29042
+
+        This reverts commit r49769. The public API for this needs to be reviewed
+        before its inclusion in Qt.
+
+        * page/PrintContext.cpp:
+        (WebCore::PrintContext::begin):
+        * page/Settings.cpp:
+        (WebCore::Settings::Settings):
+        * page/Settings.h:
+
+2009-11-09  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Moved macro MMP_RULES (LINKEROPTION) into symbian instead of symbian-sbsv2,
+        since adjustment of RW-section base address will be needed for all new symbian
+        tool chains, specifically for arm and gcc compilation targets.
+        Also, change target address to 0xE00000 to be sufficient for all targets.
+
+        * WebCore.pro:
+
+2009-11-11  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] Make the default style background color valid.
+        Currently the color is transparent but invalid, this causes
+        list boxes in QtWebKit to be drawn with a black background
+        since r49242.
+        https://bugs.webkit.org/show_bug.cgi?id=31295
+
+        * rendering/style/RenderStyle.h:
+        (WebCore::InheritedFlags::initialBackgroundColor):
+        * rendering/style/StyleBackgroundData.cpp:
+        (WebCore::StyleBackgroundData::StyleBackgroundData):
+
+2009-11-11  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Introduce a function for querying the input method status
+        in QWebPageClient.
+
+        * platform/qt/QWebPageClient.h:
+
 2009-11-09  Yael Aharon  <yael.aharon@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.

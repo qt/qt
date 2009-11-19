@@ -762,12 +762,10 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
         // Buffered stdlib mode.
 
         size_t result;
-        bool eof;
         do {
             result = fwrite(data + writtenBytes, 1, size_t(len - writtenBytes), fh);
             writtenBytes += result;
-            eof = feof(fh);
-        } while (!eof && (result == 0 ? errno == EINTR : writtenBytes < len));
+        } while (result == 0 ? errno == EINTR : writtenBytes < len);
 
     } else if (fd != -1) {
         // Unbuffered stdio mode.
@@ -783,7 +781,7 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
                 || (result > 0 && (writtenBytes += result) < len));
     }
 
-    if (writtenBytes == 0) {
+    if (len &&  writtenBytes == 0) {
         writtenBytes = -1;
         q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError, qt_error_string(errno));
     }

@@ -80,6 +80,9 @@ private slots:
     void httpProxyNtlmAuth();
     void socks5Proxy();
     void socks5ProxyAuth();
+
+    // ssl supported test
+    void supportsSsl();
 };
 
 class Chat
@@ -715,6 +718,15 @@ void tst_NetworkSelfTest::socks5ProxyAuth()
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
             );
+}
+
+void tst_NetworkSelfTest::supportsSsl()
+{
+#ifdef QT_NO_OPENSSL
+    QFAIL("SSL not compiled in");
+#else
+    QVERIFY(QSslSocket::supportsSsl());
+#endif
 }
 
 QTEST_MAIN(tst_NetworkSelfTest)

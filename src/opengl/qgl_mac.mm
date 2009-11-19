@@ -460,6 +460,7 @@ void QGLContext::reset()
     if (d->cx)
         aglDestroyContext((AGLContext)d->cx);
 #else
+    QMacCocoaAutoReleasePool pool;
     [static_cast<NSOpenGLContext *>(d->cx) release];
 #endif
     d->cx = 0;

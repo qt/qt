@@ -62,6 +62,9 @@ public slots:
     void pauseAll();
     void resumeAll();
 
+private slots:
+    void unregisterAnimation_helper(QObject *obj);
+
 private:
     static AnimationManager *instance;
     QList<QAbstractAnimation *> animations;

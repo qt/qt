@@ -234,6 +234,7 @@ void tst_QDBusInterface::notValid()
 
 void tst_QDBusInterface::invalidAfterServiceOwnerChanged()
 {
+    // this test is technically the same as tst_QDBusAbstractInterface::followSignal
     QDBusConnection conn = QDBusConnection::sessionBus();
     QDBusConnectionInterface *connIface = conn.interface();
 
@@ -249,7 +250,7 @@ void tst_QDBusInterface::invalidAfterServiceOwnerChanged()
     QTestEventLoop::instance().enterLoop(5);
 
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(!invalidInterface.isValid());
+    QVERIFY(invalidInterface.isValid());
 }
 
 void tst_QDBusInterface::introspect()

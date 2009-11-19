@@ -343,8 +343,8 @@ void* qglx_getProcAddress(const char* procName)
     static bool triedResolvingGlxGetProcAddress = false;
     if (!triedResolvingGlxGetProcAddress) {
         triedResolvingGlxGetProcAddress = true;
-        QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
-        if (glxExt.contains(QLatin1String("GLX_ARB_get_proc_address"))) {
+        QList<QByteArray> glxExt = QByteArray(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)).split(' ');
+        if (glxExt.contains("GLX_ARB_get_proc_address")) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
             void *handle = dlopen(NULL, RTLD_LAZY);
             if (handle) {
@@ -523,8 +523,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         if (!d->gpm)
             return false;
     }
-    QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
-    if (glxExt.contains(QLatin1String("GLX_SGI_video_sync"))) {
+    QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(xinfo->display(), xinfo->screen())).split(' ');
+    if (glxExt.contains("GLX_SGI_video_sync")) {
         if (d->glFormat.swapInterval() == -1)
             d->glFormat.setSwapInterval(0);
     } else {
@@ -874,8 +874,9 @@ void QGLContext::swapBuffers() const
             static qt_glXWaitVideoSyncSGI glXWaitVideoSyncSGI = 0;
             static bool resolved = false;
             if (!resolved) {
-                QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
-                if (glxExt.contains(QLatin1String("GLX_SGI_video_sync"))) {
+                const QX11Info *xinfo = qt_x11Info(d->paintDevice);
+                QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(xinfo->display(), xinfo->screen())).split(' ');
+                if (glxExt.contains("GLX_SGI_video_sync")) {
                     glXGetVideoSyncSGI =  (qt_glXGetVideoSyncSGI)qglx_getProcAddress("glXGetVideoSyncSGI");
                     glXWaitVideoSyncSGI = (qt_glXWaitVideoSyncSGI)qglx_getProcAddress("glXWaitVideoSyncSGI");
                 }
@@ -1106,8 +1107,8 @@ void *QGLContext::getProcAddress(const QString &proc) const
     if (resolved && !glXGetProcAddressARB)
         return 0;
     if (!glXGetProcAddressARB) {
-        QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
-        if (glxExt.contains(QLatin1String("GLX_ARB_get_proc_address"))) {
+        QList<QByteArray> glxExt = QByteArray(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)).split(' ');
+        if (glxExt.contains("GLX_ARB_get_proc_address")) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
             void *handle = dlopen(NULL, RTLD_LAZY);
             if (handle) {
@@ -1594,7 +1595,7 @@ typedef void (*qt_glXReleaseTexImageEXT)(Display*, GLXDrawable, int);
 static qt_glXBindTexImageEXT glXBindTexImageEXT = 0;
 static qt_glXReleaseTexImageEXT glXReleaseTexImageEXT = 0;
 
-bool qt_resolveTextureFromPixmap()
+static bool qt_resolveTextureFromPixmap(QPaintDevice *paintDevice)
 {
     static bool resolvedTextureFromPixmap = false;
 
@@ -1607,9 +1608,9 @@ bool qt_resolveTextureFromPixmap()
         {
             return false; // Can't use TFP without NPOT
         }
-
-        QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
-        if (glxExt.contains(QLatin1String("GLX_EXT_texture_from_pixmap"))) {
+        const QX11Info *xinfo = qt_x11Info(paintDevice);
+        QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(xinfo->display(), xinfo->screen())).split(' ');
+        if (glxExt.contains("GLX_EXT_texture_from_pixmap")) {
             glXBindTexImageEXT = (qt_glXBindTexImageEXT) qglx_getProcAddress("glXBindTexImageEXT");
             glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) qglx_getProcAddress("glXReleaseTexImageEXT");
         }
@@ -1630,7 +1631,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
 
     Q_ASSERT(pmd->classId() == QPixmapData::X11Class);
 
-    if (!qt_resolveTextureFromPixmap())
+    if (!qt_resolveTextureFromPixmap(paintDevice))
         return 0;
 
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);

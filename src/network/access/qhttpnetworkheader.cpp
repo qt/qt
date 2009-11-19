@@ -92,11 +92,10 @@ QByteArray QHttpNetworkHeaderPrivate::headerField(const QByteArray &name, const 
 QList<QByteArray> QHttpNetworkHeaderPrivate::headerFieldValues(const QByteArray &name) const
 {
     QList<QByteArray> result;
-    QByteArray lowerName = name.toLower();
     QList<QPair<QByteArray, QByteArray> >::ConstIterator it = fields.constBegin(),
                                                         end = fields.constEnd();
     for ( ; it != end; ++it)
-        if (lowerName == it->first.toLower())
+        if (qstricmp(name.constData(), it->first) == 0)
             result += it->second;
 
     return result;
@@ -104,10 +103,9 @@ QList<QByteArray> QHttpNetworkHeaderPrivate::headerFieldValues(const QByteArray 
 
 void QHttpNetworkHeaderPrivate::setHeaderField(const QByteArray &name, const QByteArray &data)
 {
-    QByteArray lowerName = name.toLower();
     QList<QPair<QByteArray, QByteArray> >::Iterator it = fields.begin();
     while (it != fields.end()) {
-        if (lowerName == it->first.toLower())
+        if (qstricmp(name.constData(), it->first) == 0)
             it = fields.erase(it);
         else
             ++it;

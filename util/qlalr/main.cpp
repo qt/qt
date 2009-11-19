@@ -64,7 +64,7 @@ static void help_me ()
        << "  --no-debug\t\tno debug information" << endl
        << "  --no-lines\t\tno #line directives" << endl
        << "  --dot\t\t\tgenerate a graph" << endl
-       << "  --troll\t\tadd the Trolltech copyright header" << endl
+       << "  --qt\t\tadd the Qt copyright header and Qt-specific types and macros" << endl
        << endl;
   exit (0);
 }
@@ -100,7 +100,7 @@ int main (int argc, char *argv[])
       else if (arg == QLatin1String ("--no-debug"))
         debug_info = false;
 
-      else if (arg == QLatin1String ("--troll"))
+      else if (arg == QLatin1String ("--qt"))
         troll_copyright = true;
 
       else if (file_name.isEmpty ())

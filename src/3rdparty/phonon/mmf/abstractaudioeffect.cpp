@@ -29,6 +29,10 @@ using namespace Phonon::MMF;
   \internal
 */
 
+/*! \namespace Phonon::MMF
+  \internal
+*/
+
 AbstractAudioEffect::AbstractAudioEffect(QObject *parent,
                                          const QList<EffectParameter> &params) : MediaNode::MediaNode(parent)
                                                                                , m_params(params)

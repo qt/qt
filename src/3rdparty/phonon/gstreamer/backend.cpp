@@ -49,6 +49,13 @@ Backend::Backend(QObject *parent, const QVariantList &)
         , m_debugLevel(Warning)
         , m_isValid(false)
 {
+    // In order to support reloading, we only set the app name once...
+    static bool first = true;
+    if (first) {
+        first = false;
+        g_set_application_name(qApp->applicationName().toUtf8());
+    }
+
     GError *err = 0;
     bool wasInit = gst_init_check(0, 0, &err);  //init gstreamer: must be called before any gst-related functions
     if (err)
@@ -85,7 +92,6 @@ Backend::Backend(QObject *parent, const QVariantList &)
 
 Backend::~Backend() 
 {
-    gst_deinit();
 }
 
 gboolean Backend::busCall(GstBus *bus, GstMessage *msg, gpointer data)
@@ -208,8 +214,15 @@ QStringList Backend::availableMimeTypes() const
         GstPluginFeature *feature = GST_PLUGIN_FEATURE(iter->data);
         QString klass = gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature));
 
-        if (klass == QLatin1String("Codec/Decoder/Audio") || 
-            klass == QLatin1String("Codec/Decoder/Video")) {
+        if (klass == QLatin1String("Codec/Decoder") ||
+            klass == QLatin1String("Codec/Decoder/Audio") ||
+            klass == QLatin1String("Codec/Decoder/Video") ||
+            klass == QLatin1String("Codec/Demuxer") ||
+            klass == QLatin1String("Codec/Demuxer/Audio") ||
+            klass == QLatin1String("Codec/Demuxer/Video") ||
+            klass == QLatin1String("Codec/Parser") ||
+            klass == QLatin1String("Codec/Parser/Audio") ||
+            klass == QLatin1String("Codec/Parser/Video")) {
 
             const GList *static_templates;
             GstElementFactory *factory = GST_ELEMENT_FACTORY(feature);
@@ -281,10 +294,13 @@ QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(ObjectDescripti
     switch (type) {
     case Phonon::AudioOutputDeviceType: {
             QList<AudioDevice> audioDevices = deviceManager()->audioOutputDevices();
-            if (index >= 0 && index < audioDevices.size()) {
-                ret.insert("name", audioDevices[index].gstId);
-                ret.insert("description", audioDevices[index].description);
-                ret.insert("icon", QLatin1String("audio-card"));
+            foreach(const AudioDevice &device, audioDevices) {
+                if (device.id == index) {
+                    ret.insert("name", device.gstId);
+                    ret.insert("description", device.description);
+                    ret.insert("icon", QLatin1String("audio-card"));
+                    break;
+                }
             }
         }
         break;

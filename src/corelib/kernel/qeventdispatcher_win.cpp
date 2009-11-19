@@ -725,7 +725,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
             }
             if (haveMessage) {
-                if (msg.message == WM_QT_SENDPOSTEDEVENTS && !(flags & QEventLoop::EventLoopExec)) {
+                if (msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     if (seenWM_QT_SENDPOSTEDEVENTS) {
                         needWM_QT_SENDPOSTEDEVENTS = true;
                         continue;
@@ -779,6 +779,11 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             }
         }
     } while (canWait);
+
+    if (!seenWM_QT_SENDPOSTEDEVENTS && (flags & QEventLoop::EventLoopExec) == 0) {
+        // when called "manually", always send posted events
+        QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+    }
 
     if (needWM_QT_SENDPOSTEDEVENTS)
         PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);

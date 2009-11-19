@@ -4551,6 +4551,10 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const viewTransform,
                                       QRegion *exposedRegion, QWidget *widget)
 {
+    // Make sure we don't have unpolished items before we draw.
+    if (!unpolishedItems.isEmpty())
+        _q_polishItems();
+
     QRectF exposedSceneRect;
     if (exposedRegion && indexMethod != QGraphicsScene::NoIndex) {
         exposedSceneRect = exposedRegion->boundingRect().adjusted(-1, -1, 1, 1);
@@ -5077,6 +5081,10 @@ void QGraphicsScene::drawItems(QPainter *painter,
                                const QStyleOptionGraphicsItem options[], QWidget *widget)
 {
     Q_D(QGraphicsScene);
+    // Make sure we don't have unpolished items before we draw.
+    if (!d->unpolishedItems.isEmpty())
+        d->_q_polishItems();
+
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 

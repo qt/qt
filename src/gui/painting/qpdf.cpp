@@ -78,8 +78,8 @@ const char *qt_real_to_string(qreal val, char *buf) {
     unsigned int ival = (unsigned int) val;
     qreal frac = val - (qreal)ival;
 
-    int ifrac = (int)(frac * 1000000);
-    if (ifrac == 1000000) {
+    int ifrac = (int)(frac * 1000000000);
+    if (ifrac == 1000000000) {
         ++ival;
         ifrac = 0;
     }
@@ -90,7 +90,7 @@ const char *qt_real_to_string(qreal val, char *buf) {
         ++i;
         ival /= 10;
     }
-    int fact = 100000;
+    int fact = 100000000;
     if (i == 0) {
         *(buf++) = '0';
     } else {
@@ -145,7 +145,7 @@ namespace QPdf {
             fileBackingActive(false),
             handleDirty(false)
     {
-        dev->open(QIODevice::ReadWrite);
+        dev->open(QIODevice::ReadWrite | QIODevice::Append);
     }
 
     ByteStream::ByteStream(bool fileBacking)

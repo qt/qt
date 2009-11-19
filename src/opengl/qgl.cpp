@@ -184,8 +184,13 @@ public:
             engineType = QPaintEngine::OpenGL2;
 #else
             // We can't do this in the constructor for this object because it
-            // needs to be called *before* the QApplication constructor
+            // needs to be called *before* the QApplication constructor.
+            // Also check for the FragmentProgram extension in conjunction with
+            // the 2.0 version flag, to cover the case where we export the display
+            // from an old GL 1.1 server to a GL 2.x client. In that case we can't
+            // use GL 2.0.
             if ((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
+                && (QGLExtensions::glExtensions & QGLExtensions::FragmentProgram)
                 && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty())
                 engineType = QPaintEngine::OpenGL2;
             else
@@ -2170,8 +2175,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     int tx_h = qt_next_power_of_two(image.height());
 
     QImage img = image;
-    if (( !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) &&
-          !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0) )
+    if (!(QGLExtensions::glExtensions & QGLExtensions::NPOTTextures)
+        && !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0)
         && (target == GL_TEXTURE_2D && (tx_w != image.width() || tx_h != image.height())))
     {
         img = img.scaled(tx_w, tx_h);
@@ -2192,9 +2197,9 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     bool genMipmap = false;
 #endif
     if (glFormat.directRendering()
-        && QGLExtensions::glExtensions & QGLExtensions::GenerateMipmap
+        && (QGLExtensions::glExtensions & QGLExtensions::GenerateMipmap)
         && target == GL_TEXTURE_2D
-        && options & QGLContext::MipmapBindOption)
+        && (options & QGLContext::MipmapBindOption))
     {
 #ifdef QGL_BIND_TEXTURE_DEBUG
         printf(" - generating mipmaps (%d ms)\n", time.elapsed());
@@ -2220,7 +2225,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     bool premul = options & QGLContext::PremultipliedAlphaBindOption;
     GLenum externalFormat;
     GLuint pixel_type;
-    if (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2) {
+    if (QGLExtensions::glExtensions & QGLExtensions::BGRATextureFormat) {
         externalFormat = GL_BGRA;
         pixel_type = GL_UNSIGNED_INT_8_8_8_8_REV;
     } else {
@@ -3030,7 +3035,7 @@ void QGLContext::setValid(bool valid)
 bool QGLContext::isSharing() const
 {
     Q_D(const QGLContext);
-    return d->sharing;
+    return d->group->isSharing();
 }
 
 QGLFormat QGLContext::format() const
@@ -4886,53 +4891,58 @@ QGLWidget::QGLWidget(QGLContext *context, QWidget *parent,
 
 void QGLExtensions::init_extensions()
 {
-    QString extensions = QLatin1String(reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS)));
-    if (extensions.contains(QLatin1String("texture_rectangle")))
+    QList<QByteArray> extensions = QByteArray(reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS))).split(' ');
+    if (extensions.contains("GL_ARB_texture_rectangle"))
         glExtensions |= TextureRectangle;
-    if (extensions.contains(QLatin1String("multisample")))
+    if (extensions.contains("GL_ARB_multisample"))
         glExtensions |= SampleBuffers;
-    if (extensions.contains(QLatin1String("generate_mipmap")))
+    if (extensions.contains("GL_SGIS_generate_mipmap"))
         glExtensions |= GenerateMipmap;
-    if (extensions.contains(QLatin1String("texture_compression_s3tc")))
+    if (extensions.contains("GL_EXT_texture_compression_s3tc"))
         glExtensions |= TextureCompression;
-    if (extensions.contains(QLatin1String("ARB_fragment_program")))
+    if (extensions.contains("GL_ARB_fragment_program"))
         glExtensions |= FragmentProgram;
-    if (extensions.contains(QLatin1String("mirrored_repeat")))
+    if (extensions.contains("GL_ARB_texture_mirrored_repeat"))
         glExtensions |= MirroredRepeat;
-    if (extensions.contains(QLatin1String("EXT_framebuffer_object")))
+    if (extensions.contains("GL_EXT_framebuffer_object"))
         glExtensions |= FramebufferObject;
-    if (extensions.contains(QLatin1String("EXT_stencil_two_side")))
+    if (extensions.contains("GL_EXT_stencil_two_side"))
         glExtensions |= StencilTwoSide;
-    if (extensions.contains(QLatin1String("EXT_stencil_wrap")))
+    if (extensions.contains("GL_EXT_stencil_wrap"))
         glExtensions |= StencilWrap;
-    if (extensions.contains(QLatin1String("EXT_packed_depth_stencil")))
+    if (extensions.contains("GL_EXT_packed_depth_stencil"))
         glExtensions |= PackedDepthStencil;
-    if (extensions.contains(QLatin1String("GL_NV_float_buffer")))
+    if (extensions.contains("GL_NV_float_buffer"))
         glExtensions |= NVFloatBuffer;
-    if (extensions.contains(QLatin1String("ARB_pixel_buffer_object")))
+    if (extensions.contains("GL_ARB_pixel_buffer_object"))
         glExtensions |= PixelBufferObject;
 #if defined(QT_OPENGL_ES_2)
     glExtensions |= FramebufferObject;
     glExtensions |= GenerateMipmap;
 #endif
 #if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
-    if (extensions.contains(QLatin1String("OES_framebuffer_object")))
+    if (extensions.contains("GL_OES_framebuffer_object"))
         glExtensions |= FramebufferObject;
 #endif
 #if defined(QT_OPENGL_ES)
-    if (extensions.contains(QLatin1String("OES_packed_depth_stencil")))
+    if (extensions.contains("GL_OES_packed_depth_stencil"))
         glExtensions |= PackedDepthStencil;
 #endif
-    if (extensions.contains(QLatin1String("ARB_framebuffer_object"))) {
+    if (extensions.contains("GL_ARB_framebuffer_object")) {
         // ARB_framebuffer_object also includes EXT_framebuffer_blit.
         glExtensions |= FramebufferObject;
         glExtensions |= FramebufferBlit;
     }
-    if (extensions.contains(QLatin1String("EXT_framebuffer_blit")))
+
+    if (extensions.contains("GL_EXT_framebuffer_blit"))
         glExtensions |= FramebufferBlit;
 
-    if (extensions.contains(QLatin1String("GL_ARB_texture_non_power_of_two")))
+    if (extensions.contains("GL_ARB_texture_non_power_of_two"))
         glExtensions |= NPOTTextures;
+
+    if (extensions.contains("GL_EXT_bgra"))
+        glExtensions |= BGRATextureFormat;
+
 
     QGLContext cx(QGLFormat::defaultFormat());
     if (glExtensions & TextureCompression) {

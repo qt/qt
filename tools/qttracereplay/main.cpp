@@ -56,7 +56,7 @@ public:
 public slots:
     void updateRect();
 
-private:
+public:
     QList<QRegion> updates;
     QPaintBuffer buffer;
 
@@ -70,7 +70,8 @@ private:
 
 void ReplayWidget::updateRect()
 {
-    update(updates.at(currentFrame));
+    if (!updates.isEmpty())
+        update(updates.at(currentFrame));
 }
 
 void ReplayWidget::paintEvent(QPaintEvent *)
@@ -138,12 +139,25 @@ ReplayWidget::ReplayWidget(const QString &filename_)
     QFile file(filename);
 
     QRect bounds;
-    if (file.open(QIODevice::ReadOnly)) {
-        QDataStream in(&file);
-        in >> buffer >> updates;
+    if (!file.open(QIODevice::ReadOnly)) {
+        printf("Failed to load input file '%s'\n", qPrintable(filename_));
+        return;
     }
 
-    qDebug() << "Read paint buffer with" << buffer.numFrames() << "frames";
+    QDataStream in(&file);
+
+    char *data;
+    uint size;
+    in.readBytes(data, size);
+    bool isTraceFile = size == 7 && qstrncmp(data, "qttrace", 7) == 0;
+    delete [] data;
+    if (!isTraceFile) {
+        printf("File '%s' is not a trace file\n", qPrintable(filename_));
+        return;
+    }
+
+    in >> buffer >> updates;
+    printf("Read paint buffer with %d frames\n", buffer.numFrames());
 
     resize(buffer.boundingRect().size().toSize());
 
@@ -157,14 +171,24 @@ int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
 
-    if (argc <= 1) {
-        printf("Usage: %s filename\n", argv[0]);
+    if (argc <= 1 || qstrcmp(argv[1], "-h") == 0 || qstrcmp(argv[1], "--help") == 0) {
+        printf("Replays a tracefile generated with '-graphicssystem trace'\n");
+        printf("Usage:\n  > %s [traceFile]\n", argv[0]);
+        return 1;
+    }
+
+    QFile file(argv[1]);
+    if (!file.exists()) {
+        printf("%s does not exist\n", argv[1]);
         return 1;
     }
 
     ReplayWidget *widget = new ReplayWidget(argv[1]);
-    widget->show();
 
-    return app.exec();
+    if (!widget->updates.isEmpty()) {
+        widget->show();
+        return app.exec();
+    }
+
 }
 #include "main.moc"
