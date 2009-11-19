@@ -244,7 +244,7 @@ private:
 #define TEST_CONTEXT_PROPERTY(ctxt, name, value) \
 { \
     QmlComponent component(&engine); \
-    component.setData("import Qt 4.6; Object { property var test: " #name " }", QUrl()); \
+    component.setData("import Qt 4.6; QtObject { property var test: " #name " }", QUrl()); \
 \
     QObject *obj = component.create(ctxt); \
 \
@@ -294,7 +294,7 @@ void tst_qmlcontext::setContextProperty()
     // Changes in context properties
     {
         QmlComponent component(&engine); 
-        component.setData("import Qt 4.6; Object { property var test: a }", QUrl()); 
+        component.setData("import Qt 4.6; QtObject { property var test: a }", QUrl()); 
 
         QObject *obj = component.create(&ctxt2); 
 
@@ -306,7 +306,7 @@ void tst_qmlcontext::setContextProperty()
     }
     {
         QmlComponent component(&engine); 
-        component.setData("import Qt 4.6; Object { property var test: b }", QUrl()); 
+        component.setData("import Qt 4.6; QtObject { property var test: b }", QUrl()); 
 
         QObject *obj = component.create(&ctxt2); 
 
@@ -320,7 +320,7 @@ void tst_qmlcontext::setContextProperty()
     }
     {
         QmlComponent component(&engine); 
-        component.setData("import Qt 4.6; Object { property var test: e.a }", QUrl()); 
+        component.setData("import Qt 4.6; QtObject { property var test: e.a }", QUrl()); 
 
         QObject *obj = component.create(&ctxt2); 
 
@@ -334,7 +334,7 @@ void tst_qmlcontext::setContextProperty()
     // New context properties
     {
         QmlComponent component(&engine); 
-        component.setData("import Qt 4.6; Object { property var test: a }", QUrl()); 
+        component.setData("import Qt 4.6; QtObject { property var test: a }", QUrl()); 
 
         QObject *obj = component.create(&ctxt2); 
 
@@ -348,7 +348,7 @@ void tst_qmlcontext::setContextProperty()
     // Setting an object-variant context property
     {
         QmlComponent component(&engine);
-        component.setData("import Qt 4.6; Object { id: root; property int a: 10; property int test: ctxtProp.a; property var obj: root; }", QUrl());
+        component.setData("import Qt 4.6; QtObject { id: root; property int a: 10; property int test: ctxtProp.a; property var obj: root; }", QUrl());
 
         QmlContext ctxt(engine.rootContext());
         ctxt.setContextProperty("ctxtProp", QVariant());
@@ -400,7 +400,7 @@ void tst_qmlcontext::addDefaultObject()
     // Changes in context properties
     {
         QmlComponent component(&engine); 
-        component.setData("import Qt 4.6; Object { property var test: a }", QUrl()); 
+        component.setData("import Qt 4.6; QtObject { property var test: a }", QUrl()); 
 
         QObject *obj = component.create(&ctxt); 
 

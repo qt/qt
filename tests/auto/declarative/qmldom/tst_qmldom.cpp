@@ -452,7 +452,7 @@ void tst_qmldom::loadDynamicProperty()
                          "    property date h\n"
                          "    property var i\n"
                          "    property variant j\n"
-                         "    property Object k\n"
+                         "    property QtObject k\n"
                          "}";
 
         QmlDomDocument document;
@@ -486,7 +486,7 @@ void tst_qmldom::loadDynamicProperty()
         DP_TEST(7, h, QVariant::Date, 168, 15, "date");
         DP_TEST(8, i, qMetaTypeId<QVariant>(), 188, 14, "var");
         DP_TEST(9, j, qMetaTypeId<QVariant>(), 207, 18, "variant");
-        DP_TEST(10, k, -1, 230, 17, "Object");
+        DP_TEST(10, k, -1, 230, 17, "QtObject");
     }
 
     {
@@ -494,7 +494,7 @@ void tst_qmldom::loadDynamicProperty()
                          "Item {\n"
                          "    property int a: 12\n"
                          "    property int b: a + 6\n"
-                         "    default property Object c\n"
+                         "    default property QtObject c\n"
                          "}\n";
 
         QmlDomDocument document;

@@ -189,7 +189,7 @@ void tst_qmlengine::clearComponentCache()
     {
         QFile file("temp.qml");
         QVERIFY(file.open(QIODevice::WriteOnly));
-        file.write("import Qt 4.6\nObject {\nproperty int test: 10\n}\n");
+        file.write("import Qt 4.6\nQtObject {\nproperty int test: 10\n}\n");
         file.close();
     }
 
@@ -206,7 +206,7 @@ void tst_qmlengine::clearComponentCache()
     {
         QFile file("temp.qml");
         QVERIFY(file.open(QIODevice::WriteOnly));
-        file.write("import Qt 4.6\nObject {\nproperty int test: 11\n}\n");
+        file.write("import Qt 4.6\nQtObject {\nproperty int test: 11\n}\n");
         file.close();
     }
 

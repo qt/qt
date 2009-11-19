@@ -108,16 +108,15 @@ void QmlGraphicsImageBase::setSource(const QUrl &url)
     if (url.isEmpty()) {
         d->pix = QPixmap();
         d->status = Null;
-        d->progress = 1.0;
         setImplicitWidth(0);
         setImplicitHeight(0);
         emit statusChanged(d->status);
         emit sourceChanged(d->url);
-        emit progressChanged(1.0);
         update();
     } else {
         d->status = Loading;
-        QNetworkReply *reply = QmlPixmapCache::get(qmlEngine(this), d->url, &d->pix);
+        bool ok = true;
+        QNetworkReply *reply = QmlPixmapCache::get(qmlEngine(this), d->url, &d->pix, &ok);
         if (reply) {
             d->pendingPixmapCache = true;
             connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
@@ -125,15 +124,19 @@ void QmlGraphicsImageBase::setSource(const QUrl &url)
                     this, SLOT(requestProgress(qint64,qint64)));
         } else {
             //### should be unified with requestFinished
-            setImplicitWidth(d->pix.width());
-            setImplicitHeight(d->pix.height());
+            if (ok) {
+                setImplicitWidth(d->pix.width());
+                setImplicitHeight(d->pix.height());
 
-            if (d->status == Loading)
-                d->status = Ready;
+                if (d->status == Loading)
+                    d->status = Ready;
+            } else {
+                d->status = Error;
+            }
             d->progress = 1.0;
             emit statusChanged(d->status);
             emit sourceChanged(d->url);
-            emit progressChanged(1.0);
+            emit progressChanged(d->progress);
             update();
         }
     }

@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property int readyState
     property bool statusIsException: false
     property bool statusTextIsException: false

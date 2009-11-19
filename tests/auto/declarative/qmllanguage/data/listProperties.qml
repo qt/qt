@@ -1,9 +1,9 @@
 import Qt 4.6
 
-Object {
-    property list<Object> listProperty
+QtObject {
+    property list<QtObject> listProperty
     property int test: listProperty.length
 
-    listProperty: [ Object{}, Object {} ]
+    listProperty: [ QtObject{}, QtObject {} ]
 }
 

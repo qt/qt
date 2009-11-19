@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Object {
+QtObject {
     property int unsent: XMLHttpRequest.UNSENT
     property int opened: XMLHttpRequest.OPENED
     property int headers_received: XMLHttpRequest.HEADERS_RECEIVED

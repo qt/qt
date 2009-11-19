@@ -6,7 +6,7 @@ Column {
         height: 200
         url: "test-objects.html"
         javaScriptWindowObjects:
-            Object {
+            QtObject {
                 property string text: btntext.text
                 WebView.windowObjectName: "qmltext"
             }

@@ -1,5 +1,5 @@
 import Qt 4.6
-Object {
+QtObject {
     signal signal1
     function slot1() {}
     signal signal2

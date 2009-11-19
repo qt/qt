@@ -9,17 +9,17 @@ Item {
         function c() { return 33; }
     }
 
-    Object {
+    QtObject {
         id: a
         property int value: 19
     }
 
-    Object {
+    QtObject {
         id: c
         property int value: 24
     }
 
-    Object {
+    QtObject {
         id: nested
         property int a: 1
         property int test: a.value

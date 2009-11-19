@@ -1,14 +1,14 @@
 import Qt 4.6
 
-Object {
-    property Object object
+QtObject {
+    property QtObject object
     property alias aliasedObject: target.object
 
-    object: Object {
+    object: QtObject {
         id: target
 
-        property Object object
-        object: Object {}
+        property QtObject object
+        object: QtObject {}
     }
 }
 
