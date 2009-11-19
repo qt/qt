@@ -59,7 +59,6 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsImageBase : public QmlGraphicsItem
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
 public:
-    QmlGraphicsImageBase(QmlGraphicsItem *parent = 0);
     ~QmlGraphicsImageBase();
     enum Status { Null, Ready, Loading, Error };
     Status status() const;

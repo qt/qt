@@ -169,14 +169,7 @@ public:
     void setTextInteractionFlags(Qt::TextInteractionFlags flags);
     Qt::TextInteractionFlags textInteractionFlags() const;
 
-    QTextCursor cursorForPosition(const QPoint &pos) const;
-    QRect cursorRect(const QTextCursor &cursor) const;
     QRect cursorRect() const;
-
-    void setTextCursor(const QTextCursor &cursor);
-    QTextCursor textCursor() const;
-
-    void moveCursor(QTextCursor::MoveOperation operation, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
 
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 

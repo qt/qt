@@ -49,12 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QmlGraphicsImageBase::QmlGraphicsImageBase(QmlGraphicsItem *parent)
-  : QmlGraphicsItem(*(new QmlGraphicsImageBasePrivate), parent)
-{
-    setFlag(QGraphicsItem::ItemHasNoContents, true);
-}
-
 QmlGraphicsImageBase::QmlGraphicsImageBase(QmlGraphicsImageBasePrivate &dd, QmlGraphicsItem *parent)
   : QmlGraphicsItem(dd, parent)
 {

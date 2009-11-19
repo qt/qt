@@ -119,6 +119,9 @@ QmlStateGroup::QmlStateGroup(QObject *parent)
 
 QmlStateGroup::~QmlStateGroup()
 {
+    Q_D(const QmlStateGroup);
+    for (int i = 0; i < d->states.count(); ++i)
+        d->states.at(i)->setStateGroup(0);
 }
 
 QList<QmlState *> QmlStateGroup::states() const
@@ -378,6 +381,12 @@ QmlState *QmlStateGroup::findState(const QString &name) const
     }
 
     return 0;
+}
+
+void QmlStateGroup::removeState(QmlState *state)
+{
+    Q_D(QmlStateGroup);
+    d->states.removeOne(state);
 }
 
 QT_END_NAMESPACE

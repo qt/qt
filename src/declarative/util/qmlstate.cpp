@@ -161,6 +161,9 @@ QmlState::QmlState(QObject *parent)
 
 QmlState::~QmlState()
 {
+    Q_D(QmlState);
+    if (d->group)
+        d->group->removeState(this);
 }
 
 /*!

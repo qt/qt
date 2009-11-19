@@ -120,7 +120,7 @@ Rectangle {
         anchors.centerIn: masterRect
     }
     Rectangle {
-        id: rect23; objectName: "rect23"
+        id: rect23a; objectName: "rect23a"
         anchors.left: masterRect.left
         anchors.leftMargin: 5
         anchors.right: masterRect.right
@@ -129,6 +129,17 @@ Rectangle {
         anchors.topMargin: 5
         anchors.bottom: masterRect.bottom
         anchors.bottomMargin: 5
+    }
+    Rectangle {
+        id: rect23b; objectName: "rect23b"
+        anchors.left: rect23a.anchors.left
+        anchors.leftMargin: rect23a.anchors.leftMargin
+        anchors.right: rect23a.anchors.right
+        anchors.rightMargin: rect23a.anchors.rightMargin
+        anchors.top: rect23a.anchors.top
+        anchors.topMargin: rect23a.anchors.topMargin
+        anchors.bottom: rect23a.anchors.bottom
+        anchors.bottomMargin: rect23a.anchors.bottomMargin
     }
     Rectangle {
         id: rect24; objectName: "rect24"
