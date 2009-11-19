@@ -2595,7 +2595,7 @@ void Configure::generateOutputVars()
     if (!opensslLibs.isEmpty())
         qmakeVars += opensslLibs;
     else if (dictionary[ "OPENSSL" ] == "linked") {
-    	if(dictionary[ "XQMAKESPEC" ].startsWith("symbian") )
+    	if(dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("symbian") )
             qmakeVars += QString("OPENSSL_LIBS    = -llibssl -llibcrypto");
         else
             qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
