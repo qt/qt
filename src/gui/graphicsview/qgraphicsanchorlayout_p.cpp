@@ -1272,7 +1272,6 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     addAnchor_helper(layout, Qt::AnchorLeft, layout,
                      Qt::AnchorRight, data);
     data->maxSize = QWIDGETSIZE_MAX;
-    data->skipInPreferred = 1;
 
     // Save a reference to layout vertices
     layoutFirstVertex[Horizontal] = internalVertex(layout, Qt::AnchorLeft);
@@ -1284,7 +1283,6 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     addAnchor_helper(layout, Qt::AnchorTop, layout,
                      Qt::AnchorBottom, data);
     data->maxSize = QWIDGETSIZE_MAX;
-    data->skipInPreferred = 1;
 
     // Save a reference to layout vertices
     layoutFirstVertex[Vertical] = internalVertex(layout, Qt::AnchorTop);
@@ -2700,7 +2698,9 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
     //
     for (int i = 0; i < variables.size(); ++i) {
         AnchorData *ad = variables.at(i);
-        if (ad->skipInPreferred)
+
+        // The layout original structure anchors are not relevant in preferred size calculation
+        if (ad->isLayoutAnchor)
             continue;
 
         QSimplexVariable *grower = new QSimplexVariable;
