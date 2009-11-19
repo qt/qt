@@ -1064,14 +1064,29 @@ QTableView::~QTableView()
 void QTableView::setModel(QAbstractItemModel *model)
 {
     Q_D(QTableView);
-    connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
-    connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
-    connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
-    connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+    if (model == d->model)
+        return;
+    //let's disconnect from the old model
+    if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
+        disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+    }
+    if (model) { //and connect to the new one
+        connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
+        connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
+        connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
+        connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+    }
     d->verticalHeader->setModel(model);
     d->horizontalHeader->setModel(model);
     QAbstractItemView::setModel(model);
