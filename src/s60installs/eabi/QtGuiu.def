@@ -11735,4 +11735,6 @@ EXPORTS
 	_Zls6QDebugP15QGraphicsObject @ 11734 NONAME
 	_Zls6QDebugRK12QStyleOption @ 11735 NONAME
 	_Zls6QDebugRKN12QStyleOption10OptionTypeE @ 11736 NONAME
+	_ZN12QTextControl31setIgnoreUnusedNavigationEventsEb @ 11737 NONAME
+	_ZNK12QTextControl28ignoreUnusedNavigationEventsEv @ 11738 NONAME
 
