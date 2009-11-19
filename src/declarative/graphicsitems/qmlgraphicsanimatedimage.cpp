@@ -209,7 +209,7 @@ void QmlGraphicsAnimatedImage::setSource(const QUrl &url)
             //### should be unified with movieRequestFinished
             d->_movie = new QMovie(lf);
             if (!d->_movie->isValid()){
-                qWarning() << "Error Reading Animated Image File " << d->url;
+                qWarning() << "Error Reading Animated Image File" << d->url;
                 delete d->_movie;
                 d->_movie = 0;
                 return;
@@ -261,7 +261,7 @@ void QmlGraphicsAnimatedImage::movieRequestFinished()
     d->_movie->setCacheMode(QMovie::CacheAll);
     if(d->playing)
         d->_movie->start();
-    else {
+    if (d->paused || !d->playing) {
         d->_movie->jumpToFrame(d->preset_currentframe);
         d->preset_currentframe = 0;
     }
@@ -293,8 +293,10 @@ void QmlGraphicsAnimatedImage::playingStatusChanged()
 void QmlGraphicsAnimatedImage::componentComplete()
 {
     Q_D(QmlGraphicsAnimatedImage);
-    setCurrentFrame(d->preset_currentframe);
-    d->preset_currentframe = 0;
+    if (!d->reply) {
+        setCurrentFrame(d->preset_currentframe);
+        d->preset_currentframe = 0;
+    }
 }
 
 QT_END_NAMESPACE
