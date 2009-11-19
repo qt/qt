@@ -46,7 +46,11 @@
 #include "qlibraryinfo.h"
 #include "qscopedpointer.h"
 
-#ifdef QT_BUILD_QMAKE
+#if defined(QT_BUILD_QMAKE) || defined(QT_BOOTSTRAPPED)
+# define BOOTSTRAPPING
+#endif
+
+#ifdef BOOTSTRAPPING
 QT_BEGIN_NAMESPACE
 extern QString qmake_libraryInfoFile();
 QT_END_NAMESPACE
@@ -91,7 +95,7 @@ public:
 QLibrarySettings::QLibrarySettings()
     : settings(QLibraryInfoPrivate::findConfiguration())
 {
-#ifndef QT_BUILD_QMAKE
+#ifndef BOOTSTRAPPING
     qAddPostRoutine(QLibraryInfoPrivate::cleanup);
 #endif
 }
@@ -99,7 +103,7 @@ QLibrarySettings::QLibrarySettings()
 QSettings *QLibraryInfoPrivate::findConfiguration()
 {
     QString qtconfig = QLatin1String(":/qt/etc/qt.conf");
-#ifdef QT_BUILD_QMAKE
+#ifdef BOOTSTRAPPING
     if(!QFile::exists(qtconfig))
         qtconfig = qmake_libraryInfoFile();
 #else
@@ -425,7 +429,7 @@ QLibraryInfo::location(LibraryLocation loc)
     if (QDir::isRelativePath(ret)) {
         if (loc == PrefixPath) {
             // we make the prefix path absolute to the executable's directory
-#ifdef QT_BUILD_QMAKE
+#ifdef BOOTSTRAPPING
             return QFileInfo(qmake_libraryInfoFile()).absolutePath();
 #else
             if (QCoreApplication::instance()) {

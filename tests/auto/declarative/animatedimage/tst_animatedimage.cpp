@@ -46,6 +46,18 @@
 #include <private/qmlgraphicsimage_p.h>
 #include <private/qmlgraphicsanimatedimage_p.h>
 
+#include "../shared/testhttpserver.h"
+
+#define TRY_WAIT(expr) \
+    do { \
+        for (int ii = 0; ii < 6; ++ii) { \
+            if ((expr)) break; \
+            QTest::qWait(50); \
+        } \
+        QVERIFY((expr)); \
+    } while (false)
+
+
 class tst_animatedimage : public QObject
 {
     Q_OBJECT
@@ -58,6 +70,9 @@ private slots:
     void stopped();
     void setFrame();
     void frameCount();
+    void remote();
+    void remote_data();
+    void invalidSource();
 };
 
 void tst_animatedimage::play()
@@ -119,6 +134,57 @@ void tst_animatedimage::frameCount()
     QCOMPARE(anim->frameCount(), 3);
 
     delete anim;
+}
+
+void tst_animatedimage::remote()
+{
+    QFETCH(QString, fileName);
+    QFETCH(bool, paused);
+
+    TestHTTPServer server(14445);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/data");
+
+    QmlEngine engine;
+    QmlComponent component(&engine, QUrl("http://127.0.0.1:14445/" + fileName));
+    TRY_WAIT(component.isReady());
+
+    QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
+    QVERIFY(anim);
+
+    TRY_WAIT(anim->isPlaying());
+    if (paused) {
+        TRY_WAIT(anim->isPaused());
+        QCOMPARE(anim->currentFrame(), 2);
+    }
+
+    delete anim;
+}
+
+void tst_animatedimage::remote_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<bool>("paused");
+
+    QTest::newRow("playing") << "stickman.qml" << false;
+    QTest::newRow("paused") << "stickmanpause.qml" << true;
+}
+
+void tst_animatedimage::invalidSource()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, "import Qt 4.6\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl("file://"));
+    QVERIFY(component.isReady());
+
+    QTest::ignoreMessage(QtWarningMsg, "Error Reading Animated Image File  QUrl( \"file:no-such-file.gif\" )  ");
+
+    QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
+    QVERIFY(anim);
+
+    QVERIFY(!anim->isPlaying());
+    QVERIFY(!anim->isPaused());
+    QCOMPARE(anim->currentFrame(), 0);
+    QCOMPARE(anim->frameCount(), 0);
 }
 
 QTEST_MAIN(tst_animatedimage)

@@ -302,6 +302,7 @@ void ItemCircleAnimation::setupGuides()
     int y = 20;
 
     this->qtGuide1 = new GuideCircle(QRectF(x, y, 260, 260), -36, 342);
+    this->currGuide = 0;
     new GuideLine(QPointF(x + 240, y + 268), this->qtGuide1);
     new GuideLine(QPointF(x + 265, y + 246), this->qtGuide1);
     new GuideLine(QPointF(x + 158, y + 134), this->qtGuide1);

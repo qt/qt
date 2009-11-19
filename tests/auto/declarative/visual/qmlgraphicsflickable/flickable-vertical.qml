@@ -45,7 +45,7 @@ Rectangle {
 
     // click to toggle interactive flag
     Rectangle {
-        width: 98
+        width: 64
         height: 48
         y: parent.height - 50
         color: "red"
@@ -57,14 +57,27 @@ Rectangle {
 
     // click to toggle click delay
     Rectangle {
-        width: 98
+        width: 64
         height: 48
-        x: 100
+        x: 66
         y: parent.height - 50
         color: "green"
         MouseRegion {
             anchors.fill: parent
             onClicked: Flick.pressDelay = Flick.pressDelay > 0 ? 0 : 500
+        }
+    }
+
+    // click to toggle overshoot
+    Rectangle {
+        width: 64
+        height: 48
+        x: 130
+        y: parent.height - 50
+        color: "yellow"
+        MouseRegion {
+            anchors.fill: parent
+            onClicked: Flick.overShoot = Flick.overShoot > 0 ? 0 : 30
         }
     }
 

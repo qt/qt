@@ -174,18 +174,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QScopedPointer::operator==(const QScopedPointer<T, Cleanup> &other) const
+    \fn bool operator==(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
 
-    Equality operator. Returns true if the scoped pointer \a other
-    is pointing to the same object as this pointer, otherwise returns false.
+    Equality operator. Returns true if the scoped pointers
+    \a lhs and \a rhs are pointing to the same object.
+    Otherwise returns false.
 */
 
 
 /*!
-    \fn bool QScopedPointer::operator!=(const QScopedPointer<T, Cleanup> &other) const
+    \fn bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
 
-    Inequality operator. Returns true if the scoped pointer \a other
-    is not pointing to the same object as this pointer, otherwise returns false.
+    Inequality operator. Returns true if the scoped pointers
+    \a lhs and \a rhs are \e not pointing to the same object.
+    Otherwise returns false.
 */
 
 /*!

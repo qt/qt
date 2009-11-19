@@ -86,6 +86,8 @@ private slots:
     void sciSource();
     void sciSource_data();
     void invalidSciFile();
+    void pendingRemoteRequest();
+    void pendingRemoteRequest_data();
 
 private:
     QmlEngine engine;
@@ -113,13 +115,14 @@ void tst_qmlgraphicsborderimage::noSource()
 void tst_qmlgraphicsborderimage::imageSource()
 {
     QFETCH(QString, source);
-    QFETCH(bool, remote);
     QFETCH(bool, valid);
 
-    TestHTTPServer server(SERVER_PORT);
+    bool remote = source.startsWith("http");
+    TestHTTPServer *server = 0;
     if (remote) {
-        QVERIFY(server.isValid());
-        server.serveDirectory(SRCDIR "/data");
+        server = new TestHTTPServer(SERVER_PORT);
+        QVERIFY(server->isValid());
+        server->serveDirectory(SRCDIR "/data");
     }
 
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\" }";
@@ -143,6 +146,7 @@ void tst_qmlgraphicsborderimage::imageSource()
     }
 
     delete obj;
+    delete server;
 }
 
 void tst_qmlgraphicsborderimage::clearSource()
@@ -167,13 +171,12 @@ void tst_qmlgraphicsborderimage::clearSource()
 void tst_qmlgraphicsborderimage::imageSource_data()
 {
     QTest::addColumn<QString>("source");
-    QTest::addColumn<bool>("remote");
     QTest::addColumn<bool>("valid");
 
-    QTest::newRow("local") << SRCDIR "/data/colors.png" << false << true;
-    QTest::newRow("local not found") << SRCDIR "/data/no-such-file.png" << false << false;
-    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << true;
-    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true << false;
+    QTest::newRow("local") << SRCDIR "/data/colors.png" << true;
+    QTest::newRow("local not found") << SRCDIR "/data/no-such-file.png" << false;
+    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true;
+    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << false;
 }
 
 void tst_qmlgraphicsborderimage::resized()
@@ -236,13 +239,14 @@ void tst_qmlgraphicsborderimage::tileModes()
 void tst_qmlgraphicsborderimage::sciSource()
 {
     QFETCH(QString, source);
-    QFETCH(bool, remote);
     QFETCH(bool, valid);
 
-    TestHTTPServer server(SERVER_PORT);
+    bool remote = source.startsWith("http");
+    TestHTTPServer *server = 0;
     if (remote) {
-        QVERIFY(server.isValid());
-        server.serveDirectory(SRCDIR "/data");
+        server = new TestHTTPServer(SERVER_PORT);
+        QVERIFY(server->isValid());
+        server->serveDirectory(SRCDIR "/data");
     }
 
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\"; width: 300; height: 300 }";
@@ -270,18 +274,18 @@ void tst_qmlgraphicsborderimage::sciSource()
     }
 
     delete obj;
+    delete server;
 }
 
 void tst_qmlgraphicsborderimage::sciSource_data()
 {
     QTest::addColumn<QString>("source");
-    QTest::addColumn<bool>("remote");
     QTest::addColumn<bool>("valid");
 
-    QTest::newRow("local") << SRCDIR "/data/colors-round.sci" << false << true;
-    QTest::newRow("local not found") << SRCDIR "/data/no-such-file.sci" << false << false;
-    QTest::newRow("remote") << SERVER_ADDR "/colors-round.sci" << true << true;
-    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.sci" << true << false;
+    QTest::newRow("local") << SRCDIR "/data/colors-round.sci" << true;
+    QTest::newRow("local not found") << SRCDIR "/data/no-such-file.sci" << false;
+    QTest::newRow("remote") << SERVER_ADDR "/colors-round.sci" << true;
+    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.sci" << false;
 }
 
 void tst_qmlgraphicsborderimage::invalidSciFile()
@@ -299,7 +303,29 @@ void tst_qmlgraphicsborderimage::invalidSciFile()
     delete obj;
 }
 
+void tst_qmlgraphicsborderimage::pendingRemoteRequest()
+{
+    QFETCH(QString, source);
 
+    QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\" }";
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->status(), QmlGraphicsBorderImage::Loading);
+
+    // verify no crash
+    // This will cause a delayed "QThread: Destroyed while thread is still running" warning
+    delete obj;
+    QTest::qWait(50);
+}
+
+void tst_qmlgraphicsborderimage::pendingRemoteRequest_data()
+{
+    QTest::addColumn<QString>("source");
+
+    QTest::newRow("png file") << "http://no-such-qt-server-like-this/none.png";
+    QTest::newRow("sci file") << "http://no-such-qt-server-like-this/none.sci";
+}
 
 QTEST_MAIN(tst_qmlgraphicsborderimage)
 

@@ -394,6 +394,9 @@ void tst_QmlGraphicsGridView::removed()
     // let transitions settle.
     QTest::qWait(300);
 
+    // Setting currentIndex above shouldn't cause view to scroll
+    QCOMPARE(gridview->viewportY(), 120.0);
+
     model.removeItem(1);
 
     // let transitions settle.
@@ -407,6 +410,14 @@ void tst_QmlGraphicsGridView::removed()
         QVERIFY(item->x() == (i%3)*80);
         QVERIFY(item->y() == (i/3)*60);
     }
+
+    // Remove currentIndex
+    QmlGraphicsItem *oldCurrent = gridview->currentItem();
+    model.removeItem(9);
+    QTest::qWait(500);
+
+    QCOMPARE(gridview->currentIndex(), 9);
+    QVERIFY(gridview->currentItem() != oldCurrent);
 
     gridview->setViewportY(0);
     // let transitions settle.
@@ -429,6 +440,27 @@ void tst_QmlGraphicsGridView::removed()
 
     model.removeItem(30);
     QVERIFY(gridview->currentIndex() == 31);
+
+    // remove current item beyond visible items.
+    gridview->setCurrentIndex(20);
+    QTest::qWait(500);
+    gridview->setViewportY(0);
+    model.removeItem(20);
+    QTest::qWait(500);
+
+    QCOMPARE(gridview->currentIndex(), 20);
+    QVERIFY(gridview->currentItem() != 0);
+
+    // remove item before current, but visible
+    gridview->setCurrentIndex(8);
+    QTest::qWait(500);
+    gridview->setViewportY(240);
+    oldCurrent = gridview->currentItem();
+    model.removeItem(6);
+    QTest::qWait(500);
+
+    QCOMPARE(gridview->currentIndex(), 7);
+    QVERIFY(gridview->currentItem() == oldCurrent);
 
     delete canvas;
 }

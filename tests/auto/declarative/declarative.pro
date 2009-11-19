@@ -24,6 +24,7 @@ SUBDIRS += \
            qmlengine     \          # Cover
            qmlerror \               # Cover
            qmlfontloader \          # Cover
+           qmlgraphicsimage \       # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsflickable   \ # Cover
            qmlgraphicsflipable    \ # Cover

@@ -602,14 +602,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
         }
 #ifndef QT_NO_STATUSTIP
     }  else if (previousAction) {
-        QWidget *w = causedPopup.widget;
-        while (QMenu *m = qobject_cast<QMenu*>(w))
-            w = m->d_func()->causedPopup.widget;
-        if (w) {
-            QString empty;
-            QStatusTipEvent tip(empty);
-            QApplication::sendEvent(w, &tip);
-        }
+        previousAction->d_func()->showStatusText(topCausedWidget(), QString());
 #endif
     }
     if (hideActiveMenu) {
@@ -621,6 +614,15 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
 #endif
         hideMenu(hideActiveMenu);
     }
+}
+
+//return the top causedPopup.widget that is not a QMenu
+QWidget *QMenuPrivate::topCausedWidget() const
+{
+    QWidget* top = causedPopup.widget;
+    while (QMenu* m = qobject_cast<QMenu *>(top))
+        top = m->d_func()->causedPopup.widget;
+    return top;
 }
 
 QAction *QMenuPrivate::actionAt(QPoint p) const
@@ -1094,10 +1096,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
             QAccessible::updateAccessibility(q, actionIndex, QAccessible::Selection);
         }
 #endif
-        QWidget *w = causedPopup.widget;
-        while (QMenu *m = qobject_cast<QMenu*>(w))
-            w = m->d_func()->causedPopup.widget;
-        action->showStatusText(w);
+        action->showStatusText(topCausedWidget());
     } else {
         actionAboutToTrigger = 0;
     }
@@ -1107,6 +1106,7 @@ void QMenuPrivate::_q_actionTriggered()
 {
     Q_Q(QMenu);
     if (QAction *action = qobject_cast<QAction *>(q->sender())) {
+        QWeakPointer<QAction> actionGuard = action;
 #ifdef QT3_SUPPORT
         //we store it here because the action might be deleted/changed by connected slots
         const int id = q->findIdForAction(action);
@@ -1116,7 +1116,7 @@ void QMenuPrivate::_q_actionTriggered()
         emit q->activated(id);
 #endif
 
-        if (!activationRecursionGuard) {
+        if (!activationRecursionGuard && actionGuard) {
             //in case the action has not been activated by the mouse
             //we check the parent hierarchy
             QList< QPointer<QWidget> > list;
@@ -1801,10 +1801,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 #ifndef QT_NO_MENUBAR
     // if this menu is part of a chain attached to a QMenuBar, set the
     // _NET_WM_WINDOW_TYPE_DROPDOWN_MENU X11 window type
-    QWidget* top = this;
-    while (QMenu* m = qobject_cast<QMenu *>(top))
-        top = m->d_func()->causedPopup.widget;
-    setAttribute(Qt::WA_X11NetWmWindowTypeDropDownMenu, qobject_cast<QMenuBar *>(top) != 0);
+    setAttribute(Qt::WA_X11NetWmWindowTypeDropDownMenu, qobject_cast<QMenuBar *>(d->topCausedWidget()) != 0);
 #endif
 
     ensurePolished(); // Get the right font
@@ -2752,18 +2749,14 @@ void QMenu::keyPressEvent(QKeyEvent *e)
             }
         }
         if (!key_consumed) {
-            if (QWidget *caused = d->causedPopup.widget) {
-                while(QMenu *m = qobject_cast<QMenu*>(caused))
-                    caused = m->d_func()->causedPopup.widget;
 #ifndef QT_NO_MENUBAR
-                if (QMenuBar *mb = qobject_cast<QMenuBar*>(caused)) {
-                    QAction *oldAct = mb->d_func()->currentAction;
-                    QApplication::sendEvent(mb, e);
-                    if (mb->d_func()->currentAction != oldAct)
-                        key_consumed = true;
-                }
-#endif
+            if (QMenuBar *mb = qobject_cast<QMenuBar*>(d->topCausedWidget())) {
+                QAction *oldAct = mb->d_func()->currentAction;
+                QApplication::sendEvent(mb, e);
+                if (mb->d_func()->currentAction != oldAct)
+                    key_consumed = true;
             }
+#endif
         }
 
 #ifdef Q_OS_WIN32

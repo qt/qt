@@ -70,6 +70,9 @@ private slots:
     void qListModelInterface_moved();
     void qAbstractItemModel_moved();
 
+    void qListModelInterface_clear();
+    void qAbstractItemModel_clear();
+
     void itemList();
     void currentIndex();
     void enforceRange();
@@ -83,6 +86,7 @@ private:
     template <class T> void inserted();
     template <class T> void removed(bool animated);
     template <class T> void moved();
+    template <class T> void clear();
     QmlView *createView(const QString &filename);
     template<typename T>
     T *findItem(QmlGraphicsItem *parent, const QString &id, int index=-1);
@@ -201,6 +205,12 @@ public:
         emit itemsChanged(index, 1, roles());
     }
 
+    void clear() {
+        int count = list.count();
+        list.clear();
+        emit itemsRemoved(0, count);
+    }
+
 private:
     QList<QPair<QString,QString> > list;
 };
@@ -260,6 +270,13 @@ public:
     void modifyItem(int idx, const QString &name, const QString &number) {
         list[idx] = QPair<QString,QString>(name, number);
         emit dataChanged(index(idx,0), index(idx,0));
+    }
+
+    void clear() {
+        int count = list.count();
+        emit beginRemoveRows(QModelIndex(), 0, count-1);
+        list.clear();
+        emit endRemoveRows();
     }
 
 private:
@@ -571,6 +588,15 @@ void tst_QmlGraphicsListView::removed(bool animated)
         QCOMPARE(item->y(),40+i*20.0);
     }
 
+    // Remove current index
+    QVERIFY(listview->currentIndex() == 9);
+    QmlGraphicsItem *oldCurrent = listview->currentItem();
+    model.removeItem(9);
+    QTest::qWait(500);
+
+    QCOMPARE(listview->currentIndex(), 9);
+    QVERIFY(listview->currentItem() != oldCurrent);
+
     listview->setViewportY(40); // That's the top now
     // let transitions settle.
     QTest::qWait(500);
@@ -587,6 +613,7 @@ void tst_QmlGraphicsListView::removed(bool animated)
     // remove current item beyond visible items.
     listview->setCurrentIndex(20);
     QTest::qWait(500);
+    listview->setViewportY(40);
     model.removeItem(20);
     QTest::qWait(500);
 
@@ -596,7 +623,7 @@ void tst_QmlGraphicsListView::removed(bool animated)
     // remove item before current, but visible
     listview->setCurrentIndex(8);
     QTest::qWait(500);
-    QmlGraphicsItem *oldCurrent = listview->currentItem();
+    oldCurrent = listview->currentItem();
     model.removeItem(6);
     QTest::qWait(500);
 
@@ -605,6 +632,43 @@ void tst_QmlGraphicsListView::removed(bool animated)
 
     delete canvas;
 }
+
+template <class T>
+void tst_QmlGraphicsListView::clear()
+{
+    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+
+    T model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QVERIFY(listview != 0);
+
+    QmlGraphicsItem *viewport = listview->viewport();
+    QVERIFY(viewport != 0);
+
+    model.clear();
+
+    // let transitions settle.
+    QTest::qWait(500);
+
+    QVERIFY(listview->count() == 0);
+    QVERIFY(listview->currentItem() == 0);
+    QVERIFY(listview->viewportY() == 0);
+
+    delete canvas;
+}
+
 
 template <class T>
 void tst_QmlGraphicsListView::moved()
@@ -1123,6 +1187,15 @@ void tst_QmlGraphicsListView::qAbstractItemModel_moved()
     moved<TestModel2>();
 }
 
+void tst_QmlGraphicsListView::qListModelInterface_clear()
+{
+    clear<TestModel>();
+}
+
+void tst_QmlGraphicsListView::qAbstractItemModel_clear()
+{
+    clear<TestModel2>();
+}
 
 QmlView *tst_QmlGraphicsListView::createView(const QString &filename)
 {

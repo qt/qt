@@ -465,6 +465,12 @@ public:
     void setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt = 0);
 
     QInputContext *inputContext() const;
+    inline QWidget *effectiveFocusWidget() {
+        QWidget *w = q_func();
+        while (w->focusProxy())
+            w = w->focusProxy();
+        return w;
+    }
 
     void setModal_sys();
 
@@ -479,7 +485,7 @@ public:
         QGraphicsProxyWidget *ancestorProxy = widget->d_func()->nearestGraphicsProxyWidget(widget);
         //It's embedded if it has an ancestor
         if (ancestorProxy) {
-            if (!bypassGraphicsProxyWidget(widget)) {
+            if (!bypassGraphicsProxyWidget(widget) && ancestorProxy->scene() != 0) {
                 // One view, let be smart and return the viewport rect then the popup is aligned
                 if (ancestorProxy->scene()->views().size() == 1) {
                     QGraphicsView *view = ancestorProxy->scene()->views().at(0);

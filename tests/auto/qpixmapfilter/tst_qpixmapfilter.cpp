@@ -407,7 +407,7 @@ void tst_QPixmapFilter::dropShadowBoundingRectFor()
 
     filter.setBlurRadius(2);
     filter.setOffset(QPointF(0,0));
-    int delta = 2 * 2;
+    qreal delta = 2;
     QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(-delta, -delta, delta, delta));
     QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(-delta, -delta, delta, delta));
     QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-delta, -delta, delta, delta));
