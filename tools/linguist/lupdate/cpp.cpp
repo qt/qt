@@ -2150,9 +2150,9 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
         QTextStream ts(&file);
         ts.setCodec(codec);
         ts.setAutoDetectUnicode(true);
+        parser.setInput(ts, filename);
         if (ts.codec()->name() == "UTF-16")
             translator.setCodecName("System");
-        parser.setInput(ts, filename);
         Translator *tor = new Translator;
         tor->setCodecName(translator.codecName());
         parser.setTranslator(tor);
