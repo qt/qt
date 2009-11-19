@@ -77,8 +77,9 @@ private slots:
     void sizeLoaderToItem();
     void sizeItemToLoader();
     void noResize();
-    void networkRequest();
+    void networkRequestUrl();
     void failNetworkRequest();
+//    void networkComponent();
 
 private:
     QmlEngine engine;
@@ -285,7 +286,7 @@ void tst_QmlGraphicsLoader::noResize()
     QCOMPARE(rect->height(), 60.0);
 }
 
-void tst_QmlGraphicsLoader::networkRequest()
+void tst_QmlGraphicsLoader::networkRequestUrl()
 {
     TestHTTPServer server(SERVER_PORT);
     QVERIFY(server.isValid());
@@ -303,6 +304,37 @@ void tst_QmlGraphicsLoader::networkRequest()
 
     delete loader;
 }
+
+/* XXX Component waits until all dependencies are loaded.  Is this actually possible?
+void tst_QmlGraphicsLoader::networkComponent()
+{
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    server.serveDirectory("slowdata", TestHTTPServer::Delay);
+
+    QmlComponent component(&engine, QByteArray(
+                "import Qt 4.6\n"
+                "import \"http://127.0.0.1:14445/\" as NW\n"
+                "Item {\n"
+                " Component { id: comp; NW.SlowRect {} }\n"
+                " Loader { sourceComponent: comp } }")
+            , TEST_FILE(""));
+
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(component.create());
+    QVERIFY(item);
+
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(item->QGraphicsObject::children().at(1)); 
+    QVERIFY(loader);
+    TRY_WAIT(loader->status() == QmlGraphicsLoader::Ready);
+
+    QVERIFY(loader->item());
+    QCOMPARE(loader->progress(), 1.0);
+    QCOMPARE(loader->status(), QmlGraphicsLoader::Ready);
+    QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
+
+    delete loader;
+}
+*/
 
 void tst_QmlGraphicsLoader::failNetworkRequest()
 {
