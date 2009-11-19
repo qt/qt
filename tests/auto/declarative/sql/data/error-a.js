@@ -1,5 +1,5 @@
 function test() {
-    var db = openDatabaseSync("QmlTestDB", "", "Test database from Qt autotests", 1000000);
+    var db = openDatabaseSync("QmlTestDB-error-a", "1.0", "Test database from Qt autotests", 1000000);
     var r="transaction_not_finished";
 
     try {

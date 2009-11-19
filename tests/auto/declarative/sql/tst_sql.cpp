@@ -109,6 +109,7 @@ void tst_sql::initTestCase()
 {
     removeRecursive(dbDir());
     QDir().mkpath(dbDir());
+
 }
 
 void tst_sql::cleanupTestCase()
@@ -137,16 +138,14 @@ void tst_sql::testQml_data()
     QTest::addColumn<int>("databases");  // The number of databases that should have been created
     QTest::addColumn<bool>("qmlextension"); // Things WebKit can't do
 
-    QTest::newRow("creation") << "data/1-creation.js" << "passed" << 1 << false;
-    QTest::newRow("creation-a") << "data/1a-creation.js" << "passed" << 1 << false;
-    QTest::newRow("selection") << "data/2-selection.js" << "passed" << 1 << false;
-    QTest::newRow("creation-b") << "data/1b-creation.js" << "passed" << 2 << false;
-    QTest::newRow("selection-bindnames") << "data/2-selection-bindnames.js" << "passed" << 2 << true; // WebKit somehow breaks named parameters
-    QTest::newRow("iteration-item-function") << "data/3-iteration-item-function.js" << "passed" << 2 << false;
-    QTest::newRow("iteration-index") << "data/4-iteration-index.js" << "passed" << 2 << true; // Some HTML5 documents say to use rows by index, others by item() function
-    QTest::newRow("iteration-iterator") << "data/5-iteration-iterator.js" << "passed" << 2 << true; // As with previous, WebKit doesn't give an array
-    QTest::newRow("iteration-efficient") << "data/6-iteration-efficient.js" << "passed" << 2 << true; // It's very inefficient to find the total number of results, here is a solution
-    QTest::newRow("error-a") << "data/7a-error.js" << "passed" << 2 << false;
+    // Each test should use a newly named DB to avoid inter-test dependencies
+    QTest::newRow("creation") << "data/creation.js" << "passed" << 1 << false;
+    QTest::newRow("creation-a") << "data/creation-a.js" << "passed" << 2 << false;
+    QTest::newRow("changeversion") << "data/changeversion.js" << "passed" << 3 << false;
+    QTest::newRow("selection") << "data/selection.js" << "passed" << 4 << false;
+    QTest::newRow("selection-bindnames") << "data/selection-bindnames.js" << "passed" << 5 << true;
+    QTest::newRow("iteration") << "data/iteration.js" << "passed" << 6 << false;
+    QTest::newRow("error-a") << "data/error-a.js" << "passed" << 7 << false;
 }
 
 void tst_sql::validateAgainstWebkit_data()
@@ -155,7 +154,7 @@ void tst_sql::validateAgainstWebkit_data()
     QTest::addColumn<QString>("result"); // The required output from the js test() function
     QTest::addColumn<int>("databases");  // The number of databases that should have been created
     QTest::addColumn<bool>("qmlextension"); // Things WebKit can't do
-    QTest::newRow("creation") << "data/1-creation.js" << "passed" << 1 << false;
+    QTest::newRow("creation") << "data/creation.js" << "passed" << 1 << false;
 }
 
 void tst_sql::validateAgainstWebkit()
