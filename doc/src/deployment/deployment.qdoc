@@ -1490,7 +1490,13 @@
     \o Accessibility for Qt3Support is deployed if the application uses the Qt3Support module.
     \endlist
 
-    macdeployqt supports the following options:
+    \note If you want a 3rd party library to be included in your
+    application bundle, then you must add an excplicit lib entry for
+    that library to your application's .pro file.  Otherwise, the
+    \c macdeployqt tool will not copy the 3rd party .dylib into the
+    bundle.
+
+    \c macdeployqt supports the following options:
     \list
     \o -no-plugins: Skip plugin deployment 
     \o -dmg       : Create a .dmg disk image 
