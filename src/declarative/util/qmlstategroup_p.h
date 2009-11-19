@@ -83,6 +83,7 @@ Q_SIGNALS:
 private:
     friend class QmlState;
     void updateAutoState();
+    void removeState(QmlState *state);
 };
 
 QT_END_NAMESPACE
