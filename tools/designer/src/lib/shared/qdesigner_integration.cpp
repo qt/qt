@@ -117,7 +117,7 @@ void QDesignerIntegration::initialize()
 
     // Extensions
     if (QDesignerPropertyEditor *designerPropertyEditor= qobject_cast<QDesignerPropertyEditor *>(core()->propertyEditor())) {
-        connect(designerPropertyEditor, SIGNAL(propertyValueChanged(QString, QVariant, bool)), this, SLOT(updateProperty(QString, QVariant, bool)));
+        connect(designerPropertyEditor, SIGNAL(propertyValueChanged(QString,QVariant,bool)), this, SLOT(updateProperty(QString,QVariant,bool)));
         connect(designerPropertyEditor, SIGNAL(resetProperty(QString)), this, SLOT(resetProperty(QString)));
         connect(designerPropertyEditor, SIGNAL(addDynamicProperty(QString,QVariant)),
                 this, SLOT(addDynamicProperty(QString,QVariant)));

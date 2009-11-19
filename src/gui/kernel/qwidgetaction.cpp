@@ -212,8 +212,8 @@ void QWidgetAction::releaseWidget(QWidget *widget)
     if (!d->createdWidgets.contains(widget))
         return;
 
-    disconnect(widget, SIGNAL(destroyed(QObject *)),
-               this, SLOT(_q_widgetDestroyed(QObject *)));
+    disconnect(widget, SIGNAL(destroyed(QObject*)),
+               this, SLOT(_q_widgetDestroyed(QObject*)));
     d->createdWidgets.removeAll(widget);
     deleteWidget(widget);
 }

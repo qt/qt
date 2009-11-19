@@ -691,8 +691,8 @@ QFileDialog::Options QFileDialog::options() const
 void QFileDialog::open(QObject *receiver, const char *member)
 {
     Q_D(QFileDialog);
-    const char *signal = (fileMode() == ExistingFiles) ? SIGNAL(filesSelected(const QStringList&))
-                                                       : SIGNAL(fileSelected(const QString&));
+    const char *signal = (fileMode() == ExistingFiles) ? SIGNAL(filesSelected(QStringList))
+                                                       : SIGNAL(fileSelected(QString));
     connect(this, signal, receiver, member);
     d->signalToDisconnectOnClose = signal;
     d->receiverToDisconnectOnClose = receiver;
@@ -2145,11 +2145,11 @@ void QFileDialogPrivate::createWidgets()
     model->setNameFilterDisables(false);
 #endif
     model->d_func()->disableRecursiveSort = true;
-    QFileDialog::connect(model, SIGNAL(fileRenamed(const QString &, const QString &, const QString &)), q, SLOT(_q_fileRenamed(const QString &, const QString &, const QString &)));
-    QFileDialog::connect(model, SIGNAL(rootPathChanged(const QString &)),
-            q, SLOT(_q_pathChanged(const QString &)));
-    QFileDialog::connect(model, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
-            q, SLOT(_q_rowsInserted(const QModelIndex &)));
+    QFileDialog::connect(model, SIGNAL(fileRenamed(QString,QString,QString)), q, SLOT(_q_fileRenamed(QString,QString,QString)));
+    QFileDialog::connect(model, SIGNAL(rootPathChanged(QString)),
+            q, SLOT(_q_pathChanged(QString)));
+    QFileDialog::connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            q, SLOT(_q_rowsInserted(QModelIndex)));
     model->setReadOnly(false);
 
     qFileDialogUi.reset(new Ui_QFileDialog());
@@ -2159,8 +2159,8 @@ void QFileDialogPrivate::createWidgets()
     initialBookmarks << QUrl::fromLocalFile(QLatin1String(""))
                      << QUrl::fromLocalFile(QDir::homePath());
     qFileDialogUi->sidebar->init(model, initialBookmarks);
-    QFileDialog::connect(qFileDialogUi->sidebar, SIGNAL(goToUrl(const QUrl &)),
-                         q, SLOT(_q_goToUrl(const QUrl &)));
+    QFileDialog::connect(qFileDialogUi->sidebar, SIGNAL(goToUrl(QUrl)),
+                         q, SLOT(_q_goToUrl(QUrl)));
 
     QObject::connect(qFileDialogUi->buttonBox, SIGNAL(accepted()), q, SLOT(accept()));
     QObject::connect(qFileDialogUi->buttonBox, SIGNAL(rejected()), q, SLOT(reject()));
@@ -2194,8 +2194,8 @@ void QFileDialogPrivate::createWidgets()
     qFileDialogUi->fileTypeCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QObject::connect(qFileDialogUi->fileTypeCombo, SIGNAL(activated(int)),
                      q, SLOT(_q_useNameFilter(int)));
-    QObject::connect(qFileDialogUi->fileTypeCombo, SIGNAL(activated(const QString &)),
-                     q, SIGNAL(filterSelected(const QString &)));
+    QObject::connect(qFileDialogUi->fileTypeCombo, SIGNAL(activated(QString)),
+                     q, SIGNAL(filterSelected(QString)));
 
     qFileDialogUi->listView->init(this);
     qFileDialogUi->listView->setModel(model);
@@ -2221,8 +2221,8 @@ void QFileDialogPrivate::createWidgets()
 
     QActionGroup *showActionGroup = new QActionGroup(q);
     showActionGroup->setExclusive(false);
-    QObject::connect(showActionGroup, SIGNAL(triggered(QAction *)),
-                     q, SLOT(_q_showHeader(QAction *)));;
+    QObject::connect(showActionGroup, SIGNAL(triggered(QAction*)),
+                     q, SLOT(_q_showHeader(QAction*)));;
 
     QAbstractItemModel *abstractModel = model;
 #ifndef QT_NO_PROXYMODEL
@@ -2251,7 +2251,7 @@ void QFileDialogPrivate::createWidgets()
 
     // Selections
     QItemSelectionModel *selections = qFileDialogUi->listView->selectionModel();
-    QObject::connect(selections, SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+    QObject::connect(selections, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      q, SLOT(_q_selectionChanged()));
     QObject::connect(selections, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
                      q, SLOT(_q_currentChanged(QModelIndex)));
@@ -2289,11 +2289,11 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
 
     QModelIndex idx = d->rootIndex();
     if (d->proxyModel) {
-        disconnect(d->proxyModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
-            this, SLOT(_q_rowsInserted(const QModelIndex &)));
+        disconnect(d->proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(_q_rowsInserted(QModelIndex)));
     } else {
-        disconnect(d->model, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
-            this, SLOT(_q_rowsInserted(const QModelIndex &)));
+        disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(_q_rowsInserted(QModelIndex)));
     }
 
     if (proxyModel != 0) {
@@ -2306,8 +2306,8 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         d->completer->setModel(d->proxyModel);
         d->completer->proxyModel = d->proxyModel;
 #endif
-        connect(d->proxyModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
-            this, SLOT(_q_rowsInserted(const QModelIndex &)));
+        connect(d->proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(_q_rowsInserted(QModelIndex)));
     } else {
         d->proxyModel = 0;
         d->qFileDialogUi->listView->setModel(d->model);
@@ -2317,8 +2317,8 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         d->completer->sourceModel = d->model;
         d->completer->proxyModel = 0;
 #endif
-        connect(d->model, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
-            this, SLOT(_q_rowsInserted(const QModelIndex &)));
+        connect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(_q_rowsInserted(QModelIndex)));
     }
     QScopedPointer<QItemSelectionModel> selModel(d->qFileDialogUi->treeView->selectionModel());
     d->qFileDialogUi->treeView->setSelectionModel(d->qFileDialogUi->listView->selectionModel());
@@ -2327,7 +2327,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
 
     // reconnect selection
     QItemSelectionModel *selections = d->qFileDialogUi->listView->selectionModel();
-    QObject::connect(selections, SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+    QObject::connect(selections, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      this, SLOT(_q_selectionChanged()));
     QObject::connect(selections, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
                      this, SLOT(_q_currentChanged(QModelIndex)));

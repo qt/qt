@@ -70,7 +70,6 @@ symbian {
         saxbookmarks.exe \
         desktopservices.exe \
         fridgemagnets.exe \
-        drilldown.exe \
         softkeys.exe \
         raycasting.exe \
         flickable.exe \
@@ -89,7 +88,6 @@ symbian {
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/saxbookmarks_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/desktopservices_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/fridgemagnets_reg.rsc \
-        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/drilldown_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/softkeys_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/raycasting_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/flickable_reg.rsc \
@@ -113,7 +111,6 @@ symbian {
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/saxbookmarks.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/desktopservices.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/fridgemagnets.rsc \
-        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/drilldown.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/softkeys.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/raycasting.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/flickable.rsc \

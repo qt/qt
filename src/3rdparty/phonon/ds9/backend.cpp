@@ -41,6 +41,8 @@ namespace Phonon
 {
     namespace DS9
     {
+        QMutex *Backend::directShowMutex = 0;
+
         bool Backend::AudioMoniker::operator==(const AudioMoniker &other)
         {
             return other->IsEqual(*this) == S_OK;
@@ -50,6 +52,8 @@ namespace Phonon
         Backend::Backend(QObject *parent, const QVariantList &)
             : QObject(parent)
         {
+            directShowMutex = &m_directShowMutex;
+
             ::CoInitialize(0);
 
             //registering meta types
@@ -62,11 +66,8 @@ namespace Phonon
             m_audioOutputs.clear();
             m_audioEffects.clear();
             ::CoUninitialize();
-        }
 
-        QMutex *Backend::directShowMutex()
-        {
-            return &qobject_cast<Backend*>(qt_plugin_instance())->m_directShowMutex;
+            directShowMutex = 0;
         }
 
         QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &args)

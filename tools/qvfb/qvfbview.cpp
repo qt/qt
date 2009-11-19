@@ -108,8 +108,8 @@ QVFbView::QVFbView(int id, int w, int h, int d, Rotation r, QWidget *parent)
         break;
     }
 
-    connect(mView, SIGNAL(displayDataChanged(const QRect &)),
-            SLOT(refreshDisplay(const QRect &)));
+    connect(mView, SIGNAL(displayDataChanged(QRect)),
+            SLOT(refreshDisplay(QRect)));
 #ifdef Q_WS_X11
     connect(mView, SIGNAL(displayEmbedRequested(WId)),
             this, SLOT(embedDisplay(WId)));

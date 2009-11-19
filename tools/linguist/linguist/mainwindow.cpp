@@ -473,7 +473,7 @@ MainWindow::MainWindow()
             this, SLOT(updateTranslatorComment(QString)));
     connect(m_findDialog, SIGNAL(findNext(QString,DataModel::FindLocation,bool,bool)),
             this, SLOT(findNext(QString,DataModel::FindLocation,bool,bool)));
-    connect(m_translateDialog, SIGNAL(requestMatchUpdate(bool &)), SLOT(updateTranslateHit(bool &)));
+    connect(m_translateDialog, SIGNAL(requestMatchUpdate(bool&)), SLOT(updateTranslateHit(bool&)));
     connect(m_translateDialog, SIGNAL(activated(int)), SLOT(translate(int)));
 
     QSize as(qApp->desktop()->size());

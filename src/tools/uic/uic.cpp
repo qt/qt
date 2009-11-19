@@ -363,6 +363,11 @@ bool Uic::isContainer(const QString &className) const
         || customWidgetsInfo()->extends(className, QLatin1String("QDockWidget"));
 }
 
+bool Uic::isCustomWidgetContainer(const QString &className) const
+{
+    return customWidgetsInfo()->isCustomWidgetContainer(className);
+}
+
 bool Uic::isStatusBar(const QString &className) const
 {
     return customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"));

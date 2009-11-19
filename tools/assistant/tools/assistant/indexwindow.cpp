@@ -80,10 +80,10 @@ IndexWindow::IndexWindow(QHelpEngine *helpEngine, QWidget *parent)
         SLOT(disableSearchLineEdit()));
     connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()), this,
         SLOT(enableSearchLineEdit()));
-    connect(m_indexWidget, SIGNAL(linkActivated(QUrl, QString)), this,
+    connect(m_indexWidget, SIGNAL(linkActivated(QUrl,QString)), this,
         SIGNAL(linkActivated(QUrl)));
-    connect(m_indexWidget, SIGNAL(linksActivated(QMap<QString, QUrl>, QString)),
-        this, SIGNAL(linksActivated(QMap<QString, QUrl>, QString)));
+    connect(m_indexWidget, SIGNAL(linksActivated(QMap<QString,QUrl>,QString)),
+        this, SIGNAL(linksActivated(QMap<QString,QUrl>,QString)));
     connect(m_searchLineEdit, SIGNAL(returnPressed()), m_indexWidget,
         SLOT(activateCurrentItem()));
     layout->addWidget(m_indexWidget);

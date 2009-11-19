@@ -625,12 +625,12 @@ QtResourceView::QtResourceView(QDesignerFormEditorInterface *core, QWidget *pare
     d_ptr->m_listWidget->setIconSize(QSize(48, 48));
     d_ptr->m_listWidget->setGridSize(QSize(64, 64));
 
-    connect(d_ptr->m_treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
-                    this, SLOT(slotCurrentPathChanged(QTreeWidgetItem *)));
-    connect(d_ptr->m_listWidget, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-                    this, SLOT(slotCurrentResourceChanged(QListWidgetItem *)));
-    connect(d_ptr->m_listWidget, SIGNAL(itemActivated(QListWidgetItem *)),
-                    this, SLOT(slotResourceActivated(QListWidgetItem *)));
+    connect(d_ptr->m_treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
+                    this, SLOT(slotCurrentPathChanged(QTreeWidgetItem*)));
+    connect(d_ptr->m_listWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+                    this, SLOT(slotCurrentResourceChanged(QListWidgetItem*)));
+    connect(d_ptr->m_listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
+                    this, SLOT(slotResourceActivated(QListWidgetItem*)));
     d_ptr->m_listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(d_ptr->m_listWidget, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(slotListWidgetContextMenuRequested(QPoint)));
@@ -710,8 +710,8 @@ void QtResourceView::setSettingsKey(const QString &key)
 void QtResourceView::setResourceModel(QtResourceModel *model)
 {
     if (d_ptr->m_resourceModel) {
-        disconnect(d_ptr->m_resourceModel, SIGNAL(resourceSetActivated(QtResourceSet *, bool)),
-                    this, SLOT(slotResourceSetActivated(QtResourceSet *)));
+        disconnect(d_ptr->m_resourceModel, SIGNAL(resourceSetActivated(QtResourceSet*,bool)),
+                    this, SLOT(slotResourceSetActivated(QtResourceSet*)));
     }
 
     // clear here
@@ -723,8 +723,8 @@ void QtResourceView::setResourceModel(QtResourceModel *model)
     if (!d_ptr->m_resourceModel)
         return;
 
-    connect(d_ptr->m_resourceModel, SIGNAL(resourceSetActivated(QtResourceSet *, bool)),
-            this, SLOT(slotResourceSetActivated(QtResourceSet *)));
+    connect(d_ptr->m_resourceModel, SIGNAL(resourceSetActivated(QtResourceSet*,bool)),
+            this, SLOT(slotResourceSetActivated(QtResourceSet*)));
 
     // fill new here
     d_ptr->slotResourceSetActivated(d_ptr->m_resourceModel->currentResourceSet());

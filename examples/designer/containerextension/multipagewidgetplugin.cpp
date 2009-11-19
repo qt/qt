@@ -102,8 +102,8 @@ QWidget *MultiPageWidgetPlugin::createWidget(QWidget *parent)
     MultiPageWidget *widget = new MultiPageWidget(parent);
     connect(widget, SIGNAL(currentIndexChanged(int)),
             this, SLOT(currentIndexChanged(int)));
-    connect(widget, SIGNAL(pageTitleChanged(const QString &)),
-            this, SLOT(pageTitleChanged(const QString &)));
+    connect(widget, SIGNAL(pageTitleChanged(QString)),
+            this, SLOT(pageTitleChanged(QString)));
     return widget;
 }
 

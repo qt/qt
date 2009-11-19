@@ -138,7 +138,7 @@ void QDirectFBWindowSurface::createWindow(const QRect &rect)
     DFBWindowDescription description;
     memset(&description, 0, sizeof(DFBWindowDescription));
 
-    description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
+    description.caps = DWCAPS_NODECORATION;
     description.flags = DWDESC_CAPS|DWDESC_SURFACE_CAPS|DWDESC_PIXELFORMAT|DWDESC_HEIGHT|DWDESC_WIDTH|DWDESC_POSX|DWDESC_POSY;
 #if (Q_DIRECTFB_VERSION >= 0x010200)
     description.flags |= DWDESC_OPTIONS;

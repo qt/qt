@@ -257,10 +257,10 @@ MdiContainerWidgetTaskMenu::MdiContainerWidgetTaskMenu(QMdiArea *m, QObject *par
     ContainerWidgetTaskMenu(m, MdiContainer, parent)
 {
     initializeActions();
-    connect(m_nextAction, SIGNAL(triggered()), m, SLOT( activateNextSubWindow ()));
+    connect(m_nextAction, SIGNAL(triggered()), m, SLOT(activateNextSubWindow()));
     connect(m_previousAction, SIGNAL(triggered()), m , SLOT(activatePreviousSubWindow()));
     connect(m_tileAction, SIGNAL(triggered()), m, SLOT(tileSubWindows()));
-    connect(m_cascadeAction, SIGNAL(triggered()), m, SLOT(cascadeSubWindows ()));
+    connect(m_cascadeAction, SIGNAL(triggered()), m, SLOT(cascadeSubWindows()));
 }
 
 MdiContainerWidgetTaskMenu::MdiContainerWidgetTaskMenu(QWorkspace *m, QObject *parent) :

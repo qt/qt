@@ -102,8 +102,8 @@ void SourceWidget::startDrag()
 {
     mimeData = new MimeData;
 
-    connect(mimeData, SIGNAL(dataRequested(const QString &)),
-            this, SLOT(createData(const QString &)), Qt::DirectConnection);
+    connect(mimeData, SIGNAL(dataRequested(QString)),
+            this, SLOT(createData(QString)), Qt::DirectConnection);
 
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);

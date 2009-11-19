@@ -706,6 +706,7 @@
     \o \l{tools/customtypesending}{Custom Type Sending}\raisedaster
     \o \l{tools/echoplugin}{Echo Plugin}\raisedaster
     \o \l{tools/i18n}{I18N}
+    \o \l{tools/inputpanel}{Input Panel}\raisedaster
     \o \l{tools/plugandpaint}{Plug & Paint}\raisedaster
     \o Plug & Paint Plugins: \l{tools/plugandpaintplugins/basictools}{Basic Tools}\raisedaster
        and \l{tools/plugandpaintplugins/extrafilters}{Extra Filters}\raisedaster
@@ -793,6 +794,7 @@
     \o \l{opengl/framebufferobject2}{Framebuffer Object 2}
     \o \l{opengl/grabber}{Grabber}
     \o \l{opengl/hellogl}{Hello GL}\raisedaster
+    \o \l{opengl/hellogl_es}{Hello GL - ported to Windows CE}\raisedaster
     \o \l{opengl/overpainting}{Overpainting}\raisedaster
     \o \l{opengl/pbuffers}{Pixel Buffers}
     \o \l{opengl/pbuffers2}{Pixel Buffers 2}

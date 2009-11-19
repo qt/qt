@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,29 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef BLUREFFECT_H
-#define BLUREFFECT_H
+#ifndef WINDOWMANAGER_H
+#define WINDOWMANAGER_H
 
-#include <QGraphicsEffect>
-#include <QGraphicsItem>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QString>
+#include <QtCore/QProcess>
 
-class BlurEffect: public QGraphicsBlurEffect
+/* WindowManager: Provides functions to retrieve the top level window of
+ * an application and send it a close event. */
+
+class WindowManager
 {
+    Q_DISABLE_COPY(WindowManager)
 public:
-    BlurEffect(QGraphicsItem *item);
+    static QSharedPointer<WindowManager> create();
 
-    void setBaseLine(qreal y) { m_baseLine = y; }
+    virtual ~WindowManager();
 
-    QRectF boundingRect() const;
+    bool openDisplay(QString *errorMessage);
+    bool isDisplayOpen() const;
 
-    void draw(QPainter *painter);
+    // Count: Number of toplevels, 1 for normal apps, 2 for apps with a splash screen
+    QString waitForTopLevelWindow(unsigned count, Q_PID pid, int timeOutMS, QString *errorMessage);
+    bool sendCloseEvent(const QString &winId, Q_PID pid, QString *errorMessage);
 
-private:
-    void adjustForItem();
+    static void sleepMS(int milliSeconds);
 
-private:
-    qreal m_baseLine;
-    QGraphicsItem *item;
+protected:
+    WindowManager();
+
+    virtual bool openDisplayImpl(QString *errorMessage);
+    virtual bool isDisplayOpenImpl() const;
+    virtual QString waitForTopLevelWindowImpl(unsigned count, Q_PID pid, int timeOutMS, QString *errorMessage);
+    virtual bool sendCloseEventImpl(const QString &winId, Q_PID pid, QString *errorMessage);
 };
 
-#endif // BLUREFFECT_H
+#endif // WINDOWMANAGER_H

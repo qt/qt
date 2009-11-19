@@ -65,6 +65,23 @@ void uiLibWarning(const QString &message) {
     qWarning("Designer: %s", qPrintable(message));
 }
 
+
+QFormBuilderExtra::CustomWidgetData::CustomWidgetData() :
+    isContainer(false)
+{
+}
+
+QFormBuilderExtra::CustomWidgetData::CustomWidgetData(const DomCustomWidget *dcw) :
+    addPageMethod(dcw->elementAddPageMethod()),
+    baseClass(dcw->elementExtends()),
+    isContainer(dcw->hasElementContainer() && dcw->elementContainer() != 0)
+{
+#ifndef QT_FORMBUILDER_NO_SCRIPT
+    if (const DomScript *domScript = dcw->elementScript())
+        script = domScript->text();
+#endif
+}
+
 QFormBuilderExtra::QFormBuilderExtra() :
     m_layoutWidget(false),
     m_resourceBuilder(0),
@@ -85,8 +102,8 @@ void QFormBuilderExtra::clear()
     m_parentWidgetIsSet = false;
 #ifndef QT_FORMBUILDER_NO_SCRIPT
     m_FormScriptRunner.clearErrors();
-    m_customWidgetScriptHash.clear();
 #endif
+    m_customWidgetDataHash.clear();
     m_buttonGroups.clear();
 }
 
@@ -160,45 +177,44 @@ QFormScriptRunner &QFormBuilderExtra::formScriptRunner()
     return m_FormScriptRunner;
 }
 
-void QFormBuilderExtra::storeCustomWidgetScript(const QString &className, const QString &script)
-{
-    m_customWidgetScriptHash.insert(className, script);
-}
-
 QString QFormBuilderExtra::customWidgetScript(const QString &className) const
 {
-    const CustomWidgetScriptHash::const_iterator it = m_customWidgetScriptHash.constFind(className);
-    if ( it == m_customWidgetScriptHash.constEnd())
-        return QString();
-    return it.value();
+    const QHash<QString, CustomWidgetData>::const_iterator it = m_customWidgetDataHash.constFind(className);
+    if (it != m_customWidgetDataHash.constEnd())
+        return it.value().script;
+    return QString();
 }
 
 #endif
 
-void QFormBuilderExtra::storeCustomWidgetBaseClass(const QString &className, const QString &baseClassName)
+void QFormBuilderExtra::storeCustomWidgetData(const QString &className, const DomCustomWidget *d)
 {
-    m_customWidgetBaseClassHash.insert(className, baseClassName);
+    if (d)
+        m_customWidgetDataHash.insert(className, CustomWidgetData(d));
 }
 
 QString QFormBuilderExtra::customWidgetBaseClass(const QString &className) const
 {
-    const QHash<QString, QString>::const_iterator it = m_customWidgetBaseClassHash.constFind(className);
-    if (it == m_customWidgetBaseClassHash.constEnd())
-        return QString();
-    return it.value();
-}
-
-void QFormBuilderExtra::storeCustomWidgetAddPageMethod(const QString &className, const QString &ct)
-{
-    m_customWidgetAddPageMethodHash.insert(className, ct);
+    const QHash<QString, CustomWidgetData>::const_iterator it = m_customWidgetDataHash.constFind(className);
+    if (it != m_customWidgetDataHash.constEnd())
+            return it.value().baseClass;
+    return QString();
 }
 
 QString QFormBuilderExtra::customWidgetAddPageMethod(const QString &className) const
 {
-    const QHash<QString, QString>::const_iterator it = m_customWidgetAddPageMethodHash.constFind(className);
-    if (it == m_customWidgetAddPageMethodHash.constEnd())
-        return QString();
-    return it.value();
+    const QHash<QString, CustomWidgetData>::const_iterator it = m_customWidgetDataHash.constFind(className);
+    if (it != m_customWidgetDataHash.constEnd())
+        return it.value().addPageMethod;
+    return QString();
+}
+
+bool QFormBuilderExtra::isCustomWidgetContainer(const QString &className) const
+{
+    const QHash<QString, CustomWidgetData>::const_iterator it = m_customWidgetDataHash.constFind(className);
+    if (it != m_customWidgetDataHash.constEnd())
+        return it.value().isContainer;
+    return false;
 }
 
 namespace {
