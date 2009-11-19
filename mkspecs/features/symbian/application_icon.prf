@@ -36,7 +36,7 @@ contains( CONFIG, no_icon ) {
             mifconv.output = ${ZDIR}$$APP_RESOURCE_DIR/$${baseTarget}.mif
             # Based on: http://www.forum.nokia.com/document/Cpp_Developers_Library
             # svg-t icons should always use /c32 depth
-            mifconv.commands = mifconv ${QMAKE_FILE_OUT} $$join(ICON, " /c32 ", "/c32 ",)
+            mifconv.commands = mifconv ${QMAKE_FILE_OUT} /c32 ${QMAKE_FILE_IN}
             mifconv.input = ICON
             mifconv.CONFIG = no_link combine
             # target_predeps together with combine seems not to work correctly, lets define it by ourselves
