@@ -143,16 +143,20 @@ void tst_anchors::basicAnchors()
     QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect22"))->x(), 69.0);
     QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect22"))->y(), 5.0);
 
-    //margins
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->x(), 31.0);
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->y(), 5.0);
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->width(), 86.0);
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->height(), 10.0);
+     //margins
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23a"))->x(), 31.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23a"))->y(), 5.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23a"))->width(), 86.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23a"))->height(), 10.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23b"))->x(), 31.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23b"))->y(), 5.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23b"))->width(), 86.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23b"))->height(), 10.0);
 
-   // offsets
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect24"))->x(), 26.0);
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect25"))->y(), 60.0);
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect26"))->y(), 5.0);
+    // offsets
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect24"))->x(), 26.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect25"))->y(), 60.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect26"))->y(), 5.0);
 
     //baseline
     QmlGraphicsText *text1 = findItem<QmlGraphicsText>(view->root(), QLatin1String("text1"));
