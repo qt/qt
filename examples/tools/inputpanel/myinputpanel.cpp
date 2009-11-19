@@ -49,8 +49,8 @@ MyInputPanel::MyInputPanel()
 {
     form.setupUi(this);
 
-    connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
-            this, SLOT(saveFocusWidget(QWidget *, QWidget *)));
+    connect(qApp, SIGNAL(focusChanged(QWidget*,QWidget*)),
+            this, SLOT(saveFocusWidget(QWidget*,QWidget*)));
 
     signalMapper.setMapping(form.panelButton_1, form.panelButton_1);
     signalMapper.setMapping(form.panelButton_2, form.panelButton_2);
@@ -90,8 +90,8 @@ MyInputPanel::MyInputPanel()
     connect(form.panelButton_hash, SIGNAL(clicked()),
             &signalMapper, SLOT(map()));
 
-    connect(&signalMapper, SIGNAL(mapped(QWidget *)),
-            this, SLOT(buttonClicked(QWidget *)));
+    connect(&signalMapper, SIGNAL(mapped(QWidget*)),
+            this, SLOT(buttonClicked(QWidget*)));
 }
 
 //! [0]

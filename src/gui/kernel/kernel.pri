@@ -188,9 +188,8 @@ embedded {
             HEADERS += \
                 kernel/qeventdispatcher_glib_qws_p.h
             QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
+            LIBS_PRIVATE +=$$QT_LIBS_GLIB
 	}
-
-
 }
 
 !embedded:!x11:mac {

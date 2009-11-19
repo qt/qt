@@ -654,6 +654,24 @@ void QMenuPrivate::_q_overrideMenuActionDestroyed()
     menuAction=defaultMenuAction;
 }
 
+
+void QMenuPrivate::updateLayoutDirection()
+{
+    Q_Q(QMenu);
+    //we need to mimic the cause of the popup's layout direction
+    //to allow setting it on a mainwindow for example
+    //we call setLayoutDirection_helper to not overwrite a user-defined value
+    if (!q->testAttribute(Qt::WA_SetLayoutDirection)) {
+        if (QWidget *w = causedPopup.widget)
+            setLayoutDirection_helper(w->layoutDirection());
+        else if (QWidget *w = q->parentWidget())
+            setLayoutDirection_helper(w->layoutDirection());
+        else
+            setLayoutDirection_helper(QApplication::layoutDirection());
+    }
+}
+
+
 /*!
     Returns the action associated with this menu.
 */
@@ -1797,6 +1815,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->tearoffHighlighted = 0;
     d->motions = 0;
     d->doChildEffects = true;
+    d->updateLayoutDirection();
 
 #ifndef QT_NO_MENUBAR
     // if this menu is part of a chain attached to a QMenuBar, set the
@@ -2347,6 +2366,9 @@ QMenu::event(QEvent *e)
 {
     Q_D(QMenu);
     switch (e->type()) {
+    case QEvent::Polish:
+        d->updateLayoutDirection();
+        break;
     case QEvent::ShortcutOverride: {
             QKeyEvent *kev = static_cast<QKeyEvent*>(e);
             if (kev->key() == Qt::Key_Up || kev->key() == Qt::Key_Down

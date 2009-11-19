@@ -776,7 +776,11 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     qMetaTypeId<QObjectList>();
 #endif
 
-    JSC::initializeThreading(); // ### hmmm
+    if (!QCoreApplication::instance()) {
+        qFatal("QScriptEngine: Must construct a Q(Core)Application before a QScriptEngine");
+        return;
+    }
+    JSC::initializeThreading();
 
     globalData = JSC::JSGlobalData::create().releaseRef();
     globalData->clientData = new QScript::GlobalClientData(this);
@@ -1302,7 +1306,7 @@ QScript::QObjectData *QScriptEnginePrivate::qobjectData(QObject *object)
     QScript::QObjectData *data = new QScript::QObjectData(this);
     m_qobjectData.insert(object, data);
     QObject::connect(object, SIGNAL(destroyed(QObject*)),
-                     q_func(), SLOT(_q_objectDestroyed(QObject *)));
+                     q_func(), SLOT(_q_objectDestroyed(QObject*)));
     return data;
 }
 

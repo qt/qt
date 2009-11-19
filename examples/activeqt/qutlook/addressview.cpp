@@ -243,7 +243,7 @@ AddressView::AddressView(QWidget *parent)
     model = new AddressBookModel(this);
     treeView->setModel(model);
 
-    connect(treeView->selectionModel(), SIGNAL(currentChanged(QModelIndex, QModelIndex)), this, SLOT(itemSelected(QModelIndex)));
+    connect(treeView->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(itemSelected(QModelIndex)));
 
     mainGrid->addWidget(treeView, 2, 0, 1, 5);
 }

@@ -56,11 +56,32 @@
 #include "qstringlist.h"
 #include "qtextcodec.h"
 #include "qdesktopwidget.h"
+#include "qfiledialog.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_MAC_USE_COCOA
+#ifdef QT_MAC_USE_COCOA
+
+QStringList Q3FileDialog::macGetOpenFileNames(const QString &filter, QString *pwd,
+                                              QWidget *parent, const char* /*name*/,
+                                              const QString& caption, QString *selectedFilter,
+                                              bool /*multi*/, bool /*directory*/)
+{
+    return QFileDialog::getOpenFileNames(filter, *pwd, parent, 0, 
+                                         caption);
+}
+
+
+QString Q3FileDialog::macGetSaveFileName(const QString &start, const QString &filter,
+                                         QString *, QWidget *parent, const char* /*name*/,
+                                         const QString& caption, QString *selectedFilter)
+{
+    return QFileDialog::getSaveFileName(start, filter, parent, 0,
+                                        caption, selectedFilter);
+}
+
+#else 
 
 /*****************************************************************************
   Externals

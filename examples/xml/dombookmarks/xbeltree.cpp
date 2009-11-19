@@ -90,8 +90,8 @@ bool XbelTree::read(QIODevice *device)
 
     clear();
 
-    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)),
-               this, SLOT(updateDomElement(QTreeWidgetItem *, int)));
+    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
+               this, SLOT(updateDomElement(QTreeWidgetItem*,int)));
 
     QDomElement child = root.firstChildElement("folder");
     while (!child.isNull()) {
@@ -99,8 +99,8 @@ bool XbelTree::read(QIODevice *device)
         child = child.nextSiblingElement("folder");
     }
 
-    connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)),
-            this, SLOT(updateDomElement(QTreeWidgetItem *, int)));
+    connect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
+            this, SLOT(updateDomElement(QTreeWidgetItem*,int)));
 
     return true;
 }

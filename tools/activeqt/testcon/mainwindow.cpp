@@ -204,7 +204,7 @@ void MainWindow::on_actionControlProperties_triggered()
 
     if (!dlgProperties) {
 	dlgProperties = new ChangeProperties(this);
-	connect(container, SIGNAL(propertyChanged(const QString&)), dlgProperties, SLOT(updateProperties()));
+	connect(container, SIGNAL(propertyChanged(QString)), dlgProperties, SLOT(updateProperties()));
     }
     dlgProperties->setControl(container);
     dlgProperties->show();
@@ -336,8 +336,8 @@ void MainWindow::on_actionScriptingLoad_triggered()
 
     QAxScript *script = scripts->load(file, file);
     if (script) {
-	connect(script, SIGNAL(error(int, const QString&, int, const QString&)),
-		this,   SLOT(logMacro(int,  const QString&, int, const QString&)));
+	connect(script, SIGNAL(error(int,QString,int,QString)),
+		this,   SLOT(logMacro(int,QString,int,QString)));
 	actionScriptingRun->setEnabled(true);
     }
 #else
@@ -374,17 +374,17 @@ void MainWindow::updateGUI()
 
 	QAxWidget *ax = qobject_cast<QAxWidget*>(container);
 	if (ax) {
-	    container->disconnect(SIGNAL(signal(const QString&, int, void*)));
+	    container->disconnect(SIGNAL(signal(QString,int,void*)));
 	    if (actionLogSignals->isChecked())
-		connect(container, SIGNAL(signal(const QString&, int, void*)), this, SLOT(logSignal(const QString&, int, void*)));
+		connect(container, SIGNAL(signal(QString,int,void*)), this, SLOT(logSignal(QString,int,void*)));
 
-	    container->disconnect(SIGNAL(exception(int,const QString&,const QString&,const QString&)));
-	    connect(container, SIGNAL(exception(int,const QString&,const QString&,const QString&)),
-		this, SLOT(logException(int,const QString&,const QString&,const QString&)));
+	    container->disconnect(SIGNAL(exception(int,QString,QString,QString)));
+	    connect(container, SIGNAL(exception(int,QString,QString,QString)),
+		this, SLOT(logException(int,QString,QString,QString)));
 
-	    container->disconnect(SIGNAL(propertyChanged(const QString&)));
+	    container->disconnect(SIGNAL(propertyChanged(QString)));
 	    if (actionLogProperties->isChecked()) 
-		connect(container, SIGNAL(propertyChanged(const QString&)), this, SLOT(logPropertyChanged(const QString&)));
+		connect(container, SIGNAL(propertyChanged(QString)), this, SLOT(logPropertyChanged(QString)));
 	    container->blockSignals(actionFreezeEvents->isChecked());
 	}
 

@@ -64,8 +64,8 @@ TabBar::TabBar(QWidget *parent)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
-    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
-            this, SLOT(contextMenuRequested(const QPoint &)));
+    connect(this, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(contextMenuRequested(QPoint)));
 
     QString alt = QLatin1String("Alt+%1");
     for (int i = 1; i <= 10; ++i) {
@@ -221,7 +221,7 @@ TabWidget::TabWidget(QWidget *parent)
     connect(m_tabBar, SIGNAL(closeOtherTabs(int)), this, SLOT(closeOtherTabs(int)));
     connect(m_tabBar, SIGNAL(reloadTab(int)), this, SLOT(reloadTab(int)));
     connect(m_tabBar, SIGNAL(reloadAllTabs()), this, SLOT(reloadAllTabs()));
-    connect(m_tabBar, SIGNAL(tabMoved(int, int)), this, SLOT(moveTab(int, int)));
+    connect(m_tabBar, SIGNAL(tabMoved(int,int)), this, SLOT(moveTab(int,int)));
     setTabBar(m_tabBar);
     setDocumentMode(true);
 
@@ -257,8 +257,8 @@ TabWidget::TabWidget(QWidget *parent)
     m_recentlyClosedTabsMenu = new QMenu(this);
     connect(m_recentlyClosedTabsMenu, SIGNAL(aboutToShow()),
             this, SLOT(aboutToShowRecentTabsMenu()));
-    connect(m_recentlyClosedTabsMenu, SIGNAL(triggered(QAction *)),
-            this, SLOT(aboutToShowRecentTriggeredAction(QAction *)));
+    connect(m_recentlyClosedTabsMenu, SIGNAL(triggered(QAction*)),
+            this, SLOT(aboutToShowRecentTriggeredAction(QAction*)));
     m_recentlyClosedTabsAction = new QAction(tr("Recently Closed Tabs"), this);
     m_recentlyClosedTabsAction->setMenu(m_recentlyClosedTabsMenu);
     m_recentlyClosedTabsAction->setEnabled(false);
@@ -304,18 +304,18 @@ void TabWidget::currentChanged(int index)
 
     WebView *oldWebView = this->webView(m_lineEdits->currentIndex());
     if (oldWebView) {
-        disconnect(oldWebView, SIGNAL(statusBarMessage(const QString&)),
-                this, SIGNAL(showStatusBarMessage(const QString&)));
-        disconnect(oldWebView->page(), SIGNAL(linkHovered(const QString&, const QString&, const QString&)),
-                this, SIGNAL(linkHovered(const QString&)));
+        disconnect(oldWebView, SIGNAL(statusBarMessage(QString)),
+                this, SIGNAL(showStatusBarMessage(QString)));
+        disconnect(oldWebView->page(), SIGNAL(linkHovered(QString,QString,QString)),
+                this, SIGNAL(linkHovered(QString)));
         disconnect(oldWebView, SIGNAL(loadProgress(int)),
                 this, SIGNAL(loadProgress(int)));
     }
 
-    connect(webView, SIGNAL(statusBarMessage(const QString&)),
-            this, SIGNAL(showStatusBarMessage(const QString&)));
-    connect(webView->page(), SIGNAL(linkHovered(const QString&, const QString&, const QString&)),
-            this, SIGNAL(linkHovered(const QString&)));
+    connect(webView, SIGNAL(statusBarMessage(QString)),
+            this, SIGNAL(showStatusBarMessage(QString)));
+    connect(webView->page(), SIGNAL(linkHovered(QString,QString,QString)),
+            this, SIGNAL(linkHovered(QString)));
     connect(webView, SIGNAL(loadProgress(int)),
             this, SIGNAL(loadProgress(int)));
 
@@ -450,16 +450,16 @@ WebView *TabWidget::newTab(bool makeCurrent)
             this, SLOT(webViewIconChanged()));
     connect(webView, SIGNAL(iconChanged()),
             this, SLOT(webViewIconChanged()));
-    connect(webView, SIGNAL(titleChanged(const QString &)),
-            this, SLOT(webViewTitleChanged(const QString &)));
-    connect(webView, SIGNAL(urlChanged(const QUrl &)),
-            this, SLOT(webViewUrlChanged(const QUrl &)));
+    connect(webView, SIGNAL(titleChanged(QString)),
+            this, SLOT(webViewTitleChanged(QString)));
+    connect(webView, SIGNAL(urlChanged(QUrl)),
+            this, SLOT(webViewUrlChanged(QUrl)));
     connect(webView->page(), SIGNAL(windowCloseRequested()),
             this, SLOT(windowCloseRequested()));
-    connect(webView->page(), SIGNAL(geometryChangeRequested(const QRect &)),
-            this, SIGNAL(geometryChangeRequested(const QRect &)));
-    connect(webView->page(), SIGNAL(printRequested(QWebFrame *)),
-            this, SIGNAL(printRequested(QWebFrame *)));
+    connect(webView->page(), SIGNAL(geometryChangeRequested(QRect)),
+            this, SIGNAL(geometryChangeRequested(QRect)));
+    connect(webView->page(), SIGNAL(printRequested(QWebFrame*)),
+            this, SIGNAL(printRequested(QWebFrame*)));
     connect(webView->page(), SIGNAL(menuBarVisibilityChangeRequested(bool)),
             this, SIGNAL(menuBarVisibilityChangeRequested(bool)));
     connect(webView->page(), SIGNAL(statusBarVisibilityChangeRequested(bool)),
@@ -764,7 +764,7 @@ WebActionMapper::WebActionMapper(QAction *root, QWebPage::WebAction webAction, Q
     if (!m_root)
         return;
     connect(m_root, SIGNAL(triggered()), this, SLOT(rootTriggered()));
-    connect(root, SIGNAL(destroyed(QObject *)), this, SLOT(rootDestroyed()));
+    connect(root, SIGNAL(destroyed(QObject*)), this, SLOT(rootDestroyed()));
     root->setEnabled(false);
 }
 
@@ -813,7 +813,7 @@ void WebActionMapper::childChanged()
 void WebActionMapper::updateCurrent(QWebPage *currentParent)
 {
     if (m_currentParent)
-        disconnect(m_currentParent, SIGNAL(destroyed(QObject *)),
+        disconnect(m_currentParent, SIGNAL(destroyed(QObject*)),
                    this, SLOT(currentDestroyed()));
 
     m_currentParent = currentParent;
@@ -827,7 +827,7 @@ void WebActionMapper::updateCurrent(QWebPage *currentParent)
     QAction *source = m_currentParent->action(m_webAction);
     m_root->setChecked(source->isChecked());
     m_root->setEnabled(source->isEnabled());
-    connect(m_currentParent, SIGNAL(destroyed(QObject *)),
+    connect(m_currentParent, SIGNAL(destroyed(QObject*)),
             this, SLOT(currentDestroyed()));
 }
 

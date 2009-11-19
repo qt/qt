@@ -3115,14 +3115,14 @@ void QHttpPrivate::setSock(QTcpSocket *sock)
     QObject::connect(socket, SIGNAL(bytesWritten(qint64)),
                      q, SLOT(_q_slotBytesWritten(qint64)));
 #ifndef QT_NO_NETWORKPROXY
-    QObject::connect(socket, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)),
-                     q, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)));
+    QObject::connect(socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+                     q, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 #endif
 
 #ifndef QT_NO_OPENSSL
     if (qobject_cast<QSslSocket *>(socket)) {
-        QObject::connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)),
-                         q, SIGNAL(sslErrors(const QList<QSslError> &)));
+        QObject::connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
+                         q, SIGNAL(sslErrors(QList<QSslError>)));
         QObject::connect(socket, SIGNAL(encryptedBytesWritten(qint64)),
                          q, SLOT(_q_slotEncryptedBytesWritten(qint64)));
     }
