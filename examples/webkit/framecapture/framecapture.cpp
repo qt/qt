@@ -59,6 +59,7 @@ void FrameCapture::load(const QUrl &url, const QString &outputFileName)
     m_page.mainFrame()->load(url);
     m_page.mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
     m_page.mainFrame()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+    m_page.setViewportSize(QSize(1024, 768));
 }
 
 void FrameCapture::printProgress(int percent)
@@ -88,8 +89,6 @@ void FrameCapture::saveResult(bool ok)
         int index = m_fileName.lastIndexOf('.');
         fileName = fileName.insert(index, "_frame" + QString::number(++frameCounter));
 
-        frame->setClipRenderToViewport(false);
-
         QImage image(frame->contentsSize(), QImage::Format_ARGB32_Premultiplied);
         image.fill(Qt::transparent);
 
@@ -112,7 +111,7 @@ void FrameCapture::saveFrame(QWebFrame *frame, QImage image, QString fileName)
     painter.setRenderHint(QPainter::TextAntialiasing, true);
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-    frame->render(&painter);
+    frame->documentElement().render(&painter);
 
     painter.end();
 
