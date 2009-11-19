@@ -778,6 +778,7 @@
     \o \l{opengl/framebufferobject2}{Framebuffer Object 2}
     \o \l{opengl/grabber}{Grabber}
     \o \l{opengl/hellogl}{Hello GL}\raisedaster
+    \o \l{opengl/hellogl_es}{Hello GL - ported to Windows CE}\raisedaster
     \o \l{opengl/overpainting}{Overpainting}\raisedaster
     \o \l{opengl/pbuffers}{Pixel Buffers}
     \o \l{opengl/pbuffers2}{Pixel Buffers 2}

@@ -47,7 +47,6 @@
     \title Qt for Windows CE Hardware Accelerated Graphics
     \ingroup qtce
 
-
     \input platforms/emb-hardwareacceleration.qdocinc
 
     \section1 Supported Hardware Accelerated Graphics APIs
