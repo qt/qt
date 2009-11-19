@@ -212,6 +212,8 @@ void QmlGraphicsBorderImage::setSource(const QUrl &url)
                 setImplicitWidth(d->pix.width());
                 setImplicitHeight(d->pix.height());
 
+                if (d->pix.isNull())
+                    d->status = Error;
                 if (d->status == Loading)
                     d->status = Ready;
                 d->progress = 1.0;
@@ -329,6 +331,8 @@ void QmlGraphicsBorderImage::setGridScaledImage(const QmlGraphicsGridScaledImage
             setImplicitWidth(d->pix.width());
             setImplicitHeight(d->pix.height());
 
+            if (d->pix.isNull())
+                d->status = Error;
             if (d->status == Loading)
                 d->status = Ready;
             d->progress = 1.0;

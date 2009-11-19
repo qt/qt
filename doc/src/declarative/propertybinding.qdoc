@@ -48,7 +48,7 @@ a property's value to be expressed as an ECMAScript expression that defines the 
 to other property values or data accessible in the application.  The property value is 
 automatically kept up to date if the other properties or data values change.
 
-Property bindings are created implicitly in QML whenever an property is assigned an ECMAScript
+Property bindings are created implicitly in QML whenever a property is assigned an ECMAScript
 expression.  The following QML uses two property bindings to connect the size of the rectangle
 to that of \c otherItem.
 
@@ -68,14 +68,14 @@ expression!  Here are some examples of more complex bindings:
 \code
 Rectangle {
     Script {
-        function calculateMyWidth() {
-            return Math.max(otherItem.width, thirdItem.width);
+        function calculateMyHeight() {
+            return Math.max(otherItem.height, thirdItem.height);
         }
     }
 
     anchors.centerIn: parent
     width: Math.min(otherItem.width, 10)
-    height: calculateMyWidth()
+    height: calculateMyHeight()
     color: { if (width > 10) "blue"; else "red" }
 }
 \endcode
@@ -97,6 +97,14 @@ The implicit binding syntax shown previously is easy to use and works perfectly 
 of bindings.  In some advanced cases, it is necessary to create bindings explicitly using the 
 \l Binding element.
 
-XXX - need an example
+For example, to bind a property exposed from C++ (\c system.brightness) to a value
+coming from QML (\c slider.value), you could use the Binding element as follows:
+\qml
+Binding {
+    target: system
+    property: "brightness"
+    value: slider.value
+}
+\endqml
 */
 

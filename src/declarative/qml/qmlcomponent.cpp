@@ -219,7 +219,8 @@ QmlComponent::~QmlComponent()
 }
 
 /*!
-  Returns the component's current \l{QmlComponent::Status} {status}.
+    \property QmlComponent::status
+    The component's current \l{QmlComponent::Status} {status}.
  */
 QmlComponent::Status QmlComponent::status() const
 {
@@ -284,7 +285,8 @@ bool QmlComponent::isLoading() const
 }
 
 /*!
-    Returns he progress of loading the component, from 0.0 (nothing loaded)
+    \property QmlComponent::progress
+    The progress of loading the component, from 0.0 (nothing loaded)
     to 1.0 (finished).
 */
 qreal QmlComponent::progress() const
@@ -503,7 +505,8 @@ QString QmlComponent::errorsString() const
 }
 
 /*!
-    Return the component URL.  This is the URL passed to either the constructor,
+    \property QmlComponent::url
+    The component URL.  This is the URL passed to either the constructor,
     or the loadUrl() or setData() methods.
 */
 QUrl QmlComponent::url() const
