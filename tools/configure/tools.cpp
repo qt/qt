@@ -163,10 +163,13 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
     case PL('X','C'):
     case PL('X','U'):
     case PL('X','W'):
+	case PL('X','M'): // old license key
         dictionary["LICENSE_EXTENSION"] = "-ALLOS";
         break;
+
     case PL('6', 'M'):
     case PL('8', 'M'):
+	case PL('K', 'M'): // old license key
     case PL('N', '7'):
     case PL('N', '9'):
     case PL('N', 'X'):
@@ -178,7 +181,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         if (dictionary["PLATFORM NAME"].contains("Windows CE")
             && platformCode != PL('6', 'M') && platformCode != PL('S', '9')
             && platformCode != PL('S', 'C') && platformCode != PL('S', 'U')
-            && platformCode != PL('S', 'W')) {
+            && platformCode != PL('S', 'W') && platformCode != PL('K', 'M')) {
             dictionary["DONE"] = "error";
         } else if (dictionary["PLATFORM NAME"].contains("Symbian")
                    && platformCode != PL('N', '9') && platformCode != PL('S', '9')
@@ -196,7 +199,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         break;
     default:
         dictionary["DONE"] = "error";
-        return;
+        break;
     }
 #undef PL
 
