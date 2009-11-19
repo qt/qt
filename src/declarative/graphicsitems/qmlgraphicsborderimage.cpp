@@ -176,12 +176,10 @@ void QmlGraphicsBorderImage::setSource(const QUrl &url)
     if (url.isEmpty()) {
         d->pix = QPixmap();
         d->status = Null;
-        d->progress = 1.0;
         setImplicitWidth(0);
         setImplicitHeight(0);
         emit statusChanged(d->status);
         emit sourceChanged(d->url);
-        emit progressChanged(1.0);
         update();
     } else {
         d->status = Loading;
@@ -219,7 +217,7 @@ void QmlGraphicsBorderImage::setSource(const QUrl &url)
                 d->progress = 1.0;
                 emit statusChanged(d->status);
                 emit sourceChanged(d->url);
-                emit progressChanged(1.0);
+                emit progressChanged(d->progress);
                 update();
             }
         }
