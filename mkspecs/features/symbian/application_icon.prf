@@ -9,8 +9,9 @@ contains( CONFIG, no_icon ) {
 # There is no point in compiling the MIF icon if no_icon CONFIGS is set
     !isEmpty(ICON) {
 
-        !count(ICON, $$size(TRANSLATIONS)):!count(ICON, 1) {
-            message("ICON keyword must have one or the same amout of items as in TRANSLATIONS keyword")
+        !count(ICON, 1) {
+            ICON = $$first(ICON)
+            warning("Only first icon specified in ICON variable is used: $$ICON")
         }
 
         # Try to produce indentical string to fixedTarget in SymbianMakefileGenerator, replaced chars taken
