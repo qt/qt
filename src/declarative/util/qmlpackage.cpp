@@ -101,7 +101,7 @@ QmlPackage::~QmlPackage()
     Q_D(QmlPackage);
     for (int ii = 0; ii < d->dataList.count(); ++ii) {
         QObject *obj = d->dataList.at(ii);
-        delete obj;
+        obj->setParent(this);
     }
 }
 

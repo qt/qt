@@ -52,11 +52,11 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QmlBindPrivate;
-class Q_DECLARATIVE_EXPORT QmlBind : public QObject
+class Q_DECLARATIVE_EXPORT QmlBind : public QObject, public QmlParserStatus
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlBind)
-
+    Q_INTERFACES(QmlParserStatus)
     Q_PROPERTY(QObject *target READ object WRITE setObject)
     Q_PROPERTY(QString property READ property WRITE setProperty)
     Q_PROPERTY(QVariant value READ value WRITE setValue)
@@ -77,6 +77,9 @@ public:
 
     QVariant value() const;
     void setValue(const QVariant &);
+
+protected:
+    virtual void componentComplete();
 
 private:
     void eval();

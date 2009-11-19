@@ -69,6 +69,11 @@ public:
 protected:
     QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
     QWebPage *createWindow(WebWindowType type);
+    void javaScriptConsoleMessage(const QString& message, int lineNumber, const QString& sourceID);
+    QString chooseFile(QWebFrame *originatingFrame, const QString& oldFile);
+    void javaScriptAlert(QWebFrame *originatingFrame, const QString& msg);
+    bool javaScriptConfirm(QWebFrame *originatingFrame, const QString& msg);
+    bool javaScriptPrompt(QWebFrame *originatingFrame, const QString& msg, const QString& defaultValue, QString* result);
 
 private:
     QmlGraphicsWebView *viewItem();
@@ -194,6 +199,8 @@ Q_SIGNALS:
     void doubleClick(int clickX, int clickY);
 
     void zoomTo(qreal zoom, int centerX, int centerY);
+
+    void alert(const QString& message);
 
 public Q_SLOTS:
     QVariant evaluateJavaScript(const QString&);
