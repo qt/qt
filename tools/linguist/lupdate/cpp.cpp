@@ -2151,7 +2151,7 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
         ts.setCodec(codec);
         ts.setAutoDetectUnicode(true);
         parser.setInput(ts, filename);
-        if (ts.codec()->name() == "UTF-16")
+        if (cd.m_outputCodec.isEmpty() && ts.codec()->name() == "UTF-16")
             translator.setCodecName("System");
         Translator *tor = new Translator;
         tor->setCodecName(translator.codecName());

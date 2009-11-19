@@ -494,6 +494,7 @@ int main(int argc, char **argv)
             if (!tmp.isEmpty() && !tmp.first().isEmpty()) {
                 codecForTr = tmp.first().toLatin1();
                 fetchedTor.setCodecName(codecForTr);
+                cd.m_outputCodec = codecForTr;
             }
             tmp = variables.value("CODECFORSRC");
             if (!tmp.isEmpty() && !tmp.first().isEmpty()) {
