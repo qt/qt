@@ -215,7 +215,7 @@ Item {       // Scope object for Script block 1
 \endcode
 
 One notable characteristic of the scope object is its interaction with \l {Attached Properties}.
-As attached properties exist on all object, an attached property reference that is not
+As attached properties exist on all objects, an attached property reference that is not
 explicitly prefixed by an id will \e always resolve to the attached property on the scope 
 object.
 
