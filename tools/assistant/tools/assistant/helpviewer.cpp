@@ -292,7 +292,7 @@ HelpViewer::HelpViewer(QHelpEngine *engine, CentralWidget *parent)
         SLOT(actionChanged()));
     connect(pageAction(QWebPage::Forward), SIGNAL(changed()), this,
         SLOT(actionChanged()));
-    connect(page(), SIGNAL(linkHovered(QString, QString, QString)), this,
+    connect(page(), SIGNAL(linkHovered(QString,QString,QString)), this,
         SIGNAL(highlighted(QString)));
     connect(this, SIGNAL(urlChanged(QUrl)), this, SIGNAL(sourceChanged(QUrl)));
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));

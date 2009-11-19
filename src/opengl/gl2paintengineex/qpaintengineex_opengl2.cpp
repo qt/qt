@@ -158,8 +158,8 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
     , m_height(0)
 {
     glGenFramebuffers(1, &m_fbo);
-    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)),
-            SLOT(contextDestroyed(const QGLContext *)));
+    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext*)),
+            SLOT(contextDestroyed(const QGLContext*)));
 }
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()

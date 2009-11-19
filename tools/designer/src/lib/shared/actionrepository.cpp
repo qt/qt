@@ -504,10 +504,10 @@ ActionView::ActionView(QWidget *parent) :
     addWidget(m_actionListView);
     addWidget(m_actionTreeView);
     // Wire signals
-    connect(m_actionTreeView, SIGNAL(contextMenuRequested(QContextMenuEvent*, QAction*)),
-            this, SIGNAL(contextMenuRequested(QContextMenuEvent*, QAction*)));
-    connect(m_actionListView, SIGNAL(contextMenuRequested(QContextMenuEvent*, QAction*)),
-            this, SIGNAL(contextMenuRequested(QContextMenuEvent*, QAction*)));
+    connect(m_actionTreeView, SIGNAL(contextMenuRequested(QContextMenuEvent*,QAction*)),
+            this, SIGNAL(contextMenuRequested(QContextMenuEvent*,QAction*)));
+    connect(m_actionListView, SIGNAL(contextMenuRequested(QContextMenuEvent*,QAction*)),
+            this, SIGNAL(contextMenuRequested(QContextMenuEvent*,QAction*)));
 
     // make it possible for vs integration to reimplement edit action dialog
     // [which it shouldn't do actually]

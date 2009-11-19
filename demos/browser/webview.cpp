@@ -68,8 +68,8 @@ WebPage::WebPage(QObject *parent)
     , m_openInNewTab(false)
 {
     setNetworkAccessManager(BrowserApplication::networkAccessManager());
-    connect(this, SIGNAL(unsupportedContent(QNetworkReply *)),
-            this, SLOT(handleUnsupportedContent(QNetworkReply *)));
+    connect(this, SIGNAL(unsupportedContent(QNetworkReply*)),
+            this, SLOT(handleUnsupportedContent(QNetworkReply*)));
 }
 
 BrowserMainWindow *WebPage::mainWindow()
@@ -192,16 +192,16 @@ WebView::WebView(QWidget* parent)
     , m_page(new WebPage(this))
 {
     setPage(m_page);
-    connect(page(), SIGNAL(statusBarMessage(const QString&)),
-            SLOT(setStatusBarText(const QString&)));
+    connect(page(), SIGNAL(statusBarMessage(QString)),
+            SLOT(setStatusBarText(QString)));
     connect(this, SIGNAL(loadProgress(int)),
             this, SLOT(setProgress(int)));
     connect(this, SIGNAL(loadFinished(bool)),
             this, SLOT(loadFinished()));
-    connect(page(), SIGNAL(loadingUrl(const QUrl&)),
-            this, SIGNAL(urlChanged(const QUrl &)));
-    connect(page(), SIGNAL(downloadRequested(const QNetworkRequest &)),
-            this, SLOT(downloadRequested(const QNetworkRequest &)));
+    connect(page(), SIGNAL(loadingUrl(QUrl)),
+            this, SIGNAL(urlChanged(QUrl)));
+    connect(page(), SIGNAL(downloadRequested(QNetworkRequest)),
+            this, SLOT(downloadRequested(QNetworkRequest)));
     page()->setForwardUnsupportedContent(true);
 
 }

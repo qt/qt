@@ -110,8 +110,8 @@ QScriptEdit::QScriptEdit(QWidget *parent)
 
     QObject::connect(this, SIGNAL(blockCountChanged(int)),
                      this, SLOT(updateExtraAreaWidth()));
-    QObject::connect(this, SIGNAL(updateRequest(const QRect &, int)),
-                     this, SLOT(updateExtraArea(const QRect &, int)));
+    QObject::connect(this, SIGNAL(updateRequest(QRect,int)),
+                     this, SLOT(updateExtraArea(QRect,int)));
     QObject::connect(this, SIGNAL(cursorPositionChanged()),
                      this, SLOT(highlightCurrentLine()));
 

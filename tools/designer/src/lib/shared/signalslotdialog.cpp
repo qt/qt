@@ -268,8 +268,8 @@ SignaturePanel::SignaturePanel(QObject *parent, QListView *listView, QToolButton
     m_listView->setItemDelegate(delegate);
     connect(m_model, SIGNAL(checkSignature(QString,bool*)), this, SIGNAL(checkSignature(QString,bool*)));
 
-    connect(m_listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
-            this, SLOT(slotSelectionChanged(QItemSelection, QItemSelection)));
+    connect(m_listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this, SLOT(slotSelectionChanged(QItemSelection,QItemSelection)));
 }
 
 void SignaturePanel::slotAdd()

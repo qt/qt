@@ -225,20 +225,20 @@ TorrentClient::TorrentClient(QObject *parent)
     : QObject(parent), d(new TorrentClientPrivate(this))
 {
     // Connect the file manager
-    connect(&d->fileManager, SIGNAL(dataRead(int, int, int, const QByteArray &)),
-            this, SLOT(sendToPeer(int, int, int, const QByteArray &)));
+    connect(&d->fileManager, SIGNAL(dataRead(int,int,int,QByteArray)),
+            this, SLOT(sendToPeer(int,int,int,QByteArray)));
     connect(&d->fileManager, SIGNAL(verificationProgress(int)),
             this, SLOT(updateProgress(int)));
     connect(&d->fileManager, SIGNAL(verificationDone()),
             this, SLOT(fullVerificationDone()));
-    connect(&d->fileManager, SIGNAL(pieceVerified(int, bool)),
-            this, SLOT(pieceVerified(int, bool)));
+    connect(&d->fileManager, SIGNAL(pieceVerified(int,bool)),
+            this, SLOT(pieceVerified(int,bool)));
     connect(&d->fileManager, SIGNAL(error()),
             this, SLOT(handleFileError()));
 
     // Connect the tracker client
-    connect(&d->trackerClient, SIGNAL(peerListUpdated(const QList<TorrentPeer> &)),
-            this, SLOT(addToPeerList(const QList<TorrentPeer> &)));
+    connect(&d->trackerClient, SIGNAL(peerListUpdated(QList<TorrentPeer>)),
+            this, SLOT(addToPeerList(QList<TorrentPeer>)));
     connect(&d->trackerClient, SIGNAL(stopped()),
             this, SIGNAL(stopped()));
 }
@@ -836,12 +836,12 @@ void TorrentClient::initializeConnection(PeerWireClient *client)
             this, SLOT(removeClient()));
     connect(client, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SLOT(removeClient()));
-    connect(client, SIGNAL(piecesAvailable(const QBitArray &)),
-            this, SLOT(peerPiecesAvailable(const QBitArray &)));
-    connect(client, SIGNAL(blockRequested(int, int, int)),
-            this, SLOT(peerRequestsBlock(int, int, int)));
-    connect(client, SIGNAL(blockReceived(int, int, const QByteArray &)),
-            this, SLOT(blockReceived(int, int, const QByteArray &)));
+    connect(client, SIGNAL(piecesAvailable(QBitArray)),
+            this, SLOT(peerPiecesAvailable(QBitArray)));
+    connect(client, SIGNAL(blockRequested(int,int,int)),
+            this, SLOT(peerRequestsBlock(int,int,int)));
+    connect(client, SIGNAL(blockReceived(int,int,QByteArray)),
+            this, SLOT(blockReceived(int,int,QByteArray)));
     connect(client, SIGNAL(choked()),
             this, SLOT(peerChoked()));
     connect(client, SIGNAL(unchoked()),

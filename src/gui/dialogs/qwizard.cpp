@@ -759,8 +759,8 @@ void QWizardPrivate::addField(const QWizardField &field)
         QObject::connect(myField.object, myField.changedSignal,
                          myField.page, SLOT(_q_maybeEmitCompleteChanged()));
     QObject::connect(
-        myField.object, SIGNAL(destroyed(QObject *)), q,
-        SLOT(_q_handleFieldObjectDestroyed(QObject *)));
+        myField.object, SIGNAL(destroyed(QObject*)), q,
+        SLOT(_q_handleFieldObjectDestroyed(QObject*)));
 }
 
 void QWizardPrivate::removeFieldAt(int index)
@@ -773,8 +773,8 @@ void QWizardPrivate::removeFieldAt(int index)
         QObject::disconnect(field.object, field.changedSignal,
                             field.page, SLOT(_q_maybeEmitCompleteChanged()));
     QObject::disconnect(
-        field.object, SIGNAL(destroyed(QObject *)), q,
-        SLOT(_q_handleFieldObjectDestroyed(QObject *)));
+        field.object, SIGNAL(destroyed(QObject*)), q,
+        SLOT(_q_handleFieldObjectDestroyed(QObject*)));
     fields.remove(index);
 }
 

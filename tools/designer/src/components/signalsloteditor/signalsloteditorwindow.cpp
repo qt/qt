@@ -758,8 +758,8 @@ void SignalSlotEditorWindow::setActiveFormWindow(QDesignerFormWindowInterface *f
         disconnect(m_editor, SIGNAL(connectionSelected(Connection*)),
                     this, SLOT(updateDialogSelection(Connection*)));
         if (integration) {
-            disconnect(integration, SIGNAL(objectNameChanged(QDesignerFormWindowInterface *, QObject *, QString, QString)),
-                    this, SLOT(objectNameChanged(QDesignerFormWindowInterface *, QObject *, QString, QString)));
+            disconnect(integration, SIGNAL(objectNameChanged(QDesignerFormWindowInterface*,QObject*,QString,QString)),
+                    this, SLOT(objectNameChanged(QDesignerFormWindowInterface*,QObject*,QString,QString)));
         }
     }
 
@@ -777,8 +777,8 @@ void SignalSlotEditorWindow::setActiveFormWindow(QDesignerFormWindowInterface *f
         connect(m_editor, SIGNAL(connectionSelected(Connection*)),
                 this, SLOT(updateDialogSelection(Connection*)));
         if (integration) {
-            connect(integration, SIGNAL(objectNameChanged(QDesignerFormWindowInterface *, QObject *, QString, QString)),
-                    this, SLOT(objectNameChanged(QDesignerFormWindowInterface *, QObject *, QString, QString)));
+            connect(integration, SIGNAL(objectNameChanged(QDesignerFormWindowInterface*,QObject*,QString,QString)),
+                    this, SLOT(objectNameChanged(QDesignerFormWindowInterface*,QObject*,QString,QString)));
         }
     }
 

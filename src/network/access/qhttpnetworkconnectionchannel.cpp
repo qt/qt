@@ -90,8 +90,8 @@ void QHttpNetworkConnectionChannel::init()
                      this, SLOT(_q_error(QAbstractSocket::SocketError)),
                      Qt::DirectConnection);
 #ifndef QT_NO_NETWORKPROXY
-    QObject::connect(socket, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)),
-                     this, SLOT(_q_proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)),
+    QObject::connect(socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+                     this, SLOT(_q_proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                      Qt::DirectConnection);
 #endif
 
@@ -102,8 +102,8 @@ void QHttpNetworkConnectionChannel::init()
         QObject::connect(sslSocket, SIGNAL(encrypted()),
                          this, SLOT(_q_encrypted()),
                          Qt::DirectConnection);
-        QObject::connect(sslSocket, SIGNAL(sslErrors(const QList<QSslError>&)),
-                         this, SLOT(_q_sslErrors(const QList<QSslError>&)),
+        QObject::connect(sslSocket, SIGNAL(sslErrors(QList<QSslError>)),
+                         this, SLOT(_q_sslErrors(QList<QSslError>)),
                          Qt::DirectConnection);
         QObject::connect(sslSocket, SIGNAL(encryptedBytesWritten(qint64)),
                          this, SLOT(_q_encryptedBytesWritten(qint64)),

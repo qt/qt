@@ -201,10 +201,10 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                 else
                     files->append(path);
 
-                connect(thread, SIGNAL(fileChanged(const QString &, bool)),
-                        this, SIGNAL(fileChanged(const QString &, bool)));
-                connect(thread, SIGNAL(directoryChanged(const QString &, bool)),
-                        this, SIGNAL(directoryChanged(const QString &, bool)));
+                connect(thread, SIGNAL(fileChanged(QString,bool)),
+                        this, SIGNAL(fileChanged(QString,bool)));
+                connect(thread, SIGNAL(directoryChanged(QString,bool)),
+                        this, SIGNAL(directoryChanged(QString,bool)));
                 
                 thread->msg = '@';
                 thread->start();

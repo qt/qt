@@ -630,7 +630,7 @@ BookmarkManager::BookmarkManager(QHelpEngineCore *_helpEngine)
         SLOT(itemChanged(QStandardItem*)));
     connect(treeModel, SIGNAL(itemChanged(QStandardItem*)), this,
         SIGNAL(bookmarksChanged()));
-    connect(treeModel, SIGNAL(rowsRemoved(QModelIndex, int, int)),
+    connect(treeModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
         this, SIGNAL(bookmarksChanged()));
 }
 
