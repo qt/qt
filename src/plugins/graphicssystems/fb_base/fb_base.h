@@ -68,8 +68,6 @@ public:
     virtual void lower(QWindowSurface * surface);
     virtual QWidget * topLevelAt(const QPoint & p) const;
 
-    virtual void pointerEvent(QMouseEvent & me);
-
     QImage * image() const { return mScreenImage; }
     QPaintDevice * paintDevice() const { return mScreenImage; }
 

@@ -129,21 +129,6 @@ void QGraphicsSystemFbScreen::lower(QWindowSurface * surface)
     setDirty(s->geometry());
 }
 
-void QGraphicsSystemFbScreen::pointerEvent(QMouseEvent & me)
-{
-    QWidget * widget = topLevelAt(me.pos());
-    if (!widget) {
-        QApplicationPrivate::handleMouseEvent(0, me);
-        return;
-    }
-    QPoint localPosition = me.pos();
-    QPoint topLeft = widget->geometry().topLeft();
-    localPosition.setX(localPosition.x() - topLeft.x());
-    localPosition.setY(localPosition.y() - topLeft.y());
-    QMouseEvent e(me.type(), localPosition, me.globalPos(), me.button(), me.buttons(), me.modifiers());
-    QApplicationPrivate::handleMouseEvent(widget, e);
-}
-
 QWidget * QGraphicsSystemFbScreen::topLevelAt(const QPoint & p) const
 {
     for(int i = 0; i < windowStack.size(); i++) {

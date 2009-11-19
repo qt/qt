@@ -57,6 +57,7 @@
 
 #include <qinputcontext.h>
 #include "private/qgraphicssystem_p.h"
+#include "qgraphicssystemcursor.h"
 #include <qdebug.h>
 
 
@@ -524,6 +525,9 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
 
     static QWidget *implicit_mouse_grabber=0;
+
+    if (QGraphicsSystemCursor::instance)
+        QGraphicsSystemCursor::instance->pointerEvent(ev);
 
     QPoint localPoint = ev.pos();
     QPoint globalPoint = ev.globalPos();

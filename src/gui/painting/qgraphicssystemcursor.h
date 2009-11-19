@@ -73,7 +73,7 @@ public:
     // input methods
     virtual void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
     virtual void setCursor(Qt::CursorShape shape);
-    virtual void pointerEvent(QMouseEvent & event);
+    virtual void pointerEvent(const QMouseEvent & event);
     virtual void changeCursor(QWidget * widget);
     virtual void changeCursor(QCursor * widgetCursor);
 

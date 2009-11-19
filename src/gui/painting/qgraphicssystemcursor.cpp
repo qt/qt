@@ -94,13 +94,12 @@ QRect QGraphicsSystemCursor::drawCursor(QPainter & painter)
     return prevRect;
 }
 
-void QGraphicsSystemCursor::pointerEvent(QMouseEvent & e)
+void QGraphicsSystemCursor::pointerEvent(const QMouseEvent & e)
 {
     currentRect = graphic->image()->rect().translated(-graphic->hotspot().x(),
                                                       -graphic->hotspot().y());
     currentRect.translate(e.pos());
-
-    screen->pointerEvent(e);
+    screen->setDirty(QRect(QRect(e.pos(), QSize(1, 1))));
 }
 
 void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor)
