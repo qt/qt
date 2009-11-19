@@ -68,6 +68,7 @@ private slots:
     void restoreEntryValues();
     void explicitChanges();
     void propertyErrors();
+    void incorrectRestoreBug();
 };
 
 void tst_states::basicChanges()
@@ -709,6 +710,32 @@ void tst_states::propertyErrors()
     QTest::ignoreMessage(QtWarningMsg, "QML QmlPropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to non-existant property \"colr\"");
     QTest::ignoreMessage(QtWarningMsg, "QML QmlPropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to read-only property \"wantsFocus\"");
     rect->setState("blue");
+}
+
+void tst_states::incorrectRestoreBug()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/basicChanges.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->color(),QColor("red"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("red"));
+
+    // make sure if we change the base state value, we then restore to it correctly
+    rect->setColor(QColor("green"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("green"));
 }
 
 QTEST_MAIN(tst_states)
