@@ -43,10 +43,13 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicstext_p.h>
+#include <private/qmlengine_p.h>
+#include <QtCore/qcryptographichash.h>
 #include <QtWebKit/qwebpage.h>
 #include <QtWebKit/qwebframe.h>
 #include <QtWebKit/qwebdatabase.h>
 #include <QtWebKit/qwebsecurityorigin.h>
+#include <QtSql/qsqldatabase.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qfile.h>
 
@@ -72,11 +75,11 @@ private slots:
 
     void checkDatabasePath();
 
-    void validateAgainstWebkit_data();
-    void validateAgainstWebkit();
-
     void testQml_data();
     void testQml();
+    void testQml_cleanopen_data();
+    void testQml_cleanopen();
+    void totalDatabases();
 
     void cleanupTestCase();
 
@@ -109,7 +112,6 @@ void tst_sql::initTestCase()
 {
     removeRecursive(dbDir());
     QDir().mkpath(dbDir());
-
 }
 
 void tst_sql::cleanupTestCase()
@@ -131,44 +133,37 @@ void tst_sql::checkDatabasePath()
     QVERIFY(engine->offlineStoragePath().contains("OfflineStorage"));
 }
 
+static const int total_databases_created_by_tests = 10;
 void tst_sql::testQml_data()
 {
     QTest::addColumn<QString>("jsfile"); // The input file
-    QTest::addColumn<QString>("result"); // The required output from the js test() function
-    QTest::addColumn<int>("databases");  // The number of databases that should have been created
-    QTest::addColumn<bool>("qmlextension"); // Things WebKit can't do
 
     // Each test should use a newly named DB to avoid inter-test dependencies
-    QTest::newRow("creation") << "data/creation.js" << "passed" << 1 << false;
-    QTest::newRow("creation-a") << "data/creation-a.js" << "passed" << 2 << false;
-    QTest::newRow("changeversion") << "data/changeversion.js" << "passed" << 3 << false;
-    QTest::newRow("selection") << "data/selection.js" << "passed" << 4 << false;
-    QTest::newRow("selection-bindnames") << "data/selection-bindnames.js" << "passed" << 5 << true;
-    QTest::newRow("iteration") << "data/iteration.js" << "passed" << 6 << false;
-    QTest::newRow("error-a") << "data/error-a.js" << "passed" << 7 << false;
+    QTest::newRow("creation") << "data/creation.js";
+    QTest::newRow("creation-a") << "data/creation-a.js";
+    QTest::newRow("changeversion") << "data/changeversion.js";
+    QTest::newRow("readonly") << "data/readonly.js";
+    QTest::newRow("readonly-error") << "data/readonly-error.js";
+    QTest::newRow("selection") << "data/selection.js";
+    QTest::newRow("selection-bindnames") << "data/selection-bindnames.js";
+    QTest::newRow("iteration") << "data/iteration.js";
+    QTest::newRow("error-a") << "data/error-a.js";
+    QTest::newRow("error-notransaction") << "data/error-notransaction.js";
+    QTest::newRow("reopen1") << "data/reopen1.js";
+    QTest::newRow("reopen2") << "data/reopen2.js";
+
+    // If you add a test, you should usually use a new database in the
+    // test - in which case increment total_databases_created_by_tests above.
 }
 
-void tst_sql::validateAgainstWebkit_data()
-{
-    QTest::addColumn<QString>("jsfile"); // The input file
-    QTest::addColumn<QString>("result"); // The required output from the js test() function
-    QTest::addColumn<int>("databases");  // The number of databases that should have been created
-    QTest::addColumn<bool>("qmlextension"); // Things WebKit can't do
-    QTest::newRow("creation") << "data/creation.js" << "passed" << 1 << false;
-}
-
+/*
 void tst_sql::validateAgainstWebkit()
 {
     // Validates tests against WebKit (HTML5) support.
     //
-
     QFETCH(QString, jsfile);
     QFETCH(QString, result);
     QFETCH(int, databases);
-    QFETCH(bool, qmlextension);
-
-    if (qmlextension) // WebKit can't do it (yet?)
-        return;
 
     QFile f(jsfile);
     QVERIFY(f.open(QIODevice::ReadOnly));
@@ -180,14 +175,14 @@ void tst_sql::validateAgainstWebkit()
 
     QEXPECT_FAIL("","WebKit doesn't support openDatabaseSync yet", Continue);
     QCOMPARE(webpage.mainFrame()->evaluateJavaScript(js).toString(),result);
-    /*
+
     QTest::qWait(100); // WebKit crashes if you quit it too fast
 
     QWebSecurityOrigin origin = webpage.mainFrame()->securityOrigin();
     QList<QWebDatabase> dbs = origin.databases();
     QCOMPARE(dbs.count(), databases);
-    */
 }
+*/
 
 void tst_sql::testQml()
 {
@@ -195,8 +190,6 @@ void tst_sql::testQml()
     // that have been validated against Webkit.
     //
     QFETCH(QString, jsfile);
-    QFETCH(QString, result);
-    QFETCH(int, databases);
 
     QString qml=
         "import Qt 4.6\n"
@@ -206,8 +199,31 @@ void tst_sql::testQml()
     QmlComponent component(engine, qml.toUtf8(), QUrl::fromLocalFile(SRCDIR "/empty.qml")); // just a file for relative local imports
     QmlGraphicsText *text = qobject_cast<QmlGraphicsText*>(component.create());
     QVERIFY(text != 0);
-    QCOMPARE(text->text(),result);
-    QCOMPARE(QDir(dbDir()+"/Databases").entryInfoList(QDir::Files|QDir::NoDotAndDotDot).count(), databases*2); // *2 = .ini file + .sqlite file
+    QCOMPARE(text->text(),QString("passed"));
+}
+
+void tst_sql::testQml_cleanopen_data()
+{
+    QTest::addColumn<QString>("jsfile"); // The input file
+    QTest::newRow("reopen1") << "data/reopen1.js";
+    QTest::newRow("reopen2") << "data/reopen2.js";
+}
+
+void tst_sql::testQml_cleanopen()
+{
+    // Same as testQml, but clean connections between tests,
+    // making it more like the tests are running in new processes.
+    testQml();
+
+    QmlEnginePrivate::getScriptEngine(engine)->collectGarbage(); // close databases
+    foreach (QString dbname, QSqlDatabase::connectionNames()) {
+        QSqlDatabase::removeDatabase(dbname);
+    }
+}
+
+void tst_sql::totalDatabases()
+{
+    QCOMPARE(QDir(dbDir()+"/Databases").entryInfoList(QDir::Files|QDir::NoDotAndDotDot).count(), total_databases_created_by_tests*2);
 }
 
 QTEST_MAIN(tst_sql)
