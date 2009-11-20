@@ -1451,7 +1451,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     [image release];
     dragPrivate()->executed_action = Qt::IgnoreAction;
     object = 0;
-    Qt::DropAction performedAction(qt_mac_mapNSDragOperation(dndParams.performedAction));
+    Qt::DropAction performedAction(qt_mac_mapNSDragOperation(qMacDnDParams()->performedAction));
     // do post drag processing, if required.
     if(performedAction != Qt::IgnoreAction) {
         // check if the receiver points us to a file location.
