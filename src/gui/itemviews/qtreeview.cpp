@@ -215,6 +215,13 @@ void QTreeView::setModel(QAbstractItemModel *model)
     Q_D(QTreeView);
     if (model == d->model)
         return;
+    if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
+        disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                this, SLOT(rowsRemoved(QModelIndex,int,int)));
+
+        disconnect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_modelAboutToBeReset()));
+    }
+
     if (d->selectionModel) { // support row editing
         disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
                    d->model, SLOT(submit()));
