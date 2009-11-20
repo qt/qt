@@ -19,8 +19,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OBJECTTREE_H
 #define OBJECTTREE_H
 
-#include "objectdump_global.h"
-
 #include <QObject>
 #include <QStack>
 
@@ -32,7 +30,7 @@ namespace ObjectTree
 /**
  * Depth-first iterator for QObject tree
  */
-class OBJECTDUMP_EXPORT DepthFirstConstIterator
+class DepthFirstConstIterator
 {
 public:
     DepthFirstConstIterator();
@@ -60,7 +58,7 @@ private:
 /**
  * Ancestor iterator for QObject tree
  */
-class OBJECTDUMP_EXPORT AncestorConstIterator
+class AncestorConstIterator
 {
 public:
     AncestorConstIterator();

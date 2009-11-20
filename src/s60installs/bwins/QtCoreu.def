@@ -4387,4 +4387,15 @@ EXPORTS
 	?QBasicAtomicPointer_isFetchAndAddNative@@YA_NXZ @ 4386 NONAME ; bool QBasicAtomicPointer_isFetchAndAddNative(void)
 	?QBasicAtomicPointer_isFetchAndStoreNative@@YA_NXZ @ 4387 NONAME ; bool QBasicAtomicPointer_isFetchAndStoreNative(void)
 	?QBasicAtomicPointer_isTestAndSetNative@@YA_NXZ @ 4388 NONAME ; bool QBasicAtomicPointer_isTestAndSetNative(void)
+	??0SignalEvent@QStateMachine@@QAE@PAVQObject@@HABV?$QList@VQVariant@@@@@Z @ 4389 NONAME ; QStateMachine::SignalEvent::SignalEvent(class QObject *, int, class QList<class QVariant> const &)
+	??0WrappedEvent@QStateMachine@@QAE@PAVQObject@@PAVQEvent@@@Z @ 4390 NONAME ; QStateMachine::WrappedEvent::WrappedEvent(class QObject *, class QEvent *)
+	??1SignalEvent@QStateMachine@@UAE@XZ @ 4391 NONAME ; QStateMachine::SignalEvent::~SignalEvent(void)
+	??1WrappedEvent@QStateMachine@@UAE@XZ @ 4392 NONAME ; QStateMachine::WrappedEvent::~WrappedEvent(void)
+	??_ESignalEvent@QStateMachine@@UAE@I@Z @ 4393 NONAME ; QStateMachine::SignalEvent::~SignalEvent(unsigned int)
+	??_EWrappedEvent@QStateMachine@@UAE@I@Z @ 4394 NONAME ; QStateMachine::WrappedEvent::~WrappedEvent(unsigned int)
+	?arguments@SignalEvent@QStateMachine@@QBE?AV?$QList@VQVariant@@@@XZ @ 4395 NONAME ; class QList<class QVariant> QStateMachine::SignalEvent::arguments(void) const
+	?event@WrappedEvent@QStateMachine@@QBEPAVQEvent@@XZ @ 4396 NONAME ; class QEvent * QStateMachine::WrappedEvent::event(void) const
+	?object@WrappedEvent@QStateMachine@@QBEPAVQObject@@XZ @ 4397 NONAME ; class QObject * QStateMachine::WrappedEvent::object(void) const
+	?sender@SignalEvent@QStateMachine@@QBEPAVQObject@@XZ @ 4398 NONAME ; class QObject * QStateMachine::SignalEvent::sender(void) const
+	?signalIndex@SignalEvent@QStateMachine@@QBEHXZ @ 4399 NONAME ; int QStateMachine::SignalEvent::signalIndex(void) const
 

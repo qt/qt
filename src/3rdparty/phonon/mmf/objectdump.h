@@ -19,8 +19,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OBJECTDUMP_H
 #define OBJECTDUMP_H
 
-#include "objectdump_global.h"
-
 #include <QObject>
 #include <QList>
 #include <QByteArray>
@@ -34,7 +32,7 @@ namespace ObjectDump
 /**
  * Abstract base for annotator classes invoked by QVisitor.
  */
-class OBJECTDUMP_EXPORT QAnnotator : public QObject
+class QAnnotator : public QObject
 {
     Q_OBJECT
 public:
@@ -45,7 +43,7 @@ public:
 /**
  * Annotator which replicates QObject::dumpObjectTree functionality.
  */
-class OBJECTDUMP_EXPORT QAnnotatorBasic : public QAnnotator
+class QAnnotatorBasic : public QAnnotator
 {
     Q_OBJECT
 public:
@@ -55,7 +53,7 @@ public:
 /**
  * Annotator which returns widget information.
  */
-class OBJECTDUMP_EXPORT QAnnotatorWidget : public QAnnotator
+class QAnnotatorWidget : public QAnnotator
 {
     Q_OBJECT
 public:
@@ -68,7 +66,7 @@ class QDumperPrivate;
 /**
  * Class used to dump information about individual QObjects.
  */
-class OBJECTDUMP_EXPORT QDumper : public QObject
+class QDumper : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDumper)
@@ -103,7 +101,7 @@ class QVisitorPrivate;
 /**
  * Visitor class which dumps information about nodes in the object tree.
  */
-class OBJECTDUMP_EXPORT QVisitor : public QObject
+class QVisitor : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QVisitor)
@@ -152,12 +150,12 @@ private:
 // Utility functions
 //-----------------------------------------------------------------------------
 
-void OBJECTDUMP_EXPORT addDefaultAnnotators(QDumper& dumper);
-void OBJECTDUMP_EXPORT addDefaultAnnotators(QVisitor& visitor);
+void addDefaultAnnotators(QDumper& dumper);
+void addDefaultAnnotators(QVisitor& visitor);
 
-void OBJECTDUMP_EXPORT dumpTreeFromRoot(const QObject& root, QVisitor& visitor);
-void OBJECTDUMP_EXPORT dumpTreeFromLeaf(const QObject& leaf, QVisitor& visitor);
-void OBJECTDUMP_EXPORT dumpAncestors(const QObject& leaf, QVisitor& visitor);
+void dumpTreeFromRoot(const QObject& root, QVisitor& visitor);
+void dumpTreeFromLeaf(const QObject& leaf, QVisitor& visitor);
+void dumpAncestors(const QObject& leaf, QVisitor& visitor);
 
 } // namespace ObjectDump
 
