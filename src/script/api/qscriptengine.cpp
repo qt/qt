@@ -776,7 +776,11 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     qMetaTypeId<QObjectList>();
 #endif
 
-    JSC::initializeThreading(); // ### hmmm
+    if (!QCoreApplication::instance()) {
+        qFatal("QScriptEngine: Must construct a Q(Core)Application before a QScriptEngine");
+        return;
+    }
+    JSC::initializeThreading();
 
     globalData = JSC::JSGlobalData::create().releaseRef();
     globalData->clientData = new QScript::GlobalClientData(this);

@@ -328,6 +328,16 @@
 #define WTF_PLATFORM_BIG_ENDIAN 1
 #endif
 
+/* PLATFORM(SPARC32) */
+#if defined(__sparc) && !defined(__arch64__) || defined(__sparcv8)
+#define WTF_PLATFORM_SPARC32 1
+#define WTF_PLATFORM_BIG_ENDIAN 1
+#endif
+
+#if PLATFORM(SPARC32) || PLATFORM(SPARC64)
+#define WTF_PLATFORM_SPARC
+#endif
+
 /* PLATFORM(HPPA) */
 /* a.k.a. PA-RISC */
 #if defined(__hppa) || defined(__hppa__)

@@ -14,7 +14,5 @@ SOURCES += tst_guiapplauncher.cpp \
     windowmanager.cpp
 HEADERS += windowmanager.h
 
-win32 {
-  # process enumeration,etc.
-  LIBS+=user32.lib
-}
+# process enumeration,etc.
+win32:LIBS+=-luser32

@@ -4105,8 +4105,17 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             } else if (widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
                 break;
             }
+            QPoint offset = widget->pos();
             widget = widget->parentWidget();
-            d->updateTouchPointsForWidget(widget, touchEvent);
+            touchEvent->setWidget(widget);
+            for (int i = 0; i < touchEvent->_touchPoints.size(); ++i) {
+                QTouchEvent::TouchPoint &pt = touchEvent->_touchPoints[i];
+                QRectF rect = pt.rect();
+                rect.moveCenter(offset);
+                pt.d->rect = rect;
+                pt.d->startPos = pt.startPos() + offset;
+                pt.d->lastPos = pt.lastPos() + offset;
+            }
         }
 
         touchEvent->setAccepted(eventAccepted);
@@ -5417,9 +5426,11 @@ void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
         const QPointF delta = screenPos - screenPos.toPoint();
 
         rect.moveCenter(widget->mapFromGlobal(screenPos.toPoint()) + delta);
-        touchPoint.setRect(rect);
-        touchPoint.setStartPos(widget->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta);
-        touchPoint.setLastPos(widget->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta);
+        touchPoint.d->rect = rect;
+        if (touchPoint.state() == Qt::TouchPointPressed) {
+            touchPoint.d->startPos = widget->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta;
+            touchPoint.d->lastPos = widget->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta;
+        }
     }
 }
 
@@ -5463,16 +5474,20 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
     for (int i = 0; i < touchPoints.count(); ++i) {
         QTouchEvent::TouchPoint touchPoint = touchPoints.at(i);
+        // explicitly detach from the original touch point that we got, so even
+        // if the touchpoint structs are reused, we will make a copy that we'll
+        // deliver to the user (which might want to store the struct for later use).
+        touchPoint.d = touchPoint.d->detach();
 
         // update state
-        QWidget *widget = 0;
+        QWeakPointer<QWidget> widget;
         switch (touchPoint.state()) {
         case Qt::TouchPointPressed:
         {
             if (deviceType == QTouchEvent::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
                 widget = d->widgetForTouchPointId.isEmpty()
-                         ? 0
+                         ? QWeakPointer<QWidget>()
                          : d->widgetForTouchPointId.constBegin().value();
             }
 
@@ -5489,20 +5504,21 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
             if (deviceType == QTouchEvent::TouchScreen) {
                 int closestTouchPointId = d->findClosestTouchPointId(touchPoint.screenPos());
-                QWidget *closestWidget = d->widgetForTouchPointId.value(closestTouchPointId);
+                QWidget *closestWidget = d->widgetForTouchPointId.value(closestTouchPointId).data();
                 if (closestWidget
-                    && (widget->isAncestorOf(closestWidget) || closestWidget->isAncestorOf(widget))) {
+                    && (widget.data()->isAncestorOf(closestWidget) || closestWidget->isAncestorOf(widget.data()))) {
                     widget = closestWidget;
                 }
             }
 
             d->widgetForTouchPointId[touchPoint.id()] = widget;
-            touchPoint.setStartScreenPos(touchPoint.screenPos());
-            touchPoint.setLastScreenPos(touchPoint.screenPos());
-            touchPoint.setStartNormalizedPos(touchPoint.normalizedPos());
-            touchPoint.setLastNormalizedPos(touchPoint.normalizedPos());
+            touchPoint.d->startScreenPos = touchPoint.screenPos();
+            touchPoint.d->lastScreenPos = touchPoint.screenPos();
+            touchPoint.d->startNormalizedPos = touchPoint.normalizedPos();
+            touchPoint.d->lastNormalizedPos = touchPoint.normalizedPos();
             if (touchPoint.pressure() < qreal(0.))
-                touchPoint.setPressure(qreal(1.));
+                touchPoint.d->pressure = qreal(1.);
+
             d->appCurrentTouchPoints.insert(touchPoint.id(), touchPoint);
             break;
         }
@@ -5513,12 +5529,14 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                 continue;
 
             QTouchEvent::TouchPoint previousTouchPoint = d->appCurrentTouchPoints.take(touchPoint.id());
-            touchPoint.setStartScreenPos(previousTouchPoint.startScreenPos());
-            touchPoint.setLastScreenPos(previousTouchPoint.screenPos());
-            touchPoint.setStartNormalizedPos(previousTouchPoint.startNormalizedPos());
-            touchPoint.setLastNormalizedPos(previousTouchPoint.normalizedPos());
+            touchPoint.d->startScreenPos = previousTouchPoint.startScreenPos();
+            touchPoint.d->lastScreenPos = previousTouchPoint.screenPos();
+            touchPoint.d->startPos = previousTouchPoint.startPos();
+            touchPoint.d->lastPos = previousTouchPoint.pos();
+            touchPoint.d->startNormalizedPos = previousTouchPoint.startNormalizedPos();
+            touchPoint.d->lastNormalizedPos = previousTouchPoint.normalizedPos();
             if (touchPoint.pressure() < qreal(0.))
-                touchPoint.setPressure(qreal(0.));
+                touchPoint.d->pressure = qreal(0.);
             break;
         }
         default:
@@ -5528,23 +5546,25 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
             Q_ASSERT(d->appCurrentTouchPoints.contains(touchPoint.id()));
             QTouchEvent::TouchPoint previousTouchPoint = d->appCurrentTouchPoints.value(touchPoint.id());
-            touchPoint.setStartScreenPos(previousTouchPoint.startScreenPos());
-            touchPoint.setLastScreenPos(previousTouchPoint.screenPos());
-            touchPoint.setStartNormalizedPos(previousTouchPoint.startNormalizedPos());
-            touchPoint.setLastNormalizedPos(previousTouchPoint.normalizedPos());
+            touchPoint.d->startScreenPos = previousTouchPoint.startScreenPos();
+            touchPoint.d->lastScreenPos = previousTouchPoint.screenPos();
+            touchPoint.d->startPos = previousTouchPoint.startPos();
+            touchPoint.d->lastPos = previousTouchPoint.pos();
+            touchPoint.d->startNormalizedPos = previousTouchPoint.startNormalizedPos();
+            touchPoint.d->lastNormalizedPos = previousTouchPoint.normalizedPos();
             if (touchPoint.pressure() < qreal(0.))
-                touchPoint.setPressure(qreal(1.));
+                touchPoint.d->pressure = qreal(1.);
             d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
             break;
         }
-        Q_ASSERT(widget != 0);
+        Q_ASSERT(widget.data() != 0);
 
         // make the *scene* functions return the same as the *screen* functions
-        touchPoint.setSceneRect(touchPoint.screenRect());
-        touchPoint.setStartScenePos(touchPoint.startScreenPos());
-        touchPoint.setLastScenePos(touchPoint.lastScreenPos());
+        touchPoint.d->sceneRect = touchPoint.screenRect();
+        touchPoint.d->startScenePos = touchPoint.startScreenPos();
+        touchPoint.d->lastScenePos = touchPoint.lastScreenPos();
 
-        StatesAndTouchPoints &maskAndPoints = widgetsNeedingEvents[widget];
+        StatesAndTouchPoints &maskAndPoints = widgetsNeedingEvents[widget.data()];
         maskAndPoints.first |= touchPoint.state();
         if (touchPoint.isPrimary())
             maskAndPoints.first |= Qt::TouchPointPrimary;

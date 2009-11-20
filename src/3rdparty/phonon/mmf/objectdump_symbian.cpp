@@ -16,8 +16,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef QT_NO_DEBUG
-
 #include <QTextStream>
 #include <QWidget>
 #include <coecntrl.h>
@@ -159,6 +157,4 @@ void addDefaultAnnotators_sys(QVisitor& visitor)
 } // namespace ObjectDump
 
 QT_END_NAMESPACE
-
-#endif
 
