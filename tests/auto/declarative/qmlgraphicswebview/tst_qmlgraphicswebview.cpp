@@ -49,6 +49,8 @@
 #include <QtWebKit/qwebframe.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qfile.h>
+#include <QtGui/qpainter.h>
+#include "testtypes.h"
 
 class tst_qmlgraphicswebview : public QObject
 {
@@ -66,6 +68,7 @@ private slots:
     void setHtml();
     void javaScript();
     void cleanupTestCase();
+    void pixelCache();
 
 private:
     void checkNoErrors(const QmlComponent& component);
@@ -351,6 +354,33 @@ void tst_qmlgraphicswebview::javaScript()
     QCOMPARE(wv->evaluateJavaScript("123").toInt(), 123);
     QCOMPARE(wv->evaluateJavaScript("window.status").toString(), QString("status here"));
     QCOMPARE(wv->evaluateJavaScript("window.myjsname.qmlprop").toString(), QString("qmlvalue"));
+}
+
+void tst_qmlgraphicswebview::pixelCache()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/pixelCache.qml"));
+    checkNoErrors(component);
+    MyWebView *wv = qobject_cast<MyWebView*>(component.create());
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+    QPixmap pm(150,150);
+    QPainter p(&pm);
+    wv->paint(&p,0,0);
+    const int expected = 120*(150+128); // 120 = width of HTML page, 150=pixmap height, 128=cache extra area
+    QCOMPARE(wv->pixelsPainted(), expected);
+    wv->paint(&p,0,0);
+    QCOMPARE(wv->pixelsPainted(), expected); // nothing new needed to be painted
+    wv->setPixelCacheSize(0); // clears the cache
+    wv->paint(&p,0,0);
+    QCOMPARE(wv->pixelsPainted(), expected*2); // everything needed to be painted
+    // Note that painted things always go into the cache (even if they don't "fit"),
+    // just that they will be removed if anything else needs to be painted.
+    wv->setPixelCacheSize(expected); // won't clear the cache
+    wv->paint(&p,0,0);
+    QCOMPARE(wv->pixelsPainted(), expected*2); // still there
+    wv->setPixelCacheSize(expected-1); // too small - will clear the cache
+    wv->paint(&p,0,0);
+    QCOMPARE(wv->pixelsPainted(), expected*3); // repainted
 }
 
 QTEST_MAIN(tst_qmlgraphicswebview)
