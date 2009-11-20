@@ -133,7 +133,7 @@ void tst_sql::checkDatabasePath()
     QVERIFY(engine->offlineStoragePath().contains("OfflineStorage"));
 }
 
-static const int total_databases_created_by_tests = 10;
+static const int total_databases_created_by_tests = 12;
 void tst_sql::testQml_data()
 {
     QTest::addColumn<QString>("jsfile"); // The input file
@@ -147,6 +147,7 @@ void tst_sql::testQml_data()
     QTest::newRow("selection") << "data/selection.js";
     QTest::newRow("selection-bindnames") << "data/selection-bindnames.js";
     QTest::newRow("iteration") << "data/iteration.js";
+    QTest::newRow("iteration-forwardonly") << "data/iteration-forwardonly.js";
     QTest::newRow("error-a") << "data/error-a.js";
     QTest::newRow("error-notransaction") << "data/error-notransaction.js";
     QTest::newRow("reopen1") << "data/reopen1.js";
