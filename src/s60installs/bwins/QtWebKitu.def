@@ -361,8 +361,8 @@ EXPORTS
 	?previousSibling@QWebElement@@QBE?AV1@XZ @ 360 NONAME ; class QWebElement QWebElement::previousSibling(void) const
 	?print@QWebView@@QBEXPAVQPrinter@@@Z @ 361 NONAME ; void QWebView::print(class QPrinter *) const
 	?printRequested@QWebPage@@IAEXPAVQWebFrame@@@Z @ 362 NONAME ; void QWebPage::printRequested(class QWebFrame *)
-	?printingMaximumShrinkFactor@QWebSettings@@QBEMXZ @ 363 NONAME ; float QWebSettings::printingMaximumShrinkFactor(void) const
-	?printingMinimumShrinkFactor@QWebSettings@@QBEMXZ @ 364 NONAME ; float QWebSettings::printingMinimumShrinkFactor(void) const
+	?printingMaximumShrinkFactor@QWebSettings@@QBEMXZ @ 363 NONAME ABSENT ; float QWebSettings::printingMaximumShrinkFactor(void) const
+	?printingMinimumShrinkFactor@QWebSettings@@QBEMXZ @ 364 NONAME ABSENT ; float QWebSettings::printingMinimumShrinkFactor(void) const
 	?provisionalLoad@QWebFrame@@IAEXXZ @ 365 NONAME ; void QWebFrame::provisionalLoad(void)
 	?qWebKitMajorVersion@@YAHXZ @ 366 NONAME ; int qWebKitMajorVersion(void)
 	?qWebKitMinorVersion@@YAHXZ @ 367 NONAME ; int qWebKitMinorVersion(void)
@@ -488,8 +488,8 @@ EXPORTS
 	?setPluginFactory@QWebPage@@QAEXPAVQWebPluginFactory@@@Z @ 487 NONAME ; void QWebPage::setPluginFactory(class QWebPluginFactory *)
 	?setPreferredContentsSize@QWebPage@@QBEXABVQSize@@@Z @ 488 NONAME ; void QWebPage::setPreferredContentsSize(class QSize const &) const
 	?setPreferredPluginForMimeType@QWebPluginDatabase@@QAEXABVQString@@ABVQWebPluginInfo@@@Z @ 489 NONAME ; void QWebPluginDatabase::setPreferredPluginForMimeType(class QString const &, class QWebPluginInfo const &)
-	?setPrintingMaximumShrinkFactor@QWebSettings@@QAEXM@Z @ 490 NONAME ; void QWebSettings::setPrintingMaximumShrinkFactor(float)
-	?setPrintingMinimumShrinkFactor@QWebSettings@@QAEXM@Z @ 491 NONAME ; void QWebSettings::setPrintingMinimumShrinkFactor(float)
+	?setPrintingMaximumShrinkFactor@QWebSettings@@QAEXM@Z @ 490 NONAME ABSENT ; void QWebSettings::setPrintingMaximumShrinkFactor(float)
+	?setPrintingMinimumShrinkFactor@QWebSettings@@QAEXM@Z @ 491 NONAME ABSENT ; void QWebSettings::setPrintingMinimumShrinkFactor(float)
 	?setRenderHint@QWebView@@QAEXW4RenderHint@QPainter@@_N@Z @ 492 NONAME ; void QWebView::setRenderHint(enum QPainter::RenderHint, bool)
 	?setRenderHints@QWebView@@QAEXV?$QFlags@W4RenderHint@QPainter@@@@@Z @ 493 NONAME ; void QWebView::setRenderHints(class QFlags<enum QPainter::RenderHint>)
 	?setScrollBarPolicy@QWebFrame@@QAEXW4Orientation@Qt@@W4ScrollBarPolicy@3@@Z @ 494 NONAME ; void QWebFrame::setScrollBarPolicy(enum Qt::Orientation, enum Qt::ScrollBarPolicy)
@@ -619,4 +619,5 @@ EXPORTS
 	?staticMetaObject@QGraphicsWebView@@2UQMetaObject@@B @ 618 NONAME ; struct QMetaObject const QGraphicsWebView::staticMetaObject
 	?staticMetaObject@QWebPage@@2UQMetaObject@@B @ 619 NONAME ; struct QMetaObject const QWebPage::staticMetaObject
 	?staticMetaObject@QWebView@@2UQMetaObject@@B @ 620 NONAME ; struct QMetaObject const QWebView::staticMetaObject
+	?attributeNames@QWebElement@@QBE?AVQStringList@@ABVQString@@@Z @ 621 NONAME ; class QStringList QWebElement::attributeNames(class QString const &) const
 

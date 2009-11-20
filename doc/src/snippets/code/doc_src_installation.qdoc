@@ -209,3 +209,10 @@ make sis QT_SIS_OPTIONS=-i
 cd \Qt\%VERSION%
 configure -platform win32-g++ -xplatform symbian-sbsv2
 //! [31]
+
+//! [32]
+cd <Your SDK path>\S60CppExamples\Note\group
+bldmake bldfiles
+abld build winscw udeb
+abld build gcce urel
+//! [32]
