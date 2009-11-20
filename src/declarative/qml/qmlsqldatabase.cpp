@@ -350,6 +350,8 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
         if (QSqlDatabase::connectionNames().contains(dbid)) {
             database = QSqlDatabase::database(dbid);
             version = ini.value(QLatin1String("Version")).toString();
+            if (version != dbversion && !dbversion.isEmpty() && !version.isEmpty())
+                THROW_SQL(VERSION_ERR,QmlEngine::tr("SQL: database version mismatch"));
         } else {
             created = !QFile::exists(basename+QLatin1String(".sqlite"));
             database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
