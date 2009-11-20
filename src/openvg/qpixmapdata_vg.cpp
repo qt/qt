@@ -92,7 +92,6 @@ QVGPixmapData::~QVGPixmapData()
         vgDestroyImage(vgImage);
         if (vgImageOpacity != VG_INVALID_HANDLE)
             vgDestroyImage(vgImageOpacity);
-        } else {
 #endif
     }
 #if !defined(QT_NO_EGL)
