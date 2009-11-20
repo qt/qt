@@ -77,6 +77,9 @@ private slots:
 
     void readLine_data();
     void readLine();
+
+    void readLine2_data();
+    void readLine2();
 };
 
 // Testing get/set functions
@@ -451,6 +454,115 @@ void tst_QIODevice::readLine()
     QVERIFY(buffer.seek(0));
     line = buffer.readLine();
     QCOMPARE(line.size(), linelen);
+}
+
+void tst_QIODevice::readLine2_data()
+{
+    QTest::addColumn<QByteArray>("line");
+
+    QTest::newRow("1024 - 4") << QByteArray(1024 - 4, 'x');
+    QTest::newRow("1024 - 3") << QByteArray(1024 - 3, 'x');
+    QTest::newRow("1024 - 2") << QByteArray(1024 - 2, 'x');
+    QTest::newRow("1024 - 1") << QByteArray(1024 - 1, 'x');
+    QTest::newRow("1024"    ) << QByteArray(1024    , 'x');
+    QTest::newRow("1024 + 1") << QByteArray(1024 + 1, 'x');
+    QTest::newRow("1024 + 2") << QByteArray(1024 + 2, 'x');
+
+    QTest::newRow("4096 - 4") << QByteArray(4096 - 4, 'x');
+    QTest::newRow("4096 - 3") << QByteArray(4096 - 3, 'x');
+    QTest::newRow("4096 - 2") << QByteArray(4096 - 2, 'x');
+    QTest::newRow("4096 - 1") << QByteArray(4096 - 1, 'x');
+    QTest::newRow("4096"    ) << QByteArray(4096    , 'x');
+    QTest::newRow("4096 + 1") << QByteArray(4096 + 1, 'x');
+    QTest::newRow("4096 + 2") << QByteArray(4096 + 2, 'x');
+
+    QTest::newRow("8192 - 4") << QByteArray(8192 - 4, 'x');
+    QTest::newRow("8192 - 3") << QByteArray(8192 - 3, 'x');
+    QTest::newRow("8192 - 2") << QByteArray(8192 - 2, 'x');
+    QTest::newRow("8192 - 1") << QByteArray(8192 - 1, 'x');
+    QTest::newRow("8192"    ) << QByteArray(8192    , 'x');
+    QTest::newRow("8192 + 1") << QByteArray(8192 + 1, 'x');
+    QTest::newRow("8192 + 2") << QByteArray(8192 + 2, 'x');
+
+    QTest::newRow("16384 - 4") << QByteArray(16384 - 4, 'x');
+    QTest::newRow("16384 - 3") << QByteArray(16384 - 3, 'x');
+    QTest::newRow("16384 - 2") << QByteArray(16384 - 2, 'x');
+    QTest::newRow("16384 - 1") << QByteArray(16384 - 1, 'x');
+    QTest::newRow("16384"    ) << QByteArray(16384    , 'x');
+    QTest::newRow("16384 + 1") << QByteArray(16384 + 1, 'x');
+    QTest::newRow("16384 + 2") << QByteArray(16384 + 2, 'x');
+
+    QTest::newRow("20000") << QByteArray(20000, 'x');
+
+    QTest::newRow("32768 - 4") << QByteArray(32768 - 4, 'x');
+    QTest::newRow("32768 - 3") << QByteArray(32768 - 3, 'x');
+    QTest::newRow("32768 - 2") << QByteArray(32768 - 2, 'x');
+    QTest::newRow("32768 - 1") << QByteArray(32768 - 1, 'x');
+    QTest::newRow("32768"    ) << QByteArray(32768    , 'x');
+    QTest::newRow("32768 + 1") << QByteArray(32768 + 1, 'x');
+    QTest::newRow("32768 + 2") << QByteArray(32768 + 2, 'x');
+
+    QTest::newRow("40000") << QByteArray(40000, 'x');
+}
+
+void tst_QIODevice::readLine2()
+{
+    QFETCH(QByteArray, line);
+
+    int length = line.size();
+
+    QByteArray data("First line.\r\n");
+    data.append(line);
+    data.append("\r\n");
+    data.append(line);
+    data.append("\r\n");
+    data.append("\r\n0123456789");
+
+    {
+        QBuffer buffer(&data);
+        buffer.open(QIODevice::ReadOnly);
+
+        buffer.seek(0);
+        QByteArray temp;
+        temp.resize(64536);
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(13));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(length + 2));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(length + 2));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(2));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(10));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(-1));
+
+        buffer.seek(0);
+        QCOMPARE(buffer.readLine().size(), 13);
+        QCOMPARE(buffer.readLine().size(), length + 2);
+        QCOMPARE(buffer.readLine().size(), length + 2);
+        QCOMPARE(buffer.readLine().size(), 2);
+        QCOMPARE(buffer.readLine().size(), 10);
+        QVERIFY(buffer.readLine().isNull());
+    }
+
+    {
+        QBuffer buffer(&data);
+        buffer.open(QIODevice::ReadOnly | QIODevice::Text);
+
+        buffer.seek(0);
+        QByteArray temp;
+        temp.resize(64536);
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(12));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(length + 1));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(length + 1));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(1));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(10));
+        QCOMPARE(buffer.readLine(temp.data(), temp.size()), qint64(-1));
+
+        buffer.seek(0);
+        QCOMPARE(buffer.readLine().size(), 12);
+        QCOMPARE(buffer.readLine().size(), length + 1);
+        QCOMPARE(buffer.readLine().size(), length + 1);
+        QCOMPARE(buffer.readLine().size(), 1);
+        QCOMPARE(buffer.readLine().size(), 10);
+        QVERIFY(buffer.readLine().isNull());
+    }
 }
 
 QTEST_MAIN(tst_QIODevice)
