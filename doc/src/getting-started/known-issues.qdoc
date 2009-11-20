@@ -145,4 +145,11 @@
         (bug number 5827676).
 
     \endlist
+
+    \section2 Symbian
+
+    \list
+    \o  Check known issues for Symbian at
+    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues} {Known Issues Wiki}.
+    \endlist
 */
