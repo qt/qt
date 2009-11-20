@@ -175,8 +175,8 @@ MainWindow::MainWindow(QWidget *parent)
     // Set up connections
     connect(torrentView, SIGNAL(itemSelectionChanged()),
             this, SLOT(setActionsEnabled()));
-    connect(torrentView, SIGNAL(fileDropped(const QString &)),
-            this, SLOT(acceptFileDrop(const QString &)));
+    connect(torrentView, SIGNAL(fileDropped(QString)),
+            this, SLOT(acceptFileDrop(QString)));
     connect(uploadLimitSlider, SIGNAL(valueChanged(int)),
             this, SLOT(setUploadLimit(int)));
     connect(downloadLimitSlider, SIGNAL(valueChanged(int)),

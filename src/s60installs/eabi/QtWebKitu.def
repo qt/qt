@@ -654,8 +654,8 @@ EXPORTS
 	_Z34qt_drt_resetOriginAccessWhiteListsv @ 653 NONAME
 	_ZN11QWebElement17removeAllChildrenEv @ 654 NONAME
 	_ZN11QWebElement6renderEP8QPainter @ 655 NONAME
-	_ZN12QWebSettings30setPrintingMaximumShrinkFactorEf @ 656 NONAME
-	_ZN12QWebSettings30setPrintingMinimumShrinkFactorEf @ 657 NONAME
+	_ZN12QWebSettings30setPrintingMaximumShrinkFactorEf @ 656 NONAME ABSENT
+	_ZN12QWebSettings30setPrintingMinimumShrinkFactorEf @ 657 NONAME ABSENT
 	_ZN16QGraphicsWebView10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 658 NONAME
 	_ZN16QGraphicsWebView11linkClickedERK4QUrl @ 659 NONAME
 	_ZN16QGraphicsWebView12loadFinishedEb @ 660 NONAME
@@ -674,8 +674,8 @@ EXPORTS
 	_ZN21QWebElementCollectionD2Ev @ 673 NONAME
 	_ZN21QWebElementCollectionaSERKS_ @ 674 NONAME
 	_ZN9QWebFrame6renderEP8QPainterNS_11RenderLayerERK7QRegion @ 675 NONAME
-	_ZNK12QWebSettings27printingMaximumShrinkFactorEv @ 676 NONAME
-	_ZNK12QWebSettings27printingMinimumShrinkFactorEv @ 677 NONAME
+	_ZNK12QWebSettings27printingMaximumShrinkFactorEv @ 676 NONAME ABSENT
+	_ZNK12QWebSettings27printingMinimumShrinkFactorEv @ 677 NONAME ABSENT
 	_ZNK16QGraphicsWebView10isModifiedEv @ 678 NONAME
 	_ZNK16QGraphicsWebView10pageActionEN8QWebPage9WebActionE @ 679 NONAME
 	_ZNK16QGraphicsWebView16inputMethodQueryEN2Qt16InputMethodQueryE @ 680 NONAME
@@ -689,4 +689,5 @@ EXPORTS
 	_ZThn16_NK16QGraphicsWebView8sizeHintEN2Qt8SizeHintERK6QSizeF @ 688 NONAME
 	_ZThn8_N16QGraphicsWebView10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 689 NONAME
 	_ZThn8_NK16QGraphicsWebView16inputMethodQueryEN2Qt16InputMethodQueryE @ 690 NONAME
+	_ZNK11QWebElement14attributeNamesERK7QString @ 691 NONAME
 

@@ -1934,7 +1934,7 @@ void QMenuBar::setDefaultAction(QAction *act)
     if (qt_wince_is_mobile())
         if (d->defaultAction) {
             disconnect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));
-            disconnect(d->defaultAction, SIGNAL(destroyed ()), this, SLOT(_q_updateDefaultAction()));
+            disconnect(d->defaultAction, SIGNAL(destroyed()), this, SLOT(_q_updateDefaultAction()));
         }
 #endif
     d->defaultAction = act;

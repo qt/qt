@@ -224,7 +224,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
         printer = new QPrinter;
         preview = new QPrintPreviewWidget(printer, q);
     }
-    QObject::connect(preview, SIGNAL(paintRequested(QPrinter *)), q, SIGNAL(paintRequested(QPrinter *)));
+    QObject::connect(preview, SIGNAL(paintRequested(QPrinter*)), q, SIGNAL(paintRequested(QPrinter*)));
     QObject::connect(preview, SIGNAL(previewChanged()), q, SLOT(_q_previewChanged()));
     setupActions();
 

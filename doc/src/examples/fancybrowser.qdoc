@@ -119,6 +119,10 @@
     page is loaded. Once the jQuery library is loaded, we can start executing 
     the different jQuery functions in the browser.
 
+    The rotateImages() function is then called explicitely to make sure
+    that the images of the newly loaded page respect the state of the toggle
+    action.
+
     \snippet examples/webkit/fancybrowser/mainwindow.cpp 7
 
     The first jQuery-based function, \c highlightAllLinks(), is designed to  

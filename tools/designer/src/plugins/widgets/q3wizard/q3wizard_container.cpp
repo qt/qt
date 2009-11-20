@@ -55,7 +55,7 @@ Q3WizardHelper::Q3WizardHelper(Q3Wizard *wizard)
     : QObject(wizard),
     m_wizard(wizard)
 {
-    connect(m_wizard, SIGNAL(selected(const QString &)), this, SLOT(slotCurrentChanged()));
+    connect(m_wizard, SIGNAL(selected(QString)), this, SLOT(slotCurrentChanged()));
 }
 
 void Q3WizardHelper::slotCurrentChanged()

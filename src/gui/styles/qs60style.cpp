@@ -67,6 +67,7 @@
 #include "qtoolbar.h"
 #include "qtoolbutton.h"
 #include "qfocusframe.h"
+#include "qformlayout.h"
 
 #include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
@@ -867,6 +868,13 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
     return result;
 }
 
+bool QS60StylePrivate::canDrawThemeBackground(const QBrush &backgroundBrush) 
+{
+    //If brush is not changed from style's default values, draw theme graphics.
+    return (backgroundBrush.color() == Qt::transparent ||
+            backgroundBrush.style() == Qt::NoBrush) ? true : false;
+}
+
 /*!
   \class QS60Style
   \brief The QS60Style class provides a look and feel suitable for applications on S60.
@@ -1380,8 +1388,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     highlightRect = option->rect.adjusted(xBeginning, yBeginning, xEnd, yEnd);
                 }
                 if (vopt->showDecorationSelected &&
-                    (vopt->palette.highlight().color() == d->themePalette()->highlight().color()))
+                    (vopt->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color()))
                     QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
+                else
+                    painter->fillRect(highlightRect, vopt->palette.highlight());
             }
 
              // draw the icon
@@ -1853,7 +1863,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ShapedFrame:
         if (const QTextEdit *textEdit = qobject_cast<const QTextEdit *>(widget)) {
             const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(option);
-            if (frame->palette.base().color()==Qt::transparent)
+            if (QS60StylePrivate::canDrawThemeBackground(frame->palette.base()))
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
             else
                 QCommonStyle::drawControl(element, option, painter, widget);
@@ -1927,7 +1937,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         if (option->state & State_Sunken && option->state & State_Enabled) {
             painter->save();
             painter->setOpacity(0.5);
-            painter->setBrush(d->themePalette()->light());
+            painter->setBrush(QS60StylePrivate::themePalette()->light());
             painter->setRenderHint(QPainter::Antialiasing);
             const qreal roundRectRadius = 4 * goldenRatio;
             painter->drawRoundedRect(option->rect, roundRectRadius, roundRectRadius);
@@ -1946,6 +1956,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 {
     Q_D(const QS60Style);
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
+    bool commonStyleDraws = false;
+
     switch (element) {
 #ifndef QT_NO_LINEEDIT
     case PE_PanelLineEdit:
@@ -1954,12 +1966,10 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (widget && qobject_cast<const QComboBox *>(widget->parentWidget()))
                 break;
 #endif
-            QBrush editBrush = option->palette.brush(QPalette::Base);
-            if (editBrush.color() == Qt::transparent)
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_FrameLineEdit,
-                        painter, option->rect, flags);
+            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base()))
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_FrameLineEdit, painter, option->rect, flags);
             else
-                QCommonStyle::drawPrimitive(element, option, painter, widget);
+                commonStyleDraws = true;
         }
     break;
 #endif // QT_NO_LINEEDIT
@@ -1969,10 +1979,13 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             const QS60StyleEnums::SkinParts skinPart = (option->state & QStyle::State_On) ?
                 QS60StyleEnums::SP_QgnIndiCheckboxOn : QS60StyleEnums::SP_QgnIndiCheckboxOff;
             painter->save();
-            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnIconColors, 13, option);
-            QColor buttonTextColor = option->palette.buttonText().color();
-            if (themeColor != buttonTextColor)
-                painter->setPen(buttonTextColor);
+
+            QColor themeColor = QS60StylePrivate::themePalette()->windowText().color();
+            QColor windowTextColor = option->palette.windowText().color();
+
+            if (themeColor != windowTextColor)
+                painter->setPen(windowTextColor);
+
             QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags | QS60StylePrivate::SF_ColorSkinned );
             painter->restore();
         }
@@ -2019,6 +2032,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             QColor buttonTextColor = option->palette.buttonText().color();
             if (themeColor != buttonTextColor)
                 painter->setPen(buttonTextColor);
+            else
+                painter->setPen(themeColor);
 
             // Draw radiobutton indicator as color skinned graphics.
             QS60StyleEnums::SkinParts skinPart = (option->state & QStyle::State_On) ?
@@ -2032,14 +2047,13 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelButtonTool:
     case PE_PanelButtonBevel:
     case PE_FrameButtonBevel: {
-        QBrush editBrush = option->palette.brush(QPalette::Base);
-        if (editBrush.color() == Qt::transparent) {
+        if (QS60StylePrivate::canDrawThemeBackground(option->palette.base())) {
             const bool isPressed = option->state & QStyle::State_Sunken;
             const QS60StylePrivate::SkinElements skinElement =
                 isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
             QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
         } else {
-            QCommonStyle::drawPrimitive(element, option, painter, widget);
+            commonStyleDraws = true;
             }
         }
         break;
@@ -2067,7 +2081,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorSpinUp:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QStyleOptionSpinBox optionSpinBox = *spinBox;
-            if (optionSpinBox.palette.base().color()==Qt::transparent) {
+            if (QS60StylePrivate::canDrawThemeBackground(optionSpinBox.palette.base())) {
                 const QS60StyleEnums::SkinParts part = (element == PE_IndicatorSpinUp) ?
                     QS60StyleEnums::SP_QgnGrafScrollArrowUp :
                     QS60StyleEnums::SP_QgnGrafScrollArrowDown;
@@ -2075,12 +2089,12 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 optionSpinBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );
                 QS60StylePrivate::drawSkinPart(part, painter, optionSpinBox.rect,flags);
             } else {
-                QCommonStyle::drawPrimitive(element, &optionSpinBox, painter, widget);
+                commonStyleDraws = true;
             }
         }
 #ifndef QT_NO_COMBOBOX
         else if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            if (cmb->palette.base().color()==Qt::transparent) {
+            if (QS60StylePrivate::canDrawThemeBackground( option->palette.base())) {
                 // We want to draw down arrow here for comboboxes as well.
                 const QS60StyleEnums::SkinParts part = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
                 QStyleOptionFrame comboBox = *cmb;
@@ -2088,7 +2102,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 comboBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );
                 QS60StylePrivate::drawSkinPart(part, painter, comboBox.rect,flags);
             } else {
-                QCommonStyle::drawPrimitive(element, cmb, painter, widget);
+                commonStyleDraws = true;
             }
         }
 #endif //QT_NO_COMBOBOX
@@ -2119,12 +2133,10 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             || qobject_cast<const QMenu *> (widget)
 #endif //QT_NO_MENU
             ) {
-                if (option->palette.base().color()==Qt::transparent) {
-                    QS60StylePrivate::SkinElements skinElement = QS60StylePrivate::SE_OptionsMenu;
-                    QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
-                } else {
-                    QCommonStyle::drawPrimitive(element, option, painter, widget);
-                }
+            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base()))
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_OptionsMenu, painter, option->rect, flags);
+            else
+                commonStyleDraws = true;
         }
         break;
     case PE_FrameWindow:
@@ -2256,6 +2268,9 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_COLUMNVIEW
     case PE_FrameTabBarBase: // since tabs are in S60 always in navipane, let's use common style for tab base in Qt.
     default:
+        commonStyleDraws = true;
+    }
+    if (commonStyleDraws) {
         QCommonStyle::drawPrimitive(element, option, painter, widget);
     }
 }
@@ -2386,6 +2401,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             break;
         case SH_RequestSoftwareInputPanel:
             retValue = RSIP_OnMouseClickAndAlreadyFocused;
+            break;
+        case SH_FormLayoutWrapPolicy:
+            retValue = QFormLayout::WrapLongRows;
             break;
         default:
             break;
