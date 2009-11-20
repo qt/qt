@@ -151,7 +151,8 @@ public:
     void reportDuplicates(const Duplicates &dupes, const QString &fileName, bool verbose);
 
     void setCodecName(const QByteArray &name);
-    QByteArray codecName() const { return m_codecName; }
+    QByteArray codecName() const;
+    QTextCodec *codec() const { return m_codec; }
 
     QString languageCode() const { return m_language; }
     QString sourceLanguageCode() const { return m_sourceLanguage; }
@@ -211,7 +212,7 @@ private:
     typedef QList<TranslatorMessage> TMM;       // int stores the sequence position.
 
     TMM m_messages;
-    QByteArray m_codecName;
+    QTextCodec *m_codec;
     LocationsType m_locationsType;
 
     // A string beginning with a 2 or 3 letter language code (ISO 639-1
