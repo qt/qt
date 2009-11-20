@@ -212,8 +212,9 @@ QmlGraphicsTextInput::HAlignment QmlGraphicsTextInput::hAlign() const
 void QmlGraphicsTextInput::setHAlign(HAlignment align)
 {
     Q_D(QmlGraphicsTextInput);
+    if(align == d->hAlign)
+        return;
     d->hAlign = align;
-    //TODO: implement
 }
 
 bool QmlGraphicsTextInput::isReadOnly() const
@@ -650,6 +651,21 @@ void QmlGraphicsTextInput::drawContents(QPainter *p, const QRect &r)
     }
 
     QPoint offset = QPoint(0,0);
+    if(d->hAlign != AlignLeft){
+        QFontMetrics fm = QFontMetrics(d->font);
+        //###Is this using bearing appropriately?
+        int minLB = qMax(0, -fm.minLeftBearing());
+        int minRB = qMax(0, -fm.minRightBearing());
+        int widthUsed = qRound(d->control->naturalTextWidth()) + 1 + minRB;
+        int hOffset = 0;
+        if(d->hAlign == AlignRight){
+            hOffset = width() - widthUsed;
+        }else if(d->hAlign == AlignHCenter){
+            hOffset = (width() - widthUsed) / 2;
+        }
+        hOffset -= minLB;
+        offset = QPoint(hOffset, 0);
+    }
     QRect clipRect = r;
     d->control->draw(p, offset, clipRect, flags);
 
