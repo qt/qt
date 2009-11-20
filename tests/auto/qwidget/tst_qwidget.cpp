@@ -384,6 +384,8 @@ private slots:
 
     void activateWindow();
 
+    void openModal_taskQTBUG_5804();
+
 #ifdef Q_OS_SYMBIAN
     void cbaVisibility();
 #endif
@@ -9581,6 +9583,29 @@ void tst_QWidget::activateWindow()
 
     QTRY_VERIFY(mainwindow->isActiveWindow());
     QTRY_VERIFY(!mainwindow2->isActiveWindow());
+}
+
+void tst_QWidget::openModal_taskQTBUG_5804()
+{
+    class Widget : public QWidget
+    {
+    public:
+        Widget(QWidget *parent) : QWidget(parent)
+        {
+        }
+        ~Widget()
+        {
+            QMessageBox msgbox;
+            QTimer::singleShot(10, &msgbox, SLOT(accept()));
+            msgbox.exec(); //open a modal dialog
+        }
+    };
+
+    QWidget *win = new QWidget;
+    new Widget(win);
+    win->show();
+    QTest::qWaitForWindowShown(win);
+    delete win;
 }
 
 #ifdef Q_OS_SYMBIAN
