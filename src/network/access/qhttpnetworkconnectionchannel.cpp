@@ -774,6 +774,8 @@ void QHttpNetworkConnectionChannel::_q_connected()
 {
     // improve performance since we get the request sent by the kernel ASAP
     socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    // not sure yet if it helps, but it makes sense
+    socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
     pipeliningSupported = QHttpNetworkConnectionChannel::PipeliningSupportUnknown;
 
