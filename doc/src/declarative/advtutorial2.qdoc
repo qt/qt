@@ -62,15 +62,15 @@ The \c initBoard function will be hooked up to the new game button soon, and sho
 The \c createBlock function is a lot bigger, and I'll explain it block by block.
 First we ensure that the component has been constructed. QML elements, including composite ones like the \c Block.qml
 that we've written, are never created directly in script. While there is a function to parse and create an arbitrary QML string,
-in the case where you are repeatedly creating the sme item you will want to use the \c createComponent function. \c createComponent is
+in the case where you are repeatedly creating the same item you will want to use the \c createComponent function. \c createComponent is
 a built-in function in the declarative ECMAScript, and returns a component object.
 A component object prepares and stores a QML element (usually a composite element) for easy and efficient use.
 When the component is ready, you can create a new instance of the loaded QML with the \c createObject method.
 If the component is loaded remotely (over HTTP for example) then you will have to wait for the component to finish loading
-before calling \c createObject. Since we don't wait here (the waiting is a syncronous, the component object has a signal to tell
+before calling \c createObject. Since we don't wait here (the waiting is asyncronous, the component object will send a signal to tell
 you when it's done) this code will only work if the block QML is a local file.
 
-As we aren't waiting for he component, the next block of code creates a game block with \c{component.createObject}.
+As we aren't waiting for the component, the next block of code creates a game block with \c{component.createObject}.
 Since there could be an error in the QML file you are trying to load, success is not guaranteed.
 The first bit of error checkign code comes right after \c{createObject()}, to ensure that the object loaded correctly.
 If it did not load correctly the function returns false, but we don't have that hooked up to the main UI to indicate
