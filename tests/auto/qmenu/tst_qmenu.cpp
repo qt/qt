@@ -87,6 +87,7 @@ private slots:
     void widgetActionFocus();
     void mouseActivation();
     void tearOff();
+    void layoutDirection();
 
 #if defined(QT3_SUPPORT)
     void indexBasedInsertion_data();
@@ -101,11 +102,13 @@ private slots:
     void menuSizeHint();
     void task258920_mouseBorder();
     void setFixedWidth();
+    void deleteActionInTriggered();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
     void onStatusMessageChanged(const QString &);
     void onStatusTipTimer();
+    void deleteAction(QAction *a) { delete a; }
 private:
     void createActions();
     QMenu *menus[2], *lastMenu;
@@ -594,6 +597,31 @@ void tst_QMenu::tearOff()
     QVERIFY(!torn->isVisible());
 }
 
+void tst_QMenu::layoutDirection()
+{
+    QMainWindow win;
+    win.setLayoutDirection(Qt::RightToLeft);
+
+    QMenu menu(&win);
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
+    menu.close();
+
+    menu.setParent(0);
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    QCOMPARE(menu.layoutDirection(), QApplication::layoutDirection());
+    menu.close();
+
+    //now the menubar
+    QAction *action = win.menuBar()->addMenu(&menu);
+    win.menuBar()->setActiveAction(action);
+    QTest::qWaitForWindowShown(&menu);
+    QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
+}
+
+
 
 #if defined(QT3_SUPPORT)
 void tst_QMenu::indexBasedInsertion_data()
@@ -857,6 +885,17 @@ void tst_QMenu::setFixedWidth()
     //get as much space as possible
     QCOMPARE(menu.sizeHint().width(), menu.minimumWidth());
 }
+
+void tst_QMenu::deleteActionInTriggered()
+{
+    // should not crash
+    QMenu m;
+    QObject::connect(&m, SIGNAL(triggered(QAction*)), this, SLOT(deleteAction(QAction*)));
+    QWeakPointer<QAction> a = m.addAction("action");
+    a.data()->trigger();
+    QVERIFY(!a);
+}
+
 
 
 

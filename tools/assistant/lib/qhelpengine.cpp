@@ -80,7 +80,7 @@ void QHelpEnginePrivate::init(const QString &collectionFile,
 
     connect(helpEngineCore, SIGNAL(setupFinished()),
         this, SLOT(applyCurrentFilter()));
-    connect(helpEngineCore, SIGNAL(currentFilterChanged(const QString&)),
+    connect(helpEngineCore, SIGNAL(currentFilterChanged(QString)),
         this, SLOT(applyCurrentFilter()));
 
 }

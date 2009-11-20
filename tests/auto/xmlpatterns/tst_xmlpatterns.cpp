@@ -160,7 +160,9 @@ void tst_XmlPatterns::xquerySupport()
     QCOMPARE(process.exitCode(), expectedExitCode);
 
     const QByteArray rawProducedStderr((process.readAllStandardError()));
-    const QString fixedStderr(QString::fromLocal8Bit(rawProducedStderr).remove(m_filenameInStderr));
+    QString fixedStderr(QString::fromLocal8Bit(rawProducedStderr).remove(m_filenameInStderr));
+    // convert Windows line endings to Unix ones
+    fixedStderr.replace("\r\n", "\n");
 
     const QString errorFileName(inputFile(QLatin1String(SRCDIR "stderrBaselines/") +
                                           QString::fromUtf8(QTest::currentDataTag()).remove(m_normalizeTestName) +

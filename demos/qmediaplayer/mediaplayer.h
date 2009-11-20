@@ -139,6 +139,7 @@ private slots:
     void showContextMenu(const QPoint& point);
     void bufferStatus(int percent);
     void openUrl();
+    void openRamFile();
     void configureEffect();
     void hasVideoChanged(bool);
 

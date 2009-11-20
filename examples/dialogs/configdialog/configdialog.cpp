@@ -104,8 +104,8 @@ void ConfigDialog::createIcons()
     queryButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
     connect(contentsWidget,
-            SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-            this, SLOT(changePage(QListWidgetItem *, QListWidgetItem*)));
+            SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+            this, SLOT(changePage(QListWidgetItem*,QListWidgetItem*)));
 }
 
 void ConfigDialog::changePage(QListWidgetItem *current, QListWidgetItem *previous)

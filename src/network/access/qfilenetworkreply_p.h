@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,26 +39,69 @@
 **
 ****************************************************************************/
 
-#ifndef CUSTOMSHADEREFFECT_H
-#define CUSTOMSHADEREFFECT_H
+#ifndef QFILENETWORKREPLY_P_H
+#define QFILENETWORKREPLY_P_H
 
-#include <QGraphicsEffect>
-#include <QtOpenGL/private/qgraphicsshadereffect_p.h>
-#include <QGraphicsItem>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of the Network Access API.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class CustomShaderEffect: public QGraphicsShaderEffect
+#include "qnetworkreply.h"
+#include "qnetworkreply_p.h"
+#include "qnetworkaccessmanager.h"
+#include <QFile>
+
+QT_BEGIN_NAMESPACE
+
+
+class QFileNetworkReplyPrivate;
+class QFileNetworkReply: public QNetworkReply
 {
+    Q_OBJECT
 public:
-    CustomShaderEffect();
+    QFileNetworkReply(QObject *parent, const QNetworkRequest &req);
+    ~QFileNetworkReply();
+    virtual void abort();
 
-    QColor effectColor() const { return color; }
-    void setEffectColor(const QColor& c);
+    // reimplemented from QNetworkReply
+    virtual void close();
+    virtual qint64 bytesAvailable() const;
+    virtual bool isSequential () const;
+    qint64 size() const;
 
-protected:
-    void setUniforms(QGLShaderProgram *program);
 
-private:
-    QColor color;
+    virtual qint64 readData(char *data, qint64 maxlen);
+
+    Q_DECLARE_PRIVATE(QFileNetworkReply)
+    Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
+
 };
 
-#endif // CUSTOMSHADEREFFECT_H
+class QFileNetworkReplyPrivate: public QNetworkReplyPrivate
+{
+public:
+    QFileNetworkReplyPrivate();
+
+    QFile realFile;
+    qint64 realFileSize;
+
+    void _q_startOperation();
+
+    virtual bool isFinished() const;
+    void doFinished();
+    bool finished;
+
+
+    Q_DECLARE_PUBLIC(QFileNetworkReply)
+};
+
+QT_END_NAMESPACE
+
+#endif // QFILENETWORKREPLY_P_H

@@ -841,8 +841,8 @@ void QMdiAreaPrivate::appendChild(QMdiSubWindow *child)
     child->installEventFilter(q);
 
     QObject::connect(child, SIGNAL(aboutToActivate()), q, SLOT(_q_deactivateAllWindows()));
-    QObject::connect(child, SIGNAL(windowStateChanged(Qt::WindowStates, Qt::WindowStates)),
-                     q, SLOT(_q_processWindowStateChanged(Qt::WindowStates, Qt::WindowStates)));
+    QObject::connect(child, SIGNAL(windowStateChanged(Qt::WindowStates,Qt::WindowStates)),
+                     q, SLOT(_q_processWindowStateChanged(Qt::WindowStates,Qt::WindowStates)));
 }
 
 /*!

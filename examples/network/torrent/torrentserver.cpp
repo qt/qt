@@ -69,8 +69,8 @@ void TorrentServer::incomingConnection(int socketDescriptor)
 
     if (client->setSocketDescriptor(socketDescriptor)) {
         if (ConnectionManager::instance()->canAddConnection() && !clients.isEmpty()) {
-            connect(client, SIGNAL(infoHashReceived(const QByteArray &)),
-                    this, SLOT(processInfoHash(const QByteArray &)));
+            connect(client, SIGNAL(infoHashReceived(QByteArray)),
+                    this, SLOT(processInfoHash(QByteArray)));
             connect(client, SIGNAL(error(QAbstractSocket::SocketError)),
                     this, SLOT(removeClient()));
             RateController::instance()->addSocket(client);

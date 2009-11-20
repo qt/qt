@@ -62,7 +62,7 @@ MainWindow::MainWindow()
     view = new QWebView(this);
     view->load(QUrl("http://www.google.com/ncr"));
     connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
-    connect(view, SIGNAL(titleChanged(const QString&)), SLOT(adjustTitle()));
+    connect(view, SIGNAL(titleChanged(QString)), SLOT(adjustTitle()));
     connect(view, SIGNAL(loadProgress(int)), SLOT(setProgress(int)));
     connect(view, SIGNAL(loadFinished(bool)), SLOT(finishLoading(bool)));
 

@@ -518,8 +518,8 @@ QHelpContentWidget::QHelpContentWidget()
 {
     header()->hide();
     setUniformRowHeights(true);
-    connect(this, SIGNAL(activated(const QModelIndex&)),
-        this, SLOT(showLink(const QModelIndex&)));
+    connect(this, SIGNAL(activated(QModelIndex)),
+        this, SLOT(showLink(QModelIndex)));
 }
 
 /*!

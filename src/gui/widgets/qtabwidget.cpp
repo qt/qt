@@ -699,8 +699,8 @@ void QTabWidget::setTabBar(QTabBar* tb)
     setFocusProxy(d->tabs);
     connect(d->tabs, SIGNAL(currentChanged(int)),
             this, SLOT(_q_showTab(int)));
-    connect(d->tabs, SIGNAL(tabMoved(int, int)),
-            this, SLOT(_q_tabMoved(int, int)));
+    connect(d->tabs, SIGNAL(tabMoved(int,int)),
+            this, SLOT(_q_tabMoved(int,int)));
     if (d->tabs->tabsClosable())
         connect(d->tabs, SIGNAL(tabCloseRequested(int)),
                 this, SIGNAL(tabCloseRequested(int)));

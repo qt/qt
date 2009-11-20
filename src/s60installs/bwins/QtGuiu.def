@@ -12514,4 +12514,7 @@ EXPORTS
 	?app_compile_version@QApplicationPrivate@@2HA @ 12513 NONAME ; int QApplicationPrivate::app_compile_version
 	?spacerItemFactoryMethod@QLayoutPrivate@@2P6APAVQSpacerItem@@PBVQLayout@@HHW4Policy@QSizePolicy@@1@ZA @ 12514 NONAME ; class QSpacerItem * (*QLayoutPrivate::spacerItemFactoryMethod)(class QLayout const *, int, int, enum QSizePolicy::Policy, enum QSizePolicy::Policy)
 	?allWidgets@QWidgetPrivate@@2PAV?$QSet@PAVQWidget@@@@A @ 12515 NONAME ; class QSet<class QWidget *> * QWidgetPrivate::allWidgets
+	?effectiveFocusWidget@QWidgetPrivate@@QAEPAVQWidget@@XZ @ 12516 NONAME ; class QWidget * QWidgetPrivate::effectiveFocusWidget(void)
+	?ignoreUnusedNavigationEvents@QTextControl@@QBE_NXZ @ 12517 NONAME ; bool QTextControl::ignoreUnusedNavigationEvents(void) const
+	?setIgnoreUnusedNavigationEvents@QTextControl@@QAEX_N@Z @ 12518 NONAME ; void QTextControl::setIgnoreUnusedNavigationEvents(bool)
 

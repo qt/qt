@@ -107,6 +107,7 @@ private:
            pixelsToFree later on instead of malloc'ing memory.
     */
     quint32 *pixels;
+    uint pixelsSize;
     quint32 *pixelsToFree;
     uint bytesPerRow;
     QRectF cg_mask_rect;

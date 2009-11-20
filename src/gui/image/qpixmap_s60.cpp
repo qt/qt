@@ -977,4 +977,9 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
     }
 }
 
+QPixmapData *QS60PixmapData::createCompatiblePixmapData() const
+{
+    return new QS60PixmapData(pixelType());
+}
+
 QT_END_NAMESPACE

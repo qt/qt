@@ -109,6 +109,7 @@ protected:
 #endif
 
 protected:
+    QSize prevSize;
     VGImage vgImage;
     VGImage vgImageOpacity;
     qreal cachedOpacity;

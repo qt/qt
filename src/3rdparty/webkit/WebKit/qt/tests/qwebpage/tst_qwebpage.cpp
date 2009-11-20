@@ -85,6 +85,22 @@ static bool waitForSignal(QObject* obj, const char* signal, int timeout = 10000)
     return timeoutSpy.isEmpty();
 }
 
+class EventSpy : public QObject, public QList<QEvent::Type>
+{
+    Q_OBJECT
+public:
+    EventSpy(QObject* objectToSpy)
+    {
+        objectToSpy->installEventFilter(this);
+    }
+
+    virtual bool eventFilter(QObject* receiver, QEvent* event)
+    {
+        append(event->type());
+        return false;
+    }
+};
+
 class tst_QWebPage : public QObject
 {
     Q_OBJECT
@@ -432,7 +448,7 @@ void tst_QWebPage::modified()
     m_page->mainFrame()->setUrl(QUrl("data:text/html,<body>This is fourth page"));
     QVERIFY(m_page->history()->count() == 2);
     m_page->mainFrame()->setUrl(QUrl("data:text/html,<body>This is fifth page"));
-    QVERIFY(::waitForSignal(m_page, SIGNAL(saveFrameStateRequested(QWebFrame*, QWebHistoryItem*))));
+    QVERIFY(::waitForSignal(m_page, SIGNAL(saveFrameStateRequested(QWebFrame*,QWebHistoryItem*))));
 }
 
 void tst_QWebPage::contextMenuCrash()
@@ -468,7 +484,7 @@ void tst_QWebPage::database()
         QFile::remove(dbFileName);
 
     qRegisterMetaType<QWebFrame*>("QWebFrame*");
-    QSignalSpy spy(m_page, SIGNAL(databaseQuotaExceeded(QWebFrame *, QString)));
+    QSignalSpy spy(m_page, SIGNAL(databaseQuotaExceeded(QWebFrame*,QString)));
     m_view->setHtml(QString("<html><head><script>var db; db=openDatabase('testdb', '1.0', 'test database API', 50000); </script></head><body><div></div></body></html>"), QUrl("http://www.myexample.com"));
     QTRY_COMPARE(spy.count(), 1);
     m_page->mainFrame()->evaluateJavaScript("var db2; db2=openDatabase('testdb', '1.0', 'test database API', 50000);");
@@ -646,20 +662,41 @@ class PluginCounterPage : public QWebPage {
 public:
     int m_count;
     QPointer<QObject> m_widget;
-    PluginCounterPage(QObject* parent = 0) : QWebPage(parent), m_count(0), m_widget(0)
+    QObject* m_pluginParent;
+    PluginCounterPage(QObject* parent = 0)
+        : QWebPage(parent)
+        , m_count(0)
+        , m_widget(0)
+        , m_pluginParent(0)
     {
        settings()->setAttribute(QWebSettings::PluginsEnabled, true);
+    }
+    ~PluginCounterPage()
+    {
+        if (m_pluginParent)
+            m_pluginParent->deleteLater();
     }
 };
 
 template<class T>
 class PluginTracerPage : public PluginCounterPage {
 public:
-    PluginTracerPage(QObject* parent = 0) : PluginCounterPage(parent) {}
+    PluginTracerPage(QObject* parent = 0)
+        : PluginCounterPage(parent)
+    {
+        // this is a dummy parent object for the created plugin
+        m_pluginParent = new T;
+    }
     virtual QObject* createPlugin(const QString&, const QUrl&, const QStringList&, const QStringList&)
     {
         m_count++;
-        return m_widget = new T();
+        m_widget = new T;
+        // need a cast to the specific type, as QObject::setParent cannot be called,
+        // because it is not virtual. Instead it is necesary to call QWidget::setParent,
+        // which also takes a QWidget* instead of a QObject*. Therefore we need to
+        // upcast to T*, which is a QWidget.
+        static_cast<T*>(m_widget.data())->setParent(static_cast<T*>(m_pluginParent));
+        return m_widget;
     }
 };
 
@@ -725,6 +762,8 @@ void tst_QWebPage::createViewlessPlugin()
     page->mainFrame()->setHtml(content);
     QCOMPARE(page->m_count, 1);
     QVERIFY(page->m_widget);
+    QVERIFY(page->m_pluginParent);
+    QVERIFY(page->m_widget->parent() == page->m_pluginParent);
     delete page;
 
 }
@@ -1338,6 +1377,8 @@ void tst_QWebPage::inputMethods()
                                             "</body></html>");
     page->mainFrame()->setFocus();
 
+    EventSpy viewEventSpy(container);
+
     QWebElementCollection inputs = page->mainFrame()->documentElement().findAll("input");
 
     QMouseEvent evpres(QEvent::MouseButtonPress, inputs.at(0).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
@@ -1345,15 +1386,27 @@ void tst_QWebPage::inputMethods()
     QMouseEvent evrel(QEvent::MouseButtonRelease, inputs.at(0).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
     page->event(&evrel);
 
+#if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
+    QVERIFY(!viewEventSpy.contains(QEvent::RequestSoftwareInputPanel));
+#endif
+    viewEventSpy.clear();
+
+    page->event(&evpres);
+    page->event(&evrel);
+
+#if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
+    QVERIFY(viewEventSpy.contains(QEvent::RequestSoftwareInputPanel));
+#endif
+
     //ImMicroFocus
     QVariant variant = page->inputMethodQuery(Qt::ImMicroFocus);
     QRect focusRect = variant.toRect();
     QVERIFY(inputs.at(0).geometry().contains(variant.toRect().topLeft()));
 
     //ImFont
-    variant = page->inputMethodQuery(Qt::ImFont);
-    QFont font = variant.value<QFont>();
-    QCOMPARE(QString("-webkit-serif"), font.family());
+    //variant = page->inputMethodQuery(Qt::ImFont);
+    //QFont font = variant.value<QFont>();
+    //QCOMPARE(QString("-webkit-serif"), font.family());
 
     QList<QInputMethodEvent::Attribute> inputAttributes;
 
@@ -1603,6 +1656,22 @@ void tst_QWebPage::errorPageExtension()
     QCOMPARE(page->history()->currentItem().url(), QUrl("http://non.existent/url"));
     QCOMPARE(page->history()->canGoBack(), true);
     QCOMPARE(page->history()->canGoForward(), false);
+
+    page->triggerAction(QWebPage::Back);
+    QTest::qWait(2000);
+    QCOMPARE(page->history()->canGoBack(), false);
+    QCOMPARE(page->history()->canGoForward(), true);
+
+    page->triggerAction(QWebPage::Forward);
+    QTest::qWait(2000);
+    QCOMPARE(page->history()->canGoBack(), true);
+    QCOMPARE(page->history()->canGoForward(), false);
+
+    page->triggerAction(QWebPage::Back);
+    QTest::qWait(2000);
+    QCOMPARE(page->history()->canGoBack(), false);
+    QCOMPARE(page->history()->canGoForward(), true);
+    QCOMPARE(page->history()->currentItem().url(), QUrl("qrc:///frametest/index.html"));
 
     m_view->setPage(0);
 }

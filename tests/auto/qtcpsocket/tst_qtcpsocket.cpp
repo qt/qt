@@ -192,6 +192,8 @@ private slots:
     void connectToMultiIP();
     void moveToThread0();
     void increaseReadBufferSize();
+    void taskQtBug5799ConnectionErrorWaitForConnected();
+    void taskQtBug5799ConnectionErrorEventLoop();
 #ifdef TEST_QNETWORK_PROXY
     void invalidProxy_data();
     void invalidProxy();
@@ -2213,6 +2215,47 @@ void tst_QTcpSocket::increaseReadBufferSize()
 
     delete active;
 }
+
+void tst_QTcpSocket::taskQtBug5799ConnectionErrorWaitForConnected()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // check that we get a proper error connecting to port 12346
+    // use waitForConnected, e.g. this should use a synchronous select() on the OS level
+
+    QTcpSocket socket;
+    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+    QTime timer;
+    timer.start();
+    socket.waitForConnected(10000);
+    QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");
+    QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
+    QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
+             QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
+}
+
+void tst_QTcpSocket::taskQtBug5799ConnectionErrorEventLoop()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // check that we get a proper error connecting to port 12346
+    // This testcase uses an event loop
+    QTcpSocket socket;
+    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY2(!QTestEventLoop::instance().timeout(), "Connection to closed port timed out instead of refusing, something is wrong");
+    QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
+    QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
+             QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
+}
+
+
 
 #ifdef TEST_QNETWORK_PROXY
 void tst_QTcpSocket::invalidProxy_data()

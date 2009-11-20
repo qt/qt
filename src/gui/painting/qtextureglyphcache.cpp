@@ -101,7 +101,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
         Coord c = { 0, 0, // will be filled in later
                     glyph_width,
                     glyph_height, // texture coords
-                    metrics.x.truncate(),
+                    metrics.x.round().truncate(),
                     -metrics.y.truncate() }; // baseline for horizontal scripts
 
         listItemCoordinates.insert(glyph, c);

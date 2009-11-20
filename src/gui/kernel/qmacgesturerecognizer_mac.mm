@@ -67,7 +67,7 @@ QMacSwipeGestureRecognizer::recognize(QGesture *gesture, QObject *obj, QEvent *e
             case QNativeGestureEvent::Swipe: {
                 QSwipeGesture *g = static_cast<QSwipeGesture *>(gesture);
                 g->setSwipeAngle(ev->angle);
-                return QGestureRecognizer::TriggerGesture | QGestureRecognizer::ConsumeEventHint;
+                return QGestureRecognizer::FinishGesture | QGestureRecognizer::ConsumeEventHint;
                 break; }
             default:
                 break;

@@ -162,8 +162,8 @@ FormEditor::FormEditor(QObject *parent)
 
     QtResourceModel *resourceModel = new QtResourceModel(this);
     setResourceModel(resourceModel);
-    connect(resourceModel, SIGNAL(qrcFileModifiedExternally(const QString &)),
-            this, SLOT(slotQrcFileChangedExternally(const QString &)));
+    connect(resourceModel, SIGNAL(qrcFileModifiedExternally(QString)),
+            this, SLOT(slotQrcFileChangedExternally(QString)));
 
     QList<QDesignerOptionsPageInterface*> optionsPages;
     optionsPages << new TemplateOptionsPage(this) << new FormEditorOptionsPage(this) << new EmbeddedOptionsPage(this);
