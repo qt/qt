@@ -1240,7 +1240,7 @@ void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, con
         const QTransform reverseMap = worldTransform.inverted();
         const QVector<QRect> exposedRects(exposedRegion.rects());
         for (int i = 0; i < exposedRects.size(); ++i) {
-            option->exposedRect |= reverseMap.mapRect(exposedRects.at(i));
+            option->exposedRect |= reverseMap.mapRect(QRectF(exposedRects.at(i)));
             if (option->exposedRect.contains(brect))
                 break;
         }
