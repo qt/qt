@@ -407,10 +407,12 @@ QTextEdit *MessageEditor::activeTranslation() const
 {
     if (m_currentNumerus < 0)
         return 0;
-    foreach (QTextEdit *te, m_editors[m_currentModel].transTexts[m_currentNumerus]->getEditors())
+    const QList<FormatTextEdit *> &editors =
+            m_editors[m_currentModel].transTexts[m_currentNumerus]->getEditors();
+    foreach (QTextEdit *te, editors)
         if (te->hasFocus())
             return te;
-    return 0; // This cannot happen
+    return editors.first();
 }
 
 QTextEdit *MessageEditor::activeOr1stTranslation() const
