@@ -47,11 +47,10 @@ PathView {
         Rectangle {
             id: wrapper
             width: 85; height: 85; color: lColor
-            scale: wrapper.PathView.scale
 
             transform: Rotation {
                 id: itemRotation; origin.x: wrapper.width/2; origin.y: wrapper.height/2
-                axis.y: 1; axis.z: 0; angle: wrapper.PathView.angle
+                axis.y: 1; axis.z: 0
             }
         }
     }
