@@ -1,8 +1,7 @@
 TEMPLATE =  subdirs
 SUBDIRS +=  formextractor \
             previewer \
-            fancybrowser \
-            simpleselector
+            fancybrowser
 
 contains(QT_CONFIG, openssl):SUBDIRS += googlechat
 

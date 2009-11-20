@@ -11465,17 +11465,6 @@ void QWidget::languageChange() { }  // compat
      \sa QWidget::setMaximumSize()
 */
 
-/*!
-    \fn QWidget::setupUi(QWidget *widget)
-
-    Sets up the user interface for the specified \a widget.
-
-    \note This function is available with widgets that derive from user
-    interface descriptions created using \l{uic}.
-
-    \sa {Using a Designer UI File in Your Application}
-*/
-
 QRect QWidgetPrivate::frameStrut() const
 {
     Q_Q(const QWidget);
