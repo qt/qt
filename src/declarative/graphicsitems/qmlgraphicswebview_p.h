@@ -100,7 +100,6 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
 
     Q_PROPERTY(int preferredWidth READ preferredWidth WRITE setPreferredWidth NOTIFY preferredWidthChanged)
     Q_PROPERTY(int preferredHeight READ preferredHeight WRITE setPreferredHeight NOTIFY preferredHeightChanged)
-    Q_PROPERTY(int pixelCacheSize READ pixelCacheSize WRITE setPixelCacheSize)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
@@ -165,9 +164,6 @@ public:
     QWebHistory *history() const;
     QWebSettings *settings() const;
     QmlGraphicsWebSettings *settingsObject() const;
-
-    int pixelCacheSize() const;
-    void setPixelCacheSize(int pixels);
 
     bool renderingEnabled() const;
     void setRenderingEnabled(bool);
