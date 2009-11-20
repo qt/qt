@@ -41,7 +41,13 @@
 
 #include "qgraphicssystem_minimaldfb.h"
 #include "qwindowsurface_minimaldfb.h"
-#include <QtGui/private/qpixmap_raster_p.h>
+#include "qblitter_directfb.h"
+
+#include <private/qwindowsurface_raster_p.h>
+#include <private/qpixmap_raster_p.h>
+
+#include <private/qpixmap_blitter_p.h>
+#include <private/qpixmapdata_p.h>
 #include <QCoreApplication>
 #include <directfb.h>
 
@@ -51,7 +57,7 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int
 {
     DFBResult result  = dfb->GetDisplayLayer(dfb, DLID_PRIMARY, &m_layer);
     if (result != DFB_OK) {
-        DirectFBError("QDirectFbGraphicsSystemScreen::connect: "
+        DirectFBError("QDirectFbGraphicsSystemScreen "
                       "Unable to get primary display layer!", result);
     }
     m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
@@ -106,30 +112,34 @@ IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect)
     return window;
 }
 
+IDirectFB *QDirectFbGraphicsSystem::dfb = 0;
+
 QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
 {
-    DFBResult result = DFB_OK;
+    if (!dfb) {
+        DFBResult result = DFB_OK;
 
-    {   // pass command line arguments to DirectFB
-        const QStringList args = QCoreApplication::arguments();
-        int argc = args.size();
-        char **argv = new char*[argc];
+        {   // pass command line arguments to DirectFB
+            const QStringList args = QCoreApplication::arguments();
+            int argc = args.size();
+            char **argv = new char*[argc];
 
-        for (int i = 0; i < argc; ++i)
-            argv[i] = qstrdup(args.at(i).toLocal8Bit().constData());
+            for (int i = 0; i < argc; ++i)
+                argv[i] = qstrdup(args.at(i).toLocal8Bit().constData());
 
-        result = DirectFBInit(&argc, &argv);
+            result = DirectFBInit(&argc, &argv);
+            if (result != DFB_OK) {
+                DirectFBError("QDirectFBScreen: error initializing DirectFB",
+                              result);
+            }
+            delete[] argv;
+        }
+
+        result = DirectFBCreate(&dfb);
         if (result != DFB_OK) {
-            DirectFBError("QDirectFBScreen: error initializing DirectFB",
+            DirectFBError("QDirectFBScreen: error creating DirectFB interface",
                           result);
         }
-        delete[] argv;
-    }
-
-    result = DirectFBCreate(&dfb);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreen: error creating DirectFB interface",
-                      result);
     }
 
     mPrimaryScreen = new QDirectFbGraphicsSystemScreen(dfb,0);
@@ -138,12 +148,20 @@ QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
 
 QPixmapData *QDirectFbGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QBlittablePixmapData(type);
+//    return new QRasterPixmapData(type);
 }
 
 QWindowSurface *QDirectFbGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
     return new QDirectFbWindowSurface (mPrimaryScreen, widget);
+//    return new QRasterWindowSurface(widget);
+}
+
+QBlittable *QDirectFbGraphicsSystem::createBlittable(const QRect &rect) const
+{
+    return new QDirectFbBlitter(rect);
+//    return 0;
 }
 
 QImage::Format QDirectFbGraphicsSystem::imageFormatFromSurface(IDirectFBSurface *surface)
@@ -184,6 +202,11 @@ QImage::Format QDirectFbGraphicsSystem::imageFormatFromSurface(IDirectFBSurface 
     }
     return QImage::Format_Invalid;
 
+}
+
+IDirectFB *QDirectFbGraphicsSystem::dfbInterface()
+{
+    return dfb;
 }
 
 QT_END_NAMESPACE

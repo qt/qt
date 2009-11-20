@@ -6,6 +6,7 @@
 class QRasterPaintEngine;
 class QBlittablePrivate;
 class QBlitterPaintEnginePrivate;
+class QBlittablePixmapData;
 
 // ### find name
 class Q_GUI_EXPORT QBlittable
@@ -45,7 +46,7 @@ class Q_GUI_EXPORT QBlitterPaintEngine : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QBlitterPaintEngine);
 public:
-    QBlitterPaintEngine(QPixmapData *p);
+    QBlitterPaintEngine(QBlittablePixmapData *p);
     ~QBlitterPaintEngine();
 
     virtual QPainterState *createState(QPainterState *orig) const;

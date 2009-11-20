@@ -2,6 +2,7 @@
 #include "private/qpaintengine_raster_p.h"
 #include "private/qpainter_p.h"
 #include "private/qapplication_p.h"
+#include "private/qpixmap_blitter_p.h"
 
 #define STATE_XFORM_SCALE       0x00000001
 #define STATE_XFORM_COMPLEX     0x00000002
@@ -147,21 +148,16 @@ public:
 class QBlitterPaintEnginePrivate : public QPaintEngineExPrivate
 {
 public:
-    QBlitterPaintEnginePrivate(QPixmapData *p)
-            : QPaintEngineExPrivate(), pixmap(p),
-              raster(new QRasterPaintEngine(&pixmap)), isBlitterLocked(false),
-              capabillities(0), hasXForm(false)
-    {
-        if (QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem()) {
-//            QBlittable *b = gs->createBlitter(p);
-//            if (b) {
-//                blitter=b;
-//                capabillities = new CapabilitiesToStateMask(blitter->capabilities());
-//                blitter->unlock();
-//            } else
-//                qWarning("No blitter returned from the graphics system. QBlitterPaintEngine will not work");
-        }
+    QBlitterPaintEnginePrivate(QBlittablePixmapData *p)
+            : QPaintEngineExPrivate(),
+              isBlitterLocked(false),
+              hasXForm(false)
 
+    {
+        blitter= p->blittable();
+        raster = new QRasterPaintEngine(p->buffer());
+        capabillities = new CapabilitiesToStateMask(blitter->capabilities());
+        lock();
     }
 
     inline void lock() {
@@ -179,31 +175,35 @@ public:
     }
 
     void fillRect(const QRectF &rect, const QColor &color) {
-        unlock();
+        lock();
         QRectF targetRect = rect;
         if (hasXForm) {
             targetRect = state->matrix.mapRect(rect);
         }
         QClipData *clipData = raster->state()->clip;
         if (clipData) {
-            if (clipData->hasRectClip)
+            if (clipData->hasRectClip) {
+                unlock();
                 blitter->fillRect(targetRect & clipData->clipRect, color);
-            else if (clipData->hasRegionClip) {
+            } else if (clipData->hasRegionClip) {
                 QVector<QRect> rects = clipData->clipRegion.rects();
                 for ( int i = 0; i < rects.size(); i++ ) {
                     QRect intersectRect = rects.at(i).intersected(targetRect.toRect());
                     if (!intersectRect.isEmpty()) {
+                        unlock();
                         blitter->fillRect(intersectRect,color);
                     }
                 }
             }
-        }else {
+        } else {
             if (targetRect.x() >= 0 && targetRect.y() >= 0
                 && targetRect.width() <= raster->paintDevice()->width()
-                && targetRect.height() <= raster->paintDevice()->height())
+                && targetRect.height() <= raster->paintDevice()->height()) {
+                unlock();
                 blitter->fillRect(targetRect,color);
-            else {
+            } else {
                 QRectF deviceRect(0,0,raster->paintDevice()->width(), raster->paintDevice()->height());
+                unlock();
                 blitter->fillRect(deviceRect&targetRect,color);
             }
         }
@@ -247,14 +247,13 @@ public:
     uint hasXForm;
 };
 
-QBlitterPaintEngine::QBlitterPaintEngine(QPixmapData *p)
+QBlitterPaintEngine::QBlitterPaintEngine(QBlittablePixmapData *p)
     : QPaintEngineEx(*(new QBlitterPaintEnginePrivate(p)))
 {
 }
 
 QBlitterPaintEngine::~QBlitterPaintEngine()
 {
-    Q_D(QBlitterPaintEngine);
 }
 
 QPainterState *QBlitterPaintEngine::createState(QPainterState *orig) const
@@ -407,17 +406,20 @@ void QBlitterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 void QBlitterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
     Q_D(QBlitterPaintEngine);
+    d->lock();
     d->raster->clip(path, op);
     d->updateClip();
 }
 void QBlitterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op){
     Q_D(QBlitterPaintEngine);
+    d->lock();
     d->raster->clip(rect,op);
     d->updateClip();
 }
 void QBlitterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 {
     Q_D(QBlitterPaintEngine);
+    d->lock();
     d->raster->clip(region,op);
     d->updateClip();
 }
@@ -425,12 +427,14 @@ void QBlitterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 void QBlitterPaintEngine::clipEnabledChanged()
 {
     Q_D(QBlitterPaintEngine);
+    d->lock();
     d->raster->clipEnabledChanged();
 }
 
 void QBlitterPaintEngine::penChanged()
 {
     Q_D(QBlitterPaintEngine);
+    d->lock();
     d->raster->penChanged();
     d->capabillities->updateDrawRectBits(STATE_PEN_ENABLED,qpen_style(d->state->pen) != Qt::NoPen);
 }
@@ -589,6 +593,7 @@ void QBlitterPaintEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
 void QBlitterPaintEngine::setState(QPainterState *s)
 {
     Q_D(QBlitterPaintEngine);
+    d->lock();
     QPaintEngineEx::setState(s);
     d->raster->setState(s);
     d->state = (QRasterPaintEngineState *) s;
@@ -609,7 +614,7 @@ class QBlittablePrivate
 {
 public:
     QBlittablePrivate(const QRect &rect, QBlittable::Capabilities caps)
-        : m_rect(rect), caps(caps)
+        : caps(caps), m_rect(rect)
     {}
     QBlittable::Capabilities caps;
     QRect m_rect;

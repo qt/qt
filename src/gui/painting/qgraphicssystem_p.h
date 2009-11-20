@@ -86,7 +86,7 @@ class Q_GUI_EXPORT QGraphicsSystem
 public:
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
     virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
-    virtual QBlittable *createBlittable(const QRect &rect) { return 0; }
+    virtual QBlittable *createBlittable(const QRect &) const { return 0; }
 
     virtual ~QGraphicsSystem() = 0;
 

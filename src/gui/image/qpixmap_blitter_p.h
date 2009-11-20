@@ -34,20 +34,21 @@ private:
     QImage image;
 };
 
-class QBlittablePixmapData : public QPixmapData
+class Q_GUI_EXPORT  QBlittablePixmapData : public QPixmapData
 {
 public:
-    QBlittablePixmapData(PixelType type);
+    QBlittablePixmapData(QPixmapData::PixelType type);
     ~QBlittablePixmapData();
 
-    QBlittable *blittable() const { return m_blittable; }
+    QBlittable *blittable();
+    void setBlittable(QBlittable *blittable);
 
     void resize(int width, int height);
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
     void fill(const QColor &color);
     QImage *buffer();
-    QImage toImage();
-    bool hasAlphaChannel();
+    QImage toImage() const;
+    bool hasAlphaChannel() const;
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
 
     QPaintEngine *paintEngine() const;
