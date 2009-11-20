@@ -148,6 +148,7 @@ public:
 
     QRect rect;
     Qt::Orientation o;
+    int lastVisible;
 
     QList<QToolBarAreaLayoutItem> toolBarItems;
 };

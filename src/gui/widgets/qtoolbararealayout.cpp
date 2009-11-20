@@ -100,7 +100,7 @@ bool QToolBarAreaLayoutItem::skip() const
 */
 
 QToolBarAreaLayoutLine::QToolBarAreaLayoutLine(Qt::Orientation orientation)
-    : o(orientation)
+    : o(orientation), lastVisible(-1)
 {
 }
 
@@ -146,7 +146,7 @@ QSize QToolBarAreaLayoutLine::minimumSize() const
 
 void QToolBarAreaLayoutLine::fitLayout()
 {
-    int last = -1;
+    lastVisible = -1;
     int min = pick(o, minimumSize());
     int space = pick(o, rect.size());
     int extra = qMax(0, space - min);
@@ -169,7 +169,7 @@ void QToolBarAreaLayoutLine::fitLayout()
 
         extra -= extraSpace;
 
-        last = i;
+        lastVisible = i;
     }
 
     // calculate the positions from the sizes
@@ -180,7 +180,7 @@ void QToolBarAreaLayoutLine::fitLayout()
             continue;
 
         item.pos = pos;
-        if (i == last) // stretch the last item to the end of the line
+        if (i == lastVisible) // stretch the last item to the end of the line
             item.size = qMax(0, pick(o, rect.size()) - item.pos);
         pos += item.size;
     }
@@ -441,7 +441,8 @@ void QToolBarAreaLayoutInfo::moveToolBar(QToolBar *toolbar, int pos)
                     }
 
                     //update for the current item
-                    current.extendSize(line.o, -extra);
+                    if (k != line.lastVisible)
+                    	current.extendSize(line.o, -extra);
 
                     if (extra >= 0) {
                         previous.extendSize(line.o, extra);
