@@ -266,6 +266,9 @@ MediaPlayer::MediaPlayer(const QString &filePath,
     fileMenu = new QMenu(this);
     QAction *openFileAction = fileMenu->addAction(tr("Open &File..."));
     QAction *openUrlAction = fileMenu->addAction(tr("Open &Location..."));
+    QAction *const openLinkAction = fileMenu->addAction(tr("Open &RAM File..."));
+
+    connect(openLinkAction, SIGNAL(triggered(bool)), this, SLOT(openRamFile()));
 
     fileMenu->addSeparator();  
     QMenu *aspectMenu = fileMenu->addMenu(tr("&Aspect ratio"));
@@ -833,6 +836,51 @@ void MediaPlayer::openUrl()
         m_MediaObject.play();
         settings.setValue("location", sourceURL);
     }
+}
+
+/*!
+ \since 4.6
+ */
+void MediaPlayer::openRamFile()
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("BrowserMainWindow"));
+
+    const QStringList fileNameList(QFileDialog::getOpenFileNames(this,
+                                                                  QString(),
+                                                                  settings.value("openRamFile").toString(),
+                                                                  QLatin1String("RAM files (*.ram)")));
+
+    if (fileNameList.isEmpty())
+        return;
+
+    QFile linkFile;
+    QList<QUrl> list;
+    QByteArray sourceURL;
+    for (int i = 0; i < fileNameList.count(); i++ ) {
+        linkFile.setFileName(fileNameList[i]);
+        if (linkFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            while (!linkFile.atEnd()) {
+                sourceURL = linkFile.readLine().trimmed();
+                if (!sourceURL.isEmpty()) {
+                    const QUrl url(QUrl::fromEncoded(sourceURL));
+                    if (url.isValid())
+                        list.append(url);
+                }
+            }
+            linkFile.close();
+        }
+    }
+
+    if (!list.isEmpty()) {
+        m_MediaObject.setCurrentSource(Phonon::MediaSource(list[0]));
+        m_MediaObject.play();
+        for (int i = 1; i < list.count(); i++)
+            m_MediaObject.enqueue(Phonon::MediaSource(list[i]));
+    }
+
+    forwardButton->setEnabled(!m_MediaObject.queue().isEmpty());
+    settings.setValue("openRamFile", fileNameList[0]);
 }
 
 void MediaPlayer::finished()
