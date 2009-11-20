@@ -1876,7 +1876,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
 
     QTextBlock block = cursor.block();
     QTextLayout *layout = block.layout();
-    layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
+    if (isGettingInput)
+        layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
     QList<QTextLayout::FormatRange> overrides;
     preeditCursor = e->preeditString().length();
     hideCursor = false;
