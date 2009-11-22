@@ -123,6 +123,7 @@ public:
         QObject* obj;
         int midx;
         QList<int> params;
+        QStringList argumentMatch;
         QByteArray matchRule;
     };
 

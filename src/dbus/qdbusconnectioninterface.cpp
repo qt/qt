@@ -337,11 +337,6 @@ void QDBusConnectionInterface::connectNotify(const char *signalName)
         QDBusAbstractInterface::connectNotify(SIGNAL(NameLost(QString)));
 
     else if (qstrcmp(signalName, SIGNAL(serviceOwnerChanged(QString,QString,QString))) == 0) {
-        static bool warningPrinted = false;
-        if (!warningPrinted) {
-            qWarning("Connecting to deprecated signal QDBusConnectionInterface::serviceOwnerChanged(QString,QString,QString)");
-            warningPrinted = true;
-        }
         QDBusAbstractInterface::connectNotify(SIGNAL(NameOwnerChanged(QString,QString,QString)));
     }
 }
