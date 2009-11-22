@@ -143,6 +143,7 @@ void tst_qmlgraphicswebview::basicProperties()
     QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
     QCOMPARE(wv->width(), 123.0);
     QCOMPARE(wv->preferredWidth(), 0);
+    QCOMPARE(wv->preferredHeight(), 0);
     QCOMPARE(wv->zoomFactor(), 1.0);
     QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
     QCOMPARE(wv->status(), QmlGraphicsWebView::Ready);
