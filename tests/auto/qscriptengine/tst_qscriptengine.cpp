@@ -2505,7 +2505,7 @@ void tst_QScriptEngine::stacktrace()
     QVERIFY(eng.hasUncaughtException());
     QVERIFY(result.isError());
 
-    QEXPECT_FAIL("", "", Abort);
+    QEXPECT_FAIL("", "QTBUG-6139: uncaughtExceptionBacktrace() doesn't give the full backtrace", Abort);
     QCOMPARE(eng.uncaughtExceptionBacktrace(), backtrace);
     QVERIFY(eng.hasUncaughtException());
     QVERIFY(result.strictlyEquals(eng.uncaughtException()));
