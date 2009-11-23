@@ -118,7 +118,7 @@ public:
 
     void extendSize(Qt::Orientation o, int extent)
     {
-        int newSize = qMax(pick(o, minimumSize()), (preferredSize > 0 ? preferredSize : size) + extent);
+        int newSize = qMax(pick(o, minimumSize()), (preferredSize > 0 ? preferredSize : pick(o, sizeHint())) + extent);
         int sizeh = pick(o, sizeHint());
         if (newSize == sizeh) {
             preferredSize = -1;
