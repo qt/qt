@@ -104,6 +104,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "QML QmlListModel (unknown location) set: index 0 out of range";
     QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123)}" << 0 << "QML QmlListModel (unknown location) set: value is not an object";
     QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3])}" << 0 << "QML QmlListModel (unknown location) set: value is not an object";
+    QTest::newRow("set6") << "{append({'foo':123});set(1,{'foo':456});count}" << 2 << "";
 
     QTest::newRow("setprop1") << "{append({'foo':123});set(0,'foo',456);count}" << 1 << "";
     QTest::newRow("setprop2") << "{append({'foo':123});set(0,'foo',456);get(0).foo}" << 456 << "";
