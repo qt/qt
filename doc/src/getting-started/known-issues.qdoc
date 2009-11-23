@@ -122,6 +122,11 @@
     \o  A bug in the Firebird database can cause an application to crash when
         \c{fbembed.dll} is unloaded. The bug is fixed in version 2.5.
 
+    \o  On Windows 7, resizing windows is slower than on Vista/Xp. This is because
+        the gesture initialization process (required for native gesture support)
+        currently calls winId() on widgets, which causes whole widget hierarchies
+        to use native window handles. This slows down resizing.
+
     \endlist
 
     \section2 Mac OS X
