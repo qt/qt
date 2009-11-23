@@ -59,6 +59,7 @@ void FrameCapture::load(const QUrl &url, const QString &outputFileName)
     m_page.mainFrame()->load(url);
     m_page.mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
     m_page.mainFrame()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+    m_page.setViewportSize(QSize(1024, 768));
 }
 
 void FrameCapture::printProgress(int percent)
@@ -81,41 +82,36 @@ void FrameCapture::saveResult(bool ok)
         return;
     }
 
-    // save each internal frame in different image files
-    int frameCounter = 0;
-    foreach(QWebFrame *frame, m_page.mainFrame()->childFrames()) {
-        QString fileName(m_fileName);
-        int index = m_fileName.lastIndexOf('.');
-        fileName = fileName.insert(index, "_frame" + QString::number(++frameCounter));
-
-        frame->setClipRenderToViewport(false);
-
-        QImage image(frame->contentsSize(), QImage::Format_ARGB32_Premultiplied);
-        image.fill(Qt::transparent);
-
-        saveFrame(frame, image, fileName);
-    }
-
-    // save the main frame
-    m_page.setViewportSize(m_page.mainFrame()->contentsSize());
-    QImage image(m_page.mainFrame()->contentsSize(), QImage::Format_ARGB32_Premultiplied);
-    image.fill(Qt::transparent);
-    saveFrame(m_page.mainFrame(), image, m_fileName);
+    // save each frame in different image files
+    saveFrame(m_page.mainFrame());
 
     emit finished();
 }
 
-void FrameCapture::saveFrame(QWebFrame *frame, QImage image, QString fileName)
+void FrameCapture::saveFrame(QWebFrame *frame)
 {
+    static int frameCounter = 0;
+
+    QString fileName(m_fileName);
+    if (frameCounter) {
+        int index = m_fileName.lastIndexOf('.');
+        fileName = fileName.insert(index, "_frame" + QString::number(frameCounter));
+    }
+
+    QImage image(frame->contentsSize(), QImage::Format_ARGB32_Premultiplied);
+    image.fill(Qt::transparent);
+
     QPainter painter(&image);
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setRenderHint(QPainter::TextAntialiasing, true);
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-
-    frame->render(&painter);
-
+    frame->documentElement().render(&painter);
     painter.end();
 
     image.save(fileName);
+
+    ++frameCounter;
+    foreach(QWebFrame *childFrame, frame->childFrames())
+        saveFrame(childFrame);
 }
 

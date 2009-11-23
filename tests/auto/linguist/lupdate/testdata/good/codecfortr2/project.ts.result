@@ -11,17 +11,22 @@
     </message>
     <message>
         <location filename="main.cpp" line="52"/>
-        <source>this contains an umlaut ü &amp;uuml;</source>
+        <source>this contains an umlaut ü &amp;uuml; literally</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.cpp" line="53"/>
-        <source>random ascii only in utf8</source>
+        <source>this contains an umlaut ü &amp;uuml; escaped, really in utf-8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="main.cpp" line="54"/>
-        <source>umlaut ü &amp;uuml; in utf8</source>
+        <source>random ascii only in utf8</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="55"/>
+        <source>umlaut ü &amp;uuml; in escaped utf8</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
