@@ -41,6 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/private/qmllistmodel_p.h>
 #include <QtDeclarative/private/qmlexpression_p.h>
+#include <QmlComponent>
 #include <QDebug>
 
 class tst_QmlListModel : public QObject
@@ -52,6 +53,8 @@ public:
 private slots:
     void dynamic_data();
     void dynamic();
+    void error_data();
+    void error();
 };
 
 void tst_QmlListModel::dynamic_data()
@@ -153,6 +156,56 @@ void tst_QmlListModel::dynamic()
         qDebug() << e.error(); // errors not expected
     QVERIFY(!e.hasError());
     QCOMPARE(actual,result);
+}
+
+void tst_QmlListModel::error_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("id not allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { id: fred } }"
+        << "ListElement: cannot use reserved \"id\" property";
+
+    QTest::newRow("id allowed in ListModel")
+        << "import Qt 4.6\nListModel { id:model }"
+        << "";
+
+    QTest::newRow("random properties not allowed in ListModel")
+        << "import Qt 4.6\nListModel { foo:123 }"
+        << "ListModel: undefined property 'foo'";
+
+    QTest::newRow("random properties allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { foo:123 } }"
+        << "";
+
+    QTest::newRow("random object list properties allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"
+        << "";
+
+    QTest::newRow("default properties not allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { Item { } } }"
+        << "QTBUG-6082 ListElement should not allow child objects";
+}
+
+void tst_QmlListModel::error()
+{
+    QFETCH(QString, qml);
+    QFETCH(QString, error);
+
+    QmlEngine engine;
+    QmlComponent component(&engine, qml.toUtf8(),
+                           QUrl::fromLocalFile(QString("dummy.qml")));
+    if (error.isEmpty()) {
+        QVERIFY(!component.isError());
+    } else {
+        if (error.startsWith(QLatin1String("QTBUG-")))
+            QEXPECT_FAIL("",error.toLatin1(),Abort);
+        QVERIFY(component.isError());
+        QList<QmlError> errors = component.errors();
+        QCOMPARE(errors.count(),1);
+        QCOMPARE(errors.at(0).description(),error);
+    }
 }
 
 QTEST_MAIN(tst_QmlListModel)
