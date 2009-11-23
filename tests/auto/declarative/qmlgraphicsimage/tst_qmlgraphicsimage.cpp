@@ -106,17 +106,35 @@ void tst_qmlgraphicsimage::noSource()
     delete obj;
 }
 
+void tst_qmlgraphicsimage::imageSource_data()
+{
+    QTest::addColumn<QString>("source");
+    QTest::addColumn<bool>("remote");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("local") << SRCDIR "/data/colors.png" << false << "";
+    QTest::newRow("local not found") << SRCDIR "/data/no-such-file.png" << false
+        << "Cannot open  QUrl( \"file://" SRCDIR "/data/no-such-file.png\" )  ";
+    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << "";
+    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true
+        << "Network error loading  QUrl( \"" SERVER_ADDR "/no-such-file.png\" )  "
+            "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
+}
+
 void tst_qmlgraphicsimage::imageSource()
 {
     QFETCH(QString, source);
     QFETCH(bool, remote);
-    QFETCH(bool, valid);
+    QFETCH(QString, error);
 
     TestHTTPServer server(SERVER_PORT);
     if (remote) {
         QVERIFY(server.isValid());
         server.serveDirectory(SRCDIR "/data");
     }
+
+    if (!error.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
     QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\" }";
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
@@ -128,7 +146,7 @@ void tst_qmlgraphicsimage::imageSource()
 
     QCOMPARE(obj->source(), remote ? source : QUrl::fromLocalFile(source));
 
-    if (valid) {
+    if (error.isEmpty()) {
         TRY_WAIT(obj->status() == QmlGraphicsImage::Ready);
         QCOMPARE(obj->width(), 120.);
         QCOMPARE(obj->height(), 120.);
@@ -160,18 +178,6 @@ void tst_qmlgraphicsimage::clearSource()
     QCOMPARE(obj->width(), 0.);
     QCOMPARE(obj->height(), 0.);
     QCOMPARE(obj->progress(), 0.0);
-}
-
-void tst_qmlgraphicsimage::imageSource_data()
-{
-    QTest::addColumn<QString>("source");
-    QTest::addColumn<bool>("remote");
-    QTest::addColumn<bool>("valid");
-
-    QTest::newRow("local") << SRCDIR "/data/colors.png" << false << true;
-    QTest::newRow("local not found") << SRCDIR "/data/no-such-file.png" << false << false;
-    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << true;
-    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true << false;
 }
 
 void tst_qmlgraphicsimage::resized()
