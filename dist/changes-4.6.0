@@ -73,6 +73,8 @@ New features
    * Support for getting return arguments in remote method invocation
      via QMetaMethod::invokeMethod.
 
+ - The QtScript module is now based on the 3rdparty JavaScriptCore library. It
+   is only available under the LGPL or a compatible license.
 
 Optimizations
 -------------

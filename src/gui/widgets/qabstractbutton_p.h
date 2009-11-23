@@ -77,6 +77,7 @@ public:
     uint autoExclusive :1;
     uint down :1;
     uint blockRefresh :1;
+    uint pressed : 1;
 
 #ifndef QT_NO_BUTTONGROUP
     QButtonGroup* group;

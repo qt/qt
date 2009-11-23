@@ -1254,7 +1254,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     // undefined behavior. Otherwise, let mmap have its say.
     if (doStat()
             && (QT_OFF_T(size) > st.st_size - QT_OFF_T(offset)))
-        return 0;
+        qWarning("QFSFileEngine::map: Mapping a file beyond its size is not portable");
 
     int access = 0;
     if (openMode & QIODevice::ReadOnly) access |= PROT_READ;
