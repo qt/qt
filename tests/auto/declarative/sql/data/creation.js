@@ -1,8 +1,7 @@
 function test() {
-    var db = openDatabaseSync("QmlTestDB", "", "Test database from Qt autotests", 1000000);
     var r="transaction_not_finished";
+    var db = openDatabaseSync("QmlTestDB-creation", "1.0", "Test database from Qt autotests", 1000000);
 
-    // Asynchronous in WebKit, so must wait before calling test()  
     db.transaction(
         function(tx) {
             tx.executeSql('CREATE TABLE IF NOT EXISTS Greeting(salutation TEXT, salutee TEXT)');

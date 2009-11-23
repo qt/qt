@@ -1,5 +1,5 @@
 import Test 1.0
 
 MyTypeObject {
-    nullGrouped.script: print(1921)
+    nullGrouped.script: console.log(1921)
 }

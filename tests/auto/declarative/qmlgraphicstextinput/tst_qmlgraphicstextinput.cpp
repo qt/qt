@@ -328,27 +328,53 @@ void tst_qmlgraphicstextinput::selection()
 
 void tst_qmlgraphicstextinput::maxLength()
 {
-    QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
-    QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
+    //QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
+    QmlView *canvas = createView(SRCDIR "/data/maxLength.qml");
+    canvas->execute();
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->root() != 0);
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput *>(canvas->root());
     QVERIFY(textinputObject != 0);
     QVERIFY(textinputObject->text().isEmpty());
+    QVERIFY(textinputObject->maxLength() == 10);
     foreach(const QString &str, standard){
         QVERIFY(textinputObject->text().length() <= 10);
         textinputObject->setText(str);
         QVERIFY(textinputObject->text().length() <= 10);
     }
-    //TODO: Simulated keypress input adding 11 chars at a time
+
+    textinputObject->setText("");
+    QTRY_VERIFY(textinputObject->hasFocus() == true);
+    for(int i=0; i<20; i++){
+        QCOMPARE(textinputObject->text().length(), qMin(i,10));
+        //simulateKey(canvas, Qt::Key_A);
+        QTest::keyPress(canvas, Qt::Key_A);
+        QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    }
 }
 
 void tst_qmlgraphicstextinput::masks()
 {
-    QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
-    QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
+    //Not a comprehensive test of the possible masks, that's done elsewhere (QLineEdit)
+    //QString componentStr = "import Qt 4.6\nTextInput {  inputMask: 'HHHHhhhh'; }";
+    QmlView *canvas = createView(SRCDIR "/data/masks.qml");
+    canvas->execute();
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->root() != 0);
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput *>(canvas->root());
     QVERIFY(textinputObject != 0);
-
-    //TODO: Me
+    QTRY_VERIFY(textinputObject->hasFocus() == true);
+    QVERIFY(textinputObject->text().length() == 0);
+    QCOMPARE(textinputObject->inputMask(), QString("HHHHhhhh; "));
+    for(int i=0; i<10; i++){
+        QCOMPARE(qMin(i,8), textinputObject->text().length());
+        QCOMPARE(i>=4, textinputObject->hasAcceptableInput());
+        //simulateKey(canvas, Qt::Key_A);
+        QTest::keyPress(canvas, Qt::Key_A);
+        QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    }
 }
 
 void tst_qmlgraphicstextinput::validators()

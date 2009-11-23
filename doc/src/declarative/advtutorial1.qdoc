@@ -70,7 +70,7 @@ And here is a simple block:
 
 Since it doesn't do anything yet it's very simple, just an image. As the
 tutorial progresses and the block starts doing things the file will become
-more than just an image. Note that we've set the image to be the size of the itm.
+more than just an image. Note that we've set the image to be the size of the item.
 This will be used later, when we dynamically create and size the block items the image will be scaled automatically
 to the correct size.
 

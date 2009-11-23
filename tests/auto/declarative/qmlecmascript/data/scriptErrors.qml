@@ -9,7 +9,7 @@ MyQmlObject {
     property int x: undefinedObject
     property int y: (a.value, undefinedObject)
 
-    onBasicSignal: { print(a.value); }
+    onBasicSignal: { console.log(a.value); }
 
 }
 

@@ -854,12 +854,12 @@ void tst_qmlmetaproperty::write()
     {
         PropertyObject o;
         QmlMetaProperty p(&o, "onClicked");
-        QCOMPARE(p.write(QVariant("print(1921)")), false);
+        QCOMPARE(p.write(QVariant("console.log(1921)")), false);
 
         QVERIFY(0 == p.setSignalExpression(new QmlExpression()));
         QVERIFY(0 != p.signalExpression());
 
-        QCOMPARE(p.write(QVariant("print(1921)")), false);
+        QCOMPARE(p.write(QVariant("console.log(1921)")), false);
 
         QVERIFY(0 != p.signalExpression());
     }

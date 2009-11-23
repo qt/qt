@@ -295,9 +295,15 @@ void tst_animations::badProperties()
     //make sure we get a runtime error
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/badproperty1.qml"));
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"pen.colr\"");
-        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+
+        QmlComponent c1(&engine, QUrl("file://" SRCDIR "/data/badproperty1.qml"));
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"border.colr\"");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c1.create());
+        QVERIFY(rect);
+
+        QmlComponent c2(&engine, QUrl("file://" SRCDIR "/data/badproperty2.qml"));
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty2.qml:22:9) Cannot animate read-only property \"border\"");
+        rect = qobject_cast<QmlGraphicsRectangle*>(c2.create());
         QVERIFY(rect);
 
         //### should we warn here are well?

@@ -656,7 +656,6 @@ void tst_qmlgraphicstextedit::navigation()
 
     QVERIFY(input != 0);
     QTRY_VERIFY(input->hasFocus() == true);
-    QEXPECT_FAIL("", "Depends on QT-2236", Abort);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasFocus() == false);
     simulateKey(canvas, Qt::Key_Right);

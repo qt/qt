@@ -3,7 +3,7 @@ TEST-HEADER: value
 TEST-HEADER2: value,value2
 Connection: Keep-Alive
 Accept-Encoding: gzip
-accept-language: en,*
+Accept-Language: en-US,*
 User-Agent: Mozilla/5.0
 Host: 127.0.0.1:14445
 

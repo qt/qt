@@ -10,7 +10,7 @@ Rectangle {
     function checkProperties() {
         testObject.error = false;
         if (repeater.delegate != comp) {
-            print("delegate property incorrect");
+            console.log("delegate property incorrect");
             testObject.error = true;
         }
     }

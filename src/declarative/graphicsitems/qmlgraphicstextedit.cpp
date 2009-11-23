@@ -686,29 +686,6 @@ Qt::TextInteractionFlags QmlGraphicsTextEdit::textInteractionFlags() const
 }
 
 /*!
-    Returns the cursor for the point at the given \a pos on the
-    text edit.
-*/
-QTextCursor QmlGraphicsTextEdit::cursorForPosition(const QPoint &pos) const
-{
-    Q_D(const QmlGraphicsTextEdit);
-    return d->control->cursorForPosition(pos);
-}
-
-/*!
-    Returns the rectangle where the given text \a cursor is rendered
-    within the text edit.
-*/
-QRect QmlGraphicsTextEdit::cursorRect(const QTextCursor &cursor) const
-{
-    Q_D(const QmlGraphicsTextEdit);
-    if (cursor.isNull())
-        return QRect();
-
-    return d->control->cursorRect(cursor).toRect();
-}
-
-/*!
     Returns the rectangle where the text cursor is rendered
     within the text edit.
 */
@@ -718,35 +695,6 @@ QRect QmlGraphicsTextEdit::cursorRect() const
     return d->control->cursorRect().toRect();
 }
 
-
-/*!
-    Sets the text cursor for the text edit to the given \a cursor.
-*/
-void QmlGraphicsTextEdit::setTextCursor(const QTextCursor &cursor)
-{
-    Q_D(QmlGraphicsTextEdit);
-    d->control->setTextCursor(cursor);
-}
-
-/*!
-    Returns the text cursor for the text edit.
-*/
-QTextCursor QmlGraphicsTextEdit::textCursor() const
-{
-    Q_D(const QmlGraphicsTextEdit);
-    return d->control->textCursor();
-}
-
-/*!
-Moves the cursor by performing the given \a operation.
-
-If \a mode is QTextCursor::KeepAnchor, the cursor selects the text it moves over. This is the same effect that the user achieves when they hold down the Shift key and move the cursor with the cursor keys.
-*/
-void QmlGraphicsTextEdit::moveCursor(QTextCursor::MoveOperation operation, QTextCursor::MoveMode mode)
-{
-    Q_D(QmlGraphicsTextEdit);
-    d->control->moveCursor(operation, mode);
-}
 
 /*!
 \overload
@@ -769,28 +717,7 @@ Handles the given key \a event.
 void QmlGraphicsTextEdit::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QmlGraphicsTextEdit);
-    //### this causes non-standard cursor behavior in some cases.
-    //     is it still needed?
-    /*QTextCursor c = textCursor();
-    QTextCursor::MoveOperation op = QTextCursor::NoMove;
-    if (event == QKeySequence::MoveToNextChar) {
-        op = QTextCursor::Right;
-    } else if (event == QKeySequence::MoveToPreviousChar) {
-        op = QTextCursor::Left;
-    } else if (event == QKeySequence::MoveToNextWord) {
-        op = QTextCursor::WordRight;
-    } else if (event == QKeySequence::MoveToPreviousWord) {
-        op = QTextCursor::WordLeft;
-    } else if (event == QKeySequence::MoveToNextLine) {
-        op = QTextCursor::Down;
-    } else if (event == QKeySequence::MoveToPreviousLine) {
-        op = QTextCursor::Up;
-    }
-
-    if (op != QTextCursor::NoMove && !c.movePosition(op))
-        event->ignore();
-    else*/
-        d->control->processEvent(event, QPointF(0, 0));
+    d->control->processEvent(event, QPointF(0, 0));
 
     if (!event->isAccepted())
         QmlGraphicsPaintedItem::keyPressEvent(event);
@@ -942,6 +869,7 @@ void QmlGraphicsTextEditPrivate::init()
     q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
 
     control = new QTextControl(q);
+    control->setIgnoreUnusedNavigationEvents(true);
 
     QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(updateImgCache(QRectF)));
 

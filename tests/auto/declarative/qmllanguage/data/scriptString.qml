@@ -2,5 +2,5 @@ import Test 1.0
 
 MyTypeObject {
     scriptProperty: foo + bar
-    grouped.script: print(1921)
+    grouped.script: console.log(1921)
 }

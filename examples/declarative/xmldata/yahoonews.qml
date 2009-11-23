@@ -37,7 +37,7 @@ Rectangle {
                     x: 10; y: 5
                     text: '<a href=\'' + link + '\'>' + title + '</a>'
                     font.bold: true; font.family: "Helvetica"; font.pointSize: 14
-                    onLinkActivated: { print('link clicked: ' + link) }
+                    onLinkActivated: { console.log('link clicked: ' + link) }
                 }
 
                 Text {
