@@ -3063,14 +3063,19 @@ void tst_QScriptEngine::argumentsProperty()
 {
     {
         QScriptEngine eng;
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(eng.evaluate("arguments").isUndefined());
+        {
+            QScriptValue ret = eng.evaluate("arguments");
+            QVERIFY(ret.isError());
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: arguments"));
+        }
         eng.evaluate("arguments = 10");
-        QScriptValue ret = eng.evaluate("arguments");
-        QVERIFY(ret.isNumber());
-        QCOMPARE(ret.toInt32(), 10);
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(!eng.evaluate("delete arguments").toBoolean());
+        {
+            QScriptValue ret = eng.evaluate("arguments");
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 10);
+        }
+        QVERIFY(eng.evaluate("delete arguments").toBoolean());
+        QVERIFY(!eng.globalObject().property("arguments").isValid());
     }
     {
         QScriptEngine eng;
@@ -3081,11 +3086,11 @@ void tst_QScriptEngine::argumentsProperty()
     }
     {
         QScriptEngine eng;
+        QVERIFY(!eng.globalObject().property("arguments").isValid());
         QScriptValue ret = eng.evaluate("(function() { arguments = 456; return arguments; })()");
         QVERIFY(ret.isNumber());
         QCOMPARE(ret.toInt32(), 456);
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(eng.evaluate("arguments").isUndefined());
+        QVERIFY(!eng.globalObject().property("arguments").isValid());
     }
 
     {
