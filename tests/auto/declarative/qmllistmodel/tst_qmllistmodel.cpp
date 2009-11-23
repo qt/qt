@@ -111,6 +111,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("setprop3b") << "{append({'foo':123,'bar':456});set(0,'foo',999);get(0).bar}" << 456 << "";
     QTest::newRow("setprop4a") << "{set(0,'foo',456)}" << 0 << "QML QmlListModel (unknown location) set: index 0 out of range";
     QTest::newRow("setprop4a") << "{append({'foo':123,'bar':456});set(1,'foo',456)}" << 0 << "QML QmlListModel (unknown location) set: index 1 out of range";
+    QTest::newRow("setprop5") << "{append({'foo':123,'bar':456});append({'foo':111});set(1,'bar',222);get(1).bar}" << 222 << "";
 
     QTest::newRow("move1a") << "{append({'foo':123});append({'foo':456});move(0,1,1);count}" << 2 << "";
     QTest::newRow("move1b") << "{append({'foo':123});append({'foo':456});move(0,1,1);get(0).foo}" << 456 << "";
