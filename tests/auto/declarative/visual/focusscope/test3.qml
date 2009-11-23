@@ -23,10 +23,10 @@ Rectangle {
         FocusScope {
             id: Root
             width: 50; height: 50; 
-            Keys.onDigit9Pressed: print("Error - " + name)
+            Keys.onDigit9Pressed: console.log("Error - " + name)
             Rectangle { 
                 focus: true
-                Keys.onDigit9Pressed: print(name)
+                Keys.onDigit9Pressed: console.log(name)
                 width: 50; height: 50; 
                 color: Root.ListView.isCurrentItem?"red":"green"
                 Text { text: name; anchors.centerIn: parent }

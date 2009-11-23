@@ -816,7 +816,7 @@ int main(int argc, char *argv[])
                 "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
                 "Text { color: blueRect.color; }"
                 "MouseRegion {"
-                    "onEntered: { print('hello') }"
+                    "onEntered: { console.log('hello') }"
                 "}"
             "}";
     // add second component to test multiple root contexts

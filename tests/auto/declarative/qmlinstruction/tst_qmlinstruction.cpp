@@ -316,7 +316,7 @@ void tst_qmlinstruction::dump()
     }
 
     {
-        data->primitives << "print(1921)";
+        data->primitives << "console.log(1921)";
 
         QmlInstruction i;
         i.line = 27;
@@ -564,7 +564,7 @@ void tst_qmlinstruction::dump()
         << "24\t\t24\tSTORE_OBJECT\t\t21"
         << "25\t\t25\tSTORE_VARIANT_OBJECT\t22"
         << "26\t\t26\tSTORE_INTERFACE\t\t23"
-        << "27\t\t27\tSTORE_SIGNAL\t\t2\t4\t\t\"print(1921)\""
+        << "27\t\t27\tSTORE_SIGNAL\t\t2\t4\t\t\"console.log(1921)\""
         << "28\t\t28\tSTORE_SCRIPT\t\t2\t18\t28"
         << "29\t\t29\tSTORE_SCRIPT_STRING\t24\t3\t1"
         << "30\t\t30\tASSIGN_SIGNAL_OBJECT\t0\t\t\t\"mySignal\""

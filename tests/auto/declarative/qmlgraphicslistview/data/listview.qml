@@ -7,23 +7,23 @@ Rectangle {
     function checkProperties() {
         testObject.error = false;
         if (list.model != testModel) {
-            print("model property incorrect");
+            console.log("model property incorrect");
             testObject.error = true;
         }
         if (!testObject.animate && list.delegate != myDelegate) {
-            print("delegate property incorrect - expected myDelegate");
+            console.log("delegate property incorrect - expected myDelegate");
             testObject.error = true;
         }
         if (testObject.animate && list.delegate != animatedDelegate) {
-            print("delegate property incorrect - expected animatedDelegate");
+            console.log("delegate property incorrect - expected animatedDelegate");
             testObject.error = true;
         }
         if (testObject.invalidHighlight && list.highlight != invalidHl) {
-            print("highlight property incorrect - expected invalidHl");
+            console.log("highlight property incorrect - expected invalidHl");
             testObject.error = true;
         }
         if (!testObject.invalidHighlight && list.highlight != myHighlight) {
-            print("highlight property incorrect - expected myHighlight");
+            console.log("highlight property incorrect - expected myHighlight");
             testObject.error = true;
         }
     }
@@ -85,7 +85,7 @@ Rectangle {
                 }
                 color: ListView.isCurrentItem ? "lightsteelblue" : "white"
                 ListView.onRemove: SequentialAnimation {
-                    ScriptAction { script: print("Fix PropertyAction with attached properties") }
+                    ScriptAction { script: console.log("Fix PropertyAction with attached properties") }
 /*
                     PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
                     NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
