@@ -53,6 +53,7 @@
 #include "searchwidget.h"
 #include "qtdocinstaller.h"
 #include "xbelsupport.h"
+#include "../shared/collectionconfiguration.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QTimer>
@@ -152,10 +153,11 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         connect(m_bookmarkManager, SIGNAL(bookmarksChanged()), this,
             SLOT(updateBookmarkMenu()));
 
-        setWindowTitle(m_helpEngine->customValue(QLatin1String("WindowTitle"),
-            defWindowTitle).toString());
-        QByteArray iconArray = m_helpEngine->customValue(QLatin1String("ApplicationIcon"),
-            QByteArray()).toByteArray();
+        const QString windowTitle =
+            CollectionConfiguration::windowTitle(*m_helpEngine);
+        setWindowTitle(windowTitle.isEmpty() ? defWindowTitle : windowTitle);
+        QByteArray iconArray =
+            CollectionConfiguration::applicationIcon(*m_helpEngine);
         if (iconArray.size() > 0) {
             QPixmap pix;
             pix.loadFromData(iconArray);
@@ -169,11 +171,11 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         // Show the widget here, otherwise the restore geometry and state won't work
         // on x11.
         show();
-        QByteArray ba(m_helpEngine->customValue(QLatin1String("MainWindow")).toByteArray());
+        QByteArray ba(CollectionConfiguration::mainWindow(*m_helpEngine));
         if (!ba.isEmpty())
             restoreState(ba);
 
-        ba = m_helpEngine->customValue(QLatin1String("MainWindowGeometry")).toByteArray();
+        ba = CollectionConfiguration::mainWindowGeometry(*m_helpEngine);
         if (!ba.isEmpty()) {
             restoreGeometry(ba);
         } else {
@@ -183,14 +185,14 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
             resize(QSize(800, 600));
         }
 
-        if (!m_helpEngine->customValue(QLatin1String("useAppFont")).isValid()) {
-            m_helpEngine->setCustomValue(QLatin1String("useAppFont"), false);
-            m_helpEngine->setCustomValue(QLatin1String("useBrowserFont"), false);
-            m_helpEngine->setCustomValue(QLatin1String("appFont"), qApp->font());
-            m_helpEngine->setCustomValue(QLatin1String("appWritingSystem"),
+        if (!CollectionConfiguration::hasFontSettings(*m_helpEngine)) {
+            CollectionConfiguration::setUseAppFont(*m_helpEngine, false);
+            CollectionConfiguration::setUseBrowserFont(*m_helpEngine, false);
+            CollectionConfiguration::setAppFont(*m_helpEngine, qApp->font());
+            CollectionConfiguration::setAppWritingSystem(*m_helpEngine,
                 QFontDatabase::Latin);
-            m_helpEngine->setCustomValue(QLatin1String("browserFont"), qApp->font());
-            m_helpEngine->setCustomValue(QLatin1String("browserWritingSystem"),
+            CollectionConfiguration::setBrowserFont(*m_helpEngine, qApp->font());
+            CollectionConfiguration::setBrowserWritingSystem(*m_helpEngine,
                 QFontDatabase::Latin);
         } else {
             updateApplicationFont();
@@ -264,8 +266,8 @@ bool MainWindow::usesDefaultCollection() const
 void MainWindow::closeEvent(QCloseEvent *e)
 {
     m_bookmarkManager->saveBookmarks();
-    m_helpEngine->setCustomValue(QLatin1String("MainWindow"), saveState());
-    m_helpEngine->setCustomValue(QLatin1String("MainWindowGeometry"),
+    CollectionConfiguration::setMainWindow(*m_helpEngine, saveState());
+    CollectionConfiguration::setMainWindowGeometry(*m_helpEngine,
         saveGeometry());
 
     QMainWindow::closeEvent(e);
@@ -314,13 +316,12 @@ bool MainWindow::initHelpDB()
         needsSetup = true;
     }
 
-    const QLatin1String unfiltered("UnfilteredFilterInserted");
-    if (1 != m_helpEngine->customValue(unfiltered).toInt()) {
+    if (!CollectionConfiguration::unfilteredInserted(*m_helpEngine)) {
         {
             QHelpEngineCore hc(collectionFile);
             hc.setupData();
             hc.addCustomFilter(tr("Unfiltered"), QStringList());
-            hc.setCustomValue(unfiltered, 1);
+            CollectionConfiguration::setUnfilteredInserted(hc);
         }
 
         m_helpEngine->blockSignals(true);
@@ -346,9 +347,8 @@ void MainWindow::lookForNewQtDocumentation()
     connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)), this,
         SLOT(qtDocumentationInstalled(bool)));
 
-    QString versionKey = QString(QLatin1String("qtVersion%1$$$qt")).
-        arg(QLatin1String(QT_VERSION_STR));
-    if (m_helpEngine->customValue(versionKey, 0).toInt() != 1)
+    if (CollectionConfiguration::qtDocInfo(*m_helpEngine, QLatin1String("qt")).
+        count() != 2)
         statusBar()->showMessage(tr("Looking for Qt Documentation..."));
     m_qtDocInstaller->installDocs();
 }
@@ -663,8 +663,7 @@ QMenu *MainWindow::toolBarMenu()
 
 void MainWindow::setupFilterToolbar()
 {
-    if (!m_helpEngine->
-            customValue(QLatin1String("EnableFilterFunctionality"), true).toBool())
+    if (!CollectionConfiguration::filterFunctionalityEnabled(*m_helpEngine))
         return;
 
     m_filterCombo = new QComboBox(this);
@@ -677,8 +676,7 @@ void MainWindow::setupFilterToolbar()
         this));
     filterToolBar->addWidget(m_filterCombo);
 
-    const QLatin1String hideFilter("HideFilterFunctionality");
-    if (m_helpEngine->customValue(hideFilter, true).toBool())
+    if (!CollectionConfiguration::filterToolbarVisible(*m_helpEngine))
         filterToolBar->hide();
     toolBarMenu()->addAction(filterToolBar->toggleViewAction());
 
@@ -694,7 +692,7 @@ void MainWindow::setupFilterToolbar()
 
 void MainWindow::setupAddressToolbar()
 {
-    if (!m_helpEngine->customValue(QLatin1String("EnableAddressBar"), true).toBool())
+    if (!CollectionConfiguration::addressBarEnabled(*m_helpEngine))
         return;
 
     m_addressLineEdit = new QLineEdit(this);
@@ -706,7 +704,7 @@ void MainWindow::setupAddressToolbar()
         this));
     addressToolBar->addWidget(m_addressLineEdit);
 
-    if (m_helpEngine->customValue(QLatin1String("HideAddressBar"), true).toBool())
+    if (!CollectionConfiguration::addressBarVisible(*m_helpEngine))
         addressToolBar->hide();
     toolBarMenu()->addAction(addressToolBar->toggleViewAction());
 
@@ -722,8 +720,7 @@ void MainWindow::setupAddressToolbar()
 void MainWindow::updateAboutMenuText()
 {
     if (m_helpEngine) {
-        QByteArray ba = m_helpEngine->customValue(QLatin1String("AboutMenuTexts"),
-            QByteArray()).toByteArray();
+        QByteArray ba = CollectionConfiguration::aboutMenuTexts(*m_helpEngine);
         if (ba.size() > 0) {
             QString lang;
             QString str;
@@ -837,8 +834,7 @@ void MainWindow::showAboutDialog()
 {
     QByteArray contents;
     if (m_helpEngine) {
-        QByteArray ba = m_helpEngine->customValue(QLatin1String("AboutTexts"),
-            QByteArray()).toByteArray();
+        QByteArray ba = CollectionConfiguration::aboutTexts(*m_helpEngine);
         if (!ba.isEmpty()) {
             QString lang;
             QByteArray cba;
@@ -864,11 +860,9 @@ void MainWindow::showAboutDialog()
 
     QByteArray iconArray;
     if (!contents.isEmpty()) {
-        iconArray = m_helpEngine->customValue(QLatin1String("AboutIcon"),
-            QByteArray()).toByteArray();
+        iconArray = CollectionConfiguration::aboutIcon(*m_helpEngine);
         QByteArray resources =
-            m_helpEngine->customValue(QLatin1String("AboutImages"),
-            QByteArray()).toByteArray();
+            CollectionConfiguration::aboutImages(*m_helpEngine);
         QPixmap pix;
         pix.loadFromData(iconArray);
         aboutDia.setText(QString::fromUtf8(contents), resources);
@@ -997,8 +991,8 @@ void MainWindow::showSearchWidget()
 void MainWindow::updateApplicationFont()
 {
     QFont font = qApp->font();
-    if (m_helpEngine->customValue(QLatin1String("useAppFont")).toBool())
-        font = qVariantValue<QFont>(m_helpEngine->customValue(QLatin1String("appFont")));
+    if (CollectionConfiguration::usesAppFont(*m_helpEngine))
+        font = CollectionConfiguration::appFont(*m_helpEngine);
 
     qApp->setFont(font, "QWidget");
 }

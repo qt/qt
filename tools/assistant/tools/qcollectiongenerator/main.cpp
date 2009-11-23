@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "../shared/collectionconfiguration.h"
 #include "../shared/helpgenerator.h"
 
 #include <QtCore/QDir>
@@ -453,36 +454,39 @@ int main(int argc, char *argv[])
     }
 
     if (!config.title().isEmpty())
-        helpEngine.setCustomValue(QLatin1String("WindowTitle"), config.title());
+        CollectionConfiguration::setWindowTitle(helpEngine, config.title());
 
     if (!config.homePage().isEmpty()) {
-        helpEngine.setCustomValue(QLatin1String("defaultHomepage"),
-        config.homePage());
+        CollectionConfiguration::setDefaultHomePage(helpEngine,
+            config.homePage());
     }
 
-    if (!config.startPage().isEmpty())
-        helpEngine.setCustomValue(QLatin1String("LastShownPages"), config.startPage());
+    if (!config.startPage().isEmpty()) {
+        CollectionConfiguration::setLastShownPages(helpEngine,
+            QStringList(config.startPage()));
+    }
 
-    if (!config.currentFilter().isEmpty())
-        helpEngine.setCustomValue(QLatin1String("CurrentFilter"), config.currentFilter());
+    if (!config.currentFilter().isEmpty()) {
+        CollectionConfiguration::setCurrentFilter(helpEngine,
+            config.currentFilter());
+    }
 
     if (!config.cacheDirectory().isEmpty()) {
-        helpEngine.setCustomValue(QLatin1String("CacheDirectory"), config.cacheDirectory());
-        helpEngine.setCustomValue(QLatin1String("CacheDirRelativeToCollection"),
-                                  config.cacheDirRelativeToCollection());
+        CollectionConfiguration::setCacheDir(helpEngine, config.cacheDirectory(),
+            config.cacheDirRelativeToCollection());
     }
 
-    helpEngine.setCustomValue(QLatin1String("EnableFilterFunctionality"),
+    CollectionConfiguration::setFilterFunctionalityEnabled(helpEngine,
         config.enableFilterFunctionality());
-    helpEngine.setCustomValue(QLatin1String("HideFilterFunctionality"),
-        config.hideFilterFunctionality());
-    helpEngine.setCustomValue(QLatin1String("EnableDocumentationManager"),
+    CollectionConfiguration::setFilterToolbarVisible(helpEngine,
+        !config.hideFilterFunctionality());
+    CollectionConfiguration::setDocumentationManagerEnabled(helpEngine,
         config.enableDocumentationManager());
-    helpEngine.setCustomValue(QLatin1String("EnableAddressBar"),
+    CollectionConfiguration::setAddressBarEnabled(helpEngine,
         config.enableAddressBar());
-    helpEngine.setCustomValue(QLatin1String("HideAddressBar"),
-        config.hideAddressBar());
-    helpEngine.setCustomValue(QLatin1String("CreationTime"),
+    CollectionConfiguration::setAddressBarVisible(helpEngine,
+         !config.hideAddressBar());
+    CollectionConfiguration::setCreationTime(helpEngine,
         QDateTime::currentDateTime().toTime_t());
 
     if (!config.applicationIcon().isEmpty()) {
@@ -491,7 +495,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Cannot open %s!\n", qPrintable(icon.fileName()));
             return -1;
         }
-        helpEngine.setCustomValue(QLatin1String("ApplicationIcon"), icon.readAll());
+        CollectionConfiguration::setApplicationIcon(helpEngine, icon.readAll());
     }
 
     if (config.aboutMenuTexts().count()) {
@@ -503,7 +507,7 @@ int main(int argc, char *argv[])
             s << it.value();
             ++it;
         }
-        helpEngine.setCustomValue(QLatin1String("AboutMenuTexts"), ba);
+        CollectionConfiguration::setAboutMenuTexts(helpEngine, ba);
     }
 
     if (!config.aboutIcon().isEmpty()) {
@@ -512,7 +516,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Cannot open %s!\n", qPrintable(icon.fileName()));
             return -1;
         }
-        helpEngine.setCustomValue(QLatin1String("AboutIcon"), icon.readAll());
+        CollectionConfiguration::setAboutIcon(helpEngine, icon.readAll());
     }
 
     if (config.aboutTextFiles().count()) {
@@ -560,14 +564,14 @@ int main(int argc, char *argv[])
             }
             ++it;
         }
-        helpEngine.setCustomValue(QLatin1String("AboutTexts"), ba);
+        CollectionConfiguration::setAboutTexts(helpEngine, ba);
         if (imgData.count()) {
             QByteArray imageData;
             QBuffer buffer(&imageData);
             buffer.open(QIODevice::WriteOnly);
             QDataStream out(&buffer);
             out << imgData;
-            helpEngine.setCustomValue(QLatin1String("AboutImages"), imageData);
+            CollectionConfiguration::setAboutImages(helpEngine, imageData);
         }
     }
 

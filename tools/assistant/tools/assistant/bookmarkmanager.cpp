@@ -41,6 +41,7 @@
 
 #include "bookmarkmanager.h"
 #include "centralwidget.h"
+#include "../shared/collectionconfiguration.h"
 
 #include <QtGui/QMenu>
 #include <QtGui/QIcon>
@@ -662,7 +663,7 @@ void BookmarkManager::saveBookmarks()
     QDataStream stream(&bookmarks, QIODevice::WriteOnly);
 
     readBookmarksRecursive(treeModel->invisibleRootItem(), stream, 0);
-    helpEngine->setCustomValue(QLatin1String("Bookmarks"), bookmarks);
+    CollectionConfiguration::setBookmarks(*helpEngine, bookmarks);
 }
 
 QStringList BookmarkManager::bookmarkFolders() const
@@ -814,8 +815,7 @@ void BookmarkManager::setupBookmarkModels()
     QList<int> lastDepths;
     QList<QStandardItem*> parents;
 
-    QByteArray ba =
-        helpEngine->customValue(QLatin1String("Bookmarks")).toByteArray();
+    QByteArray ba = CollectionConfiguration::bookmarks(*helpEngine);
     QDataStream stream(ba);
     while (!stream.atEnd()) {
         stream >> depth >> name >> type >> expanded;
