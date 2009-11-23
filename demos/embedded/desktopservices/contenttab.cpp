@@ -76,8 +76,8 @@ void ContentTab::init(const QDesktopServices::StandardLocation &location,
     m_ContentDir.setNameFilters(filterList);
     setIcon(icon);
 
-    connect(this, SIGNAL(itemClicked(QListWidgetItem *)),
-            this, SLOT(openItem(QListWidgetItem *)));
+    connect(this, SIGNAL(itemClicked(QListWidgetItem*)),
+            this, SLOT(openItem(QListWidgetItem*)));
 
     populateListWidget();
 }

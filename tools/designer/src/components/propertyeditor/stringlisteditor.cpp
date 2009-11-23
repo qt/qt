@@ -55,10 +55,10 @@ StringListEditor::StringListEditor(QWidget *parent)
     listView->setModel(m_model);
 
     connect(listView->selectionModel(),
-            SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
-            this, SLOT(currentIndexChanged(const QModelIndex &, const QModelIndex &)));
+            SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+            this, SLOT(currentIndexChanged(QModelIndex,QModelIndex)));
     connect(listView->itemDelegate(),
-            SIGNAL(closeEditor(QWidget *, QAbstractItemDelegate::EndEditHint)),
+            SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),
             this, SLOT(currentValueChanged()));
 
     QIcon upIcon = createIconSet(QString::fromUtf8("up.png"));

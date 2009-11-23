@@ -138,10 +138,22 @@ void QAbstractItemViewPrivate::init()
 #endif
 }
 
+void QAbstractItemViewPrivate::setHoverIndex(const QPersistentModelIndex &index)
+{
+    Q_Q(QAbstractItemView);
+    if (hover == index)
+        return;
+
+    q->update(hover); //update the old one
+    hover = index;
+    q->update(hover); //update the new one
+}
+
 void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index)
 {
     //we take a persistent model index because the model might change by emitting signals
     Q_Q(QAbstractItemView);
+    setHoverIndex(index);
     if (viewportEnteredNeeded || enteredIndex != index) {
         viewportEnteredNeeded = false;
 
@@ -1536,22 +1548,13 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
 {
     Q_D(QAbstractItemView);
     switch (event->type()) {
-    case QEvent::HoverEnter: {
-        QHoverEvent *he = static_cast<QHoverEvent*>(event);
-        d->hover = indexAt(he->pos());
-        update(d->hover);
-        break; }
-    case QEvent::HoverLeave: {
-        update(d->hover); // update old
-        d->hover = QModelIndex();
-        break; }
-    case QEvent::HoverMove: {
-        QHoverEvent *he = static_cast<QHoverEvent*>(event);
-        QModelIndex old = d->hover;
-        d->hover = indexAt(he->pos());
-        if (d->hover != old)
-            d->viewport->update(visualRect(old)|visualRect(d->hover));
-        break; }
+    case QEvent::HoverMove:
+    case QEvent::HoverEnter:
+        d->setHoverIndex(indexAt(static_cast<QHoverEvent*>(event)->pos()));
+        break;
+    case QEvent::HoverLeave:
+        d->setHoverIndex(QModelIndex());
+        break;
     case QEvent::Enter:
         d->viewportEnteredNeeded = true;
         break;

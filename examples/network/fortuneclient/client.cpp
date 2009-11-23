@@ -95,9 +95,9 @@ Client::Client(QWidget *parent)
     tcpSocket = new QTcpSocket(this);
 //! [1]
 
-    connect(hostLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(hostLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
-    connect(portLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(portLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
     connect(getFortuneButton, SIGNAL(clicked()),
             this, SLOT(requestNewFortune()));

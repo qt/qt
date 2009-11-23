@@ -54,12 +54,12 @@ MainWindow::MainWindow()
 //![0]
 //![2]
     connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
-    connect(mediaObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)),
-            this, SLOT(stateChanged(Phonon::State, Phonon::State)));
+    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
+            this, SLOT(stateChanged(Phonon::State,Phonon::State)));
     connect(metaInformationResolver, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
-            this, SLOT(metaStateChanged(Phonon::State, Phonon::State)));
-    connect(mediaObject, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)),
-            this, SLOT(sourceChanged(const Phonon::MediaSource &)));
+            this, SLOT(metaStateChanged(Phonon::State,Phonon::State)));
+    connect(mediaObject, SIGNAL(currentSourceChanged(Phonon::MediaSource)),
+            this, SLOT(sourceChanged(Phonon::MediaSource)));
     connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
 //![2]
 
@@ -328,8 +328,8 @@ void MainWindow::setupUi()
     musicTable->setHorizontalHeaderLabels(headers);
     musicTable->setSelectionMode(QAbstractItemView::SingleSelection);
     musicTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    connect(musicTable, SIGNAL(cellPressed(int, int)),
-            this, SLOT(tableClicked(int, int)));
+    connect(musicTable, SIGNAL(cellPressed(int,int)),
+            this, SLOT(tableClicked(int,int)));
 
     QHBoxLayout *seekerLayout = new QHBoxLayout;
     seekerLayout->addWidget(seekSlider);

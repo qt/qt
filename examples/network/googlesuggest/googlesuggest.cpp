@@ -66,7 +66,7 @@ GSuggestCompletion::GSuggestCompletion(QLineEdit *parent): QObject(parent), edit
 
     popup->installEventFilter(this);
 
-    connect(popup, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+    connect(popup, SIGNAL(itemClicked(QTreeWidgetItem*,int)),
             SLOT(doneCompletion()));
 
     timer = new QTimer(this);

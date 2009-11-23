@@ -276,6 +276,7 @@ private slots:
     void task176178_itemIndexMethodBreaksSceneRect();
     void task160653_selectionChanged();
     void task250680_childClip();
+    void taskQTBUG_5904_crashWithDeviceCoordinateCache();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -4178,6 +4179,21 @@ void tst_QGraphicsScene::isActive()
     QVERIFY(!scene1.hasFocus());
     QVERIFY(!scene2.hasFocus());
 
+}
+
+void tst_QGraphicsScene::taskQTBUG_5904_crashWithDeviceCoordinateCache()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rectItem = scene.addRect(QRectF(0, 0, 100, 200), QPen(Qt::black), QBrush(Qt::green));
+
+    rectItem->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+
+    QPixmap pixmap(100,200);
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+    // No crash, then it passed!
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

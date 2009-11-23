@@ -320,8 +320,8 @@ void QDesignerWorkbench::addFormWindow(QDesignerFormWindow *formWindow)
 
     m_actionManager->minimizeAction()->setEnabled(true);
     m_actionManager->minimizeAction()->setChecked(false);
-    connect(formWindow, SIGNAL(minimizationStateChanged(QDesignerFormWindowInterface *, bool)),
-            this, SLOT(minimizationStateChanged(QDesignerFormWindowInterface *, bool)));
+    connect(formWindow, SIGNAL(minimizationStateChanged(QDesignerFormWindowInterface*,bool)),
+            this, SLOT(minimizationStateChanged(QDesignerFormWindowInterface*,bool)));
 
     m_actionManager->editWidgets()->trigger();
 }

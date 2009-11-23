@@ -1404,6 +1404,9 @@ bool QIODevicePrivate::putCharHelper(char c)
 */
 bool QIODevice::getChar(char *c)
 {
+    Q_D(QIODevice);
+    CHECK_READABLE(getChar, false);
+
     char ch;
     return (1 == read(c ? c : &ch, 1));
 }

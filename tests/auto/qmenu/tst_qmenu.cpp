@@ -87,6 +87,7 @@ private slots:
     void widgetActionFocus();
     void mouseActivation();
     void tearOff();
+    void layoutDirection();
 
 #if defined(QT3_SUPPORT)
     void indexBasedInsertion_data();
@@ -595,6 +596,31 @@ void tst_QMenu::tearOff()
     QVERIFY(!menu->isTearOffMenuVisible());
     QVERIFY(!torn->isVisible());
 }
+
+void tst_QMenu::layoutDirection()
+{
+    QMainWindow win;
+    win.setLayoutDirection(Qt::RightToLeft);
+
+    QMenu menu(&win);
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
+    menu.close();
+
+    menu.setParent(0);
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    QCOMPARE(menu.layoutDirection(), QApplication::layoutDirection());
+    menu.close();
+
+    //now the menubar
+    QAction *action = win.menuBar()->addMenu(&menu);
+    win.menuBar()->setActiveAction(action);
+    QTest::qWaitForWindowShown(&menu);
+    QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
+}
+
 
 
 #if defined(QT3_SUPPORT)

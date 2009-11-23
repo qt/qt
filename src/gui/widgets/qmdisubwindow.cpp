@@ -2268,8 +2268,8 @@ QMdiSubWindow::QMdiSubWindow(QWidget *parent, Qt::WindowFlags flags)
     else
         d->menuIcon = windowIcon();
 #endif
-    connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
-            this, SLOT(_q_processFocusChanged(QWidget *, QWidget *)));
+    connect(qApp, SIGNAL(focusChanged(QWidget*,QWidget*)),
+            this, SLOT(_q_processFocusChanged(QWidget*,QWidget*)));
 }
 
 /*!

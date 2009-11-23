@@ -354,8 +354,8 @@ void QGraphicsSceneIndexPrivate::init()
     if (!scene)
         return;
 
-    QObject::connect(scene, SIGNAL(sceneRectChanged(const QRectF&)),
-                     q_func(), SLOT(updateSceneRect(const QRectF&)));
+    QObject::connect(scene, SIGNAL(sceneRectChanged(QRectF)),
+                     q_func(), SLOT(updateSceneRect(QRectF)));
 }
 
 /*!
