@@ -32,4 +32,6 @@ symbian {
      DEPLOYMENT += addFiles
 
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+
+    TARGET.CAPABILITY="NetworkServices"
 }
