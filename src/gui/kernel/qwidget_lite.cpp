@@ -669,8 +669,13 @@ void QWidgetPrivate::setModal_sys()
 void qt_lite_set_cursor(QWidget * w, bool force)
 {
     static QPointer<QWidget> lastUnderMouse = 0;
-    if (w == 0) {   // override cursor stack emptied
-        QCursor * override = QApplication::overrideCursor();
+
+    QCursor * override = QApplication::overrideCursor();
+
+    if (override && w != 0)
+        return;
+
+    if (w == 0) {
         if (override) {
             if (QGraphicsSystemCursor::instance) {
                 QGraphicsSystemCursor::instance->changeCursor(override);
@@ -678,11 +683,19 @@ void qt_lite_set_cursor(QWidget * w, bool force)
             return;
         }
         w = QApplication::widgetAt(QCursor::pos());
+        if (w == 0) // clear the override cursor while over empty space
+            w = QApplication::desktop();
     } else if (force) {
         lastUnderMouse = w;
     } else if (w->testAttribute(Qt::WA_WState_Created) && lastUnderMouse
                && lastUnderMouse->effectiveWinId() == w->effectiveWinId()) {
         w = lastUnderMouse;
+    }
+
+    if (w == QApplication::desktop()) {
+        if (QGraphicsSystemCursor::instance) {
+            QGraphicsSystemCursor::instance->changeCursor(w);
+        }
     }
 
     QWidget * curWin = QApplication::activeWindow();

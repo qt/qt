@@ -2660,7 +2660,11 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
 #if defined(Q_WS_X11)
             qt_x11_enforce_cursor(parentOfLeavingCursor,true);
 #elif defined(Q_WS_LITE)
-            qt_lite_set_cursor(parentOfLeavingCursor, true);
+            if (enter == QApplication::desktop()) {
+                qt_lite_set_cursor(enter, true);
+            } else {
+                qt_lite_set_cursor(parentOfLeavingCursor, true);
+            }
 #endif
         }
     }

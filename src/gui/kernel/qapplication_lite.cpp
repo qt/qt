@@ -558,7 +558,7 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     }
 
     if (!mouseWindow && !implicit_mouse_grabber)
-        return; //nowhere to send it
+        mouseWindow = QApplication::desktop();
 
     if (mouseWindow && mouseWindow != tlw) {
         //we did not get a sensible localPoint from the window system, so let's calculate it
