@@ -64,7 +64,7 @@ files.
 The Qt object contains all enums in the Qt namespace. For example, you can
 access the AlignLeft member of the Qt::AlignmentFlag enum with \c Qt.AlignLeft.
 
-For a full list of enums, see the Qt Namespace documentation.
+For a full list of enums, see the \l{Qt Namespace} documentation.
 
 \section2 Types
 The Qt object also contains helper functions for creating objects of specific
@@ -88,20 +88,20 @@ This function returns a Color with the specified \c red, \c green, \c blue and \
 This function returns a Color with the specified \c hue, \c saturation, \c lightness and \c alpha components. All components should be in the range 0-1 inclusive.
 
 \section3 Qt.rect(int x, int y, int width, int height) 
-This function returns a Rect with the top-left corner at \c x,\c y and the specified \c width and \c height.
+This function returns a Rect with the top-left corner at \c x, \c y and the specified \c width and \c height.
 \section3 Qt.point(int x, int y)
 This function returns a Point with the specified \c x and \c y coordinates.
 \section3 Qt.size(int width, int height)
-This function returns as Size with the specified width and height.
+This function returns as Size with the specified \c width and \c height.
 \section3 Qt.vector3d(real x, real y, real z)
-This function returns a Vector3D with the specified x, y and z.
+This function returns a Vector3D with the specified \c x, \c y and \c z.
 \section2 Functions
 The Qt object also contains the following miscellaneous functions which expose Qt functionality for use in QML.
 
 \section3 Qt.lighter(color baseColor)
 This function returns a color 50% lighter than \c baseColor. See QColor::lighter() for further details.
 \section3 Qt.darker(color baseColor)
-This function returns a color 50% darker than \c baseColor. See QColor::lighter() for further details.
+This function returns a color 50% darker than \c baseColor. See QColor::darker() for further details.
 \section3 Qt.tint(color baseColor, color tintColor)
     This function allows tinting one color with another.
 
@@ -116,6 +116,16 @@ This function returns a color 50% darker than \c baseColor. See QColor::lighter(
     Tint is most useful when a subtle change is intended to be conveyed due to some event; you can then use tinting to more effectively tune the visible color.
 \section3 Qt.closestAngle(number fromAngle, number toAngle)
 This function returns an equivalent angle to toAngle, such that the difference between fromAngle and toAngle is never more than 180 degrees. This is useful when animating angles using a NumberAnimation, which does not know about equivalent angles, when you always want to take the shortest path. 
+
+For example, the following would rotate myItem counterclockwise from 350 degrees to 10 degrees, for a total of 340 degrees of rotation.
+\qml
+NumberAnimation { target: myItem; property: "rotation"; from: 350; to: 10 }
+\endqml
+
+while the following would rotate myItem clockwise from 350 degrees to 370 degrees (which is visually equivilant to 10 degrees), for a total of 20 degrees of rotation.
+\qml
+NumberAnimation { target: myItem; property: "rotation"; from: 350; to: Qt.closetAngle(350, 10) }
+\endqml
 
 \section3 Qt.playSound(url soundLocation)
 This function plays the audio file located at \c soundLocation. Only .wav files are supported.
