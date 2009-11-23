@@ -734,6 +734,9 @@ void QMenuBarPrivate::init()
         if(wce_menubar)
             q->hide();
     }
+    else {
+        QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
+    }
 #endif
 #ifdef Q_WS_S60
     symbianCreateMenuBar(q->parentWidget());
