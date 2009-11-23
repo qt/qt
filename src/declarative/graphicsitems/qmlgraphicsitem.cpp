@@ -2307,7 +2307,7 @@ void QmlGraphicsItem::setBaselineOffset(qreal offset)
   Opacity is an \e inherited attribute.  That is, the opacity is
   also applied individually to child items.  In almost all cases this
   is what you want.  If you can spot the issue in the following
-  example, you might need to use an opacity filter (not yet available) instead.
+  example, you might need to use an \l Opacity effect instead.
 
   \table
   \row

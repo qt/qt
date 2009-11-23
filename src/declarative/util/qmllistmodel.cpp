@@ -732,11 +732,11 @@ bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QL
             for(int jj = 0; jj < props.count(); ++jj) {
                 const QmlCustomParserProperty &nodeProp = props.at(jj);
                 if (nodeProp.name() == "") {
-                    error(nodeProp, QLatin1String("Cannot use default property in ListModel"));
+                    error(nodeProp, QmlListModel::tr("ListElement: cannot use default property"));
                     return false;
                 }
                 if (nodeProp.name() == "id") {
-                    error(nodeProp, QLatin1String("Cannot use reserved \"id\" property in ListModel"));
+                    error(nodeProp, QmlListModel::tr("ListElement: cannot use reserved \"id\" property"));
                     return false;
                 }
 
@@ -792,7 +792,7 @@ QByteArray QmlListModelParser::compile(const QList<QmlCustomParserProperty> &cus
     for(int ii = 0; ii < customProps.count(); ++ii) {
         const QmlCustomParserProperty &prop = customProps.at(ii);
         if(prop.name() != "") { // isn't default property
-            error(prop, QLatin1String("Cannot use default property"));
+            error(prop, QmlListModel::tr("ListModel: undefined property '%1'").arg(QString::fromUtf8(prop.name())));
             return QByteArray();
         }
 
