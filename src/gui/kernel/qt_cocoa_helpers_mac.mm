@@ -899,6 +899,14 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
             widgetToGetMouse =
                 [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(tmpView) qt_qwidget];
         }
+    } else {
+        extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
+        if (!mac_mouse_grabber && qt_button_down) {
+            // if there is no explicit grabber, and the mouse was grabbed
+            // implicitely (i.e. a mousebutton was pressed)
+            widgetToGetMouse = qt_button_down;
+            tmpView = qt_mac_nativeview_for(widgetToGetMouse);
+        }
     }
 
     NSPoint localPoint = [tmpView convertPoint:windowPoint fromView:nil];
