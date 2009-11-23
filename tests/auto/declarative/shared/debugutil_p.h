@@ -119,6 +119,9 @@ signals:
 
 protected:
     virtual void messageReceived(const QByteArray &ba);
+
+private:
+    QByteArray lastMsg;
 };
 
 class tst_QmlDebug_Thread : public QThread
