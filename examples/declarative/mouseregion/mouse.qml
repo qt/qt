@@ -10,13 +10,13 @@ Rectangle {
         MouseRegion {
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton | Qt.RightButton
-            onPressed: { print('press (x: ' + mouse.x + ' y: ' + mouse.y + ' button: ' + (mouse.button == Qt.RightButton ? 'right' : 'left') + ' Shift: ' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')') }
-            onReleased: { print('release (x: ' + mouse.x + ' y: ' + mouse.y + ' isClick: ' + mouse.isClick + ' wasHeld: ' + mouse.wasHeld + ')') }
-            onClicked: { print('click (x: ' + mouse.x + ' y: ' + mouse.y + ' wasHeld: ' + mouse.wasHeld + ')') }
-            onDoubleClicked: { print('double click (x: ' + mouse.x + ' y: ' + mouse.y + ')') }
-            onPressAndHold: { print('press and hold') }
-            onEntered: { print('entered ' + pressed) }
-            onExited: { print('exited ' + pressed) }
+            onPressed: { console.log('press (x: ' + mouse.x + ' y: ' + mouse.y + ' button: ' + (mouse.button == Qt.RightButton ? 'right' : 'left') + ' Shift: ' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')') }
+            onReleased: { console.log('release (x: ' + mouse.x + ' y: ' + mouse.y + ' isClick: ' + mouse.isClick + ' wasHeld: ' + mouse.wasHeld + ')') }
+            onClicked: { console.log('click (x: ' + mouse.x + ' y: ' + mouse.y + ' wasHeld: ' + mouse.wasHeld + ')') }
+            onDoubleClicked: { console.log('double click (x: ' + mouse.x + ' y: ' + mouse.y + ')') }
+            onPressAndHold: { console.log('press and hold') }
+            onEntered: { console.log('entered ' + pressed) }
+            onExited: { console.log('exited ' + pressed) }
             anchors.fill: parent
         }
     }
@@ -29,11 +29,11 @@ Rectangle {
             drag.axis: "XAxis"
             drag.minimumX: 0
             drag.maximumX: 150
-            onPressed: { print('press') }
-            onReleased: { print('release (isClick: ' + mouse.isClick + ') (wasHeld: ' + mouse.wasHeld + ')') }
-            onClicked: { print('click' + '(wasHeld: ' + mouse.wasHeld + ')') }
-            onDoubleClicked: { print('double click') }
-            onPressAndHold: { print('press and hold') }
+            onPressed: { console.log('press') }
+            onReleased: { console.log('release (isClick: ' + mouse.isClick + ') (wasHeld: ' + mouse.wasHeld + ')') }
+            onClicked: { console.log('click' + '(wasHeld: ' + mouse.wasHeld + ')') }
+            onDoubleClicked: { console.log('double click') }
+            onPressAndHold: { console.log('press and hold') }
             anchors.fill: parent
         }
     }

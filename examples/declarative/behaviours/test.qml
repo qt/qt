@@ -7,7 +7,7 @@ Rectangle {
     id: page
     MouseRegion {
         anchors.fill: parent
-        onClicked: { bluerect.parent = page; print(mouseX); bluerect.x = mouseX; }
+        onClicked: { bluerect.parent = page; console.log(mouseX); bluerect.x = mouseX; }
     }
     MyRect {
         color: "green"
