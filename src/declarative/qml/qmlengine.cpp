@@ -145,6 +145,12 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("openUrlExternally"),scriptEngine.newFunction(desktopOpenUrl, 1));
     qtObject.setProperty(QLatin1String("md5"),scriptEngine.newFunction(md5, 1));
 
+    //firebug/webkit compat
+    QScriptValue consoleObject = scriptEngine.newObject();
+    consoleObject.setProperty(QLatin1String("log"),scriptEngine.newFunction(consoleLog, 1));
+    consoleObject.setProperty(QLatin1String("debug"),scriptEngine.newFunction(consoleLog, 1));
+    scriptEngine.globalObject().setProperty(QLatin1String("console"), consoleObject);
+
     scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
@@ -800,7 +806,7 @@ QScriptValue QmlEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngin
     return e->newVariant(QVariant(ret));
 }
 
-QScriptValue QmlEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *e)
+QScriptValue QmlEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *)
 {
     QByteArray data;
 
@@ -810,6 +816,25 @@ QScriptValue QmlEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *e)
     QByteArray result = QCryptographicHash::hash(data, QCryptographicHash::Md5);
 
     return QScriptValue(QLatin1String(result.toHex()));
+}
+
+QScriptValue QmlEnginePrivate::consoleLog(QScriptContext *ctxt, QScriptEngine *e)
+{
+    if(ctxt->argumentCount() < 1)
+        return e->newVariant(QVariant(false));
+
+    QByteArray msg;
+
+    for (int i=0; i<ctxt->argumentCount(); ++i) {
+        if (!msg.isEmpty()) msg += ' ';
+        msg += ctxt->argument(i).toString().toLocal8Bit();
+        // does not support firebug "%[a-z]" formatting, since firebug really
+        // does just ignore the format letter, which makes it pointless.
+    }
+
+    qDebug("%s",msg.data());
+
+    return e->newVariant(QVariant(true));
 }
 
 QScriptValue QmlEnginePrivate::closestAngle(QScriptContext *ctxt, QScriptEngine *e)
