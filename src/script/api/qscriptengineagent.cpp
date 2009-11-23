@@ -154,7 +154,10 @@ void QScriptEngineAgentPrivate::exceptionCatch(const JSC::DebuggerCallFrame& fra
 void QScriptEngineAgentPrivate::atStatement(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, int column)
 {
     QScript::UStringSourceProviderWithFeedback *source = engine->loadedScripts.value(sourceID);
-    Q_ASSERT(source != 0);
+    if (!source) {
+        // QTBUG-6108: We don't have the source for this script, so ignore.
+        return;
+    }
     column = source->columnNumberFromOffset(column);
     JSC::CallFrame *oldFrame = engine->currentFrame;
     int oldAgentLineNumber = engine->agentLineNumber;
@@ -183,7 +186,10 @@ void QScriptEngineAgentPrivate::didReachBreakpoint(const JSC::DebuggerCallFrame&
 {
     if (q_ptr->supportsExtension(QScriptEngineAgent::DebuggerInvocationRequest)) {
         QScript::UStringSourceProviderWithFeedback *source = engine->loadedScripts.value(sourceID);
-        Q_ASSERT(source != 0);
+        if (!source) {
+            // QTBUG-6108: We don't have the source for this script, so ignore.
+            return;
+        }
         column = source->columnNumberFromOffset(column);
         JSC::CallFrame *oldFrame = engine->currentFrame;
         int oldAgentLineNumber = engine->agentLineNumber;
