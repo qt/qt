@@ -109,6 +109,8 @@ public:
     int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs, bool mirrored) const;
     void getCMap();
 
+    bool getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph_metrics_t *metrics) const;
+
     QString     _name;
     HFONT       hfont;
     LOGFONT     logfont;
