@@ -154,6 +154,15 @@ QObjectPrivate::QObjectPrivate(int version)
     hasGuards = false;
 }
 
+#ifdef Q_CC_INTEL
+/* Workaround for a bug in win32-icc where it seems to inline ~QObjectPrivate too aggressive.
+   When icc compiles QtGui, it inlines ~QObjectPrivate so that it would generate a call to
+  ~QObjectData. However, ~QObjectData is not exported from QtCore, so it does not link.
+  See also QTBUG-5145 for info on how this manifested itself.
+ */
+# pragma auto_inline(off)
+#endif
+
 QObjectPrivate::~QObjectPrivate()
 {
     delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
@@ -165,6 +174,9 @@ QObjectPrivate::~QObjectPrivate()
     delete extraData;
 #endif
 }
+#ifdef Q_CC_INTEL
+# pragma auto_inline(on)
+#endif
 
 
 int *QObjectPrivate::setDeleteWatch(QObjectPrivate *d, int *w) {
