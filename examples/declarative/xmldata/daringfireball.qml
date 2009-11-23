@@ -33,7 +33,7 @@ Rectangle {
                 text: content
                 anchors.top: titleText.bottom
                 width: 580; wrap: true
-                onLinkActivated: { print('link clicked: ' + link) }
+                onLinkActivated: { console.log('link clicked: ' + link) }
             }
         }
     }

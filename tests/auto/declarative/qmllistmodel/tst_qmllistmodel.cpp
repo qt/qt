@@ -41,6 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/private/qmllistmodel_p.h>
 #include <QtDeclarative/private/qmlexpression_p.h>
+#include <QmlComponent>
 #include <QDebug>
 
 class tst_QmlListModel : public QObject
@@ -52,6 +53,8 @@ public:
 private slots:
     void dynamic_data();
     void dynamic();
+    void error_data();
+    void error();
 };
 
 void tst_QmlListModel::dynamic_data()
@@ -104,6 +107,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "QML QmlListModel (unknown location) set: index 0 out of range";
     QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123)}" << 0 << "QML QmlListModel (unknown location) set: value is not an object";
     QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3])}" << 0 << "QML QmlListModel (unknown location) set: value is not an object";
+    QTest::newRow("set6") << "{append({'foo':123});set(1,{'foo':456});count}" << 2 << "";
 
     QTest::newRow("setprop1") << "{append({'foo':123});set(0,'foo',456);count}" << 1 << "";
     QTest::newRow("setprop2") << "{append({'foo':123});set(0,'foo',456);get(0).foo}" << 456 << "";
@@ -111,6 +115,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("setprop3b") << "{append({'foo':123,'bar':456});set(0,'foo',999);get(0).bar}" << 456 << "";
     QTest::newRow("setprop4a") << "{set(0,'foo',456)}" << 0 << "QML QmlListModel (unknown location) set: index 0 out of range";
     QTest::newRow("setprop4a") << "{append({'foo':123,'bar':456});set(1,'foo',456)}" << 0 << "QML QmlListModel (unknown location) set: index 1 out of range";
+    QTest::newRow("setprop5") << "{append({'foo':123,'bar':456});append({'foo':111});set(1,'bar',222);get(1).bar}" << 222 << "";
 
     QTest::newRow("move1a") << "{append({'foo':123});append({'foo':456});move(0,1,1);count}" << 2 << "";
     QTest::newRow("move1b") << "{append({'foo':123});append({'foo':456});move(0,1,1);get(0).foo}" << 456 << "";
@@ -151,6 +156,56 @@ void tst_QmlListModel::dynamic()
         qDebug() << e.error(); // errors not expected
     QVERIFY(!e.hasError());
     QCOMPARE(actual,result);
+}
+
+void tst_QmlListModel::error_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("id not allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { id: fred } }"
+        << "ListElement: cannot use reserved \"id\" property";
+
+    QTest::newRow("id allowed in ListModel")
+        << "import Qt 4.6\nListModel { id:model }"
+        << "";
+
+    QTest::newRow("random properties not allowed in ListModel")
+        << "import Qt 4.6\nListModel { foo:123 }"
+        << "ListModel: undefined property 'foo'";
+
+    QTest::newRow("random properties allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { foo:123 } }"
+        << "";
+
+    QTest::newRow("random object list properties allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"
+        << "";
+
+    QTest::newRow("default properties not allowed in ListElement")
+        << "import Qt 4.6\nListModel { ListElement { Item { } } }"
+        << "QTBUG-6082 ListElement should not allow child objects";
+}
+
+void tst_QmlListModel::error()
+{
+    QFETCH(QString, qml);
+    QFETCH(QString, error);
+
+    QmlEngine engine;
+    QmlComponent component(&engine, qml.toUtf8(),
+                           QUrl::fromLocalFile(QString("dummy.qml")));
+    if (error.isEmpty()) {
+        QVERIFY(!component.isError());
+    } else {
+        if (error.startsWith(QLatin1String("QTBUG-")))
+            QEXPECT_FAIL("",error.toLatin1(),Abort);
+        QVERIFY(component.isError());
+        QList<QmlError> errors = component.errors();
+        QCOMPARE(errors.count(),1);
+        QCOMPARE(errors.at(0).description(),error);
+    }
 }
 
 QTEST_MAIN(tst_QmlListModel)
