@@ -1148,7 +1148,7 @@ void tst_QScriptEngine::globalObjectProperties()
         QScriptValue::PropertyFlags flags = QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration;
         global.setProperty(name, val, flags);
         QVERIFY(global.property(name).equals(val));
-        QEXPECT_FAIL("", "custom Global Object properties don't retain attributes", Continue);
+        QEXPECT_FAIL("", "QTBUG-6134: custom Global Object properties don't retain attributes", Continue);
         QCOMPARE(global.propertyFlags(name), flags);
         global.setProperty(name, QScriptValue());
         QVERIFY(!global.property(name).isValid());
@@ -2033,7 +2033,7 @@ void tst_QScriptEngine::valueConversion()
         QScriptValue val = qScriptValueFromValue(&eng, in);
         QVERIFY(val.isRegExp());
         QRegExp out = val.toRegExp();
-        QEXPECT_FAIL("", "JSC-based back-end doesn't preserve QRegExp::patternSyntax (always uses RegExp2)", Continue);
+        QEXPECT_FAIL("", "QTBUG-6136: JSC-based back-end doesn't preserve QRegExp::patternSyntax (always uses RegExp2)", Continue);
         QCOMPARE(out.patternSyntax(), in.patternSyntax());
         QCOMPARE(out.pattern(), in.pattern());
         QCOMPARE(out.caseSensitivity(), in.caseSensitivity());
@@ -2050,7 +2050,7 @@ void tst_QScriptEngine::valueConversion()
         in.setMinimal(true);
         QScriptValue val = qScriptValueFromValue(&eng, in);
         QVERIFY(val.isRegExp());
-        QEXPECT_FAIL("", "JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
+        QEXPECT_FAIL("", "QTBUG-6136: JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
         QCOMPARE(val.toRegExp().isMinimal(), in.isMinimal());
     }
 }
@@ -3045,7 +3045,7 @@ void tst_QScriptEngine::errorConstructors()
             eng.clearExceptions();
             QVERIFY(ret.toString().startsWith(name));
             if (x != 0)
-                QEXPECT_FAIL("", "JSC doesn't assign lineNumber when errors are not thrown", Continue);
+                QEXPECT_FAIL("", "QTBUG-6138: JSC doesn't assign lineNumber when errors are not thrown", Continue);
             QCOMPARE(ret.property("lineNumber").toInt32(), i+2);
         }
     }
