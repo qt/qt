@@ -64,7 +64,7 @@ private:
     QString m_fileName;
     int m_percent;
 
-    void saveFrame(QWebFrame *frame, QImage image, QString fileName);
+    void saveFrame(QWebFrame *frame);
 };
 
 #endif

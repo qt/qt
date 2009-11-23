@@ -5,15 +5,33 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="main.cpp" line="51"/>
+        <location filename="main.cpp" line="53"/>
         <source>abc</source>
         <comment>ascii</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="52"/>
+        <location filename="main.cpp" line="54"/>
         <source>æøå</source>
         <comment>utf-8</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="55"/>
+        <source>æøå</source>
+        <comment>utf-8 oct</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="56"/>
+        <source>Für Élise</source>
+        <comment>trUtf8</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="57"/>
+        <source>Für Élise</source>
+        <comment>trUtf8 oct</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
