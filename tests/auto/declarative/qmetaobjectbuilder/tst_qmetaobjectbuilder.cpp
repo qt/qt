@@ -993,7 +993,6 @@ void tst_QMetaObjectBuilder::serialize()
     QMetaObjectBuilder builder;
     builder.setClassName("Test");
     builder.addProperty("foo", "int");
-    builder.setSuperClass(0);
 
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly | QIODevice::Append);

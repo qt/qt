@@ -97,7 +97,7 @@ QmlNumberFormatter::~QmlNumberFormatter()
     \qmlproperty string NumberFormatter::text
 
     The number in the specified format.
-    <br>
+
     If no format is specified the text will be empty.
 */
 
@@ -123,38 +123,82 @@ qreal QmlNumberFormatter::number() const
     \qmlproperty string NumberFormatter::format
 
     The particular format the number will adhere to during the conversion to text.
-    <br>
+
     The format syntax follows a style similar to the Unicode Standard (UTS35).
 
     The table below shows the characters, patterns that can be used in the format.
 
-    <table border="0" align="center">
-    <tr style="background-color: #D6E2E8"><th> Character </th><th> Meaning </th></tr>
-    <tr><td> # </td><td> Any digit(s), zero shows as absent (for leading/trailing zeroes) </td></tr>
-    <tr><td> 0 </td><td> Implicit digit. Zero will show in the case that the input number is too small.</td></tr>
-    <tr><td> . </td><td> Decimal separator. Output decimal seperator will be dependant on system locale.</td></tr>
-    <tr><td> , </td><td> Grouping separator. The number of digits (either #, or 0) between the grouping separator and the decimal (or the rightmost digit) will determine the groupingSize)</td></tr>
-    <tr><td> other </td><td> Any other character will be taken as a string literal and placed directly into the output string </td></tr>
-    </table>
+    \table
+    \header
+        \o Character
+        \o Meaning
+    \row
+        \o #
+        \o Any digit(s), zero shows as absent (for leading/trailing zeroes).
+    \row
+        \o 0
+        \o Implicit digit. Zero will show in the case that the input number is too small.
+    \row
+        \o .
+        \o Decimal separator. Output decimal seperator will be dependant on system locale.
+    \row
+        \o ,
+        \o Grouping separator. The number of digits (either #, or 0) between the grouping separator and the decimal (or the rightmost digit) will determine the groupingSize).
+    \row
+        \o other
+        \o Any other character will be taken as a string literal and placed directly into the output string.
+    \endtable
     
-    Invalid formats will not guarantee a meaningful text output.<br>
+    Invalid formats will not guarantee a meaningful text output.
     
-    \note <i>Input numbers that are too long for the given format will be rounded dependent on precison based on the position of the decimal point </i>
+    \note Input numbers that are too long for the given format will be rounded dependent on precison based on the position of the decimal point.
     
     The following table illustrates the output text created by applying some examples of numeric formats to the formatter.
 
-    <table border="0" align="center">
-    <tr style="background-color: #D6E2E8"><th> Format </th><th> Number </th><th> Output </th></tr>
-    <tr><td> ### </td><td> 123456 </td><td> 123456 </td></tr>
-    <tr><td> 000 </td><td> 123456 </td><td> 123456 </td></tr>
-    <tr><td> ###### </td><td> 1234 </td><td> 1234 </td></tr>
-    <tr><td> 000000 </td><td> 1234 </td><td> 001234 </td></tr>
-    <tr><td> ##,##0.## </td><td> 1234.456 </td><td> 1,234.46 (for US locale)<br> 1 234,46 (for FR locale)</td></tr>
-    <tr><td> 000000,000.# </td><td> 123456 </td><td> 000,123,456 (for US locale)<br> 000 123 456 (for FR locale)</td></tr>
-    <tr><td> 0.0### </td><td> 0.999997 </td><td> 1.0 </td></tr> 
-    <tr><td> (000) 000 - 000 </td><td> 12345678 </td><td> (012) 345 - 678 </td></tr>
-    <tr><td> #A</td><td>12</td><td>12A</td></tr>
-    </table>
+    \table
+    \header
+        \o Format
+        \o Number
+        \o Output
+    \row
+        \o ###
+        \o 123456
+        \o  123456
+    \row
+        \o  000
+        \o  123456
+        \o  123456
+    \row
+        \o  ######
+        \o  1234
+        \o  1234
+    \row
+        \o  000000
+        \o  1234
+        \o  001234
+    \row
+        \o  ##,##0.##
+        \o  1234.456
+        \o  1,234.46 (for US locale)
+        \codeline 1 234,46 (for FR locale)
+    \row
+        \o  000000,000.#
+        \o  123456
+        \o  000,123,456 (for US locale)
+        \codeline 000 123 456 (for FR locale)
+    \row
+        \o  0.0###
+        \o  0.999997
+        \o  1.0
+    \row
+        \o  (000) 000 - 000
+        \o  12345678
+        \o  (012) 345 - 678
+    \row
+        \o  #A
+        \o 12
+        \o 12A
+    \endtable
 
 */
 QString QmlNumberFormatter::format() const
