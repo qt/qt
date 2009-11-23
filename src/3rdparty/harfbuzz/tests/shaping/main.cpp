@@ -686,7 +686,7 @@ void tst_QScriptEngine::bengali()
 void tst_QScriptEngine::gurmukhi()
 {
     {
-        FT_Face face = loadFace("lohit.punjabi.1.1.ttf");
+        FT_Face face = loadFace("lohit_pa.ttf");
         if (face) {
 	    const ShapeTable shape_table [] = {
 		{ { 0xA15, 0xA4D, 0xa39, 0x0 },
@@ -998,6 +998,36 @@ void tst_QScriptEngine::malayalam()
 	    QSKIP("couln't find AkrutiMal2Normal.ttf", SkipAll);
 	}
     }
+
+    {
+        FT_Face face = loadFace("Rachana.ttf");
+        if (face) {
+            const ShapeTable shape_table [] = {
+                { { 0xd37, 0xd4d, 0xd1f, 0xd4d, 0xd30, 0xd40, 0x0 },
+                  { 0x385, 0xa3, 0x0 } },
+                { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
+                  { 0x2ff, 0x0 } },
+                { { 0xd33, 0xd4d, 0xd33, 0x0 },
+                  { 0x3f8, 0x0 } },
+                { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
+                  { 0x2ff, 0x0 } },
+
+                { {0}, {0} }
+            };
+
+
+            const ShapeTable *s = shape_table;
+            while (s->unicode[0]) {
+                QVERIFY( shaping(face, s, HB_Script_Malayalam) );
+                ++s;
+            }
+
+            FT_Done_Face(face);
+        } else {
+            QSKIP("couln't find Rachana.ttf", SkipAll);
+        }
+    }
+
 }
 
 void tst_QScriptEngine::sinhala()
@@ -1113,7 +1143,7 @@ void tst_QScriptEngine::nko()
 void tst_QScriptEngine::linearB()
 {
     {
-        FT_Face face = loadFace("PENUTURE.TTF");
+        FT_Face face = loadFace("penuture.ttf");
         if (face) {
 	    const ShapeTable shape_table [] = {
 		{ { 0xd800, 0xdc01, 0xd800, 0xdc02, 0xd800, 0xdc03,  0 },

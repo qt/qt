@@ -39,7 +39,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/mmf_medianode.h          \
            $$PHONON_MMF_DIR/mmf_videoplayer.h        \
            $$PHONON_MMF_DIR/objectdump.h             \
-           $$PHONON_MMF_DIR/objectdump_global.h      \
+           $$PHONON_MMF_DIR/objectdump_symbian.h     \
            $$PHONON_MMF_DIR/objecttree.h             \
            $$PHONON_MMF_DIR/utils.h                  \
            $$PHONON_MMF_DIR/videooutput.h            \
@@ -61,13 +61,11 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/mmf_medianode.cpp        \
            $$PHONON_MMF_DIR/mmf_videoplayer.cpp      \
            $$PHONON_MMF_DIR/objectdump.cpp           \
+           $$PHONON_MMF_DIR/objectdump_symbian.cpp   \
            $$PHONON_MMF_DIR/objecttree.cpp           \
            $$PHONON_MMF_DIR/utils.cpp                \
            $$PHONON_MMF_DIR/videooutput.cpp          \
            $$PHONON_MMF_DIR/videowidget.cpp
-
-HEADERS += $$PHONON_MMF_DIR/objectdump_symbian.h
-SOURCES += $$PHONON_MMF_DIR/objectdump_symbian.cpp
 
 LIBS += -lcone
 LIBS += -lws32

@@ -995,7 +995,7 @@ void tst_QWebElement::render()
     QImage testImage(resource.width(), resource.height(), QImage::Format_ARGB32);
     QPainter painter0(&testImage);
     painter0.fillRect(imageRect, Qt::white);
-    //render() uses pixmaps internally, and pixmaps might have bit depths
+    // render() uses pixmaps internally, and pixmaps might have bit depths
     // other than 32, giving different pixel values due to rounding.
     QPixmap pix = QPixmap::fromImage(resource);
     painter0.drawPixmap(0, 0, pix);
