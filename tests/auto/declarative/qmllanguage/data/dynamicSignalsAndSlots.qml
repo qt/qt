@@ -6,5 +6,5 @@ QtObject {
     function slot2() {}
 
     property int test: 0
-    function slot3(a) { print(1921); test = a; }
+    function slot3(a) { console.log(1921); test = a; }
 }

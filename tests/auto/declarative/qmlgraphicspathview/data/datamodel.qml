@@ -9,7 +9,7 @@ PathView {
     function checkProperties() {
         testObject.error = false;
         if (testObject.useModel && view.model != itemModel) {
-            print("model property incorrect");
+            console.log("model property incorrect");
             testObject.error = true;
         }
     }
