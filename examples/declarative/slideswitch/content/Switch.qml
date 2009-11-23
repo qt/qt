@@ -1,38 +1,42 @@
+//![0]
 import Qt 4.6
 
 Item {
-    id: mySwitch
+    id: toggleswitch
     width: background.width; height: background.height
 
+//![1]
     property bool on: false
+//![1]
 
-    Script {
-        function toggle() {
-            if (mySwitch.state == "On")
-            mySwitch.state = "Off";
-            else
-            mySwitch.state = "On";
-        }
-
-        function dorelease() {
-            if (knob.x == 1) {
-                if (mySwitch.state == "Off")
-                return;
-            }
-
-            if (knob.x == 78) {
-                if (mySwitch.state == "On")
-                return;
-            }
-            toggle();
-        }
+//![2]
+    function toggle() {
+        if (toggleswitch.state == "on")
+            toggleswitch.state = "off";
+        else toggleswitch.state = "on";
     }
+//![2]
 
+//![3]
+    function dorelease() {
+        if (knob.x == 1) {
+            if (toggleswitch.state == "off") return;
+        }
+        if (knob.x == 78) {
+            if (toggleswitch.state == "on") return;
+        }
+        toggle();
+    }
+//![3]
+
+//![4]
     Image {
         id: background; source: "background.svg"
         MouseRegion { anchors.fill: parent; onClicked: toggle() }
     }
+//![4]
 
+//![5]
     Image {
         id: knob; source: "knob.svg"; x: 1; y: 2
 
@@ -43,21 +47,27 @@ Item {
             onReleased: dorelease()
         }
     }
+//![5]
 
+//![6]
     states: [
         State {
-            name: "On"
+            name: "on"
             PropertyChanges { target: knob; x: 78 }
-            PropertyChanges { target: mySwitch; on: true }
+            PropertyChanges { target: toggleswitch; on: true }
         },
         State {
-            name: "Off"
+            name: "off"
             PropertyChanges { target: knob; x: 1 }
-            PropertyChanges { target: mySwitch; on: false }
+            PropertyChanges { target: toggleswitch; on: false }
         }
     ]
+//![6]
 
+//![7]
     transitions: Transition {
         NumberAnimation { matchProperties: "x"; easing: "easeInOutQuad"; duration: 200 }
     }
+//![7]
 }
+//![0]
