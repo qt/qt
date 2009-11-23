@@ -218,7 +218,7 @@ void tst_qmlecmascript::basicExpressions_data()
     QTest::addColumn<QVariant>("result");
     QTest::addColumn<bool>("nest");
 
-    QTest::newRow("Syntax error (self test)") << "{print({'a':1'}.a)}" << QVariant() << false;
+    QTest::newRow("Syntax error (self test)") << "{console.log({'a':1'}.a)}" << QVariant() << false;
     QTest::newRow("Context property") << "a" << QVariant(1944) << false;
     QTest::newRow("Context property") << "a" << QVariant(1944) << true;
     QTest::newRow("Context property expression") << "a * 2" << QVariant(3888) << false;

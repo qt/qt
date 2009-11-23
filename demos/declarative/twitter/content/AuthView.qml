@@ -30,7 +30,7 @@ Item {
                     Item {
                         id: tabber
                         //Note: it's not working yet
-                        Keys.onPressed: {if(event.key == Qt.Key_Tab){print('Tab works!'); passIn.focus = true; accept(); }}
+                        Keys.onPressed: {if(event.key == Qt.Key_Tab){console.log('Tab works!'); passIn.focus = true; accept(); }}
                     }
                 }
             }

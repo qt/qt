@@ -196,7 +196,7 @@ Item {
                 fillColor: "white"
                 focus: true
 
-                onAlert: print(message)
+                onAlert: console.log(message)
 
                 function doZoom(zoom,centerX,centerY)
                 {
