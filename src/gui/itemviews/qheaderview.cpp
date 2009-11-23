@@ -1913,7 +1913,6 @@ void QHeaderView::initializeSections(int start, int end)
     Q_ASSERT(start >= 0);
     Q_ASSERT(end >= 0);
 
-    d->executePostedLayout();
     d->invalidateCachedSizeHint();
 
     if (end + 1 < d->sectionCount) {
@@ -1939,11 +1938,25 @@ void QHeaderView::initializeSections(int start, int end)
     d->sectionCount = end + 1;
 
     if (!d->logicalIndices.isEmpty()) {
-        d->logicalIndices.resize(d->sectionCount);
-        d->visualIndices.resize(d->sectionCount);
-        for (int i = start; i < d->sectionCount; ++i){
-            d->logicalIndices[i] = i;
-            d->visualIndices[i] = i;
+        if (oldCount <= d->sectionCount) {
+            d->logicalIndices.resize(d->sectionCount);
+            d->visualIndices.resize(d->sectionCount);
+            for (int i = oldCount; i < d->sectionCount; ++i) {
+                d->logicalIndices[i] = i;
+                d->visualIndices[i] = i;
+            }
+        } else {
+            int j = 0;
+            for (int i = 0; i < oldCount; ++i) {
+                int v = d->logicalIndices.at(i);
+                if (v < d->sectionCount) {
+                    d->logicalIndices[j] = v;
+                    d->visualIndices[v] = j;
+                    j++;
+                }
+            }
+            d->logicalIndices.resize(d->sectionCount);
+            d->visualIndices.resize(d->sectionCount);
         }
     }
 
