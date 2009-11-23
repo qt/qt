@@ -102,7 +102,30 @@ public:
 
     QString name;
     QmlBinding *when;
-    QmlConcreteList<QmlStateOperation *> operations;
+
+    class OperationList;
+    struct OperationGuard : public QGuard<QmlStateOperation>
+    {
+        OperationGuard(QObject *obj, OperationList *l) : list(l) { (QGuard<QObject>&)*this = obj; }
+        OperationList *list;
+        void objectDestroyed(QmlStateOperation *) {
+            // we assume priv will always be destroyed after objectDestroyed calls
+            list->removeOne(*this);
+        }
+    };
+
+    typedef QList<OperationGuard> GuardedOpList;
+    class OperationList : public GuardedOpList, public QmlList<QmlStateOperation*>
+    {
+    public:
+        virtual void append(QmlStateOperation* v) { GuardedOpList::append(OperationGuard(v, this)); }
+        virtual void insert(int i, QmlStateOperation* v) { GuardedOpList::insert(i, OperationGuard(v, this)); }
+        virtual void clear() { GuardedOpList::clear(); }
+        virtual QmlStateOperation* at(int i) const { return GuardedOpList::at(i); }
+        virtual void removeAt(int i) { GuardedOpList::removeAt(i); }
+        virtual int count() const { return GuardedOpList::count(); }
+    };
+    OperationList operations;
 
     QmlTransitionManager transitionManager;
 

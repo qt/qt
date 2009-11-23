@@ -44,6 +44,7 @@
 #include <private/qmlgraphicsanchors_p_p.h>
 #include <private/qmlgraphicsrectangle_p.h>
 #include <private/qmlpropertychanges_p.h>
+#include <private/qmlstategroup_p.h>
 
 class tst_states : public QObject
 {
@@ -69,6 +70,8 @@ private slots:
     void explicitChanges();
     void propertyErrors();
     void incorrectRestoreBug();
+    void deletingChange();
+    void deletingState();
 };
 
 void tst_states::basicChanges()
@@ -736,6 +739,68 @@ void tst_states::incorrectRestoreBug()
 
     rect->setState("");
     QCOMPARE(rect->color(),QColor("green"));
+}
+
+void tst_states::deletingChange()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/deleting.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+    QCOMPARE(rect->radius(),qreal(5));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("red"));
+    QCOMPARE(rect->radius(),qreal(0));
+
+    QmlPropertyChanges *pc = rect->findChild<QmlPropertyChanges*>("pc1");
+    QVERIFY(pc != 0);
+    delete pc;
+
+    QmlState *state = rect->findChild<QmlState*>();
+    QVERIFY(state != 0);
+    QCOMPARE(state->changes()->count(), 1);
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("red"));
+    QCOMPARE(rect->radius(),qreal(5));
+
+    delete rect;
+}
+
+void tst_states::deletingState()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/deletingState.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QmlStateGroup *sg = rect->findChild<QmlStateGroup*>();
+    QVERIFY(sg != 0);
+    QVERIFY(sg->findState("blue") != 0);
+
+    sg->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    sg->setState("");
+    QCOMPARE(rect->color(),QColor("red"));
+
+    QmlState *state = rect->findChild<QmlState*>();
+    QVERIFY(state != 0);
+    delete state;
+
+    QVERIFY(sg->findState("blue") == 0);
+
+    //### should we warn that state doesn't exist
+    sg->setState("blue");
+    QCOMPARE(rect->color(),QColor("red"));
+
+    delete rect;
 }
 
 QTEST_MAIN(tst_states)
