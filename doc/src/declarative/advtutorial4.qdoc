@@ -71,7 +71,7 @@ parameters specified). This is shown in the below snippet of code from \c Block.
 We also have to change the \c{samegame.js} code, so that wherever it was setting the \c x or \c y it now sets \c targetX and \c targetY
 (including when creating the block). This simple change is all you need to get spring moving blocks that no longer teleport
 around the board. If you try doing just this though, you'll notice that they now never jump from one point to another, even in
-the initialization! This gives an odd effect of having them all jump out of the corner (0,0) on start up. We'd rather that they
+the initialization! This gives an odd effect of having them all slide out of the corner (0,0) on start up. We'd rather that they
 fall down from the top in rows. To do this, we disable the \c x follow (but not the \c y follow) and only enable it after we've set
 the \c x in the \c createBlock function. The above snippet now becomes:
 
@@ -84,7 +84,7 @@ image's opacity, like so:
 
 \snippet declarative/tutorials/samegame/samegame4/content/BoomBlock.qml 2
 
-Note that the \c{opacity: 0} makes it start out transparent. We could set the opacity in the script file when we create the blocks,
+Note that the \c{opacity: 0} makes it start out transparent. We could set the opacity in the script file when we create and destroy the blocks,
 but instead we use states (as this is useful for the next animation we'll implement). The below snippet is set on the root
 element of \c{Block.qml}:
 \code
@@ -129,7 +129,7 @@ if they exit this dialog without entering it they have a way to opt out of posti
 
 For offline storage, we use the HTML 5 offline storage javascript API to maintain a persistant SQL database unique to this application. This first line in this function calls the function for the web-based high scores, described later, if it has been setup. Next we create an offline storage database for the high scores using openDatabase and prepare the data and SQL query that we want to use to save it. The offline storage API uses SQL queries for data manipulation and retrival, and in the db.transaction call we use three SQL queries to initialize the database (if necessary), and then add to and retrieve high scores. To use the returned data, we turn it into a string with one line per row returned, and show a dialog containing that string. For a more detailed explanation of the offline storage API in QML, consult the global object documentation.
 
-This is one way of storing and displaying high scores locally, but not the only way. A more complex alternative would have been to create a high score dialog component, and pass the results to it for processing and display (instead of resusing the Dialog). This would allow a more themable dialog that could present the high scores better. If your QML is the UI for a C++ application, you could also have passed the score to a C++ function to store it locally in a variety of ways, including a simple format without SQL.
+This is one way of storing and displaying high scores locally, but not the only way. A more complex alternative would have been to create a high score dialog component, and pass the results to it for processing and display (instead of resusing the Dialog). This would allow a more themable dialog that could present the high scores better. If your QML is the UI for a C++ application, you could also have passed the score to a C++ function to store it locally in a variety of ways, including a simple format without SQL or in another SQL database.
 
 \section2 Web-based High Scores
 
@@ -143,7 +143,7 @@ if the player entered their name we can send the data to the web service in the 
 \snippet declarative/tutorials/samegame/samegame4/content/samegame.js 1
 
 This is the same \c XMLHttpRequest() as you'll find in browser javascript, and can be used in the same way to dynamically get XML
-or QML from the web service to display the high scores. We don't worry about the response here though, we just post the high
+or QML from the web service to display the high scores. We don't worry about the response in this case, we just post the high
 score data to the web server. If it had returned a QML file (or a URL to a QML file) you could instantiate it in much the same
 way as you did the blocks.
 
@@ -152,7 +152,7 @@ makes it very easy to fetch and display XML based data such as RSS in a QML appl
 
 By following this tutorial you've now ben shown how to write a fully functional application in QML, with the application logic
 written in a script file and with both many fluid animations and being web-enabled. Congratulations, you should now be skilled
-enough to write your own QML applications.
+enough to write entire applications in QML.
 
 [Previous: \l {Advanced Tutorial 3 - Implementing the Game Logic}] [\l {advtutorial.html}{Advanced Tutorial}]
 */

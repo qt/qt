@@ -63,8 +63,6 @@
 Q_DECLARE_METATYPE(QSqlDatabase)
 Q_DECLARE_METATYPE(QSqlQuery)
 
-class QmlSqlQueryScriptClassPropertyIterator;
-
 class QmlSqlQueryScriptClass: public QScriptClass {
 public:
     QmlSqlQueryScriptClass(QScriptEngine *engine) : QScriptClass(engine)
@@ -75,22 +73,13 @@ public:
 
     QueryFlags queryProperty(const QScriptValue &object,
                              const QScriptString &name,
-                             QueryFlags flags, uint *id)
+                             QueryFlags flags, uint *)
     {
         if (flags & HandlesReadAccess) {
             if (name == str_length) {
                 return HandlesReadAccess;
             } else if (name == str_forwardOnly) {
                 return flags;
-            } else {
-                bool ok;
-                qint32 pos = name.toString().toInt(&ok);
-                if (pos < 0 || !ok)
-                    return 0;
-                QSqlQuery query = qscriptvalue_cast<QSqlQuery>(object.data());
-                *id = pos;
-                if (*id < (uint)query.size())
-                    return HandlesReadAccess;
             }
         }
         if (flags & HandlesWriteAccess)
@@ -100,7 +89,7 @@ public:
     }
 
     QScriptValue property(const QScriptValue &object,
-                          const QScriptString &name, uint id)
+                          const QScriptString &name, uint)
     {
         QSqlQuery query = qscriptvalue_cast<QSqlQuery>(object.data());
         if (name == str_length) {
@@ -117,15 +106,6 @@ public:
             }
         } else if (name == str_forwardOnly) {
             return query.isForwardOnly();
-        } else {
-            if ((uint)query.at() == id || query.seek(id)) { // Qt 4.6 doesn't optimize seek(at())
-                QSqlRecord r = query.record();
-                QScriptValue row = engine()->newObject();
-                for (int j=0; j<r.count(); ++j) {
-                    row.setProperty(r.fieldName(j), QScriptValue(engine(),r.value(j).toString()));
-                }
-                return row;
-            }
         }
         return engine()->undefinedValue();
     }
@@ -148,83 +128,15 @@ public:
         return QScriptValue::Undeletable;
     }
 
-    //QScriptClassPropertyIterator *newIterator(const QScriptValue &object);
-
 private:
     QScriptString str_length;
     QScriptString str_forwardOnly;
 };
 
-/*
-class QmlSqlQueryScriptClassPropertyIterator : public QScriptClassPropertyIterator
-{
-public:
-    QmlSqlQueryScriptClassPropertyIterator(const QScriptValue &object)
-        : QScriptClassPropertyIterator(object)
-    {
-        toFront();
-    }
+// If the spec changes to allow iteration, check git history...
+// class QmlSqlQueryScriptClassPropertyIterator : public QScriptClassPropertyIterator
 
-    ~QmlSqlQueryScriptClassPropertyIterator()
-    {
-    }
 
-    bool hasNext() const
-    {
-        QSqlQuery query = qscriptvalue_cast<QSqlQuery>(object().data());
-        return query.at() == m_index || query.seek(m_index); // Qt 4.6 doesn't optimize seek(at())
-    }
-
-    void next()
-    {
-        m_last = m_index;
-        ++m_index;
-    }
-
-    bool hasPrevious() const
-    {
-        return (m_index > 0);
-    }
-
-    void previous()
-    {
-        --m_index;
-        m_last = m_index;
-    }
-
-    void toFront()
-    {
-        m_index = 0;
-        m_last = -1;
-    }
-
-    void toBack()
-    {
-        QSqlQuery query = qscriptvalue_cast<QSqlQuery>(object().data());
-        m_index = query.size();
-        m_last = -1;
-    }
-
-    QScriptString name() const
-    {
-        return object().engine()->toStringHandle(QString::number(m_last));
-    }
-
-    uint id() const
-    {
-        return m_last;
-    }
-
-private:
-    int m_index;
-    int m_last;
-};
-
-QScriptClassPropertyIterator *QmlSqlQueryScriptClass::newIterator(const QScriptValue &object)
-{
-    return new QmlSqlQueryScriptClassPropertyIterator(object);
-}
-*/
 
 enum SqlException {
     UNKNOWN_ERR,
@@ -328,11 +240,10 @@ static QScriptValue qmlsqldatabase_executeSql_readonly(QScriptContext *context, 
 {
     QString sql = context->argument(0).toString();
     if (sql.startsWith(QLatin1String("SELECT"),Qt::CaseInsensitive)) {
-        qmlsqldatabase_executeSql(context,engine);
+        return qmlsqldatabase_executeSql(context,engine);
     } else {
         THROW_SQL(SYNTAX_ERR,QmlEngine::tr("Read-only Transaction"))
     }
-    return engine->undefinedValue();
 }
 
 static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScriptEngine *engine)
@@ -380,7 +291,7 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
     return engine->undefinedValue();
 }
 
-static QScriptValue qmlsqldatabase_transaction(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue qmlsqldatabase_transaction_shared(QScriptContext *context, QScriptEngine *engine, bool readOnly)
 {
     QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
     QScriptValue callback = context->argument(0);
@@ -388,7 +299,8 @@ static QScriptValue qmlsqldatabase_transaction(QScriptContext *context, QScriptE
         THROW_SQL(UNKNOWN_ERR,QmlEngine::tr("transaction: missing callback"));
 
     QScriptValue instance = engine->newObject();
-    instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql,1));
+    instance.setProperty(QLatin1String("executeSql"),
+        engine->newFunction(readOnly ? qmlsqldatabase_executeSql_readonly : qmlsqldatabase_executeSql,1));
     QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
 
     db.transaction();
@@ -402,26 +314,13 @@ static QScriptValue qmlsqldatabase_transaction(QScriptContext *context, QScriptE
     return engine->undefinedValue();
 }
 
+static QScriptValue qmlsqldatabase_transaction(QScriptContext *context, QScriptEngine *engine)
+{
+    return qmlsqldatabase_transaction_shared(context,engine,false);
+}
 static QScriptValue qmlsqldatabase_read_transaction(QScriptContext *context, QScriptEngine *engine)
 {
-    QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
-    QScriptValue callback = context->argument(0);
-    if (!callback.isFunction())
-        return engine->undefinedValue();
-
-    QScriptValue instance = engine->newObject();
-    instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql_readonly,1));
-    QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
-
-    db.transaction();
-    callback.call(QScriptValue(), QScriptValueList() << tx);
-    if (engine->hasUncaughtException()) {
-        db.rollback();
-    } else {
-        if (!db.commit())
-            db.rollback();
-    }
-    return engine->undefinedValue();
+    return qmlsqldatabase_transaction_shared(context,engine,true);
 }
 
 /*
@@ -451,6 +350,8 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
         if (QSqlDatabase::connectionNames().contains(dbid)) {
             database = QSqlDatabase::database(dbid);
             version = ini.value(QLatin1String("Version")).toString();
+            if (version != dbversion && !dbversion.isEmpty() && !version.isEmpty())
+                THROW_SQL(VERSION_ERR,QmlEngine::tr("SQL: database version mismatch"));
         } else {
             created = !QFile::exists(basename+QLatin1String(".sqlite"));
             database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);

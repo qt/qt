@@ -2653,7 +2653,7 @@ public:
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
-    { return lbracketToken; }
+    { return qualifiedId->identifierToken; }
 
     virtual SourceLocation lastSourceLocation() const
     { return rbracketToken; }

@@ -223,10 +223,14 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
     }
 
     QRegion topaint = p->clipRegion();
-    if (topaint.isEmpty())
-        topaint = effectiveClip;
-    else
+    if (topaint.isEmpty()) {
+        if (effectiveClip.isEmpty())
+            topaint = QRect(0,0,p->device()->width(),p->device()->height());
+        else
+            topaint = effectiveClip;
+    } else {
         topaint &= effectiveClip;
+    }
 
     topaint &= content;
     QRegion uncached(content);
@@ -323,27 +327,26 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
 }
 
 /*!
-  \qmlproperty int PaintedItem::cacheSize
+  \qmlproperty int PaintedItem::pixelCacheSize
 
   This property holds the maximum number of pixels of image cache to
   allow. The default is 0.1 megapixels. The cache will not be larger
-  than the (unscaled) size of the item.
+  than the (unscaled) size of the WebView.
 */
-
 /*!
-  \property QmlGraphicsPaintedItem::cacheSize
+  \property QmlGraphicsPaintedItem::pixelCacheSize
 
   The maximum number of pixels of image cache to allow. The default
   is 0.1 megapixels. The cache will not be larger than the (unscaled)
   size of the QmlGraphicsPaintedItem.
 */
-int QmlGraphicsPaintedItem::cacheSize() const
+int QmlGraphicsPaintedItem::pixelCacheSize() const
 {
     Q_D(const QmlGraphicsPaintedItem);
     return d->max_imagecache_size;
 }
 
-void QmlGraphicsPaintedItem::setCacheSize(int pixels)
+void QmlGraphicsPaintedItem::setPixelCacheSize(int pixels)
 {
     Q_D(QmlGraphicsPaintedItem);
     if (pixels < d->max_imagecache_size) {
@@ -368,6 +371,8 @@ void QmlGraphicsPaintedItem::setCacheSize(int pixels)
     }
     d->max_imagecache_size = pixels;
 }
+
+
 
 /*!
     \property QmlGraphicsPaintedItem::fillColor
@@ -417,7 +422,6 @@ void QmlGraphicsPaintedItem::setSmoothCache(bool on)
         clearCache();
     }
 }
-
 
 
 QT_END_NAMESPACE

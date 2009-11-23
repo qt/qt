@@ -58,8 +58,9 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsPaintedItem : public QmlGraphicsItem
 
     Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize)
     Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor NOTIFY fillColorChanged)
-    Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
+    Q_PROPERTY(int pixelCacheSize READ pixelCacheSize WRITE setPixelCacheSize)
     Q_PROPERTY(bool smoothCache READ smoothCache WRITE setSmoothCache)
+
 
 public:
     QmlGraphicsPaintedItem(QmlGraphicsItem *parent=0);
@@ -68,8 +69,8 @@ public:
     QSize contentsSize() const;
     void setContentsSize(const QSize &);
 
-    int cacheSize() const;
-    void setCacheSize(int pixels);
+    int pixelCacheSize() const;
+    void setPixelCacheSize(int pixels);
 
     bool smoothCache() const;
     void setSmoothCache(bool on);
