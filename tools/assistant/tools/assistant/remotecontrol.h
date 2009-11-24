@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 class MainWindow;
+class QFileSystemWatcher;
 class QHelpEngine;
 
 class RemoteControl : public QObject
@@ -56,7 +57,8 @@ class RemoteControl : public QObject
     Q_OBJECT
 
 public:
-    RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine);
+    RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine,
+                  QFileSystemWatcher *qchWatcher);
 
 private slots:
     void receivedData();
@@ -89,6 +91,7 @@ private:
     QString m_activateIdentifier;
     int m_expandTOC;
     QString m_currentFilter;
+    QFileSystemWatcher * const m_qchWatcher;
 };
 
 QT_END_NAMESPACE

@@ -45,6 +45,7 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/QFileSystemWatcher>
 #include <QtCore/QThread>
 #include <QtCore/QTextStream>
 #include <QtCore/QSocketNotifier>
@@ -105,7 +106,8 @@ void StdInListenerWin::run()
 }
 #endif
 
-RemoteControl::RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine)
+RemoteControl::RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine,
+                             QFileSystemWatcher *qchWatcher)
     : QObject(mainWindow)
     , m_mainWindow(mainWindow)
     , m_helpEngine(helpEngine)
@@ -113,6 +115,7 @@ RemoteControl::RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine)
     , m_caching(true)
     , m_syncContents(false)
     , m_expandTOC(-2)
+    , m_qchWatcher(qchWatcher)
 
 {
     connect(m_mainWindow, SIGNAL(initDone()), this, SLOT(applyCache()));
@@ -293,10 +296,14 @@ void RemoteControl::handleRegisterCommand(const QString &arg)
 {
     const QString &absFileName = QFileInfo(arg).absoluteFilePath();
     if (m_helpEngine->registeredDocumentations().
-            contains(QHelpEngineCore::namespaceName(absFileName)))
+        contains(QHelpEngineCore::namespaceName(absFileName)))
         return;
-    m_helpEngine->registerDocumentation(absFileName);
-    m_helpEngine->setupData();
+    if (m_helpEngine->registerDocumentation(absFileName)) {
+        m_qchWatcher->addPath(absFileName);
+        m_helpEngine->setupData();
+        Q_ASSERT(m_qchWatcher->files().count()
+                 == m_helpEngine->registeredDocumentations().count());
+    }
 }
 
 void RemoteControl::handleUnregisterCommand(const QString &arg)
@@ -306,8 +313,11 @@ void RemoteControl::handleUnregisterCommand(const QString &arg)
     if (m_helpEngine->registeredDocumentations().contains(ns)) {
         CentralWidget* widget = CentralWidget::instance();
         widget->closeTabs(widget->currentSourceFileList().keys(ns));
-        m_helpEngine->unregisterDocumentation(ns);
-        m_helpEngine->setupData();
+        const QString docFile = m_helpEngine->documentationFileName(ns);
+        if (m_helpEngine->unregisterDocumentation(ns)) {
+            m_qchWatcher->removePath(docFile);
+            m_helpEngine->setupData();
+        }
     }
 }
 

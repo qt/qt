@@ -45,8 +45,10 @@
 #include "fontpanel.h"
 #include "centralwidget.h"
 #include "aboutdialog.h"
+#include "../shared/collectionconfiguration.h"
 
-#include <QtAlgorithms>
+#include <QtCore/QtAlgorithms>
+#include <QtCore/QFileSystemWatcher>
 
 #include <QtGui/QHeaderView>
 #include <QtGui/QFileDialog>
@@ -60,11 +62,13 @@
 
 QT_BEGIN_NAMESPACE
 
-PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine, QWidget *parent)
+PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine,
+    QFileSystemWatcher *qchWatcher, QWidget *parent)
     : QDialog(parent)
     , m_helpEngine(helpEngine)
     , m_appFontChanged(false)
     , m_browserFontChanged(false)
+    , m_qchWatcher(qchWatcher)
 {
     m_ui.setupUi(this);
 
@@ -73,11 +77,10 @@ PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine, QWidget *paren
     connect(m_ui.buttonBox->button(QDialogButtonBox::Cancel), SIGNAL(clicked()),
         this, SLOT(reject()));
 
-    QLatin1String key("EnableFilterFunctionality");
-    m_hideFiltersTab = !m_helpEngine->customValue(key, true).toBool();
-
-    key = QLatin1String("EnableDocumentationManager");
-    m_hideDocsTab = !m_helpEngine->customValue(key, true).toBool();
+    m_hideFiltersTab =
+        !CollectionConfiguration::filterFunctionalityEnabled(*m_helpEngine);
+    m_hideDocsTab =
+        !CollectionConfiguration::documentationManagerEnabled(*m_helpEngine);
 
     if (!m_hideFiltersTab) {
         m_ui.attributeWidget->header()->hide();
@@ -118,27 +121,22 @@ PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine, QWidget *paren
 
 PreferencesDialog::~PreferencesDialog()
 {
-    QLatin1String key("");
     if (m_appFontChanged) {
-        key = QLatin1String("appFont");
-        m_helpEngine->setCustomValue(key, m_appFontPanel->selectedFont());
-
-        key = QLatin1String("useAppFont");
-        m_helpEngine->setCustomValue(key, m_appFontPanel->isChecked());
-
-        key = QLatin1String("appWritingSystem");
-        m_helpEngine->setCustomValue(key, m_appFontPanel->writingSystem());
+        CollectionConfiguration::setAppFont(*m_helpEngine,
+            m_appFontPanel->selectedFont());
+        CollectionConfiguration::setUseAppFont(*m_helpEngine,
+            m_appFontPanel->isChecked());
+        CollectionConfiguration::setAppWritingSystem(*m_helpEngine,
+            m_appFontPanel->writingSystem());
     }
 
     if (m_browserFontChanged) {
-        key = QLatin1String("browserFont");
-        m_helpEngine->setCustomValue(key, m_browserFontPanel->selectedFont());
-
-        key = QLatin1String("useBrowserFont");
-        m_helpEngine->setCustomValue(key, m_browserFontPanel->isChecked());
-
-        key = QLatin1String("browserWritingSystem");
-        m_helpEngine->setCustomValue(key, m_browserFontPanel->writingSystem());
+        CollectionConfiguration::setBrowserFont(*m_helpEngine,
+            m_browserFontPanel->selectedFont());
+        CollectionConfiguration::setUseBrowserFont(*m_helpEngine,
+            m_browserFontPanel->isChecked());
+        CollectionConfiguration::setBrowserWritingSystem(*m_helpEngine,
+            m_browserFontPanel->writingSystem());
     }
 
     if (m_appFontChanged || m_browserFontChanged) {
@@ -149,10 +147,10 @@ PreferencesDialog::~PreferencesDialog()
     QString homePage = m_ui.homePageLineEdit->text();
     if (homePage.isEmpty())
         homePage = QLatin1String("help");
-    m_helpEngine->setCustomValue(QLatin1String("homepage"), homePage);
+    CollectionConfiguration::setHomePage(*m_helpEngine, homePage);
 
     int option = m_ui.helpStartComboBox->currentIndex();
-    m_helpEngine->setCustomValue(QLatin1String("StartOption"), option);
+    CollectionConfiguration::setStartOption(*m_helpEngine, option);
 }
 
 void PreferencesDialog::showDialog()
@@ -275,7 +273,11 @@ void PreferencesDialog::addDocumentationLocal()
                 continue;
         }
 
-        m_helpEngine->registerDocumentation(fileName);
+        if (m_helpEngine->registerDocumentation(fileName)) {
+            m_qchWatcher->addPath(fileName);
+            Q_ASSERT(m_qchWatcher->files().count()
+                     == m_helpEngine->registeredDocumentations().count());
+        }
         m_ui.registeredDocsListWidget->addItem(nameSpace);
         m_regDocs.append(nameSpace);
         m_unregDocs.removeAll(nameSpace);
@@ -380,10 +382,13 @@ void PreferencesDialog::applyChanges()
 
     CentralWidget::instance()->closeTabs(m_TabsToClose);
 
-    if (m_unregDocs.count()) {
-        foreach (const QString &doc, m_unregDocs)
-            m_helpEngine->unregisterDocumentation(doc);
+    foreach (const QString &doc, m_unregDocs) {
+        const QString docFile = m_helpEngine->documentationFileName(doc);
+        if (m_helpEngine->unregisterDocumentation(doc))
+            m_qchWatcher->removePath(docFile);
     }
+    Q_ASSERT(m_qchWatcher->files().count()
+             == m_helpEngine->registeredDocumentations().count());
 
     if (filtersWereChanged || m_regDocs.count() || m_unregDocs.count())
         m_helpEngine->setupData();
@@ -406,31 +411,26 @@ void PreferencesDialog::updateFontSettingsPage()
     const QString customSettings(tr("Use custom settings"));
     m_appFontPanel->setTitle(customSettings);
 
-    QLatin1String key = QLatin1String("appFont");
-    QFont font = qVariantValue<QFont>(m_helpEngine->customValue(key));
+    QFont font = CollectionConfiguration::appFont(*m_helpEngine);
     m_appFontPanel->setSelectedFont(font);
 
-    key = QLatin1String("appWritingSystem");
-    QFontDatabase::WritingSystem system = static_cast<QFontDatabase::WritingSystem>
-        (m_helpEngine->customValue(key).toInt());
+    QFontDatabase::WritingSystem system =
+        CollectionConfiguration::appWritingSystem(*m_helpEngine);
     m_appFontPanel->setWritingSystem(system);
 
-    key = QLatin1String("useAppFont");
-    m_appFontPanel->setChecked(m_helpEngine->customValue(key).toBool());
+    m_appFontPanel->setChecked(CollectionConfiguration::
+                               usesAppFont(*m_helpEngine));
 
     m_browserFontPanel->setTitle(customSettings);
 
-    key = QLatin1String("browserFont");
-    font = qVariantValue<QFont>(m_helpEngine->customValue(key));
+    font = CollectionConfiguration::browserFont(*m_helpEngine);
     m_browserFontPanel->setSelectedFont(font);
 
-    key = QLatin1String("browserWritingSystem");
-    system = static_cast<QFontDatabase::WritingSystem>
-        (m_helpEngine->customValue(key).toInt());
+    system = CollectionConfiguration::browserWritingSystem(*m_helpEngine);
     m_browserFontPanel->setWritingSystem(system);
 
-    key = QLatin1String("useBrowserFont");
-    m_browserFontPanel->setChecked(m_helpEngine->customValue(key).toBool());
+    m_browserFontPanel->setChecked(CollectionConfiguration::
+                                   usesBrowserFont(*m_helpEngine));
 
     connect(m_appFontPanel, SIGNAL(toggled(bool)), this,
         SLOT(appFontSettingToggled(bool)));
@@ -476,17 +476,12 @@ void PreferencesDialog::browserFontSettingChanged(int index)
 
 void PreferencesDialog::updateOptionsPage()
 {
-    QString homepage = m_helpEngine->customValue(QLatin1String("homepage"),
-        QLatin1String("")).toString();
+    QString homePage = CollectionConfiguration::homePage(*m_helpEngine);
+    if (homePage.isEmpty())
+        homePage = CollectionConfiguration::defaultHomePage(*m_helpEngine);
+    m_ui.homePageLineEdit->setText(homePage);
 
-    if (homepage.isEmpty()) {
-        homepage = m_helpEngine->customValue(QLatin1String("defaultHomepage"),
-            QLatin1String("help")).toString();
-    }
-    m_ui.homePageLineEdit->setText(homepage);
-
-    int option = m_helpEngine->customValue(QLatin1String("StartOption"),
-        ShowLastPages).toInt();
+    int option = CollectionConfiguration::startOption(*m_helpEngine);
     m_ui.helpStartComboBox->setCurrentIndex(option);
 
     connect(m_ui.blankPageButton, SIGNAL(clicked()), this, SLOT(setBlankPage()));
@@ -510,9 +505,8 @@ void PreferencesDialog::setCurrentPage()
 
 void PreferencesDialog::setDefaultPage()
 {
-    QString homepage = m_helpEngine->customValue(QLatin1String("defaultHomepage"),
-        QLatin1String("help")).toString();
-    m_ui.homePageLineEdit->setText(homepage);
+    QString homePage = CollectionConfiguration::defaultHomePage(*m_helpEngine);
+    m_ui.homePageLineEdit->setText(homePage);
 }
 
 QT_END_NAMESPACE

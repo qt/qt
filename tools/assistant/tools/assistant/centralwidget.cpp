@@ -44,6 +44,7 @@
 #include "searchwidget.h"
 #include "mainwindow.h"
 #include "preferencesdialog.h"
+#include "../shared/collectionconfiguration.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QEvent>
@@ -296,28 +297,23 @@ CentralWidget::~CentralWidget()
     if (!engine.setupData())
         return;
 
-    QString zoomCount;
-    QString currentPages;
-    QLatin1Char separator('|');
+    QStringList zoomFactors;
+    QStringList currentPages;
     bool searchAttached = m_searchWidget->isAttached();
 
     int i = searchAttached ? 1 : 0;
     for (; i < tabWidget->count(); ++i) {
         HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(i));
         if (viewer && viewer->source().isValid()) {
-            currentPages += viewer->source().toString() + separator;
-            zoomCount += QString::number(viewer->zoom()) + separator;
+            currentPages << viewer->source().toString();
+            zoomFactors << QString::number(viewer->zoom());
         }
     }
 
-    engine.setCustomValue(QLatin1String("LastTabPage"), lastTabPage);
-    engine.setCustomValue(QLatin1String("LastShownPages"), currentPages);
-    engine.setCustomValue(QLatin1String("SearchWasAttached"), searchAttached);
-#if !defined(QT_NO_WEBKIT)
-    engine.setCustomValue(QLatin1String("LastPagesZoomWebView"), zoomCount);
-#else
-    engine.setCustomValue(QLatin1String("LastPagesZoomTextBrowser"), zoomCount);
-#endif
+    CollectionConfiguration::setLastTabPage(engine, lastTabPage);
+    CollectionConfiguration::setLastShownPages(engine, currentPages);
+    CollectionConfiguration::setSearchWasAttached(engine, searchAttached);
+    CollectionConfiguration::setLastZoomFactors(engine, zoomFactors);
 }
 
 CentralWidget *CentralWidget::instance()
@@ -427,16 +423,14 @@ void CentralWidget::setSource(const QUrl &url)
 
 void CentralWidget::setupWidget()
 {
-    int option = helpEngine->customValue(QLatin1String("StartOption"),
-        ShowLastPages).toInt();
-
+    int option = CollectionConfiguration::startOption(*helpEngine);
     if (option != ShowLastPages) {
         QString homePage;
         if (option == ShowHomePage) {
-            homePage = helpEngine->customValue(QLatin1String("defaultHomepage"),
-                QLatin1String("help")).toString();
-            homePage = helpEngine->customValue(QLatin1String("homepage"),
-                homePage).toString();
+            // TODO: Can this fall-back logic go into the wrapper class?
+            homePage = CollectionConfiguration::homePage(*helpEngine);
+            if (homePage.isEmpty())
+                homePage = CollectionConfiguration::defaultHomePage(*helpEngine);
         }
         if (option == ShowBlankPage)
             homePage = QLatin1String("about:blank");
@@ -448,11 +442,8 @@ void CentralWidget::setupWidget()
 
 void CentralWidget::setLastShownPages()
 {
-    const QLatin1String key("LastShownPages");
-    QString value = helpEngine->customValue(key, QString()).toString();
-    const QStringList lastShownPageList = value.split(QLatin1Char('|'),
-        QString::SkipEmptyParts);
-
+    const QStringList lastShownPageList =
+        CollectionConfiguration::lastShownPages(*helpEngine);
     const int pageCount = lastShownPageList.count();
     if (pageCount == 0) {
         if (usesDefaultCollection)
@@ -462,37 +453,27 @@ void CentralWidget::setLastShownPages()
         return;
     }
 
-#if !defined(QT_NO_WEBKIT)
-    const QLatin1String zoom("LastPagesZoomWebView");
-#else
-    const QLatin1String zoom("LastPagesZoomTextBrowser");
-#endif
+    QStringList zoomFactors =
+        CollectionConfiguration::lastZoomFactors(*helpEngine);
+    while (zoomFactors.count() < pageCount)
+        zoomFactors.append(CollectionConfiguration::DefaultZoomFactor);
 
-    value = helpEngine->customValue(zoom, QString()).toString();
-    QVector<QString> zoomVector = value.split(QLatin1Char('|'),
-        QString::SkipEmptyParts).toVector();
-
-    const int zoomCount = zoomVector.count();
-    zoomVector.insert(zoomCount, pageCount - zoomCount, QLatin1String("0.0"));
-
-    QVector<QString>::const_iterator zIt = zoomVector.constBegin();
+    QStringList::const_iterator zIt = zoomFactors.constBegin();
     QStringList::const_iterator it = lastShownPageList.constBegin();
     for (; it != lastShownPageList.constEnd(); ++it, ++zIt)
         setSourceInNewTab((*it), (*zIt).toFloat());
 
-    const QLatin1String lastTab("LastTabPage");
-    int tab = helpEngine->customValue(lastTab, 1).toInt();
+    int tab = CollectionConfiguration::lastTabPage(*helpEngine);
 
-    const QLatin1String searchKey("SearchWasAttached");
     const bool searchIsAttached = m_searchWidget->isAttached();
-    const bool searchWasAttached = helpEngine->customValue(searchKey).toBool();
+    const bool searchWasAttached =
+        CollectionConfiguration::searchWasAttached(*helpEngine);
 
     if (searchWasAttached && !searchIsAttached)
-        tabWidget->setCurrentIndex(--tab);
+        --tab;
     else if (!searchWasAttached && searchIsAttached)
-        tabWidget->setCurrentIndex(++tab);
-    else
-        tabWidget->setCurrentIndex(tab);
+        ++tab;
+    tabWidget->setCurrentIndex(tab);
 }
 
 bool CentralWidget::hasSelection() const
@@ -1174,7 +1155,7 @@ QMap<int, QString> CentralWidget::currentSourceFileList() const
 void CentralWidget::getBrowserFontFor(QWidget *viewer, QFont *font)
 {
     const QLatin1String key("useBrowserFont");
-    if (!helpEngine->customValue(key, false).toBool()) {
+    if (!CollectionConfiguration::usesBrowserFont(*helpEngine)) {
         *font = qApp->font();   // case for QTextBrowser and SearchWidget
 #if !defined(QT_NO_WEBKIT)
         QWebView *view = qobject_cast<QWebView*> (viewer);
@@ -1185,8 +1166,7 @@ void CentralWidget::getBrowserFontFor(QWidget *viewer, QFont *font)
         }
 #endif
     } else {
-        *font = qVariantValue<QFont>(helpEngine->customValue(
-            QLatin1String("browserFont")));
+        *font = CollectionConfiguration::browserFont(*helpEngine);
     }
 }
 

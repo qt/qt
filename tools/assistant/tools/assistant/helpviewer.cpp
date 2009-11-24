@@ -41,6 +41,7 @@
 
 #include "helpviewer.h"
 #include "centralwidget.h"
+#include "../shared/collectionconfiguration.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QEvent>
@@ -333,19 +334,6 @@ void HelpViewer::zoomOut(qreal range)
     setTextSizeMultiplier(qMax(0.0, textSizeMultiplier() - range / 10.0));
 }
 
-void HelpViewer::home()
-{
-    QString homepage = helpEngine->customValue(QLatin1String("homepage"),
-        QLatin1String("")).toString();
-
-    if (homepage.isEmpty()) {
-        homepage = helpEngine->customValue(QLatin1String("defaultHomepage"),
-            QLatin1String("help")).toString();
-    }
-
-    setSource(homepage);
-}
-
 void HelpViewer::wheelEvent(QWheelEvent *e)
 {
     if (e->modifiers() & Qt::ControlModifier) {
@@ -603,19 +591,6 @@ void HelpViewer::keyPressEvent(QKeyEvent *e)
     QTextBrowser::keyPressEvent(e);
 }
 
-void HelpViewer::home()
-{
-    QString homepage = helpEngine->customValue(QLatin1String("homepage"),
-        QLatin1String("")).toString();
-
-    if (homepage.isEmpty()) {
-        homepage = helpEngine->customValue(QLatin1String("defaultHomepage"),
-            QLatin1String("help")).toString();
-    }
-
-    setSource(homepage);
-}
-
 void HelpViewer::wheelEvent(QWheelEvent *e)
 {
     if (e->modifiers() == Qt::CTRL) {
@@ -628,5 +603,13 @@ void HelpViewer::wheelEvent(QWheelEvent *e)
 }
 
 #endif  // !defined(QT_NO_WEBKIT)
+
+void HelpViewer::home()
+{
+    QString homePage = CollectionConfiguration::homePage(*helpEngine);
+    if (homePage.isEmpty())
+        homePage = CollectionConfiguration::defaultHomePage(*helpEngine);
+    setSource(homePage);
+}
 
 QT_END_NAMESPACE

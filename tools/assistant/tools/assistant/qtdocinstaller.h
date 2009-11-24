@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QFileSystemWatcher;
 class QHelpEngineCore;
 
 class QtDocInstaller : public QThread
@@ -54,7 +55,7 @@ class QtDocInstaller : public QThread
     Q_OBJECT
 
 public:
-    QtDocInstaller(const QString &collectionFile);
+    QtDocInstaller(const QString &collectionFile, QFileSystemWatcher *qchWatcher);
     ~QtDocInstaller();
     void installDocs();
 
@@ -70,6 +71,7 @@ private:
     bool m_abort;
     QString m_collectionFile;
     QMutex m_mutex;
+    QFileSystemWatcher * const m_qchWatcher;
 };
 
 QT_END_NAMESPACE

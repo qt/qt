@@ -56,6 +56,7 @@
 
 #include <QtSql/QSqlDatabase>
 
+#include "../shared/collectionconfiguration.h"
 #include "mainwindow.h"
 #include "cmdlineparser.h"
 
@@ -71,94 +72,33 @@ namespace {
 void
 updateLastPagesOnUnregister(QHelpEngineCore& helpEngine, const QString& nsName)
 {
-    int lastPage = helpEngine.customValue(QLatin1String("LastTabPage")).toInt();
-
-    QLatin1String sep("|");
-    QLatin1String pages("LastShownPages");
-#if !defined(QT_NO_WEBKIT)
-    QLatin1String zoom("LastPagesZoomWebView");
-#else
-    QLatin1String zoom("LastPagesZoomTextBrowser");
-#endif
-
-    QStringList currentPages =
-        helpEngine.customValue(pages).toString().
-        split(QLatin1Char('|'), QString::SkipEmptyParts);
-
+    int lastPage = CollectionConfiguration::lastTabPage(helpEngine);
+    QStringList currentPages = CollectionConfiguration::lastShownPages(helpEngine);
     if (!currentPages.isEmpty()) {
-        QVector<QString>zoomList = helpEngine.customValue(zoom).toString().
-            split(sep, QString::SkipEmptyParts).toVector();
-        if (zoomList.isEmpty())
-            zoomList.fill(QLatin1String("0.0"), currentPages.size());
-        else if(zoomList.count() < currentPages.count()) {
-            zoomList.insert(zoomList.count(),
-                currentPages.count() - zoomList.count(), QLatin1String("0.0"));
-        }
+        QStringList zoomList = CollectionConfiguration::lastZoomFactors(helpEngine);
+        while (zoomList.count() < currentPages.count())
+            zoomList.append(CollectionConfiguration::DefaultZoomFactor);
 
         for (int i = currentPages.count(); --i >= 0;) {
             if (QUrl(currentPages.at(i)).host() == nsName) {
-                zoomList.remove(i);
+                zoomList.removeAt(i);
                 currentPages.removeAt(i);
                 lastPage = (lastPage == (i + 1)) ? 1 : lastPage;
             }
         }
 
-        helpEngine.setCustomValue(pages, currentPages.join(sep));
-        helpEngine.setCustomValue(QLatin1String("LastTabPage"), lastPage);
-        helpEngine.setCustomValue(zoom, QStringList(zoomList.toList()).join(sep));
+        CollectionConfiguration::setLastShownPages(helpEngine, currentPages);
+        CollectionConfiguration::setLastTabPage(helpEngine, lastPage);
+        CollectionConfiguration::setLastZoomFactors(helpEngine, zoomList);
     }
 }
 
 bool
 updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
 {
-    const uint callerCollectionCreationTime = caller.
-        customValue(QLatin1String("CreationTime"), 0).toUInt();
-    const uint userCollectionCreationTime = user.
-        customValue(QLatin1String("CreationTime"), 1).toUInt();
-
-    if (callerCollectionCreationTime <= userCollectionCreationTime)
+    if (!CollectionConfiguration::isNewer(caller, user))
         return false;
-
-    user.setCustomValue(QLatin1String("CreationTime"),
-        callerCollectionCreationTime);
-    user.setCustomValue(QLatin1String("WindowTitle"),
-        caller.customValue(QLatin1String("WindowTitle")));
-    user.setCustomValue(QLatin1String("LastShownPages"),
-        caller.customValue(QLatin1String("LastShownPages")));
-#if !defined(QT_NO_WEBKIT)
-    const QLatin1String zoomKey("LastPagesZoomWebView");
-#else
-    const QLatin1String zoomKey("LastPagesZoomTextBrowser");
-#endif
-    user.setCustomValue(zoomKey, caller.customValue(zoomKey));
-    user.setCustomValue(QLatin1String("CurrentFilter"),
-        caller.customValue(QLatin1String("CurrentFilter")));
-    user.setCustomValue(QLatin1String("CacheDirectory"),
-        caller.customValue(QLatin1String("CacheDirectory")));
-    user.setCustomValue(QLatin1String("EnableFilterFunctionality"),
-        caller.customValue(QLatin1String("EnableFilterFunctionality")));
-    user.setCustomValue(QLatin1String("HideFilterFunctionality"),
-        caller.customValue(QLatin1String("HideFilterFunctionality")));
-    user.setCustomValue(QLatin1String("EnableDocumentationManager"),
-        caller.customValue(QLatin1String("EnableDocumentationManager")));
-    user.setCustomValue(QLatin1String("EnableAddressBar"),
-        caller.customValue(QLatin1String("EnableAddressBar")));
-    user.setCustomValue(QLatin1String("HideAddressBar"),
-        caller.customValue(QLatin1String("HideAddressBar")));
-    user.setCustomValue(QLatin1String("ApplicationIcon"),
-        caller.customValue(QLatin1String("ApplicationIcon")));
-    user.setCustomValue(QLatin1String("AboutMenuTexts"),
-        caller.customValue(QLatin1String("AboutMenuTexts")));
-    user.setCustomValue(QLatin1String("AboutIcon"),
-        caller.customValue(QLatin1String("AboutIcon")));
-    user.setCustomValue(QLatin1String("AboutTexts"),
-        caller.customValue(QLatin1String("AboutTexts")));
-    user.setCustomValue(QLatin1String("AboutImages"),
-        caller.customValue(QLatin1String("AboutImages")));
-    user.setCustomValue(QLatin1String("defaultHomepage"),
-        caller.customValue(QLatin1String("defaultHomepage")));
-
+    CollectionConfiguration::copyConfiguration(caller, user);
     return true;
 }
 
@@ -247,7 +187,7 @@ int main(int argc, char *argv[])
                 return -1;
             }
         }
-        help.setCustomValue(QLatin1String("DocUpdate"), true);
+        CollectionConfiguration::setDocUpdatePending(help, true);
         return 0;
     }
 
@@ -293,11 +233,9 @@ int main(int argc, char *argv[])
         }
 
         QString fileName = QFileInfo(cmdCollectionFile).fileName();
-        const QString &cacheDir =
-            caller.customValue(QLatin1String("CacheDirectory"),
-                               QString()).toString();
+        const QString &cacheDir = CollectionConfiguration::cacheDir(caller);
         const QString dir = !cacheDir.isEmpty()
-            && caller.customValue(QLatin1String("CacheDirRelativeToCollection")).toBool()
+            && CollectionConfiguration::cacheDirIsRelativeToCollection(caller)
             ? QFileInfo(cmdCollectionFile).dir().absolutePath()
                 + QDir::separator() + cacheDir
             : MainWindow::collectionFileDirectory(false, cacheDir);
@@ -316,8 +254,7 @@ int main(int argc, char *argv[])
             QHelpEngineCore user(fi.absoluteFilePath());
             if (user.setupData()) {
                 // some docs might have been un/registered
-                bool docUpdate = caller.
-                    customValue(QLatin1String("DocUpdate"), false).toBool();
+                bool docUpdate = CollectionConfiguration::docUpdatePending(caller);
 
                 // update in case the passed collection file changed
                 if (updateUserCollection(user, caller))
@@ -343,7 +280,7 @@ int main(int argc, char *argv[])
                             user.unregisterDocumentation(doc);
                     }
 
-                    caller.setCustomValue(QLatin1String("DocUpdate"), false);
+                    CollectionConfiguration::setDocUpdatePending(caller, false);
                 }
             }
         }
