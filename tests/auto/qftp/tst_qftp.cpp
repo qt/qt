@@ -1304,6 +1304,9 @@ void tst_QFtp::abort_data()
 
 void tst_QFtp::abort()
 {
+    // In case you wonder where the abort() actually happens, look into
+    // tst_QFtp::dataTransferProgress
+    //
     QFETCH( QString, host );
     QFETCH( uint, port );
     QFETCH( QString, file );
@@ -1325,7 +1328,7 @@ void tst_QFtp::abort()
     addCommand( QFtp::Close, ftp->close() );
 
     for(int time = 0; time <= uploadData.length() / 30000; time += 30) {
-        QTestEventLoop::instance().enterLoop( 30 );
+        QTestEventLoop::instance().enterLoop( 50 );
         if(ftp->currentCommand() == QFtp::None)
             break;
     }
