@@ -44,9 +44,9 @@
 \title QML Documents
 
 A QML document is a block of QML source code.  QML documents generally correspond to files 
-stored on a disk or network resource, but can be constructed directly from text data.
+stored on a disk or network resource, but can also be constructed directly from text data.
 
-A simple QML document looks like this:
+Here is a simple QML document:
 
 \code
 import Qt 4.6

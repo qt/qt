@@ -48,7 +48,7 @@
 \section1 What is QML?
 
 QML is a declarative language designed to describe the user interface of a
-program: both what it looks like and how it behaves. In QML, a user
+program: both what it looks like, and how it behaves. In QML, a user
 interface is specified as a tree of objects with properties.
 
 \section1 What should I know before starting?
@@ -56,8 +56,8 @@ interface is specified as a tree of objects with properties.
 This introduction is meant for those with little or no programming
 experience. JavaScript is used as a scripting language in QML, so you may want
 to learn a bit more about it (\l{JavaScript: The Definitive Guide}) before diving
-too deep into QML. It's also helpful to have a basic understanding of other web
-technologies like HTML and CSS, but not required.
+deeper into QML. It's also helpful to have a basic understanding of other web
+technologies like HTML and CSS, but it's not required.
 
 \section1 Basic QML Syntax
 
@@ -131,18 +131,18 @@ Item {
 }
 \endcode
 
-In the example above, the Text2 object will display the same text as Text1. If Text1 is updated,
-Text2 will be updated as well.
+In the example above, the \c text2 object will display the same text as \c text1. If \c text1 is changed,
+\c text2 is automatically changed to the same value.
 
-Note that to refer to other objects, we use their \e id (more information on the id property can be
-found in a following section).
+Note that to refer to other objects, we use their \e id values. (See below for more
+information on the \e id property.)
 
 \section1 QML Comments
 
 Commenting in QML is similar to JavaScript.
 \list
-\o Single line comments begin with // and end at the end of the line.
-\o Multiline comments begin with /* and end with *\/
+\o Single line comments start with // and finish at the end of the line.
+\o Multiline comments start with /* and finish with *\/
 \endlist
 
 \quotefile doc/src/snippets/declarative/comments.qml
@@ -173,7 +173,7 @@ Properties begin with a lowercase letter (with the exception of \l{Attached Prop
 
 \section2 Property types
 
-QML supports properties of many types (\l{Common QML Types}). The basic types include int,
+QML supports properties of many types (see \l{Common QML Types}). The basic types include int,
 real, bool, string, color, and lists.
 
 \code
@@ -186,12 +186,12 @@ Item {
 \endcode
 
 QML properties are what is known as \e typesafe. That is, they only allow you to assign a value that
-matches the property type. For example, the scale property of item is a real, and if you try to assign
+matches the property type. For example, the \c x property of item is a real, and if you try to assign
 a string to it you will get an error.
 
 \badcode
 Item {
-    scale: "hello"  //illegal!
+    x: "hello"  // illegal!
 }
 \endcode
 
