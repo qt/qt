@@ -114,6 +114,7 @@ private slots:
     void evaluateProgram();
     void evaluateProgram_SyntaxError();
     void evaluateNullProgram();
+    void QTBUG6108();
 
 private:
     double m_testProperty;
@@ -2304,6 +2305,33 @@ void tst_QScriptEngineAgent::evaluateNullProgram()
     ScriptEngineSpy *spy = new ScriptEngineSpy(&eng);
     (void)eng.evaluate(QScriptProgram());
     QCOMPARE(spy->count(), 0);
+}
+
+void tst_QScriptEngineAgent::QTBUG6108()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng);
+    eng.evaluate("eval('a = 1')");
+    QCOMPARE(spy->count(), 5);
+
+    QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
+    QVERIFY(spy->at(0).scriptId != -1);
+
+    QCOMPARE(spy->at(1).type, ScriptEngineEvent::FunctionEntry);
+    QVERIFY(spy->at(1).scriptId != -1);
+    QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
+
+    QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
+    QVERIFY(spy->at(2).scriptId != -1);
+    QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
+    QCOMPARE(spy->at(2).lineNumber, 1);
+
+    QCOMPARE(spy->at(3).type, ScriptEngineEvent::FunctionExit);
+    QVERIFY(spy->at(3).scriptId != -1);
+    QCOMPARE(spy->at(3).scriptId, spy->at(0).scriptId);
+
+    QCOMPARE(spy->at(4).type, ScriptEngineEvent::ScriptUnload);
+    QCOMPARE(spy->at(4).scriptId, spy->at(0).scriptId);
 }
 
 QTEST_MAIN(tst_QScriptEngineAgent)
