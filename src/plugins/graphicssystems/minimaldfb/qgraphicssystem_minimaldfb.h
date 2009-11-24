@@ -81,11 +81,9 @@ public:
 
     QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
 
-    static QImage::Format imageFormatFromSurface(IDirectFBSurface *surface);
-    static IDirectFB *dfbInterface();
+
 
 private:
-    static IDirectFB *dfb;
     QDirectFbGraphicsSystemScreen *mPrimaryScreen;
     QList<QGraphicsSystemScreen *> mScreens;
 };

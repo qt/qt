@@ -34,10 +34,12 @@ public:
     virtual void fillRect(const QRectF &rect, const QColor &color) = 0;
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect) = 0;
 
-    virtual QImage *lock() = 0;
-    virtual void unlock() = 0;
+    QImage *lock();
+    void unlock();
 
 protected:
+    virtual QImage *doLock() = 0;
+    virtual void doUnlock() = 0;
     QBlittablePrivate *d_ptr;
 };
 

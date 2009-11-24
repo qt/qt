@@ -157,7 +157,6 @@ public:
         blitter= p->blittable();
         raster = new QRasterPaintEngine(p->buffer());
         capabillities = new CapabilitiesToStateMask(blitter->capabilities());
-        lock();
     }
 
     inline void lock() {
@@ -175,12 +174,12 @@ public:
     }
 
     void fillRect(const QRectF &rect, const QColor &color) {
-        lock();
+//        lock();
         QRectF targetRect = rect;
         if (hasXForm) {
             targetRect = state->matrix.mapRect(rect);
         }
-        QClipData *clipData = raster->state()->clip;
+        QClipData *clipData = state->clip;
         if (clipData) {
             if (clipData->hasRectClip) {
                 unlock();
@@ -614,10 +613,12 @@ class QBlittablePrivate
 {
 public:
     QBlittablePrivate(const QRect &rect, QBlittable::Capabilities caps)
-        : caps(caps), m_rect(rect)
+        : caps(caps), m_rect(rect), locked(false), cachedImg(0)
     {}
     QBlittable::Capabilities caps;
     QRect m_rect;
+    bool locked;
+    QImage *cachedImg;
 };
 
 
@@ -644,3 +645,22 @@ QRect QBlittable::rect() const
     return d->m_rect;
 }
 
+QImage *QBlittable::lock()
+{
+    Q_D(QBlittable);
+    if (!d->locked) {
+        d->cachedImg = doLock();
+        d->locked = true;
+    }
+
+    return d->cachedImg;
+}
+
+void QBlittable::unlock()
+{
+    Q_D(QBlittable);
+    if (d->locked) {
+        doUnlock();
+        d->locked = false;
+    }
+}

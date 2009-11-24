@@ -14,8 +14,9 @@ public:
     virtual void fillRect(const QRectF &rect, const QColor &color);
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect);
 
-    virtual QImage *lock();
-    virtual void unlock();
+protected:
+    virtual QImage *doLock();
+    virtual void doUnlock();
 
     IDirectFBSurface *m_surface;
     QImage m_image;

@@ -21,12 +21,13 @@ public:
         //should never be called
     }
 
-    QImage *lock()
+protected:
+    QImage *doLock()
     {
         return &image;
     }
 
-    void unlock()
+    void doUnlock()
     {
     }
 
@@ -36,6 +37,7 @@ private:
 
 class Q_GUI_EXPORT  QBlittablePixmapData : public QPixmapData
 {
+//     Q_DECLARE_PRIVATE(QBlittablePixmapData);
 public:
     QBlittablePixmapData(QPixmapData::PixelType type);
     ~QBlittablePixmapData();
@@ -52,10 +54,10 @@ public:
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
 
     QPaintEngine *paintEngine() const;
-
 protected:
     QBlitterPaintEngine *m_engine;
     QBlittable *m_blittable;
+
 };
 
 #endif // QPIXMAP_BLITTER_P_H

@@ -60,7 +60,9 @@ QDirectFbWindowSurface::QDirectFbWindowSurface
     }
     QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
     pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
-    pmdata->resize(window->width(),window->height());
+    int width,height;
+    m_dfbSurface->GetSize(m_dfbSurface, &width, &height);
+    pmdata->resize(width,height);
     pmdata->setBlittable(blitter);
 
     m_pixmap = new QPixmap(pmdata);
@@ -95,14 +97,10 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
 void QDirectFbWindowSurface::setGeometry(const QRect &rect)
 {
-//    qDebug() << "QDirectF.bWindowSurface::setGeometry:" << (long)this << rect;
-
     m_dfbSurface->Release(m_dfbSurface);
     QWindowSurface::setGeometry(rect);
     m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
                            rect.width(), rect.height());
-//    m_dfbWindow->Resize(m_dfbWindow,rect.width(),rect.height());
-//    m_dfbWindow->MoveTo(m_dfbWindow,rect.x(),rect.y());
     DFBResult result = m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
     if (result != DFB_OK)
         DirectFBError("QDirectFbWindowSurface::setGeometry() failed to retrieve new surface",result);

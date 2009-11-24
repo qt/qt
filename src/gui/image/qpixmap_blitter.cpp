@@ -10,6 +10,8 @@ QBlittablePixmapData::QBlittablePixmapData(QPixmapData::PixelType type)
 
 QBlittablePixmapData::~QBlittablePixmapData()
 {
+    delete m_blittable;
+    delete m_engine;
 }
 
 QBlittable *QBlittablePixmapData::blittable()
@@ -34,10 +36,9 @@ void QBlittablePixmapData::resize(int width, int height)
     m_blittable = 0;
     delete m_engine;
     m_engine = 0;
-    d = 32;
+    d = QApplicationPrivate::graphicsSystem()->screens().at(0)->depth();
     w = width;
     h = height;
-//    d = image.depth();
     is_null = (w <= 0 || h <= 0);
 }
 extern int qt_defaultDpiX();

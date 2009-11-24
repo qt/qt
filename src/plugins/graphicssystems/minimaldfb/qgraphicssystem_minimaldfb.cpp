@@ -42,6 +42,7 @@
 #include "qgraphicssystem_minimaldfb.h"
 #include "qwindowsurface_minimaldfb.h"
 #include "qblitter_directfb.h"
+#include "qdirectfbconvenience.h"
 
 #include <private/qwindowsurface_raster_p.h>
 #include <private/qpixmap_raster_p.h>
@@ -65,7 +66,7 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int
     IDirectFBSurface *topLevelSurface;
     //This line gives a warning
     m_layer->GetSurface(m_layer, &topLevelSurface);
-    m_format = QDirectFbGraphicsSystem::imageFormatFromSurface(topLevelSurface);
+    m_format = QDirectFbConvenience::imageFormatFromSurface(topLevelSurface);
 
     result = m_layer->GetScreen(m_layer,&m_screen);
     if (result != DFB_OK) {
@@ -73,9 +74,9 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int
     }
 
     int w(0),h(0);
+
     //Asking the screen for its size gives the desktop geometry on X11
-    //Thats not something we want, so as the topLevelSorface instead
-//    m_screen->GetSize(m_screen,&w,&h);
+    //Thats not something we want, so ask the topLevelSorface instead
     topLevelSurface->GetSize(topLevelSurface,&w,&h);
 
     m_geometry = QRect(0,0,w,h);
@@ -112,35 +113,32 @@ IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect)
     return window;
 }
 
-IDirectFB *QDirectFbGraphicsSystem::dfb = 0;
 
 QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
 {
-    if (!dfb) {
-        DFBResult result = DFB_OK;
+    IDirectFB *dfb;
+    DFBResult result = DFB_OK;
 
-        {   // pass command line arguments to DirectFB
-            const QStringList args = QCoreApplication::arguments();
-            int argc = args.size();
-            char **argv = new char*[argc];
+    const QStringList args = QCoreApplication::arguments();
+    int argc = args.size();
+    char **argv = new char*[argc];
 
-            for (int i = 0; i < argc; ++i)
-                argv[i] = qstrdup(args.at(i).toLocal8Bit().constData());
+    for (int i = 0; i < argc; ++i)
+        argv[i] = qstrdup(args.at(i).toLocal8Bit().constData());
 
-            result = DirectFBInit(&argc, &argv);
-            if (result != DFB_OK) {
-                DirectFBError("QDirectFBScreen: error initializing DirectFB",
-                              result);
-            }
-            delete[] argv;
-        }
-
-        result = DirectFBCreate(&dfb);
-        if (result != DFB_OK) {
-            DirectFBError("QDirectFBScreen: error creating DirectFB interface",
-                          result);
-        }
+    result = DirectFBInit(&argc, &argv);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreen: error initializing DirectFB",
+                      result);
     }
+    delete[] argv;
+
+    result = DirectFBCreate(&dfb);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreen: error creating DirectFB interface",
+                      result);
+    }
+    QDirectFbConvenience::setDfbInterface(dfb);
 
     mPrimaryScreen = new QDirectFbGraphicsSystemScreen(dfb,0);
     mScreens.append(mPrimaryScreen);
@@ -149,64 +147,16 @@ QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
 QPixmapData *QDirectFbGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
     return new QBlittablePixmapData(type);
-//    return new QRasterPixmapData(type);
 }
 
 QWindowSurface *QDirectFbGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
     return new QDirectFbWindowSurface (mPrimaryScreen, widget);
-//    return new QRasterWindowSurface(widget);
 }
 
 QBlittable *QDirectFbGraphicsSystem::createBlittable(const QRect &rect) const
 {
     return new QDirectFbBlitter(rect);
-//    return 0;
-}
-
-QImage::Format QDirectFbGraphicsSystem::imageFormatFromSurface(IDirectFBSurface *surface)
-{
-    DFBSurfacePixelFormat format;
-    surface->GetPixelFormat(surface, &format);
-
-    switch (format) {
-    case DSPF_LUT8:
-        return QImage::Format_Indexed8;
-    case DSPF_RGB24:
-        return QImage::Format_RGB888;
-    case DSPF_ARGB4444:
-        return QImage::Format_ARGB4444_Premultiplied;
-    case DSPF_RGB444:
-        return QImage::Format_RGB444;
-    case DSPF_RGB555:
-    case DSPF_ARGB1555:
-        return QImage::Format_RGB555;
-    case DSPF_RGB16:
-        return QImage::Format_RGB16;
-    case DSPF_ARGB6666:
-        return QImage::Format_ARGB6666_Premultiplied;
-    case DSPF_RGB18:
-        return QImage::Format_RGB666;
-    case DSPF_RGB32:
-        return QImage::Format_RGB32;
-    case DSPF_ARGB: {
-            DFBSurfaceCapabilities caps;
-            const DFBResult result = surface->GetCapabilities(surface, &caps);
-            Q_ASSERT(result == DFB_OK);
-            Q_UNUSED(result);
-            return (caps & DSCAPS_PREMULTIPLIED
-                    ? QImage::Format_ARGB32_Premultiplied
-                        : QImage::Format_ARGB32); }
-    default:
-        break;
-    }
-    return QImage::Format_Invalid;
-
-}
-
-IDirectFB *QDirectFbGraphicsSystem::dfbInterface()
-{
-    return dfb;
 }
 
 QT_END_NAMESPACE
