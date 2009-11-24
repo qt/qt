@@ -85,6 +85,7 @@ private slots:
     void functionEntryAndExit_native();
     void functionEntryAndExit_native2();
     void functionEntryAndExit_nativeThrowing();
+    void functionEntryAndExit_builtin_data();
     void functionEntryAndExit_builtin();
     void functionEntryAndExit_objects();
     void functionEntryAndExit_slots();
@@ -811,18 +812,42 @@ void tst_QScriptEngineAgent::functionEntryAndExit_nativeThrowing()
     delete spy;
 }
 
+void tst_QScriptEngineAgent::functionEntryAndExit_builtin_data()
+{
+  QTest::addColumn<QString>("script");
+  QTest::addColumn<QString>("result");
+
+  QTest::newRow("string native") << "'ciao'.toString()" << "ciao";
+  QTest::newRow("string object") << "String('ciao').toString()" << "ciao";
+  QTest::newRow("number native") << "(123).toString()" << "123";
+  QTest::newRow("number object") << "Number(123).toString()" << "123";
+  QTest::newRow("array native") << "['s','a'].toString()" << "s, a";
+  QTest::newRow("array object") << "Array('s', 'a').toString()" << "s,a";
+  QTest::newRow("boolean native") << "false.toString()" << "false";
+  QTest::newRow("boolean object") << "Boolean(true).toString()" << "true";
+  QTest::newRow("regexp native") << "/a/.toString()" << "/a/";
+  QTest::newRow("regexp object") << "RegExp('a').toString()" << "/a/";
+}
+
 /** check behaiviour of built-in function */
 void tst_QScriptEngineAgent::functionEntryAndExit_builtin()
 {
+    QFETCH(QString, script);
+    QFETCH(QString, result);
     QScriptEngine eng;
     ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnoreFunctionEntry
                                                        | ScriptEngineSpy::IgnoreFunctionExit));
     {
         spy->clear();
-        eng.evaluate("'ciao'.toString()");
+        eng.evaluate(script);
 
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "Some events are missing when JIT is enabled", Abort);
+        if (qt_script_isJITEnabled()) {
+            QEXPECT_FAIL("string native", "QTBUG-6187 Some events are missing when JIT is enabled", Abort);
+            QEXPECT_FAIL("number native", "QTBUG-6187 Some events are missing when JIT is enabled", Abort);
+            QEXPECT_FAIL("array native", "QTBUG-6187 Some events are missing when JIT is enabled", Abort);
+            QEXPECT_FAIL("boolean native", "QTBUG-6187 Some events are missing when JIT is enabled", Abort);
+            QEXPECT_FAIL("regexp native", "QTBUG-6187 Some events are missing when JIT is enabled", Abort);
+        }
         QCOMPARE(spy->count(), 4);
 
         // evaluate() entry
@@ -835,14 +860,13 @@ void tst_QScriptEngineAgent::functionEntryAndExit_builtin()
         // built-in native function exit
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::FunctionExit);
         QCOMPARE(spy->at(2).scriptId, qint64(-1));
-        QVERIFY(spy->at(2).value.isString());
-        QCOMPARE(spy->at(2).value.toString(), QString("ciao"));
+        QCOMPARE(spy->at(2).value.toString(), QString(result));
 
         // evaluate() exit
         QCOMPARE(spy->at(3).type, ScriptEngineEvent::FunctionExit);
         QCOMPARE(spy->at(3).scriptId, spy->at(0).scriptId);
         QVERIFY(spy->at(3).value.isString());
-        QCOMPARE(spy->at(3).value.toString(), QString("ciao"));
+        QCOMPARE(spy->at(3).value.toString(), QString(result));
     }
     delete spy;
 }
