@@ -235,6 +235,7 @@ private slots:
     void task259503_scrollingArtifacts();
     void QTBUG_4151_clipAndIgnore_data();
     void QTBUG_4151_clipAndIgnore();
+    void QTBUG_5859_exposedRect();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -3865,6 +3866,44 @@ void tst_QGraphicsView::QTBUG_4151_clipAndIgnore()
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
     QCOMPARE(view.items(view.rect()).size(), numItems);
+}
+
+void tst_QGraphicsView::QTBUG_5859_exposedRect()
+{
+    class CustomScene : public QGraphicsScene
+    {
+    public:
+        CustomScene(const QRectF &rect) : QGraphicsScene(rect) { }
+        void drawBackground(QPainter *painter, const QRectF &rect)
+        { lastBackgroundExposedRect = rect; }
+        QRectF lastBackgroundExposedRect;
+    };
+    
+    class CustomRectItem : public QGraphicsRectItem
+    {
+    public:
+        CustomRectItem(const QRectF &rect) : QGraphicsRectItem(rect)
+        { setFlag(QGraphicsItem::ItemUsesExtendedStyleOption); }
+        void paint(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+        { lastExposedRect = option->exposedRect; }
+        QRectF lastExposedRect;
+    };
+
+    CustomScene scene(QRectF(0,0,50,50));
+
+    CustomRectItem item(scene.sceneRect());
+
+    scene.addItem(&item);
+
+    QGraphicsView view(&scene);
+    view.scale(4.15, 4.15);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    view.viewport()->repaint(10,10,20,20);
+    QApplication::processEvents();
+
+    QCOMPARE(item.lastExposedRect, scene.lastBackgroundExposedRect);
 }
 
 QTEST_MAIN(tst_QGraphicsView)

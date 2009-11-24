@@ -295,6 +295,10 @@ void tst_QTabBar::setUsesScrollButtons()
     if (usesArrows != -128)
         tabBar.setUsesScrollButtons(usesArrows);
     QTEST(tabBar.usesScrollButtons(), "expectedArrows");
+
+    // Make sure style sheet does not override user set mode
+    tabBar.setStyleSheet("QWidget { background-color: #ABA8A6;}");
+    QTEST(tabBar.usesScrollButtons(), "expectedArrows");
 }
 
 void tst_QTabBar::removeLastTab()
@@ -532,7 +536,7 @@ void tst_QTabBar::task251184_removeTab()
 
     QCOMPARE(bar.count(), 1);
     QCOMPARE(bar.currentIndex(), 0);
-    QCOMPARE(bar.tabText(bar.currentIndex()), QString("bar2"));    
+    QCOMPARE(bar.tabText(bar.currentIndex()), QString("bar2"));
 }
 
 
