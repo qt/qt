@@ -1295,10 +1295,11 @@ void tst_QFtp::abort_data()
     // Qt/CE and Symbian test environment has to less memory for this test
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QByteArray bigData( 10*1024*1024, 0 );
-    bigData.fill( 'B' );
-
-    QTest::newRow( "put_fluke01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("qtest/upload/abort_put") << bigData;
+#else
+    QByteArray bigData( 1*1024*1024, 0 );
 #endif
+    bigData.fill( 'B' );
+    QTest::newRow( "put_fluke01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("qtest/upload/abort_put") << bigData;
 }
 
 void tst_QFtp::abort()
