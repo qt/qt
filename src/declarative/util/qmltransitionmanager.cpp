@@ -236,11 +236,8 @@ void QmlTransitionManager::transition(const QList<Action> &list,
             action.property.write(action.toValue);
         }
     }
-    if (!transition) {
+    if (!transition)
         d->applyBindings();
-        if (d->state)
-            static_cast<QmlStatePrivate*>(QObjectPrivate::get(d->state))->complete();
-    }
 }
 
 void QmlTransitionManager::cancel()
