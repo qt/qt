@@ -1245,7 +1245,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     }
 
     if (offset < 0 || offset != qint64(QT_OFF_T(offset))
-            || size < 0 || size > qint64(size_t(-1))) {
+            || size < 0 || quint64(size) > quint64(size_t(-1))) {
         q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
         return 0;
     }
