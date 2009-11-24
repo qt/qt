@@ -52,6 +52,7 @@
 
 #include "qmacdefines_mac.h"
 #ifdef QT_MAC_USE_COCOA
+#include <qpointer.h>
 #import <Cocoa/Cocoa.h>
 
 QT_FORWARD_DECLARE_CLASS(QMenu)
@@ -71,6 +72,7 @@ QT_FORWARD_DECLARE_CLASS(QMenu)
 @interface QT_MANGLE_NAMESPACE(QCocoaMenu) : NSMenu <NSMenuDelegate>
 {
     QMenu *qmenu;
+    QPointer<QAction> previousAction;
 }
 - (id)initWithQMenu:(QMenu*)menu;
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action;
