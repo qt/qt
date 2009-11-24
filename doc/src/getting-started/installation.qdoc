@@ -599,6 +599,13 @@ If you are using pre-built binaries, follow the instructions given in the
         emulator. This is done by locating the Carbide.c++ submenu on the Start
         menu, and choosing "Configure environment for WINSCW command line".
 
+        If you are planning to use abld (the default build system that comes with the S60 SDK)
+        to build Qt, you will also need to set the following environment variable:
+
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 33
+
+        This is not necessary for other applications, only when building Qt.
+
     \o  Configure Qt
 
         To configure Qt for the Symbian platform, do:

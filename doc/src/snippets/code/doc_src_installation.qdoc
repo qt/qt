@@ -216,3 +216,7 @@ bldmake bldfiles
 abld build winscw udeb
 abld build gcce urel
 //! [32]
+
+//! [33]
+SYMBIANBUILD_DEPENDENCYOFF=1
+//! [33]
