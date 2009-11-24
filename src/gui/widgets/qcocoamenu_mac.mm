@@ -100,7 +100,7 @@ QT_USE_NAMESPACE
     qt_mac_menu_collapseSeparators(menu, qtmenu->separatorsCollapsible());
 }
 
-- (void)menuWillClose:(NSMenu*)menu;
+- (void)menuDidClose:(NSMenu*)menu;
 {
     qt_mac_emit_menuSignals(((QT_MANGLE_NAMESPACE(QCocoaMenu) *)menu)->qmenu, false);
 }
