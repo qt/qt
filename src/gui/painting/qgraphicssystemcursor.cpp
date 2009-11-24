@@ -116,6 +116,7 @@ void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor)
         // system cursor
         setCursor(shape);
     }
+    screen->setDirty(currentRect);
 }
 
 void QGraphicsSystemCursor::changeCursor(QWidget * widget)
@@ -126,6 +127,7 @@ void QGraphicsSystemCursor::changeCursor(QWidget * widget)
      } else {
         // default cursor
         setCursor(Qt::ArrowCursor);
+        screen->setDirty(currentRect);
      }
 }
 
