@@ -109,6 +109,7 @@ public:
 
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
     void setVisible(bool visible);
+    void setCursorShape(int cshape);
 
 public: //###
 

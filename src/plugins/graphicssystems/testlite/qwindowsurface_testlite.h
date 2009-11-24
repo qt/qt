@@ -82,6 +82,8 @@ public:
     void raise();
     void lower();
 
+    void setCursor(Qt::CursorShape shape);
+
 private:
     QTestLiteGraphicsSystem *mGraphicsSystem;
     QTestLiteGraphicsSystemScreen *mScreen;

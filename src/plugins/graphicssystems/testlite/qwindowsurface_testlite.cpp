@@ -589,4 +589,10 @@ void QTestLiteWindowSurface::lower()
     WId window = winId();
     XLowerWindow(mGraphicsSystem->xd->display, window);
 }
+
+
+void QTestLiteWindowSurface::setCursor(Qt::CursorShape shape)
+{
+    xw->setCursorShape(shape);
+}
 QT_END_NAMESPACE

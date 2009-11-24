@@ -55,6 +55,7 @@
 
 #include <X11/Xatom.h>
 
+#include <X11/cursorfont.h>
 
 
 //### remove stuff we don't want from qt_x11_p.h
@@ -480,7 +481,7 @@ void MyWindow::setGeometry(int x, int y, int w, int h)
 }
 
 
-void MyWindow::enterEvent(XCrossingEvent *e)
+void MyWindow::enterEvent(XCrossingEvent *)
 {
 #ifdef MYX11_DEBUG
     qDebug() << "MyWindow::enterEvent" << hex << window;
@@ -488,7 +489,7 @@ void MyWindow::enterEvent(XCrossingEvent *e)
     windowSurface->handleEnterEvent();
 }
 
-void MyWindow::leaveEvent(XCrossingEvent *e)
+void MyWindow::leaveEvent(XCrossingEvent *)
 {
 #ifdef MYX11_DEBUG
     qDebug() << "MyWindow::enterEvent" << hex << window;
@@ -782,3 +783,91 @@ void MyWindow::setVisible(bool visible)
     else
         XUnmapWindow(xd->display, window);
 }
+
+
+void MyWindow::setCursorShape(int cshape)
+{
+    if (cshape < 0 || cshape > Qt::LastCursor)
+        return;
+
+    static Cursor cursors[Qt::LastCursor+1] = {XNone};
+
+    Cursor cursor = cursors[cshape];
+    if (!cursor) {
+        switch (cshape) {
+        case Qt::ArrowCursor:
+            cursor =  XCreateFontCursor(xd->display, XC_left_ptr);
+            break;
+        case Qt::UpArrowCursor:
+            cursor =  XCreateFontCursor(xd->display, XC_center_ptr);
+            break;
+        case Qt::CrossCursor:
+            cursor =  XCreateFontCursor(xd->display, XC_crosshair);
+            break;
+        case Qt::WaitCursor:
+            cursor =  XCreateFontCursor(xd->display, XC_watch);
+            break;
+        case Qt::IBeamCursor:
+            cursor =  XCreateFontCursor(xd->display, XC_xterm);
+            break;
+        case Qt::SizeAllCursor:
+            cursor =  XCreateFontCursor(xd->display, XC_fleur);
+            break;
+        case Qt::PointingHandCursor:
+            cursor =  XCreateFontCursor(xd->display, XC_hand2);
+            break;
+        case Qt::SizeBDiagCursor:
+            cursor =  XCreateFontCursor(xd->display, XC_top_right_corner);
+            break;
+        case Qt::SizeFDiagCursor:
+            cursor =  XCreateFontCursor(xd->display, XC_bottom_right_corner);
+            break;
+        case Qt::SizeVerCursor:
+        case Qt::SplitVCursor:
+            cursor = XCreateFontCursor(xd->display, XC_sb_v_double_arrow);
+            break;
+        case Qt::SizeHorCursor:
+        case Qt::SplitHCursor:
+            cursor = XCreateFontCursor(xd->display, XC_sb_h_double_arrow);
+            break;
+        case Qt::WhatsThisCursor:
+            cursor = XCreateFontCursor(xd->display, XC_question_arrow);
+            break;
+        case Qt::ForbiddenCursor:
+            cursor = XCreateFontCursor(xd->display, XC_circle);
+            break;
+        case Qt::BusyCursor:
+            cursor = XCreateFontCursor(xd->display, XC_watch);
+            break;
+
+        default: //default cursor for all the rest
+            break;
+        }
+        cursors[cshape] = cursor;
+    }
+    XDefineCursor(xd->display, window, cursor);
+}
+
+
+#if 0
+
+
+    switch (cshape) {                        // map Q cursor to X cursor
+    case Qt::BlankCursor:
+        XColor bg, fg;
+        bg.red   = 255 << 8;
+        bg.green = 255 << 8;
+        bg.blue  = 255 << 8;
+        fg.red   = 0;
+        fg.green = 0;
+        fg.blue  = 0;
+        pm  = XCreateBitmapFromData(dpy, rootwin, cur_blank_bits, 16, 16);
+        pmm = XCreateBitmapFromData(dpy, rootwin, cur_blank_bits, 16, 16);
+        hcurs = XCreatePixmapCursor(dpy, pm, pmm, &fg, &bg, 8, 8);
+        return;
+        break;
+    default:
+        qWarning("QCursor::update: Invalid cursor shape %d", cshape);
+        return;
+    }
+#endif

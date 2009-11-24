@@ -44,12 +44,62 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
 
+#include <qgraphicssystemcursor.h>
+
+
 #include "x11util.h"
 
 QT_BEGIN_NAMESPACE
 
+class MyCursor : QGraphicsSystemCursor
+{
+public:
+    MyCursor(QGraphicsSystemScreen *screen) : QGraphicsSystemCursor(screen) {}
+
+        // input methods
+    void setCursor(const uchar */*data*/, const uchar */*mask*/, int width, int height, int hotX, int hotY) {qDebug() << "setCursor data..." << width << height << hotX << hotY;}
+
+    void setCursor(Qt::CursorShape shape) {
+        static int oldshape = -1;
+        if (shape != oldshape) {
+            qDebug() << "setCursor" << shape; QGraphicsSystemCursor::setCursor(shape);
+            oldshape = shape;
+        }
+    }
+
+    void changeCursor(QWidget * widget) {
+
+        QTestLiteWindowSurface *ws = 0;
+        if (widget) {
+            QWidget *window = widget->window();
+            ws = static_cast<QTestLiteWindowSurface*>(window->windowSurface());
+        }
+
+        //qDebug() << "changeCursor" << widget << ws;
+        if (!ws)
+            return;
+
+        ws->setCursor(widget->cursor().shape());
+    }
+
+//     void changeCursor(QCursor * widgetCursor) {
+//         //qDebug() << "changeCursor widgetCursor";
+//         QGraphicsSystemCursor::changeCursor(widgetCursor);
+//     }
+
+    //#### remove this
+    void pointerEvent(const QMouseEvent & event) {
+        Q_UNUSED(event);
+#if 0
+        qDebug() << "pointerEvent" << event.globalPos();
+#endif
+    }
+};
+
+
 QTestLiteGraphicsSystem::QTestLiteGraphicsSystem()
 {
+
     xd = new MyDisplay;
 
     mPrimaryScreen = new QTestLiteGraphicsSystemScreen();
@@ -62,6 +112,10 @@ QTestLiteGraphicsSystem::QTestLiteGraphicsSystem()
         QSize(xd->physicalWidth, xd->physicalHeight);
 
     mScreens.append(mPrimaryScreen);
+
+
+    (void)new MyCursor(mPrimaryScreen);
+
 }
 
 QPixmapData *QTestLiteGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
@@ -83,6 +137,7 @@ QPixmap QTestLiteGraphicsSystem::grabWindow(WId window, int x, int y, int width,
     qDebug() << "grabWindow" << hex << window << dec<< x << y << width << height;
     return QPixmap();
 }
+
 
 
 QT_END_NAMESPACE
