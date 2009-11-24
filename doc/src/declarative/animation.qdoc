@@ -186,7 +186,7 @@ Transition {
 }
 \endcode
 
-To insert an explicit animation into your transition, you can use \target and \property as normal.
+To insert an explicit animation into your transition, you can use \c target and \c property as normal.
 
 \code
 Transition {
@@ -214,8 +214,8 @@ Transition {
 
 \section1 Property Behaviors
 
-A property behavior specifies a default animation to run whenever the property's value changes, regardless
-of what caused the change. Unlike Transition, Behavior doesn't provide a way to indicate that a Behavior
+A \l{Behavior}{property behavior} specifies a default animation to run whenever the property's value changes, regardless
+of what caused the change. Unlike Transition, \l Behavior doesn't provide a way to indicate that a Behavior
 should only apply under certain circumstances.
 
 In the following snippet, we specify that we want the x position of redRect to be animated

@@ -153,6 +153,9 @@ void QmlParentChangePrivate::doChange(QmlGraphicsItem *targetParent, QmlGraphics
     More specifically, it will not work if the transform property has been set for any
     Items involved in the reparenting (defined as any Items in the common ancestor tree
     for the original and new parent).
+
+    You can specify at which point in a transition you want a ParentChange to occur by
+    using a ParentAction.
 */
 
 QML_DEFINE_TYPE(Qt,4,6,ParentChange,QmlParentChange)
@@ -166,7 +169,7 @@ QmlParentChange::~QmlParentChange()
 }
 
 /*!
-    \qmlproperty Object ParentChange::target
+    \qmlproperty Item ParentChange::target
     This property holds the item to be reparented
 */
 
@@ -310,6 +313,10 @@ public:
 /*!
     \qmlclass StateChangeScript QmlStateChangeScript
     \brief The StateChangeScript element allows you to run a script in a state.
+
+    The script specified will be run immediately when the state is made current.
+    Alternatively you can use a ScriptAction to specify at which point in the transition
+    you want the StateChangeScript to be run.
 */
 QML_DEFINE_TYPE(Qt,4,6,StateChangeScript,QmlStateChangeScript)
 QmlStateChangeScript::QmlStateChangeScript(QObject *parent)
@@ -385,7 +392,15 @@ QString QmlStateChangeScript::typeName() const
     \qmlclass AnchorChanges QmlAnchorChanges
     \brief The AnchorChanges element allows you to change the anchors of an item in a state.
 
+    In the following example we change the top and bottom anchors of an item:
     \snippet examples/declarative/anchors/anchor-changes.qml 0
+
+    AnchorChanges will 'inject' \c x, \c y, \c width, and \c height changes into the transition,
+    so you can animate them as you would normally changes to these properties:
+    \qml
+    //animate our anchor changes
+    NumberAnimation { matchTargets: content; matchProperties: "x,y,width,height" }
+    \endqml
 
     For more information on anchors see \l {anchor-layout}{Anchor Layouts}.
 */
@@ -432,8 +447,8 @@ public:
 };
 
 /*!
-    \qmlproperty Object AnchorChanges::target
-    This property holds the object that the anchors to change belong to
+    \qmlproperty Item AnchorChanges::target
+    This property holds the Item whose anchors will change
 */
 
 QmlAnchorChanges::QmlAnchorChanges(QObject *parent)

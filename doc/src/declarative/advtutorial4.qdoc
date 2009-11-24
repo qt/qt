@@ -41,7 +41,6 @@
 
 /*!
 \page advtutorial4.html
-\example declarative/tutorials/samegame/samegame4
 \title Advanced Tutorial 4 - Finishing Touches
 
 Now we're going to do two things to liven the game up. Animate the blocks and add a web-based high score system.
