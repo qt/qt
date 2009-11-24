@@ -65,47 +65,25 @@ or
 
 Many other simple examples can be found under the \c examples/declarative sub
 directory.  Some can be run directly using the viewer like those above, and
-others require you to build and run an executable.  More sophisticated demos of 
-large applications can be found under the \c demos/declarative sub directory. 
-These are intended to show more integrated functionality rather than to be 
+others require you to build and run an executable.  More sophisticated demos of
+large applications can be found under the \c demos/declarative sub directory.
+These are intended to show more integrated functionality rather than to be
 instructive on specific elements.
 
 \section1 Examples
 
 These will be documented, and demonstrate how to achieve various things in QML.
 
-\raw HTML
-<center>
-<table cellspacing="10">
-<tr>
-<td>
-\endraw
-\image dial-example.gif
-\raw HTML
-</td>
-<td>
-\endraw
-\image switch-example.gif
-\raw HTML
-</td>
-<td>
-\endraw
-\image declarative-adv-tutorial4.gif
-\raw HTML
-</td>
-</tr>
-<tr>
-<td>
-<center>Elastic Dial</center>
-</td>
-<td>
-<center>Touch Toggle Switch</center>
-</td>
-<td>
-<center>Samegame</center>
-</td>
-</table>
-</center>
-\endraw
+\table
+\row
+    \o Elastic Dial
+    \o \image dial-example.gif
+\row
+    \o \l{qmlexampletoggleswitch.html}{Toggle Switch}
+    \o \image switch-example.gif
+\row
+    \o \l{Advanced Tutorial}{SameGame}
+    \o \image declarative-adv-tutorial4.gif
+\endtable
 
 */

@@ -10,7 +10,7 @@ Flickable {
         id: column
         Repeater {
             model: 4
-            Rectangle { width: 200; height: 300; color: dayColor }
+            Rectangle { width: 200; height: 300; color: "blue" }
         }
     }
 }
