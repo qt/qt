@@ -41,7 +41,6 @@
 
 /*!
 \page advtutorial2.html
-\example declarative/tutorials/samegame/samegame2
 \title Advanced Tutorial 2 - Populating the Game Canvas
 
 Now that we've written some basic elements, let's start writing the game. The

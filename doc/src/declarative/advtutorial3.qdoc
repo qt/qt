@@ -41,7 +41,6 @@
 
 /*!
 \page advtutorial3.html
-\example declarative/tutorials/samegame/samegame3
 \title Advanced Tutorial 3 - Implementing the Game Logic
 
 First we add to the \c initBoard function clearing of the board before filling it up again, so that clicking new game won't leave the previous game

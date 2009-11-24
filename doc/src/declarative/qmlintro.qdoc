@@ -239,8 +239,8 @@ Image {
 
 \section2 Default properties
 
-Each object type can specify one of its list properties as its default property.
-If a list property has been declared as the default property, the property tag can be omitted.
+Each object type can specify one of its list or object properties as its default property.
+If a property has been declared as the default property, the property tag can be omitted.
 
 For example this code:
 \code
@@ -263,9 +263,27 @@ State {
 
 because \c changes is the default property of the \c State type.
 
-\section2 Dot Properties
+\section2 Grouped Properties
 
+In some cases properties form a logical group and use a 'dot' or grouped notation
+to show this.
 
+Grouped properties can be written like this:
+\qml
+Text {
+    font.pixelSize: 12
+    font.bold: true
+}
+\endqml
+
+or like this:
+\qml
+Text {
+    font { pixelSize: 12; bold: true }
+}
+\endqml
+
+In the element documentation grouped properties are shown using the 'dot' notation.
 
 \section2 Attached Properties
 \target attached-properties
