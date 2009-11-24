@@ -1580,7 +1580,7 @@ void QTreeWidgetItem::setChildIndicatorPolicy(QTreeWidgetItem::ChildIndicatorPol
     if (!view)
         return;
 
-    view->viewport()->update( view->d_func()->itemDecorationRect(view->d_func()->index(this)));
+    view->scheduleDelayedItemsLayout();
 }
 
 /*!
