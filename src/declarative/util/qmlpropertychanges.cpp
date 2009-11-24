@@ -57,7 +57,8 @@ QT_BEGIN_NAMESPACE
     \brief The PropertyChanges element describes new property values for a state.
 
     PropertyChanges changes the properties of an item. It allows you to specify the property
-    names and values similar to how you normally would specify them for the actual item:
+    names and values for a state similar to how you normally would specify them for the
+    actual item:
 
     \code
     PropertyChanges {
@@ -67,6 +68,20 @@ QT_BEGIN_NAMESPACE
         width: 48
     }
     \endcode
+
+    State-specific script for signal handlers can also be specified:
+
+    \qml
+    PropertyChanges {
+        target: myMouseRegion
+        onClicked: doSomethingDifferent()
+    }
+    \endqml
+
+    Changes to an Item's parent or anchors should be done using the associated change elements
+    (ParentChange and AnchorChanges, respectively) rather than PropertyChanges.
+
+    \sa {qmlstate}{States}
 */
 
 /*!

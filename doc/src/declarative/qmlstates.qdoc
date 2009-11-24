@@ -3,7 +3,7 @@
 \target qmlstates
 \title QML States
 
-QML states describe user interface configurations, including:
+QML states typically describe user interface configurations, including:
 \list
 \o What UI elements are present
 \o The properties of those elements (including how they behave)
@@ -52,7 +52,7 @@ To animate state changes, you can use \l{state-transitions}{transitions}.
 Other things you can do in a state change:
 \list
 \o override signal handlers with PropertyChanges
-\o change an item's parent with ParentChange
+\o change an item's visual parent with ParentChange
 \o change an item's anchors with AnchorChanges
 \o run some script with StateChangeScript
 \endlist
