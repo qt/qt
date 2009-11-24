@@ -72,6 +72,8 @@ private slots:
     void incorrectRestoreBug();
     void deletingChange();
     void deletingState();
+    void tempState();
+    void illegalTempState();
 };
 
 void tst_states::basicChanges()
@@ -801,6 +803,33 @@ void tst_states::deletingState()
     QCOMPARE(rect->color(),QColor("red"));
 
     delete rect;
+}
+
+void tst_states::tempState()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/legalTempState.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QTest::ignoreMessage(QtDebugMsg, "entering placed");
+    QTest::ignoreMessage(QtDebugMsg, "entering idle");
+    rect->setState("placed");
+    QCOMPARE(rect->state(), QLatin1String("idle"));
+}
+
+void tst_states::illegalTempState()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/illegalTempState.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "Can't apply a state change as part of a state definition. ");
+    rect->setState("placed");
+    QCOMPARE(rect->state(), QLatin1String("placed"));
 }
 
 QTEST_MAIN(tst_states)

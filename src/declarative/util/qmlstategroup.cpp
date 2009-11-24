@@ -42,6 +42,7 @@
 #include "private/qobject_p.h"
 #include "qmlstategroup_p.h"
 #include "qmltransition_p.h"
+#include "qmlstate_p_p.h"
 #include <qmlbinding.h>
 #include <QtCore/qdebug.h>
 #include <private/qmlglobal_p.h>
@@ -57,7 +58,8 @@ class QmlStateGroupPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlStateGroup)
 public:
     QmlStateGroupPrivate(QmlStateGroup *p)
-    : nullState(0), states(p), componentComplete(true), ignoreTrans(false) {}
+    : nullState(0), states(p), componentComplete(true),
+      ignoreTrans(false), applyingState(false) {}
 
     QString currentState;
     QmlState *nullState;
@@ -78,6 +80,7 @@ public:
     QmlConcreteList<QmlTransition *> transitions;
     bool componentComplete;
     bool ignoreTrans;
+    bool applyingState;
 
     QmlTransition *findTransition(const QString &from, const QString &to);
     void setCurrentStateInternal(const QString &state, bool = false);
@@ -212,9 +215,6 @@ void QmlStateGroup::setState(const QString &state)
         return;
 
     d->setCurrentStateInternal(state);
-
-    d->currentState = state;
-    emit stateChanged(d->currentState);
 }
 
 void QmlStateGroup::classBegin()
@@ -334,6 +334,13 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
     if (!componentComplete)
         return;
 
+    if (applyingState) {
+        qWarning() << "Can't apply a state change as part of a state definition.";
+        return;
+    }
+
+    applyingState = true;
+
     QmlTransition *transition = (ignoreTrans || ignoreTrans) ? 0 : findTransition(currentState, state);
     if (stateChangeDebug()) {
         qWarning() << this << "Changing state.  From" << currentState << ". To" << state;
@@ -353,6 +360,7 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
     }
 
     currentState = state;
+    emit q->stateChanged(currentState);
 
     QmlState *newState = 0;
     for (int ii = 0; ii < states.count(); ++ii) {
@@ -369,6 +377,9 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
     }
 
     newState->apply(q, transition, oldState);
+    applyingState = false;
+    if (!transition)
+        static_cast<QmlStatePrivate*>(QObjectPrivate::get(newState))->complete();
 }
 
 QmlState *QmlStateGroup::findState(const QString &name) const
