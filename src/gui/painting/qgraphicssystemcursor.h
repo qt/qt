@@ -92,6 +92,9 @@ protected:
     QWidget * currentWidget; // widget currently under the cursor
 
     QGraphicsSystemCursorImage * graphic;
+
+private:
+    QRect getCurrentRect();
 };
 
 QT_END_NAMESPACE

@@ -94,12 +94,18 @@ QRect QGraphicsSystemCursor::drawCursor(QPainter & painter)
     return prevRect;
 }
 
+QRect QGraphicsSystemCursor::getCurrentRect()
+{
+    QRect rect = graphic->image()->rect().translated(-graphic->hotspot().x(),
+                                                     -graphic->hotspot().y());
+    rect.translate(QCursor::pos());
+    return rect;
+}
+
 void QGraphicsSystemCursor::pointerEvent(const QMouseEvent & e)
 {
-    currentRect = graphic->image()->rect().translated(-graphic->hotspot().x(),
-                                                      -graphic->hotspot().y());
-    currentRect.translate(e.pos());
-    screen->setDirty(QRect(QRect(e.pos(), QSize(1, 1))));
+    currentRect = getCurrentRect();
+    screen->setDirty(currentRect);
 }
 
 void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor)
@@ -116,6 +122,7 @@ void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor)
         // system cursor
         setCursor(shape);
     }
+    currentRect = getCurrentRect();
     screen->setDirty(currentRect);
 }
 
@@ -127,6 +134,7 @@ void QGraphicsSystemCursor::changeCursor(QWidget * widget)
      } else {
         // default cursor
         setCursor(Qt::ArrowCursor);
+        currentRect = getCurrentRect();
         screen->setDirty(currentRect);
      }
 }
