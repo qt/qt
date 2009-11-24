@@ -2449,7 +2449,7 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
         switch(aeID) {
         case kAEQuitApplication: {
             extern bool qt_mac_quit_menu_item_enabled; // qmenu_mac.cpp
-            if(!QApplicationPrivate::modalState() && qt_mac_quit_menu_item_enabled) {
+            if (qt_mac_quit_menu_item_enabled) {
                 QCloseEvent ev;
                 QApplication::sendSpontaneousEvent(app, &ev);
                 if(ev.isAccepted()) {
