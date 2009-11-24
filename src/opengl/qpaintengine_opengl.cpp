@@ -4828,7 +4828,7 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
             }
 
             QImage glyph_im(fontEngine->alphaMapForGlyph(glyphs[i]));
-			glyph_im = glyph_im.convertToFormat(QImage::Format_Indexed8);
+            glyph_im = glyph_im.convertToFormat(QImage::Format_Indexed8);
             glyph_width = glyph_im.width();
             Q_ASSERT(glyph_width >= 0);
             // pad the glyph width to an even number

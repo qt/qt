@@ -1194,6 +1194,21 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
 }
 
+void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
+{
+    Q_D(QGL2PaintEngineEx);
+
+    ensureActive();
+
+    QFontEngineGlyphCache::Type glyphType = textItem->fontEngine->glyphFormat >= 0
+                                            ? QFontEngineGlyphCache::Type(textItem->fontEngine->glyphFormat)
+                                            : d->glyphCacheType;
+
+    // ### What about transformations and huge fonts? These are not passed through cache
+    // in drawTextItem().
+    d->drawCachedGlyphs(glyphType, textItem);
+}
+
 void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
 {
     Q_D(QGL2PaintEngineEx);
@@ -1389,7 +1404,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QStaticTextItem *staticTextItem)
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
-            glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
+            glDrawArrays(GL_TRIANGLES, 0, 6 * staticTextItem->numGlyphs);
 
             shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMaskPass2);
 
