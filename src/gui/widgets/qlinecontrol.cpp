@@ -138,7 +138,12 @@ void QLineControl::copy(QClipboard::Mode mode) const
 */
 void QLineControl::paste()
 {
-    insert(QApplication::clipboard()->text(QClipboard::Clipboard));
+    QString clip = QApplication::clipboard()->text(QClipboard::Clipboard);
+    if (!clip.isEmpty() || hasSelectedText()) {
+        separate(); //make it a separate undo/redo command
+        insert(clip);
+        separate();
+    }
 }
 
 #endif // !QT_NO_CLIPBOARD
