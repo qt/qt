@@ -104,15 +104,32 @@ QT_BEGIN_NAMESPACE
         \o \l{QMetaType::}{QLine}
         \o \l{QMetaType::}{QLineF}
         \o \l{QMetaType::}{QPoint}
+        \o \l{QMetaType::}{QPointF}
         \o \l{QMetaType::}{QSize}
         \o \l{QMetaType::}{QSizeF}
         \o \l{QMetaType::}{QRect}
         \o \l{QMetaType::}{QRectF}
+        \o \l{QMetaType::}{QColor}
     \endlist
 
     If you need to interpolate other variant types, including custom
     types, you have to implement interpolation for these yourself.
-    You do this by reimplementing interpolated(), which returns
+    To do this, you can register an interpolator function for a given
+    type. This function takes 3 parameters: the start value, the end value
+    and the current progress.
+
+    Example:
+    \code
+        QVariant myColorInterpolator(const QColor &start, const QColor &end, qreal progress)
+        {
+            ...
+            return QColor(...);
+        }
+        ...
+        qRegisterAnimationInterpolator<QColor>(myColorInterpolator);
+    \endcode
+
+    Another option is to reimplement interpolated(), which returns
     interpolation values for the value being interpolated.
 
     \omit We need some snippets around here. \endomit

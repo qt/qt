@@ -114,6 +114,7 @@ private slots:
     void evaluateProgram();
     void evaluateProgram_SyntaxError();
     void evaluateNullProgram();
+    void QTBUG6108();
 
 private:
     double m_testProperty;
@@ -475,7 +476,7 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload_eval()
         spy->clear();
         eng.evaluate("eval('function foo() { print(123); }')");
 
-        QEXPECT_FAIL("","Eval is threaded in different way that in old backend", Abort);
+        QEXPECT_FAIL("","QTBUG-6140 Eval is threaded in different way that in old backend", Abort);
         QCOMPARE(spy->count(), 3);
 
         QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
@@ -1160,16 +1161,16 @@ void tst_QScriptEngineAgent::positionChange_1()
     {
         spy->clear();
         eng.evaluate(";");
-        QEXPECT_FAIL("","JSC do not evaluate ';' to statemant",Continue);
+        QEXPECT_FAIL("","QTBUG-6142 JSC do not evaluate ';' to statemant",Continue);
         QCOMPARE(spy->count(), 1);
         if (spy->count()) {
-            QEXPECT_FAIL("","JSC do not evaluate ';' to statemant",Continue);
+            QEXPECT_FAIL("","QTBUG-6142 JSC do not evaluate ';' to statemant",Continue);
             QCOMPARE(spy->at(0).type, ScriptEngineEvent::PositionChange);
-            QEXPECT_FAIL("","JSC do not evaluate ';' to statemant",Continue);
+            QEXPECT_FAIL("","QTBUG-6142 JSC do not evaluate ';' to statemant",Continue);
             QVERIFY(spy->at(0).scriptId != -1);
-            QEXPECT_FAIL("","JSC do not evaluate ';' to statemant",Continue);
+            QEXPECT_FAIL("","QTBUG-6142 JSC do not evaluate ';' to statemant",Continue);
             QCOMPARE(spy->at(0).lineNumber, 1);
-            QEXPECT_FAIL("","JSC do not evaluate ';' to statemant",Continue);
+            QEXPECT_FAIL("","QTBUG-6142 JSC do not evaluate ';' to statemant",Continue);
             QCOMPARE(spy->at(0).columnNumber, 1);
         }
     }
@@ -1551,7 +1552,7 @@ void tst_QScriptEngineAgent::positionChange_2()
     }
 
     {
-        QEXPECT_FAIL("","I believe the test is wrong. Expressions shouldn't call positionChange "
+        QEXPECT_FAIL("","QTBUG-6142 I believe the test is wrong. Expressions shouldn't call positionChange "
                      "because statement '1+2' will call it at least twice, why debugger have to "
                      "stop here so many times?", Abort);
         spy->clear();
@@ -2088,8 +2089,6 @@ void tst_QScriptEngineAgent::syntaxError()
 
         i = 2;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ContextPush);
-        QEXPECT_FAIL("","The test is broken, contextPush event do not provide scriptId", Continue);
-        QVERIFY(spy->at(i).scriptId == -1);
         i = 3;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::FunctionEntry);
         QVERIFY(spy->at(i).scriptId == -1);
@@ -2098,14 +2097,12 @@ void tst_QScriptEngineAgent::syntaxError()
         QVERIFY(spy->at(i).scriptId == -1);
         i = 5;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ContextPop);
-        QEXPECT_FAIL("","The test is broken, contextPop event do not provide scriptId", Continue);
-        QVERIFY(spy->at(i).scriptId == -1);
         i = 6;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ExceptionThrow);
         QCOMPARE(spy->at(i).scriptId, spy->at(0).scriptId);
         QVERIFY(!spy->at(i).hasExceptionHandler);
         QVERIFY(spy->at(i).value.isError());
-        QEXPECT_FAIL("","There are other messages in JSC",Continue);
+        QEXPECT_FAIL("","QTBUG-6137 There are other messages in JSC",Continue);
         QCOMPARE(spy->at(i).value.toString(), QString("SyntaxError: Expected `}'"));
         QCOMPARE(spy->at(i).scriptId, spy->at(0).scriptId);
         i = 7;
@@ -2138,7 +2135,7 @@ void tst_QScriptEngineAgent::extension_invoctaion()
         QCOMPARE(spy->at(1).lineNumber, lineNumber);
         QCOMPARE(spy->at(1).columnNumber, 1);
 
-        QEXPECT_FAIL("","In JSC Eval('debugger') returns undefined",Abort);
+        QEXPECT_FAIL("","QTBUG-6135 In JSC Eval('debugger') returns undefined",Abort);
         QVERIFY(ret.isString());
         QCOMPARE(ret.toString(), QString::fromLatin1("extension(DebuggerInvocationRequest)"));
     }
@@ -2304,6 +2301,33 @@ void tst_QScriptEngineAgent::evaluateNullProgram()
     ScriptEngineSpy *spy = new ScriptEngineSpy(&eng);
     (void)eng.evaluate(QScriptProgram());
     QCOMPARE(spy->count(), 0);
+}
+
+void tst_QScriptEngineAgent::QTBUG6108()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng);
+    eng.evaluate("eval('a = 1')");
+    QCOMPARE(spy->count(), 5);
+
+    QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
+    QVERIFY(spy->at(0).scriptId != -1);
+
+    QCOMPARE(spy->at(1).type, ScriptEngineEvent::FunctionEntry);
+    QVERIFY(spy->at(1).scriptId != -1);
+    QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
+
+    QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
+    QVERIFY(spy->at(2).scriptId != -1);
+    QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
+    QCOMPARE(spy->at(2).lineNumber, 1);
+
+    QCOMPARE(spy->at(3).type, ScriptEngineEvent::FunctionExit);
+    QVERIFY(spy->at(3).scriptId != -1);
+    QCOMPARE(spy->at(3).scriptId, spy->at(0).scriptId);
+
+    QCOMPARE(spy->at(4).type, ScriptEngineEvent::ScriptUnload);
+    QCOMPARE(spy->at(4).scriptId, spy->at(0).scriptId);
 }
 
 QTEST_MAIN(tst_QScriptEngineAgent)

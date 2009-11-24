@@ -933,7 +933,8 @@ void QApplicationPrivate::initialize()
     QApplicationPrivate::wheel_scroll_lines = 3;
 #endif
 
-    initializeMultitouch();
+    if (qt_is_gui_used)
+        initializeMultitouch();
 }
 
 /*!

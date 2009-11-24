@@ -712,7 +712,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
-                false, 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
+                (keyEvent.iRepeats != 0), 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
 //        WId wid = reinterpret_cast<RWindowGroup *>(keyEvent.Handle())->Child();
 //        if (!wid)
 //             Could happen if window isn't shown yet.

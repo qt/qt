@@ -1148,7 +1148,7 @@ void tst_QScriptEngine::globalObjectProperties()
         QScriptValue::PropertyFlags flags = QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration;
         global.setProperty(name, val, flags);
         QVERIFY(global.property(name).equals(val));
-        QEXPECT_FAIL("", "custom Global Object properties don't retain attributes", Continue);
+        QEXPECT_FAIL("", "QTBUG-6134: custom Global Object properties don't retain attributes", Continue);
         QCOMPARE(global.propertyFlags(name), flags);
         global.setProperty(name, QScriptValue());
         QVERIFY(!global.property(name).isValid());
@@ -2033,7 +2033,7 @@ void tst_QScriptEngine::valueConversion()
         QScriptValue val = qScriptValueFromValue(&eng, in);
         QVERIFY(val.isRegExp());
         QRegExp out = val.toRegExp();
-        QEXPECT_FAIL("", "JSC-based back-end doesn't preserve QRegExp::patternSyntax (always uses RegExp2)", Continue);
+        QEXPECT_FAIL("", "QTBUG-6136: JSC-based back-end doesn't preserve QRegExp::patternSyntax (always uses RegExp2)", Continue);
         QCOMPARE(out.patternSyntax(), in.patternSyntax());
         QCOMPARE(out.pattern(), in.pattern());
         QCOMPARE(out.caseSensitivity(), in.caseSensitivity());
@@ -2050,7 +2050,7 @@ void tst_QScriptEngine::valueConversion()
         in.setMinimal(true);
         QScriptValue val = qScriptValueFromValue(&eng, in);
         QVERIFY(val.isRegExp());
-        QEXPECT_FAIL("", "JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
+        QEXPECT_FAIL("", "QTBUG-6136: JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
         QCOMPARE(val.toRegExp().isMinimal(), in.isMinimal());
     }
 }
@@ -2505,7 +2505,7 @@ void tst_QScriptEngine::stacktrace()
     QVERIFY(eng.hasUncaughtException());
     QVERIFY(result.isError());
 
-    QEXPECT_FAIL("", "", Abort);
+    QEXPECT_FAIL("", "QTBUG-6139: uncaughtExceptionBacktrace() doesn't give the full backtrace", Abort);
     QCOMPARE(eng.uncaughtExceptionBacktrace(), backtrace);
     QVERIFY(eng.hasUncaughtException());
     QVERIFY(result.strictlyEquals(eng.uncaughtException()));
@@ -3045,7 +3045,7 @@ void tst_QScriptEngine::errorConstructors()
             eng.clearExceptions();
             QVERIFY(ret.toString().startsWith(name));
             if (x != 0)
-                QEXPECT_FAIL("", "JSC doesn't assign lineNumber when errors are not thrown", Continue);
+                QEXPECT_FAIL("", "QTBUG-6138: JSC doesn't assign lineNumber when errors are not thrown", Continue);
             QCOMPARE(ret.property("lineNumber").toInt32(), i+2);
         }
     }
@@ -3063,14 +3063,19 @@ void tst_QScriptEngine::argumentsProperty()
 {
     {
         QScriptEngine eng;
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(eng.evaluate("arguments").isUndefined());
+        {
+            QScriptValue ret = eng.evaluate("arguments");
+            QVERIFY(ret.isError());
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: arguments"));
+        }
         eng.evaluate("arguments = 10");
-        QScriptValue ret = eng.evaluate("arguments");
-        QVERIFY(ret.isNumber());
-        QCOMPARE(ret.toInt32(), 10);
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(!eng.evaluate("delete arguments").toBoolean());
+        {
+            QScriptValue ret = eng.evaluate("arguments");
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 10);
+        }
+        QVERIFY(eng.evaluate("delete arguments").toBoolean());
+        QVERIFY(!eng.globalObject().property("arguments").isValid());
     }
     {
         QScriptEngine eng;
@@ -3081,11 +3086,11 @@ void tst_QScriptEngine::argumentsProperty()
     }
     {
         QScriptEngine eng;
+        QVERIFY(!eng.globalObject().property("arguments").isValid());
         QScriptValue ret = eng.evaluate("(function() { arguments = 456; return arguments; })()");
         QVERIFY(ret.isNumber());
         QCOMPARE(ret.toInt32(), 456);
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(eng.evaluate("arguments").isUndefined());
+        QVERIFY(!eng.globalObject().property("arguments").isValid());
     }
 
     {

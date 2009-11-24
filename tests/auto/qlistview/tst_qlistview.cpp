@@ -1895,6 +1895,8 @@ void tst_QListView::taskQTBUG_5877_skippingItemInPageDownUp()
     vu.setModel(&model);
     vu.show();
 
+    QTest::qWaitForWindowShown(&vu);
+
     int itemHeight = vu.visualRect(model.index(0, 0)).height();
     int visibleRowCount = vu.height() / itemHeight;
     int scrolledRowCount = visibleRowCount - 1;
