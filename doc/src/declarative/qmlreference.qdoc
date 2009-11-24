@@ -45,16 +45,22 @@
 
     \target qtdeclarativemainpage
 
-    QML is a language for building highly dynamic and fluid applications. It is targetted at the sorts of user
-    interface (and the sorts of hardware) in embedded devices such as phones, media
-    players, and set-top boxes. It is also appropriate for highly custom desktop
+    QML is a language for building the animation rich,
+    highly fluid user interfaces that are becoming common in portable consumer
+    electronics devices such as mobile phones, media players, set-top boxes and
+    netbooks. It is also appropriate for highly custom desktop
     user interfaces, or special elements in more traditional desktop user interfaces.
 
     Building fluid applications is done declaratively, rather than procedurally.
     That is, you specify \e what the UI should look like and how it should behave
     rather than specifying step-by-step \e how to build it. Specifying a UI declaratively
     does not just include the layout of the interface items, but also the way each
-    individual item looks and behaves and the overall flow of the application.
+    individual item looks and behaves and the overall flow of the application.    
+
+    The QML elements provide a sophisticated set of graphical and behavioral building
+    blocks.  These different elements are combined together in \l {QML Documents}{QML documents} to build components
+    ranging in complexity from simple buttons and sliders, to complete
+    internet-enabled applications like a \l {http://www.flickr.com}{Flickr} photo browser.
 
     Getting Started:
     \list
@@ -69,6 +75,7 @@
     \o \l {QML Documents}
     \o \l {Property Binding}
     \o \l {ECMAScript Blocks}
+    \o \l {QML Scope}
     \o \l {Network Transparency}
     \o \l {qmlmodels}{Data Models}
     \o \l {anchor-layout}{Anchor-based Layout}
@@ -82,5 +89,6 @@
     QML Reference:
     \list
     \o \l {elements}{QML Elements}
+    \o \l {QML Global Object}
     \endlist
 */

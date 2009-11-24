@@ -45,29 +45,29 @@
 \ingroup modules
 
 \brief The Qt Declarative module provides a declarative framework for building
-highly dynamic, custom UIs
+highly dynamic, custom user interfaces.
 
-Qt Declarative aids programmers and designers in building the animation rich, 
-highly fluid user interfaces that are becoming common in portable consumer 
-electronics devices, such as mobile phones, media players, set-top boxes and 
-netbooks.  The Qt Declarative module provides an engine for interpreting the 
-declarative QML language, and a rich set of \l {QML Elements} that can be used 
+Qt Declarative aids programmers and designers in building the animation rich,
+highly fluid user interfaces that are becoming common in portable consumer
+electronics devices, such as mobile phones, media players, set-top boxes and
+netbooks.  The Qt Declarative module provides an engine for interpreting the
+declarative QML language, and a rich set of \l {QML Elements}{QML elements} that can be used
 from QML.
 
 QML is an extension to \l {http://www.ecma-international.org/publications/standards/Ecma-262.htm}
-{ECMAScript}, that provides a mechanism to declaratively build an object tree 
-of \l {QML Elements}.  QML improves the integration between ECMAScript and Qt's
-existing QObject based type system, adds support for automatic 
-\l {Property Binding}s and provides \l {Network Transparency} at the language 
+{ECMAScript}, that provides a mechanism to declaratively build an object tree
+of QML elements.  QML improves the integration between ECMAScript and Qt's
+existing QObject based type system, adds support for automatic
+\l {Property Binding}{property bindings} and provides \l {Network Transparency}{network transparency} at the language
 level.
 
-The \l {QML Elements} are a sophisticated set of graphical and behavioral building
-blocks.  \l {QML Elements} are combined together in \l {QML Documents} to build components 
-ranging in complexity from simple pushbuttons and sliders, to complete 
-internet-enabled applications like a \l {http://www.flickr.com}{flickr} photo browser.
+The QML elements are a sophisticated set of graphical and behavioral building
+blocks.  These different elements are combined together in \l {QML Documents}{QML documents} to build components
+ranging in complexity from simple buttons and sliders, to complete
+internet-enabled applications like a \l {http://www.flickr.com}{Flickr} photo browser.
 
 Qt Declarative builds on \l {QML for Qt programmers}{Qt's existing strengths}.
-QML can be be used to incrementally extend an existing application or to build 
+QML can be be used to incrementally extend an existing application or to build
 completely new applications.  QML is fully \l {Extending QML}{extensible from C++}.
 
 \section1 Getting Started:
@@ -76,7 +76,7 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {Tutorial}{Tutorial: 'Hello World'}
 \o \l {advtutorial.html}{Tutorial: 'Same Game'}
 \o \l {QML Examples and Walkthroughs}
-\o \l {Using QML in C++ Applications} 
+\o \l {Using QML in C++ Applications}
 \endlist
 
 \section1 Core QML Features:

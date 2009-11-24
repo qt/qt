@@ -112,18 +112,36 @@ void tst_qmlgraphicsborderimage::noSource()
     delete obj;
 }
 
+void tst_qmlgraphicsborderimage::imageSource_data()
+{
+    QTest::addColumn<QString>("source");
+    QTest::addColumn<bool>("remote");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("local") << SRCDIR "/data/colors.png" << false << "";
+    QTest::newRow("local not found") << SRCDIR "/data/no-such-file.png" << false
+        << "Cannot open  QUrl( \"file://" SRCDIR "/data/no-such-file.png\" )  ";
+    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << "";
+    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true
+        << "Network error loading  QUrl( \"" SERVER_ADDR "/no-such-file.png\" )  "
+            "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
+}
+
 void tst_qmlgraphicsborderimage::imageSource()
 {
     QFETCH(QString, source);
-    QFETCH(bool, valid);
+    QFETCH(bool, remote);
+    QFETCH(QString, error);
 
-    bool remote = source.startsWith("http");
     TestHTTPServer *server = 0;
     if (remote) {
         server = new TestHTTPServer(SERVER_PORT);
         QVERIFY(server->isValid());
         server->serveDirectory(SRCDIR "/data");
     }
+
+    if (!error.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\" }";
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
@@ -135,7 +153,7 @@ void tst_qmlgraphicsborderimage::imageSource()
 
     QCOMPARE(obj->source(), remote ? source : QUrl::fromLocalFile(source));
 
-    if (valid) {
+    if (error.isEmpty()) {
         TRY_WAIT(obj->status() == QmlGraphicsBorderImage::Ready);
         QCOMPARE(obj->width(), 120.);
         QCOMPARE(obj->height(), 120.);
@@ -166,17 +184,6 @@ void tst_qmlgraphicsborderimage::clearSource()
     QVERIFY(obj->status() == QmlGraphicsBorderImage::Null);
     QCOMPARE(obj->width(), 0.);
     QCOMPARE(obj->height(), 0.);
-}
-
-void tst_qmlgraphicsborderimage::imageSource_data()
-{
-    QTest::addColumn<QString>("source");
-    QTest::addColumn<bool>("valid");
-
-    QTest::newRow("local") << SRCDIR "/data/colors.png" << true;
-    QTest::newRow("local not found") << SRCDIR "/data/no-such-file.png" << false;
-    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true;
-    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << false;
 }
 
 void tst_qmlgraphicsborderimage::resized()
@@ -290,6 +297,9 @@ void tst_qmlgraphicsborderimage::sciSource_data()
 
 void tst_qmlgraphicsborderimage::invalidSciFile()
 {
+    QTest::ignoreMessage(QtWarningMsg, "Unknown tile rule specified. Using Stretch "); // for "Roun"
+    QTest::ignoreMessage(QtWarningMsg, "Unknown tile rule specified. Using Stretch "); // for "Repea"
+
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/invalid.sci\"; width: 300; height: 300 }";
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());

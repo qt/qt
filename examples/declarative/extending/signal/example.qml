@@ -2,7 +2,7 @@ import People 1.0
 
 // ![0]
 BirthdayParty {
-    onPartyStarted: print("This party started rockin' at " + time);
+    onPartyStarted: console.log("This party started rockin' at " + time);
 // ![0]
 
     celebrant: Boy {

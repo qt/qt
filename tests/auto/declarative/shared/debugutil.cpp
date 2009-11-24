@@ -88,8 +88,8 @@ void QmlDebugTestService::messageReceived(const QByteArray &ba)
 
 void QmlDebugTestService::enabledChanged(bool e)
 {
-    emit enabledStateChanged();
     enabled = e;
+    emit enabledStateChanged();
 }
 
 
@@ -100,17 +100,18 @@ QmlDebugTestClient::QmlDebugTestClient(const QString &s, QmlDebugConnection *c)
 
 QByteArray QmlDebugTestClient::waitForResponse()
 {
-    QSignalSpy spy(this, SIGNAL(serverMessage(QByteArray)));
+    lastMsg.clear();
     QmlDebugTest::waitForSignal(this, SIGNAL(serverMessage(QByteArray)));
-    if (spy.count() == 0) {
+    if (lastMsg.isEmpty()) {
         qWarning() << "tst_QmlDebugClient: no response from server!";
         return QByteArray();
     }
-    return spy.at(0).at(0).value<QByteArray>();
+    return lastMsg;
 }
 
 void QmlDebugTestClient::messageReceived(const QByteArray &ba)
 {
+    lastMsg = ba;
     emit serverMessage(ba);
 }
 

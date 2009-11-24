@@ -5,7 +5,7 @@ BirthdayParty {
     speaker: HappyBirthday { name: "Bob Jones" }
 // ![0]
 
-    onPartyStarted: print("This party started rockin' at " + time);
+    onPartyStarted: console.log("This party started rockin' at " + time);
 
 
     celebrant: Boy {

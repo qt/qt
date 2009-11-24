@@ -167,7 +167,11 @@ public:
     ...
     view->execute();
     ...
+    view->show();
     \endcode
+
+    To receive errors related to loading and executing QML with QmlView,
+    you can connect to the errors() signal.
 */
 
 /*!

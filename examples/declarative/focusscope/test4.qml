@@ -5,12 +5,12 @@ Rectangle {
     width: 800
     height: 600
 
-    Keys.onDigit9Pressed: print("Error - Root")
+    Keys.onDigit9Pressed: console.log("Error - Root")
 
     FocusScope {
         id: myScope
 
-        Keys.onDigit9Pressed: print("Error - FocusScope")
+        Keys.onDigit9Pressed: console.log("Error - FocusScope")
 
         Rectangle {
             height: 120
@@ -26,7 +26,7 @@ Rectangle {
                 width: 100; height: 100; color: "green"
                 border.width: 5
                 border.color: wantsFocus?"blue":"black"
-                Keys.onDigit9Pressed: print("Error - Top Left");
+                Keys.onDigit9Pressed: console.log("Error - Top Left");
                 KeyNavigation.right: item2
                 focus: true
 
@@ -43,7 +43,7 @@ Rectangle {
                 border.width: 5
                 border.color: wantsFocus?"blue":"black"
                 KeyNavigation.left: item1
-                Keys.onDigit9Pressed: print("Error - Top Right");
+                Keys.onDigit9Pressed: console.log("Error - Top Right");
 
                 Rectangle {
                     width: 50; height: 50; anchors.centerIn: parent
@@ -63,7 +63,7 @@ Rectangle {
         border.width: 5
         border.color: wantsFocus?"blue":"black"
 
-        Keys.onDigit9Pressed: print("Error - Bottom Left");
+        Keys.onDigit9Pressed: console.log("Error - Bottom Left");
         KeyNavigation.up: myScope
 
         Rectangle {

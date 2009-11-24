@@ -606,6 +606,8 @@ void tst_qmllanguage::dynamicObjectProperties()
 // Tests the declaration of dynamic signals and slots
 void tst_qmllanguage::dynamicSignalsAndSlots()
 {
+    QTest::ignoreMessage(QtDebugMsg, "1921");
+
     QmlComponent component(&engine, TEST_FILE("dynamicSignalsAndSlots.qml"));
     VERIFY_ERRORS(0);
     QObject *object = component.create();
@@ -956,7 +958,7 @@ void tst_qmllanguage::scriptString()
     QCOMPARE(object->scriptProperty().context(), qmlContext(object));
 
     QVERIFY(object->grouped() != 0);
-    QCOMPARE(object->grouped()->script().script(), QString("print(1921)"));
+    QCOMPARE(object->grouped()->script().script(), QString("console.log(1921)"));
     QCOMPARE(object->grouped()->script().scopeObject(), object);
     QCOMPARE(object->grouped()->script().context(), qmlContext(object));
 }

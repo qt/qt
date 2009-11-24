@@ -72,6 +72,7 @@ private slots:
     void md5();
     void createComponent();
     void createQmlObject();
+    void consoleLog();
 
 private:
     QmlEngine engine;
@@ -350,6 +351,16 @@ void tst_qmlqt::createQmlObject()
     QVERIFY(item != 0);
     QVERIFY(item->childItems().count() == 1);
 
+    delete object;
+}
+
+void tst_qmlqt::consoleLog()
+{
+    QTest::ignoreMessage(QtDebugMsg, "completed ok");
+    QTest::ignoreMessage(QtDebugMsg, "completed ok");
+    QmlComponent component(&engine, TEST_FILE("consoleLog.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
     delete object;
 }
 

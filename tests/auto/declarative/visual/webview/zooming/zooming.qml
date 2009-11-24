@@ -12,6 +12,6 @@ WebView {
     url: "zooming.html"
     preferredWidth: width
     preferredHeight: height
-    onDoubleClick: {print(clickX,clickY);heuristicZoom(clickX,clickY,2)}
-    onZoomTo: {print(zoom);scale=zoom;x=width/2-centerX;y=height/2-centerY}
+    onDoubleClick: {console.log(clickX,clickY);heuristicZoom(clickX,clickY,2)}
+    onZoomTo: {console.log(zoom);scale=zoom;x=width/2-centerX;y=height/2-centerY}
 }

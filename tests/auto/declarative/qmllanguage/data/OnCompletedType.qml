@@ -4,5 +4,5 @@ import Qt 4.6
 MyQmlObject {
     property int a: Math.max(10, 9)
     property int b: 11 
-    Component.onCompleted: print("Completed " + a + " " + b);
+    Component.onCompleted: console.log("Completed " + a + " " + b);
 }
