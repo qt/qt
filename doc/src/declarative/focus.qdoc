@@ -49,6 +49,8 @@ focused QML \l Item.  To facilitate the construction of reusable components
 and to address some of the cases unique to fluid user interfaces, the QML items add a
 \e scope based extension to Qt's traditional keyboard focus model.
 
+\tableofcontents
+
 \section1 Key Handling Overview
 
 When the user presses or releases a key, the following occurs:
@@ -65,7 +67,7 @@ item and thus subsequently be \l {QEvent::ignore()}{ignored}.
 \code
 Item {
     Item {
-        Keys.onPressed: if (event.key == Qt.Key_A) { print('Key A was pressed'); event.accepted = true }
+        Keys.onPressed: if (event.key == Qt.Key_A) { console.log('Key A was pressed'); event.accepted = true }
         Rectangle {}
     }
 }
@@ -305,7 +307,7 @@ Rectangle {
             Text {
                 focus: true
                 text: name
-                Keys.onReturnPressed: print(name)
+                Keys.onReturnPressed: console.log(name)
             }
         }
     }

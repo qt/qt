@@ -182,7 +182,7 @@ such as ListView, \l Repeater and \l Loader.
         sprite = component.createObject();
         if(sprite == 0){
             // Error Handling
-            print(component.errorsString());
+            console.log(component.errorsString());
         }else{
             sprite.parent = page;
             sprite.x = 200;

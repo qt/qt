@@ -168,7 +168,7 @@ QML_DEFINE_TYPE(Qt,4,6,Rotation,QGraphicsRotation)
     \qmlproperty real Rotation::axis.z
 
     The axis to rotate around. For simple (2D) rotation around a point, you do not need to specify an axis,
-    as the default axis is the z axis (\c{ axis { x: 0; y: 0; z: 0 } }).
+    as the default axis is the z axis (\c{ axis { x: 0; y: 0; z: 1 } }).
 
     For a typical 3D-like rotation you will usually specify both the origin and the axis.
 
@@ -656,7 +656,7 @@ void QmlGraphicsKeyNavigationAttached::keyReleased(QKeyEvent *event)
         focus: true
         Keys.onPressed: {
             if (event.key == Qt.Key_Left) {
-                print("move left");
+                console.log("move left");
                 event.accepted = true;
             }
         }
@@ -670,7 +670,7 @@ void QmlGraphicsKeyNavigationAttached::keyReleased(QKeyEvent *event)
     \code
     Item {
         focus: true
-        Keys.onLeftPressed: print("move left")
+        Keys.onLeftPressed: console.log("move left")
     }
     \endcode
 
@@ -1359,11 +1359,11 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
         focus: true
         Keys.onPressed: {
             if (event.key == Qt.Key_Left) {
-                print("move left");
+                console.log("move left");
                 event.accepted = true;
             }
         }
-        Keys.onSelectPressed: print("Selected");
+        Keys.onSelectPressed: console.log("Selected");
     }
     \endqml
 
@@ -1943,8 +1943,8 @@ void QmlGraphicsItem::setClip(bool c)
 
     Whether the item is visible. By default this is true.
 
-    \note visible is not linked to actual visibility; if you item
-    goes off screen, or the opacity changes to 0, etc this will
+    \note visible is not linked to actual visibility; if an item
+    moves off screen, or the opacity changes to 0, this will
     not affect the visible property.
 */
 
@@ -2930,6 +2930,8 @@ bool QmlGraphicsItem::heightValid() const
   \qmlproperty bool Item::wantsFocus
 
   This property indicates whether the item has has an active focus request.
+
+  \sa {qmlfocus}{Keyboard Focus}
 */
 
 /*! \internal */
@@ -2942,6 +2944,8 @@ bool QmlGraphicsItem::wantsFocus() const
   \qmlproperty bool Item::focus
   This property indicates whether the item has keyboard input focus. Set this
   property to true to request focus.
+
+  \sa {qmlfocus}{Keyboard Focus}
 */
 
 /*! \internal */

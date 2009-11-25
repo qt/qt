@@ -55,7 +55,7 @@ class QmlTimerPrivate : public QObjectPrivate
 public:
     QmlTimerPrivate()
         : interval(1000), running(false), repeating(false), triggeredOnStart(false)
-        , classBegun(false), componentComplete(false) {}
+        , classBegun(false), componentComplete(false), firstTick(true) {}
     int interval;
     QPauseAnimation pause;
     bool running : 1;
@@ -63,6 +63,7 @@ public:
     bool triggeredOnStart : 1;
     bool classBegun : 1;
     bool componentComplete : 1;
+    bool firstTick : 1;
 };
 
 /*!
@@ -71,6 +72,9 @@ public:
 
     A timer can be used to trigger an action either once, or repeatedly
     at a given interval.
+
+    Here is a timer that shows the current date and time, and updates
+    the text every 500 milliseconds:
 
     \qml
     Timer {
@@ -85,6 +89,12 @@ public:
     QmlTimer is synchronized with the animation timer.  Since the animation
     timer is usually set to 60fps, the resolution of QmlTimer will be
     at best 16ms.
+
+    If the Timer is running and one of its properties is changed, the
+    elapsed time will be reset.  For example, if a Timer with interval of
+    1000ms has its \e repeat property changed 500ms after starting, the
+    elapsed time will be reset to 0, and the Timer will be triggered
+    1000ms later.
 */
 
 QmlTimer::QmlTimer(QObject *parent)
@@ -92,8 +102,7 @@ QmlTimer::QmlTimer(QObject *parent)
 {
     Q_D(QmlTimer);
     connect(&d->pause, SIGNAL(currentLoopChanged(int)), this, SLOT(ticked()));
-    connect(&d->pause, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State))
-            , this, SLOT(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    connect(&d->pause, SIGNAL(finished()), this, SLOT(finished()));
     d->pause.setLoopCount(1);
     d->pause.setDuration(d->interval);
 }
@@ -101,7 +110,7 @@ QmlTimer::QmlTimer(QObject *parent)
 /*!
     \qmlproperty int Timer::interval
 
-    Sets the \a interval in milliseconds between triggering.
+    Sets the \a interval between triggers, in milliseconds.
 
     The default interval is 1000 milliseconds.
 */
@@ -124,7 +133,7 @@ int QmlTimer::interval() const
     \qmlproperty bool Timer::running
 
     If set to true, starts the timer; otherwise stops the timer.
-    For a non-repeating timer, \a running  will be set to false after the
+    For a non-repeating timer, \a running is set to false after the
     timer has been triggered.
 
     \a running defaults to false.
@@ -142,6 +151,7 @@ void QmlTimer::setRunning(bool running)
     Q_D(QmlTimer);
     if (d->running != running) {
         d->running = running;
+        d->firstTick = true;
         emit runningChanged();
         update();
     }
@@ -150,7 +160,7 @@ void QmlTimer::setRunning(bool running)
 /*!
     \qmlproperty bool Timer::repeat
 
-    If \a repeat is true the timer will be triggered repeatedly at the
+    If \a repeat is true the timer is triggered repeatedly at the
     specified interval; otherwise, the timer will trigger once at the
     specified interval and then stop (i.e. running will be set to false).
 
@@ -176,15 +186,15 @@ void QmlTimer::setRepeating(bool repeating)
 /*!
     \qmlproperty bool Timer::triggeredOnStart
 
-    When the Timer is started the first trigger is normally after the specified
-    interval has elapsed.  It is sometimes desireable to trigger immediately
-    when the timer is started, for example to establish an initial
+    When a timer is started, the first trigger is usually after the specified
+    interval has elapsed.  It is sometimes desirable to trigger immediately
+    when the timer is started; for example, to establish an initial
     state.
 
-    If \a triggeredOnStart is true, the timer will be triggered immediately
-    when started, and subsequently at the specified interval.  Note that for
-    a Timer with \e repeat set to false, this will result in the timer being
-    triggered twice; once on start, and again at the interval.
+    If \a triggeredOnStart is true, the timer is triggered immediately
+    when started, and subsequently at the specified interval. Note that if
+    \e repeat is set to false, the timer is triggered twice; once on start,
+    and again at the interval.
 
     \a triggeredOnStart defaults to false.
 
@@ -219,7 +229,7 @@ void QmlTimer::start()
 
 /*!
     \qmlmethod Timer::stop()
-    \brief stops the timer.
+    \brief Stops the timer.
 
     If the timer is not running, calling this method has no effect.  The
     \c running property will be false following a call to \c stop().
@@ -229,6 +239,20 @@ void QmlTimer::stop()
     setRunning(false);
 }
 
+/*!
+    \qmlmethod Timer::restart()
+    \brief Restarts the timer.
+
+    If the Timer is not running it will be started, otherwise it will be
+    stopped, reset to initial state and started.  The \c running property
+    will be true following a call to \c restart().
+*/
+void QmlTimer::restart()
+{
+    setRunning(false);
+    setRunning(true);
+}
+
 void QmlTimer::update()
 {
     Q_D(QmlTimer);
@@ -236,10 +260,11 @@ void QmlTimer::update()
         return;
     d->pause.stop();
     if (d->running) {
+        d->pause.setCurrentTime(0);
         d->pause.setLoopCount(d->repeating ? -1 : 1);
         d->pause.setDuration(d->interval);
         d->pause.start();
-        if (d->triggeredOnStart) {
+        if (d->triggeredOnStart && d->firstTick) {
             QCoreApplication::removePostedEvents(this, QEvent::MetaCall);
             QMetaObject::invokeMethod(this, "ticked", Qt::QueuedConnection);
         }
@@ -267,18 +292,18 @@ void QmlTimer::componentComplete()
 void QmlTimer::ticked()
 {
     Q_D(QmlTimer);
-    if (d->running)
+    if (d->running && (d->pause.currentTime() > 0 || (d->triggeredOnStart && d->firstTick)))
         emit triggered();
+    d->firstTick = false;
 }
 
-void QmlTimer::stateChanged(QAbstractAnimation::State state, QAbstractAnimation::State)
+void QmlTimer::finished()
 {
     Q_D(QmlTimer);
-    if (d->running && state != QAbstractAnimation::Running) {
-        d->running = false;
-        emit triggered();
-        emit runningChanged();
-    }
+    if (d->repeating || !d->running)
+        return;
+    emit triggered();
+    d->firstTick = false;
 }
 
 QT_END_NAMESPACE

@@ -349,9 +349,13 @@ QmlGraphicsItem *QmlGraphicsAnchors::fill() const
 void QmlGraphicsAnchors::setFill(QmlGraphicsItem *f)
 {
     Q_D(QmlGraphicsAnchors);
+    if (d->fill == f)
+        return;
+
     if (!f) {
         d->remDepend(d->fill);
         d->fill = f;
+        emit fillChanged();
         return;
     }
     if (f != d->item->parentItem() && f->parentItem() != d->item->parentItem()){
@@ -361,8 +365,13 @@ void QmlGraphicsAnchors::setFill(QmlGraphicsItem *f)
     d->remDepend(d->fill);
     d->fill = f;
     d->addDepend(d->fill);
-
+    emit fillChanged();
     d->fillChanged();
+}
+
+void QmlGraphicsAnchors::resetFill()
+{
+    setFill(0);
 }
 
 QmlGraphicsItem *QmlGraphicsAnchors::centerIn() const
@@ -374,9 +383,13 @@ QmlGraphicsItem *QmlGraphicsAnchors::centerIn() const
 void QmlGraphicsAnchors::setCenterIn(QmlGraphicsItem* c)
 {
     Q_D(QmlGraphicsAnchors);
+    if (d->centerIn == c)
+        return;
+
     if (!c) {
         d->remDepend(d->centerIn);
         d->centerIn = c;
+        emit centerInChanged();
         return;
     }
     if (c != d->item->parentItem() && c->parentItem() != d->item->parentItem()){
@@ -387,8 +400,13 @@ void QmlGraphicsAnchors::setCenterIn(QmlGraphicsItem* c)
     d->remDepend(d->centerIn);
     d->centerIn = c;
     d->addDepend(d->centerIn);
-
+    emit centerInChanged();
     d->centerInChanged();
+}
+
+void QmlGraphicsAnchors::resetCenterIn()
+{
+    setCenterIn(0);
 }
 
 bool QmlGraphicsAnchorsPrivate::calcStretch(const QmlGraphicsAnchorLine &edge1,
@@ -553,7 +571,7 @@ QmlGraphicsAnchorLine QmlGraphicsAnchors::top() const
 void QmlGraphicsAnchors::setTop(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlGraphicsAnchors);
-    if (!d->checkVAnchorValid(edge))
+    if (!d->checkVAnchorValid(edge) || d->top == edge)
         return;
 
     d->usedAnchors |= HasTopAnchor;
@@ -566,6 +584,7 @@ void QmlGraphicsAnchors::setTop(const QmlGraphicsAnchorLine &edge)
     d->remDepend(d->top.item);
     d->top = edge;
     d->addDepend(d->top.item);
+    emit topChanged();
     d->updateVerticalAnchors();
 }
 
@@ -575,6 +594,7 @@ void QmlGraphicsAnchors::resetTop()
     d->usedAnchors &= ~HasTopAnchor;
     d->remDepend(d->top.item);
     d->top = QmlGraphicsAnchorLine();
+    emit topChanged();
     d->updateVerticalAnchors();
 }
 
@@ -587,7 +607,7 @@ QmlGraphicsAnchorLine QmlGraphicsAnchors::bottom() const
 void QmlGraphicsAnchors::setBottom(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlGraphicsAnchors);
-    if (!d->checkVAnchorValid(edge))
+    if (!d->checkVAnchorValid(edge) || d->bottom == edge)
         return;
 
     d->usedAnchors |= HasBottomAnchor;
@@ -600,6 +620,7 @@ void QmlGraphicsAnchors::setBottom(const QmlGraphicsAnchorLine &edge)
     d->remDepend(d->bottom.item);
     d->bottom = edge;
     d->addDepend(d->bottom.item);
+    emit bottomChanged();
     d->updateVerticalAnchors();
 }
 
@@ -609,6 +630,7 @@ void QmlGraphicsAnchors::resetBottom()
     d->usedAnchors &= ~HasBottomAnchor;
     d->remDepend(d->bottom.item);
     d->bottom = QmlGraphicsAnchorLine();
+    emit bottomChanged();
     d->updateVerticalAnchors();
 }
 
@@ -621,7 +643,7 @@ QmlGraphicsAnchorLine QmlGraphicsAnchors::verticalCenter() const
 void QmlGraphicsAnchors::setVerticalCenter(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlGraphicsAnchors);
-    if (!d->checkVAnchorValid(edge))
+    if (!d->checkVAnchorValid(edge) || d->vCenter == edge)
         return;
 
     d->usedAnchors |= HasVCenterAnchor;
@@ -634,6 +656,7 @@ void QmlGraphicsAnchors::setVerticalCenter(const QmlGraphicsAnchorLine &edge)
     d->remDepend(d->vCenter.item);
     d->vCenter = edge;
     d->addDepend(d->vCenter.item);
+    emit verticalCenterChanged();
     d->updateVerticalAnchors();
 }
 
@@ -643,6 +666,7 @@ void QmlGraphicsAnchors::resetVerticalCenter()
     d->usedAnchors &= ~HasVCenterAnchor;
     d->remDepend(d->vCenter.item);
     d->vCenter = QmlGraphicsAnchorLine();
+    emit verticalCenterChanged();
     d->updateVerticalAnchors();
 }
 
@@ -655,7 +679,7 @@ QmlGraphicsAnchorLine QmlGraphicsAnchors::baseline() const
 void QmlGraphicsAnchors::setBaseline(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlGraphicsAnchors);
-    if (!d->checkVAnchorValid(edge))
+    if (!d->checkVAnchorValid(edge) || d->baseline == edge)
         return;
 
     d->usedAnchors |= HasBaselineAnchor;
@@ -668,6 +692,7 @@ void QmlGraphicsAnchors::setBaseline(const QmlGraphicsAnchorLine &edge)
     d->remDepend(d->baseline.item);
     d->baseline = edge;
     d->addDepend(d->baseline.item);
+    emit baselineChanged();
     d->updateVerticalAnchors();
 }
 
@@ -677,6 +702,7 @@ void QmlGraphicsAnchors::resetBaseline()
     d->usedAnchors &= ~HasBaselineAnchor;
     d->remDepend(d->baseline.item);
     d->baseline = QmlGraphicsAnchorLine();
+    emit baselineChanged();
     d->updateVerticalAnchors();
 }
 
@@ -689,7 +715,7 @@ QmlGraphicsAnchorLine QmlGraphicsAnchors::left() const
 void QmlGraphicsAnchors::setLeft(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlGraphicsAnchors);
-    if (!d->checkHAnchorValid(edge))
+    if (!d->checkHAnchorValid(edge) || d->left == edge)
         return;
 
     d->usedAnchors |= HasLeftAnchor;
@@ -702,6 +728,7 @@ void QmlGraphicsAnchors::setLeft(const QmlGraphicsAnchorLine &edge)
     d->remDepend(d->left.item);
     d->left = edge;
     d->addDepend(d->left.item);
+    emit leftChanged();
     d->updateHorizontalAnchors();
 }
 
@@ -711,6 +738,7 @@ void QmlGraphicsAnchors::resetLeft()
     d->usedAnchors &= ~HasLeftAnchor;
     d->remDepend(d->left.item);
     d->left = QmlGraphicsAnchorLine();
+    emit leftChanged();
     d->updateHorizontalAnchors();
 }
 
@@ -723,7 +751,7 @@ QmlGraphicsAnchorLine QmlGraphicsAnchors::right() const
 void QmlGraphicsAnchors::setRight(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlGraphicsAnchors);
-    if (!d->checkHAnchorValid(edge))
+    if (!d->checkHAnchorValid(edge) || d->right == edge)
         return;
 
     d->usedAnchors |= HasRightAnchor;
@@ -736,7 +764,7 @@ void QmlGraphicsAnchors::setRight(const QmlGraphicsAnchorLine &edge)
     d->remDepend(d->right.item);
     d->right = edge;
     d->addDepend(d->right.item);
-
+    emit rightChanged();
     d->updateHorizontalAnchors();
 }
 
@@ -746,6 +774,7 @@ void QmlGraphicsAnchors::resetRight()
     d->usedAnchors &= ~HasRightAnchor;
     d->remDepend(d->right.item);
     d->right = QmlGraphicsAnchorLine();
+    emit rightChanged();
     d->updateHorizontalAnchors();
 }
 
@@ -758,7 +787,7 @@ QmlGraphicsAnchorLine QmlGraphicsAnchors::horizontalCenter() const
 void QmlGraphicsAnchors::setHorizontalCenter(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlGraphicsAnchors);
-    if (!d->checkHAnchorValid(edge))
+    if (!d->checkHAnchorValid(edge) || d->hCenter == edge)
         return;
 
     d->usedAnchors |= HasHCenterAnchor;
@@ -771,6 +800,7 @@ void QmlGraphicsAnchors::setHorizontalCenter(const QmlGraphicsAnchorLine &edge)
     d->remDepend(d->hCenter.item);
     d->hCenter = edge;
     d->addDepend(d->hCenter.item);
+    emit horizontalCenterChanged();
     d->updateHorizontalAnchors();
 }
 
@@ -780,6 +810,7 @@ void QmlGraphicsAnchors::resetHorizontalCenter()
     d->usedAnchors &= ~HasHCenterAnchor;
     d->remDepend(d->hCenter.item);
     d->hCenter = QmlGraphicsAnchorLine();
+    emit horizontalCenterChanged();
     d->updateHorizontalAnchors();
 }
 

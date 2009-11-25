@@ -67,6 +67,7 @@ private slots:
     void illegalSets_data();
     void reset();
     void reset_data();
+    void resetConvenience();
     void nullItem();
     void nullItem_data();
     void crash1();
@@ -310,6 +311,27 @@ void tst_anchors::reset_data()
     QTest::newRow("hcenter") << "horizontalCenter" << QmlGraphicsAnchorLine::HCenter << QmlGraphicsAnchors::HasHCenterAnchor;
     QTest::newRow("vcenter") << "verticalCenter" << QmlGraphicsAnchorLine::VCenter << QmlGraphicsAnchors::HasVCenterAnchor;
     QTest::newRow("baseline") << "baseline" << QmlGraphicsAnchorLine::Baseline << QmlGraphicsAnchors::HasBaselineAnchor;
+}
+
+void tst_anchors::resetConvenience()
+{
+    QmlGraphicsItem *baseItem = new QmlGraphicsItem;
+    QmlGraphicsItem *item = new QmlGraphicsItem;
+
+    //fill
+    item->anchors()->setFill(baseItem);
+    QVERIFY(item->anchors()->fill() == baseItem);
+    item->anchors()->resetFill();
+    QVERIFY(item->anchors()->fill() == 0);
+
+    //centerIn
+    item->anchors()->setCenterIn(baseItem);
+    QVERIFY(item->anchors()->centerIn() == baseItem);
+    item->anchors()->resetCenterIn();
+    QVERIFY(item->anchors()->centerIn() == 0);
+
+    delete item;
+    delete baseItem;
 }
 
 void tst_anchors::nullItem()

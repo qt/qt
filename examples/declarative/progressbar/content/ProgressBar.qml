@@ -11,17 +11,17 @@ Item {
     property alias secondColor: g2.color
 
     BorderImage {
-        source: "images/lineedit-bg.png"
+        source: "background.png"
         width: parent.width; height: parent.height
         border.left: 4; border.top: 4; border.right: 4; border.bottom: 4
     }
 
     Rectangle {
-        property int widthDest: (progressbar.width * (value - minimum)) / (maximum - minimum) - 6
-        id: highlight; radius: 2
+        property int widthDest: ((progressbar.width * (value - minimum)) / (maximum - minimum) - 6)
+        id: highlight; radius: 1
         anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
         anchors.leftMargin: 3; anchors.topMargin: 3; anchors.bottomMargin: 3
-        width: EaseFollow { source: highlight.widthDest; duration: 1000 }
+        width: EaseFollow { source: highlight.widthDest; velocity: 1200 }
         gradient: Gradient {
             GradientStop { id: g1; position: 0.0 }
             GradientStop { id: g2; position: 1.0 }

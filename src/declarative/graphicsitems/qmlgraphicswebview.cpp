@@ -79,6 +79,7 @@ public:
       : QmlGraphicsPaintedItemPrivate(), page(0), preferredwidth(0), preferredheight(0),
             progress(1.0), status(QmlGraphicsWebView::Null), pending(PendingNone),
             newWindowComponent(0), newWindowParent(0),
+            pressTime(400),
             windowObjects(this),
             rendering(true)
     {
@@ -98,6 +99,11 @@ public:
     mutable QmlGraphicsWebSettings settings;
     QmlComponent *newWindowComponent;
     QmlGraphicsItem *newWindowParent;
+
+    QBasicTimer pressTimer;
+    QPoint pressPoint;
+    int pressTime; // milliseconds before it's a "hold" XXX not currently settable
+    static const int pressDragLength = 15; // XXX #pixels before it's no longer a "hold"; device-specific
 
     void updateWindowObjects();
     class WindowObjectList : public QmlConcreteList<QObject *>
@@ -613,8 +619,15 @@ bool QmlGraphicsWebView::heuristicZoom(int clickX, int clickY, qreal maxzoom)
 
 void QmlGraphicsWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    Q_D(QmlGraphicsWebView);
+
     setFocus (true);
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
+
+    d->pressPoint = me->pos();
+    d->pressTimer.start(d->pressTime,this);
+    setKeepMouseGrab(false);
+
     page()->event(me);
     event->setAccepted(
 /*
@@ -636,8 +649,11 @@ void QmlGraphicsWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void QmlGraphicsWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    Q_D(QmlGraphicsWebView);
+
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
     page()->event(me);
+    d->pressTimer.stop();
     event->setAccepted(
 /*
   It is not correct to send the press event upwards, if it is not accepted by WebKit
@@ -653,24 +669,45 @@ void QmlGraphicsWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (!event->isAccepted()) {
         QmlGraphicsPaintedItem::mouseReleaseEvent(event);
     }
+    setKeepMouseGrab(false);
+    ungrabMouse();
+}
+
+void QmlGraphicsWebView::timerEvent(QTimerEvent *event)
+{
+    Q_D(QmlGraphicsWebView);
+    if (event->timerId() == d->pressTimer.timerId()) {
+        d->pressTimer.stop();
+        grabMouse();
+        setKeepMouseGrab(true);
+    }
 }
 
 void QmlGraphicsWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
+    Q_D(QmlGraphicsWebView);
+
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
-    page()->event(me);
-    event->setAccepted(
+    if (d->pressTimer.isActive()) {
+        if ((me->pos() - d->pressPoint).manhattanLength() > d->pressDragLength)  {
+            d->pressTimer.stop();
+        }
+    }
+    if (keepMouseGrab()) {
+        page()->event(me);
+        event->setAccepted(
 /*
   It is not correct to send the press event upwards, if it is not accepted by WebKit
   e.g. push button does not work, if done so as QGraphicsScene will not send the release event at all to WebKit
   Might be a bug in WebKit, though
   */
 #if 1 // QT_VERSION <= 0x040500 // XXX see bug 230835
-        true
+            true
 #else
-        me->isAccepted()
+            me->isAccepted()
 #endif
-    );
+        );
+    }
     delete me;
     if (!event->isAccepted())
         QmlGraphicsPaintedItem::mouseMoveEvent(event);
@@ -720,7 +757,6 @@ bool QmlGraphicsWebView::sceneEvent(QEvent *event)
     } 
     return QmlGraphicsPaintedItem::sceneEvent(event); 
 } 
-
 
 
 /*!
@@ -1161,6 +1197,8 @@ void QmlGraphicsWebPage::javaScriptConsoleMessage(const QString& message, int li
 QString QmlGraphicsWebPage::chooseFile(QWebFrame *originatingFrame, const QString& oldFile)
 {
     // Not supported (it's modal)
+    Q_UNUSED(originatingFrame)
+    Q_UNUSED(oldFile)
     return oldFile;
 }
 
@@ -1172,6 +1210,8 @@ void QmlGraphicsWebPage::javaScriptAlert(QWebFrame *originatingFrame, const QStr
 bool QmlGraphicsWebPage::javaScriptConfirm(QWebFrame *originatingFrame, const QString& msg)
 {
     // Not supported (it's modal)
+    Q_UNUSED(originatingFrame)
+    Q_UNUSED(msg)
     return false;
 }
 

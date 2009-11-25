@@ -43,40 +43,45 @@
 
 /*!
     \qmlclass Script QmlScript
-    \brief The Script element adds JavaScript snippets.
+    \brief The Script element provides a way to add JavaScript code snippets in QML.
     \ingroup group_utility
 
-    QmlScript is used to add convenient JavaScript "glue" methods to
-    your Qt Declarative application or component. While you can have any JavaScript code
-    within a QmlScript, it is best to limit yourself to defining functions.
+    The Script element is used to add convenient JavaScript "glue" methods to
+    your Qt Declarative application or component. 
+
+    An example: 
 
     \qml
     Script {
         function debugMyComponent() {
-            print(text.text);
-            print(otherinterestingitem.property);
+            console.log(text.text);
+            console.log(otherinterestingitem.property);
         }
     }
     MouseRegion { onClicked: debugMyComponent() }
     \endqml
 
-    \note QmlScript executes JavaScript as soon as it is specified.
-    When defining a component, this may be before the execution context is
-    fully specified.  As a result some properties or items may not be
-    accessible. By limiting your JavaScript to defining functions that are
-    only executed later once the context is fully defined, this problem is
-    avoided.
+    \note While it is possible to use any JavaScript code within a Script element,
+    it is recommended that the code be limited to defining functions. The Script
+    element executes JavaScript as soon as it is specified, so
+    when defining a component, this may be done before the execution context is
+    fully specified.  As a result, some properties or items may not be
+    accessible. You can avoid this problem by limiting your JavaScript to
+    defining functions that are only executed later once the context is fully
+    defined.
+
+    \sa {ECMAScript Blocks}
 */
 
 /*!
     \qmlproperty string Script::script
     \default
-    JavaScript code to execute.
+    The JavaScript code to be executed.
 */
 
 /*!
     \qmlproperty url Script::source
 
-    Setting this property causes the Script element to read JavaScript code from
-    the file specified.
+    Specifies a source file containing JavaScript code. This can be used instead
+    of providing inline JavaScript code in the Script element.
 */

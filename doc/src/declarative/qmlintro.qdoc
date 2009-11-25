@@ -311,7 +311,7 @@ any visual Item, for example:
 \code
 Item {
     focus: true
-    Keys.onSelectPressed: print("Selected")
+    Keys.onSelectPressed: console.log("Selected")
 }
 \endcode
 
@@ -323,7 +323,7 @@ and click:
 
 \code
 MouseRegion {
-    onPressed: print("mouse button pressed")
+    onPressed: console.log("mouse button pressed")
 }
 \endcode
 
@@ -335,7 +335,7 @@ the MouseRegion onPressed signal handler has a \e mouse parameter:
 \code
 MouseRegion {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onPressed: if (mouse.button == Qt.RightButton) print("Right mouse button pressed")
+    onPressed: if (mouse.button == Qt.RightButton) console.log("Right mouse button pressed")
 }
 \endcode
 
