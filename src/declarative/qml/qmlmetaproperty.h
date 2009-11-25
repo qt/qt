@@ -133,7 +133,7 @@ public:
     int valueTypeCoreIndex() const;
 private:
     friend class QmlEnginePrivate;
-    friend class QmlMetaPropertyPrivate;;
+    friend class QmlMetaPropertyPrivate;
     QmlMetaPropertyPrivate *d;
 };
 typedef QList<QmlMetaProperty> QmlMetaProperties;
