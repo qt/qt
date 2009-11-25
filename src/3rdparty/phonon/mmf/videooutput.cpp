@@ -72,12 +72,7 @@ MMF::VideoOutput::VideoOutput
     setAttribute(Qt::WA_NoSystemBackground, true);
     setAutoFillBackground(false);
 
-    // Causes QSymbianControl::Draw not to BitBlt this widget's region of the
-    // backing store.  Since the backing store is (by default) a 16MU bitmap,
-    // blitting it results in this widget's screen region in the final
-    // framebuffer having opaque alpha values.  This in turn causes the video
-    // to be invisible when running on the target device.
-    qt_widget_private(this)->extraData()->disableBlit = true;
+    qt_widget_private(this)->extraData()->nativePaintMode = QWExtra::ZeroFill;
 
     getVideoWindowRect();
     registerForAncestorMoved();
