@@ -77,13 +77,13 @@ public:
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QBlittable *createBlittable(const QRect &rect) const;
 
     QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
 
-    static QImage::Format imageFormatFromSurface(IDirectFBSurface *surface);
+
 
 private:
-    IDirectFB *dfb;
     QDirectFbGraphicsSystemScreen *mPrimaryScreen;
     QList<QGraphicsSystemScreen *> mScreens;
 };

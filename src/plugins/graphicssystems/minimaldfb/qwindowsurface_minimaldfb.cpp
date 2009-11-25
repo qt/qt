@@ -41,6 +41,9 @@
 
 #include "qwindowsurface_minimaldfb.h"
 #include "qgraphicssystem_minimaldfb.h"
+#include "qblitter_directfb.h"
+#include <private/qpixmap_blitter_p.h>
+
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -55,6 +58,15 @@ QDirectFbWindowSurface::QDirectFbWindowSurface
     if (result != DFB_OK) {
         DirectFBError("QDirectFbWindowSurface::QDirectFbWindowSurface: unable to get windows surface",result);
     }
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
+    pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
+    int width,height;
+    m_dfbSurface->GetSize(m_dfbSurface, &width, &height);
+    pmdata->resize(width,height);
+    pmdata->setBlittable(blitter);
+
+    m_pixmap = new QPixmap(pmdata);
+
 }
 
 QDirectFbWindowSurface::~QDirectFbWindowSurface()
@@ -63,7 +75,7 @@ QDirectFbWindowSurface::~QDirectFbWindowSurface()
 
 QPaintDevice *QDirectFbWindowSurface::paintDevice()
 {
-    return m_image;
+    return m_pixmap;
 }
 
 void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -71,6 +83,7 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
     Q_UNUSED(widget);
     Q_UNUSED(offset);
 
+    m_dfbSurface->Unlock(m_dfbSurface);
     const quint8 windowOpacity = quint8(widget->windowOpacity() * 0xff);
     m_dfbWindow->SetOpacity(m_dfbWindow,windowOpacity);
 
@@ -84,24 +97,21 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
 void QDirectFbWindowSurface::setGeometry(const QRect &rect)
 {
-//    qDebug() << "QDirectF.bWindowSurface::setGeometry:" << (long)this << rect;
-    bool wasLocked = false;
-    if (m_lock){
-        m_dfbSurface->Unlock(m_dfbSurface);
-        wasLocked = true;
-    }
     m_dfbSurface->Release(m_dfbSurface);
     QWindowSurface::setGeometry(rect);
     m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
                            rect.width(), rect.height());
-//    m_dfbWindow->Resize(m_dfbWindow,rect.width(),rect.height());
-//    m_dfbWindow->MoveTo(m_dfbWindow,rect.x(),rect.y());
     DFBResult result = m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
     if (result != DFB_OK)
-        qDebug() << "could not resurface";
+        DirectFBError("QDirectFbWindowSurface::setGeometry() failed to retrieve new surface",result);
 
-    if (wasLocked)
-        lockSurfaceToImage();
+    QPixmap *oldpixmap = m_pixmap;
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(rect, m_dfbSurface);
+    pmdata->resize(rect.width(),rect.height());
+    pmdata->setBlittable(blitter);
+    m_pixmap = new QPixmap(pmdata);
+    delete oldpixmap;
+
 }
 
 bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
@@ -112,36 +122,11 @@ bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
 void QDirectFbWindowSurface::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
-    if (!m_lock)
-        lockSurfaceToImage();
 }
 
 void QDirectFbWindowSurface::endPaint(const QRegion &region)
 {
     Q_UNUSED(region);
-    if (m_lock){
-        m_dfbSurface->Unlock(m_dfbSurface);
-        m_lock = false;
-    }
-}
-
-void QDirectFbWindowSurface::lockSurfaceToImage()
-{
-    if (m_lock)
-        return;
-    m_lock = true;
-
-    int w,h;
-    m_dfbSurface->GetSize(m_dfbSurface,&w,&h);
-    uchar *data;
-    int bpl;
-    DFBResult result = m_dfbSurface->Lock(m_dfbSurface,static_cast<DFBSurfaceLockFlags>(DSLF_READ|DSLF_WRITE),reinterpret_cast<void **>(&data),&bpl);
-    if (!result == DFB_OK) {
-        DirectFBError("QDirectFbWindowSurface::lockSurfaceToImage() failed to lock surface",result);
-        return;
-    }
-    QImage::Format format = QDirectFbGraphicsSystem::imageFormatFromSurface(m_dfbSurface);
-    m_image = new QImage(data,w,h,bpl,format);
 }
 
 QT_END_NAMESPACE

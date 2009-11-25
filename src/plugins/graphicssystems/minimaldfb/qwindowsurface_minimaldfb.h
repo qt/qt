@@ -43,6 +43,8 @@
 #define QWINDOWSURFACE_MINIMAL_H
 
 #include <QtGui/private/qwindowsurface_p.h>
+#include <private/qpixmap_blitter_p.h>
+
 #include <directfb.h>
 
 QT_BEGIN_NAMESPACE
@@ -68,7 +70,8 @@ private:
     void lockSurfaceToImage();
 
     QDirectFbGraphicsSystemScreen *m_screen;
-    QImage *m_image;
+    QPixmap *m_pixmap;
+    QBlittablePixmapData *pmdata;
     bool m_lock;
 
     IDirectFBWindow *m_dfbWindow;

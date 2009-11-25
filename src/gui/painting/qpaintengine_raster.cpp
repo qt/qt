@@ -458,8 +458,8 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     if (device->devType() == QInternal::Pixmap) {
         QPixmap *pixmap = static_cast<QPixmap *>(device);
-        if (pixmap->data->classId() == QPixmapData::RasterClass)
-            d->device = pixmap->data->buffer();
+        if (pixmap->data->classId() == QPixmapData::RasterClass || pixmap->data->classId() == QPixmapData::BlitterClass)
+                d->device = pixmap->data->buffer();
     } else {
         d->device = device;
     }

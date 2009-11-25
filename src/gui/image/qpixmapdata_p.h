@@ -73,7 +73,7 @@ public:
     };
 #endif
     enum ClassId { RasterClass, X11Class, MacClass, DirectFBClass,
-                   OpenGLClass, OpenVGClass, CustomClass = 1024 };
+                   OpenGLClass, OpenVGClass, BlitterClass, CustomClass = 1024 };
 
     QPixmapData(PixelType pixelType, int classId);
     virtual ~QPixmapData();
