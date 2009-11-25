@@ -123,8 +123,6 @@ private:
     GLfloat     minY;
     bool        boundingRectDirty;
 
-    inline void curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, const QGLPoint &ep, GLfloat inverseScale);
-
     void addClosingLine(int index);
     void addCentroid(const QVectorPath &path, int subPathIndex);
 };
