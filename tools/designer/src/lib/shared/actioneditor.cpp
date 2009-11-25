@@ -234,8 +234,8 @@ ActionEditor::ActionEditor(QDesignerFormEditorInterface *core, QWidget *parent, 
     connect(m_actionView,SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             this, SLOT(slotSelectionChanged(QItemSelection,QItemSelection)));
 
-    connect(m_actionView, SIGNAL(contextMenuRequested(QContextMenuEvent*, QAction*)),
-            this, SLOT(slotContextMenuRequested(QContextMenuEvent*, QAction*)));
+    connect(m_actionView, SIGNAL(contextMenuRequested(QContextMenuEvent*,QAction*)),
+            this, SLOT(slotContextMenuRequested(QContextMenuEvent*,QAction*)));
 
     connect(this, SIGNAL(itemActivated(QAction*)), this, SLOT(editAction(QAction*)));
 

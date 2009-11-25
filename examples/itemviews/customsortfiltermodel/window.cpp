@@ -89,15 +89,15 @@ Window::Window()
     toLabel = new QLabel(tr("&To:"));
     toLabel->setBuddy(toDateEdit);
 
-    connect(filterPatternLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(filterPatternLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(textFilterChanged()));
     connect(filterSyntaxComboBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(textFilterChanged()));
     connect(filterCaseSensitivityCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(textFilterChanged()));
-    connect(fromDateEdit, SIGNAL(dateChanged(const QDate &)),
+    connect(fromDateEdit, SIGNAL(dateChanged(QDate)),
             this, SLOT(dateFilterChanged()));
-    connect(toDateEdit, SIGNAL(dateChanged(const QDate &)),
+    connect(toDateEdit, SIGNAL(dateChanged(QDate)),
 //! [3] //! [4]
             this, SLOT(dateFilterChanged()));
 //! [4]

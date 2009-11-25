@@ -102,7 +102,7 @@ void tst_rcc::rcc_data()
     QTest::addColumn<QString>("qrcfile");
     QTest::addColumn<QString>("expected");
 
-    QTest::newRow("images") << "data" << "images.qrc" << "images.expected";
+    QTest::newRow("images") << SRCDIR "data" << "images.qrc" << "images.expected";
 }
 
 void tst_rcc::rcc()

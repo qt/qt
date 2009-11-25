@@ -175,7 +175,7 @@ public:
 
 protected: // from MAknFadedComponent
     TInt CountFadedComponents() {return 1;}
-    CCoeControl* FadedComponent(TInt aIndex) {return this;}
+    CCoeControl* FadedComponent(TInt /*aIndex*/) {return this;}
 #else
     #warning No fallback implementation for QSymbianControl::FadeBehindPopup
     void FadeBehindPopup(bool /*fade*/){ }
@@ -202,9 +202,9 @@ private:
 
 private:
     QWidget *qwidget;
-    bool m_ignoreFocusChanged;
     QLongTapTimer* m_longTapDetector;
-    bool m_previousEventLongTap;
+    bool m_ignoreFocusChanged : 1;
+    bool m_symbianPopupIsOpen : 1;
 
 #ifdef Q_WS_S60
     // Fader object used to fade everything except this menu and the CBA.

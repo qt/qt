@@ -121,7 +121,7 @@ namespace qdesigner_internal {
     PromotionModel::PromotionModel(QDesignerFormEditorInterface *core) :
         m_core(core)
     {
-        connect(this, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(slotItemChanged(QStandardItem *)));
+        connect(this, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(slotItemChanged(QStandardItem*)));
     }
 
     void PromotionModel::initializeHeaders() {

@@ -42,7 +42,7 @@
 #include "qdatastream.h"
 #include "qdatastream_p.h"
 
-#ifndef QT_NO_DATASTREAM
+#if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 #include "qbuffer.h"
 #include "qstring.h"
 #include <stdio.h>

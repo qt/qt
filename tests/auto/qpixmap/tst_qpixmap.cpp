@@ -48,6 +48,7 @@
 #include <qdesktopwidget.h>
 #include <qpaintengine.h>
 #include <qtreewidget.h>
+#include <qsplashscreen.h>
 
 #include <private/qpixmapdata_p.h>
 
@@ -170,6 +171,7 @@ private slots:
     void loadFromDataNullValues();
 
     void preserveDepth();
+    void splash_crash();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -1438,6 +1440,17 @@ void tst_QPixmap::fromImage_crash()
     QPainter painter(&pm);
 
     delete img;
+}
+
+//This is testing QPixmapData::createCompatiblePixmapData - see QTBUG-5977
+void tst_QPixmap::splash_crash()
+{
+    QPixmap pix;
+    pix = QPixmap(":/images/designer.png");
+    QSplashScreen splash(pix);
+    splash.show();
+    QCoreApplication::processEvents();
+    splash.close();
 }
 
 void tst_QPixmap::fromData()

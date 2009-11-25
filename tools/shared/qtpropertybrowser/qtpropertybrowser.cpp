@@ -1243,11 +1243,11 @@ void QtAbstractPropertyBrowserPrivate::insertSubTree(QtProperty *property,
                             QtProperty *, QtProperty *)));
         q_ptr->connect(manager, SIGNAL(propertyRemoved(QtProperty *,
                             QtProperty *)),
-                q_ptr, SLOT(slotPropertyRemoved(QtProperty *, QtProperty *)));
-        q_ptr->connect(manager, SIGNAL(propertyDestroyed(QtProperty *)),
-                q_ptr, SLOT(slotPropertyDestroyed(QtProperty *)));
-        q_ptr->connect(manager, SIGNAL(propertyChanged(QtProperty *)),
-                q_ptr, SLOT(slotPropertyDataChanged(QtProperty *)));
+                q_ptr, SLOT(slotPropertyRemoved(QtProperty*,QtProperty*)));
+        q_ptr->connect(manager, SIGNAL(propertyDestroyed(QtProperty*)),
+                q_ptr, SLOT(slotPropertyDestroyed(QtProperty*)));
+        q_ptr->connect(manager, SIGNAL(propertyChanged(QtProperty*)),
+                q_ptr, SLOT(slotPropertyDataChanged(QtProperty*)));
     }
     m_managerToProperties[manager].append(property);
     m_propertyToParents[property].append(parentProperty);
@@ -1283,11 +1283,11 @@ void QtAbstractPropertyBrowserPrivate::removeSubTree(QtProperty *property,
                             QtProperty *, QtProperty *)));
         q_ptr->disconnect(manager, SIGNAL(propertyRemoved(QtProperty *,
                             QtProperty *)),
-                q_ptr, SLOT(slotPropertyRemoved(QtProperty *, QtProperty *)));
-        q_ptr->disconnect(manager, SIGNAL(propertyDestroyed(QtProperty *)),
-                q_ptr, SLOT(slotPropertyDestroyed(QtProperty *)));
-        q_ptr->disconnect(manager, SIGNAL(propertyChanged(QtProperty *)),
-                q_ptr, SLOT(slotPropertyDataChanged(QtProperty *)));
+                q_ptr, SLOT(slotPropertyRemoved(QtProperty*,QtProperty*)));
+        q_ptr->disconnect(manager, SIGNAL(propertyDestroyed(QtProperty*)),
+                q_ptr, SLOT(slotPropertyDestroyed(QtProperty*)));
+        q_ptr->disconnect(manager, SIGNAL(propertyChanged(QtProperty*)),
+                q_ptr, SLOT(slotPropertyDataChanged(QtProperty*)));
 
         m_managerToProperties.remove(manager);
     }

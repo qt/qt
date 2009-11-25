@@ -50,6 +50,7 @@
 #include <qlineedit.h>
 #include <QDesktopWidget>
 #include <QtGui/QPainter>
+#include "private/qdockwidget_p.h"
 
 bool hasFeature(QDockWidget *dockwidget, QDockWidget::DockWidgetFeature feature)
 { return (dockwidget->features() & feature) == feature; }
@@ -865,7 +866,9 @@ void tst_QDockWidget::taskQTBUG_1665_closableChanged()
     dock.show();
     QTest::qWaitForWindowShown(&dock);
 
-    if (dock.windowFlags() & Qt::FramelessWindowHint)
+    QDockWidgetLayout *l = qobject_cast<QDockWidgetLayout*>(dock.layout());
+
+    if (l && !l->nativeWindowDeco())
         QSKIP("this machine doesn't support native dock widget", SkipAll);
 
     QVERIFY(dock.windowFlags() & Qt::WindowCloseButtonHint);

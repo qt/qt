@@ -64,7 +64,7 @@ namespace Phonon
 
             Filter getAudioOutputFilter(int index) const;
 
-            static QMutex *directShowMutex();
+            static QMutex *directShowMutex;
 
         Q_SIGNALS:
             void objectDescriptionChanged(ObjectDescriptionType);

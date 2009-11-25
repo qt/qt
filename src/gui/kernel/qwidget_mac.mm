@@ -725,6 +725,23 @@ static OSWindowRef qt_mac_create_window(QWidget *, WindowClass wclass, WindowAtt
     return window;
 }
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+/* We build the release package against the 10.4 SDK.
+   So, to enable gestures for applications running on
+   10.6+, we define the missing constants here: */
+enum {
+    kEventClassGesture              = 'gest',
+    kEventGestureStarted            = 1,
+    kEventGestureEnded              = 2,
+    kEventGestureMagnify            = 4,
+    kEventGestureSwipe              = 5,
+    kEventGestureRotate             = 6,
+    kEventParamRotationAmount       = 'rota',
+    kEventParamSwipeDirection       = 'swip',
+    kEventParamMagnificationAmount  = 'magn'
+};
+#endif
+
 // window events
 static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowClose },
@@ -741,13 +758,11 @@ static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowGetRegion },
     { kEventClassWindow, kEventWindowGetClickModality },
     { kEventClassWindow, kEventWindowTransitionCompleted },
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
     { kEventClassGesture, kEventGestureStarted },
     { kEventClassGesture, kEventGestureEnded },
     { kEventClassGesture, kEventGestureMagnify },
     { kEventClassGesture, kEventGestureSwipe },
     { kEventClassGesture, kEventGestureRotate },
-#endif
     { kEventClassMouse, kEventMouseDown }
 };
 static EventHandlerUPP mac_win_eventUPP = 0;
@@ -1036,7 +1051,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
         handled_event = false;
         break; }
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
     case kEventClassGesture: {
         // First, find the widget that was under
         // the mouse when the gesture happened:
@@ -1064,7 +1078,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                 break;
             case kEventGestureRotate: {
                 CGFloat amount;
-                if (GetEventParameter(event, kEventParamRotationAmount, typeCGFloat, 0,
+                if (GetEventParameter(event, kEventParamRotationAmount, 'cgfl', 0,
                             sizeof(amount), 0, &amount) != noErr) {
                     handled_event = false;
                     break;
@@ -1091,7 +1105,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                 break; }
             case kEventGestureMagnify: {
                 CGFloat amount;
-                if (GetEventParameter(event, kEventParamMagnificationAmount, typeCGFloat, 0,
+                if (GetEventParameter(event, kEventParamMagnificationAmount, 'cgfl', 0,
                             sizeof(amount), 0, &amount) != noErr) {
                     handled_event = false;
                     break;
@@ -1103,7 +1117,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
 
         QApplication::sendSpontaneousEvent(widget, &qNGEvent);
     break; }
-#endif // gestures
 
     default:
         handled_event = false;
@@ -2673,7 +2686,10 @@ void QWidgetPrivate::transferChildren()
                     // site disabled until it is part of the new hierarchy.
                     bool oldRegistered = w->testAttribute(Qt::WA_DropSiteRegistered);
                     w->setAttribute(Qt::WA_DropSiteRegistered, false);
+                    [qt_mac_nativeview_for(w) retain];
+                    [qt_mac_nativeview_for(w) removeFromSuperview];
                     [qt_mac_nativeview_for(q) addSubview:qt_mac_nativeview_for(w)];
+                    [qt_mac_nativeview_for(w) release];
                     w->setAttribute(Qt::WA_DropSiteRegistered, oldRegistered);
 #endif
                 }

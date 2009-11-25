@@ -2290,11 +2290,8 @@ void tst_QComboBox::setItemDelegate()
     QComboBox comboBox;
     QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
     comboBox.setItemDelegate(itemDelegate);
-#ifdef Q_CC_MWERKS
+    // the cast is a workaround for the XLC and Metrowerks compilers
     QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
-#else
-    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
-#endif
 }
 
 void tst_QComboBox::task253944_itemDelegateIsReset()
@@ -2303,19 +2300,13 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
     QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
     comboBox.setItemDelegate(itemDelegate);
 
+    // the casts are workarounds for the XLC and Metrowerks compilers
+
     comboBox.setEditable(true);
-#ifdef Q_CC_MWERKS
     QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
-#else
-    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
-#endif
 
     comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
-#ifdef Q_CC_MWERKS
     QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
-#else
-    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
-#endif
 }
 
 
@@ -2478,6 +2469,10 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     QTest::qWait(130);
 
     QCOMPARE(combo.currentText(), QLatin1String("0"));
+
+#ifdef Q_OS_WINCE
+    QSKIP("When calling cursor function, Windows CE responds with: This function is not supported on this system.", SkipAll);
+#endif
 
     QCursor::setPos(combo.view()->mapToGlobal(combo.view()->rect().center()));
     QTest::qWait(200);

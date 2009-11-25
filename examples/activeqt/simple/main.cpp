@@ -64,8 +64,8 @@ public:
 	LCD = new QLCDNumber( 3, this );
 	edit = new QLineEdit( this );
 
-	connect( slider, SIGNAL( valueChanged( int ) ), this, SLOT( setValue(int) ) );
-	connect( edit, SIGNAL(textChanged(const QString&)), this, SLOT(setText(const QString&)) );
+	connect( slider, SIGNAL(valueChanged(int)), this, SLOT(setValue(int)) );
+	connect( edit, SIGNAL(textChanged(QString)), this, SLOT(setText(QString)) );
 
 	vbox->addWidget( slider );
 	vbox->addWidget( LCD );

@@ -315,9 +315,9 @@ void QDialogButtonBoxPrivate::initLayout()
             buttonLayout = new QVBoxLayout(q);
     }
 
-	int left, top, right, bottom;
+    int left, top, right, bottom;
     setLayoutItemMargins(QStyle::SE_PushButtonLayoutItem);
-	getLayoutItemMargins(&left, &top, &right, &bottom);
+    getLayoutItemMargins(&left, &top, &right, &bottom);
     buttonLayout->setContentsMargins(-left, -top, -right, -bottom);
 
     if (!q->testAttribute(Qt::WA_WState_OwnSizePolicy)) {
@@ -356,7 +356,7 @@ void QDialogButtonBoxPrivate::addButtonsToLayout(const QList<QAbstractButton *> 
 void QDialogButtonBoxPrivate::layoutButtons()
 {
     Q_Q(QDialogButtonBox);
-    const int MacGap = 36 - 8;	// 8 is the default gap between a widget and a spacer item
+    const int MacGap = 36 - 8;    // 8 is the default gap between a widget and a spacer item
 
     for (int i = buttonLayout->count() - 1; i >= 0; --i) {
         QLayoutItem *item = buttonLayout->takeAt(i);
@@ -581,6 +581,22 @@ QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialog
     }
     QObject::connect(action, SIGNAL(triggered()), button, SIGNAL(clicked()));
     action->setSoftKeyRole(softkeyRole);
+
+
+    QWidget *dialog = 0;
+    QWidget *p = q;
+    while (p && !p->isWindow()) {
+        p = p->parentWidget();
+        if ((dialog = qobject_cast<QDialog *>(p)))
+            break;
+    }
+
+    if (dialog) {
+        dialog->addAction(action);
+    } else {
+        q->addAction(action);
+    }
+
     return action;
 }
 #endif
@@ -1193,16 +1209,36 @@ bool QDialogButtonBox::event(QEvent *event)
         if (!hasDefault && firstAcceptButton)
             firstAcceptButton->setDefault(true);
 #ifdef QT_SOFTKEYS_ENABLED
-        if (dialog) {
+        if (dialog)
             setFixedSize(0,0);
-            dialog->addActions(d->softKeyActions.values());
-        } else {
-            addActions(d->softKeyActions.values());
-        }
 #endif
     }else if (event->type() == QEvent::LanguageChange) {
         d->retranslateStrings();
     }
+#ifdef QT_SOFTKEYS_ENABLED
+    else if (event->type() == QEvent::ParentChange) {
+        QWidget *dialog = 0;
+        QWidget *p = this;
+        while (p && !p->isWindow()) {
+            p = p->parentWidget();
+            if ((dialog = qobject_cast<QDialog *>(p)))
+                break;
+        }
+
+        // If the parent changes, then move the softkeys
+        for (QHash<QAbstractButton *, QAction *>::const_iterator it = d->softKeyActions.constBegin();
+            it != d->softKeyActions.constEnd(); ++it) {
+            QAction *current = it.value();
+            QList<QWidget *> widgets = current->associatedWidgets();
+            foreach (QWidget *w, widgets)
+                w->removeAction(current);
+            if (dialog)
+                dialog->addAction(current);
+            else
+                addAction(current);
+        }
+    }
+#endif
 
     return QWidget::event(event);
 }

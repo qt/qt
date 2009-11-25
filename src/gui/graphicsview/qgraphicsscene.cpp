@@ -2556,11 +2556,9 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     item->d_ptr->resolveFont(d->font.resolve());
     item->d_ptr->resolvePalette(d->palette.resolve());
 
-    if (!item->d_ptr->explicitlyHidden) {
-       if (d->unpolishedItems.isEmpty())
-           QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
-       d->unpolishedItems.insert(item);
-    }
+   if (d->unpolishedItems.isEmpty())
+       QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+   d->unpolishedItems.insert(item);
 
     // Reenable selectionChanged() for individual items
     --d->selectionChanging;
@@ -4422,9 +4420,12 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         bool allowPartialCacheExposure = !viewRect.contains(deviceRect);
 #else
         // Only if deviceRect is 20% taller or wider than the desktop.
-        QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
-        bool allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
-                                          || desktopRect.height() * 1.2 < deviceRect.height());
+        bool allowPartialCacheExposure = false;
+        if (widget) {
+            QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
+            allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
+                                         || desktopRect.height() * 1.2 < deviceRect.height());
+        }
 #endif
         QRegion scrollExposure;
         if (deviceData->cacheIndent != QPoint() || allowPartialCacheExposure) {
@@ -4551,6 +4552,10 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const viewTransform,
                                       QRegion *exposedRegion, QWidget *widget)
 {
+    // Make sure we don't have unpolished items before we draw.
+    if (!unpolishedItems.isEmpty())
+        _q_polishItems();
+
     QRectF exposedSceneRect;
     if (exposedRegion && indexMethod != QGraphicsScene::NoIndex) {
         exposedSceneRect = exposedRegion->boundingRect().adjusted(-1, -1, 1, 1);
@@ -5077,6 +5082,10 @@ void QGraphicsScene::drawItems(QPainter *painter,
                                const QStyleOptionGraphicsItem options[], QWidget *widget)
 {
     Q_D(QGraphicsScene);
+    // Make sure we don't have unpolished items before we draw.
+    if (!d->unpolishedItems.isEmpty())
+        d->_q_polishItems();
+
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 

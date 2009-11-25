@@ -131,8 +131,8 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
     QWSSignalHandler::instance()->addObject(this);
 #endif
 #ifdef QT_DIRECTFB_WM
-    connect(QWSServer::instance(), SIGNAL(windowEvent(QWSWindow*, QWSServer::WindowEvent)),
-            this, SLOT(onWindowEvent(QWSWindow*, QWSServer::WindowEvent)));
+    connect(QWSServer::instance(), SIGNAL(windowEvent(QWSWindow*,QWSServer::WindowEvent)),
+            this, SLOT(onWindowEvent(QWSWindow*,QWSServer::WindowEvent)));
 #endif
 }
 

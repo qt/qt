@@ -30,7 +30,7 @@ win32:DEFINES += QT_NODLL
 
 INCLUDEPATH += $$QT_BUILD_TREE/include \
             $$QT_BUILD_TREE/include/QtCore \
-            $$QT_BUILD_TREE/include/QtXml \
+            $$QT_BUILD_TREE/include/QtXml
 
 DEPENDPATH += $$INCLUDEPATH \
               ../../corelib/global \
@@ -52,6 +52,7 @@ SOURCES += \
            ../../corelib/global/qnumeric.cpp \
            ../../corelib/io/qabstractfileengine.cpp \
            ../../corelib/io/qbuffer.cpp \
+           ../../corelib/io/qdatastream.cpp \
            ../../corelib/io/qdir.cpp \
            ../../corelib/io/qdiriterator.cpp \
            ../../corelib/io/qfile.cpp \

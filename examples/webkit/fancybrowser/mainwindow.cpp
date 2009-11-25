@@ -62,7 +62,7 @@ MainWindow::MainWindow(const QUrl& url)
     view = new QWebView(this);
     view->load(url);
     connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
-    connect(view, SIGNAL(titleChanged(const QString&)), SLOT(adjustTitle()));
+    connect(view, SIGNAL(titleChanged(QString)), SLOT(adjustTitle()));
     connect(view, SIGNAL(loadProgress(int)), SLOT(setProgress(int)));
     connect(view, SIGNAL(loadFinished(bool)), SLOT(finishLoading(bool)));
 
@@ -87,7 +87,7 @@ MainWindow::MainWindow(const QUrl& url)
     QMenu *effectMenu = menuBar()->addMenu(tr("&Effect"));
     effectMenu->addAction("Highlight all links", this, SLOT(highlightAllLinks()));
 
-    QAction *rotateAction = new QAction(this);
+    rotateAction = new QAction(this);
     rotateAction->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
     rotateAction->setCheckable(true);
     rotateAction->setText(tr("Turn images upside down"));
@@ -158,8 +158,8 @@ void MainWindow::finishLoading(bool)
     progress = 100;
     adjustTitle();
     view->page()->mainFrame()->evaluateJavaScript(jQuery);
-    // Enable this to see the dump of the internal render tree
-    //qDebug() << view->page()->mainFrame()->renderTreeDump();
+
+    rotateImages(rotateAction->isChecked());
 }
 //! [6]
 
@@ -172,10 +172,10 @@ void MainWindow::highlightAllLinks()
 //! [7]
 
 //! [8]
-void MainWindow::rotateImages(bool toggle)
+void MainWindow::rotateImages(bool invert)
 {
     QString code;
-    if (toggle)
+    if (invert)
         code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s'); $(this).css('-webkit-transform', 'rotate(180deg)') } )";
     else
         code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s'); $(this).css('-webkit-transform', 'rotate(0deg)') } )";

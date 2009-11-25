@@ -94,7 +94,7 @@ void Lighting::setupScene()
             else
                 item = new QGraphicsRectItem(0, 0, 50, 50);
 
-            item->setPen(QPen(Qt::black));
+            item->setPen(QPen(Qt::black, 1));
             item->setBrush(QBrush(Qt::white));
             QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect;
             effect->setBlurRadius(8);

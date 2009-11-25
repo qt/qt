@@ -86,11 +86,11 @@ PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine,
         m_ui.attributeWidget->header()->hide();
         m_ui.attributeWidget->setRootIsDecorated(false);
 
-        connect(m_ui.attributeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
+        connect(m_ui.attributeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
             this, SLOT(updateFilterMap()));
 
         connect(m_ui.filterWidget,
-            SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this,
+            SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this,
             SLOT(updateAttributes(QListWidgetItem*)));
 
         connect(m_ui.filterAddButton, SIGNAL(clicked()), this,

@@ -319,7 +319,11 @@ void QLongTapTimer::RunL()
 }
 
 QSymbianControl::QSymbianControl(QWidget *w)
-    : CCoeControl(), qwidget(w), m_ignoreFocusChanged(false)
+    : CCoeControl()
+    , qwidget(w)
+    , m_longTapDetector(0)
+    , m_ignoreFocusChanged(0)
+    , m_symbianPopupIsOpen(0)
 {
 }
 
@@ -357,9 +361,6 @@ QSymbianControl::~QSymbianControl()
         setFocusSafely(false);
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
-
-    if(m_previousEventLongTap)
-        QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons & ~Qt::RightButton;
 }
 
 void QSymbianControl::setWidget(QWidget *w)
@@ -374,19 +375,11 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     alienWidget = qwidget->childAt(widgetPos);
     if (!alienWidget)
         alienWidget = qwidget;
-    QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons &(~Qt::LeftButton);
-    QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons | Qt::RightButton;
-    QMouseEvent mEvent(QEvent::MouseButtonPress, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
-        Qt::RightButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
-
-    bool res = sendMouseEvent(alienWidget, &mEvent);
 
 #if !defined(QT_NO_CONTEXTMENU)
-    QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse, widgetPos, globalPos, mEvent.modifiers());
+    QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse, widgetPos, globalPos, Qt::NoModifier);
     qt_sendSpontaneousEvent(alienWidget, &contextMenuEvent);
 #endif
-
-    m_previousEventLongTap = true;
 }
 
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
@@ -510,12 +503,6 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
     Qt::KeyboardModifiers modifiers = mapToQtModifiers(pEvent.iModifiers);
 
-    if (m_previousEventLongTap)
-        if (type == QEvent::MouseButtonRelease){
-            button = Qt::RightButton;
-            QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons & ~Qt::RightButton;
-            m_previousEventLongTap = false;
-        }
     if (type == QMouseEvent::None)
         return;
 
@@ -725,7 +712,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
-                false, 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
+                (keyEvent.iRepeats != 0), 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
 //        WId wid = reinterpret_cast<RWindowGroup *>(keyEvent.Handle())->Child();
 //        if (!wid)
 //             Could happen if window isn't shown yet.
@@ -911,7 +898,18 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         return;
 
     if (IsFocused() && IsVisible()) {
+        if (m_symbianPopupIsOpen) {
+            QWidget *fw = QApplication::focusWidget();
+            if (fw) {
+                QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
+                QCoreApplication::sendEvent(fw, &event);
+            }
+            m_symbianPopupIsOpen = false;
+        }
+
         QApplication::setActiveWindow(qwidget->window());
+        qwidget->d_func()->setWindowIcon_sys(true);
+        qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
         // If widget is fullscreen, hide status pane and button container
         // otherwise show them.
@@ -924,6 +922,16 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             buttonGroup->MakeVisible(!isFullscreen);
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
+        if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog()) {
+            QWidget *fw = QApplication::focusWidget();
+            if (fw) {
+                QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
+                QCoreApplication::sendEvent(fw, &event);
+            }
+            m_symbianPopupIsOpen = true;
+            return;
+        }
+
         QApplication::setActiveWindow(0);
     }
     // else { We don't touch the active window unless we were explicitly activated or deactivated }
@@ -939,7 +947,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
             TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
             SetExtent(r.iTl, r.Size());
         }
-        qwidget->d_func()->setWindowIcon_sys(true);
+        if (IsFocused() && IsVisible()) {
+            qwidget->d_func()->setWindowIcon_sys(true);
+            qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
+        }
         break;
     case KUidValueCoeFontChangeEvent:
         // font change event

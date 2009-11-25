@@ -52,7 +52,7 @@
     painting implementation and item interaction through its event handlers.
     QGraphicsItem is part of \l{The Graphics View Framework}
 
-    \img graphicsview-items.png
+    \image graphicsview-items.png
 
     For convenience, Qt provides a set of standard graphics items for the most
     common shapes. These are:
@@ -378,14 +378,14 @@
     it's parent if it's z-value is negative. This flag enables setZValue() to
     toggle ItemStacksBehindParent.
 
-    \value ItemIsPanel. The item is a panel. A panel provides activation and
+    \value ItemIsPanel The item is a panel. A panel provides activation and
     contained focus handling. Only one panel can be active at a time (see
     QGraphicsItem::isActive()). When no panel is active, QGraphicsScene
     activates all non-panel items. Window items (i.e.,
     QGraphicsItem::isWindow() returns true) are panels. This flag was
     introduced in Qt 4.6.
 
-    \omitvalue ItemIsFocusScope Internal only (for now).
+    \omitvalue ItemIsFocusScope \omit Internal only (for now). \endomit
 
     \value ItemSendsScenePositionChanges The item enables itemChange()
     notifications for ItemScenePositionHasChanged. For performance reasons,
@@ -1240,7 +1240,7 @@ void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, con
         const QTransform reverseMap = worldTransform.inverted();
         const QVector<QRect> exposedRects(exposedRegion.rects());
         for (int i = 0; i < exposedRects.size(); ++i) {
-            option->exposedRect |= reverseMap.mapRect(exposedRects.at(i));
+            option->exposedRect |= reverseMap.mapRect(QRectF(exposedRects.at(i)));
             if (option->exposedRect.contains(brect))
                 break;
         }
@@ -10178,9 +10178,10 @@ bool QGraphicsTextItemPrivate::_q_mouseOnEdge(QGraphicsSceneMouseEvent *event)
 void QGraphicsTextItem::setTextInteractionFlags(Qt::TextInteractionFlags flags)
 {
     if (flags == Qt::NoTextInteraction)
-        setFlags(this->flags() & ~QGraphicsItem::ItemIsFocusable);
+        setFlags(this->flags() & ~(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod));
     else
-        setFlags(this->flags() | QGraphicsItem::ItemIsFocusable);
+        setFlags(this->flags() | QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
+
     dd->textControl()->setTextInteractionFlags(flags);
 }
 

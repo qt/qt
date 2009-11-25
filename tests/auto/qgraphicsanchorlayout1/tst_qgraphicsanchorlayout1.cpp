@@ -167,7 +167,7 @@ public:
         {
             setContentsMargins( 0,0,0,0 );
             if (name.isEmpty())
-                setData(0, QString::fromAscii("w%1").arg(int(this)));
+                setData(0, QString::fromAscii("w%1").arg(quintptr(this)));
             else
                 setData(0, name);
         }
@@ -1722,7 +1722,7 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         QRectF expected = truncate(item.rect);
         QRectF actual = truncate(widgets[item.index]->geometry());
 
-        QCOMPARE(expected, actual);
+        QCOMPARE(actual, expected);
     }
 
     // Test mirrored mode
@@ -1739,7 +1739,7 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         QRectF expected = truncate(mirroredRect);
         QRectF actual = truncate(widgets[item.index]->geometry());
 
-        QCOMPARE(expected, actual);
+        QCOMPARE(actual, expected);
         delete widgets[item.index];
     }
 

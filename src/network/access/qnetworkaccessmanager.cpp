@@ -52,6 +52,7 @@
 #include "qnetworkaccessfilebackend_p.h"
 #include "qnetworkaccessdatabackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
+#include "qfilenetworkreply_p.h"
 
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
@@ -681,6 +682,17 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
                                                     QIODevice *outgoingData)
 {
     Q_D(QNetworkAccessManager);
+
+    // fast path for GET on file:// URLs
+    // Also if the scheme is empty we consider it a file.
+    // The QNetworkAccessFileBackend will right now only be used
+    // for PUT or qrc://
+    if (op == QNetworkAccessManager::GetOperation
+         && (req.url().scheme() == QLatin1String("file")
+             || req.url().scheme().isEmpty())) {
+        return new QFileNetworkReply(this, req);
+    }
+
     QNetworkRequest request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
         outgoingData && !outgoingData->isSequential()) {

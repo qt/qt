@@ -2155,9 +2155,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
             wdi.titleWidth = tb->rect.width();
             QCFType<HIShapeRef> region;
             HIRect hirect = qt_hirectForQRect(tb->rect);
-            if (hirect.size.width == -1)
+            if (hirect.size.width <= 0)
                 hirect.size.width = 100;
-            if (hirect.size.height == -1)
+            if (hirect.size.height <= 0)
                 hirect.size.height = 30;
 
             HIThemeGetWindowShape(&hirect, &wdi, kWindowTitleBarRgn, &region);

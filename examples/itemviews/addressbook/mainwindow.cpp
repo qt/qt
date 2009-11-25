@@ -97,8 +97,8 @@ void MainWindow::createMenus()
     connect(removeAct, SIGNAL(triggered()),
         addressWidget, SLOT(removeEntry()));
 
-    connect(addressWidget, SIGNAL(selectionChanged(const QItemSelection &)),
-        this, SLOT(updateActions(const QItemSelection &)));
+    connect(addressWidget, SIGNAL(selectionChanged(QItemSelection)),
+        this, SLOT(updateActions(QItemSelection)));
 }
 //! [1b]
 

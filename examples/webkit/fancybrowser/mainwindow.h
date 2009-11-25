@@ -66,7 +66,7 @@ protected slots:
     void slotSourceDownloaded();
 
     void highlightAllLinks();
-    void rotateImages(bool toggle);
+    void rotateImages(bool invert);
     void removeGifImages();
     void removeInlineFrames();
     void removeObjectElements();
@@ -76,6 +76,7 @@ private:
     QString jQuery;
     QWebView *view;
     QLineEdit *locationEdit;
+    QAction *rotateAction;
     int progress;
 //! [1]
 };

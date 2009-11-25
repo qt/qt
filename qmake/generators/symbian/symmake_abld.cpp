@@ -379,10 +379,11 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     }
 }
 
-void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t)
+void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)
 {
     // We don't use extensions for anything in abld
     Q_UNUSED(t);
+    Q_UNUSED(iconTargetFile);
 }
 
 bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
@@ -449,4 +450,18 @@ void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool ad
         gnuMakefileName.append(".mk");
         t << "gnumakefile " << gnuMakefileName << endl;
     }
+}
+
+void SymbianAbldMakefileGenerator::appendAbldTempDirs(QStringList& sysincspaths, QString includepath)
+{
+    // As a workaround for Symbian toolchain insistence to treat include
+    // statements as relative to source file rather than the file they appear in,
+    // we generate extra temporary include directories to make
+    // relative include paths used in various headers to work properly.
+    // Note that this is not a fix-all solution; it's just a stop-gap measure
+    // to make Qt itself build until toolchain can support relative includes in
+    // a way that Qt expects.
+    QString epocPath("epoc32");
+    if (!includepath.contains(epocPath)) // No temp dirs for epoc includes
+        appendIfnotExist(sysincspaths, includepath + QString("/" QT_EXTRA_INCLUDE_DIR));
 }

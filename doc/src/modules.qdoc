@@ -289,33 +289,68 @@
 */
 
 /*!
-    \module QtScript
-    \title QtScript Module
-    \since 4.3
-    \contentspage All Qt Modules
-    \previouspage QtOpenVG
-    \nextpage QtScriptTools
-    \ingroup modules
+	\module QtScript
+	\title QtScript Module
+	\since 4.3
+	\contentspage All Qt Modules
+	\previouspage QtOpenVG
+	\nextpage QtScriptTools
+	\ingroup modules
 
-    \brief The QtScript module provides classes for making Qt applications scriptable.
+	\brief The QtScript module provides classes for making Qt applications scriptable.
 
-    The QtScript module only provides core scripting facilities; the
-    QtScriptTools module provides additional Qt Script-related
-    components that application developers may find useful.
+	The QtScript module only provides core scripting facilities; the
+	QtScriptTools module provides additional Qt Script-related
+	components that application developers may find useful.
 
-    \tableofcontents
+	\tableofcontents
 
-    To include the definitions of the module's classes, use the
-    following directive:
+	To include the definitions of the module's classes, use the
+	following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 0
+	\snippet doc/src/snippets/code/doc_src_qtscript.qdoc 0
 
-    To link against the module, add this line to your \l qmake \c .pro file:
+	To link against the module, add this line to your \l qmake \c .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 1
+	\snippet doc/src/snippets/code/doc_src_qtscript.qdoc 1
 
-    The QtScript module is part of the \l{Qt Full Framework Edition} and the
-    \l{Open Source Versions of Qt}.
+        For detailed information on how to make your application
+        scriptable with QtScript, see \l{Making Applications
+        Scriptable}.
+
+	The QtScript module is part of the \l{Qt Full Framework Edition} and the
+	\l{Open Source Versions of Qt}.
+
+        \section1 License Information
+
+        Qt Commercial Edition licensees that wish to distribute applications that
+        use the QtScript module need to be aware of their obligations under the
+        GNU Library General Public License (LGPL).
+
+        Developers using the Open Source Edition can choose to redistribute
+        the module under the appropriate version of the GNU LGPL.
+
+        \legalese
+        QtScript is licensed under the GNU Library General Public License.
+        Individual contributor names and copyright dates can be found
+        inline in the code.
+
+        This library is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Library General Public
+        License as published by the Free Software Foundation; either
+        version 2 of the License, or (at your option) any later version.
+
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+        Library General Public License for more details.
+
+        You should have received a copy of the GNU Library General Public License
+        along with this library; see the file COPYING.LIB.  If not, write to
+        the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+        Boston, MA 02110-1301, USA.
+        \endlegalese
+
 */
 
 /*!
@@ -374,59 +409,59 @@
 */
 
 /*!
-    \module QtSvg
-    \title QtSvg Module
-    \since 4.1
-    \contentspage All Qt Modules
-    \previouspage QtSql
-    \nextpage QtWebKit
-    \ingroup modules
+	\module QtSvg
+	\title QtSvg Module
+	\since 4.1
+	\contentspage All Qt Modules
+	\previouspage QtSql
+	\nextpage QtWebKit
+	\ingroup modules
 
-    \brief The QtSvg module provides classes for displaying the contents of SVG
-    files.
+	\brief The QtSvg module provides classes for displaying the contents of SVG
+	files.
 
-    To include the definitions of the module's classes, use the
-    following directive:
+	To include the definitions of the module's classes, use the
+	following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 0
+	\snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 0
 
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
+	To link against the module, add this line to your \l qmake \c
+	.pro file:
 
-    \snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 1
+	\snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 1
 
-    The QtSvg module is part of the \l{Qt Full Framework Edition} and the
-    \l{Open Source Versions of Qt}.
+	The QtSvg module is part of the \l{Qt Full Framework Edition} and the
+	\l{Open Source Versions of Qt}.
 
-    \section1 License Information
+	\section1 License Information
 
-    Some code for arc handling in this module is derived from code with
-    the following license:
+	Some code for arc handling in this module is derived from code with
+	the following license:
 
-    \legalese
-    Copyright  2002 USC/Information Sciences Institute
+	\legalese
+	Copyright  2002 USC/Information Sciences Institute
 
-    Permission to use, copy, modify, distribute, and sell this software
-    and its documentation for any purpose is hereby granted without
-    fee, provided that the above copyright notice appear in all copies
-    and that both that copyright notice and this permission notice
-    appear in supporting documentation, and that the name of
-    Information Sciences Institute not be used in advertising or
-    publicity pertaining to distribution of the software without
-    specific, written prior permission.  Information Sciences Institute
-    makes no representations about the suitability of this software for
-    any purpose.  It is provided "as is" without express or implied
-    warranty.
+	Permission to use, copy, modify, distribute, and sell this software
+	and its documentation for any purpose is hereby granted without
+	fee, provided that the above copyright notice appear in all copies
+	and that both that copyright notice and this permission notice
+	appear in supporting documentation, and that the name of
+	Information Sciences Institute not be used in advertising or
+	publicity pertaining to distribution of the software without
+	specific, written prior permission.  Information Sciences Institute
+	makes no representations about the suitability of this software for
+	any purpose.  It is provided "as is" without express or implied
+	warranty.
 
-    INFORMATION SCIENCES INSTITUTE DISCLAIMS ALL WARRANTIES WITH REGARD
-    TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
-    MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL INFORMATION SCIENCES
-    INSTITUTE BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-    DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA
-    OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-    TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    \endlegalese
+	INFORMATION SCIENCES INSTITUTE DISCLAIMS ALL WARRANTIES WITH REGARD
+	TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+	MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL INFORMATION SCIENCES
+	INSTITUTE BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+	DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA
+	OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+	TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+	PERFORMANCE OF THIS SOFTWARE.
+	\endlegalese
 */
 
 /*!
@@ -468,7 +503,7 @@
     \ingroup modules
 
     \brief The QtXmlPatterns module provides support for XPath,
-    XQuery, XSLT and XML schema-validation.
+    XQuery, XSLT and XML Schema validation.
 
     To include the definitions of the module's classes, use the
     following directive:

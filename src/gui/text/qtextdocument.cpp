@@ -64,6 +64,7 @@
 
 #include "qtextdocument_p.h"
 #include <private/qprinter_p.h>
+#include <private/qabstracttextdocumentlayout_p.h>
 
 #include <limits.h>
 
@@ -1722,6 +1723,9 @@ void QTextDocument::print(QPrinter *printer) const
         QAbstractTextDocumentLayout *layout = doc->documentLayout();
         layout->setPaintDevice(p.device());
 
+        // copy the custom object handlers
+        layout->d_func()->handlers = documentLayout()->d_func()->handlers;
+
         int dpiy = p.device()->logicalDpiY();
         int margin = 0;
         if (printer->fullPage() && !printer->d_func()->hasCustomPageMargins) {
@@ -1762,6 +1766,12 @@ void QTextDocument::print(QPrinter *printer) const
     // paranoia check
     fromPage = qMax(1, fromPage);
     toPage = qMin(doc->pageCount(), toPage);
+
+    if (toPage < fromPage) {
+        // if the user entered a page range outside the actual number
+        // of printable pages, just return
+        return;
+    }
 
     if (printer->pageOrder() == QPrinter::LastPageFirst) {
         int tmp = fromPage;

@@ -363,7 +363,10 @@ void QSvgStrokeStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraSt
     if (m_strokeMiterLimitSet)
         pen.setMiterLimit(m_stroke.miterLimit());
 
-    if (setDashOffsetNeeded) {
+    // You can have dash offset on solid strokes in SVG files, but not in Qt.
+    // QPen::setDashOffset() will set the pen style to Qt::CustomDashLine,
+    // so don't call the method if the pen is solid.
+    if (setDashOffsetNeeded && pen.style() != Qt::SolidLine) {
         qreal currentWidth = pen.widthF();
         if (currentWidth == 0)
             currentWidth = 1;

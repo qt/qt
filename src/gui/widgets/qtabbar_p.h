@@ -75,7 +75,7 @@ class QTabBarPrivate  : public QWidgetPrivate
 public:
     QTabBarPrivate()
         :currentIndex(-1), pressedIndex(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
-        drawBase(true), scrollOffset(0), elideModeSetByUser(false), expanding(true), closeButtonOnTabs(false),
+        drawBase(true), scrollOffset(0), elideModeSetByUser(false), useScrollButtonsSetByUser(false), expanding(true), closeButtonOnTabs(false),
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
         dragInProgress(false), documentMode(false), movingTab(0)
 #ifdef Q_WS_MAC
@@ -188,6 +188,7 @@ public:
     Qt::TextElideMode elideMode;
     bool elideModeSetByUser;
     bool useScrollButtons;
+    bool useScrollButtonsSetByUser;
 
     bool expanding;
     bool closeButtonOnTabs;

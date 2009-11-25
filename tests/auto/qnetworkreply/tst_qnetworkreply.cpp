@@ -225,6 +225,9 @@ private Q_SLOTS:
     void ioPostToHttpUploadProgress();
     void ioPostToHttpEmtpyUploadProgress();
 
+    void lastModifiedHeaderForFile();
+    void lastModifiedHeaderForHttp();
+
     void rateControl_data();
     void rateControl();
 
@@ -2209,7 +2212,7 @@ void tst_QNetworkReply::ioGetWithManyProxies()
     connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
-    QTestEventLoop::instance().enterLoop(10);
+    QTestEventLoop::instance().enterLoop(15);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
@@ -2619,12 +2622,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QSignalSpy authenticationRequiredSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy proxyAuthenticationRequiredSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-#ifdef Q_OS_SYMBIAN
-    QTestEventLoop::instance().enterLoop(6);
-#else
-    QTestEventLoop::instance().enterLoop(3);
-#endif
-
+    QTestEventLoop::instance().enterLoop(12);
     disconnect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
@@ -2967,6 +2965,41 @@ void tst_QNetworkReply::ioPostToHttpEmtpyUploadProgress()
 
     incomingSocket->close();
     server.close();
+}
+
+void tst_QNetworkReply::lastModifiedHeaderForFile()
+{
+    QFileInfo fileInfo(SRCDIR "./bigfile");
+    QUrl url = QUrl::fromLocalFile(fileInfo.filePath());
+
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.head(request);
+    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+    QCOMPARE(header, fileInfo.lastModified());
+}
+
+void tst_QNetworkReply::lastModifiedHeaderForHttp()
+{
+    // Tue, 22 May 2007 12:04:57 GMT according to webserver
+    QUrl url = "http://" + QtNetworkSettings::serverName() + "/gif/fluke.gif";
+
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.head(request);
+    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+    QDateTime realDate = QDateTime::fromString("2007-05-22T12:04:57", Qt::ISODate);
+    realDate.setTimeSpec(Qt::UTC);
+
+    QCOMPARE(header, realDate);
 }
 
 void tst_QNetworkReply::rateControl_data()

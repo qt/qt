@@ -416,6 +416,11 @@ void QX11PixmapData::fromImage(const QImage &img,
     d = img.depth();
     is_null = (w <= 0 || h <= 0);
 
+    if (is_null) {
+        w = h = 0;
+        return;
+    }
+
     if (defaultScreen >= 0 && defaultScreen != xinfo.screen()) {
         QX11InfoData* xd = xinfo.getX11Data(true);
         xd->screen = defaultScreen;

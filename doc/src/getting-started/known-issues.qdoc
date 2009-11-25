@@ -59,57 +59,35 @@
 
     \section1 Installation Issues
 
-    \section2 Building the Source Package on Windows 7
+    \section2 Installing the Source Package on Unix systems
 
     \list
-    \o  When building Qt 4.5.0 with Windows 7, the build fails with an error
-        message regarding failing to embed manifest. This a known issue with
-        Windows 7, explained in the Windows 7 SDK Beta
-        \l{http://download.microsoft.com/download/8/8/0/8808A472-6450-4723-9C87-977069714B27/ReleaseNotes.Htm}
-        {release notes}. A workaround for this issue is to patch the
-        \bold{embed_manifest_exe.prf} file with the following:
-
-        \code
-        diff --git a/mkspecs/features/win32/embed_manifest_exe.prf b/mkspecs/features/win32/embed_manifest_exe.prf
-        index e1747f1..05f116e 100644
-        --- a/mkspecs/features/win32/embed_manifest_exe.prf
-        +++ b/mkspecs/features/win32/embed_manifest_exe.prf
-        @@ -8,4 +8,9 @@ if(win32-msvc2005|win32-msvc2008):!equals(TEMPLATE_PREFIX, "vc"):equals(TEMPLATE
-             QMAKE_POST_LINK = $$quote(mt.exe -nologo -manifest \"$$replace(OBJECTS_DIR,/,\\)\\$${NOPATH_TARGET}.intermediate.ma
-        nifest\" -outputresource:$(DESTDIR_TARGET);1$$escape_expand(\n\t))
-             QMAKE_POST_LINK += $$QMAKE_PREV_POST_LINK
-             QMAKE_CLEAN += \"$$replace(OBJECTS_DIR,/,\\)\\$${NOPATH_TARGET}.intermediate.manifest\"
-        +    isEmpty(RC_FILE) {
-        +        system("echo.>$$replace(OUT_PWD,/,\\)\\$$replace(OBJECTS_DIR,/,\\)\\Windows7WorkAround.rc")
-        +        RC_FILE = $$replace(OUT_PWD,/,\\)\\$$replace(OBJECTS_DIR,/,\\)\\Windows7WorkAround.rc
-        +       }
-        +
-         }
-        \endcode
-
-    \section2 Installing the Source Package on Unix systems
 
     \o  If you download a Zip source package, you will need to convert
         Windows-style line endings (CR/LF) to Unix-style line-endings (LF) when
         you uncompress the package.  To do this, give the "-a" option when you
         run the "unzip' command.
-    
-        If you fail to supply the "-a" option when unzipping the package, you
+
+    \o  If you fail to supply the "-a" option when unzipping the package, you
         will see the following error message when you attempt to execute the
         configure command:
         "bash: ./configure: /bin/sh^M: bad interpreter: No such file or directory"
+
     \endlist
 
     \section2 Installing on Mac OS X 10.6 "Snow Leopard"
+
     \list
+
     \o Performing a new install of the Qt 4.6 beta on Snow Leopard
        triggers a bug in the installer that causes the install to fail.
        Updating an existing Qt installation works fine.
 
-       There are two workarounds, either disable spotlight for the target
+    \o There are two workarounds, either disable spotlight for the target
        drive during the install, or do a custom install where you deselect
        documentation and examples. Run the installer again as a full
        install to get the documentation and examples installed.
+
     \endlist
 
     \section1 Issues with Third Party Software
@@ -135,6 +113,7 @@
     \section2 Windows
 
     \list
+
     \o  When using version 6.14.11.6921 of the NVIDIA drivers for the GeForce
         6600 GT under Windows XP, Qt applications which use drag and drop will
         display reduced size drag and drop icons when run alongside
@@ -150,13 +129,27 @@
     \o  A bug in the Firebird database can cause an application to crash when
         \c{fbembed.dll} is unloaded. The bug is fixed in version 2.5.
 
+    \o  On Windows 7, resizing windows is slower than on Vista/Xp. This is because
+        the gesture initialization process (required for native gesture support)
+        currently calls winId() on widgets, which causes whole widget hierarchies
+        to use native window handles. This slows down resizing.
+
     \endlist
 
     \section2 Mac OS X
 
     \list
+
     \o  If a sheet is opened for a given window, clicking the title bar of that
         window will cause it to flash. This behavior has been reported to Apple
         (bug number 5827676).
+
+    \endlist
+
+    \section2 Symbian
+
+    \list
+    \o  Check known issues for Symbian at
+    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues} {Known Issues Wiki}.
     \endlist
 */

@@ -2989,7 +2989,6 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
 #ifndef QT_NO_COMBOBOX
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
-            p->save();
             QBrush editBrush = cmb->palette.brush(QPalette::Base);
             if ((cmb->subControls & SC_ComboBoxFrame)) {
                 if (cmb->frame) {
@@ -3059,7 +3058,6 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                     proxy()->drawPrimitive(PE_FrameFocusRect, &focus, p, widget);
                 }
             }
-            p->restore();
         }
         break;
 #endif // QT_NO_COMBOBOX

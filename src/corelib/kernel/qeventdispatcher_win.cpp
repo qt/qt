@@ -675,11 +675,6 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
     bool seenWM_QT_SENDPOSTEDEVENTS = false;
     bool needWM_QT_SENDPOSTEDEVENTS = false;
     do {
-        if (! (flags & QEventLoop::EventLoopExec)) {
-            // when called "manually", always send posted events
-            QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
-        }
-
         DWORD waitRet = 0;
         HANDLE pHandles[MAXIMUM_WAIT_OBJECTS - 1];
         QVarLengthArray<MSG> processedTimers;
@@ -730,7 +725,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
             }
             if (haveMessage) {
-                if (msg.message == WM_QT_SENDPOSTEDEVENTS && !(flags & QEventLoop::EventLoopExec)) {
+                if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     if (seenWM_QT_SENDPOSTEDEVENTS) {
                         needWM_QT_SENDPOSTEDEVENTS = true;
                         continue;
@@ -784,6 +779,11 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             }
         }
     } while (canWait);
+
+    if (!seenWM_QT_SENDPOSTEDEVENTS && (flags & QEventLoop::EventLoopExec) == 0) {
+        // when called "manually", always send posted events
+        QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+    }
 
     if (needWM_QT_SENDPOSTEDEVENTS)
         PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);

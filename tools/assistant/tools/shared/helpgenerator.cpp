@@ -49,10 +49,10 @@ QT_BEGIN_NAMESPACE
 HelpGenerator::HelpGenerator()
 {
     generator = new QHelpGenerator(this);
-    connect(generator, SIGNAL(statusChanged(const QString&)),
-        this, SLOT(printStatus(const QString&)));
-    connect(generator, SIGNAL(warning(const QString&)),
-        this, SLOT(printWarning(const QString&)));
+    connect(generator, SIGNAL(statusChanged(QString)),
+        this, SLOT(printStatus(QString)));
+    connect(generator, SIGNAL(warning(QString)),
+        this, SLOT(printWarning(QString)));
 }
 
 bool HelpGenerator::generate(QHelpDataInterface *helpData,

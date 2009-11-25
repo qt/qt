@@ -501,7 +501,7 @@ static bool qt_win_set_IFileDialogOptions(IFileDialog *pfd,
     DWORD newOptions;
     hr = pfd->GetOptions(&newOptions);
     if (SUCCEEDED(hr)) {
-        newOptions |= (FOS_NOCHANGEDIR | FOS_NOREADONLYRETURN);
+        newOptions |= FOS_NOCHANGEDIR;
         if (mode == QFileDialog::ExistingFile ||
              mode == QFileDialog::ExistingFiles)
             newOptions |= (FOS_FILEMUSTEXIST | FOS_PATHMUSTEXIST);

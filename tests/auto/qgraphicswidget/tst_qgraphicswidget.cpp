@@ -160,6 +160,8 @@ private slots:
     void widgetSendsGeometryChanges();
     void respectHFW();
     void addChildInpolishEvent();
+    void polishEvent();
+    void polishEvent2();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2768,6 +2770,55 @@ void tst_QGraphicsWidget::addChildInpolishEvent()
     QCOMPARE(PolishWidget::numberOfPolish, 2);
 }
 
+void tst_QGraphicsWidget::polishEvent()
+{
+    class MyGraphicsWidget : public QGraphicsWidget
+    { public:
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
+        { events << QEvent::Paint; }
+        void polishEvent()
+        { events << QEvent::Polish; }
+        QList<QEvent::Type> events;
+    };
+
+    QGraphicsScene scene;
+
+    MyGraphicsWidget *widget = new MyGraphicsWidget;
+    scene.addItem(widget);
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    // Make sure the item is painted.
+    QTRY_VERIFY(widget->events.contains(QEvent::Paint));
+
+    // Make sure the item got polish before paint.
+    QCOMPARE(widget->events.at(0), QEvent::Polish);
+}
+
+void tst_QGraphicsWidget::polishEvent2()
+{
+    class MyGraphicsWidget : public QGraphicsWidget
+    { public:
+    void polishEvent()
+    { events << QEvent::Polish; }
+    QList<QEvent::Type> events;
+    };
+
+    QGraphicsScene scene;
+
+    MyGraphicsWidget *widget = new MyGraphicsWidget;
+    widget->hide();
+    scene.addItem(widget);
+
+    widget->events.clear();
+
+    QApplication::processEvents();
+
+    // Make sure the item got polish event.
+    QVERIFY(widget->events.contains(QEvent::Polish));
+}
 
 QTEST_MAIN(tst_QGraphicsWidget)
 #include "tst_qgraphicswidget.moc"

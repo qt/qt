@@ -121,17 +121,16 @@ struct AnchorData : public QSimplexVariable {
     };
 
     AnchorData()
-        : QSimplexVariable(), item(0), from(0), to(0),
+        : QSimplexVariable(), from(0), to(0),
           minSize(0), prefSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
-          sizeAtMaximum(0),
-          graphicsAnchor(0), skipInPreferred(0),
-          type(Normal), hasSize(true), isLayoutAnchor(false),
+          sizeAtMaximum(0), item(0), graphicsAnchor(0),
+          type(Normal), isLayoutAnchor(false),
           isCenterAnchor(false), orientation(0),
           dependency(Independent) {}
 
     virtual void updateChildrenSizes() {}
-    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
+    void refreshSizeHints(const QLayoutStyleInfo *styleInfo = 0);
 
     virtual ~AnchorData() {}
 
@@ -141,43 +140,35 @@ struct AnchorData : public QSimplexVariable {
     QString name;
 #endif
 
-    inline void setPreferredSize(qreal size)
-    {
-        prefSize = size;
-        hasSize = true;
-    }
-
-    inline void unsetSize()
-    {
-        hasSize = false;
-    }
-
-    // Internal anchors have associated items
-    QGraphicsLayoutItem *item;
-
     // Anchor is semantically directed
     AnchorVertex *from;
     AnchorVertex *to;
 
-    // Size restrictions of this edge. For anchors internal to items, these
-    // values are derived from the respective item size hints. For anchors
-    // that were added by users, these values are equal to the specified anchor
-    // size.
+    // Nominal sizes
+    // These are the intrinsic size restrictions for a given item. They are
+    // used as input for the calculation of the actual sizes.
+    // These values are filled by the refreshSizeHints method, based on the
+    // anchor size policy, the size hints of the item it (possibly) represents
+    // and the layout spacing information.
     qreal minSize;
     qreal prefSize;
     qreal maxSize;
 
+    // Calculated sizes
     // These attributes define which sizes should that anchor be in when the
     // layout is at its minimum, preferred or maximum sizes. Values are
     // calculated by the Simplex solver based on the current layout setup.
     qreal sizeAtMinimum;
     qreal sizeAtPreferred;
     qreal sizeAtMaximum;
+
+    // References to the classes that represent this anchor in the public world
+    // An anchor may represent a LayoutItem, it may also be acessible externally
+    // through a GraphicsAnchor "handler".
+    QGraphicsLayoutItem *item;
     QGraphicsAnchor *graphicsAnchor;
 
-    uint skipInPreferred : 1;
     uint type : 2;            // either Normal, Sequential or Parallel
-    uint hasSize : 1;         // if false, get size from style.
     uint isLayoutAnchor : 1;  // if this anchor is an internal layout anchor
     uint isCenterAnchor : 1;
     uint orientation : 1;
@@ -204,9 +195,7 @@ struct SequentialAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
-
-    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
+    void calculateSizeHints();
 
     QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
     QVector<AnchorData*> m_edges;               // keep the list of edges too.
@@ -233,9 +222,7 @@ struct ParallelAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
-
-    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
+    bool calculateSizeHints();
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
@@ -350,7 +337,13 @@ public:
 
     QGraphicsAnchorLayoutPrivate *layoutPrivate;
     AnchorData *data;
+
+    // Size information for user controlled anchor
     QSizePolicy::Policy sizePolicy;
+    qreal preferredSize;
+
+    uint hasSize : 1;         // if false, get size from style.
+    uint reversed : 1;        // if true, the anchor was inverted to keep its value positive
 };
 
 
@@ -445,11 +438,6 @@ public:
 
     void removeAnchor(AnchorVertex *firstVertex, AnchorVertex *secondVertex);
     void removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2);
-    void setAnchorSize(AnchorData *data, const qreal *anchorSize);
-    void anchorSize(const AnchorData *data,
-                    qreal *minSize = 0,
-                    qreal *prefSize = 0,
-                    qreal *maxSize = 0) const;
 
     void removeAnchors(QGraphicsLayoutItem *item);
 
@@ -489,7 +477,7 @@ public:
                            const QList<AnchorData *> &variables);
 
     // Support functions for calculateGraph()
-    bool refreshAllSizeHints(Orientation orientation);
+    void refreshAllSizeHints(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
     void updateAnchorSizes(Orientation orientation);
@@ -528,8 +516,6 @@ public:
     void calculateVertexPositions(Orientation orientation);
     void setupEdgesInterpolation(Orientation orientation);
     void interpolateEdge(AnchorVertex *base, AnchorData *edge);
-    void interpolateSequentialEdges(SequentialAnchorData *edge);
-    void interpolateParallelEdges(ParallelAnchorData *edge);
 
     // Linear Programming solver methods
     bool solveMinMax(const QList<QSimplexConstraint *> &constraints,
@@ -576,8 +562,6 @@ public:
     Interval interpolationInterval[2];
     qreal interpolationProgress[2];
 
-    // ###
-    bool graphSimplified[2];
     bool graphHasConflicts[2];
     QSet<QGraphicsLayoutItem *> m_floatItems[2];
 
