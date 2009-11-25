@@ -331,8 +331,10 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
                                                    bool ignoreTrans)
 {
     Q_Q(QmlStateGroup);
-    if (!componentComplete)
+    if (!componentComplete) {
+        currentState = state;
         return;
+    }
 
     if (applyingState) {
         qWarning() << "Can't apply a state change as part of a state definition.";
