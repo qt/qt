@@ -812,6 +812,12 @@ void QSymbianControl::Draw(const TRect& controlRect) const
     if (!engine)
         return;
 
+    const bool sendNativePaintEvents = qwidget->d_func()->extraData()->receiveNativePaintEvents;
+    if (sendNativePaintEvents) {
+        const QRect r = qt_TRect2QRect(controlRect);
+        QMetaObject::invokeMethod(qwidget, "beginNativePaintEvent", Qt::DirectConnection, Q_ARG(QRect, r));
+    }
+
     // Map source rectangle into coordinates of the backing store.
     const QPoint controlBase(controlRect.iTl.iX, controlRect.iTl.iY);
     const QPoint backingStoreBase = qwidget->mapTo(qwidget->window(), controlBase);
@@ -850,6 +856,19 @@ void QSymbianControl::Draw(const TRect& controlRect) const
         }
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());
+    }
+
+    if (sendNativePaintEvents) {
+        const QRect r = qt_TRect2QRect(controlRect);
+        // The draw ops aren't actually sent to WSERV until the graphics
+        // context is deactivated, which happens in the function calling
+        // this one.  We therefore delay the delivery of endNativePaintEvent,
+        // to ensure that drawing has completed by the time the widget
+        // receives the event.  Note that, if the widget needs to ensure
+        // that the draw ops have actually been executed into the output
+        // framebuffer, a call to RWsSession::Flush is required in the
+        // endNativePaintEvent implementation.
+        QMetaObject::invokeMethod(qwidget, "endNativePaintEvent", Qt::QueuedConnection, Q_ARG(QRect, r));
     }
 }
 
