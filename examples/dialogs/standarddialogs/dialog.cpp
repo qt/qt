@@ -124,7 +124,7 @@ Dialog::Dialog(QWidget *parent)
     errorLabel = new QLabel;
     errorLabel->setFrameStyle(frameStyle);
     QPushButton *errorButton =
-            new QPushButton(tr("QErrorMessage::show&M&essage()"));
+            new QPushButton(tr("QErrorMessage::showM&essage()"));
 
     connect(integerButton, SIGNAL(clicked()), this, SLOT(setInteger()));
     connect(doubleButton, SIGNAL(clicked()), this, SLOT(setDouble()));

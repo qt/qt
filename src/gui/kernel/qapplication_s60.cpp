@@ -908,6 +908,8 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         }
 
         QApplication::setActiveWindow(qwidget->window());
+        qwidget->d_func()->setWindowIcon_sys(true);
+        qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
         // If widget is fullscreen, hide status pane and button container
         // otherwise show them.
@@ -945,7 +947,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
             TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
             SetExtent(r.iTl, r.Size());
         }
-        qwidget->d_func()->setWindowIcon_sys(true);
+        if (IsFocused() && IsVisible()) {
+            qwidget->d_func()->setWindowIcon_sys(true);
+            qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
+        }
         break;
     case KUidValueCoeFontChangeEvent:
         // font change event
