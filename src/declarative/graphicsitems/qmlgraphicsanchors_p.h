@@ -72,8 +72,8 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsAnchors : public QObject
     Q_PROPERTY(qreal bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
     Q_PROPERTY(qreal verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged())
-    Q_PROPERTY(QmlGraphicsItem *fill READ fill WRITE setFill NOTIFY fillChanged)
-    Q_PROPERTY(QmlGraphicsItem *centerIn READ centerIn WRITE setCenterIn NOTIFY centerInChanged)
+    Q_PROPERTY(QmlGraphicsItem *fill READ fill WRITE setFill RESET resetFill NOTIFY fillChanged)
+    Q_PROPERTY(QmlGraphicsItem *centerIn READ centerIn WRITE setCenterIn RESET resetCenterIn NOTIFY centerInChanged)
 
 public:
     QmlGraphicsAnchors(QObject *parent=0);
@@ -143,9 +143,11 @@ public:
 
     QmlGraphicsItem *fill() const;
     void setFill(QmlGraphicsItem *);
+    void resetFill();
 
     QmlGraphicsItem *centerIn() const;
     void setCenterIn(QmlGraphicsItem *);
+    void resetCenterIn();
 
     UsedAnchors usedAnchors() const;
 

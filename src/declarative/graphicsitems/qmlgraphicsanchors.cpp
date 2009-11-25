@@ -355,6 +355,7 @@ void QmlGraphicsAnchors::setFill(QmlGraphicsItem *f)
     if (!f) {
         d->remDepend(d->fill);
         d->fill = f;
+        emit fillChanged();
         return;
     }
     if (f != d->item->parentItem() && f->parentItem() != d->item->parentItem()){
@@ -366,6 +367,11 @@ void QmlGraphicsAnchors::setFill(QmlGraphicsItem *f)
     d->addDepend(d->fill);
     emit fillChanged();
     d->fillChanged();
+}
+
+void QmlGraphicsAnchors::resetFill()
+{
+    setFill(0);
 }
 
 QmlGraphicsItem *QmlGraphicsAnchors::centerIn() const
@@ -383,6 +389,7 @@ void QmlGraphicsAnchors::setCenterIn(QmlGraphicsItem* c)
     if (!c) {
         d->remDepend(d->centerIn);
         d->centerIn = c;
+        emit centerInChanged();
         return;
     }
     if (c != d->item->parentItem() && c->parentItem() != d->item->parentItem()){
@@ -395,6 +402,11 @@ void QmlGraphicsAnchors::setCenterIn(QmlGraphicsItem* c)
     d->addDepend(d->centerIn);
     emit centerInChanged();
     d->centerInChanged();
+}
+
+void QmlGraphicsAnchors::resetCenterIn()
+{
+    setCenterIn(0);
 }
 
 bool QmlGraphicsAnchorsPrivate::calcStretch(const QmlGraphicsAnchorLine &edge1,
