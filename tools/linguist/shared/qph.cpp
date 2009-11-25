@@ -166,9 +166,8 @@ static bool saveQPH(const Translator &translator, QIODevice &dev, ConversionData
                     QChar(Translator::TextVariantSeparator));
         t << "    <target>" << protect(str)
             << "</target>\n";
-        if (!msg.context().isEmpty() || !msg.comment().isEmpty())
-            t << "    <definition>" << msg.context() << msg.comment()
-                << "</definition>\n";
+        if (!msg.comment().isEmpty())
+            t << "    <definition>" << msg.comment() << "</definition>\n";
         t << "</phrase>\n";
     }
     t << "</QPH>\n";
