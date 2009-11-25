@@ -1103,9 +1103,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         parent->itemChange(QGraphicsItem::ItemChildAddedChange, thisPointerVariant);
         if (scene) {
             if (!implicitUpdate)
-                scene->d_func()->markDirty(q_ptr, QRect(),
-                                           /*invalidateChildren=*/false,
-                                           /*maybeDirtyClipPath=*/true);
+                scene->d_func()->markDirty(q_ptr);
 
             // Re-enable scene pos notifications for new ancestors
             if (scenePosDescendants || (flags & QGraphicsItem::ItemSendsScenePositionChanges))
@@ -1146,11 +1144,8 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
                 setEnabledHelper(true, /* explicit = */ false);
 
             // If the item is being deleted, the whole scene will be updated.
-            if (scene) {
-                scene->d_func()->markDirty(q_ptr, QRect(),
-                                           /*invalidateChildren=*/false,
-                                           /*maybeDirtyClipPath=*/true);
-            }
+            if (scene)
+                scene->d_func()->markDirty(q_ptr);
         }
     }
 
@@ -1773,9 +1768,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
             else
                 d_ptr->scene->d_func()->unregisterScenePosItem(this);
         }
-        d_ptr->scene->d_func()->markDirty(this, QRectF(),
-                                          /*invalidateChildren=*/true,
-                                          /*maybeDirtyClipPath*/true);
+        d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
     }
 
     // Notify change.
@@ -2123,12 +2116,8 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
         QGraphicsItemCache *c = (QGraphicsItemCache *)qVariantValue<void *>(extra(ExtraCacheData));
         if (c)
             c->purge();
-        if (scene) {
-            scene->d_func()->markDirty(q_ptr, QRectF(),
-                                       /*invalidateChildren=*/false,
-                                       /*maybeDirtyClipPath=*/false,
-                                       /*force=*/true);
-        }
+        if (scene)
+            scene->d_func()->markDirty(q_ptr, QRectF(), /*invalidateChildren=*/false, /*force=*/true);
     }
 
     // Certain properties are dropped as an item becomes invisible.
@@ -2538,7 +2527,6 @@ void QGraphicsItem::setOpacity(qreal opacity)
 #endif //QT_NO_GRAPHICSEFFECT
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
-                                          /*maybeDirtyClipPath=*/false,
                                           /*force=*/false,
                                           /*ignoreOpacity=*/true);
     }
@@ -2586,8 +2574,11 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
         d_ptr->graphicsEffect = 0;
         if (oldEffectPrivate) {
             oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
-            if (d_ptr->scene) // Update the views directly.
-                d_ptr->scene->d_func()->markDirty(this, QRectF(), false, false, false, false, true);
+            if (d_ptr->scene) { // Update the views directly.
+                d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/false,
+                                                  /*force=*/false, /*ignoreOpacity=*/false,
+                                                  /*removeItemFromScene=*/true);
+            }
         }
     } else {
         // Set new effect.
@@ -4988,10 +4979,9 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
     \internal
     Returns true if we can discard an update request; otherwise false.
 */
-bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignoreVisibleBit,
-                                                bool ignoreDirtyBit, bool ignoreOpacity) const
+bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreVisibleBit, bool ignoreDirtyBit,
+                                                bool ignoreOpacity) const
 {
-    Q_UNUSED(ignoreClipping);
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
     return !scene
@@ -7147,9 +7137,7 @@ void QGraphicsItem::prepareGeometryChange()
 
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
         scenePrivate->index->prepareBoundingRectChange(this);
-        scenePrivate->markDirty(this, QRectF(),
-                                /*invalidateChildren=*/true,
-                                /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
+        scenePrivate->markDirty(this, QRectF(), /*invalidateChildren=*/true);
 
         // For compatibility reasons, we have to update the item's old geometry
         // if someone is connected to the changed signal or the scene has no views.
