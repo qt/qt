@@ -3016,6 +3016,14 @@ void tst_QTableView::spans_data()
       << QPoint(2, 0)
       << 1
       << 2;
+
+    QTest::newRow("QTBUG-6004: No failing Q_ASSERT, then it passes.")
+      << 5 << 5
+      << (SpanList() << QRect(0, 0, 2, 2) << QRect(0, 0, 1, 1))
+      << false
+      << QPoint(0, 0)
+      << 1
+      << 1;
 }
 
 void tst_QTableView::spans()

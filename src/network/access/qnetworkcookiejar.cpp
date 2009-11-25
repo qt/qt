@@ -192,9 +192,10 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
         // validate the cookie & set the defaults if unset
         if (cookie.path().isEmpty())
             cookie.setPath(defaultPath);
-        else if (!isParentPath(pathAndFileName, cookie.path()))
-            continue;           // not accepted
-
+        // don't do path checking. See http://bugreports.qt.nokia.com/browse/QTBUG-5815
+//        else if (!isParentPath(pathAndFileName, cookie.path())) {
+//            continue;           // not accepted
+//        }
         if (cookie.domain().isEmpty()) {
             cookie.setDomain(defaultDomain);
         } else {

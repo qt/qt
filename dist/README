@@ -52,7 +52,7 @@ documentation is available at http://qt.nokia.com/doc/.
 SUPPORTED PLATFORMS
 
 For a complete list of supported platforms, see
-http://qt.nokia.com/doc/%VERSION%/supported-platforms.html.
+http://qt.nokia.com/doc/%SHORTVERSION%/supported-platforms.html.
 
 
 COMMERCIAL EDITIONS
@@ -65,7 +65,7 @@ the QtCore, QtGui (except QGraphicsView), QtTest, QtDBus and
 Qt3Support modules.
 
 For a full listing of the contents of each module, please refer to 
-http://qt.nokia.com/doc/%VERSION%/modules.html
+http://qt.nokia.com/doc/%SHORTVERSION%/modules.html
 
 
 HOW TO REPORT A BUG
