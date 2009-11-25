@@ -56,19 +56,32 @@ QT_BEGIN_NAMESPACE
     \qmlclass PropertyChanges QmlPropertyChanges
     \brief The PropertyChanges element describes new property values for a state.
 
-    PropertyChanges changes the properties of an item. It allows you to specify the property
-    names and values for a state similar to how you normally would specify them for the
-    actual item:
+    PropertyChanges provides a state change that modifies the properties of an item.
 
-    \code
-    PropertyChanges {
-        target: myRect
-        x: 52
-        y: 300
-        width: 48
+    Here is a property change that modifies the text and color of a Text element
+    when it is clicked:
+    
+    \qml
+    Text {
+        id: myText
+        width: 100; height: 100
+        text: "Hello"
+        color: "blue"
+
+        states: State {
+            name: "myState"
+
+            PropertyChanges {
+                target: myText
+                text: "Goodbye"
+                color: "red"
+            }
+        }
+
+        MouseRegion { anchors.fill: parent; onClicked: myText.state = 'myState' }
     }
-    \endcode
-
+    \endqml
+    
     State-specific script for signal handlers can also be specified:
 
     \qml
@@ -92,7 +105,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlproperty Object PropertyChanges::target
-    This property holds the object that the properties to change belong to
+    This property holds the object which contains the properties to be changed.
 */
 
 class QmlReplaceSignalHandler : public ActionEvent

@@ -173,6 +173,7 @@ void QmlGraphicsImagePrivate::setPixmap(const QPixmap &pixmap)
     q->setImplicitHeight(pix.height());
 
     q->update();
+    emit q->pixmapChanged();
 }
 
 /*!
