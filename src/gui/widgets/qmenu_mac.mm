@@ -774,8 +774,12 @@ QMacMenuAction::~QMacMenuAction()
                    && menuItem != [getMenuLoader() quitMenuItem]) {
             [menuItem setHidden:YES];
         }
+        // Only clear the tag if it points to this action. Since items like
+        // 'Quit' is being reused, we sometimes end up redirecting the item
+        // before deleting the assosiated action.
+        if (action.data() == reinterpret_cast<QAction *>([menuItem tag]))
+            [menuItem setTag:nil];
     }
-    [menuItem setTag:nil];
     [menuItem release];
 #endif
 }
