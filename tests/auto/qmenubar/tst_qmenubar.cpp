@@ -1667,6 +1667,9 @@ void tst_QMenuBar::menubarSizeHint()
 
 void tst_QMenuBar::taskQTBUG4965_escapeEaten()
 {
+#ifdef Q_WS_MAC
+    QSKIP("On Mac, do not test the menubar with escape key", SkipAll);
+#endif
     QMenuBar menubar;
     QMenu menu("menu1");
     QAction *first = menubar.addMenu(&menu);
