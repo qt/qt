@@ -418,8 +418,6 @@ public:
 
     //set theme palette for application
     void setThemePalette(QApplication *application) const;
-    //set theme palette for style option
-    void setThemePalette(QStyleOption *option) const;
     //access to theme palette
     static QPalette* themePalette();
 
