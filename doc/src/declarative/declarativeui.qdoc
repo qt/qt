@@ -46,11 +46,12 @@
 \brief The Qt Declarative module provides a declarative framework for building
 highly dynamic, custom user interfaces.
 
-Qt Declarative aids programmers and designers in building the animation rich,
-highly fluid user interfaces that are becoming common in portable consumer
-electronics devices, such as mobile phones, media players, set-top boxes and
-netbooks.  The Qt Declarative module provides an engine for interpreting the
-declarative QML language, and a rich set of \l {QML Elements}{QML elements} that can be used
+Qt Declarative UI provides a declarative framework for building highly dynamic, custom
+user interfaces.  Declarative UI helps programmers and designers collaborate to build 
+the animation rich, fluid user interfaces that are becoming common in portable 
+consumer devices, such as mobile phones, media players, set-top boxes and netbooks.  
+The Qt Declarative module provides an engine for interpreting the declarative QML 
+language, and a rich set of \l {QML Elements}{QML elements} that can be used
 from QML.
 
 QML is an extension to \l {http://www.ecma-international.org/publications/standards/Ecma-262.htm}
@@ -85,12 +86,12 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {ECMAScript Blocks}
 \o \l {QML Scope}
 \o \l {Network Transparency}
-\o \l {qmlmodels}{Data Models}
-\o \l {anchor-layout}{Anchor-based Layout}
-\o \l {qmlstates}{States}
+\o \l {Data Models}
+\o \l {anchor-layout.html}{Anchor-based Layout}
+\o \l {qmlstates.html}{States}
 \o \l {qmlanimation.html}{Animation}
 \o \l {qmlmodules.html}{Modules}
-\o \l {qmlfocus}{Keyboard Focus}
+\o \l {qmlfocus.html}{Keyboard Focus}
 \o \l {Extending types from QML}
 \endlist
 
