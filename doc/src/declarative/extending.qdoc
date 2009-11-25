@@ -531,7 +531,7 @@ in the bind engine for allowing an object to access the binding directly.
 
 If a binding is assigned to a property with a type of QmlBinding
 pointer (ie. \c {QmlBinding *}), each time the binding value changes,
-a QmlBinding instance is assigned to that property.  The QmlBinding instance 
+a QmlBinding instance is assigned to that property.  The QmlBinding instance
 allows the object to read the binding and to evaluate the binding's current value.
 
 \section1 Extension Objects
@@ -548,16 +548,16 @@ directly, if this is either not possible or is complicated by some other
 concerns, extension objects allow limited extension possibilities without
 direct modifications.
 
-Extension objects are used to add additional properties to an existing type.  
-Extension objects can only add properties, not signals or methods.  An extended 
-type definition allows the programmer to supply an additional type - known as the 
-extension type - when registering the target class whose properties are 
+Extension objects are used to add additional properties to an existing type.
+Extension objects can only add properties, not signals or methods.  An extended
+type definition allows the programmer to supply an additional type - known as the
+extension type - when registering the target class whose properties are
 transparently merged with the original target class when used from within QML.
 
-An extension class is a regular QObject, with a constructor that takes a QObject 
-pointer.  When needed (extension classes are delay created until the first extended 
-property is accessed) the extension class is created and the target object is 
-passed in as the parent.  When an extended property on the original is accessed, 
+An extension class is a regular QObject, with a constructor that takes a QObject
+pointer.  When needed (extension classes are delay created until the first extended
+property is accessed) the extension class is created and the target object is
+passed in as the parent.  When an extended property on the original is accessed,
 the appropriate property on the extension object is used instead.
 
 When an extended type is installed, one of the
@@ -565,22 +565,22 @@ When an extended type is installed, one of the
     #define QML_DEFINE_EXTENDED_TYPE(URI, VMAJ, VFROM, VTO, QmlName,T, ExtendedT)
     #define QML_DEFINE_EXTENDED_NOCREATE_TYPE(T, ExtendedT)
 \endcode
-macros should be used instead of the regular \c QML_DEFINE_TYPE or 
-\c QML_DEFINE_NOCREATE_TYPE.  The arguments are identical to the corresponding 
-non-extension object macro, except for the ExtendedT parameter which is the type 
+macros should be used instead of the regular \c QML_DEFINE_TYPE or
+\c QML_DEFINE_NOCREATE_TYPE.  The arguments are identical to the corresponding
+non-extension object macro, except for the ExtendedT parameter which is the type
 of the extension object.
 
 \section1 Optimization
 
-Often to develop high performance elements it is helpful to know more about the 
-status of the QML engine. For example, it might be beneficial to delay 
-initializing some costly data structures until after all the properties have been 
+Often to develop high performance elements it is helpful to know more about the
+status of the QML engine. For example, it might be beneficial to delay
+initializing some costly data structures until after all the properties have been
 set.
 
 The QML engine defines an interface class called QmlParserStatus, which contains a
-number of virtual methods that are invoked at various stages during component 
-instantiation.  To receive these notifications, an element implementation inherits 
-QmlParserStatus and notifies the Qt meta system using the Q_INTERFACES() macro.  
+number of virtual methods that are invoked at various stages during component
+instantiation.  To receive these notifications, an element implementation inherits
+QmlParserStatus and notifies the Qt meta system using the Q_INTERFACES() macro.
 
 For example,
 
@@ -691,6 +691,7 @@ controls the color of the inner rectangle.
     }
 \endcode
 
+\target qml-property-aliases
 \section2 Property aliases
 
 Property aliases are a more advanced form of property declaration.  Unlike a
@@ -717,8 +718,9 @@ An alias reference takes one of the following forms
     <id>.<property>
     <id>
 \endcode
+
 where <id> must refer to an object id within the same component as the type
-declaring the alias, and, optionally, <property> refers to a property on that object.  
+declaring the alias, and, optionally, <property> refers to a property on that object.
 
 Here is the property definition example rewritten to use property aliases.
 \code

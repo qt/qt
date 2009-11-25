@@ -8,7 +8,7 @@ Item {
     property alias color: rectangle.color
 //![4]
 //![5]
-    signal clicked(string color)
+    signal clicked(color color)
 //![5]
 
     width: 40; height: 25

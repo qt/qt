@@ -81,6 +81,7 @@ private slots:
     void clearSource();
     void resized();
     void smooth();
+    void pixmap();
 
 private:
     QmlEngine engine;
@@ -203,6 +204,35 @@ void tst_qmlgraphicsimage::smooth()
     QCOMPARE(obj->height(), 300.);
     QCOMPARE(obj->smooth(), true);
     QCOMPARE(obj->fillMode(), QmlGraphicsImage::Stretch);
+
+    delete obj;
+}
+
+void tst_qmlgraphicsimage::pixmap()
+{
+    QString componentStr = "import Qt 4.6\nImage { pixmap: testPixmap }";
+
+    QPixmap pixmap;
+    QmlContext *ctxt = engine.rootContext();
+    ctxt->setContextProperty("testPixmap", pixmap);
+
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+
+    QmlGraphicsImage *obj = qobject_cast<QmlGraphicsImage*>(component.create());
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->source(), QUrl());
+    QVERIFY(obj->status() == QmlGraphicsImage::Null);
+    QCOMPARE(obj->width(), 0.);
+    QCOMPARE(obj->height(), 0.);
+    QCOMPARE(obj->fillMode(), QmlGraphicsImage::Stretch);
+    QCOMPARE(obj->progress(), 0.0);
+    QVERIFY(obj->pixmap().isNull());
+
+    pixmap = QPixmap(SRCDIR "/data/colors.png");
+    ctxt->setContextProperty("testPixmap", pixmap);
+    QCOMPARE(obj->width(), 120.);
+    QCOMPARE(obj->height(), 120.);
+    QVERIFY(obj->status() == QmlGraphicsImage::Ready);
 
     delete obj;
 }

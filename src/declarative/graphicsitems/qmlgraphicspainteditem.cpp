@@ -289,7 +289,7 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
                 }
                 cachesize -= d->imagecache[oldest]->area.width()*d->imagecache[oldest]->area.height();
                 uncached += d->imagecache[oldest]->area;
-                d->imagecache.removeAt(oldest);
+                delete d->imagecache.takeAt(oldest);
             }
             const QRegion bigger = QRegion(biggerrect) & uncached;
             const QVector<QRect> rects = bigger.rects();
@@ -366,7 +366,7 @@ void QmlGraphicsPaintedItem::setPixelCacheSize(int pixels)
                 }
             }
             cachesize -= d->imagecache[oldest]->area.width()*d->imagecache[oldest]->area.height();
-            d->imagecache.removeAt(oldest);
+            delete d->imagecache.takeAt(oldest);
         }
     }
     d->max_imagecache_size = pixels;

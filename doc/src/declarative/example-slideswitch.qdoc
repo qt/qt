@@ -127,8 +127,11 @@ For more information on scripts see \l{qmlecmascript.html}{ECMAScript Blocks}.
 \snippet examples/declarative/slideswitch/content/Switch.qml 7
 
 At this point, when the switch toggles between the two states the knob will instantly change its \c x position between 1 and 78.
-In order for the the knob to move smoothly we add a transistion that will animate the \c x property with an easing curve for a duration of 200ms.
+In order for the the knob to move smoothly we add a transition that will animate the \c x property with an easing curve for a duration of 200ms.
 
 For more information on transitions see \l{state-transitions}{QML Transitions}.
 
+\section1 Usage
+The switch can be used in a QML file, like this:
+\snippet examples/declarative/slideswitch/slideswitch.qml 0
 */
