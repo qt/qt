@@ -104,7 +104,7 @@ bool QPHReader::read(Translator &translator)
             TranslatorMessage msg;
             msg.setSourceText(m_currentSource);
             msg.setTranslation(m_currentTarget);
-            msg.setTranslatorComment(m_currentDefinition);
+            msg.setComment(m_currentDefinition);
             translator.append(msg);
             m_currentSource.clear();
             m_currentTarget.clear();
