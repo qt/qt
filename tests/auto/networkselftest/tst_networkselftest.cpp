@@ -156,7 +156,7 @@ static QString prettyByteArray(const QByteArray &array)
     return result;
 }
 
-static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = 2000)
+static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = 4000)
 {
     QTime timer;
     timer.start();
@@ -171,7 +171,7 @@ static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout 
     }
 }
 
-static bool doSocketFlush(QTcpSocket *socket, int timeout = 2000)
+static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
 {
 #ifndef QT_NO_OPENSSL
     QSslSocket *sslSocket = qobject_cast<QSslSocket *>(socket);
