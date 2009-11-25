@@ -636,7 +636,7 @@ declaring a new property, and the corresponding C++ type.
 \row \o variant \o QVariant
 \endtable
 
-QML supports two methods for adding a new property to a type - a new property
+QML supports two methods for adding a new property to a type: a new property
 definition, and a property alias.
 
 \section2 Property definitions
@@ -714,10 +714,10 @@ binding, the alias reference syntax is highly restricted.
 
 An alias reference takes one of the following forms
 \code
-    <Id>.<property>
-    <Id>
+    <id>.<property>
+    <id>
 \endcode
-where <Id> must refer to an object id within the same component as the type
+where <id> must refer to an object id within the same component as the type
 declaring the alias, and, optionally, <property> refers to a property on that object.  
 
 Here is the property definition example rewritten to use property aliases.

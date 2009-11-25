@@ -65,7 +65,18 @@ public:
     \qmlclass Connection QmlConnection
     \brief A Connection object describes generalized connections to signals.
 
-    JavaScript-in-HTML style signal properties do not allow:
+    When connecting to signals in QML, the usual way is to create an
+    "on<Signal>" handler that reacts when a signal is received, like this:
+
+    \qml
+    MouseRegion {
+        onClicked: { foo(x+123,y+456) }
+    }
+    \endqml
+
+    However, in some cases, it is not possible to connect to a signal in this
+    way. For example, JavaScript-in-HTML style signal properties do not allow:
+
     \list
         \i connecting to signals with the same name but different parameters
         \i conformance checking that parameters are correctly named
@@ -74,39 +85,33 @@ public:
         \i signals in classes with coincidentally-named on<Signal> properties
     \endlist
 
-    When any of these is needed, the Connection object can be used instead.
-    Where a signal could be connected like this:
+    When any of these are needed, the Connection object can be used instead.
+
+    For example, the above code can be changed to use a Connection object,
+    like this:
 
     \qml
-MouseRegion {
-    onClicked: { foo(x+123,y+456) }
-}
-    \endqml
-
-    An equivalent binding can be made with a Connection object:
-
-    \qml
-MouseRegion {
-    Connection {
-        signal: "clicked(x,y)"
-        script: { foo(x+123,y+456) }
+    MouseRegion {
+        Connection {
+            signal: "clicked(x,y)"
+            script: { foo(x+123,y+456) }
+        }
     }
-}
     \endqml
 
     More generally, the Connection object can be a child of some other object than
     the sender of the signal, and the script is the default attribute:
 
     \qml
-MouseRegion {
-    id: mr
-}
-...
-Connection {
-    sender: mr
-    signal: "clicked(x,y)"
-    script: { foo(x+123,y+456) }
-}
+    MouseRegion {
+        id: mr
+    }
+    ...
+    Connection {
+        sender: mr
+        signal: "clicked(x,y)"
+        script: { foo(x+123,y+456) }
+    }
     \endqml
 */
 
@@ -249,7 +254,7 @@ void QmlConnection::setScript(const QmlScriptString& script)
     \qmlproperty string Connection::signal
     This property holds the signal from the sender to which the script is attached.
 
-    The signal must have its formal parameter names given in parentheses:
+    The signal's formal parameter names must be given in parentheses:
 
     \qml
 Connection {

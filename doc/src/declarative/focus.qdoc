@@ -49,6 +49,8 @@ focused QML \l Item.  To facilitate the construction of reusable components
 and to address some of the cases unique to fluid user interfaces, the QML items add a
 \e scope based extension to Qt's traditional keyboard focus model.
 
+\tableofcontents
+
 \section1 Key Handling Overview
 
 When the user presses or releases a key, the following occurs:
