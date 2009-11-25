@@ -101,7 +101,7 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
         boundingRectDirty = false;
     }
 
-    if (!outline)
+    if (!outline && !path.isConvex())
         addCentroid(path, 0);
 
     int lastMoveTo = vertexArray.size();
@@ -127,7 +127,7 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
 //                qDebug("element[%d] is a MoveToElement", i);
                 vertexArrayStops.add(vertexArray.size());
                 if (!outline) {
-                    addCentroid(path, i);
+                    if (!path.isConvex()) addCentroid(path, i);
                     lastMoveTo = vertexArray.size();
                 }
                 lineToArray(points[i].x(), points[i].y()); // Add the moveTo as a new vertex
