@@ -89,7 +89,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
 {
     Q_OBJECT
 
-    Q_ENUMS(Status)
+    Q_ENUMS(Status SelectionMode)
 
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(QPixmap icon READ icon NOTIFY iconChanged)
@@ -220,6 +220,7 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    void timerEvent(QTimerEvent *event);
     void hoverMoveEvent (QGraphicsSceneHoverEvent * event);
     void keyPressEvent(QKeyEvent* event);
     void keyReleaseEvent(QKeyEvent* event);
