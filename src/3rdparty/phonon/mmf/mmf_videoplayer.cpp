@@ -446,7 +446,18 @@ QSize scaleToAspect(const QSize& srcRect, int aspectWidth, int aspectHeight)
 void MMF::VideoPlayer::updateVideoRect()
 {
     QRect videoRect;
-    const QRect windowRect = m_videoOutput->videoWindowRect();
+    QRect windowRect = m_videoOutput->videoWindowRect();
+
+    // Clip to physical window size
+    // This is due to a defect in the layout when running on S60 3.2, which
+    // results in the rectangle of the video widget extending outside the
+    // screen in certain circumstances.  These include the initial startup
+    // of the mediaplayer demo in portrait mode.  When this rectangle is
+    // passed to the CVideoPlayerUtility, no video is rendered.
+    const TSize screenSize = m_screenDevice.SizeInPixels();
+    const QRect screenRect(0, 0, screenSize.iWidth, screenSize.iHeight);
+    windowRect = windowRect.intersected(screenRect);
+
     const QSize windowSize = windowRect.size();
 
     // Calculate size of smallest rect which contains video frame size
