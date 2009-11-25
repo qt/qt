@@ -106,6 +106,7 @@ void QmlGraphicsImageBase::setSource(const QUrl &url)
         setImplicitHeight(0);
         emit statusChanged(d->status);
         emit sourceChanged(d->url);
+        emit pixmapChanged();
         update();
     } else {
         d->status = Loading;
@@ -131,6 +132,7 @@ void QmlGraphicsImageBase::setSource(const QUrl &url)
             emit statusChanged(d->status);
             emit sourceChanged(d->url);
             emit progressChanged(d->progress);
+            emit pixmapChanged();
             update();
         }
     }
@@ -155,6 +157,7 @@ void QmlGraphicsImageBase::requestFinished()
     emit statusChanged(d->status);
     emit sourceChanged(d->url);
     emit progressChanged(1.0);
+    emit pixmapChanged();
     update();
 }
 

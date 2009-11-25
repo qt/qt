@@ -74,7 +74,6 @@ public:
 
 Q_SIGNALS:
     void fillModeChanged();
-    void pixmapChanged();
 
 protected:
     QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent);
