@@ -50,6 +50,8 @@ MMF::VideoPlayer::VideoPlayer()
         ,   m_window(0)
         ,   m_totalTime(0)
         ,   m_pendingChanges(false)
+        ,   m_dsaActive(false)
+        ,   m_dsaWasActive(false)
 {
     construct();
 }
@@ -61,6 +63,7 @@ MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
         ,   m_window(0)
         ,   m_totalTime(0)
         ,   m_pendingChanges(false)
+        ,   m_dsaActive(false)
 {
     construct();
 }
@@ -85,6 +88,9 @@ void MMF::VideoPlayer::construct()
                  m_videoRect, m_videoRect
             ))
         );
+
+    // CVideoPlayerUtility::NewL starts DSA
+    m_dsaActive = true;
 
     if (KErrNone != err)
         changeState(ErrorState);
@@ -349,6 +355,18 @@ void MMF::VideoPlayer::initVideoOutput()
     Q_ASSERT(connected);
 
     connected = connect(
+        m_videoOutput, SIGNAL(beginVideoWindowNativePaint()),
+        this, SLOT(suspendDirectScreenAccess())
+    );
+    Q_ASSERT(connected);
+
+    connected = connect(
+        m_videoOutput, SIGNAL(endVideoWindowNativePaint()),
+        this, SLOT(resumeDirectScreenAccess())
+    );
+    Q_ASSERT(connected);
+
+    connected = connect(
         m_videoOutput, SIGNAL(aspectRatioChanged()),
         this, SLOT(aspectRatioChanged())
     );
@@ -370,10 +388,46 @@ void MMF::VideoPlayer::videoWindowChanged()
     TRACE_ENTRY("state %d", state());
 
     m_window = m_videoOutput->videoWindow();
-
     updateVideoRect();
 
     TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::suspendDirectScreenAccess()
+{
+    m_dsaWasActive = stopDirectScreenAccess();
+}
+
+void MMF::VideoPlayer::resumeDirectScreenAccess()
+{
+    if(m_dsaWasActive) {
+        startDirectScreenAccess();
+        m_dsaWasActive = false;
+    }
+}
+
+void MMF::VideoPlayer::startDirectScreenAccess()
+{
+    if(!m_dsaActive) {
+        TRAPD(err, m_player->StartDirectScreenAccessL());
+        if(KErrNone == err)
+            m_dsaActive = true;
+        else
+            setError(NormalError);
+    }
+}
+
+bool MMF::VideoPlayer::stopDirectScreenAccess()
+{
+    const bool dsaWasActive = m_dsaActive;
+    if(m_dsaActive) {
+        TRAPD(err, m_player->StopDirectScreenAccessL());
+        if(KErrNone == err)
+            m_dsaActive = false;
+        else
+            setError(NormalError);
+    }
+    return dsaWasActive;
 }
 
 // Helper function for aspect ratio / scale mode handling
@@ -553,6 +607,7 @@ void MMF::VideoPlayer::applyVideoWindowChange()
             TRACE("SetDisplayWindowL err %d", err);
             setError(NormalError);
         } else {
+            m_dsaActive = true;
             TRAP(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight, antialias));
             if(KErrNone != err) {
                 TRACE("SetScaleFactorL (2) err %d", err);

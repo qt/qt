@@ -34,6 +34,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <coecntrl.h>
 
+#include <coemain.h>    // for CCoeEnv
+
 QT_BEGIN_NAMESPACE
 
 using namespace Phonon;
@@ -73,6 +75,7 @@ MMF::VideoOutput::VideoOutput
     setAutoFillBackground(false);
 
     qt_widget_private(this)->extraData()->nativePaintMode = QWExtra::ZeroFill;
+    qt_widget_private(this)->extraData()->receiveNativePaintEvents = true;
 
     getVideoWindowRect();
     registerForAncestorMoved();
@@ -281,6 +284,19 @@ void MMF::VideoOutput::dump() const
     TRACE_0("Dumping VideoOutput:");
     dumper->dumpObject(*this);
 #endif
+}
+
+void MMF::VideoOutput::beginNativePaintEvent(const QRect& /*controlRect*/)
+{
+    emit beginVideoWindowNativePaint();
+}
+
+void MMF::VideoOutput::endNativePaintEvent(const QRect& /*controlRect*/)
+{
+    // Ensure that draw ops are executed into the WSERV output framebuffer
+    CCoeEnv::Static()->WsSession().Flush();
+
+    emit endVideoWindowNativePaint();
 }
 
 QT_END_NAMESPACE
