@@ -167,7 +167,7 @@ static bool saveQPH(const Translator &translator, QIODevice &dev, ConversionData
         t << "    <target>" << protect(str)
             << "</target>\n";
         if (!msg.comment().isEmpty())
-            t << "    <definition>" << msg.comment() << "</definition>\n";
+            t << "    <definition>" << protect(msg.comment()) << "</definition>\n";
         t << "</phrase>\n";
     }
     t << "</QPH>\n";
