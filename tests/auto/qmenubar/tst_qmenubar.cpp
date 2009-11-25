@@ -167,6 +167,7 @@ private slots:
     void task223138_triggered();
     void task256322_highlight();
     void menubarSizeHint();
+    void taskQTBUG4965_escapeEaten();
     
 #if defined(QT3_SUPPORT)
     void indexBasedInsertion_data();
@@ -1664,6 +1665,27 @@ void tst_QMenuBar::menubarSizeHint()
     QCOMPARE(resSize, mb.sizeHint());
 }
 
+void tst_QMenuBar::taskQTBUG4965_escapeEaten()
+{
+    QMenuBar menubar;
+    QMenu menu("menu1");
+    QAction *first = menubar.addMenu(&menu);
+    menu.addAction("quit", &menubar, SLOT(close()), QKeySequence("ESC"));
+    menubar.show();
+    menubar.setActiveWindow();
+    QTest::qWaitForWindowShown(&menubar);
+    menubar.setActiveAction(first);
+    QTRY_VERIFY(menu.isVisible());
+    QCOMPARE(menubar.activeAction(), first);
+    QTest::keyClick(0, Qt::Key_Escape);
+    QVERIFY(!menu.isVisible());
+    QTRY_VERIFY(menubar.hasFocus());
+    QCOMPARE(menubar.activeAction(), first);
+    QTest::keyClick(0, Qt::Key_Escape);
+    QVERIFY(!menubar.activeAction());
+    QTest::keyClick(0, Qt::Key_Escape); //now the action should be triggered
+    QTRY_VERIFY(!menubar.isVisible());
+}
 
 #if defined(QT3_SUPPORT)
 void tst_QMenuBar::indexBasedInsertion_data()

@@ -1489,7 +1489,8 @@ bool QMenuBar::event(QEvent *e)
     break;
     case QEvent::ShortcutOverride: {
         QKeyEvent *kev = static_cast<QKeyEvent*>(e);
-        if (kev->key() == Qt::Key_Escape) {
+        //we only filter out escape if there is a current action
+        if (kev->key() == Qt::Key_Escape && d->currentAction) {
             e->accept();
             return true;
         }

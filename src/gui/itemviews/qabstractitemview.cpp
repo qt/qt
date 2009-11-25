@@ -96,6 +96,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         autoScrollMargin(16),
         autoScrollCount(0),
         shouldScrollToCurrentOnShow(false),
+        shouldClearStatusTip(false),
         alternatingColors(false),
         textElideMode(Qt::ElideRight),
         verticalScrollMode(QAbstractItemView::ScrollPerItem),
@@ -161,14 +162,15 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
             emit q->entered(index);
 #ifndef QT_NO_STATUSTIP
             QString statustip = model->data(index, Qt::StatusTipRole).toString();
-            if (parent && !statustip.isEmpty()) {
+            if (parent && (shouldClearStatusTip || !statustip.isEmpty())) {
                 QStatusTipEvent tip(statustip);
                 QApplication::sendEvent(parent, &tip);
+                shouldClearStatusTip = !statustip.isEmpty();
             }
 #endif
         } else {
 #ifndef QT_NO_STATUSTIP
-            if (parent) {
+            if (parent && shouldClearStatusTip) {
                 QString emptyString;
                 QStatusTipEvent tip( emptyString );
                 QApplication::sendEvent(parent, &tip);
@@ -1559,6 +1561,14 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
         d->viewportEnteredNeeded = true;
         break;
     case QEvent::Leave:
+    #ifndef QT_NO_STATUSTIP
+        if (d->shouldClearStatusTip && d->parent) {
+            QString empty;
+            QStatusTipEvent tip(empty);
+            QApplication::sendEvent(d->parent, &tip);
+            d->shouldClearStatusTip = false;
+        }
+    #endif
         d->enteredIndex = QModelIndex();
         break;
     case QEvent::ToolTip:

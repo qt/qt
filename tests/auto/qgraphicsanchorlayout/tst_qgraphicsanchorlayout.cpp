@@ -86,6 +86,8 @@ private slots:
     void parallelSimplificationOfCenter();
     void simplificationVsRedundance();
     void spacingPersistency();
+    void snakeParallelWithLayout();
+    void parallelToHalfLayout();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1890,6 +1892,88 @@ void tst_QGraphicsAnchorLayout::spacingPersistency()
     w.effectiveSizeHint(Qt::PreferredSize);
 
     QCOMPARE(anchor->spacing(), 30.0);
+}
+
+/*
+    Test whether a correct preferred size is set when a "snake" sequence is in parallel with the
+    layout or half of the layout. The tricky thing here is that all items on the snake should
+    keep their preferred sizes.
+*/
+void tst_QGraphicsAnchorLayout::snakeParallelWithLayout()
+{
+    QSizeF min(10, 20);
+    QSizeF pref(50, 20);
+    QSizeF max(100, 20);
+
+    QGraphicsWidget *a = createItem(max, max, max, "A");
+    QGraphicsWidget *b = createItem(min, pref, max, "B");
+    QGraphicsWidget *c = createItem(max, max, max, "C");
+
+    QGraphicsWidget parent;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&parent);
+    l->setContentsMargins(0, 0, 0, 0);
+    l->setSpacing(0);
+
+    // First we'll do the case in parallel with the entire layout...
+    l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    l->addAnchor(a, Qt::AnchorRight, b, Qt::AnchorRight);
+    l->addAnchor(b, Qt::AnchorLeft, c, Qt::AnchorLeft);
+    l->addAnchor(c, Qt::AnchorRight, l, Qt::AnchorRight);
+
+    l->addAnchor(l, Qt::AnchorTop, a, Qt::AnchorTop);
+    l->addAnchor(a, Qt::AnchorBottom, b, Qt::AnchorTop);
+    l->addAnchor(b, Qt::AnchorBottom, c, Qt::AnchorTop);
+    l->addAnchor(c, Qt::AnchorBottom, l, Qt::AnchorBottom);
+
+    parent.resize(l->effectiveSizeHint(Qt::PreferredSize));
+
+    // Note that A and C are fixed in the maximum size
+    QCOMPARE(l->geometry(), QRectF(QPointF(0, 0), QSizeF(150, 60)));
+    QCOMPARE(a->geometry(), QRectF(QPointF(0, 0), max));
+    QCOMPARE(b->geometry(), QRectF(QPointF(50, 20), pref));
+    QCOMPARE(c->geometry(), QRectF(QPointF(50, 40), max));
+
+    // Then, we change the "snake" to be in parallel with half of the layout
+    delete l->anchor(c, Qt::AnchorRight, l, Qt::AnchorRight);
+    l->addAnchor(c, Qt::AnchorRight, l, Qt::AnchorHorizontalCenter);
+
+    parent.resize(l->effectiveSizeHint(Qt::PreferredSize));
+
+    QCOMPARE(l->geometry(), QRectF(QPointF(0, 0), QSizeF(300, 60)));
+    QCOMPARE(a->geometry(), QRectF(QPointF(0, 0), max));
+    QCOMPARE(b->geometry(), QRectF(QPointF(50, 20), pref));
+    QCOMPARE(c->geometry(), QRectF(QPointF(50, 40), max));
+}
+
+/*
+  Avoid regression where the sizeHint constraints would not be
+  created for a parallel anchor that included the first layout half
+*/
+void tst_QGraphicsAnchorLayout::parallelToHalfLayout()
+{
+    QGraphicsWidget *a = createItem();
+
+    QGraphicsWidget w;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&w);
+    l->setContentsMargins(10, 10, 10, 10);
+
+    l->addAnchors(l, a, Qt::Vertical);
+
+    QGraphicsAnchor *anchor;
+    anchor = l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    anchor->setSpacing(5);
+    anchor = l->addAnchor(l, Qt::AnchorHorizontalCenter, a, Qt::AnchorRight);
+    anchor->setSpacing(-5);
+
+    const QSizeF minimumSizeHint = w.effectiveSizeHint(Qt::MinimumSize);
+    const QSizeF preferredSizeHint = w.effectiveSizeHint(Qt::PreferredSize);
+    const QSizeF maximumSizeHint = w.effectiveSizeHint(Qt::MaximumSize);
+
+    const QSizeF overhead = QSizeF(10 + 5 + 5, 10) * 2;
+
+    QCOMPARE(minimumSizeHint, QSizeF(200, 100) + overhead);
+    QCOMPARE(preferredSizeHint, QSizeF(300, 100) + overhead);
+    QCOMPARE(maximumSizeHint, QSizeF(400, 100) + overhead);
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
