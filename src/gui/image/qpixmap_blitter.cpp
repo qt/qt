@@ -1,5 +1,7 @@
 #include "qpixmap_blitter_p.h"
 
+#include <qpainter.h>
+
 #include <private/qapplication_p.h>
 #include <private/qgraphicssystem_p.h>
 
@@ -14,10 +16,11 @@ QBlittablePixmapData::~QBlittablePixmapData()
     delete m_engine;
 }
 
-QBlittable *QBlittablePixmapData::blittable()
+QBlittable *QBlittablePixmapData::blittable() const
 {
     if (!m_blittable) {
-        m_blittable = QApplicationPrivate::graphicsSystem()->createBlittable(QRect(0,0,w,h));
+        QBlittablePixmapData *that = const_cast<QBlittablePixmapData *>(this);
+        that->m_blittable = QApplicationPrivate::graphicsSystem()->createBlittable(QRect(0,0,w,h));
     }
 
     return m_blittable;
@@ -73,32 +76,35 @@ int QBlittablePixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 
 void QBlittablePixmapData::fill(const QColor &color)
 {
-    if (m_blittable->capabilities() & QBlittable::SolidRectCapability)
-        m_blittable->fillRect(m_blittable->rect(),color);
+    if (blittable()->capabilities() & QBlittable::SolidRectCapability)
+        blittable()->fillRect(m_blittable->rect(),color);
     else
-        m_blittable->lock()->fill(color.rgb());
+        blittable()->lock()->fill(color.rgb());
 }
 
 QImage *QBlittablePixmapData::buffer()
 {
-    return m_blittable->lock();
+    return blittable()->lock();
 }
 
 QImage QBlittablePixmapData::toImage() const
 {
-    return m_blittable->lock()->copy();
+    return blittable()->lock()->copy();
 }
 
 bool QBlittablePixmapData::hasAlphaChannel() const
 {
-    return m_blittable->lock()->hasAlphaChannel();
+    return blittable()->lock()->hasAlphaChannel();
 }
 
 void QBlittablePixmapData::fromImage(const QImage &image,
-                                     Qt::ImageConversionFlags)
+                                     Qt::ImageConversionFlags flags)
 {
-    m_blittable = new QImageBlitter(image);
-    m_engine = 0;
+    resize(image.width(),image.height());
+    QImage *thisImg = blittable()->lock();
+    QPainter p(thisImg);
+    p.drawImage(0,0,image,flags);
+
 }
 
 QPaintEngine *QBlittablePixmapData::paintEngine() const

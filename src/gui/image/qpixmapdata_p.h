@@ -137,7 +137,6 @@ private:
     friend class QX11PixmapData;
     friend class QS60PixmapData;
     friend class QImagePixmapCleanupHooks; // Needs to set is_cached
-    friend class QBlittablPixmapData;
     friend class QGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPixmapData>;
 
