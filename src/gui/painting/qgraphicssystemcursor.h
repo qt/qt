@@ -78,9 +78,10 @@ public:
     virtual QRect drawCursor(QPainter &);
     virtual QRect dirtyRect();
 
-    static QPointer<QGraphicsSystemCursor> instance;
+    static QPointer<QGraphicsSystemCursor> getInstance() { return instance; }
 
 protected:
+    static QPointer<QGraphicsSystemCursor> instance;
 
     QRect currentRect;      // next place to draw the cursor
     QRect prevRect;         // last place the cursor was drawn
@@ -91,6 +92,7 @@ protected:
     QGraphicsSystemCursorImage * graphic;
 
 private:
+
     void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
     void setCursor(Qt::CursorShape shape);
     QRect getCurrentRect();

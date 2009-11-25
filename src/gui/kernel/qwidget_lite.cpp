@@ -675,11 +675,13 @@ void qt_lite_set_cursor(QWidget * w, bool force)
     if (override && w != 0)
         return;
 
+    QPointer<QGraphicsSystemCursor> cursor = QGraphicsSystemCursor::getInstance();
+    if (!cursor)
+        return;
+
     if (w == 0) {
         if (override) {
-            if (QGraphicsSystemCursor::instance) {
-                QGraphicsSystemCursor::instance->changeCursor(override, QApplication::topLevelAt(QCursor::pos()));
-            }
+            cursor->changeCursor(override, QApplication::topLevelAt(QCursor::pos()));
             return;
         }
         w = QApplication::widgetAt(QCursor::pos());
@@ -693,10 +695,8 @@ void qt_lite_set_cursor(QWidget * w, bool force)
     }
 
     if (w == QApplication::desktop() && !override) {
-        if (QGraphicsSystemCursor::instance) {
-            QCursor c(Qt::ArrowCursor);
-            QGraphicsSystemCursor::instance->changeCursor(&c, w);
-        }
+        QCursor c(Qt::ArrowCursor);
+        cursor->changeCursor(&c, w);
         return;
     }
 
@@ -709,9 +709,7 @@ void qt_lite_set_cursor(QWidget * w, bool force)
          !cW->isVisible() || !cW->underMouse() || override)
         return;
 
-    if (QGraphicsSystemCursor::instance) {
-        QCursor c = w->cursor();
-        QGraphicsSystemCursor::instance->changeCursor(&c, w);
-    }
+    QCursor c = w->cursor();
+    cursor->changeCursor(&c, w);
 }
 QT_END_NAMESPACE

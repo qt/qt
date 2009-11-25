@@ -526,8 +526,9 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
 
     static QWidget *implicit_mouse_grabber=0;
 
-    if (QGraphicsSystemCursor::instance)
-        QGraphicsSystemCursor::instance->pointerEvent(ev);
+    QPointer<QGraphicsSystemCursor> cursor = QGraphicsSystemCursor::getInstance();
+    if (cursor)
+        cursor->pointerEvent(ev);
 
     QPoint localPoint = ev.pos();
     QPoint globalPoint = ev.globalPos();
