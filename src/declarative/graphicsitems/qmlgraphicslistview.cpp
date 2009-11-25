@@ -1318,7 +1318,7 @@ void QmlGraphicsListView::setHighlightFollowsCurrentItem(bool autoHighlight)
 /*!
     \qmlproperty real ListView::preferredHighlightBegin
     \qmlproperty real ListView::preferredHighlightEnd
-    \qmlproperty bool ListView::highlightRangeMode
+    \qmlproperty enumeration ListView::highlightRangeMode
 
     These properties set the preferred range of the highlight (current item)
     within the view.

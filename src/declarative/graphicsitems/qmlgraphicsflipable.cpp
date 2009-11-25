@@ -68,29 +68,39 @@ public:
 
     Flipable allows you to specify a front and a back and then flip between those sides.
 
+    Here's an example that flips between the front and back sides when clicked:
+
     \qml
-Flipable {
-    width: 40; height: 40
 
-    transform: Rotation {
-        id: rotation
-        origin.x: 20; origin.y: 120
-        axis.x: 0; axis.y: 1; axis.z: 0
-        angle: 0
+    Flipable {
+        id: flipable
+        width: 250; height: 250
+        property int angle: 0
+
+        transform: Rotation {
+            id: rotation
+            origin.x: flipable.width/2; origin.y: flipable.height/2
+            axis.x: 0; axis.y: 1; axis.z: 0     // rotate around y-axis
+            angle: flipable.angle
+        }
+
+        front: Image { source: "front.png" }
+        back: Image { source: "back.png" }
+
+        states: State {
+            name: "back"
+            PropertyChanges { target: flipable; angle: 180 }
+        }
+
+        transitions: Transition {
+            NumberAnimation { matchProperties: "angle"; duration: 2000 }
+        }
+
+        MouseRegion {
+            anchors.fill: parent
+            onClicked: flipable.state = (flipable.state == 'back' ? 'front' : 'back')
+        }
     }
-
-    front: Image { source: "front.png" }
-    back: Image { source: "back.png" }
-
-    states: State {
-       name: "back"
-       SetProperties { target: rotation; angle: 180 }
-    }
-
-    transitions: Transition {
-        NumberAnimation { easing: "easeInOutQuad"; matchProperties: "rotation" }
-    }
-}
     \endqml
 
     \image flipable.gif

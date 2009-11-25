@@ -1138,7 +1138,11 @@ qreal QmlGraphicsGridView::maxYExtent() const
     Q_D(const QmlGraphicsGridView);
     if (d->flow == QmlGraphicsGridView::TopToBottom)
         return QmlGraphicsFlickable::maxYExtent();
-    return -(d->endPosition() - height());
+    qreal extent = -(d->endPosition() - height());
+    const qreal minY = minYExtent();
+    if (extent > minY)
+        extent = minY;
+    return extent;
 }
 
 qreal QmlGraphicsGridView::minXExtent() const
@@ -1154,7 +1158,11 @@ qreal QmlGraphicsGridView::maxXExtent() const
     Q_D(const QmlGraphicsGridView);
     if (d->flow == QmlGraphicsGridView::LeftToRight)
         return QmlGraphicsFlickable::maxXExtent();
-    return -(d->endPosition() - width());
+    qreal extent = -(d->endPosition() - width());
+    const qreal minX = minXExtent();
+    if (extent > minX)
+        extent = minX;
+    return extent;
 }
 
 void QmlGraphicsGridView::keyPressEvent(QKeyEvent *event)

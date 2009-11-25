@@ -44,7 +44,7 @@
 \title QML Scope
 
 \l {Property Binding}s and \l {ECMAScript Blocks} are executed in a scope chain automatically 
-established by QML when constructing a component instance.  QML is a \e {dynamically scoped} 
+established by QML when a component instance is constructed.  QML is a \e {dynamically scoped} 
 language.  Different object instances instantiated from the same component can exist in 
 different scope chains.
 
@@ -91,8 +91,8 @@ Text {
 \section1 QML Local Scope
 
 Most variables references are resolved in the local scope.  The local scope is controlled by the
-QML component in which the binding or script block was declarated.  The following example shows
-three different bindings, and the component that dictates their local scope.
+QML component in which the binding or script block was defined.  The following example shows
+three different bindings, and the component that dictates each local scope.
 
 \table
 \row
@@ -135,15 +135,15 @@ Rectangle { // Local scope component for binding 3
 \endcode
 \endtable
 
-Inside the local scope, four "sub-scopes" exist.  Each "sub-scope" is searched in order when
-resolving a name - names in a higher "sub-scopes" shadow those in lower sub-scopes.
+Inside the local scope, four "sub-scopes" exist.  Each sub-scope is searched in order when
+resolving a name; names in higher sub-scopes shadow those in lower sub-scopes.
 
 \section2 IDs
 
 IDs present in the component take precendence over other names.  The QML engine enforces 
 uniqueness of IDs within a component, so their names cannot conflict with one another.
 
-This is an example of using IDs within bindings.
+Here is an example of using IDs within bindings:
 
 \code
 Item {
@@ -192,7 +192,7 @@ scope object appear in the scope chain, immediately after \l {Script Methods}.
 In bindings and script blocks established explicitly in \l {QML Documents}, the scope object is 
 always the element containing the binding or script block.  The following example shows two
 bindings, one using grouped properties, and the corresponding scope object.  These two bindings
-use the scope object to resolve variable references - \c height is a property on \l Rectangle, 
+use the scope object to resolve variable references: \c height is a property on \l Rectangle, 
 and \c parent is a property on \l Text.
 
 \code
@@ -269,7 +269,7 @@ Item {
 \section1 QML Component chain
 
 When a QML component is instantiated it is given a parent component instance.  The parent 
-component instance is immutable - it is not effected, for example, by changes in the instance's
+component instance is immutable - it is not affected, for example, by changes in the instance's
 visual parent (in the case of visual elements).  Should name resolution fail within the
 \l {QML Local Scope}, this parent chain is searched.
 
@@ -283,8 +283,8 @@ For each component instance in the chain, the following are examined:
 
 This list is a sub-set of that in the \l {QML Local Scope}.
 
-Sub-components used within a component have their parent component instance set to the component
-instance that created them.  In the following example, the two \c Button instances have the 
+A sub-component's parent component instance is set to the component that created it.
+In the following example, the two \c Button instances have the 
 \c main.qml instance as their parent component instance.  If the \c Button type was used from
 within another QML file, it may have a difference parent component instance, and consequently
 the \c buttonClicked() method may resolve differently.

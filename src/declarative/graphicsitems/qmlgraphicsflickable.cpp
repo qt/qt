@@ -613,7 +613,7 @@ void QmlGraphicsFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
             const qreal maxY = q->maxYExtent();
             if (newY > minY)
                 newY = minY + (newY - minY) / 2;
-            if (newY < maxY && maxY - minY < 0)
+            if (newY < maxY && maxY - minY <= 0)
                 newY = maxY + (newY - maxY) / 2;
             if (!q->overShoot() && (newY > minY || newY < maxY)) {
                 if (newY > minY)
@@ -640,7 +640,7 @@ void QmlGraphicsFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
             const qreal maxX = q->maxXExtent();
             if (newX > minX)
                 newX = minX + (newX - minX) / 2;
-            if (newX < maxX && maxX - minX < 0)
+            if (newX < maxX && maxX - minX <= 0)
                 newX = maxX + (newX - maxX) / 2;
             if (!q->overShoot() && (newX > minX || newX < maxX)) {
                 if (newX > minX)

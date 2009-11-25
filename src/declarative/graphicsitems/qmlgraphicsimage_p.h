@@ -56,7 +56,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsImage : public QmlGraphicsImageBase
     Q_OBJECT
     Q_ENUMS(FillMode)
 
-    Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
+    Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap NOTIFY pixmapChanged DESIGNABLE false)
     Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged)
 
 public:
@@ -74,6 +74,7 @@ public:
 
 Q_SIGNALS:
     void fillModeChanged();
+    void pixmapChanged();
 
 protected:
     QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent);
