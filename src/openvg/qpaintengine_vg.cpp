@@ -3459,14 +3459,11 @@ void QVGCompositionHelper::endCompositing()
 }
 
 void QVGCompositionHelper::blitWindow
-    (QVGEGLWindowSurfacePrivate *surface, const QRect& rect,
-     const QPoint& topLeft, int opacity)
+    (VGImage image, const QSize& imageSize,
+     const QRect& rect, const QPoint& topLeft, int opacity)
 {
-    // Get the VGImage that is acting as a back buffer for the window.
-    VGImage image = surface->surfaceImage();
     if (image == VG_INVALID_HANDLE)
         return;
-    QSize imageSize = surface->surfaceSize();
 
     // Determine which sub rectangle of the window to draw.
     QRect sr = rect.translated(-topLeft);
