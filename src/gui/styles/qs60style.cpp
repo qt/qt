@@ -459,11 +459,6 @@ void QS60StylePrivate::setThemePalette(QApplication *app) const
     storeThemePalette(&widgetPalette);
 }
 
-void QS60StylePrivate::setThemePalette(QStyleOption *option) const
-{
-    setThemePalette(&option->palette);
-}
-
 QPalette* QS60StylePrivate::themePalette()
 {
     return m_themePalette;
