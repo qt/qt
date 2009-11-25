@@ -2212,7 +2212,7 @@ void tst_QNetworkReply::ioGetWithManyProxies()
     connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
-    QTestEventLoop::instance().enterLoop(10);
+    QTestEventLoop::instance().enterLoop(15);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),

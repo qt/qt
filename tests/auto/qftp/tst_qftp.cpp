@@ -1408,7 +1408,7 @@ void tst_QFtp::bytesAvailable()
     if ( type != 0 )
         addCommand( QFtp::Close, ftp->close() );
 
-    QTestEventLoop::instance().enterLoop( 30 );
+    QTestEventLoop::instance().enterLoop( 40 );
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 

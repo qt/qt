@@ -199,9 +199,6 @@ public:
     QDBusMetaObject *findMetaObject(const QString &service, const QString &path,
                                     const QString &interface, QDBusError &error);
 
-    void registerService(const QString &serviceName);
-    void unregisterService(const QString &serviceName);
-
     void postEventToThread(int action, QObject *target, QEvent *event);
 
     inline void serverConnection(const QDBusConnection &connection)
@@ -238,6 +235,8 @@ public slots:
     void objectDestroyed(QObject *o);
     void relaySignal(QObject *obj, const QMetaObject *, int signalId, const QVariantList &args);
     void _q_serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
+    void registerService(const QString &serviceName);
+    void unregisterService(const QString &serviceName);
 
 signals:
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
