@@ -81,14 +81,20 @@ bool QPHReader::read(Translator &translator)
     while (!atEnd()) {
         readNext();
         if (isStartElement()) {
-            if (name() == QLatin1String("source"))
+            if (name() == QLatin1String("source")) {
                 m_currentField = SourceField;
-            else if (name() == QLatin1String("target"))
+            } else if (name() == QLatin1String("target")) {
                 m_currentField = TargetField;
-            else if (name() == QLatin1String("definition"))
+            } else if (name() == QLatin1String("definition")) {
                 m_currentField = DefinitionField;
-            else
+            } else {
                 m_currentField = NoField;
+                if (name() == QLatin1String("QPH")) {
+                    QXmlStreamAttributes atts = attributes();
+                    translator.setLanguageCode(atts.value(QLatin1String("language")).toString());
+                    translator.setSourceLanguageCode(atts.value(QLatin1String("sourcelanguage")).toString());
+                }
+            }
         } else if (isWhiteSpace()) {
             // ignore these
         } else if (isCharacters()) {
@@ -157,7 +163,14 @@ static bool saveQPH(const Translator &translator, QIODevice &dev, ConversionData
 {
     QTextStream t(&dev);
     t.setCodec(QTextCodec::codecForName("UTF-8"));
-    t << "<!DOCTYPE QPH>\n<QPH>\n";
+    t << "<!DOCTYPE QPH>\n<QPH";
+    QString languageCode = translator.languageCode();
+    if (!languageCode.isEmpty() && languageCode != QLatin1String("C"))
+        t << " language=\"" << languageCode << "\"";
+    languageCode = translator.sourceLanguageCode();
+    if (!languageCode.isEmpty() && languageCode != QLatin1String("C"))
+        t << " sourcelanguage=\"" << languageCode << "\"";
+    t << ">\n";
     foreach (const TranslatorMessage &msg, translator.messages()) {
         t << "<phrase>\n";
         t << "    <source>" << protect(msg.sourceText()) << "</source>\n";
