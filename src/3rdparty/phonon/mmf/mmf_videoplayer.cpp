@@ -321,8 +321,7 @@ void MMF::VideoPlayer::getVideoWindow()
         m_videoOutput->dump();
 
         initVideoOutput();
-        m_window = m_videoOutput->videoWindow();
-        updateVideoRect();
+        videoWindowChanged();
     } else
         // Top-level window
         m_window = QApplication::activeWindow()->effectiveWinId()->DrawableWindow();
