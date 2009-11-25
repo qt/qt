@@ -222,6 +222,8 @@ Item {
                 onDoubleClick: {
                                 if (!heuristicZoom(clickX,clickY,2.5)) {
                                     var zf = flickable.width > 980 ? 1 : flickable.width/980;
+                                    if (zf > zoomFactor)
+                                        zf = 2.0 // zoom in (else zooming out)
                                     doZoom(zf,clickX/zoomFactor*zf,clickY/zoomFactor*zf)
                                  }
                                }
