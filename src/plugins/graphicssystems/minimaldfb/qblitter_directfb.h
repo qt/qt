@@ -9,7 +9,7 @@ class QDirectFbBlitter : public QBlittable
 {
 public:
     QDirectFbBlitter(const QRect &rect, IDirectFBSurface *surface = 0);
-    virtual ~QDirectFbBlitter(){ }
+    virtual ~QDirectFbBlitter();
 
     virtual void fillRect(const QRectF &rect, const QColor &color);
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect);

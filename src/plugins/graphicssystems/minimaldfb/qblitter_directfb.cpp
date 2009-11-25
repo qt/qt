@@ -27,6 +27,11 @@ QDirectFbBlitter::QDirectFbBlitter(const QRect &rect, IDirectFBSurface *surface)
     }
 }
 
+QDirectFbBlitter::~QDirectFbBlitter()
+{
+    delete m_surface;
+}
+
 void QDirectFbBlitter::fillRect(const QRectF &rect, const QColor &color)
 {
     m_surface->SetColor(m_surface, color.red(), color.green(), color.blue(), color.alpha());
