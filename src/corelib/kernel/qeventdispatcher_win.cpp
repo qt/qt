@@ -725,7 +725,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
             }
             if (haveMessage) {
-                if (msg.message == WM_QT_SENDPOSTEDEVENTS) {
+                if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     if (seenWM_QT_SENDPOSTEDEVENTS) {
                         needWM_QT_SENDPOSTEDEVENTS = true;
                         continue;
