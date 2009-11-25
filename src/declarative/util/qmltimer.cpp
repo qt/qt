@@ -239,6 +239,20 @@ void QmlTimer::stop()
     setRunning(false);
 }
 
+/*!
+    \qmlmethod Timer::restart()
+    \brief Restarts the timer.
+
+    If the Timer is not running it will be started, otherwise it will be
+    stopped, reset to initial state and started.  The \c running property
+    will be true following a call to \c restart().
+*/
+void QmlTimer::restart()
+{
+    setRunning(false);
+    setRunning(true);
+}
+
 void QmlTimer::update()
 {
     Q_D(QmlTimer);

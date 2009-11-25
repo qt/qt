@@ -85,6 +85,7 @@ protected:
 public Q_SLOTS:
     void start();
     void stop();
+    void restart();
 
 Q_SIGNALS:
     void triggered();

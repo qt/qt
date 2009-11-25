@@ -58,6 +58,7 @@ private slots:
     void triggeredOnStart();
     void triggeredOnStartRepeat();
     void changeDuration();
+    void restart();
 };
 
 class TimerHelper : public QObject
@@ -233,6 +234,31 @@ void tst_qmltimer::changeDuration()
 
     QTest::qWait(600);
     QCOMPARE(helper.count, 3);
+
+    delete timer;
+}
+
+void tst_qmltimer::restart()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 500; repeat: true; running: true }"), QUrl("file://"));
+    QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
+    QVERIFY(timer != 0);
+
+    TimerHelper helper;
+    connect(timer, SIGNAL(triggered()), &helper, SLOT(timeout()));
+    QCOMPARE(helper.count, 0);
+
+    QTest::qWait(600);
+    QCOMPARE(helper.count, 1);
+
+    QTest::qWait(300);
+
+    timer->restart();
+
+    QTest::qWait(700);
+
+    QCOMPARE(helper.count, 2);
 
     delete timer;
 }
