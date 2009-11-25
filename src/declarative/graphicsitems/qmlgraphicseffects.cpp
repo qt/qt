@@ -51,10 +51,10 @@ QML_DEFINE_TYPE(Qt,4,6,Blur,QGraphicsBlurEffect)
     \qmlclass Blur QGraphicsBlurEffect
     \brief The Blur object provides a blur effect.
 
-    A blur effect blurs the source item. This effect is useful for reducing details,
-    such as when the source loses focus and you want to draw attention to other
-    elements. The level of detail can be modified using the blurRadius property.
-    Use blurHint to choose the quality or performance blur hints.
+    A blur effect blurs the source item. This effect is useful for reducing details;
+    for example, when the a source loses focus and attention should be drawn to other
+    elements. Use blurRadius to control the level of detail and blurHint to control
+    the quality of the blur.
 
     By default, the blur radius is 5 pixels.
 
@@ -64,21 +64,22 @@ QML_DEFINE_TYPE(Qt,4,6,Blur,QGraphicsBlurEffect)
 /*!
     \qmlproperty real Blur::blurRadius
 
-    blurRadius controls how blurry an item will appear.
-    Using a smaller radius results in a sharper appearance, whereas a bigger
-    radius results in a more blurred appearance.
+    This controls how blurry an item will appear.
 
-    By default, the blur radius is 5 pixels.
+    A smaller radius produces a sharper appearance, and a larger radius produces
+    a more blurred appearance.
+
+    The default radius is 5 pixels.
 */
 /*!
     \qmlproperty enumeration Blur::blurHint
 
-    Use the Qt.PerformanceHint hint to say that you want a faster blur,
-    and the Qt.QualityHint hint to say that you prefer a higher quality blur.
+    Use Qt.PerformanceHint to specify a faster blur or Qt.QualityHint hint
+    to specify a higher quality blur.
+   
+    If the blur radius is animated, it is recommended you use Qt.PerformanceHint.
 
-    When animating the blur radius it's recommended to use Qt.PerformanceHint.
-
-    By default, the blur hint is Qt.PerformanceHint.
+    The default hint is Qt.PerformanceHint.
 */
 
 QML_DECLARE_TYPE(QGraphicsColorizeEffect)

@@ -73,6 +73,9 @@ public:
     A timer can be used to trigger an action either once, or repeatedly
     at a given interval.
 
+    Here is a timer that shows the current date and time, and updates
+    the text every 500 milliseconds:
+
     \qml
     Timer {
         interval: 500; running: true; repeat: true
@@ -107,7 +110,7 @@ QmlTimer::QmlTimer(QObject *parent)
 /*!
     \qmlproperty int Timer::interval
 
-    Sets the \a interval in milliseconds between triggering.
+    Sets the \a interval between triggers, in milliseconds.
 
     The default interval is 1000 milliseconds.
 */
@@ -130,7 +133,7 @@ int QmlTimer::interval() const
     \qmlproperty bool Timer::running
 
     If set to true, starts the timer; otherwise stops the timer.
-    For a non-repeating timer, \a running  will be set to false after the
+    For a non-repeating timer, \a running is set to false after the
     timer has been triggered.
 
     \a running defaults to false.
@@ -157,7 +160,7 @@ void QmlTimer::setRunning(bool running)
 /*!
     \qmlproperty bool Timer::repeat
 
-    If \a repeat is true the timer will be triggered repeatedly at the
+    If \a repeat is true the timer is triggered repeatedly at the
     specified interval; otherwise, the timer will trigger once at the
     specified interval and then stop (i.e. running will be set to false).
 
@@ -183,15 +186,15 @@ void QmlTimer::setRepeating(bool repeating)
 /*!
     \qmlproperty bool Timer::triggeredOnStart
 
-    When the Timer is started the first trigger is normally after the specified
-    interval has elapsed.  It is sometimes desireable to trigger immediately
-    when the timer is started, for example to establish an initial
+    When a timer is started, the first trigger is usually after the specified
+    interval has elapsed.  It is sometimes desirable to trigger immediately
+    when the timer is started; for example, to establish an initial
     state.
 
-    If \a triggeredOnStart is true, the timer will be triggered immediately
-    when started, and subsequently at the specified interval.  Note that for
-    a Timer with \e repeat set to false, this will result in the timer being
-    triggered twice; once on start, and again at the interval.
+    If \a triggeredOnStart is true, the timer is triggered immediately
+    when started, and subsequently at the specified interval. Note that if
+    \e repeat is set to false, the timer is triggered twice; once on start,
+    and again at the interval.
 
     \a triggeredOnStart defaults to false.
 
@@ -226,7 +229,7 @@ void QmlTimer::start()
 
 /*!
     \qmlmethod Timer::stop()
-    \brief stops the timer.
+    \brief Stops the timer.
 
     If the timer is not running, calling this method has no effect.  The
     \c running property will be false following a call to \c stop().
