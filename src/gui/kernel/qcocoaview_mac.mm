@@ -64,10 +64,14 @@
 
 #include <qdebug.h>
 
-@interface NSEvent (DeviceDelta)
+@interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
   - (CGFloat)deviceDeltaX;
   - (CGFloat)deviceDeltaY;
   - (CGFloat)deviceDeltaZ;
+@end
+
+@interface NSEvent (Qt_Compile_Leopard_Gestures)
+  - (CGFloat)magnification;
 @end
 
 QT_BEGIN_NAMESPACE
@@ -884,6 +888,7 @@ extern "C" {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
     qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
 }
+#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 
 - (void)magnifyWithEvent:(NSEvent *)event;
 {
@@ -954,7 +959,6 @@ extern "C" {
     qNGEvent.position = flipPoint(p).toPoint();
     qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
-#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 
 - (void)frameDidChange:(NSNotification *)note
 {

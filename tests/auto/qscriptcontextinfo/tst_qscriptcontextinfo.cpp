@@ -249,13 +249,13 @@ void tst_QScriptContextInfo::qtFunction()
             QCOMPARE(info.functionEndLineNumber(), -1);
             QCOMPARE(info.functionStartLineNumber(), -1);
             if (x == 0)
-                QEXPECT_FAIL("", "QScriptContextInfo doesn't pick the correct meta-index for overloaded slots", Continue);
+                QEXPECT_FAIL("", "QTBUG-6133: QScriptContextInfo doesn't pick the correct meta-index for overloaded slots", Continue);
             QCOMPARE(info.functionParameterNames().size(), pnames.size());
             if (x == 0)
-                QEXPECT_FAIL("", "QScriptContextInfo doesn't pick the correct meta-index for overloaded slots", Continue);
+                QEXPECT_FAIL("", "QTBUG-6133: QScriptContextInfo doesn't pick the correct meta-index for overloaded slots", Continue);
             QCOMPARE(info.functionParameterNames(), pnames);
             if (x == 0)
-                QEXPECT_FAIL("", "QScriptContextInfo doesn't pick the correct meta-index for overloaded slots", Continue);
+                QEXPECT_FAIL("", "QTBUG-6133: QScriptContextInfo doesn't pick the correct meta-index for overloaded slots", Continue);
             QCOMPARE(info.functionMetaIndex(), metaObject()->indexOfMethod(sig));
         }
 
