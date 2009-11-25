@@ -178,6 +178,9 @@ static void cleanupCocoaApplicationDelegate()
     return [[qtMenuLoader retain] autorelease];
 }
 
+// This function will only be called when NSApp is actually running. Before
+// that, the kAEQuitApplication apple event will be sendt to 
+// QApplicationPrivate::globalAppleEventProcessor in qapplication_mac.mm
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
     Q_UNUSED(sender);

@@ -291,7 +291,10 @@ void QWindowsSystemProxy::init()
             GlobalFree(ieProxyConfig.lpszAutoConfigUrl);
         }
         if (ieProxyConfig.lpszProxy) {
-            proxyServerList << QString::fromWCharArray(ieProxyConfig.lpszProxy);
+            // http://msdn.microsoft.com/en-us/library/aa384250%28VS.85%29.aspx speaks only about a "proxy URL",
+            // not multiple URLs. However we tested this and it can return multiple URLs. So we use splitSpaceSemicolon
+            // on it.
+            proxyServerList = splitSpaceSemicolon(QString::fromWCharArray(ieProxyConfig.lpszProxy));
             GlobalFree(ieProxyConfig.lpszProxy);
         }
         if (ieProxyConfig.lpszProxyBypass) {
