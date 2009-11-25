@@ -49,6 +49,8 @@ real, int, color, rect, point, and size can all be animated.
 QML supports three different forms of animation - basic property animation,
 transitions, and property behaviors.
 
+\tableofcontents
+
 \section1 Basic Property Animation
 
 The simplest form of animation is directly using \l PropertyAnimation, which can animate all of the property

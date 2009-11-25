@@ -131,4 +131,7 @@ In order for the the knob to move smoothly we add a transition that will animate
 
 For more information on transitions see \l{state-transitions}{QML Transitions}.
 
+\section1 Usage
+The switch can be used in a QML file, like this:
+\snippet examples/declarative/slideswitch/slideswitch.qml 0
 */
