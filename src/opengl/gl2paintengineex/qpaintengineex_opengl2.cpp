@@ -908,7 +908,8 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
 void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
                                                           int count,
-                                                          const QVector<int> *stops,
+                                                          int *stops,
+                                                          int stopCount,
                                                           const QGLRect &bounds,
                                                           StencilFillMode mode)
 {
@@ -966,7 +967,7 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
         // Dec. for back-facing "holes"
         glStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_DECR_WRAP);
         glStencilMask(~GL_STENCIL_HIGH_BIT);
-        drawVertexArrays(data, stops, GL_TRIANGLE_FAN);
+        drawVertexArrays(data, stops, stopCount, GL_TRIANGLE_FAN);
 
         if (q->state()->clipTestEnabled) {
             // Clear high bit of stencil outside of path
@@ -978,7 +979,7 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
     } else if (mode == OddEvenFillMode) {
         glStencilMask(GL_STENCIL_HIGH_BIT);
         glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT); // Simply invert the stencil bit
-        drawVertexArrays(data, stops, GL_TRIANGLE_FAN);
+        drawVertexArrays(data, stops, stopCount, GL_TRIANGLE_FAN);
 
     } else { // TriStripStrokeFillMode
         Q_ASSERT(count && !stops); // tristrips generated directly, so no vertexArray or stops
@@ -1137,7 +1138,7 @@ void QGL2PaintEngineExPrivate::composite(const QGLRect& boundingRect)
 }
 
 // Draws the vertex array as a set of <vertexArrayStops.size()> triangle fans.
-void QGL2PaintEngineExPrivate::drawVertexArrays(const float *data, const QVector<int> *stops,
+void QGL2PaintEngineExPrivate::drawVertexArrays(const float *data, int *stops, int stopCount,
                                                 GLenum primitive)
 {
     // Now setup the pointer to the vertex array:
@@ -1145,7 +1146,8 @@ void QGL2PaintEngineExPrivate::drawVertexArrays(const float *data, const QVector
     glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
 
     int previousStop = 0;
-    foreach(int stop, *stops) {
+    for (int i=0; i<stopCount; ++i) {
+        int stop = stops[i];
 /*
         qDebug("Drawing triangle fan for vertecies %d -> %d:", previousStop, stop-1);
         for (int i=previousStop; i<stop; ++i)
@@ -1304,7 +1306,7 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         QRectF bounds = path.controlPointRect().adjusted(-extra, -extra, extra, extra);
 
         d->fillStencilWithVertexArray(d->stroker.vertices(), d->stroker.vertexCount() / 2,
-                                      0, bounds, QGL2PaintEngineExPrivate::TriStripStrokeFillMode);
+                                      0, 0, bounds, QGL2PaintEngineExPrivate::TriStripStrokeFillMode);
 
         glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 

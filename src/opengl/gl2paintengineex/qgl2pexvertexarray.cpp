@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 void QGL2PEXVertexArray::clear()
 {
     vertexArray.reset();
-    vertexArrayStops.clear();
+    vertexArrayStops.reset();
     boundingRectDirty = true;
 }
 
@@ -125,7 +125,7 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
                 if (!outline)
                     addClosingLine(lastMoveTo);
 //                qDebug("element[%d] is a MoveToElement", i);
-                vertexArrayStops.append(vertexArray.size());
+                vertexArrayStops.add(vertexArray.size());
                 if (!outline) {
                     addCentroid(path, i);
                     lastMoveTo = vertexArray.size();
@@ -143,7 +143,7 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
                                                 points[i+2]);
                 QRectF bounds = b.bounds();
                 // threshold based on same algorithm as in qtriangulatingstroker.cpp
-                int threshold = qMin<float>(64, qMax(bounds.width(), bounds.height()) * 3.14f / (curveInverseScale * 8));
+                int threshold = qMin<float>(64, qMax(bounds.width(), bounds.height()) * 3.14f / (curveInverseScale * 6));
                 if (threshold < 3) threshold = 3;
                 qreal one_over_threshold_minus_1 = 1.f / (threshold - 1);
                 for (int t=0; t<threshold; ++t) {
@@ -160,7 +160,7 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
 
     if (!outline)
         addClosingLine(lastMoveTo);
-    vertexArrayStops.append(vertexArray.size());
+    vertexArrayStops.add(vertexArray.size());
 }
 
 void QGL2PEXVertexArray::lineToArray(const GLfloat x, const GLfloat y)

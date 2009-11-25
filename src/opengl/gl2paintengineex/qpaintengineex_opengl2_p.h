@@ -195,18 +195,18 @@ public:
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
     void drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType, const QTextItemInt &ti);
 
-    void drawVertexArrays(const float *data, const QVector<int> *stops, GLenum primitive);
+    void drawVertexArrays(const float *data, int *stops, int stopCount, GLenum primitive);
     void drawVertexArrays(QGL2PEXVertexArray &vertexArray, GLenum primitive) {
-        drawVertexArrays((const float *) vertexArray.data(), &vertexArray.stops(), primitive);
+        drawVertexArrays((const float *) vertexArray.data(), vertexArray.stops(), vertexArray.stopCount(), primitive);
     }
 
         // ^ draws whatever is in the vertex array
     void composite(const QGLRect& boundingRect);
         // ^ Composites the bounding rect onto dest buffer
 
-    void fillStencilWithVertexArray(const float *data, int count, const QVector<int> *stops, const QGLRect &bounds, StencilFillMode mode);
+    void fillStencilWithVertexArray(const float *data, int count, int *stops, int stopCount, const QGLRect &bounds, StencilFillMode mode);
     void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill) {
-        fillStencilWithVertexArray((const float *) vertexArray.data(), 0, &vertexArray.stops(),
+        fillStencilWithVertexArray((const float *) vertexArray.data(), 0, vertexArray.stops(), vertexArray.stopCount(),
                                    vertexArray.boundingRect(),
                                    useWindingFill ? WindingFillMode : OddEvenFillMode);
     }
