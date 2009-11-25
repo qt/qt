@@ -755,7 +755,6 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
         case QGraphicsItem::ItemClipsChildrenToShape:
             flag = AncestorClipsChildren;
             enabled = flags & QGraphicsItem::ItemClipsChildrenToShape;
-            invalidateCachedClipPathRecursively(/*childrenOnly=*/true);
             break;
         case QGraphicsItem::ItemIgnoresTransformations:
             flag = AncestorIgnoresTransformations;
@@ -1731,9 +1730,6 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         // all children.
         d_ptr->updateAncestorFlag(ItemClipsChildrenToShape);
     }
-
-    if ((flags & ItemClipsToShape) != (oldFlags & ItemClipsToShape))
-        d_ptr->invalidateCachedClipPath();
 
     if ((flags & ItemIgnoresTransformations) != (oldFlags & ItemIgnoresTransformations)) {
         // Item children clipping changes. Propagate the ancestor flag to
@@ -3399,7 +3395,6 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
 {
     Q_Q(QGraphicsItem);
     inSetPosHelper = 1;
-    updateCachedClipPathFromSetPosHelper(pos);
     if (scene)
         q->prepareGeometryChange();
     QPointF oldPos = this->pos;
@@ -4535,22 +4530,12 @@ bool QGraphicsItem::isClipped() const
 QPainterPath QGraphicsItem::clipPath() const
 {
     Q_D(const QGraphicsItem);
-    if (!d->dirtyClipPath)
-        return d->emptyClipPath ? QPainterPath() : d->cachedClipPath;
-
-    if (!isClipped()) {
-        d_ptr->setCachedClipPath(QPainterPath());
-        return d->cachedClipPath;
-    }
+    if (!isClipped())
+        return QPainterPath();
 
     const QRectF thisBoundingRect(boundingRect());
-    if (thisBoundingRect.isEmpty()) {
-        if (d_ptr->flags & ItemClipsChildrenToShape)
-            d_ptr->setEmptyCachedClipPathRecursively();
-        else
-            d_ptr->setEmptyCachedClipPath();
+    if (thisBoundingRect.isEmpty())
         return QPainterPath();
-    }
 
     QPainterPath clip;
     // Start with the item's bounding rect.
@@ -4561,40 +4546,18 @@ QPainterPath QGraphicsItem::clipPath() const
         const QGraphicsItem *lastParent = this;
 
         // Intersect any in-between clips starting at the top and moving downwards.
-        bool foundValidClipPath = false;
         while ((parent = parent->d_ptr->parent)) {
             if (parent->d_ptr->flags & ItemClipsChildrenToShape) {
                 // Map clip to the current parent and intersect with its shape/clipPath
                 clip = lastParent->itemTransform(parent).map(clip);
-                if ((foundValidClipPath = !parent->d_ptr->dirtyClipPath && parent->isClipped())) {
-                    if (parent->d_ptr->emptyClipPath) {
-                        if (d_ptr->flags & ItemClipsChildrenToShape)
-                            d_ptr->setEmptyCachedClipPathRecursively();
-                        else
-                            d_ptr->setEmptyCachedClipPath();
-                        return QPainterPath();
-                    }
-                    clip = clip.intersected(parent->d_ptr->cachedClipPath);
-                    if (!(parent->d_ptr->flags & ItemClipsToShape))
-                        clip = clip.intersected(parent->shape());
-                } else {
-                    clip = clip.intersected(parent->shape());
-                }
-
-                if (clip.isEmpty()) {
-                    if (d_ptr->flags & ItemClipsChildrenToShape)
-                        d_ptr->setEmptyCachedClipPathRecursively();
-                    else
-                        d_ptr->setEmptyCachedClipPath();
+                clip = clip.intersected(parent->shape());
+                if (clip.isEmpty())
                     return clip;
-                }
                 lastParent = parent;
             }
 
-            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
-                || foundValidClipPath) {
+            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
                 break;
-            }
         }
 
         if (lastParent != this) {
@@ -4607,7 +4570,6 @@ QPainterPath QGraphicsItem::clipPath() const
     if (d->flags & ItemClipsToShape)
         clip = clip.intersected(shape());
 
-    d_ptr->setCachedClipPath(clip);
     return clip;
 }
 
@@ -5029,12 +4991,12 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
 bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignoreVisibleBit,
                                                 bool ignoreDirtyBit, bool ignoreOpacity) const
 {
+    Q_UNUSED(ignoreClipping);
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
     return !scene
            || (!visible && !ignoreVisibleBit && !this->ignoreVisible)
            || (!ignoreDirtyBit && fullUpdatePending)
-           || (!ignoreClipping && (childrenClippedToShape() && isClippedAway()))
            || (!ignoreOpacity && !this->ignoreOpacity && childrenCombineOpacity() && isFullyTransparent());
 }
 
@@ -5167,109 +5129,6 @@ void QGraphicsItemPrivate::removeExtraItemCache()
         delete c;
     }
     unsetExtra(ExtraCacheData);
-}
-
-void QGraphicsItemPrivate::setEmptyCachedClipPathRecursively(const QRectF &emptyIfOutsideThisRect)
-{
-    setEmptyCachedClipPath();
-
-    const bool checkRect = !emptyIfOutsideThisRect.isNull()
-                           && !(flags & QGraphicsItem::ItemClipsChildrenToShape);
-    for (int i = 0; i < children.size(); ++i) {
-        if (!checkRect) {
-            children.at(i)->d_ptr->setEmptyCachedClipPathRecursively();
-            continue;
-        }
-
-        QGraphicsItem *child = children.at(i);
-        const QRectF rect = child->mapRectFromParent(emptyIfOutsideThisRect);
-        if (rect.intersects(child->boundingRect()))
-            child->d_ptr->invalidateCachedClipPathRecursively(false, rect);
-        else
-            child->d_ptr->setEmptyCachedClipPathRecursively(rect);
-    }
-}
-
-void QGraphicsItemPrivate::invalidateCachedClipPathRecursively(bool childrenOnly, const QRectF &emptyIfOutsideThisRect)
-{
-    if (!childrenOnly)
-        invalidateCachedClipPath();
-
-    const bool checkRect = !emptyIfOutsideThisRect.isNull();
-    for (int i = 0; i < children.size(); ++i) {
-        if (!checkRect) {
-            children.at(i)->d_ptr->invalidateCachedClipPathRecursively(false);
-            continue;
-        }
-
-        QGraphicsItem *child = children.at(i);
-        const QRectF rect = child->mapRectFromParent(emptyIfOutsideThisRect);
-        if (rect.intersects(child->boundingRect()))
-            child->d_ptr->invalidateCachedClipPathRecursively(false, rect);
-        else
-            child->d_ptr->setEmptyCachedClipPathRecursively(rect);
-    }
-}
-
-void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &newPos)
-{
-    Q_ASSERT(inSetPosHelper);
-
-    if (inDestructor || !(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
-        return; // Not clipped by any ancestor.
-
-    // Find closest clip ancestor and transform.
-    Q_Q(QGraphicsItem);
-    // COMBINE
-    QTransform thisToParentTransform = QTransform::fromTranslate(newPos.x(), newPos.y());
-    if (transformData)
-        thisToParentTransform = transformData->computedFullTransform(&thisToParentTransform);
-    QGraphicsItem *clipParent = parent;
-    while (clipParent && !clipParent->d_ptr->inDestructor && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
-        thisToParentTransform *= clipParent->d_ptr->transformToParent();
-        clipParent = clipParent->d_ptr->parent;
-    }
-
-    // Ensure no parents are currently being deleted. This can only
-    // happen if the item is moved by a dying ancestor.
-    QGraphicsItem *p = clipParent;
-    while (p) {
-        if (p->d_ptr->inDestructor)
-            return;
-        p = p->d_ptr->parent;
-    }
-
-    // From here everything is calculated in clip parent's coordinates.
-    const QRectF parentBoundingRect(clipParent->boundingRect());
-    const QRectF thisBoundingRect(thisToParentTransform.mapRect(q->boundingRect()));
-
-    if (!parentBoundingRect.intersects(thisBoundingRect)) {
-        // Item is moved outside the clip parent's bounding rect,
-        // i.e. it is fully clipped and the clip path is empty.
-        if (flags & QGraphicsItem::ItemClipsChildrenToShape)
-            setEmptyCachedClipPathRecursively();
-        else
-            setEmptyCachedClipPathRecursively(thisToParentTransform.inverted().mapRect(parentBoundingRect));
-        return;
-    }
-
-    const QPainterPath parentClip(clipParent->isClipped() ? clipParent->clipPath() : clipParent->shape());
-    if (parentClip.contains(thisBoundingRect))
-        return; // Item is inside the clip parent's shape. No update required.
-
-    const QRectF parentClipRect(parentClip.controlPointRect());
-    if (!parentClipRect.intersects(thisBoundingRect)) {
-        // Item is moved outside the clip parent's shape,
-        // i.e. it is fully clipped and the clip path is empty.
-        if (flags & QGraphicsItem::ItemClipsChildrenToShape)
-            setEmptyCachedClipPathRecursively();
-        else
-            setEmptyCachedClipPathRecursively(thisToParentTransform.inverted().mapRect(parentClipRect));
-    } else {
-        // Item is partially inside the clip parent's shape,
-        // i.e. the cached clip path must be invalidated.
-        invalidateCachedClipPathRecursively(false, thisToParentTransform.inverted().mapRect(parentClipRect));
-    }
 }
 
 // Traverses all the ancestors up to the top-level and updates the pointer to
@@ -7312,16 +7171,6 @@ void QGraphicsItem::prepareGeometryChange()
         parent->d_ptr->dirtyChildrenBoundingRect = 1;
         // ### Only do this if the parent's effect applies to the entire subtree.
         parent->d_ptr->notifyBoundingRectChanged = 1;
-    }
-
-    if (d_ptr->inSetPosHelper)
-        return;
-
-    if (d_ptr->flags & ItemClipsChildrenToShape
-        || d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
-        d_ptr->invalidateCachedClipPathRecursively();
-    } else {
-        d_ptr->invalidateCachedClipPath();
     }
 }
 
