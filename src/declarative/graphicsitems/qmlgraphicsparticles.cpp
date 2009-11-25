@@ -372,7 +372,7 @@ public:
         , lifeSpanDev(1000), fadeInDur(200), fadeOutDur(300)
         , angle(0), angleDev(0), velocity(0), velocityDev(0), emissionCarry(0.)
         , addParticleTime(0), addParticleCount(0), lastAdvTime(0)
-        , emitting(true), motion(0), pendingPixmapCache(false), clock(this)
+        , motion(0), pendingPixmapCache(false), clock(this)
     {
     }
 
@@ -407,7 +407,6 @@ public:
     int addParticleTime;
     int addParticleCount;
     int lastAdvTime;
-    bool emitting;
     QmlGraphicsParticleMotion *motion;
     QmlGraphicsParticlesPainter *paintItem;
 
@@ -443,14 +442,14 @@ void QmlGraphicsParticlesPrivate::tick(int time)
     }
 
     if(emissionRate == -1)//Otherwise leave emission to the emission rate
-        while(removed-- && ((count == -1) || particles.count() < count) && emitting)
+        while(removed-- && ((count == -1) || particles.count() < count))
             createParticle(time);
 
     if (!addParticleTime)
         addParticleTime = time;
 
     //Possibly emit new particles
-    if (((count == -1) || particles.count() < count) && emitting
+    if (((count == -1) || particles.count() < count) && emissionRate
             && !(count==-1 && emissionRate==-1)) {
         int emissionCount = -1;
         if (emissionRate != -1){
@@ -497,7 +496,7 @@ void QmlGraphicsParticlesPrivate::tick(int time)
     lastAdvTime = time;
     paintItem->updateSize();
     paintItem->update();
-    if (!(oldCount || particles.count()) && (!count || !emitting) && bursts.isEmpty()) {
+    if (!(oldCount || particles.count()) && (!count || !emissionRate) && bursts.isEmpty()) {
         lastAdvTime = 0;
         clock.stop();
     }
@@ -733,7 +732,7 @@ void QmlGraphicsParticles::setCount(int cnt)
     d->count = cnt;
     d->addParticleTime = 0;
     d->addParticleCount = d->particles.count();
-    if (!oldCount && d->clock.state() != QAbstractAnimation::Running && d->count && d->emitting) {
+    if (!oldCount && d->clock.state() != QAbstractAnimation::Running && d->count && d->emissionRate) {
         d->clock.start();
     }
     d->paintItem->updateSize();
@@ -774,6 +773,9 @@ void QmlGraphicsParticles::setEmissionRate(int er)
     if(er == d->emissionRate)
         return;
     d->emissionRate = er;
+    if (d->clock.state() != QAbstractAnimation::Running && d->count && d->emissionRate) {
+            d->clock.start();
+    }
     emit emissionRateChanged();
 }
 
@@ -1100,42 +1102,6 @@ void QmlGraphicsParticles::setVelocityDeviation(qreal velocity)
 }
 
 /*!
-  \qmlproperty bool Particles::emitting
-  This property determines whether new particles are created
-
-  If emitting is set to false no new particles will be created. This means that
-  when a particle reaches the end of its lifespan it is not replaced. This
-  property can be used to turn particles on and off with a more natural look.
-
-  The default setting is true. Note that if it initialized to false no particles
-  will be produced until it is set to true.
-*/
-/*!
-  \property QmlGraphicsParticles::emitting
-  If emitting is set to false no new particles will be created. This means that
-  when a particle reaches the end of its lifespan it is not replaced. This
-  property can be used to turn particles on and off with a more natural look.
-
-  The default setting is true. Note that if it initialized to false no particles
-  will be produced until it is set to true.
-*/
-bool QmlGraphicsParticles::emitting() const
-{
-    Q_D(const QmlGraphicsParticles);
-    return d->emitting;
-}
-
-void QmlGraphicsParticles::setEmitting(bool r)
-{
-    Q_D(QmlGraphicsParticles);
-    if(d->emitting == r)
-        return;
-    d->emitting = r;
-    if (d->count && r)
-        d->clock.start();
-    emit emittingChanged();
-}
-/*!
     \qmlproperty ParticleMotion Particles::motion
     This property sets the type of motion to apply to the particles.
 
@@ -1178,7 +1144,7 @@ void QmlGraphicsParticles::setMotion(QmlGraphicsParticleMotion *motion)
     burst. If the second argument is omitted, it is treated as -1. The burst
     of particles has a separate emissionRate and count to the normal emission of
     particles. The burst uses the same values as normal emission for all other
-    properties, including emissionVariance and emitting.
+    properties, including emissionVariance.
 
     The normal emission of particles will continue during the burst, however
     the particles created by the burst count towards the maximum number used by
@@ -1189,7 +1155,7 @@ void QmlGraphicsParticles::burst(int count, int emissionRate)
 {
     Q_D(QmlGraphicsParticles);
     d->bursts << qMakePair(count, emissionRate);
-    if (d->clock.state() != QAbstractAnimation::Running && d->emitting)
+    if (d->clock.state() != QAbstractAnimation::Running)
         d->clock.start();
 }
 
