@@ -95,7 +95,7 @@ private:
 
 private Q_SLOTS:
     void ticked();
-    void stateChanged(QAbstractAnimation::State,QAbstractAnimation::State);
+    void finished();
 };
 
 QT_END_NAMESPACE

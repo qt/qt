@@ -55,7 +55,7 @@ class QmlTimerPrivate : public QObjectPrivate
 public:
     QmlTimerPrivate()
         : interval(1000), running(false), repeating(false), triggeredOnStart(false)
-        , classBegun(false), componentComplete(false) {}
+        , classBegun(false), componentComplete(false), firstTick(true) {}
     int interval;
     QPauseAnimation pause;
     bool running : 1;
@@ -63,6 +63,7 @@ public:
     bool triggeredOnStart : 1;
     bool classBegun : 1;
     bool componentComplete : 1;
+    bool firstTick : 1;
 };
 
 /*!
@@ -85,6 +86,12 @@ public:
     QmlTimer is synchronized with the animation timer.  Since the animation
     timer is usually set to 60fps, the resolution of QmlTimer will be
     at best 16ms.
+
+    If the Timer is running and one of its properties is changed, the
+    elapsed time will be reset.  For example, if a Timer with interval of
+    1000ms has its \e repeat property changed 500ms after starting, the
+    elapsed time will be reset to 0, and the Timer will be triggered
+    1000ms later.
 */
 
 QmlTimer::QmlTimer(QObject *parent)
@@ -92,8 +99,7 @@ QmlTimer::QmlTimer(QObject *parent)
 {
     Q_D(QmlTimer);
     connect(&d->pause, SIGNAL(currentLoopChanged(int)), this, SLOT(ticked()));
-    connect(&d->pause, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State))
-            , this, SLOT(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    connect(&d->pause, SIGNAL(finished()), this, SLOT(finished()));
     d->pause.setLoopCount(1);
     d->pause.setDuration(d->interval);
 }
@@ -142,6 +148,7 @@ void QmlTimer::setRunning(bool running)
     Q_D(QmlTimer);
     if (d->running != running) {
         d->running = running;
+        d->firstTick = true;
         emit runningChanged();
         update();
     }
@@ -236,10 +243,11 @@ void QmlTimer::update()
         return;
     d->pause.stop();
     if (d->running) {
+        d->pause.setCurrentTime(0);
         d->pause.setLoopCount(d->repeating ? -1 : 1);
         d->pause.setDuration(d->interval);
         d->pause.start();
-        if (d->triggeredOnStart) {
+        if (d->triggeredOnStart && d->firstTick) {
             QCoreApplication::removePostedEvents(this, QEvent::MetaCall);
             QMetaObject::invokeMethod(this, "ticked", Qt::QueuedConnection);
         }
@@ -267,18 +275,18 @@ void QmlTimer::componentComplete()
 void QmlTimer::ticked()
 {
     Q_D(QmlTimer);
-    if (d->running)
+    if (d->running && (d->pause.currentTime() > 0 || (d->triggeredOnStart && d->firstTick)))
         emit triggered();
+    d->firstTick = false;
 }
 
-void QmlTimer::stateChanged(QAbstractAnimation::State state, QAbstractAnimation::State)
+void QmlTimer::finished()
 {
     Q_D(QmlTimer);
-    if (d->running && state != QAbstractAnimation::Running) {
-        d->running = false;
-        emit triggered();
-        emit runningChanged();
-    }
+    if (d->repeating || !d->running)
+        return;
+    emit triggered();
+    d->firstTick = false;
 }
 
 QT_END_NAMESPACE

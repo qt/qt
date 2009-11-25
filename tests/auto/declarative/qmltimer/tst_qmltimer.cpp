@@ -42,6 +42,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmltimer_p.h>
+#include <QDebug>
 
 class tst_qmltimer : public QObject
 {
@@ -56,6 +57,7 @@ private slots:
     void noTriggerIfNotRunning();
     void triggeredOnStart();
     void triggeredOnStartRepeat();
+    void changeDuration();
 };
 
 class TimerHelper : public QObject
@@ -123,6 +125,8 @@ void tst_qmltimer::notRepeatingStart()
     QCOMPARE(helper.count, 1);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(helper.count, 1);
+
+    delete timer;
 }
 
 void tst_qmltimer::repeat()
@@ -147,6 +151,8 @@ void tst_qmltimer::repeat()
     timer->stop();
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count == oldCount);
+
+    delete timer;
 }
 
 void tst_qmltimer::triggeredOnStart()
@@ -166,6 +172,8 @@ void tst_qmltimer::triggeredOnStart()
     QCOMPARE(helper.count, 2);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(helper.count, 2);
+
+    delete timer;
 }
 
 void tst_qmltimer::triggeredOnStartRepeat()
@@ -185,6 +193,8 @@ void tst_qmltimer::triggeredOnStartRepeat()
     int oldCount = helper.count;
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > oldCount);
+
+    delete timer;
 }
 
 void tst_qmltimer::noTriggerIfNotRunning()
@@ -201,6 +211,30 @@ void tst_qmltimer::noTriggerIfNotRunning()
     QVERIFY(item != 0);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(item->property("ok").toBool(), true);
+
+    delete item;
+}
+
+void tst_qmltimer::changeDuration()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 200; repeat: true; running: true }"), QUrl("file://"));
+    QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
+    QVERIFY(timer != 0);
+
+    TimerHelper helper;
+    connect(timer, SIGNAL(triggered()), &helper, SLOT(timeout()));
+    QCOMPARE(helper.count, 0);
+
+    QTest::qWait(500);
+    QCOMPARE(helper.count, 2);
+
+    timer->setInterval(500);
+
+    QTest::qWait(600);
+    QCOMPARE(helper.count, 3);
+
+    delete timer;
 }
 
 QTEST_MAIN(tst_qmltimer)
