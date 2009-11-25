@@ -104,12 +104,14 @@ QRect QGraphicsSystemCursor::getCurrentRect()
 
 void QGraphicsSystemCursor::pointerEvent(const QMouseEvent & e)
 {
+    Q_UNUSED(e);
     currentRect = getCurrentRect();
     screen->setDirty(currentRect);
 }
 
-void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor)
+void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
 {
+    Q_UNUSED(widget);
     Qt::CursorShape shape = widgetCursor->shape();
 
     if (shape == Qt::BitmapCursor) {
@@ -124,19 +126,6 @@ void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor)
     }
     currentRect = getCurrentRect();
     screen->setDirty(currentRect);
-}
-
-void QGraphicsSystemCursor::changeCursor(QWidget * widget)
-{
-    if (widget) {
-        QCursor widgetCursor = widget->cursor();
-        changeCursor(&widgetCursor);
-     } else {
-        // default cursor
-        setCursor(Qt::ArrowCursor);
-        currentRect = getCurrentRect();
-        screen->setDirty(currentRect);
-     }
 }
 
 // End of display and pointer event handling code

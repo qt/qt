@@ -71,11 +71,8 @@ public:
     virtual ~QGraphicsSystemCursor();
 
     // input methods
-    virtual void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
-    virtual void setCursor(Qt::CursorShape shape);
     virtual void pointerEvent(const QMouseEvent & event);
-    virtual void changeCursor(QWidget * widget);
-    virtual void changeCursor(QCursor * widgetCursor);
+    virtual void changeCursor(QCursor * widgetCursor, QWidget * widget);
 
     // output methods
     virtual QRect drawCursor(QPainter &);
@@ -94,6 +91,8 @@ protected:
     QGraphicsSystemCursorImage * graphic;
 
 private:
+    void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
+    void setCursor(Qt::CursorShape shape);
     QRect getCurrentRect();
 };
 

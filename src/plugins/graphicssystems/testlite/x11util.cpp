@@ -846,6 +846,7 @@ void MyWindow::setCursorShape(int cshape)
         cursors[cshape] = cursor;
     }
     XDefineCursor(xd->display, window, cursor);
+    XFlush(xd->display);
 }
 
 

@@ -57,9 +57,7 @@ public:
 
     // input methods
     void setCursorMode(bool vnc);
-    void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
-    void setCursor(Qt::CursorShape shape);
-
+    void changeCursor(QCursor * widgetCursor, QWidget * widget);
     // output methods
     QRect drawCursor(QPainter &);
 

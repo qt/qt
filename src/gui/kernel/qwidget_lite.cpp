@@ -678,7 +678,7 @@ void qt_lite_set_cursor(QWidget * w, bool force)
     if (w == 0) {
         if (override) {
             if (QGraphicsSystemCursor::instance) {
-                QGraphicsSystemCursor::instance->changeCursor(override);
+                QGraphicsSystemCursor::instance->changeCursor(override, QApplication::topLevelAt(QCursor::pos()));
             }
             return;
         }
@@ -692,10 +692,12 @@ void qt_lite_set_cursor(QWidget * w, bool force)
         w = lastUnderMouse;
     }
 
-    if (w == QApplication::desktop()) {
+    if (w == QApplication::desktop() && !override) {
         if (QGraphicsSystemCursor::instance) {
-            QGraphicsSystemCursor::instance->changeCursor(w);
+            QCursor c(Qt::ArrowCursor);
+            QGraphicsSystemCursor::instance->changeCursor(&c, w);
         }
+        return;
     }
 
     QWidget * curWin = QApplication::activeWindow();
@@ -704,11 +706,12 @@ void qt_lite_set_cursor(QWidget * w, bool force)
     QWidget* cW = w && !w->internalWinId() ? w : curWin;
 
     if (!cW || cW->window() != w->window() ||
-         !cW->isVisible() || !cW->underMouse() || QApplication::overrideCursor())
+         !cW->isVisible() || !cW->underMouse() || override)
         return;
 
     if (QGraphicsSystemCursor::instance) {
-        QGraphicsSystemCursor::instance->changeCursor(w);
+        QCursor c = w->cursor();
+        QGraphicsSystemCursor::instance->changeCursor(&c, w);
     }
 }
 QT_END_NAMESPACE

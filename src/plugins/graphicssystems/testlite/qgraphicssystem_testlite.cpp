@@ -56,36 +56,22 @@ class MyCursor : QGraphicsSystemCursor
 public:
     MyCursor(QGraphicsSystemScreen *screen) : QGraphicsSystemCursor(screen) {}
 
-        // input methods
-    void setCursor(const uchar */*data*/, const uchar */*mask*/, int width, int height, int hotX, int hotY) {qDebug() << "setCursor data..." << width << height << hotX << hotY;}
-
-    void setCursor(Qt::CursorShape shape) {
-        static int oldshape = -1;
-        if (shape != oldshape) {
-            qDebug() << "setCursor" << shape; QGraphicsSystemCursor::setCursor(shape);
-            oldshape = shape;
-        }
-    }
-
-    void changeCursor(QWidget * widget) {
-
+    void changeCursor(QCursor * cursor, QWidget * widget) {
         QTestLiteWindowSurface *ws = 0;
         if (widget) {
             QWidget *window = widget->window();
             ws = static_cast<QTestLiteWindowSurface*>(window->windowSurface());
+        } else {
+            // No X11 cursor control when there is no widget under the cursor
+            return;
         }
 
         //qDebug() << "changeCursor" << widget << ws;
         if (!ws)
             return;
 
-        ws->setCursor(widget->cursor().shape());
+        ws->setCursor(cursor->shape());
     }
-
-//     void changeCursor(QCursor * widgetCursor) {
-//         //qDebug() << "changeCursor widgetCursor";
-//         QGraphicsSystemCursor::changeCursor(widgetCursor);
-//     }
 
     //#### remove this
     void pointerEvent(const QMouseEvent & event) {

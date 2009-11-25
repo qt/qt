@@ -58,6 +58,16 @@ QVNCCursor::QVNCCursor(QVNCServer * srvr, QVNCGraphicsSystemScreen *scr )
 {
 }
 
+void QVNCCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
+{
+    QGraphicsSystemCursor::changeCursor(widgetCursor, widget);
+    if (useVncCursor) {
+        server->setDirtyCursor();
+    } else {
+        screen->setDirty(QRect(0,0,1,1));
+    }
+}
+
 void QVNCCursor::setCursorMode(bool vnc)
 {
     if (vnc) {
@@ -68,26 +78,6 @@ void QVNCCursor::setCursorMode(bool vnc)
         server->setDirtyCursor();
     }
     useVncCursor = vnc;
-}
-
-void QVNCCursor::setCursor(Qt::CursorShape shape)
-{
-    QGraphicsSystemCursor::setCursor(shape);
-    if (useVncCursor) {
-        server->setDirtyCursor();
-    } else {
-        screen->setDirty(QRect(QRect(0,0,1,1)));
-    }
-}
-
-void QVNCCursor::setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
-{
-    QGraphicsSystemCursor::setCursor(data, mask, width, height, hotX, hotY);
-    if (useVncCursor) {
-        server->setDirtyCursor();
-    } else {
-        screen->setDirty(QRect(0,0,1,1));
-    }
 }
 
 QRect QVNCCursor::drawCursor(QPainter & painter)
