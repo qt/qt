@@ -822,10 +822,31 @@ void QSymbianControl::Draw(const TRect& controlRect) const
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
 
-        if(!qwidget->d_func()->extraData()->disableBlit) {
+        switch(qwidget->d_func()->extraData()->nativePaintMode) {
+        case QWExtra::Disable:
+            // Do nothing
+            break;
+
+        case QWExtra::Blit:
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
+            break;
+
+        case QWExtra::ZeroFill:
+            if (Window().DisplayMode() == EColor16MA) {
+                gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
+                gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
+                gc.SetBrushColor(TRgb::Color16MA(0));
+                gc.Clear(controlRect);
+            } else {
+                gc.SetBrushColor(TRgb(0x000000));
+                gc.Clear(controlRect);
+            };
+            break;
+
+        default:
+            Q_ASSERT(false);
         }
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());

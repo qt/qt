@@ -881,7 +881,7 @@ void QWidgetPrivate::deleteTLSysExtra()
 void QWidgetPrivate::createSysExtra()
 {
     extra->activated = 0;
-    extra->disableBlit = 0;
+    extra->nativePaintMode = QWExtra::Default;
 }
 
 void QWidgetPrivate::deleteSysExtra()

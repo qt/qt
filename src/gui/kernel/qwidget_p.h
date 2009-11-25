@@ -230,12 +230,33 @@ struct QWExtra {
 #elif defined(Q_OS_SYMBIAN) // <----------------------------------------------------- Symbian
     uint activated : 1; // RWindowBase::Activated has been called
 
-    // If set, QSymbianControl::Draw does not blit this widget
-    // This is to allow, for use cases such as video, widgets which, from the Qt point
-    // of view, are just placeholders in the scene.  For these widgets, any necessary
-    // drawing to the UI framebuffer is done by the relevant Symbian subsystem.  For
-    // video rendering, this would be an MMF controller, or MDF post-processor.
-    uint disableBlit : 1;
+    /**
+     * Defines the behaviour of QSymbianControl::Draw.
+     */
+    enum NativePaintMode {
+        /**
+         * Normal drawing mode: blits the required region of the backing store
+         * via WSERV.
+         */
+        Blit,
+
+        /**
+         * Disable drawing for this widget.
+         */
+        Disable,
+
+        /**
+         * Paint zeros into the WSERV framebuffer, using BitGDI APIs.  For windows
+         * with an EColor16MU display mode, zero is written only into the R, G and B
+         * channels of the pixel.
+         */
+        ZeroFill,
+
+        Default = Blit
+    };
+
+    NativePaintMode nativePaintMode : 2;
+
 #endif
 };
 
