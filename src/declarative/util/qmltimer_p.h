@@ -85,6 +85,7 @@ protected:
 public Q_SLOTS:
     void start();
     void stop();
+    void restart();
 
 Q_SIGNALS:
     void triggered();
@@ -95,7 +96,7 @@ private:
 
 private Q_SLOTS:
     void ticked();
-    void stateChanged(QAbstractAnimation::State,QAbstractAnimation::State);
+    void finished();
 };
 
 QT_END_NAMESPACE

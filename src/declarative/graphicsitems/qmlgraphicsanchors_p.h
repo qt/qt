@@ -58,13 +58,13 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsAnchors : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QmlGraphicsAnchorLine left READ left WRITE setLeft RESET resetLeft)
-    Q_PROPERTY(QmlGraphicsAnchorLine right READ right WRITE setRight RESET resetRight)
-    Q_PROPERTY(QmlGraphicsAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter)
-    Q_PROPERTY(QmlGraphicsAnchorLine top READ top WRITE setTop RESET resetTop)
-    Q_PROPERTY(QmlGraphicsAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom)
-    Q_PROPERTY(QmlGraphicsAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter)
-    Q_PROPERTY(QmlGraphicsAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline)
+    Q_PROPERTY(QmlGraphicsAnchorLine left READ left WRITE setLeft RESET resetLeft NOTIFY leftChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine right READ right WRITE setRight RESET resetRight NOTIFY rightChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter NOTIFY horizontalCenterChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine top READ top WRITE setTop RESET resetTop NOTIFY topChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom NOTIFY bottomChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter NOTIFY verticalCenterChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline NOTIFY baselineChanged)
     Q_PROPERTY(qreal leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged)
     Q_PROPERTY(qreal rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged)
     Q_PROPERTY(qreal horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged())
@@ -72,8 +72,8 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsAnchors : public QObject
     Q_PROPERTY(qreal bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
     Q_PROPERTY(qreal verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged())
-    Q_PROPERTY(QmlGraphicsItem *fill READ fill WRITE setFill)
-    Q_PROPERTY(QmlGraphicsItem *centerIn READ centerIn WRITE setCenterIn)
+    Q_PROPERTY(QmlGraphicsItem *fill READ fill WRITE setFill NOTIFY fillChanged)
+    Q_PROPERTY(QmlGraphicsItem *centerIn READ centerIn WRITE setCenterIn NOTIFY centerInChanged)
 
 public:
     QmlGraphicsAnchors(QObject *parent=0);
@@ -155,6 +155,15 @@ public:
     void componentComplete();
 
 Q_SIGNALS:
+    void leftChanged();
+    void rightChanged();
+    void topChanged();
+    void bottomChanged();
+    void verticalCenterChanged();
+    void horizontalCenterChanged();
+    void baselineChanged();
+    void fillChanged();
+    void centerInChanged();
     void leftMarginChanged();
     void rightMarginChanged();
     void topMarginChanged();
