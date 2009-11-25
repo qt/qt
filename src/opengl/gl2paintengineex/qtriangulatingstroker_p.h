@@ -43,6 +43,7 @@
 #define QTRIANGULATINGSTROKER_P_H
 
 #include <private/qdatabuffer_p.h>
+#include <qvarlengtharray.h>
 #include <private/qvectorpath_p.h>
 #include <private/qbezier_p.h>
 #include <private/qnumeric_p.h>
@@ -68,7 +69,7 @@ private:
     inline void join(const qreal *pts);
     inline void normalVector(float x1, float y1, float x2, float y2, float *nx, float *ny);
     inline void endCap(const qreal *pts);
-    inline void arc(float x, float y);
+    inline void arcPoints(float cx, float cy, float fromX, float fromY, float toX, float toY, QVarLengthArray<float> &points);
     void endCapOrJoinClosed(const qreal *start, const qreal *cur, bool implicitClose, bool endsAtStart);
 
 
@@ -149,43 +150,73 @@ inline void QTriangulatingStroker::emitLineSegment(float x, float y, float vx, f
     m_vertices.add(y - vy);
 }
 
-
-
-// We draw a full circle for any round join or round cap which is a
-// bit of overkill...
-inline void QTriangulatingStroker::arc(float x, float y)
+inline void QTriangulatingStroker::arcPoints(float cx, float cy, float fromX, float fromY, float toX, float toY, QVarLengthArray<float> &points)
 {
-    float dx = m_width;
-    float dy = 0;
-    for (int i=0; i<=m_roundness; ++i) {
-        float tmpx = dx * m_cos_theta - dy * m_sin_theta;
-        float tmpy = dx * m_sin_theta + dy * m_cos_theta;
-        dx = tmpx;
-        dy = tmpy;
-        emitLineSegment(x, y, dx, dy);
+    float dx1 = fromX - cx;
+    float dy1 = fromY - cy;
+    float dx2 = toX - cx;
+    float dy2 = toY - cy;
+
+    // while more than 180 degrees left:
+    while (dx1 * dy2 - dx2 * dy1 < 0) {
+        float tmpx = dx1 * m_cos_theta - dy1 * m_sin_theta;
+        float tmpy = dx1 * m_sin_theta + dy1 * m_cos_theta;
+        dx1 = tmpx;
+        dy1 = tmpy;
+        points.append(cx + dx1);
+        points.append(cy + dy1);
     }
+
+    // while more than 90 degrees left:
+    while (dx1 * dx2 + dy1 * dy2 < 0) {
+        float tmpx = dx1 * m_cos_theta - dy1 * m_sin_theta;
+        float tmpy = dx1 * m_sin_theta + dy1 * m_cos_theta;
+        dx1 = tmpx;
+        dy1 = tmpy;
+        points.append(cx + dx1);
+        points.append(cy + dy1);
+    }
+
+    // while more than 0 degrees left:
+    while (dx1 * dy2 - dx2 * dy1 > 0) {
+        float tmpx = dx1 * m_cos_theta - dy1 * m_sin_theta;
+        float tmpy = dx1 * m_sin_theta + dy1 * m_cos_theta;
+        dx1 = tmpx;
+        dy1 = tmpy;
+        points.append(cx + dx1);
+        points.append(cy + dy1);
+    }
+
+    // remove last point which was rotated beyond [toX, toY].
+    if (!points.isEmpty())
+        points.resize(points.size() - 2);
 }
 
-
-
-inline void QTriangulatingStroker::endCap(const qreal *pts)
+inline void QTriangulatingStroker::endCap(const qreal *)
 {
     switch (m_cap_style) {
     case Qt::FlatCap:
         break;
-    case Qt::SquareCap: {
-        float dx = m_cx - *(pts - 2);
-        float dy = m_cy - *(pts - 1);
-
-        float len = m_width / sqrt(dx * dx + dy * dy);
-        dx = dx * len;
-        dy = dy * len;
-
-        emitLineSegment(m_cx + dx, m_cy + dy, m_nvx, m_nvy);
-        break; }
-    case Qt::RoundCap:
-        arc(m_cx, m_cy);
+    case Qt::SquareCap:
+        emitLineSegment(m_cx + m_nvy, m_cy - m_nvx, m_nvx, m_nvy);
         break;
+    case Qt::RoundCap: {
+        QVarLengthArray<float> points;
+        int count = m_vertices.size();
+        arcPoints(m_cx, m_cy, m_vertices.at(count - 2), m_vertices.at(count - 1), m_vertices.at(count - 4), m_vertices.at(count - 3), points);
+        int front = 0;
+        int end = points.size() / 2;
+        while (front != end) {
+            m_vertices.add(points[2 * end - 2]);
+            m_vertices.add(points[2 * end - 1]);
+            --end;
+            if (front == end)
+                break;
+            m_vertices.add(points[2 * front + 0]);
+            m_vertices.add(points[2 * front + 1]);
+            ++front;
+        }
+        break; }
     default: break; // to shut gcc up...
     }
 }
@@ -214,31 +245,37 @@ void QTriangulatingStroker::moveTo(const qreal *pts)
         }
         break;
     case Qt::SquareCap: {
-        float dx = x2 - m_cx;
-        float dy = y2 - m_cy;
-        float len = m_width / sqrt(dx * dx + dy * dy);
-        dx = dx * len;
-        dy = dy * len;
-        float sx = m_cx - dx;
-        float sy = m_cy - dy;
+        float sx = m_cx - m_nvy;
+        float sy = m_cy + m_nvx;
         if (invisibleJump) {
             m_vertices.add(sx + m_nvx);
             m_vertices.add(sy + m_nvy);
         }
         emitLineSegment(sx, sy, m_nvx, m_nvy);
         break; }
-    case Qt::RoundCap:
-        if (invisibleJump) {
-            m_vertices.add(m_cx + m_nvx);
-            m_vertices.add(m_cy + m_nvy);
+    case Qt::RoundCap: {
+        QVarLengthArray<float> points;
+        arcPoints(m_cx, m_cy, m_cx + m_nvx, m_cy + m_nvy, m_cx - m_nvx, m_cy - m_nvy, points);
+        m_vertices.resize(m_vertices.size() + points.size() + 2 * int(invisibleJump));
+        int count = m_vertices.size();
+        int front = 0;
+        int end = points.size() / 2;
+        while (front != end) {
+            m_vertices.at(--count) = points[2 * end - 1];
+            m_vertices.at(--count) = points[2 * end - 2];
+            --end;
+            if (front == end)
+                break;
+            m_vertices.at(--count) = points[2 * front + 1];
+            m_vertices.at(--count) = points[2 * front + 0];
+            ++front;
         }
 
-        // This emitLineSegment is not needed for the arc, but we need
-        // to start where we put the invisibleJump vertex, otherwise
-        // we'll have visible triangles between subpaths.
-        emitLineSegment(m_cx, m_cy, m_nvx, m_nvy);
-        arc(m_cx, m_cy);
-        break;
+        if (invisibleJump) {
+            m_vertices.at(count - 1) = m_vertices.at(count + 1);
+            m_vertices.at(count - 2) = m_vertices.at(count + 0);
+        }
+        break; }
     default: break; // ssssh gcc...
     }
     emitLineSegment(m_cx, m_cy, m_nvx, m_nvy);
@@ -289,10 +326,21 @@ void QTriangulatingStroker::join(const qreal *pts)
         // what some other graphics API's do.
 
         break; }
-    case Qt::RoundJoin:
-        arc(m_cx, m_cy);
-        break;
-
+    case Qt::RoundJoin: {
+        QVarLengthArray<float> points;
+        int count = m_vertices.size();
+        float prevNvx = m_vertices.at(count - 2) - m_cx;
+        float prevNvy = m_vertices.at(count - 1) - m_cy;
+        if (m_nvx * prevNvy - m_nvy * prevNvx < 0) {
+            arcPoints(0, 0, m_nvx, m_nvy, -prevNvx, -prevNvy, points);
+            for (int i = points.size() / 2; i > 0; --i)
+                emitLineSegment(m_cx, m_cy, points[2 * i - 2], points[2 * i - 1]);
+        } else {
+            arcPoints(0, 0, -prevNvx, -prevNvy, m_nvx, m_nvy, points);
+            for (int i = 0; i < points.size() / 2; ++i)
+                emitLineSegment(m_cx, m_cy, points[2 * i + 0], points[2 * i + 1]);
+        }
+        break; }
     default: break; // gcc warn--
     }
 
