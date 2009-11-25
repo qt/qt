@@ -5,7 +5,7 @@ Rectangle {
     color: "white"
     width: 400; height: 250
 
-    Switch {
-        anchors.centerIn: parent
-    }
+//![0]
+    Switch { anchors.centerIn: parent; on: false }
+//![0]
 }
