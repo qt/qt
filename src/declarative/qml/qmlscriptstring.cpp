@@ -60,12 +60,12 @@ public:
 The QmlScriptString is used by properties that want to accept a script "assignment" from QML.
 
 Normally, the following code would result in a binding being established for the \c script
-property.  If the property had a type of QmlScriptString, the script - \e {print(1921)} - itself
+property.  If the property had a type of QmlScriptString, the script - \e {console.log(1921)} - itself
 would be passed to the property and it could choose how to handle it.
 
 \code
 MyType {
-    script: print(1921)
+    script: console.log(1921)
 }
 \endcode
 */

@@ -54,8 +54,8 @@
     \qml
     Script {
         function debugMyComponent() {
-            print(text.text);
-            print(otherinterestingitem.property);
+            console.log(text.text);
+            console.log(otherinterestingitem.property);
         }
     }
     MouseRegion { onClicked: debugMyComponent() }

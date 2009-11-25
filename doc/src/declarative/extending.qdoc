@@ -845,7 +845,7 @@ This example adds a new method that behaves like a child:
 \code
 Item {
     function say(text) {
-        print("You said " + text);
+        console.log("You said " + text);
     }
 }
 \endcode
