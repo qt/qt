@@ -8,7 +8,7 @@ Rectangle {
     // Make a ball to bounce
     Rectangle {
         // Add a property for the target y coordinate
-        property var targetY : page.height - 10
+        property int targetY : page.height - 10
         property var direction : "right"
 
         id: ball
