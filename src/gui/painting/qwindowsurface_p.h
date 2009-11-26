@@ -95,6 +95,7 @@ public:
     virtual Qt::WindowFlags windowFlags() const;
     virtual WId winId() const;
 
+    virtual void setWindowTitle(const QString &) {}
     virtual void raise() { qWarning("This plugin does not support raise()"); }
     virtual void lower() { qWarning("This plugin does not support lower()"); }
 #endif

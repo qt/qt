@@ -590,6 +590,10 @@ void QTestLiteWindowSurface::lower()
     XLowerWindow(mGraphicsSystem->xd->display, window);
 }
 
+void QTestLiteWindowSurface::setWindowTitle(const QString &title)
+{
+    xw->setWindowTitle(title);
+}
 
 void QTestLiteWindowSurface::setCursor(Qt::CursorShape shape)
 {
