@@ -140,8 +140,7 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
 
 #if defined(Q_OS_UNIX) || defined(Q_OS_SYMBIAN)
     // FIXME let's see if this stuff works, then we might be able to remove some of the other code
-    const char *fileName = path.toLocal8Bit().constData();
-    char *ret = realpath(fileName, (char*)0);
+    char *ret = realpath(path.toLocal8Bit().constData(), (char*)0);
     if (ret) {
         QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
         free(ret);
