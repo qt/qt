@@ -78,7 +78,7 @@ class QGraphicsSceneIndex;
 class QGraphicsView;
 class QGraphicsWidget;
 
-class QGraphicsScenePrivate : public QObjectPrivate
+class Q_AUTOTEST_EXPORT QGraphicsScenePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsScene)
 public:
@@ -265,6 +265,7 @@ public:
     {
         if (needSortTopLevelItems) {
             qSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
+            topLevelSequentialOrdering = false;
             needSortTopLevelItems = false;
         }
     }
