@@ -144,7 +144,7 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_ToolBarButtonPressed,   QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
     {SE_PanelBackground,        QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_ButtonInactive,         QS60StyleEnums::SP_QsnFrButtonCenterInactive},
-    {SE_Editor,                 QS60StyleEnums::SP_QsnFrNotepadCenter},
+    {SE_Editor,                 QS60StyleEnums::SP_QsnFrInputCenter},
 };
 
 static const int frameElementsCount =
@@ -807,7 +807,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafTabActiveL:
             //Returned QSize for tabs must not be square, but narrow rectangle with width:height
             //ratio of 1:2 for horizontal tab bars (and 2:1 for vertical ones).
-            result.setWidth(10);
+            result.setWidth(result.height()>>1);
             break;
         case QS60StyleEnums::SP_QgnIndiSliderEdit:
             result.scale(pixelMetric(QStyle::PM_SliderLength),
@@ -2022,7 +2022,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             buttonRect.setHeight((int)(buttonRect.height() * scaler));
             // move the rect up for half of the new height-gain
             const int newY = (buttonRect.bottomRight().y() - option->rect.bottomRight().y()) >> 1 ;
-            buttonRect.adjust(0,-newY,0,-newY);
+            buttonRect.adjust(0, -newY, -1, -newY);
 
             painter->save();
             QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnTextColors, 6, option);
