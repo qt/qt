@@ -301,23 +301,42 @@ void QTriangulatingStroker::join(const qreal *pts)
     case Qt::BevelJoin:
         break;
     case Qt::MiterJoin: {
-        int p1 = m_vertices.size() - 6;
-        int p2 = m_vertices.size() - 2;
-        QLineF line(m_vertices.at(p1), m_vertices.at(p1+1),
-                    m_vertices.at(p2), m_vertices.at(p2+1));
-        QLineF nextLine(m_cx - m_nvx, m_cy - m_nvy,
-                        pts[0] - m_nvx, pts[1] - m_nvy);
+        // Find out on which side the join should be.
+        int count = m_vertices.size();
+        float prevNvx = m_vertices.at(count - 2) - m_cx;
+        float prevNvy = m_vertices.at(count - 1) - m_cy;
+        float xprod = prevNvx * m_nvy - prevNvy * m_nvx;
+        float px, py, qx, qy;
 
-        QPointF isect;
-        if (line.intersect(nextLine, &isect) != QLineF::NoIntersection
-            && QLineF(line.p2(), isect).length() <= m_miter_limit) {
-            // The intersection point mirrored over the m_cx, m_cy point
-            m_vertices.add(m_cx - (isect.x() - m_cx));
-            m_vertices.add(m_cy - (isect.y() - m_cy));
+        // If the segments are parallel, use bevel join.
+        if (qFuzzyIsNull(xprod))
+            break;
 
-            // The intersection point
-            m_vertices.add(isect.x());
-            m_vertices.add(isect.y());
+        // Find the corners of the previous and next segment to join.
+        if (xprod < 0) {
+            px = m_vertices.at(count - 2);
+            py = m_vertices.at(count - 1);
+            qx = m_cx - m_nvx;
+            qy = m_cy - m_nvy;
+        } else {
+            px = m_vertices.at(count - 4);
+            py = m_vertices.at(count - 3);
+            qx = m_cx + m_nvx;
+            qy = m_cy + m_nvy;
+        }
+
+        // Find intersection point.
+        float pu = px * prevNvx + py * prevNvy;
+        float qv = qx * m_nvx + qy * m_nvy;
+        float ix = (m_nvy * pu - prevNvy * qv) / xprod;
+        float iy = (prevNvx * qv - m_nvx * pu) / xprod;
+
+        // Check that the distance to the intersection point is less than the miter limit.
+        if ((ix - px) * (ix - px) + (iy - py) * (iy - py) <= m_miter_limit * m_miter_limit) {
+            m_vertices.add(ix);
+            m_vertices.add(iy);
+            m_vertices.add(ix);
+            m_vertices.add(iy);
         }
         // else
         // Do a plain bevel join if the miter limit is exceeded or if
