@@ -144,7 +144,6 @@ void QmlGraphicsTextEdit::setText(const QString &text)
         d->control->setPlainText(text);
     }
     q_textChanged();
-    updateSize();
 }
 
 /*!
@@ -889,8 +888,7 @@ void QmlGraphicsTextEditPrivate::init()
 
 void QmlGraphicsTextEdit::q_textChanged()
 {
-    if (!widthValid())
-        updateSize();   //### optimize: we get 3 calls to updateSize every time a letter is typed
+    updateSize();
     emit textChanged(text());
 }
 

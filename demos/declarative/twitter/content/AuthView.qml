@@ -5,79 +5,94 @@ Item {
     Column {
         anchors.centerIn: parent
         spacing: 20
-        Row{
+        Column{
             spacing: 4
             Text {
-                width: 100
                 text: "Screen name:"
-                font.pointSize: 14; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
-                anchors.verticalCenter: parent.verticalCenter
+                font.pixelSize: 16; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
                 horizontalAlignment: Qt.AlignRight
             }
             Item {
-                width: 160
+                width: 220
                 height: 28
                 BorderImage { source: "images/lineedit.sci"; anchors.fill: parent }
                 TextInput{
                     id: nameIn
                     width: parent.width - 8
-                    height: parent.height - 12
                     anchors.centerIn: parent
                     maximumLength:21
+                    font.pixelSize: 16;
                     font.bold: true
                     color: "#151515"; selectionColor: "green"
-                    Keys.forwardTo: [(tabber), (nameIn)]
-                    Item {
-                        id: tabber
-                        //Note: it's not working yet
-                        Keys.onPressed: {if(event.key == Qt.Key_Tab){console.log('Tab works!'); passIn.focus = true; accept(); }}
-                    }
+                    KeyNavigation.down: passIn
+                    focus: true
                 }
             }
         }
-        Row{
+        Column{
             spacing: 4
             Text {
-                width: 100
                 text: "Password:"
-                font.pointSize: 14; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
-                anchors.verticalCenter: parent.verticalCenter
+                font.pixelSize: 16; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
                 horizontalAlignment: Qt.AlignRight
             }
             Item {
-                width: 160
-                height: 28
+                width: 220
+               height: 28
                 BorderImage { source: "images/lineedit.sci"; anchors.fill: parent }
                 TextInput{
                     id: passIn
                     width: parent.width - 8
-                    height: parent.height - 12
                     anchors.centerIn: parent
                     maximumLength:21
                     echoMode: TextInput.Password
+                    font.pixelSize: 16;
                     font.bold: true
                     color: "#151515"; selectionColor: "green"
+                    KeyNavigation.down: login
+                    KeyNavigation.up: nameIn
                 }
             }
         }
-        Item{
-            width: childrenRect.width; height:childrenRect.height;
-            anchors.horizontalCenter: parent.horizontalCenter
+        Row{
+            spacing: 10
             Button {
-                x: 10
                 width: 100
                 height: 32
                 id: login
+                keyUsing: true;
+                function doLogin(){
+                    rssModel.authName=nameIn.text;
+                    rssModel.authPass=passIn.text;
+                    rssModel.tags='my timeline';
+                    screen.focus = true;
+                }
                 text: "Log in"
-                onClicked: {rssModel.authName=nameIn.text; rssModel.authPass=passIn.text; rssModel.tags='my timeline';}
+                KeyNavigation.right: guest
+                KeyNavigation.up: passIn
+                Keys.onReturnPressed: login.doLogin();
+                Keys.onSelectPressed: login.doLogin();
+                Keys.onSpacePressed: login.doLogin();
+                onClicked: login.doLogin();
             }
             Button {
-                x: 120
                 width: 100
                 height: 32
                 id: guest
+                keyUsing: true;
+                function doGuest()
+                {
+                    rssModel.authName='-';
+                    screen.focus = true;
+                    screen.setMode(true);
+                }
                 text: "Guest"
-                onClicked: {rssModel.authName='-'; screen.setMode(true);}
+                KeyNavigation.left: login
+                KeyNavigation.up: passIn
+                Keys.onReturnPressed: guest.doGuest();
+                Keys.onSelectPressed: guest.doGuest();
+                Keys.onSpacePressed: guest.doGuest();
+                onClicked: guest.doGuest();
             }
         }
     }

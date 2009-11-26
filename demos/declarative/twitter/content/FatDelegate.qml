@@ -10,7 +10,7 @@ Component {
                     setUser(link.slice(7));
                     screen.setMode(true);
                 }else if(link.slice(0,4) == 'http'){
-                    Qt.DesktopServices.openUrl(link);
+                    Qt.openUrlExternally(link);
                 }
             }
             function addTags(str){

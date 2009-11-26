@@ -54,6 +54,10 @@ assigned to an object property or given an id.  The included ECMAScript is evalu
 in a scope chain.  The \l {QML Scope} documentation covers the specifics of scoping 
 in QML.  
 
+Note that if you are adding a function that should be called by external elements,
+you do not need the \l Script element. See \l {Extending types from QML#Adding new methods}
+{Adding new methods} for information about adding slots that can be called externally.
+
 \section1 Inline Script
 
 Small blocks of ECMAScript can be included directly inside a \l {QML Document} as

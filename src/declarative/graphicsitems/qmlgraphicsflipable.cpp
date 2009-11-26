@@ -98,7 +98,7 @@ public:
 
         MouseRegion {
             anchors.fill: parent
-            onClicked: flipable.state = (flipable.state == 'back' ? 'front' : 'back')
+            onClicked: flipable.state = (flipable.state == 'back' ? '' : 'back')
         }
     }
     \endqml
