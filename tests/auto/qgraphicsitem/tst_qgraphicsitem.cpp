@@ -9759,16 +9759,16 @@ void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
 {
     struct Item : public QGraphicsTextItem
     {
-        bool painted;
+        int painted;
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *opt, QWidget *wid)
         {
-            painted = true;
+            painted++;
             QGraphicsTextItem::paint(painter, opt, wid);
         }
     };
 
     Item *i = new Item;
-    i->painted = false;
+    i->painted = 0;
     i->setPlainText("I AM A TROLL");
 
     QGraphicsScene scene;
@@ -9780,11 +9780,11 @@ void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
     QTRY_VERIFY(i->painted);
     QApplication::processEvents();
 
-    i->painted = false;
+    i->painted = 0;
     QColor col(Qt::red);
     i->setDefaultTextColor(col);
     QApplication::processEvents();
-    QTRY_VERIFY(i->painted); //check that changing the color force an update
+    QTRY_COMPARE(i->painted, 1); //check that changing the color force an update
 
     i->painted = false;
     QImage image(400, 200, QImage::Format_RGB32);
@@ -9792,7 +9792,7 @@ void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
     QPainter painter(&image);
     scene.render(&painter);
     painter.end();
-    QVERIFY(i->painted);
+    QCOMPARE(i->painted, 1);
 
     int numRedPixel = 0;
     QRgb rgb = col.rgb();
@@ -9810,6 +9810,11 @@ void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
         }
     }
     QCOMPARE(numRedPixel, -1); //color not found, FAIL!
+
+    i->painted = 0;
+    i->setDefaultTextColor(col);
+    QApplication::processEvents();
+    QCOMPARE(i->painted, 0); //same color as before should not trigger an update (QTBUG-6242)
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
