@@ -96,9 +96,6 @@ void tst_QmlGraphicsParticles::properties()
 
     particles->setEmissionRate(12);
     QCOMPARE(particles->emissionRate(), 12);
-
-    particles->setEmitting(false);
-    QCOMPARE(particles->emitting(), false);
 }
 
 void tst_QmlGraphicsParticles::runs()

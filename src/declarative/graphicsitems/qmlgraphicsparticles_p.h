@@ -157,7 +157,6 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsParticles : public QmlGraphicsItem
     Q_PROPERTY(qreal angleDeviation READ angleDeviation WRITE setAngleDeviation NOTIFY angleDeviationChanged)
     Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity NOTIFY velocityChanged)
     Q_PROPERTY(qreal velocityDeviation READ velocityDeviation WRITE setVelocityDeviation NOTIFY velocityDeviationChanged)
-    Q_PROPERTY(bool emitting READ emitting WRITE setEmitting NOTIFY emittingChanged)
     Q_PROPERTY(QmlGraphicsParticleMotion *motion READ motion WRITE setMotion)
     Q_CLASSINFO("DefaultProperty", "motion")
 
@@ -200,9 +199,6 @@ public:
 
     qreal velocityDeviation() const;
     void setVelocityDeviation(qreal);
-
-    bool emitting() const;
-    void setEmitting(bool);
 
     QmlGraphicsParticleMotion *motion() const;
     void setMotion(QmlGraphicsParticleMotion *);

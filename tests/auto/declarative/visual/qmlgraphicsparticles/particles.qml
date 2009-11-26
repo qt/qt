@@ -3,7 +3,12 @@ import Qt 4.6
 Rectangle {
     width: 640; height: 480; color: "black"
 
-    Particles { emitting: false }
+    Particles { id:particlesAnotEmitting
+        y:60; width: 260; height:30; source: "star.png";
+        lifeSpan:1000; count: 50; angle:70; angleDeviation:36;
+        velocity:30; velocityDeviation:10; emissionRate: 0
+        ParticleMotionWander { yvariance:5; xvariance:30; pace:100 }
+    }
     Particles { id:particlesA
         y:0; width: 260; height:30; source: "star.png";
         lifeSpan:1000; count: 50; angle:70; angleDeviation:36;
