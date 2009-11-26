@@ -25,7 +25,6 @@ Item {
                     }
                 }
                 postman.send(postData);
-
                 editor.text = ""
                 titleBar.state = ""
             }
@@ -52,7 +51,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideLeft
             text: "Timeline for " + rssModel.authName
-            font.pointSize: 10; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
+            font.pixelSize: 12; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
         }
 
         Button {

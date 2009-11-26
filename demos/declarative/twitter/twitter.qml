@@ -22,6 +22,8 @@ Item {
         function reallySetUser(){rssModel.tags = tmpStr;}
     }
 
+    //TODO: better way to return to the auth screen
+    Keys.onEscapePressed: rssModel.authName=''
     Rectangle {
         id: background
         anchors.fill: parent; color: "#343434";
