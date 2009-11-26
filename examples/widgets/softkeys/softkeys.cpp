@@ -66,11 +66,11 @@ MainWindow::MainWindow(QWidget *parent)
     infoLabel = new QLabel(tr(""), this);
     infoLabel->setContextMenuPolicy(Qt::NoContextMenu);
 
-    toggleButton = new QPushButton(tr("Custom softkeys"), this);
+    toggleButton = new QPushButton(tr("Custom"), this);
     toggleButton->setContextMenuPolicy(Qt::NoContextMenu);
     toggleButton->setCheckable(true);
 
-    pushButton = new QPushButton(tr("Open File Dialog"), this);
+    pushButton = new QPushButton(tr("File Dialog"), this);
     pushButton->setContextMenuPolicy(Qt::NoContextMenu);
 
     QComboBox* comboBox = new QComboBox(this);
@@ -81,12 +81,12 @@ MainWindow::MainWindow(QWidget *parent)
      << QApplication::translate("MainWindow", "Selection3", 0, QApplication::UnicodeUTF8)
     );
 
-    layout = new QVBoxLayout;
-    layout->addWidget(textEditor);
-    layout->addWidget(infoLabel);
-    layout->addWidget(toggleButton);
-    layout->addWidget(pushButton);
-    layout->addWidget(comboBox);
+    layout = new QGridLayout;
+    layout->addWidget(textEditor, 0, 0, 1, 2);
+    layout->addWidget(infoLabel, 1, 0, 1, 2);
+    layout->addWidget(toggleButton, 2, 0);
+    layout->addWidget(pushButton, 2, 1);
+    layout->addWidget(comboBox, 3, 0, 1, 2);
     central->setLayout(layout);
 
     fileMenu = menuBar()->addMenu(tr("&File"));
