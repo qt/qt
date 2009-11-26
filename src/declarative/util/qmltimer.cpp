@@ -303,7 +303,9 @@ void QmlTimer::finished()
     if (d->repeating || !d->running)
         return;
     emit triggered();
+    d->running = false;
     d->firstTick = false;
+    emit runningChanged();
 }
 
 QT_END_NAMESPACE

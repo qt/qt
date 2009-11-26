@@ -105,6 +105,7 @@ void tst_qmltimer::notRepeating()
     QCOMPARE(helper.count, 1);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(helper.count, 1);
+    QVERIFY(timer->isRunning() == false);
 }
 
 void tst_qmltimer::notRepeatingStart()
@@ -126,6 +127,7 @@ void tst_qmltimer::notRepeatingStart()
     QCOMPARE(helper.count, 1);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(helper.count, 1);
+    QVERIFY(timer->isRunning() == false);
 
     delete timer;
 }
@@ -147,11 +149,14 @@ void tst_qmltimer::repeat()
 
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > oldCount);
+    QVERIFY(timer->isRunning());
 
     oldCount = helper.count;
     timer->stop();
+
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count == oldCount);
+    QVERIFY(timer->isRunning() == false);
 
     delete timer;
 }
@@ -173,6 +178,7 @@ void tst_qmltimer::triggeredOnStart()
     QCOMPARE(helper.count, 2);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(helper.count, 2);
+    QVERIFY(timer->isRunning() == false);
 
     delete timer;
 }
@@ -194,6 +200,7 @@ void tst_qmltimer::triggeredOnStartRepeat()
     int oldCount = helper.count;
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > oldCount);
+    QVERIFY(timer->isRunning());
 
     delete timer;
 }
@@ -234,6 +241,7 @@ void tst_qmltimer::changeDuration()
 
     QTest::qWait(600);
     QCOMPARE(helper.count, 3);
+    QVERIFY(timer->isRunning());
 
     delete timer;
 }
@@ -259,6 +267,7 @@ void tst_qmltimer::restart()
     QTest::qWait(700);
 
     QCOMPARE(helper.count, 2);
+    QVERIFY(timer->isRunning());
 
     delete timer;
 }
