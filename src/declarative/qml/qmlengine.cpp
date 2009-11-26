@@ -147,6 +147,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("md5"),scriptEngine.newFunction(md5, 1));
     qtObject.setProperty(QLatin1String("btoa"),scriptEngine.newFunction(btoa, 1));
     qtObject.setProperty(QLatin1String("atob"),scriptEngine.newFunction(atob, 1));
+    qtObject.setProperty(QLatin1String("quit"), scriptEngine.newFunction(QmlEnginePrivate::quit, 0));
 
     //firebug/webkit compat
     QScriptValue consoleObject = scriptEngine.newObject();
@@ -866,6 +867,19 @@ QScriptValue QmlEnginePrivate::consoleLog(QScriptContext *ctxt, QScriptEngine *e
     qDebug("%s",msg.data());
 
     return e->newVariant(QVariant(true));
+}
+
+void QmlEnginePrivate::sendQuit ()
+{
+    Q_Q(QmlEngine);
+    emit q->quit ();
+}
+
+QScriptValue QmlEnginePrivate::quit(QScriptContext *ctxt, QScriptEngine *e)
+{
+    QmlEnginePrivate *qe = get (e);
+    qe->sendQuit ();
+    return QScriptValue();
 }
 
 QScriptValue QmlEnginePrivate::closestAngle(QScriptContext *ctxt, QScriptEngine *e)

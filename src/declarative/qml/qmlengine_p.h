@@ -254,6 +254,8 @@ public:
     QScriptValue scriptValueFromVariant(const QVariant &);
     QVariant scriptValueToVariant(const QScriptValue &);
 
+    void sendQuit ();
+
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
 
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
@@ -276,6 +278,7 @@ public:
     static QScriptValue btoa(QScriptContext*, QScriptEngine*);
     static QScriptValue atob(QScriptContext*, QScriptEngine*);
     static QScriptValue consoleLog(QScriptContext*, QScriptEngine*);
+    static QScriptValue quit(QScriptContext*, QScriptEngine*);
 
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEngine *getEngine(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p->q_func(); }

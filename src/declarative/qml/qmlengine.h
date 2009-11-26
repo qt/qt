@@ -89,6 +89,9 @@ public:
     static QmlContext *contextForObject(const QObject *);
     static void setContextForObject(QObject *, QmlContext *);
 
+Q_SIGNALS:
+    void quit ();
+
 private:
     Q_DECLARE_PRIVATE(QmlEngine)
 };
