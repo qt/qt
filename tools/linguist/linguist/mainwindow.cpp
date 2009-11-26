@@ -305,8 +305,6 @@ MainWindow::MainWindow()
     m_contextView->setModel(m_sortedContextsModel);
     m_contextView->header()->setMovable(false);
     m_contextView->setColumnHidden(0, true);
-    m_contextView->header()->setResizeMode(1, QHeaderView::Stretch);
-    m_contextView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
     m_contextView->header()->setStretchLastSection(false);
 
     m_contextDock->setWidget(m_contextView);
@@ -335,8 +333,6 @@ MainWindow::MainWindow()
     m_messageView->setModel(m_sortedMessagesModel);
     m_messageView->header()->setMovable(false);
     m_messageView->setColumnHidden(0, true);
-    m_messageView->setColumnHidden(2, true);
-    // last visible column auto-stretches
 
     m_messagesDock->setWidget(m_messageView);
 
@@ -443,6 +439,7 @@ MainWindow::MainWindow()
     statusBar()->addPermanentWidget(m_modifiedLabel);
 
     modelCountChanged();
+    initViewHeaders();
     resetSorting();
 
     connect(m_dataModel, SIGNAL(modifiedChanged(bool)),
@@ -507,6 +504,14 @@ MainWindow::~MainWindow()
     delete m_dataModel;
     delete m_statistics;
     delete m_printer;
+}
+
+void MainWindow::initViewHeaders()
+{
+    m_contextView->header()->setResizeMode(1, QHeaderView::Stretch);
+    m_contextView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
+    m_messageView->setColumnHidden(2, true);
+    // last visible column auto-stretches
 }
 
 void MainWindow::modelCountChanged()
@@ -740,6 +745,7 @@ bool MainWindow::closeAll()
         m_messageView->setUpdatesEnabled(false);
         m_dataModel->closeAll();
         modelCountChanged();
+        initViewHeaders();
         recentFiles().closeGroup();
         return true;
     }
