@@ -47,4 +47,21 @@
 \brief The Qt Declarative module provides a declarative framework for building
 highly dynamic, custom user interfaces.
 
+To include the definitions of the module's classes, use the
+following directive:
+
+\code
+#include <QtDeclarative>
+\endcode
+
+To link against the module, add this line to your \l qmake \c
+.pro file:
+
+\code
+QT += declarative
+\endcode
+
+For more information on the Qt Declarative module, see the
+\l{declarativeui.html}{Declarative UI} documentation.
+
 */
