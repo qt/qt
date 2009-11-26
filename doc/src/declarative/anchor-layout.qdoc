@@ -44,7 +44,7 @@
 \target anchor-layout
 \title Anchor-based Layout in QML
 
-In addition to the more traditional \l Grid, \l Row, and \l Column, QML also provides a way to layout items using the concept of anchors. Each item can be thought of as having a set of 6 invisible "anchor lines": \e left, \e horizontalCenter, \e right, \e top, \e verticalCenter, and \e bottom.
+In addition to the more traditional \l Grid, \l Row, and \l Column, QML also provides a way to layout items using the concept of \e anchors. Each item can be thought of as having a set of 6 invisible "anchor lines": \e left, \e horizontalCenter, \e right, \e top, \e verticalCenter, and \e bottom.
 
 \image edges_qml.png
 
