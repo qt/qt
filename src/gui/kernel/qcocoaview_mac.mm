@@ -708,9 +708,9 @@ extern "C" {
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    qt_button_down = 0;
-
     qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonRelease, Qt::LeftButton);
+
+    qt_button_down = 0;
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
@@ -723,9 +723,9 @@ extern "C" {
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    qt_button_down = 0;
-
     qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonRelease, Qt::RightButton);
+
+    qt_button_down = 0;
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
@@ -739,10 +739,10 @@ extern "C" {
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-    qt_button_down = 0;
-
     Qt::MouseButton mouseButton = cocoaButton2QtButton([theEvent buttonNumber]);
     qt_mac_handleMouseEvent(self, theEvent,  QEvent::MouseButtonRelease, mouseButton);
+
+    qt_button_down = 0;
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
@@ -1442,6 +1442,9 @@ Qt::DropAction QDragManager::drag(QDrag *o)
                     pasteboard:pboard
                         source:dndParams.view
                      slideBack:YES];
+    // reset the implicit grab widget when drag ends because we will not
+    // receive the mouse release event when DND is active.
+    qt_button_down = 0;
     [dndParams.view release];
     [image release];
     dragPrivate()->executed_action = Qt::IgnoreAction;

@@ -52,6 +52,7 @@
 QT_FORWARD_DECLARE_CLASS(QWidget);
 QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
+extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 QT_END_NAMESPACE
 QT_USE_NAMESPACE
 
@@ -146,40 +147,44 @@ QT_USE_NAMESPACE
     }
 
     [self retain];
+
+    bool handled = false;
     QT_MANGLE_NAMESPACE(QCocoaView) *view = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_nativeview_for(widget));
     Qt::MouseButton mouseButton = cocoaButton2QtButton([event buttonNumber]);
     // sometimes need to redirect mouse events to the popup.
     QWidget *popup = qAppInstance()->activePopupWidget();
-    if (popup && popup != widget) {
+    if (popup) {
         switch([event type])
         {
         case NSLeftMouseDown:
-            qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonPress, mouseButton);
+            if (!qt_button_down)
+                qt_button_down = widget;
+            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonPress, mouseButton);
             // Don't call super here. This prevents us from getting the mouseUp event,
             // which we need to send even if the mouseDown event was not accepted. 
             // (this is standard Qt behavior.)
             break;
         case NSRightMouseDown:
         case NSOtherMouseDown:
-            if (!qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonPress, mouseButton))
-                [super sendEvent:event];
+            if (!qt_button_down)
+                qt_button_down = widget;
+            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonPress, mouseButton);
             break;
         case NSLeftMouseUp:
         case NSRightMouseUp:
         case NSOtherMouseUp:
-            if (!qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonRelease, mouseButton))
-                [super sendEvent:event];
+            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonRelease, mouseButton);
+            qt_button_down = 0;
             break;
         case NSMouseMoved:
-            qt_mac_handleMouseEvent(view, event, QEvent::MouseMove, Qt::NoButton);
+            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseMove, Qt::NoButton);
             break;
         case NSLeftMouseDragged:
         case NSRightMouseDragged:
         case NSOtherMouseDragged:
             [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->view = view;
             [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->theEvent = event;
-            if (!qt_mac_handleMouseEvent(view, event, QEvent::MouseMove, mouseButton))
-                [super sendEvent:event];
+            handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseMove, mouseButton);
             break;
         default:
             [super sendEvent:event];
@@ -188,8 +193,9 @@ QT_USE_NAMESPACE
     } else {
         [super sendEvent:event];
     }
-    qt_mac_dispatchNCMouseMessage(self, event, [self QT_MANGLE_NAMESPACE(qt_qwidget)], leftButtonIsRightButton);
 
+    if (!handled)
+        qt_mac_dispatchNCMouseMessage(self, event, [self QT_MANGLE_NAMESPACE(qt_qwidget)], leftButtonIsRightButton);
 
     [self release];
 }
