@@ -33,7 +33,7 @@ Item  {
         lifeSpan: 700; lifeSpanDeviation: 600;
         angle: 0; angleDeviation: 360;
         velocity: 100; velocityDeviation:30;
-        source: "pics/greenStar.png";
+        source: "pics/yellowStar.png";
     }
 
     states: [
