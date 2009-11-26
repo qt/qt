@@ -9441,9 +9441,11 @@ void QGraphicsTextItem::setDefaultTextColor(const QColor &col)
 {
     QTextControl *c = dd->textControl();
     QPalette pal = c->palette();
+    QColor old = pal.color(QPalette::Text);
     pal.setColor(QPalette::Text, col);
     c->setPalette(pal);
-    update();
+    if (old != col)
+        update();
 }
 
 /*!
