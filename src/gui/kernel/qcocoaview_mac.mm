@@ -79,7 +79,6 @@ extern bool qt_sendSpontaneousEvent(QObject *, QEvent *); // qapplication.cpp
 extern OSViewRef qt_mac_nativeview_for(const QWidget *w); // qwidget_mac.mm
 extern const QStringList& qEnabledDraggedTypes(); // qmime_mac.cpp
 extern QPointer<QWidget> qt_mouseover; //qapplication_mac.mm
-extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 {
@@ -692,9 +691,6 @@ extern "C" {
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    if (!qt_button_down)
-        qt_button_down = qwidget;
-
     qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonPress, Qt::LeftButton);
     // Don't call super here. This prevents us from getting the mouseUp event,
     // which we need to send even if the mouseDown event was not accepted.
@@ -704,62 +700,75 @@ extern "C" {
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    qt_button_down = 0;
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonRelease, Qt::LeftButton);
 
-    qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonRelease, Qt::LeftButton);
+    if (!mouseOK)
+        [super mouseUp:theEvent];
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-    if (!qt_button_down)
-        qt_button_down = qwidget;
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonPress, Qt::RightButton);
 
-    qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonPress, Qt::RightButton);
+    if (!mouseOK)
+        [super rightMouseDown:theEvent];
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    qt_button_down = 0;
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonRelease, Qt::RightButton);
 
-    qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonRelease, Qt::RightButton);
+    if (!mouseOK)
+        [super rightMouseUp:theEvent];
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-    if (!qt_button_down)
-        qt_button_down = qwidget;
-
     Qt::MouseButton mouseButton = cocoaButton2QtButton([theEvent buttonNumber]);
-    qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonPress, mouseButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonPress, mouseButton);
+
+    if (!mouseOK)
+        [super otherMouseDown:theEvent];
 }
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-    qt_button_down = 0;
-
     Qt::MouseButton mouseButton = cocoaButton2QtButton([theEvent buttonNumber]);
-    qt_mac_handleMouseEvent(self, theEvent,  QEvent::MouseButtonRelease, mouseButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent,  QEvent::MouseButtonRelease, mouseButton);
+
+    if (!mouseOK)
+        [super otherMouseUp:theEvent];
+
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
-    qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+
+    if (!mouseOK)
+        [super mouseDragged:theEvent];
 }
 
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
-    qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+
+    if (!mouseOK)
+        [super rightMouseDragged:theEvent];
 }
 
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
-    qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+
+    if (!mouseOK)
+        [super otherMouseDragged:theEvent];
 }
 
 - (void)scrollWheel:(NSEvent *)theEvent
