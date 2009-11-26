@@ -643,7 +643,7 @@ void QS60StylePrivate::setThemePalette(QWidget *widget) const
             s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
         QHeaderView* header = qobject_cast<QHeaderView *>(widget);
         widgetPalette.setColor(QPalette::Button, Qt::transparent );
-        if ( header->viewport() )
+        if (header->viewport())
             header->viewport()->setPalette(widgetPalette);
         QApplication::setPalette(widgetPalette, "QHeaderView");
     }
@@ -864,7 +864,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
     return result;
 }
 
-bool QS60StylePrivate::canDrawThemeBackground(const QBrush &backgroundBrush) 
+bool QS60StylePrivate::canDrawThemeBackground(const QBrush &backgroundBrush)
 {
     //If brush is not changed from style's default values, draw theme graphics.
     return (backgroundBrush.color() == Qt::transparent ||
@@ -1782,7 +1782,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             if (qobject_cast<const QAbstractButton *>(widget)) {
                 //Make cornerButton slightly smaller so that it is not on top of table border graphic.
                 QStyleOptionHeader subopt = *header;
-                const int borderTweak = 
+                const int borderTweak =
                     QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth)>>1;
                 if (subopt.direction == Qt::LeftToRight)
                     subopt.rect.adjust(borderTweak, borderTweak, 0, -borderTweak);
@@ -1875,7 +1875,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 adjustableFlags = (adjustableFlags | QS60StylePrivate::SF_PointWest);
             } else {
                 const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-                if (option->direction == Qt::LeftToRight) 
+                if (option->direction == Qt::LeftToRight)
                     headerRect.adjust(-2*frameWidth, 0, 0, 0);
                 else
                     headerRect.adjust(0, 0, 2*frameWidth, 0);
@@ -2590,7 +2590,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             const int indicatorRect = pixelMetric(PM_MenuButtonIndicator) + 2*pixelMetric(PM_ButtonMargin);
             const int border = pixelMetric(PM_ButtonMargin) + pixelMetric(PM_DefaultFrameWidth);
             ret = toolButton->rect;
-            const bool popup = (toolButton->features & 
+            const bool popup = (toolButton->features &
                     (QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay))
                     == QStyleOptionToolButton::MenuButtonPopup;
             switch (scontrol) {
