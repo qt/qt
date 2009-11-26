@@ -2348,6 +2348,17 @@ void MainWindow::updatePhraseDicts()
     m_phraseView->update();
 }
 
+static bool haveMnemonic(const QString &str)
+{
+    QString mnemonic = QKeySequence::mnemonic(str);
+    if (mnemonic == QLatin1String("Alt+Space")) {
+        // "Nobody" ever really uses these, and they are highly annoying
+        // because we get a lot of false positives.
+        return false;
+    }
+    return !mnemonic.isEmpty();
+}
+
 void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)
 {
     MultiDataIndex curIdx = index;
@@ -2379,10 +2390,10 @@ void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)
             }
 
             if (m_ui.actionAccelerators->isChecked()) {
-                bool sk = !QKeySequence::mnemonic(source).isEmpty();
+                bool sk = haveMnemonic(source);
                 bool tk = true;
                 for (int i = 0; i < translations.count() && tk; ++i) {
-                    tk &= !QKeySequence::mnemonic(translations[i]).isEmpty();
+                    tk &= haveMnemonic(translations[i]);
                 }
 
                 if (!sk && tk) {
