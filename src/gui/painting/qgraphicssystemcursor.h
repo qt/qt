@@ -51,7 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 // Cursor graphics management
-class QGraphicsSystemCursorImage {
+class Q_GUI_EXPORT QGraphicsSystemCursorImage {
 public:
     QGraphicsSystemCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
     { set(data, mask, width, height, hotX, hotY); }
@@ -68,33 +68,17 @@ private:
 class Q_GUI_EXPORT QGraphicsSystemCursor : public QObject {
 public:
     QGraphicsSystemCursor(QGraphicsSystemScreen *);
-    virtual ~QGraphicsSystemCursor();
 
     // input methods
-    virtual void pointerEvent(const QMouseEvent & event);
-    virtual void changeCursor(QCursor * widgetCursor, QWidget * widget);
-
-    // output methods
-    virtual QRect drawCursor(QPainter &);
-    virtual QRect dirtyRect();
+    virtual void pointerEvent(const QMouseEvent & event) { Q_UNUSED(event); }
+    virtual void changeCursor(QCursor * widgetCursor, QWidget * widget) = 0;
 
     static QPointer<QGraphicsSystemCursor> getInstance() { return instance; }
 
 protected:
-    static QPointer<QGraphicsSystemCursor> instance;
-
-    QRect currentRect;      // next place to draw the cursor
-    QRect prevRect;         // last place the cursor was drawn
+    static QPointer<QGraphicsSystemCursor> instance;    // limit 1 cursor at a time
 
     QGraphicsSystemScreen * screen;  // Where to request an update
-
-    QGraphicsSystemCursorImage * graphic;
-
-private:
-
-    void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
-    void setCursor(Qt::CursorShape shape);
-    QRect getCurrentRect();
 };
 
 QT_END_NAMESPACE

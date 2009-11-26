@@ -53,79 +53,9 @@ QT_BEGIN_NAMESPACE
 QPointer<QGraphicsSystemCursor> QGraphicsSystemCursor::instance = 0;
 
 QGraphicsSystemCursor::QGraphicsSystemCursor(QGraphicsSystemScreen *scr )
-        :currentRect(QRect()), prevRect(QRect()), screen(scr)
+        : screen(scr)
 {
-    graphic = new QGraphicsSystemCursorImage(0, 0, 0, 0, 0, 0);
     instance = this;
-    setCursor(Qt::ArrowCursor);
-}
-
-QGraphicsSystemCursor::~QGraphicsSystemCursor()
-{
-}
-
-void QGraphicsSystemCursor::setCursor(Qt::CursorShape shape)
-{
-    graphic->set(shape);
-}
-
-void QGraphicsSystemCursor::setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
-{
-    graphic->set(data, mask, width, height, hotX, hotY);
-}
-
-QRect QGraphicsSystemCursor::dirtyRect()
-{
-    if (!prevRect.isNull()) {
-        QRect rect = prevRect;
-        prevRect = QRect();
-        return rect;
-    }
-    return QRect();
-}
-
-QRect QGraphicsSystemCursor::drawCursor(QPainter & painter)
-{
-    if (currentRect.isNull())
-        return QRect();
-
-    prevRect = currentRect;
-    painter.drawImage(prevRect, *graphic->image());
-    return prevRect;
-}
-
-QRect QGraphicsSystemCursor::getCurrentRect()
-{
-    QRect rect = graphic->image()->rect().translated(-graphic->hotspot().x(),
-                                                     -graphic->hotspot().y());
-    rect.translate(QCursor::pos());
-    return rect;
-}
-
-void QGraphicsSystemCursor::pointerEvent(const QMouseEvent & e)
-{
-    Q_UNUSED(e);
-    currentRect = getCurrentRect();
-    screen->setDirty(currentRect);
-}
-
-void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
-{
-    Q_UNUSED(widget);
-    Qt::CursorShape shape = widgetCursor->shape();
-
-    if (shape == Qt::BitmapCursor) {
-        // application supplied cursor
-        const QBitmap * map = widgetCursor->bitmap();
-        const QBitmap * mask = widgetCursor->mask();
-        QPoint spot = widgetCursor->hotSpot();
-        setCursor(map->toImage().bits(), mask->toImage().bits(), map->width(), map->height(), spot.x(), spot.y());
-    } else {
-        // system cursor
-        setCursor(shape);
-    }
-    currentRect = getCurrentRect();
-    screen->setDirty(currentRect);
 }
 
 // End of display and pointer event handling code

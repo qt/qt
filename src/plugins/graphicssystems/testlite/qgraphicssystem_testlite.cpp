@@ -72,14 +72,6 @@ public:
 
         ws->setCursor(cursor->shape());
     }
-
-    //#### remove this
-    void pointerEvent(const QMouseEvent & event) {
-        Q_UNUSED(event);
-#if 0
-        qDebug() << "pointerEvent" << event.globalPos();
-#endif
-    }
 };
 
 

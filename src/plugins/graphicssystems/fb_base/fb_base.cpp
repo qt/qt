@@ -3,8 +3,80 @@
 #include <qpainter.h>
 #include <private/qapplication_p.h>
 #include <qdebug.h>
-
+#include <qbitmap.h>
 #include <qgraphicssystemcursor.h>
+
+QGraphicsSystemSoftwareCursor::QGraphicsSystemSoftwareCursor(QGraphicsSystemScreen *scr)
+        : QGraphicsSystemCursor(scr), currentRect(QRect()), prevRect(QRect())
+{
+    graphic = new QGraphicsSystemCursorImage(0, 0, 0, 0, 0, 0);
+    setCursor(Qt::ArrowCursor);
+}
+
+QRect QGraphicsSystemSoftwareCursor::getCurrentRect()
+{
+    QRect rect = graphic->image()->rect().translated(-graphic->hotspot().x(),
+                                                     -graphic->hotspot().y());
+    rect.translate(QCursor::pos());
+    return rect;
+}
+
+
+void QGraphicsSystemSoftwareCursor::pointerEvent(const QMouseEvent & e)
+{
+    Q_UNUSED(e);
+    currentRect = getCurrentRect();
+    screen->setDirty(currentRect);
+}
+
+QRect QGraphicsSystemSoftwareCursor::drawCursor(QPainter & painter)
+{
+    if (currentRect.isNull())
+        return QRect();
+
+    prevRect = currentRect;
+    painter.drawImage(prevRect, *graphic->image());
+    return prevRect;
+}
+
+QRect QGraphicsSystemSoftwareCursor::dirtyRect()
+{
+    if (!prevRect.isNull()) {
+        QRect rect = prevRect;
+        prevRect = QRect();
+        return rect;
+    }
+    return QRect();
+}
+
+void QGraphicsSystemSoftwareCursor::setCursor(Qt::CursorShape shape)
+{
+    graphic->set(shape);
+}
+
+void QGraphicsSystemSoftwareCursor::setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
+{
+    graphic->set(data, mask, width, height, hotX, hotY);
+}
+
+void QGraphicsSystemSoftwareCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
+{
+    Q_UNUSED(widget);
+    Qt::CursorShape shape = widgetCursor->shape();
+
+    if (shape == Qt::BitmapCursor) {
+        // application supplied cursor
+        const QBitmap * map = widgetCursor->bitmap();
+        const QBitmap * mask = widgetCursor->mask();
+        QPoint spot = widgetCursor->hotSpot();
+        setCursor(map->toImage().bits(), mask->toImage().bits(), map->width(), map->height(), spot.x(), spot.y());
+    } else {
+        // system cursor
+        setCursor(shape);
+    }
+    currentRect = getCurrentRect();
+    screen->setDirty(currentRect);
+}
 
 QGraphicsSystemFbScreen::QGraphicsSystemFbScreen() : cursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0)
 {

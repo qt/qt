@@ -15,6 +15,30 @@ class QPainter;
 class QGraphicsSystemFbWindowSurface;
 class QGraphicsSystemFbScreen;
 
+class QGraphicsSystemSoftwareCursor : public QGraphicsSystemCursor
+{
+public:
+    QGraphicsSystemSoftwareCursor(QGraphicsSystemScreen * scr);
+
+    // output methods
+    QRect dirtyRect();
+    virtual QRect drawCursor(QPainter & painter);
+
+    // input methods
+    virtual void pointerEvent(const QMouseEvent & event);
+    virtual void changeCursor(QCursor * widgetCursor, QWidget * widget);
+
+protected:
+    QGraphicsSystemCursorImage * graphic;
+
+private:
+    void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
+    void setCursor(Qt::CursorShape shape);
+    QRect currentRect;      // next place to draw the cursor
+    QRect prevRect;         // last place the cursor was drawn
+    QRect getCurrentRect();
+};
+
 class QGraphicsSystemFbWindowSurface : public QWindowSurface
 {
 public:
@@ -74,7 +98,7 @@ public:
 protected:
     QList<QGraphicsSystemFbWindowSurface *> windowStack;
     QRegion repaintRegion;
-    QGraphicsSystemCursor * cursor;
+    QGraphicsSystemSoftwareCursor * cursor;
     QTimer redrawTimer;
 
 protected slots:

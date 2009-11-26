@@ -41,7 +41,7 @@
 #ifndef QVNCCURSOR_H
 #define QVNCCURSOR_H
 
-#include "qgraphicssystemcursor.h"
+#include "../fb_base/fb_base.h"
 #include <QList>
 #include <QImage>
 #include <QMouseEvent>
@@ -51,13 +51,14 @@ QT_BEGIN_NAMESPACE
 class QVNCGraphicsSystemScreen;
 class QVNCServer;
 
-class QVNCCursor : public QGraphicsSystemCursor {
+class QVNCCursor : public QGraphicsSystemSoftwareCursor {
 public:
     QVNCCursor(QVNCServer *, QVNCGraphicsSystemScreen *);
 
     // input methods
     void setCursorMode(bool vnc);
     void changeCursor(QCursor * widgetCursor, QWidget * widget);
+
     // output methods
     QRect drawCursor(QPainter &);
 

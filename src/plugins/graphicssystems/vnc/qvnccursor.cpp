@@ -54,13 +54,13 @@
 QT_BEGIN_NAMESPACE
 
 QVNCCursor::QVNCCursor(QVNCServer * srvr, QVNCGraphicsSystemScreen *scr )
-        :QGraphicsSystemCursor::QGraphicsSystemCursor(scr), useVncCursor(false), server(srvr)
+        :QGraphicsSystemSoftwareCursor(scr), useVncCursor(false), server(srvr)
 {
 }
 
 void QVNCCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
 {
-    QGraphicsSystemCursor::changeCursor(widgetCursor, widget);
+    QGraphicsSystemSoftwareCursor::changeCursor(widgetCursor, widget);
     if (useVncCursor) {
         server->setDirtyCursor();
     } else {
@@ -71,8 +71,7 @@ void QVNCCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
 void QVNCCursor::setCursorMode(bool vnc)
 {
     if (vnc) {
-        screen->setDirty(prevRect);
-        prevRect = QRect();
+        screen->setDirty(dirtyRect());
         server->setDirtyCursor();
     } else {
         server->setDirtyCursor();
@@ -85,10 +84,7 @@ QRect QVNCCursor::drawCursor(QPainter & painter)
     if (useVncCursor)
         return QRect();
 
-    if (currentRect.isNull())
-        return QRect();
-
-    return QGraphicsSystemCursor::drawCursor(painter);
+    return QGraphicsSystemSoftwareCursor::drawCursor(painter);
 }
 
 void QVNCCursor::clearClientCursor()
