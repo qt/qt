@@ -476,6 +476,7 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     applicationPalette.setBrush(QPalette::Window, backgroundTexture());
     setThemePalette(&applicationPalette);
     QApplication::setPalette(applicationPalette);
+    setThemePaletteHash(&applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
