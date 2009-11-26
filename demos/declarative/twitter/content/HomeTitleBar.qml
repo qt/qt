@@ -25,6 +25,7 @@ Item {
                     }
                 }
                 postman.send(postData);
+
                 editor.text = ""
                 titleBar.state = ""
             }
@@ -88,7 +89,7 @@ Item {
                 width: parent.width - 12
                 height: parent.height - 8
                 font.pointSize: 10
-                wrap:true
+                wrap: true
                 color: "#151515"; selectionColor: "green"
             }
             Keys.forwardTo: [(returnKey), (editor)]

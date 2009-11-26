@@ -19,7 +19,6 @@ Item {
                 TextInput{
                     id: nameIn
                     width: parent.width - 8
-                    height: parent.height - 12
                     anchors.centerIn: parent
                     maximumLength:21
                     font.pixelSize: 16;
@@ -44,7 +43,6 @@ Item {
                 TextInput{
                     id: passIn
                     width: parent.width - 8
-                    height: parent.height - 12
                     anchors.centerIn: parent
                     maximumLength:21
                     echoMode: TextInput.Password
