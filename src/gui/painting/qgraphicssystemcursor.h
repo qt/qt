@@ -87,7 +87,6 @@ protected:
     QRect prevRect;         // last place the cursor was drawn
 
     QGraphicsSystemScreen * screen;  // Where to request an update
-    QWidget * currentWidget; // widget currently under the cursor
 
     QGraphicsSystemCursorImage * graphic;
 
