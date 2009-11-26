@@ -46,7 +46,7 @@
 int main(int argc, char **argv)
 {
     if (argc < 2) {
-        fprintf(stderr, "*** you must specify a script file to evaluate (try example.qs)\n");
+        fprintf(stderr, "*** you must specify a script file to evaluate (try example.js)\n");
         return(-1);
     }
 
