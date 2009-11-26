@@ -171,6 +171,7 @@ void QmlGraphicsImagePrivate::setPixmap(const QPixmap &pixmap)
 
     q->setImplicitWidth(pix.width());
     q->setImplicitHeight(pix.height());
+    status = pix.isNull() ? QmlGraphicsImageBase::Null : QmlGraphicsImageBase::Ready;
 
     q->update();
     emit q->pixmapChanged();

@@ -80,8 +80,15 @@ public:
 
     QmlGraphicsItem *item;
     AnchorLine anchorLine;
+
+    bool operator==(const QmlGraphicsAnchorLine& other) const
+    {
+        return item == other.item && anchorLine == other.anchorLine;
+    }
 };
 Q_DECLARE_METATYPE(QmlGraphicsAnchorLine)
+
+
 
 class QmlGraphicsAnchorsPrivate : public QObjectPrivate
 {

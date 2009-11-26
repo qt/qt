@@ -168,7 +168,7 @@ is illegal in QML.
 // Illegal modification of undeclared variable
 a = 1;
 for (var ii = 1; ii < 10; ++ii) a = a * ii;
-print("Result: " + a);
+    console.log("Result: " + a);
 \endcode
 
 It can be trivially modified to this legal code.
@@ -176,7 +176,7 @@ It can be trivially modified to this legal code.
 \code
 var a = 1;
 for (var ii = 1; ii < 10; ++ii) a = a * ii;
-print("Result: " + a);
+    console.log("Result: " + a);
 \endcode
 
 Any attempt to modify the global object - either implicitly or explicitly - will 

@@ -112,9 +112,9 @@ Item {
 
     \qml
     Rectangle {
-        Component.onCompleted: print("Completed Running!")
+        Component.onCompleted: console.log("Completed Running!")
         Rectangle {
-            Component.onCompleted: print("Nested Completed Running!")
+            Component.onCompleted: console.log("Nested Completed Running!")
         }
     }
     \endqml

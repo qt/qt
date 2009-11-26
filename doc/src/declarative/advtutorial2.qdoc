@@ -93,7 +93,7 @@ To hook this code up to the \e{New Game} button, you alter it as below:
 
 \snippet declarative/tutorials/samegame/samegame2/samegame.qml 1
 
-We have just replaced the \c{onClicked: print("Implement me!")} with \c{onClicked: initBoard()}.
+We have just replaced the \c{onClicked: console.log("Implement me!")} with \c{onClicked: initBoard()}.
 Note that in order to have the function available, you'll need to include the script in the main file,
 by adding a script element to it.
 

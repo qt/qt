@@ -42,6 +42,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmltimer_p.h>
+#include <QDebug>
 
 class tst_qmltimer : public QObject
 {
@@ -56,6 +57,8 @@ private slots:
     void noTriggerIfNotRunning();
     void triggeredOnStart();
     void triggeredOnStartRepeat();
+    void changeDuration();
+    void restart();
 };
 
 class TimerHelper : public QObject
@@ -102,6 +105,7 @@ void tst_qmltimer::notRepeating()
     QCOMPARE(helper.count, 1);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(helper.count, 1);
+    QVERIFY(timer->isRunning() == false);
 }
 
 void tst_qmltimer::notRepeatingStart()
@@ -123,6 +127,9 @@ void tst_qmltimer::notRepeatingStart()
     QCOMPARE(helper.count, 1);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(helper.count, 1);
+    QVERIFY(timer->isRunning() == false);
+
+    delete timer;
 }
 
 void tst_qmltimer::repeat()
@@ -142,11 +149,16 @@ void tst_qmltimer::repeat()
 
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > oldCount);
+    QVERIFY(timer->isRunning());
 
     oldCount = helper.count;
     timer->stop();
+
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count == oldCount);
+    QVERIFY(timer->isRunning() == false);
+
+    delete timer;
 }
 
 void tst_qmltimer::triggeredOnStart()
@@ -166,6 +178,9 @@ void tst_qmltimer::triggeredOnStart()
     QCOMPARE(helper.count, 2);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(helper.count, 2);
+    QVERIFY(timer->isRunning() == false);
+
+    delete timer;
 }
 
 void tst_qmltimer::triggeredOnStartRepeat()
@@ -185,6 +200,9 @@ void tst_qmltimer::triggeredOnStartRepeat()
     int oldCount = helper.count;
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > oldCount);
+    QVERIFY(timer->isRunning());
+
+    delete timer;
 }
 
 void tst_qmltimer::noTriggerIfNotRunning()
@@ -201,6 +219,57 @@ void tst_qmltimer::noTriggerIfNotRunning()
     QVERIFY(item != 0);
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(item->property("ok").toBool(), true);
+
+    delete item;
+}
+
+void tst_qmltimer::changeDuration()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 200; repeat: true; running: true }"), QUrl("file://"));
+    QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
+    QVERIFY(timer != 0);
+
+    TimerHelper helper;
+    connect(timer, SIGNAL(triggered()), &helper, SLOT(timeout()));
+    QCOMPARE(helper.count, 0);
+
+    QTest::qWait(500);
+    QCOMPARE(helper.count, 2);
+
+    timer->setInterval(500);
+
+    QTest::qWait(600);
+    QCOMPARE(helper.count, 3);
+    QVERIFY(timer->isRunning());
+
+    delete timer;
+}
+
+void tst_qmltimer::restart()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 500; repeat: true; running: true }"), QUrl("file://"));
+    QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
+    QVERIFY(timer != 0);
+
+    TimerHelper helper;
+    connect(timer, SIGNAL(triggered()), &helper, SLOT(timeout()));
+    QCOMPARE(helper.count, 0);
+
+    QTest::qWait(600);
+    QCOMPARE(helper.count, 1);
+
+    QTest::qWait(300);
+
+    timer->restart();
+
+    QTest::qWait(700);
+
+    QCOMPARE(helper.count, 2);
+    QVERIFY(timer->isRunning());
+
+    delete timer;
 }
 
 QTEST_MAIN(tst_qmltimer)

@@ -47,7 +47,7 @@ This tutorial goes step-by-step through creating a full application using just Q
 It is assumed that you already know basic QML (such as from doing the simple tutorial) and the focus is on showing
 how to turn that knowledge into a complete and functioning application.
 
-This tutorial involves a significant amount of javascript to implement the game logic. An understanding of javascript is helpful to understand the javascript parts of this tutorial, but if you don't understand javascript you can still get a feel for how to integrate QML elements with backend logic which creates and controls them. From the QML perspective, there is little difference between integrating with backend logic written in C++ and backend logic written in javascript.
+This tutorial involves a significant amount of JavaScript to implement the game logic. An understanding of JavaScript is helpful to understand the JavaScript parts of this tutorial, but if you don't understand JavaScript you can still get a feel for how to integrate QML elements with backend logic which creates and controls them. From the QML perspective, there is little difference between integrating with backend logic written in C++ and backend logic written in JavaScript.
 
 In this tutorial we recreate, step by step, the Same Game demo in $QTDIR/demos/declarative/samegame.qml.
 The results of the individual steps are in the $QTDIR/examples/declarative/tutorials/samegame directory.

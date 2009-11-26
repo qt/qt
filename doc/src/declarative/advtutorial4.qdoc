@@ -126,7 +126,7 @@ if they exit this dialog without entering it they have a way to opt out of posti
 
 \snippet declarative/tutorials/samegame/samegame4/content/samegame.js 2
 
-For offline storage, we use the HTML 5 offline storage javascript API to maintain a persistant SQL database unique to this application. This first line in this function calls the function for the web-based high scores, described later, if it has been setup. Next we create an offline storage database for the high scores using openDatabase and prepare the data and SQL query that we want to use to save it. The offline storage API uses SQL queries for data manipulation and retrival, and in the db.transaction call we use three SQL queries to initialize the database (if necessary), and then add to and retrieve high scores. To use the returned data, we turn it into a string with one line per row returned, and show a dialog containing that string. For a more detailed explanation of the offline storage API in QML, consult the global object documentation.
+For offline storage, we use the HTML 5 offline storage JavaScript API to maintain a persistant SQL database unique to this application. This first line in this function calls the function for the web-based high scores, described later, if it has been setup. Next we create an offline storage database for the high scores using openDatabase and prepare the data and SQL query that we want to use to save it. The offline storage API uses SQL queries for data manipulation and retrival, and in the db.transaction call we use three SQL queries to initialize the database (if necessary), and then add to and retrieve high scores. To use the returned data, we turn it into a string with one line per row returned, and show a dialog containing that string. For a more detailed explanation of the offline storage API in QML, consult the global object documentation.
 
 This is one way of storing and displaying high scores locally, but not the only way. A more complex alternative would have been to create a high score dialog component, and pass the results to it for processing and display (instead of resusing the Dialog). This would allow a more themable dialog that could present the high scores better. If your QML is the UI for a C++ application, you could also have passed the score to a C++ function to store it locally in a variety of ways, including a simple format without SQL or in another SQL database.
 
@@ -141,7 +141,7 @@ if the player entered their name we can send the data to the web service in the 
 
 \snippet declarative/tutorials/samegame/samegame4/content/samegame.js 1
 
-This is the same \c XMLHttpRequest() as you'll find in browser javascript, and can be used in the same way to dynamically get XML
+This is the same \c XMLHttpRequest() as you'll find in browser JavaScript, and can be used in the same way to dynamically get XML
 or QML from the web service to display the high scores. We don't worry about the response in this case, we just post the high
 score data to the web server. If it had returned a QML file (or a URL to a QML file) you could instantiate it in much the same
 way as you did the blocks.
