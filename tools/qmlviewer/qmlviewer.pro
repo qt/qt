@@ -22,7 +22,8 @@ SOURCES += main.cpp \
            qfxtester.cpp
 FORMS = recopts.ui \
     proxysettings.ui
-include($$QT_SOURCE_TREE/tools/shared/deviceskin/deviceskin.pri)
+INCLUDEPATH += ../../include/QtDeclarative
+include(../shared/deviceskin/deviceskin.pri)
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
 
