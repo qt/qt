@@ -122,8 +122,8 @@ int main(int argc, char **argv)
 
     scene.addItem(w);
     scene.setBackgroundBrush(Qt::darkGreen);
-    QGraphicsView *view = new QGraphicsView(&scene);
-    view->show();
+    QGraphicsView view(&scene);
+    view.show();
 
     return app.exec();
 }

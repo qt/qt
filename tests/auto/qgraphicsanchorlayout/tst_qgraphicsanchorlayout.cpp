@@ -1197,7 +1197,7 @@ void tst_QGraphicsAnchorLayout::styleDefaults()
     QSizeF pref(20, 20);
     QSizeF max (50, 50);
 
-    /* 
+    /*
     create this layout, where a,b have controlType QSizePolicy::RadioButton
     c,d have controlType QSizePolicy::PushButton:
     +-------+
@@ -1244,9 +1244,9 @@ void tst_QGraphicsAnchorLayout::styleDefaults()
     scene.addItem(window);
 
     window->show();
-    QGraphicsView *view = new QGraphicsView(&scene);
-    view->resize(200, 200);
-    view->show();
+    QGraphicsView view(&scene);
+    view.resize(200, 200);
+    view.show();
 
     window->adjustSize();
     QCOMPARE(a->geometry(), QRectF(0,   3, 20, 20));    //radio
@@ -1265,10 +1265,13 @@ void tst_QGraphicsAnchorLayout::styleDefaults()
     window->setStyle(style);
     window->adjustSize();
     QCOMPARE(a->geometry(), QRectF(0,   3, 20, 20));
-    QCOMPARE(b->geometry(), QRectF(21, 25, 20, 20));     
+    QCOMPARE(b->geometry(), QRectF(21, 25, 20, 20));
     QCOMPARE(c->geometry(), QRectF(42, 47, 20, 20));
     QCOMPARE(d->geometry(), QRectF(63, 69, 20, 20));
     QCOMPARE(l->geometry(), QRectF(0,   0, 89, 98));
+
+    window->setStyle(0);
+    delete style;
 }
 
 
@@ -1777,7 +1780,8 @@ void tst_QGraphicsAnchorLayout::simplificationVsOrder()
     QGraphicsWidget *b = createItem(min, pref, max, "B");
     QGraphicsWidget *c = createItem(min, pref, max, "C");
 
-    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    QGraphicsWidget frame;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&frame);
 
     // Bulk anchors
     l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
@@ -1847,7 +1851,8 @@ void tst_QGraphicsAnchorLayout::simplificationVsRedundance()
     QGraphicsWidget *b = createItem(min, pref, max, "B");
     QGraphicsWidget *c = createItem(min, pref, max, "C");
 
-    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    QGraphicsWidget frame;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&frame);
 
     l->addCornerAnchors(a, Qt::TopLeftCorner, l, Qt::TopLeftCorner);
     l->addCornerAnchors(a, Qt::BottomLeftCorner, l, Qt::BottomLeftCorner);
