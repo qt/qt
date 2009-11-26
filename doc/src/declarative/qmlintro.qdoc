@@ -121,7 +121,7 @@ Item {
     }
     Text {
         id: text2
-        text: Text1.text
+        text: text1.text
     }
 }
 \endcode
