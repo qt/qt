@@ -235,6 +235,7 @@ function sendHighScore(name) {
     var postData = "name="+name+"&score="+gameCanvas.score
         +"&gridSize="+maxX+"x"+maxY +"&time="+Math.floor(timer/1000);
     postman.open("POST", scoresURL, true);
+    postman.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     postman.onreadystatechange = function() { 
         if (postman.readyState == postman.DONE) {
             dialog.show("Your score has been uploaded.");
