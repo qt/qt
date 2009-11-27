@@ -105,13 +105,9 @@ void QDirectFbWindowSurface::setGeometry(const QRect &rect)
     if (result != DFB_OK)
         DirectFBError("QDirectFbWindowSurface::setGeometry() failed to retrieve new surface",result);
 
-    QPixmap *oldpixmap = m_pixmap;
     QDirectFbBlitter *blitter = new QDirectFbBlitter(rect, m_dfbSurface);
     pmdata->resize(rect.width(),rect.height());
     pmdata->setBlittable(blitter);
-    m_pixmap = new QPixmap(pmdata);
-    delete oldpixmap;
-
 }
 
 bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
