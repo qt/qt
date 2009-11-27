@@ -334,7 +334,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "SUBLIBS       = ";
         QStringList &l = project->values("SUBLIBS");
         for(QStringList::Iterator it = l.begin(); it != l.end(); ++it)
-            t << libdir << "lib" << (*it) << ".a ";
+            t << libdir << project->first("QMAKE_PREFIX_STATICLIB") << (*it) << "."
+              << project->first("QMAKE_EXTENSION_STATICLIB") << " ";
         t << endl << endl;
     }
     if(project->isActiveConfig("depend_prl") && !project->isEmpty("QMAKE_PRL_INTERNAL_FILES")) {
@@ -873,7 +874,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             libdir = project->first("SUBLIBS_DIR");
         QStringList &l = project->values("SUBLIBS");
         for(it = l.begin(); it != l.end(); ++it)
-            t << libdir << "lib" << (*it) << ".a" << ":\n\t"
+            t << libdir << project->first("QMAKE_PREFIX_STATICLIB") << (*it) << "."
+              << project->first("QMAKE_EXTENSION_STATICLIB") << ":\n\t"
               << var(QString("MAKELIB") + (*it)) << endl << endl;
     }
 
@@ -1006,12 +1008,13 @@ void UnixMakefileGenerator::init2()
        if (!project->values("QMAKE_CYGWIN_EXE").isEmpty())
             project->values("TARGET_EXT").append(".exe");
     } else if (project->isActiveConfig("staticlib")) {
-        project->values("TARGET").first().prepend("lib");
-        project->values("TARGET").first() += ".a";
+        project->values("TARGET").first().prepend(project->first("QMAKE_PREFIX_STATICLIB"));
+        project->values("TARGET").first() += "." + project->first("QMAKE_EXTENSION_STATICLIB");
         if(project->values("QMAKE_AR_CMD").isEmpty())
             project->values("QMAKE_AR_CMD").append("$(AR) $(TARGET) $(OBJECTS)");
     } else {
-        project->values("TARGETA").append(project->first("DESTDIR") + "lib" + project->first("TARGET") + ".a");
+        project->values("TARGETA").append(project->first("DESTDIR") + project->first("QMAKE_PREFIX_STATICLIB")
+                + project->first("TARGET") + "." + project->first("QMAKE_EXTENSION_STATICLIB"));
         if(project->isActiveConfig("compile_libtool"))
             project->values("TARGET_la") = QStringList(project->first("DESTDIR") + "lib" + project->first("TARGET") + Option::libtool_ext);
 
@@ -1059,7 +1062,8 @@ void UnixMakefileGenerator::init2()
                                                         project->first("VER_MAJ"));
             project->values("TARGET") = project->values("TARGET_x");
         } else if (!project->isEmpty("QMAKE_AIX_SHLIB")) {
-            project->values("TARGET_").append("lib" + project->first("TARGET") + ".a");
+            project->values("TARGET_").append(project->first("QMAKE_PREFIX_STATICLIB") + project->first("TARGET")
+                    + "." + project->first("QMAKE_EXTENSION_STATICLIB"));
             if(project->isActiveConfig("lib_version_first")) {
                 project->values("TARGET_x").append("lib" + project->first("TARGET") + "." +
                                                         project->first("VER_MAJ") + "." +
