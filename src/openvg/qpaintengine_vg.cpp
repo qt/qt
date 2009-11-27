@@ -1570,12 +1570,6 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
 
-    // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
-        QPaintEngineEx::clip(rect, op);
-        return;
-    }
-
     switch (op) {
         case Qt::NoClip:
         {
@@ -1611,12 +1605,6 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     QVGPainterState *s = state();
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
-
-    // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
-        QPaintEngineEx::clip(region, op);
-        return;
-    }
 
     switch (op) {
         case Qt::NoClip:
