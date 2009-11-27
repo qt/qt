@@ -128,11 +128,10 @@ struct AnchorData : public QSimplexVariable {
           type(Normal), isLayoutAnchor(false),
           isCenterAnchor(false), orientation(0),
           dependency(Independent) {}
+    virtual ~AnchorData();
 
     virtual void updateChildrenSizes() {}
     void refreshSizeHints(const QLayoutStyleInfo *styleInfo = 0);
-
-    virtual ~AnchorData() {}
 
 #ifdef QT_DEBUG
     void dump(int indent = 2);

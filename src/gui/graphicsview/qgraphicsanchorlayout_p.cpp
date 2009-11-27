@@ -62,7 +62,13 @@ QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
 
 QGraphicsAnchorPrivate::~QGraphicsAnchorPrivate()
 {
-    layoutPrivate->removeAnchor(data->from, data->to);
+    if (data) {
+        // The QGraphicsAnchor was already deleted at this moment. We must clean
+        // the dangling pointer to avoid double deletion in the AnchorData dtor.
+        data->graphicsAnchor = 0;
+
+        layoutPrivate->removeAnchor(data->from, data->to);
+    }
 }
 
 void QGraphicsAnchorPrivate::setSizePolicy(QSizePolicy::Policy policy)
@@ -166,6 +172,18 @@ static void internalSizeHints(QSizePolicy::Policy policy,
     else
         *prefSize = prefSizeHint;
 }
+
+AnchorData::~AnchorData()
+{
+    if (graphicsAnchor) {
+        // Remove reference to ourself to avoid double removal in
+        // QGraphicsAnchorPrivate dtor.
+        graphicsAnchor->d_func()->data = 0;
+
+        delete graphicsAnchor;
+    }
+}
+
 
 void AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
 {
@@ -1687,11 +1705,15 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor(AnchorVertex *firstVertex,
 {
     Q_Q(QGraphicsAnchorLayout);
 
-    // Actually delete the anchor
-    removeAnchor_helper(firstVertex, secondVertex);
-
+    // Save references to items while it's safe to assume the vertices exist
     QGraphicsLayoutItem *firstItem = firstVertex->m_item;
     QGraphicsLayoutItem *secondItem = secondVertex->m_item;
+
+    // Delete the anchor (may trigger deletion of center vertices)
+    removeAnchor_helper(firstVertex, secondVertex);
+
+    // Ensure no dangling pointer is left behind
+    firstVertex = secondVertex = 0;
 
     // Checking if the item stays in the layout or not
     bool keepFirstItem = false;
