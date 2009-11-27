@@ -59,12 +59,12 @@ contains(TEMPLATE, app) {
     !isEmpty($$QMAKE_POST_LINK):QMAKE_POST_LINK += &&
 
     QMAKE_POST_LINK += $$QMAKE_MOVE $$DESTDIR/$${TARGET} $$DESTDIR/$${TARGET}.sym
-    QMAKE_POST_LINK += && elf2e32  --version 4.1536 --sid 0xe001b2dc  --uid1 0x10000079 --uid2 0x1000008d --uid3 $$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 --stack=0x00014000 --capability=None --fpu=softvfp --targettype=EXE --elfinput=$${DESTDIR}/$${TARGET}.sym --output=$${DESTDIR}/$${TARGET}.exe --unfrozen --linkas=$${TARGET}\\{$${intVersion}\\}\\[$${intUid3}\\].exe --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged
+    QMAKE_POST_LINK += && elf2e32  --version 4.1536 --sid 0xe001b2dc  --uid1 0x1000007a --uid2 0x1000008d --uid3 $$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 --stack=0x00014000 --capability=None --fpu=softvfp --targettype=EXE --elfinput=$${DESTDIR}/$${TARGET}.sym --output=$${DESTDIR}/$${TARGET}.exe --unfrozen --linkas=$${TARGET}\\{$${intVersion}\\}\\[$${intUid3}\\].exe --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged
     QMAKE_DISTCLEAN += $${DESTDIR}/$${TARGET}.exe
 
     QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
 
-    QMAKE_LFLAGS += --symver_soname --soname $${TARGET}\\{$${intVersion}\\}\\[$${intUid3}\\].dll
+    QMAKE_LFLAGS += --symver_soname --soname $${TARGET}\\{$${intVersion}\\}\\[$${intUid3}\\].exe
 }
 
 # Symbian resource files
