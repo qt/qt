@@ -97,8 +97,9 @@ public:
         }
 
         MouseRegion {
-            anchors.fill: parent
+            // change between default and 'back' states
             onClicked: flipable.state = (flipable.state == 'back' ? '' : 'back')
+            anchors.fill: parent
         }
     }
     \endqml
