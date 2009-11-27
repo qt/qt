@@ -7,15 +7,22 @@ isEmpty(DESTDIR) {
 for(libraries, LIBS) {
     isFullName = $$find(libraries, \.)
     isEmpty(isFullName) {
-        LIBS = $$replace(LIBS, "$$libraries", "$${libraries}.dso")
+        newLIBS += "$${libraries}.dso"
+    } else {
+        newLIBS += "$${libraries}"
     }
 }
+LIBS = $$newLIBS
+newLIBS =
 for(libraries, QMAKE_LIBS) {
     isFullName = $$find(libraries, \.)
     isEmpty(isFullName) {
-        QMAKE_LIBS = $$replace(QMAKE_LIBS, "$$libraries", "$${libraries}.dso")
+        newLIBS += "$${libraries}.dso"
+    } else {
+        newLIBS += "$${libraries}"
     }
 }
+QMAKE_LIBS = $$newLIBS
 
 # This needs to be done after the above LIBS mangling.
 include(../platformlibs.conf)
