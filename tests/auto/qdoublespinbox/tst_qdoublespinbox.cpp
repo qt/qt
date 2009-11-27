@@ -1050,7 +1050,6 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
 {
     class DecoratedSpinBox : public QDoubleSpinBox
     {
-        friend class tst_QDoubleSpinBox;
     public:
         DecoratedSpinBox()
         {
@@ -1064,6 +1063,8 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
         { 
             return locale().toString(value);
         }
+
+        using QDoubleSpinBox::lineEdit;
     } spinbox;
     spinbox.show();
     spinbox.activateWindow();
