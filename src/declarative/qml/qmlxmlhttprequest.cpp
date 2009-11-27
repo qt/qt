@@ -1208,14 +1208,16 @@ void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
     m_request = QNetworkRequest();
     destroyNetwork();
 
-    if (error != QNetworkReply::ContentAccessDenied &&
-        error != QNetworkReply::ContentOperationNotPermittedError &&
-        error != QNetworkReply::ContentNotFoundError) {
-        m_errorFlag = true;
-    } else {
+    if (error == QNetworkReply::ContentAccessDenied ||
+        error == QNetworkReply::ContentOperationNotPermittedError ||
+        error == QNetworkReply::ContentNotFoundError ||
+        error == QNetworkReply::AuthenticationRequiredError ||
+        error == QNetworkReply::ContentReSendError) {
         m_state = Loading;
         dispatchCallback();
-    }
+    } else {
+        m_errorFlag = true;
+    } 
 
     m_state = Done;
     dispatchCallback();
