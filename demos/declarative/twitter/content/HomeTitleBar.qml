@@ -52,7 +52,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideLeft
             text: "Timeline for " + rssModel.authName
-            font.pointSize: 10; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
+            font.pixelSize: 12; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
         }
 
         Button {
@@ -89,7 +89,7 @@ Item {
                 width: parent.width - 12
                 height: parent.height - 8
                 font.pointSize: 10
-                wrap:true
+                wrap: true
                 color: "#151515"; selectionColor: "green"
             }
             Keys.forwardTo: [(returnKey), (editor)]

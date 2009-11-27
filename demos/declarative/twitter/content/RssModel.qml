@@ -11,7 +11,8 @@ Item { id: wrapper
 XmlListModel {
     id: xmlModel
 
-    source: if (wrapper.authName == ""){
+    source:{ 
+            if (wrapper.authName == ""){
                 ""; //Avoid worthless calls to twitter servers
             }else if(wrapper.mode == 'user'){
                 "https://"+ ((wrapper.authName!="" && wrapper.authPass!="")? (wrapper.authName+":"+wrapper.authPass+"@") : "" )+"twitter.com/statuses/user_timeline.xml?screen_name="+wrapper.tags;
@@ -20,6 +21,7 @@ XmlListModel {
             }else{//everyone/public
                 "http://twitter.com/statuses/public_timeline.xml";
             }
+    }
     query: "/statuses/status"
 
     XmlRole { name: "statusText"; query: "text/string()" }
