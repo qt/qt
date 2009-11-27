@@ -89,6 +89,7 @@ private slots:
     void snakeParallelWithLayout();
     void parallelToHalfLayout();
     void globalSpacing();
+    void graphicsAnchorHandling();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -2016,6 +2017,42 @@ void tst_QGraphicsAnchorLayout::globalSpacing()
     QCOMPARE(newHSpacing, hSpacing);
 }
 
+void tst_QGraphicsAnchorLayout::graphicsAnchorHandling()
+{
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout();
+    QGraphicsWidget *a = createItem();
+
+    l->addAnchors(l, a);
+
+    QGraphicsAnchor *layoutAnchor = l->anchor(l, Qt::AnchorTop, l, Qt::AnchorBottom);
+    QGraphicsAnchor *itemAnchor = l->anchor(a, Qt::AnchorTop, a, Qt::AnchorBottom);
+    QGraphicsAnchor *invalidAnchor = l->anchor(a, Qt::AnchorTop, l, Qt::AnchorBottom);
+
+    // Ensure none of these anchors are accessible.
+    QVERIFY(layoutAnchor == 0);
+    QVERIFY(itemAnchor == 0);
+    QVERIFY(invalidAnchor == 0);
+
+    // Hook the anchors to a QObject
+    QObject object;
+    QGraphicsAnchor *userAnchor = l->anchor(l, Qt::AnchorTop, a, Qt::AnchorTop);
+    userAnchor->setParent(&object);
+    userAnchor = l->anchor(l, Qt::AnchorBottom, a, Qt::AnchorBottom);
+    userAnchor->setParent(&object);
+    userAnchor = l->anchor(l, Qt::AnchorRight, a, Qt::AnchorRight);
+    userAnchor->setParent(&object);
+    userAnchor = l->anchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    userAnchor->setParent(&object);
+
+    QCOMPARE(object.children().size(), 4);
+
+    // Delete layout, this will cause all anchors to be deleted internally.
+    // We expect the public QGraphicsAnchor instances to be deleted too.
+    delete l;
+    QCOMPARE(object.children().size(), 0);
+
+    delete a;
+}
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
 #include "tst_qgraphicsanchorlayout.moc"
