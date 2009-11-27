@@ -121,6 +121,7 @@ public Q_SLOTS:
     void moveCurrentIndexDown();
     void moveCurrentIndexLeft();
     void moveCurrentIndexRight();
+    void positionViewAtIndex(int index);
 
 Q_SIGNALS:
     void countChanged();

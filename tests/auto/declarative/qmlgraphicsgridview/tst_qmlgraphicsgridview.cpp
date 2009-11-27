@@ -65,6 +65,7 @@ private slots:
     void currentIndex();
     void defaultValues();
     void properties();
+    void positionViewAtIndex();
 
 private:
     QmlView *createView(const QString &filename);
@@ -807,6 +808,96 @@ void tst_QmlGraphicsGridView::properties()
     QCOMPARE(obj->cellWidth(), 100);
     QCOMPARE(obj->cellHeight(), 100);
     delete obj;
+}
+
+void tst_QmlGraphicsGridView::positionViewAtIndex()
+{
+    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
+
+    TestModel model;
+    for (int i = 0; i < 40; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QVERIFY(gridview != 0);
+
+    QmlGraphicsItem *viewport = gridview->viewport();
+    QVERIFY(viewport != 0);
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount-1; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->x(), (i%3)*80.);
+        QCOMPARE(item->y(), (i/3)*60.);
+    }
+
+    // Position on a currently visible item
+    gridview->positionViewAtIndex(4);
+    QCOMPARE(gridview->viewportY(), 60.);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 3; i < model.count() && i < itemCount-3-1; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->x(), (i%3)*80.);
+        QCOMPARE(item->y(), (i/3)*60.);
+    }
+
+    // Position on an item beyond the visible items
+    gridview->positionViewAtIndex(21);
+    QCOMPARE(gridview->viewportY(), 420.);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 22; i < model.count() && i < itemCount-22-1; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->x(), (i%3)*80.);
+        QCOMPARE(item->y(), (i/3)*60.);
+    }
+
+    // Position on an item that would leave empty space if positioned at the top
+    gridview->positionViewAtIndex(31);
+    QCOMPARE(gridview->viewportY(), 520.);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 24; i < model.count() && i < itemCount-24-1; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->x(), (i%3)*80.);
+        QCOMPARE(item->y(), (i/3)*60.);
+    }
+
+    // Position at the beginning again
+    gridview->positionViewAtIndex(0);
+    QCOMPARE(gridview->viewportY(), 0.);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount-1; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->x(), (i%3)*80.);
+        QCOMPARE(item->y(), (i/3)*60.);
+    }
+
+    delete canvas;
 }
 
 QmlView *tst_QmlGraphicsGridView::createView(const QString &filename)
