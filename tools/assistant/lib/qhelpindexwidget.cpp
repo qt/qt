@@ -391,8 +391,8 @@ QHelpIndexWidget::QHelpIndexWidget()
 {
     setEditTriggers(QAbstractItemView::NoEditTriggers);
     setUniformItemSizes(true);
-    connect(this, SIGNAL(activated(const QModelIndex&)),
-        this, SLOT(showLink(const QModelIndex&)));
+    connect(this, SIGNAL(activated(QModelIndex)),
+        this, SLOT(showLink(QModelIndex)));
 }
 
 void QHelpIndexWidget::showLink(const QModelIndex &index)

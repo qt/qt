@@ -88,8 +88,8 @@ TextEdit::TextEdit(QWidget *parent)
     }
 
     textEdit = new QTextEdit(this);
-    connect(textEdit, SIGNAL(currentCharFormatChanged(const QTextCharFormat &)),
-            this, SLOT(currentCharFormatChanged(const QTextCharFormat &)));
+    connect(textEdit, SIGNAL(currentCharFormatChanged(QTextCharFormat)),
+            this, SLOT(currentCharFormatChanged(QTextCharFormat)));
     connect(textEdit, SIGNAL(cursorPositionChanged()),
             this, SLOT(cursorPositionChanged()));
 
@@ -314,7 +314,7 @@ void TextEdit::setupTextActions()
     menu->addSeparator();
 
     QActionGroup *grp = new QActionGroup(this);
-    connect(grp, SIGNAL(triggered(QAction *)), this, SLOT(textAlign(QAction *)));
+    connect(grp, SIGNAL(triggered(QAction*)), this, SLOT(textAlign(QAction*)));
 
     // Make sure the alignLeft  is always left of the alignRight
     if (QApplication::isLeftToRight()) {
@@ -377,8 +377,8 @@ void TextEdit::setupTextActions()
 
     comboFont = new QFontComboBox(tb);
     tb->addWidget(comboFont);
-    connect(comboFont, SIGNAL(activated(const QString &)),
-            this, SLOT(textFamily(const QString &)));
+    connect(comboFont, SIGNAL(activated(QString)),
+            this, SLOT(textFamily(QString)));
 
     comboSize = new QComboBox(tb);
     comboSize->setObjectName("comboSize");
@@ -389,8 +389,8 @@ void TextEdit::setupTextActions()
     foreach(int size, db.standardSizes())
         comboSize->addItem(QString::number(size));
 
-    connect(comboSize, SIGNAL(activated(const QString &)),
-            this, SLOT(textSize(const QString &)));
+    connect(comboSize, SIGNAL(activated(QString)),
+            this, SLOT(textSize(QString)));
     comboSize->setCurrentIndex(comboSize->findText(QString::number(QApplication::font()
                                                                    .pointSize())));
 }
@@ -511,7 +511,7 @@ void TextEdit::filePrintPreview()
 #ifndef QT_NO_PRINTER
     QPrinter printer(QPrinter::HighResolution);
     QPrintPreviewDialog preview(&printer, this);
-    connect(&preview, SIGNAL(paintRequested(QPrinter *)), SLOT(printPreview(QPrinter *)));
+    connect(&preview, SIGNAL(paintRequested(QPrinter*)), SLOT(printPreview(QPrinter*)));
     preview.exec();
 #endif
 }

@@ -295,8 +295,8 @@ void tst_QUdpSocket::loop()
     QCOMPARE(paul.writeDatagram(paulMessage.data(), paulMessage.length(),
                                peterAddress, peter.localPort()), qint64(paulMessage.length()));
 
-    QVERIFY(peter.waitForReadyRead(5000));
-    QVERIFY(paul.waitForReadyRead(5000));
+    QVERIFY(peter.waitForReadyRead(9000));
+    QVERIFY(paul.waitForReadyRead(9000));
     char peterBuffer[16*1024];
     char paulBuffer[16*1024];
     if (success) {

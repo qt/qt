@@ -215,6 +215,13 @@ void QTreeView::setModel(QAbstractItemModel *model)
     Q_D(QTreeView);
     if (model == d->model)
         return;
+    if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
+        disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                this, SLOT(rowsRemoved(QModelIndex,int,int)));
+
+        disconnect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_modelAboutToBeReset()));
+    }
+
     if (d->selectionModel) { // support row editing
         disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
                    d->model, SLOT(submit()));
@@ -838,10 +845,10 @@ void QTreeView::setSortingEnabled(bool enable)
         // because otherwise it will not call sort on the model.
         sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
         connect(header(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                this, SLOT(_q_sortIndicatorChanged(int, Qt::SortOrder)), Qt::UniqueConnection);
+                this, SLOT(_q_sortIndicatorChanged(int,Qt::SortOrder)), Qt::UniqueConnection);
     } else {
         disconnect(header(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                   this, SLOT(_q_sortIndicatorChanged(int, Qt::SortOrder)));
+                   this, SLOT(_q_sortIndicatorChanged(int,Qt::SortOrder)));
     }
     d->sortingEnabled = enable;
 }

@@ -247,7 +247,7 @@ namespace Phonon
                                                     m_stopped(0)
         {
             m_thread = new WorkerThread();
-            connect(this, SIGNAL(outOfData(QIODevice*, QByteArray*, bool*)), m_thread, SLOT(stream(QIODevice*, QByteArray*, bool*)));
+            connect(this, SIGNAL(outOfData(QIODevice*,QByteArray*,bool*)), m_thread, SLOT(stream(QIODevice*,QByteArray*,bool*)));
             m_thread->start();
             m_soundBuffer1.waveHeader = new WAVEHDR;
             m_soundBuffer2.waveHeader = new WAVEHDR;
@@ -258,7 +258,7 @@ namespace Phonon
         MediaObject::~MediaObject()
         {
             stop();
-            disconnect(this, SIGNAL(outOfData(QIODevice*, QByteArray*, bool*)), m_thread, SLOT(stream(QIODevice*, QByteArray*, bool*)));
+            disconnect(this, SIGNAL(outOfData(QIODevice*,QByteArray*,bool*)), m_thread, SLOT(stream(QIODevice*,QByteArray*,bool*)));
             do { //The event loop of m_thread might not be started, yet
                 m_thread->quit(); //If the event loop is not started yet quit() does nothing
                 m_thread->wait(100);

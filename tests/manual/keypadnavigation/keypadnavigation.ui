@@ -1060,74 +1060,99 @@ As a reward you can try out the QDial, below.</string>
       </widget>
       <widget class="QWidget" name="m_pageDialogs">
        <layout class="QVBoxLayout" name="verticalLayout_13">
+        <property name="margin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QPushButton" name="m_buttonGetOpenFileName">
-          <property name="text">
-           <string>getOpenFileName()</string>
+         <widget class="QScrollArea" name="scrollArea_5">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
           </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_5">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>264</width>
+             <height>356</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_14">
+            <item>
+             <widget class="QPushButton" name="m_buttonGetOpenFileName">
+              <property name="text">
+               <string>getOpenFileName()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetSaveFileName">
+              <property name="text">
+               <string>getSaveFileName()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetExistingDirectory">
+              <property name="text">
+               <string>getExistingDirectory()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetColor">
+              <property name="text">
+               <string>getColor()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetFont">
+              <property name="text">
+               <string>getFont()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonQuestion">
+              <property name="text">
+               <string>question()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonAboutQt">
+              <property name="text">
+               <string>aboutQt()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetItem">
+              <property name="text">
+               <string>getItem()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>103</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
          </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_buttonGetSaveFileName">
-          <property name="text">
-           <string>getSaveFileName()</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_buttonGetExistingDirectory">
-          <property name="text">
-           <string>getExistingDirectory()</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_buttonGetColor">
-          <property name="text">
-           <string>getColor()</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_buttonGetFont">
-          <property name="text">
-           <string>getFont()</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_buttonQuestion">
-          <property name="text">
-           <string>question()</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_buttonAboutQt">
-          <property name="text">
-           <string>aboutQt()</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_buttonGetItem">
-          <property name="text">
-           <string>getItem()</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>104</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>
@@ -1155,7 +1180,7 @@ As a reward you can try out the QDial, below.</string>
     <addaction name="m_actionLayoutChaos"/>
     <addaction name="m_actionLayoutDialogs"/>
    </widget>
-   <widget class="QMenu" name="menuNavigation_mode">
+   <widget class="QMenu" name="m_menuNavigation_mode">
     <property name="title">
      <string>Navigation mode</string>
     </property>
@@ -1166,7 +1191,7 @@ As a reward you can try out the QDial, below.</string>
     <addaction name="m_actionModeCursorForceVisible"/>
    </widget>
    <addaction name="menuUi_layout"/>
-   <addaction name="menuNavigation_mode"/>
+   <addaction name="m_menuNavigation_mode"/>
   </widget>
   <action name="m_actionLayoutVerticalSimple">
    <property name="text">

@@ -96,6 +96,8 @@ private slots:
     void registerQObjectChildren();
 
     void callSelf();
+    void callSelfByAnotherName_data();
+    void callSelfByAnotherName();
     void multipleInterfacesInQObject();
 
     void slotsWithLessParameters();
@@ -491,6 +493,70 @@ void tst_QDBusConnection::callSelf()
     msg << 44;
     reply = connection.call(msg);
     QCOMPARE(reply.arguments().value(0).toInt(), 45);
+}
+
+void tst_QDBusConnection::callSelfByAnotherName_data()
+{
+    QTest::addColumn<int>("registerMethod");
+    QTest::newRow("connection") << 0;
+    QTest::newRow("connection-interface") << 1;
+    QTest::newRow("direct") << 2;
+}
+
+void tst_QDBusConnection::callSelfByAnotherName()
+{
+    static int counter = 0;
+    QString sname = serviceName() + QString::number(counter++);
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    TestObject testObject;
+    QVERIFY(con.registerObject("/test", &testObject,
+            QDBusConnection::ExportAllContents));
+    con.connect("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged",
+                QStringList() << sname << "",
+                QString(), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    // register the name
+    QFETCH(int, registerMethod);
+    switch (registerMethod) {
+    case 0:
+        QVERIFY(con.registerService(sname));
+        break;
+
+    case 1:
+        QVERIFY(con.interface()->registerService(sname).value() == QDBusConnectionInterface::ServiceRegistered);
+        break;
+
+    case 2: {
+            // flag is DBUS_NAME_FLAG_DO_NOT_QUEUE = 0x04
+            // reply is DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER = 1
+            QDBusReply<uint> reply = con.interface()->call("RequestName", sname, 4u);
+            QVERIFY(reply.value() == 1);
+        }
+    }
+
+    struct Deregisterer {
+        QDBusConnection con;
+        QString sname;
+        Deregisterer(const QDBusConnection &con, const QString &sname) : con(con), sname(sname) {}
+        ~Deregisterer() { con.interface()->unregisterService(sname); }
+    } deregisterer(con, sname);
+
+    // give the connection a chance to find out that we're good to go
+    QTestEventLoop::instance().enterLoop(2);
+    con.disconnect("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged",
+                 QStringList() << sname << "",
+                 QString(), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // make the call
+    QDBusMessage msg = QDBusMessage::createMethodCall(sname, "/test",
+                                                      QString(), "test0");
+    QDBusMessage reply = con.call(msg, QDBus::Block, 1000);
+
+    QVERIFY(reply.type() == QDBusMessage::ReplyMessage);
 }
 
 void tst_QDBusConnection::multipleInterfacesInQObject()

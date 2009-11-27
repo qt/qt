@@ -92,7 +92,6 @@ QVGPixmapData::~QVGPixmapData()
         vgDestroyImage(vgImage);
         if (vgImageOpacity != VG_INVALID_HANDLE)
             vgDestroyImage(vgImageOpacity);
-        } else {
 #endif
     }
 #if !defined(QT_NO_EGL)
@@ -202,6 +201,14 @@ QPaintEngine* QVGPixmapData::paintEngine() const
     return source.paintEngine();
 }
 
+// This function works around QImage::bits() making a deep copy if the
+// QImage is not const.  We force it to be const and then get the bits.
+// XXX: Should add a QImage::constBits() in the future to replace this.
+static inline const uchar *qt_vg_imageBits(const QImage& image)
+{
+    return image.bits();
+}
+
 VGImage QVGPixmapData::toVGImage()
 {
     if (!isValid())
@@ -213,7 +220,7 @@ VGImage QVGPixmapData::toVGImage()
         context = qt_vg_create_context(0);
 #endif
 
-    if (recreate) {
+    if (recreate && prevSize != QSize(w, h)) {
         if (vgImage != VG_INVALID_HANDLE) {
             vgDestroyImage(vgImage);
             vgImage = VG_INVALID_HANDLE;
@@ -222,6 +229,8 @@ VGImage QVGPixmapData::toVGImage()
             vgDestroyImage(vgImageOpacity);
             vgImageOpacity = VG_INVALID_HANDLE;
         }
+    } else if (recreate) {
+        cachedOpacity = -1.0f;  // Force opacity image to be refreshed later.
     }
 
     if (vgImage == VG_INVALID_HANDLE) {
@@ -232,11 +241,12 @@ VGImage QVGPixmapData::toVGImage()
     if (!source.isNull() && recreate) {
         vgImageSubData
             (vgImage,
-             source.bits(), source.bytesPerLine(),
+             qt_vg_imageBits(source), source.bytesPerLine(),
              VG_sARGB_8888_PRE, 0, 0, w, h);
     }
 
     recreate = false;
+    prevSize = QSize(w, h);
 
     return vgImage;
 }
@@ -244,43 +254,14 @@ VGImage QVGPixmapData::toVGImage()
 VGImage QVGPixmapData::toVGImage(qreal opacity)
 {
 #if !defined(QT_SHIVAVG)
-    if (!isValid())
+    // Force the primary VG image to be recreated if necessary.
+    if (toVGImage() == VG_INVALID_HANDLE)
         return VG_INVALID_HANDLE;
-
-#if !defined(QT_NO_EGL)
-    // Increase the reference count on the shared context.
-    if (!context)
-        context = qt_vg_create_context(0);
-#endif
-
-    if (recreate) {
-        if (vgImage != VG_INVALID_HANDLE) {
-            vgDestroyImage(vgImage);
-            vgImage = VG_INVALID_HANDLE;
-        }
-        if (vgImageOpacity != VG_INVALID_HANDLE) {
-            vgDestroyImage(vgImageOpacity);
-            vgImageOpacity = VG_INVALID_HANDLE;
-        }
-    }
-
-    if (vgImage == VG_INVALID_HANDLE) {
-        vgImage = vgCreateImage
-            (VG_sARGB_8888_PRE, w, h, VG_IMAGE_QUALITY_FASTER);
-    }
-
-    if (!source.isNull() && recreate) {
-        vgImageSubData
-            (vgImage,
-             source.bits(), source.bytesPerLine(),
-             VG_sARGB_8888_PRE, 0, 0, w, h);
-    }
-
-    recreate = false;
 
     if (opacity == 1.0f)
         return vgImage;
 
+    // Create an alternative image for the selected opacity.
     if (vgImageOpacity == VG_INVALID_HANDLE || cachedOpacity != opacity) {
         if (vgImageOpacity == VG_INVALID_HANDLE) {
             vgImageOpacity = vgCreateImage
@@ -405,6 +386,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
             vgDestroyImage(vgImageOpacity);
             vgImageOpacity = VG_INVALID_HANDLE;
         }
+        prevSize = QSize();
 
         TInt err = 0;
 
@@ -465,6 +447,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         is_null = (w <= 0 || h <= 0);
         source = QImage();
         recreate = false;
+        prevSize = QSize(w, h);
         setSerialNumber(++qt_vg_pixmap_serial);
         // release stuff
         eglDestroyImageKHR(context->display(), eglImage);

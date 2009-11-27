@@ -511,7 +511,7 @@ public:
 
     QWidget *gestureWidget;
 
-    QMap<int, QWidget *> widgetForTouchPointId;
+    QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();

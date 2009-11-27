@@ -1,3 +1,32 @@
+2009-11-23  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Symbian] Fix lastIndexOf() for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=31773
+
+        Symbian soft floating point library has problems with operators
+        comparing NaN to numbers. Without a workaround lastIndexOf() 
+        function does not work.
+
+        Patch developed by David Leong.
+
+        * runtime/StringPrototype.cpp:
+        (JSC::stringProtoFuncLastIndexOf):Add an extra test 
+        to check for NaN for Symbian.
+
+2009-11-18  Harald Fernengel  <harald.fernengel@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix detection of linux-g++
+
+        Never use "linux-g++*" to check for linux-g++, since this will break embedded
+        builds which use linux-arm-g++ and friends. Use 'linux*-g++*' to check for any
+        g++ on linux mkspec.
+
+        * JavaScriptCore.pri:
+
 2009-11-16  Joerg Bornemann  <joerg.bornemann@trolltech.com>
 
         Reviewed by Simon Hausmann.

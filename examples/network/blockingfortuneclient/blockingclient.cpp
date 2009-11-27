@@ -85,19 +85,19 @@ BlockingClient::BlockingClient(QWidget *parent)
     buttonBox->addButton(getFortuneButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    connect(hostLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(hostLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
-    connect(portLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(portLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
     connect(getFortuneButton, SIGNAL(clicked()),
             this, SLOT(requestNewFortune()));
     connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
 //! [0]
-    connect(&thread, SIGNAL(newFortune(const QString &)),
-            this, SLOT(showFortune(const QString &)));
+    connect(&thread, SIGNAL(newFortune(QString)),
+            this, SLOT(showFortune(QString)));
 //! [0] //! [1]
-    connect(&thread, SIGNAL(error(int, const QString &)),
-            this, SLOT(displayError(int, const QString &)));
+    connect(&thread, SIGNAL(error(int,QString)),
+            this, SLOT(displayError(int,QString)));
 //! [1]
 
     QGridLayout *mainLayout = new QGridLayout;

@@ -87,6 +87,7 @@
     <example filename="combowidgetmapper" name="Combo Widget Mapper" />
     <example filename="dirview" name="Directory View" />
     <example filename="fetchmore" name="Fetch More" />
+    <example filename="frozencolumn" name="Frozen Column" />
     <example filename="pixelator" name="Pixelator" />
     <example filename="puzzle" name="Puzzle " image="itemviewspuzzle-example.png"/>
     <example filename="simpledommodel" name="Simple DOM Model" />

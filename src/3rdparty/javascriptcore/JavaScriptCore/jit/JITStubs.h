@@ -246,6 +246,10 @@ namespace JSC {
         MacroAssemblerCodePtr m_ctiNativeCallThunk;
     };
 
+#if COMPILER(GCC)
+#pragma GCC visibility push(hidden)
+#endif
+
 extern "C" {
     EncodedJSValue JIT_STUB cti_op_add(STUB_ARGS_DECLARATION);
     EncodedJSValue JIT_STUB cti_op_bitand(STUB_ARGS_DECLARATION);
@@ -362,6 +366,10 @@ extern "C" {
     void* JIT_STUB cti_op_switch_string(STUB_ARGS_DECLARATION);
     void* JIT_STUB cti_vm_lazyLinkCall(STUB_ARGS_DECLARATION);
 } // extern "C"
+
+#if COMPILER(GCC)
+#pragma GCC visibility pop
+#endif
 
 } // namespace JSC
 

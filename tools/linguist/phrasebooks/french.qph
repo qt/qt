@@ -1402,4 +1402,40 @@
     <source>&amp;Redo</source>
     <target>&amp;Rétablir</target>
 </phrase>
+<phrase>
+    <source>Edit</source>
+    <target>Éditer</target>
+</phrase>
+<phrase>
+    <source>PATH:</source>
+    <target>PATH :</target>
+</phrase>
+<phrase>
+    <source>Change:</source>
+    <target>Modification :</target>
+</phrase>
+<phrase>
+    <source>Edit...</source>
+    <target>Modifier...</target>
+</phrase>
+<phrase>
+    <source>&amp;Username:</source>
+    <target>&amp;Utilisateur :</target>
+</phrase>
+<phrase>
+    <source>Link</source>
+    <target>Lien</target>
+</phrase>
+<phrase>
+    <source>Paste:</source>
+    <target>Collage :</target>
+</phrase>
+<phrase>
+    <source>Label</source>
+    <target>Libellé</target>
+</phrase>
+<phrase>
+    <source>&amp;Debug</source>
+    <target>&amp;Déboguer</target>
+</phrase>
 </QPH>

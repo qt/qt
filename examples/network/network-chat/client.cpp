@@ -51,10 +51,10 @@ Client::Client()
     peerManager->setServerPort(server.serverPort());
     peerManager->startBroadcasting();
 
-    QObject::connect(peerManager, SIGNAL(newConnection(Connection *)),
-                     this, SLOT(newConnection(Connection *)));
-    QObject::connect(&server, SIGNAL(newConnection(Connection *)),
-                     this, SLOT(newConnection(Connection *)));
+    QObject::connect(peerManager, SIGNAL(newConnection(Connection*)),
+                     this, SLOT(newConnection(Connection*)));
+    QObject::connect(&server, SIGNAL(newConnection(Connection*)),
+                     this, SLOT(newConnection(Connection*)));
 }
 
 void Client::sendMessage(const QString &message)
@@ -107,8 +107,8 @@ void Client::readyForUse()
                                      connection->peerPort()))
         return;
 
-    connect(connection, SIGNAL(newMessage(const QString &, const QString &)),
-            this, SIGNAL(newMessage(const QString &, const QString &)));
+    connect(connection, SIGNAL(newMessage(QString,QString)),
+            this, SIGNAL(newMessage(QString,QString)));
 
     peers.insert(connection->peerAddress(), connection);
     QString nick = connection->name();
