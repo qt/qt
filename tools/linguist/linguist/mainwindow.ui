@@ -679,7 +679,7 @@
     <string>About Qt</string>
    </property>
    <property name="whatsThis">
-    <string>Display information about the Qt toolkit by Trolltech.</string>
+    <string>Display information about the Qt toolkit by Nokia.</string>
    </property>
    <property name="menuRole">
     <enum>QAction::AboutQtRole</enum>
