@@ -1603,7 +1603,7 @@ qreal QmlGraphicsListView::maxYExtent() const
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
     else
-        extent = -(d->endPosition() - height());
+        extent = -(d->endPosition() - height() + 1);
     qreal minY = minYExtent();
     if (extent > minY)
         extent = minY;
@@ -1631,7 +1631,7 @@ qreal QmlGraphicsListView::maxXExtent() const
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
     else
-        extent = -(d->endPosition() - width());
+        extent = -(d->endPosition() - width() + 1);
     qreal minX = minXExtent();
     if (extent > minX)
         extent = minX;
@@ -1705,6 +1705,43 @@ void QmlGraphicsListView::decrementCurrentIndex()
         d->updateCurrent(index >= 0 ? index : d->model->count()-1);
     }
 }
+
+/*!
+    \qmlmethod ListView::positionViewAtIndex(int index)
+
+    Positions the view such that the \a index is at the top (or left for horizontal orientation) of the view.
+    If positioning the view at the index would cause empty space to be displayed at
+    the end of the view, the view will be positioned at the end.
+*/
+void QmlGraphicsListView::positionViewAtIndex(int index)
+{
+    Q_D(QmlGraphicsListView);
+    if (index < 0 || index >= d->model->count())
+        return;
+
+    FxListItem *item = d->visibleItem(index);
+    if (item) {
+        // Already created - just move to top of view
+        int pos = item->position();
+        if (item->position() > -maxYExtent())
+            pos = -maxYExtent();
+        d->setPosition(pos);
+    } else {
+        int pos = d->positionAt(index);
+        // save the currently visible items in case any of them end up visible again
+        QList<FxListItem*> oldVisible = d->visibleItems;
+        d->visibleItems.clear();
+        d->visiblePos = pos;
+        d->visibleIndex = index;
+        d->setPosition(pos);
+        if (d->position() > -maxYExtent())
+            d->setPosition(-maxYExtent());
+        // now release the reference to all the old visible items.
+        for (int i = 0; i < oldVisible.count(); ++i)
+            d->releaseItem(oldVisible.at(i));
+    }
+}
+
 
 void QmlGraphicsListView::componentComplete()
 {
