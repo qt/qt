@@ -44,6 +44,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
 
+#include "private/qfsfileengine_p.h"
 
 class qfileinfo : public QObject
 {
@@ -67,11 +68,12 @@ void qfileinfo::cleanupTestCase()
 
 void qfileinfo::canonicalFileNamePerformance()
 {
+    QString appPath = QCoreApplication::applicationFilePath();
+    QFSFileEnginePrivate::canonicalized(appPath); // warmup
+    QFSFileEnginePrivate::canonicalized(appPath); // more warmup
     QBENCHMARK {
         for (int i = 0; i < 5000; i++) {
-            // this actually calls canonicalFilePath twice, once inside QCoreApplication.
-            QFileInfo fi(QCoreApplication::applicationFilePath());
-            fi.canonicalFilePath();
+            QFSFileEnginePrivate::canonicalized(appPath);
         }
     }
 }
