@@ -1652,6 +1652,10 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::getAnchor(QGraphicsLayoutItem *fi
                                                          QGraphicsLayoutItem *secondItem,
                                                          Qt::AnchorPoint secondEdge)
 {
+    // Do not expose internal anchors
+    if (firstItem == secondItem)
+        return 0;
+
     const Orientation orientation = edgeOrientation(firstEdge);
     AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
@@ -1659,8 +1663,16 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::getAnchor(QGraphicsLayoutItem *fi
     QGraphicsAnchor *graphicsAnchor = 0;
 
     AnchorData *data = graph[orientation].edgeData(v1, v2);
-    if (data)
-        graphicsAnchor = acquireGraphicsAnchor(data);
+    if (data) {
+        // We could use "acquireGraphicsAnchor" here, but to avoid a regression where
+        // an internal anchor was wrongly exposed, I want to ensure no new
+        // QGraphicsAnchor instances are created by this call.
+        // This assumption must hold because anchors are either user-created (and already
+        // have their public object created), or they are internal (and must not reach
+        // this point).
+        Q_ASSERT(data->graphicsAnchor);
+        graphicsAnchor = data->graphicsAnchor;
+    }
     return graphicsAnchor;
 }
 
