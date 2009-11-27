@@ -43,7 +43,7 @@
 #define QMLFOLDERLISTMODEL_H
 
 #include <QtDeclarative/qml.h>
-#include <QtDeclarative/QListModelInterface>
+#include <QtDeclarative/private/qlistmodelinterface_p.h>
 
 class QmlContext;
 class QModelIndex;
