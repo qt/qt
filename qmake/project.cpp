@@ -551,8 +551,9 @@ static void init_symbian(const QMap<QString, QStringList>& vars)
         }
     }
 
-    // Force recursive on Symbian, as non-recursive is not really a viable option there
-    if (isForSymbian_value != isForSymbian_FALSE)
+    // Force recursive on Symbian native build system, as non-recursive is not really
+    // a viable option there
+    if (isForSymbian_value != isForSymbian_FALSE && isForSymbian_value != isForSymbian_MAKEFILE)
         Option::recursive = true;
 }
 
