@@ -79,6 +79,7 @@ private slots:
     void spacing();
     void sections();
     void cacheBuffer();
+    void positionViewAtIndex();
 
 private:
     template <class T> void items();
@@ -1130,6 +1131,93 @@ void tst_QmlGraphicsListView::cacheBuffer()
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
         QVERIFY(item->y() == i*20);
+    }
+
+    delete canvas;
+}
+
+void tst_QmlGraphicsListView::positionViewAtIndex()
+{
+    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+
+    TestModel model;
+    for (int i = 0; i < 40; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QVERIFY(listview != 0);
+
+    QmlGraphicsItem *viewport = listview->viewport();
+    QVERIFY(viewport != 0);
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->y(), i*20.);
+    }
+
+    // Position on a currently visible item
+    listview->positionViewAtIndex(3);
+    QCOMPARE(listview->viewportY(), 60.);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 3; i < model.count() && i < itemCount-3-1; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->y(), i*20.);
+    }
+
+    // Position on an item beyond the visible items
+    listview->positionViewAtIndex(22);
+    QCOMPARE(listview->viewportY(), 440.);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 22; i < model.count() && i < itemCount-22-1; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->y(), i*20.);
+    }
+
+    // Position on an item that would leave empty space if positioned at the top
+    listview->positionViewAtIndex(28);
+    QCOMPARE(listview->viewportY(), 480.);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 24; i < model.count() && i < itemCount-24-1; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->y(), i*20.);
+    }
+
+    // Position at the beginning again
+    listview->positionViewAtIndex(0);
+    QCOMPARE(listview->viewportY(), 0.);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount-1; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->y(), i*20.);
     }
 
     delete canvas;

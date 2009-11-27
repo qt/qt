@@ -147,6 +147,7 @@ public:
 public Q_SLOTS:
     void incrementCurrentIndex();
     void decrementCurrentIndex();
+    void positionViewAtIndex(int index);
 
 Q_SIGNALS:
     void countChanged();
