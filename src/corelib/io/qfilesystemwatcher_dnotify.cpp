@@ -295,6 +295,9 @@ QStringList QDnotifyFileSystemWatcherEngine::addPaths(const QStringList &paths, 
             pathToFD.insert(path, fd);
             if(parentFd)
                 parentToFD.insert(parentFd, fd);
+
+            ::closedir(d);
+            if(parent) ::closedir(parent);
         }
 
         Directory &directory = fdToDirectory[fd];
