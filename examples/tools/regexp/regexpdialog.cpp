@@ -126,9 +126,9 @@ RegExpDialog::RegExpDialog(QWidget *parent)
     }
     setLayout(mainLayout);
 
-    connect(patternComboBox, SIGNAL(editTextChanged(const QString &)),
+    connect(patternComboBox, SIGNAL(editTextChanged(QString)),
             this, SLOT(refresh()));
-    connect(textComboBox, SIGNAL(editTextChanged(const QString &)),
+    connect(textComboBox, SIGNAL(editTextChanged(QString)),
             this, SLOT(refresh()));
     connect(caseSensitiveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(refresh()));

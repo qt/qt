@@ -238,7 +238,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     }
 }
 
-void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t)
+void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)
 {
     // Makes sure we have needed FLMs in place.
     exportFlm();
@@ -376,12 +376,18 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         t << "START EXTENSION s60/mifconv" << endl;
 
         QFileInfo iconInfo = fileInfo(icon);
-        QString iconPath = iconInfo.path();
+
+        QFileInfo bldinf(project->values("MAKEFILE").first());
+        QString iconPath = bldinf.dir().relativeFilePath(iconInfo.path());
+
         QString iconFile = iconInfo.baseName();
+
+        QFileInfo iconTargetInfo = fileInfo(iconTargetFile);
+        QString iconTarget = iconTargetInfo.fileName();
 
         t << "OPTION SOURCES -c32 " << iconFile << endl;
         t << "OPTION SOURCEDIR " << iconPath << endl;
-        t << "OPTION TARGETFILE " << uid3 << ".mif" << endl;
+        t << "OPTION TARGETFILE " << iconTarget << endl;
         t << "OPTION SVGENCODINGVERSION 3" << endl; // Compatibility with S60 3.1 devices and up
         t << "END" << endl;
     }

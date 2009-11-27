@@ -315,6 +315,10 @@
 
 	\snippet doc/src/snippets/code/doc_src_qtscript.qdoc 1
 
+        For detailed information on how to make your application
+        scriptable with QtScript, see \l{Making Applications
+        Scriptable}.
+
 	The QtScript module is part of the \l{Qt Full Framework Edition} and the
 	\l{Open Source Versions of Qt}.
 
@@ -500,7 +504,7 @@
     \ingroup modules
 
     \brief The QtXmlPatterns module provides support for XPath,
-    XQuery, XSLT and XML schema-validation.
+    XQuery, XSLT and XML Schema validation.
 
     To include the definitions of the module's classes, use the
     following directive:

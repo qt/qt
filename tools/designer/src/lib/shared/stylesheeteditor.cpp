@@ -114,8 +114,8 @@ StyleSheetEditorDialog::StyleSheetEditorDialog(QDesignerFormEditorInterface *cor
     setLayout(layout);
 
     m_editor->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_editor, SIGNAL(customContextMenuRequested(const QPoint &)),
-                this, SLOT(slotContextMenuRequested(const QPoint &)));
+    connect(m_editor, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(slotContextMenuRequested(QPoint)));
 
     QSignalMapper *resourceActionMapper = new QSignalMapper(this);
     QSignalMapper *gradientActionMapper = new QSignalMapper(this);

@@ -73,6 +73,8 @@ New features
    * Support for getting return arguments in remote method invocation
      via QMetaMethod::invokeMethod.
 
+ - The QtScript module is now based on the 3rdparty JavaScriptCore library. It
+   is only available under the LGPL or a compatible license.
 
 Optimizations
 -------------
@@ -1152,4 +1154,11 @@ Qt for Windows CE
 
     X11: LIBS += -lX11
     Mac: LIBS += -framework AppKit -framework Carbon
+
+- QtScript: Behavior changes due to using JavaScriptCore in the back-end:
+  * QDateTime is no longer used for date parsing and string conversion of
+    Date objects; instead the (more compliant) date processing from
+    JavaScriptCore is used.
+  * RegExp objects are no longer thin wrappers around QRegExp; they are now
+    "proper" JavaScript RegExp objects.
 

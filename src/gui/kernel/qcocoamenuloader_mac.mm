@@ -76,9 +76,14 @@ QT_USE_NAMESPACE
 
 - (void)ensureAppMenuInMenu:(NSMenu *)menu
 {
+    // The application menu is the menu in the menu bar that contains the
+    // 'Quit' item. When changing menu bar (e.g when swithing between
+    // windows with different menu bars), we never recreate this menu, but
+    // instead pull it out the current menu bar and place into the new one:
     NSMenu *mainMenu = [NSApp mainMenu];
     if ([NSApp mainMenu] == menu)
-        return; // nothing to do!
+        return; // nothing to do (menu is the current menu bar)!
+
 #ifndef QT_NAMESPACE
     Q_ASSERT(mainMenu);
 #endif

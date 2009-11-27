@@ -227,10 +227,10 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
     resourcePath.append(QLatin1String("win"));
 #else
     resourcePath.append(QLatin1String("mac"));
+    tabWidget->setDocumentMode(true);
 #endif
 
     tabWidget = new QTabWidget(this);
-    tabWidget->setDocumentMode(true);
     connect(tabWidget, SIGNAL(currentChanged(int)), this,
         SLOT(currentPageChanged(int)));
 

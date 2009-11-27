@@ -207,8 +207,8 @@ QtGradientDialog::QtGradientDialog(QWidget *parent)
     button = d_ptr->m_ui.buttonBox->button(QDialogButtonBox::Cancel);
     if (button)
         button->setAutoDefault(false);
-    connect(d_ptr->m_ui.gradientEditor, SIGNAL(aboutToShowDetails(bool, int)),
-                this, SLOT(slotAboutToShowDetails(bool, int)));
+    connect(d_ptr->m_ui.gradientEditor, SIGNAL(aboutToShowDetails(bool,int)),
+                this, SLOT(slotAboutToShowDetails(bool,int)));
 }
 
 /*!

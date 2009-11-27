@@ -117,8 +117,8 @@ RemoteControl::RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine)
     connect(m_mainWindow, SIGNAL(initDone()), this, SLOT(applyCache()));
 #ifdef Q_OS_WIN
     StdInListenerWin *l = new StdInListenerWin(this);
-    connect(l, SIGNAL(receivedCommand(const QString&)),
-        this, SLOT(handleCommandString(const QString&)));
+    connect(l, SIGNAL(receivedCommand(QString)),
+        this, SLOT(handleCommandString(QString)));
     l->start();
 #else
     QSocketNotifier *notifier = new QSocketNotifier(fileno(stdin),

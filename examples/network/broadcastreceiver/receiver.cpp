@@ -52,7 +52,7 @@ Receiver::Receiver(QWidget *parent)
 
 //! [0]
     udpSocket = new QUdpSocket(this);
-    udpSocket->bind(45454);
+    udpSocket->bind(45454, QUdpSocket::ShareAddress);
 //! [0]
 
 //! [1]

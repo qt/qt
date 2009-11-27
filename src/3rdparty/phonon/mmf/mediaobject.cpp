@@ -319,10 +319,10 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     }
 
     connect(m_player.data(), SIGNAL(totalTimeChanged(qint64)), SIGNAL(totalTimeChanged(qint64)));
-    connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+    connect(m_player.data(), SIGNAL(stateChanged(Phonon::State,Phonon::State)), SIGNAL(stateChanged(Phonon::State,Phonon::State)));
     connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
     connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
-    connect(m_player.data(), SIGNAL(metaDataChanged(const QMultiMap<QString, QString>&)), SIGNAL(metaDataChanged(const QMultiMap<QString, QString>&)));
+    connect(m_player.data(), SIGNAL(metaDataChanged(QMultiMap<QString,QString>)), SIGNAL(metaDataChanged(QMultiMap<QString,QString>)));
 
     // We need to call setError() after doing the connects, otherwise the
     // error won't be received.

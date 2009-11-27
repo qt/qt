@@ -87,7 +87,7 @@ PhraseBookBox::PhraseBookBox(PhraseBook *phraseBook, QWidget *parent)
             this, SLOT(targetChanged(QString)));
     connect(definitionLed, SIGNAL(textChanged(QString)),
             this, SLOT(definitionChanged(QString)));
-    connect(phraseList->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+    connect(phraseList->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
             this, SLOT(selectionChanged()));
     connect(newBut, SIGNAL(clicked()), this, SLOT(newPhrase()));
     connect(removeBut, SIGNAL(clicked()), this, SLOT(removePhrase()));

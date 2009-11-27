@@ -292,6 +292,9 @@ public:
 
     bool hasMouseMoved(const QPoint &globalPos);
 
+    void updateLayoutDirection();
+
+
     //menu fading/scrolling effects
     bool doChildEffects;
 

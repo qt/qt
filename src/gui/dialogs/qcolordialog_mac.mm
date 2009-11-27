@@ -336,7 +336,6 @@ QT_USE_NAMESPACE
         }
     }
 
-    QAbstractEventDispatcher::instance()->interrupt();
     if (mResultCode == NSCancelButton)
         mPriv->colorDialog()->reject();
     else

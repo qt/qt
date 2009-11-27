@@ -114,7 +114,7 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
         }
     } else if (old_height > span->height()) {
         //remove the span from all the subspans lists that intersect the columns not covered anymore
-        Index::iterator it_y = index.lowerBound(-span->bottom());
+        Index::iterator it_y = index.lowerBound(qMin(-span->bottom(), 0));
         Q_ASSERT(it_y != index.end()); //it_y must exist since the span is in the list
         while (-it_y.key() <= span->top() + old_height -1) {
             if (-it_y.key() > span->bottom()) {
@@ -1064,14 +1064,29 @@ QTableView::~QTableView()
 void QTableView::setModel(QAbstractItemModel *model)
 {
     Q_D(QTableView);
-    connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
-    connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
-    connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
-    connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+    if (model == d->model)
+        return;
+    //let's disconnect from the old model
+    if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
+        disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+    }
+    if (model) { //and connect to the new one
+        connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
+        connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
+        connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
+        connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+    }
     d->verticalHeader->setModel(model);
     d->horizontalHeader->setModel(model);
     QAbstractItemView::setModel(model);
