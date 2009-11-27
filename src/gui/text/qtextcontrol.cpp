@@ -1849,8 +1849,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
             || e->preeditString() != cursor.block().layout()->preeditAreaText()
             || e->replacementLength() > 0;
 
+    cursor.beginEditBlock();
     if (isGettingInput) {
-        cursor.beginEditBlock();
         cursor.removeSelectedText();
     }
 
@@ -1876,7 +1876,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
 
     QTextBlock block = cursor.block();
     QTextLayout *layout = block.layout();
-    layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
+    if (isGettingInput)
+        layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
     QList<QTextLayout::FormatRange> overrides;
     preeditCursor = e->preeditString().length();
     hideCursor = false;
@@ -1897,9 +1898,7 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         }
     }
     layout->setAdditionalFormats(overrides);
-
-    if (isGettingInput)
-        cursor.endEditBlock();
+    cursor.endEditBlock();
 }
 
 QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const

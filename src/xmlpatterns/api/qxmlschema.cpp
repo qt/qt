@@ -65,6 +65,11 @@ QT_BEGIN_NAMESPACE
 
   \snippet doc/src/snippets/qxmlschema/main.cpp 0
 
+  \section1 XML Schema Version
+
+  This class is used to represent schemas that conform to the \l{XML Schema} 1.0
+  specification.
+
   \sa QXmlSchemaValidator, {xmlpatterns/schema}{XML Schema Validation Example}
 */
 

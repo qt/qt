@@ -656,7 +656,7 @@ void QDesignerTaskMenu::navigateToSlot(QDesignerFormEditorInterface *core,
         dialogUi.signalList->addTopLevelItem(row);
         dialogUi.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     } else {
-        connect(dialogUi.signalList, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)),
+        connect(dialogUi.signalList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),
                 &selectSignalDialog, SLOT(accept()));
     }
 

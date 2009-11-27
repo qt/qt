@@ -948,9 +948,6 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
 
     rootNode.flags = 0;
     watchedServiceNames[QLatin1String(DBUS_SERVICE_DBUS)] = 1;
-
-    connect(this, SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-            this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
 
 QDBusConnectionPrivate::~QDBusConnectionPrivate()
@@ -1180,11 +1177,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
 void QDBusConnectionPrivate::_q_serviceOwnerChanged(const QString &name,
                                                     const QString &oldOwner, const QString &newOwner)
 {
-    if (oldOwner == baseService)
-        unregisterService(name);
-    if (newOwner == baseService)
-        registerService(name);
-
+    Q_UNUSED(oldOwner);
     QDBusWriteLocker locker(UpdateSignalHookOwnerAction, this);
     QMutableHashIterator<QString, SignalHook> it(signalHooks);
     it.toFront();
@@ -1230,6 +1223,7 @@ bool QDBusConnectionPrivate::prepareHook(QDBusConnectionPrivate::SignalHook &hoo
     hook.owner = owner; // we don't care if the service has an owner yet
     hook.path = path;
     hook.obj = receiver;
+    hook.argumentMatch = argMatch;
 
     // build the D-Bus signal name and signature
     // This should not happen for QDBusConnection::connect, use buildSignature here, since
@@ -1502,6 +1496,24 @@ void QDBusConnectionPrivate::handleSignal(const QString &key, const QDBusMessage
             continue;
         if (hook.signature.isEmpty() && !hook.signature.isNull() && !msg.signature().isEmpty())
             continue;
+        if (!hook.argumentMatch.isEmpty()) {
+            const QVariantList arguments = msg.arguments();
+            if (hook.argumentMatch.size() > arguments.size())
+                continue;
+
+            bool matched = true;
+            for (int i = 0; i < hook.argumentMatch.size(); ++i) {
+                const QString &param = hook.argumentMatch.at(i);
+                if (param.isNull())
+                    continue;   // don't try to match against this
+                if (param == arguments.at(i).toString())
+                    continue;   // matched
+                matched = false;
+                break;
+            }
+            if (!matched)
+                continue;
+        }
 
         activateSignal(hook, msg);
     }
@@ -1636,8 +1648,15 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
 
         baseService = QString::fromUtf8(service);
     } else {
-        qWarning("QDBusConnectionPrivate::SetConnection: Unable to get base service");
+        qWarning("QDBusConnectionPrivate::setConnection: Unable to get base service");
     }
+
+    QString busService = QLatin1String(DBUS_SERVICE_DBUS);
+    connectSignal(busService, QString(), QString(), QString(), QLatin1String("NameAcquired"), QStringList(), QString(),
+                  this, SLOT(registerService(QString)));
+    connectSignal(busService, QString(), QString(), QString(), QLatin1String("NameLost"), QStringList(), QString(),
+                  this, SLOT(unregisterService(QString)));
+
 
     q_dbus_connection_add_filter(connection, qDBusSignalFilter, this, 0);
 

@@ -363,7 +363,7 @@ void tst_QHttp::get()
     }
     addRequest( QHttpRequestHeader(), getId );
 
-    QTestEventLoop::instance().enterLoop( 30 );
+    QTestEventLoop::instance().enterLoop( 50 );
 
     if ( QTestEventLoop::instance().timeout() )
     QFAIL( "Network operation timed out" );

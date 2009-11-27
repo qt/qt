@@ -561,6 +561,7 @@ SYMBOL_STRING(ctiOpThrowNotCaught) ":" "\n"
 
 asm volatile (
 ".globl " SYMBOL_STRING(ctiTrampoline) "\n"
+HIDE_SYMBOL(ctiTrampoline) "\n"
 SYMBOL_STRING(ctiTrampoline) ":" "\n"
     "stmdb sp!, {r1-r3}" "\n"
     "stmdb sp!, {r4-r8, lr}" "\n"
@@ -584,6 +585,7 @@ SYMBOL_STRING(ctiTrampoline) ":" "\n"
 
 asm volatile (
 ".globl " SYMBOL_STRING(ctiVMThrowTrampoline) "\n"
+HIDE_SYMBOL(ctiVMThrowTrampoline) "\n"
 SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
     "mov r0, sp" "\n"
     "mov lr, r6" "\n"
@@ -593,6 +595,7 @@ SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
 
 // Both has the same return sequence
 ".globl " SYMBOL_STRING(ctiOpThrowNotCaught) "\n"
+HIDE_SYMBOL(ctiOpThrowNotCaught) "\n"
 SYMBOL_STRING(ctiOpThrowNotCaught) ":" "\n"
     "add sp, sp, #32" "\n"
     "ldmia sp!, {r4-r8, lr}" "\n"

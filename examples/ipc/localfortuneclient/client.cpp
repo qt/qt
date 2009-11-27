@@ -66,7 +66,7 @@ Client::Client(QWidget *parent)
 
     socket = new QLocalSocket(this);
 
-    connect(hostLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(hostLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
     connect(getFortuneButton, SIGNAL(clicked()),
             this, SLOT(requestNewFortune()));

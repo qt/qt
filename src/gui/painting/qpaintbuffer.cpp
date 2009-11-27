@@ -1708,7 +1708,7 @@ void QPaintEngineExReplayer::process(const QPaintBufferCommand &cmd)
 
 QPaintBufferResource::QPaintBufferResource(FreeFunc f, QObject *parent) : QObject(parent), free(f)
 {
-    connect(QPaintBufferSignalProxy::instance(), SIGNAL(aboutToDestroy(const QPaintBufferPrivate *)), this, SLOT(remove(const QPaintBufferPrivate *)));
+    connect(QPaintBufferSignalProxy::instance(), SIGNAL(aboutToDestroy(const QPaintBufferPrivate*)), this, SLOT(remove(const QPaintBufferPrivate*)));
 }
 
 QPaintBufferResource::~QPaintBufferResource()

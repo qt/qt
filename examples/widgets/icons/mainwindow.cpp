@@ -293,7 +293,7 @@ void MainWindow::createImagesGroupBox()
 //! [23]
 
 //! [24]
-    connect(imagesTable, SIGNAL(itemChanged(QTableWidgetItem *)),
+    connect(imagesTable, SIGNAL(itemChanged(QTableWidgetItem*)),
 //! [24] //! [25]
             this, SLOT(changeIcon()));
 

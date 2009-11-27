@@ -144,8 +144,8 @@ void Window::createDateTimeEdits()
     formatComboBox->addItem("hh:mm ap");
 //! [9] //! [10]
 
-    connect(formatComboBox, SIGNAL(activated(const QString &)),
-            this, SLOT(setFormatString(const QString &)));
+    connect(formatComboBox, SIGNAL(activated(QString)),
+            this, SLOT(setFormatString(QString)));
 //! [10]
 
     setFormatString(formatComboBox->currentText());

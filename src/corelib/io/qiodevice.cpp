@@ -1157,6 +1157,10 @@ QByteArray QIODevice::readLine(qint64 maxSize)
         // If resize fails or maxSize == 0, read incrementally
         if (maxSize == 0)
             maxSize = INT_MAX;
+
+        // The first iteration needs to leave an extra byte for the terminating null
+        result.resize(1);
+
         qint64 readResult;
         do {
             result.resize(int(qMin(maxSize, result.size() + QIODEVICE_BUFFERSIZE)));
@@ -1164,7 +1168,7 @@ QByteArray QIODevice::readLine(qint64 maxSize)
             if (readResult > 0 || readBytes == 0)
                 readBytes += readResult;
         } while (readResult == QIODEVICE_BUFFERSIZE
-                && result[int(readBytes)] != '\n');
+                && result[int(readBytes - 1)] != '\n');
     } else
         readBytes = readLine(result.data(), result.size());
 
@@ -1404,6 +1408,9 @@ bool QIODevicePrivate::putCharHelper(char c)
 */
 bool QIODevice::getChar(char *c)
 {
+    Q_D(QIODevice);
+    CHECK_READABLE(getChar, false);
+
     char ch;
     return (1 == read(c ? c : &ch, 1));
 }

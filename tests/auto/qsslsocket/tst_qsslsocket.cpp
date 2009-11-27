@@ -347,7 +347,6 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.sslConfiguration(), QSslConfiguration::defaultConfiguration());
     QCOMPARE(socket.errorString(), QString("Unknown error"));
     char c = '\0';
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
     QVERIFY(!socket.getChar(&c));
     QCOMPARE(c, '\0');
     QVERIFY(!socket.isOpen());

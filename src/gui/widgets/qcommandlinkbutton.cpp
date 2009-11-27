@@ -326,7 +326,8 @@ int QCommandLinkButton::heightForWidth(int width) const
     Q_D(const QCommandLinkButton);
     int heightWithoutDescription = d->descriptionOffset() + d->bottomMargin();
     // find the width available for the description area
-    return heightWithoutDescription + d->descriptionHeight(width);
+    return qMax(heightWithoutDescription + d->descriptionHeight(width),
+                iconSize().height() + d->topMargin() + d->bottomMargin());
 }
 
 /*! \reimp */

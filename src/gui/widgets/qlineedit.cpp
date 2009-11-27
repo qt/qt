@@ -2004,38 +2004,48 @@ QMenu *QLineEdit::createStandardContextMenu()
     Q_D(QLineEdit);
     QMenu *popup = new QMenu(this);
     popup->setObjectName(QLatin1String("qt_edit_menu"));
+    QAction *action = 0;
 
-    QAction *action = popup->addAction(QLineEdit::tr("&Undo") + ACCEL_KEY(QKeySequence::Undo));
-    action->setEnabled(d->control->isUndoAvailable());
-    connect(action, SIGNAL(triggered()), SLOT(undo()));
+    if (!isReadOnly()) {
+        action = popup->addAction(QLineEdit::tr("&Undo") + ACCEL_KEY(QKeySequence::Undo));
+        action->setEnabled(d->control->isUndoAvailable());
+        connect(action, SIGNAL(triggered()), SLOT(undo()));
 
-    action = popup->addAction(QLineEdit::tr("&Redo") + ACCEL_KEY(QKeySequence::Redo));
-    action->setEnabled(d->control->isRedoAvailable());
-    connect(action, SIGNAL(triggered()), SLOT(redo()));
+        action = popup->addAction(QLineEdit::tr("&Redo") + ACCEL_KEY(QKeySequence::Redo));
+        action->setEnabled(d->control->isRedoAvailable());
+        connect(action, SIGNAL(triggered()), SLOT(redo()));
 
-    popup->addSeparator();
+        popup->addSeparator();
+    }
 
 #ifndef QT_NO_CLIPBOARD
-    action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
-    action->setEnabled(!d->control->isReadOnly() && d->control->hasSelectedText()
-            && d->control->echoMode() == QLineEdit::Normal);
-    connect(action, SIGNAL(triggered()), SLOT(cut()));
+    if (!isReadOnly()) {
+        action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
+        action->setEnabled(!d->control->isReadOnly() && d->control->hasSelectedText()
+                && d->control->echoMode() == QLineEdit::Normal);
+        connect(action, SIGNAL(triggered()), SLOT(cut()));
+    }
 
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
     action->setEnabled(d->control->hasSelectedText()
             && d->control->echoMode() == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(copy()));
 
-    action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
-    action->setEnabled(!d->control->isReadOnly() && !QApplication::clipboard()->text().isEmpty());
-    connect(action, SIGNAL(triggered()), SLOT(paste()));
+    if (!isReadOnly()) {
+        action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
+        action->setEnabled(!d->control->isReadOnly() && !QApplication::clipboard()->text().isEmpty());
+        connect(action, SIGNAL(triggered()), SLOT(paste()));
+    }
 #endif
 
-    action = popup->addAction(QLineEdit::tr("Delete"));
-    action->setEnabled(!d->control->isReadOnly() && !d->control->text().isEmpty() && d->control->hasSelectedText());
-    connect(action, SIGNAL(triggered()), d->control, SLOT(_q_deleteSelected()));
+    if (!isReadOnly()) {
+        action = popup->addAction(QLineEdit::tr("Delete"));
+        action->setEnabled(!d->control->isReadOnly() && !d->control->text().isEmpty() && d->control->hasSelectedText());
+        connect(action, SIGNAL(triggered()), d->control, SLOT(_q_deleteSelected()));
+    }
 
-    popup->addSeparator();
+    if (!popup->isEmpty())
+        popup->addSeparator();
 
     action = popup->addAction(QLineEdit::tr("Select All") + ACCEL_KEY(QKeySequence::SelectAll));
     action->setEnabled(!d->control->text().isEmpty() && !d->control->allSelected());

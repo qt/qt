@@ -249,7 +249,7 @@ int qnx6SocketPairReplacement (int socketFD[2]) {
 	if (errno != EINPROGRESS) { BAILOUT };
 
     // Accept connection
-    socketFD[0] = accept(tmpSocket, (struct sockaddr *)NULL, (size_t *)NULL);
+    socketFD[0] = accept(tmpSocket, (struct sockaddr *)NULL, (QT_SOCKLEN_T *)NULL);
     if(socketFD[0] == -1) { BAILOUT };
 
     // We're done
