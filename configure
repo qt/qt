@@ -6995,6 +6995,10 @@ fi
 QCONFIG_FLAGS=`echo $QCONFIG_FLAGS`
 
 if echo $XPLATFORM | grep symbian >& /dev/null; then
+    # Enable Symbian DLLs and export rules.
+    # We cannot use Linux's default export rules since they export everything.
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_DLL"
+    # Disable non-working features.
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT QT_NO_QFUTURE QT_NO_CRASHHANDLER QT_NO_PRINTER QT_NO_CURSOR QT_NO_SYSTEMTRAYICON"
 fi
 
