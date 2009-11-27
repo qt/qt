@@ -763,7 +763,9 @@ QMacMenuAction::~QMacMenuAction()
 {
 #ifdef QT_MAC_USE_COCOA
     [menu release];
-    if (action) {
+    // Update the menu item if this action still owns it. For some items
+    // (like 'Quit') ownership will be transferred between all menu bars...
+    if (action && action.data() == reinterpret_cast<QAction *>([menuItem tag])) {
         QAction::MenuRole role = action->menuRole();
         // Check if the item is owned by Qt, and should be hidden to keep it from causing
         // problems. Do it for everything but the quit menu item since that should always
@@ -774,8 +776,8 @@ QMacMenuAction::~QMacMenuAction()
                    && menuItem != [getMenuLoader() quitMenuItem]) {
             [menuItem setHidden:YES];
         }
+        [menuItem setTag:nil];
     }
-    [menuItem setTag:nil];
     [menuItem release];
 #endif
 }

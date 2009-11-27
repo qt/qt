@@ -137,7 +137,12 @@ public:
 #if defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
     union {
         T * volatile _q_value;
-        long volatile _q_value_integral;
+#  if !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
+        qint64
+#  else
+        long
+#  endif
+        volatile _q_value_integral;
     };
 #else
     T * volatile _q_value;

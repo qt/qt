@@ -523,7 +523,7 @@ void tst_QTcpServer::waitForConnectionTest()
 
     QTcpSocket findLocalIpSocket;
     findLocalIpSocket.connectToHost(QtNetworkSettings::serverName(), 143);
-    QVERIFY(findLocalIpSocket.waitForConnected(2000));
+    QVERIFY(findLocalIpSocket.waitForConnected(5000));
 
     QTcpServer server;
     bool timeout = false;
