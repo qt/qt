@@ -1307,20 +1307,20 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
     \qml
     Item {
         Image {
-            file: "tile.png"
+            source: "tile.png"
         }
         Image {
             x: 80
             width: 100
             height: 100
-            file: "tile.png"
+            source: "tile.png"
         }
         Image {
             x: 190
             width: 100
             height: 100
-            tile: true
-            file: "tile.png"
+            fillMode: Image.Tile
+            source: "tile.png"
         }
     }
     \endqml
