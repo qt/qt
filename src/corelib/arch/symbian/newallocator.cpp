@@ -503,22 +503,41 @@ TAny* RNewAllocator::ReAlloc(TAny* aPtr, TInt aSize, TInt /*aMode = 0*/)
 
 TInt RNewAllocator::Available(TInt& aBiggestBlock) const
 {
+    //struct mallinfo mi = dlmallinfo();
 	aBiggestBlock = 0;
-	return 1000;
+	//return mi.fordblks;
+	return ptrdiff(iTop, iBase) - iTotalAllocSize; //HACK
 	/*Need to see how to implement this*/
 	// TODO: return iHeap.Available(aBiggestBlock);
 }
 TInt RNewAllocator::AllocSize(TInt& aTotalAllocSize) const
 {
 	aTotalAllocSize = iTotalAllocSize;
-//	aTotalAllocSize = iChunkSize;
 	return iCellCount;
 }
 
-TInt RNewAllocator::DebugFunction(TInt /*aFunc*/, TAny* /*a1*/, TAny* /*a2*/)
+TInt RNewAllocator::DebugFunction(TInt aFunc, TAny* a1, TAny* /*a2*/)
 	{
-	return 0;
+    TInt r = KErrNotSupported;
+    TInt* a1int = reinterpret_cast<TInt*>(a1);
+    switch(aFunc) {
+    case RAllocator::ECount:
+    {
+        struct mallinfo mi = dlmallinfo();
+        *a1int = mi.fordblks;
+        r = mi.uordblks;
+    }
+        break;
+    case RAllocator::EMarkStart:
+    case RAllocator::EMarkEnd:
+    case RAllocator::ESetFail:
+    case RAllocator::ECheck:
+        r = KErrNone;
+        break;
+    }
+	return r;
 	}
+
 TInt RNewAllocator::Extension_(TUint /* aExtensionId */, TAny*& /* a0 */, TAny* /* a1 */)
 	{
 	return KErrNotSupported;
@@ -2862,7 +2881,7 @@ TInt RNewAllocator::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RNewAlloca
  * Called from the qtmain.lib application wrapper.
  * Create a new heap as requested, but use the new allocator
  */
-Q_CORE_EXPORT TInt qt_symbian_SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo)
+Q_CORE_EXPORT TInt qt_symbian_SetupThreadHeap(TBool /*aNotFirst*/, SStdEpocThreadCreateInfo& aInfo)
     {
     TInt r = KErrNone;
     if (!aInfo.iAllocator && aInfo.iHeapInitialSize>0)
