@@ -397,6 +397,24 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
 			   wmProtocolsAtom,
 			   XA_ATOM, 32, PropModeAppend,
 			   (unsigned char *) &wmDeleteWindowAtom, 1);
+
+
+    setWindowTitle(QLatin1String("Qt Lighthouse"));
+
+}
+
+
+void MyWindow::setWindowTitle(const QString &title)
+
+{
+    QByteArray ba = title.toLatin1(); //We're not making a general solution here...
+    XTextProperty windowName;
+    windowName.value    = (unsigned char *)ba.constData();
+    windowName.encoding = XA_STRING;
+    windowName.format   = 8;
+    windowName.nitems   = ba.length();
+
+    XSetWMName(xd->display, window, &windowName);
 }
 
 MyWindow::~MyWindow()

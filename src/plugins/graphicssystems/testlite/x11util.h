@@ -111,6 +111,8 @@ public:
     void setVisible(bool visible);
     void setCursorShape(int cshape);
 
+    void setWindowTitle(const QString &title);
+
 public: //###
 
     int xpos, ypos;

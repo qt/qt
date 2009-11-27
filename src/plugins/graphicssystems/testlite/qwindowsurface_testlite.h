@@ -81,6 +81,7 @@ public:
     WId winId() const;
     void raise();
     void lower();
+    void setWindowTitle(const QString &title);
 
     void setCursor(Qt::CursorShape shape);
 

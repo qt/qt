@@ -187,8 +187,13 @@ void QWidgetPrivate::updateCursor() const
 
 void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
 {
-    Q_UNUSED(caption);
-    // XXX
+    Q_Q(QWidget);
+    if (!q->isWindow())
+        return;
+
+    if (QWindowSurface *surface = q->windowSurface())
+        surface->setWindowTitle(caption);
+
 }
 
 void QWidgetPrivate::setWindowIcon_sys(bool /*forceReset*/)
