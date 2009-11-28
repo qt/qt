@@ -482,6 +482,31 @@ int QMetaObject::classInfoCount() const
     return n;
 }
 
+/** \internal
+* helper class for indexOf{Method,Slot,Signal}, returns the relative index of the method within
+* the baseObject
+* \a MethodType might be MethodSignal or MethodSlot, or 0 to match everything.
+*/
+template<int MethodType>
+static inline int indexOfMethodRelative(const QMetaObject **baseObject, const char *method)
+{
+    while (*baseObject) {
+        const QMetaObject *const m = *baseObject;
+        int i = (MethodType == MethodSignal && priv(m->d.data)->revision >= 4)
+            ? (priv(m->d.data)->signalCount - 1) : (priv(m->d.data)->methodCount - 1);
+        const int end = (MethodType == MethodSlot && priv(m->d.data)->revision >= 4)
+                ? (priv(m->d.data)->signalCount - 1) : 0;
+        for (; i >= end; --i) {
+            if ((MethodType == 0 || (m->d.data[priv(m->d.data)->methodData + 5*i + 4] & MethodTypeMask) == MethodType)
+                && strcmp(method, m->d.stringdata + m->d.data[priv(m->d.data)->methodData + 5*i]) == 0)
+                return i;
+        }
+        *baseObject = m->d.superdata;
+    }
+    return -1;
+}
+
+
 /*!
     \since 4.5
 
@@ -515,17 +540,10 @@ int QMetaObject::indexOfConstructor(const char *constructor) const
 */
 int QMetaObject::indexOfMethod(const char *method) const
 {
-    int i = -1;
     const QMetaObject *m = this;
-    while (m && i < 0) {
-        for (i = priv(m->d.data)->methodCount-1; i >= 0; --i)
-            if (strcmp(method, m->d.stringdata
-                       + m->d.data[priv(m->d.data)->methodData + 5*i]) == 0) {
-                i += m->methodOffset();
-                break;
-            }
-        m = m->d.superdata;
-    }
+    int i = indexOfMethodRelative<0>(&m, method);
+    if (i >= 0)
+        i += m->methodOffset();
     return i;
 }
 
@@ -556,19 +574,7 @@ int QMetaObject::indexOfSignal(const char *signal) const
 */
 int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject, const char *signal)
 {
-    int i = -1;
-    while (*baseObject) {
-        const QMetaObject *const m = *baseObject;
-        for (i = priv(m->d.data)->methodCount-1; i >= 0; --i)
-            if ((m->d.data[priv(m->d.data)->methodData + 5*i + 4] & MethodTypeMask) == MethodSignal
-                && strcmp(signal, m->d.stringdata
-                + m->d.data[priv(m->d.data)->methodData + 5*i]) == 0) {
-                break;
-            }
-        if (i >= 0)
-            break;
-        *baseObject = m->d.superdata;
-    }
+    int i = indexOfMethodRelative<MethodSignal>(baseObject, signal);
 #ifndef QT_NO_DEBUG
     const QMetaObject *m = *baseObject;
     if (i >= 0 && m && m->d.superdata) {
@@ -592,18 +598,10 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject, co
 */
 int QMetaObject::indexOfSlot(const char *slot) const
 {
-    int i = -1;
     const QMetaObject *m = this;
-    while (m && i < 0) {
-        for (i = priv(m->d.data)->methodCount-1; i >= 0; --i)
-            if ((m->d.data[priv(m->d.data)->methodData + 5*i + 4] & MethodTypeMask) == MethodSlot
-                && strcmp(slot, m->d.stringdata
-                       + m->d.data[priv(m->d.data)->methodData + 5*i]) == 0) {
-                i += m->methodOffset();
-                break;
-            }
-        m = m->d.superdata;
-    }
+    int i = indexOfMethodRelative<MethodSlot>(&m, slot);
+    if (i >= 0)
+        i += m->methodOffset();
     return i;
 }
 
