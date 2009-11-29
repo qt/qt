@@ -1716,15 +1716,14 @@ void QmlGraphicsListView::decrementCurrentIndex()
 void QmlGraphicsListView::positionViewAtIndex(int index)
 {
     Q_D(QmlGraphicsListView);
-    if (index < 0 || index >= d->model->count())
+    if (!d->isValid() || index < 0 || index >= d->model->count())
         return;
 
+    qreal maxExtent = d->orient == QmlGraphicsListView::Vertical ? -maxYExtent() : -maxXExtent();
     FxListItem *item = d->visibleItem(index);
     if (item) {
         // Already created - just move to top of view
-        int pos = item->position();
-        if (item->position() > -maxYExtent())
-            pos = -maxYExtent();
+        int pos = qMin(item->position(), maxExtent);
         d->setPosition(pos);
     } else {
         int pos = d->positionAt(index);
@@ -1734,8 +1733,9 @@ void QmlGraphicsListView::positionViewAtIndex(int index)
         d->visiblePos = pos;
         d->visibleIndex = index;
         d->setPosition(pos);
-        if (d->position() > -maxYExtent())
-            d->setPosition(-maxYExtent());
+        // setPosition() will cause refill.  Adjust if we have moved beyond range.
+        if (d->position() > maxExtent)
+            d->setPosition(maxExtent);
         // now release the reference to all the old visible items.
         for (int i = 0; i < oldVisible.count(); ++i)
             d->releaseItem(oldVisible.at(i));

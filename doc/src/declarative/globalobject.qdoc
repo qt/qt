@@ -42,17 +42,9 @@
 /*!
 \page qmlglobalobject.html
 \title QML Global Object
+
 Contains all the properties of the ECMAScript global object, plus:
 
-\list
-\o Qt
-\o createQmlObject
-\o createComponent
-\o XMLHttpRequest
-\o openDatabase
-\endlist
-
-Contents:
 \tableofcontents
 
 \section1 Qt Object

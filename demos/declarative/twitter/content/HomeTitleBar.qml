@@ -24,6 +24,7 @@ Item {
                         titleBar.update();
                     }
                 }
+                postman.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                 postman.send(postData);
 
                 editor.text = ""
