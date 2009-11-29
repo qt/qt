@@ -269,6 +269,8 @@ public:
     static QScriptValue playSound(QScriptContext*, QScriptEngine*);
     static QScriptValue desktopOpenUrl(QScriptContext*, QScriptEngine*);
     static QScriptValue md5(QScriptContext*, QScriptEngine*);
+    static QScriptValue btoa(QScriptContext*, QScriptEngine*);
+    static QScriptValue atob(QScriptContext*, QScriptEngine*);
     static QScriptValue consoleLog(QScriptContext*, QScriptEngine*);
 
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
