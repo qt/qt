@@ -29,7 +29,7 @@ ListModel {
         size: "Medium"
     }
     ListElement {
-        name: "Whiskers"
+        name: "Schrödinger"
         type: "Cat"
         age: 2
         size: "Medium"
