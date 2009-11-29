@@ -108,6 +108,7 @@ private slots:
     void exceptionClearsOnReeval();
     void transientErrors();
     void shutdownErrors();
+    void externalScript();
 
 private:
     QmlEngine engine;
@@ -944,6 +945,53 @@ void tst_qmlecmascript::shutdownErrors()
 
     qInstallMsgHandler(old);
     QCOMPARE(transientErrorsMsgCount, 0);
+}
+
+// Check that Script::source property works as expected
+void tst_qmlecmascript::externalScript()
+{
+    {
+        QmlComponent component(&engine, TEST_FILE("externalScript.1.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 92);
+
+        delete object;
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("externalScript.2.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 92);
+
+        delete object;
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("externalScript.3.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 92);
+        QCOMPARE(object->property("test2").toInt(), 92);
+        QCOMPARE(object->property("test3").toBool(), false);
+
+        delete object;
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("externalScript.4.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 92);
+        QCOMPARE(object->property("test2").toBool(), true);
+
+        delete object;
+    }
 }
 
 QTEST_MAIN(tst_qmlecmascript)

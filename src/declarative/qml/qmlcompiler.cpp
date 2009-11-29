@@ -846,13 +846,13 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     }
 
     // Set any script blocks
-    for (int ii = 0; ii < obj->scriptBlocks.count(); ++ii) {
+    for (int ii = 0; ii < obj->scripts.count(); ++ii) {
         QmlInstruction script;
         script.type = QmlInstruction::StoreScript;
         script.line = 0; // ###
-        script.storeScript.fileName = output->indexForString(obj->scriptBlocksFile.at(ii));
-        script.storeScript.lineNumber = obj->scriptBlocksLineNumber.at(ii);
-        script.storeScript.value = output->indexForString(obj->scriptBlocks.at(ii));
+        int idx = output->scripts.count();
+        output->scripts << obj->scripts.at(ii);
+        script.storeScript.value = idx;
         output->bytecode << script;
     }
 
@@ -1086,9 +1086,7 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
 
 bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
 {
-    QString scriptCode;
-    QString sourceUrl;
-    int lineNumber = 1;
+    Object::ScriptBlock scriptBlock;
 
     if (script->properties.count() == 1 && 
         script->properties.begin().key() == QByteArray("source")) {
@@ -1098,22 +1096,37 @@ bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
             COMPILE_EXCEPTION(source, qApp->translate("QmlCompiler","Invalid Script block.  Specify either the source property or inline script"));
 
         if (source->value || source->values.count() != 1 ||
-            source->values.at(0)->object || !source->values.at(0)->value.isString())
+            source->values.at(0)->object || !source->values.at(0)->value.isStringList())
             COMPILE_EXCEPTION(source, qApp->translate("QmlCompiler","Invalid Script source value"));
 
-        sourceUrl = output->url.resolved(QUrl(source->values.at(0)->value.asString())).toString();
+        QStringList sources = source->values.at(0)->value.asStringList();
 
-        for (int ii = 0; ii < unit->resources.count(); ++ii) {
-            if (unit->resources.at(ii)->url == sourceUrl) {
-                scriptCode = QString::fromUtf8(unit->resources.at(ii)->data);
-                break;
+        for (int jj = 0; jj < sources.count(); ++jj) {
+            QString sourceUrl = output->url.resolved(QUrl(sources.at(jj))).toString();
+            QString scriptCode;
+            int lineNumber = 1;
+
+            for (int ii = 0; ii < unit->resources.count(); ++ii) {
+                if (unit->resources.at(ii)->url == sourceUrl) {
+                    scriptCode = QString::fromUtf8(unit->resources.at(ii)->data);
+                    break;
+                }
+            }
+
+            if (!scriptCode.isEmpty()) {
+                scriptBlock.codes.append(scriptCode);
+                scriptBlock.files.append(sourceUrl);
+                scriptBlock.lineNumbers.append(lineNumber);
             }
         }
 
     } else if (!script->properties.isEmpty()) {
         COMPILE_EXCEPTION(*script->properties.begin(), qApp->translate("QmlCompiler","Properties cannot be set on Script block"));
     } else if (script->defaultProperty) {
-        sourceUrl = output->url.toString();
+
+        QString scriptCode;
+        int lineNumber = 1;
+        QString sourceUrl = output->url.toString();
 
         QmlParser::Location currentLocation;
 
@@ -1141,13 +1154,16 @@ bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
             currentLocation = v->location.end;
             currentLocation.column++;
         }
+
+        if (!scriptCode.isEmpty()) {
+            scriptBlock.codes.append(scriptCode);
+            scriptBlock.files.append(sourceUrl);
+            scriptBlock.lineNumbers.append(lineNumber);
+        }
     }
 
-    if (!scriptCode.isEmpty()) {
-        obj->scriptBlocks.append(scriptCode);
-        obj->scriptBlocksFile.append(sourceUrl);
-        obj->scriptBlocksLineNumber.append(lineNumber);
-    }
+    if (!scriptBlock.codes.isEmpty())
+        obj->scripts << scriptBlock;
 
     return true;
 }

@@ -116,6 +116,7 @@ public:
     QList<QScriptProgram *> programs;
     QList<QmlPropertyCache *> propertyCaches;
     QList<QmlIntegerCache *> contextCaches;
+    QList<QmlParser::Object::ScriptBlock> scripts;
 
     void dumpInstructions();
 private:

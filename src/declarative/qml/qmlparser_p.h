@@ -169,9 +169,12 @@ namespace QmlParser
         QList<QPair<Property *, int> > scriptStringProperties;
 
         // Script blocks that were nested under this object
-        QStringList scriptBlocks;
-        QStringList scriptBlocksFile;
-        QList<int> scriptBlocksLineNumber;
+        struct ScriptBlock {
+            QStringList codes;
+            QStringList files;
+            QList<int> lineNumbers;
+        };
+        QList<ScriptBlock> scripts;
 
         // The bytes to cast instances by to get to the QmlParserStatus 
         // interface.  -1 indicates the type doesn't support this interface.
@@ -243,12 +246,14 @@ namespace QmlParser
         bool isNumber() const { return type() == Number; }
         bool isString() const { return type() == String; }
         bool isScript() const { return type() == Script; }
+        bool isStringList() const;
 
         bool asBoolean() const;
         QString asString() const;
         double asNumber() const;
         QString asScript() const;
         QmlJS::AST::Node *asAST() const;
+        QStringList asStringList() const;
 
     private:
         Type t;
