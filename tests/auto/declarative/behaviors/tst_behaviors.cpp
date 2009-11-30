@@ -64,6 +64,7 @@ private slots:
     void emptyBehavior();
     void nonSelectingBehavior();
     void reassignedAnimation();
+    void disabled();
 };
 
 void tst_behaviors::simpleBehavior()
@@ -241,6 +242,20 @@ void tst_behaviors::reassignedAnimation()
     QCOMPARE(qobject_cast<QmlNumberAnimation*>(
                  qobject_cast<QmlBehavior*>(
                      rect->findChild<QmlBehavior*>("MyBehavior"))->animation())->duration(), 200);
+}
+
+void tst_behaviors::disabled()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/disabled.qml"));
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+    QVERIFY(rect);
+    QCOMPARE(rect->findChild<QmlBehavior*>("MyBehavior")->enabled(), false);
+
+    rect->setState("moved");
+    qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
+    QCOMPARE(x, qreal(200));    //should change immediately
+
 }
 
 QTEST_MAIN(tst_behaviors)

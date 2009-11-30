@@ -63,6 +63,7 @@ class Q_DECLARATIVE_EXPORT QmlBehavior : public QObject, public QmlPropertyValue
     Q_INTERFACES(QmlPropertyValueInterceptor)
     Q_CLASSINFO("DefaultProperty", "animation")
     Q_PROPERTY(QmlAbstractAnimation *animation READ animation WRITE setAnimation)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
 
 public:
     QmlBehavior(QObject *parent=0);
@@ -73,6 +74,12 @@ public:
 
     QmlAbstractAnimation *animation();
     void setAnimation(QmlAbstractAnimation *);
+
+    bool enabled() const;
+    void setEnabled(bool enabled);
+
+Q_SIGNALS:
+    void enabledChanged();
 };
 
 QT_END_NAMESPACE
