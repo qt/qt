@@ -341,6 +341,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
     QObject::connect(canvas, SIGNAL(initialSize(QSize)), this, SLOT(adjustSizeSlot()));
     QObject::connect(canvas, SIGNAL(errors(QList<QmlError>)), this, SLOT(executeErrors()));
+    QObject::connect(canvas, SIGNAL(quit()), QCoreApplication::instance (), SLOT(quit()));
 
     if (!(flags & Qt::FramelessWindowHint)) {
         createMenu(menuBar(),0);

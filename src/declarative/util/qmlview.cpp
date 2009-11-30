@@ -291,6 +291,7 @@ void QmlView::execute()
     } else {
         d->component = new QmlComponent(&d->engine, d->qml.toUtf8(), d->source, this);
     }
+    connect (&d->engine, SIGNAL (quit ()), this, SIGNAL (quit ()));
 
     if (!d->component->isLoading()) {
         continueExecute();
