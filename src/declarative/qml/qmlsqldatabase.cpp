@@ -71,7 +71,7 @@ public:
         str_forwardOnly = engine->toStringHandle(QLatin1String("forwardOnly")); // not in HTML5 (an optimization)
     }
 
-    QueryFlags queryProperty(const QScriptValue &object,
+    QueryFlags queryProperty(const QScriptValue &,
                              const QScriptString &name,
                              QueryFlags flags, uint *)
     {
@@ -369,7 +369,7 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
                     // Incompatible
                     THROW_SQL(VERSION_ERR,QmlEngine::tr("SQL: database version mismatch"));
                 }
-                version = ini.value("Version").toString();
+                version = ini.value(QLatin1String("Version")).toString();
             }
             database.setDatabaseName(basename+QLatin1String(".sqlite"));
         }
