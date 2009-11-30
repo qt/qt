@@ -301,8 +301,9 @@ QString QmlViewer::getVideoFileName()
 
 
 QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
-    : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0), m_scriptOptions(0),
-      tester(0)
+    : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
+      , portraitOrientation(0), landscapeOrientation(0)
+      , m_scriptOptions(0), tester(0)
 {
     devicemode = false;
     skin = 0;
@@ -342,8 +343,10 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     QObject::connect(canvas, SIGNAL(errors(QList<QmlError>)), this, SLOT(executeErrors()));
     QObject::connect(canvas, SIGNAL(quit()), QCoreApplication::instance (), SLOT(quit()));
 
-    if (!(flags & Qt::FramelessWindowHint))
+    if (!(flags & Qt::FramelessWindowHint)) {
         createMenu(menuBar(),0);
+        setPortrait();
+    }
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(0);
@@ -477,6 +480,23 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     if (!flatmenu)
         settingsMenu->addAction(recordOptions);
 
+    QMenu *propertiesMenu = new QMenu(tr("Properties"));
+    QActionGroup *orientation = new QActionGroup(parent);
+    orientation->setExclusive(true);
+    portraitOrientation = new QAction(tr("orientation: Portrait"), parent);
+    portraitOrientation->setCheckable(true);
+    connect(portraitOrientation, SIGNAL(triggered()), this, SLOT(setPortrait()));
+    orientation->addAction(portraitOrientation);
+    propertiesMenu->addAction(portraitOrientation);
+
+    landscapeOrientation = new QAction(tr("orientation: Landscape"), parent);
+    landscapeOrientation->setCheckable(true);
+    connect(landscapeOrientation, SIGNAL(triggered()), this, SLOT(setLandscape()));
+    orientation->addAction(landscapeOrientation);
+    propertiesMenu->addAction(landscapeOrientation);
+
+    settingsMenu->addMenu(propertiesMenu);
+
     if (flatmenu) flatmenu->addSeparator();
 
     QMenu *helpMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Help"));
@@ -508,6 +528,18 @@ void QmlViewer::proxySettingsChanged()
 {
     setupProxy ();
     reload ();
+}
+
+void QmlViewer::setPortrait()
+{
+    canvas->rootContext()->setContextProperty("orientation", "Portrait");
+    portraitOrientation->setChecked(true);
+}
+
+void QmlViewer::setLandscape()
+{
+    canvas->rootContext()->setContextProperty("orientation", "Landscape");
+    landscapeOrientation->setChecked(true);
 }
 
 void QmlViewer::setScaleSkin()
@@ -871,6 +903,7 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
                  << "F7 - show timing\n"
                  << "F8 - show performance (if available)\n"
                  << "F9 - toggle video recording\n"
+                 << "F10 - toggle orientation\n"
                  << "device keys: 0=quit, 1..8=F1..F8"
                 ;
     } else if (event->key() == Qt::Key_F2 || (event->key() == Qt::Key_2 && devicemode)) {
@@ -885,6 +918,13 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
         QPerformanceLog::clear();
     } else if (event->key() == Qt::Key_F9 || (event->key() == Qt::Key_9 && devicemode)) {
         toggleRecording();
+    } else if (event->key() == Qt::Key_F10) {
+        if (portraitOrientation) {
+            if (portraitOrientation->isChecked())
+                setLandscape();
+            else
+                setPortrait();
+        }
     }
 
     QWidget::keyPressEvent(event);

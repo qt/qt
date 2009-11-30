@@ -119,6 +119,8 @@ private slots:
     void pickRecordingFile();
     void setScaleSkin();
     void adjustSizeSlot();
+    void setPortrait();
+    void setLandscape();
 
 private:
     void setupProxy();
@@ -153,6 +155,9 @@ private:
     QWidget *ffmpegHelpWindow;
     bool ffmpegAvailable;
     bool convertAvailable;
+
+    QAction *portraitOrientation;
+    QAction *landscapeOrientation;
 
     QString m_script;
     ScriptOptions m_scriptOptions;
