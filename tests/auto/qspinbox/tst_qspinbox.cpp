@@ -758,7 +758,7 @@ void tst_QSpinBox::editingFinished()
     box->activateWindow();
     box->setFocus();
 
-    QTRY_COMPARE(qApp->focusWidget(), box);
+    QTRY_COMPARE(qApp->focusWidget(), (QWidget *)box);
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
     QSignalSpy editingFinishedSpy2(box2, SIGNAL(editingFinished()));
