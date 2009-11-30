@@ -134,6 +134,16 @@
         currently calls winId() on widgets, which causes whole widget hierarchies
         to use native window handles. This slows down resizing.
 
+    \o  Compile error with Intel C++ Compiler.
+        There seems to be a bug in the Intel compiler wrt too agressive inlining.
+        The problem will manifest itself during the link phase of QtGui where it
+        fails with the error that it cannot find QObjectData::~QObjectData().
+        See http://bugreports.qt.nokia.com/browse/QTBUG-5145 for updates on this
+        bug.
+        Also, due to some bugs in webkit, both QtScript and Webkit does not compile.
+        See http://bugreports.qt.nokia.com/browse/QTBUG-6297 for a workaround for
+        QtScript.
+        
     \endlist
 
     \section2 Mac OS X
