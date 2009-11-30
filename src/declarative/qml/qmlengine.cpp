@@ -144,6 +144,8 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
     qtObject.setProperty(QLatin1String("openUrlExternally"),scriptEngine.newFunction(desktopOpenUrl, 1));
     qtObject.setProperty(QLatin1String("md5"),scriptEngine.newFunction(md5, 1));
+    qtObject.setProperty(QLatin1String("btoa"),scriptEngine.newFunction(btoa, 1));
+    qtObject.setProperty(QLatin1String("atob"),scriptEngine.newFunction(atob, 1));
 
     //firebug/webkit compat
     QScriptValue consoleObject = scriptEngine.newObject();
@@ -816,6 +818,26 @@ QScriptValue QmlEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *)
     QByteArray result = QCryptographicHash::hash(data, QCryptographicHash::Md5);
 
     return QScriptValue(QLatin1String(result.toHex()));
+}
+
+QScriptValue QmlEnginePrivate::btoa(QScriptContext *ctxt, QScriptEngine *)
+{
+    QByteArray data;
+
+    if (ctxt->argumentCount() >= 1)
+        data = ctxt->argument(0).toString().toUtf8();
+
+    return QScriptValue(QLatin1String(data.toBase64()));
+}
+
+QScriptValue QmlEnginePrivate::atob(QScriptContext *ctxt, QScriptEngine *)
+{
+    QByteArray data;
+
+    if (ctxt->argumentCount() >= 1)
+        data = ctxt->argument(0).toString().toUtf8();
+
+    return QScriptValue(QLatin1String(QByteArray::fromBase64(data)));
 }
 
 QScriptValue QmlEnginePrivate::consoleLog(QScriptContext *ctxt, QScriptEngine *e)

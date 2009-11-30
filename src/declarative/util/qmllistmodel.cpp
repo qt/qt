@@ -851,7 +851,7 @@ void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
         case ListInstruction::Value:
             {
                 ModelNode *n = nodes.top();
-                n->values.append(QByteArray(data + instr.dataIdx));
+                n->values.append(QString::fromUtf8(QByteArray(data + instr.dataIdx)));
             }
             break;
 

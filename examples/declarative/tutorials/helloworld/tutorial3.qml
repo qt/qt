@@ -29,7 +29,7 @@ Rectangle {
             from: ""; to: "down"; reversible: true
             ParallelAnimation {
                 NumberAnimation { matchProperties: "y,rotation"; duration: 500; easing: "easeInOutQuad" }
-                ColorAnimation { property: "color"; duration: 500 }
+                ColorAnimation { duration: 500 }
             }
         }
 //![3]
