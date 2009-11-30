@@ -99,6 +99,7 @@ class QmlComponentAttached;
 class QmlListScriptClass;
 class QmlCleanup;
 class QmlBindingData;
+class QmlWorkerScriptEngine;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -151,6 +152,9 @@ public:
         QmlEnginePrivate *p;
     };
     QmlScriptEngine scriptEngine;
+
+    QmlWorkerScriptEngine *getWorkerScriptEngine();
+    QmlWorkerScriptEngine *workerScriptEngine;
 
     QUrl baseUrl;
 

@@ -46,7 +46,8 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlglobalscriptclass.cpp \
     qml/qmlvaluetypescriptclass.cpp \
     qml/qmltypenamescriptclass.cpp \
-    qml/qmllistscriptclass.cpp
+    qml/qmllistscriptclass.cpp \
+    qml/qmlworkerscript.cpp 
 
 HEADERS += qml/qmlparser_p.h \
     qml/qmlglobal_p.h \
@@ -109,8 +110,9 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlglobalscriptclass_p.h \
     qml/qmlvaluetypescriptclass_p.h \
     qml/qmltypenamescriptclass_p.h \
-    qml/qmllistscriptclass_p.h
-
+    qml/qmllistscriptclass_p.h \
+    qml/qmlworkerscript_p.h
+ 
 QT += sql
 
 include(parser/parser.pri)
