@@ -1417,8 +1417,22 @@ void tst_QLineEdit::undo_keypressevents()
 }
 
 #ifndef QT_NO_CLIPBOARD
+static bool nativeClipboardWorking()
+{
+#ifdef Q_WS_MAC
+    PasteboardRef pasteboard;
+    OSStatus status = PasteboardCreate(0, &pasteboard);
+    if (status == noErr)
+        CFRelease(pasteboard);
+    return status == noErr;
+#endif
+    return true;
+}
+
 void tst_QLineEdit::QTBUG5786_undoPaste()
 {
+    if (!nativeClipboardWorking())
+	   QSKIP("this machine doesn't support the clipboard", SkipAll);
     QString initial("initial");
     QString string("test");
     QString additional("add");

@@ -1,7 +1,7 @@
 TRANSLATIONS = $$files(*.ts)
 
 LRELEASE = $$QT_BUILD_TREE/bin/lrelease
-win32:isEmpty(QMAKE_SH):LRELEASE ~= s|/|\\|g
+LRELEASE ~= s,/,$$QMAKE_DIR_SEP,
 
 contains(TEMPLATE_PREFIX, vc):vcproj = 1
 
