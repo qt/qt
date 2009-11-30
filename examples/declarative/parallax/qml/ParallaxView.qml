@@ -25,13 +25,7 @@ Item {
         anchors.fill: parent
         model: VisualItemModel { id: visualModel }
 
-        highlight: Rectangle { height: 1; width: 1 }
-        highlightMoveSpeed: 2000
-        preferredHighlightBegin: 0
-        preferredHighlightEnd: 0
-        highlightRangeMode: "StrictlyEnforceRange"
-
-        flickDeceleration: 1000
+        snapMode: ListView.SnapOneItem
     }
 
     ListView {

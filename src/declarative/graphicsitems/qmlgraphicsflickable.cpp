@@ -855,30 +855,6 @@ void QmlGraphicsFlickable::viewportMoved()
     QmlGraphicsItemPrivate::restart(d->velocityTime);
     d->lastFlickablePosition = QPointF(d->_moveY.value(), d->_moveX.value());
 
-    if (d->flicked && d->timeline.time() > d->vTime) {
-        // Near an end and it seems that the extent has changed?
-        // Recalculate the flick so that we don't end up in an odd position.
-        if (d->velocityY > 0) {
-            const qreal minY = minYExtent();
-            if (minY - d->_moveY.value() < height()/2 && minY != d->flickTargetY)
-                d->flickY(-d->verticalVelocity.value());
-        } else if (d->velocityY < 0) {
-            const qreal maxY = maxYExtent();
-            if (d->_moveY.value() - maxY < height()/2 && maxY != d->flickTargetY)
-                d->flickY(-d->verticalVelocity.value());
-        }
-
-        if (d->velocityX > 0) {
-            const qreal minX = minXExtent();
-            if (minX - d->_moveX.value() < height()/2 && minX != d->flickTargetX)
-                d->flickX(-d->horizontalVelocity.value());
-        } else if (d->velocityX < 0) {
-            const qreal maxX = maxXExtent();
-            if (d->_moveX.value() - maxX < height()/2 && maxX != d->flickTargetX)
-                d->flickX(-d->horizontalVelocity.value());
-        }
-    }
-
     d->vTime = d->timeline.time();
     d->updateBeginningEnd();
 }

@@ -55,18 +55,21 @@ class QmlBehaviorPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlBehavior)
 public:
-    QmlBehaviorPrivate() : animation(0) {}
+    QmlBehaviorPrivate() : animation(0), enabled(true) {}
 
     QmlMetaProperty property;
     QVariant currentValue;
     QmlAbstractAnimation *animation;
+    bool enabled;
 };
 
 /*!
     \qmlclass Behavior QmlBehavior
     \brief The Behavior element allows you to specify a default animation for a property change.
 
-    In example below, the rect will use a bounce easing curve over 200 millisecond for any changes to its y property:
+    Behaviors provide one way to specify \l{qmlanimation.html}{animations} in QML.
+
+    In the example below, the rect will use a bounce easing curve over 200 millisecond for any changes to its y property:
     \code
     Rectangle {
         width: 20; height: 20
@@ -80,6 +83,9 @@ public:
         }
     }
     \endcode
+
+    Currently only a single Behavior may be specified for a property;
+    this Behavior can be enabled and disabled via the \l{enabled} property.
 */
 
 
@@ -118,10 +124,32 @@ void QmlBehavior::setAnimation(QmlAbstractAnimation *animation)
         d->animation->setTarget(d->property);
 }
 
+/*!
+    \qmlproperty bool Behavior::enabled
+    Whether the Behavior will be triggered when the property it is tracking changes.
+
+    By default a Behavior is enabled.
+*/
+
+bool QmlBehavior::enabled() const
+{
+    Q_D(const QmlBehavior);
+    return d->enabled;
+}
+
+void QmlBehavior::setEnabled(bool enabled)
+{
+    Q_D(QmlBehavior);
+    if (d->enabled == enabled)
+        return;
+    d->enabled = enabled;
+    emit enabledChanged();
+}
+
 void QmlBehavior::write(const QVariant &value)
 {
     Q_D(QmlBehavior);
-    if (!d->animation) {
+    if (!d->animation || !d->enabled) {
         d->property.write(value, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
         return;
     }

@@ -388,9 +388,9 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
     to += buffer;
     bool changed = false;
 
-    int colPos = 0;
-    int rowPos = 0;
-    int modelIndex = 0;
+    int colPos = colPosAt(visibleIndex);
+    int rowPos = rowPosAt(visibleIndex);
+    int modelIndex = visibleIndex;
     if (visibleItems.count()) {
         rowPos = visibleItems.last()->rowPos();
         colPos = visibleItems.last()->colPos() + colSize();
@@ -822,14 +822,14 @@ void QmlGraphicsGridView::setModel(const QVariant &model)
 }
 
 /*!
-  \qmlproperty component GridView::delegate
+    \qmlproperty component GridView::delegate
 
     The delegate provides a template defining each item instantiated by the view.
     The index is exposed as an accessible \c index property.  Properties of the
     model are also available depending upon the type of \l {qmlmodels}{Data Model}.
 
-  Here is an example delegate:
-  \snippet doc/src/snippets/declarative/gridview/gridview.qml 0
+    Here is an example delegate:
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml 0
 */
 QmlComponent *QmlGraphicsGridView::delegate() const
 {
@@ -1291,6 +1291,35 @@ void QmlGraphicsGridView::moveCurrentIndexRight()
         }
     }
 }
+
+void QmlGraphicsGridView::positionViewAtIndex(int index)
+{
+    Q_D(QmlGraphicsGridView);
+    if (!d->isValid() || index < 0 || index >= d->model->count())
+        return;
+
+    qreal maxExtent = d->flow == QmlGraphicsGridView::LeftToRight ? -maxYExtent() : -maxXExtent();
+    FxGridItem *item = d->visibleItem(index);
+    if (item) {
+        // Already created - just move to top of view
+        int pos = qMin(item->rowPos(), maxExtent);
+        d->setPosition(pos);
+    } else {
+        int pos = d->rowPosAt(index);
+        // save the currently visible items in case any of them end up visible again
+        QList<FxGridItem*> oldVisible = d->visibleItems;
+        d->visibleItems.clear();
+        d->visibleIndex = index - index % d->columns;
+        d->setPosition(pos);
+        // setPosition() will cause refill.  Adjust if we have moved beyond range
+        if (d->position() > maxExtent)
+            d->setPosition(maxExtent);
+        // now release the reference to all the old visible items.
+        for (int i = 0; i < oldVisible.count(); ++i)
+            d->releaseItem(oldVisible.at(i));
+    }
+}
+
 
 void QmlGraphicsGridView::componentComplete()
 {
