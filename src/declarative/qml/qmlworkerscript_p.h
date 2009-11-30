@@ -59,6 +59,7 @@
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qurl.h>
 
+class QmlWorkerScript;
 class QmlWorkerScriptEnginePrivate;
 class QmlWorkerScriptEngine : public QThread
 {
@@ -67,26 +68,10 @@ public:
     QmlWorkerScriptEngine(QObject *parent = 0);
     virtual ~QmlWorkerScriptEngine();
 
-    class Data;
-    class WorkerScript {
-    public:
-        void sendMessage(Data *);
-        void executeUrl(const QUrl &);
-
-    private:
-        WorkerScript();
-        friend class QmlWorkerScriptEngine;
-        QmlWorkerScriptEngine *engine;
-        int id;
-    };
-    WorkerScript *createWorkerScript();
-
-    struct Data {
-        QVariant var;
-    };
-
-    void executeUrl(WorkerScript *, const QUrl &);
-    void sendMessage(WorkerScript *, Data *);
+    int registerWorkerScript(QmlWorkerScript *);
+    void removeWorkerScript(int);
+    void executeUrl(int, const QUrl &);
+    void sendMessage(int, const QVariant &);
 
 protected:
     virtual void run();
@@ -112,12 +97,15 @@ public slots:
 
 signals:
     void sourceChanged();
+    void message(const QScriptValue &messageObject);
 
 protected:
     virtual void componentComplete();
+    virtual bool event(QEvent *);
 
 private:
-    QmlWorkerScriptEngine::WorkerScript *m_script;
+    QmlWorkerScriptEngine *m_engine;
+    int m_scriptId;
     QUrl m_source;
 };
 QML_DECLARE_TYPE(QmlWorkerScript);

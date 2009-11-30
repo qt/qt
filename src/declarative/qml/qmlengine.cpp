@@ -226,6 +226,7 @@ void QmlEnginePrivate::init()
     Q_Q(QmlEngine);
     qRegisterMetaType<QVariant>("QVariant");
     qRegisterMetaType<QmlScriptString>("QmlScriptString");
+    qRegisterMetaType<QScriptValue>("QScriptValue");
 
     scriptEngine.installTranslatorFunctions();
     contextClass = new QmlContextScriptClass(q);

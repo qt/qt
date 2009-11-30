@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_METATYPE(QScriptValue);
+
 void QmlPropertyCache::Data::load(const QMetaProperty &p)
 {
     propType = p.userType();
@@ -61,6 +63,8 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p)
 
     if (propType == qMetaTypeId<QmlBinding *>()) {
         flags |= Data::IsQmlBinding;
+    } else if (propType == qMetaTypeId<QScriptValue>()) {
+        flags |= Data::IsQScriptValue;
     } else if (p.isEnumType()) {
         flags |= Data::IsEnumType;
     } else {

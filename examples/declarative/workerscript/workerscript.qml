@@ -6,6 +6,12 @@ Rectangle {
     WorkerScript {
         id: myWorker
         source: "workerscript.js"
+
+        onMessage: {
+            print("Moved " + messageObject.xmove + " along the X axis.");
+            print("Moved " + messageObject.ymove + " along the Y axis.");
+            print("Moved " + messageObject.move + " pixels.");
+        }
     }
 
     Rectangle {
