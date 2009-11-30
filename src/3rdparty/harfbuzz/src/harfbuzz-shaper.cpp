@@ -975,7 +975,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     face->glyphs_substituted = false;
     face->buffer = 0;
 
-    HB_Error error;
+    HB_Error error = HB_Err_Ok;
     HB_Stream stream;
     HB_Stream gdefStream;
 

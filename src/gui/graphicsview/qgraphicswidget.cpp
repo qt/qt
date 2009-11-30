@@ -385,8 +385,6 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     QSizeF oldSize = size();
     QGraphicsLayoutItem::setGeometry(newGeom);
 
-    wd->invalidateCachedClipPathRecursively();
-
     // Send resize event
     bool resized = newGeom.size() != oldSize;
     if (resized) {

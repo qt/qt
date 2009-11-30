@@ -52,6 +52,9 @@
 #include <QX11Info>
 #endif // Q_WS_X11
 
+#include "../../shared/util.h"
+
+
 class tst_QWidget_window : public QWidget
 {
     Q_OBJECT
@@ -150,7 +153,7 @@ void tst_QWidget_window::tst_show_resize_hide_show()
 class TestWidget : public QWidget
 {
 public:
-    int m_first, m_next;    
+    int m_first, m_next;
     bool paintEventReceived;
 
     void reset(){ m_first = m_next = 0; paintEventReceived = false; }
@@ -163,7 +166,7 @@ public:
         case QEvent::Show:
             if (m_first)
                 m_next = event->type();
-            else 
+            else
                 m_first = event->type();
             break;
         case QEvent::Paint:
@@ -173,7 +176,7 @@ public:
             break;
         }
         return QWidget::event(event);
-    }    
+    }
 };
 
 void tst_QWidget_window::tst_windowFilePathAndwindowTitle_data()
@@ -289,7 +292,7 @@ void tst_QWidget_window::tst_showWithoutActivating()
 #else
     QWidget w;
     w.show();
-    qt_x11_wait_for_window_manager(&w);
+    QTest::qWaitForWindowShown(&w);
     QApplication::processEvents();
 
     QApplication::clipboard();
@@ -302,8 +305,11 @@ void tst_QWidget_window::tst_showWithoutActivating()
 
     Window window;
     int revertto;
-    XGetInputFocus(QX11Info::display(), &window, &revertto);
-    QCOMPARE(lineEdit->winId(), window);
+    QTRY_COMPARE(lineEdit->winId(),
+                 (XGetInputFocus(QX11Info::display(), &window, &revertto), window) );
+    // Note the use of the , before window because we want the XGetInputFocus to be re-executed
+    //     in each iteration of the inside loop of the QTRY_COMPARE macro
+
 #endif // Q_WS_X11
 }
 
@@ -315,11 +321,9 @@ void tst_QWidget_window::tst_paintEventOnSecondShow()
 
     w.reset();
     w.show();
-#ifdef Q_WS_X11
-    QTest::qWait(500);
-#endif
+    QTest::qWaitForWindowShown(&w);
     QApplication::processEvents();
-    QVERIFY(w.paintEventReceived);
+    QTRY_VERIFY(w.paintEventReceived);
 }
 
 QTEST_MAIN(tst_QWidget_window)
