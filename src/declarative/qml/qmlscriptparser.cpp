@@ -383,10 +383,12 @@ Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
             QString propertyName = asString(scriptBinding->qualifiedId);
             if (propertyName == QLatin1String("source")) {
                 if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
-                    AST::StringLiteral *string = AST::cast<AST::StringLiteral *>(stmt->expression);
-                    if (string) { 
+                    QmlParser::Variant string = getVariant(stmt->expression);
+                    if (string.isStringList()) {
+                        QStringList urls = string.asStringList();
                         // We need to add this as a resource
-                        _parser->_refUrls << QUrl(string->value->asString());
+                        for (int ii = 0; ii < urls.count(); ++ii) 
+                            _parser->_refUrls << QUrl(urls.at(ii));
                     }
                 }
             }

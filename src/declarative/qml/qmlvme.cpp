@@ -142,7 +142,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
     const QList<int> &intData = comp->intData;
     const QList<float> &floatData = comp->floatData;
     const QList<QmlPropertyCache *> &propertyCaches = comp->propertyCaches;
-
+    const QList<QmlParser::Object::ScriptBlock> &scripts = comp->scripts;
 
     QmlEnginePrivate::SimpleList<QmlAbstractBinding> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
@@ -224,7 +224,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::SetId:
             {
                 QObject *target = stack.top();
-//                ctxt->setContextProperty(primitives.at(instr.setId.value), target);
                 cp->setIdProperty(instr.setId.index, target);
             }
             break;
@@ -551,9 +550,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreScript:
             {
                 QObject *target = stack.top();
-                cp->addScript(primitives.at(instr.storeScript.value), target, 
-                              primitives.at(instr.storeScript.fileName), 
-                              instr.storeScript.lineNumber);
+                cp->addScript(scripts.at(instr.storeScript.value), target);
             }
             break;
 

@@ -92,8 +92,7 @@ public:
     int highPriorityCount;
 
     QList<QScriptValue> scripts;
-    void addScript(const QString &script, QObject *scope, 
-                   const QString &fileName = QString(), int lineNumber = 1);
+    void addScript(const QmlParser::Object::ScriptBlock &, QObject *);
 
     QUrl url;
 

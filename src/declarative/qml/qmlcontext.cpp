@@ -59,8 +59,7 @@ QmlContextPrivate::QmlContextPrivate()
 {
 }
 
-void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject,
-                                  const QString &fileName, int lineNumber)
+void QmlContextPrivate::addScript(const QmlParser::Object::ScriptBlock &script, QObject *scopeObject)
 {
     Q_Q(QmlContext);
 
@@ -76,12 +75,14 @@ void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject,
     QScriptValue scope = scriptEngine->newObject();
     scriptContext->setActivationObject(scope);
 
-    QScriptValue val = scriptEngine->evaluate(script, fileName, lineNumber);
+    for (int ii = 0; ii < script.codes.count(); ++ii) {
+        scriptEngine->evaluate(script.codes.at(ii), script.files.at(ii), script.lineNumbers.at(ii));
 
-    if (scriptEngine->hasUncaughtException()) {
-        QmlError error;
-        QmlExpressionPrivate::exceptionToError(scriptEngine, error);
-        qWarning().nospace() << qPrintable(error.toString());
+        if (scriptEngine->hasUncaughtException()) {
+            QmlError error;
+            QmlExpressionPrivate::exceptionToError(scriptEngine, error);
+            qWarning().nospace() << qPrintable(error.toString());
+        }
     }
 
     scriptEngine->popContext();

@@ -51,11 +51,25 @@ public:
     tst_QmlListModel() {}
 
 private slots:
+    void static_i18n();
     void dynamic_data();
     void dynamic();
     void error_data();
     void error();
 };
+
+void tst_QmlListModel::static_i18n()
+{
+    QString expect = QString::fromUtf8("na\303\257ve");
+    QString componentStr = "import Qt 4.6\nListModel { ListElement { prop1: \""+expect+"\" } }";
+    QmlEngine engine;
+    QmlComponent component(&engine, componentStr.toUtf8(), QUrl("file://"));
+    QmlListModel *obj = qobject_cast<QmlListModel*>(component.create());
+    QVERIFY(obj != 0);
+    QString prop = obj->get(0).property(QLatin1String("prop1")).toString();
+    QCOMPARE(prop,expect);
+    delete obj;
+}
 
 void tst_QmlListModel::dynamic_data()
 {

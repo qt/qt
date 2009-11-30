@@ -140,7 +140,7 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SIGNAL\t\t" << instr->storeSignal.signalIndex << "\t" << instr->storeSignal.value << "\t\t" << primitives.at(instr->storeSignal.value);
         break;
     case QmlInstruction::StoreScript:
-        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SCRIPT\t\t" << instr->storeScript.value << "\t" << instr->storeScript.fileName << "\t" << instr->storeScript.lineNumber;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SCRIPT\t\t" << instr->storeScript.value;
         break;
     case QmlInstruction::StoreScriptString:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SCRIPT_STRING\t" << instr->storeScriptString.propertyIndex << "\t" << instr->storeScriptString.value << "\t" << instr->storeScriptString.scope;

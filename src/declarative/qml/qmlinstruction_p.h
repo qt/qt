@@ -252,8 +252,6 @@ public:
         } storeScriptString;
         struct {
             int value;
-            int fileName;
-            int lineNumber;
         } storeScript;
         struct {
             int propertyIndex;

@@ -54,10 +54,13 @@
 #include "private/qmetaobjectbuilder_p.h"
 #include <private/qmlvmemetaobject_p.h>
 #include <private/qmlcompiler_p.h>
+#include "parser/qmljsast_p.h"
+#include "parser/qmljsengine_p.h"
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
 
+using namespace QmlJS;
 using namespace QmlParser;
 
 QmlParser::Object::Object()
@@ -325,6 +328,57 @@ QmlJS::AST::Node *QmlParser::Variant::asAST() const
         return n;
     else
         return 0;
+}
+
+bool QmlParser::Variant::isStringList() const
+{
+    if (isString())
+        return true;
+
+    if (type() != Script || !n)
+        return false;
+
+    AST::ArrayLiteral *array = AST::cast<AST::ArrayLiteral *>(n);
+    if (!array)
+        return false;
+
+    AST::ElementList *elements = array->elements;
+
+    while (elements) {
+
+        if (!AST::cast<AST::StringLiteral *>(elements->expression))
+            return false;
+
+        elements = elements->next;
+    }
+
+    return true;
+}
+
+QStringList QmlParser::Variant::asStringList() const
+{
+    QStringList rv;
+    if (isString()) {
+        rv << asString();
+        return rv;
+    }
+
+    AST::ArrayLiteral *array = AST::cast<AST::ArrayLiteral *>(n);
+    if (!array)
+        return rv;
+
+    AST::ElementList *elements = array->elements;
+    while (elements) {
+
+        AST::StringLiteral *string = AST::cast<AST::StringLiteral *>(elements->expression);
+        if (!string)
+            return QStringList();
+        rv.append(string->value->asString());
+
+        elements = elements->next;
+    }
+
+    return  rv;
 }
 
 QT_END_NAMESPACE
