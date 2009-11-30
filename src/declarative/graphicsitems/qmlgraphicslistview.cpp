@@ -177,8 +177,9 @@ public:
         , highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0.0)
         , highlightMoveSpeed(400), highlightResizeSpeed(400), highlightRange(QmlGraphicsListView::NoHighlightRange)
-        , ownModel(false), wrap(false), autoHighlight(true)
-        , haveHighlightRange(false)
+        , snapMode(QmlGraphicsListView::NoSnap), overshootDist(0.0)
+        , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
+        , correctFlick(true)
     {}
 
     void init();
@@ -192,6 +193,32 @@ public:
                 FxListItem *item = visibleItems.at(i);
                 if (item->index == modelIndex)
                     return item;
+            }
+        }
+        return 0;
+    }
+
+    FxListItem *firstVisibleItem() const {
+        const qreal pos = position();
+        for (int i = 0; i < visibleItems.count(); ++i) {
+            FxListItem *item = visibleItems.at(i);
+            if (item->index != -1 && item->endPosition() > pos)
+                return item;
+        }
+        return 0;
+    }
+
+    FxListItem *nextVisibleItem() const {
+        qDebug() << "last vis";
+        const qreal pos = position();
+        bool foundFirst = false;
+        for (int i = 0; i < visibleItems.count(); ++i) {
+            FxListItem *item = visibleItems.at(i);
+            if (item->index != -1) {
+                if (foundFirst)
+                    return item;
+                else if (item->position() < pos && item->endPosition() > pos)
+                    foundFirst = true;
             }
         }
         return 0;
@@ -287,9 +314,40 @@ public:
         return index;
     }
 
-    //XXX Rough.  Only works for fixed size items.
     qreal snapPosAt(qreal pos) {
+        for (int i = 0; i < visibleItems.count(); ++i) {
+            FxListItem *item = visibleItems[i];
+            if (item->index == -1)
+                continue;
+            qreal itemTop = item->position();
+            if ((item->index == model->count()-1 || itemTop >= pos-item->size()/2)
+                && (item->index == 0 || itemTop <= pos+item->size()/2))
+                return item->position();
+        }
+        if (visibleItems.count()) {
+            qreal firstPos = visibleItems.first()->position();
+            qreal endPos = visibleItems.last()->position();
+            if (pos < firstPos) {
+                return firstPos - qRound((firstPos - pos) / averageSize) * averageSize;
+            } else if (pos > endPos)
+                return endPos + qRound((pos - endPos) / averageSize) * averageSize;
+        }
         return qRound((pos - startPosition()) / averageSize) * averageSize + startPosition();
+    }
+
+    FxListItem *snapItemAt(qreal pos) {
+        for (int i = 0; i < visibleItems.count(); ++i) {
+            FxListItem *item = visibleItems[i];
+            if (item->index == -1)
+                continue;
+            qreal itemTop = item->position();
+            if ((item->index == model->count()-1 || itemTop >= pos-item->size()/2)
+                && (item->index == 0 || itemTop <= pos+item->size()/2))
+                return item;
+        }
+        if (visibleItems.count() && visibleItems.first()->position() <= pos)
+            return visibleItems.first();
+        return 0;
     }
 
     int lastVisibleIndex() const {
@@ -409,11 +467,14 @@ public:
     qreal highlightMoveSpeed;
     qreal highlightResizeSpeed;
     QmlGraphicsListView::HighlightRangeMode highlightRange;
+    QmlGraphicsListView::SnapMode snapMode;
+    qreal overshootDist;
 
     bool ownModel : 1;
     bool wrap : 1;
     bool autoHighlight : 1;
     bool haveHighlightRange : 1;
+    bool correctFlick : 1;
 };
 
 void QmlGraphicsListViewPrivate::init()
@@ -809,8 +870,10 @@ void QmlGraphicsListViewPrivate::fixupPosition()
 
 void QmlGraphicsListViewPrivate::fixupY()
 {
-    QmlGraphicsFlickablePrivate::fixupY();
+    Q_Q(QmlGraphicsListView);
     if (orient == QmlGraphicsListView::Horizontal)
+        return;
+    if (!q->yflick() || _moveY.timeLine())
         return;
 
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
@@ -820,13 +883,28 @@ void QmlGraphicsListViewPrivate::fixupY()
             timeline.move(_moveY, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
             vTime = timeline.time();
         }
+    } else if (snapMode != QmlGraphicsListView::NoSnap) {
+        moveReason = Mouse;
+        if (FxListItem *item = snapItemAt(position())) {
+            qreal pos = qMin(item->position() - highlightRangeStart, -q->maxYExtent());
+            qreal dist = qAbs(_moveY + pos);
+            if (dist > 0) {
+                timeline.reset(_moveY);
+                timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), 200);
+                vTime = timeline.time();
+            }
+        }
+    } else {
+        QmlGraphicsFlickablePrivate::fixupY();
     }
 }
 
 void QmlGraphicsListViewPrivate::fixupX()
 {
-    QmlGraphicsFlickablePrivate::fixupX();
+    Q_Q(QmlGraphicsListView);
     if (orient == QmlGraphicsListView::Vertical)
+        return;
+    if (!q->xflick() || _moveX.timeLine())
         return;
 
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
@@ -836,6 +914,19 @@ void QmlGraphicsListViewPrivate::fixupX()
             timeline.move(_moveX, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
             vTime = timeline.time();
         }
+    } else if (snapMode != QmlGraphicsListView::NoSnap) {
+        moveReason = Mouse;
+        if (FxListItem *item = snapItemAt(position())) {
+            qreal pos = qMin(item->position() - highlightRangeStart, -q->maxXExtent());
+            qreal dist = qAbs(_moveX + pos);
+            if (dist > 0) {
+                timeline.reset(_moveX);
+                timeline.move(_moveX, -pos, QEasingCurve(QEasingCurve::InOutQuad), 200);
+                vTime = timeline.time();
+            }
+        }
+    } else {
+        QmlGraphicsFlickablePrivate::fixupX();
     }
 }
 
@@ -843,23 +934,38 @@ void QmlGraphicsListViewPrivate::flickX(qreal velocity)
 {
     Q_Q(QmlGraphicsListView);
 
-    if (!haveHighlightRange || highlightRange != QmlGraphicsListView::StrictlyEnforceRange) {
+    if ((!haveHighlightRange || highlightRange != QmlGraphicsListView::StrictlyEnforceRange) && snapMode == QmlGraphicsListView::NoSnap) {
         QmlGraphicsFlickablePrivate::flickX(velocity);
         return;
     }
-
     qreal maxDistance = -1;
+    const qreal maxX = q->maxXExtent();
+    const qreal minX = q->minXExtent();
     // -ve velocity means list is moving up
     if (velocity > 0) {
-        if (_moveX.value() < q->minXExtent())
-            maxDistance = qAbs(q->minXExtent() -_moveX.value() + (overShoot?30:0));
-        flickTargetX = q->minXExtent();
+        if (snapMode == QmlGraphicsListView::SnapOneItem) {
+            if (FxListItem *item = firstVisibleItem())
+                maxDistance = qAbs(item->position() + _moveX.value());
+        } else if (_moveX.value() < minX) {
+            maxDistance = qAbs(minX -_moveX.value() + (overShoot?30:0));
+        }
+        if (snapMode != QmlGraphicsListView::SnapToItem && highlightRange != QmlGraphicsListView::StrictlyEnforceRange)
+            flickTargetX = minX;
     } else {
-        if (_moveX.value() > q->maxXExtent())
-            maxDistance = qAbs(q->maxXExtent() - _moveX.value()) + (overShoot?30:0);
-        flickTargetX = q->maxXExtent();
+        if (snapMode == QmlGraphicsListView::SnapOneItem) {
+            if (FxListItem *item = nextVisibleItem())
+                maxDistance = qAbs(item->position() + _moveX.value());
+        } else if (_moveX.value() > maxX) {
+            maxDistance = qAbs(maxX - _moveX.value()) + (overShoot?30:0);
+        }
+        if (snapMode != QmlGraphicsListView::SnapToItem && highlightRange != QmlGraphicsListView::StrictlyEnforceRange)
+            flickTargetX = maxX;
     }
-    if (maxDistance > 0) {
+    if (maxDistance > 0 && (snapMode != QmlGraphicsListView::NoSnap || highlightRange == QmlGraphicsListView::StrictlyEnforceRange)) {
+        // These modes require the list to stop exactly on an item boundary.
+        // The initial flick will estimate the boundary to stop on.
+        // Since list items can have variable sizes, the boundary will be
+        // reevaluated and adjusted as we approach the boundary.
         qreal v = velocity;
         if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
             if (v < 0)
@@ -867,31 +973,57 @@ void QmlGraphicsListViewPrivate::flickX(qreal velocity)
             else
                 v = maxVelocity;
         }
-        qreal accel = deceleration;
-        qreal v2 = v * v;
-        qreal maxAccel = v2 / (2.0f * maxDistance);
-        if (maxAccel < accel) {
-            // If we are not flicking to the end then attempt to stop exactly on an item boundary
-            qreal dist = v2 / accel / 2.0;
-            if (v > 0)
-                dist = -dist;
-            dist = -_moveX.value() - snapPosAt(-(_moveX.value() - highlightRangeStart) + dist) + highlightRangeStart;
-            if ((v < 0 && dist >= 0) || (v > 0 && dist <= 0)) {
+        if (!flicked) {
+            // the initial flick - estimate boundary
+            qreal accel = deceleration;
+            qreal v2 = v * v;
+            qreal maxAccel = v2 / (2.0f * maxDistance);
+            if (maxAccel < accel) {
+                qreal dist = v2 / (accel * 2.0);
+                if (v > 0)
+                    dist = -dist;
+                flickTargetX = -snapPosAt(-(_moveX.value() - highlightRangeStart) + dist) + highlightRangeStart;
+                dist = -flickTargetX + _moveX.value();
+                accel = v2 / (2.0f * qAbs(dist));
+                overshootDist = 0.0;
+            } else {
+                if (velocity > 0)
+                    flickTargetX = minX;
+                else
+                    flickTargetX = maxX;
+                overshootDist = overShoot ? 30 : 0;
+            }
+            timeline.reset(_moveX);
+            timeline.accel(_moveX, v, accel, maxDistance);
+            timeline.execute(fixupXEvent);
+            flicked = true;
+            emit q->flickingChanged();
+            emit q->flickStarted();
+            correctFlick = true;
+        } else {
+            // reevaluate the target boundary.
+            qreal newtarget = -snapPosAt(-(flickTargetX - highlightRangeStart)) + highlightRangeStart;
+            if (newtarget < maxX) {
+                newtarget = maxX;
+            }
+            if (newtarget == flickTargetX) {
+                // boundary unchanged - nothing to do
+                return;
+            }
+            flickTargetX = newtarget;
+            qreal dist = -newtarget + _moveX.value();
+            if ((v < 0 && dist < 0) || (v > 0 && dist > 0)) {
+                correctFlick = false;
                 timeline.reset(_moveX);
                 fixupX();
                 return;
             }
-            accel = v2 / (2.0f * qAbs(dist));
-        }
-        timeline.reset(_moveX);
-        timeline.accel(_moveX, v, accel, maxDistance);
-        timeline.execute(fixupXEvent);
-        if (!flicked) {
-            flicked = true;
-            emit q->flickingChanged();
-            emit q->flickStarted();
+            timeline.reset(_moveX);
+            timeline.accelDistance(_moveX, v, -dist + (v < 0 ? -overshootDist : overshootDist));
+            timeline.execute(fixupXEvent);
         }
     } else {
+        correctFlick = false;
         timeline.reset(_moveX);
         fixupX();
     }
@@ -901,23 +1033,38 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
 {
     Q_Q(QmlGraphicsListView);
 
-    if (!haveHighlightRange || highlightRange != QmlGraphicsListView::StrictlyEnforceRange) {
+    if ((!haveHighlightRange || highlightRange != QmlGraphicsListView::StrictlyEnforceRange) && snapMode == QmlGraphicsListView::NoSnap) {
         QmlGraphicsFlickablePrivate::flickY(velocity);
         return;
     }
-
     qreal maxDistance = -1;
+    const qreal maxY = q->maxYExtent();
+    const qreal minY = q->minYExtent();
     // -ve velocity means list is moving up
     if (velocity > 0) {
-        if (_moveY.value() < q->minYExtent())
-            maxDistance = qAbs(q->minYExtent() -_moveY.value() + (overShoot?30:0));
-        flickTargetY = q->minYExtent();
+        if (snapMode == QmlGraphicsListView::SnapOneItem) {
+            if (FxListItem *item = firstVisibleItem())
+                maxDistance = qAbs(item->position() + _moveY.value());
+        } else if (_moveY.value() < minY) {
+            maxDistance = qAbs(minY -_moveY.value() + (overShoot?30:0));
+        }
+        if (snapMode != QmlGraphicsListView::SnapToItem && highlightRange != QmlGraphicsListView::StrictlyEnforceRange)
+            flickTargetY = minY;
     } else {
-        if (_moveY.value() > q->maxYExtent())
-            maxDistance = qAbs(q->maxYExtent() - _moveY.value()) + (overShoot?30:0);
-        flickTargetY = q->maxYExtent();
+        if (snapMode == QmlGraphicsListView::SnapOneItem) {
+            if (FxListItem *item = nextVisibleItem())
+                maxDistance = qAbs(item->position() + _moveY.value());
+        } else if (_moveY.value() > maxY) {
+            maxDistance = qAbs(maxY - _moveY.value()) + (overShoot?30:0);
+        }
+        if (snapMode != QmlGraphicsListView::SnapToItem && highlightRange != QmlGraphicsListView::StrictlyEnforceRange)
+            flickTargetY = maxY;
     }
-    if (maxDistance > 0) {
+    if (maxDistance > 0 && (snapMode != QmlGraphicsListView::NoSnap || highlightRange == QmlGraphicsListView::StrictlyEnforceRange)) {
+        // These modes require the list to stop exactly on an item boundary.
+        // The initial flick will estimate the boundary to stop on.
+        // Since list items can have variable sizes, the boundary will be
+        // reevaluated and adjusted as we approach the boundary.
         qreal v = velocity;
         if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
             if (v < 0)
@@ -925,31 +1072,57 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
             else
                 v = maxVelocity;
         }
-        qreal accel = deceleration;
-        qreal v2 = v * v;
-        qreal maxAccel = v2 / (2.0f * maxDistance);
-        if (maxAccel < accel) {
-            // If we are not flicking to the end then attempt to stop exactly on an item boundary
-            qreal dist = v2 / accel / 2.0;
-            if (v > 0)
-                dist = -dist;
-            dist = -_moveY.value() - snapPosAt(-(_moveY.value() - highlightRangeStart) + dist) + highlightRangeStart;
-            if ((v < 0 && dist >= 0) || (v > 0 && dist <= 0)) {
+        if (!flicked) {
+            // the initial flick - estimate boundary
+            qreal accel = deceleration;
+            qreal v2 = v * v;
+            qreal maxAccel = v2 / (2.0f * maxDistance);
+            if (maxAccel < accel) {
+                qreal dist = v2 / (accel * 2.0);
+                if (v > 0)
+                    dist = -dist;
+                flickTargetY = -snapPosAt(-(_moveY.value() - highlightRangeStart) + dist) + highlightRangeStart;
+                dist = -flickTargetY + _moveY.value();
+                accel = v2 / (2.0f * qAbs(dist));
+                overshootDist = 0.0;
+            } else {
+                if (velocity > 0)
+                    flickTargetY = minY;
+                else
+                    flickTargetY = maxY;
+                overshootDist = overShoot ? 30 : 0;
+            }
+            timeline.reset(_moveY);
+            timeline.accel(_moveY, v, accel, maxDistance);
+            timeline.execute(fixupYEvent);
+            flicked = true;
+            emit q->flickingChanged();
+            emit q->flickStarted();
+            correctFlick = true;
+        } else {
+            // reevaluate the target boundary.
+            qreal newtarget = -snapPosAt(-(flickTargetY - highlightRangeStart)) + highlightRangeStart;
+            if (newtarget < maxY) {
+                newtarget = maxY;
+            }
+            if (newtarget == flickTargetY) {
+                // boundary unchanged - nothing to do
+                return;
+            }
+            flickTargetY = newtarget;
+            qreal dist = -newtarget + _moveY.value();
+            if ((v < 0 && dist < 0) || (v > 0 && dist > 0)) {
+                correctFlick = false;
                 timeline.reset(_moveY);
                 fixupY();
                 return;
             }
-            accel = v2 / (2.0f * qAbs(dist));
-        }
-        timeline.reset(_moveY);
-        timeline.accel(_moveY, v, accel, maxDistance);
-        timeline.execute(fixupYEvent);
-        if (!flicked) {
-            flicked = true;
-            emit q->flickingChanged();
-            emit q->flickStarted();
+            timeline.reset(_moveY);
+            timeline.accelDistance(_moveY, v, -dist + (v < 0 ? -overshootDist : overshootDist));
+            timeline.execute(fixupYEvent);
         }
     } else {
+        correctFlick = false;
         timeline.reset(_moveY);
         fixupY();
     }
@@ -1557,6 +1730,35 @@ void QmlGraphicsListView::setHighlightResizeSpeed(qreal speed)
     }
 }
 
+/*!
+    \qmlproperty enumeration ListView::snapMode
+
+    This property determines where the view will settle following a drag or flick.
+    The allowed values are:
+
+    \list
+    \o NoSnap (default) - the view will stop anywhere within the visible area.
+    \o SnapToItem - the view will settle with an item aligned with the start of
+    the view.
+    \o SnapOneItem - the view will settle no more than one item away from the first
+    visible item at the time the mouse button is released.  This mode is particularly
+    useful for moving one page at a time.
+    \endlist
+*/
+QmlGraphicsListView::SnapMode QmlGraphicsListView::snapMode() const
+{
+    Q_D(const QmlGraphicsListView);
+    return d->snapMode;
+}
+
+void QmlGraphicsListView::setSnapMode(SnapMode mode)
+{
+    Q_D(QmlGraphicsListView);
+    if (d->snapMode != mode) {
+        d->snapMode = mode;
+    }
+}
+
 void QmlGraphicsListView::viewportMoved()
 {
     Q_D(QmlGraphicsListView);
@@ -1578,6 +1780,29 @@ void QmlGraphicsListView::viewportMoved()
             int idx = d->snapIndex();
             if (idx >= 0 && idx != d->currentIndex)
                 d->updateCurrent(idx);
+        }
+    }
+
+    if ((d->haveHighlightRange && d->highlightRange == QmlGraphicsListView::StrictlyEnforceRange)
+        || d->snapMode == QmlGraphicsListView::SnapToItem) {
+        if (d->flicked && d->correctFlick) {
+            // Near an end and it seems that the extent has changed?
+            // Recalculate the flick so that we don't end up in an odd position.
+            if (d->velocityY > 0) {
+                if (d->flickTargetY - d->_moveY.value() < height()/2 && minYExtent() != d->flickTargetY)
+                    d->flickY(-d->verticalVelocity.value());
+            } else if (d->velocityY < 0) {
+                if (d->_moveY.value() - d->flickTargetY < height()/2 && maxYExtent() != d->flickTargetY)
+                    d->flickY(-d->verticalVelocity.value());
+            }
+
+            if (d->velocityX > 0) {
+                if (d->flickTargetX - d->_moveX.value() < height()/2 && minXExtent() != d->flickTargetX)
+                    d->flickX(-d->verticalVelocity.value());
+            } else if (d->velocityX < 0) {
+                if (d->_moveX.value() - d->flickTargetX < height()/2 && maxXExtent() != d->flickTargetX)
+                    d->flickX(-d->verticalVelocity.value());
+            }
         }
     }
 }

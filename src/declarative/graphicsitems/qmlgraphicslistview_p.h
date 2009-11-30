@@ -82,8 +82,11 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsListView : public QmlGraphicsFlickable
     Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
     Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
 
+    Q_PROPERTY(SnapMode snapMode READ snapMode WRITE setSnapMode)
+
     Q_ENUMS(HighlightRangeMode)
     Q_ENUMS(Orientation)
+    Q_ENUMS(SnapMode)
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
@@ -141,6 +144,10 @@ public:
 
     qreal highlightResizeSpeed() const;
     void setHighlightResizeSpeed(qreal);
+
+    enum SnapMode { NoSnap, SnapToItem, SnapOneItem };
+    SnapMode snapMode() const;
+    void setSnapMode(SnapMode mode);
 
     static QmlGraphicsListViewAttached *qmlAttachedProperties(QObject *);
 

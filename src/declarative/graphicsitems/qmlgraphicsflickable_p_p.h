@@ -111,8 +111,8 @@ public:
     QTime velocityTime;
     QPointF lastFlickablePosition;
     qreal reportedVelocitySmoothing;
-    int flickTargetX;
-    int flickTargetY;
+    qreal flickTargetX;
+    qreal flickTargetY;
     QGraphicsSceneMouseEvent *delayedPressEvent;
     QGraphicsItem *delayedPressTarget;
     QBasicTimer delayedPressTimer;
