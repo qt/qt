@@ -555,7 +555,8 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     // Clear focus on the item to remove any reference in the focusWidget chain.
     item->clearFocus();
 
-    markDirty(item, QRectF(), false, false, false, false, /*removingItemFromScene=*/true);
+    markDirty(item, QRectF(), /*invalidateChildren=*/false, /*force=*/false,
+              /*ignoreOpacity=*/false, /*removingItemFromScene=*/true);
 
     if (item->d_ptr->inDestructor) {
         // The item is actually in its destructor, we call the special method in the index.
@@ -4759,15 +4760,13 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 }
 
 void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, bool invalidateChildren,
-                                      bool maybeDirtyClipPath, bool force, bool ignoreOpacity,
-                                      bool removingItemFromScene)
+                                      bool force, bool ignoreOpacity, bool removingItemFromScene)
 {
     Q_ASSERT(item);
     if (updateAll)
         return;
 
-    if (item->d_ptr->discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath,
-                                          /*ignoreVisibleBit=*/force,
+    if (item->d_ptr->discardUpdateRequest(/*ignoreVisibleBit=*/force,
                                           /*ignoreDirtyBit=*/removingItemFromScene || invalidateChildren,
                                           /*ignoreOpacity=*/ignoreOpacity)) {
         if (item->d_ptr->dirty) {

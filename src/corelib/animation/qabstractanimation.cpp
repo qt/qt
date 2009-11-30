@@ -229,8 +229,10 @@ void QUnifiedTimer::restartAnimationTimer()
 
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
+    //in the case of consistent timing we make sure the orders in which events come is always the same
+   //for that purpose we do as if the startstoptimer would always fire before the animation timer
     if ((consistentTiming && startStopAnimationTimer.isActive()) ||
-        (event->timerId() == startStopAnimationTimer.timerId())) {
+        event->timerId() == startStopAnimationTimer.timerId()) {
         startStopAnimationTimer.stop();
 
         //we transfer the waiting animations into the "really running" state
@@ -248,8 +250,8 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
                 time.start();
             }
         }
-    } 
-    
+    }
+
     if (event->timerId() == animationTimer.timerId()) {
         // update current time on all top level animations
         updateAnimationsTime();

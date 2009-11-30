@@ -271,15 +271,6 @@ public:
         SP_QsnFrButtonSideLInactive,
         SP_QsnFrButtonSideRInactive,
         SP_QsnFrButtonCenterInactive,
-        SP_QsnFrNotepadCornerTl,
-        SP_QsnFrNotepadCornerTr,
-        SP_QsnFrNotepadCornerBl,
-        SP_QsnFrNotepadCornerBr,
-        SP_QsnFrNotepadSideT,
-        SP_QsnFrNotepadSideB,
-        SP_QsnFrNotepadSideL,
-        SP_QsnFrNotepadSideR,
-        SP_QsnFrNotepadCenter
     };
 
     enum ColorLists {
@@ -418,8 +409,6 @@ public:
 
     //set theme palette for application
     void setThemePalette(QApplication *application) const;
-    //set theme palette for style option
-    void setThemePalette(QStyleOption *option) const;
     //access to theme palette
     static QPalette* themePalette();
 

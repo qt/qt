@@ -61,7 +61,7 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 private:
-    QVBoxLayout *layout;
+    QGridLayout *layout;
     QWidget *central;
     QTextEdit* textEditor;
     QLabel *infoLabel;

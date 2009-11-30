@@ -179,6 +179,7 @@ private:
     bool prev(bool checkUnfinished);
 
     void updateStatistics();
+    void initViewHeaders();
     void modelCountChanged();
     void setupMenuBar();
     void setupToolBars();
