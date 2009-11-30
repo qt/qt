@@ -61,13 +61,10 @@ typedef void (*_qt_image_cleanup_hook_64)(qint64);
 typedef void (*_qt_pixmap_cleanup_hook_pm)(QPixmap*);
 
 class QImagePixmapCleanupHooks;
-extern QImagePixmapCleanupHooks* qt_image_and_pixmap_cleanup_hooks;
 
 class Q_GUI_EXPORT QImagePixmapCleanupHooks
 {
 public:
-    QImagePixmapCleanupHooks();
-
     static QImagePixmapCleanupHooks *instance();
 
     static void enableCleanupHooks(const QImage &image);

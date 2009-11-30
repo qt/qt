@@ -133,36 +133,46 @@ private:
     TTimeIntervalMicroSeconds iDuration;
 };
 
+static QS60Beep* qt_S60Beep = 0;
+
 QS60Beep::~QS60Beep()
 {
+    if (iToneUtil) {
+        switch (iState) {
+        case EBeepPlaying:
+            iToneUtil->CancelPlay();
+            break;
+        case EBeepNotPrepared:
+            iToneUtil->CancelPrepare();
+            break;
+        }
+    }
     delete iToneUtil;
 }
 
 QS60Beep* QS60Beep::NewL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
 {
-    QS60Beep* self=new (ELeave) QS60Beep();
+    QS60Beep* self = new (ELeave) QS60Beep();
     CleanupStack::PushL(self);
     self->ConstructL(aFrequency, aDuration);
     CleanupStack::Pop();
     return self;
-};
+}
 
 void QS60Beep::ConstructL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
 {
-    iToneUtil=CMdaAudioToneUtility::NewL(*this);
-    iState=EBeepNotPrepared;
-    iFrequency=aFrequency;
-    iDuration=aDuration;
-    iToneUtil->PrepareToPlayTone(iFrequency,iDuration);
+    iToneUtil = CMdaAudioToneUtility::NewL(*this);
+    iState = EBeepNotPrepared;
+    iFrequency = aFrequency;
+    iDuration = aDuration;
+    iToneUtil->PrepareToPlayTone(iFrequency, iDuration);
 }
 
 void QS60Beep::Play()
 {
-    if (iState != EBeepNotPrepared) {
-        if (iState == EBeepPlaying) {
-            iToneUtil->CancelPlay();
-            iState = EBeepPrepared;
-        }
+    if (iState == EBeepPlaying) {
+        iToneUtil->CancelPlay();
+        iState = EBeepPrepared;
     }
 
     iToneUtil->Play();
@@ -173,13 +183,14 @@ void QS60Beep::MatoPrepareComplete(TInt aError)
 {
     if (aError == KErrNone) {
         iState = EBeepPrepared;
+        Play();
     }
 }
 
 void QS60Beep::MatoPlayComplete(TInt aError)
 {
     Q_UNUSED(aError);
-    iState=EBeepPrepared;
+    iState = EBeepPrepared;
 }
 
 
@@ -1226,6 +1237,10 @@ void qt_init(QApplicationPrivate * /* priv */, int)
  *****************************************************************************/
 void qt_cleanup()
 {
+    if(qt_S60Beep) {
+        delete qt_S60Beep;
+        qt_S60Beep = 0;
+    }
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there
 
@@ -1467,14 +1482,13 @@ void QApplication::setCursorFlashTime(int msecs)
 
 void QApplication::beep()
 {
-    TInt frequency=440;
-    TTimeIntervalMicroSeconds duration(500000);
-    QS60Beep* beep=NULL;
-    TRAPD(err, beep=QS60Beep::NewL(frequency, duration));
-    if (!err)
-        beep->Play();
-    delete beep;
-    beep=NULL;
+    if (!qt_S60Beep) {
+        TInt frequency = 880;
+        TTimeIntervalMicroSeconds duration(500000);
+        TRAP_IGNORE(qt_S60Beep=QS60Beep::NewL(frequency, duration));
+    }
+    if (qt_S60Beep)
+        qt_S60Beep->Play();
 }
 
 /*!
