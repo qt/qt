@@ -66,7 +66,7 @@ the body of the \l Script element.
 \code
 Rectangle {
     Script {
-        function factorial(var a) {
+        function factorial(a) {
             a = Integer(a);
             if (a <= 0)
                 return 1;
@@ -85,7 +85,7 @@ as it declares the non-function variable \c lastResult.
 \code
 // Illegal inline code block
 var lastResult = 0
-function factorial(var a) {
+function factorial(a) {
     a = Integer(a);
     if (a <= 0) 
         lastResult = 1;
