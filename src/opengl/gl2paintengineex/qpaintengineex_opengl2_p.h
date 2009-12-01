@@ -221,6 +221,7 @@ public:
     void restoreDepthRangeForRenderText();
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
+    static QGL2PaintEngineExPrivate *getData(QGL2PaintEngineEx *engine) { return engine->d_func(); }
 
     QGL2PaintEngineEx* q;
     QGLPaintDevice* device;
@@ -294,6 +295,9 @@ public:
     QScopedPointer<QPixmapFilter> fastBlurFilter;
     QScopedPointer<QPixmapFilter> dropShadowFilter;
     QScopedPointer<QPixmapFilter> fastDropShadowFilter;
+
+    QSet<QVectorPath::CacheEntry *> pathCaches;
+    QVector<GLuint> unusedVBOSToClean;
 };
 
 QT_END_NAMESPACE

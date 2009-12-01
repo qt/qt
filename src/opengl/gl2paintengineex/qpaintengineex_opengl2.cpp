@@ -62,6 +62,8 @@
     and use the correct program when we really need it.
 */
 
+// #define QT_OPENGL_CACHE_AS_VBOS
+
 #include "qpaintengineex_opengl2_p.h"
 
 #include <string.h> //for memcpy
@@ -344,6 +346,13 @@ extern QImage qt_imageForBrush(int brushStyle, bool invert);
 QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
 {
     delete shaderManager;
+
+    while (pathCaches.size()) {
+        QVectorPath::CacheEntry *e = *(pathCaches.constBegin());
+        e->cleanup(e->engine, e->data);
+        e->data = 0;
+        e->engine = 0;
+    }
 }
 
 void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id)
@@ -846,6 +855,30 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     mode = newMode;
 }
 
+struct QGL2PEVectorPathCache
+{
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+    GLuint vbo;
+#else
+    float *vertices;
+#endif
+    int vertexCount;
+    GLenum primitiveType;
+    qreal iscale;
+};
+
+void qopengl2paintengine_cleanup_vectorpath(QPaintEngineEx *engine, void *data)
+{
+    QGL2PEVectorPathCache *c = (QGL2PEVectorPathCache *) data;
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+    QGL2PaintEngineExPrivate *d = QGL2PaintEngineExPrivate::getData((QGL2PaintEngineEx *) engine);
+    d->unusedVBOSToClean << c->vbo;
+#else
+    qFree(c->vertices);
+#endif
+    delete c;
+}
+
 // Assumes everything is configured for the brush you want to use
 void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 {
@@ -863,10 +896,74 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         prepareForDraw(currentBrush->isOpaque());
         composite(rect);
     } else if (path.isConvex()) {
-        vertexCoordinateArray.clear();
-        vertexCoordinateArray.addPath(path, inverseScale, false);
-        prepareForDraw(currentBrush->isOpaque());
-        drawVertexArrays(vertexCoordinateArray, GL_TRIANGLE_FAN);
+
+        if (path.isCacheable()) {
+            QVectorPath::CacheEntry *data = path.lookupCacheData(q);
+            QGL2PEVectorPathCache *cache;
+
+            if (data) {
+                cache = (QGL2PEVectorPathCache *) data->data;
+                // Check if scale factor is exceeded for curved paths and generate curves if so...
+                if (path.isCurved()) {
+                    qreal scaleFactor = cache->iscale / inverseScale;
+                    if (scaleFactor < 0.5 || scaleFactor > 2.0) {
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+                        glDeleteBuffers(1, &cache->vbo);
+                        cache->vbo = 0;
+#else
+                        qFree(cache->vertices);
+#endif
+                        cache->vertexCount = 0;
+                    }
+                }
+            } else {
+                cache = new QGL2PEVectorPathCache;
+                cache->vertexCount = 0;
+                data = const_cast<QVectorPath &>(path).addCacheData(q, cache, qopengl2paintengine_cleanup_vectorpath);
+            }
+
+            // Flatten the path at the current scale factor and fill it into the cache struct.
+            if (!cache->vertexCount) {
+                vertexCoordinateArray.clear();
+                vertexCoordinateArray.addPath(path, inverseScale, false);
+                int vertexCount = vertexCoordinateArray.vertexCount();
+                int floatSizeInBytes = vertexCount * 2 * sizeof(float);
+                cache->vertexCount = vertexCount;
+                cache->primitiveType = GL_TRIANGLE_FAN;
+                cache->iscale = inverseScale;               
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+                glGenBuffers(1, &cache->vbo);
+                glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
+                glBufferData(GL_ARRAY_BUFFER, floatSizeInBytes, vertexCoordinateArray.data(), GL_STATIC_DRAW);
+#else
+                cache->vertices = (float *) qMalloc(floatSizeInBytes);
+                memcpy(cache->vertices, vertexCoordinateArray.data(), floatSizeInBytes);
+#endif
+            }
+
+            prepareForDraw(currentBrush->isOpaque());
+            glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+            glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
+            glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, 0);
+#else
+            glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, cache->vertices);
+#endif
+            glDrawArrays(cache->primitiveType, 0, cache->vertexCount);
+
+        } else {
+      //        printf(" - Marking path as cachable...\n");
+            // Tag it for later so that if the same path is drawn twice, it is assumed to be static and thus cachable
+            // ### Remove before release...
+            static bool do_vectorpath_cache = qgetenv("QT_OPENGL_NO_PATH_CACHE").isEmpty();
+            if (do_vectorpath_cache)
+                path.makeCacheable();
+            vertexCoordinateArray.clear();
+            vertexCoordinateArray.addPath(path, inverseScale, false);
+            prepareForDraw(currentBrush->isOpaque());
+            drawVertexArrays(vertexCoordinateArray, GL_TRIANGLE_FAN);
+        }
+
     } else {
         // The path is too complicated & needs the stencil technique
         vertexCoordinateArray.clear();
@@ -1756,7 +1853,8 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->device->beginPaint();
 
 #if !defined(QT_OPENGL_ES_2)
-    bool success = qt_resolve_version_2_0_functions(d->ctx);
+    bool success = qt_resolve_version_2_0_functions(d->ctx)
+                   && qt_resolve_buffer_extensions(d->ctx);
     Q_ASSERT(success);
     Q_UNUSED(success);
 #endif
@@ -1816,6 +1914,13 @@ bool QGL2PaintEngineEx::end()
 
     delete d->shaderManager;
     d->shaderManager = 0;
+
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+    if (!d->unusedVBOSToClean.isEmpty()) {
+        glDeleteBuffers(d->unusedVBOSToClean.size(), d->unusedVBOSToClean.constData());
+        d->unusedVBOSToClean.clear();
+    }
+#endif
 
     return false;
 }

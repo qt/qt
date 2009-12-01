@@ -112,6 +112,8 @@ public:
     int stopCount() const { return vertexArrayStops.size(); }
     QGLRect         boundingRect() const;
 
+    int vertexCount() const { return vertexArray.size(); }
+
     void lineToArray(const GLfloat x, const GLfloat y);
 
 private:
