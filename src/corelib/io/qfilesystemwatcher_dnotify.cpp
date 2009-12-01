@@ -272,6 +272,9 @@ QStringList QDnotifyFileSystemWatcherEngine::addPaths(const QStringList &paths, 
             fd = qt_safe_dup(::dirfd(d));
             int parentFd = parent ? qt_safe_dup(::dirfd(parent)) : 0;
 
+            ::closedir(d);
+            if(parent) ::closedir(parent);
+
             Q_ASSERT(fd);
             if(::fcntl(fd, F_SETSIG, SIGIO) ||
                ::fcntl(fd, F_NOTIFY, DN_MODIFY | DN_CREATE | DN_DELETE |
@@ -279,10 +282,6 @@ QStringList QDnotifyFileSystemWatcherEngine::addPaths(const QStringList &paths, 
                (parent && ::fcntl(parentFd, F_SETSIG, SIGIO)) ||
                (parent && ::fcntl(parentFd, F_NOTIFY, DN_DELETE | DN_RENAME |
                                             DN_MULTISHOT))) {
-
-                ::closedir(d);
-                if(parent) ::closedir(parent);
-
                 continue; // Could not set appropriate flags
             }
 
@@ -295,9 +294,6 @@ QStringList QDnotifyFileSystemWatcherEngine::addPaths(const QStringList &paths, 
             pathToFD.insert(path, fd);
             if(parentFd)
                 parentToFD.insert(parentFd, fd);
-
-            ::closedir(d);
-            if(parent) ::closedir(parent);
         }
 
         Directory &directory = fdToDirectory[fd];
