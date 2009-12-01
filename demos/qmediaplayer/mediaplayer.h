@@ -107,10 +107,13 @@ private slots:
     void showContextMenu(const QPoint &);
     void bufferStatus(int percent);
     void openUrl();
+    void openRamFile();
     void configureEffect();
     void hasVideoChanged(bool);
 
 private:
+    void playPauseForDialog();
+
     QIcon playIcon;
     QIcon pauseIcon;
     QMenu *fileMenu;

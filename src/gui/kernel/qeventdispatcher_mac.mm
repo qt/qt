@@ -571,6 +571,12 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, false);
                 while (!d->interrupt && [NSApp runModalSession:session] == NSRunContinuesResponse)
                     qt_mac_waitForMoreModalSessionEvents();
+                if (!d->interrupt && session == d->currentModalSessionCached) {
+                    // INVARIANT: Someone called e.g. [NSApp stopModal:] from outside the event
+                    // dispatcher (e.g to stop a native dialog). But that call wrongly stopped
+                    // 'session' as well. As a result, we need to restart all internal sessions:
+                    d->temporarilyStopAllModalSessions();
+                }
             } else {
                 d->nsAppRunCalledByQt = true;
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, true);
@@ -590,7 +596,13 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
                 if (NSModalSession session = d->currentModalSession()) {
                     if (flags & QEventLoop::WaitForMoreEvents)
                         qt_mac_waitForMoreModalSessionEvents();
-                    [NSApp runModalSession:session];
+                    NSInteger status = [NSApp runModalSession:session];
+                    if (status != NSRunContinuesResponse && session == d->currentModalSessionCached) {
+                        // INVARIANT: Someone called e.g. [NSApp stopModal:] from outside the event
+                        // dispatcher (e.g to stop a native dialog). But that call wrongly stopped
+                        // 'session' as well. As a result, we need to restart all internal sessions:
+                        d->temporarilyStopAllModalSessions();
+                    }
                     retVal = true;
                     break;
                 } else {

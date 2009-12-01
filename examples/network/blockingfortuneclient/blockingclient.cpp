@@ -50,7 +50,22 @@ BlockingClient::BlockingClient(QWidget *parent)
     hostLabel = new QLabel(tr("&Server name:"));
     portLabel = new QLabel(tr("S&erver port:"));
 
-    hostLineEdit = new QLineEdit("Localhost");
+    // find out which IP to connect to
+    QString ipAddress;
+    QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
+    // use the first non-localhost IPv4 address
+    for (int i = 0; i < ipAddressesList.size(); ++i) {
+        if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
+            ipAddressesList.at(i).toIPv4Address()) {
+            ipAddress = ipAddressesList.at(i).toString();
+            break;
+        }
+    }
+    // if we did not find one, use IPv4 localhost
+    if (ipAddress.isEmpty())
+        ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
+
+    hostLineEdit = new QLineEdit(ipAddress);
     portLineEdit = new QLineEdit;
     portLineEdit->setValidator(new QIntValidator(1, 65535, this));
 
@@ -70,19 +85,19 @@ BlockingClient::BlockingClient(QWidget *parent)
     buttonBox->addButton(getFortuneButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    connect(hostLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(hostLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
-    connect(portLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(portLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
     connect(getFortuneButton, SIGNAL(clicked()),
             this, SLOT(requestNewFortune()));
     connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
 //! [0]
-    connect(&thread, SIGNAL(newFortune(const QString &)),
-            this, SLOT(showFortune(const QString &)));
+    connect(&thread, SIGNAL(newFortune(QString)),
+            this, SLOT(showFortune(QString)));
 //! [0] //! [1]
-    connect(&thread, SIGNAL(error(int, const QString &)),
-            this, SLOT(displayError(int, const QString &)));
+    connect(&thread, SIGNAL(error(int,QString)),
+            this, SLOT(displayError(int,QString)));
 //! [1]
 
     QGridLayout *mainLayout = new QGridLayout;

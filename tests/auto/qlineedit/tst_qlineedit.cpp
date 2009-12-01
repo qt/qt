@@ -51,6 +51,10 @@
 #include "qcompleter.h"
 #include "qstandarditemmodel.h"
 
+#ifndef QT_NO_CLIPBOARD
+#include "qclipboard.h"
+#endif
+
 #ifdef Q_WS_MAC
 #include <Carbon/Carbon.h> // For the random function.
 #include <cstdlib> // For the random function.
@@ -156,6 +160,10 @@ private slots:
 
     void undo_keypressevents_data();
     void undo_keypressevents();
+
+#ifndef QT_NO_CLIPBOARD
+    void QTBUG5786_undoPaste();
+#endif
 
     void clear();
 
@@ -1405,6 +1413,50 @@ void tst_QLineEdit::undo_keypressevents()
     }
     QVERIFY(testWidget->text().isEmpty());
 }
+
+#ifndef QT_NO_CLIPBOARD
+static bool nativeClipboardWorking()
+{
+#ifdef Q_WS_MAC
+    PasteboardRef pasteboard;
+    OSStatus status = PasteboardCreate(0, &pasteboard);
+    if (status == noErr)
+        CFRelease(pasteboard);
+    return status == noErr;
+#endif
+    return true;
+}
+
+void tst_QLineEdit::QTBUG5786_undoPaste()
+{
+    if (!nativeClipboardWorking())
+	   QSKIP("this machine doesn't support the clipboard", SkipAll);
+    QString initial("initial");
+    QString string("test");
+    QString additional("add");
+    QApplication::clipboard()->setText(string);
+    QLineEdit edit(initial);
+    QCOMPARE(edit.text(), initial);
+    edit.paste();
+    QCOMPARE(edit.text(), initial + string);
+    edit.paste();
+    QCOMPARE(edit.text(), initial + string + string);
+    edit.insert(additional);
+    QCOMPARE(edit.text(), initial + string + string + additional);
+    edit.undo();
+    QCOMPARE(edit.text(), initial + string + string);
+    edit.undo();
+    QCOMPARE(edit.text(), initial + string);
+    edit.undo();
+    QCOMPARE(edit.text(), initial);
+    edit.selectAll();
+    QApplication::clipboard()->setText(QString());
+    edit.paste();
+    QVERIFY(edit.text().isEmpty());
+
+}
+#endif
+
 
 void tst_QLineEdit::clear()
 {

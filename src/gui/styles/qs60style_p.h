@@ -271,15 +271,6 @@ public:
         SP_QsnFrButtonSideLInactive,
         SP_QsnFrButtonSideRInactive,
         SP_QsnFrButtonCenterInactive,
-        SP_QsnFrNotepadCornerTl,
-        SP_QsnFrNotepadCornerTr,
-        SP_QsnFrNotepadCornerBl,
-        SP_QsnFrNotepadCornerBr,
-        SP_QsnFrNotepadSideT,
-        SP_QsnFrNotepadSideB,
-        SP_QsnFrNotepadSideL,
-        SP_QsnFrNotepadSideR,
-        SP_QsnFrNotepadCenter
     };
 
     enum ColorLists {
@@ -418,8 +409,6 @@ public:
 
     //set theme palette for application
     void setThemePalette(QApplication *application) const;
-    //set theme palette for style option
-    void setThemePalette(QStyleOption *option) const;
     //access to theme palette
     static QPalette* themePalette();
 
@@ -452,6 +441,10 @@ public:
 #endif // Q_WS_S60
 
     static QSize naviPaneSize();
+
+    //Checks that the current brush is transparent or has BrushStyle NoBrush,
+    //so that theme graphic background can be drawn. 
+    static bool canDrawThemeBackground(const QBrush &backgroundBrush);
 
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,

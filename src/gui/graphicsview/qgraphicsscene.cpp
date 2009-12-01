@@ -555,7 +555,8 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     // Clear focus on the item to remove any reference in the focusWidget chain.
     item->clearFocus();
 
-    markDirty(item, QRectF(), false, false, false, false, /*removingItemFromScene=*/true);
+    markDirty(item, QRectF(), /*invalidateChildren=*/false, /*force=*/false,
+              /*ignoreOpacity=*/false, /*removingItemFromScene=*/true);
 
     if (item->d_ptr->inDestructor) {
         // The item is actually in its destructor, we call the special method in the index.
@@ -2556,11 +2557,9 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     item->d_ptr->resolveFont(d->font.resolve());
     item->d_ptr->resolvePalette(d->palette.resolve());
 
-    if (!item->d_ptr->explicitlyHidden) {
-       if (d->unpolishedItems.isEmpty())
-           QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
-       d->unpolishedItems.insert(item);
-    }
+   if (d->unpolishedItems.isEmpty())
+       QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+   d->unpolishedItems.insert(item);
 
     // Reenable selectionChanged() for individual items
     --d->selectionChanging;
@@ -4422,9 +4421,12 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         bool allowPartialCacheExposure = !viewRect.contains(deviceRect);
 #else
         // Only if deviceRect is 20% taller or wider than the desktop.
-        QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
-        bool allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
-                                          || desktopRect.height() * 1.2 < deviceRect.height());
+        bool allowPartialCacheExposure = false;
+        if (widget) {
+            QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
+            allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
+                                         || desktopRect.height() * 1.2 < deviceRect.height());
+        }
 #endif
         QRegion scrollExposure;
         if (deviceData->cacheIndent != QPoint() || allowPartialCacheExposure) {
@@ -4758,15 +4760,13 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 }
 
 void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, bool invalidateChildren,
-                                      bool maybeDirtyClipPath, bool force, bool ignoreOpacity,
-                                      bool removingItemFromScene)
+                                      bool force, bool ignoreOpacity, bool removingItemFromScene)
 {
     Q_ASSERT(item);
     if (updateAll)
         return;
 
-    if (item->d_ptr->discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath,
-                                          /*ignoreVisibleBit=*/force,
+    if (item->d_ptr->discardUpdateRequest(/*ignoreVisibleBit=*/force,
                                           /*ignoreDirtyBit=*/removingItemFromScene || invalidateChildren,
                                           /*ignoreOpacity=*/ignoreOpacity)) {
         if (item->d_ptr->dirty) {

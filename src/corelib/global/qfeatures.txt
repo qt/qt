@@ -216,7 +216,7 @@ SeeAlso: ???
 Feature: SETTINGS
 Description: Supports persistent application settings.
 Section: File I/O
-Requires: TEXTSTREAM
+Requires:
 Name: QSettings
 SeeAlso: ???
 

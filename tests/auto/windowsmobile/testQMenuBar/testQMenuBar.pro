@@ -1,2 +1,3 @@
 SOURCES += main.cpp
-DESTDIR = ./
+TARGET = ../testQMenuBar
+

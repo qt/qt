@@ -1215,6 +1215,30 @@ bool QDialogButtonBox::event(QEvent *event)
     }else if (event->type() == QEvent::LanguageChange) {
         d->retranslateStrings();
     }
+#ifdef QT_SOFTKEYS_ENABLED
+    else if (event->type() == QEvent::ParentChange) {
+        QWidget *dialog = 0;
+        QWidget *p = this;
+        while (p && !p->isWindow()) {
+            p = p->parentWidget();
+            if ((dialog = qobject_cast<QDialog *>(p)))
+                break;
+        }
+
+        // If the parent changes, then move the softkeys
+        for (QHash<QAbstractButton *, QAction *>::const_iterator it = d->softKeyActions.constBegin();
+            it != d->softKeyActions.constEnd(); ++it) {
+            QAction *current = it.value();
+            QList<QWidget *> widgets = current->associatedWidgets();
+            foreach (QWidget *w, widgets)
+                w->removeAction(current);
+            if (dialog)
+                dialog->addAction(current);
+            else
+                addAction(current);
+        }
+    }
+#endif
 
     return QWidget::event(event);
 }

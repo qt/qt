@@ -1864,12 +1864,12 @@ void QFileSystemModelPrivate::init()
 {
     Q_Q(QFileSystemModel);
     qRegisterMetaType<QList<QPair<QString,QFileInfo> > >("QList<QPair<QString,QFileInfo> >");
-    q->connect(&fileInfoGatherer, SIGNAL(newListOfFiles(const QString &, const QStringList &)),
-               q, SLOT(_q_directoryChanged(const QString &, const QStringList &)));
-    q->connect(&fileInfoGatherer, SIGNAL(updates(const QString &, const QList<QPair<QString, QFileInfo> > &)),
-            q, SLOT(_q_fileSystemChanged(const QString &, const QList<QPair<QString, QFileInfo> > &)));
-    q->connect(&fileInfoGatherer, SIGNAL(nameResolved(const QString &, const QString &)),
-            q, SLOT(_q_resolvedName(const QString &, const QString &)));
+    q->connect(&fileInfoGatherer, SIGNAL(newListOfFiles(QString,QStringList)),
+               q, SLOT(_q_directoryChanged(QString,QStringList)));
+    q->connect(&fileInfoGatherer, SIGNAL(updates(QString,QList<QPair<QString,QFileInfo> >)),
+            q, SLOT(_q_fileSystemChanged(QString,QList<QPair<QString,QFileInfo> >)));
+    q->connect(&fileInfoGatherer, SIGNAL(nameResolved(QString,QString)),
+            q, SLOT(_q_resolvedName(QString,QString)));
     q->connect(&delayedSortTimer, SIGNAL(timeout()), q, SLOT(_q_performDelayedSort()), Qt::QueuedConnection);
 }
 

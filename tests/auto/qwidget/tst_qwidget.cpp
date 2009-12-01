@@ -384,9 +384,14 @@ private slots:
 
     void activateWindow();
 
+    void openModal_taskQTBUG_5804();
+
 #ifdef Q_OS_SYMBIAN
     void cbaVisibility();
 #endif
+
+    void focusProxyAndInputMethods();
+    void scrollWithoutBackingStore();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -9581,6 +9586,29 @@ void tst_QWidget::activateWindow()
     QTRY_VERIFY(!mainwindow2->isActiveWindow());
 }
 
+void tst_QWidget::openModal_taskQTBUG_5804()
+{
+    class Widget : public QWidget
+    {
+    public:
+        Widget(QWidget *parent) : QWidget(parent)
+        {
+        }
+        ~Widget()
+        {
+            QMessageBox msgbox;
+            QTimer::singleShot(10, &msgbox, SLOT(accept()));
+            msgbox.exec(); //open a modal dialog
+        }
+    };
+
+    QWidget *win = new QWidget;
+    new Widget(win);
+    win->show();
+    QTest::qWaitForWindowShown(win);
+    delete win;
+}
+
 #ifdef Q_OS_SYMBIAN
 void tst_QWidget::cbaVisibility()
 {
@@ -9618,6 +9646,100 @@ void tst_QWidget::cbaVisibility()
     QVERIFY(buttonGroup->IsVisible());
 }
 #endif
+
+class InputContextTester : public QInputContext
+{
+    Q_OBJECT
+public:
+    QString identifierName() { return QString(); }
+    bool isComposing() const { return false; }
+    QString language() { return QString(); }
+    void reset() { ++resets; }
+    int resets;
+};
+
+void tst_QWidget::focusProxyAndInputMethods()
+{
+    InputContextTester *inputContext = new InputContextTester;
+    QWidget *toplevel = new QWidget(0, Qt::X11BypassWindowManagerHint);
+    toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
+    toplevel->setInputContext(inputContext); // ownership is transferred
+
+    QWidget *child = new QWidget(toplevel);
+    child->setFocusProxy(toplevel);
+    child->setAttribute(Qt::WA_InputMethodEnabled, true);
+
+    toplevel->setFocusPolicy(Qt::WheelFocus);
+    child->setFocusPolicy(Qt::WheelFocus);
+
+    QVERIFY(!child->hasFocus());
+    QVERIFY(!toplevel->hasFocus());
+
+    toplevel->show();
+    QTest::qWaitForWindowShown(toplevel);
+    QApplication::setActiveWindow(toplevel);
+    QVERIFY(toplevel->hasFocus());
+    QVERIFY(child->hasFocus());
+
+    // verify that toggling input methods on the child widget
+    // correctly propagate to the focus proxy's input method
+    // and that the input method gets the focus proxy passed
+    // as the focus widget instead of the child widget.
+    // otherwise input method queries go to the wrong widget
+
+    QCOMPARE(inputContext->focusWidget(), toplevel);
+
+    child->setAttribute(Qt::WA_InputMethodEnabled, false);
+    QVERIFY(!inputContext->focusWidget());
+
+    child->setAttribute(Qt::WA_InputMethodEnabled, true);
+    QCOMPARE(inputContext->focusWidget(), toplevel);
+
+    child->setEnabled(false);
+    QVERIFY(!inputContext->focusWidget());
+
+    child->setEnabled(true);
+    QCOMPARE(inputContext->focusWidget(), toplevel);
+
+    delete toplevel;
+}
+
+class scrollWidgetWBS : public QWidget
+{
+public:
+    void deleteBackingStore()
+    {
+        if (static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
+            delete static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore;    
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = 0;
+        }
+    }
+    void enableBackingStore()
+    {
+        if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = new QWidgetBackingStore(this);
+            static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBuffer(this->rect());
+            repaint();
+        }
+    }
+};
+
+void tst_QWidget::scrollWithoutBackingStore()
+{
+    scrollWidgetWBS scrollable;
+    scrollable.resize(100,100);
+    QLabel child(QString("@"),&scrollable);
+    child.resize(50,50);
+    scrollable.show();
+    QTest::qWaitForWindowShown(&scrollable);
+    scrollable.scroll(50,50);
+    QCOMPARE(child.pos(),QPoint(50,50));
+    scrollable.deleteBackingStore();
+    scrollable.scroll(-25,-25);
+    QCOMPARE(child.pos(),QPoint(25,25));
+    scrollable.enableBackingStore();
+    QCOMPARE(child.pos(),QPoint(25,25));
+}
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"

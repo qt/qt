@@ -85,9 +85,9 @@ FtpWindow::FtpWindow(QWidget *parent)
 
     progressDialog = new QProgressDialog(this);
 
-    connect(fileList, SIGNAL(itemActivated(QTreeWidgetItem *, int)),
-            this, SLOT(processItem(QTreeWidgetItem *, int)));
-    connect(fileList, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
+    connect(fileList, SIGNAL(itemActivated(QTreeWidgetItem*,int)),
+            this, SLOT(processItem(QTreeWidgetItem*,int)));
+    connect(fileList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
             this, SLOT(enableDownloadButton()));
     connect(progressDialog, SIGNAL(canceled()), this, SLOT(cancelDownload()));
     connect(connectButton, SIGNAL(clicked()), this, SLOT(connectOrDisconnect()));
@@ -163,12 +163,12 @@ void FtpWindow::connectOrDisconnect()
 
 //![1]
     ftp = new QFtp(this);
-    connect(ftp, SIGNAL(commandFinished(int, bool)),
-            this, SLOT(ftpCommandFinished(int, bool)));
-    connect(ftp, SIGNAL(listInfo(const QUrlInfo &)),
-            this, SLOT(addToList(const QUrlInfo &)));
-    connect(ftp, SIGNAL(dataTransferProgress(qint64, qint64)),
-            this, SLOT(updateDataTransferProgress(qint64, qint64)));
+    connect(ftp, SIGNAL(commandFinished(int,bool)),
+            this, SLOT(ftpCommandFinished(int,bool)));
+    connect(ftp, SIGNAL(listInfo(QUrlInfo)),
+            this, SLOT(addToList(QUrlInfo)));
+    connect(ftp, SIGNAL(dataTransferProgress(qint64,qint64)),
+            this, SLOT(updateDataTransferProgress(qint64,qint64)));
 
     fileList->clear();
     currentPath.clear();

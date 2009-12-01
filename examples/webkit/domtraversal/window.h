@@ -46,7 +46,9 @@
 #include <QUrl>
 #include <QWebElement>
 
+QT_BEGIN_NAMESPACE
 class QTreeWidgetItem;
+QT_END_NAMESPACE
 
 //! [Window class definition]
 #include "ui_window.h"

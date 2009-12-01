@@ -106,6 +106,7 @@ private slots:
     void font_data();
     void font();
     void fontPropagation();
+    void fontChangedEvent();
     void fontPropagationWidgetItemWidget();
     void fontPropagationSceneChange();
     void geometry_data();
@@ -161,6 +162,7 @@ private slots:
     void respectHFW();
     void addChildInpolishEvent();
     void polishEvent();
+    void polishEvent2();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -670,6 +672,40 @@ void tst_QGraphicsWidget::fontPropagation()
     QVERIFY(child2->font().bold());
     QVERIFY(!child2->font().italic());
     QCOMPARE(child2->font().pointSize(), 43);
+}
+
+void tst_QGraphicsWidget::fontChangedEvent()
+{
+    QGraphicsWidget *root = new QGraphicsWidget;
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    // Check that only the application fonts apply.
+    QFont appFont = QApplication::font();
+    QCOMPARE(scene.font(), appFont);
+    QCOMPARE(root->font(), appFont);
+
+    EventSpy rootSpyFont(root, QEvent::FontChange);
+    EventSpy rootSpyPolish(root, QEvent::Polish);
+    QCOMPARE(rootSpyFont.count(), 0);
+    QApplication::processEvents(); //The polish event is sent
+    QCOMPARE(rootSpyPolish.count(), 1);
+    QApplication::processEvents(); //Process events to see if we get the font change event
+    //The font is still the same so no fontChangeEvent
+    QCOMPARE(rootSpyFont.count(), 0);
+
+    QFont font;
+    font.setPointSize(43);
+    root->setFont(font);
+    QApplication::processEvents(); //Process events to get the font change event
+    //The font changed
+    QCOMPARE(rootSpyFont.count(), 1);
+
+    //then roll back to the default one.
+    root->setFont(appFont);
+    QApplication::processEvents(); //Process events to get the font change event
+    //The font changed
+    QCOMPARE(rootSpyFont.count(), 2);
 }
 
 void tst_QGraphicsWidget::fontPropagationWidgetItemWidget()
@@ -2794,6 +2830,29 @@ void tst_QGraphicsWidget::polishEvent()
 
     // Make sure the item got polish before paint.
     QCOMPARE(widget->events.at(0), QEvent::Polish);
+}
+
+void tst_QGraphicsWidget::polishEvent2()
+{
+    class MyGraphicsWidget : public QGraphicsWidget
+    { public:
+    void polishEvent()
+    { events << QEvent::Polish; }
+    QList<QEvent::Type> events;
+    };
+
+    QGraphicsScene scene;
+
+    MyGraphicsWidget *widget = new MyGraphicsWidget;
+    widget->hide();
+    scene.addItem(widget);
+
+    widget->events.clear();
+
+    QApplication::processEvents();
+
+    // Make sure the item got polish event.
+    QVERIFY(widget->events.contains(QEvent::Polish));
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)

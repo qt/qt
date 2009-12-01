@@ -52,6 +52,7 @@
 
 #include <QtCore/qcoreapplication.h>
 #include "qaudiooutput_alsa_p.h"
+#include "qaudiodeviceinfo_alsa_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -281,21 +282,31 @@ bool QAudioOutputPrivate::open()
     unsigned int freakuency=settings.frequency();
 
     QString dev = QLatin1String(m_device.constData());
-    if(!dev.contains(QLatin1String("default"))) {
-#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14) 
-        dev = QString(QLatin1String("default:CARD=%1")).arg(QLatin1String(m_device.constData()));
+    QList<QByteArray> devices = QAudioDeviceInfoInternal::availableDevices(QAudio::AudioOutput);
+    if(dev.compare(QLatin1String("default")) == 0) {
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
+        dev = QLatin1String(devices.first().constData());
+#else
+        dev = QLatin1String("hw:0,0");
+#endif
+    } else {
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
+        dev = QLatin1String(m_device);
 #else
         int idx = 0;
         char *name;
 
+        QString shortName = QLatin1String(m_device.mid(m_device.indexOf('=',0)+1).constData());
+
 	while(snd_card_get_name(idx,&name) == 0) {
-            if(m_device.contains(name))
+            if(qstrncmp(shortName.toLocal8Bit().constData(),name,shortName.length()) == 0)
                 break;
             idx++;
 	}
         dev = QString(QLatin1String("hw:%1,0")).arg(idx);
 #endif
     }
+
     // Step 1: try and open the device
     while((count < 5) && (err < 0)) {
         err=snd_pcm_open(&handle,dev.toLocal8Bit().constData(),SND_PCM_STREAM_PLAYBACK,0);
@@ -666,7 +677,7 @@ qint64 QAudioOutputPrivate::elapsedUSecs() const
     if (deviceState == QAudio::StoppedState)
         return 0;
 
-#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14) 
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
     snd_pcm_status_t* status;
     snd_pcm_status_alloca(&status);
 

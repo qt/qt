@@ -88,22 +88,11 @@ static const char will_shutdown_now[] =
     "timeout and will shut down.\n"
     "Contact http://qt.nokia.com/about/contact-us for pricing and purchasing information.\n";
 
-static int qt_eval_days_left()
+static int qt_eval_is_supported()
 {
     const char *const license_key = qt_eval_key_data + 12;
 
     // fast fail
-    if (!qt_eval_key_data[0] || !*license_key)
-        return -2;
-
-    QDate today = QDate::currentDate();
-    QDate build = QLibraryInfo::buildDate();
-    return qMax(-1, today.daysTo(build) + 30);
-}
-
-static int qt_eval_is_supported()
-{
-    const char *const license_key = qt_eval_key_data + 12;
     if (!qt_eval_key_data[0] || !*license_key)
         return -1;
 
@@ -121,6 +110,16 @@ static int qt_eval_is_supported()
             return 1;
     }
     return -1;
+}
+
+static int qt_eval_days_left()
+{
+    if (qt_eval_is_supported() < 0)
+        return -2;
+
+    QDate today = QDate::currentDate();
+    QDate build = QLibraryInfo::buildDate();
+    return qMax(-1, today.daysTo(build) + 30);
 }
 
 static QString qt_eval_string()
@@ -178,6 +177,9 @@ public:
 
 void qt_core_eval_init(uint type)
 {
+    if (!type)
+        return;     // GUI app
+
     switch (qt_eval_days_left()) {
     case -2:
         return;

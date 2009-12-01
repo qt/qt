@@ -82,7 +82,7 @@ Window::Window()
     filterColumnLabel = new QLabel(tr("Filter &column:"));
     filterColumnLabel->setBuddy(filterColumnComboBox);
 
-    connect(filterPatternLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(filterPatternLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(filterRegExpChanged()));
     connect(filterSyntaxComboBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(filterRegExpChanged()));

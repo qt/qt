@@ -127,11 +127,19 @@ static const int groupBoxBottomMargin    =  2;  // space below the groupbox
 static const int groupBoxTitleMargin     =  6;  // space between contents and title
 static const int groupBoxTopMargin       =  2;
 
+/*!
+  Returns the configuration string for \a value.
+  Returns \a fallback if \a value is not found.
+ */
 QString QGtkStyle::getGConfString(const QString &value, const QString &fallback)
 {
     return QGtkStylePrivate::getGConfString(value, fallback);
 }
 
+/*!
+  Returns the configuration boolean for \a key.
+  Returns \a fallback if \a key is not found.
+ */
 bool QGtkStyle::getGConfBool(const QString &key, bool fallback)
 {
     return QGtkStylePrivate::getGConfBool(key, fallback);
@@ -1360,7 +1368,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     else {
                         gtkCachedPainter.paintFlatBox(gtkEntry, "entry_bg", contentRect,
                                                 option->state & State_Enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
-                                                GTK_SHADOW_NONE, style, entryPath + QString::number(focus));
+                                                GTK_SHADOW_NONE, gtkCombo->style, entryPath + QString::number(focus));
                     }
 
                     gtkCachedPainter.paintShadow(gtkEntry, comboBox->editable ? "entry" : "frame", frameRect, frameState,
@@ -2513,7 +2521,7 @@ void QGtkStyle::drawControl(ControlElement element,
             bool selected = menuItem->state & State_Selected && menuItem->state & State_Enabled;
 
             if (selected) {
-                QRect rect = option->rect.adjusted(0, 0, -1, -1);
+                QRect rect = option->rect.adjusted(0, 0, 0, -1);
 #ifndef QT_NO_COMBOBOX
                 if (qobject_cast<const QComboBox*>(widget))
                     rect = option->rect;
@@ -2620,7 +2628,7 @@ void QGtkStyle::drawControl(ControlElement element,
                 int pixw = pixmap.width();
                 int pixh = pixmap.height();
                 QRect pmr(0, 0, pixw, pixh);
-                pmr.moveCenter(vCheckRect.center());
+                pmr.moveCenter(vCheckRect.center() - QPoint(0, 1));
                 painter->setPen(menuItem->palette.text().color());
                 if (!ignoreCheckMark && checkable && checked) {
                     QStyleOption opt = *option;
@@ -2662,8 +2670,8 @@ void QGtkStyle::drawControl(ControlElement element,
             menuitem->rect.getRect(&x, &y, &w, &h);
             int tab = menuitem->tabWidth;
             int xm = windowsItemFrame + checkcol + windowsItemHMargin;
-            int xpos = menuitem->rect.x() + xm;
-            QRect textRect(xpos, y + windowsItemVMargin, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
+            int xpos = menuitem->rect.x() + xm + 1;
+            QRect textRect(xpos, y + windowsItemVMargin - 1, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
             QRect vTextRect = visualRect(opt->direction, menuitem->rect, textRect);
             QString s = menuitem->text;
 
@@ -2710,13 +2718,19 @@ void QGtkStyle::drawControl(ControlElement element,
                 QFontMetrics fm(menuitem->font);
                 int arrow_size = fm.ascent() + fm.descent() - 2 * gtkMenuItem->style->ythickness;
                 gfloat arrow_scaling = 0.8;
+                int extra = 0;
+                if (!d->gtk_check_version(2, 16, 0)) {
+                    // "arrow-scaling" is actually hardcoded and fails on hardy (see gtk+-2.12/gtkmenuitem.c)
+                    // though the current documentation states otherwise
+                    d->gtk_widget_style_get(gtkMenuItem, "arrow-scaling", &arrow_scaling, NULL);
+                    // in versions < 2.16 ythickness was previously subtracted from the arrow_size
+                    extra = 2 * gtkMenuItem->style->ythickness;
+                }
 
-                // "arrow-scaling" is actually hardcoded and fails on hardy (see gtk+-2.12/gtkmenuitem.c)
-                // though the current documentation states otherwise
                 int horizontal_padding;
                 d->gtk_widget_style_get(gtkMenuItem, "horizontal-padding", &horizontal_padding, NULL);
 
-                const int dim = static_cast<int>(arrow_size * arrow_scaling);
+                const int dim = static_cast<int>(arrow_size * arrow_scaling) + extra;
                 int xpos = menuItem->rect.left() + menuItem->rect.width() - horizontal_padding - dim;
                 QRect  vSubMenuRect = visualRect(option->direction, menuItem->rect,
                                                  QRect(xpos, menuItem->rect.top() +
@@ -3115,7 +3129,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
     case CT_ToolButton:
         if (const QStyleOptionToolButton *toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             GtkWidget *gtkButton = d->gtkWidget(QLS("GtkToolButton.GtkButton"));
-            newSize = size + QSize(2 * gtkButton->style->xthickness, 1 + 2 * gtkButton->style->ythickness);
+            newSize = size + QSize(2 * gtkButton->style->xthickness, 2 + 2 * gtkButton->style->ythickness);
             if (widget && qobject_cast<QToolBar *>(widget->parentWidget())) {
                 QSize minSize(0, 25);
                 if (toolbutton->toolButtonStyle != Qt::ToolButtonTextOnly)
@@ -3147,7 +3161,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
 
             GtkWidget *gtkMenuItem = d->gtkWidget(QLS("GtkMenu.GtkMenuItem"));
             GtkStyle* style = gtkMenuItem->style;
-            newSize += QSize(textMargin + style->xthickness - 2, style->ythickness - 4);
+            newSize += QSize(textMargin + style->xthickness - 1, style->ythickness - 3);
 
             // Cleanlooks assumes a check column of 20 pixels so we need to
             // expand it a bit
@@ -3167,7 +3181,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
 
     case CT_SpinBox:
         // QSpinBox does some nasty things that depends on CT_LineEdit
-        newSize = size + QSize(0, -d->gtkWidget(QLS("GtkSpinButton"))->style->ythickness * 2 + 2);
+        newSize = size + QSize(0, -d->gtkWidget(QLS("GtkSpinButton"))->style->ythickness * 2);
         break;
 
     case CT_PushButton:
@@ -3198,13 +3212,9 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
     }
     break;
 
-    case CT_MenuBarItem://cleanlooks adds 2 pixels
-        newSize = QWindowsStyle::sizeFromContents(type, option, size, widget) + QSize(0, 1);
-        break;
-
     case CT_LineEdit: {
         GtkWidget *gtkEntry = d->gtkWidget(QLS("GtkEntry"));
-        newSize = size + QSize(2*gtkEntry->style->xthickness, 2*gtkEntry->style->ythickness);
+        newSize = size + QSize(2*gtkEntry->style->xthickness, 2 + 2*gtkEntry->style->ythickness);
     }
     break;
 
@@ -3219,7 +3229,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
             newSize = size + QSize(12 + arrowButtonRect.width() + 2*gtkCombo->style->xthickness, 4 + 2*gtkCombo->style->ythickness);
 
             if (!(widget && qobject_cast<QToolBar *>(widget->parentWidget())))
-                newSize += QSize(0, 3);
+                newSize += QSize(0, 2);
         }
         break;
 
@@ -3232,7 +3242,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
             if (!tab->icon.isNull())
                 newSize += QSize(6, 0);
         }
-        newSize += QSize(1, 0);
+        newSize += QSize(1, 1);
         break;
 
     default:

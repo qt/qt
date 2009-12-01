@@ -3084,9 +3084,10 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #endif
 #ifndef QT_NO_IM
     if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
-        QInputContext *qic = inputContext();
+        QWidget *focusWidget = effectiveFocusWidget();
+        QInputContext *qic = focusWidget->d_func()->inputContext();
         if (enable) {
-            qic->setFocusWidget(q);
+            qic->setFocusWidget(focusWidget);
         } else {
             qic->reset();
             qic->setFocusWidget(0);
@@ -4604,7 +4605,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
     if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolve();
-    } else 
+    } else
 #endif //QT_NO_GRAPHICSVIEW
     if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedFontResolveMask = 0;
@@ -4676,8 +4677,10 @@ void QWidgetPrivate::resolveLayoutDirection()
     By default, this property is set to Qt::LeftToRight.
 
     When the layout direction is set on a widget, it will propagate to
-    the widget's children. Children added after the call to \c
-    setLayoutDirection() will not inherit the parent's layout
+    the widget's children, but not to a child that is a window and not
+    to a child for which setLayoutDirection() has been explicitly
+    called. Also, child widgets added \e after setLayoutDirection()
+    has been called for the parent do not inherit the parent's layout
     direction.
 
     \sa QApplication::layoutDirection
@@ -8245,7 +8248,8 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                QApplication::sendEvent(o, event);
+                if (o)
+                    QApplication::sendEvent(o, event);
             }
         }
         update();
@@ -8274,7 +8278,7 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                if (o != QApplication::activeModalWidget()) {
+                if (o && o != QApplication::activeModalWidget()) {
                     if (qobject_cast<QWidget *>(o) && static_cast<QWidget *>(o)->isWindow()) {
                         // do not forward the event to child windows,
                         // QApplication does this for us
@@ -9893,13 +9897,13 @@ void QWidget::scroll(int dx, int dy)
     Q_D(QWidget);
 #ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
-	// Graphics View maintains its own dirty region as a list of rects;
-	// until we can connect item updates directly to the view, we must
-	// separately add a translated dirty region.
-	if (!d->dirty.isEmpty()) {
-	    foreach (const QRect &rect, (d->dirty.translated(dx, dy)).rects())
-		proxy->update(rect);
-	}
+        // Graphics View maintains its own dirty region as a list of rects;
+        // until we can connect item updates directly to the view, we must
+        // separately add a translated dirty region.
+        if (!d->dirty.isEmpty()) {
+            foreach (const QRect &rect, (d->dirty.translated(dx, dy)).rects())
+                proxy->update(rect);
+        }
         proxy->scroll(dx, dy, proxy->subWidgetRect(this));
         return;
     }
@@ -9928,13 +9932,13 @@ void QWidget::scroll(int dx, int dy, const QRect &r)
     Q_D(QWidget);
 #ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
-	// Graphics View maintains its own dirty region as a list of rects;
-	// until we can connect item updates directly to the view, we must
-	// separately add a translated dirty region.
-	if (!d->dirty.isEmpty()) {
-	    foreach (const QRect &rect, (d->dirty.translated(dx, dy) & r).rects())
-		proxy->update(rect);
-	}
+        // Graphics View maintains its own dirty region as a list of rects;
+        // until we can connect item updates directly to the view, we must
+        // separately add a translated dirty region.
+        if (!d->dirty.isEmpty()) {
+            foreach (const QRect &rect, (d->dirty.translated(dx, dy) & r).rects())
+                proxy->update(rect);
+        }
         proxy->scroll(dx, dy, r.translated(proxy->subWidgetRect(this).topLeft().toPoint()));
         return;
     }
@@ -10348,9 +10352,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break; }
     case Qt::WA_NativeWindow: {
 #ifndef QT_NO_IM
+        QWidget *focusWidget = d->effectiveFocusWidget();
         QInputContext *ic = 0;
         if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
-            ic = d->inputContext();
+            ic = focusWidget->d_func()->inputContext();
             ic->reset();
             ic->setFocusWidget(0);
         }
@@ -10359,7 +10364,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
         if (ic && isEnabled())
-            ic->setFocusWidget(this);
+            ic->setFocusWidget(focusWidget);
 #endif //QT_NO_IM
         break;
     }
@@ -10391,13 +10396,14 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
-        QInputContext *ic = d->ic;
+        QWidget *focusWidget = d->effectiveFocusWidget();
+        QInputContext *ic = focusWidget->d_func()->ic;
         if (!ic && (!on || hasFocus()))
-            ic = d->inputContext();
+            ic = focusWidget->d_func()->inputContext();
         if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
-                ic->setFocusWidget(this);
-            } else if (!on && ic->focusWidget() == this) {
+            if (on && hasFocus() && ic->focusWidget() != focusWidget && isEnabled()) {
+                ic->setFocusWidget(focusWidget);
+            } else if (!on && ic->focusWidget() == focusWidget) {
                 ic->reset();
                 ic->setFocusWidget(0);
             }
@@ -11866,8 +11872,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     isVisible() returns false for a widget, that widget cannot call
     grabMouse().
 
-    \sa releaseMouse() grabKeyboard() releaseKeyboard() grabKeyboard()
-    focusWidget()
+    \sa releaseMouse() grabKeyboard() releaseKeyboard()
 */
 
 /*!

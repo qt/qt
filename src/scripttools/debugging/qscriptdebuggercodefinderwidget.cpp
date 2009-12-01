@@ -143,7 +143,7 @@ QScriptDebuggerCodeFinderWidget::QScriptDebuggerCodeFinderWidget(QWidget *parent
 
     d->editFind = new QLineEdit(this);
     d->editFind->setMinimumSize(QSize(150, 0));
-    connect(d->editFind, SIGNAL(textChanged(const QString&)),
+    connect(d->editFind, SIGNAL(textChanged(QString)),
             this, SLOT(_q_updateButtons()));
     connect(d->editFind, SIGNAL(returnPressed()),
             this, SLOT(_q_next()));

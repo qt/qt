@@ -229,7 +229,7 @@ void QMenuPrivate::updateActionRects() const
     Q_Q(const QMenu);
     if (!itemsDirty)
         return;
-		
+
     q->ensurePolished();
 
     //let's reinitialize the buffer
@@ -292,7 +292,7 @@ void QMenuPrivate::updateActionRects() const
         if (!action->isVisible() ||
             (collapsibleSeparators && previousWasSeparator && action->isSeparator()))
             continue; // we continue, this action will get an empty QRect
-        
+
         previousWasSeparator = action->isSeparator();
 
         //let the style modify the above size..
@@ -653,6 +653,24 @@ void QMenuPrivate::_q_overrideMenuActionDestroyed()
 {
     menuAction=defaultMenuAction;
 }
+
+
+void QMenuPrivate::updateLayoutDirection()
+{
+    Q_Q(QMenu);
+    //we need to mimic the cause of the popup's layout direction
+    //to allow setting it on a mainwindow for example
+    //we call setLayoutDirection_helper to not overwrite a user-defined value
+    if (!q->testAttribute(Qt::WA_SetLayoutDirection)) {
+        if (QWidget *w = causedPopup.widget)
+            setLayoutDirection_helper(w->layoutDirection());
+        else if (QWidget *w = q->parentWidget())
+            setLayoutDirection_helper(w->layoutDirection());
+        else
+            setLayoutDirection_helper(QApplication::layoutDirection());
+    }
+}
+
 
 /*!
     Returns the action associated with this menu.
@@ -1106,6 +1124,7 @@ void QMenuPrivate::_q_actionTriggered()
 {
     Q_Q(QMenu);
     if (QAction *action = qobject_cast<QAction *>(q->sender())) {
+        QWeakPointer<QAction> actionGuard = action;
 #ifdef QT3_SUPPORT
         //we store it here because the action might be deleted/changed by connected slots
         const int id = q->findIdForAction(action);
@@ -1115,12 +1134,12 @@ void QMenuPrivate::_q_actionTriggered()
         emit q->activated(id);
 #endif
 
-        if (!activationRecursionGuard) {
+        if (!activationRecursionGuard && actionGuard) {
             //in case the action has not been activated by the mouse
             //we check the parent hierarchy
             QList< QPointer<QWidget> > list;
             for(QWidget *widget = q->parentWidget(); widget; ) {
-                if (qobject_cast<QMenu*>(widget) 
+                if (qobject_cast<QMenu*>(widget)
 #ifndef QT_NO_MENUBAR
                     || qobject_cast<QMenuBar*>(widget)
 #endif
@@ -1287,7 +1306,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     the addAction(), addActions() and insertAction() functions. An action
     is represented vertically and rendered by QStyle. In addition, actions
     can have a text label, an optional icon drawn on the very left side,
-    and shortcut key sequence such as "Ctrl+X". 
+    and shortcut key sequence such as "Ctrl+X".
 
     The existing actions held by a menu can be found with actions().
 
@@ -1796,6 +1815,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->tearoffHighlighted = 0;
     d->motions = 0;
     d->doChildEffects = true;
+    d->updateLayoutDirection();
 
 #ifndef QT_NO_MENUBAR
     // if this menu is part of a chain attached to a QMenuBar, set the
@@ -1886,9 +1906,9 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
                 pos.setX(qMax(p.x()-size.width(), screen.right()-desktopFrame-size.width()+1));
         } else {
             if (pos.x()+size.width()-1 > screen.right()-desktopFrame)
-                pos.setX(qMin(p.x()+size.width(), screen.right()-desktopFrame-size.width()+1));
+                pos.setX(screen.right()-desktopFrame-size.width()+1);
             if (pos.x() < screen.left()+desktopFrame)
-                pos.setX(qMax(p.x(), screen.left() + desktopFrame));
+                pos.setX(screen.left() + desktopFrame);
         }
         if (pos.y() + size.height() - 1 > screen.bottom() - desktopFrame) {
             if(snapToMouse)
@@ -2346,6 +2366,9 @@ QMenu::event(QEvent *e)
 {
     Q_D(QMenu);
     switch (e->type()) {
+    case QEvent::Polish:
+        d->updateLayoutDirection();
+        break;
     case QEvent::ShortcutOverride: {
             QKeyEvent *kev = static_cast<QKeyEvent*>(e);
             if (kev->key() == Qt::Key_Up || kev->key() == Qt::Key_Down

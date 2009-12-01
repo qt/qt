@@ -41,7 +41,9 @@
 
 #include "translator.h"
 
+#ifndef QT_BOOTSTRAPPED
 #include <QtCore/QCoreApplication>
+#endif
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>

@@ -1570,12 +1570,6 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
 
-    // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
-        QPaintEngineEx::clip(rect, op);
-        return;
-    }
-
     switch (op) {
         case Qt::NoClip:
         {
@@ -1611,12 +1605,6 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     QVGPainterState *s = state();
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
-
-    // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
-        QPaintEngineEx::clip(region, op);
-        return;
-    }
 
     switch (op) {
         case Qt::NoClip:
@@ -3407,6 +3395,34 @@ void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)
 #endif
 }
 
+void QVGPaintEngine::fillRegion
+    (const QRegion& region, const QColor& color, const QSize& surfaceSize)
+{
+    Q_D(QVGPaintEngine);
+    if (d->clearColor != color || d->clearOpacity != 1.0f) {
+        VGfloat values[4];
+        values[0] = color.redF();
+        values[1] = color.greenF();
+        values[2] = color.blueF();
+        values[3] = color.alphaF();
+        vgSetfv(VG_CLEAR_COLOR, 4, values);
+        d->clearColor = color;
+        d->clearOpacity = 1.0f;
+    }
+    if (region.rectCount() == 1) {
+        QRect r = region.boundingRect();
+        vgClear(r.x(), surfaceSize.height() - r.y() - r.height(),
+                r.width(), r.height());
+    } else {
+        const QVector<QRect> rects = region.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            QRect r = rects.at(i);
+            vgClear(r.x(), surfaceSize.height() - r.y() - r.height(),
+                    r.width(), r.height());
+        }
+    }
+}
+
 #if !defined(QVG_NO_SINGLE_CONTEXT) && !defined(QT_NO_EGL)
 
 QVGCompositionHelper::QVGCompositionHelper()
@@ -3431,14 +3447,11 @@ void QVGCompositionHelper::endCompositing()
 }
 
 void QVGCompositionHelper::blitWindow
-    (QVGEGLWindowSurfacePrivate *surface, const QRect& rect,
-     const QPoint& topLeft, int opacity)
+    (VGImage image, const QSize& imageSize,
+     const QRect& rect, const QPoint& topLeft, int opacity)
 {
-    // Get the VGImage that is acting as a back buffer for the window.
-    VGImage image = surface->surfaceImage();
     if (image == VG_INVALID_HANDLE)
         return;
-    QSize imageSize = surface->surfaceSize();
 
     // Determine which sub rectangle of the window to draw.
     QRect sr = rect.translated(-topLeft);

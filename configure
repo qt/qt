@@ -226,6 +226,7 @@ COMMERCIAL_USER=ask
 CFG_DEV=no
 CFG_NOKIA=no
 CFG_EMBEDDED=no
+CFG_RTOS_ENABLED=yes
 EditionString=Commercial
 
 earlyArgParse()
@@ -404,7 +405,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         exit 1
     fi
     ProductCode=`echo $LicenseKeyExt | cut -f 1 -d - | cut -b 1`
-    PlatformCode=`echo $LicenseKeyExt | cut -f 2 -d - | cut -b 1`
+    PlatformCode=`echo $LicenseKeyExt | cut -f 2 -d -`
     LicenseTypeCode=`echo $LicenseKeyExt | cut -f 3 -d -`
     LicenseFeatureCode=`echo $LicenseKeyExt | cut -f 4 -d - | cut -b 1`
 
@@ -448,65 +449,46 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
 
     # verify that we are licensed to use Qt on this platform
     LICENSE_EXTENSION=
-    if [ "$PlatformCode" = "X" ]; then
-	# Qt All-OS
-	LICENSE_EXTENSION="-ALLOS"
-    elif [ "$PLATFORM_QWS" = "yes" ]; then
-        case $PlatformCode in
-        2|4|8|A|B|E|G|J|K|P|Q|S|U|V|W)
+    case "$PlatformCode" in
+	*L)
+	    CFG_RTOS_ENABLED=yes
+	    PlatformCode=`echo "$PlatformCode" | sed 'h;y/8NPQRTZ/UCWX9M7/;x;G;s/\(.\)....\(.\)./\1\2/'`
+	    ;;
+	*)
+	    CFG_RTOS_ENABLED=no
+	    PlatformCode=`echo "$PlatformCode" | sed 's/.$//'`
+	    ;;
+    esac
+    case "$PlatformCode,$PLATFORM_MAC,$PLATFORM_QWS" in
+        X9,* | XC,* | XU,* | XW,* | XM,*)
+            # Qt All-OS
+            LICENSE_EXTENSION="-ALLOS"
+            ;;
+        8M,* | KM,* | S9,* | SC,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
             # Qt for Embedded Linux
             LICENSE_EXTENSION="-EMBEDDED"
             ;;
-        *)
-            echo
-            echo "You are not licensed for Qt for Embedded Linux."
-            echo
-            echo "Please contact qt-info@nokia.com to upgrade your license"
-            echo "to include Qt for Embedded Linux, or install the"
-            echo "Qt Open Source Edition if you intend to develop free software."
-            exit 1
-            ;;
-        esac
-    elif [ "$PLATFORM_MAC" = "yes" ]; then
-        case $PlatformCode in
-        2|4|5|7|9|B|C|E|F|G|L|M|U|W|Y)
-            # Qt/Mac
-            LICENSE_EXTENSION="-DESKTOP"
-            ;;
-        3|6|8|A|D|H|J|K|P|Q|S|V)
+        6M,*,no | N7,*,no | N9,*,no | NX,*,no)
             # Embedded no-deploy
             LICENSE_EXTENSION="-EMBEDDED"
-	    ;;
+            ;;
+        FM,*,no | LM,yes,* | ZM,no,no)
+            # Desktop
+            LICENSE_EXTENSION="-DESKTOP"
+            ;;
         *)
+            Platform=Linux/X11
+            [ "$PLATFORM_MAC" = "yes" ] && Platform='Mac OS X'
+            [ "$PLATFORM_QWS" = "yes" ] && Platform='Embedded Linux'
             echo
-            echo "You are not licensed for the Qt/Mac platform."
+            echo "You are not licensed for the $Platform platform."
             echo
-            echo "Please contact qt-info@nokia.com to upgrade your license"
-            echo "to include the Qt/Mac platform."
+            echo "Please contact qt-info@nokia.com to upgrade your license to"
+            echo "include the $Platform platform, or install the Qt Open Source Edition"
+            echo "if you intend to develop free software."
             exit 1
             ;;
-        esac
-     else
-         case $PlatformCode in
-         2|3|4|5|7|D|E|F|J|M|Q|S|T|V|Z)
-             # Qt/X11
-             LICENSE_EXTENSION="-DESKTOP"
-             ;;
-         6|8|9|A|B|C|G|H|K|P|U|W)
-             # Embedded no-deploy
-             LICENSE_EXTENSION="-EMBEDDED"
-             ;;
-         *)
-             echo
-             echo "You are not licensed for the Qt/X11 platform."
-             echo
-             echo "Please contact qt-info@nokia.com to upgrade your license to"
-             echo "include the Qt/X11 platform, or install the Qt Open Source Edition"
-             echo "if you intend to develop free software."
-             exit 1
-             ;;
-        esac
-    fi
+    esac
 
     if test -r "$relpath/.LICENSE"; then
 	# Generic, non-final license
@@ -533,7 +515,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
     fi
 
     case "$LicenseFeatureCode" in
-    G|L)
+    B|G|L|Y)
         # US
         case "$LicenseType" in
         Commercial)
@@ -544,7 +526,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             ;;
         esac
         ;;
-    2|5)
+    2|4|5|F)
         # non-US
         case "$LicenseType" in
         Commercial)
@@ -560,6 +542,14 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         echo "Invalid license key. Please check the license key."
         exit 1
         ;;
+    esac
+    case "$LicenseFeatureCode" in
+	4|B|F|Y)
+	    CFG_RTOS_ENABLED=yes
+	    ;;
+	2|5|G|L)
+	    CFG_RTOS_ENABLED=no
+	    ;;
     esac
     if [ '!' -f "$outpath/LICENSE" ]; then
         echo "The LICENSE, LICENSE.GPL3 LICENSE.LGPL file shipped with"
@@ -2629,6 +2619,20 @@ if [ "$CFG_EMBEDDED" != "no" -a "$CFG_EMBEDDED" != "auto" ] && [ -n "$CFG_ARCH" 
     fi
 fi
 
+if [ "$CFG_RTOS_ENABLED" = "no" ]; then
+    case `basename "$XPLATFORM"` in
+	qnx-* | vxworks-*)
+            echo ""
+            echo "You are not licensed for Qt for `basename $XPLATFORM`."
+            echo ""
+            echo "Please contact qt-info@nokia.com to upgrade your license to"
+            echo "include this platform, or install the Qt Open Source Edition"
+            echo "if you intend to develop free software."
+            exit 1
+	    ;;
+    esac
+fi
+
 if [ -z "${CFG_HOST_ARCH}" ]; then
     case "$UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_MACHINE" in
     IRIX*:*:*)
@@ -3883,10 +3887,10 @@ fi # Help
 if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
 elif [ "$PLATFORM_MAC" = "yes" ]; then
-    Platform="Qt/Mac"
+    Platform="Qt for Mac OS X"
 else
     PLATFORM_X11=yes
-    Platform="Qt/X11"
+    Platform="Qt for Linux/X11"
 fi
 
 echo
@@ -7577,6 +7581,9 @@ FNR == 1 {
     if ( \$3 == "moc" || \$3 ~ /^Qt/ ) {
         target_file = first
         matched_target = 1
+    } else if ( \$3 == "lrelease" || \$3 == "qm_phony_target" ) {
+        target_file = second
+        matched_target = 1
     }
 }
 
@@ -7661,6 +7668,7 @@ for part in $CFG_BUILD_PARTS; do
     case "$part" in
     tools) PART_ROOTS="$PART_ROOTS tools" ;;
     libs) PART_ROOTS="$PART_ROOTS src" ;;
+    translations) PART_ROOTS="$PART_ROOTS tools/linguist/lrelease translations" ;;
     examples) PART_ROOTS="$PART_ROOTS examples demos" ;;
     *) ;;
     esac
@@ -7688,7 +7696,7 @@ for file in .projects .projects.3; do
         *s60main/s60main.pro) continue ;;
         *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
-        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
+        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*linguist/lrelease*) SPEC=$QMAKESPEC ;;
         *) SPEC=$XQMAKESPEC ;;
         esac
         dir=`dirname "$a" | sed -e "s;$sepath;.;g"`

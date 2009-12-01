@@ -56,8 +56,18 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef QT_BOOTSTRAPPED
+QString QObject::tr(const char *sourceText, const char *, int n)
+{
+    QString ret = QString::fromLatin1(sourceText);
+    if (n >= 0)
+        ret.replace(QLatin1String("%n"), QString::number(n));
+    return ret;
+}
+#endif
+
 Translator::Translator() :
-    m_codecName("ISO-8859-1"),
+    m_codec(QTextCodec::codecForName("ISO-8859-1")),
     m_locationsType(AbsoluteLocations)
 {
 }
@@ -703,10 +713,15 @@ void Translator::setCodecName(const QByteArray &name)
     if (!codec) {
         if (!name.isEmpty())
             qWarning("No QTextCodec for %s available. Using Latin1\n", name.constData());
-        m_codecName = "ISO-8859-1";
+        m_codec = QTextCodec::codecForName("ISO-8859-1");
     } else {
-        m_codecName = codec->name();
+        m_codec = codec;
     }
+}
+
+QByteArray Translator::codecName() const
+{
+    return m_codec->name();
 }
 
 void Translator::dump() const

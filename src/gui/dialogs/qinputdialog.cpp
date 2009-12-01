@@ -95,7 +95,7 @@ class QInputDialogSpinBox : public QSpinBox
 public:
     QInputDialogSpinBox(QWidget *parent)
         : QSpinBox(parent) {
-        connect(lineEdit(), SIGNAL(textChanged(const QString&)), this, SLOT(notifyTextChanged()));
+        connect(lineEdit(), SIGNAL(textChanged(QString)), this, SLOT(notifyTextChanged()));
         connect(this, SIGNAL(editingFinished()), this, SLOT(notifyTextChanged()));
     }
 
@@ -130,7 +130,7 @@ class QInputDialogDoubleSpinBox : public QDoubleSpinBox
 public:
     QInputDialogDoubleSpinBox(QWidget *parent = 0)
         : QDoubleSpinBox(parent) {
-        connect(lineEdit(), SIGNAL(textChanged(const QString&)), this, SLOT(notifyTextChanged()));
+        connect(lineEdit(), SIGNAL(textChanged(QString)), this, SLOT(notifyTextChanged()));
         connect(this, SIGNAL(editingFinished()), this, SLOT(notifyTextChanged()));
     }
 
@@ -245,8 +245,8 @@ void QInputDialogPrivate::ensureLineEdit()
     if (!lineEdit) {
         lineEdit = new QLineEdit(q);
         lineEdit->hide();
-        QObject::connect(lineEdit, SIGNAL(textChanged(const QString&)),
-                         q, SLOT(_q_textChanged(const QString&)));
+        QObject::connect(lineEdit, SIGNAL(textChanged(QString)),
+                         q, SLOT(_q_textChanged(QString)));
     }
 }
 
@@ -256,10 +256,10 @@ void QInputDialogPrivate::ensureComboBox()
     if (!comboBox) {
         comboBox = new QComboBox(q);
         comboBox->hide();
-        QObject::connect(comboBox, SIGNAL(editTextChanged(const QString&)),
-                         q, SLOT(_q_textChanged(const QString&)));
-        QObject::connect(comboBox, SIGNAL(currentIndexChanged(const QString&)),
-                         q, SLOT(_q_textChanged(const QString&)));
+        QObject::connect(comboBox, SIGNAL(editTextChanged(QString)),
+                         q, SLOT(_q_textChanged(QString)));
+        QObject::connect(comboBox, SIGNAL(currentIndexChanged(QString)),
+                         q, SLOT(_q_textChanged(QString)));
     }
 }
 
@@ -276,8 +276,8 @@ void QInputDialogPrivate::ensureListView()
         listView->setModel(comboBox->model());
         listView->setCurrentIndex(QModelIndex()); // ###
         QObject::connect(listView->selectionModel(),
-                         SIGNAL(currentRowChanged(const QModelIndex&, const QModelIndex&)),
-                         q, SLOT(_q_currentRowChanged(const QModelIndex&, const QModelIndex&)));
+                         SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+                         q, SLOT(_q_currentRowChanged(QModelIndex,QModelIndex)));
     }
 }
 
