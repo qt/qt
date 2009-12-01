@@ -15,11 +15,17 @@ contains(QT_CONFIG, opengl) {
 # Input
 HEADERS += qmlviewer.h \
            proxysettings.h \
-           qfxtester.h 
+           qfxtester.h \
+           deviceorientation.h
 SOURCES += main.cpp \
            qmlviewer.cpp \
            proxysettings.cpp \
            qfxtester.cpp
+maemo: {
+    SOURCES += deviceorientation_maemo.cpp
+} else {
+    SOURCES += deviceorientation.cpp
+}
 FORMS = recopts.ui \
     proxysettings.ui
 INCLUDEPATH += ../../include/QtDeclarative
