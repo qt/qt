@@ -138,12 +138,13 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
     if (path.isEmpty())
         return path;
 
-#if defined(Q_OS_UNIX) || defined(Q_OS_SYMBIAN)
     // FIXME let's see if this stuff works, then we might be able to remove some of the other code.
-    // baaad Mac: 10.5 and 10.6 crash if trying to free a value returned by
-    // realpath() if the input path is just the root component.
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     if (path.size() == 1 && path.at(0) == QLatin1Char('/'))
         return path;
+#endif
+    // Mac OS X 10.5.x doesn't support the realpath(X,0) extenstion we use here.
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     char *ret = realpath(path.toLocal8Bit().constData(), (char*)0);
     if (ret) {
         QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
