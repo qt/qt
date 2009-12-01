@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,48 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef SOFTKEYS_H
-#define SOFTKEYS_H
+#include "deviceorientation.h"
 
-#include <QtGui>
-
-class MainWindow : public QMainWindow
+class DefaultDeviceOrientation : public DeviceOrientation
 {
     Q_OBJECT
 public:
+    DefaultDeviceOrientation() : DeviceOrientation(), m_orientation(DeviceOrientation::Portrait) {}
 
-private slots:
-    void clearTextEditor();
-    void openDialog();
-    void addSoftKeys();
-    void exitApplication();
-    void okPressed();
-    void cancelPressed();
-    void setCustomSoftKeys();
-public:
-    MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-private:
-    QGridLayout *layout;
-    QWidget *central;
-    QTextEdit* textEditor;
-    QLabel *infoLabel;
-    QPushButton* toggleButton;
-    QPushButton* pushButton;
-    QMenu* fileMenu;
-    QAction* addSoftKeysAct;
-    QAction* exit;
-    QAction* ok;
-    QAction* cancel;
+    Orientation orientation() const {
+        return m_orientation;
+    }
+
+    void setOrientation(Orientation o) {
+        if (o != m_orientation) {
+            m_orientation = o;
+            emit orientationChanged();
+        }
+    }
+
+    Orientation m_orientation;
 };
 
-//! [0]
-class SoftKey : public QWidget
+DeviceOrientation* DeviceOrientation::instance()
 {
-    Q_OBJECT
-public:
-    SoftKey(QWidget *parent = 0);
-};
-//! [0]
+    static DefaultDeviceOrientation *o = 0;
+    if (!o)
+        o = new DefaultDeviceOrientation;
+    return o;
+}
 
-#endif
+#include "deviceorientation.moc"
+

@@ -64,6 +64,7 @@
 #include <qml.h>
 #include <qmlcontext.h>
 #include <private/qmltimeline_p_p.h>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -94,9 +95,9 @@ class QActionAnimation : public QAbstractAnimation
 {
     Q_OBJECT
 public:
-    QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped) {}
+    QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped), running(false) {}
     QActionAnimation(QAbstractAnimationAction *action, QObject *parent = 0)
-        : QAbstractAnimation(parent), animAction(action), policy(KeepWhenStopped) {}
+        : QAbstractAnimation(parent), animAction(action), policy(KeepWhenStopped), running(false) {}
     virtual int duration() const { return 0; }
     void setAnimAction(QAbstractAnimationAction *action, DeletionPolicy p)
     {
@@ -111,17 +112,27 @@ protected:
     virtual void updateState(State newState, State /*oldState*/)
     {
         if (newState == Running) {
-            if (animAction)
+            if (animAction) {
+                running = true;
                 animAction->doAction();
+                running = false;
+                if (state() == Stopped && policy == DeleteWhenStopped) {
+                    delete animAction;
+                    animAction = 0;
+                }
+            }
         } else if (newState == Stopped && policy == DeleteWhenStopped) {
-            delete animAction;
-            animAction = 0;
+            if (!running) {
+                delete animAction;
+                animAction = 0;
+            }
         }
     }
 
 private:
     QAbstractAnimationAction *animAction;
     DeletionPolicy policy;
+    bool running;
 };
 
 //animates QmlTimeLineValue (assumes start and end values will be reals or compatible)
