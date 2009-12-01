@@ -42,9 +42,12 @@
 #ifndef QSTATICTEXT_H
 #define QSTATICTEXT_H
 
-#include <QtCore/qstring.h>
-#include <QtGui/qfont.h>
 #include <QtCore/qsize.h>
+#include <QtCore/qstring.h>
+
+#include <QtGui/qtransform.h>
+#include <QtGui/qfont.h>
+
 
 QT_BEGIN_HEADER
 
@@ -66,6 +69,8 @@ public:
 
     void setMaximumSize(const QSizeF &maximumSize);
     QSizeF maximumSize() const;
+
+    void prepare(const QTransform &matrix, const QFont &font);
 
     QStaticText &operator=(const QStaticText &);
     bool operator==(const QStaticText &) const;

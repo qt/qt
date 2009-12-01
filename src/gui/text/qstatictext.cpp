@@ -152,6 +152,29 @@ void QStaticText::detach()
 }
 
 /*!
+  Prepares the QStaticText object for being painted with the given \a matrix and the given
+  \a font to avoid overhead when the actual drawStaticText() call is made.
+
+  When drawStaticText() is called, the layout of the QStaticText will be recalculated if the
+  painter's font or matrix is different from the one used for the currently cached layout. By
+  default, QStaticText will use a default constructed QFont and an identity matrix to create
+  its layout.
+
+  To avoid the overhead of creating the layout the first time you draw the QStaticText with
+  a painter whose matrix or font are different from the defaults, you can use the prepare()
+  function and pass in the matrix and font you expect to use when drawing the text.
+
+  \sa QPainter::setFont(), QPainter::setMatrix()
+*/
+void QStaticText::prepare(const QTransform &matrix, const QFont &font)
+{
+    d_ptr->matrix = matrix;
+    d_ptr->font = font;
+    d_ptr->init();
+}
+
+
+/*!
     Assigns \a other to this QStaticText.
 */
 QStaticText &QStaticText::operator=(const QStaticText &other)
