@@ -2552,7 +2552,9 @@ void QAbstractItemView::verticalScrollbarValueChanged(int value)
     Q_D(QAbstractItemView);
     if (verticalScrollBar()->maximum() == value && d->model->canFetchMore(d->root))
         d->model->fetchMore(d->root);
-    d->checkMouseMove(viewport()->mapFromGlobal(QCursor::pos()));
+    QPoint posInVp = viewport()->mapFromGlobal(QCursor::pos());
+    if (viewport()->rect().contains(posInVp))
+        d->checkMouseMove(posInVp);
 }
 
 /*!
@@ -2563,7 +2565,9 @@ void QAbstractItemView::horizontalScrollbarValueChanged(int value)
     Q_D(QAbstractItemView);
     if (horizontalScrollBar()->maximum() == value && d->model->canFetchMore(d->root))
         d->model->fetchMore(d->root);
-    d->checkMouseMove(viewport()->mapFromGlobal(QCursor::pos()));
+    QPoint posInVp = viewport()->mapFromGlobal(QCursor::pos());
+    if (viewport()->rect().contains(posInVp))
+        d->checkMouseMove(posInVp);
 }
 
 /*!
