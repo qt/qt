@@ -269,8 +269,8 @@ QStringList QDnotifyFileSystemWatcherEngine::addPaths(const QStringList &paths, 
                 }
             }
 
-            fd = ::dirfd(d);
-            int parentFd = parent?::dirfd(parent):0;
+            fd = qt_safe_dup(::dirfd(d));
+            int parentFd = parent ? qt_safe_dup(::dirfd(parent)) : 0;
 
             Q_ASSERT(fd);
             if(::fcntl(fd, F_SETSIG, SIGIO) ||
