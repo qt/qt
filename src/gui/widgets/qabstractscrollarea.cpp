@@ -294,7 +294,9 @@ void QAbstractScrollAreaPrivate::init()
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
+#ifndef Q_WS_MAC
     viewport->grabGesture(Qt::PanGesture);
+#endif
 }
 
 #ifdef Q_WS_WIN
@@ -543,7 +545,9 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         d->viewport->setParent(this);
         d->viewport->setFocusProxy(this);
         d->viewport->installEventFilter(d->viewportFilter.data());
+#ifndef Q_WS_MAC
         d->viewport->grabGesture(Qt::PanGesture);
+#endif
         d->layoutChildren();
         if (isVisible())
             d->viewport->show();
