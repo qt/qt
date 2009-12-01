@@ -43,7 +43,7 @@
 #define QMLNUMBERFORMATTER_H
 
 #include <qml.h>
-#include <private/qnumberformat_p.h>
+#include "qnumberformat_p.h"
 
 QT_BEGIN_HEADER
 

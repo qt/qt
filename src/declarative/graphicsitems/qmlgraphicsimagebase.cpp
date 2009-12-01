@@ -45,7 +45,7 @@
 #include <QNetworkReply>
 #include <QFile>
 #include <qmlengine.h>
-#include <private/qmlpixmapcache_p.h>
+#include "qmlpixmapcache_p.h"
 
 QT_BEGIN_NAMESPACE
 

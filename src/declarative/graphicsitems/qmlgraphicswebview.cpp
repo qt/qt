@@ -55,12 +55,12 @@
 
 #include "qml.h"
 #include "qmlengine.h"
-#include <private/qmlstate_p.h>
-#include <private/qlistmodelinterface_p.h>
+#include "qmlstate_p.h"
+#include "qlistmodelinterface_p.h"
 
 #include "qmlgraphicswebview_p.h"
 #include "qmlgraphicswebview_p_p.h"
-#include <private/qmlgraphicspainteditem_p_p.h>
+#include "qmlgraphicspainteditem_p_p.h"
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,WebView,QmlGraphicsWebView)

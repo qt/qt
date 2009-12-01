@@ -53,13 +53,13 @@
 // We mean it.
 //
 
-#include <private/qmlgraphicsitem_p.h>
+#include "qmlgraphicsitem_p.h"
 #include <QtCore/QObject>
 #include <QtCore/QString>
-#include <private/qmlgraphicspositioners_p.h>
-#include <private/qmlstate_p.h>
-#include <private/qmltransitionmanager_p_p.h>
-#include <private/qmlstateoperations_p.h>
+#include "qmlgraphicspositioners_p.h"
+#include "qmlstate_p.h"
+#include "qmltransitionmanager_p_p.h"
+#include "qmlstateoperations_p.h"
 #include <QtCore/QTimer>
 
 QT_BEGIN_NAMESPACE

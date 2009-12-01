@@ -45,7 +45,7 @@
 #include <QtCore/qdebug.h>
 
 // ### Remove me
-#include <private/qmlengine_p.h>
+#include "qmlengine_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <private/qmlgraphicsitem_p.h>
+#include "qmlgraphicsitem_p.h"
 
 QT_BEGIN_NAMESPACE
 

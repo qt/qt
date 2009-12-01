@@ -54,8 +54,8 @@
 //
 
 #include <QtCore/qthread.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlparserstatus.h>
+#include <qml.h>
+#include <qmlparserstatus.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qurl.h>
 

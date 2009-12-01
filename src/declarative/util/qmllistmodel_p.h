@@ -48,7 +48,7 @@
 #include <QtCore/QList>
 #include <QtCore/QVariant>
 #include <qml.h>
-#include <private/qlistmodelinterface_p.h>
+#include "qlistmodelinterface_p.h"
 #include <QtScript/qscriptvalue.h>
 
 

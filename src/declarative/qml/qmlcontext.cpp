@@ -40,14 +40,14 @@
 ****************************************************************************/
 
 #include <qmlcontext.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmlexpression_p.h>
-#include <private/qmlengine_p.h>
+#include "qmlcontext_p.h"
+#include "qmlexpression_p.h"
+#include "qmlengine_p.h"
 #include <qmlengine.h>
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qdebug.h>
-#include <private/qmlbindingoptimizations_p.h>
+#include "qmlbindingoptimizations_p.h"
 #include <private/qscriptdeclarativeclass_p.h>
 #include <qmlinfo.h>
 

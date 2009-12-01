@@ -41,7 +41,7 @@
 
 #include "qmlconnection_p.h"
 #include <qmlexpression.h>
-#include "private/qmlboundsignal_p.h"
+#include "qmlboundsignal_p.h"
 #include "private/qobject_p.h"
 #include <qmlcontext.h>
 #include <QtCore/qdebug.h>

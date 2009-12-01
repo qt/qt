@@ -55,7 +55,7 @@
 #include <QCoreApplication>
 #include <QtDebug>
 
-#include <private/qfxperf_p_p.h>
+#include "qfxperf_p_p.h"
 
 QT_BEGIN_NAMESPACE
 

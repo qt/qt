@@ -39,17 +39,17 @@
 **
 ****************************************************************************/
 
-#include <private/qmlcompositetypedata_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <private/qmlscriptparser_p.h>
+#include "qmlcompositetypedata_p.h"
+#include "qmlcompositetypemanager_p.h"
+#include "qmlscriptparser_p.h"
 #include <qmlengine.h>
 #include <QtNetwork/qnetworkreply.h>
-#include <private/qmlengine_p.h>
+#include "qmlengine_p.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
 #include <qmlcomponent.h>
-#include <private/qmlcomponent_p.h>
-#include <private/qmlcompiler_p.h>
+#include "qmlcomponent_p.h"
+#include "qmlcompiler_p.h"
 
 QT_BEGIN_NAMESPACE
 

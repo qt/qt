@@ -47,7 +47,7 @@
 #include <QtScript/qscriptvalue.h>
 #include <QtScript/qscriptcontext.h>
 #include <QtScript/qscriptengine.h>
-#include <private/qmlnullablevalue_p_p.h>
+#include "qmlnullablevalue_p_p.h"
 #include "qmlbind_p.h"
 
 QT_BEGIN_NAMESPACE

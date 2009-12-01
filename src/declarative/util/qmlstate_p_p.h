@@ -53,10 +53,10 @@
 // We mean it.
 //
 
-#include <private/qmlstate_p.h>
+#include "qmlstate_p.h"
 #include <private/qobject_p.h>
-#include <private/qmlanimation_p_p.h>
-#include <private/qmltransitionmanager_p_p.h>
+#include "qmlanimation_p_p.h"
+#include "qmltransitionmanager_p_p.h"
 
 QT_BEGIN_NAMESPACE
 

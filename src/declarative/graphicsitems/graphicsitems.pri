@@ -85,4 +85,3 @@ contains(QT_CONFIG, webkit) {
     HEADERS += graphicsitems/qmlgraphicswebview_p.h
     HEADERS += graphicsitems/qmlgraphicswebview_p_p.h
 }
-
