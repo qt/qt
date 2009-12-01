@@ -90,7 +90,7 @@ symbian: {
     }
 
     contains(QT_CONFIG, phonon): {
-       qtlibraries.sources += Phonon.dll
+       qtlibraries.sources += phonon.dll
     }
 
     contains(QT_CONFIG, script): {

@@ -586,7 +586,15 @@ void tst_QListView::indexAt()
     index = view.indexAt(QPoint(20,2 * sz.height()));
     QVERIFY(!index.isValid());
 
-
+    // Check when peeking out of the viewport bounds
+    index = view.indexAt(QPoint(view.viewport()->rect().width(), 0));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(-1, 0));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(20, view.viewport()->rect().height()));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(20, -1));
+    QVERIFY(!index.isValid());
 
     model.rCount = 30;
     QListViewShowEventListener view2;
