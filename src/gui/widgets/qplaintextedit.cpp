@@ -1802,6 +1802,9 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
     QTextBlock block = firstVisibleBlock();
     qreal maximumWidth = document()->documentLayout()->documentSize().width();
 
+    // Set a brush origin so that the WaveUnderline knows where the wave started
+    painter.setBrushOrigin(offset);
+
     // keep right margin clean from full-width selection
     int maxX = offset.x() + qMax((qreal)viewportRect.width(), maximumWidth)
                - document()->documentMargin();

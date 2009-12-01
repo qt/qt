@@ -1773,13 +1773,10 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
 
 #if !defined(QT_OPENGL_ES_2)
-    if (!d->device->format().alpha()
 #if defined(Q_WS_WIN)
-        && qt_cleartype_enabled
+    if (qt_cleartype_enabled)
 #endif
-       ) {
         d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
-    }
 #endif
 
 #if defined(QT_OPENGL_ES_2)
