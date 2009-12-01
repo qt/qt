@@ -104,21 +104,22 @@ void MMF::AbstractMediaPlayer::pause()
     TRACE_ENTRY("state %d", privateState());
 
     m_playPending = false;
+    stopTickTimer();
 
     switch (privateState()) {
     case GroundState:
     case LoadingState:
     case PausedState:
+    case StoppedState:
         // Do nothing
         break;
 
-    case StoppedState:
     case PlayingState:
-    case ErrorState:
     case BufferingState:
-        doPause();
-        stopTickTimer();
         changeState(PausedState);
+        // Fall through
+    case ErrorState:
+        doPause();
         break;
 
         // Protection against adding new states and forgetting to update this switch
@@ -135,6 +136,7 @@ void MMF::AbstractMediaPlayer::stop()
     TRACE_ENTRY("state %d", privateState());
 
     m_playPending = false;
+    stopTickTimer();
 
     switch (privateState()) {
     case GroundState:
@@ -148,7 +150,6 @@ void MMF::AbstractMediaPlayer::stop()
     case BufferingState:
     case PausedState:
         doStop();
-        stopTickTimer();
         changeState(StoppedState);
         break;
 

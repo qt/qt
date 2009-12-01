@@ -127,7 +127,7 @@ void MMF::VideoPlayer::doPause()
     TRACE_CONTEXT(VideoPlayer::doPause, EVideoApi);
 
     TRAPD(err, m_player->PauseL());
-    if (KErrNone != err) {
+    if (KErrNone != err && state() != ErrorState) {
         TRACE("PauseL error %d", err);
         setError(tr("Pause failed"), err);
     }
