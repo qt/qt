@@ -110,6 +110,7 @@ Q_SIGNALS:
     void totalTimeChanged(qint64 length);
     void finished();
     void tick(qint64 time);
+    void bufferStatus(int percentFilled);
     void stateChanged(Phonon::State oldState,
                       Phonon::State newState);
     void metaDataChanged(const QMultiMap<QString, QString>& metaData);

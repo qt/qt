@@ -53,6 +53,7 @@ void MMF::AudioPlayer::construct()
     CPlayerType *player = 0;
     QT_TRAP_THROWING(player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone));
     m_player.reset(player);
+    m_player->RegisterForAudioLoadingNotification(*this);
 
     TRACE_EXIT_0();
 }
@@ -135,6 +136,13 @@ int MMF::AudioPlayer::openUrl(const QString& /*url*/)
     return 0;
 }
 
+int MMF::AudioPlayer::bufferStatus() const
+{
+    int result = 0;
+    TRAP_IGNORE(m_player->GetAudioLoadingProgressL(result));
+    return result;
+}
+
 void MMF::AudioPlayer::close()
 {
     m_player->Close();
@@ -211,8 +219,6 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
     TRACE_CONTEXT(AudioPlayer::MapcPlayComplete, EAudioInternal);
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    stopTickTimer();
-
     if (KErrNone == aError) {
         changeState(StoppedState);
         // TODO: move on to m_nextSource
@@ -257,6 +263,21 @@ void MMF::AudioPlayer::MaloLoadingComplete()
 
 }
 #endif // QT_PHONON_MMF_AUDIO_DRM
+
+
+//-----------------------------------------------------------------------------
+// MAudioLoadingObserver callbacks
+//-----------------------------------------------------------------------------
+
+void MMF::AudioPlayer::MaloLoadingStarted()
+{
+    bufferingStarted();
+}
+
+void MMF::AudioPlayer::MaloLoadingComplete()
+{
+    bufferingComplete();
+}
 
 
 //-----------------------------------------------------------------------------

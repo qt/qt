@@ -92,7 +92,6 @@ Q_SIGNALS:
     void totalTimeChanged(qint64 length);
     void hasVideoChanged(bool hasVideo);
     void seekableChanged(bool seekable);
-    // TODO: emit bufferStatus from MediaObject
     void bufferStatus(int);
     // TODO: emit aboutToFinish from MediaObject
     void aboutToFinish();

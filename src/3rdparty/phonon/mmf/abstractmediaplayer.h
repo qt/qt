@@ -69,6 +69,7 @@ protected:
     virtual int setDeviceVolume(int mmfVolume) = 0;
     virtual int openFile(RFile& file) = 0;
     virtual int openUrl(const QString& url) = 0;
+    virtual int bufferStatus() const = 0;
     virtual void close() = 0;
     virtual void changeState(PrivateState newState);
 
@@ -77,21 +78,22 @@ protected:
     virtual QPair<QString, QString> metaDataEntry(int index) const = 0;
 
 protected:
-    bool tickTimerRunning() const;
-    void startTickTimer();
-    void stopTickTimer();
+    void bufferingStarted();
+    void bufferingComplete();
     void maxVolumeChanged(int maxVolume);
-
     static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
 
 private:
+    void startPositionTimer();
+    void stopPositionTimer();
+    void startBufferStatusTimer();
+    void stopBufferStatusTimer();
+    void stopTimers();
     void doVolumeChanged();
 
 private Q_SLOTS:
-    /**
-     * Receives signal from m_tickTimer
-     */
-    void tick();
+    void positionTick();
+    void bufferStatusTick();
 
 private:
     /**
@@ -101,7 +103,10 @@ private:
      */
     bool                        m_playPending;
 
-    QScopedPointer<QTimer>      m_tickTimer;
+    QScopedPointer<QTimer>      m_positionTimer;
+
+    QScopedPointer<QTimer>      m_bufferStatusTimer;
+    PrivateState                m_stateBeforeBuffering;
 
     int                         m_mmfMaxVolume;
 
