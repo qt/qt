@@ -74,6 +74,7 @@
 #include <QNetworkProxyFactory>
 #include <QKeyEvent>
 #include "proxysettings.h"
+#include "deviceorientation.h"
 
 #ifdef GL_SUPPORTED
 #include <QGLWidget>
@@ -83,6 +84,43 @@
 
 QT_BEGIN_NAMESPACE
 
+
+class Screen : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(Orientation orientation READ orientation NOTIFY orientationChanged)
+    Q_ENUMS(Orientation)
+
+public:
+    Screen(QObject *parent=0) : QObject(parent) {
+        m_screens.append(this);
+        connect(DeviceOrientation::instance(), SIGNAL(orientationChanged()),
+                this, SIGNAL(orientationChanged()));
+    }
+    ~Screen() { m_screens.removeAll(this); }
+
+    enum Orientation { UnknownOrientation = DeviceOrientation::UnknownOrientation,
+                       Portrait = DeviceOrientation::Portrait,
+                       Landscape = DeviceOrientation::Landscape };
+    Orientation orientation() const { return Orientation(DeviceOrientation::instance()->orientation()); }
+    static void setOrientation(Orientation orient) {
+        if (orient != Orientation(DeviceOrientation::instance()->orientation())) {
+            DeviceOrientation::instance()->setOrientation(DeviceOrientation::Orientation(orient));
+        }
+    }
+
+signals:
+    void orientationChanged();
+
+private:
+    static QList<Screen*> m_screens;
+};
+
+QList<Screen*> Screen::m_screens;
+
+QML_DECLARE_TYPE(Screen)
+QML_DEFINE_TYPE(QmlViewer, 1, 0, Screen, Screen)
 
 class SizedMenuBar : public QMenuBar
 {
@@ -532,13 +570,13 @@ void QmlViewer::proxySettingsChanged()
 
 void QmlViewer::setPortrait()
 {
-    canvas->rootContext()->setContextProperty("orientation", "Portrait");
+    Screen::setOrientation(Screen::Portrait);
     portraitOrientation->setChecked(true);
 }
 
 void QmlViewer::setLandscape()
 {
-    canvas->rootContext()->setContextProperty("orientation", "Landscape");
+    Screen::setOrientation(Screen::Landscape);
     landscapeOrientation->setChecked(true);
 }
 

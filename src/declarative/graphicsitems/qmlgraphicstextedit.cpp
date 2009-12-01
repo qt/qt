@@ -562,7 +562,7 @@ QString QmlGraphicsTextEdit::selectedText() const
     \qmlproperty bool TextEdit::focusOnPress
 
     Whether the TextEdit should gain focus on a mouse press. By default this is
-    set to false.
+    set to true.
 */
 bool QmlGraphicsTextEdit::focusOnPress() const
 {
