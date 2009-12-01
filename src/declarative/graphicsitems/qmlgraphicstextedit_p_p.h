@@ -69,7 +69,7 @@ class QmlGraphicsTextEditPrivate : public QmlGraphicsPaintedItemPrivate
 public:
     QmlGraphicsTextEditPrivate()
       : color("black"), imgDirty(true), hAlign(QmlGraphicsTextEdit::AlignLeft), vAlign(QmlGraphicsTextEdit::AlignTop),
-      dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false),
+      dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(true),
       persistentSelection(true), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
       cursorComponent(0), cursor(0), format(QmlGraphicsTextEdit::AutoText), document(0)
     {
