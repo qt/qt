@@ -36,6 +36,7 @@ using namespace Phonon::MMF;
 //-----------------------------------------------------------------------------
 
 const int       NullMaxVolume = -1;
+const int       BufferStatusTimerInterval = 100; // ms
 
 
 //-----------------------------------------------------------------------------
@@ -44,19 +45,23 @@ const int       NullMaxVolume = -1;
 
 MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
             m_playPending(false)
-        ,   m_tickTimer(new QTimer(this))
+        ,   m_positionTimer(new QTimer(this))
+        ,   m_bufferStatusTimer(new QTimer(this))
         ,   m_mmfMaxVolume(NullMaxVolume)
 {
-    connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
+    connect(m_positionTimer.data(), SIGNAL(timeout()), this, SLOT(positionTick()));
+    connect(m_bufferStatusTimer.data(), SIGNAL(timeout()), this, SLOT(bufferStatusTick()));
 }
 
 MMF::AbstractMediaPlayer::AbstractMediaPlayer(const AbstractPlayer& player) :
         AbstractPlayer(player)
         ,   m_playPending(false)
-        ,   m_tickTimer(new QTimer(this))
+        ,   m_positionTimer(new QTimer(this))
+        ,   m_bufferStatusTimer(new QTimer(this))
         ,   m_mmfMaxVolume(NullMaxVolume)
 {
-    connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
+    connect(m_positionTimer.data(), SIGNAL(timeout()), this, SLOT(positionTick()));
+    connect(m_bufferStatusTimer.data(), SIGNAL(timeout()), this, SLOT(bufferStatusTick()));
 }
 
 //-----------------------------------------------------------------------------
@@ -80,7 +85,7 @@ void MMF::AbstractMediaPlayer::play()
     case StoppedState:
     case PausedState:
         doPlay();
-        startTickTimer();
+        startPositionTimer();
         changeState(PlayingState);
         break;
 
@@ -104,7 +109,7 @@ void MMF::AbstractMediaPlayer::pause()
     TRACE_ENTRY("state %d", privateState());
 
     m_playPending = false;
-    stopTickTimer();
+    stopTimers();
 
     switch (privateState()) {
     case GroundState:
@@ -136,7 +141,7 @@ void MMF::AbstractMediaPlayer::stop()
     TRACE_ENTRY("state %d", privateState());
 
     m_playPending = false;
-    stopTickTimer();
+    stopTimers();
 
     switch (privateState()) {
     case GroundState:
@@ -174,14 +179,13 @@ void MMF::AbstractMediaPlayer::seek(qint64 ms)
     case PlayingState:
     case LoadingState:
     {
-        const bool tickTimerWasRunning = m_tickTimer->isActive();
-        stopTickTimer();
+        const bool positionTimerWasRunning = m_positionTimer->isActive();
+        stopPositionTimer();
 
         doSeek(ms);
 
-        if (tickTimerWasRunning) {
-            startTickTimer();
-        }
+        if (positionTimerWasRunning)
+            startPositionTimer();
         break;
     }
     case BufferingState:
@@ -204,7 +208,7 @@ void MMF::AbstractMediaPlayer::doSetTickInterval(qint32 interval)
     TRACE_CONTEXT(AbstractMediaPlayer::doSetTickInterval, EAudioApi);
     TRACE_ENTRY("state %d m_interval %d interval %d", privateState(), tickInterval(), interval);
 
-    m_tickTimer->setInterval(interval);
+    m_positionTimer->setInterval(interval);
 
     TRACE_EXIT_0();
 }
@@ -307,6 +311,35 @@ void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
     TRACE_EXIT_0();
 }
 
+//-----------------------------------------------------------------------------
+// Private functions
+//-----------------------------------------------------------------------------
+
+void MMF::AbstractMediaPlayer::startPositionTimer()
+{
+    m_positionTimer->start(tickInterval());
+}
+
+void MMF::AbstractMediaPlayer::stopPositionTimer()
+{
+    m_positionTimer->stop();
+}
+
+void MMF::AbstractMediaPlayer::startBufferStatusTimer()
+{
+    m_bufferStatusTimer->start(BufferStatusTimerInterval);
+}
+
+void MMF::AbstractMediaPlayer::stopBufferStatusTimer()
+{
+    m_bufferStatusTimer->stop();
+}
+
+void MMF::AbstractMediaPlayer::stopTimers()
+{
+    stopPositionTimer();
+    stopBufferStatusTimer();
+}
 
 void MMF::AbstractMediaPlayer::doVolumeChanged()
 {
@@ -342,14 +375,19 @@ void MMF::AbstractMediaPlayer::doVolumeChanged()
 // Protected functions
 //-----------------------------------------------------------------------------
 
-void MMF::AbstractMediaPlayer::startTickTimer()
+void MMF::AbstractMediaPlayer::bufferingStarted()
 {
-    m_tickTimer->start(tickInterval());
+    m_stateBeforeBuffering = privateState();
+    changeState(BufferingState);
+    bufferStatusTick();
+    startBufferStatusTimer();
 }
 
-void MMF::AbstractMediaPlayer::stopTickTimer()
+void MMF::AbstractMediaPlayer::bufferingComplete()
 {
-    m_tickTimer->stop();
+    stopBufferStatusTimer();
+    emit MMF::AbstractPlayer::bufferStatus(100);
+    changeState(m_stateBeforeBuffering);
 }
 
 void MMF::AbstractMediaPlayer::maxVolumeChanged(int mmfMaxVolume)
@@ -367,10 +405,14 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
 // Slots
 //-----------------------------------------------------------------------------
 
-void MMF::AbstractMediaPlayer::tick()
+void MMF::AbstractMediaPlayer::positionTick()
 {
-    // For the MWC compiler, we need to qualify the base class.
     emit MMF::AbstractPlayer::tick(currentTime());
+}
+
+void MMF::AbstractMediaPlayer::bufferStatusTick()
+{
+    emit MMF::AbstractPlayer::bufferStatus(bufferStatus());
 }
 
 void MMF::AbstractMediaPlayer::changeState(PrivateState newState)

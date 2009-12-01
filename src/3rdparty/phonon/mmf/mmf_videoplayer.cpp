@@ -93,6 +93,8 @@ void MMF::VideoPlayer::construct()
     // CVideoPlayerUtility::NewL starts DSA
     m_dsaActive = true;
 
+    m_player->RegisterForVideoLoadingNotification(*this);
+
     TRACE_EXIT_0();
 }
 
@@ -176,6 +178,13 @@ int MMF::VideoPlayer::openUrl(const QString& url)
 {
     TRAPD(err, m_player->OpenUrlL(qt_QString2TPtrC(url)));
     return err;
+}
+
+int MMF::VideoPlayer::bufferStatus() const
+{
+    int result = 0;
+    TRAP_IGNORE(m_player->GetVideoLoadingProgressL(result));
+    return result;
 }
 
 void MMF::VideoPlayer::close()
@@ -292,7 +301,8 @@ void MMF::VideoPlayer::MvpuoPlayComplete(TInt aError)
     TRACE_CONTEXT(VideoPlayer::MvpuoPlayComplete, EVideoApi)
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    Q_UNUSED(aError);   // suppress warnings in release builds
+    // TODO: handle aError
+    Q_UNUSED(aError);
     changeState(StoppedState);
 
     TRACE_EXIT_0();
@@ -306,6 +316,21 @@ void MMF::VideoPlayer::MvpuoEvent(const TMMFEvent &aEvent)
     Q_UNUSED(aEvent);
 
     TRACE_EXIT_0();
+}
+
+
+//-----------------------------------------------------------------------------
+// MVideoLoadingObserver callbacks
+//-----------------------------------------------------------------------------
+
+void MMF::VideoPlayer::MvloLoadingStarted()
+{
+    bufferingStarted();
+}
+
+void MMF::VideoPlayer::MvloLoadingComplete()
+{
+    bufferingComplete();
 }
 
 

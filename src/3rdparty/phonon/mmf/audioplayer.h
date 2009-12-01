@@ -45,9 +45,7 @@ namespace MMF
  */
 class AudioPlayer   :   public AbstractMediaPlayer
                     ,   public MPlayerObserverType    // typedef
-#ifdef QT_PHONON_MMF_AUDIO_DRM
                     ,   public MAudioLoadingObserver
-#endif
 {
     Q_OBJECT
 
@@ -64,6 +62,7 @@ public:
     virtual int setDeviceVolume(int mmfVolume);
     virtual int openFile(RFile& file);
     virtual int openUrl(const QString& url);
+    virtual int bufferStatus() const;
     virtual void close();
 
     // MediaObjectInterface
@@ -71,21 +70,9 @@ public:
     virtual qint64 currentTime() const;
     virtual qint64 totalTime() const;
 
-#ifdef QT_PHONON_MMF_AUDIO_DRM
-    // MDrmAudioPlayerCallback
-    virtual void MdapcInitComplete(TInt aError,
-                                   const TTimeIntervalMicroSeconds &aDuration);
-    virtual void MdapcPlayComplete(TInt aError);
-
-    // MAudioLoadingObserver
-    virtual void MaloLoadingStarted();
-    virtual void MaloLoadingComplete();
-#else
-    // MMdaAudioPlayerCallback
-    virtual void MapcInitComplete(TInt aError,
-                                  const TTimeIntervalMicroSeconds &aDuration);
-    virtual void MapcPlayComplete(TInt aError);
-#endif
+    // AbstractMediaPlayer
+    virtual int numberOfMetaDataEntries() const;
+    virtual QPair<QString, QString> metaDataEntry(int index) const;
 
     /**
      * This class owns the pointer.
@@ -95,9 +82,22 @@ public:
 private:
     void construct();
 
-    // AbstractMediaPlayer
-    virtual int numberOfMetaDataEntries() const;
-    virtual QPair<QString, QString> metaDataEntry(int index) const;
+private:
+#ifdef QT_PHONON_MMF_AUDIO_DRM
+    // MDrmAudioPlayerCallback
+    virtual void MdapcInitComplete(TInt aError,
+                                   const TTimeIntervalMicroSeconds &aDuration);
+    virtual void MdapcPlayComplete(TInt aError);
+#else
+    // MMdaAudioPlayerCallback
+    virtual void MapcInitComplete(TInt aError,
+                                  const TTimeIntervalMicroSeconds &aDuration);
+    virtual void MapcPlayComplete(TInt aError);
+#endif
+
+    // MAudioLoadingObserver
+    virtual void MaloLoadingStarted();
+    virtual void MaloLoadingComplete();
 
 private:
     /**
