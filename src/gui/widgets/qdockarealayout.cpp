@@ -1167,7 +1167,8 @@ bool QDockAreaLayoutInfo::insertGap(QList<int> path, QLayoutItem *dockWidgetItem
 
             QDockAreaLayoutInfo *subinfo = item.subinfo;
             QLayoutItem *widgetItem = item.widgetItem;
-            QRect r = subinfo == 0 ? dockedGeometry(widgetItem->widget()) : subinfo->rect;
+            QPlaceHolderItem *placeHolderItem = item.placeHolderItem;
+            QRect r = subinfo == 0 ? widgetItem ? dockedGeometry(widgetItem->widget()) : placeHolderItem->topLevelRect : subinfo->rect;
 
             Qt::Orientation opposite = o == Qt::Horizontal ? Qt::Vertical : Qt::Horizontal;
 #ifdef QT_NO_TABBAR
@@ -1176,13 +1177,15 @@ bool QDockAreaLayoutInfo::insertGap(QList<int> path, QLayoutItem *dockWidgetItem
             QDockAreaLayoutInfo *new_info
                 = new QDockAreaLayoutInfo(sep, dockPos, opposite, tabBarShape, mainWindow);
 
+            //item become a new top-level
             item.subinfo = new_info;
             item.widgetItem = 0;
+            item.placeHolderItem = 0;
 
             QDockAreaLayoutItem new_item
                 = widgetItem == 0
                     ? QDockAreaLayoutItem(subinfo)
-                    : QDockAreaLayoutItem(widgetItem);
+                    : widgetItem ? QDockAreaLayoutItem(widgetItem) : QDockAreaLayoutItem(placeHolderItem);
             new_item.size = pick(opposite, r.size());
             new_item.pos = pick(opposite, r.topLeft());
             new_info->item_list.append(new_item);
