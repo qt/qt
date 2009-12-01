@@ -966,15 +966,19 @@ void QListView::paintEvent(QPaintEvent *e)
     bool alternateBase = false;
     int previousRow = -2; // trigger the alternateBase adjustment on first pass
 
+    int maxSize = (flow() == TopToBottom)
+        ? qMax(viewport()->size().width(), d->contentsSize().width()) - 2 * d->spacing()
+        : qMax(viewport()->size().height(), d->contentsSize().height()) - 2 * d->spacing();
+
     QVector<QModelIndex>::const_iterator end = toBeRendered.constEnd();
     for (QVector<QModelIndex>::const_iterator it = toBeRendered.constBegin(); it != end; ++it) {
         Q_ASSERT((*it).isValid());
         option.rect = visualRect(*it);
 
         if (flow() == TopToBottom)
-            option.rect.setWidth(qMin(d->contentsSize().width() - 2 * d->spacing(), option.rect.width()));
+            option.rect.setWidth(qMin(maxSize, option.rect.width()));
         else
-            option.rect.setHeight(qMin(d->contentsSize().height() - 2 * d->spacing(), option.rect.height()));
+            option.rect.setHeight(qMin(maxSize, option.rect.height()));
 
         option.state = state;
         if (selections && selections->isSelected(*it))

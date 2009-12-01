@@ -1411,6 +1411,8 @@ bool QLineEdit::event(QEvent * e)
         QTimer::singleShot(0, this, SLOT(_q_handleWindowActivate()));
     }else if(e->type() == QEvent::ShortcutOverride){
         d->control->processEvent(e);
+    } else if (e->type() == QEvent::KeyRelease) {
+        d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
     }
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1615,6 +1617,8 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
     }
 #endif
     d->control->processKeyEvent(event);
+    if (event->isAccepted())
+        d->control->setCursorBlinkPeriod(0);
 }
 
 /*!

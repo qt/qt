@@ -2212,7 +2212,7 @@ void tst_QNetworkReply::ioGetWithManyProxies()
     connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
-    QTestEventLoop::instance().enterLoop(10);
+    QTestEventLoop::instance().enterLoop(15);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
@@ -2622,7 +2622,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QSignalSpy authenticationRequiredSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy proxyAuthenticationRequiredSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-    QTestEventLoop::instance().enterLoop(6);
+    QTestEventLoop::instance().enterLoop(12);
     disconnect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
@@ -3241,8 +3241,11 @@ void tst_QNetworkReply::receiveCookiesFromHttp_data()
     cookie = QNetworkCookie("a", "b");
     cookie.setPath("/not/part-of-path");
     header << cookie;
+    cookie.setDomain(QtNetworkSettings::serverName());
+    jar << cookie;
     QTest::newRow("invalid-cookie-path") << "a=b; path=/not/part-of-path" << header << jar;
 
+    jar.clear();
     cookie = QNetworkCookie("a", "b");
     cookie.setDomain(".example.com");
     header.clear();

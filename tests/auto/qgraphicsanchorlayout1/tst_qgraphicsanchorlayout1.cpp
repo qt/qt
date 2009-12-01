@@ -167,7 +167,7 @@ public:
         {
             setContentsMargins( 0,0,0,0 );
             if (name.isEmpty())
-                setData(0, QString::fromAscii("w%1").arg(int(this)));
+                setData(0, QString::fromAscii("w%1").arg(quintptr(this)));
             else
                 setData(0, name);
         }

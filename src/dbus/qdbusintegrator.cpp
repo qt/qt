@@ -948,9 +948,6 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
 
     rootNode.flags = 0;
     watchedServiceNames[QLatin1String(DBUS_SERVICE_DBUS)] = 1;
-
-    connect(this, SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-            this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
 
 QDBusConnectionPrivate::~QDBusConnectionPrivate()
@@ -1180,11 +1177,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
 void QDBusConnectionPrivate::_q_serviceOwnerChanged(const QString &name,
                                                     const QString &oldOwner, const QString &newOwner)
 {
-    if (oldOwner == baseService)
-        unregisterService(name);
-    if (newOwner == baseService)
-        registerService(name);
-
+    Q_UNUSED(oldOwner);
     QDBusWriteLocker locker(UpdateSignalHookOwnerAction, this);
     QMutableHashIterator<QString, SignalHook> it(signalHooks);
     it.toFront();
@@ -1655,8 +1648,15 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
 
         baseService = QString::fromUtf8(service);
     } else {
-        qWarning("QDBusConnectionPrivate::SetConnection: Unable to get base service");
+        qWarning("QDBusConnectionPrivate::setConnection: Unable to get base service");
     }
+
+    QString busService = QLatin1String(DBUS_SERVICE_DBUS);
+    connectSignal(busService, QString(), QString(), QString(), QLatin1String("NameAcquired"), QStringList(), QString(),
+                  this, SLOT(registerService(QString)));
+    connectSignal(busService, QString(), QString(), QString(), QLatin1String("NameLost"), QStringList(), QString(),
+                  this, SLOT(unregisterService(QString)));
+
 
     q_dbus_connection_add_filter(connection, qDBusSignalFilter, this, 0);
 

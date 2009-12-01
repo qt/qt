@@ -191,12 +191,16 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
             return false;
         }
 
-        QT_STATBUF statBuf;
-        if (QT_FSTAT(fd, &statBuf) != -1) {
-            if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
-                q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
-                QT_CLOSE(fd);
-                return false;
+        if (!(openMode & QIODevice::WriteOnly)) {
+            // we don't need this check if we tried to open for writing because then
+            // we had received EISDIR anyway.
+            QT_STATBUF statBuf;
+            if (QT_FSTAT(fd, &statBuf) != -1) {
+                if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
+                    q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
+                    QT_CLOSE(fd);
+                    return false;
+                }
             }
         }
 
@@ -230,12 +234,16 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
             return false;
         }
 
-        QT_STATBUF statBuf;
-        if (QT_FSTAT(fileno(fh), &statBuf) != -1) {
-            if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
-                q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
-                fclose(fh);
-                return false;
+        if (!(openMode & QIODevice::WriteOnly)) {
+            // we don't need this check if we tried to open for writing because then
+            // we had received EISDIR anyway.
+            QT_STATBUF statBuf;
+            if (QT_FSTAT(fileno(fh), &statBuf) != -1) {
+                if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
+                    q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
+                    fclose(fh);
+                    return false;
+                }
             }
         }
 
@@ -1245,7 +1253,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     }
 
     if (offset < 0 || offset != qint64(QT_OFF_T(offset))
-            || size < 0 || size > qint64(size_t(-1))) {
+            || size < 0 || quint64(size) > quint64(size_t(-1))) {
         q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
         return 0;
     }

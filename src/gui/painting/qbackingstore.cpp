@@ -949,6 +949,8 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
         return;
 
     QWidgetBackingStore *wbs = x->backingStore;
+    if (!wbs)
+        return;
 
     static int accelEnv = -1;
     if (accelEnv == -1) {

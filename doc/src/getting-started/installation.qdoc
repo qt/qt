@@ -423,7 +423,7 @@ in the \l{Qt for Windows CE Requirements} document.
         "Control Panel->System->Advanced->Environment variables" and for
         older versions by editing \c{c:\autoexec.bat}.
 
-        Make sure the enviroment variables for your compiler are set. 
+        Make sure the enviroment variables for your compiler are set.
         Visual Studio includes \c{vcvars32.bat} for that purpose - or simply
         use the "Visual Studio Command Prompt" from the Start menu.
 
@@ -530,7 +530,7 @@ in the \l{Qt for the Symbian platform Requirements} document.
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 25
 
-        To run the demos on the emulator simply navigate to the directory of the demo 
+        To run the demos on the emulator simply navigate to the directory of the demo
         you want to see and run:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 27
@@ -554,7 +554,7 @@ Symbian platform,
 in the \l{Qt for the Symbian platform Requirements} document.
 
 \note \bold {This document describes how to install and configure Qt for
-the Symbian platform from scratch. 
+the Symbian platform from scratch.
 If you are using pre-built binaries, follow the instructions given in the
 \l{Installing Qt on the Symbian platform from a Binary Package} document.}
 
@@ -599,6 +599,13 @@ If you are using pre-built binaries, follow the instructions given in the
         emulator. This is done by locating the Carbide.c++ submenu on the Start
         menu, and choosing "Configure environment for WINSCW command line".
 
+        If you are planning to use abld (the default build system that comes with the S60 SDK)
+        to build Qt, you will also need to set the following environment variable:
+
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 33
+
+        This is not necessary for other applications, only when building Qt.
+
     \o  Configure Qt
 
         To configure Qt for the Symbian platform, do:
@@ -609,7 +616,7 @@ If you are using pre-built binaries, follow the instructions given in the
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 31
         to build the tools using MinGW, and the libraries using SBSv2.
 
-        SBSv2 also known as a (\l{http://developer.symbian.org/wiki/index.php/Introduction_to_RAPTOR} {Raptor})
+        SBSv2 (also known as \l{http://developer.symbian.org/wiki/index.php/Introduction_to_RAPTOR} {Raptor})
         is a next-generation Symbian build system. SBSv2 is not officially
         supported by any of the S60 SDKs currently available from Forum Nokia.
 
@@ -634,8 +641,8 @@ If you are using pre-built binaries, follow the instructions given in the
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 29
 
-        \note You will need to supply certificate that allows installation 
-        of binaries with "All -Tcb" capability to your device. 
+        \note You will need to supply certificate that allows installation
+        of binaries with "All -Tcb" capability to your device.
 
         Similarly, install fluidlauncher to the device:
 
@@ -644,7 +651,7 @@ If you are using pre-built binaries, follow the instructions given in the
         This will create a self-signed \c fluidlauncher_armv5_urel.sis and
         install it to your device.
 
-        To run the demos on the emulator simply navigate to the directory of the demo 
+        To run the demos on the emulator simply navigate to the directory of the demo
         you want to see and run:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 27
@@ -820,7 +827,7 @@ If you are using pre-built binaries, follow the instructions given in the
     when building Qt from its source code. On Debian-based GNU/Linux systems,
     for example, we recommend that you install the following development
     packages:
-    
+
     \list
     \o libfontconfig1-dev
     \o libfreetype6-dev
@@ -843,7 +850,7 @@ If you are using pre-built binaries, follow the instructions given in the
     The configure script will autodetect if OpenGL headers and libraries are
     installed on your system, and if so, it will include the QtOpenGL module
     in the Qt library.
-    
+
     If your OpenGL headers or libraries are placed in a non-standard directory,
     you may need to change the \c QMAKE_INCDIR_OPENGL and/or
     \c QMAKE_LIBDIR_OPENGL in the config file for your system.
@@ -947,7 +954,7 @@ If you are using pre-built binaries, follow the instructions given in the
 
     \table
     \header \o{1,2} Architecture \o{1,2} Compiler  \o{2,1} QtCore       \o{2,1} QtGui        \o{2,1} QtNetwork    \o{2,1} QtWebKit
-    \header                                        \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal 
+    \header                                        \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal
     \row    \o linux-x86-g++ \o GCC 4.2.4          \o 1.7M    \o 2.7M   \o 3.3M    \o 9.9M   \o 653K    \o 1.1M   \o N/A     \o 17M
     \row    \o linux-arm-g++ \o GCC 4.1.1          \o 1.9M    \o 3.2M   \o 4.1M    \o 11M    \o 507K    \o 1.0M   \o N/A     \o 17M
     \row    \o linux-mips-g++ (MIPS32)
@@ -977,7 +984,7 @@ If you are using pre-built binaries, follow the instructions given in the
 
     Qt for the Symbian platform requires the following software installed on your development PC:
     \list
-        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}           
+        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}
            \list
            \o \bold{Note:} It may be necessary to update the Carbide compiler.
               See \l{http://pepper.troll.no/s60prereleases/patches/}{here} for instructions how to check your
@@ -999,7 +1006,7 @@ If you are using pre-built binaries, follow the instructions given in the
            \o \bold{Note:} This is not required if you are using pre-built binary package.
            \endlist
         \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} 2.2 [build 686] or later,
-           which is not available free of charge. 
+           which is not available free of charge.
     \endlist
 
     Running Qt on real device requires the following packages to be installed on your device.

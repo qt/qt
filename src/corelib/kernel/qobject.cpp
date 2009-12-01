@@ -145,14 +145,22 @@ QObjectPrivate::QObjectPrivate(int version)
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;
-    for (uint i = 0; i < (sizeof connectedSignals / sizeof connectedSignals[0]); ++i)
-        connectedSignals[i] = 0;
+    connectedSignals = 0;
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
     metaObject = 0;
     hasGuards = false;
 }
+
+#ifdef Q_CC_INTEL
+/* Workaround for a bug in win32-icc where it seems to inline ~QObjectPrivate too aggressive.
+   When icc compiles QtGui, it inlines ~QObjectPrivate so that it would generate a call to
+  ~QObjectData. However, ~QObjectData is not exported from QtCore, so it does not link.
+  See also QTBUG-5145 for info on how this manifested itself.
+ */
+# pragma auto_inline(off)
+#endif
 
 QObjectPrivate::~QObjectPrivate()
 {
@@ -165,6 +173,9 @@ QObjectPrivate::~QObjectPrivate()
     delete extraData;
 #endif
 }
+#ifdef Q_CC_INTEL
+# pragma auto_inline(on)
+#endif
 
 
 int *QObjectPrivate::setDeleteWatch(QObjectPrivate *d, int *w) {
@@ -2925,13 +2936,9 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
 
     QObjectPrivate *const sender_d = QObjectPrivate::get(s);
     if (signal_index < 0) {
-        for (uint i = 0; i < (sizeof sender_d->connectedSignals
-                              / sizeof sender_d->connectedSignals[0] ); ++i)
-            sender_d->connectedSignals[i] = ~0u;
-    } else if (signal_index < (int)sizeof sender_d->connectedSignals * 8) {
-        uint n = (signal_index / (8 * sizeof sender_d->connectedSignals[0]));
-        sender_d->connectedSignals[n] |= (1 << (signal_index - n * 8
-                                    * sizeof sender_d->connectedSignals[0]));
+        sender_d->connectedSignals = ~ulong(0);
+    } else if (signal_index < (int)sizeof(sender_d->connectedSignals) * 8) {
+        sender_d->connectedSignals |= ulong(1) << signal_index;
     }
 
     return true;
@@ -3189,15 +3196,9 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
     computeOffsets(m, &signalOffset, &methodOffset);
 
     int signal_index = signalOffset + local_signal_index;
-    if (signal_index < (int)sizeof(sender->d_func()->connectedSignals) * 8
-        && !qt_signal_spy_callback_set.signal_begin_callback
-        && !qt_signal_spy_callback_set.signal_end_callback) {
-        uint n = (signal_index / (8 * sizeof sender->d_func()->connectedSignals[0]));
-        uint m = 1 << (signal_index - n * 8 * sizeof sender->d_func()->connectedSignals[0]);
-        if ((sender->d_func()->connectedSignals[n] & m) == 0)
-            // nothing connected to these signals, and no spy
-            return;
-    }
+
+    if (!sender->d_func()->isSignalConnected(signal_index))
+        return; // nothing connected to these signals, and no spy
 
     if (sender->d_func()->blockSig)
         return;
@@ -3356,28 +3357,6 @@ int QObjectPrivate::signalIndex(const char *signalName) const
     int signalOffset, methodOffset;
     computeOffsets(base, &signalOffset, &methodOffset);
     return relative_index + signalOffset;
-}
-
-/*! \internal
-
-  Returns true if the signal with index \a signal_index from object \a sender is connected.
-  Signals with indices above a certain range are always considered connected (see connectedSignals
-  in QObjectPrivate). If a signal spy is installed, all signals are considered connected.
-
-  \a signal_index must be the index returned by QObjectPrivate::signalIndex;
-*/
-bool QObjectPrivate::isSignalConnected(int signal_index) const
-{
-    if (signal_index < (int)sizeof(connectedSignals) * 8
-        && !qt_signal_spy_callback_set.signal_begin_callback
-        && !qt_signal_spy_callback_set.signal_end_callback) {
-        uint n = (signal_index / (8 * sizeof connectedSignals[0]));
-        uint m = 1 << (signal_index - n * 8 * sizeof connectedSignals[0]);
-        if ((connectedSignals[n] & m) == 0)
-            // nothing connected to these signals, and no spy
-            return false;
-    }
-    return true;
 }
 
 /*****************************************************************************

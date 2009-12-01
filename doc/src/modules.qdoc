@@ -503,7 +503,7 @@
     \ingroup modules
 
     \brief The QtXmlPatterns module provides support for XPath,
-    XQuery, XSLT and XML schema-validation.
+    XQuery, XSLT and XML Schema validation.
 
     To include the definitions of the module's classes, use the
     following directive:

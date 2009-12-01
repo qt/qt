@@ -83,22 +83,23 @@ struct QObjectConnection
 
     void mark(JSC::MarkStack& markStack)
     {
-        // ### need to find out if senderWrapper is marked
         if (senderWrapper) {
-            // see if the sender should be marked or not
+            // see if the sender should be marked or not;
+            // if the C++ object is owned by script, we don't want
+            // it to stay alive due to a script connection.
             Q_ASSERT(senderWrapper.inherits(&QScriptObject::info));
             QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(senderWrapper));
-            QScriptObjectDelegate *delegate = scriptObject->delegate();
-            Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
-            QObjectDelegate *inst = static_cast<QObjectDelegate*>(delegate);
-            if ((inst->ownership() == QScriptEngine::ScriptOwnership)
-                || ((inst->ownership() == QScriptEngine::AutoOwnership)
-                    && inst->value() && !inst->value()->parent())) {
-                // #### don't mark if not marked otherwise
-                //senderWrapper = JSC::JSValue();
-                markStack.append(senderWrapper);
-            } else {
-                markStack.append(senderWrapper);
+            if (!JSC::Heap::isCellMarked(scriptObject)) {
+                QScriptObjectDelegate *delegate = scriptObject->delegate();
+                Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
+                QObjectDelegate *inst = static_cast<QObjectDelegate*>(delegate);
+                if ((inst->ownership() == QScriptEngine::ScriptOwnership)
+                    || ((inst->ownership() == QScriptEngine::AutoOwnership)
+                        && inst->value() && !inst->value()->parent())) {
+                    senderWrapper = JSC::JSValue();
+                } else {
+                    markStack.append(senderWrapper);
+                }
             }
         }
         if (receiver)

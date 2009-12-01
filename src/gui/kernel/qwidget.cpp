@@ -4605,7 +4605,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
     if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolve();
-    } else 
+    } else
 #endif //QT_NO_GRAPHICSVIEW
     if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedFontResolveMask = 0;
@@ -8248,7 +8248,8 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                QApplication::sendEvent(o, event);
+                if (o)
+                    QApplication::sendEvent(o, event);
             }
         }
         update();
@@ -8277,7 +8278,7 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                if (o != QApplication::activeModalWidget()) {
+                if (o && o != QApplication::activeModalWidget()) {
                     if (qobject_cast<QWidget *>(o) && static_cast<QWidget *>(o)->isWindow()) {
                         // do not forward the event to child windows,
                         // QApplication does this for us
@@ -9896,13 +9897,13 @@ void QWidget::scroll(int dx, int dy)
     Q_D(QWidget);
 #ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
-	// Graphics View maintains its own dirty region as a list of rects;
-	// until we can connect item updates directly to the view, we must
-	// separately add a translated dirty region.
-	if (!d->dirty.isEmpty()) {
-	    foreach (const QRect &rect, (d->dirty.translated(dx, dy)).rects())
-		proxy->update(rect);
-	}
+        // Graphics View maintains its own dirty region as a list of rects;
+        // until we can connect item updates directly to the view, we must
+        // separately add a translated dirty region.
+        if (!d->dirty.isEmpty()) {
+            foreach (const QRect &rect, (d->dirty.translated(dx, dy)).rects())
+                proxy->update(rect);
+        }
         proxy->scroll(dx, dy, proxy->subWidgetRect(this));
         return;
     }
@@ -9931,13 +9932,13 @@ void QWidget::scroll(int dx, int dy, const QRect &r)
     Q_D(QWidget);
 #ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
-	// Graphics View maintains its own dirty region as a list of rects;
-	// until we can connect item updates directly to the view, we must
-	// separately add a translated dirty region.
-	if (!d->dirty.isEmpty()) {
-	    foreach (const QRect &rect, (d->dirty.translated(dx, dy) & r).rects())
-		proxy->update(rect);
-	}
+        // Graphics View maintains its own dirty region as a list of rects;
+        // until we can connect item updates directly to the view, we must
+        // separately add a translated dirty region.
+        if (!d->dirty.isEmpty()) {
+            foreach (const QRect &rect, (d->dirty.translated(dx, dy) & r).rects())
+                proxy->update(rect);
+        }
         proxy->scroll(dx, dy, r.translated(proxy->subWidgetRect(this).topLeft().toPoint()));
         return;
     }

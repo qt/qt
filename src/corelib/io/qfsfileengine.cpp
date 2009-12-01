@@ -55,6 +55,7 @@
 #include "private/qcore_unix_p.h"
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -136,6 +137,20 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
 {
     if (path.isEmpty())
         return path;
+
+#if defined(Q_OS_UNIX) || defined(Q_OS_SYMBIAN)
+    // FIXME let's see if this stuff works, then we might be able to remove some of the other code.
+    // baaad Mac: 10.5 and 10.6 crash if trying to free a value returned by
+    // realpath() if the input path is just the root component.
+    if (path.size() == 1 && path.at(0) == QLatin1Char('/'))
+        return path;
+    char *ret = realpath(path.toLocal8Bit().constData(), (char*)0);
+    if (ret) {
+        QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
+        free(ret);
+        return canonicalPath;
+    }
+#endif
 
     QFileInfo fi;
     const QChar slash(QLatin1Char('/'));
