@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,49 +38,46 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QDebug>
+#include <qtest.h>
+#include <QtTest/QtTest>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QFileInfo>
 
-#ifndef SOFTKEYS_H
-#define SOFTKEYS_H
+#include "private/qfsfileengine_p.h"
 
-#include <QtGui>
-
-class MainWindow : public QMainWindow
+class qfileinfo : public QObject
 {
     Q_OBJECT
-public:
-
 private slots:
-    void clearTextEditor();
-    void openDialog();
-    void addSoftKeys();
-    void exitApplication();
-    void okPressed();
-    void cancelPressed();
-    void setCustomSoftKeys();
+    void canonicalFileNamePerformance();
+
+    void initTestCase();
+    void cleanupTestCase();
 public:
-    MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-private:
-    QGridLayout *layout;
-    QWidget *central;
-    QTextEdit* textEditor;
-    QLabel *infoLabel;
-    QPushButton* toggleButton;
-    QPushButton* pushButton;
-    QMenu* fileMenu;
-    QAction* addSoftKeysAct;
-    QAction* exit;
-    QAction* ok;
-    QAction* cancel;
+    qfileinfo() : QObject() {};
 };
 
-//! [0]
-class SoftKey : public QWidget
+void qfileinfo::initTestCase()
 {
-    Q_OBJECT
-public:
-    SoftKey(QWidget *parent = 0);
-};
-//! [0]
+}
 
-#endif
+void qfileinfo::cleanupTestCase()
+{
+}
+
+void qfileinfo::canonicalFileNamePerformance()
+{
+    QString appPath = QCoreApplication::applicationFilePath();
+    QFSFileEnginePrivate::canonicalized(appPath); // warmup
+    QFSFileEnginePrivate::canonicalized(appPath); // more warmup
+    QBENCHMARK {
+        for (int i = 0; i < 5000; i++) {
+            QFSFileEnginePrivate::canonicalized(appPath);
+        }
+    }
+}
+
+QTEST_MAIN(qfileinfo)
+
+#include "main.moc"
