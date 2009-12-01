@@ -51,6 +51,13 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNetworkConfigurationManagerPrivate, connManager);
 
+#ifndef Q_OS_SYMBIAN
+QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
+{
+    return connManager();
+}
+#endif
+
 /*!
     \class QNetworkConfigurationManager
 

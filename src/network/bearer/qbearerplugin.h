@@ -39,56 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QGENERICENGINE_P_H
-#define QGENERICENGINE_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QBEARERPLUGIN_H
+#define QBEARERPLUGIN_H
 
 #include "qnetworksessionengine_p.h"
 
-#include <QMap>
-#include <QTimer>
+#include <QtCore/qplugin.h>
+#include <QtCore/qfactoryinterface.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkConfigurationPrivate;
+QT_MODULE(Network)
 
-class QGenericEngine : public QNetworkSessionEngine
+struct Q_NETWORK_EXPORT QBearerEngineFactoryInterface : public QFactoryInterface
+{
+    virtual QBearerEngine *create(const QString &key = QString()) const = 0;
+};
+
+#define QBearerEngineFactoryInterface_iid "com.trolltech.Qt.QBearerEngineFactoryInterface"
+Q_DECLARE_INTERFACE(QBearerEngineFactoryInterface, QBearerEngineFactoryInterface_iid)
+
+class Q_NETWORK_EXPORT QBearerEnginePlugin : public QObject, public QBearerEngineFactoryInterface
 {
     Q_OBJECT
+    Q_INTERFACES(QBearerEngineFactoryInterface:QFactoryInterface)
 
 public:
-    QGenericEngine(QObject *parent = 0);
-    ~QGenericEngine();
+    explicit QBearerEnginePlugin(QObject *parent = 0);
+    virtual ~QBearerEnginePlugin();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
-    QString getInterfaceFromId(const QString &id);
-    bool hasIdentifier(const QString &id);
-
-    QString bearerName(const QString &id);
-
-    void connectToId(const QString &id);
-    void disconnectFromId(const QString &id);
-
-    void requestUpdate();
-
-    static QGenericEngine *instance();
-
-private:
-    QMap<uint, QString> configurationInterface;
-    QTimer pollTimer;
+    virtual QStringList keys() const = 0;
+    virtual QBearerEngine *create(const QString &key = QString()) const = 0;
 };
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif
 

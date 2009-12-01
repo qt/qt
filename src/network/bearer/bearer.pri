@@ -4,11 +4,13 @@
 
 HEADERS += bearer/qnetworkconfiguration.h \
            bearer/qnetworksession.h \
-           bearer/qnetworkconfigmanager.h
+           bearer/qnetworkconfigmanager.h \
+           bearer/qbearerplugin.h
 
 SOURCES += bearer/qnetworksession.cpp \
            bearer/qnetworkconfigmanager.cpp \
-           bearer/qnetworkconfiguration.cpp
+           bearer/qnetworkconfiguration.cpp \
+           bearer/qbearerplugin.cpp
 
 symbian {
     exists($${EPOCROOT}epoc32/release/winscw/udeb/cmmanager.lib)| \
@@ -72,13 +74,11 @@ symbian {
     HEADERS += bearer/qnetworkconfigmanager_p.h \
                bearer/qnetworkconfiguration_p.h \
                bearer/qnetworksession_p.h \
-               bearer/qnetworksessionengine_p.h \
-               bearer/qgenericengine_p.h
+               bearer/qnetworksessionengine_p.h
 
     SOURCES += bearer/qnetworkconfigmanager_p.cpp \
                bearer/qnetworksession_p.cpp \
-               bearer/qnetworksessionengine.cpp \
-               bearer/qgenericengine.cpp
+               bearer/qnetworksessionengine.cpp
 
     unix:!mac:contains(networkmanager_enabled, yes) {
         contains(QT_CONFIG,dbus) {

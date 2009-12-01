@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,61 +39,50 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKSESSIONENGINE_P_H
-#define QNETWORKSESSIONENGINE_P_H
+#include "qgenericengine.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtNetwork/qbearerplugin.h>
 
-#include <QtCore/qobject.h>
-#include <QtCore/qglobal.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qstring.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkConfigurationPrivate;
-class Q_NETWORK_EXPORT QNetworkSessionEngine : public QObject
+class QGenericEnginePlugin : public QBearerEnginePlugin
 {
-    Q_OBJECT
-
 public:
-    enum ConnectionError {
-        InterfaceLookupError = 0,
-        ConnectError,
-        OperationNotSupported,
-        DisconnectionError,
-    };
+    QGenericEnginePlugin();
+    ~QGenericEnginePlugin();
 
-    QNetworkSessionEngine(QObject *parent = 0);
-    virtual ~QNetworkSessionEngine();
-
-    virtual QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0) = 0;
-    virtual QString getInterfaceFromId(const QString &id) = 0;
-    virtual bool hasIdentifier(const QString &id) = 0;
-
-    virtual QString bearerName(const QString &id) = 0;
-
-    virtual void connectToId(const QString &id) = 0;
-    virtual void disconnectFromId(const QString &id) = 0;
-
-    virtual void requestUpdate() = 0;
-
-Q_SIGNALS:
-    void configurationsChanged();
-    void connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error);
+    QStringList keys() const;
+    QBearerEngine *create(const QString &key) const;
 };
 
-typedef QNetworkSessionEngine QBearerEngine;
+QGenericEnginePlugin::QGenericEnginePlugin()
+{
+}
+
+QGenericEnginePlugin::~QGenericEnginePlugin()
+{
+}
+
+QStringList QGenericEnginePlugin::keys() const
+{
+    qDebug() << Q_FUNC_INFO;
+
+    return QStringList() << QLatin1String("generic");
+}
+
+QBearerEngine *QGenericEnginePlugin::create(const QString &key) const
+{
+    qDebug() << Q_FUNC_INFO;
+
+    if (key == QLatin1String("generic"))
+        return new QGenericEngine;
+    else
+        return 0;
+}
+
+Q_EXPORT_STATIC_PLUGIN(QGenericEnginePlugin)
+Q_EXPORT_PLUGIN2(qgenericbearer, QGenericEnginePlugin)
 
 QT_END_NAMESPACE
-
-#endif

@@ -135,7 +135,7 @@ private:
 #endif
 
 #ifdef BEARER_ENGINE
-    QGenericEngine *generic;
+    QNetworkSessionEngine *generic;
 #ifdef Q_OS_WIN
     QNlaEngine *nla;
 #ifndef Q_OS_WINCE
@@ -172,6 +172,8 @@ private Q_SLOTS:
     void configurationChanged(QNetworkConfigurationPrivate *cpPriv);
 #endif
 };
+
+QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();
 
 QT_END_NAMESPACE
 

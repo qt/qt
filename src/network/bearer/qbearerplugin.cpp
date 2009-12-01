@@ -39,61 +39,20 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKSESSIONENGINE_P_H
-#define QNETWORKSESSIONENGINE_P_H
+#include "qbearerplugin.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/qobject.h>
-#include <QtCore/qglobal.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qstring.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkConfigurationPrivate;
-class Q_NETWORK_EXPORT QNetworkSessionEngine : public QObject
+QBearerEnginePlugin::QBearerEnginePlugin(QObject *parent)
+:   QObject(parent)
 {
-    Q_OBJECT
+    qDebug() << Q_FUNC_INFO;
+}
 
-public:
-    enum ConnectionError {
-        InterfaceLookupError = 0,
-        ConnectError,
-        OperationNotSupported,
-        DisconnectionError,
-    };
-
-    QNetworkSessionEngine(QObject *parent = 0);
-    virtual ~QNetworkSessionEngine();
-
-    virtual QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0) = 0;
-    virtual QString getInterfaceFromId(const QString &id) = 0;
-    virtual bool hasIdentifier(const QString &id) = 0;
-
-    virtual QString bearerName(const QString &id) = 0;
-
-    virtual void connectToId(const QString &id) = 0;
-    virtual void disconnectFromId(const QString &id) = 0;
-
-    virtual void requestUpdate() = 0;
-
-Q_SIGNALS:
-    void configurationsChanged();
-    void connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error);
-};
-
-typedef QNetworkSessionEngine QBearerEngine;
+QBearerEnginePlugin::~QBearerEnginePlugin()
+{
+}
 
 QT_END_NAMESPACE
-
-#endif

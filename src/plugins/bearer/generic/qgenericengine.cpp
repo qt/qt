@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qgenericengine_p.h"
-#include "qnetworkconfiguration_p.h"
+#include "qgenericengine.h"
+
+#include <QtNetwork/private/qnetworkconfiguration_p.h>
 
 #include <QtCore/qthread.h>
 #include <QtCore/qmutex.h>
@@ -229,6 +230,5 @@ QGenericEngine *QGenericEngine::instance()
     return genericEngine();
 }
 
-#include "moc_qgenericengine_p.cpp"
 QT_END_NAMESPACE
 

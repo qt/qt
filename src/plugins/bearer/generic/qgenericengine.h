@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,61 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKSESSIONENGINE_P_H
-#define QNETWORKSESSIONENGINE_P_H
+#ifndef QGENERICENGINE_H
+#define QGENERICENGINE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtNetwork/private/qnetworksessionengine_p.h>
 
-#include <QtCore/qobject.h>
-#include <QtCore/qglobal.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qstring.h>
+#include <QMap>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
-class Q_NETWORK_EXPORT QNetworkSessionEngine : public QObject
+
+class QGenericEngine : public QNetworkSessionEngine
 {
     Q_OBJECT
 
 public:
-    enum ConnectionError {
-        InterfaceLookupError = 0,
-        ConnectError,
-        OperationNotSupported,
-        DisconnectionError,
-    };
+    QGenericEngine(QObject *parent = 0);
+    ~QGenericEngine();
 
-    QNetworkSessionEngine(QObject *parent = 0);
-    virtual ~QNetworkSessionEngine();
+    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
+    QString getInterfaceFromId(const QString &id);
+    bool hasIdentifier(const QString &id);
 
-    virtual QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0) = 0;
-    virtual QString getInterfaceFromId(const QString &id) = 0;
-    virtual bool hasIdentifier(const QString &id) = 0;
+    QString bearerName(const QString &id);
 
-    virtual QString bearerName(const QString &id) = 0;
+    void connectToId(const QString &id);
+    void disconnectFromId(const QString &id);
 
-    virtual void connectToId(const QString &id) = 0;
-    virtual void disconnectFromId(const QString &id) = 0;
+    void requestUpdate();
 
-    virtual void requestUpdate() = 0;
+    static QGenericEngine *instance();
 
-Q_SIGNALS:
-    void configurationsChanged();
-    void connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error);
+private:
+    QMap<uint, QString> configurationInterface;
+    QTimer pollTimer;
 };
-
-typedef QNetworkSessionEngine QBearerEngine;
 
 QT_END_NAMESPACE
 
 #endif
+

@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qnetworkconfigmanager_p.h"
-#include "qgenericengine_p.h"
 
 #ifdef Q_OS_WIN
 #include "qnlaengine_win_p.h"
@@ -55,11 +54,18 @@
 #include "qcorewlanengine_mac_p.h"
 #endif
 
+#include "qbearerplugin.h"
+
+#include <QtCore/private/qfactoryloader_p.h>
+
 #include <QtCore/qdebug.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+                          (QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")))
 
 void QNetworkConfigurationManagerPrivate::registerPlatformCapabilities()
 {
@@ -228,6 +234,9 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         updateState = NotUpdating;
         onlineConfigurations = 0;
 
+        QFactoryLoader *l = loader();
+        QStringList keys = l->keys();
+
 #if defined (Q_OS_DARWIN)
         coreWifi = QCoreWlanEngine::instance();
         if (coreWifi) {
@@ -242,10 +251,14 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                     this, SLOT(updateConfigurations()));
         } else {
 #endif
-            generic = QGenericEngine::instance();
-            if (generic) {
-                connect(generic, SIGNAL(configurationsChanged()),
-                        this, SLOT(updateConfigurations()));
+            QBearerEnginePlugin *genericPlugin =
+                qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("generic")));
+            if (genericPlugin) {
+                generic = genericPlugin->create(QLatin1String("generic"));
+                if (generic) {
+                    connect(generic, SIGNAL(configurationsChanged()),
+                            this, SLOT(updateConfigurations()));
+                }
             }
 #if defined(BACKEND_NM)
         }

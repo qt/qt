@@ -55,7 +55,7 @@
 
 #include "qnetworkconfiguration.h"
 #include <QtCore/qshareddata.h>
-#include <QNetworkInterface>
+#include <QtNetwork/QNetworkInterface>
 
 QT_BEGIN_NAMESPACE
 

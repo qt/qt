@@ -42,7 +42,7 @@
 #include "qnetworksession_p.h"
 #include "qnetworksession.h"
 #include "qnetworksessionengine_p.h"
-#include "qgenericengine_p.h"
+#include "qnetworkconfigmanager_p.h"
 
 #ifdef Q_OS_WIN
 #include "qnlaengine_win_p.h"
@@ -81,6 +81,8 @@ static bool NetworkManagerAvailable()
 
 static QNetworkSessionEngine *getEngineFromId(const QString &id)
 {
+    QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
+
 #ifdef Q_OS_WIN
     QNlaEngine *nla = QNlaEngine::instance();
     if (nla && nla->hasIdentifier(id))
@@ -106,9 +108,9 @@ static QNetworkSessionEngine *getEngineFromId(const QString &id)
         return coreWifi;
 
 #endif
-    QGenericEngine *generic = QGenericEngine::instance();
-    if (generic && generic->hasIdentifier(id))
-        return generic;
+    QNetworkSessionEngine *engine = priv->configurationEngine.value(id);
+    if (engine && engine->hasIdentifier(id))
+        return engine;
 
     return 0;
 }
