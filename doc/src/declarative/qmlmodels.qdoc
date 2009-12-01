@@ -101,7 +101,7 @@ ListModel {
 \endcode
 
 The above model has two roles, \e name and \e cost.  These can be bound
-bound to by a ListView delegate, for example:
+to by a ListView delegate, for example:
 
 \code
 Component {
