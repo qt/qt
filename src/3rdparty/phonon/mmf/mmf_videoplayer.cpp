@@ -142,24 +142,10 @@ void MMF::VideoPlayer::doSeek(qint64 ms)
 {
     TRACE_CONTEXT(VideoPlayer::doSeek, EVideoApi);
 
-    bool wasPlaying = false;
-    if (state() == PlayingState) {
-        // The call to SetPositionL does not have any effect if playback is
-        // ongoing, so we pause before seeking.
-        doPause();
-        wasPlaying = true;
-    }
-
     TRAPD(err, m_player->SetPositionL(TTimeIntervalMicroSeconds(ms * 1000)));
 
-    if (KErrNone == err) {
-        if (wasPlaying)
-            doPlay();
-    }
-    else {
-        TRACE("SetPositionL error %d", err);
+    if(KErrNone != err)
         setError(tr("Seek failed"), err);
-    }
 }
 
 int MMF::VideoPlayer::setDeviceVolume(int mmfVolume)
