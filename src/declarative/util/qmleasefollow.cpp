@@ -124,7 +124,7 @@ bool QmlEaseFollowPrivate::recalc()
         vp = velocity;
         sp = 0;
         sd = s;
-    } else if (tf > (maximumEasingTime / 1000.)) {
+    } else if (maximumEasingTime != -1 && tf > (maximumEasingTime / 1000.)) {
 
         qreal met = maximumEasingTime / 1000.;
         td = tf - met;
