@@ -179,13 +179,20 @@ void MMF::AbstractMediaPlayer::seek(qint64 ms)
     case PlayingState:
     case LoadingState:
     {
-        const bool positionTimerWasRunning = m_positionTimer->isActive();
-        stopPositionTimer();
+        bool wasPlaying = false;
+        if (state() == PlayingState) {
+            stopPositionTimer();
+            doPause();
+            wasPlaying = true;
+        }
 
         doSeek(ms);
 
-        if (positionTimerWasRunning)
+        if(wasPlaying && state() != ErrorState) {
+            doPlay();
             startPositionTimer();
+        }
+
         break;
     }
     case BufferingState:
@@ -369,7 +376,6 @@ void MMF::AbstractMediaPlayer::doVolumeChanged()
         Utils::panic(InvalidStatePanic);
     }
 }
-
 
 //-----------------------------------------------------------------------------
 // Protected functions
