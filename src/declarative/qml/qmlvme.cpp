@@ -67,6 +67,7 @@
 #include <private/qmlbinding_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlbindingoptimizations_p.h>
+#include <private/qmlglobal_p.h>
 #include <qmlscriptstring.h>
 
 QT_BEGIN_NAMESPACE
@@ -102,7 +103,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp,
                      int start, int count, 
                      const QBitField &bindingSkipList)
 {
-    QStack<QObject *> stack;
+    QmlVMEStack<QObject *> stack;
 
     if (start == -1) start = 0;
     if (count == -1) count = comp->bytecode.count();
@@ -121,14 +122,14 @@ void QmlVME::runDeferred(QObject *object)
     QmlCompiledData *comp = data->deferredComponent;
     int start = data->deferredIdx + 1;
     int count = data->deferredComponent->bytecode.at(data->deferredIdx).defer.deferCount;
-    QStack<QObject *> stack;
+    QmlVMEStack<QObject *> stack;
     stack.push(object);
 
     run(stack, ctxt, comp, start, count, QBitField());
 }
 
 QBitField bindingSkipList;
-QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, 
+QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt, 
                      QmlCompiledData *comp, 
                      int start, int count, 
                      const QBitField &bindingSkipList)
@@ -147,7 +148,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
     QmlEnginePrivate::SimpleList<QmlAbstractBinding> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
 
-    QStack<ListInstance> qliststack;
+    QmlVMEStack<ListInstance> qliststack;
 
     vmeErrors.clear();
     QmlEnginePrivate *ep = QmlEnginePrivate::get(ctxt->engine());
@@ -214,7 +215,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                             // TODO: parent might be a layout 
                         } 
                     } else { 
-                        o->setParent(parent); 
+			    QmlGraphics_setParent_noEvent(o, parent);
+       //                 o->setParent(parent); 
                     } 
                 }
                 stack.push(o);
