@@ -1549,7 +1549,7 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
     }
 #endif
 
-    if (!isReadOnly())
+    if (!isReadOnly() && rect().contains(e->pos()))
         d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
