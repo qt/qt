@@ -1058,13 +1058,16 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
             setValue(1000);
         }
 
+        QLineEdit *lineEdit() const
+        {
+            return QDoubleSpinBox::lineEdit();
+        }
+
         //we use the French delimiters here
         QString textFromValue (double value) const
         { 
             return locale().toString(value);
         }
-
-        using QDoubleSpinBox::lineEdit;
     } spinbox;
     spinbox.show();
     spinbox.activateWindow();
