@@ -292,7 +292,8 @@ void Generator::generateCode()
     QList<QByteArray> extraList;
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
-        if (!isVariantType(p.type) && !metaTypes.contains(p.type)) {
+        if (!isVariantType(p.type) && !metaTypes.contains(p.type) && !p.type.contains('*') &&
+                !p.type.contains('<') && !p.type.contains('>')) {
             int s = p.type.lastIndexOf("::");
             if (s > 0) {
                 QByteArray scope = p.type.left(s);

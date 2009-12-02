@@ -489,7 +489,6 @@ private slots:
     void constructors();
     void typenameWithUnsigned();
     void warnOnVirtualSignal();
-
 signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
@@ -817,6 +816,8 @@ void tst_Moc::structQObject()
 
 #include "namespaced-flags.h"
 
+Q_DECLARE_METATYPE(QList<Foo::Bar::Flags>);
+
 void tst_Moc::namespacedFlags()
 {
     Foo::Baz baz;
@@ -829,6 +830,12 @@ void tst_Moc::namespacedFlags()
     QVERIFY(v.isValid());
     QVERIFY(baz.setProperty("flags", v));
     QVERIFY(baz.flags() == bar.flags());
+
+    QList<Foo::Bar::Flags> l;
+    l << baz.flags();
+    QVariant v2 = baz.setProperty("flagsList", QVariant::fromValue(l));
+    QCOMPARE(l, baz.flagsList());
+    QCOMPARE(l, qvariant_cast<QList<Foo::Bar::Flags> >(baz.property("flagsList")));
 }
 
 void tst_Moc::warnOnMultipleInheritance()
