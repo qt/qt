@@ -2538,12 +2538,17 @@ bool QmlCompiler::completeComponentBuild()
             expression = rewriteBinding(expression);
 
             quint32 length = expression.length();
-            quint32 pc = output->programs.length();
-            if (isSharable) 
+            quint32 pc; 
+            
+            if (isSharable) {
+                pc = output->cachedClosures.count();
                 pc |= 0x80000000;
+                output->cachedClosures.append(0);
+            } else {
+                pc = output->cachedPrograms.length();
+                output->cachedPrograms.append(0);
+            }
 
-            output->programs.append(0);
-            output->cachedValues.append(0);
             binding.compiledData =
                 QByteArray((const char *)&pc, sizeof(quint32)) +
                 QByteArray((const char *)&length, sizeof(quint32)) +

@@ -117,22 +117,22 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
 
         if (isShared) {
 
-            if (!dd->cachedValues.at(progIdx)) {
+            if (!dd->cachedClosures.at(progIdx)) {
                 QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
                 scriptContext->pushScope(ep->contextClass->newSharedContext());
-                dd->cachedValues[progIdx] = new QScriptValue(scriptEngine->evaluate(data->expression, data->url.toString(), data->line));
+                dd->cachedClosures[progIdx] = new QScriptValue(scriptEngine->evaluate(data->expression, data->url.toString(), data->line));
                 scriptEngine->popContext();
             }
 
-            data->expressionFunction = *dd->cachedValues.at(progIdx);
+            data->expressionFunction = *dd->cachedClosures.at(progIdx);
             data->isShared = true;
             data->expressionFunctionValid = true;
 
         } else {
 
 #if !defined(Q_OS_SYMBIAN) //XXX Why doesn't this work?
-            if (!dd->programs.at(progIdx)) {
-                dd->programs[progIdx] =
+            if (!dd->cachedPrograms.at(progIdx)) {
+                dd->cachedPrograms[progIdx] =
                     new QScriptProgram(data->expression, data->url.toString(), data->line);
             }
 #endif
@@ -141,7 +141,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
             scriptContext->pushScope(ep->contextClass->newContext(ctxt, me));
 
 #if !defined(Q_OS_SYMBIAN) 
-            data->expressionFunction = scriptEngine->evaluate(*dd->programs[progIdx]);
+            data->expressionFunction = scriptEngine->evaluate(*dd->cachedPrograms.at(progIdx));
 #else
             data->expressionFunction = scriptEngine->evaluate(data->expression);
 #endif
