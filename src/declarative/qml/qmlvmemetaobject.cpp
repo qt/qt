@@ -41,13 +41,13 @@
 
 #include "qmlvmemetaobject_p.h"
 #include <qml.h>
-#include <private/qmlrefcount_p.h>
+#include "qmlrefcount_p.h"
 #include <QColor>
 #include <QDate>
 #include <QtCore/qlist.h>
 #include <QtCore/qdebug.h>
 #include <qmlexpression.h>
-#include <private/qmlcontext_p.h>
+#include "qmlcontext_p.h"
 
 QT_BEGIN_NAMESPACE
 

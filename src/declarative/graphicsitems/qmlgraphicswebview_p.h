@@ -44,7 +44,7 @@
 
 #include <QtGui/QAction>
 #include <QtCore/QUrl>
-#include <private/qmlgraphicspainteditem_p.h>
+#include "qmlgraphicspainteditem_p.h"
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWebKit/QWebPage>
 
@@ -210,7 +210,7 @@ private Q_SLOTS:
     void setStatusText(const QString&);
     void windowObjectCleared();
     void pageUrlChanged();
-    void contentsSizeChanged(const QSize&);
+    void noteContentsSizeChanged(const QSize&);
     void initialLayout();
 
 protected:
@@ -235,6 +235,8 @@ private:
     virtual void componentComplete();
     Q_DISABLE_COPY(QmlGraphicsWebView)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsWebView)
+    QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *);
+    QMouseEvent *sceneHoverMoveEventToMouseEvent(QGraphicsSceneHoverEvent *);
     friend class QmlGraphicsWebPage;
 };
 

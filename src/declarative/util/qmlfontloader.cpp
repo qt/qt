@@ -46,7 +46,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>
-#include <QmlContext>
+#include <qmlcontext.h>
 #include <qmlengine.h>
 #include <QFontDatabase>
 

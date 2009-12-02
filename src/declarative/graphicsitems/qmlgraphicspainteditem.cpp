@@ -50,6 +50,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QPaintEngine>
+#include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -98,9 +99,13 @@ static int inpaint_clearcache=0;
 void QmlGraphicsPaintedItem::dirtyCache(const QRect& rect)
 {
     Q_D(QmlGraphicsPaintedItem);
+    QRect srect(qCeil(rect.x()*d->contentsScale),
+            qCeil(rect.y()*d->contentsScale),
+            qCeil(rect.width()*d->contentsScale),
+            qCeil(rect.height()*d->contentsScale));
     for (int i=0; i < d->imagecache.count(); ) {
         QmlGraphicsPaintedItemPrivate::ImageCacheItem *c = d->imagecache[i];
-        QRect isect = (c->area & rect) | c->dirty;
+        QRect isect = (c->area & srect) | c->dirty;
         if (isect == c->area && !inpaint) {
             delete d->imagecache.takeAt(i);
         } else {
@@ -147,9 +152,31 @@ void QmlGraphicsPaintedItem::setContentsSize(const QSize &size)
     Q_D(QmlGraphicsPaintedItem);
     if (d->contentsSize == size) return;
     d->contentsSize = size;
+    setImplicitWidth(size.width()*d->contentsScale);
+    setImplicitHeight(size.height()*d->contentsScale);
     clearCache();
     update();
+    emit contentsSizeChanged();
 }
+
+qreal QmlGraphicsPaintedItem::contentsScale() const
+{
+    Q_D(const QmlGraphicsPaintedItem);
+    return d->contentsScale;
+}
+
+void QmlGraphicsPaintedItem::setContentsScale(qreal scale)
+{
+    Q_D(QmlGraphicsPaintedItem);
+    if (d->contentsScale == scale) return;
+    d->contentsScale = scale;
+    setImplicitWidth(d->contentsSize.width()*scale);
+    setImplicitHeight(d->contentsSize.height()*scale);
+    clearCache();
+    update();
+    emit contentsScaleChanged();
+}
+
 
 /*!
     Constructs a new QmlGraphicsPaintedItem with the given \a parent.
@@ -204,7 +231,8 @@ void QmlGraphicsPaintedItem::setCacheFrozen(bool frozen)
 void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QmlGraphicsPaintedItem);
-    const QRect content(QPoint(0,0),d->contentsSize);
+    const QRect content(0,0,qCeil(d->contentsSize.width()*d->contentsScale),
+                            qCeil(d->contentsSize.height()*d->contentsScale));
     if (content.width() <= 0 || content.height() <= 0)
         return;
 
@@ -244,21 +272,27 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
             if (!d->cachefrozen) {
                 if (!d->imagecache[i]->dirty.isNull() && topaint.contains(d->imagecache[i]->dirty)) {
                     QPainter qp(&d->imagecache[i]->image);
-                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smoothCache);
+                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smoothCache);
                     qp.translate(-area.x(), -area.y());
+                    qp.scale(d->contentsScale,d->contentsScale);
+                    QRect clip = d->imagecache[i]->dirty;
+                    QRect sclip(qFloor(clip.x()/d->contentsScale),
+                            qFloor(clip.y()/d->contentsScale),
+                            qCeil(clip.width()/d->contentsScale+clip.x()/d->contentsScale-qFloor(clip.x()/d->contentsScale)),
+                            qCeil(clip.height()/d->contentsScale+clip.y()/d->contentsScale-qFloor(clip.y()/d->contentsScale)));
+                    qp.setClipRect(sclip);
                     if (d->fillColor.isValid()){
                         if(d->fillColor.alpha() < 255){
                             // ### Might not work outside of raster paintengine
                             QPainter::CompositionMode prev = qp.compositionMode();
                             qp.setCompositionMode(QPainter::CompositionMode_Source);
-                            qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
+                            qp.fillRect(sclip,d->fillColor);
                             qp.setCompositionMode(prev);
                         }else{
-                            qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
+                            qp.fillRect(sclip,d->fillColor);
                         }
                     }
-                    qp.setClipRect(d->imagecache[i]->dirty);
-                    drawContents(&qp, d->imagecache[i]->dirty);
+                    drawContents(&qp, sclip);
                     d->imagecache[i]->dirty = QRect();
                 }
             }
@@ -300,10 +334,15 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
                     img.fill(d->fillColor);
                 {
                     QPainter qp(&img);
-                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smoothCache);
+                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smoothCache);
 
                     qp.translate(-r.x(),-r.y());
-                    drawContents(&qp, r);
+                    qp.scale(d->contentsScale,d->contentsScale);
+                    QRect sclip(qFloor(r.x()/d->contentsScale),
+                            qFloor(r.y()/d->contentsScale),
+                            1+qCeil(r.width()/d->contentsScale+r.x()/d->contentsScale-qFloor(r.x()/d->contentsScale)),
+                            1+qCeil(r.height()/d->contentsScale+r.y()/d->contentsScale-qFloor(r.y()/d->contentsScale)));
+                    drawContents(&qp, sclip);
                 }
                 QmlGraphicsPaintedItemPrivate::ImageCacheItem *newitem = new QmlGraphicsPaintedItemPrivate::ImageCacheItem;
                 newitem->area = r;

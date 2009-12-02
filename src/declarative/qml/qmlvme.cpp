@@ -41,13 +41,13 @@
 
 #include "qmlvme_p.h"
 #include "qmlcompiler_p.h"
-#include <private/qfxperf_p_p.h>
-#include <private/qmlboundsignal_p.h>
-#include <private/qmlstringconverters_p.h>
-#include "private/qmetaobjectbuilder_p.h"
-#include "private/qmldeclarativedata_p.h"
+#include "qfxperf_p_p.h"
+#include "qmlboundsignal_p.h"
+#include "qmlstringconverters_p.h"
+#include "qmetaobjectbuilder_p.h"
+#include "qmldeclarativedata_p.h"
 #include <qml.h>
-#include <private/qmlcustomparser_p.h>
+#include "qmlcustomparser_p.h"
 #include <QStack>
 #include <QWidget>
 #include <QColor>
@@ -58,15 +58,16 @@
 #include <qmlcontext.h>
 #include <qmlcomponent.h>
 #include <qmlbinding.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcomponent_p.h>
-#include "private/qmlvmemetaobject_p.h"
+#include "qmlengine_p.h"
+#include "qmlcomponent_p.h"
+#include "qmlvmemetaobject_p.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qapplication.h>
-#include <private/qmlbinding_p.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmlbindingoptimizations_p.h>
+#include "qmlbinding_p.h"
+#include "qmlcontext_p.h"
+#include "qmlbindingoptimizations_p.h"
+#include "qmlglobal_p.h"
 #include <qmlscriptstring.h>
 
 QT_BEGIN_NAMESPACE
@@ -102,7 +103,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp,
                      int start, int count, 
                      const QBitField &bindingSkipList)
 {
-    QStack<QObject *> stack;
+    QmlVMEStack<QObject *> stack;
 
     if (start == -1) start = 0;
     if (count == -1) count = comp->bytecode.count();
@@ -121,14 +122,14 @@ void QmlVME::runDeferred(QObject *object)
     QmlCompiledData *comp = data->deferredComponent;
     int start = data->deferredIdx + 1;
     int count = data->deferredComponent->bytecode.at(data->deferredIdx).defer.deferCount;
-    QStack<QObject *> stack;
+    QmlVMEStack<QObject *> stack;
     stack.push(object);
 
     run(stack, ctxt, comp, start, count, QBitField());
 }
 
 QBitField bindingSkipList;
-QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, 
+QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt, 
                      QmlCompiledData *comp, 
                      int start, int count, 
                      const QBitField &bindingSkipList)
@@ -147,7 +148,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
     QmlEnginePrivate::SimpleList<QmlAbstractBinding> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
 
-    QStack<ListInstance> qliststack;
+    QmlVMEStack<ListInstance> qliststack;
 
     vmeErrors.clear();
     QmlEnginePrivate *ep = QmlEnginePrivate::get(ctxt->engine());
@@ -214,7 +215,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                             // TODO: parent might be a layout 
                         } 
                     } else { 
-                        o->setParent(parent); 
+			    QmlGraphics_setParent_noEvent(o, parent);
+       //                 o->setParent(parent); 
                     } 
                 }
                 stack.push(o);

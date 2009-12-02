@@ -52,7 +52,7 @@
 // We mean it.
 //
 
-#include "private/qperformancelog_p_p.h"
+#include "qperformancelog_p_p.h"
 
 QT_BEGIN_HEADER
 

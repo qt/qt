@@ -56,10 +56,11 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsPaintedItem : public QmlGraphicsItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize)
+    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize NOTIFY contentsSizeChanged)
     Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor NOTIFY fillColorChanged)
     Q_PROPERTY(int pixelCacheSize READ pixelCacheSize WRITE setPixelCacheSize)
     Q_PROPERTY(bool smoothCache READ smoothCache WRITE setSmoothCache)
+    Q_PROPERTY(qreal contentsScale READ contentsScale WRITE setContentsScale NOTIFY contentsScaleChanged)
 
 
 public:
@@ -68,6 +69,9 @@ public:
 
     QSize contentsSize() const;
     void setContentsSize(const QSize &);
+
+    qreal contentsScale() const;
+    void setContentsScale(qreal);
 
     int pixelCacheSize() const;
     void setPixelCacheSize(int pixels);
@@ -89,6 +93,8 @@ protected:
 
 Q_SIGNALS:
     void fillColorChanged();
+    void contentsSizeChanged();
+    void contentsScaleChanged();
 
 protected Q_SLOTS:
     void dirtyCache(const QRect &);

@@ -42,8 +42,8 @@
 #include "qmlgraphicstextedit_p.h"
 #include "qmlgraphicstextedit_p_p.h"
 #include <private/qtextcontrol_p.h>
-#include <private/qfxperf_p_p.h>
-#include <private/qmlgraphicsevents_p_p.h>
+#include "qfxperf_p_p.h"
+#include "qmlgraphicsevents_p_p.h"
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>

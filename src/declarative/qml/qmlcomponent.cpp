@@ -42,21 +42,21 @@
 #include "qmlcomponent.h"
 #include "qmlcomponent_p.h"
 #include "qmlcompiler_p.h"
-#include "private/qmlcontext_p.h"
-#include "private/qmlcompositetypedata_p.h"
-#include "private/qmlengine_p.h"
+#include "qmlcontext_p.h"
+#include "qmlcompositetypedata_p.h"
+#include "qmlengine_p.h"
 #include "qmlvme_p.h"
 #include "qml.h"
 #include <QStack>
-#include <private/qfxperf_p_p.h>
+#include "qfxperf_p_p.h"
 #include <QStringList>
 #include <qmlengine.h>
 #include <QFileInfo>
 #include "qmlbinding.h"
 #include <QtCore/qdebug.h>
 #include <QApplication>
-#include <private/qmlbinding_p.h>
-#include <private/qmlglobal_p.h>
+#include "qmlbinding_p.h"
+#include "qmlglobal_p.h"
 
 #include "qmlscriptparser_p.h"
 

@@ -45,7 +45,7 @@
 #include "qmlstate_p_p.h"
 #include <qmlbinding.h>
 #include <QtCore/qdebug.h>
-#include <private/qmlglobal_p.h>
+#include "qmlglobal_p.h"
 
 QT_BEGIN_NAMESPACE
 
