@@ -202,9 +202,9 @@ void tst_QSystemLock::processes()
 
     QStringList scripts;
     for (int i = 0; i < readOnly; ++i)
-        scripts.append(QFileInfo(SRCDIR "lackey/scripts/ systemlock_read.js").absoluteFilePath() );
+        scripts.append(QFileInfo(SRCDIR "/../lackey/scripts/systemlock_read.js").absoluteFilePath() );
     for (int i = 0; i < readWrite; ++i)
-        scripts.append(QFileInfo(SRCDIR "lackey/scripts/systemlock_readwrite.js").absoluteFilePath());
+        scripts.append(QFileInfo(SRCDIR "/../lackey/scripts/systemlock_readwrite.js").absoluteFilePath());
 
     QList<QProcess*> consumers;
     unsigned int failedProcesses = 0;
@@ -213,8 +213,8 @@ void tst_QSystemLock::processes()
         QStringList arguments = QStringList() << scripts.at(i);
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
-        
-        p->start(QFileInfo(SRCDIR "lackey/lackey").absoluteFilePath(), arguments);
+
+        p->start("../lackey/lackey", arguments);
         // test, if the process could be started.
 
         if (p->waitForStarted(2000))
