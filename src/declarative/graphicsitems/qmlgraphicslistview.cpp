@@ -2266,6 +2266,8 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
     d->updateUnrequestedPositions();
     d->updateViewport();
     d->updateSections();
+    d->updateHeader();
+    d->updateFooter();
     emit countChanged();
 }
 
