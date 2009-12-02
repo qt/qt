@@ -277,7 +277,6 @@ void MMF::VideoPlayer::MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError)
     TRACE_CONTEXT(VideoPlayer::MvpuoFrameReady, EVideoApi);
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    // TODO
     Q_UNUSED(aFrame);
     Q_UNUSED(aError);   // suppress warnings in release builds
 
@@ -300,7 +299,6 @@ void MMF::VideoPlayer::MvpuoEvent(const TMMFEvent &aEvent)
     TRACE_CONTEXT(VideoPlayer::MvpuoEvent, EVideoApi);
     TRACE_ENTRY("state %d", state());
 
-    // TODO
     Q_UNUSED(aEvent);
 
     TRACE_EXIT_0();
