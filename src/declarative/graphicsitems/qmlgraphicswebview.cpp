@@ -349,7 +349,9 @@ void QmlGraphicsWebView::setPreferredWidth(int iw)
     Q_D(QmlGraphicsWebView);
     if (d->preferredwidth == iw) return;
     d->preferredwidth = iw;
-    expandToWebPage();
+    if (d->preferredwidth > 0 && d->preferredheight > 0)
+        page()->setPreferredContentsSize(QSize(d->preferredwidth,d->preferredheight));
+    //expandToWebPage();
     emit preferredWidthChanged();
 }
 
@@ -368,6 +370,8 @@ void QmlGraphicsWebView::setPreferredHeight(int ih)
     Q_D(QmlGraphicsWebView);
     if (d->preferredheight == ih) return;
     d->preferredheight = ih;
+    if (d->preferredwidth > 0 && d->preferredheight > 0)
+        page()->setPreferredContentsSize(QSize(d->preferredwidth,d->preferredheight));
     emit preferredHeightChanged();
 }
 
@@ -397,7 +401,7 @@ void QmlGraphicsWebView::initialLayout()
     // nothing useful to do at this point
 }
 
-void QmlGraphicsWebView::contentsSizeChanged(const QSize&)
+void QmlGraphicsWebView::noteContentsSizeChanged(const QSize&)
 {
     expandToWebPage();
 }
@@ -416,10 +420,9 @@ void QmlGraphicsWebView::expandToWebPage()
         cs.setHeight(height());
     if (cs != page()->viewportSize()) {
         page()->setViewportSize(cs);
-        clearCache();
-        setImplicitWidth(cs.width());
-        setImplicitHeight(cs.height());
     }
+    if (cs != contentsSize())
+        setContentsSize(cs);
 }
 
 void QmlGraphicsWebView::geometryChanged(const QRectF &newGeometry,
@@ -432,9 +435,6 @@ void QmlGraphicsWebView::geometryChanged(const QRectF &newGeometry,
 
 void QmlGraphicsWebView::paintPage(const QRect& r)
 {
-    Q_D(QmlGraphicsWebView);
-    if (d->page->mainFrame()->contentsSize() != contentsSize())
-        setContentsSize(d->page->mainFrame()->contentsSize());
     dirtyCache(r);
     update();
 }
@@ -536,7 +536,7 @@ void QmlGraphicsWebView::drawContents(QPainter *p, const QRect &r)
         page()->mainFrame()->render(p,r);
 }
 
-static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
+QMouseEvent *QmlGraphicsWebView::sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
 {
     QEvent::Type t;
     switch(e->type()) {
@@ -555,15 +555,15 @@ static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
         break;
     }
 
-    QMouseEvent *me = new QMouseEvent(t, e->pos().toPoint(), e->button(), e->buttons(), 0);
+    QMouseEvent *me = new QMouseEvent(t, (e->pos()/contentsScale()).toPoint(), e->button(), e->buttons(), 0);
     return me;
 }
 
-static QMouseEvent *sceneHoverMoveEventToMouseEvent(QGraphicsSceneHoverEvent *e)
+QMouseEvent *QmlGraphicsWebView::sceneHoverMoveEventToMouseEvent(QGraphicsSceneHoverEvent *e)
 {
     QEvent::Type t = QEvent::MouseMove;
 
-    QMouseEvent *me = new QMouseEvent(t, e->pos().toPoint(), Qt::NoButton, Qt::NoButton, 0);
+    QMouseEvent *me = new QMouseEvent(t, (e->pos()/contentsScale()).toPoint(), Qt::NoButton, Qt::NoButton, 0);
 
     return me;
 }
@@ -601,15 +601,15 @@ void QmlGraphicsWebView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 bool QmlGraphicsWebView::heuristicZoom(int clickX, int clickY, qreal maxzoom)
 {
     Q_D(QmlGraphicsWebView);
-    qreal ozf = zoomFactor();
-    if (ozf >= maxzoom)
+    if (contentsScale() >= maxzoom/zoomFactor())
         return false;
+    qreal ozf = contentsScale();
     QRect showarea = elementAreaAt(clickX, clickY, d->preferredwidth/maxzoom, d->preferredheight/maxzoom);
-    qreal z = qMin(qreal(d->preferredwidth)*ozf/showarea.width(),qreal(d->preferredheight)*ozf/showarea.height());
-    if (z > maxzoom)
-        z = maxzoom;
-    if (z/ozf > 1.1) {
-        QRectF r(showarea.left()/ozf*z, showarea.top()/ozf*z, showarea.width()/ozf*z, showarea.height()/ozf*z);
+    qreal z = qMin(qreal(d->preferredwidth)/showarea.width(),qreal(d->preferredheight)/showarea.height());
+    if (z > maxzoom/zoomFactor())
+        z = maxzoom/zoomFactor();
+    if (z/ozf > 1.2) {
+        QRectF r(showarea.left()*z, showarea.top()*z, showarea.width()*z, showarea.height()*z);
         emit zoomTo(z,r.x()+r.width()/2, r.y()+r.height()/2);
         return true;
     } else {
@@ -963,7 +963,7 @@ void QmlGraphicsWebView::setPage(QWebPage *page)
     connect(d->page->mainFrame(),SIGNAL(urlChanged(QUrl)),this,SLOT(pageUrlChanged()));
     connect(d->page->mainFrame(), SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
     connect(d->page->mainFrame(), SIGNAL(iconChanged()), this, SIGNAL(iconChanged()));
-    connect(d->page->mainFrame(), SIGNAL(contentsSizeChanged(QSize)), this, SLOT(contentsSizeChanged(QSize)));
+    connect(d->page->mainFrame(), SIGNAL(contentsSizeChanged(QSize)), this, SLOT(noteContentsSizeChanged(QSize)));
     connect(d->page->mainFrame(), SIGNAL(initialLayoutCompleted()), this, SLOT(initialLayout()));
 
     connect(d->page,SIGNAL(loadStarted()),this,SLOT(doLoadStarted()));
@@ -1204,6 +1204,7 @@ QString QmlGraphicsWebPage::chooseFile(QWebFrame *originatingFrame, const QStrin
 
 void QmlGraphicsWebPage::javaScriptAlert(QWebFrame *originatingFrame, const QString& msg)
 {
+    Q_UNUSED(originatingFrame)
     emit viewItem()->alert(msg);
 }
 
@@ -1218,6 +1219,10 @@ bool QmlGraphicsWebPage::javaScriptConfirm(QWebFrame *originatingFrame, const QS
 bool QmlGraphicsWebPage::javaScriptPrompt(QWebFrame *originatingFrame, const QString& msg, const QString& defaultValue, QString* result)
 {
     // Not supported (it's modal)
+    Q_UNUSED(originatingFrame)
+    Q_UNUSED(msg)
+    Q_UNUSED(defaultValue)
+    Q_UNUSED(result)
     return false;
 }
 

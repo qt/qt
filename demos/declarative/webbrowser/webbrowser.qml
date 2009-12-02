@@ -195,13 +195,14 @@ Item {
                 smoothCache: true // We do want smooth rendering
                 fillColor: "white"
                 focus: true
+                zoomFactor: 4
 
                 onAlert: console.log(message)
 
                 function doZoom(zoom,centerX,centerY)
                 {
                     if (centerX) {
-                        var sc = zoom/zoomFactor;
+                        var sc = zoom/contentsScale;
                         scaleAnim.to = sc;
                         flickVX.from = flickable.viewportX
                         flickVX.to = Math.max(0,Math.min(centerX-flickable.width/2,webView.width*sc-flickable.width))
@@ -214,17 +215,28 @@ Item {
                     }
                 }
 
+                Keys.onLeftPressed: webView.contentsScale -= 0.1
+                Keys.onRightPressed: webView.contentsScale += 0.1
+
                 preferredWidth: flickable.width
                 preferredHeight: flickable.height
-                zoomFactor: flickable.width > 980 ? 1 : flickable.width/980
-
-                onUrlChanged: { if (url != null) { editUrl.text = url.toString(); } }
+                contentsScale: 1/zoomFactor
+                onContentsSizeChanged: {
+                    // zoom out
+                    contentsScale = flickable.width / contentsSize.width
+                }
+                onUrlChanged: {
+                    // got to topleft
+                    flickable.viewportX = 0
+                    flickable.viewportY = 0
+                    if (url != null) { editUrl.text = url.toString(); }
+                }
                 onDoubleClick: {
                                 if (!heuristicZoom(clickX,clickY,2.5)) {
-                                    var zf = flickable.width > 980 ? 1 : flickable.width/980;
-                                    if (zf > zoomFactor)
-                                        zf = 2.0 // zoom in (else zooming out)
-                                    doZoom(zf,clickX/zoomFactor*zf,clickY/zoomFactor*zf)
+                                    var zf = flickable.width / contentsSize.width
+                                    if (zf >= contentsScale)
+                                        zf = 2.0/zoomFactor // zoom in (else zooming out)
+                                    doZoom(zf,clickX*zf,clickY*zf)
                                  }
                                }
 
@@ -268,7 +280,7 @@ Item {
                     PropertyAction {
                         id: finalZoom
                         target: webView
-                        property: "zoomFactor"
+                        property: "contentsScale"
                     }
                     PropertyAction {
                         target: webView
@@ -277,7 +289,7 @@ Item {
                     }
                     // Have to set the viewportXY, since the above 2
                     // size changes may have started a correction if
-                    // zoomFactor < 1.0.
+                    // contentsScale < 1.0.
                     PropertyAction {
                         id: finalX
                         target: flickable
