@@ -251,19 +251,9 @@ void MMF::AbstractMediaPlayer::open(const MediaSource &source, RFile& file)
         break;
     }
 
-    case MediaSource::Invalid:
-    case MediaSource::Disc:
-    case MediaSource::Stream:
-        TRACE_0("Error opening source: type not supported");
-        errorMessage = tr("Error opening source: type not supported");
-        break;
+    // Other source types are handled in MediaObject::createPlayer
 
-    case MediaSource::Empty:
-        TRACE_0("Empty source - doing nothing");
-        TRACE_EXIT_0();
-        return;
-
-        // Protection against adding new media types and forgetting to update this switch
+    // Protection against adding new media types and forgetting to update this switch
     default:
         TRACE_PANIC(InvalidMediaTypePanic);
     }
