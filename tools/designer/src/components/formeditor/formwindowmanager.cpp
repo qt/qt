@@ -196,6 +196,7 @@ bool FormWindowManager::eventFilter(QObject *o, QEvent *e)
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
+    case QEvent::AcceptDropsChange:
         return false;
     default:
         break;
