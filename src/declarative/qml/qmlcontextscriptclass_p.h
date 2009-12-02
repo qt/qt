@@ -68,6 +68,7 @@ public:
     ~QmlContextScriptClass();
 
     QScriptValue newContext(QmlContext *, QObject * = 0);
+    QScriptValue newSharedContext();
 
     QmlContext *contextFromValue(const QScriptValue &);
 

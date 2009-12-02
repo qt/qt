@@ -229,12 +229,16 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
         } else if (lastData->flags & QmlPropertyCache::Data::IsQmlList) {
             return enginePriv->listClass->newList(obj, lastData->coreIndex, 
                                                   QmlListScriptClass::QmlListPtr);
-        } if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
+        } else if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
             QObject *rv = 0;
             void *args[] = { &rv, 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
-
             return newQObject(rv, lastData->propType);
+        } else if (lastData->flags & QmlPropertyCache::Data::IsQScriptValue) {
+            QScriptValue rv = scriptEngine->nullValue();
+            void *args[] = { &rv, 0 };
+            QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
+            return rv;
         } else {
             QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
             return enginePriv->scriptValueFromVariant(var);

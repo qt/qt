@@ -55,15 +55,15 @@ class WorkerDataEvent : public QEvent
 public:
     enum Type { WorkerData = QEvent::User };
 
-    WorkerDataEvent(int workerId, QmlWorkerScriptEngine::Data *data);
+    WorkerDataEvent(int workerId, const QVariant &data);
     virtual ~WorkerDataEvent();
 
     int workerId() const;
-    QmlWorkerScriptEngine::Data *takeData();
+    QVariant data() const;
 
 private:
     int m_id;
-    QmlWorkerScriptEngine::Data *m_data;
+    QVariant m_data;
 };
 
 class WorkerLoadEvent : public QEvent
@@ -81,31 +81,64 @@ private:
     QUrl m_url;
 };
 
+class WorkerRemoveEvent : public QEvent
+{
+public:
+    enum Type { WorkerRemove = WorkerLoadEvent::WorkerLoad + 1 };
+
+    WorkerRemoveEvent(int workerId);
+
+    int workerId() const;
+
+private:
+    int m_id;
+};
+
 class QmlWorkerScriptEnginePrivate : public QObject
 {
 public:
     QmlWorkerScriptEnginePrivate();
 
-    QScriptEngine *workerEngine;
+    struct ScriptEngine : public QScriptEngine 
+    {
+        ScriptEngine(QmlWorkerScriptEnginePrivate *parent) : p(parent) {}
+        QmlWorkerScriptEnginePrivate *p;
+    };
+    ScriptEngine *workerEngine;
+    static QmlWorkerScriptEnginePrivate *get(QScriptEngine *e) {
+        return static_cast<ScriptEngine *>(e)->p;
+    }
 
     QMutex m_lock;
     QWaitCondition m_wait;
 
+    struct WorkerScript {
+        WorkerScript();
+
+        int id;
+        bool initialized;
+        QmlWorkerScript *owner;
+        QScriptValue object;
+
+        QScriptValue callback;
+    };
+
+    QHash<int, WorkerScript *> workers;
     QScriptValue getWorker(int);
 
     int m_nextId;
-    QHash<int, QScriptValue> m_workers;
 
     static QVariant scriptValueToVariant(const QScriptValue &);
     static QScriptValue variantToScriptValue(const QVariant &, QScriptEngine *);
 
-    static QScriptValue onmessage(QScriptContext *ctxt, QScriptEngine *engine);
+    static QScriptValue onMessage(QScriptContext *ctxt, QScriptEngine *engine);
+    static QScriptValue sendMessage(QScriptContext *ctxt, QScriptEngine *engine);
 
 protected:
     virtual bool event(QEvent *);
 
 private:
-    void processMessage(int, QmlWorkerScriptEngine::Data *);
+    void processMessage(int, const QVariant &);
     void processLoad(int, const QUrl &);
 };
 
@@ -114,34 +147,75 @@ QmlWorkerScriptEnginePrivate::QmlWorkerScriptEnginePrivate()
 {
 }
 
-QScriptValue QmlWorkerScriptEnginePrivate::onmessage(QScriptContext *ctxt, QScriptEngine *engine)
+QScriptValue QmlWorkerScriptEnginePrivate::onMessage(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if (ctxt->argumentCount() >= 1) 
-        ctxt->thisObject().setData(ctxt->argument(0));
+    QmlWorkerScriptEnginePrivate *p = QmlWorkerScriptEnginePrivate::get(engine);
 
-    return ctxt->thisObject().data();
+    int id = ctxt->thisObject().data().toVariant().toInt();
+
+    WorkerScript *script = p->workers.value(id);
+    if (!script)
+        return engine->undefinedValue();
+
+    if (ctxt->argumentCount() >= 1) 
+        script->callback = ctxt->argument(0);
+
+    return script->callback;
+}
+
+QScriptValue QmlWorkerScriptEnginePrivate::sendMessage(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if (!ctxt->argumentCount())
+        return engine->undefinedValue();
+
+    QmlWorkerScriptEnginePrivate *p = QmlWorkerScriptEnginePrivate::get(engine);
+
+    int id = ctxt->thisObject().data().toVariant().toInt();
+
+    WorkerScript *script = p->workers.value(id);
+    if (!script) 
+        return engine->undefinedValue();
+
+    p->m_lock.lock();
+    if (script->owner) 
+        QCoreApplication::postEvent(script->owner, 
+                                    new WorkerDataEvent(0, scriptValueToVariant(ctxt->argument(0))));
+    p->m_lock.unlock();
+
+    return engine->undefinedValue();
 }
 
 QScriptValue QmlWorkerScriptEnginePrivate::getWorker(int id)
 {
-    QHash<int, QScriptValue>::Iterator iter = m_workers.find(id);
-    if (iter == m_workers.end()) {
-        QScriptValue worker = workerEngine->newObject();
+    QHash<int, WorkerScript *>::ConstIterator iter = workers.find(id);
 
-        worker.setProperty(QLatin1String("onmessage"), workerEngine->newFunction(onmessage), 
-                           QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+    if (iter == workers.end())
+        return workerEngine->nullValue();
 
-        iter = m_workers.insert(id, worker);
+    WorkerScript *script = *iter;
+    if (!script->initialized) {
+
+        script->initialized = true;
+        script->object = workerEngine->newObject();
+
+        QScriptValue api = workerEngine->newObject();
+        api.setData(script->id);
+
+        api.setProperty(QLatin1String("onMessage"), workerEngine->newFunction(onMessage), 
+                        QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+        api.setProperty(QLatin1String("sendMessage"), workerEngine->newFunction(sendMessage));
+
+        script->object.setProperty(QLatin1String("WorkerScript"), api);
     }
 
-    return *iter;
+    return script->object;
 }
 
 bool QmlWorkerScriptEnginePrivate::event(QEvent *event)
 {
     if (event->type() == (QEvent::Type)WorkerDataEvent::WorkerData) {
         WorkerDataEvent *workerEvent = static_cast<WorkerDataEvent *>(event);
-        processMessage(workerEvent->workerId(), workerEvent->takeData());
+        processMessage(workerEvent->workerId(), workerEvent->data());
         return true;
     } else if (event->type() == (QEvent::Type)WorkerLoadEvent::WorkerLoad) {
         WorkerLoadEvent *workerEvent = static_cast<WorkerLoadEvent *>(event);
@@ -152,19 +226,18 @@ bool QmlWorkerScriptEnginePrivate::event(QEvent *event)
     }
 }
 
-void QmlWorkerScriptEnginePrivate::processMessage(int id, QmlWorkerScriptEngine::Data *data)
+void QmlWorkerScriptEnginePrivate::processMessage(int id, const QVariant &data)
 {
-    QScriptValue worker = getWorker(id);
-    QScriptValue onmessage = worker.data();
+    WorkerScript *script = workers.value(id);
+    if (!script)
+        return;
 
-    if (onmessage.isFunction()) {
+    if (script->callback.isFunction()) {
         QScriptValue args = workerEngine->newArray(1);
-        args.setProperty(0, variantToScriptValue(data->var, workerEngine));
+        args.setProperty(0, variantToScriptValue(data, workerEngine));
 
-        onmessage.call(worker, args);
+        script->callback.call(script->object, args);
     }
-
-    if (data) delete data;
 }
 
 void QmlWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
@@ -188,119 +261,6 @@ void QmlWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
 
         workerEngine->popContext();
     }
-}
-
-WorkerDataEvent::WorkerDataEvent(int workerId, QmlWorkerScriptEngine::Data *data)
-: QEvent((QEvent::Type)WorkerData), m_id(workerId), m_data(data)
-{
-}
-
-WorkerDataEvent::~WorkerDataEvent()
-{
-    if (m_data) { delete m_data; m_data = 0; }
-}
-
-int WorkerDataEvent::workerId() const
-{
-    return m_id;
-}
-
-QmlWorkerScriptEngine::Data *WorkerDataEvent::takeData()
-{
-    QmlWorkerScriptEngine::Data *rv = m_data;
-    m_data = 0;
-    return rv;
-}
-
-WorkerLoadEvent::WorkerLoadEvent(int workerId, const QUrl &url)
-: QEvent((QEvent::Type)WorkerLoad), m_id(workerId), m_url(url)
-{
-}
-
-int WorkerLoadEvent::workerId() const
-{
-    return m_id;
-}
-
-QUrl WorkerLoadEvent::url() const
-{
-    return m_url;
-}
-
-QmlWorkerScriptEngine::QmlWorkerScriptEngine(QObject *parent)
-: QThread(parent), d(new QmlWorkerScriptEnginePrivate)
-{
-    d->m_lock.lock();
-    start(QThread::LowPriority);
-    d->m_wait.wait(&d->m_lock);
-    d->moveToThread(this);
-}
-
-QmlWorkerScriptEngine::~QmlWorkerScriptEngine()
-{
-    delete d; d = 0;
-}
-
-QmlWorkerScriptEngine::WorkerScript::WorkerScript()
-: engine(0), id(0)
-{
-}
-
-void QmlWorkerScriptEngine::WorkerScript::executeUrl(const QUrl &url)
-{
-    engine->executeUrl(this, url);
-}
-
-void QmlWorkerScriptEngine::WorkerScript::sendMessage(Data *data)
-{
-    engine->sendMessage(this, data);
-}
-
-void QmlWorkerScriptEngine::executeUrl(WorkerScript *script, const QUrl &data)
-{
-    QCoreApplication::postEvent(d, new WorkerLoadEvent(script->id, data));
-}
-
-/*!
-    Ownership of \a data transfers to QmlWorkerScriptEngine.  It can not be modified by 
-    the caller.
-*/
-void QmlWorkerScriptEngine::sendMessage(WorkerScript *script, Data *data)
-{
-    QCoreApplication::postEvent(d, new WorkerDataEvent(script->id, data));
-}
-
-QmlWorkerScriptEngine::WorkerScript *QmlWorkerScriptEngine::createWorkerScript()
-{
-    WorkerScript *rv = new WorkerScript;
-    rv->engine = this;
-    rv->id = d->m_nextId++;
-    return rv;
-}
-
-void QmlWorkerScriptEngine::run()
-{
-    d->m_lock.lock();
-
-    d->workerEngine = new QScriptEngine;
-
-    d->m_wait.wakeAll();
-
-    d->m_lock.unlock();
-
-    exec();
-
-    delete d->workerEngine; d->workerEngine = 0;
-}
-
-QmlWorkerScript::QmlWorkerScript(QObject *parent)
-: QObject(parent), m_script(0)
-{
-}
-
-QmlWorkerScript::~QmlWorkerScript()
-{
-    if (m_script) { delete m_script; m_script = 0; }
 }
 
 QVariant QmlWorkerScriptEnginePrivate::scriptValueToVariant(const QScriptValue &value)
@@ -370,6 +330,123 @@ QScriptValue QmlWorkerScriptEnginePrivate::variantToScriptValue(const QVariant &
     }
 }
 
+WorkerDataEvent::WorkerDataEvent(int workerId, const QVariant &data)
+: QEvent((QEvent::Type)WorkerData), m_id(workerId), m_data(data)
+{
+}
+
+WorkerDataEvent::~WorkerDataEvent()
+{
+}
+
+int WorkerDataEvent::workerId() const
+{
+    return m_id;
+}
+
+QVariant WorkerDataEvent::data() const
+{
+    return m_data;
+}
+
+WorkerLoadEvent::WorkerLoadEvent(int workerId, const QUrl &url)
+: QEvent((QEvent::Type)WorkerLoad), m_id(workerId), m_url(url)
+{
+}
+
+int WorkerLoadEvent::workerId() const
+{
+    return m_id;
+}
+
+QUrl WorkerLoadEvent::url() const
+{
+    return m_url;
+}
+
+WorkerRemoveEvent::WorkerRemoveEvent(int workerId)
+: QEvent((QEvent::Type)WorkerRemove), m_id(workerId)
+{
+}
+
+int WorkerRemoveEvent::workerId() const
+{
+    return m_id;
+}
+
+QmlWorkerScriptEngine::QmlWorkerScriptEngine(QObject *parent)
+: QThread(parent), d(new QmlWorkerScriptEnginePrivate)
+{
+    d->m_lock.lock();
+    start(QThread::LowPriority);
+    d->m_wait.wait(&d->m_lock);
+    d->moveToThread(this);
+    d->m_lock.unlock();
+}
+
+QmlWorkerScriptEngine::~QmlWorkerScriptEngine()
+{
+    delete d; d = 0;
+}
+
+QmlWorkerScriptEnginePrivate::WorkerScript::WorkerScript()
+: id(-1), initialized(false), owner(0)
+{
+}
+
+int QmlWorkerScriptEngine::registerWorkerScript(QmlWorkerScript *owner)
+{
+    QmlWorkerScriptEnginePrivate::WorkerScript *script = new QmlWorkerScriptEnginePrivate::WorkerScript;
+    script->id = d->m_nextId++;
+    script->owner = owner;
+
+    d->m_lock.lock();
+    d->workers.insert(script->id, script);
+    d->m_lock.unlock();
+
+    return script->id;
+}
+
+void QmlWorkerScriptEngine::removeWorkerScript(int id)
+{
+    QCoreApplication::postEvent(d, new WorkerRemoveEvent(id));
+}
+
+void QmlWorkerScriptEngine::executeUrl(int id, const QUrl &url)
+{
+    QCoreApplication::postEvent(d, new WorkerLoadEvent(id, url));
+}
+
+void QmlWorkerScriptEngine::sendMessage(int id, const QVariant &data)
+{
+    QCoreApplication::postEvent(d, new WorkerDataEvent(id, data));
+}
+
+void QmlWorkerScriptEngine::run()
+{
+    d->m_lock.lock();
+
+    d->workerEngine = new QmlWorkerScriptEnginePrivate::ScriptEngine(d);
+
+    d->m_wait.wakeAll();
+
+    d->m_lock.unlock();
+
+    exec();
+
+    delete d->workerEngine; d->workerEngine = 0;
+}
+
+QmlWorkerScript::QmlWorkerScript(QObject *parent)
+: QObject(parent), m_engine(0), m_scriptId(-1)
+{
+}
+
+QmlWorkerScript::~QmlWorkerScript()
+{
+    if (m_scriptId != -1) m_engine->removeWorkerScript(m_scriptId);
+}
+
 QUrl QmlWorkerScript::source() const
 {
     return m_source;
@@ -382,37 +459,55 @@ void QmlWorkerScript::setSource(const QUrl &source)
 
     m_source = source;
 
-    if (m_script) 
-        m_script->executeUrl(m_source);
+    if (m_engine) 
+        m_engine->executeUrl(m_scriptId, m_source);
 
     emit sourceChanged();
 }
 
 void QmlWorkerScript::sendMessage(const QScriptValue &message)
 {
-    if (!m_script) {
+    if (!m_engine) {
         qWarning("QmlWorkerScript: Attempt to send message before WorkerScript establishment");
         return;
     }
 
-    QmlWorkerScriptEngine::Data *data = new QmlWorkerScriptEngine::Data;
-    data->var = QmlWorkerScriptEnginePrivate::scriptValueToVariant(message);
-    m_script->sendMessage(data);
+    m_engine->sendMessage(m_scriptId, QmlWorkerScriptEnginePrivate::scriptValueToVariant(message));
 }
 
 void QmlWorkerScript::componentComplete()
 {
-    if (!m_script) {
+    if (!m_engine) {
         QmlEngine *engine = qmlEngine(this);
         if (!engine) {
             qWarning("QmlWorkerScript: componentComplete() called without qmlEngine() set");
             return;
         }
-        m_script = QmlEnginePrivate::get(engine)->getWorkerScriptEngine()->createWorkerScript();
+
+        m_engine = QmlEnginePrivate::get(engine)->getWorkerScriptEngine();
+        m_scriptId = m_engine->registerWorkerScript(this);
 
         if (m_source.isValid())
-            m_script->executeUrl(m_source);
+            m_engine->executeUrl(m_scriptId, m_source);
     }
 }
+
+bool QmlWorkerScript::event(QEvent *event)
+{
+    if (event->type() == (QEvent::Type)WorkerDataEvent::WorkerData) {
+        QmlEngine *engine = qmlEngine(this);
+        if (engine) {
+            QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+            WorkerDataEvent *workerEvent = static_cast<WorkerDataEvent *>(event);
+            QScriptValue value = 
+                QmlWorkerScriptEnginePrivate::variantToScriptValue(workerEvent->data(), scriptEngine);
+            emit message(value);
+        }
+        return true;
+    } else {
+        return QObject::event(event);
+    }
+}
+
 
 QML_DEFINE_TYPE(Qt, 4, 6, WorkerScript, QmlWorkerScript);

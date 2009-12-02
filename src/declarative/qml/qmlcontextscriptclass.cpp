@@ -47,9 +47,27 @@
 QT_BEGIN_NAMESPACE
 
 struct ContextData : public QScriptDeclarativeClass::Object {
-    ContextData(QmlContext *c, QObject *o) : context(c), scopeObject(o) {}
+    ContextData() : isSharedContext(true) {}
+    ContextData(QmlContext *c, QObject *o) : context(c), scopeObject(o), isSharedContext(false) {}
     QGuard<QmlContext> context;
     QGuard<QObject> scopeObject;
+    bool isSharedContext;
+
+    QmlContext *getContext(QmlEngine *engine) {
+        if (isSharedContext) {
+            return QmlEnginePrivate::get(engine)->sharedContext;
+        } else {
+            return context.data();
+        }
+    }
+
+    QObject *getScope(QmlEngine *engine) {
+        if (isSharedContext) {
+            return QmlEnginePrivate::get(engine)->sharedScope;
+        } else {
+            return scopeObject.data();
+        }
+    }
 };
 
 /*
@@ -73,13 +91,20 @@ QScriptValue QmlContextScriptClass::newContext(QmlContext *context, QObject *sco
     return newObject(scriptEngine, this, new ContextData(context, scopeObject));
 }
 
+QScriptValue QmlContextScriptClass::newSharedContext()
+{
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+
+    return newObject(scriptEngine, this, new ContextData());
+}
+
 QmlContext *QmlContextScriptClass::contextFromValue(const QScriptValue &v)
 {
     if (scriptClass(v) != this)
         return 0;
 
     ContextData *data = (ContextData *)object(v);
-    return data->context;
+    return data->getContext(engine);
 }
 
 QScriptClass::QueryFlags 
@@ -94,8 +119,8 @@ QmlContextScriptClass::queryProperty(Object *object, const Identifier &name,
     lastPropertyIndex = -1;
     lastDefaultObject = -1;
 
-    QmlContext *bindContext = ((ContextData *)object)->context.data();
-    QObject *scopeObject = ((ContextData *)object)->scopeObject.data();
+    QmlContext *bindContext = ((ContextData *)object)->getContext(engine);
+    QObject *scopeObject = ((ContextData *)object)->getScope(engine);
     if (!bindContext)
         return 0;
 

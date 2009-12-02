@@ -101,6 +101,8 @@ public:
     QObject *me;
     bool trackChange;
 
+    bool isShared;
+
     QUrl url;
     int line;
 
