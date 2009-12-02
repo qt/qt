@@ -513,6 +513,10 @@ void tst_QFileInfo::canonicalFilePath()
     QFileInfo info("/tmp/../../../../../../../../../../../../../../../../../");
     info.canonicalFilePath();
 
+    // This used to crash on Mac
+    QFileInfo dontCrash(QLatin1String("/"));
+    QCOMPARE(dontCrash.canonicalFilePath(), QLatin1String("/"));
+
 #ifndef Q_OS_WIN
     // test symlinks
     QFile::remove("link.lnk");

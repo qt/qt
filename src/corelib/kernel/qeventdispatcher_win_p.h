@@ -102,6 +102,7 @@ public:
 
 private:
     friend LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
+    friend LRESULT CALLBACK qt_GetMessageHook(int, WPARAM, LPARAM);
 };
 
 QT_END_NAMESPACE

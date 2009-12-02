@@ -336,6 +336,7 @@ public:
 
     // internal window handle used for socketnotifiers/timers/etc
     HWND internalHwnd;
+    HHOOK getMessageHook;
 
     // for controlling when to send posted events
     QAtomicInt serialNumber;
@@ -363,7 +364,7 @@ public:
 };
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
-    : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), serialNumber(0), lastSerialNumber(0), wakeUps(0)
+    : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), getMessageHook(0), serialNumber(0), lastSerialNumber(0), wakeUps(0)
 {
     resolveTimerAPI();
 }
@@ -471,37 +472,11 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         }
         return 0;
     } else if (message == WM_TIMER) {    
-        if (wp == SendPostedEventsTimerId) {
-            KillTimer(d->internalHwnd, wp);
-            int localSerialNumber = d->serialNumber;
-            (void) d->wakeUps.fetchAndStoreRelease(0);
-            if (localSerialNumber != d->lastSerialNumber) {
-                PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);
-            }
-        } else {
-            Q_ASSERT(d != 0);
-            d->sendTimerEvent(wp);
-        }
+        Q_ASSERT(d != 0);
+        d->sendTimerEvent(wp);
         return 0;
     } else if (message == WM_QT_SENDPOSTEDEVENTS) {
         int localSerialNumber = d->serialNumber;
-
-        if (GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER) != 0) {
-            // delay the next pass of sendPostedEvents() until we get the special
-            // WM_TIMER, which allows all pending Windows messages to be processed
-            if (SetTimer(d->internalHwnd, SendPostedEventsTimerId, 0, 0) == 0) {
-                // failed to start the timer, oops, clear wakeUps in an attempt to keep things running
-                qErrnoWarning("Qt: INTERNAL ERROR: failed to start sendPostedEvents() timer");
-                d->wakeUps.fetchAndStoreRelease(0);
-            } else {
-                // SetTimer() succeeded, nothing to do now
-                ;
-            }
-        } else {
-            // nothing pending in the queue, let sendPostedEvents go through
-            d->wakeUps.fetchAndStoreRelease(0);
-        }
-
         if (localSerialNumber != d->lastSerialNumber) {
             d->lastSerialNumber = localSerialNumber;
             QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
@@ -510,6 +485,31 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
     }
 
     return DefWindowProc(hwnd, message, wp, lp);
+}
+
+LRESULT CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
+{
+    if (wp == PM_REMOVE) {
+        QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
+        Q_ASSERT(q != 0);
+        if (q) {
+            QEventDispatcherWin32Private *d = q->d_func();
+            int localSerialNumber = d->serialNumber;
+            if (HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER)) == 0) {
+                // no more input or timer events in the message queue, we can allow posted events to be
+                // sent now
+                (void) d->wakeUps.fetchAndStoreRelease(0);
+                MSG *msg = (MSG *) lp;
+                if (localSerialNumber != d->lastSerialNumber
+                    // if this message IS the one that triggers sendPostedEvents(), no need to post it again
+                    && msg->hwnd != d->internalHwnd
+                    && msg->message != WM_QT_SENDPOSTEDEVENTS) {
+                    PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);
+                }
+            }
+        }
+    }
+    return CallNextHookEx(0, code, wp, lp);
 }
 
 static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatcher)
@@ -635,6 +635,12 @@ void QEventDispatcherWin32::createInternalHwnd()
     if (d->internalHwnd)
         return;
     d->internalHwnd = qt_create_internal_window(this);
+
+    // setup GetMessage hook needed to drive our posted events
+    d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
+    if (!d->getMessageHook) {
+        qFatal("Qt: INTERNALL ERROR: failed to install GetMessage hook");
+    }
 
     // register all socket notifiers
     QList<int> sockets = (d->sn_read.keys().toSet()
@@ -1058,6 +1064,10 @@ void QEventDispatcherWin32::closingDown()
         d->unregisterTimer(d->timerVec.at(i), true);
     d->timerVec.clear();
     d->timerDict.clear();
+
+    if (d->getMessageHook)
+        UnhookWindowsHookEx(d->getMessageHook);
+    d->getMessageHook = 0;
 }
 
 bool QEventDispatcherWin32::event(QEvent *e)

@@ -758,7 +758,7 @@ void tst_QSpinBox::editingFinished()
     box->activateWindow();
     box->setFocus();
 
-    QTRY_COMPARE(qApp->focusWidget(), box);
+    QTRY_COMPARE(qApp->focusWidget(), (QWidget *)box);
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
     QSignalSpy editingFinishedSpy2(box2, SIGNAL(editingFinished()));
@@ -1018,13 +1018,17 @@ void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
             setValue(1000000);
         }
 
+        QLineEdit *lineEdit() const
+        {
+            return QSpinBox::lineEdit();
+        }
+
         //we use the French delimiters here
         QString textFromValue (int value) const
         { 
             return locale().toString(value);
         }
 
-        using QSpinBox::lineEdit;
     } spinbox;
     spinbox.show();
     spinbox.activateWindow();

@@ -1301,7 +1301,8 @@ bool QGraphicsWidget::event(QEvent *event)
     case QEvent::Polish:
         polishEvent();
         d->polished = true;
-        d->updateFont(d->font);
+        if (!d->font.isCopyOf(QApplication::font()))
+            d->updateFont(d->font);
         break;
     case QEvent::WindowActivate:
     case QEvent::WindowDeactivate:
