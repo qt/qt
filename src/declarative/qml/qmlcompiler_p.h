@@ -57,14 +57,14 @@
 #include <QtCore/qset.h>
 #include <qml.h>
 #include <qmlerror.h>
-#include <private/qmlinstruction_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <private/qmlparser_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qbitfield_p.h>
-#include <private/qmlpropertycache_p.h>
-#include <private/qmlintegercache_p.h>
-#include <private/qmltypenamecache_p.h>
+#include "qmlinstruction_p.h"
+#include "qmlcompositetypemanager_p.h"
+#include "qmlparser_p.h"
+#include "qmlengine_p.h"
+#include "qbitfield_p.h"
+#include "qmlpropertycache_p.h"
+#include "qmlintegercache_p.h"
+#include "qmltypenamecache_p.h"
 
 QT_BEGIN_NAMESPACE
 

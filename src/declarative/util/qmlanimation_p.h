@@ -45,9 +45,9 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/QAbstractAnimation>
 #include <QtGui/qcolor.h>
-#include <private/qmltransition_p.h>
+#include "qmltransition_p.h"
 #include <qmlpropertyvaluesource.h>
-#include <private/qmlstate_p.h>
+#include "qmlstate_p.h"
 #include <qml.h>
 #include <qmlscriptstring.h>
 

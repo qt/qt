@@ -45,7 +45,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <qmlgraphicsitem.h>
-#include <private/qmlstate_p.h>
+#include "qmlstate_p.h"
 
 
 QT_BEGIN_HEADER

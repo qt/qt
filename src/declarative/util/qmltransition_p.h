@@ -43,7 +43,7 @@
 #define QMLTRANSITION_H
 
 #include <QtCore/qobject.h>
-#include <private/qmlstate_p.h>
+#include "qmlstate_p.h"
 #include <qml.h>
 
 QT_BEGIN_HEADER

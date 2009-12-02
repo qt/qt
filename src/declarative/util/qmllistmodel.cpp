@@ -42,10 +42,10 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qstack.h>
 #include <QXmlStreamReader>
-#include <private/qmlcustomparser_p.h>
-#include <private/qmlparser_p.h>
+#include "qmlcustomparser_p.h"
+#include "qmlparser_p.h"
 #include "qmlopenmetaobject_p.h"
-#include <private/qmlengine_p.h>
+#include "qmlengine_p.h"
 #include <qmlcontext.h>
 #include "qmllistmodel_p.h"
 #include <QtScript/qscriptvalueiterator.h>

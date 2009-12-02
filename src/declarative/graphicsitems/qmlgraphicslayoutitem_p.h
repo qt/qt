@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSGRAPHICSLAYOUTITEM_H
 #define QMLGRAPHICSGRAPHICSLAYOUTITEM_H
 #include <QGraphicsLayoutItem>
-#include <QmlGraphicsItem>
+#include <qmlgraphicsitem.h>
 #include <QSizeF>
 
 QT_BEGIN_HEADER

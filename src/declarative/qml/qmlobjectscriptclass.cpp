@@ -40,12 +40,12 @@
 ****************************************************************************/
 
 #include "qmlobjectscriptclass_p.h"
-#include <private/qmlengine_p.h>
+#include "qmlengine_p.h"
 #include <private/qguard_p.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmldeclarativedata_p.h>
-#include <private/qmltypenamescriptclass_p.h>
-#include <private/qmllistscriptclass_p.h>
+#include "qmlcontext_p.h"
+#include "qmldeclarativedata_p.h"
+#include "qmltypenamescriptclass_p.h"
+#include "qmllistscriptclass_p.h"
 #include <qmlbinding.h>
 #include <QtCore/qtimer.h>
 

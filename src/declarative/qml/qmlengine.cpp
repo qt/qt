@@ -40,12 +40,12 @@
 ****************************************************************************/
 
 #include <QtCore/qmetaobject.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcontext_p.h>
+#include "qmlengine_p.h"
+#include "qmlcontext_p.h"
 #include <private/qobject_p.h>
-#include <private/qmlcompiler_p.h>
+#include "qmlcompiler_p.h"
 #include <private/qscriptdeclarativeclass_p.h>
-#include <private/qmlglobalscriptclass_p.h>
+#include "qmlglobalscriptclass_p.h"
 
 #include <QScriptClass>
 #include <QNetworkReply>
@@ -58,9 +58,9 @@
 #include <QDebug>
 #include <QMetaObject>
 #include "qml.h"
-#include <private/qfxperf_p_p.h>
+#include "qfxperf_p_p.h"
 #include <QStack>
-#include "private/qmlbasicscript_p.h"
+#include "qmlbasicscript_p.h"
 #include "qmlengine.h"
 #include "qmlcontext.h"
 #include "qmlexpression.h"
@@ -73,19 +73,19 @@
 #include <QtGui/qsound.h>
 #include <QGraphicsObject>
 #include <qmlcomponent.h>
-#include <private/qmlmetaproperty_p.h>
-#include <private/qmlbinding_p.h>
-#include <private/qmlvme_p.h>
-#include <private/qmlenginedebug_p.h>
-#include <private/qmlstringconverters_p.h>
-#include <private/qmlxmlhttprequest_p.h>
-#include <private/qmlsqldatabase_p.h>
-#include <private/qmltypenamescriptclass_p.h>
-#include <private/qmllistscriptclass_p.h>
+#include "qmlmetaproperty_p.h"
+#include "qmlbinding_p.h"
+#include "qmlvme_p.h"
+#include "qmlenginedebug_p.h"
+#include "qmlstringconverters_p.h"
+#include "qmlxmlhttprequest_p.h"
+#include "qmlsqldatabase_p.h"
+#include "qmltypenamescriptclass_p.h"
+#include "qmllistscriptclass_p.h"
 #include <qmlscriptstring.h>
-#include <private/qmlglobal_p.h>
+#include "qmlglobal_p.h"
 #include <QtCore/qcryptographichash.h>
-#include <private/qmlworkerscript_p.h>
+#include "qmlworkerscript_p.h"
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include "qt_windows.h"
@@ -1211,7 +1211,7 @@ QmlEnginePrivate::Imports::~Imports()
 }
 
 #include <qmlmetatype.h>
-#include <private/qmltypenamecache_p.h>
+#include "qmltypenamecache_p.h"
 static QmlTypeNameCache *cacheForNamespace(QmlEngine *engine, const QmlEnginePrivate::ImportedNamespace &set, QmlTypeNameCache *cache)
 {
     if (!cache)

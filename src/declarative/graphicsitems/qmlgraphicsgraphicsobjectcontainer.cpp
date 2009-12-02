@@ -43,7 +43,7 @@
 #include <QGraphicsObject>
 #include <QGraphicsWidget>
 #include <QGraphicsSceneResizeEvent>
-#include <private/qmlgraphicsitem_p.h>
+#include "qmlgraphicsitem_p.h"
 
 QT_BEGIN_NAMESPACE
 

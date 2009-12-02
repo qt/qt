@@ -41,7 +41,7 @@
 
 #include "qmlgraphicspath_p.h"
 #include "qmlgraphicspath_p_p.h"
-#include <private/qfxperf_p_p.h>
+#include "qfxperf_p_p.h"
 #include <private/qbezier_p.h>
 #include <QSet>
 

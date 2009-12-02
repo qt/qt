@@ -1,6 +1,8 @@
 QT += network declarative
 contains(QT_CONFIG, opengles2)|contains(QT_CONFIG, opengles1): QT += opengl
 
+INCLUDEPATH += ../../../src/declarative/debugger
+
 # Input
 HEADERS += $$PWD/canvasframerate.h \
            $$PWD/watchtable.h \

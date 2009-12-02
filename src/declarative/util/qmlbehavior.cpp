@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <private/qobject_p.h>
-#include <private/qmlanimation_p.h>
-#include <private/qmltransition_p.h>
+#include "qmlanimation_p.h"
+#include "qmltransition_p.h"
 #include "qmlbehavior_p.h"
 #include <qmlcontext.h>
 #include <qmlinfo.h>

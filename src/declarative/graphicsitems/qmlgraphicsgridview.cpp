@@ -40,10 +40,10 @@
 ****************************************************************************/
 
 #include "qmlgraphicsgridview_p.h"
-#include <private/qmlgraphicsvisualitemmodel_p.h>
-#include <private/qlistmodelinterface_p.h>
-#include <private/qmleasefollow_p.h>
-#include <private/qmlgraphicsflickable_p_p.h>
+#include "qmlgraphicsvisualitemmodel_p.h"
+#include "qlistmodelinterface_p.h"
+#include "qmleasefollow_p.h"
+#include "qmlgraphicsflickable_p_p.h"
 
 #include <QKeyEvent>
 

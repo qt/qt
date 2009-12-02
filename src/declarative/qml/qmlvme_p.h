@@ -56,7 +56,7 @@
 #include <QtCore/QString>
 #include <QtCore/QStack>
 #include <qmlerror.h>
-#include <private/qbitfield_p.h>
+#include "qbitfield_p.h"
 
 QT_BEGIN_NAMESPACE
 

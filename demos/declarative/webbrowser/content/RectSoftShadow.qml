@@ -26,7 +26,7 @@ Item {
         source: "pics/softshadow-bottom.png"
         x: 0
         y: parent.height
-        width: webView.width*webView.scale
+        width: parent.width
         height: 16
     }
 }

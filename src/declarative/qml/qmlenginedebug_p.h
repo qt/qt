@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <private/qmldebugservice_p.h>
+#include "qmldebugservice_p.h"
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
 

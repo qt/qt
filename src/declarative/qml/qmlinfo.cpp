@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qmlinfo.h"
-#include <private/qmldeclarativedata_p.h>
+#include "qmldeclarativedata_p.h"
 #include <qmlcontext.h>
 #include <QtGui/qapplication.h>
 

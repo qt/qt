@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSLISTVIEW_H
 #define QMLGRAPHICSLISTVIEW_H
 
-#include <private/qmlgraphicsflickable_p.h>
+#include "qmlgraphicsflickable_p.h"
 
 QT_BEGIN_HEADER
 

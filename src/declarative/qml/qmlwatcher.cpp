@@ -42,7 +42,7 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdebug.h>
 #include <qmlexpression.h>
-#include <private/qmldebugservice_p.h>
+#include "qmldebugservice_p.h"
 #include <qmlcontext.h>
 #include <qml.h>
 
