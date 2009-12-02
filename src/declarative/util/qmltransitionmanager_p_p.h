@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qmlstateoperations_p.h"
+#include <private/qmlstateoperations_p.h>
 
 QT_BEGIN_NAMESPACE
 

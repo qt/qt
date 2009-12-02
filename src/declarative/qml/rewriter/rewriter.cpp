@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "rewriter_p.h"
-#include "qmljsast_p.h"
+#include <private/rewriter_p.h>
+#include <private/qmljsast_p.h>
 
 QT_QML_BEGIN_NAMESPACE
 

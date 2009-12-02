@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsrepeater_p.h"
-#include "qmlgraphicsrepeater_p_p.h"
-#include "qmllistaccessor_p.h"
-#include "qmlgraphicsvisualitemmodel_p.h"
-#include "qlistmodelinterface_p.h"
+#include <private/qmlgraphicsrepeater_p.h>
+#include <private/qmlgraphicsrepeater_p_p.h>
+#include <private/qmllistaccessor_p.h>
+#include <private/qmlgraphicsvisualitemmodel_p.h>
+#include <private/qlistmodelinterface_p.h>
 
 
 QT_BEGIN_NAMESPACE

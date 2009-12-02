@@ -54,7 +54,7 @@
 //
 
 #include "qmlgraphicsitem.h"
-#include "qmlgraphicsitem_p.h"
+#include <private/qmlgraphicsitem_p.h>
 #include "qml.h"
 #include <QtGui/qtextlayout.h>
 

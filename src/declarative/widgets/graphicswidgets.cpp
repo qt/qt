@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "graphicswidgets_p.h"
+#include <private/graphicswidgets_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -54,7 +54,7 @@
 //
 
 #include "qmlgraphicsitem.h"
-#include "qmlgraphicspainteditem_p_p.h"
+#include <private/qmlgraphicspainteditem_p_p.h>
 #include "qml.h"
 
 

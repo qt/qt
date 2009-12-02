@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsimage_p.h"
-#include "qmlgraphicsimage_p_p.h"
+#include <private/qmlgraphicsimage_p.h>
+#include <private/qmlgraphicsimage_p_p.h>
 
 #include <QKeyEvent>
 #include <QPainter>

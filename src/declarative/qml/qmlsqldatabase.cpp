@@ -41,7 +41,7 @@
 
 #include <QtCore/qobject.h>
 #include <qmlengine.h>
-#include "qmlengine_p.h"
+#include <private/qmlengine_p.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtScript/qscriptvalueiterator.h>
 #include <QtScript/qscriptcontext.h>
@@ -51,11 +51,11 @@
 #include <QtSql/qsqlquery.h>
 #include <QtSql/qsqlerror.h>
 #include <QtSql/qsqlrecord.h>
-#include "qmlrefcount_p.h"
-#include "qmlengine_p.h"
+#include <private/qmlrefcount_p.h>
+#include <private/qmlengine_p.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qcryptographichash.h>
-#include "qmlsqldatabase_p.h"
+#include <private/qmlsqldatabase_p.h>
 #include <QtCore/qsettings.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qdebug.h>

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsflipable_p.h"
-#include "qmlgraphicsitem_p.h"
+#include <private/qmlgraphicsflipable_p.h>
+#include <private/qmlgraphicsitem_p.h>
 #include "QtGui/qgraphicstransform.h"
 #include <qmlinfo.h>
 

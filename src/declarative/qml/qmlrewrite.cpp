@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qmlrewrite_p.h"
+#include <private/qmlrewrite_p.h>
 #include <QtCore/qdebug.h>
-#include "qmlglobal_p.h"
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

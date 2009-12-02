@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qmlboundsignal_p.h"
-#include "qmetaobjectbuilder_p.h"
-#include "qmlengine_p.h"
-#include "qmlexpression_p.h"
-#include "qmlcontext_p.h"
+#include <private/qmlboundsignal_p.h>
+#include <private/qmetaobjectbuilder_p.h>
+#include <private/qmlengine_p.h>
+#include <private/qmlexpression_p.h>
+#include <private/qmlcontext_p.h>
 #include <qmlmetatype.h>
 #include <qml.h>
 #include <qmlcontext.h>
 #include <QtCore/qdebug.h>
-#include "qmlglobal_p.h"
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

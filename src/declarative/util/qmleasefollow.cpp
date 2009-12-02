@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qmleasefollow_p.h"
+#include <private/qmleasefollow_p.h>
 #include <qmlmetaproperty.h>
 #include <math.h>
 #include <QtCore/qdebug.h>
-#include "qmlanimation_p_p.h"
+#include <private/qmlanimation_p_p.h>
 
 QT_BEGIN_NAMESPACE
 

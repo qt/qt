@@ -55,7 +55,7 @@
 
 #include <QtCore/QMetaObject>
 #include <QtCore/QObject>
-#include "qmetaobjectbuilder_p.h"
+#include <private/qmetaobjectbuilder_p.h>
 #include <private/qobject_p.h>
 #include <qml.h>
 

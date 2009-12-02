@@ -39,19 +39,19 @@
 **
 ****************************************************************************/
 
-#include "qlistmodelinterface_p.h"
+#include <private/qlistmodelinterface_p.h>
 #include "qmlgraphicsitem.h"
 #include <qmlcontext.h>
 #include <qmlexpression.h>
-#include "qmlpackage_p.h"
+#include <private/qmlpackage_p.h>
 #include "qhash.h"
 #include "qlist.h"
 #include "private/qobject_p.h"
-#include "qmetaobjectbuilder_p.h"
-#include "qmlopenmetaobject_p.h"
-#include "qmllistaccessor_p.h"
+#include <private/qmetaobjectbuilder_p.h>
+#include <private/qmlopenmetaobject_p.h>
+#include <private/qmllistaccessor_p.h>
 #include "qmlinfo.h"
-#include "qmlgraphicsvisualitemmodel_p.h"
+#include <private/qmlgraphicsvisualitemmodel_p.h>
 #include "private/qguard_p.h"
 #include <QtCore/qdebug.h>
 

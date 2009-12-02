@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qmlexpression_p.h"
+#include <private/qmlexpression_p.h>
 #include <qmlbinding.h>
 
 QT_BEGIN_HEADER

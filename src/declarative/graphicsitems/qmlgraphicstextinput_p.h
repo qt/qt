@@ -42,8 +42,8 @@
 #ifndef QMLGRAPHICSTEXTINPUT_H
 #define QMLGRAPHICSTEXTINPUT_H
 
-#include "qmlgraphicstext_p.h"
-#include "qmlgraphicspainteditem_p.h"
+#include <private/qmlgraphicstext_p.h>
+#include <private/qmlgraphicspainteditem_p.h>
 #include <QGraphicsSceneMouseEvent>
 #include <QIntValidator>
 

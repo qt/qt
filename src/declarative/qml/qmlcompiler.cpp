@@ -39,40 +39,40 @@
 **
 ****************************************************************************/
 
-#include "qmlcompiler_p.h"
-#include "qmlcompositetypedata_p.h"
-#include "qfxperf_p_p.h"
-#include "qmlparser_p.h"
-#include "qmlscriptparser_p.h"
+#include <private/qmlcompiler_p.h>
+#include <private/qmlcompositetypedata_p.h>
+#include <private/qfxperf_p_p.h>
+#include <private/qmlparser_p.h>
+#include <private/qmlscriptparser_p.h>
 #include <qmlpropertyvaluesource.h>
 #include <qmlcomponent.h>
-#include "qmetaobjectbuilder_p.h"
-#include "qmlbasicscript_p.h"
+#include <private/qmetaobjectbuilder_p.h>
+#include <private/qmlbasicscript_p.h>
 #include <QColor>
 #include <QDebug>
 #include <QPointF>
 #include <QSizeF>
 #include <QRectF>
 #include <QAtomicInt>
-#include "qmlstringconverters_p.h"
-#include "qmlengine_p.h"
+#include <private/qmlstringconverters_p.h>
+#include <private/qmlengine_p.h>
 #include <qmlengine.h>
 #include <qmlcontext.h>
 #include <qmlmetatype.h>
 #include <QtCore/qdebug.h>
 #include <QtGui/qapplication.h>
-#include "qmlcustomparser_p_p.h"
-#include "qmlcontext_p.h"
-#include "qmlcomponent_p.h"
+#include <private/qmlcustomparser_p_p.h>
+#include <private/qmlcontext_p.h>
+#include <private/qmlcomponent_p.h>
 #include "parser/qmljsast_p.h"
-#include "qmlvmemetaobject_p.h"
-#include "qmlexpression_p.h"
-#include "qmlmetaproperty_p.h"
-#include "qmlrewrite_p.h"
+#include <private/qmlvmemetaobject_p.h>
+#include <private/qmlexpression_p.h>
+#include <private/qmlmetaproperty_p.h>
+#include <private/qmlrewrite_p.h>
 #include <qmlscriptstring.h>
-#include "qmlglobal_p.h"
+#include <private/qmlglobal_p.h>
 
-#include "qmlscriptparser_p.h"
+#include <private/qmlscriptparser_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2307,7 +2307,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     return true;
 }
 
-#include "qmljsparser_p.h"
+#include <private/qmljsparser_p.h>
 static QStringList astNodeToStringList(QmlJS::AST::Node *node)
 {
     if (node->kind == QmlJS::AST::Node::Kind_IdentifierExpression) {

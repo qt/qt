@@ -46,14 +46,14 @@
 
 #include <string.h>
 
-#include "qmljsengine_p.h"
-#include "qmljslexer_p.h"
-#include "qmljsast_p.h"
-#include "qmljsnodepool_p.h"
+#include <private/qmljsengine_p.h>
+#include <private/qmljslexer_p.h>
+#include <private/qmljsast_p.h>
+#include <private/qmljsnodepool_p.h>
 
 
 
-#include "qmljsparser_p.h"
+#include <private/qmljsparser_p.h>
 #include <QVarLengthArray>
 
 //

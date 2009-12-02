@@ -42,11 +42,11 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdebug.h>
 #include <qmlexpression.h>
-#include "qmldebugservice_p.h"
+#include <private/qmldebugservice_p.h>
 #include <qmlcontext.h>
 #include <qml.h>
 
-#include "qmlwatcher_p.h"
+#include <private/qmlwatcher_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsanchors_p_p.h"
+#include <private/qmlgraphicsanchors_p_p.h>
 #include "qmlgraphicsitem.h"
-#include "qmlgraphicsitem_p.h"
+#include <private/qmlgraphicsitem_p.h>
 #include <QDebug>
 #include <qmlinfo.h>
 

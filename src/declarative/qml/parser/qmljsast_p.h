@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qmljsastvisitor_p.h"
-#include "qmljsglobal_p.h"
+#include <private/qmljsastvisitor_p.h>
+#include <private/qmljsglobal_p.h>
 #include <QtCore/QString>
 
 QT_QML_BEGIN_NAMESPACE

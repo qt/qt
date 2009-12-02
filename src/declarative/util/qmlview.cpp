@@ -53,16 +53,16 @@
 
 #include "qml.h"
 #include "qmlgraphicsitem.h"
-#include "qperformancelog_p_p.h"
-#include "qfxperf_p_p.h"
+#include <private/qperformancelog_p_p.h>
+#include <private/qfxperf_p_p.h>
 
 #include "qmlview.h"
 #include <qmlengine.h>
 #include <qmlcontext.h>
-#include "qmldebug_p.h"
-#include "qmldebugservice_p.h"
+#include <private/qmldebug_p.h>
+#include <private/qmldebugservice_p.h>
 #include <QtCore/qabstractanimation.h>
-#include "qmlglobal_p.h"
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

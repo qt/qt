@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsfocusscope_p.h"
+#include <private/qmlgraphicsfocusscope_p.h>
 
 
 QT_BEGIN_NAMESPACE

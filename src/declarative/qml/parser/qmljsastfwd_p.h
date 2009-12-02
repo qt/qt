@@ -43,7 +43,7 @@
 #define QMLJSAST_FWD_P_H
 
 #include <QtCore/qglobal.h>
-#include "qmljsglobal_p.h"
+#include <private/qmljsglobal_p.h>
 
 //
 //  W A R N I N G

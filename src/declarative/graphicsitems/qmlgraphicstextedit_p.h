@@ -42,8 +42,8 @@
 #ifndef QMLGRAPHICSTEXTEDIT_H
 #define QMLGRAPHICSTEXTEDIT_H
 
-#include "qmlgraphicstext_p.h"
-#include "qmlgraphicspainteditem_p.h"
+#include <private/qmlgraphicstext_p.h>
+#include <private/qmlgraphicspainteditem_p.h>
 
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>

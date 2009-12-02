@@ -44,9 +44,9 @@
 
 #include <QtCore/QString>
 #include <QtCore/QObject>
-#include "qmlpixmapcache_p.h"
+#include <private/qmlpixmapcache_p.h>
 #include <qml.h>
-#include "qmlgraphicsborderimage_p.h"
+#include <private/qmlgraphicsborderimage_p.h>
 
 
 QT_BEGIN_HEADER

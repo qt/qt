@@ -41,16 +41,16 @@
 
 #include <QtCore/qobject.h>
 #include <qmlengine.h>
-#include "qmlengine_p.h"
+#include <private/qmlengine_p.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtScript/qscriptcontext.h>
 #include <QtScript/qscriptengine.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtCore/qxmlstream.h>
-#include "qmlrefcount_p.h"
-#include "qmlengine_p.h"
+#include <private/qmlrefcount_p.h>
+#include <private/qmlengine_p.h>
 #include <QtCore/qstack.h>
-#include "qmlxmlhttprequest_p.h"
+#include <private/qmlxmlhttprequest_p.h>
 
 #include <QtCore/qdebug.h>
 

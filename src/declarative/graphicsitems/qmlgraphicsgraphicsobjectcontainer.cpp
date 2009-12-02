@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsgraphicsobjectcontainer_p.h"
+#include <private/qmlgraphicsgraphicsobjectcontainer_p.h>
 #include <QGraphicsObject>
 #include <QGraphicsWidget>
 #include <QGraphicsSceneResizeEvent>
-#include "qmlgraphicsitem_p.h"
+#include <private/qmlgraphicsitem_p.h>
 
 QT_BEGIN_NAMESPACE
 

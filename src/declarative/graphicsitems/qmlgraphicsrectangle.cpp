@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsrectangle_p.h"
-#include "qmlgraphicsrectangle_p_p.h"
+#include <private/qmlgraphicsrectangle_p.h>
+#include <private/qmlgraphicsrectangle_p_p.h>
 
 #include <QPainter>
 #include <QtCore/qmath.h>

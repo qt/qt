@@ -42,12 +42,12 @@
 #include <math.h>
 #include <QDebug>
 #include <QEvent>
-#include "qmlstate_p.h"
-#include "qlistmodelinterface_p.h"
-#include "qmlopenmetaobject_p.h"
+#include <private/qmlstate_p.h>
+#include <private/qlistmodelinterface_p.h>
+#include <private/qmlopenmetaobject_p.h>
 
-#include "qmlgraphicspathview_p.h"
-#include "qmlgraphicspathview_p_p.h"
+#include <private/qmlgraphicspathview_p.h>
+#include <private/qmlgraphicspathview_p_p.h>
 #include <QGraphicsSceneEvent>
 
 static const int FlickThreshold = 5;

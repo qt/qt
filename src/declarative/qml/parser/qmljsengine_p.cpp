@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qmljsglobal_p.h"
-#include "qmljsengine_p.h"
-#include "qmljsnodepool_p.h"
+#include <private/qmljsglobal_p.h>
+#include <private/qmljsengine_p.h>
+#include <private/qmljsnodepool_p.h>
 #include <qnumeric.h>
 #include <QHash>
 

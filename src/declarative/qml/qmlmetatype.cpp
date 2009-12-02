@@ -45,7 +45,7 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qbitarray.h>
 #include <QtCore/qreadwritelock.h>
-#include "qmlproxymetaobject_p.h"
+#include <private/qmlproxymetaobject_p.h>
 
 #include <qmetatype.h>
 #include <qobjectdefs.h>
@@ -59,7 +59,7 @@
 #include <ctype.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtScript/qscriptvalue.h>
-#include "qmlcustomparser_p.h"
+#include <private/qmlcustomparser_p.h>
 
 #ifdef QT_BOOTSTRAPPED
 # ifndef QT_NO_GEOM_VARIANT

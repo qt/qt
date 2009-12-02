@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qmlanimation_p.h"
+#include <private/qmlanimation_p.h>
 #include "qvariant.h"
 #include "qcolor.h"
 #include "qfile.h"
 #include "qmlpropertyvaluesource.h"
 #include "qml.h"
 #include "qmlinfo.h"
-#include "qmlanimation_p_p.h"
-#include "qmlbehavior_p.h"
+#include <private/qmlanimation_p_p.h>
+#include <private/qmlbehavior_p.h>
 #include <QParallelAnimationGroup>
 #include <QSequentialAnimationGroup>
 #include <QtCore/qset.h>
@@ -55,10 +55,10 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <qmlexpression.h>
-#include "qmlstateoperations_p.h"
-#include "qmlstringconverters_p.h"
+#include <private/qmlstateoperations_p.h>
+#include <private/qmlstringconverters_p.h>
 #include <private/qvariantanimation_p.h>
-#include "qmlglobal_p.h"
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

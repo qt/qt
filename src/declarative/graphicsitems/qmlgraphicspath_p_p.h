@@ -54,7 +54,7 @@
 //
 
 #include "private/qobject_p.h"
-#include "qmlgraphicspath_p.h"
+#include <private/qmlgraphicspath_p.h>
 #include "qml.h"
 
 
