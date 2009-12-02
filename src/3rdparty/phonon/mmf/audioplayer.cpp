@@ -34,13 +34,9 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AudioPlayer::AudioPlayer()
-{
-    construct();
-}
-
-MMF::AudioPlayer::AudioPlayer(const AbstractPlayer& player)
-        : AbstractMediaPlayer(player)
+MMF::AudioPlayer::AudioPlayer(MediaObject *parent, const AbstractPlayer *player)
+        :   AbstractMediaPlayer(parent, player)
+        ,   m_totalTime(0)
 {
     construct();
 }
@@ -177,7 +173,7 @@ qint64 MMF::AudioPlayer::currentTime() const
 
 qint64 MMF::AudioPlayer::totalTime() const
 {
-    return toMilliSeconds(m_player->Duration());
+    return m_totalTime;
 }
 
 
@@ -200,7 +196,8 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
 
     if (KErrNone == aError) {
         maxVolumeChanged(m_player->MaxVolume());
-        emit totalTimeChanged(totalTime());
+        m_totalTime = toMilliSeconds(m_player->Duration());
+        emit totalTimeChanged(m_totalTime);
         updateMetaData();
         changeState(StoppedState);
     } else {
@@ -219,29 +216,9 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
     TRACE_CONTEXT(AudioPlayer::MapcPlayComplete, EAudioInternal);
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    if (KErrNone == aError) {
-        changeState(StoppedState);
-        // TODO: move on to m_nextSource
-    } else {
-        setError(tr("Playback complete"), aError);
-    }
-
-    /*
-        if (aError == KErrNone) {
-            if (m_nextSource.type() == MediaSource::Empty) {
-                emit finished();
-            } else {
-                setSource(m_nextSource);
-                m_nextSource = MediaSource();
-            }
-
-            changeState(StoppedState);
-        }
-        else {
-            m_error = NormalError;
-            changeState(ErrorState);
-        }
-    */
+    // Call base class function which handles end of playback for both
+    // audio and video clips.
+    playbackComplete(aError);
 
     TRACE_EXIT_0();
 }

@@ -53,8 +53,9 @@ class AbstractPlayer : public QObject
     Q_OBJECT
 
 public:
-    AbstractPlayer();
-    explicit AbstractPlayer(const AbstractPlayer& player);
+    AbstractPlayer(const AbstractPlayer *player);
+
+    virtual void open(const Phonon::MediaSource&, RFile&) = 0;
 
     // MediaObjectInterface (implemented)
     qint32 tickInterval() const;
@@ -75,12 +76,6 @@ public:
     virtual Phonon::ErrorType errorType() const;
     virtual QString errorString() const;
     virtual qint64 totalTime() const = 0;
-    virtual Phonon::MediaSource source() const = 0;
-    // This is a temporary hack to work around KErrInUse from MMF
-    // client utility OpenFileL calls
-    //virtual void setSource(const Phonon::MediaSource &) = 0;
-    virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
-    virtual void setNextSource(const Phonon::MediaSource &) = 0;
 
     virtual void volumeChanged(qreal volume);
 
@@ -114,6 +109,8 @@ Q_SIGNALS:
     void stateChanged(Phonon::State oldState,
                       Phonon::State newState);
     void metaDataChanged(const QMultiMap<QString, QString>& metaData);
+    void aboutToFinish();
+    void prefinishMarkReached(qint32 remaining);
 
 protected:
     /**

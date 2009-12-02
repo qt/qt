@@ -44,8 +44,7 @@ class VideoPlayer : public AbstractMediaPlayer
     Q_OBJECT
 
 public:
-    VideoPlayer();
-    explicit VideoPlayer(const AbstractPlayer& player);
+    VideoPlayer(MediaObject *parent = 0, const AbstractPlayer *player = 0);
     virtual ~VideoPlayer();
 
     // AbstractPlayer

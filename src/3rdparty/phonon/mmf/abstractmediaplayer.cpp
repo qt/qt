@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractmediaplayer.h"
 #include "defs.h"
+#include "mediaobject.h"
 #include "utils.h"
 
 QT_BEGIN_NAMESPACE
@@ -43,22 +44,16 @@ const int       BufferStatusTimerInterval = 100; // ms
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
-            m_playPending(false)
-        ,   m_positionTimer(new QTimer(this))
-        ,   m_bufferStatusTimer(new QTimer(this))
-        ,   m_mmfMaxVolume(NullMaxVolume)
-{
-    connect(m_positionTimer.data(), SIGNAL(timeout()), this, SLOT(positionTick()));
-    connect(m_bufferStatusTimer.data(), SIGNAL(timeout()), this, SLOT(bufferStatusTick()));
-}
-
-MMF::AbstractMediaPlayer::AbstractMediaPlayer(const AbstractPlayer& player) :
-        AbstractPlayer(player)
+MMF::AbstractMediaPlayer::AbstractMediaPlayer
+    (MediaObject *parent, const AbstractPlayer *player)
+        :   AbstractPlayer(player)
+        ,   m_parent(parent)
         ,   m_playPending(false)
         ,   m_positionTimer(new QTimer(this))
         ,   m_bufferStatusTimer(new QTimer(this))
         ,   m_mmfMaxVolume(NullMaxVolume)
+        ,   m_prefinishMarkSent(false)
+        ,   m_aboutToFinishSent(false)
 {
     connect(m_positionTimer.data(), SIGNAL(timeout()), this, SLOT(positionTick()));
     connect(m_bufferStatusTimer.data(), SIGNAL(timeout()), this, SLOT(bufferStatusTick()));
@@ -220,12 +215,7 @@ void MMF::AbstractMediaPlayer::doSetTickInterval(qint32 interval)
     TRACE_EXIT_0();
 }
 
-MediaSource MMF::AbstractMediaPlayer::source() const
-{
-    return m_source;
-}
-
-void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& file)
+void MMF::AbstractMediaPlayer::open(const MediaSource &source, RFile& file)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::setFileSource, EAudioApi);
     TRACE_ENTRY("state %d source.type %d", privateState(), source.type());
@@ -233,14 +223,10 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
     close();
     changeState(GroundState);
 
-    // TODO: is it correct to assign even if the media type is not supported in
-    // the switch statement below?
-    m_source = source;
-
     TInt symbianErr = KErrNone;
     QString errorMessage;
 
-    switch (m_source.type()) {
+    switch (source.type()) {
     case MediaSource::LocalFile: {
         symbianErr = openFile(file);
         if (KErrNone != symbianErr)
@@ -292,20 +278,6 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
 
     TRACE_EXIT_0();
 }
-
-void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::setNextSource, EAudioApi);
-    TRACE_ENTRY("state %d", privateState());
-
-    // TODO: handle 'next source'
-
-    m_nextSource = source;
-    Q_UNUSED(source);
-
-    TRACE_EXIT_0();
-}
-
 
 void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
 {
@@ -402,6 +374,23 @@ void MMF::AbstractMediaPlayer::maxVolumeChanged(int mmfMaxVolume)
     doVolumeChanged();
 }
 
+void MMF::AbstractMediaPlayer::playbackComplete(int error)
+{
+    stopTimers();
+
+    if (KErrNone == error) {
+        changeState(StoppedState);
+
+        // MediaObject::switchToNextSource deletes the current player, so we
+        // call it via delayed slot invokation to ensure that this object does
+        // not get deleted during execution of a member function.
+        QMetaObject::invokeMethod(m_parent, "switchToNextSource", Qt::QueuedConnection);
+    }
+    else {
+        setError(tr("Playback complete"), error);
+    }
+}
+
 qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds &in)
 {
     return in.Int64() / 1000;
@@ -413,7 +402,26 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
 
 void MMF::AbstractMediaPlayer::positionTick()
 {
-    emit MMF::AbstractPlayer::tick(currentTime());
+    const qint64 current = currentTime();
+    const qint64 total = totalTime();
+    const qint64 remaining = total - current;
+
+    if (prefinishMark() && !m_prefinishMarkSent) {
+        if (remaining < (prefinishMark() + tickInterval()/2)) {
+            m_prefinishMarkSent = true;
+            emit prefinishMarkReached(remaining);
+        }
+    }
+
+    if (!m_aboutToFinishSent) {
+        if (remaining < tickInterval()) {
+            m_aboutToFinishSent = true;
+            emit aboutToFinish();
+        }
+    }
+
+    // For the MWC compiler, we need to qualify the base class.
+    emit MMF::AbstractPlayer::tick(current);
 }
 
 void MMF::AbstractMediaPlayer::bufferStatusTick()

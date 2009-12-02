@@ -44,20 +44,8 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoPlayer::VideoPlayer()
-        :   m_wsSession(CCoeEnv::Static()->WsSession())
-        ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
-        ,   m_window(0)
-        ,   m_totalTime(0)
-        ,   m_pendingChanges(false)
-        ,   m_dsaActive(false)
-        ,   m_dsaWasActive(false)
-{
-    construct();
-}
-
-MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
-        :   AbstractMediaPlayer(player)
+MMF::VideoPlayer::VideoPlayer(MediaObject *parent, const AbstractPlayer *player)
+        :   AbstractMediaPlayer(parent, player)
         ,   m_wsSession(CCoeEnv::Static()->WsSession())
         ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
         ,   m_window(0)
@@ -287,9 +275,9 @@ void MMF::VideoPlayer::MvpuoPlayComplete(TInt aError)
     TRACE_CONTEXT(VideoPlayer::MvpuoPlayComplete, EVideoApi)
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    // TODO: handle aError
-    Q_UNUSED(aError);
-    changeState(StoppedState);
+    // Call base class function which handles end of playback for both
+    // audio and video clips.
+    playbackComplete(aError);
 
     TRACE_EXIT_0();
 }

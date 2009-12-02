@@ -45,6 +45,7 @@ using namespace Phonon::MMF;
 
 MMF::MediaObject::MediaObject(QObject *parent) : MMF::MediaNode::MediaNode(parent)
                                                , m_recognizerOpened(false)
+                                               , m_nextSourceSet(false)
 {
     m_player.reset(new DummyPlayer());
 
@@ -211,18 +212,20 @@ qint64 MMF::MediaObject::totalTime() const
 
 MediaSource MMF::MediaObject::source() const
 {
-    return m_player->source();
+    return m_source;
 }
 
 void MMF::MediaObject::setSource(const MediaSource &source)
 {
+    switchToSource(source);
+}
+
+void MMF::MediaObject::switchToSource(const MediaSource &source)
+{
     createPlayer(source);
-
-    // This is a hack to work around KErrInUse from MMF client utility
-    // OpenFileL calls
-    m_player->setFileSource(source, m_file);
-
-    emit currentSourceChanged(source);
+    m_source = source;
+    m_player->open(m_source, m_file);
+    emit currentSourceChanged(m_source);
 }
 
 void MMF::MediaObject::createPlayer(const MediaSource &source)
@@ -281,29 +284,16 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     switch (mediaType) {
     case MediaTypeUnknown:
         TRACE_0("Media type could not be determined");
-        if (oldPlayer) {
-            newPlayer = new DummyPlayer(*oldPlayer);
-        } else {
-            newPlayer = new DummyPlayer();
-        }
-
+        newPlayer = new DummyPlayer(oldPlayer);
         errorMessage = tr("Error opening source: media type could not be determined");
         break;
 
     case MediaTypeAudio:
-        if (oldPlayer) {
-            newPlayer = new AudioPlayer(*oldPlayer);
-        } else {
-            newPlayer = new AudioPlayer();
-        }
+        newPlayer = new AudioPlayer(this, oldPlayer);
         break;
 
     case MediaTypeVideo:
-        if (oldPlayer) {
-            newPlayer = new VideoPlayer(*oldPlayer);
-        } else {
-            newPlayer = new VideoPlayer();
-        }
+        newPlayer = new VideoPlayer(this, oldPlayer);
         break;
     }
 
@@ -323,6 +313,8 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
     connect(m_player.data(), SIGNAL(bufferStatus(int)), SIGNAL(bufferStatus(int)));
     connect(m_player.data(), SIGNAL(metaDataChanged(QMultiMap<QString,QString>)), SIGNAL(metaDataChanged(QMultiMap<QString,QString>)));
+    connect(m_player.data(), SIGNAL(aboutToFinish()), SIGNAL(aboutToFinish()));
+    connect(m_player.data(), SIGNAL(prefinishMarkReached(qint32)), SIGNAL(tick(qint32)));
 
     // We need to call setError() after doing the connects, otherwise the
     // error won't be received.
@@ -336,7 +328,8 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 
 void MMF::MediaObject::setNextSource(const MediaSource &source)
 {
-    m_player->setNextSource(source);
+    m_nextSource = source;
+    m_nextSourceSet = true;
 }
 
 qint32 MMF::MediaObject::prefinishMark() const
@@ -383,6 +376,19 @@ bool MMF::MediaObject::activateOnMediaObject(MediaObject *)
 {
     // Guess what, we do nothing.
     return true;
+}
+
+//-----------------------------------------------------------------------------
+// Playlist support
+//-----------------------------------------------------------------------------
+
+void MMF::MediaObject::switchToNextSource()
+{
+    if (m_nextSourceSet) {
+        m_nextSourceSet = false;
+        switchToSource(m_nextSource);
+        play();
+    }
 }
 
 QT_END_NAMESPACE

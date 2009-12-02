@@ -50,8 +50,7 @@ class AudioPlayer   :   public AbstractMediaPlayer
     Q_OBJECT
 
 public:
-    AudioPlayer();
-    explicit AudioPlayer(const AbstractPlayer& player);
+    AudioPlayer(MediaObject *parent = 0, const AbstractPlayer *player = 0);
     virtual ~AudioPlayer();
 
     // AbstractMediaPlayer
@@ -105,6 +104,8 @@ private:
      * CMdaAudioPlayerUtility and CDrmPlayerUtility
      */
     QScopedPointer<CPlayerType> m_player;
+
+    qint64                      m_totalTime;
 };
 }
 }
