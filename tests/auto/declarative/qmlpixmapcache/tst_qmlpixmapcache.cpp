@@ -126,6 +126,9 @@ void tst_qmlpixmapcache::single()
                 +target.toString()+"\" )  \"Error downloading "
                 +target.toString()+" - server replied: Not Found\" ";
         QTest::ignoreMessage(QtWarningMsg, expected.toLatin1());
+    } else if (!exists) {
+        QString expected = "Cannot open  QUrl( \"" + target.toString() + "\" )  ";
+        QTest::ignoreMessage(QtWarningMsg, expected.toLatin1());
     }
 
     QPixmap pixmap;
