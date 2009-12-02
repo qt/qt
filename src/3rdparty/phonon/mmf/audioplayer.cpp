@@ -51,9 +51,8 @@ void MMF::AudioPlayer::construct()
     TRACE_ENTRY_0();
 
     TRAPD(err, m_player.reset(CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone)));
-    if (KErrNone != err) {
-        changeState(ErrorState);
-    }
+    if (KErrNone != err)
+        setError("Creation of audio player failed", err);
 
     TRACE_EXIT_0();
 }
@@ -151,7 +150,7 @@ qint64 MMF::AudioPlayer::currentTime() const
 
         // If we don't cast away constness here, we simply have to ignore
         // the error.
-        const_cast<AudioPlayer*>(this)->setError(NormalError);
+        const_cast<AudioPlayer*>(this)->setError(tr("Getting position failed"), err);
     }
 
     return result;
@@ -186,8 +185,7 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
         updateMetaData();
         changeState(StoppedState);
     } else {
-        // TODO: set different error states according to value of aError?
-        setError(NormalError);
+        setError(tr("Opening clip failed"), aError);
     }
 
     TRACE_EXIT_0();
@@ -208,8 +206,7 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
         changeState(StoppedState);
         // TODO: move on to m_nextSource
     } else {
-        // TODO: do something with aError?
-        setError(NormalError);
+        setError(tr("Playback complete"), aError);
     }
 
     /*
