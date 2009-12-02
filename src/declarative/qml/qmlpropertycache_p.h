@@ -83,7 +83,8 @@ public:
                     IsEnumType        = 0x00000010,
                     IsQmlList         = 0x00000020,
                     IsQList           = 0x00000040,
-                    IsQmlBinding      = 0x00000080 
+                    IsQmlBinding      = 0x00000080,
+                    IsQScriptValue    = 0x00000100
         };
         Q_DECLARE_FLAGS(Flags, Flag)
                         

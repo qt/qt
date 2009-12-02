@@ -55,6 +55,7 @@
 
 #include <qmlexpression.h>
 #include <private/qobject_p.h>
+#include <QtCore/qmetaobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -87,7 +88,8 @@ protected:
 
 private:
     QmlExpression *m_expression;
-    int m_idx;
+    QMetaMethod m_signal;
+    bool m_paramsValid;
     QmlBoundSignalParameters *m_params;
 };
 
