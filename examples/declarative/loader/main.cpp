@@ -131,9 +131,19 @@ public:
 
     Q_INVOKABLE void launch(const QString &fileName)
     {
-        QUrl url(fileName);
+        m_fileName = fileName;
+        QMetaObject::invokeMethod(this, "doLaunch", Qt::QueuedConnection);
+    }
+
+private slots:
+    void doLaunch()
+    {
+        qDebug() << "dolaunch";
+        QUrl url(m_fileName);
         QFileInfo fi(url.toLocalFile());
         if (fi.exists()) {
+            canvas->reset();
+
             url = QUrl::fromLocalFile(fi.absoluteFilePath());
             QmlContext *ctxt = canvas->rootContext();
             QDir dir(fi.path()+"/dummydata", "*.qml");
@@ -160,14 +170,17 @@ public:
                     dummyData->setParent(this);
                 }
             }
-        }
 
-        canvas->setUrl(url);
-        canvas->execute();
+            canvas->setUrl(url);
+            canvas->execute();
+        }
     }
 
 signals:
     void logUpdated();
+
+private:
+    QString m_fileName;
 };
 
 class MainWindow : public QMainWindow
