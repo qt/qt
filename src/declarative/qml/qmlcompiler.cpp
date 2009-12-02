@@ -2529,12 +2529,21 @@ bool QmlCompiler::completeComponentBuild()
 
             // Pre-rewrite the expression
             QString expression = binding.expression.asScript();
+
+            // ### Optimize
+            QmlRewrite::SharedBindingTester sharableTest;
+            bool isSharable = sharableTest.isSharable(expression);
+            
             QmlRewrite::RewriteBinding rewriteBinding;
             expression = rewriteBinding(expression);
 
             quint32 length = expression.length();
             quint32 pc = output->programs.length();
+            if (isSharable) 
+                pc |= 0x80000000;
+
             output->programs.append(0);
+            output->cachedValues.append(0);
             binding.compiledData =
                 QByteArray((const char *)&pc, sizeof(quint32)) +
                 QByteArray((const char *)&length, sizeof(quint32)) +

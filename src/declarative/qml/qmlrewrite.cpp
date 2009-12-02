@@ -49,6 +49,22 @@ DEFINE_BOOL_CONFIG_OPTION(rewriteDump, QML_REWRITE_DUMP);
 
 namespace QmlRewrite {
 
+bool SharedBindingTester::isSharable(const QString &code)
+{
+    Engine engine;
+    NodePool pool(QString(), &engine);
+    Lexer lexer(&engine);
+    Parser parser(&engine);
+    lexer.setCode(code, 0);
+    parser.parseStatement();
+    if (!parser.statement()) 
+        return false;
+
+    _sharable = true;
+    AST::Node::acceptChild(parser.statement(), this);
+    return _sharable;
+}
+
 QString RewriteBinding::operator()(const QString &code, bool *ok)
 {
     Engine engine;

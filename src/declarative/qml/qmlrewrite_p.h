@@ -63,6 +63,17 @@ QT_BEGIN_NAMESPACE
 namespace QmlRewrite {
 using namespace QmlJS;
 
+class SharedBindingTester : protected AST::Visitor
+{
+    bool _sharable;
+public:
+    bool isSharable(const QString &code);
+    
+    virtual bool visit(AST::FunctionDeclaration *) { _sharable = false; return false; }
+    virtual bool visit(AST::FunctionExpression *) { _sharable = false; return false; }
+    virtual bool visit(AST::CallExpression *) { _sharable = false; return false; }
+};
+
 class RewriteBinding: protected AST::Visitor
 {
     unsigned _position;

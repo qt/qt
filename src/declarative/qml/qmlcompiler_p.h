@@ -114,6 +114,7 @@ public:
     QList<QmlParser::Location> locations;
     QList<QmlInstruction> bytecode;
     QList<QScriptProgram *> programs;
+    QList<QScriptValue *> cachedValues;
     QList<QmlPropertyCache *> propertyCaches;
     QList<QmlIntegerCache *> contextCaches;
     QList<QmlParser::Object::ScriptBlock> scripts;

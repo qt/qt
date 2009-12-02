@@ -168,6 +168,7 @@ QmlCompiledData::~QmlCompiledData()
         importCache->release();
 
     qDeleteAll(programs);
+    qDeleteAll(cachedValues);
 }
 
 QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt, const QBitField &bindings) const
