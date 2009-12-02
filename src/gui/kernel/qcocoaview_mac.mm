@@ -777,12 +777,19 @@ extern "C" {
     NSPoint windowPoint = [theEvent locationInWindow];
     NSPoint globalPoint = [[theEvent window] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
-    QPoint qlocal = QPoint(localPoint.x, localPoint.y);
-    QPoint qglobal = QPoint(globalPoint.x, globalPoint.y);
+    QPoint qlocal = QPoint(localPoint.x, flipYCoordinate(localPoint.y));
+    QPoint qglobal = QPoint(globalPoint.x, flipYCoordinate(globalPoint.y));
     Qt::MouseButton buttons = cocoaButton2QtButton([theEvent buttonNumber]);
     bool wheelOK = false;
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([theEvent modifierFlags]);
     QWidget *widgetToGetMouse = qwidget;
+    // if popup is open it should get wheel events if the cursor is over the popup,
+    // otherwise the event should be ignored.
+    if (QWidget *popup = qAppInstance()->activePopupWidget()) {
+        if (!popup->geometry().contains(qglobal))
+            return;
+    }
+
     int deltaX = 0;
     int deltaY = 0;
     int deltaZ = 0;
