@@ -81,12 +81,12 @@ public:
 
 private:
     void realloc() {
-	    maxSize += N;
-	    if (data != fixedData) {
-		    data = (T*)qRealloc(data, maxSize * sizeof(T));
-	    } else {
-		    data = (T*)qMalloc(maxSize * sizeof(T));
-	    }
+        maxSize += N;
+        if (data != fixedData) {
+            data = (T*)qRealloc(data, maxSize * sizeof(T));
+        } else {
+            data = (T*)qMalloc(maxSize * sizeof(T));
+        }
     }
     int index;
     int maxSize;
