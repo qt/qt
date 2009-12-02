@@ -70,6 +70,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsFlickable : public QmlGraphicsItem
     Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration)
     Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
+    Q_PROPERTY(FlickDirection flickDirection READ flickDirection WRITE setFlickDirection NOTIFY flickDirectionChanged)
 
     Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive)
     Q_PROPERTY(int pressDelay READ pressDelay WRITE setPressDelay)
@@ -84,6 +85,8 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsFlickable : public QmlGraphicsItem
     Q_PROPERTY(QmlList<QObject *>* flickableData READ flickableData)
     Q_PROPERTY(QmlList<QmlGraphicsItem *>* flickableChildren READ flickableChildren)
     Q_CLASSINFO("DefaultProperty", "flickableData")
+
+    Q_ENUMS(FlickDirection)
 
 public:
     QmlGraphicsFlickable(QmlGraphicsItem *parent=0);
@@ -135,6 +138,10 @@ public:
 
     QmlGraphicsItem *viewport();
 
+    enum FlickDirection { AutoFlickDirection=0x00, HorizontalFlick=0x01, VerticalFlick=0x02, HorizontalAndVerticalFlick=0x03 };
+    FlickDirection flickDirection() const;
+    void setFlickDirection(FlickDirection);
+
 Q_SIGNALS:
     void viewportWidthChanged();
     void viewportHeightChanged();
@@ -151,6 +158,7 @@ Q_SIGNALS:
     void verticalVelocityChanged();
     void isAtBoundaryChanged();
     void pageChanged();
+    void flickDirectionChanged();
 
 protected:
     virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);

@@ -134,6 +134,7 @@ public:
     int vTime;
     QmlTimeLine velocityTimeline;
     QmlGraphicsFlickableVisibleArea *visibleArea;
+    QmlGraphicsFlickable::FlickDirection flickDirection;
 
     void handleMousePressEvent(QGraphicsSceneMouseEvent *);
     void handleMouseMoveEvent(QGraphicsSceneMouseEvent *);
