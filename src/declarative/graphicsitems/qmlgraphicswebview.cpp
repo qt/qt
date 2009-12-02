@@ -317,8 +317,6 @@ void QmlGraphicsWebView::setUrl(const QUrl &url)
         page()->setViewportSize(QSize(
             d->preferredwidth>0 ? d->preferredwidth : width(),
             d->preferredheight>0 ? d->preferredheight : height()));
-        if (d->preferredwidth > 0 && d->preferredheight > 0)
-            page()->setPreferredContentsSize(QSize(d->preferredwidth,d->preferredheight));
         QUrl seturl = url;
         if (seturl.isEmpty())
             seturl = QUrl(QLatin1String("about:blank"));
@@ -349,8 +347,6 @@ void QmlGraphicsWebView::setPreferredWidth(int iw)
     Q_D(QmlGraphicsWebView);
     if (d->preferredwidth == iw) return;
     d->preferredwidth = iw;
-    if (d->preferredwidth > 0 && d->preferredheight > 0)
-        page()->setPreferredContentsSize(QSize(d->preferredwidth,d->preferredheight));
     //expandToWebPage();
     emit preferredWidthChanged();
 }
@@ -370,8 +366,6 @@ void QmlGraphicsWebView::setPreferredHeight(int ih)
     Q_D(QmlGraphicsWebView);
     if (d->preferredheight == ih) return;
     d->preferredheight = ih;
-    if (d->preferredwidth > 0 && d->preferredheight > 0)
-        page()->setPreferredContentsSize(QSize(d->preferredwidth,d->preferredheight));
     emit preferredHeightChanged();
 }
 

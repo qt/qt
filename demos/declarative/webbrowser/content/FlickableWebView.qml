@@ -67,12 +67,12 @@ Flickable {
         Keys.onLeftPressed: webView.contentsScale -= 0.1
         Keys.onRightPressed: webView.contentsScale += 0.1
 
-        preferredWidth: flickable.width
-        preferredHeight: flickable.height
+        preferredWidth: flickable.width*zoomFactor
+        preferredHeight: flickable.height*zoomFactor
         contentsScale: 1/zoomFactor
         onContentsSizeChanged: {
             // zoom out
-            contentsScale = flickable.width / contentsSize.width
+            contentsScale = Math.min(0.25,flickable.width / contentsSize.width)
         }
         onUrlChanged: {
             // got to topleft
