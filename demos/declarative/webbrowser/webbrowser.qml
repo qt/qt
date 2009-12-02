@@ -1,14 +1,11 @@
 import Qt 4.6
 
 import "content"
-import "fieldtext"
 
 Item {
     id: webBrowser
 
     property string urlString : "http://qt.nokia.com/"
-
-    state: "Normal"
 
     width: 640
     height: 480
@@ -33,10 +30,10 @@ Item {
             anchors.bottom: footer.top
         }
         RectSoftShadow {
-            x: -flickable.viewportX
-            y: -flickable.viewportY
-            width: webView.width*webView.scale
-            height: flickable.y+webView.height*webView.scale
+            x: -webView.viewportX
+            y: -webView.viewportY
+            width: webView.viewportWidth
+            height: webView.viewportHeight+headerSpace.height
         }
         Item {
             id: headerSpace
@@ -44,282 +41,15 @@ Item {
             height: 60
             z: 1
 
-            Rectangle {
-                id: headerSpaceTint
-                color: "black"
-                opacity: 0
-                anchors.fill: parent
-             }
-
-            Image {
-                id: header
-                source: "content/pics/header.png"
-                width: parent.width
-                height: 60
-                state: "Normal"
-                x: flickable.viewportX < 0 ? -flickable.viewportX : flickable.viewportX > flickable.viewportWidth-flickable.width
-                                         ? -flickable.viewportX+flickable.viewportWidth-flickable.width : 0
-                y: flickable.viewportY < 0 ? -flickable.viewportY : progressOff*
-                                        (flickable.viewportY>height?-height:-flickable.viewportY)
-                Text {
-                    id: headerText
-
-                    text: webView.title!='' || webView.progress == 1.0 ? webView.title : 'Loading...'
-                    elide: Text.ElideRight
-
-                    color: "white"
-                    styleColor: "black"
-                    style: Text.Raised
-
-                    font.family: "Helvetica"
-                    font.pointSize: 10
-                    font.bold: true
-
-                    anchors.left: header.left
-                    anchors.right: header.right
-                    anchors.leftMargin: 4
-                    anchors.rightMargin: 4
-                    anchors.top: header.top
-                    anchors.topMargin: 4
-                    horizontalAlignment: Text.AlignHCenter
-                }
-                Item {
-                    width: parent.width
-                    anchors.top: headerText.bottom
-                    anchors.topMargin: 2
-                    anchors.bottom: parent.bottom
-
-                    Item {
-                        id: urlBox
-                        height: 31
-                        anchors.left: parent.left
-                        anchors.leftMargin: 12
-                        anchors.right: parent.right
-                        anchors.rightMargin: 12
-                        anchors.top: parent.top
-                        clip: true
-                        property bool mouseGrabbed: false
-
-                        BorderImage {
-                            source: "content/pics/addressbar.sci"
-                            anchors.fill: urlBox
-                        }
-
-                        BorderImage {
-                            id: urlBoxhl
-                            source: "content/pics/addressbar-filled.sci"
-                            width: parent.width*webView.progress
-                            height: parent.height
-                            opacity: 1-header.progressOff
-                            clip: true
-                        }
-
-                        FieldText {
-                            id: editUrl
-                            mouseGrabbed: parent.mouseGrabbed
-
-                            text: webBrowser.urlString
-                            label: "url:"
-                            onConfirmed: { webBrowser.urlString = editUrl.text; webView.focus=true }
-                            onCancelled: { webView.focus=true }
-                            onStartEdit: { webView.focus=false }
-
-                            anchors.left: urlBox.left
-                            anchors.right: urlBox.right
-                            anchors.leftMargin: 6
-                            anchors.verticalCenter: urlBox.verticalCenter
-                            anchors.verticalCenterOffset: 1
-                        }
-                    }
-                }
-
-                property real progressOff : 1
-                states: [
-                    State {
-                        name: "Normal"
-                        when: webView.progress == 1.0
-                        PropertyChanges { target: header; progressOff: 1 }
-                    },
-                    State {
-                        name: "ProgressShown"
-                        when: webView.progress < 1.0
-                        PropertyChanges { target: header; progressOff: 0; }
-                    }
-                ]
-                transitions: [
-                    Transition {
-                        NumberAnimation {
-                            matchTargets: header
-                            matchProperties: "progressOff"
-                            easing: "easeInOutQuad"
-                            duration: 300
-                        }
-                    }
-                ]
-            }
+            RetractingWebBrowserHeader { id: header }
         }
-        Flickable {
-            id: flickable
+        FlickableWebView {
+            id: webView
             width: parent.width
-            viewportWidth: Math.max(parent.width,webView.width*webView.scale)
-            viewportHeight: Math.max(parent.height,webView.height*webView.scale)
             anchors.top: headerSpace.bottom
             anchors.bottom: footer.top
             anchors.left: parent.left
             anchors.right: parent.right
-            pressDelay: 200
-
-            WebView {
-                id: webView
-                pixelCacheSize: 4000000
-
-                Script {
-                    function fixUrl(url)
-                    {
-                        if (url == "") return url
-                        if (url[0] == "/") return "file://"+url
-                        if (url.indexOf(":")<0) {
-                            if (url.indexOf(".")<0 || url.indexOf(" ")>=0) {
-                                // Fall back to a search engine; hard-code Wikipedia
-                                return "http://en.wikipedia.org/w/index.php?search="+url
-                            } else {
-                                return "http://"+url
-                            }
-                        }
-                        return url
-                    }
-                }
-
-                url: fixUrl(webBrowser.urlString)
-                smooth: false // We don't want smooth scaling, since we only scale during (fast) transitions
-                smoothCache: true // We do want smooth rendering
-                fillColor: "white"
-                focus: true
-                zoomFactor: 4
-
-                onAlert: console.log(message)
-
-                function doZoom(zoom,centerX,centerY)
-                {
-                    if (centerX) {
-                        var sc = zoom/contentsScale;
-                        scaleAnim.to = sc;
-                        flickVX.from = flickable.viewportX
-                        flickVX.to = Math.max(0,Math.min(centerX-flickable.width/2,webView.width*sc-flickable.width))
-                        finalX.value = flickVX.to
-                        flickVY.from = flickable.viewportY
-                        flickVY.to = Math.max(0,Math.min(centerY-flickable.height/2,webView.height*sc-flickable.height))
-                        finalY.value = flickVY.to
-                        finalZoom.value = zoom
-                        quickZoom.start()
-                    }
-                }
-
-                Keys.onLeftPressed: webView.contentsScale -= 0.1
-                Keys.onRightPressed: webView.contentsScale += 0.1
-
-                preferredWidth: flickable.width
-                preferredHeight: flickable.height
-                contentsScale: 1/zoomFactor
-                onContentsSizeChanged: {
-                    // zoom out
-                    contentsScale = flickable.width / contentsSize.width
-                }
-                onUrlChanged: {
-                    // got to topleft
-                    flickable.viewportX = 0
-                    flickable.viewportY = 0
-                    if (url != null) { editUrl.text = url.toString(); }
-                }
-                onDoubleClick: {
-                                if (!heuristicZoom(clickX,clickY,2.5)) {
-                                    var zf = flickable.width / contentsSize.width
-                                    if (zf >= contentsScale)
-                                        zf = 2.0/zoomFactor // zoom in (else zooming out)
-                                    doZoom(zf,clickX*zf,clickY*zf)
-                                 }
-                               }
-
-                SequentialAnimation {
-                    id: quickZoom
-
-                    PropertyAction {
-                        target: webView
-                        property: "renderingEnabled"
-                        value: false
-                    }
-                    ParallelAnimation {
-                        NumberAnimation {
-                            id: scaleAnim
-                            target: webView
-                            property: "scale"
-                            from: 1
-                            to: 0 // set before calling
-                            easing: "easeLinear"
-                            duration: 200
-                        }
-                        NumberAnimation {
-                            id: flickVX
-                            target: flickable
-                            property: "viewportX"
-                            easing: "easeLinear"
-                            duration: 200
-                            from: 0 // set before calling
-                            to: 0 // set before calling
-                        }
-                        NumberAnimation {
-                            id: flickVY
-                            target: flickable
-                            property: "viewportY"
-                            easing: "easeLinear"
-                            duration: 200
-                            from: 0 // set before calling
-                            to: 0 // set before calling
-                        }
-                    }
-                    PropertyAction {
-                        id: finalZoom
-                        target: webView
-                        property: "contentsScale"
-                    }
-                    PropertyAction {
-                        target: webView
-                        property: "scale"
-                        value: 1.0
-                    }
-                    // Have to set the viewportXY, since the above 2
-                    // size changes may have started a correction if
-                    // contentsScale < 1.0.
-                    PropertyAction {
-                        id: finalX
-                        target: flickable
-                        property: "viewportX"
-                        value: 0 // set before calling
-                    }
-                    PropertyAction {
-                        id: finalY
-                        target: flickable
-                        property: "viewportY"
-                        value: 0 // set before calling
-                    }
-                    PropertyAction {
-                        target: webView
-                        property: "renderingEnabled"
-                        value: true
-                    }
-                }
-                onZoomTo: doZoom(zoom,centerX,centerY)
-            }
-            Rectangle {
-                id: webViewTint
-                color: "black"
-                opacity: 0
-                anchors.fill: webView
-                /*MouseRegion {
-                    anchors.fill: WebViewTint
-                    onClicked: { proxy.focus=false }
-                }*/
-            }
         }
         BorderImage {
             id: footer
