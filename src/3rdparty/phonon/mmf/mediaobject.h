@@ -98,7 +98,6 @@ Q_SIGNALS:
     void aboutToFinish();
     // TODO: emit prefinishMarkReached from MediaObject
     void prefinishMarkReached(qint32);
-    // TODO: emit metaDataChanged from MediaObject
     void metaDataChanged(const QMultiMap<QString, QString>& metaData);
     void currentSourceChanged(const MediaSource& source);
     void stateChanged(Phonon::State oldState,
