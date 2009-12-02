@@ -84,6 +84,9 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsListView : public QmlGraphicsFlickable
 
     Q_PROPERTY(SnapMode snapMode READ snapMode WRITE setSnapMode)
 
+    Q_PROPERTY(QmlComponent *header READ header WRITE setHeader)
+    Q_PROPERTY(QmlComponent *footer READ footer WRITE setFooter)
+
     Q_ENUMS(HighlightRangeMode)
     Q_ENUMS(Orientation)
     Q_ENUMS(SnapMode)
@@ -148,6 +151,12 @@ public:
     enum SnapMode { NoSnap, SnapToItem, SnapOneItem };
     SnapMode snapMode() const;
     void setSnapMode(SnapMode mode);
+
+    QmlComponent *footer() const;
+    void setFooter(QmlComponent *);
+
+    QmlComponent *header() const;
+    void setHeader(QmlComponent *);
 
     static QmlGraphicsListViewAttached *qmlAttachedProperties(QObject *);
 

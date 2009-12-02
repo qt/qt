@@ -178,6 +178,7 @@ public:
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0.0)
         , highlightMoveSpeed(400), highlightResizeSpeed(400), highlightRange(QmlGraphicsListView::NoHighlightRange)
         , snapMode(QmlGraphicsListView::NoSnap), overshootDist(0.0)
+        , footerComponent(0), footer(0), headerComponent(0), header(0)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
         , correctFlick(true)
     {}
@@ -209,7 +210,6 @@ public:
     }
 
     FxListItem *nextVisibleItem() const {
-        qDebug() << "last vis";
         const qreal pos = position();
         bool foundFirst = false;
         for (int i = 0; i < visibleItems.count(); ++i) {
@@ -404,9 +404,9 @@ public:
     void updateViewport() {
         Q_Q(QmlGraphicsListView);
         if (orient == QmlGraphicsListView::Vertical)
-            q->setViewportHeight(endPosition() - startPosition());
+            q->setViewportHeight(q->minYExtent() - q->maxYExtent());
         else
-            q->setViewportWidth(endPosition() - startPosition());
+            q->setViewportWidth(q->minXExtent() - q->maxXExtent());
     }
 
 
@@ -434,6 +434,8 @@ public:
     void updateCurrentSection();
     void updateCurrent(int);
     void updateAverage();
+    void updateHeader();
+    void updateFooter();
     void fixupPosition();
     virtual void fixupY();
     virtual void fixupX();
@@ -469,6 +471,10 @@ public:
     QmlGraphicsListView::HighlightRangeMode highlightRange;
     QmlGraphicsListView::SnapMode snapMode;
     qreal overshootDist;
+    QmlComponent *footerComponent;
+    FxListItem *footer;
+    QmlComponent *headerComponent;
+    FxListItem *header;
 
     bool ownModel : 1;
     bool wrap : 1;
@@ -484,6 +490,7 @@ void QmlGraphicsListViewPrivate::init()
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
+    q->setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
 }
 
 void QmlGraphicsListViewPrivate::clear()
@@ -491,7 +498,7 @@ void QmlGraphicsListViewPrivate::clear()
     for (int i = 0; i < visibleItems.count(); ++i)
         releaseItem(visibleItems.at(i));
     visibleItems.clear();
-    visiblePos = 0;
+    visiblePos = header ? header->size() : 0;
     visibleIndex = 0;
     releaseItem(currentItem);
     currentItem = 0;
@@ -623,6 +630,10 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
         updateAverage();
         if (!sectionExpression.isEmpty())
             updateCurrentSection();
+        if (header)
+            updateHeader();
+        if (footer)
+            updateFooter();
         updateViewport();
     }
 }
@@ -647,6 +658,10 @@ void QmlGraphicsListViewPrivate::layout()
     q->refill();
     updateHighlight();
     fixupPosition();
+    if (header)
+        updateHeader();
+    if (footer)
+        updateFooter();
     updateUnrequestedPositions();
     updateViewport();
 }
@@ -858,6 +873,66 @@ void QmlGraphicsListViewPrivate::updateAverage()
     for (int i = 0; i < visibleItems.count(); ++i)
         sum += visibleItems.at(i)->size();
     averageSize = sum / visibleItems.count();
+}
+
+void QmlGraphicsListViewPrivate::updateFooter()
+{
+    Q_Q(QmlGraphicsListView);
+    if (!footer && footerComponent) {
+        QmlGraphicsItem *item = 0;
+        QmlContext *context = new QmlContext(qmlContext(q));
+        QObject *nobj = footerComponent->create(context);
+        if (nobj) {
+            context->setParent(nobj);
+            item = qobject_cast<QmlGraphicsItem *>(nobj);
+            if (!item)
+                delete nobj;
+        } else {
+            delete context;
+        }
+        if (item) {
+            item->setParent(q->viewport());
+            item->setZValue(1);
+            footer = new FxListItem(item, q);
+        }
+    }
+    if (footer) {
+        if (visibleItems.count())
+            footer->setPosition(endPosition());
+        else
+            footer->setPosition(visiblePos);
+    }
+}
+
+void QmlGraphicsListViewPrivate::updateHeader()
+{
+    Q_Q(QmlGraphicsListView);
+    if (!header && headerComponent) {
+        QmlGraphicsItem *item = 0;
+        QmlContext *context = new QmlContext(qmlContext(q));
+        QObject *nobj = headerComponent->create(context);
+        if (nobj) {
+            context->setParent(nobj);
+            item = qobject_cast<QmlGraphicsItem *>(nobj);
+            if (!item)
+                delete nobj;
+        } else {
+            delete context;
+        }
+        if (item) {
+            item->setParent(q->viewport());
+            item->setZValue(1);
+            header = new FxListItem(item, q);
+            if (visibleItems.isEmpty())
+                visiblePos = header->size();
+        }
+    }
+    if (header) {
+        if (visibleItems.count())
+            header->setPosition(startPosition() - header->size());
+        else
+            header->setPosition(0);
+    }
 }
 
 void QmlGraphicsListViewPrivate::fixupPosition()
@@ -1593,10 +1668,13 @@ void QmlGraphicsListView::setOrientation(QmlGraphicsListView::Orientation orient
     Q_D(QmlGraphicsListView);
     if (d->orient != orientation) {
         d->orient = orientation;
-        if (d->orient == QmlGraphicsListView::Vertical)
+        if (d->orient == QmlGraphicsListView::Vertical) {
             setViewportWidth(-1);
-        else
+            setFlickDirection(VerticalFlick);
+        } else {
             setViewportHeight(-1);
+            setFlickDirection(HorizontalFlick);
+        }
         d->clear();
         refill();
         emit orientationChanged();
@@ -1759,6 +1837,47 @@ void QmlGraphicsListView::setSnapMode(SnapMode mode)
     }
 }
 
+QmlComponent *QmlGraphicsListView::footer() const
+{
+    Q_D(const QmlGraphicsListView);
+    return d->footerComponent;
+}
+
+void QmlGraphicsListView::setFooter(QmlComponent *footer)
+{
+    Q_D(QmlGraphicsListView);
+    if (d->footerComponent != footer) {
+        if (d->footer) {
+            delete d->footer;
+            d->footer = 0;
+        }
+        d->footerComponent = footer;
+        d->updateFooter();
+        d->updateViewport();
+    }
+}
+
+QmlComponent *QmlGraphicsListView::header() const
+{
+    Q_D(const QmlGraphicsListView);
+    return d->headerComponent;
+}
+
+void QmlGraphicsListView::setHeader(QmlComponent *header)
+{
+    Q_D(QmlGraphicsListView);
+    if (d->headerComponent != header) {
+        if (d->header) {
+            delete d->header;
+            d->header = 0;
+        }
+        d->headerComponent = header;
+        d->updateHeader();
+        d->updateFooter();
+        d->updateViewport();
+    }
+}
+
 void QmlGraphicsListView::viewportMoved()
 {
     Q_D(QmlGraphicsListView);
@@ -1813,6 +1932,8 @@ qreal QmlGraphicsListView::minYExtent() const
     if (d->orient == QmlGraphicsListView::Horizontal)
         return QmlGraphicsFlickable::minYExtent();
     qreal extent = -d->startPosition();
+    if (d->header && d->visibleItems.count())
+        extent += d->header->size();
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent += d->highlightRangeStart;
 
@@ -1829,6 +1950,8 @@ qreal QmlGraphicsListView::maxYExtent() const
         extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
     else
         extent = -(d->endPosition() - height() + 1);
+    if (d->footer)
+        extent -= d->footer->size();
     qreal minY = minYExtent();
     if (extent > minY)
         extent = minY;
@@ -1841,6 +1964,8 @@ qreal QmlGraphicsListView::minXExtent() const
     if (d->orient == QmlGraphicsListView::Vertical)
         return QmlGraphicsFlickable::minXExtent();
     qreal extent = -d->startPosition();
+    if (d->header)
+        extent += d->header->size();
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent += d->highlightRangeStart;
 
@@ -1857,6 +1982,8 @@ qreal QmlGraphicsListView::maxXExtent() const
         extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
     else
         extent = -(d->endPosition() - width() + 1);
+    if (d->footer)
+        extent -= d->footer->size();
     qreal minX = minXExtent();
     if (extent > minX)
         extent = minX;
@@ -2008,6 +2135,8 @@ void QmlGraphicsListView::trackedPositionChanged()
                     pos = d->startPosition();
                 } else if (d->trackedItem->endPosition() > d->endPosition() - d->size() + d->highlightRangeEnd) {
                     pos = d->endPosition() - d->size();
+                    if (pos < d->startPosition())
+                        pos = d->startPosition();
                 } else {
                     if (trackedPos < viewPos + d->highlightRangeStart) {
                         pos = trackedPos - d->highlightRangeStart;
@@ -2221,7 +2350,7 @@ void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
 
     if (d->visibleItems.isEmpty()) {
         d->visibleIndex = 0;
-        d->visiblePos = 0;
+        d->visiblePos = d->header ? d->header->size() : 0;
         d->timeline.clear();
         d->setPosition(0);
         if (d->model->count() == 0)

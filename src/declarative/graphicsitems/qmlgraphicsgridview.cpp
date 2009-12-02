@@ -327,6 +327,7 @@ void QmlGraphicsGridViewPrivate::init()
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(sizeChange()));
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(sizeChange()));
+    q->setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
 }
 
 void QmlGraphicsGridViewPrivate::clear()
@@ -1014,10 +1015,13 @@ void QmlGraphicsGridView::setFlow(Flow flow)
     Q_D(QmlGraphicsGridView);
     if (d->flow != flow) {
         d->flow = flow;
-        if (d->flow == LeftToRight)
+        if (d->flow == LeftToRight) {
             setViewportWidth(-1);
-        else
+            setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
+        } else {
             setViewportHeight(-1);
+            setFlickDirection(QmlGraphicsFlickable::HorizontalFlick);
+        }
         d->clear();
         d->updateGrid();
         refill();

@@ -160,6 +160,10 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
 
+    // translation functions need to be installed
+    // before the global script class is constructed (QTBUG-6437)
+    scriptEngine.installTranslatorFunctions();
+
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
 }
 
@@ -228,7 +232,6 @@ void QmlEnginePrivate::init()
     qRegisterMetaType<QmlScriptString>("QmlScriptString");
     qRegisterMetaType<QScriptValue>("QScriptValue");
 
-    scriptEngine.installTranslatorFunctions();
     contextClass = new QmlContextScriptClass(q);
     objectClass = new QmlObjectScriptClass(q);
     valueTypeClass = new QmlValueTypeScriptClass(q);

@@ -94,30 +94,18 @@ class Screen : public QObject
 
 public:
     Screen(QObject *parent=0) : QObject(parent) {
-        m_screens.append(this);
         connect(DeviceOrientation::instance(), SIGNAL(orientationChanged()),
                 this, SIGNAL(orientationChanged()));
     }
-    ~Screen() { m_screens.removeAll(this); }
 
     enum Orientation { UnknownOrientation = DeviceOrientation::UnknownOrientation,
                        Portrait = DeviceOrientation::Portrait,
                        Landscape = DeviceOrientation::Landscape };
     Orientation orientation() const { return Orientation(DeviceOrientation::instance()->orientation()); }
-    static void setOrientation(Orientation orient) {
-        if (orient != Orientation(DeviceOrientation::instance()->orientation())) {
-            DeviceOrientation::instance()->setOrientation(DeviceOrientation::Orientation(orient));
-        }
-    }
 
 signals:
     void orientationChanged();
-
-private:
-    static QList<Screen*> m_screens;
 };
-
-QList<Screen*> Screen::m_screens;
 
 QML_DECLARE_TYPE(Screen)
 QML_DEFINE_TYPE(QmlViewer, 1, 0, Screen, Screen)
@@ -570,13 +558,13 @@ void QmlViewer::proxySettingsChanged()
 
 void QmlViewer::setPortrait()
 {
-    Screen::setOrientation(Screen::Portrait);
+    DeviceOrientation::instance()->setOrientation(DeviceOrientation::Portrait);
     portraitOrientation->setChecked(true);
 }
 
 void QmlViewer::setLandscape()
 {
-    Screen::setOrientation(Screen::Landscape);
+    DeviceOrientation::instance()->setOrientation(DeviceOrientation::Landscape);
     landscapeOrientation->setChecked(true);
 }
 

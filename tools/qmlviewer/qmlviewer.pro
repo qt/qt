@@ -21,7 +21,7 @@ SOURCES += main.cpp \
            qmlviewer.cpp \
            proxysettings.cpp \
            qfxtester.cpp
-maemo: {
+maemo5 {
     SOURCES += deviceorientation_maemo.cpp
 } else {
     SOURCES += deviceorientation.cpp
