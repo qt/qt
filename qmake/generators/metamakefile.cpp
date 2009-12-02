@@ -203,7 +203,11 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
         } else if(build == glue) {
             ret = build->makefile->writeProjectMakefile();
         } else {
+            // ensure that extra compilers are run in the build dir
+            QString bakpwd = qmake_getpwd();
+            qmake_setpwd(oldpwd);
             ret = build->makefile->write();
+            qmake_setpwd(bakpwd);
             if (glue && glue->makefile->supportsMergedBuilds())
                 ret = glue->makefile->mergeBuildProject(build->makefile);
         }
