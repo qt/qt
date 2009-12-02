@@ -87,10 +87,20 @@ public:
     void setVideoOutput(VideoOutput* videoOutput);
 
     /**
-     * Records error and changes state to ErrorState
+     * Records error message and changes state to ErrorState
      */
-    void setError(Phonon::ErrorType error,
-                  const QString &errorMessage = QString());
+    void setError(const QString &errorMessage);
+
+    /**
+     * Records error message and changes state to ErrorState
+     *
+     * Appends a human-readable version of symbianErrorCode to the error message,
+     * e.g.
+     *      setError(NormalError, "Opening file failed", KErrPermissionDenied)
+     * results in the following error message:
+     *      "Opening file failed: permission denied"
+     */
+    void setError(const QString &errorMessage, int symbianErrorCode);
 
     Phonon::State state() const;
 

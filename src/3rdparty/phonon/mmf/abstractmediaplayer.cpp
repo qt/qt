@@ -70,7 +70,7 @@ void MMF::AbstractMediaPlayer::play()
 
     switch (privateState()) {
     case GroundState:
-        setError(NormalError);
+        setError(tr("Not ready to play"));
         break;
 
     case LoadingState:
@@ -226,10 +226,13 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
     m_source = source;
 
     TInt symbianErr = KErrNone;
+    QString errorMessage;
 
     switch (m_source.type()) {
     case MediaSource::LocalFile: {
         symbianErr = openFile(file);
+        if (KErrNone != symbianErr)
+            errorMessage = tr("Error opening file");
         break;
     }
 
@@ -238,11 +241,12 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
 
         if (url.scheme() == QLatin1String("file")) {
             symbianErr = openFile(file);
+            if (KErrNone != symbianErr)
+                errorMessage = tr("Error opening URL");
         }
         else {
-            TRACE_0("Source type not supported");
-            // TODO: support network URLs
-            symbianErr = KErrNotSupported;
+            TRACE_0("Error opening URL: protocol not supported");
+            errorMessage = tr("Error opening URL: protocol not supported");
         }
 
         break;
@@ -251,8 +255,8 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
     case MediaSource::Invalid:
     case MediaSource::Disc:
     case MediaSource::Stream:
-        TRACE_0("Source type not supported");
-        symbianErr = KErrNotSupported;
+        TRACE_0("Error opening source: type not supported");
+        errorMessage = tr("Error opening source: type not supported");
         break;
 
     case MediaSource::Empty:
@@ -265,11 +269,13 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
         TRACE_PANIC(InvalidMediaTypePanic);
     }
 
-    if (KErrNone == symbianErr) {
+    if (errorMessage.isEmpty()) {
         changeState(LoadingState);
     } else {
-        TRACE("error %d", symbianErr)
-        setError(NormalError);
+        if (symbianErr)
+            setError(errorMessage, symbianErr);
+        else
+            setError(errorMessage);
     }
 
     TRACE_EXIT_0();
@@ -318,7 +324,7 @@ void MMF::AbstractMediaPlayer::doVolumeChanged()
         const int err = setDeviceVolume(volume);
 
         if (KErrNone != err) {
-            setError(NormalError);
+            setError(tr("Setting volume failed"), err);
         }
         break;
     }

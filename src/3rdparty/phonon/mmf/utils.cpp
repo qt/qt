@@ -18,6 +18,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils.h"
 #include <e32std.h>
+#include <mmf/common/mmferrors.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +70,103 @@ MMF::MediaType MMF::Utils::mimeTypeToMediaType(const TDesC& mimeType)
     return result;
 }
 
+QString MMF::Utils::symbianErrorToString(int errorCode)
+{
+    /**
+     * Here we translate only the error codes which are likely to be
+     * meaningful to the user.  For example, when an error occurs
+     * during opening of a media file, displaying "not found" or
+     * "permission denied" is informative.  On the other hand,
+     * differentiating between KErrGeneral and KErrArgument at the UI
+     * level does not make sense.
+     */
+    switch (errorCode)
+    {
+    // System-wide errors
+    case KErrNone:
+        return tr("no error");
+    case KErrNotFound:
+        return tr("not found");
+    case KErrNoMemory:
+        return tr("out of memory");
+    case KErrNotSupported:
+        return tr("not supported");
+    case KErrOverflow:
+        return tr("overflow");
+    case KErrUnderflow:
+        return tr("underflow");
+    case KErrAlreadyExists:
+        return tr("already exists");
+    case KErrPathNotFound:
+        return tr("path not found");
+    case KErrInUse:
+        return tr("in use");
+    case KErrNotReady:
+        return tr("not ready");
+    case KErrAccessDenied:
+        return tr("access denied");
+    case KErrCouldNotConnect:
+        return tr("could not connect");
+    case KErrDisconnected:
+        return tr("disconnected");
+    case KErrPermissionDenied:
+        return tr("permission denied");
+
+    // Multimedia framework errors
+    case KErrMMNotEnoughBandwidth:
+        return tr("insufficient bandwidth");
+    case KErrMMSocketServiceNotFound:
+    case KErrMMServerSocket:
+        return tr("network unavailable");
+    case KErrMMNetworkRead:
+    case KErrMMNetworkWrite:
+    case KErrMMUDPReceive:
+        return tr("network communication error");
+    case KErrMMServerNotSupported:
+        return tr("streaming not supported");
+    case KErrMMServerAlert:
+        return tr("server alert");
+    case KErrMMInvalidProtocol:
+        return tr("invalid protocol");
+    case KErrMMInvalidURL:
+        return tr("invalid URL");
+    case KErrMMMulticast:
+        return tr("multicast error");
+    case KErrMMProxyServer:
+    case KErrMMProxyServerConnect:
+        return tr("proxy server error");
+    case KErrMMProxyServerNotSupported:
+        return tr("proxy server not supported");
+    case KErrMMAudioDevice:
+        return tr("audio output error");
+    case KErrMMVideoDevice:
+        return tr("video output error");
+    case KErrMMDecoder:
+        return tr("decoder error");
+    case KErrMMPartialPlayback:
+        return tr("audio or video components could not be played");
+    case KErrMMDRMNotAuthorized:
+        return tr("DRM error");
+
+    /*
+    // We don't use QoS settings
+    case KErrMMQosLowBandwidth:
+    case KErrMMQosUnsupportedTrafficClass:
+    case KErrMMQosPoorTrafficClass:
+    case KErrMMQosUnsupportedParameters:
+    case KErrMMQosPoorParameters:
+    case KErrMMQosNotSupported:
+    */
+
+    // Catch-all for errors other than those above
+    default:
+        {
+        QString errorString;
+        errorString.setNum(errorCode);
+        return tr("unknown error") + " (" + errorString + ")";
+        }
+    }
+}
 
 #ifndef QT_NO_DEBUG
 

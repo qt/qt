@@ -113,17 +113,21 @@ void MMF::AbstractPlayer::videoOutputChanged()
     // Default behaviour is empty - overridden by VideoPlayer
 }
 
-void MMF::AbstractPlayer::setError(Phonon::ErrorType error,
-                                   const QString &errorMessage)
+void MMF::AbstractPlayer::setError(const QString &errorMessage)
 {
     TRACE_CONTEXT(AbstractPlayer::setError, EAudioInternal);
-    TRACE_ENTRY("state %d error %d", m_state, error);
+    TRACE_ENTRY("state %d", m_state);
 
-    m_error = error;
+    m_error = Phonon::NormalError;
     m_errorString = errorMessage;
     changeState(ErrorState);
 
     TRACE_EXIT_0();
+}
+
+void MMF::AbstractPlayer::setError(const QString &errorMessage, int symbianError)
+{
+    setError(errorMessage + ": " + Utils::symbianErrorToString(symbianError));
 }
 
 Phonon::ErrorType MMF::AbstractPlayer::errorType() const

@@ -238,7 +238,6 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     const bool oldPlayerHasVideo = oldPlayer->hasVideo();
     const bool oldPlayerSeekable = oldPlayer->isSeekable();
 
-    Phonon::ErrorType error = NoError;
     QString errorMessage;
 
     // Determine media type
@@ -255,7 +254,6 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
             }
             else {
                 errorMessage = QLatin1String("Network streaming not supported yet");
-                error = NormalError;
             }
         }
         break;
@@ -263,8 +261,7 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     case MediaSource::Invalid:
     case MediaSource::Disc:
     case MediaSource::Stream:
-        TRACE_0("Unsupported media type");
-        error = NormalError;
+        errorMessage = tr("Error opening source: type not supported");
         break;
 
     case MediaSource::Empty:
@@ -287,8 +284,7 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
             newPlayer = new DummyPlayer();
         }
 
-        error = NormalError;
-        errorMessage = tr("Media type could not be determined");
+        errorMessage = tr("Error opening source: media type could not be determined");
         break;
 
     case MediaTypeAudio:
@@ -326,9 +322,9 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 
     // We need to call setError() after doing the connects, otherwise the
     // error won't be received.
-    if (error != NoError) {
+    if (!errorMessage.isEmpty()) {
         Q_ASSERT(m_player);
-        m_player->setError(error, errorMessage);
+        m_player->setError(errorMessage);
     }
 
     TRACE_EXIT_0();

@@ -93,7 +93,7 @@ void MMF::VideoPlayer::construct()
     m_dsaActive = true;
 
     if (KErrNone != err)
-        changeState(ErrorState);
+        setError("Creation of video player failed", err);
 
     TRACE_EXIT_0();
 }
@@ -129,7 +129,7 @@ void MMF::VideoPlayer::doPause()
     TRAPD(err, m_player->PauseL());
     if (KErrNone != err) {
         TRACE("PauseL error %d", err);
-        setError(NormalError);
+        setError(tr("Pause failed"), err);
     }
 }
 
@@ -158,7 +158,7 @@ void MMF::VideoPlayer::doSeek(qint64 ms)
     }
     else {
         TRACE("SetPositionL error %d", err);
-        setError(NormalError);
+        setError(tr("Seek failed"), err);
     }
 }
 
@@ -200,7 +200,7 @@ qint64 MMF::VideoPlayer::currentTime() const
 
         // If we don't cast away constness here, we simply have to ignore
         // the error.
-        const_cast<VideoPlayer*>(this)->setError(NormalError);
+        const_cast<VideoPlayer*>(this)->setError(tr("Getting position failed"), err);
     }
 
     return result;
@@ -226,7 +226,7 @@ void MMF::VideoPlayer::MvpuoOpenComplete(TInt aError)
     if (KErrNone == aError)
         m_player->Prepare();
     else
-        setError(NormalError);
+        setError(tr("Opening clip failed"), aError);
 
     TRACE_EXIT_0();
 }
@@ -252,7 +252,7 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
         emit totalTimeChanged(totalTime());
         changeState(StoppedState);
     } else {
-        setError(NormalError);
+        setError(tr("Buffering clip failed"), err);
     }
 
     TRACE_EXIT_0();
@@ -412,7 +412,7 @@ void MMF::VideoPlayer::startDirectScreenAccess()
         if(KErrNone == err)
             m_dsaActive = true;
         else
-            setError(NormalError);
+            setError(tr("Video display error"), err);
     }
 }
 
@@ -424,7 +424,7 @@ bool MMF::VideoPlayer::stopDirectScreenAccess()
         if(KErrNone == err)
             m_dsaActive = false;
         else
-            setError(NormalError);
+            setError(tr("Video display error"), err);
     }
     return dsaWasActive;
 }
@@ -600,7 +600,7 @@ void MMF::VideoPlayer::applyVideoWindowChange()
     TRAPD(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight, antialias));
     if(KErrNone != err) {
         TRACE("SetScaleFactorL (1) err %d", err);
-        setError(NormalError);
+        setError(tr("Video display error"), err);
     }
 
     if(KErrNone == err) {
@@ -615,13 +615,13 @@ void MMF::VideoPlayer::applyVideoWindowChange()
 
         if (KErrNone != err) {
             TRACE("SetDisplayWindowL err %d", err);
-            setError(NormalError);
+            setError(tr("Video display error"), err);
         } else {
             m_dsaActive = true;
             TRAP(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight, antialias));
             if(KErrNone != err) {
                 TRACE("SetScaleFactorL (2) err %d", err);
-                setError(NormalError);
+                setError(tr("Video display error"), err);
             }
         }
     }
