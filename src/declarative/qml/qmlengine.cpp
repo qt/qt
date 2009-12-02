@@ -110,7 +110,7 @@ struct StaticQtMetaObject : public QObject
 
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
-  isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0), globalClass(0),
+  isDebugging(false), contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), globalClass(0),
   nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), cleanup(0), erroredBindings(0), 
   inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttacheds(0), 
   rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
@@ -159,6 +159,10 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
+
+    // translation functions need to be installed
+    // before the global script class is constructed (QTBUG-6437)
+    scriptEngine.installTranslatorFunctions();
 
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
 }
@@ -226,8 +230,8 @@ void QmlEnginePrivate::init()
     Q_Q(QmlEngine);
     qRegisterMetaType<QVariant>("QVariant");
     qRegisterMetaType<QmlScriptString>("QmlScriptString");
+    qRegisterMetaType<QScriptValue>("QScriptValue");
 
-    scriptEngine.installTranslatorFunctions();
     contextClass = new QmlContextScriptClass(q);
     objectClass = new QmlObjectScriptClass(q);
     valueTypeClass = new QmlValueTypeScriptClass(q);

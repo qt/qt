@@ -58,6 +58,7 @@
 #include <qlocale.h>
 #include <ctype.h>
 #include <QtCore/qcryptographichash.h>
+#include <QtScript/qscriptvalue.h>
 #include "qmlcustomparser_p.h"
 
 #ifdef QT_BOOTSTRAPPED
@@ -929,6 +930,7 @@ QList<QmlType*> QmlMetaType::qmlTypes()
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
 #include <QtGui/qquaternion.h>
+Q_DECLARE_METATYPE(QScriptValue);
 
 /*!
     Copies \a copy into \a data, assuming they both are of type \a type.  If
@@ -1138,6 +1140,9 @@ bool QmlMetaType::copy(int type, void *data, const void *copy)
             if (type == qMetaTypeId<QVariant>()) {
                 *static_cast<NS(QVariant) *>(data) = *static_cast<const NS(QVariant)*>(copy);
                 return true;
+            } else if (type == qMetaTypeId<QScriptValue>()) {
+                *static_cast<NS(QScriptValue) *>(data) = *static_cast<const NS(QScriptValue)*>(copy);
+                return true;
             } else if (typeCategory(type) != Unknown) {
                 *static_cast<void **>(data) = *static_cast<void* const *>(copy);
                 return true;
@@ -1339,6 +1344,9 @@ bool QmlMetaType::copy(int type, void *data, const void *copy)
         default:
             if (type == qMetaTypeId<QVariant>()) {
                 *static_cast<NS(QVariant) *>(data) = NS(QVariant)();
+                return true;
+            } else if (type == qMetaTypeId<QScriptValue>()) {
+                *static_cast<NS(QScriptValue) *>(data) = NS(QScriptValue)();
                 return true;
             } else if (typeCategory(type) != Unknown) {
                 *static_cast<void **>(data) = 0;

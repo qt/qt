@@ -705,7 +705,7 @@ void QmlComponentPrivate::completeCreate()
             QmlEnginePrivate::SimpleList<QmlParserStatus> ps = 
                 parserStatus.at(ii);
 
-            for (int jj = 0; jj < ps.count; ++jj) {
+            for (int jj = ps.count - 1; jj >= 0; --jj) {
                 QmlParserStatus *status = ps.at(jj);
                 if (status && status->d) {
                     status->d = 0;

@@ -162,6 +162,7 @@ QmlGraphicsFlickablePrivate::QmlGraphicsFlickablePrivate()
     , interactive(true), deceleration(500), maxVelocity(5000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0)
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
+    , flickDirection(QmlGraphicsFlickable::AutoFlickDirection)
 {
     fixupXEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsFlickablePrivate, &QmlGraphicsFlickablePrivate::fixupX>(&_moveX, this);
     fixupYEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsFlickablePrivate, &QmlGraphicsFlickablePrivate::fixupY>(&_moveY, this);
@@ -574,6 +575,36 @@ QmlGraphicsFlickableVisibleArea *QmlGraphicsFlickable::visibleArea()
     if (!d->visibleArea)
         d->visibleArea = new QmlGraphicsFlickableVisibleArea(this);
     return d->visibleArea;
+}
+
+/*!
+    \qmlproperty enumeration Flickable::flickDirection
+
+    This property determines which directions the view can be flicked.
+
+    \list
+    \o AutoFlickDirection (default) - allows flicking vertically if the
+    \e viewportHeight is not equal to the \e height of the Flickable.
+    Allows flicking horizontally if the \e viewportWidth is not equal
+    to the \e width of the Flickable.
+    \o HorizontalFlick - allows flicking horizontally.
+    \o VerticalFlick - allows flicking vertically.
+    \o HorizontalAndVerticalFlick - allows flicking in both directions.
+    \endlist
+*/
+QmlGraphicsFlickable::FlickDirection QmlGraphicsFlickable::flickDirection() const
+{
+    Q_D(const QmlGraphicsFlickable);
+    return d->flickDirection;
+}
+
+void QmlGraphicsFlickable::setFlickDirection(FlickDirection direction)
+{
+    Q_D(QmlGraphicsFlickable);
+    if (direction != d->flickDirection) {
+        d->flickDirection = direction;
+        emit flickDirectionChanged();
+    }
 }
 
 void QmlGraphicsFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -1039,12 +1070,18 @@ qreal QmlGraphicsFlickable::vHeight() const
 
 bool QmlGraphicsFlickable::xflick() const
 {
-    return vWidth() != width();
+    Q_D(const QmlGraphicsFlickable);
+    if (d->flickDirection == QmlGraphicsFlickable::AutoFlickDirection)
+        return vWidth() != width();
+    return d->flickDirection & QmlGraphicsFlickable::HorizontalFlick;
 }
 
 bool QmlGraphicsFlickable::yflick() const
 {
-    return vHeight() !=  height();
+    Q_D(const QmlGraphicsFlickable);
+    if (d->flickDirection == QmlGraphicsFlickable::AutoFlickDirection)
+        return vHeight() !=  height();
+    return d->flickDirection & QmlGraphicsFlickable::VerticalFlick;
 }
 
 bool QmlGraphicsFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)

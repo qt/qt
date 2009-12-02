@@ -93,7 +93,7 @@ QmlAbstractBoundSignal::~QmlAbstractBoundSignal()
 
 QmlBoundSignal::QmlBoundSignal(QObject *scope, const QMetaMethod &signal, 
                                QObject *parent)
-: m_expression(0), m_idx(signal.methodIndex()), m_params(0)
+: m_expression(0), m_signal(signal), m_paramsValid(false), m_params(0)
 {
     // A cached evaluation of the QmlExpression::value() slot index.
     //
@@ -103,16 +103,13 @@ QmlBoundSignal::QmlBoundSignal(QObject *scope, const QMetaMethod &signal,
     if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
     QmlGraphics_setParent_noEvent(this, parent);
-    QMetaObject::connect(scope, m_idx, this, evaluateIdx);
-
-    if (!signal.parameterTypes().isEmpty())
-        m_params = new QmlBoundSignalParameters(signal, this);
+    QMetaObject::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
 }
 
 QmlBoundSignal::QmlBoundSignal(QmlContext *ctxt, const QString &val, 
                                QObject *scope, const QMetaMethod &signal,
                                QObject *parent)
-: m_expression(0), m_idx(signal.methodIndex()), m_params(0)
+: m_expression(0), m_signal(signal), m_paramsValid(false), m_params(0)
 {
     // A cached evaluation of the QmlExpression::value() slot index.
     //
@@ -122,13 +119,10 @@ QmlBoundSignal::QmlBoundSignal(QmlContext *ctxt, const QString &val,
     if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
     QmlGraphics_setParent_noEvent(this, parent);
-    QMetaObject::connect(scope, m_idx, this, evaluateIdx);
+    QMetaObject::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
 
     m_expression = new QmlExpression(ctxt, val, scope);
     m_expression->setTrackChange(false);
-
-    if (!signal.parameterTypes().isEmpty())
-        m_params = new QmlBoundSignalParameters(signal, this);
 }
 
 QmlBoundSignal::~QmlBoundSignal()
@@ -139,7 +133,7 @@ QmlBoundSignal::~QmlBoundSignal()
 
 int QmlBoundSignal::index() const 
 { 
-    return m_idx; 
+    return m_signal.methodIndex();
 }
 
 /*!
@@ -174,6 +168,12 @@ QmlBoundSignal *QmlBoundSignal::cast(QObject *o)
 int QmlBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
     if (c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
+        if (!m_paramsValid) {
+            if (!m_signal.parameterTypes().isEmpty())
+                m_params = new QmlBoundSignalParameters(m_signal, this);
+            m_paramsValid = true;
+        }
+
         if (m_params) m_params->setValues(a);
         if (m_expression) {
             QmlExpressionPrivate::get(m_expression)->value(m_params);

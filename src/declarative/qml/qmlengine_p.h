@@ -126,6 +126,8 @@ public:
 
     struct ImportedNamespace;
     QmlContextScriptClass *contextClass;
+    QmlContext *sharedContext;
+    QObject *sharedScope;
     QmlObjectScriptClass *objectClass;
     QmlValueTypeScriptClass *valueTypeClass;
     QmlTypeNameScriptClass *typeNameClass;

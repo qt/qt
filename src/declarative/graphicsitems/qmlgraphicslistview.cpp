@@ -490,6 +490,7 @@ void QmlGraphicsListViewPrivate::init()
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
+    q->setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
 }
 
 void QmlGraphicsListViewPrivate::clear()
@@ -1667,10 +1668,13 @@ void QmlGraphicsListView::setOrientation(QmlGraphicsListView::Orientation orient
     Q_D(QmlGraphicsListView);
     if (d->orient != orientation) {
         d->orient = orientation;
-        if (d->orient == QmlGraphicsListView::Vertical)
+        if (d->orient == QmlGraphicsListView::Vertical) {
             setViewportWidth(-1);
-        else
+            setFlickDirection(VerticalFlick);
+        } else {
             setViewportHeight(-1);
+            setFlickDirection(HorizontalFlick);
+        }
         d->clear();
         refill();
         emit orientationChanged();
@@ -2131,6 +2135,8 @@ void QmlGraphicsListView::trackedPositionChanged()
                     pos = d->startPosition();
                 } else if (d->trackedItem->endPosition() > d->endPosition() - d->size() + d->highlightRangeEnd) {
                     pos = d->endPosition() - d->size();
+                    if (pos < d->startPosition())
+                        pos = d->startPosition();
                 } else {
                     if (trackedPos < viewPos + d->highlightRangeStart) {
                         pos = trackedPos - d->highlightRangeStart;
