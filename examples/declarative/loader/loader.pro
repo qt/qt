@@ -1,5 +1,5 @@
 SOURCES = main.cpp qmlfolderlistmodel.cpp
-HEADERS = qmlfolderlistmodel.h qlistmodelinterface.h
+HEADERS = qmlfolderlistmodel.h
 RESOURCES = loader.qrc
 
 QT += script declarative network
