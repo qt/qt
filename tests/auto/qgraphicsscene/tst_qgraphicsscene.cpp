@@ -46,6 +46,8 @@
 #endif
 
 #include <QtGui>
+#include <private/qgraphicsscene_p.h>
+#include <private/qgraphicssceneindex_p.h>
 #include <math.h>
 #include "../../shared/util.h"
 
@@ -269,6 +271,7 @@ private slots:
     void initialFocus();
     void polishItems();
     void isActive();
+    void siblingIndexAlwaysValid();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -4178,6 +4181,35 @@ void tst_QGraphicsScene::isActive()
     QVERIFY(!scene2.isActive());
     QVERIFY(!scene1.hasFocus());
     QVERIFY(!scene2.hasFocus());
+
+}
+
+void tst_QGraphicsScene::siblingIndexAlwaysValid()
+{
+    QGraphicsScene scene;
+
+    QGraphicsWidget *parent = new QGraphicsWidget;
+    parent->setZValue(350);
+    parent->setGeometry(0, 0, 100, 100);
+    QGraphicsWidget *parent2 = new QGraphicsWidget;
+    parent2->setGeometry(10, 10, 50, 50);
+    QGraphicsWidget *child = new QGraphicsWidget(parent2);
+    child->setGeometry(15, 15, 25, 25);
+    child->setZValue(150);
+    //Both are top level
+    scene.addItem(parent);
+    scene.addItem(parent2);
+
+    //Then we make the child a top level
+    child->setParentItem(0);
+
+    //This is trigerred by a repaint...
+    QGraphicsScenePrivate::get(&scene)->index->estimateTopLevelItems(QRectF(), Qt::AscendingOrder);
+
+    delete child;
+
+    //If there are in the list that's bad, we crash...
+    QVERIFY(!QGraphicsScenePrivate::get(&scene)->topLevelItems.contains(static_cast<QGraphicsItem *>(child)));
 
 }
 

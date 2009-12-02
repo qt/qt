@@ -1153,6 +1153,8 @@ void QSortFilterProxyModelPrivate::_q_sourceAboutToBeReset()
 {
     Q_Q(QSortFilterProxyModel);
     q->beginResetModel();
+    invalidatePersistentIndexes();
+    clear_mapping();
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceReset()
@@ -1470,6 +1472,8 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
     Q_D(QSortFilterProxyModel);
 
+    beginResetModel();
+
     disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
 
@@ -1551,7 +1555,7 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     connect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
     d->clear_mapping();
-    reset();
+    endResetModel();
     if (d->update_source_sort_column() && d->dynamic_sortfilter)
         d->sort();
 }

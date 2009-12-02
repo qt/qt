@@ -66,6 +66,8 @@ private:
 
 private slots:
     void on_buttonBox_accepted();
+    void on_srcCbLanguageList_currentIndexChanged(int idx);
+    void on_tgtCbLanguageList_currentIndexChanged(int idx);
 
 private:
     Ui::TranslationSettingsDialog m_ui;

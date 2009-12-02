@@ -236,6 +236,18 @@ bool QEglContext::makeCurrent(EGLSurface surface)
     currentSurface = surface;
     setCurrentContext(apiType, this);
 
+    // Force the right API to be bound before making the context current.
+    // The EGL implementation should be able to figure this out from ctx,
+    // but some systems require the API to be explicitly set anyway.
+#ifdef EGL_OPENGL_ES_API
+    if (apiType == QEgl::OpenGL)
+        eglBindAPI(EGL_OPENGL_ES_API);
+#endif
+#ifdef EGL_OPENVG_API
+    if (apiType == QEgl::OpenVG)
+        eglBindAPI(EGL_OPENVG_API);
+#endif
+
     bool ok = eglMakeCurrent(dpy, surface, surface, ctx);
     if (!ok)
         qWarning() << "QEglContext::makeCurrent():" << errorString(eglGetError());
