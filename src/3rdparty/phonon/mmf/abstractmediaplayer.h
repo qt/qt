@@ -33,6 +33,7 @@ namespace Phonon
 namespace MMF
 {
 class AudioOutput;
+class MediaObject;
 
 /**
  * Interface via which MMF client APIs for both audio and video can be
@@ -43,19 +44,17 @@ class AbstractMediaPlayer : public AbstractPlayer
     Q_OBJECT
 
 protected:
-    AbstractMediaPlayer();
-    explicit AbstractMediaPlayer(const AbstractPlayer& player);
+    AbstractMediaPlayer(MediaObject *parent, const AbstractPlayer *player);
 
 public:
+    virtual void open(const Phonon::MediaSource&, RFile&);
+
     // MediaObjectInterface
     virtual void play();
     virtual void pause();
     virtual void stop();
     virtual void seek(qint64 milliseconds);
     virtual bool isSeekable() const;
-    virtual MediaSource source() const;
-    virtual void setFileSource(const Phonon::MediaSource&, RFile&);
-    virtual void setNextSource(const MediaSource &source);
     virtual void volumeChanged(qreal volume);
 
 protected:
@@ -81,6 +80,8 @@ protected:
     void bufferingStarted();
     void bufferingComplete();
     void maxVolumeChanged(int maxVolume);
+    void playbackComplete(int error);
+
     static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
 
 private:
@@ -96,6 +97,8 @@ private Q_SLOTS:
     void bufferStatusTick();
 
 private:
+    MediaObject *const          m_parent;
+
     /**
      * This flag is set to true if play is called when the object is
      * in a Loading state.  Once loading is complete, playback will
@@ -110,8 +113,8 @@ private:
 
     int                         m_mmfMaxVolume;
 
-    MediaSource                 m_source;
-    MediaSource                 m_nextSource;
+    bool                        m_prefinishMarkSent;
+    bool                        m_aboutToFinishSent;
 
     QMultiMap<QString, QString> m_metaData;
 

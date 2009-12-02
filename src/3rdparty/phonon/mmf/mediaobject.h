@@ -87,16 +87,16 @@ public:
 
 public Q_SLOTS:
     void volumeChanged(qreal volume);
+    void switchToNextSource();
 
 Q_SIGNALS:
     void totalTimeChanged(qint64 length);
     void hasVideoChanged(bool hasVideo);
     void seekableChanged(bool seekable);
     void bufferStatus(int);
-    // TODO: emit aboutToFinish from MediaObject
     void aboutToFinish();
-    // TODO: emit prefinishMarkReached from MediaObject
-    void prefinishMarkReached(qint32);
+    void prefinishMarkReached(qint32 remaining);
+    // TODO: emit metaDataChanged from MediaObject
     void metaDataChanged(const QMultiMap<QString, QString>& metaData);
     void currentSourceChanged(const MediaSource& source);
     void stateChanged(Phonon::State oldState,
@@ -105,6 +105,7 @@ Q_SIGNALS:
     void tick(qint64 time);
 
 private:
+    void switchToSource(const MediaSource &source);
     void createPlayer(const MediaSource &source);
     bool openRecognizer();
 
@@ -120,6 +121,10 @@ private:
     bool                                m_recognizerOpened;
     RApaLsSession                       m_recognizer;
     RFs                                 m_fileServer;
+
+    MediaSource                         m_source;
+    MediaSource                         m_nextSource;
+    bool                                m_nextSourceSet;
 
     // Storing the file handle here to work around KErrInUse error
     // from MMF player utility OpenFileL functions
