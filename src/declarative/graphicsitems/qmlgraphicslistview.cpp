@@ -481,7 +481,11 @@ public:
     bool autoHighlight : 1;
     bool haveHighlightRange : 1;
     bool correctFlick : 1;
+
+    static int itemResizedIdx;
 };
+
+int QmlGraphicsListViewPrivate::itemResizedIdx = -1;
 
 void QmlGraphicsListViewPrivate::init()
 {
@@ -491,6 +495,10 @@ void QmlGraphicsListViewPrivate::init()
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
+    if (itemResizedIdx == -1) {
+        itemResizedIdx = QmlGraphicsListView::staticMetaObject.indexOfSlot("itemResized()");
+        qDebug() << "ri" << itemResizedIdx;
+    }
 }
 
 void QmlGraphicsListViewPrivate::clear()
@@ -531,10 +539,11 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
         model->completeItem();
         listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
+        QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item));
         if (orient == QmlGraphicsListView::Vertical)
-            QObject::connect(listItem->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
+            itemPrivate->connectToHeightChanged(q, itemResizedIdx);
         else
-            QObject::connect(listItem->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
+            itemPrivate->connectToWidthChanged(q, itemResizedIdx);
     }
     requestedIndex = -1;
 
@@ -556,10 +565,11 @@ void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
+        QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item->item));
         if (orient == QmlGraphicsListView::Vertical)
-            QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
+            itemPrivate->disconnectFromHeightChanged(q, itemResizedIdx);
         else
-            QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
+            itemPrivate->disconnectFromWidthChanged(q, itemResizedIdx);
     }
     delete item;
 }

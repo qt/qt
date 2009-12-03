@@ -70,6 +70,8 @@ public:
     {
     }
 
+    ~QmlGraphicsMouseRegionPrivate();
+
     void init()
     {
         Q_Q(QmlGraphicsMouseRegion);
@@ -97,7 +99,7 @@ public:
     bool dragX : 1;
     bool dragY : 1;
     bool dragged : 1;
-    QmlGraphicsDrag drag;
+    QmlGraphicsDrag *drag;
     QPointF start;
     QPointF startScene;
     qreal startX;

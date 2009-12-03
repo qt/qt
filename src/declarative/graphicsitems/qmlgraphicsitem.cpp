@@ -2994,6 +2994,9 @@ QDebug operator<<(QDebug debug, QmlGraphicsItem *item)
     return debug;
 }
 
+int QmlGraphicsItemPrivate::heightIdx = -1;
+int QmlGraphicsItemPrivate::widthIdx = -1;
+
 int QmlGraphicsItemPrivate::consistentTime = -1;
 void QmlGraphicsItemPrivate::setConsistentTime(int t) 
 { 

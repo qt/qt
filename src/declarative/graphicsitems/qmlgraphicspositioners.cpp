@@ -51,30 +51,38 @@
 
 QT_BEGIN_NAMESPACE
 
+int QmlGraphicsBasePositionerPrivate::prePosIdx = -1;
+int QmlGraphicsBasePositionerPrivate::visibleIdx = -1;
+int QmlGraphicsBasePositionerPrivate::opacityIdx = -1;
+
+
 void QmlGraphicsBasePositionerPrivate::watchChanges(QmlGraphicsItem *other)
 {
     Q_Q(QmlGraphicsBasePositioner);
     QMetaObject::connect(other, visibleIdx, q, prePosIdx);
     QMetaObject::connect(other, opacityIdx, q, prePosIdx);
-    QMetaObject::connect(other, heightIdx, q, prePosIdx);
-    QMetaObject::connect(other, widthIdx, q, prePosIdx);
 
-    static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other))->registerSiblingOrderNotification(this);
+    QmlGraphicsItemPrivate *otherPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other));
+
+    otherPrivate->connectToHeightChanged(q, prePosIdx);
+    otherPrivate->connectToWidthChanged(q, prePosIdx);
+
+    otherPrivate->registerSiblingOrderNotification(this);
     watched << other;
 }
 
 void QmlGraphicsBasePositionerPrivate::unwatchChanges(QmlGraphicsItem* other)
 {
     Q_Q(QmlGraphicsBasePositioner);
+    QmlGraphicsItemPrivate *otherPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other));
     bool stillAlive = false; //Use the return from disconnect to see if it was deleted or just reparented
     stillAlive |= QMetaObject::disconnect(other, visibleIdx, q, prePosIdx);
     stillAlive |= QMetaObject::disconnect(other, opacityIdx, q, prePosIdx);
-    stillAlive |= QMetaObject::disconnect(other, heightIdx, q, prePosIdx);
-    stillAlive |= QMetaObject::disconnect(other, widthIdx, q, prePosIdx);
+    stillAlive |= otherPrivate->disconnectFromHeightChanged(q, prePosIdx);
+    stillAlive |= otherPrivate->disconnectFromWidthChanged(q, prePosIdx);
 
     if(stillAlive)
-        static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other))
-                ->unregisterSiblingOrderNotification(this);
+        otherPrivate->unregisterSiblingOrderNotification(this);
     watched.removeAll(other);
 }
 

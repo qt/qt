@@ -85,11 +85,11 @@ public:
     void init(QmlGraphicsBasePositioner::AutoUpdateType at)
     {
         aut = at;
-        prePosIdx = QmlGraphicsBasePositioner::staticMetaObject.indexOfSlot("prePositioning()");
-        visibleIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("visibleChanged()");
-        opacityIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("opacityChanged()");
-        heightIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("heightChanged()");
-        widthIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("widthChanged()");
+        if (prePosIdx == -1) {
+            prePosIdx = QmlGraphicsBasePositioner::staticMetaObject.indexOfSlot("prePositioning()");
+            visibleIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("visibleChanged()");
+            opacityIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("opacityChanged()");
+        }
     }
 
     bool _ep;
@@ -117,11 +117,9 @@ public:
     QList<QGuard<QmlGraphicsItem> > watched;
     bool queuedPositioning;
 
-    int prePosIdx;
-    int visibleIdx;
-    int opacityIdx;
-    int heightIdx;
-    int widthIdx;
+    static int prePosIdx;
+    static int visibleIdx;
+    static int opacityIdx;
 
     virtual void otherSiblingOrderChange(QmlGraphicsItemPrivate* other)
     {

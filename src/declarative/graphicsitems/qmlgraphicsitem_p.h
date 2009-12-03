@@ -109,7 +109,12 @@ public:
       _componentComplete(true), _keepMouse(false),
       smooth(false), keyHandler(0),
       width(0), height(0), implicitWidth(0), implicitHeight(0)
-    {}
+    {
+        if (widthIdx == -1) {
+            widthIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("widthChanged()");
+            heightIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("heightChanged()");
+        }
+    }
     ~QmlGraphicsItemPrivate()
     { delete _anchors; }
 
@@ -249,6 +254,19 @@ public:
     }
     virtual void otherSiblingOrderChange(QmlGraphicsItemPrivate* other) {Q_UNUSED(other)}
 
+    bool connectToWidthChanged(QObject *object, int index) {
+        return QMetaObject::connect(q_func(), widthIdx, object, index);
+    }
+    bool disconnectFromWidthChanged(QObject *object, int index) {
+        return QMetaObject::disconnect(q_func(), widthIdx, object, index);
+    }
+
+    bool connectToHeightChanged(QObject *object, int index) {
+        return QMetaObject::connect(q_func(), heightIdx, object, index);
+    }
+    bool disconnectFromHeightChanged(QObject *object, int index) {
+        return QMetaObject::disconnect(q_func(), heightIdx, object, index);
+    }
 
     static int consistentTime;
     static QTime currentTime();
@@ -256,6 +274,8 @@ public:
     static void start(QTime &);
     static int elapsed(QTime &);
     static int restart(QTime &);
+    static int widthIdx;
+    static int heightIdx;
 };
 
 QT_END_NAMESPACE
