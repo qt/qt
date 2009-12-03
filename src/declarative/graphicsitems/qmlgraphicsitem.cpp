@@ -1442,13 +1442,23 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
     \internal
 */
 
-static inline void qfxitem_registerAnchorLine() {
+static int qfxitem_registerAnchorLine() {
+    /*
     static bool registered = false;
     if (!registered) {
         qRegisterMetaType<QmlGraphicsAnchorLine>("QmlGraphicsAnchorLine");
         registered = true;
     }
+    */
 }
+// ### Must fix
+struct RegisterAnchorLineAtStartup {
+    RegisterAnchorLineAtStartup() { 
+        qRegisterMetaType<QmlGraphicsAnchorLine>("QmlGraphicsAnchorLine");
+    }
+};
+static RegisterAnchorLineAtStartup registerAnchorLineAtStartup;
+
 
 /*!
     \fn QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItem *parent)

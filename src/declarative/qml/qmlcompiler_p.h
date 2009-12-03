@@ -246,6 +246,9 @@ private:
                               QmlParser::Property *valueTypeProperty = 0);
     int genContextCache();
 
+    int genValueTypeData(QmlParser::Property *prop, QmlParser::Property *valueTypeProp);
+    int genPropertyData(QmlParser::Property *prop);
+
     int componentTypeRef();
 
     static int findSignalByName(const QMetaObject *, const QByteArray &name);
