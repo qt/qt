@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 // they are actually calculated in the interval [0, 2 * limit]
 // To avoid numerical errors in platforms where we use single precision,
 // we use a tighter limit for the variables range.
-const qreal limit = (sizeof(qreal) == sizeof(double)) ? QWIDGETSIZE_MAX : QWIDGETSIZE_MAX / 32;
+const qreal g_offset = (sizeof(qreal) == sizeof(double)) ? QWIDGETSIZE_MAX : QWIDGETSIZE_MAX / 32;
 
 QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
     : QObjectPrivate(version), layoutPrivate(0), data(0),
@@ -2223,7 +2223,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const
         QList<QSimplexConstraint *> sizeHintConstraints = constraintsFromSizeHints(variables);
         QList<QSimplexConstraint *> allConstraints = constraints + sizeHintConstraints;
 
-        shiftConstraints(allConstraints, limit);
+        shiftConstraints(allConstraints, g_offset);
 
         // Solve min and max size hints
         qreal min, max;
@@ -2248,7 +2248,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const
         }
 
         qDeleteAll(sizeHintConstraints);
-        shiftConstraints(constraints, -limit);
+        shiftConstraints(constraints, -g_offset);
 
     } else {
         // No Simplex is necessary because the path was simplified all the way to a single
@@ -2279,7 +2279,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const
 bool QGraphicsAnchorLayoutPrivate::calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
                                                      const QList<AnchorData *> &variables)
 {
-    shiftConstraints(constraints, limit);
+    shiftConstraints(constraints, g_offset);
     bool feasible = solvePreferred(constraints, variables);
 
     if (feasible) {
@@ -2293,7 +2293,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateNonTrunk(const QList<QSimplexConstra
         }
     }
 
-    shiftConstraints(constraints, -limit);
+    shiftConstraints(constraints, -g_offset);
     return feasible;
 }
 
@@ -2460,8 +2460,8 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
         // To use negative variables inside simplex, we shift them so the minimum negative value is
         // mapped to zero before solving. To make sure that it works, we need to guarantee that the
         // variables are all inside a certain boundary.
-        qreal boundedMin = qBound(-limit, ad->minSize, limit);
-        qreal boundedMax = qBound(-limit, ad->maxSize, limit);
+        qreal boundedMin = qBound(-g_offset, ad->minSize, g_offset);
+        qreal boundedMax = qBound(-g_offset, ad->maxSize, g_offset);
 
         if ((boundedMin == boundedMax) || qFuzzyCompare(boundedMin, boundedMax)) {
             QSimplexConstraint *c = new QSimplexConstraint;
@@ -2497,7 +2497,7 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
         QSimplexConstraint *c = new QSimplexConstraint;
         c->variables.insert(layoutEdge, 1.0);
         // The maximum size that the layout can take
-        c->constant = limit;
+        c->constant = g_offset;
         c->ratio = QSimplexConstraint::LessOrEqual;
         anchorConstraints += c;
     }
@@ -2821,7 +2821,7 @@ bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *>
         for (iter = path.negatives.constBegin(); iter != path.negatives.constEnd(); ++iter)
             objective.variables.insert(*iter, -1.0);
 
-        const qreal objectiveOffset = (path.positives.count() - path.negatives.count()) * limit;
+        const qreal objectiveOffset = (path.positives.count() - path.negatives.count()) * g_offset;
         simplex.setObjective(&objective);
 
         // Calculate minimum values
@@ -2831,7 +2831,7 @@ bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *>
         QList<AnchorData *> variables = getVariables(constraints);
         for (int i = 0; i < variables.size(); ++i) {
             AnchorData *ad = static_cast<AnchorData *>(variables.at(i));
-            ad->sizeAtMinimum = ad->result - limit;
+            ad->sizeAtMinimum = ad->result - g_offset;
         }
 
         // Calculate maximum values
@@ -2840,7 +2840,7 @@ bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *>
         // Save sizeAtMaximum results
         for (int i = 0; i < variables.size(); ++i) {
             AnchorData *ad = static_cast<AnchorData *>(variables.at(i));
-            ad->sizeAtMaximum = ad->result - limit;
+            ad->sizeAtMaximum = ad->result - g_offset;
         }
     }
     return feasible;
@@ -2898,7 +2898,7 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
         QSimplexConstraint *sizeConstraint = new QSimplexConstraint;
         preferredConstraints += sizeConstraint;
         sizeConstraint->variables.insert(ad, 1.0);
-        sizeConstraint->constant = ad->prefSize + limit;
+        sizeConstraint->constant = ad->prefSize + g_offset;
 
         // Can easily shrink
         QPair<QSimplexVariable *, QSimplexConstraint *> slack;
@@ -2957,7 +2957,7 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
         // Save sizeAtPreferred results
         for (int i = 0; i < variables.size(); ++i) {
             AnchorData *ad = variables.at(i);
-            ad->sizeAtPreferred = ad->result - limit;
+            ad->sizeAtPreferred = ad->result - g_offset;
         }
 
         // Make sure we delete the simplex solver -before- we delete the
