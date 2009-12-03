@@ -202,7 +202,11 @@ Ptr_gnome_vfs_init QGtkStylePrivate::gnome_vfs_init = 0;
 
 typedef int (*x11ErrorHandler)(Display*, XErrorEvent*);
 
+QT_END_NAMESPACE
+
 Q_DECLARE_METATYPE(QGtkStylePrivate*);
+
+QT_BEGIN_NAMESPACE
 
 static void gtkStyleSetCallback(GtkWidget*)
 {
