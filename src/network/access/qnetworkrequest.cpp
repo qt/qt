@@ -218,8 +218,9 @@ class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate
 {
 public:
     inline QNetworkRequestPrivate()
+        : priority(QNetworkRequest::NormalPriority)
 #ifndef QT_NO_OPENSSL
-        : sslConfiguration(0)
+        , sslConfiguration(0)
 #endif
     { qRegisterMetaType<QNetworkRequest>(); }
     ~QNetworkRequestPrivate()
@@ -234,6 +235,7 @@ public:
         : QSharedData(other), QNetworkHeadersPrivate(other)
     {
         url = other.url;
+        priority = other.priority;
 
 #ifndef QT_NO_OPENSSL
         sslConfiguration = 0;
@@ -245,12 +247,14 @@ public:
     inline bool operator==(const QNetworkRequestPrivate &other) const
     {
         return url == other.url &&
+            priority == other.priority &&
             rawHeaders == other.rawHeaders &&
             attributes == other.attributes;
         // don't compare cookedHeaders
     }
 
     QUrl url;
+    QNetworkRequest::Priority priority;
 #ifndef QT_NO_OPENSSL
     mutable QSslConfiguration *sslConfiguration;
 #endif
@@ -514,6 +518,34 @@ void QNetworkRequest::setOriginatingObject(QObject *object)
 QObject *QNetworkRequest::originatingObject() const
 {
     return d->originatingObject.data();
+}
+
+/*!
+    \since 4.7
+
+    Return the priority of this request.
+
+    \sa setPriority()
+*/
+QNetworkRequest::Priority QNetworkRequest::priority() const
+{
+    return d->priority;
+}
+
+/*!
+    \since 4.7
+
+    Set the priority of this request.
+
+    \note The priority is only a hint to the network access manager.
+    It can use it or not. Currently it is used for HTTP to
+    decide which request should be sent first to a server.
+
+    \sa priority()
+*/
+void QNetworkRequest::setPriority(Priority priority)
+{
+    d->priority = priority;
 }
 
 static QByteArray headerName(QNetworkRequest::KnownHeaders header)
