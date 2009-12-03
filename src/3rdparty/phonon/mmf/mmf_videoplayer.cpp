@@ -78,22 +78,20 @@ void MMF::VideoPlayer::construct()
     const TInt priority = 0;
     const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
 
-    TRAPD(err,
-        m_player.reset(CVideoPlayerUtility::NewL
+    CVideoPlayerUtility *player = 0;
+    QT_TRAP_THROWING(player = CVideoPlayerUtility::NewL
             (
                  *this,
                  priority, preference,
                  m_wsSession, m_screenDevice,
                  *m_window,
                  m_videoRect, m_videoRect
-            ))
+            )
         );
+    m_player.reset(player);
 
     // CVideoPlayerUtility::NewL starts DSA
     m_dsaActive = true;
-
-    if (KErrNone != err)
-        setError("Creation of video player failed", err);
 
     TRACE_EXIT_0();
 }
