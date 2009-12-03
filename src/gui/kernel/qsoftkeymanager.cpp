@@ -246,7 +246,7 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
             break;
         }
 
-        int command = (softKeyAction->objectName().contains("_q_menuSoftKeyAction"))
+        int command = (softKeyAction->objectName().contains(QLatin1String("_q_menuSoftKeyAction")))
                     ? EAknSoftkeyOptions
                     : s60CommandStart + index;
 
