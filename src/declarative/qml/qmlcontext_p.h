@@ -55,14 +55,14 @@
 
 #include <qmlcontext.h>
 #include <private/qobject_p.h>
-#include "qmldeclarativedata_p.h"
+#include <private/qmldeclarativedata_p.h>
 #include <QtCore/qhash.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qset.h>
 #include <private/qguard_p.h>
-#include "qmlengine_p.h"
-#include "qmlintegercache_p.h"
-#include "qmltypenamecache_p.h"
+#include <private/qmlengine_p.h>
+#include <private/qmlintegercache_p.h>
+#include <private/qmltypenamecache_p.h>
 
 QT_BEGIN_NAMESPACE
 

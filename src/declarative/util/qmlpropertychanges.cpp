@@ -40,12 +40,12 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlopenmetaobject_p.h"
-#include "qmlpropertychanges_p.h"
+#include <private/qmlopenmetaobject_p.h>
+#include <private/qmlpropertychanges_p.h>
 #include <QtCore/qdebug.h>
 #include <qmlinfo.h>
-#include "qmlcustomparser_p.h"
-#include "qmlparser_p.h"
+#include <private/qmlcustomparser_p.h>
+#include <private/qmlparser_p.h>
 #include <qmlexpression.h>
 #include <qmlbinding.h>
 #include <qmlcontext.h>

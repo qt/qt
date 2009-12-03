@@ -41,8 +41,8 @@
 
 #include <QMovie>
 #include <qmlengine.h>
-#include "qmlgraphicsanimatedimage_p.h"
-#include "qmlgraphicsanimatedimage_p_p.h"
+#include <private/qmlgraphicsanimatedimage_p.h>
+#include <private/qmlgraphicsanimatedimage_p_p.h>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 

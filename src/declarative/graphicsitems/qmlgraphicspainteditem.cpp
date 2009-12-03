@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicspainteditem_p.h"
-#include "qmlgraphicspainteditem_p_p.h"
+#include <private/qmlgraphicspainteditem_p.h>
+#include <private/qmlgraphicspainteditem_p_p.h>
 
 #include <QDebug>
 #include <QPen>
@@ -340,8 +340,8 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
                     qp.scale(d->contentsScale,d->contentsScale);
                     QRect sclip(qFloor(r.x()/d->contentsScale),
                             qFloor(r.y()/d->contentsScale),
-                            1+qCeil(r.width()/d->contentsScale+r.x()/d->contentsScale-qFloor(r.x()/d->contentsScale)),
-                            1+qCeil(r.height()/d->contentsScale+r.y()/d->contentsScale-qFloor(r.y()/d->contentsScale)));
+                            qCeil(r.width()/d->contentsScale+r.x()/d->contentsScale-qFloor(r.x()/d->contentsScale)),
+                            qCeil(r.height()/d->contentsScale+r.y()/d->contentsScale-qFloor(r.y()/d->contentsScale)));
                     drawContents(&qp, sclip);
                 }
                 QmlGraphicsPaintedItemPrivate::ImageCacheItem *newitem = new QmlGraphicsPaintedItemPrivate::ImageCacheItem;

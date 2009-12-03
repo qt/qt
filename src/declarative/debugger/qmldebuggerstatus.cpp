@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmldebuggerstatus_p.h"
+#include <private/qmldebuggerstatus_p.h>
 
 QT_BEGIN_NAMESPACE
 

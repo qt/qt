@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qmlworkerscript_p.h"
+#include <private/qmlworkerscript_p.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 #include <QtScript/qscriptengine.h>
-#include "qmlengine_p.h"
+#include <private/qmlengine_p.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtScript/qscriptvalueiterator.h>

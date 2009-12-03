@@ -42,7 +42,7 @@
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qpauseanimation.h"
 #include "private/qobject_p.h"
-#include "qmltimer_p.h"
+#include <private/qmltimer_p.h>
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE

@@ -39,17 +39,17 @@
 **
 ****************************************************************************/
 
-#include "qmlbasicscript_p.h"
+#include <private/qmlbasicscript_p.h>
 #include <QColor>
 #include <QDebug>
-#include "qmlengine_p.h"
-#include "qmlcontext_p.h"
+#include <private/qmlengine_p.h>
+#include <private/qmlcontext_p.h>
 #include <QStack>
-#include "qfxperf_p_p.h"
-#include "qmlrefcount_p.h"
-#include "qmljsast_p.h"
-#include "qmljsengine_p.h"
-#include "qmlglobal_p.h"
+#include <private/qfxperf_p_p.h>
+#include <private/qmlrefcount_p.h>
+#include <private/qmljsast_p.h>
+#include <private/qmljsengine_p.h>
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

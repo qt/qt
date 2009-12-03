@@ -45,8 +45,8 @@
 #include <QtCore/QList>
 #include <QtCore/QString>
 
-#include "textwriter_p.h"
-#include "qmljsastvisitor_p.h"
+#include <private/textwriter_p.h>
+#include <private/qmljsastvisitor_p.h>
 
 QT_BEGIN_HEADER
 QT_QML_BEGIN_NAMESPACE

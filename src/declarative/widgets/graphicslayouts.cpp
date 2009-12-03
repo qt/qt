@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "graphicslayouts_p.h"
+#include <private/graphicslayouts_p.h>
 #include <QtGui/qgraphicswidget.h>
 #include <QtCore/qdebug.h>
 

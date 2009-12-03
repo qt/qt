@@ -331,8 +331,8 @@ void tst_qmlinstruction::dump()
         i.line = 28;
         i.type = QmlInstruction::StoreScript;
         i.storeScript.value = 2;
-        i.storeScript.fileName = 18;
-        i.storeScript.lineNumber = 28;
+        //i.storeScript.fileName = 18;
+        //i.storeScript.lineNumber = 28;
         data->bytecode << i;
     }
 
@@ -565,7 +565,7 @@ void tst_qmlinstruction::dump()
         << "25\t\t25\tSTORE_VARIANT_OBJECT\t22"
         << "26\t\t26\tSTORE_INTERFACE\t\t23"
         << "27\t\t27\tSTORE_SIGNAL\t\t2\t4\t\t\"console.log(1921)\""
-        << "28\t\t28\tSTORE_SCRIPT\t\t2\t18\t28"
+        << "28\t\t28\tSTORE_SCRIPT\t\t2"
         << "29\t\t29\tSTORE_SCRIPT_STRING\t24\t3\t1"
         << "30\t\t30\tASSIGN_SIGNAL_OBJECT\t0\t\t\t\"mySignal\""
         << "31\t\t31\tASSIGN_CUSTOMTYPE\t25\t4"

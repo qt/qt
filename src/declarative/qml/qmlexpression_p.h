@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-#include "qmlbasicscript_p.h"
+#include <private/qmlbasicscript_p.h>
 #include "qmlexpression.h"
-#include "qmlengine_p.h"
+#include <private/qmlengine_p.h>
 #include <private/qguard_p.h>
 #include <QtScript/qscriptvalue.h>
 

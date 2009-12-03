@@ -54,16 +54,16 @@
 //
 
 #include <private/qobject_p.h>
-#include "qmlnullablevalue_p_p.h"
+#include <private/qmlnullablevalue_p_p.h>
 #include <private/qvariantanimation_p.h>
 #include <QtCore/QPauseAnimation>
 #include <QtCore/QVariantAnimation>
 #include <QtCore/QAnimationGroup>
 #include <QtGui/QColor>
-#include "qmlanimation_p.h"
+#include <private/qmlanimation_p.h>
 #include <qml.h>
 #include <qmlcontext.h>
-#include "qmltimeline_p_p.h"
+#include <private/qmltimeline_p_p.h>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE

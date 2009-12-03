@@ -42,7 +42,7 @@
 #ifndef QMLSTATEGROUP_H
 #define QMLSTATEGROUP_H
 
-#include "qmlstate_p.h"
+#include <private/qmlstate_p.h>
 
 QT_BEGIN_HEADER
 

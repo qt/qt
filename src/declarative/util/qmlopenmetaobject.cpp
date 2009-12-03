@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlopenmetaobject_p.h"
-#include "qmetaobjectbuilder_p.h"
+#include <private/qmlopenmetaobject_p.h>
+#include <private/qmetaobjectbuilder_p.h>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE

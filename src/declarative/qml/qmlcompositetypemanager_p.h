@@ -54,8 +54,8 @@
 //
 
 #include <QtCore/qglobal.h>
-#include "qmlscriptparser_p.h"
-#include "qmlrefcount_p.h"
+#include <private/qmlscriptparser_p.h>
+#include <private/qmlrefcount_p.h>
 #include <qmlerror.h>
 #include <qmlengine.h>
 

@@ -44,7 +44,7 @@
 
 #include <QtGui/QAction>
 #include <QtCore/QUrl>
-#include "qmlgraphicspainteditem_p.h"
+#include <private/qmlgraphicspainteditem_p.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWebKit/QWebPage>
 

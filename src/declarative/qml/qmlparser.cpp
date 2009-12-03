@@ -39,21 +39,21 @@
 **
 ****************************************************************************/
 
-#include "qmlparser_p.h"
+#include <private/qmlparser_p.h>
 #include <QStack>
 #include <qmlpropertyvaluesource.h>
 #include <QColor>
 #include <QPointF>
 #include <QSizeF>
 #include <QRectF>
-#include "qmlvme_p.h"
-#include "qfxperf_p_p.h"
+#include <private/qmlvme_p.h>
+#include <private/qfxperf_p_p.h>
 #include <qml.h>
-#include "qmlcomponent_p.h"
+#include <private/qmlcomponent_p.h>
 #include <qmlcomponent.h>
-#include "qmetaobjectbuilder_p.h"
-#include "qmlvmemetaobject_p.h"
-#include "qmlcompiler_p.h"
+#include <private/qmetaobjectbuilder_p.h>
+#include <private/qmlvmemetaobject_p.h>
+#include <private/qmlcompiler_p.h>
 #include "parser/qmljsast_p.h"
 #include "parser/qmljsengine_p.h"
 #include <QtDebug>

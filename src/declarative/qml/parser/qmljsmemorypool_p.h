@@ -57,7 +57,7 @@
 #include <QtCore/qshareddata.h>
 #include <string.h>
 
-#include "qmljsglobal_p.h"
+#include <private/qmljsglobal_p.h>
 
 QT_QML_BEGIN_NAMESPACE
 

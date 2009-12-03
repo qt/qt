@@ -14,7 +14,7 @@ exists("qml_enable_gcov") {
     LIBS += -lgcov
 }
 
-INCLUDEPATH += 3rdparty util graphicsitems debugger qml
+#INCLUDEPATH += 3rdparty util graphicsitems debugger qml
 
 include(../qbase.pri)
 

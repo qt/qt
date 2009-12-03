@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qmlcompiler_p.h"
+#include <private/qmlcompiler_p.h>
 #include "qmlengine.h"
 #include "qmlcomponent.h"
-#include "qmlcomponent_p.h"
+#include <private/qmlcomponent_p.h>
 #include "qmlcontext.h"
-#include "qmlcontext_p.h"
+#include <private/qmlcontext_p.h>
 #include <private/qobject_p.h>
 #include <QtCore/qdebug.h>
 

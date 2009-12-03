@@ -45,7 +45,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qvariant.h>
-#include "qmlstringconverters_p.h"
+#include <private/qmlstringconverters_p.h>
 
 QT_BEGIN_NAMESPACE
 

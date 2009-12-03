@@ -56,8 +56,8 @@
 #include <QString>
 #include <QSet>
 
-#include "qmljsglobal_p.h"
-#include "qmljsastfwd_p.h"
+#include <private/qmljsglobal_p.h>
+#include <private/qmljsastfwd_p.h>
 
 QT_QML_BEGIN_NAMESPACE
 

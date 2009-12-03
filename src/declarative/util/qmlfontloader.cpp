@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlfontloader_p.h"
+#include <private/qmlfontloader_p.h>
 #include <QUrl>
 #include <QDebug>
 #include <QNetworkRequest>

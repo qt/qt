@@ -54,7 +54,7 @@
 //
 #include <QtScript/qscriptclass.h>
 #include <private/qscriptdeclarativeclass_p.h>
-#include "qmlengine_p.h"
+#include <private/qmlengine_p.h>
 
 QT_BEGIN_NAMESPACE
 

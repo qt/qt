@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlrefcount_p.h"
+#include <private/qmlrefcount_p.h>
 
 QT_BEGIN_NAMESPACE
 

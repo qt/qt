@@ -60,10 +60,10 @@
 #ifndef QMLJSPARSER_P_H
 #define QMLJSPARSER_P_H
 
-#include "qmljsglobal_p.h"
-#include "qmljsgrammar_p.h"
-#include "qmljsast_p.h"
-#include "qmljsengine_p.h"
+#include <private/qmljsglobal_p.h>
+#include <private/qmljsgrammar_p.h>
+#include <private/qmljsast_p.h>
+#include <private/qmljsengine_p.h>
 
 #include <QtCore/QList>
 #include <QtCore/QString>

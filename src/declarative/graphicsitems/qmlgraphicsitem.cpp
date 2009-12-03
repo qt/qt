@@ -47,21 +47,21 @@
 #include <QNetworkRequest>
 #include <QGraphicsSceneMouseEvent>
 #include <QtScript/qscriptengine.h>
-#include "qfxperf_p_p.h"
+#include <private/qfxperf_p_p.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qgraphicseffect.h>
 
 #include <qmlengine.h>
-#include "qmlopenmetaobject_p.h"
-#include "qmlstate_p.h"
-#include "qlistmodelinterface_p.h"
+#include <private/qmlopenmetaobject_p.h>
+#include <private/qmlstate_p.h>
+#include <private/qlistmodelinterface_p.h>
 
 #include "qmlview.h"
-#include "qmlstategroup_p.h"
+#include <private/qmlstategroup_p.h>
 
-#include "qmlgraphicsitem_p.h"
+#include <private/qmlgraphicsitem_p.h>
 #include "qmlgraphicsitem.h"
-#include "qmlgraphicsevents_p_p.h"
+#include <private/qmlgraphicsevents_p_p.h>
 #include <qmlcomponent.h>
 
 QT_BEGIN_NAMESPACE

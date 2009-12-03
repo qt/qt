@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlxmllistmodel_p.h"
+#include <private/qmlxmllistmodel_p.h>
 #include "private/qobject_p.h"
 
 #include <qmlcontext.h>

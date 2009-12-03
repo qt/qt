@@ -40,7 +40,7 @@
 **
 ****************************************************************************/
 
-#include "qmljsgrammar_p.h"
+#include <private/qmljsgrammar_p.h>
 
 const char *const QmlJSGrammar::spell [] = {
   "end of file", "&", "&&", "&=", "break", "case", "catch", ":", ";", "continue", 

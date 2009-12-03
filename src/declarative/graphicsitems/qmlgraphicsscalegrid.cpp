@@ -42,7 +42,7 @@
 #include <QBuffer>
 #include <qml.h>
 #include <QDebug>
-#include "qmlgraphicsscalegrid_p_p.h"
+#include <private/qmlgraphicsscalegrid_p_p.h>
 
 
 QT_BEGIN_NAMESPACE

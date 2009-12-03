@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qmlpixmapcache_p.h"
+#include <private/qmlpixmapcache_p.h>
 #include <QImageReader>
 #include <QHash>
 #include <QNetworkReply>
 #include <QPixmapCache>
-#include "qfxperf_p_p.h"
+#include <private/qfxperf_p_p.h>
 #include <qmlengine.h>
 #include <QFile>
 #include <QtCore/qdebug.h>

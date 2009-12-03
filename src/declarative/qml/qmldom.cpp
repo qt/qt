@@ -40,15 +40,15 @@
 ****************************************************************************/
 
 #include "qmldom.h"
-#include "qmldom_p.h"
-#include "qmlcompositetypedata_p.h"
-#include "qmlcompiler_p.h"
-#include "qmlengine_p.h"
+#include <private/qmldom_p.h>
+#include <private/qmlcompositetypedata_p.h>
+#include <private/qmlcompiler_p.h>
+#include <private/qmlengine_p.h>
 #include <QtCore/QByteArray>
 #include <QtCore/QDebug>
 #include <QtCore/QString>
-#include "qmlscriptparser_p.h"
-#include "qmlglobal_p.h"
+#include <private/qmlscriptparser_p.h>
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

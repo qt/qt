@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlbindingoptimizations_p.h"
-#include "qmlcontext_p.h"
+#include <private/qmlbindingoptimizations_p.h>
+#include <private/qmlcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 

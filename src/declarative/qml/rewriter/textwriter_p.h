@@ -46,7 +46,7 @@
 #include <QtCore/QList>
 #include <QtGui/QTextCursor>
 
-#include "qmljsglobal_p.h"
+#include <private/qmljsglobal_p.h>
 
 QT_BEGIN_HEADER
 QT_QML_BEGIN_NAMESPACE

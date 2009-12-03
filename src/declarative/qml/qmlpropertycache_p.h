@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-#include "qmlrefcount_p.h"
+#include <private/qmlrefcount_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
-#include "qmlcleanup_p.h"
+#include <private/qmlcleanup_p.h>
 #include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsfocuspanel_p.h"
+#include <private/qmlgraphicsfocuspanel_p.h>
 #include <QtGui/qgraphicsscene.h>
 #include <QEvent>
 

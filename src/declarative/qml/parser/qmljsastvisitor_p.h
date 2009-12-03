@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qmljsastfwd_p.h"
-#include "qmljsglobal_p.h"
+#include <private/qmljsastfwd_p.h>
+#include <private/qmljsglobal_p.h>
 
 QT_QML_BEGIN_NAMESPACE
 

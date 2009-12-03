@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlglobalscriptclass_p.h"
+#include <private/qmlglobalscriptclass_p.h>
 #include <QtScript/qscriptstring.h>
 #include <QtScript/qscriptengine.h>
 #include <QtScript/qscriptvalueiterator.h>

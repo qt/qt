@@ -172,7 +172,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop1.qml"));
 
-        QString expect = "QML QmlGraphicsText (" + view->url().toString() + ":7:5" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = "QML QmlGraphicsText (" + view->url().toString() + ":6:5" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
@@ -187,7 +187,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop2.qml"));
 
-        QString expect = "QML QmlGraphicsImage (" + view->url().toString() + ":14:3" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = "QML QmlGraphicsImage (" + view->url().toString() + ":8:3" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         qApp->processEvents();

@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qmlgraphicsitem_p.h"
-#include "qmlgraphicsrepeater_p.h"
+#include <private/qmlgraphicsitem_p.h>
+#include <private/qmlgraphicsrepeater_p.h>
 #include <QPointer>
 
 
