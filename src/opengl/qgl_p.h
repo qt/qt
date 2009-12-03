@@ -518,7 +518,8 @@ bool qt_gl_preferGL2Engine();
 
 inline GLenum qt_gl_preferredTextureFormat()
 {
-    return QSysInfo::ByteOrder == QSysInfo::BigEndian ? GL_RGBA : GL_BGRA;
+    return (QGLExtensions::glExtensions & QGLExtensions::BGRATextureFormat) && QSysInfo::ByteOrder == QSysInfo::LittleEndian
+        ? GL_BGRA : GL_RGBA;
 }
 
 inline GLenum qt_gl_preferredTextureTarget()

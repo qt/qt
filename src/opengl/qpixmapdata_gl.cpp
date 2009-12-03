@@ -321,25 +321,47 @@ void QGLPixmapData::ensureCreated() const
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     m_ctx = ctx;
 
-    const GLenum format = qt_gl_preferredTextureFormat();
+    const GLenum internal_format = m_hasAlpha ? GL_RGBA : GL_RGB;
+#ifdef QT_OPENGL_ES_2
+    const GLenum external_format = internal_format;
+#else
+    const GLenum external_format = qt_gl_preferredTextureFormat();
+#endif
     const GLenum target = GL_TEXTURE_2D;
 
     if (!m_texture.id) {
         glGenTextures(1, &m_texture.id);
         glBindTexture(target, m_texture.id);
-        GLenum format = m_hasAlpha ? GL_RGBA : GL_RGB;
-        glTexImage2D(target, 0, format, w, h, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(target, 0, internal_format, w, h, 0, external_format, GL_UNSIGNED_BYTE, 0);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
     if (!m_source.isNull()) {
-        const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, format);
+        if (external_format == GL_RGB) {
+            QImage tx = m_source.convertToFormat(QImage::Format_RGB32);
 
-        glBindTexture(target, m_texture.id);
-        glTexSubImage2D(target, 0, 0, 0, w, h, format,
-                        GL_UNSIGNED_BYTE, tx.bits());
+            QVector<uchar> pixelData(w * h * 3);
+            uchar *p = &pixelData[0];
+            QRgb *src = (QRgb *)tx.bits();
+
+            for (int i = 0; i < w * h; ++i) {
+                *p++ = qRed(*src);
+                *p++ = qGreen(*src);
+                *p++ = qBlue(*src);
+                ++src;
+            }
+
+            glBindTexture(target, m_texture.id);
+            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
+                            GL_UNSIGNED_BYTE, &pixelData[0]);
+        } else {
+            const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, external_format);
+
+            glBindTexture(target, m_texture.id);
+            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
+                            GL_UNSIGNED_BYTE, tx.bits());
+        }
 
         if (useFramebufferObjects())
             m_source = QImage();
