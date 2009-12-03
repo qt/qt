@@ -44,6 +44,8 @@
 
 #include <QtCore/QCoreApplication>
 
+QT_BEGIN_NAMESPACE
+
 struct Bookmark {
     QString title;
     QString url;
@@ -232,3 +234,5 @@ QStandardItem *XbelReader::createChildItem(QStandardItem *item)
 
     return childItem;
 }
+
+QT_END_NAMESPACE
