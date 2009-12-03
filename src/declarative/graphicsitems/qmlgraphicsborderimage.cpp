@@ -69,7 +69,6 @@ QML_DEFINE_TYPE(Qt,4,6,BorderImage,QmlGraphicsBorderImage)
 QmlGraphicsBorderImage::QmlGraphicsBorderImage(QmlGraphicsItem *parent)
   : QmlGraphicsImageBase(*(new QmlGraphicsBorderImagePrivate), parent)
 {
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QmlGraphicsBorderImage::~QmlGraphicsBorderImage()
