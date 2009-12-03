@@ -132,6 +132,24 @@ QString indexFilesFolder(const QString &collectionFile)
     return indexFilesFolder;
 }
 
+/*
+ * Returns the expected absolute file path of the cached collection file
+ * correspondinging to the given collection's file.
+ * It may or may not exist yet.
+ */
+QString cachedCollectionFile(const QHelpEngineCore &collection)
+{
+    const QString &filePath = collection.collectionFile();
+    const QString &fileName = QFileInfo(filePath).fileName();
+    const QString &cacheDir = CollectionConfiguration::cacheDir(collection);
+    const QString &dir = !cacheDir.isEmpty()
+        && CollectionConfiguration::cacheDirIsRelativeToCollection(collection)
+            ? QFileInfo(filePath).dir().absolutePath()
+                + QDir::separator() + cacheDir
+            : MainWindow::collectionFileDirectory(false, cacheDir);
+    return dir + QDir::separator() + fileName;
+}
+
 } // Anonymous namespace.
 
 int main(int argc, char *argv[])
@@ -238,26 +256,14 @@ int main(int argc, char *argv[])
             return -1;
         }
 
-        QString fileName = QFileInfo(cmdCollectionFile).fileName();
-        const QString &cacheDir = CollectionConfiguration::cacheDir(caller);
-        const QString dir = !cacheDir.isEmpty()
-            && CollectionConfiguration::cacheDirIsRelativeToCollection(caller)
-            ? QFileInfo(cmdCollectionFile).dir().absolutePath()
-                + QDir::separator() + cacheDir
-            : MainWindow::collectionFileDirectory(false, cacheDir);
-
-        bool collectionFileExists = true;
-        QFileInfo fi(dir + QDir::separator() + fileName);
-        if (!fi.exists()) {
-            collectionFileExists = false;
-            if (!caller.copyCollectionFile(fi.absoluteFilePath())) {
+        const QString &cachedCollectionFilePath = cachedCollectionFile(caller);
+        if (!QFileInfo(cachedCollectionFilePath).exists()) {
+            if (!caller.copyCollectionFile(cachedCollectionFilePath)) {
                 cmd.showMessage(caller.error(), true);
                 return -1;
             }
-        }
-
-        if (collectionFileExists) {
-            QHelpEngineCore user(fi.absoluteFilePath());
+        } else {
+            QHelpEngineCore user(cachedCollectionFilePath);
             if (user.setupData()) {
                 // some docs might have been un/registered
                 bool docUpdate = CollectionConfiguration::docUpdatePending(caller);
@@ -290,7 +296,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        cmd.setCollectionFile(fi.absoluteFilePath());
+        cmd.setCollectionFile(cachedCollectionFilePath);
     }
 
     if (!cmd.currentFilter().isEmpty()) {
