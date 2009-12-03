@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qnetworksessionengine_p.h"
+#include <QtNetwork/private/qnetworksessionengine_p.h>
 
 #include <QtCore/qtimer.h>
 
@@ -82,7 +82,7 @@ public:
 
     inline void emitConfigurationsChanged() { emit configurationsChanged(); }
 
-    static QNativeWifiEngine *instance();
+    inline bool available() const { return handle != 0; }
 
 private:
     QTimer pollTimer;

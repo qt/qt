@@ -44,9 +44,6 @@
 #include "qnetworksessionengine_p.h"
 #include "qnetworkconfigmanager_p.h"
 
-#ifdef Q_OS_WIN32
-#include "qnativewifiengine_win_p.h"
-#endif
 #ifdef Q_OS_DARWIN
 #include "qcorewlanengine_mac_p.h"
 #endif
@@ -63,12 +60,6 @@ QT_BEGIN_NAMESPACE
 static QNetworkSessionEngine *getEngineFromId(const QString &id)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
-
-#ifdef Q_OS_WIN32
-    QNativeWifiEngine *nativeWifi = QNativeWifiEngine::instance();
-    if (nativeWifi && nativeWifi->hasIdentifier(id))
-        return nativeWifi;
-#endif
 
 #ifdef Q_OS_DARWIN
     QCoreWlanEngine *coreWifi = QCoreWlanEngine::instance();

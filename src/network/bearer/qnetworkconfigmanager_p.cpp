@@ -41,9 +41,6 @@
 
 #include "qnetworkconfigmanager_p.h"
 
-#ifdef Q_OS_WIN32
-#include "qnativewifiengine_win_p.h"
-#endif
 #ifdef Q_OS_DARWIN
 #include "qcorewlanengine_mac_p.h"
 #endif
@@ -239,6 +236,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         }
 #else
 #ifdef BACKEND_NM
+        nmWifi = 0;
         if (keys.contains(QLatin1String("networkmanager"))) {
             QBearerEnginePlugin *nmPlugin =
                 qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("networkmanager")));
@@ -252,6 +250,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         }
 #endif
 
+        generic = 0;
         if (keys.contains(QLatin1String("generic"))) {
             QBearerEnginePlugin *genericPlugin =
                 qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("generic")));
@@ -266,10 +265,12 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 #endif
 
 #ifdef Q_OS_WIN
+        nla = 0;
         if (keys.contains(QLatin1String("nla"))) {
             QBearerEnginePlugin *nlaPlugin =
                 qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("nla")));
             if (nlaPlugin) {
+                qDebug() << "creating nla backend";
                 nla = nlaPlugin->create(QLatin1String("nla"));
                 if (nla) {
                     connect(nla, SIGNAL(configurationsChanged()),
@@ -280,13 +281,21 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 #endif
 
 #ifdef Q_OS_WIN32
-            nativeWifi = QNativeWifiEngine::instance();
-            if (nativeWifi) {
-                connect(nativeWifi, SIGNAL(configurationsChanged()),
-                        this, SLOT(updateConfigurations()));
+        nativeWifi = 0;
+        if (keys.contains(QLatin1String("nativewifi"))) {
+            QBearerEnginePlugin *nativeWifiPlugin =
+                qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("nativewifi")));
+            if (nativeWifiPlugin) {
+                qDebug() << "Creating native wifi backend";
+                nativeWifi = nativeWifiPlugin->create(QLatin1String("nativewifi"));
+                if (nativeWifi) {
+                    connect(nativeWifi, SIGNAL(configurationsChanged()),
+                            this, SLOT(updateConfigurations()));
 
-                capFlags |= QNetworkConfigurationManager::CanStartAndStopInterfaces;
+                    capFlags |= QNetworkConfigurationManager::CanStartAndStopInterfaces;
+                }
             }
+        }
 #endif
     }
 

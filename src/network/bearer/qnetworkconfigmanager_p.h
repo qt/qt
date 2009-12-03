@@ -139,7 +139,7 @@ private:
 #ifdef Q_OS_WIN
     QNetworkSessionEngine *nla;
 #ifndef Q_OS_WINCE
-    QNativeWifiEngine *nativeWifi;
+    QNetworkSessionEngine *nativeWifi;
 #endif
 #endif
 #ifdef BACKEND_NM
