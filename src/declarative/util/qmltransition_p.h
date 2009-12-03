@@ -42,9 +42,11 @@
 #ifndef QMLTRANSITION_H
 #define QMLTRANSITION_H
 
-#include <QtCore/qobject.h>
-#include <private/qmlstate_p.h>
+#include "qmlstate_p.h"
+
 #include <qml.h>
+
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 

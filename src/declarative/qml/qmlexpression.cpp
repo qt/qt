@@ -40,13 +40,16 @@
 ****************************************************************************/
 
 #include "qmlexpression.h"
-#include <private/qmlexpression_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmlrewrite_p.h>
-#include "QtCore/qdebug.h"
-#include <private/qmlcompiler_p.h>
+#include "qmlexpression_p.h"
+
+#include "qmlengine_p.h"
+#include "qmlcontext_p.h"
+#include "qmlrewrite_p.h"
+#include "qmlcompiler_p.h"
+
+#include <QtCore/qdebug.h>
 #include <QtScript/qscriptprogram.h>
+
 #include <private/qscriptdeclarativeclass_p.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);

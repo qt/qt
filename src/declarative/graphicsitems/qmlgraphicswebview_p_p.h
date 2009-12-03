@@ -43,6 +43,7 @@
 #define QMLGRAPHICSWEBVIEW_P_H
 
 #include <qml.h>
+
 #include <QtWebKit/QWebPage>
 
 QT_BEGIN_HEADER

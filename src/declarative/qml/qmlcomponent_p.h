@@ -53,16 +53,19 @@
 // We mean it.
 //
 
+#include "qmlcomponent.h"
+
+#include "qmlengine_p.h"
+#include "qmlcompositetypemanager_p.h"
+#include "qbitfield_p.h"
+#include "qmlerror.h"
+#include "qml.h"
+
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QList>
+
 #include <private/qobject_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <private/qbitfield_p.h>
-#include <qmlerror.h>
-#include <qmlcomponent.h>
-#include <qml.h>
 
 QT_BEGIN_NAMESPACE
 

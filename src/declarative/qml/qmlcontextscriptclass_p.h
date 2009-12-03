@@ -53,9 +53,11 @@
 // We mean it.
 //
 
+#include "qmltypenamecache_p.h"
+
 #include <QtScript/qscriptclass.h>
+
 #include <private/qscriptdeclarativeclass_p.h>
-#include <private/qmltypenamecache_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -45,7 +45,6 @@
 #include <QtCore/QHash>
 #include <QtCore/QVariant>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

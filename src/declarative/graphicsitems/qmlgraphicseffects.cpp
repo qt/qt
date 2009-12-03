@@ -38,7 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <qml.h>
+
 #include <QtGui/qgraphicseffect.h>
 
 QML_DECLARE_TYPE(QGraphicsEffect)

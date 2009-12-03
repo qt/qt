@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSLOADER_H
 #define QMLGRAPHICSLOADER_H
 
-#include <qmlgraphicsitem.h>
+#include "qmlgraphicsitem.h"
 
 QT_BEGIN_HEADER
 

@@ -39,7 +39,8 @@
 **
 ****************************************************************************/
 
-#include <private/qmlvaluetype_p.h>
+#include "qmlvaluetype_p.h"
+
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE

@@ -42,10 +42,11 @@
 #ifndef QMLCONNECTION_H
 #define QMLCONNECTION_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qstring.h>
 #include <qml.h>
 #include <qmlscriptstring.h>
+
+#include <QtCore/qobject.h>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_HEADER
 

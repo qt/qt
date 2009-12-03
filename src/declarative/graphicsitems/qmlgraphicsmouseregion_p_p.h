@@ -53,10 +53,11 @@
 // We mean it.
 //
 
-#include "qdatetime.h"
-#include "qbasictimer.h"
-#include "qgraphicssceneevent.h"
-#include <private/qmlgraphicsitem_p.h>
+#include "qmlgraphicsitem_p.h"
+
+#include <qdatetime.h>
+#include <qbasictimer.h>
+#include <qgraphicssceneevent.h>
 
 QT_BEGIN_NAMESPACE
 

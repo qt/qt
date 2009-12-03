@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSPARTICLES_H
 #define QMLGRAPHICSPARTICLES_H
 
-#include <qmlgraphicsitem.h>
+#include "qmlgraphicsitem.h"
 
 QT_BEGIN_HEADER
 

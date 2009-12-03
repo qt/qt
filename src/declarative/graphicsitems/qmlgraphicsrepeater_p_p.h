@@ -53,10 +53,11 @@
 // We mean it.
 //
 
-#include <private/qmlgraphicsitem_p.h>
-#include <private/qmlgraphicsrepeater_p.h>
-#include <QPointer>
+#include "qmlgraphicsrepeater_p.h"
 
+#include "qmlgraphicsitem_p.h"
+
+#include <QPointer>
 
 QT_BEGIN_NAMESPACE
 

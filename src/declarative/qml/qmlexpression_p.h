@@ -53,11 +53,14 @@
 // We mean it.
 //
 
-#include <private/qmlbasicscript_p.h>
 #include "qmlexpression.h"
-#include <private/qmlengine_p.h>
-#include <private/qguard_p.h>
+
+#include "qmlbasicscript_p.h"
+#include "qmlengine_p.h"
+
 #include <QtScript/qscriptvalue.h>
+
+#include <private/qguard_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -39,12 +39,14 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicsborderimage_p.h>
-#include <private/qmlgraphicsborderimage_p_p.h>
+#include "qmlgraphicsborderimage_p.h"
+#include "qmlgraphicsborderimage_p_p.h"
+
+#include <qmlengine.h>
+
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>
-#include <qmlengine.h>
 
 QT_BEGIN_NAMESPACE
 

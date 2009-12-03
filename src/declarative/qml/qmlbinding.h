@@ -42,10 +42,11 @@
 #ifndef QMLBINDING_H
 #define QMLBINDING_H
 
+#include "qml.h"
+#include "qmlpropertyvaluesource.h"
+#include "qmlexpression.h"
+
 #include <QtCore/QObject>
-#include <qml.h>
-#include <qmlpropertyvaluesource.h>
-#include <qmlexpression.h>
 #include <QtCore/QMetaProperty>
 
 QT_BEGIN_HEADER

@@ -53,11 +53,12 @@
 // We mean it.
 //
 
+#include "qmlscriptparser_p.h"
+#include "qmlrefcount_p.h"
+#include "qmlerror.h"
+#include "qmlengine.h"
+
 #include <QtCore/qglobal.h>
-#include <private/qmlscriptparser_p.h>
-#include <private/qmlrefcount_p.h>
-#include <qmlerror.h>
-#include <qmlengine.h>
 
 QT_BEGIN_NAMESPACE
 

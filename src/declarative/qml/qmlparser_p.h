@@ -53,11 +53,13 @@
 // We mean it.
 //
 
+#include "qml.h"
+#include "qmlrefcount_p.h"
+
 #include <QtCore/QByteArray>
 #include <QtCore/QList>
 #include <QtCore/qstring.h>
-#include <qml.h>
-#include <private/qmlrefcount_p.h>
+
 #include <private/qobject_p.h>
 
 QT_BEGIN_HEADER

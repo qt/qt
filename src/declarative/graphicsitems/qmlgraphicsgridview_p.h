@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSGRIDVIEW_H
 #define QMLGRAPHICSGRIDVIEW_H
 
-#include <private/qmlgraphicsflickable_p.h>
+#include "qmlgraphicsflickable_p.h"
 
 QT_BEGIN_HEADER
 

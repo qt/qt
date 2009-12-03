@@ -39,11 +39,13 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicsgraphicsobjectcontainer_p.h>
+#include "qmlgraphicsgraphicsobjectcontainer_p.h"
+
+#include "qmlgraphicsitem_p.h"
+
 #include <QGraphicsObject>
 #include <QGraphicsWidget>
 #include <QGraphicsSceneResizeEvent>
-#include <private/qmlgraphicsitem_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -225,6 +227,6 @@ void QmlGraphicsGraphicsObjectContainerPrivate::_q_updateSize()
     }*/
 }
 
-#include "moc_qmlgraphicsgraphicsobjectcontainer_p.cpp"
+#include <moc_qmlgraphicsgraphicsobjectcontainer_p.cpp>
 
 QT_END_NAMESPACE

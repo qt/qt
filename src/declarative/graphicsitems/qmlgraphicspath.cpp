@@ -39,12 +39,14 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicspath_p.h>
-#include <private/qmlgraphicspath_p_p.h>
-#include <private/qfxperf_p_p.h>
-#include <private/qbezier_p.h>
+#include "qmlgraphicspath_p.h"
+#include "qmlgraphicspath_p_p.h"
+
+#include <qfxperf_p_p.h>
+
 #include <QSet>
 
+#include <private/qbezier_p.h>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,Path,QmlGraphicsPath)
