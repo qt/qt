@@ -116,6 +116,13 @@ QmlGraphicsText::~QmlGraphicsText()
 {
 }
 
+
+QmlGraphicsTextPrivate::~QmlGraphicsTextPrivate()
+{
+    delete control;
+    delete doc;
+}
+
 /*!
     \qmlproperty string Text::font.family
     \qmlproperty bool Text::font.bold

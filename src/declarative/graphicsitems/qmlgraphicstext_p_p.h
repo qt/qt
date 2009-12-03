@@ -76,6 +76,8 @@ public:
     {
     }
 
+    ~QmlGraphicsTextPrivate();
+
     void updateSize();
     void checkImgCache();
 
