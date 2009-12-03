@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 // QtCore
 #include <qdebug.h>
 #include <qmath.h>
@@ -5918,7 +5919,7 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
     if (QPixmapCache::find(key, pixmap))
         return pixmap;
 
-    const qreal halfPeriod = qMax(qreal(2), radiusBase * 1.61803399); // the golden ratio
+    const qreal halfPeriod = qMax(qreal(2), radiusBase * qreal(1.61803399)); // the golden ratio
     const int width = qCeil(100 / (2 * halfPeriod)) * (2 * halfPeriod);
     const int radius = qFloor(radiusBase);
 
