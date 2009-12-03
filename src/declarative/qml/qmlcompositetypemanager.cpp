@@ -119,7 +119,7 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
 
         compiledComponent = new QmlCompiledData;
         compiledComponent->url = imports.baseUrl();
-        compiledComponent->name = compiledComponent->url.toString().toUtf8(); 
+        compiledComponent->name = compiledComponent->url.toString();
 
         QmlCompiler compiler;
         if (!compiler.compile(engine, this, compiledComponent)) {

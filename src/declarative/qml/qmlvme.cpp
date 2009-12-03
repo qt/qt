@@ -144,6 +144,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
     const QList<float> &floatData = comp->floatData;
     const QList<QmlPropertyCache *> &propertyCaches = comp->propertyCaches;
     const QList<QmlParser::Object::ScriptBlock> &scripts = comp->scripts;
+    const QList<QUrl> &urls = comp->urls;
 
     QmlEnginePrivate::SimpleList<QmlAbstractBinding> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
@@ -297,8 +298,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreUrl:
             {
                 QObject *target = stack.top();
-                QUrl u(primitives.at(instr.storeUrl.value));
-                void *a[] = { &u, 0, &status, &flags };
+                void *a[] = { (void *)&urls.at(instr.storeUrl.value), 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeUrl.propertyIndex, a);
             }
@@ -544,7 +544,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 QmlBoundSignal *bs = new QmlBoundSignal(target, signal, target);
                 QmlExpression *expr = 
                     new QmlExpression(ctxt, primitives.at(instr.storeSignal.value), target);
-                expr->setSourceLocation(comp->url, instr.line);
+                expr->setSourceLocation(comp->name, instr.line);
                 bs->setExpression(expr);
             }
             break;
@@ -589,15 +589,15 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *context = 
                     stack.at(stack.count() - 1 - instr.assignBinding.context);
 
-                QmlMetaProperty mp;
-                QmlMetaPropertyPrivate::restore(mp, instr.assignBinding.property, target, ctxt);
+                QmlMetaProperty mp = 
+                    QmlMetaPropertyPrivate::restore(datas.at(instr.assignBinding.property), target, ctxt);
 
                 int coreIndex = mp.coreIndex();
 
                 if (stack.count() == 1 && bindingSkipList.testBit(coreIndex))  
                     break;
 
-                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, comp->url, instr.line, 0);
+                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, comp->name, instr.line, 0);
                 bindValues.append(bind);
                 bind->m_mePtr = &bindValues.values[bindValues.count - 1];
                 bind->setTarget(mp);
@@ -646,8 +646,9 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *obj = stack.pop();
                 QmlPropertyValueSource *vs = reinterpret_cast<QmlPropertyValueSource *>(reinterpret_cast<char *>(obj) + instr.assignValueSource.castValue);
                 QObject *target = stack.at(stack.count() - 1 - instr.assignValueSource.owner);
-                QmlMetaProperty prop;
-                QmlMetaPropertyPrivate::restore(prop, instr.assignValueSource.property, target, ctxt);
+
+                QmlMetaProperty prop = 
+                    QmlMetaPropertyPrivate::restore(datas.at(instr.assignValueSource.property), target, ctxt);
                 obj->setParent(target);
                 vs->setTarget(prop);
             }
@@ -658,8 +659,8 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *obj = stack.pop();
                 QmlPropertyValueInterceptor *vi = reinterpret_cast<QmlPropertyValueInterceptor *>(reinterpret_cast<char *>(obj) + instr.assignValueInterceptor.castValue);
                 QObject *target = stack.at(stack.count() - 1 - instr.assignValueInterceptor.owner);
-                QmlMetaProperty prop;
-                QmlMetaPropertyPrivate::restore(prop, instr.assignValueInterceptor.property, target, ctxt);
+                QmlMetaProperty prop = 
+                    QmlMetaPropertyPrivate::restore(datas.at(instr.assignValueInterceptor.property), target, ctxt);
                 obj->setParent(target);
                 vi->setTarget(prop);
                 QmlVMEMetaObject *mo = static_cast<QmlVMEMetaObject *>((QMetaObject*)target->metaObject());

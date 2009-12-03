@@ -79,7 +79,7 @@ public:
     QmlCompiledData();
     virtual ~QmlCompiledData();
 
-    QByteArray name;
+    QString name;
     QUrl url;
     QmlEnginePrivate::Imports imports;
     QmlTypeNameCache *importCache;
@@ -118,6 +118,7 @@ public:
     QList<QmlPropertyCache *> propertyCaches;
     QList<QmlIntegerCache *> contextCaches;
     QList<QmlParser::Object::ScriptBlock> scripts;
+    QList<QUrl> urls;
 
     void dumpInstructions();
 private:
@@ -134,6 +135,7 @@ private:
     int indexForInt(int *, int);
     int indexForLocation(const QmlParser::Location &);
     int indexForLocation(const QmlParser::LocationSpan &);
+    int indexForUrl(const QUrl &);
 };
 
 class QMetaObjectBuilder;
@@ -245,6 +247,9 @@ private:
                               QmlParser::Object *obj,
                               QmlParser::Property *valueTypeProperty = 0);
     int genContextCache();
+
+    int genValueTypeData(QmlParser::Property *prop, QmlParser::Property *valueTypeProp);
+    int genPropertyData(QmlParser::Property *prop);
 
     int componentTypeRef();
 

@@ -85,6 +85,16 @@ int QmlCompiledData::indexForByteArray(const QByteArray &data)
     return idx;
 }
 
+int QmlCompiledData::indexForUrl(const QUrl &data)
+{
+    int idx = urls.indexOf(data);
+    if (idx == -1) {
+        idx = urls.count();
+        urls << data;
+    }
+    return idx;
+}
+
 int QmlCompiledData::indexForFloat(float *data, int count)
 {
     Q_ASSERT(count > 0);

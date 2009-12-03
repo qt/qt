@@ -78,7 +78,7 @@ public:
                     IsWritable        = 0x00000002,
 
                     // These are mutually exclusive
-                    IsFunction        = 0x00000004, 
+                    IsFunction        = 0x00000004,
                     IsQObjectDerived  = 0x00000008,
                     IsEnumType        = 0x00000010,
                     IsQmlList         = 0x00000020,
@@ -94,18 +94,19 @@ public:
         int propType;
         int coreIndex;
         int notifyIndex;
-        QString name;
 
         void load(const QMetaProperty &);
         void load(const QMetaMethod &);
+        QString name(QObject *);
+        QString name(const QMetaObject *);
     };
 
-#if 0
     struct ValueTypeData {
+        inline ValueTypeData();
+        inline bool operator==(const ValueTypeData &);
         int valueTypeCoreIdx;  // The prop index of the access property on the value type wrapper
         int valueTypePropType; // The QVariant::Type of access property on the value type wrapper
     };
-#endif
 
     static QmlPropertyCache *create(QmlEngine *, const QMetaObject *);
     static Data create(const QMetaObject *, const QString &);
@@ -142,14 +143,24 @@ bool QmlPropertyCache::Data::operator==(const QmlPropertyCache::Data &other)
     return flags == other.flags &&
            propType == other.propType &&
            coreIndex == other.coreIndex &&
-           notifyIndex == other.notifyIndex &&
-           name == other.name;
+           notifyIndex == other.notifyIndex;
 }
 
 QmlPropertyCache::Data *
 QmlPropertyCache::property(const QScriptDeclarativeClass::Identifier &id) const 
 {
     return identifierCache.value(id);
+}
+
+QmlPropertyCache::ValueTypeData::ValueTypeData()
+: valueTypeCoreIdx(-1), valueTypePropType(0) 
+{
+}
+
+bool QmlPropertyCache::ValueTypeData::operator==(const ValueTypeData &o) 
+{ 
+    return valueTypeCoreIdx == o.valueTypeCoreIdx &&
+           valueTypePropType == o.valueTypePropType; 
 }
 
 QT_END_NAMESPACE
