@@ -260,8 +260,9 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
     instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql,1));
     QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
 
-    if (from_version!=context->thisObject().property(QLatin1String("version")).toString()) {
-        THROW_SQL(2,QmlEngine::tr("Version mismatch"));
+    QString foundvers = context->thisObject().property(QLatin1String("version")).toString();
+    if (from_version!=foundvers) {
+        THROW_SQL(2,QmlEngine::tr("Version mismatch: expected %1, found %2").arg(from_version).arg(foundvers));
         return engine->undefinedValue();
     }
 
