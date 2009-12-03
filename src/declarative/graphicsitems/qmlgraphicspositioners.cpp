@@ -49,20 +49,16 @@
 #include <private/qmlgraphicspositioners_p.h>
 #include <private/qmlgraphicspositioners_p_p.h>
 
-
 QT_BEGIN_NAMESPACE
 
 void QmlGraphicsBasePositionerPrivate::watchChanges(QmlGraphicsItem *other)
 {
     Q_Q(QmlGraphicsBasePositioner);
-    QObject::connect(other, SIGNAL(visibleChanged()),
-                     q, SLOT(prePositioning()));
-    QObject::connect(other, SIGNAL(opacityChanged()),
-                     q, SLOT(prePositioning()));
-    QObject::connect(other, SIGNAL(heightChanged()),
-                     q, SLOT(prePositioning()));
-    QObject::connect(other, SIGNAL(widthChanged()),
-                     q, SLOT(prePositioning()));
+    QMetaObject::connect(other, visibleIdx, q, prePosIdx);
+    QMetaObject::connect(other, opacityIdx, q, prePosIdx);
+    QMetaObject::connect(other, heightIdx, q, prePosIdx);
+    QMetaObject::connect(other, widthIdx, q, prePosIdx);
+
     static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other))->registerSiblingOrderNotification(this);
     watched << other;
 }
@@ -71,14 +67,11 @@ void QmlGraphicsBasePositionerPrivate::unwatchChanges(QmlGraphicsItem* other)
 {
     Q_Q(QmlGraphicsBasePositioner);
     bool stillAlive = false; //Use the return from disconnect to see if it was deleted or just reparented
-    stillAlive |= QObject::disconnect(other, SIGNAL(visibleChanged()),
-                     q, SLOT(prePositioning()));
-    stillAlive |= QObject::disconnect(other, SIGNAL(opacityChanged()),
-                     q, SLOT(prePositioning()));
-    stillAlive |= QObject::disconnect(other, SIGNAL(heightChanged()),
-                     q, SLOT(prePositioning()));
-    stillAlive |= QObject::disconnect(other, SIGNAL(widthChanged()),
-                     q, SLOT(prePositioning()));
+    stillAlive |= QMetaObject::disconnect(other, visibleIdx, q, prePosIdx);
+    stillAlive |= QMetaObject::disconnect(other, opacityIdx, q, prePosIdx);
+    stillAlive |= QMetaObject::disconnect(other, heightIdx, q, prePosIdx);
+    stillAlive |= QMetaObject::disconnect(other, widthIdx, q, prePosIdx);
+
     if(stillAlive)
         static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other))
                 ->unregisterSiblingOrderNotification(this);
@@ -247,8 +240,9 @@ void QmlGraphicsBasePositioner::prePositioning()
     //###can we avoid using the QGraphicsItemPrivate?
     QList<QGraphicsItem *> children = childItems();
     qSort(children.begin(), children.end(), d->insertionOrder);
-    positionedItems = QList<QmlGraphicsItem*>();
+    positionedItems.clear();
 
+    allItems.reserve(children.count());
     for (int ii = 0; ii < children.count(); ++ii) {
         QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
         if (!child)
@@ -268,10 +262,12 @@ void QmlGraphicsBasePositioner::prePositioning()
         allItems += child;
         positionedItems << child;
     }
-    QSet<QmlGraphicsItem *> deletedItems = d->_items - allItems;
-    foreach(QmlGraphicsItem *child, deletedItems){
-        d->unwatchChanges(child);
-        d->_items -= child;
+    if (d->_items.count() != allItems.count()) {
+        QSet<QmlGraphicsItem *> deletedItems = d->_items - allItems;
+        foreach(QmlGraphicsItem *child, deletedItems){
+            d->unwatchChanges(child);
+            d->_items -= child;
+        }
     }
     d->_animated.clear();
     doPositioning();
@@ -471,7 +467,7 @@ QmlGraphicsColumn::QmlGraphicsColumn(QmlGraphicsItem *parent)
 {
 }
 
-inline bool isInvisible(QmlGraphicsItem *child)
+static inline bool isInvisible(QmlGraphicsItem *child)
 {
     return child->opacity() == 0.0 || !child->isVisible() || !child->width() || !child->height();
 }
@@ -495,12 +491,15 @@ void QmlGraphicsColumn::doPositioning()
 
         bool needMove = (child->y() != voffset || child->x());
 
-        QList<QPair<QString, QVariant> > changes;
-        changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
-        changes << qMakePair(QString(QLatin1String("x")),QVariant(0));
-        if (needMove && items()->contains(child) && move()) {
+        if (needMove && move() && items()->contains(child)) {
+            QList<QPair<QString, QVariant> > changes;
+            changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
+            changes << qMakePair(QString(QLatin1String("x")),QVariant(0));
             applyMove(changes,child);
-        } else if (!items()->contains(child) && add()) {
+        } else if (add() && !items()->contains(child)) {
+            QList<QPair<QString, QVariant> > changes;
+            changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
+            changes << qMakePair(QString(QLatin1String("x")),QVariant(0));
             applyAdd(changes,child);
         } else if (needMove) {
             setMovingItem(child);
@@ -630,12 +629,15 @@ void QmlGraphicsRow::doPositioning()
 
         bool needMove = (child->x() != hoffset || child->y());
 
-        QList<QPair<QString, QVariant> > changes;
-        changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
-        changes << qMakePair(QString(QLatin1String("y")),QVariant(0));
-        if (needMove && items()->contains(child) && move()) {
+        if (needMove && move() && items()->contains(child)) {
+            QList<QPair<QString, QVariant> > changes;
+            changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
+            changes << qMakePair(QString(QLatin1String("y")),QVariant(0));
             applyMove(changes,child);
-        } else if (!items()->contains(child) && add()) {
+        } else if (add() && !items()->contains(child)) {
+            QList<QPair<QString, QVariant> > changes;
+            changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
+            changes << qMakePair(QString(QLatin1String("y")),QVariant(0));
             applyAdd(changes,child);
         } else if (needMove) {
             setMovingItem(child);
