@@ -50,9 +50,9 @@ void MMF::AudioPlayer::construct()
     TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
     TRACE_ENTRY_0();
 
-    TRAPD(err, m_player.reset(CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone)));
-    if (KErrNone != err)
-        setError("Creation of audio player failed", err);
+    CPlayerType *player = 0;
+    QT_TRAP_THROWING(player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone));
+    m_player.reset(player);
 
     TRACE_EXIT_0();
 }
