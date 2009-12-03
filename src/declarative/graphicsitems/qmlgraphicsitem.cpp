@@ -1442,15 +1442,6 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
     \internal
 */
 
-static int qfxitem_registerAnchorLine() {
-    /*
-    static bool registered = false;
-    if (!registered) {
-        qRegisterMetaType<QmlGraphicsAnchorLine>("QmlGraphicsAnchorLine");
-        registered = true;
-    }
-    */
-}
 // ### Must fix
 struct RegisterAnchorLineAtStartup {
     RegisterAnchorLineAtStartup() { 
@@ -1469,7 +1460,6 @@ QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItem* parent)
   : QGraphicsObject(*(new QmlGraphicsItemPrivate), parent, 0)
 {
     Q_D(QmlGraphicsItem);
-    qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
@@ -1479,7 +1469,6 @@ QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItemPrivate &dd, QmlGraphicsItem *pa
   : QGraphicsObject(dd, parent, 0)
 {
     Q_D(QmlGraphicsItem);
-    qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
