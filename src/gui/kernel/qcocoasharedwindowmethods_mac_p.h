@@ -119,6 +119,7 @@ QT_END_NAMESPACE
     QT_MANGLE_NAMESPACE(QCocoaView) *view = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_nativeview_for(widget));
     Qt::MouseButton mouseButton = cocoaButton2QtButton([event buttonNumber]);
 
+    bool handled = false;
     // sometimes need to redirect mouse events to the popup.
     QWidget *popup = qAppInstance()->activePopupWidget();
     if (popup) {
