@@ -374,7 +374,7 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             instr.type = QmlInstruction::StoreUrl;
             QUrl u = string.isEmpty() ? QUrl() : output->url.resolved(QUrl(string));
             instr.storeUrl.propertyIndex = prop.propertyIndex();
-            instr.storeUrl.value = output->indexForString(u.toString());
+            instr.storeUrl.value = output->indexForUrl(u);
             }
             break;
         case QVariant::UInt:

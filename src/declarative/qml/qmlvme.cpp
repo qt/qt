@@ -144,6 +144,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
     const QList<float> &floatData = comp->floatData;
     const QList<QmlPropertyCache *> &propertyCaches = comp->propertyCaches;
     const QList<QmlParser::Object::ScriptBlock> &scripts = comp->scripts;
+    const QList<QUrl> &urls = comp->urls;
 
     QmlEnginePrivate::SimpleList<QmlAbstractBinding> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
@@ -297,8 +298,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreUrl:
             {
                 QObject *target = stack.top();
-                QUrl u(primitives.at(instr.storeUrl.value));
-                void *a[] = { &u, 0, &status, &flags };
+                void *a[] = { (void *)&urls.at(instr.storeUrl.value), 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeUrl.propertyIndex, a);
             }

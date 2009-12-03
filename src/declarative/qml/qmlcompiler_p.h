@@ -118,6 +118,7 @@ public:
     QList<QmlPropertyCache *> propertyCaches;
     QList<QmlIntegerCache *> contextCaches;
     QList<QmlParser::Object::ScriptBlock> scripts;
+    QList<QUrl> urls;
 
     void dumpInstructions();
 private:
@@ -134,6 +135,7 @@ private:
     int indexForInt(int *, int);
     int indexForLocation(const QmlParser::Location &);
     int indexForLocation(const QmlParser::LocationSpan &);
+    int indexForUrl(const QUrl &);
 };
 
 class QMetaObjectBuilder;
