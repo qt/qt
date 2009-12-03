@@ -243,38 +243,51 @@ void QmlGraphicsBasePositioner::prePositioning()
         d->_ep = true;
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
-    QSet<QmlGraphicsItem *> allItems;
     //Need to order children by creation order modified by stacking order
     //###can we avoid using the QGraphicsItemPrivate?
     QList<QGraphicsItem *> children = childItems();
     qSort(children.begin(), children.end(), d->insertionOrder);
     positionedItems.clear();
 
-    allItems.reserve(children.count());
-    for (int ii = 0; ii < children.count(); ++ii) {
-        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
-        if (!child)
-            continue;
-        if (!d->_items.contains(child)){
+    if (d->_items.isEmpty()) {
+        for (int ii = 0; ii < children.count(); ++ii) {
+            QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
+            if (!child)
+                continue;
             d->watchChanges(child);
             d->_items += child;
+            if (child->opacity() != 0.0)
+                d->_newItems += child;
+            positionedItems << child;
         }
-        if (child->opacity() == 0.0){
-            if (d->_stableItems.contains(child)){
-                d->_leavingItems += child;
-                d->_stableItems -= child;
+    } else {
+        QSet<QmlGraphicsItem *> allItems;
+        allItems.reserve(children.count());
+        for (int ii = 0; ii < children.count(); ++ii) {
+            QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
+            if (!child)
+                continue;
+            if (!d->_items.contains(child)){
+                d->watchChanges(child);
+                d->_items += child;
             }
-        }else if (!d->_stableItems.contains(child)){
-            d->_newItems+=child;
+            if (child->opacity() == 0.0){
+                if (d->_stableItems.contains(child)){
+                    d->_leavingItems += child;
+                    d->_stableItems -= child;
+                }
+            }else if (!d->_stableItems.contains(child)){
+                d->_newItems+=child;
+            }
+            allItems += child;
+            positionedItems << child;
         }
-        allItems += child;
-        positionedItems << child;
-    }
-    if (d->_items.count() != allItems.count()) {
-        QSet<QmlGraphicsItem *> deletedItems = d->_items - allItems;
-        foreach(QmlGraphicsItem *child, deletedItems){
-            d->unwatchChanges(child);
-            d->_items -= child;
+        if (d->_items.count() != allItems.count()) {
+            QSet<QmlGraphicsItem *> deletedItems = d->_items - allItems;
+            foreach(QmlGraphicsItem *child, deletedItems){
+                d->unwatchChanges(child);
+                d->_items -= child;
+            }
         }
     }
     d->_animated.clear();
