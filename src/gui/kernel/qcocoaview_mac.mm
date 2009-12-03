@@ -779,7 +779,7 @@ extern "C" {
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint qlocal = QPoint(localPoint.x, flipYCoordinate(localPoint.y));
     QPoint qglobal = QPoint(globalPoint.x, flipYCoordinate(globalPoint.y));
-    Qt::MouseButton buttons = cocoaButton2QtButton([theEvent buttonNumber]);
+    Qt::MouseButtons buttons = QApplication::mouseButtons();
     bool wheelOK = false;
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([theEvent modifierFlags]);
     QWidget *widgetToGetMouse = qwidget;
