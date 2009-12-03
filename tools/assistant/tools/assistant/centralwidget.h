@@ -110,7 +110,7 @@ class CentralWidget : public QWidget
     Q_OBJECT
 
 public:
-    CentralWidget(QHelpEngine *engine, MainWindow *parent);
+    CentralWidget(MainWindow *parent);
     ~CentralWidget();
 
     void setupWidget();
@@ -201,13 +201,11 @@ private:
 
 private:
     int lastTabPage;
-    QString collectionFile;
     QList<QAction*> globalActionList;
 
     QWidget *findBar;
     QTabWidget *tabWidget;
     FindWidget *findWidget;
-    QHelpEngine *helpEngine;
     QPrinter *printer;
     bool usesDefaultCollection;
 

@@ -41,22 +41,20 @@
 
 #include "contentwindow.h"
 #include "centralwidget.h"
+#include "helpenginewrapper.h"
 
 #include <QtGui/QLayout>
 #include <QtGui/QFocusEvent>
 #include <QtGui/QMenu>
 
-#include <QtHelp/QHelpEngine>
 #include <QtHelp/QHelpContentWidget>
 
 QT_BEGIN_NAMESPACE
 
-ContentWindow::ContentWindow(QHelpEngine *helpEngine)
-    : m_helpEngine(helpEngine)
-    , m_contentWidget(0)
+ContentWindow::ContentWindow()
+    : m_contentWidget(HelpEngineWrapper::instance().contentWidget())
     , m_expandDepth(-2)
 {
-    m_contentWidget = m_helpEngine->contentWidget();
     m_contentWidget->viewport()->installEventFilter(this);
     m_contentWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 

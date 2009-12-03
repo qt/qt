@@ -57,8 +57,11 @@
 #include <QtSql/QSqlDatabase>
 
 #include "../shared/collectionconfiguration.h"
+#include "helpenginewrapper.h"
 #include "mainwindow.h"
 #include "cmdlineparser.h"
+
+// #define TRACING_REQUESTED
 
 QT_USE_NAMESPACE
 
@@ -317,8 +320,17 @@ int main(int argc, char *argv[])
     qtHelpTranslator.load(QLatin1String("qt_help_") + locale, resourceDir);
     a.installTranslator(&qtHelpTranslator);
 
-    MainWindow w(&cmd);
-    w.show();
+    /*
+     * We need to be careful here: The main window has to be deleted before
+     * the help engine wrapper, which has to be deleted before the
+     * QApplication.
+     */
+    int retval;
+    MainWindow *w = new MainWindow(&cmd);
+    w->show();
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
-    return a.exec();
+    retval = a.exec();
+    delete w;
+    delete &HelpEngineWrapper::instance();
+    return retval;
 }

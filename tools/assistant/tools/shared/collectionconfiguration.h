@@ -46,8 +46,6 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
-#include <QtGui/QFont>
-#include <QtGui/QFontDatabase>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,28 +54,17 @@ class QHelpEngineCore;
 class CollectionConfiguration
 {
 public:
-    static int lastTabPage(const QHelpEngineCore &helpEngine);
-    static void setLastTabPage(QHelpEngineCore &helpEngine, int lastPage);
-
-    static const QStringList lastShownPages(const QHelpEngineCore &helpEngine);
-    static void setLastShownPages(QHelpEngineCore &helpEngine,
-                                  const QStringList &lastShownPages);
-
-
-    // TODO: Don't allow last pages and zoom factors to be set in isolation
-    //       Perhaps also fill up missing elements automatically or assert.
-    static const QStringList lastZoomFactors(const QHelpEngineCore &helpEngine);
-    static void setLastZoomFactors(QHelpEngineCore &helpEngine,
-                                   const QStringList &lastZoomFactors);
-
-    static const QString currentFilter(const QHelpEngineCore &helpEngine);
-    static void setCurrentFilter(QHelpEngineCore &helpEngine,
-                                 const QString &currentFilter);
+    static const QString windowTitle(const QHelpEngineCore &helpEngine);
+    static void setWindowTitle(QHelpEngineCore &helpEngine,
+                               const QString &windowTitle);
 
     static const QString cacheDir(const QHelpEngineCore &helpEngine);
     static bool cacheDirIsRelativeToCollection(const QHelpEngineCore &helpEngine);
     static void setCacheDir(QHelpEngineCore &helpEngine,
                             const QString &cacheDir, bool relativeToCollection);
+
+    static uint creationTime(const QHelpEngineCore &helpEngine);
+    static void setCreationTime(QHelpEngineCore &helpEngine, uint time);
 
     static bool filterFunctionalityEnabled(const QHelpEngineCore &helpEngine);
     static void setFilterFunctionalityEnabled(QHelpEngineCore &helpEngine,
@@ -93,12 +80,6 @@ public:
     static bool addressBarVisible(const QHelpEngineCore &helpEngine);
     static void setAddressBarVisible(QHelpEngineCore &helpEngine, bool visible);
 
-    static uint creationTime(const QHelpEngineCore &helpEngine);
-    static void setCreationTime(QHelpEngineCore &helpEngine, uint time);
-
-    static const QString windowTitle(const QHelpEngineCore &helpEngine);
-    static void setWindowTitle(QHelpEngineCore &helpEngine,
-                               const QString &windowTitle);
 
     static bool documentationManagerEnabled(const QHelpEngineCore &helpEngine);
     static void setDocumentationManagerEnabled(QHelpEngineCore &helpEngine,
@@ -107,12 +88,6 @@ public:
     static const QByteArray applicationIcon(const QHelpEngineCore &helpEngine);
     static void setApplicationIcon(QHelpEngineCore &helpEngine,
                                    const QByteArray &icon);
-
-    static const QString homePage(const QHelpEngineCore &helpEngine);
-    static void setHomePage(QHelpEngineCore &helpEngine, const QString &page);
-
-    static int startOption(const QHelpEngineCore &helpEngine);
-    static void setStartOption(QHelpEngineCore &helpEngine, int option);
 
     // TODO: Encapsulate encoding from/to QByteArray here
     static const QByteArray aboutMenuTexts(const QHelpEngineCore &helpEngine);
@@ -139,58 +114,25 @@ public:
     static bool docUpdatePending(const QHelpEngineCore &helpEngine);
     static void setDocUpdatePending(QHelpEngineCore &helpEngine, bool pending);
 
-    // TODO: Put these GUI-specific functions in the help engine wrapper
-    static const QByteArray bookmarks(const QHelpEngineCore &helpEngine);
-    static void setBookmarks(QHelpEngineCore &helpEngine,
-                             const QByteArray &bookmarks);
+    // TODO: Don't allow last pages and zoom factors to be set in isolation
+    //       Perhaps also fill up missing elements automatically or assert.
+    static const QStringList lastShownPages(const QHelpEngineCore &helpEngine);
+    static void setLastShownPages(QHelpEngineCore &helpEngine,
+                                  const QStringList &lastShownPages);
+    static const QStringList lastZoomFactors(const QHelpEngineCore &helpEngine);
+    static void setLastZoomFactors(QHelpEngineCore &helPEngine,
+                                   const QStringList &lastZoomFactors);
 
-    static const QByteArray mainWindow(const QHelpEngineCore &helpEngine);
-    static void setMainWindow(QHelpEngineCore &helpEngine,
-                              const QByteArray &mainWindow);
+    static int lastTabPage(const QHelpEngineCore &helpEngine);
+    static void setLastTabPage(QHelpEngineCore &helpEngine, int lastPage);
 
-    static const QByteArray mainWindowGeometry(const QHelpEngineCore &helpEngine);
-    static void setMainWindowGeometry(QHelpEngineCore &helpEngine,
-                                      const QByteArray &geometry);
-
-    static bool usesAppFont(const QHelpEngineCore &helpEngine);
-    static void setUseAppFont(QHelpEngineCore &helpEngine, bool useAppFont);
-
-    static bool usesBrowserFont(const QHelpEngineCore &helpEngine);
-    static void setUseBrowserFont(QHelpEngineCore &helpEngine,
-                                  bool useBrowserFont);
-
-    static const QFont appFont(const QHelpEngineCore &helpEngine);
-    static void setAppFont(QHelpEngineCore &helpEngine, const QFont &font);
-
-    static QFontDatabase::WritingSystem appWritingSystem(const QHelpEngineCore &helpEngine);
-    static void setAppWritingSystem(QHelpEngineCore &helpEngine,
-                                    QFontDatabase::WritingSystem system);
-
-    static const QFont browserFont(const QHelpEngineCore &helpEngine);
-    static void setBrowserFont(QHelpEngineCore &helpEngine, const QFont &font);
-
-    static QFontDatabase::WritingSystem browserWritingSystem(const QHelpEngineCore &helpEngine);
-    static void setBrowserWritingSystem(QHelpEngineCore &helpEngine,
-                                        QFontDatabase::WritingSystem system);
-
-    static bool unfilteredInserted(const QHelpEngineCore &helpEngine);
-    static void setUnfilteredInserted(QHelpEngineCore &helpEngine);
-
-    static const QStringList qtDocInfo(const QHelpEngineCore &helpEngine,
-                                       const QString &component);
-    static void setQtDocInfo(QHelpEngineCore &helpEngine,
-                             const QString &component, const QStringList &doc);
-
-    static bool searchWasAttached(const QHelpEngineCore &helpEngine);
-    static void setSearchWasAttached(QHelpEngineCore &helpEngine, bool attached);
-
-    static bool hasFontSettings(const QHelpEngineCore &helpEngine);
     static bool isNewer(const QHelpEngineCore &newer,
                         const QHelpEngineCore &older);
     static void copyConfiguration(const QHelpEngineCore &source,
                                   QHelpEngineCore &target);
 
     static const QString DefaultZoomFactor;
+    static const QString ListSeparator;
 };
 
 QT_END_NAMESPACE

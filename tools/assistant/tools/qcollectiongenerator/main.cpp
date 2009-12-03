@@ -467,8 +467,7 @@ int main(int argc, char *argv[])
     }
 
     if (!config.currentFilter().isEmpty()) {
-        CollectionConfiguration::setCurrentFilter(helpEngine,
-            config.currentFilter());
+        helpEngine.setCurrentFilter(config.currentFilter());
     }
 
     if (!config.cacheDirectory().isEmpty()) {

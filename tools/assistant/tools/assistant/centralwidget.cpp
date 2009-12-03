@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "centralwidget.h"
+#include "helpenginewrapper.h"
 #include "helpviewer.h"
 #include "searchwidget.h"
 #include "mainwindow.h"
@@ -68,7 +69,6 @@
 #include <QtGui/QPrintPreviewDialog>
 #include <QtGui/QPageSetupDialog>
 
-#include <QtHelp/QHelpEngine>
 #include <QtHelp/QHelpSearchEngine>
 
 QT_BEGIN_NAMESPACE
@@ -206,14 +206,12 @@ QToolButton* FindWidget::setupToolButton(const QString &text, const QString &ico
 // --
 
 
-CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
+CentralWidget::CentralWidget(MainWindow *parent)
     : QWidget(parent)
     , lastTabPage(0)
-    , collectionFile(engine->collectionFile())
     , findBar(0)
     , tabWidget(0)
     , findWidget(0)
-    , helpEngine(engine)
     , printer(0)
     , usesDefaultCollection(parent->usesDefaultCollection())
     , m_searchWidget(0)
@@ -293,10 +291,6 @@ CentralWidget::~CentralWidget()
     delete printer;
 #endif
 
-    QHelpEngineCore engine(collectionFile, 0);
-    if (!engine.setupData())
-        return;
-
     QStringList zoomFactors;
     QStringList currentPages;
     bool searchAttached = m_searchWidget->isAttached();
@@ -310,10 +304,11 @@ CentralWidget::~CentralWidget()
         }
     }
 
-    CollectionConfiguration::setLastTabPage(engine, lastTabPage);
-    CollectionConfiguration::setLastShownPages(engine, currentPages);
-    CollectionConfiguration::setSearchWasAttached(engine, searchAttached);
-    CollectionConfiguration::setLastZoomFactors(engine, zoomFactors);
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    helpEngine.setLastTabPage(lastTabPage);
+    helpEngine.setLastShownPages(currentPages);
+    helpEngine.setSearchWasAttached(searchAttached);
+    helpEngine.setLastZoomFactors(zoomFactors);
 }
 
 CentralWidget *CentralWidget::instance()
@@ -405,7 +400,7 @@ void CentralWidget::setSource(const QUrl &url)
         qobject_cast<HelpViewer*>(tabWidget->widget(lastTabPage));
 
     if (!viewer && !lastViewer) {
-        viewer = new HelpViewer(helpEngine, this);
+        viewer = new HelpViewer(this);
         viewer->installEventFilter(this);
         lastTabPage = tabWidget->addTab(viewer, QString());
         tabWidget->setCurrentIndex(lastTabPage);
@@ -423,16 +418,13 @@ void CentralWidget::setSource(const QUrl &url)
 
 void CentralWidget::setupWidget()
 {
-    int option = CollectionConfiguration::startOption(*helpEngine);
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    int option = helpEngine.startOption();
     if (option != ShowLastPages) {
         QString homePage;
-        if (option == ShowHomePage) {
-            // TODO: Can this fall-back logic go into the wrapper class?
-            homePage = CollectionConfiguration::homePage(*helpEngine);
-            if (homePage.isEmpty())
-                homePage = CollectionConfiguration::defaultHomePage(*helpEngine);
-        }
-        if (option == ShowBlankPage)
+        if (option == ShowHomePage)
+            homePage = helpEngine.homePage();
+        else if (option == ShowBlankPage)
             homePage = QLatin1String("about:blank");
         setSource(homePage);
     } else {
@@ -442,8 +434,8 @@ void CentralWidget::setupWidget()
 
 void CentralWidget::setLastShownPages()
 {
-    const QStringList lastShownPageList =
-        CollectionConfiguration::lastShownPages(*helpEngine);
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    const QStringList lastShownPageList = helpEngine.lastShownPages();
     const int pageCount = lastShownPageList.count();
     if (pageCount == 0) {
         if (usesDefaultCollection)
@@ -453,8 +445,7 @@ void CentralWidget::setLastShownPages()
         return;
     }
 
-    QStringList zoomFactors =
-        CollectionConfiguration::lastZoomFactors(*helpEngine);
+    QStringList zoomFactors = helpEngine.lastZoomFactors();
     while (zoomFactors.count() < pageCount)
         zoomFactors.append(CollectionConfiguration::DefaultZoomFactor);
 
@@ -463,12 +454,10 @@ void CentralWidget::setLastShownPages()
     for (; it != lastShownPageList.constEnd(); ++it, ++zIt)
         setSourceInNewTab((*it), (*zIt).toFloat());
 
-    int tab = CollectionConfiguration::lastTabPage(*helpEngine);
+    int tab = helpEngine.lastTabPage();
 
     const bool searchIsAttached = m_searchWidget->isAttached();
-    const bool searchWasAttached =
-        CollectionConfiguration::searchWasAttached(*helpEngine);
-
+    const bool searchWasAttached = helpEngine.searchWasAttached();
     if (searchWasAttached && !searchIsAttached)
         --tab;
     else if (!searchWasAttached && searchIsAttached)
@@ -639,7 +628,7 @@ void CentralWidget::setSourceInNewTab(const QUrl &url, qreal zoom)
         return;
 #endif
 
-    viewer = new HelpViewer(helpEngine, this);
+    viewer = new HelpViewer(this);
     viewer->installEventFilter(this);
     viewer->setSource(url);
     viewer->setFocus(Qt::OtherFocusReason);
@@ -663,7 +652,7 @@ void CentralWidget::setSourceInNewTab(const QUrl &url, qreal zoom)
 
 HelpViewer *CentralWidget::newEmptyTab()
 {
-    HelpViewer *viewer = new HelpViewer(helpEngine, this);
+    HelpViewer *viewer = new HelpViewer(this);
     viewer->installEventFilter(this);
     viewer->setFocus(Qt::OtherFocusReason);
 #if defined(QT_NO_WEBKIT)
@@ -1005,7 +994,7 @@ void CentralWidget::createSearchWidget(QHelpSearchEngine *searchEngine)
 void CentralWidget::activateSearchWidget(bool updateLastTabPage)
 {
     if (!m_searchWidget)
-        createSearchWidget(helpEngine->searchEngine());
+        createSearchWidget(HelpEngineWrapper::instance().searchEngine());
 
     if (!m_searchWidget->isAttached()) {
         tabWidget->insertTab(0, m_searchWidget, tr("Search"));
@@ -1072,7 +1061,8 @@ CentralWidget::highlightSearchTerms()
     if (!viewer)
         return;
 
-    QHelpSearchEngine *searchEngine = helpEngine->searchEngine();
+    QHelpSearchEngine *searchEngine =
+        HelpEngineWrapper::instance().searchEngine();
     QList<QHelpSearchQuery> queryList = searchEngine->query();
 
     QStringList terms;
@@ -1154,8 +1144,8 @@ QMap<int, QString> CentralWidget::currentSourceFileList() const
 
 void CentralWidget::getBrowserFontFor(QWidget *viewer, QFont *font)
 {
-    const QLatin1String key("useBrowserFont");
-    if (!CollectionConfiguration::usesBrowserFont(*helpEngine)) {
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (!helpEngine.usesBrowserFont()) {
         *font = qApp->font();   // case for QTextBrowser and SearchWidget
 #if !defined(QT_NO_WEBKIT)
         QWebView *view = qobject_cast<QWebView*> (viewer);
@@ -1166,7 +1156,7 @@ void CentralWidget::getBrowserFontFor(QWidget *viewer, QFont *font)
         }
 #endif
     } else {
-        *font = CollectionConfiguration::browserFont(*helpEngine);
+        *font = helpEngine.browserFont();
     }
 }
 

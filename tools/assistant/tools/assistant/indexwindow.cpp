@@ -41,6 +41,7 @@
 
 #include "indexwindow.h"
 #include "centralwidget.h"
+#include "helpenginewrapper.h"
 #include "topicchooser.h"
 
 #include <QtGui/QLayout>
@@ -51,22 +52,19 @@
 #include <QtGui/QContextMenuEvent>
 #include <QtGui/QListWidgetItem>
 
-#include <QtHelp/QHelpEngine>
 #include <QtHelp/QHelpIndexWidget>
 
 QT_BEGIN_NAMESPACE
 
-IndexWindow::IndexWindow(QHelpEngine *helpEngine, QWidget *parent)
+IndexWindow::IndexWindow(QWidget *parent)
     : QWidget(parent)
-    , m_searchLineEdit(0)
-    , m_indexWidget(0)
-    , m_helpEngine(helpEngine)
+    , m_searchLineEdit(new QLineEdit)
+    , m_indexWidget(HelpEngineWrapper::instance().indexWidget())
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     QLabel *l = new QLabel(tr("&Look for:"));
     layout->addWidget(l);
 
-    m_searchLineEdit = new QLineEdit();
     l->setBuddy(m_searchLineEdit);
     connect(m_searchLineEdit, SIGNAL(textChanged(QString)), this,
         SLOT(filterIndices(QString)));
@@ -74,11 +72,11 @@ IndexWindow::IndexWindow(QHelpEngine *helpEngine, QWidget *parent)
     layout->setMargin(4);
     layout->addWidget(m_searchLineEdit);
 
-    m_indexWidget = m_helpEngine->indexWidget();
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     m_indexWidget->installEventFilter(this);
-    connect(m_helpEngine->indexModel(), SIGNAL(indexCreationStarted()), this,
+    connect(helpEngine.indexModel(), SIGNAL(indexCreationStarted()), this,
         SLOT(disableSearchLineEdit()));
-    connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()), this,
+    connect(helpEngine.indexModel(), SIGNAL(indexCreated()), this,
         SLOT(enableSearchLineEdit()));
     connect(m_indexWidget, SIGNAL(linkActivated(QUrl,QString)), this,
         SIGNAL(linkActivated(QUrl)));

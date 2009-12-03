@@ -41,7 +41,7 @@
 
 #include "bookmarkmanager.h"
 #include "centralwidget.h"
-#include "../shared/collectionconfiguration.h"
+#include "helpenginewrapper.h"
 
 #include <QtGui/QMenu>
 #include <QtGui/QIcon>
@@ -57,7 +57,6 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QPushButton>
 #include <QtGui/QApplication>
-#include <QtHelp/QHelpEngineCore>
 #include <QtGui/QDialogButtonBox>
 #include <QtGui/QSortFilterProxyModel>
 
@@ -624,11 +623,10 @@ Qt::ItemFlags BookmarkModel::flags(const QModelIndex &index) const
 // BookmarkManager
 
 
-BookmarkManager::BookmarkManager(QHelpEngineCore *_helpEngine)
+BookmarkManager::BookmarkManager()
     : treeModel(new BookmarkModel(0, 1, this))
     , listModel(new BookmarkModel(0, 1, this))
     , renameItem(0)
-    , helpEngine(_helpEngine)
 {
     folderIcon = QApplication::style()->standardIcon(QStyle::SP_DirClosedIcon);
     bookmarkIcon = QIcon(QLatin1String(":/trolltech/assistant/images/bookmark.png"));
@@ -663,7 +661,7 @@ void BookmarkManager::saveBookmarks()
     QDataStream stream(&bookmarks, QIODevice::WriteOnly);
 
     readBookmarksRecursive(treeModel->invisibleRootItem(), stream, 0);
-    CollectionConfiguration::setBookmarks(*helpEngine, bookmarks);
+    HelpEngineWrapper::instance().setBookmarks(bookmarks);
 }
 
 QStringList BookmarkManager::bookmarkFolders() const
@@ -815,7 +813,7 @@ void BookmarkManager::setupBookmarkModels()
     QList<int> lastDepths;
     QList<QStandardItem*> parents;
 
-    QByteArray ba = CollectionConfiguration::bookmarks(*helpEngine);
+    QByteArray ba = HelpEngineWrapper::instance().bookmarks();
     QDataStream stream(ba);
     while (!stream.atEnd()) {
         stream >> depth >> name >> type >> expanded;

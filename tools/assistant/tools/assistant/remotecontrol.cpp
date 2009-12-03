@@ -42,6 +42,7 @@
 #include "remotecontrol.h"
 #include "mainwindow.h"
 #include "centralwidget.h"
+#include "helpenginewrapper.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -106,16 +107,14 @@ void StdInListenerWin::run()
 }
 #endif
 
-RemoteControl::RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine,
-                             QFileSystemWatcher *qchWatcher)
+RemoteControl::RemoteControl(MainWindow *mainWindow)
     : QObject(mainWindow)
     , m_mainWindow(mainWindow)
-    , m_helpEngine(helpEngine)
     , m_debug(false)
     , m_caching(true)
     , m_syncContents(false)
     , m_expandTOC(-2)
-    , m_qchWatcher(qchWatcher)
+    , helpEngine(HelpEngineWrapper::instance())
 
 {
     connect(m_mainWindow, SIGNAL(initDone()), this, SLOT(applyCache()));
@@ -248,7 +247,7 @@ void RemoteControl::handleActivateKeywordCommand(const QString &arg)
     } else {
         m_mainWindow->setIndexString(arg);
         if (!arg.isEmpty())
-            m_helpEngine->indexWidget()->activateCurrentItem();
+            helpEngine.indexWidget()->activateCurrentItem();
     }
 }
 
@@ -258,8 +257,7 @@ void RemoteControl::handleActivateIdentifierCommand(const QString &arg)
         clearCache();
         m_activateIdentifier = arg;
     } else {
-        const QMap<QString, QUrl> &links =
-            m_helpEngine->linksForIdentifier(arg);
+        const QMap<QString, QUrl> &links = helpEngine.linksForIdentifier(arg);
         if (!links.isEmpty())
             CentralWidget::instance()->setSource(links.constBegin().value());
     }
@@ -282,12 +280,12 @@ void RemoteControl::handleExpandTocCommand(const QString &arg)
 
 void RemoteControl::handleSetCurrentFilterCommand(const QString &arg)
 {
-    if (m_helpEngine->customFilters().contains(arg)) {
+    if (helpEngine.customFilters().contains(arg)) {
         if (m_caching) {
             clearCache();
             m_currentFilter = arg;
         } else {
-            m_helpEngine->setCurrentFilter(arg);
+            helpEngine.setCurrentFilter(arg);
         }
     }
 }
@@ -295,29 +293,22 @@ void RemoteControl::handleSetCurrentFilterCommand(const QString &arg)
 void RemoteControl::handleRegisterCommand(const QString &arg)
 {
     const QString &absFileName = QFileInfo(arg).absoluteFilePath();
-    if (m_helpEngine->registeredDocumentations().
+    if (helpEngine.registeredDocumentations().
         contains(QHelpEngineCore::namespaceName(absFileName)))
         return;
-    if (m_helpEngine->registerDocumentation(absFileName)) {
-        m_qchWatcher->addPath(absFileName);
-        m_helpEngine->setupData();
-        Q_ASSERT(m_qchWatcher->files().count()
-                 == m_helpEngine->registeredDocumentations().count());
-    }
+    if (helpEngine.registerDocumentation(absFileName))
+        helpEngine.setupData();
 }
 
 void RemoteControl::handleUnregisterCommand(const QString &arg)
 {
     const QString &absFileName = QFileInfo(arg).absoluteFilePath();
     const QString &ns = QHelpEngineCore::namespaceName(absFileName);
-    if (m_helpEngine->registeredDocumentations().contains(ns)) {
+    if (helpEngine.registeredDocumentations().contains(ns)) {
         CentralWidget* widget = CentralWidget::instance();
         widget->closeTabs(widget->currentSourceFileList().keys(ns));
-        const QString docFile = m_helpEngine->documentationFileName(ns);
-        if (m_helpEngine->unregisterDocumentation(ns)) {
-            m_qchWatcher->removePath(docFile);
-            m_helpEngine->setupData();
-        }
+        if (helpEngine.unregisterDocumentation(ns))
+            helpEngine.setupData();
     }
 }
 
@@ -327,14 +318,14 @@ void RemoteControl::applyCache()
         CentralWidget::instance()->setSource(m_setSource);
     } else if (!m_activateKeyword.isEmpty()) {
         m_mainWindow->setIndexString(m_activateKeyword);
-        m_helpEngine->indexWidget()->activateCurrentItem();
+        helpEngine.indexWidget()->activateCurrentItem();
     } else if (!m_activateIdentifier.isEmpty()) {
         QMap<QString, QUrl> links =
-            m_helpEngine->linksForIdentifier(m_activateIdentifier);
-        if (links.count())
+            helpEngine.linksForIdentifier(m_activateIdentifier);
+        if (!links.isEmpty())
             CentralWidget::instance()->setSource(links.constBegin().value());
     } else if (!m_currentFilter.isEmpty()) {
-        m_helpEngine->setCurrentFilter(m_currentFilter);
+        helpEngine.setCurrentFilter(m_currentFilter);
     }
 
     if (m_syncContents)

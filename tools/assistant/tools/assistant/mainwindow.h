@@ -117,10 +117,13 @@ private slots:
     void lookForNewQtDocumentation();
     void indexingStarted();
     void indexingFinished();
-    void displayInstallationError(const QString &errorMessage);
     void qtDocumentationInstalled(bool newDocsInstalled);
+    void registerDocumentation(const QString &component,
+                               const QString &absFileName);
+    void resetQtDocInfo(const QString &component);
     void checkInitState();
-    void qchFileChanged(const QString &fileName);
+    void documentationRemoved(const QString &namespaceName);
+    void documentationUpdated(const QString &namespaceName);
 
     void updateBookmarkMenu();
     void showBookmark(QAction *action);
@@ -143,7 +146,6 @@ private:
     void hideBookmarks();
     void hideSearch();
 
-    QHelpEngine *m_helpEngine;
     CentralWidget *m_centralWidget;
     IndexWindow *m_indexWindow;
     ContentWindow *m_contentWindow;
@@ -179,7 +181,6 @@ private:
 
     QWidget *m_progressWidget;
     QtDocInstaller *m_qtDocInstaller;
-    QFileSystemWatcher * const m_qchWatcher;
 
     bool m_connectedInitSignals;
 };

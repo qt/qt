@@ -47,18 +47,22 @@
 #include "contentwindow.h"
 #include "preferencesdialog.h"
 #include "bookmarkmanager.h"
+#include "helpenginewrapper.h"
 #include "remotecontrol.h"
 #include "cmdlineparser.h"
 #include "aboutdialog.h"
 #include "searchwidget.h"
 #include "qtdocinstaller.h"
 #include "xbelsupport.h"
-#include "../shared/collectionconfiguration.h"
+
+// #define TRACING_REQUESTED
 
 #include <QtCore/QDir>
 #include <QtCore/QTimer>
+#include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 #include <QtCore/QFileSystemWatcher>
+#include <QtCore/QPair>
 #include <QtCore/QResource>
 #include <QtCore/QByteArray>
 #include <QtCore/QTextStream>
@@ -81,7 +85,7 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QFileDialog>
 
-#include <QtHelp/QHelpEngine>
+#include <QtHelp/QHelpEngineCore>
 #include <QtHelp/QHelpSearchEngine>
 #include <QtHelp/QHelpContentModel>
 #include <QtHelp/QHelpIndexModel>
@@ -95,29 +99,31 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     , m_cmdLine(cmdLine)
     , m_progressWidget(0)
     , m_qtDocInstaller(0)
-    , m_qchWatcher(new QFileSystemWatcher(this))
     , m_connectedInitSignals(false)
 {
+
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
 
+    QString collectionFile;
     if (usesDefaultCollection()) {
         MainWindow::collectionFileDirectory(true);
-        m_helpEngine = new QHelpEngine(MainWindow::defaultHelpCollectionFileName(),
-            this);
+        collectionFile = MainWindow::defaultHelpCollectionFileName();
     } else {
-        m_helpEngine = new QHelpEngine(cmdLine->collectionFile(), this);
+        collectionFile = cmdLine->collectionFile();
     }
+    HelpEngineWrapper &helpEngineWrapper =
+        HelpEngineWrapper::instance(collectionFile);
 
-    m_centralWidget = new CentralWidget(m_helpEngine, this);
+    m_centralWidget = new CentralWidget(this);
     setCentralWidget(m_centralWidget);
 
-    m_indexWindow = new IndexWindow(m_helpEngine);
+    m_indexWindow = new IndexWindow(this);
     QDockWidget *indexDock = new QDockWidget(tr("Index"), this);
     indexDock->setObjectName(QLatin1String("IndexWindow"));
     indexDock->setWidget(m_indexWindow);
     addDockWidget(Qt::LeftDockWidgetArea, indexDock);
 
-    m_contentWindow = new ContentWindow(m_helpEngine);
+    m_contentWindow = new ContentWindow;
     QDockWidget *contentDock = new QDockWidget(tr("Contents"), this);
     contentDock->setObjectName(QLatin1String("ContentWindow"));
     contentDock->setWidget(m_contentWindow);
@@ -128,7 +134,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     bookmarkDock->setWidget(setupBookmarkWidget());
     addDockWidget(Qt::LeftDockWidgetArea, bookmarkDock);
 
-    QHelpSearchEngine *searchEngine = m_helpEngine->searchEngine();
+    QHelpSearchEngine *searchEngine = helpEngineWrapper.searchEngine();
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
 
@@ -153,11 +159,9 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         connect(m_bookmarkManager, SIGNAL(bookmarksChanged()), this,
             SLOT(updateBookmarkMenu()));
 
-        const QString windowTitle =
-            CollectionConfiguration::windowTitle(*m_helpEngine);
+        const QString windowTitle = helpEngineWrapper.windowTitle();
         setWindowTitle(windowTitle.isEmpty() ? defWindowTitle : windowTitle);
-        QByteArray iconArray =
-            CollectionConfiguration::applicationIcon(*m_helpEngine);
+        QByteArray iconArray = helpEngineWrapper.applicationIcon();
         if (iconArray.size() > 0) {
             QPixmap pix;
             pix.loadFromData(iconArray);
@@ -171,11 +175,11 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         // Show the widget here, otherwise the restore geometry and state won't work
         // on x11.
         show();
-        QByteArray ba(CollectionConfiguration::mainWindow(*m_helpEngine));
+        QByteArray ba(helpEngineWrapper.mainWindow());
         if (!ba.isEmpty())
             restoreState(ba);
 
-        ba = CollectionConfiguration::mainWindowGeometry(*m_helpEngine);
+        ba = helpEngineWrapper.mainWindowGeometry();
         if (!ba.isEmpty()) {
             restoreGeometry(ba);
         } else {
@@ -185,15 +189,13 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
             resize(QSize(800, 600));
         }
 
-        if (!CollectionConfiguration::hasFontSettings(*m_helpEngine)) {
-            CollectionConfiguration::setUseAppFont(*m_helpEngine, false);
-            CollectionConfiguration::setUseBrowserFont(*m_helpEngine, false);
-            CollectionConfiguration::setAppFont(*m_helpEngine, qApp->font());
-            CollectionConfiguration::setAppWritingSystem(*m_helpEngine,
-                QFontDatabase::Latin);
-            CollectionConfiguration::setBrowserFont(*m_helpEngine, qApp->font());
-            CollectionConfiguration::setBrowserWritingSystem(*m_helpEngine,
-                QFontDatabase::Latin);
+        if (!helpEngineWrapper.hasFontSettings()) {
+            helpEngineWrapper.setUseAppFont(false);
+            helpEngineWrapper.setUseBrowserFont(false);
+            helpEngineWrapper.setAppFont(qApp->font());
+            helpEngineWrapper.setAppWritingSystem(QFontDatabase::Latin);
+            helpEngineWrapper.setBrowserFont(qApp->font());
+            helpEngineWrapper.setBrowserWritingSystem(QFontDatabase::Latin);
         } else {
             updateApplicationFont();
         }
@@ -202,7 +204,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
 
         QTimer::singleShot(0, this, SLOT(insertLastPages()));
         if (m_cmdLine->enableRemoteControl())
-            (void)new RemoteControl(this, m_helpEngine, m_qchWatcher);
+            (void)new RemoteControl(this);
 
         if (m_cmdLine->contents() == CmdLineParser::Show)
             showContents();
@@ -233,8 +235,8 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
 
         if (!m_cmdLine->currentFilter().isEmpty()) {
             const QString &curFilter = m_cmdLine->currentFilter();
-            if (m_helpEngine->customFilters().contains(curFilter))
-                m_helpEngine->setCurrentFilter(curFilter);
+            if (helpEngineWrapper.customFilters().contains(curFilter))
+                helpEngineWrapper.setCurrentFilter(curFilter);
         }
 
         if (usesDefaultCollection())
@@ -242,12 +244,11 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else
             checkInitState();
 
-        foreach(const QString &ns, m_helpEngine->registeredDocumentations()) {
-            const QString &docFile = m_helpEngine->documentationFileName(ns);
-            m_qchWatcher->addPath(docFile);
-            connect(m_qchWatcher, SIGNAL(fileChanged(QString)), this,
-                    SLOT(qchFileChanged(QString)));
-        }
+        helpEngineWrapper.initFileSystemWatchers();
+        connect(&helpEngineWrapper, SIGNAL(documentationRemoved(QString)),
+                this, SLOT(documentationRemoved(QString)));
+        connect(&helpEngineWrapper, SIGNAL(documentationUpdated(QString)),
+                this, SLOT(documentationUpdated(QString)));
     }
     setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 }
@@ -266,21 +267,20 @@ bool MainWindow::usesDefaultCollection() const
 void MainWindow::closeEvent(QCloseEvent *e)
 {
     m_bookmarkManager->saveBookmarks();
-    CollectionConfiguration::setMainWindow(*m_helpEngine, saveState());
-    CollectionConfiguration::setMainWindowGeometry(*m_helpEngine,
-        saveGeometry());
-
+    HelpEngineWrapper::instance().setMainWindow(saveState());
+    HelpEngineWrapper::instance().setMainWindowGeometry(saveGeometry());
     QMainWindow::closeEvent(e);
 }
 
 bool MainWindow::initHelpDB()
 {
-    if (!m_helpEngine->setupData())
+    HelpEngineWrapper &helpEngineWrapper = HelpEngineWrapper::instance();
+    if (!helpEngineWrapper.setupData())
         return false;
 
     bool assistantInternalDocRegistered = false;
     QString intern(QLatin1String("com.trolltech.com.assistantinternal-"));
-    foreach (const QString &ns, m_helpEngine->registeredDocumentations()) {
+    foreach (const QString &ns, helpEngineWrapper.registeredDocumentations()) {
         if (ns.startsWith(intern)) {
             intern = ns;
             assistantInternalDocRegistered = true;
@@ -288,8 +288,7 @@ bool MainWindow::initHelpDB()
         }
     }
 
-    const QString &collectionFile = m_helpEngine->collectionFile();
-
+    const QString &collectionFile = helpEngineWrapper.collectionFile();
     QFileInfo fi(collectionFile);
     QString helpFile;
     QTextStream(&helpFile) << fi.absolutePath() << QDir::separator()
@@ -306,62 +305,52 @@ bool MainWindow::initHelpDB()
 
             file.close();
         }
-        QHelpEngineCore hc(fi.absoluteFilePath());
-        hc.setupData();
-        const QString internalFile = hc.documentationFileName(intern);
-        if (hc.unregisterDocumentation(intern))
-            m_qchWatcher->removePath(internalFile);
-        if (hc.registerDocumentation(helpFile))
-            m_qchWatcher->addPath(helpFile);
+        helpEngineWrapper.unregisterDocumentation(intern);
+        helpEngineWrapper.registerDocumentation(helpFile);
         needsSetup = true;
     }
 
-    if (!CollectionConfiguration::unfilteredInserted(*m_helpEngine)) {
-        {
-            QHelpEngineCore hc(collectionFile);
-            hc.setupData();
-            hc.addCustomFilter(tr("Unfiltered"), QStringList());
-            CollectionConfiguration::setUnfilteredInserted(hc);
-        }
-
-        m_helpEngine->blockSignals(true);
-        m_helpEngine->setCurrentFilter(tr("Unfiltered"));
-        m_helpEngine->blockSignals(false);
+    if (!helpEngineWrapper.unfilteredInserted()) {
+        helpEngineWrapper.addCustomFilter(tr("Unfiltered"), QStringList());
+        helpEngineWrapper.setUnfilteredInserted();
+        helpEngineWrapper.setCurrentFilter(tr("Unfiltered"));
         needsSetup = true;
     }
 
-    if (needsSetup) {
-        m_helpEngine->setupData();
-        Q_ASSERT(m_qchWatcher->files().count()
-                 == m_helpEngine->registeredDocumentations().count());
-    }
+    if (needsSetup)
+        helpEngineWrapper.setupData();
     return true;
 }
 
 void MainWindow::lookForNewQtDocumentation()
 {
-    m_qtDocInstaller =
-        new QtDocInstaller(m_helpEngine->collectionFile(), m_qchWatcher);
-    connect(m_qtDocInstaller, SIGNAL(errorMessage(QString)), this,
-        SLOT(displayInstallationError(QString)));
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    QStringList docs;
+    docs << QLatin1String("assistant")
+        << QLatin1String("designer")
+        << QLatin1String("linguist")
+        << QLatin1String("qmake")
+        << QLatin1String("qt");
+    QList<QtDocInstaller::DocInfo> qtDocInfos;
+    foreach (const QString &doc, docs)
+        qtDocInfos.append(QtDocInstaller::DocInfo(doc, helpEngine.qtDocInfo(doc)));
+
+    m_qtDocInstaller = new QtDocInstaller(qtDocInfos);
     connect(m_qtDocInstaller, SIGNAL(docsInstalled(bool)), this,
         SLOT(qtDocumentationInstalled(bool)));
-
-    if (CollectionConfiguration::qtDocInfo(*m_helpEngine, QLatin1String("qt")).
-        count() != 2)
+    connect(m_qtDocInstaller, SIGNAL(qchFileNotFound(QString)), this,
+            SLOT(resetQtDocInfo(QString)));
+    connect(m_qtDocInstaller, SIGNAL(registerDocumentation(QString, QString)),
+            this, SLOT(registerDocumentation(QString, QString)));
+    if (helpEngine.qtDocInfo(QLatin1String("qt")).count() != 2)
         statusBar()->showMessage(tr("Looking for Qt Documentation..."));
     m_qtDocInstaller->installDocs();
-}
-
-void MainWindow::displayInstallationError(const QString &errorMessage)
-{
-    QMessageBox::warning(this, tr("Qt Assistant"), errorMessage);
 }
 
 void MainWindow::qtDocumentationInstalled(bool newDocsInstalled)
 {
     if (newDocsInstalled)
-        m_helpEngine->setupData();
+        HelpEngineWrapper::instance().setupData();
     statusBar()->clearMessage();
     checkInitState();
 }
@@ -371,19 +360,20 @@ void MainWindow::checkInitState()
     if (!m_cmdLine->enableRemoteControl())
         return;
 
-    if (m_helpEngine->contentModel()->isCreatingContents()
-        || m_helpEngine->indexModel()->isCreatingIndex()) {
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (helpEngine.contentModel()->isCreatingContents()
+        || helpEngine.indexModel()->isCreatingIndex()) {
         if (!m_connectedInitSignals) {
-            connect(m_helpEngine->contentModel(), SIGNAL(contentsCreated()),
+            connect(helpEngine.contentModel(), SIGNAL(contentsCreated()),
                 this, SLOT(checkInitState()));
-            connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()), this,
+            connect(helpEngine.indexModel(), SIGNAL(indexCreated()), this,
                 SLOT(checkInitState()));
             m_connectedInitSignals = true;
         }
     } else {
         if (m_connectedInitSignals) {
-            disconnect(m_helpEngine->contentModel(), 0, this, 0);
-            disconnect(m_helpEngine->indexModel(), 0, this, 0);
+            disconnect(helpEngine.contentModel(), 0, this, 0);
+            disconnect(helpEngine.indexModel(), 0, this, 0);
         }
         emit initDone();
     }
@@ -663,7 +653,8 @@ QMenu *MainWindow::toolBarMenu()
 
 void MainWindow::setupFilterToolbar()
 {
-    if (!CollectionConfiguration::filterFunctionalityEnabled(*m_helpEngine))
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (!helpEngine.filterFunctionalityEnabled())
         return;
 
     m_filterCombo = new QComboBox(this);
@@ -676,15 +667,15 @@ void MainWindow::setupFilterToolbar()
         this));
     filterToolBar->addWidget(m_filterCombo);
 
-    if (!CollectionConfiguration::filterToolbarVisible(*m_helpEngine))
+    if (!helpEngine.filterToolbarVisible())
         filterToolBar->hide();
     toolBarMenu()->addAction(filterToolBar->toggleViewAction());
 
-    connect(m_helpEngine, SIGNAL(setupFinished()), this,
-        SLOT(setupFilterCombo()));
+    connect(&helpEngine, SIGNAL(setupFinished()), this,
+        SLOT(setupFilterCombo()), Qt::QueuedConnection);
     connect(m_filterCombo, SIGNAL(activated(QString)), this,
         SLOT(filterDocumentation(QString)));
-    connect(m_helpEngine, SIGNAL(currentFilterChanged(QString)), this,
+    connect(&helpEngine, SIGNAL(currentFilterChanged(QString)), this,
         SLOT(currentFilterChanged(QString)));
 
     setupFilterCombo();
@@ -692,7 +683,8 @@ void MainWindow::setupFilterToolbar()
 
 void MainWindow::setupAddressToolbar()
 {
-    if (!CollectionConfiguration::addressBarEnabled(*m_helpEngine))
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (!helpEngine.addressBarEnabled())
         return;
 
     m_addressLineEdit = new QLineEdit(this);
@@ -704,7 +696,7 @@ void MainWindow::setupAddressToolbar()
         this));
     addressToolBar->addWidget(m_addressLineEdit);
 
-    if (!CollectionConfiguration::addressBarVisible(*m_helpEngine))
+    if (!helpEngine.addressBarVisible())
         addressToolBar->hide();
     toolBarMenu()->addAction(addressToolBar->toggleViewAction());
 
@@ -719,30 +711,28 @@ void MainWindow::setupAddressToolbar()
 
 void MainWindow::updateAboutMenuText()
 {
-    if (m_helpEngine) {
-        QByteArray ba = CollectionConfiguration::aboutMenuTexts(*m_helpEngine);
-        if (ba.size() > 0) {
-            QString lang;
-            QString str;
-            QString trStr;
-            QString currentLang = QLocale::system().name();
-            int i = currentLang.indexOf(QLatin1Char('_'));
-            if (i > -1)
-                currentLang = currentLang.left(i);
-            QDataStream s(&ba, QIODevice::ReadOnly);
-            while (!s.atEnd()) {
-                s >> lang;
-                s >> str;
-                if (lang == QLatin1String("default") && trStr.isEmpty()) {
-                    trStr = str;
-                } else if (lang == currentLang) {
-                    trStr = str;
-                    break;
-                }
+    QByteArray ba = HelpEngineWrapper::instance().aboutMenuTexts();
+    if (ba.size() > 0) {
+        QString lang;
+        QString str;
+        QString trStr;
+        QString currentLang = QLocale::system().name();
+        int i = currentLang.indexOf(QLatin1Char('_'));
+        if (i > -1)
+            currentLang = currentLang.left(i);
+        QDataStream s(&ba, QIODevice::ReadOnly);
+        while (!s.atEnd()) {
+            s >> lang;
+            s >> str;
+            if (lang == QLatin1String("default") && trStr.isEmpty()) {
+                trStr = str;
+            } else if (lang == currentLang) {
+                trStr = str;
+                break;
             }
-            if (!trStr.isEmpty())
-                m_aboutAction->setText(trStr);
         }
+        if (!trStr.isEmpty())
+            m_aboutAction->setText(trStr);
     }
 }
 
@@ -796,7 +786,7 @@ void MainWindow::showTopicChooser(const QMap<QString, QUrl> &links,
 
 void MainWindow::showPreferences()
 {
-    PreferencesDialog dia(m_helpEngine, m_qchWatcher, this);
+    PreferencesDialog dia(this);
 
     connect(&dia, SIGNAL(updateApplicationFont()), this,
         SLOT(updateApplicationFont()));
@@ -832,26 +822,25 @@ void MainWindow::addNewBookmark(const QString &title, const QString &url)
 
 void MainWindow::showAboutDialog()
 {
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QByteArray contents;
-    if (m_helpEngine) {
-        QByteArray ba = CollectionConfiguration::aboutTexts(*m_helpEngine);
-        if (!ba.isEmpty()) {
-            QString lang;
-            QByteArray cba;
-            QString currentLang = QLocale::system().name();
-            int i = currentLang.indexOf(QLatin1Char('_'));
-            if (i > -1)
-                currentLang = currentLang.left(i);
-            QDataStream s(&ba, QIODevice::ReadOnly);
-            while (!s.atEnd()) {
-                s >> lang;
-                s >> cba;
-                if (lang == QLatin1String("default") && contents.isEmpty()) {
-                    contents = cba;
-                } else if (lang == currentLang) {
-                    contents = cba;
-                    break;
-                }
+    QByteArray ba = helpEngine.aboutTexts();
+    if (!ba.isEmpty()) {
+        QString lang;
+        QByteArray cba;
+        QString currentLang = QLocale::system().name();
+        int i = currentLang.indexOf(QLatin1Char('_'));
+        if (i > -1)
+            currentLang = currentLang.left(i);
+        QDataStream s(&ba, QIODevice::ReadOnly);
+        while (!s.atEnd()) {
+            s >> lang;
+            s >> cba;
+            if (lang == QLatin1String("default") && contents.isEmpty()) {
+                contents = cba;
+            } else if (lang == currentLang) {
+                contents = cba;
+                break;
             }
         }
     }
@@ -860,9 +849,8 @@ void MainWindow::showAboutDialog()
 
     QByteArray iconArray;
     if (!contents.isEmpty()) {
-        iconArray = CollectionConfiguration::aboutIcon(*m_helpEngine);
-        QByteArray resources =
-            CollectionConfiguration::aboutImages(*m_helpEngine);
+        iconArray = helpEngine.aboutIcon();
+        QByteArray resources = helpEngine.aboutImages();
         QPixmap pix;
         pix.loadFromData(iconArray);
         aboutDia.setText(QString::fromUtf8(contents), resources);
@@ -990,20 +978,22 @@ void MainWindow::showSearchWidget()
 
 void MainWindow::updateApplicationFont()
 {
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QFont font = qApp->font();
-    if (CollectionConfiguration::usesAppFont(*m_helpEngine))
-        font = CollectionConfiguration::appFont(*m_helpEngine);
+    if (helpEngine.usesAppFont())
+        font = helpEngine.appFont();
 
     qApp->setFont(font, "QWidget");
 }
 
 void MainWindow::setupFilterCombo()
 {
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QString curFilter = m_filterCombo->currentText();
     if (curFilter.isEmpty())
-        curFilter = m_helpEngine->currentFilter();
+        curFilter = helpEngine.currentFilter();
     m_filterCombo->clear();
-    m_filterCombo->addItems(m_helpEngine->customFilters());
+    m_filterCombo->addItems(helpEngine.customFilters());
     int idx = m_filterCombo->findText(curFilter);
     if (idx < 0)
         idx = 0;
@@ -1012,7 +1002,7 @@ void MainWindow::setupFilterCombo()
 
 void MainWindow::filterDocumentation(const QString &customFilter)
 {
-    m_helpEngine->setCurrentFilter(customFilter);
+    HelpEngineWrapper::instance().setCurrentFilter(customFilter);
 }
 
 void MainWindow::expandTOC(int depth)
@@ -1055,7 +1045,7 @@ void MainWindow::indexingFinished()
 
 QWidget* MainWindow::setupBookmarkWidget()
 {
-    m_bookmarkManager = new BookmarkManager(m_helpEngine);
+    m_bookmarkManager = new BookmarkManager;
     m_bookmarkWidget = new BookmarkWidget(m_bookmarkManager, this);
     connect(m_bookmarkWidget, SIGNAL(addBookmark()), this, SLOT(addBookmark()));
     return m_bookmarkWidget;
@@ -1135,33 +1125,45 @@ void MainWindow::currentFilterChanged(const QString &filter)
     m_filterCombo->setCurrentIndex(index);
 }
 
-void MainWindow::qchFileChanged(const QString &fileName)
+void MainWindow::documentationRemoved(const QString &namespaceName)
 {
-    /*
-     * We don't use QHelpEngineCore::namespaceName(fileName), because the file
-     * may not exist anymore or contain a different namespace.
-     */
-    QString ns;
-    foreach (const QString &curNs, m_helpEngine->registeredDocumentations()) {
-        if (m_helpEngine->documentationFileName(curNs) == fileName) {
-            ns = curNs;
-            break;
-        }
-    }
+    CentralWidget* widget = CentralWidget::instance();
+    widget->closeTabs(widget->currentSourceFileList().keys(namespaceName));
+}
 
-    /*
-     * We can't do an assertion here, because QFileSystemWatcher may send the
-     * signal more than  once.
-     */
+void MainWindow::documentationUpdated(const QString &namespaceName)
+{
+    // TODO: Check whether the documents still exists and if they do, reload.
+    CentralWidget* widget = CentralWidget::instance();
+    widget->closeTabs(widget->currentSourceFileList().keys(namespaceName));
+}
+
+void MainWindow::resetQtDocInfo(const QString &component)
+{
+    HelpEngineWrapper::instance().setQtDocInfo(component,
+        QStringList(QDateTime().toString(Qt::ISODate)));
+}
+
+void MainWindow::registerDocumentation(const QString &component,
+                                       const QString &absFileName)
+{
+    QString ns = QHelpEngineCore::namespaceName(absFileName);
     if (ns.isEmpty())
         return;
 
-    CentralWidget* widget = CentralWidget::instance();
-    widget->closeTabs(widget->currentSourceFileList().keys(ns));
-    if (m_helpEngine->unregisterDocumentation(ns) &&
-        (!QFileInfo(fileName).exists()
-         || !m_helpEngine->registerDocumentation(fileName)))
-        m_qchWatcher->removePath(fileName);
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (helpEngine.registeredDocumentations().contains(ns))
+        helpEngine.unregisterDocumentation(ns);
+    if (!helpEngine.registerDocumentation(absFileName)) {
+        QMessageBox::warning(this, tr("Qt Assistant"),
+            tr("Could not register file '%1': %2").
+            arg(absFileName).arg(helpEngine.error()));
+    } else {
+        QStringList docInfo;
+        docInfo << QFileInfo(absFileName).lastModified().toString(Qt::ISODate)
+                << absFileName;
+        helpEngine.setQtDocInfo(component, docInfo);
+    }
 }
 
 QT_END_NAMESPACE

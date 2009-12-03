@@ -49,7 +49,6 @@
 QT_BEGIN_NAMESPACE
 
 class QHelpIndexWidget;
-class QHelpEngine;
 class QModelIndex;
 
 class IndexWindow : public QWidget
@@ -57,7 +56,7 @@ class IndexWindow : public QWidget
     Q_OBJECT
 
 public:
-    IndexWindow(QHelpEngine *helpEngine, QWidget *parent = 0);
+    IndexWindow(QWidget *parent = 0);
     ~IndexWindow();
 
     void setSearchLineEditText(const QString &text);
@@ -84,7 +83,6 @@ private:
 
     QLineEdit *m_searchLineEdit;
     QHelpIndexWidget *m_indexWidget;
-    QHelpEngine *m_helpEngine;
 };
 
 QT_END_NAMESPACE
