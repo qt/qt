@@ -241,6 +241,7 @@ struct mallinfo {
   MALLINFO_FIELD_TYPE fordblks; /* total free space */
   MALLINFO_FIELD_TYPE keepcost; /* releasable (via malloc_trim) space */
   MALLINFO_FIELD_TYPE cellCount;/* Number of chunks allocated*/
+  MALLINFO_FIELD_TYPE largestBlock;
 };
 
 #endif /* HAVE_USR_INCLUDE_MALLOC_H */

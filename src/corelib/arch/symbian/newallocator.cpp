@@ -503,12 +503,13 @@ TAny* RNewAllocator::ReAlloc(TAny* aPtr, TInt aSize, TInt /*aMode = 0*/)
 
 TInt RNewAllocator::Available(TInt& aBiggestBlock) const
 {
-    //struct mallinfo mi = dlmallinfo();
-	aBiggestBlock = 0;
-	//return mi.fordblks;
-	return ptrdiff(iTop, iBase) - iTotalAllocSize; //HACK
-	/*Need to see how to implement this*/
-	// TODO: return iHeap.Available(aBiggestBlock);
+	//TODO: consider page and slab allocators
+
+	//this gets free space in DL region - the C ported code doesn't respect const yet.
+	RNewAllocator* self = const_cast<RNewAllocator*> (this);
+	mallinfo info = self->dlmallinfo();
+	aBiggestBlock = info.largestBlock;
+	return info.fordblks;
 }
 TInt RNewAllocator::AllocSize(TInt& aTotalAllocSize) const
 {
@@ -812,7 +813,7 @@ void* RNewAllocator::internal_realloc(mstate m, void* oldmem, size_t bytes)
 }
 /* ----------------------------- statistics ------------------------------ */
 mallinfo RNewAllocator::internal_mallinfo(mstate m) {
-  struct mallinfo nm = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  struct mallinfo nm = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
   TInt chunkCnt = 0;
   if (!PREACTION(m)) {
     check_malloc_state(m);
@@ -829,6 +830,8 @@ mallinfo RNewAllocator::internal_mallinfo(mstate m) {
           size_t sz = chunksize(q);
           sum += sz;
           if (!cinuse(q)) {
+            if (sz > nm.largestBlock)
+              nm.largestBlock = sz;
             mfree += sz;
             ++nfree;
           }
