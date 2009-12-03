@@ -53,6 +53,8 @@
 #include <private/qpaintengineex_opengl2_p.h>
 
 #include <qdesktopwidget.h>
+#include <qfile.h>
+#include <qimagereader.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -405,6 +407,61 @@ void QGLPixmapData::fromImage(const QImage &image,
         glDeleteTextures(1, &m_texture.id);
         m_texture.id = 0;
     }
+}
+
+bool QGLPixmapData::fromFile(const QString &filename, const char *format,
+                             Qt::ImageConversionFlags flags)
+{
+    if (pixelType() == QPixmapData::BitmapType)
+        return QPixmapData::fromFile(filename, format, flags);
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+    QByteArray data = file.peek(64);
+    bool alpha;
+    if (m_texture.canBindCompressedTexture
+            (data.constData(), data.size(), format, &alpha)) {
+        resize(0, 0);
+        data = file.readAll();
+        file.close();
+        QSize size = m_texture.bindCompressedTexture
+            (data.constData(), data.size(), format);
+        if (!size.isEmpty()) {
+            w = size.width();
+            h = size.height();
+            is_null = false;
+            d = 32;
+            m_hasAlpha = alpha;
+            m_source = QImage();
+            m_dirty = isValid();
+            return true;
+        }
+        return false;
+    }
+    fromImage(QImageReader(&file, format).read(), flags);
+    return !isNull();
+}
+
+bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
+                             Qt::ImageConversionFlags flags)
+{
+    bool alpha;
+    const char *buf = reinterpret_cast<const char *>(buffer);
+    if (m_texture.canBindCompressedTexture(buf, int(len), format, &alpha)) {
+        resize(0, 0);
+        QSize size = m_texture.bindCompressedTexture(buf, int(len), format);
+        if (!size.isEmpty()) {
+            w = size.width();
+            h = size.height();
+            is_null = false;
+            d = 32;
+            m_hasAlpha = alpha;
+            m_source = QImage();
+            m_dirty = isValid();
+            return true;
+        }
+    }
+    return QPixmapData::fromData(buffer, len, format, flags);
 }
 
 bool QGLPixmapData::scroll(int dx, int dy, const QRect &rect)

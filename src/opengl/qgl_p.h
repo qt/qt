@@ -222,6 +222,8 @@ public:
 class QGLContextResource;
 class QGLSharedResourceGuard;
 
+typedef QHash<QString, GLuint> QGLDDSCache;
+
 // QGLContextPrivate has the responsibility of creating context groups.
 // QGLContextPrivate and QGLShareRegister will both maintain the reference counter and destroy
 // context groups when needed.
@@ -246,6 +248,7 @@ private:
     QHash<QGLContextResource *, void *> m_resources;
     QGLSharedResourceGuard *m_guards; // double-linked list of active guards.
     QAtomicInt m_refs;
+    QGLDDSCache m_dds_cache;
 
     void cleanupResources(const QGLContext *ctx);
 
@@ -377,7 +380,10 @@ public:
         PixelBufferObject       = 0x00000800,
         FramebufferBlit         = 0x00001000,
         NPOTTextures            = 0x00002000,
-        BGRATextureFormat       = 0x00004000
+        BGRATextureFormat       = 0x00004000,
+        DDSTextureCompression   = 0x00008000,
+        ETC1TextureCompression  = 0x00010000,
+        PVRTCTextureCompression = 0x00020000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
@@ -482,6 +488,14 @@ public:
     QPixmapData* boundPixmap;
 #endif
 
+    bool canBindCompressedTexture
+        (const char *buf, int len, const char *format, bool *hasAlpha);
+    QSize bindCompressedTexture
+        (const QString& fileName, const char *format = 0);
+    QSize bindCompressedTexture
+        (const char *buf, int len, const char *format = 0);
+    QSize bindCompressedTextureDDS(const char *buf, int len);
+    QSize bindCompressedTexturePVR(const char *buf, int len);
 };
 
 class QGLTextureCache {
