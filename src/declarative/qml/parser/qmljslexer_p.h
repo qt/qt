@@ -64,7 +64,7 @@ namespace QmlJS {
 class Engine;
 class NameId;
 
-class Lexer
+class QML_PARSER_EXPORT Lexer
 {
 public:
     Lexer(Engine *eng, bool tokenizeComments = false);

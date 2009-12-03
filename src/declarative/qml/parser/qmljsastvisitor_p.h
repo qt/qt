@@ -60,7 +60,7 @@ QT_QML_BEGIN_NAMESPACE
 
 namespace QmlJS { namespace AST {
 
-class Visitor
+class QML_PARSER_EXPORT Visitor
 {
 public:
     Visitor();

@@ -63,7 +63,7 @@ QT_QML_BEGIN_NAMESPACE
 
 namespace QmlJS {
 
-class MemoryPool : public QSharedData
+class QML_PARSER_EXPORT MemoryPool : public QSharedData
 {
 public:
     enum { maxBlockCount = -1 };

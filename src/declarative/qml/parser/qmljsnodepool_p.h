@@ -106,7 +106,7 @@ inline NodeType *makeAstNode(MemoryPool *storage, Arg1 arg1, Arg2 arg2, Arg3 arg
     return node;
 }
 
-class NodePool : public MemoryPool
+class QML_PARSER_EXPORT NodePool : public MemoryPool
 {
 public:
     NodePool(const QString &fileName, Engine *engine);
