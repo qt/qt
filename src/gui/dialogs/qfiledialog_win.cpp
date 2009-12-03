@@ -526,7 +526,7 @@ static QStringList qt_win_CID_get_open_file_names(const QFileDialogArgs &args,
     modal_widget.setParent(args.parent, Qt::Window);
     QApplicationPrivate::enterModal(&modal_widget);
     // Multiple selection is allowed only in IFileOpenDialog.
-    IFileOpenDialog *pfd;
+    IFileOpenDialog *pfd = 0;
     HRESULT hr = CoCreateInstance(QT_CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, QT_IID_IFileOpenDialog, 
         reinterpret_cast<void**>(&pfd));
 
@@ -597,6 +597,8 @@ static QStringList qt_win_CID_get_open_file_names(const QFileDialogArgs &args,
             }
         }
     }
+    if (pfd)
+        pfd->Release();
     return result;
 }
 

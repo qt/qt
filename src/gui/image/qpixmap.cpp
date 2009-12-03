@@ -1168,7 +1168,7 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
 Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
-    if (data->classId() == QPixmapData::X11Class)
+    if (data && data->classId() == QPixmapData::X11Class)
         return static_cast<const QX11PixmapData*>(data.constData())->handle();
 #endif
     return 0;
@@ -1219,7 +1219,7 @@ QPixmap::QPixmap(const QImage& image)
     if (!qt_pixmap_thread_test())
         return;
 
-    if (data->pixelType() == QPixmapData::BitmapType)
+    if (data && data->pixelType() == QPixmapData::BitmapType)
         *this = QBitmap::fromImage(image);
     else
         *this = fromImage(image);

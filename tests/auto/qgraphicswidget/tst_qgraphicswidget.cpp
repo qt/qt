@@ -106,6 +106,7 @@ private slots:
     void font_data();
     void font();
     void fontPropagation();
+    void fontChangedEvent();
     void fontPropagationWidgetItemWidget();
     void fontPropagationSceneChange();
     void geometry_data();
@@ -162,6 +163,7 @@ private slots:
     void addChildInpolishEvent();
     void polishEvent();
     void polishEvent2();
+    void autoFillBackground();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -671,6 +673,40 @@ void tst_QGraphicsWidget::fontPropagation()
     QVERIFY(child2->font().bold());
     QVERIFY(!child2->font().italic());
     QCOMPARE(child2->font().pointSize(), 43);
+}
+
+void tst_QGraphicsWidget::fontChangedEvent()
+{
+    QGraphicsWidget *root = new QGraphicsWidget;
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    // Check that only the application fonts apply.
+    QFont appFont = QApplication::font();
+    QCOMPARE(scene.font(), appFont);
+    QCOMPARE(root->font(), appFont);
+
+    EventSpy rootSpyFont(root, QEvent::FontChange);
+    EventSpy rootSpyPolish(root, QEvent::Polish);
+    QCOMPARE(rootSpyFont.count(), 0);
+    QApplication::processEvents(); //The polish event is sent
+    QCOMPARE(rootSpyPolish.count(), 1);
+    QApplication::processEvents(); //Process events to see if we get the font change event
+    //The font is still the same so no fontChangeEvent
+    QCOMPARE(rootSpyFont.count(), 0);
+
+    QFont font;
+    font.setPointSize(43);
+    root->setFont(font);
+    QApplication::processEvents(); //Process events to get the font change event
+    //The font changed
+    QCOMPARE(rootSpyFont.count(), 1);
+
+    //then roll back to the default one.
+    root->setFont(appFont);
+    QApplication::processEvents(); //Process events to get the font change event
+    //The font changed
+    QCOMPARE(rootSpyFont.count(), 2);
 }
 
 void tst_QGraphicsWidget::fontPropagationWidgetItemWidget()
@@ -2818,6 +2854,32 @@ void tst_QGraphicsWidget::polishEvent2()
 
     // Make sure the item got polish event.
     QVERIFY(widget->events.contains(QEvent::Polish));
+}
+
+void tst_QGraphicsWidget::autoFillBackground()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QCOMPARE(widget->autoFillBackground(), false);
+    widget->setAutoFillBackground(true);
+    QCOMPARE(widget->autoFillBackground(), true);
+
+    const QColor color(Qt::red);
+    const QRect rect(0, 0, 1, 1);
+
+    QGraphicsScene scene;
+    scene.addItem(widget);
+    widget->setGeometry(rect);
+
+    QPalette palette = widget->palette();
+    palette.setColor(QPalette::Window, color);
+    widget->setPalette(palette);
+
+    QImage image(rect.size(), QImage::Format_RGB32);
+    QPainter painter;
+    painter.begin(&image);
+    scene.render(&painter, rect, rect);
+    painter.end();
+    QCOMPARE(image.pixel(0, 0), color.rgb());
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)

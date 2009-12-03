@@ -133,36 +133,46 @@ private:
     TTimeIntervalMicroSeconds iDuration;
 };
 
+static QS60Beep* qt_S60Beep = 0;
+
 QS60Beep::~QS60Beep()
 {
+    if (iToneUtil) {
+        switch (iState) {
+        case EBeepPlaying:
+            iToneUtil->CancelPlay();
+            break;
+        case EBeepNotPrepared:
+            iToneUtil->CancelPrepare();
+            break;
+        }
+    }
     delete iToneUtil;
 }
 
 QS60Beep* QS60Beep::NewL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
 {
-    QS60Beep* self=new (ELeave) QS60Beep();
+    QS60Beep* self = new (ELeave) QS60Beep();
     CleanupStack::PushL(self);
     self->ConstructL(aFrequency, aDuration);
     CleanupStack::Pop();
     return self;
-};
+}
 
 void QS60Beep::ConstructL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
 {
-    iToneUtil=CMdaAudioToneUtility::NewL(*this);
-    iState=EBeepNotPrepared;
-    iFrequency=aFrequency;
-    iDuration=aDuration;
-    iToneUtil->PrepareToPlayTone(iFrequency,iDuration);
+    iToneUtil = CMdaAudioToneUtility::NewL(*this);
+    iState = EBeepNotPrepared;
+    iFrequency = aFrequency;
+    iDuration = aDuration;
+    iToneUtil->PrepareToPlayTone(iFrequency, iDuration);
 }
 
 void QS60Beep::Play()
 {
-    if (iState != EBeepNotPrepared) {
-        if (iState == EBeepPlaying) {
-            iToneUtil->CancelPlay();
-            iState = EBeepPrepared;
-        }
+    if (iState == EBeepPlaying) {
+        iToneUtil->CancelPlay();
+        iState = EBeepPrepared;
     }
 
     iToneUtil->Play();
@@ -173,13 +183,14 @@ void QS60Beep::MatoPrepareComplete(TInt aError)
 {
     if (aError == KErrNone) {
         iState = EBeepPrepared;
+        Play();
     }
 }
 
 void QS60Beep::MatoPlayComplete(TInt aError)
 {
     Q_UNUSED(aError);
-    iState=EBeepPrepared;
+    iState = EBeepPrepared;
 }
 
 
@@ -812,6 +823,12 @@ void QSymbianControl::Draw(const TRect& controlRect) const
     if (!engine)
         return;
 
+    const bool sendNativePaintEvents = qwidget->d_func()->extraData()->receiveNativePaintEvents;
+    if (sendNativePaintEvents) {
+        const QRect r = qt_TRect2QRect(controlRect);
+        QMetaObject::invokeMethod(qwidget, "beginNativePaintEvent", Qt::DirectConnection, Q_ARG(QRect, r));
+    }
+
     // Map source rectangle into coordinates of the backing store.
     const QPoint controlBase(controlRect.iTl.iX, controlRect.iTl.iY);
     const QPoint backingStoreBase = qwidget->mapTo(qwidget->window(), controlBase);
@@ -822,13 +839,47 @@ void QSymbianControl::Draw(const TRect& controlRect) const
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
 
-        if(!qwidget->d_func()->extraData()->disableBlit) {
+        switch(qwidget->d_func()->extraData()->nativePaintMode) {
+        case QWExtra::Disable:
+            // Do nothing
+            break;
+
+        case QWExtra::Blit:
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
+            break;
+
+        case QWExtra::ZeroFill:
+            if (Window().DisplayMode() == EColor16MA) {
+                gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
+                gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
+                gc.SetBrushColor(TRgb::Color16MA(0));
+                gc.Clear(controlRect);
+            } else {
+                gc.SetBrushColor(TRgb(0x000000));
+                gc.Clear(controlRect);
+            };
+            break;
+
+        default:
+            Q_ASSERT(false);
         }
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());
+    }
+
+    if (sendNativePaintEvents) {
+        const QRect r = qt_TRect2QRect(controlRect);
+        // The draw ops aren't actually sent to WSERV until the graphics
+        // context is deactivated, which happens in the function calling
+        // this one.  We therefore delay the delivery of endNativePaintEvent,
+        // to ensure that drawing has completed by the time the widget
+        // receives the event.  Note that, if the widget needs to ensure
+        // that the draw ops have actually been executed into the output
+        // framebuffer, a call to RWsSession::Flush is required in the
+        // endNativePaintEvent implementation.
+        QMetaObject::invokeMethod(qwidget, "endNativePaintEvent", Qt::QueuedConnection, Q_ARG(QRect, r));
     }
 }
 
@@ -1226,6 +1277,10 @@ void qt_init(QApplicationPrivate * /* priv */, int)
  *****************************************************************************/
 void qt_cleanup()
 {
+    if(qt_S60Beep) {
+        delete qt_S60Beep;
+        qt_S60Beep = 0;
+    }
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there
 
@@ -1467,14 +1522,13 @@ void QApplication::setCursorFlashTime(int msecs)
 
 void QApplication::beep()
 {
-    TInt frequency=440;
-    TTimeIntervalMicroSeconds duration(500000);
-    QS60Beep* beep=NULL;
-    TRAPD(err, beep=QS60Beep::NewL(frequency, duration));
-    if (!err)
-        beep->Play();
-    delete beep;
-    beep=NULL;
+    if (!qt_S60Beep) {
+        TInt frequency = 880;
+        TTimeIntervalMicroSeconds duration(500000);
+        TRAP_IGNORE(qt_S60Beep=QS60Beep::NewL(frequency, duration));
+    }
+    if (qt_S60Beep)
+        qt_S60Beep->Play();
 }
 
 /*!

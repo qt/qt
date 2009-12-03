@@ -2517,10 +2517,12 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
     layout.addWidget(&edit);
 
     w.show();
+    QApplication::setActiveWindow(&w);
     QTest::qWaitForWindowShown(&w);
     cb.clearEditText();
     cb.setFocus();
     QApplication::processEvents();
+    QTRY_VERIFY(cb.hasFocus());
     QTest::keyClick(0, '1');
     QCOMPARE(spy.count(), 0);
     edit.setFocus();

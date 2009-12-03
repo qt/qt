@@ -144,7 +144,7 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_ToolBarButtonPressed,   QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
     {SE_PanelBackground,        QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_ButtonInactive,         QS60StyleEnums::SP_QsnFrButtonCenterInactive},
-    {SE_Editor,                 QS60StyleEnums::SP_QsnFrNotepadCenter},
+    {SE_Editor,                 QS60StyleEnums::SP_QsnFrInputCenter},
 };
 
 static const int frameElementsCount =
@@ -459,11 +459,6 @@ void QS60StylePrivate::setThemePalette(QApplication *app) const
     storeThemePalette(&widgetPalette);
 }
 
-void QS60StylePrivate::setThemePalette(QStyleOption *option) const
-{
-    setThemePalette(&option->palette);
-}
-
 QPalette* QS60StylePrivate::themePalette()
 {
     return m_themePalette;
@@ -475,6 +470,8 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     QPalette applicationPalette = QApplication::palette();
     applicationPalette.setBrush(QPalette::Window, backgroundTexture());
     setThemePalette(&applicationPalette);
+    QApplication::setPalette(applicationPalette);
+    setThemePaletteHash(&applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
@@ -638,16 +635,16 @@ void QS60StylePrivate::setThemePalette(QWidget *widget) const
 {
     if(!widget)
         return;
-    QPalette widgetPalette = QApplication::palette(widget);
 
     //header view and its viewport need to be set 100% transparent button color, since drawing code will
     //draw transparent theme graphics to table column and row headers.
     if (qobject_cast<QHeaderView *>(widget)){
+        QPalette widgetPalette = QApplication::palette(widget);
         widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
             s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
         QHeaderView* header = qobject_cast<QHeaderView *>(widget);
         widgetPalette.setColor(QPalette::Button, Qt::transparent );
-        if ( header->viewport() )
+        if (header->viewport())
             header->viewport()->setPalette(widgetPalette);
         QApplication::setPalette(widgetPalette, "QHeaderView");
     }
@@ -810,7 +807,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafTabActiveL:
             //Returned QSize for tabs must not be square, but narrow rectangle with width:height
             //ratio of 1:2 for horizontal tab bars (and 2:1 for vertical ones).
-            result.setWidth(10);
+            result.setWidth(result.height()>>1);
             break;
         case QS60StyleEnums::SP_QgnIndiSliderEdit:
             result.scale(pixelMetric(QStyle::PM_SliderLength),
@@ -868,7 +865,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
     return result;
 }
 
-bool QS60StylePrivate::canDrawThemeBackground(const QBrush &backgroundBrush) 
+bool QS60StylePrivate::canDrawThemeBackground(const QBrush &backgroundBrush)
 {
     //If brush is not changed from style's default values, draw theme graphics.
     return (backgroundBrush.color() == Qt::transparent ||
@@ -1786,7 +1783,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             if (qobject_cast<const QAbstractButton *>(widget)) {
                 //Make cornerButton slightly smaller so that it is not on top of table border graphic.
                 QStyleOptionHeader subopt = *header;
-                const int borderTweak = 
+                const int borderTweak =
                     QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth)>>1;
                 if (subopt.direction == Qt::LeftToRight)
                     subopt.rect.adjust(borderTweak, borderTweak, 0, -borderTweak);
@@ -1879,7 +1876,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 adjustableFlags = (adjustableFlags | QS60StylePrivate::SF_PointWest);
             } else {
                 const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-                if (option->direction == Qt::LeftToRight) 
+                if (option->direction == Qt::LeftToRight)
                     headerRect.adjust(-2*frameWidth, 0, 0, 0);
                 else
                     headerRect.adjust(0, 0, 2*frameWidth, 0);
@@ -2025,7 +2022,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             buttonRect.setHeight((int)(buttonRect.height() * scaler));
             // move the rect up for half of the new height-gain
             const int newY = (buttonRect.bottomRight().y() - option->rect.bottomRight().y()) >> 1 ;
-            buttonRect.adjust(0,-newY,0,-newY);
+            buttonRect.adjust(0, -newY, -1, -newY);
 
             painter->save();
             QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnTextColors, 6, option);
@@ -2594,7 +2591,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             const int indicatorRect = pixelMetric(PM_MenuButtonIndicator) + 2*pixelMetric(PM_ButtonMargin);
             const int border = pixelMetric(PM_ButtonMargin) + pixelMetric(PM_DefaultFrameWidth);
             ret = toolButton->rect;
-            const bool popup = (toolButton->features & 
+            const bool popup = (toolButton->features &
                     (QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay))
                     == QStyleOptionToolButton::MenuButtonPopup;
             switch (scontrol) {

@@ -213,10 +213,12 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
     case QEvent::StyleChange:
     case QEvent::Show:
         if (QProgressBar *bar = qobject_cast<QProgressBar *>(o)) {
-            d->bars << bar;
-            if (d->bars.size() == 1) {
-                Q_ASSERT(d->animationFps> 0);
-                d->animateTimer = startTimer(1000 / d->animationFps);
+            if (!d->bars.contains(bar)) {
+                d->bars << bar;
+                if (d->bars.size() == 1) {
+                    Q_ASSERT(d->animationFps> 0);
+                    d->animateTimer = startTimer(1000 / d->animationFps);
+                }
             }
         }
         break;
