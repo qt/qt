@@ -1,10 +1,9 @@
+INCLUDEPATH += $$PWD
+
 SOURCES += \
-           widgets/graphicswidgets.cpp \
-           widgets/graphicslayouts.cpp \
+    $$PWD/graphicswidgets.cpp \
+    $$PWD/graphicslayouts.cpp
 
 HEADERS += \
-           widgets/graphicswidgets_p.h \
-           widgets/graphicslayouts_p.h \
-
-
-
+    $$PWD/graphicswidgets_p.h \
+    $$PWD/graphicslayouts_p.h

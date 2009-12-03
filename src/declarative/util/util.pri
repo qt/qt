@@ -1,68 +1,70 @@
+INCLUDEPATH += $$PWD
+
 SOURCES += \
-           util/qmlview.cpp \
-           util/qfxperf.cpp \
-           util/qperformancelog.cpp \
-           util/qmlconnection.cpp \
-           util/qmlpackage.cpp \
-           util/qmlanimation.cpp \
-           util/qmlsystempalette.cpp \
-           util/qmlspringfollow.cpp \
-           util/qmleasefollow.cpp \
-           util/qmlstate.cpp\
-           util/qmltransitionmanager.cpp \
-           util/qmlstateoperations.cpp \
-           util/qmlpropertychanges.cpp \
-           util/qmlstategroup.cpp \
-           util/qmltransition.cpp \
-           util/qmllistmodel.cpp\
-           util/qmllistaccessor.cpp \
-           util/qmlopenmetaobject.cpp \
-           util/qmltimeline.cpp \
-           util/qmltimer.cpp \
-           util/qmlbind.cpp \
-           util/qmlpropertymap.cpp \
-           util/qmlpixmapcache.cpp \
-           util/qnumberformat.cpp \
-           util/qmlnumberformatter.cpp \
-           util/qmldatetimeformatter.cpp \
-           util/qmlbehavior.cpp \
-           util/qmlfontloader.cpp
+    $$PWD/qmlview.cpp \
+    $$PWD/qfxperf.cpp \
+    $$PWD/qperformancelog.cpp \
+    $$PWD/qmlconnection.cpp \
+    $$PWD/qmlpackage.cpp \
+    $$PWD/qmlanimation.cpp \
+    $$PWD/qmlsystempalette.cpp \
+    $$PWD/qmlspringfollow.cpp \
+    $$PWD/qmleasefollow.cpp \
+    $$PWD/qmlstate.cpp\
+    $$PWD/qmltransitionmanager.cpp \
+    $$PWD/qmlstateoperations.cpp \
+    $$PWD/qmlpropertychanges.cpp \
+    $$PWD/qmlstategroup.cpp \
+    $$PWD/qmltransition.cpp \
+    $$PWD/qmllistmodel.cpp\
+    $$PWD/qmllistaccessor.cpp \
+    $$PWD/qmlopenmetaobject.cpp \
+    $$PWD/qmltimeline.cpp \
+    $$PWD/qmltimer.cpp \
+    $$PWD/qmlbind.cpp \
+    $$PWD/qmlpropertymap.cpp \
+    $$PWD/qmlpixmapcache.cpp \
+    $$PWD/qnumberformat.cpp \
+    $$PWD/qmlnumberformatter.cpp \
+    $$PWD/qmldatetimeformatter.cpp \
+    $$PWD/qmlbehavior.cpp \
+    $$PWD/qmlfontloader.cpp
 
 HEADERS += \
-           util/qmlview.h \
-           util/qfxperf_p_p.h \
-           util/qperformancelog_p_p.h \
-           util/qmlconnection_p.h \
-           util/qmlpackage_p.h \
-           util/qmlanimation_p.h \
-           util/qmlanimation_p_p.h \
-           util/qmlsystempalette_p.h \
-           util/qmlspringfollow_p.h \
-           util/qmleasefollow_p.h \
-           util/qmlstate_p.h\
-           util/qmlstateoperations_p.h \
-           util/qmlpropertychanges_p.h \
-           util/qmlstate_p_p.h\
-           util/qmltransitionmanager_p_p.h \
-           util/qmlstategroup_p.h \
-           util/qmltransition_p.h \
-           util/qmllistmodel_p.h\
-           util/qmllistaccessor_p.h \
-           util/qmlopenmetaobject_p.h \
-           util/qmlnullablevalue_p_p.h \
-           util/qmltimeline_p_p.h \
-           util/qmltimer_p.h \
-           util/qmlbind_p.h \
-           util/qmlpropertymap.h \
-           util/qmlpixmapcache_p.h \
-           util/qnumberformat_p.h \
-           util/qmlnumberformatter_p.h \
-           util/qmldatetimeformatter_p.h \
-           util/qmlbehavior_p.h \
-           util/qmlfontloader_p.h
+    $$PWD/qmlview.h \
+    $$PWD/qfxperf_p_p.h \
+    $$PWD/qperformancelog_p_p.h \
+    $$PWD/qmlconnection_p.h \
+    $$PWD/qmlpackage_p.h \
+    $$PWD/qmlanimation_p.h \
+    $$PWD/qmlanimation_p_p.h \
+    $$PWD/qmlsystempalette_p.h \
+    $$PWD/qmlspringfollow_p.h \
+    $$PWD/qmleasefollow_p.h \
+    $$PWD/qmlstate_p.h\
+    $$PWD/qmlstateoperations_p.h \
+    $$PWD/qmlpropertychanges_p.h \
+    $$PWD/qmlstate_p_p.h\
+    $$PWD/qmltransitionmanager_p_p.h \
+    $$PWD/qmlstategroup_p.h \
+    $$PWD/qmltransition_p.h \
+    $$PWD/qmllistmodel_p.h\
+    $$PWD/qmllistaccessor_p.h \
+    $$PWD/qmlopenmetaobject_p.h \
+    $$PWD/qmlnullablevalue_p_p.h \
+    $$PWD/qmltimeline_p_p.h \
+    $$PWD/qmltimer_p.h \
+    $$PWD/qmlbind_p.h \
+    $$PWD/qmlpropertymap.h \
+    $$PWD/qmlpixmapcache_p.h \
+    $$PWD/qnumberformat_p.h \
+    $$PWD/qmlnumberformatter_p.h \
+    $$PWD/qmldatetimeformatter_p.h \
+    $$PWD/qmlbehavior_p.h \
+    $$PWD/qmlfontloader_p.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns
-    SOURCES += util/qmlxmllistmodel.cpp
-    HEADERS += util/qmlxmllistmodel_p.h
+    SOURCES += $$PWD/qmlxmllistmodel.cpp
+    HEADERS += $$PWD/qmlxmllistmodel_p.h
 }
