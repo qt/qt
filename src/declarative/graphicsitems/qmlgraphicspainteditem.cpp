@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicspainteditem_p.h>
-#include <private/qmlgraphicspainteditem_p_p.h>
+#include "qmlgraphicspainteditem_p.h"
+#include "qmlgraphicspainteditem_p_p.h"
 
 #include <QDebug>
 #include <QPen>

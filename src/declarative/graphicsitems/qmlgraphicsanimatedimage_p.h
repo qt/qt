@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSANIMATEDIMAGE_H
 #define QMLGRAPHICSANIMATEDIMAGE_H
 
-#include <private/qmlgraphicsimage_p.h>
+#include "qmlgraphicsimage_p.h"
 
 QT_BEGIN_HEADER
 

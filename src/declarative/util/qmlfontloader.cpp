@@ -39,16 +39,19 @@
 **
 ****************************************************************************/
 
-#include "private/qobject_p.h"
-#include <private/qmlfontloader_p.h>
+#include "qmlfontloader_p.h"
+
+#include <qmlcontext.h>
+#include <qmlengine.h>
+
 #include <QUrl>
 #include <QDebug>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>
-#include <qmlcontext.h>
-#include <qmlengine.h>
 #include <QFontDatabase>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 

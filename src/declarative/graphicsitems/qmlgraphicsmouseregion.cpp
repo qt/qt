@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicsmouseregion_p.h>
-#include <private/qmlgraphicsmouseregion_p_p.h>
-#include <private/qmlgraphicsevents_p_p.h>
-#include <QGraphicsSceneMouseEvent>
+#include "qmlgraphicsmouseregion_p.h"
+#include "qmlgraphicsmouseregion_p_p.h"
 
+#include "qmlgraphicsevents_p_p.h"
+
+#include <QGraphicsSceneMouseEvent>
 
 QT_BEGIN_NAMESPACE
 static const qreal DragThreshold = 5;
@@ -118,6 +119,12 @@ void QmlGraphicsDrag::setYmax(qreal m)
 {
     _ymax = m;
 }
+
+QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
+{
+    delete drag;
+}
+
 
 /*!
     \qmlclass MouseRegion QmlGraphicsMouseRegion
@@ -339,8 +346,10 @@ void QmlGraphicsMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
     else {
         d->longPress = false;
         d->saveEvent(event);
-        d->dragX = drag()->axis() & QmlGraphicsDrag::XAxis;
-        d->dragY = drag()->axis() & QmlGraphicsDrag::YAxis;
+        if (d->drag) {
+            d->dragX = drag()->axis() & QmlGraphicsDrag::XAxis;
+            d->dragY = drag()->axis() & QmlGraphicsDrag::YAxis;
+        }
         d->dragged = false;
         setHovered(true);
         d->start = event->pos();
@@ -371,7 +380,7 @@ void QmlGraphicsMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     else if (!d->hovered && contains)
         setHovered(true);
 
-    if (drag()->target()) {
+    if (d->drag && d->drag->target()) {
         if (!d->moved) {
             if (d->dragX) d->startX = drag()->target()->x();
             if (d->dragY) d->startY = drag()->target()->y();
@@ -616,7 +625,9 @@ bool QmlGraphicsMouseRegion::setPressed(bool p)
 QmlGraphicsDrag *QmlGraphicsMouseRegion::drag()
 {
     Q_D(QmlGraphicsMouseRegion);
-    return &(d->drag);
+    if (!d->drag)
+        d->drag = new QmlGraphicsDrag;
+    return d->drag;
 }
 
 /*!

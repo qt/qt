@@ -42,8 +42,9 @@
 #ifndef QMLSTATE_H
 #define QMLSTATE_H
 
-#include <QtCore/qobject.h>
 #include <qml.h>
+
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 

@@ -40,13 +40,14 @@
 ****************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include <config.h>
 #endif
 
-#include <private/qmljsglobal_p.h>
-#include <private/qmljsengine_p.h>
-#include <private/qmljslexer_p.h>
-#include <private/qmljsgrammar_p.h>
+#include "qmljslexer_p.h"
+
+#include "qmljsglobal_p.h"
+#include "qmljsengine_p.h"
+#include "qmljsgrammar_p.h"
 
 #include <QtGui/qapplication.h>
 

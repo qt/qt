@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicsevents_p_p.h>
+#include "qmlgraphicsevents_p_p.h"
 
 QT_BEGIN_NAMESPACE
 /*!

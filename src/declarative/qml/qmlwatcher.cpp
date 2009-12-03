@@ -39,14 +39,16 @@
 **
 ****************************************************************************/
 
+#include "qmlwatcher_p.h"
+
+#include "qmlexpression.h"
+#include "qmlcontext.h"
+#include "qml.h"
+
+#include <qmldebugservice_p.h>
+
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdebug.h>
-#include <qmlexpression.h>
-#include <private/qmldebugservice_p.h>
-#include <qmlcontext.h>
-#include <qml.h>
-
-#include <private/qmlwatcher_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -180,4 +182,4 @@ void QmlWatcher::addPropertyWatch(int id, QObject *object, quint32 debugId, cons
 
 QT_END_NAMESPACE
 
-#include "qmlwatcher.moc"
+#include <qmlwatcher.moc>

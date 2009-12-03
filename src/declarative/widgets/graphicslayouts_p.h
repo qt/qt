@@ -42,7 +42,8 @@
 #ifndef GRAPHICSLAYOUTS_H
 #define GRAPHICSLAYOUTS_H
 
-#include <private/graphicswidgets_p.h>
+#include "graphicswidgets_p.h"
+
 #include <QtGui/QGraphicsLinearLayout>
 #include <QtGui/QGraphicsGridLayout>
 

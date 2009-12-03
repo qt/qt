@@ -42,9 +42,10 @@
 #ifndef QMLEASEFOLLOW_H
 #define QMLEASEFOLLOW_H
 
-#include <QtCore/qobject.h>
 #include <qml.h>
 #include <qmlpropertyvaluesource.h>
+
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 

@@ -43,6 +43,7 @@
 #define NUMBERFORMAT_H 
 
 #include <qml.h>
+
 #include <QtCore/QLocale>
 #include <QtCore/QTime>
 

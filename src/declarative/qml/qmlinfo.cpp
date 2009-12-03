@@ -40,8 +40,10 @@
 ****************************************************************************/
 
 #include "qmlinfo.h"
-#include <private/qmldeclarativedata_p.h>
-#include <qmlcontext.h>
+
+#include "qmldeclarativedata_p.h"
+#include "qmlcontext.h"
+
 #include <QtGui/qapplication.h>
 
 QT_BEGIN_NAMESPACE

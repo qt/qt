@@ -42,10 +42,11 @@
 #ifndef QMLBINDING_H
 #define QMLBINDING_H
 
+#include "qml.h"
+#include "qmlpropertyvaluesource.h"
+#include "qmlexpression.h"
+
 #include <QtCore/QObject>
-#include <qml.h>
-#include <qmlpropertyvaluesource.h>
-#include <qmlexpression.h>
 #include <QtCore/QMetaProperty>
 
 QT_BEGIN_HEADER
@@ -92,7 +93,7 @@ class Q_DECLARATIVE_EXPORT QmlBinding : public QmlExpression,
 Q_OBJECT
 public:
     QmlBinding(const QString &, QObject *, QmlContext *, QObject *parent=0);
-    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, const QUrl &, int, 
+    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, const QString &, int, 
                QObject *parent);
     ~QmlBinding();
 

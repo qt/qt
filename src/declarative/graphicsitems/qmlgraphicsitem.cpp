@@ -39,6 +39,19 @@
 **
 ****************************************************************************/
 
+#include "qmlgraphicsitem_p.h"
+#include "qmlgraphicsitem.h"
+
+#include "qmlgraphicsevents_p_p.h"
+
+#include <qfxperf_p_p.h>
+#include <qmlengine.h>
+#include <qmlopenmetaobject_p.h>
+#include <qmlstate_p.h>
+#include <qmlview.h>
+#include <qmlstategroup_p.h>
+#include <qmlcomponent.h>
+
 #include <QDebug>
 #include <QPen>
 #include <QFile>
@@ -47,22 +60,9 @@
 #include <QNetworkRequest>
 #include <QGraphicsSceneMouseEvent>
 #include <QtScript/qscriptengine.h>
-#include <private/qfxperf_p_p.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qgraphicseffect.h>
-
-#include <qmlengine.h>
-#include <private/qmlopenmetaobject_p.h>
-#include <private/qmlstate_p.h>
-#include <private/qlistmodelinterface_p.h>
-
-#include "qmlview.h"
-#include <private/qmlstategroup_p.h>
-
-#include <private/qmlgraphicsitem_p.h>
-#include "qmlgraphicsitem.h"
-#include <private/qmlgraphicsevents_p_p.h>
-#include <qmlcomponent.h>
+#include <qlistmodelinterface_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1442,13 +1442,14 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
     \internal
 */
 
-static inline void qfxitem_registerAnchorLine() {
-    static bool registered = false;
-    if (!registered) {
+// ### Must fix
+struct RegisterAnchorLineAtStartup {
+    RegisterAnchorLineAtStartup() { 
         qRegisterMetaType<QmlGraphicsAnchorLine>("QmlGraphicsAnchorLine");
-        registered = true;
     }
-}
+};
+static RegisterAnchorLineAtStartup registerAnchorLineAtStartup;
+
 
 /*!
     \fn QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItem *parent)
@@ -1459,7 +1460,6 @@ QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItem* parent)
   : QGraphicsObject(*(new QmlGraphicsItemPrivate), parent, 0)
 {
     Q_D(QmlGraphicsItem);
-    qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
@@ -1469,7 +1469,6 @@ QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItemPrivate &dd, QmlGraphicsItem *pa
   : QGraphicsObject(dd, parent, 0)
 {
     Q_D(QmlGraphicsItem);
-    qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
@@ -2994,6 +2993,9 @@ QDebug operator<<(QDebug debug, QmlGraphicsItem *item)
     return debug;
 }
 
+int QmlGraphicsItemPrivate::heightIdx = -1;
+int QmlGraphicsItemPrivate::widthIdx = -1;
+
 int QmlGraphicsItemPrivate::consistentTime = -1;
 void QmlGraphicsItemPrivate::setConsistentTime(int t) 
 { 
@@ -3031,8 +3033,8 @@ int QmlGraphicsItemPrivate::restart(QTime &t)
     return n;
 }
 
-#include "qmlgraphicsitem.moc"
-#include "moc_qmlgraphicsitem.cpp"
+#include <qmlgraphicsitem.moc>
+#include <moc_qmlgraphicsitem.cpp>
 
 QT_END_NAMESPACE
 

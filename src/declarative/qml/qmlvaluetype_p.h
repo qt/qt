@@ -53,12 +53,13 @@
 // We mean it.
 //
 
+#include "qmlmetaproperty.h"
+
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qvariant.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qfont.h>
-#include <qmlmetaproperty.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -42,9 +42,10 @@
 #ifndef QMLEXPRESSION_H
 #define QMLEXPRESSION_H
 
+#include "qmlerror.h"
+
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
-#include <qmlerror.h>
 
 QT_BEGIN_HEADER
 
@@ -77,9 +78,9 @@ public:
     bool trackChange() const;
     void setTrackChange(bool);
 
-    QUrl sourceFile() const;
+    QString sourceFile() const;
     int lineNumber() const;
-    void setSourceLocation(const QUrl &fileName, int line);
+    void setSourceLocation(const QString &fileName, int line);
 
     QObject *scopeObject() const;
 
@@ -96,7 +97,7 @@ Q_SIGNALS:
 protected:
     QmlExpression(QmlContext *, const QString &, QObject *, 
                   QmlExpressionPrivate &dd);
-    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me, const QUrl &,
+    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me, const QString &,
                   int, QmlExpressionPrivate &dd);
 
 private Q_SLOTS:

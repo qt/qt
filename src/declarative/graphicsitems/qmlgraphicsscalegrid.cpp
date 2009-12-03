@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#include <QBuffer>
-#include <qml.h>
-#include <QDebug>
-#include <private/qmlgraphicsscalegrid_p_p.h>
+#include "qmlgraphicsscalegrid_p_p.h"
 
+#include <qml.h>
+
+#include <QBuffer>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 /*!

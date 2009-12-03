@@ -42,7 +42,7 @@
 #ifndef QMLPROPERTYCHANGES_H
 #define QMLPROPERTYCHANGES_H
 
-#include <private/qmlstateoperations_p.h>
+#include "qmlstateoperations_p.h"
 
 QT_BEGIN_HEADER
 

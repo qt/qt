@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <private/qnumberformat_p.h>
+#include "qnumberformat_p.h"
 
 QT_BEGIN_NAMESPACE
 

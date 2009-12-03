@@ -40,13 +40,16 @@
 ****************************************************************************/
 
 #include "qmlexpression.h"
-#include <private/qmlexpression_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmlrewrite_p.h>
-#include "QtCore/qdebug.h"
-#include <private/qmlcompiler_p.h>
+#include "qmlexpression_p.h"
+
+#include "qmlengine_p.h"
+#include "qmlcontext_p.h"
+#include "qmlrewrite_p.h"
+#include "qmlcompiler_p.h"
+
+#include <QtCore/qdebug.h>
 #include <QtScript/qscriptprogram.h>
+
 #include <private/qscriptdeclarativeclass_p.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -91,7 +94,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, const QString &expr,
 }
 
 void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc, 
-                                QObject *me, const QUrl &url, int lineNumber)
+                                QObject *me, const QString &url, int lineNumber)
 {
     data->url = url;
     data->line = lineNumber;
@@ -120,7 +123,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
             if (!dd->cachedClosures.at(progIdx)) {
                 QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
                 scriptContext->pushScope(ep->contextClass->newSharedContext());
-                dd->cachedClosures[progIdx] = new QScriptValue(scriptEngine->evaluate(data->expression, data->url.toString(), data->line));
+                dd->cachedClosures[progIdx] = new QScriptValue(scriptEngine->evaluate(data->expression, data->url, data->line));
                 scriptEngine->popContext();
             }
 
@@ -133,7 +136,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
 #if !defined(Q_OS_SYMBIAN) //XXX Why doesn't this work?
             if (!dd->cachedPrograms.at(progIdx)) {
                 dd->cachedPrograms[progIdx] =
-                    new QScriptProgram(data->expression, data->url.toString(), data->line);
+                    new QScriptProgram(data->expression, data->url, data->line);
             }
 #endif
 
@@ -174,7 +177,7 @@ QmlExpression::QmlExpression()
 /*!  \internal */
 QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
                              QmlRefCount *rc, QObject *me, 
-                             const QUrl &url, int lineNumber,
+                             const QString &url, int lineNumber,
                              QmlExpressionPrivate &dd)
 : QObject(dd, 0)
 {
@@ -331,7 +334,7 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
 
         if (data->expressionRewritten) {
             data->expressionFunction = scriptEngine->evaluate(data->expression, 
-                                                              data->url.toString(), data->line);
+                                                              data->url, data->line);
         } else {
             QmlRewrite::RewriteBinding rewriteBinding;
 
@@ -341,7 +344,7 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
                 scriptEngine->popContext();
                 return QVariant();
             }
-            data->expressionFunction = scriptEngine->evaluate(code, data->url.toString(), data->line);
+            data->expressionFunction = scriptEngine->evaluate(code, data->url, data->line);
         }
 
         scriptEngine->popContext();
@@ -521,7 +524,7 @@ void QmlExpression::setTrackChange(bool trackChange)
     Returns the source file URL for this expression.  The source location must
     have been previously set by calling setSourceLocation().
 */
-QUrl QmlExpression::sourceFile() const
+QString QmlExpression::sourceFile() const
 {
     Q_D(const QmlExpression);
     return d->data->url;
@@ -541,7 +544,7 @@ int QmlExpression::lineNumber() const
     Set the location of this expression to \a line of \a url. This information
     is used by the script engine.
 */
-void QmlExpression::setSourceLocation(const QUrl &url, int line)
+void QmlExpression::setSourceLocation(const QString &url, int line)
 {
     Q_D(QmlExpression);
     d->data->url = url;

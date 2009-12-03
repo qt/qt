@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
-#include <private/qmlstate_p.h>
-#include <private/qmlstategroup_p.h>
-#include <private/qmlstate_p_p.h>
-#include <private/qmlstateoperations_p.h>
-#include <private/qmlanimation_p.h>
-#include <private/qmlanimation_p_p.h>
-#include <private/qmltransitionmanager_p_p.h>
+#include "qmlstate_p.h"
+#include "qmlstategroup_p.h"
+#include "qmlstate_p_p.h"
+#include "qmlstateoperations_p.h"
+#include "qmlanimation_p.h"
+#include "qmlanimation_p_p.h"
+#include "qmltransitionmanager_p_p.h"
+
 #include <QParallelAnimationGroup>
 
 QT_BEGIN_NAMESPACE
@@ -257,4 +258,4 @@ QmlList<QmlAbstractAnimation *>* QmlTransition::animations()
 
 QT_END_NAMESPACE
 
-#include "qmltransition.moc"
+#include <qmltransition.moc>

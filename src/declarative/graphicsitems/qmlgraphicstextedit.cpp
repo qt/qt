@@ -39,18 +39,21 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicstextedit_p.h>
-#include <private/qmlgraphicstextedit_p_p.h>
-#include <private/qtextcontrol_p.h>
-#include <private/qfxperf_p_p.h>
-#include <private/qmlgraphicsevents_p_p.h>
+#include "qmlgraphicstextedit_p.h"
+#include "qmlgraphicstextedit_p_p.h"
+
+#include "qmlgraphicsevents_p_p.h"
+
+#include <qfxperf_p_p.h>
+
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
 #include <QGraphicsSceneMouseEvent>
-
 #include <QDebug>
 #include <QPainter>
+
+#include <private/qtextcontrol_p.h>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,TextEdit,QmlGraphicsTextEdit)

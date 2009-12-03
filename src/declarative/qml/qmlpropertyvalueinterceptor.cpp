@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qmlpropertyvalueinterceptor.h"
+
 #include "qml.h"
 
 QT_BEGIN_NAMESPACE

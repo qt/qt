@@ -39,12 +39,16 @@
 **
 ****************************************************************************/
 
+#include "qmlspringfollow_p.h"
+
+#include "qmlanimation_p_p.h"
+
+#include <QtCore/qdebug.h>
+
+#include <private/qobject_p.h>
+
 #include <limits.h>
 #include <math.h>
-#include <QtCore/qdebug.h>
-#include "private/qobject_p.h"
-#include <private/qmlspringfollow_p.h>
-#include <private/qmlanimation_p_p.h>
 
 QT_BEGIN_NAMESPACE
 

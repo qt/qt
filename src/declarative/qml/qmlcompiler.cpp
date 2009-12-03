@@ -39,40 +39,42 @@
 **
 ****************************************************************************/
 
-#include <private/qmlcompiler_p.h>
-#include <private/qmlcompositetypedata_p.h>
-#include <private/qfxperf_p_p.h>
-#include <private/qmlparser_p.h>
-#include <private/qmlscriptparser_p.h>
-#include <qmlpropertyvaluesource.h>
-#include <qmlcomponent.h>
-#include <private/qmetaobjectbuilder_p.h>
-#include <private/qmlbasicscript_p.h>
+#include "qmlcompiler_p.h"
+
+#include "qmlcompositetypedata_p.h"
+#include "qmlparser_p.h"
+#include "qmlscriptparser_p.h"
+#include "qmlpropertyvaluesource.h"
+#include "qmlcomponent.h"
+#include "qmetaobjectbuilder_p.h"
+#include "qmlbasicscript_p.h"
+#include "qmlstringconverters_p.h"
+#include "qmlengine_p.h"
+#include "qmlengine.h"
+#include "qmlcontext.h"
+#include "qmlmetatype.h"
+#include "qmlcustomparser_p_p.h"
+#include "qmlcontext_p.h"
+#include "qmlcomponent_p.h"
+#include "parser/qmljsast_p.h"
+#include "qmlvmemetaobject_p.h"
+#include "qmlexpression_p.h"
+#include "qmlmetaproperty_p.h"
+#include "qmlrewrite_p.h"
+#include "qmlscriptstring.h"
+#include "qmlglobal_p.h"
+#include "qmlscriptparser_p.h"
+
+#include <qfxperf_p_p.h>
+
 #include <QColor>
 #include <QDebug>
 #include <QPointF>
 #include <QSizeF>
 #include <QRectF>
 #include <QAtomicInt>
-#include <private/qmlstringconverters_p.h>
-#include <private/qmlengine_p.h>
-#include <qmlengine.h>
-#include <qmlcontext.h>
-#include <qmlmetatype.h>
 #include <QtCore/qdebug.h>
 #include <QtGui/qapplication.h>
-#include <private/qmlcustomparser_p_p.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmlcomponent_p.h>
-#include "parser/qmljsast_p.h"
-#include <private/qmlvmemetaobject_p.h>
-#include <private/qmlexpression_p.h>
-#include <private/qmlmetaproperty_p.h>
-#include <private/qmlrewrite_p.h>
-#include <qmlscriptstring.h>
-#include <private/qmlglobal_p.h>
-
-#include <private/qmlscriptparser_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -374,7 +376,7 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             instr.type = QmlInstruction::StoreUrl;
             QUrl u = string.isEmpty() ? QUrl() : output->url.resolved(QUrl(string));
             instr.storeUrl.propertyIndex = prop.propertyIndex();
-            instr.storeUrl.value = output->indexForString(u.toString());
+            instr.storeUrl.value = output->indexForUrl(u);
             }
             break;
         case QVariant::UInt:
@@ -1577,11 +1579,10 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
             store.type = QmlInstruction::StoreValueSource;
             store.line = v->object->location.start.line;
             if (valueTypeProperty) {
-                store.assignValueSource.property = QmlMetaPropertyPrivate::saveValueType(valueTypeProperty->index, prop->index);
+                store.assignValueSource.property = genValueTypeData(prop, valueTypeProperty);
                 store.assignValueSource.owner = 1;
             } else {
-                store.assignValueSource.property =
-                    QmlMetaPropertyPrivate::saveProperty(prop->index);
+                store.assignValueSource.property = genPropertyData(prop);
                 store.assignValueSource.owner = 0;
             }
             QmlType *valueType = QmlMetaType::qmlType(v->object->metatype);
@@ -1595,11 +1596,10 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
             store.type = QmlInstruction::StoreValueInterceptor;
             store.line = v->object->location.start.line;
             if (valueTypeProperty) {
-                store.assignValueInterceptor.property = QmlMetaPropertyPrivate::saveValueType(valueTypeProperty->index, prop->index);
+                store.assignValueInterceptor.property = genValueTypeData(prop, valueTypeProperty);
                 store.assignValueInterceptor.owner = 1;
             } else {
-                store.assignValueInterceptor.property =
-                    QmlMetaPropertyPrivate::saveProperty(prop->index);
+                store.assignValueInterceptor.property = genPropertyData(prop);
                 store.assignValueInterceptor.owner = 0;
             }
             QmlType *valueType = QmlMetaType::qmlType(v->object->metatype);
@@ -2307,7 +2307,8 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     return true;
 }
 
-#include <private/qmljsparser_p.h>
+#include <qmljsparser_p.h>
+
 static QStringList astNodeToStringList(QmlJS::AST::Node *node)
 {
     if (node->kind == QmlJS::AST::Node::Kind_IdentifierExpression) {
@@ -2467,12 +2468,9 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     Q_ASSERT(ref.bindingContext.owner == 0 ||
              (ref.bindingContext.owner != 0 && valueTypeProperty));
     if (ref.bindingContext.owner) {
-        store.assignBinding.property =
-            QmlMetaPropertyPrivate::saveValueType(valueTypeProperty->index,
-                                                  prop->index);
+        store.assignBinding.property = genValueTypeData(prop, valueTypeProperty);
     } else {
-        store.assignBinding.property =
-            QmlMetaPropertyPrivate::saveProperty(prop->index);
+        store.assignBinding.property = genPropertyData(prop);
     }
 
     output->bytecode << store;
@@ -2492,6 +2490,17 @@ int QmlCompiler::genContextCache()
 
     output->contextCaches.append(cache);
     return output->contextCaches.count() - 1;
+}
+
+int QmlCompiler::genValueTypeData(QmlParser::Property *valueTypeProp, 
+                                  QmlParser::Property *prop)
+{
+    return output->indexForByteArray(QmlMetaPropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, valueTypeProp->index, valueTypeProp->type));
+}
+
+int QmlCompiler::genPropertyData(QmlParser::Property *prop)
+{
+    return output->indexForByteArray(QmlMetaPropertyPrivate::saveProperty(prop->parent->metaObject(), prop->index));
 }
 
 bool QmlCompiler::completeComponentBuild()

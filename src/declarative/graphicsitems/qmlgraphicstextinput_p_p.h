@@ -42,11 +42,16 @@
 #ifndef QMLGRAPHICSTEXTINPUT_P_H
 #define QMLGRAPHICSTEXTINPUT_P_H
 
-#include <private/qmlgraphicstextinput_p.h>
-#include "qml.h"
-#include <private/qmlgraphicspainteditem_p_p.h>
-#include "private/qlinecontrol_p.h"
+#include "qmlgraphicstextinput_p.h"
+
+#include "qmlgraphicspainteditem_p_p.h"
+
+#include <qml.h>
+
 #include <QPointer>
+
+#include <private/qlinecontrol_p.h>
+
 //
 //  W A R N I N G
 //  -------------

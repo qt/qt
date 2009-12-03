@@ -42,8 +42,9 @@
 #ifndef QMLFONTLOADER_H
 #define QMLFONTLOADER_H
 
-#include <QtCore/qobject.h>
 #include <qml.h>
+
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 

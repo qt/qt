@@ -53,8 +53,9 @@
 // We mean it.
 //
 
+#include "qmlengine_p.h"
+
 #include <QtCore/qglobal.h>
-#include <private/qmlengine_p.h>
 
 QT_BEGIN_NAMESPACE
 

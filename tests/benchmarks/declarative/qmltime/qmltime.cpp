@@ -21,6 +21,8 @@ public:
     void run(uint);
 
 private:
+    void runTest(QmlContext *, uint);
+
     QmlComponent *m_component;
     static Timer *m_timer;
 };
@@ -56,10 +58,19 @@ void Timer::run(uint iterations)
 {
     QmlContext context(qmlContext(this));
 
+    QObject *o = m_component->create(&context);
+    delete o;
+
+    
+    runTest(&context, iterations);
+}
+
+void Timer::runTest(QmlContext *context, uint iterations)
+{
     QTime t;
     t.start();
     for (uint ii = 0; ii < iterations; ++ii) {
-        QObject *o = m_component->create(&context);
+        QObject *o = m_component->create(context);
         delete o;
     }
 

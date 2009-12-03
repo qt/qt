@@ -42,11 +42,12 @@
 #ifndef QMLGRAPHICSLAYOUTS_H
 #define QMLGRAPHICSLAYOUTS_H
 
+#include "qmlgraphicsitem.h"
+
+#include <qmlstate_p.h>
+
 #include <QtCore/QObject>
 #include <QtCore/QString>
-#include <qmlgraphicsitem.h>
-#include <private/qmlstate_p.h>
-
 
 QT_BEGIN_HEADER
 

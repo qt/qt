@@ -39,9 +39,10 @@
 **
 ****************************************************************************/
 
-#include <private/qmlpropertycache_p.h>
-#include <private/qmlengine_p.h>
-#include <qmlbinding.h>
+#include "qmlpropertycache_p.h"
+
+#include "qmlengine_p.h"
+#include "qmlbinding.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -54,7 +55,6 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p)
         propType = qMetaTypeId<QVariant>();
     coreIndex = p.propertyIndex();
     notifyIndex = p.notifySignalIndex();
-    name = QString::fromUtf8(p.name());
 
     if (p.isConstant())
         flags |= Data::IsConstant;
@@ -80,11 +80,6 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p)
 
 void QmlPropertyCache::Data::load(const QMetaMethod &m)
 {
-    name = QString::fromUtf8(m.signature());
-    int parenIdx = name.indexOf(QLatin1Char('('));
-    Q_ASSERT(parenIdx != -1);
-    name = name.left(parenIdx);
-
     coreIndex = m.methodIndex();
     flags |= Data::IsFunction;
 }
@@ -222,6 +217,33 @@ QmlPropertyCache::Data *
 QmlPropertyCache::property(const QString &str) const
 {
     return stringCache.value(str);
+}
+
+QString QmlPropertyCache::Data::name(QObject *object)
+{
+    if (!object)
+        return QString();
+
+    return name(object->metaObject());
+}
+
+QString QmlPropertyCache::Data::name(const QMetaObject *metaObject)
+{
+    if (!metaObject || coreIndex == -1)
+        return QString();
+
+    if (flags & IsFunction) {
+        QMetaMethod m = metaObject->method(coreIndex);
+
+        QString name = QString::fromUtf8(m.signature());
+        int parenIdx = name.indexOf(QLatin1Char('('));
+        if (parenIdx != -1)
+            name = name.left(parenIdx);
+        return name;
+    } else {
+        QMetaProperty p = metaObject->property(coreIndex);
+        return QString::fromUtf8(p.name());
+    }
 }
 
 QT_END_NAMESPACE

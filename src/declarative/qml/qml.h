@@ -42,15 +42,16 @@
 #ifndef QML_H
 #define QML_H
 
+#include "qmlmetatype.h"
+#include "qmlmetaproperty.h"
+#include "qmlparserstatus.h"
+#include "qmlpropertyvaluesource.h"
+#include "qmllist.h"
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qmetaobject.h>
-#include <qmlmetatype.h>
-#include <qmlmetaproperty.h>
-#include <qmlparserstatus.h>
-#include <qmlpropertyvaluesource.h>
-#include <qmllist.h>
 
 QT_BEGIN_HEADER
 

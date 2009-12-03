@@ -42,8 +42,9 @@
 #ifndef QMLNUMBERFORMATTER_H
 #define QMLNUMBERFORMATTER_H
 
+#include "qnumberformat_p.h"
+
 #include <qml.h>
-#include <private/qnumberformat_p.h>
 
 QT_BEGIN_HEADER
 

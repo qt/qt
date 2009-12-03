@@ -42,10 +42,11 @@
 #ifndef QMLBEHAVIOR_H
 #define QMLBEHAVIOR_H
 
+#include "qmlstate_p.h"
+
 #include <qmlpropertyvaluesource.h>
 #include <qmlpropertyvalueinterceptor.h>
 #include <qml.h>
-#include <private/qmlstate_p.h>
 
 QT_BEGIN_HEADER
 

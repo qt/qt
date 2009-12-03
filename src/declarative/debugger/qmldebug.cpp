@@ -38,10 +38,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <private/qmldebug_p.h>
-#include <private/qmldebugclient_p.h>
+
+#include "qmldebug_p.h"
+
+#include "qmldebugclient_p.h"
+
+#include <qmlenginedebug_p.h>
+
 #include <private/qobject_p.h>
-#include <private/qmlenginedebug_p.h>
 
 class QmlEngineDebugClient : public QmlDebugClient
 {

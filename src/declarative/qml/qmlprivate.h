@@ -43,6 +43,7 @@
 #define QMLPRIVATE_H
 
 #include <QtCore/qglobal.h>
+
 #ifndef Q_OS_WIN
 #include <stdint.h>
 #endif

@@ -53,8 +53,9 @@
 // We mean it.
 //
 
-#include <private/qobject_p.h>
 #include <QtScript/qscriptvalue.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,6 +72,10 @@ public:
 
     QmlContext *context;
     QmlAbstractBinding *bindings;
+
+    // Linked list for QmlContext::contextObjects
+    QmlDeclarativeData *nextContextObject;
+    QmlDeclarativeData**prevContextObject;
 
     int bindingBitsSize;
     quint32 *bindingBits; 

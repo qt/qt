@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <private/graphicswidgets_p.h>
+#include "graphicswidgets_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -160,4 +160,4 @@ QML_DEFINE_INTERFACE(QGraphicsItem)
 
 QT_END_NAMESPACE
 
-#include "graphicswidgets.moc"
+#include <graphicswidgets.moc>
