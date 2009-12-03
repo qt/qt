@@ -1370,8 +1370,8 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
     for (int i = 0; i < len; ++i) {
         bool surrogate = (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00 && i < len-1
                           && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
-        if (glyphs->glyphs[glyph_pos] == 0) {
 
+        if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
             QGlyphLayoutInstance tmp = glyphs->instance(glyph_pos);
             for (int x = 1; x < engines.size(); ++x) {
                 QFontEngine *engine = engines.at(x);

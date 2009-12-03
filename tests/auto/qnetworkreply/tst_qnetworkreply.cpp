@@ -3241,8 +3241,11 @@ void tst_QNetworkReply::receiveCookiesFromHttp_data()
     cookie = QNetworkCookie("a", "b");
     cookie.setPath("/not/part-of-path");
     header << cookie;
+    cookie.setDomain(QtNetworkSettings::serverName());
+    jar << cookie;
     QTest::newRow("invalid-cookie-path") << "a=b; path=/not/part-of-path" << header << jar;
 
+    jar.clear();
     cookie = QNetworkCookie("a", "b");
     cookie.setDomain(".example.com");
     header.clear();

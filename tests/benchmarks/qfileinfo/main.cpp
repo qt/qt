@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,40 +38,46 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#include <QDebug>
+#include <qtest.h>
+#include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
-#include <QtScript>
+#include <QtCore/QFileInfo>
 
-#include "scriptdebugger.h"
+#include "private/qfsfileengine_p.h"
 
-int main(int argc, char **argv)
+class qfileinfo : public QObject
 {
-    QCoreApplication app(argc, argv);
+    Q_OBJECT
+private slots:
+    void canonicalFileNamePerformance();
 
-    if (argc < 2) {
-        fprintf(stderr, "*** you must specify a script file to evaluate (try example.js)\n");
-        return(-1);
-    }
+    void initTestCase();
+    void cleanupTestCase();
+public:
+    qfileinfo() : QObject() {};
+};
 
-    QString fileName = QString::fromLatin1(argv[1]);
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly)) {
-        fprintf(stderr, "*** failed to open `%s' for reading\n", argv[1]);
-        return(-1);
-    }
-
-    QScriptEngine engine;
-    QString code = QTextStream(&file).readAll();
-    file.close();
-
-    fprintf(stdout, "\n*** Welcome to qsdbg. Debugger commands start with a . (period)\n");
-    fprintf(stdout, "*** Any other input will be evaluated by the script interpreter.\n");
-    fprintf(stdout, "*** Type .help for help.\n\n");
-
-    ScriptDebugger *dbg = new ScriptDebugger(&engine);
-    dbg->breakAtNextStatement();
-
-    engine.evaluate(code, fileName);
-
-    return 0;
+void qfileinfo::initTestCase()
+{
 }
+
+void qfileinfo::cleanupTestCase()
+{
+}
+
+void qfileinfo::canonicalFileNamePerformance()
+{
+    QString appPath = QCoreApplication::applicationFilePath();
+    QFSFileEnginePrivate::canonicalized(appPath); // warmup
+    QFSFileEnginePrivate::canonicalized(appPath); // more warmup
+    QBENCHMARK {
+        for (int i = 0; i < 5000; i++) {
+            QFSFileEnginePrivate::canonicalized(appPath);
+        }
+    }
+}
+
+QTEST_MAIN(qfileinfo)
+
+#include "main.moc"

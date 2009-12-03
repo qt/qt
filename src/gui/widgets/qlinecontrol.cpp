@@ -1586,16 +1586,16 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         }
     }
 #endif //QT_NO_CLIPBOARD
-    else if (event == QKeySequence::MoveToStartOfLine) {
+    else if (event == QKeySequence::MoveToStartOfLine || event == QKeySequence::MoveToStartOfBlock) {
         home(0);
     }
-    else if (event == QKeySequence::MoveToEndOfLine) {
+    else if (event == QKeySequence::MoveToEndOfLine || event == QKeySequence::MoveToEndOfBlock) {
         end(0);
     }
-    else if (event == QKeySequence::SelectStartOfLine) {
+    else if (event == QKeySequence::SelectStartOfLine || event == QKeySequence::SelectStartOfBlock) {
         home(1);
     }
-    else if (event == QKeySequence::SelectEndOfLine) {
+    else if (event == QKeySequence::SelectEndOfLine || event == QKeySequence::SelectEndOfBlock) {
         end(1);
     }
     else if (event == QKeySequence::MoveToNextChar) {
