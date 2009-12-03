@@ -42,9 +42,10 @@
 #ifndef QMLDOM_H
 #define QMLDOM_H
 
+#include "qmlerror.h"
+
 #include <QtCore/qlist.h>
 #include <QtCore/qshareddata.h>
-#include <qmlerror.h>
 
 QT_BEGIN_HEADER
 

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicsflickable_p.h>
-#include <private/qmlgraphicsflickable_p_p.h>
+#include "qmlgraphicsflickable_p.h"
+#include "qmlgraphicsflickable_p_p.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QPointer>
@@ -1287,4 +1287,4 @@ QT_END_NAMESPACE
 QML_DECLARE_TYPE(QmlGraphicsFlickableVisibleArea)
 QML_DEFINE_TYPE(Qt,4,6,VisibleArea,QmlGraphicsFlickableVisibleArea)
 
-#include "qmlgraphicsflickable.moc"
+#include <qmlgraphicsflickable.moc>

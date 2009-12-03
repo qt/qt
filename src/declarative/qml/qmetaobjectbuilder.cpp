@@ -39,7 +39,8 @@
 **
 ****************************************************************************/
 
-#include <private/qmetaobjectbuilder_p.h>
+#include "qmetaobjectbuilder_p.h"
+
 #ifndef Q_OS_WIN
 #include <stdint.h>
 #endif

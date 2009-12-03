@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSFOCUSSCOPE_H
 #define QMLGRAPHICSFOCUSSCOPE_H
 
-#include <qmlgraphicsitem.h>
+#include "qmlgraphicsitem.h"
 
 QT_BEGIN_HEADER
 

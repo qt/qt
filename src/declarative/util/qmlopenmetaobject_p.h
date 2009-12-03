@@ -43,8 +43,9 @@
 #define QMLOPENMETAOBJECT_H
 
 #include <QtCore/QMetaObject>
-#include <private/qobject_p.h>
 #include <QtCore/QObject>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_HEADER
 

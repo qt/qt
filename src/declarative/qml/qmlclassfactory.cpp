@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <private/qmlclassfactory_p.h>
+#include "qmlclassfactory_p.h"
 
 QT_BEGIN_NAMESPACE
 

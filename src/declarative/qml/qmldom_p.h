@@ -53,8 +53,9 @@
 // We mean it.
 //
 
+#include "qmlparser_p.h"
+
 #include <QtCore/QtGlobal>
-#include <private/qmlparser_p.h>
 
 QT_BEGIN_NAMESPACE
 

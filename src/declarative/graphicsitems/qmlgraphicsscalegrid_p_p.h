@@ -42,12 +42,13 @@
 #ifndef QMLGRAPHICSSCALEGRID_H
 #define QMLGRAPHICSSCALEGRID_H
 
+#include "qmlgraphicsborderimage_p.h"
+
+#include <qmlpixmapcache_p.h>
+#include <qml.h>
+
 #include <QtCore/QString>
 #include <QtCore/QObject>
-#include <private/qmlpixmapcache_p.h>
-#include <qml.h>
-#include <private/qmlgraphicsborderimage_p.h>
-
 
 QT_BEGIN_HEADER
 

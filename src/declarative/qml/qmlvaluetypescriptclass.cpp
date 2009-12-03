@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include <private/qmlvaluetypescriptclass_p.h>
-#include <private/qmlengine_p.h>
+#include "qmlvaluetypescriptclass_p.h"
+
+#include "qmlengine_p.h"
 
 QT_BEGIN_NAMESPACE
 

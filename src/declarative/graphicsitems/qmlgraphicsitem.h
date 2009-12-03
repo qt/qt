@@ -42,10 +42,11 @@
 #ifndef QMLGRAPHICSITEM_H
 #define QMLGRAPHICSITEM_H
 
-#include <QtCore/QObject>
-#include <QtCore/QList>
 #include <qml.h>
 #include <qmlcomponent.h>
+
+#include <QtCore/QObject>
+#include <QtCore/QList>
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qfont.h>

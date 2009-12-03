@@ -39,36 +39,39 @@
 **
 ****************************************************************************/
 
-#include <private/qmlvme_p.h>
-#include <private/qmlcompiler_p.h>
-#include <private/qfxperf_p_p.h>
-#include <private/qmlboundsignal_p.h>
-#include <private/qmlstringconverters_p.h>
-#include <private/qmetaobjectbuilder_p.h>
-#include <private/qmldeclarativedata_p.h>
-#include <qml.h>
-#include <private/qmlcustomparser_p.h>
+#include "qmlvme_p.h"
+
+#include "qmlcompiler_p.h"
+#include "qmlboundsignal_p.h"
+#include "qmlstringconverters_p.h"
+#include "qmetaobjectbuilder_p.h"
+#include "qmldeclarativedata_p.h"
+#include "qml.h"
+#include "qmlcustomparser_p.h"
+#include "qmlengine.h"
+#include "qmlcontext.h"
+#include "qmlcomponent.h"
+#include "qmlbinding.h"
+#include "qmlengine_p.h"
+#include "qmlcomponent_p.h"
+#include "qmlvmemetaobject_p.h"
+#include "qmlbinding_p.h"
+#include "qmlcontext_p.h"
+#include "qmlbindingoptimizations_p.h"
+#include "qmlglobal_p.h"
+#include "qmlscriptstring.h"
+
+#include <qfxperf_p_p.h>
+
 #include <QStack>
 #include <QWidget>
 #include <QColor>
 #include <QPointF>
 #include <QSizeF>
 #include <QRectF>
-#include <qmlengine.h>
-#include <qmlcontext.h>
-#include <qmlcomponent.h>
-#include <qmlbinding.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcomponent_p.h>
-#include <private/qmlvmemetaobject_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qapplication.h>
-#include <private/qmlbinding_p.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmlbindingoptimizations_p.h>
-#include <private/qmlglobal_p.h>
-#include <qmlscriptstring.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -544,7 +547,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 QmlBoundSignal *bs = new QmlBoundSignal(target, signal, target);
                 QmlExpression *expr = 
                     new QmlExpression(ctxt, primitives.at(instr.storeSignal.value), target);
-                expr->setSourceLocation(comp->url, instr.line);
+                expr->setSourceLocation(comp->name, instr.line);
                 bs->setExpression(expr);
             }
             break;
@@ -597,7 +600,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 if (stack.count() == 1 && bindingSkipList.testBit(coreIndex))  
                     break;
 
-                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, comp->url, instr.line, 0);
+                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, comp->name, instr.line, 0);
                 bindValues.append(bind);
                 bind->m_mePtr = &bindValues.values[bindValues.count - 1];
                 bind->setTarget(mp);

@@ -39,11 +39,14 @@
 **
 ****************************************************************************/
 
-#include <private/qmldebugclient_p.h>
-#include <private/qobject_p.h>
-#include <private/qpacketprotocol_p.h>
+#include "qmldebugclient_p.h"
+
+#include "qpacketprotocol_p.h"
+
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -201,4 +204,4 @@ void QmlDebugClient::messageReceived(const QByteArray &)
 
 QT_END_NAMESPACE
 
-#include "qmldebugclient.moc"
+#include <qmldebugclient.moc>

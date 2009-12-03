@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <private/qmlproxymetaobject_p.h>
+#include "qmlproxymetaobject_p.h"
 
 #include <QDebug>
 

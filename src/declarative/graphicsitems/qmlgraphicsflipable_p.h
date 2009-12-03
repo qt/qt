@@ -42,9 +42,10 @@
 #ifndef QMLGRAPHICSFLIPABLE_H
 #define QMLGRAPHICSFLIPABLE_H
 
+#include "qmlgraphicsitem.h"
+
 #include <QtCore/QObject>
 #include <QtGui/QTransform>
-#include <qmlgraphicsitem.h>
 #include <QtGui/qvector3d.h>
 
 QT_BEGIN_HEADER

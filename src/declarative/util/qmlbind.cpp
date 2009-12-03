@@ -39,16 +39,20 @@
 **
 ****************************************************************************/
 
+#include "qmlbind_p.h"
+
+#include "qmlnullablevalue_p_p.h"
+
 #include <qmlengine.h>
 #include <qmlcontext.h>
-#include <private/qobject_p.h>
+
 #include <QtCore/qfile.h>
 #include <QtCore/qdebug.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtScript/qscriptcontext.h>
 #include <QtScript/qscriptengine.h>
-#include <private/qmlnullablevalue_p_p.h>
-#include <private/qmlbind_p.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 

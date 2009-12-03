@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-#include <QtCore/QString>
+#include "qmljsglobal_p.h"
 
-#include <private/qmljsglobal_p.h>
+#include <QtCore/QString>
 
 QT_QML_BEGIN_NAMESPACE
 
@@ -64,7 +64,7 @@ namespace QmlJS {
 class Engine;
 class NameId;
 
-class Lexer
+class QML_PARSER_EXPORT Lexer
 {
 public:
     Lexer(Engine *eng, bool tokenizeComments = false);

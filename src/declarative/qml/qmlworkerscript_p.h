@@ -53,9 +53,10 @@
 // We mean it.
 //
 
+#include "qml.h"
+#include "qmlparserstatus.h"
+
 #include <QtCore/qthread.h>
-#include <qml.h>
-#include <qmlparserstatus.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qurl.h>
 

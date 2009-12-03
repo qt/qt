@@ -42,8 +42,8 @@
 #ifndef QMLGRAPHICSPATHVIEW_H
 #define QMLGRAPHICSPATHVIEW_H
 
-#include <qmlgraphicsitem.h>
-#include <private/qmlgraphicspath_p.h>
+#include "qmlgraphicsitem.h"
+#include "qmlgraphicspath_p.h"
 
 QT_BEGIN_HEADER
 

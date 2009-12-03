@@ -53,10 +53,12 @@
 // We mean it.
 //
 
-#include <qml.h>
+#include "qml.h"
+
 #include <QtCore/QMetaObject>
 #include <QtCore/QBitArray>
 #include <QtCore/QPair>
+
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE

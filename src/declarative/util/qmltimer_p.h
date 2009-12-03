@@ -42,9 +42,10 @@
 #ifndef QMLTIMER_H
 #define QMLTIMER_H
 
+#include <qml.h>
+
 #include <QtCore/qobject.h>
 #include <QtCore/qabstractanimation.h>
-#include <qml.h>
 
 QT_BEGIN_HEADER
 

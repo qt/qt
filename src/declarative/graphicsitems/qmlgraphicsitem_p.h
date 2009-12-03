@@ -53,16 +53,20 @@
 // We mean it.
 //
 
-#include <qmlgraphicsitem.h>
-#include <private/qmlstate_p.h>
-#include <private/qmlgraphicsanchors_p.h>
-#include <private/qmlnullablevalue_p_p.h>
-#include <private/qmlgraphicsanchors_p_p.h>
+#include "qmlgraphicsitem.h"
+
+#include "qmlgraphicsanchors_p.h"
+#include "qmlgraphicsanchors_p_p.h"
+
+#include <qmlstate_p.h>
+#include <qmlnullablevalue_p_p.h>
 #include <qml.h>
 #include <qmlcontext.h>
+
 #include <QtCore/qlist.h>
-#include <private/qgraphicsitem_p.h>
 #include <QtCore/qdebug.h>
+
+#include <private/qgraphicsitem_p.h>
 
 QT_BEGIN_NAMESPACE
 
