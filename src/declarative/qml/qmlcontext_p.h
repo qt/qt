@@ -106,7 +106,7 @@ public:
 
     QmlAbstractExpression *expressions;
 
-    QObjectList contextObjects;
+    QmlDeclarativeData *contextObjects;
 
     struct ContextGuard : public QGuard<QObject>
     {

@@ -440,7 +440,8 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     }
 
     data->context = context;
-    context->d_func()->contextObjects.append(object);
+    data->nextContextObject = context->d_func()->contextObjects;
+    data->prevContextObject = &context->d_func()->contextObjects;
 }
 
 void qmlExecuteDeferred(QObject *object)
@@ -493,9 +494,10 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 }
 
 QmlDeclarativeData::QmlDeclarativeData(QmlContext *ctxt)
-: context(ctxt), bindings(0), bindingBitsSize(0), bindingBits(0), 
-  outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0), 
-  deferredIdx(0), attachedProperties(0), propertyCache(0)
+: context(ctxt), bindings(0), nextContextObject(0), prevContextObject(0),
+  bindingBitsSize(0), bindingBits(0), outerContext(0), lineNumber(0), 
+  columnNumber(0), deferredComponent(0), deferredIdx(0), attachedProperties(0), 
+  propertyCache(0)
 {
 }
 
@@ -505,8 +507,11 @@ void QmlDeclarativeData::destroyed(QObject *object)
         deferredComponent->release();
     if (attachedProperties)
         delete attachedProperties;
-    if (context)
-        static_cast<QmlContextPrivate *>(QObjectPrivate::get(context))->contextObjects.removeAll(object);
+
+    if (nextContextObject) 
+        nextContextObject->prevContextObject = prevContextObject;
+    if (prevContextObject)
+        *prevContextObject = nextContextObject;
 
     QmlAbstractBinding *binding = bindings;
     while (binding) {

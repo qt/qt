@@ -72,6 +72,10 @@ public:
     QmlContext *context;
     QmlAbstractBinding *bindings;
 
+    // Linked list for QmlContext::contextObjects
+    QmlDeclarativeData *nextContextObject;
+    QmlDeclarativeData**prevContextObject;
+
     int bindingBitsSize;
     quint32 *bindingBits; 
     bool hasBindingBit(int) const;
