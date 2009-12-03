@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qcorewlanengine_mac_p.h"
-#include "qnetworkconfiguration_p.h"
+#include "qcorewlanengine.h"
+
+#include <QtNetwork/private/qnetworkconfiguration_p.h>
 
 #include <QtCore/qthread.h>
 #include <QtCore/qmutex.h>
@@ -455,7 +456,4 @@ bool QCoreWlanEngine::getAllScInterfaces()
     return true;
 }
 
-#include "moc_qcorewlanengine_mac_p.cpp"
-
 QT_END_NAMESPACE
-

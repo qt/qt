@@ -81,18 +81,5 @@ symbian {
                bearer/qnetworksessionengine.cpp
 
     contains(QT_CONFIG, networkmanager):DEFINES += BACKEND_NM
-
-    macx {
-        HEADERS += bearer/qcorewlanengine_mac_p.h
-        SOURCES+= bearer/qcorewlanengine_mac.mm
-        LIBS += -framework Foundation -framework SystemConfiguration
-
-        contains(corewlan_enabled, yes) {
-            isEmpty(QMAKE_MAC_SDK)|contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10.6.sdk") {
-                LIBS += -framework CoreWLAN
-                DEFINES += MAC_SDK_10_6
-            }
-        }
-    }
 }
 

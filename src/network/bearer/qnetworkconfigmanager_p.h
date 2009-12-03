@@ -146,7 +146,7 @@ private:
     QNetworkSessionEngine *nmWifi;
 #endif
 #ifdef Q_OS_DARWIN
-    QCoreWlanEngine *coreWifi;
+    QNetworkSessionEngine *coreWifi;
 #endif
 
     uint onlineConfigurations;

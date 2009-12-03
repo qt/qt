@@ -40,11 +40,6 @@
 ****************************************************************************/
 
 #include "qnetworkconfigmanager_p.h"
-
-#ifdef Q_OS_DARWIN
-#include "qcorewlanengine_mac_p.h"
-#endif
-
 #include "qbearerplugin.h"
 
 #include <QtCore/private/qfactoryloader_p.h>
@@ -229,10 +224,17 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         QStringList keys = l->keys();
 
 #if defined (Q_OS_DARWIN)
-        coreWifi = QCoreWlanEngine::instance();
-        if (coreWifi) {
-            connect(coreWifi, SIGNAL(configurationsChanged()),
-                    this, SLOT(updateConfigurations()));
+        coreWifi = 0;
+        if (keys.contains(QLatin1String("corewlan"))) {
+            QBearerEnginePlugin *coreWlanPlugin =
+                qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("corewlan")));
+            if (coreWlanPlugin) {
+                coreWifi = coreWlanPlugin->create(QLatin1String("corewlan"));
+                if (coreWifi) {
+                    connect(coreWifi, SIGNAL(configurationsChanged()),
+                            this, SLOT(updateConfigurations()));
+                }
+            }
         }
 #else
 #ifdef BACKEND_NM
@@ -473,7 +475,4 @@ void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
 #endif
 }
 
-#include "moc_qnetworkconfigmanager_p.cpp"
-
 QT_END_NAMESPACE
-

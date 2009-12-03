@@ -44,16 +44,11 @@
 #include "qnetworksessionengine_p.h"
 #include "qnetworkconfigmanager_p.h"
 
-#ifdef Q_OS_DARWIN
-#include "qcorewlanengine_mac_p.h"
-#endif
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qmutex.h>
 
 #include <QtNetwork/qnetworkinterface.h>
-
-#undef interface
 
 QT_BEGIN_NAMESPACE
 
@@ -61,12 +56,6 @@ static QNetworkSessionEngine *getEngineFromId(const QString &id)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
 
-#ifdef Q_OS_DARWIN
-    QCoreWlanEngine *coreWifi = QCoreWlanEngine::instance();
-    if (coreWifi && coreWifi->hasIdentifier(id))
-        return coreWifi;
-
-#endif
     QNetworkSessionEngine *engine = priv->configurationEngine.value(id);
     if (engine && engine->hasIdentifier(id))
         return engine;
@@ -498,6 +487,4 @@ if(serviceName.isEmpty())
 }
 #endif
 
-#include "moc_qnetworksession_p.cpp"
 QT_END_NAMESPACE
-
