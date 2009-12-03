@@ -623,8 +623,7 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 
     painter->save();
 
-    QMatrix m = painter->matrix();
-    bool complexXForm = m.m11() != 1.0 || m.m22() != 1.0 || m.m12() != 0.0 || m.m21() != 0.0;
+    bool complexXForm = painter->deviceTransform().type() > QTransform::TxTranslate;
 
     bool translucentToplevel = false;
     QPaintDevice *pdev = painter->device();

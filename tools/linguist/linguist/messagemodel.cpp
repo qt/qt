@@ -786,16 +786,9 @@ void MultiDataModel::closeAll()
     m_numFinished = 0;
     m_numEditable = 0;
     m_numMessages = 0;
-    int delCol = m_dataModels.count();
-    m_msgModel->beginRemoveColumns(QModelIndex(), 1, delCol);
-    for (int i = m_multiContextList.size(); --i >= 0;) {
-        m_msgModel->beginRemoveColumns(m_msgModel->createIndex(i, 0, 0), 1, delCol);
-        m_msgModel->endRemoveColumns();
-    }
     qDeleteAll(m_dataModels);
     m_dataModels.clear();
     m_multiContextList.clear();
-    m_msgModel->endRemoveColumns();
     m_msgModel->reset();
     emit allModelsDeleted();
     onModifiedChanged();
