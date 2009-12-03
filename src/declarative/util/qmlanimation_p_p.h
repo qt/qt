@@ -201,14 +201,14 @@ public:
       connectedTimeLine(false), componentComplete(true), startOnCompletion(false),
       target(0), group(0) {}
 
-    bool running;
-    bool paused;
-    bool alwaysRunToEnd;
-    bool repeat;
-    bool connectedTimeLine;
+    bool running:1;
+    bool paused:1;
+    bool alwaysRunToEnd:1;
+    bool repeat:1;
+    bool connectedTimeLine:1;
 
-    bool componentComplete;
-    bool startOnCompletion;
+    bool componentComplete:1;
+    bool startOnCompletion:1;
 
     void commence();
 
