@@ -170,7 +170,7 @@ void tst_QNetworkSession::initTestCase()
     dbus_send.waitForFinished();
 #endif
 
-    inProcessSessionManagementCount = 0;
+    inProcessSessionManagementCount = -1;
 
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations();
@@ -415,6 +415,8 @@ void tst_QNetworkSession::sessionOpenCloseStop_data()
         QTest::newRow((name + QLatin1String(" stop")).toLocal8Bit().constData())
             << config << true;
     }
+
+    inProcessSessionManagementCount = 0;
 }
 
 void tst_QNetworkSession::sessionOpenCloseStop()
@@ -803,7 +805,7 @@ void tst_QNetworkSession::outOfProcessSession()
             output = oopSocket->readLine().trimmed();
 
         if (output.startsWith("Started session ")) {
-            QString identifier = QString::fromLocal8Bit(output.mid(16).constData());
+            QString identifier = QString::fromLocal8Bit(output.mid(20).constData());
 
             QNetworkConfiguration changed;
 
