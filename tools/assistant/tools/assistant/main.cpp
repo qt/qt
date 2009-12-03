@@ -150,6 +150,38 @@ QString cachedCollectionFile(const QHelpEngineCore &collection)
     return dir + QDir::separator() + fileName;
 }
 
+bool synchronizeDocs(const QHelpEngineCore &collection,
+                     QHelpEngineCore &cachedCollection)
+{
+    const QStringList &docs = collection.registeredDocumentations();
+    const QStringList &cachedDocs = cachedCollection.registeredDocumentations();
+
+    /*
+     * Step 1: Ensure that the cached collection contains all docs that
+     *         the collection contains.
+     */
+    foreach (const QString &doc, docs) {
+        if (!cachedDocs.contains(doc)) {
+            if (!cachedCollection.registerDocumentation(
+                    collection.documentationFileName(doc)))
+                return false;
+        }
+    }
+
+    /*
+     * Step 2: Ensure that the cached collection contains no docs that
+     *         the collection doesn't contain.
+     */
+    QLatin1String intern("com.trolltech.com.assistantinternal-");
+    foreach (const QString &doc, cachedDocs) {
+        if (!collection.contains(doc) && !doc.startsWith(intern)
+            && !cachedCollection.unregisterDocumentation(doc))
+            return false;
+    }
+
+    return true;
+}
+
 } // Anonymous namespace.
 
 int main(int argc, char *argv[])
@@ -278,20 +310,7 @@ int main(int argc, char *argv[])
                     docUpdate = true;
 
                 if (docUpdate) {
-                    QStringList callerDocs = caller.registeredDocumentations();
-                    foreach (const QString &doc, callerDocs) {
-                        if (!userDocs.contains(doc)) {
-                            user.registerDocumentation(
-                                caller.documentationFileName(doc));
-                        }
-                    }
-
-                    QLatin1String intern("com.trolltech.com.assistantinternal-");
-                    foreach (const QString &doc, userDocs) {
-                        if (!callerDocs.contains(doc) && !doc.startsWith(intern))
-                            user.unregisterDocumentation(doc);
-                    }
-
+                    synchronizeDocs(caller, user);
                     CollectionConfiguration::setDocUpdatePending(caller, false);
                 }
             }
