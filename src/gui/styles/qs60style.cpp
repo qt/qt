@@ -454,9 +454,6 @@ void QS60StylePrivate::setThemePalette(QApplication *app) const
     Q_UNUSED(app)
     QPalette widgetPalette = QPalette(Qt::white);
     setThemePalette(&widgetPalette);
-    QApplication::setPalette(widgetPalette); //calling QApplication::setPalette clears palette hash
-    setThemePaletteHash(&widgetPalette);
-    storeThemePalette(&widgetPalette);
 }
 
 QPalette* QS60StylePrivate::themePalette()
@@ -470,8 +467,6 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     QPalette applicationPalette = QApplication::palette();
     applicationPalette.setBrush(QPalette::Window, backgroundTexture());
     setThemePalette(&applicationPalette);
-    QApplication::setPalette(applicationPalette);
-    setThemePaletteHash(&applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
@@ -687,6 +682,10 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::Midlight, palette->color(QPalette::Button).lighter(125));
     palette->setColor(QPalette::Mid, palette->color(QPalette::Button).darker(150));
     palette->setColor(QPalette::Shadow, Qt::black);
+
+    QApplication::setPalette(*palette); //calling QApplication::setPalette clears palette hash
+    setThemePaletteHash(palette);
+    storeThemePalette(palette);
 }
 
 void QS60StylePrivate::deleteThemePalette()
