@@ -544,7 +544,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 QmlBoundSignal *bs = new QmlBoundSignal(target, signal, target);
                 QmlExpression *expr = 
                     new QmlExpression(ctxt, primitives.at(instr.storeSignal.value), target);
-                expr->setSourceLocation(comp->url, instr.line);
+                expr->setSourceLocation(comp->name, instr.line);
                 bs->setExpression(expr);
             }
             break;
@@ -597,7 +597,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 if (stack.count() == 1 && bindingSkipList.testBit(coreIndex))  
                     break;
 
-                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, comp->url, instr.line, 0);
+                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, comp->name, instr.line, 0);
                 bindValues.append(bind);
                 bind->m_mePtr = &bindValues.values[bindValues.count - 1];
                 bind->setTarget(mp);

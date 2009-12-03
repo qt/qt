@@ -103,7 +103,7 @@ public:
 
     bool isShared;
 
-    QUrl url;
+    QString url; // This is a QString for a reason.  QUrls are slooooooow...
     int line;
 
     struct SignalGuard : public QGuard<QObject> {
@@ -143,7 +143,7 @@ public:
     };
 
     void init(QmlContext *, const QString &, QObject *);
-    void init(QmlContext *, void *, QmlRefCount *, QObject *, const QUrl &, int);
+    void init(QmlContext *, void *, QmlRefCount *, QObject *, const QString &, int);
 
     QmlExpressionData *data;
 

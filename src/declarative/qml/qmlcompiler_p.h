@@ -79,7 +79,7 @@ public:
     QmlCompiledData();
     virtual ~QmlCompiledData();
 
-    QByteArray name;
+    QString name;
     QUrl url;
     QmlEnginePrivate::Imports imports;
     QmlTypeNameCache *importCache;
