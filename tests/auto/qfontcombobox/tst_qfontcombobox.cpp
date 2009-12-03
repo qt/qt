@@ -144,9 +144,11 @@ void tst_QFontComboBox::currentFont()
     QFont oldCurrentFont = box.currentFont();
 
     box.setCurrentFont(currentFont);
-    QCOMPARE(box.currentFont(), currentFont);
-    QString boxFontFamily = QFontInfo(box.currentFont()).family();
     QRegExp foundry(" \\[.*\\]");
+    if (!box.currentFont().family().contains(foundry)) {
+        QCOMPARE(box.currentFont(), currentFont);
+    }
+    QString boxFontFamily = QFontInfo(box.currentFont()).family();
     if (!currentFont.family().contains(foundry))
         boxFontFamily.remove(foundry);
     QCOMPARE(boxFontFamily, currentFont.family());

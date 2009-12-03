@@ -2277,13 +2277,21 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #ifdef QGL_BIND_TEXTURE_DEBUG
             printf(" - flipping bits over y (%d ms)\n", time.elapsed());
 #endif
-        int ipl = img.bytesPerLine() / 4;
-        int h = img.height();
-        for (int y=0; y<h/2; ++y) {
-            int *a = (int *) img.scanLine(y);
-            int *b = (int *) img.scanLine(h - y - 1);
-            for (int x=0; x<ipl; ++x)
-                qSwap(a[x], b[x]);
+        if (img.isDetached()) {
+            int ipl = img.bytesPerLine() / 4;
+            int h = img.height();
+            for (int y=0; y<h/2; ++y) {
+                int *a = (int *) img.scanLine(y);
+                int *b = (int *) img.scanLine(h - y - 1);
+                for (int x=0; x<ipl; ++x)
+                    qSwap(a[x], b[x]);
+            }
+        } else {
+            // Create a new image and copy across.  If we use the
+            // above in-place code then a full copy of the image is
+            // made before the lines are swapped, which processes the
+            // data twice.  This version should only do it once.
+            img = img.mirrored();
         }
     }
 

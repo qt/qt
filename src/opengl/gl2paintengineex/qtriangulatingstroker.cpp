@@ -313,6 +313,7 @@ void QTriangulatingStroker::join(const qreal *pts)
     switch (m_join_style) {
     case Qt::BevelJoin:
         break;
+    case Qt::SvgMiterJoin:
     case Qt::MiterJoin: {
         // Find out on which side the join should be.
         int count = m_vertices.size();

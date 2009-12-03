@@ -46,7 +46,7 @@ QList<QByteArray> QAnnotatorWidget::annotation(const QObject& object)
 
             stream << "widget (Symbian): ";
             stream << "activated " << extra->activated << ' ';
-            stream << "disableBlit " << extra->disableBlit << ' ';
+            stream << "nativePaintMode " << extra->nativePaintMode << ' ';
 
             stream.flush();
             result.append(array);

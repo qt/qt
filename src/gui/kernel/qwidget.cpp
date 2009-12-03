@@ -366,7 +366,8 @@ bool QWidget::hasEditFocus() const
     normally; otherwise, Qt::Key_Up and Qt::Key_Down are used to
     change focus.
 
-    This feature is only available in Qt for Embedded Linux.
+    This feature is only available in Qt for Embedded Linux and Qt
+    for Symbian.
 
     \sa hasEditFocus(), QApplication::keypadNavigationEnabled()
 */
@@ -6045,6 +6046,11 @@ bool QWidget::hasFocus() const
     (Nothing happens if the focus in and focus out widgets are the
     same.)
 
+    \note On embedded platforms, setFocus() will not cause an input panel
+    to be opened by the input method. If you want this to happen, you
+    have to send a QEvent::RequestSoftwareInputPanel event to the
+    widget yourself.
+
     setFocus() gives focus to a widget regardless of its focus policy,
     but does not clear any keyboard grab (see grabKeyboard()).
 
@@ -6057,7 +6063,7 @@ bool QWidget::hasFocus() const
 
     \sa hasFocus(), clearFocus(), focusInEvent(), focusOutEvent(),
     setFocusPolicy(), focusWidget(), QApplication::focusWidget(), grabKeyboard(),
-    grabMouse(), {Keyboard Focus}
+    grabMouse(), {Keyboard Focus}, QEvent::RequestSoftwareInputPanel
 */
 
 void QWidget::setFocus(Qt::FocusReason reason)
