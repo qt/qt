@@ -766,6 +766,7 @@ CFG_SILENT=no
 CFG_GRAPHICS_SYSTEM=default
 CFG_ALSA=auto
 CFG_NETWORKMANAGER=auto
+CFG_COREWLAN=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -5365,6 +5366,14 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
         # Always enable Phonon (unless it was explicitly disabled)
         CFG_PHONON=yes
     fi
+
+    if [ "$CFG_COREWLAN" = "auto" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/corewlan "CoreWlan" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            CFG_COREWLAN=yes
+        else
+            CFG_COREWLAN=no
+        fi
+    fi
 fi
 
 # QWS
@@ -6310,6 +6319,10 @@ if [ "$CFG_NETWORKMANAGER" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG networkmanager"
 fi
 
+if [ "$CFG_COREWLAN" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG corewlan"
+fi
+
 #
 # Some Qt modules are too advanced in C++ for some old compilers
 # Detect here the platforms where they are known to work.
@@ -7011,6 +7024,7 @@ fi
 [ "$CFG_XINPUT" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINPUT"
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
 [ "$CFG_NETWORKMANAGER" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NETWORKMANAGER"
+[ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
 
 # sort QCONFIG_FLAGS for neatness if we can
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
@@ -7537,6 +7551,7 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG"
 fi
 echo "alsa support ........... $CFG_ALSA"
 echo "NetworkManager support . $CFG_NETWORKMANAGER"
+echo "CoreWlan support ....... $CFG_COREWLAN"
 echo
 
 sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`
