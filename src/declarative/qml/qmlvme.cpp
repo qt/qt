@@ -158,7 +158,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
     QmlMetaProperty::WriteFlags flags = QmlMetaProperty::BypassInterceptor;
 
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
-        QmlInstruction &instr = comp->bytecode[ii];
+        const QmlInstruction &instr = comp->bytecode.at(ii);
 
         switch(instr.type) {
         case QmlInstruction::Init:

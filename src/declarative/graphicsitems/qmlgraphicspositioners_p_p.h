@@ -85,6 +85,11 @@ public:
     void init(QmlGraphicsBasePositioner::AutoUpdateType at)
     {
         aut = at;
+        if (prePosIdx == -1) {
+            prePosIdx = QmlGraphicsBasePositioner::staticMetaObject.indexOfSlot("prePositioning()");
+            visibleIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("visibleChanged()");
+            opacityIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("opacityChanged()");
+        }
     }
 
     bool _ep;
@@ -105,13 +110,16 @@ public:
     QmlTransitionManager addTransitionManager;
     QmlTransitionManager moveTransitionManager;
     QmlTransitionManager removeTransitionManager;
-//    QmlStateGroup *stateGroup;
     QmlGraphicsItem *_movingItem;
 
     void watchChanges(QmlGraphicsItem *other);
     void unwatchChanges(QmlGraphicsItem* other);
     QList<QGuard<QmlGraphicsItem> > watched;
     bool queuedPositioning;
+
+    static int prePosIdx;
+    static int visibleIdx;
+    static int opacityIdx;
 
     virtual void otherSiblingOrderChange(QmlGraphicsItemPrivate* other)
     {

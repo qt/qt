@@ -119,6 +119,12 @@ void QmlGraphicsDrag::setYmax(qreal m)
     _ymax = m;
 }
 
+QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
+{
+    delete drag;
+}
+
+
 /*!
     \qmlclass MouseRegion QmlGraphicsMouseRegion
     \brief The MouseRegion item enables simple mouse handling.
@@ -339,8 +345,10 @@ void QmlGraphicsMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
     else {
         d->longPress = false;
         d->saveEvent(event);
-        d->dragX = drag()->axis() & QmlGraphicsDrag::XAxis;
-        d->dragY = drag()->axis() & QmlGraphicsDrag::YAxis;
+        if (d->drag) {
+            d->dragX = drag()->axis() & QmlGraphicsDrag::XAxis;
+            d->dragY = drag()->axis() & QmlGraphicsDrag::YAxis;
+        }
         d->dragged = false;
         setHovered(true);
         d->start = event->pos();
@@ -371,7 +379,7 @@ void QmlGraphicsMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     else if (!d->hovered && contains)
         setHovered(true);
 
-    if (drag()->target()) {
+    if (d->drag && d->drag->target()) {
         if (!d->moved) {
             if (d->dragX) d->startX = drag()->target()->x();
             if (d->dragY) d->startY = drag()->target()->y();
@@ -616,7 +624,9 @@ bool QmlGraphicsMouseRegion::setPressed(bool p)
 QmlGraphicsDrag *QmlGraphicsMouseRegion::drag()
 {
     Q_D(QmlGraphicsMouseRegion);
-    return &(d->drag);
+    if (!d->drag)
+        d->drag = new QmlGraphicsDrag;
+    return d->drag;
 }
 
 /*!
