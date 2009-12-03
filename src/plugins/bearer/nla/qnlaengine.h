@@ -53,7 +53,8 @@
 // We mean it.
 //
 
-#include "qnetworksessionengine_p.h"
+#include <QtNetwork/private/qnetworksessionengine_p.h>
+#include <QtNetwork/private/qnativesocketengine_p.h>
 
 #include <QMap>
 
@@ -62,11 +63,11 @@ QT_BEGIN_NAMESPACE
 class QNetworkConfigurationPrivate;
 class QNlaThread;
 
-class QWindowsSockInit
+class QWindowsSockInit2
 {
 public:
-    QWindowsSockInit();
-    ~QWindowsSockInit();
+    QWindowsSockInit2();
+    ~QWindowsSockInit2();
     int version;
 };
 
@@ -94,7 +95,7 @@ public:
     static QNlaEngine *instance();
 
 private:
-    QWindowsSockInit winSock;
+    QWindowsSockInit2 winSock;
     QNlaThread *nlaThread;
     QMap<uint, QString> configurationInterface;
 };

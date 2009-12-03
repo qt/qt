@@ -82,21 +82,10 @@ symbian {
 
     contains(QT_CONFIG, networkmanager):DEFINES += BACKEND_NM
 
-    win32 {
-        HEADERS += bearer/qnlaengine_win_p.h \
-                   bearer/qnetworksessionengine_win_p.h
+    win32:!wince* {
+        HEADERS += bearer/qnativewifiengine_win_p.h
 
-        SOURCES += bearer/qnlaengine_win.cpp
-
-        !wince* {
-            HEADERS += bearer/qnativewifiengine_win_p.h
-
-            SOURCES += bearer/qnativewifiengine_win.cpp
-
-            LIBS += -lWs2_32
-        } else {
-            LIBS += -lWs2
-        }
+        SOURCES += bearer/qnativewifiengine_win.cpp
     }
 
     macx {

@@ -41,9 +41,6 @@
 
 #include "qnetworkconfigmanager_p.h"
 
-#ifdef Q_OS_WIN
-#include "qnlaengine_win_p.h"
-#endif
 #ifdef Q_OS_WIN32
 #include "qnativewifiengine_win_p.h"
 #endif
@@ -269,11 +266,17 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 #endif
 
 #ifdef Q_OS_WIN
-            nla = QNlaEngine::instance();
-            if (nla) {
-                connect(nla, SIGNAL(configurationsChanged()),
-                        this, SLOT(updateConfigurations()));
+        if (keys.contains(QLatin1String("nla"))) {
+            QBearerEnginePlugin *nlaPlugin =
+                qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("nla")));
+            if (nlaPlugin) {
+                nla = nlaPlugin->create(QLatin1String("nla"));
+                if (nla) {
+                    connect(nla, SIGNAL(configurationsChanged()),
+                            this, SLOT(updateConfigurations()));
+                }
             }
+        }
 #endif
 
 #ifdef Q_OS_WIN32

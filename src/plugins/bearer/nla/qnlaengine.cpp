@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qnlaengine_win_p.h"
-#include "qnetworkconfiguration_p.h"
+#include "qnlaengine.h"
+#include <QtNetwork/private/qnetworkconfiguration_p.h>
 
 #include <QtCore/qthread.h>
 #include <QtCore/qmutex.h>
@@ -49,13 +49,13 @@
 
 #include <QtCore/qdebug.h>
 
-#include "qnetworksessionengine_win_p.h"
+#include "../platformdefs_win.h"
 
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNlaEngine, nlaEngine)
 
-QWindowsSockInit::QWindowsSockInit()
+QWindowsSockInit2::QWindowsSockInit2()
 :   version(0)
 {
     //### should we try for 2.2 on all platforms ??
@@ -69,7 +69,7 @@ QWindowsSockInit::QWindowsSockInit()
     }
 }
 
-QWindowsSockInit::~QWindowsSockInit()
+QWindowsSockInit2::~QWindowsSockInit2()
 {
     WSACleanup();
 }
@@ -130,8 +130,8 @@ static QString qGetInterfaceType(const QString &interface)
     NDIS_MEDIUM medium;
     NDIS_PHYSICAL_MEDIUM physicalMedium;
 
-    HANDLE handle = CreateFile((TCHAR *)QString("\\\\.\\%1").arg(interface).utf16(), 0,
-                               FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+    HANDLE handle = CreateFile((TCHAR *)QString(QLatin1String("\\\\.\\%1")).arg(interface).utf16(),
+                               0, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if (handle == INVALID_HANDLE_VALUE)
         return QString();
 
@@ -377,7 +377,7 @@ DWORD QNlaThread::parseBlob(NLA_BLOB *blob, QNetworkConfigurationPrivate *cpPriv
         cpPriv->state = QNetworkConfiguration::Active;
         if (QNlaEngine *engine = qobject_cast<QNlaEngine *>(parent())) {
             engine->configurationInterface[cpPriv->id.toUInt()] =
-                QString(blob->data.interfaceData.adapterName);
+                QString::fromLatin1(blob->data.interfaceData.adapterName);
         }
         break;
     case NLA_802_1X_LOCATION:
@@ -584,8 +584,7 @@ QNlaEngine *QNlaEngine::instance()
     return nlaEngine();
 }
 
-#include "qnlaengine_win.moc"
-#include "moc_qnlaengine_win_p.cpp"
+#include "qnlaengine.moc"
 QT_END_NAMESPACE
 
 

@@ -137,7 +137,7 @@ private:
 #ifdef BEARER_ENGINE
     QNetworkSessionEngine *generic;
 #ifdef Q_OS_WIN
-    QNlaEngine *nla;
+    QNetworkSessionEngine *nla;
 #ifndef Q_OS_WINCE
     QNativeWifiEngine *nativeWifi;
 #endif

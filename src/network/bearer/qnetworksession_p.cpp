@@ -44,9 +44,6 @@
 #include "qnetworksessionengine_p.h"
 #include "qnetworkconfigmanager_p.h"
 
-#ifdef Q_OS_WIN
-#include "qnlaengine_win_p.h"
-#endif
 #ifdef Q_OS_WIN32
 #include "qnativewifiengine_win_p.h"
 #endif
@@ -59,17 +56,13 @@
 
 #include <QtNetwork/qnetworkinterface.h>
 
+#undef interface
+
 QT_BEGIN_NAMESPACE
 
 static QNetworkSessionEngine *getEngineFromId(const QString &id)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
-
-#ifdef Q_OS_WIN
-    QNlaEngine *nla = QNlaEngine::instance();
-    if (nla && nla->hasIdentifier(id))
-        return nla;
-#endif
 
 #ifdef Q_OS_WIN32
     QNativeWifiEngine *nativeWifi = QNativeWifiEngine::instance();

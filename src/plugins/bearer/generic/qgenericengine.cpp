@@ -51,7 +51,7 @@
 #include <QtCore/qdebug.h>
 
 #ifdef Q_OS_WIN
-#include "qnetworksessionengine_win_p.h"
+#include "../platformdefs_win.h"
 #endif
 
 QT_BEGIN_NAMESPACE
