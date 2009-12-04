@@ -443,7 +443,7 @@ void tst_QmlGraphicsListView::inserted()
     // Confirm items positioned correctly
     for (int i = 0; i < model.count(); ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        QVERIFY(item->y() == i*20);
+        QCOMPARE(item->y(), i*20.0);
     }
 
     model.insertItem(0, "Foo", "1111"); // zero index, and current item
@@ -465,7 +465,7 @@ void tst_QmlGraphicsListView::inserted()
     // Confirm items positioned correctly
     for (int i = 0; i < model.count(); ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        QVERIFY(item->y() == i*20);
+        QCOMPARE(item->y(), i*20.0);
     }
 
     for (int i = model.count(); i < 30; ++i)
@@ -482,10 +482,11 @@ void tst_QmlGraphicsListView::inserted()
     QVERIFY(listview->viewportY() == 80);
 
     // Confirm items positioned correctly
-    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count() - 1;
-    for (int i = 5; i < 5+itemCount; ++i) {
+    for (int i = 5; i < 5+15; ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        QVERIFY(item->y() == i*20 - 20);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->y(), i*20.0 - 20.0);
     }
 
     delete canvas;
@@ -736,7 +737,7 @@ void tst_QmlGraphicsListView::moved()
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QVERIFY(item->y() == i*20 + 20);
+        QCOMPARE(item->y(), i*20.0 + 20);
         name = findItem<QmlGraphicsText>(viewport, "textName", i);
         QVERIFY(name != 0);
         QCOMPARE(name->text(), model.name(i));
@@ -756,7 +757,7 @@ void tst_QmlGraphicsListView::moved()
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QVERIFY(item->y() == i*20 + 20);
+        QCOMPARE(item->y(), i*20.0 + 20);
         name = findItem<QmlGraphicsText>(viewport, "textName", i);
         QVERIFY(name != 0);
         QCOMPARE(name->text(), model.name(i));
