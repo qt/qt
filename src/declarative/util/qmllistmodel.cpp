@@ -445,6 +445,7 @@ void QmlListModel::clear()
     _root = 0;
     roleStrings.clear();
     emit itemsRemoved(0,cleared);
+    emit countChanged(0);
 }
 
 /*!
