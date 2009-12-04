@@ -8388,9 +8388,10 @@ bool QWidget::event(QEvent *event)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
     {
+#ifndef Q_WS_MAC
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
         const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().first();
-        if (touchPoint.isPrimary())
+        if (touchPoint.isPrimary() || touchEvent->deviceType() == QTouchEvent::TouchPad)
             break;
 
         // fake a mouse event!
@@ -8419,6 +8420,7 @@ bool QWidget::event(QEvent *event)
                                Qt::LeftButton,
                                touchEvent->modifiers());
         (void) QApplication::sendEvent(this, &mouseEvent);
+#endif // Q_WS_MAC
         break;
     }
     case QEvent::Gesture:

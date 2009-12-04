@@ -760,7 +760,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 
     pluginState = IsNotAPlugin; // be pessimistic
 
-    if ((qt_version > QT_VERSION) || ((QT_VERSION & 0xff0000) > (qt_version & 0xff0000))) {
+    if ((qt_version & 0x00ff00) > (QT_VERSION & 0x00ff00) || (qt_version & 0xff0000) != (QT_VERSION & 0xff0000)) {
         if (qt_debug_component()) {
             qWarning("In %s:\n"
                  "  Plugin uses incompatible Qt library (%d.%d.%d) [%s]",
