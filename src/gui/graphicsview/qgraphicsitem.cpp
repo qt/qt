@@ -1341,8 +1341,8 @@ QGraphicsItem::~QGraphicsItem()
     }
 
     if (!d_ptr->children.isEmpty()) {
-        QList<QGraphicsItem *> oldChildren = d_ptr->children;
-        qDeleteAll(oldChildren);
+        while (!d_ptr->children.isEmpty())
+            delete d_ptr->children.first();
         Q_ASSERT(d_ptr->children.isEmpty());
     }
 
