@@ -150,7 +150,7 @@ QString cachedCollectionFile(const QHelpEngineCore &collection)
     return dir + QDir::separator() + fileName;
 }
 
-bool synchronizeDocs(const QHelpEngineCore &collection,
+bool synchronizeDocs(QHelpEngineCore &collection,
                      QHelpEngineCore &cachedCollection)
 {
     const QStringList &docs = collection.registeredDocumentations();
@@ -174,7 +174,7 @@ bool synchronizeDocs(const QHelpEngineCore &collection,
      */
     QLatin1String intern("com.trolltech.com.assistantinternal-");
     foreach (const QString &doc, cachedDocs) {
-        if (!collection.contains(doc) && !doc.startsWith(intern)
+        if (!docs.contains(doc) && !doc.startsWith(intern)
             && !cachedCollection.unregisterDocumentation(doc))
             return false;
     }
@@ -182,28 +182,62 @@ bool synchronizeDocs(const QHelpEngineCore &collection,
     return true;
 }
 
-} // Anonymous namespace.
-
-int main(int argc, char *argv[])
+bool removeSearchIndex(const QString &collectionFile)
 {
-#ifndef Q_OS_WIN 
-    // First do a quick search for arguments that imply command-line mode.
+    QString path = QFileInfo(collectionFile).path();
+    path += QLatin1Char('/') + indexFilesFolder(collectionFile);
+
+    QLocalSocket localSocket;
+    localSocket.connectToServer(QString(QLatin1String("QtAssistant%1"))
+                                .arg(QLatin1String(QT_VERSION_STR)));
+
+    QDir dir(path); // check if there is no other instance ruinning
+    if (!dir.exists() || localSocket.waitForConnected())
+        return false;
+
+    QStringList lst = dir.entryList(QDir::Files | QDir::Hidden);
+    foreach (const QString &item, lst)
+        dir.remove(item);
+    return true;
+}
+
+bool checkForSqlite(CmdLineParser &cmd)
+{
+    QSqlDatabase db;
+    QStringList sqlDrivers(db.drivers());
+    if (!sqlDrivers.contains(QLatin1String("QSQLITE"))) {
+        cmd.showMessage(QObject::tr("Cannot load sqlite database driver!"),
+                        true);
+        return false;
+    }
+    return true;
+}
+
+bool useGui(int argc, char *argv[])
+{
+    bool gui = true;
+#ifndef Q_OS_WIN
+    // Look for arguments that imply command-line mode.
     const char * cmdModeArgs[] = {
         "-help", "-register", "-unregister", "-remove-search-index"
     };
-    bool useGui = true;
     for (int i = 1; i < argc; ++i) {
         for (size_t j = 0; j < sizeof cmdModeArgs/sizeof *cmdModeArgs; ++j) {
             if(strcmp(argv[i], cmdModeArgs[j]) == 0) {
-                useGui = false;
+                gui = false;
                 break;
             }
         }
     }
-    QApplication a(argc, argv, useGui);
-#else
-    QApplication a(argc, argv);
 #endif
+    return gui;
+}
+
+} // Anonymous namespace.
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv, useGui(argc, argv));
     a.addLibraryPath(a.applicationDirPath() + QLatin1String("/plugins"));
 
     CmdLineParser cmd(a.arguments());
@@ -247,38 +281,16 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    // TODO: Also remove search index of cached collection file?
     if (cmd.removeSearchIndex()) {
         QString file = cmdCollectionFile;
         if (file.isEmpty())
             file = MainWindow::defaultHelpCollectionFileName();
-        QString path = QFileInfo(file).path();
-        path += QLatin1Char('/') + indexFilesFolder(file);
-
-        QLocalSocket localSocket;
-        localSocket.connectToServer(QString(QLatin1String("QtAssistant%1"))
-            .arg(QLatin1String(QT_VERSION_STR)));
-
-        QDir dir(path); // check if there is no other instance ruinning
-        if (!localSocket.waitForConnected() && dir.exists()) {
-            QStringList lst = dir.entryList(QDir::Files | QDir::Hidden);
-            foreach (const QString &item, lst)
-                dir.remove(item);
-            return 0;
-        } else {
-            return -1;
-        }
+        return removeSearchIndex(file) ? 0 : EXIT_FAILURE;
     }
 
-    {
-        QSqlDatabase db;
-        QStringList sqlDrivers(db.drivers());
-        if (sqlDrivers.isEmpty()
-            || !sqlDrivers.contains(QLatin1String("QSQLITE"))) {
-            cmd.showMessage(QObject::tr("Cannot load sqlite database driver!"),
-                true);
-            return -1;
-        }
-    }
+    if (!checkForSqlite(cmd))
+        return EXIT_FAILURE;
 
     if (!cmdCollectionFile.isEmpty()) {
         QHelpEngineCore caller(cmdCollectionFile);
