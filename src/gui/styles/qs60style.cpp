@@ -2343,10 +2343,10 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     int retValue = -1;
     switch (sh) {
         case SH_Table_GridLineColor:
-            retValue = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors,2,0).rgb();
+            retValue = int(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors,2,0).rgba());
             break;
         case SH_GroupBox_TextLabelColor:
-            retValue = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors,6,0).rgb();
+            retValue = int(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors,6,0).rgba());
             break;
         case SH_ScrollBar_ScrollWhenPointerLeavesControl:
             retValue = true;
@@ -2402,10 +2402,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             retValue = QFormLayout::WrapLongRows;
             break;
         default:
+            retValue = QCommonStyle::styleHint(sh, opt, widget, hret);
             break;
     }
-    if (retValue == -1)
-        retValue = QCommonStyle::styleHint(sh, opt, widget, hret);
     return retValue;
 }
 
