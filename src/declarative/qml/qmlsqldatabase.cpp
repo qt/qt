@@ -173,7 +173,8 @@ static const char* sqlerror[] = {
 
 static QString databaseFile(const QString& connectionName, QScriptEngine *engine)
 {
-    QString basename = QmlEnginePrivate::get(engine)->offlineStoragePath
+    QmlScriptEngine *qmlengine = static_cast<QmlScriptEngine*>(engine);
+    QString basename = qmlengine->offlineStoragePath
                 + QDir::separator() + QLatin1String("Databases") + QDir::separator();
     basename += connectionName;
     return basename;
@@ -198,6 +199,7 @@ static QScriptValue qmlsqldatabase_item(QScriptContext *context, QScriptEngine *
 
 static QScriptValue qmlsqldatabase_executeSql_outsidetransaction(QScriptContext *context, QScriptEngine *engine)
 {
+    qDebug() << QmlEngine::tr("executeSql called outside transaction()"); // XXX pending bug QTBUG-6507
     THROW_SQL(DATABASE_ERR,QmlEngine::tr("executeSql called outside transaction()"));
 }
 
@@ -224,9 +226,10 @@ static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEn
         }
         if (query.exec()) {
             result = engine->newObject();
-            if (!QmlEnginePrivate::get(engine)->sqlQueryClass)
-                QmlEnginePrivate::get(engine)->sqlQueryClass= new QmlSqlQueryScriptClass(engine);
-            QScriptValue rows = engine->newObject(QmlEnginePrivate::get(engine)->sqlQueryClass);
+            QmlScriptEngine *qmlengine = static_cast<QmlScriptEngine*>(engine);
+            if (!qmlengine->sqlQueryClass)
+                qmlengine->sqlQueryClass = new QmlSqlQueryScriptClass(engine);
+            QScriptValue rows = engine->newObject(qmlengine->sqlQueryClass);
             rows.setData(engine->newVariant(qVariantFromValue(query)));
             rows.setProperty(QLatin1String("item"), engine->newFunction(qmlsqldatabase_item,1), QScriptValue::SkipInEnumeration);
             result.setProperty(QLatin1String("rows"),rows);
@@ -406,6 +409,7 @@ void qt_add_qmlsqldatabase(QScriptEngine *engine)
 {
     QScriptValue openDatabase = engine->newFunction(qmlsqldatabase_open_sync, 4);
     engine->globalObject().setProperty(QLatin1String("openDatabaseSync"), openDatabase);
+qDebug() << "qt_add_qmlsqldatabase" << engine;
 
     QScriptValue sqlExceptionPrototype = engine->newObject();
     for (int i=0; sqlerror[i]; ++i)
