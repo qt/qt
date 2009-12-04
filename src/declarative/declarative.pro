@@ -16,6 +16,9 @@ exists("qml_enable_gcov") {
 
 include(../qbase.pri)
 
+#INCLUDEPATH -= $$QMAKE_INCDIR_QT/$$TARGET
+#DESTDIR=.
+
 #modules
 include(3rdparty/3rdparty.pri)
 include(util/util.pri)
