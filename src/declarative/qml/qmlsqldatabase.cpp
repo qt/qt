@@ -198,7 +198,6 @@ static QScriptValue qmlsqldatabase_item(QScriptContext *context, QScriptEngine *
 
 static QScriptValue qmlsqldatabase_executeSql_outsidetransaction(QScriptContext *context, QScriptEngine *engine)
 {
-    qDebug() << QmlEngine::tr("executeSql called outside transaction()");
     THROW_SQL(DATABASE_ERR,QmlEngine::tr("executeSql called outside transaction()"));
 }
 
