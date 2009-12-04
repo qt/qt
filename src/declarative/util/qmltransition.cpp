@@ -46,6 +46,7 @@
 #include "qmlanimation_p.h"
 #include "qmlanimation_p_p.h"
 #include "qmltransitionmanager_p_p.h"
+
 #include <QParallelAnimationGroup>
 
 QT_BEGIN_NAMESPACE
@@ -71,7 +72,7 @@ class ParallelAnimationWrapper : public QParallelAnimationGroup
 {
     Q_OBJECT
 public:
-    ParallelAnimationWrapper(QObject *parent) : QParallelAnimationGroup(parent) {}
+    ParallelAnimationWrapper(QObject *parent = 0) : QParallelAnimationGroup(parent) {}
     QmlTransitionPrivate *trans;
 protected:
     virtual void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
@@ -96,8 +97,7 @@ public:
 
     void init()
     {
-        Q_Q(QmlTransition);
-        group = new ParallelAnimationWrapper(q);
+        group = new ParallelAnimationWrapper;
         group->trans = this;
     }
 
@@ -146,6 +146,8 @@ QmlTransition::QmlTransition(QObject *parent)
 
 QmlTransition::~QmlTransition()
 {
+    Q_D(QmlTransition);
+    delete d->group;
 }
 
 void QmlTransition::stop()
@@ -257,4 +259,4 @@ QmlList<QmlAbstractAnimation *>* QmlTransition::animations()
 
 QT_END_NAMESPACE
 
-#include "qmltransition.moc"
+#include <qmltransition.moc>

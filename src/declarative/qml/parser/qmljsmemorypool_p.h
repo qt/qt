@@ -53,17 +53,18 @@
 // We mean it.
 //
 
+#include "qmljsglobal_p.h"
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
-#include <string.h>
 
-#include "qmljsglobal_p.h"
+#include <string.h>
 
 QT_QML_BEGIN_NAMESPACE
 
 namespace QmlJS {
 
-class MemoryPool : public QSharedData
+class QML_PARSER_EXPORT MemoryPool : public QSharedData
 {
 public:
     enum { maxBlockCount = -1 };

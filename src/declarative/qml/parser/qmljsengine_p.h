@@ -53,16 +53,16 @@
 // We mean it.
 //
 
-#include <QString>
-#include <QSet>
-
 #include "qmljsglobal_p.h"
 #include "qmljsastfwd_p.h"
+
+#include <QString>
+#include <QSet>
 
 QT_QML_BEGIN_NAMESPACE
 
 namespace QmlJS {
-class NameId
+class QML_PARSER_EXPORT NameId
 {
     QString _text;
 
@@ -101,7 +101,7 @@ class NodePool;
 
 namespace Ecma {
 
-class RegExp
+class QML_PARSER_EXPORT RegExp
 {
 public:
     enum RegExpFlag {
@@ -117,7 +117,7 @@ public:
 
 } // end of namespace Ecma
 
-class DiagnosticMessage
+class QML_PARSER_EXPORT DiagnosticMessage
 {
 public:
     enum Kind { Warning, Error };
@@ -139,7 +139,7 @@ public:
     QString message;
 };
 
-class Engine
+class QML_PARSER_EXPORT Engine
 {
     Lexer *_lexer;
     NodePool *_nodePool;

@@ -39,17 +39,20 @@
 **
 ****************************************************************************/
 
-#include <qml.h>
 #include "qmlbinding.h"
 #include "qmlbinding_p.h"
-#include <qmlcontext.h>
-#include <qmlinfo.h>
+
+#include "qml.h"
+#include "qmlcontext.h"
+#include "qmlinfo.h"
+#include "qmlcontext_p.h"
+#include "qmldeclarativedata_p.h"
+#include "qmlstringconverters_p.h"
+
+#include <qfxperf_p_p.h>
+
 #include <QVariant>
-#include <private/qfxperf_p_p.h>
 #include <QtCore/qdebug.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmldeclarativedata_p.h>
-#include <private/qmlstringconverters_p.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 
@@ -111,7 +114,7 @@ QmlBindingPrivate::QmlBindingPrivate()
 {
 }
 
-QmlBinding::QmlBinding(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ctxt, const QUrl &url, int lineNumber, QObject *parent)
+QmlBinding::QmlBinding(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ctxt, const QString &url, int lineNumber, QObject *parent)
 : QmlExpression(ctxt, data, rc, obj, url, lineNumber, *new QmlBindingPrivate)
 {
     setParent(parent);
@@ -177,7 +180,7 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
 
             if (isUndefined && !data->error.isValid()) {
 
-                QUrl url = data->url;
+                QUrl url = QUrl(data->url);
                 int line = data->line;
                 if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
 
@@ -189,7 +192,7 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
             } else if (!isUndefined && data->property.object() && 
                 !data->property.write(value, flags)) {
 
-                QUrl url = data->url;
+                QUrl url = QUrl(data->url);
                 int line = data->line;
                 if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
 

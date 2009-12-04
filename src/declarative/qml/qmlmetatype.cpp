@@ -40,13 +40,15 @@
 ****************************************************************************/
 
 #include "qmlmetatype.h"
+
+#include "qmlproxymetaobject_p.h"
+#include "qmlcustomparser_p.h"
+
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qbitarray.h>
 #include <QtCore/qreadwritelock.h>
-#include <private/qmlproxymetaobject_p.h>
-
 #include <qmetatype.h>
 #include <qobjectdefs.h>
 #include <qdatetime.h>
@@ -56,10 +58,10 @@
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qlocale.h>
-#include <ctype.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtScript/qscriptvalue.h>
-#include <private/qmlcustomparser_p.h>
+
+#include <ctype.h>
 
 #ifdef QT_BOOTSTRAPPED
 # ifndef QT_NO_GEOM_VARIANT
@@ -921,6 +923,7 @@ QList<QmlType*> QmlMetaType::qmlTypes()
 #include <QtGui/qsizepolicy.h>
 #include <QtGui/qkeysequence.h>
 #include <QtGui/qpen.h>
+
 //#include <QtGui/qtextlength.h>
 #include <QtGui/qtextformat.h>
 #include <QtGui/qmatrix.h>
@@ -930,6 +933,7 @@ QList<QmlType*> QmlMetaType::qmlTypes()
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
 #include <QtGui/qquaternion.h>
+
 Q_DECLARE_METATYPE(QScriptValue);
 
 /*!

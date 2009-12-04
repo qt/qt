@@ -42,8 +42,9 @@
 #ifndef QMLGRAPHICSBORDERIMAGE_H
 #define QMLGRAPHICSBORDERIMAGE_H
 
-#include <QtNetwork/qnetworkreply.h>
 #include "qmlgraphicsimagebase_p.h"
+
+#include <QtNetwork/qnetworkreply.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE

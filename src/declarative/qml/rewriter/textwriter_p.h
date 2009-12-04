@@ -42,11 +42,11 @@
 #ifndef TEXTWRITER_H
 #define TEXTWRITER_H
 
+#include <qmljsglobal_p.h>
+
 #include <QtCore/QString>
 #include <QtCore/QList>
 #include <QtGui/QTextCursor>
-
-#include "qmljsglobal_p.h"
 
 QT_BEGIN_HEADER
 QT_QML_BEGIN_NAMESPACE

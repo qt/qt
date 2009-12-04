@@ -75,7 +75,7 @@ namespace QmlJS {
 class Engine;
 class NameId;
 
-class Parser: protected QmlJSGrammar
+class QML_PARSER_EXPORT Parser: protected QmlJSGrammar
 {
 public:
     union Value {

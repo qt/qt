@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <private/qmlgraphicsitem_p.h>
+#include "qmlgraphicsitem_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -63,7 +63,7 @@ class QmlGraphicsPaintedItemPrivate : public QmlGraphicsItemPrivate
 
 public:
     QmlGraphicsPaintedItemPrivate()
-      : max_imagecache_size(100000), fillColor(Qt::transparent), cachefrozen(false), smoothCache(true)
+      : max_imagecache_size(100000), contentsScale(1.0), fillColor(Qt::transparent), cachefrozen(false), smoothCache(true)
     {
     }
 
@@ -80,6 +80,7 @@ public:
 
     int max_imagecache_size;
     QSize contentsSize;
+    qreal contentsScale;
     QColor fillColor;
     bool cachefrozen;
     bool smoothCache;

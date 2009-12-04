@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include "qmlinstruction_p.h"
+
 #include "qmlcompiler_p.h"
+
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE

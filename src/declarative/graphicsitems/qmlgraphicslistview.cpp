@@ -39,13 +39,15 @@
 **
 ****************************************************************************/
 
-#include "private/qmlgraphicsflickable_p_p.h"
-#include <private/qmleasefollow_p.h>
-#include <private/qlistmodelinterface_p.h>
-#include "qmlgraphicsvisualitemmodel_p.h"
 #include "qmlgraphicslistview_p.h"
+
+#include "qmlgraphicsflickable_p_p.h"
+#include "qmlgraphicsvisualitemmodel_p.h"
+
+#include <qmleasefollow_p.h>
 #include <qmlexpression.h>
 
+#include <qlistmodelinterface_p.h>
 #include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
@@ -481,7 +483,11 @@ public:
     bool autoHighlight : 1;
     bool haveHighlightRange : 1;
     bool correctFlick : 1;
+
+    static int itemResizedIdx;
 };
+
+int QmlGraphicsListViewPrivate::itemResizedIdx = -1;
 
 void QmlGraphicsListViewPrivate::init()
 {
@@ -491,6 +497,8 @@ void QmlGraphicsListViewPrivate::init()
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
+    if (itemResizedIdx == -1)
+        itemResizedIdx = QmlGraphicsListView::staticMetaObject.indexOfSlot("itemResized()");
 }
 
 void QmlGraphicsListViewPrivate::clear()
@@ -531,10 +539,11 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
         model->completeItem();
         listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
+        QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item));
         if (orient == QmlGraphicsListView::Vertical)
-            QObject::connect(listItem->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
+            itemPrivate->connectToHeightChanged(q, itemResizedIdx);
         else
-            QObject::connect(listItem->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
+            itemPrivate->connectToWidthChanged(q, itemResizedIdx);
     }
     requestedIndex = -1;
 
@@ -556,10 +565,11 @@ void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
+        QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item->item));
         if (orient == QmlGraphicsListView::Vertical)
-            QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
+            itemPrivate->disconnectFromHeightChanged(q, itemResizedIdx);
         else
-            QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
+            itemPrivate->disconnectFromWidthChanged(q, itemResizedIdx);
     }
     delete item;
 }
@@ -1902,26 +1912,23 @@ void QmlGraphicsListView::viewportMoved()
         }
     }
 
-    if ((d->haveHighlightRange && d->highlightRange == QmlGraphicsListView::StrictlyEnforceRange)
-        || d->snapMode == QmlGraphicsListView::SnapToItem) {
-        if (d->flicked && d->correctFlick) {
-            // Near an end and it seems that the extent has changed?
-            // Recalculate the flick so that we don't end up in an odd position.
-            if (d->velocityY > 0) {
-                if (d->flickTargetY - d->_moveY.value() < height()/2 && minYExtent() != d->flickTargetY)
-                    d->flickY(-d->verticalVelocity.value());
-            } else if (d->velocityY < 0) {
-                if (d->_moveY.value() - d->flickTargetY < height()/2 && maxYExtent() != d->flickTargetY)
-                    d->flickY(-d->verticalVelocity.value());
-            }
+    if (d->flicked && d->correctFlick) {
+        // Near an end and it seems that the extent has changed?
+        // Recalculate the flick so that we don't end up in an odd position.
+        if (d->velocityY > 0) {
+            if (d->flickTargetY - d->_moveY.value() < height()/2 && minYExtent() != d->flickTargetY)
+                d->flickY(-d->verticalVelocity.value());
+        } else if (d->velocityY < 0) {
+            if (d->_moveY.value() - d->flickTargetY < height()/2 && maxYExtent() != d->flickTargetY)
+                d->flickY(-d->verticalVelocity.value());
+        }
 
-            if (d->velocityX > 0) {
-                if (d->flickTargetX - d->_moveX.value() < height()/2 && minXExtent() != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
-            } else if (d->velocityX < 0) {
-                if (d->_moveX.value() - d->flickTargetX < height()/2 && maxXExtent() != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
-            }
+        if (d->velocityX > 0) {
+            if (d->flickTargetX - d->_moveX.value() < height()/2 && minXExtent() != d->flickTargetX)
+                d->flickX(-d->verticalVelocity.value());
+        } else if (d->velocityX < 0) {
+            if (d->_moveX.value() - d->flickTargetX < height()/2 && maxXExtent() != d->flickTargetX)
+                d->flickX(-d->verticalVelocity.value());
         }
     }
 }
@@ -2266,6 +2273,8 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
     d->updateUnrequestedPositions();
     d->updateViewport();
     d->updateSections();
+    d->updateHeader();
+    d->updateFooter();
     emit countChanged();
 }
 
@@ -2485,4 +2494,4 @@ QML_DEFINE_TYPE(Qt,4,6,ListView,QmlGraphicsListView)
 
 QT_END_NAMESPACE
 
-#include "qmlgraphicslistview.moc"
+#include <qmlgraphicslistview.moc>

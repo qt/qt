@@ -1,11 +1,15 @@
-SOURCES += debugger/qmldebuggerstatus.cpp \
-           debugger/qpacketprotocol.cpp \
-           debugger/qmldebugservice.cpp \
-           debugger/qmldebugclient.cpp \
-           debugger/qmldebug.cpp
+INCLUDEPATH += $$PWD
 
-HEADERS += debugger/qmldebuggerstatus_p.h \
-           debugger/qpacketprotocol_p.h \
-           debugger/qmldebugservice_p.h \
-           debugger/qmldebugclient_p.h \
-           debugger/qmldebug_p.h
+SOURCES += \
+    $$PWD/qmldebuggerstatus.cpp \
+    $$PWD/qpacketprotocol.cpp \
+    $$PWD/qmldebugservice.cpp \
+    $$PWD/qmldebugclient.cpp \
+    $$PWD/qmldebug.cpp
+
+HEADERS += \
+    $$PWD/qmldebuggerstatus_p.h \
+    $$PWD/qpacketprotocol_p.h \
+    $$PWD/qmldebugservice_p.h \
+    $$PWD/qmldebugclient_p.h \
+    $$PWD/qmldebug_p.h

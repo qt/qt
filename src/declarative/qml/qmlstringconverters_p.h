@@ -54,6 +54,8 @@
 //
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qvariant.h>
+
 class QColor;
 class QPointF;
 class QSizeF;

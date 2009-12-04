@@ -2,6 +2,7 @@ TEMPLATE = lib
 TARGET = QmlInspector
 
 INCLUDEPATH += .
+INCLUDEPATH += ../../../src/declarative/debugger
 DEPENDPATH += .
 
 include(../standalone/qmldebugger.pri)

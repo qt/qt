@@ -42,8 +42,9 @@
 #ifndef QMLBIND_H
 #define QMLBIND_H
 
-#include <QtCore/qobject.h>
 #include <qml.h>
+
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 

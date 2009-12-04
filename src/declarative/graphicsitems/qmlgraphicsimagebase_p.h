@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSIMAGEBASE_H
 #define QMLGRAPHICSIMAGEBASE_H
 
-#include <qmlgraphicsitem.h>
+#include "qmlgraphicsitem.h"
 
 QT_BEGIN_HEADER
 

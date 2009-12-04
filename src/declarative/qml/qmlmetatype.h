@@ -42,13 +42,14 @@
 #ifndef QMLMETATYPE_H
 #define QMLMETATYPE_H
 
+#include "qmlprivate.h"
+#include "qmlparserstatus.h"
+#include "qmlpropertyvaluesource.h"
+#include "qmlpropertyvalueinterceptor.h"
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qbitarray.h>
-#include <qmlprivate.h>
-#include <qmlparserstatus.h>
-#include <qmlpropertyvaluesource.h>
-#include <qmlpropertyvalueinterceptor.h>
 
 QT_BEGIN_HEADER
 

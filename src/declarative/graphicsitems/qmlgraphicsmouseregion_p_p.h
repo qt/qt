@@ -53,10 +53,11 @@
 // We mean it.
 //
 
-#include "qdatetime.h"
-#include "qbasictimer.h"
-#include "qgraphicssceneevent.h"
 #include "qmlgraphicsitem_p.h"
+
+#include <qdatetime.h>
+#include <qbasictimer.h>
+#include <qgraphicssceneevent.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +70,8 @@ public:
       : absorb(true), hovered(false), pressed(false), longPress(false), drag(0)
     {
     }
+
+    ~QmlGraphicsMouseRegionPrivate();
 
     void init()
     {
@@ -97,7 +100,7 @@ public:
     bool dragX : 1;
     bool dragY : 1;
     bool dragged : 1;
-    QmlGraphicsDrag drag;
+    QmlGraphicsDrag *drag;
     QPointF start;
     QPointF startScene;
     qreal startX;

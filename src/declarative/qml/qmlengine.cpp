@@ -39,14 +39,33 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qmetaobject.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcontext_p.h>
-#include <private/qobject_p.h>
-#include <private/qmlcompiler_p.h>
-#include <private/qscriptdeclarativeclass_p.h>
-#include <private/qmlglobalscriptclass_p.h>
+#include "qmlengine_p.h"
+#include "qmlengine.h"
 
+#include "qmlcontext_p.h"
+#include "qmlcompiler_p.h"
+#include "qmlglobalscriptclass_p.h"
+#include "qml.h"
+#include "qmlbasicscript_p.h"
+#include "qmlcontext.h"
+#include "qmlexpression.h"
+#include "qmlcomponent.h"
+#include "qmlmetaproperty_p.h"
+#include "qmlbinding_p.h"
+#include "qmlvme_p.h"
+#include "qmlenginedebug_p.h"
+#include "qmlstringconverters_p.h"
+#include "qmlxmlhttprequest_p.h"
+#include "qmlsqldatabase_p.h"
+#include "qmltypenamescriptclass_p.h"
+#include "qmllistscriptclass_p.h"
+#include "qmlscriptstring.h"
+#include "qmlglobal_p.h"
+#include "qmlworkerscript_p.h"
+
+#include <qfxperf_p_p.h>
+
+#include <QtCore/qmetaobject.h>
 #include <QScriptClass>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -57,13 +76,7 @@
 #include <QPair>
 #include <QDebug>
 #include <QMetaObject>
-#include "qml.h"
-#include <private/qfxperf_p_p.h>
 #include <QStack>
-#include "private/qmlbasicscript_p.h"
-#include "qmlengine.h"
-#include "qmlcontext.h"
-#include "qmlexpression.h"
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qcoreapplication.h>
@@ -72,24 +85,15 @@
 #include <QtGui/qvector3d.h>
 #include <QtGui/qsound.h>
 #include <QGraphicsObject>
-#include <qmlcomponent.h>
-#include <private/qmlmetaproperty_p.h>
-#include <private/qmlbinding_p.h>
-#include <private/qmlvme_p.h>
-#include <private/qmlenginedebug_p.h>
-#include <private/qmlstringconverters_p.h>
-#include <private/qmlxmlhttprequest_p.h>
-#include <private/qmlsqldatabase_p.h>
-#include <private/qmltypenamescriptclass_p.h>
-#include <private/qmllistscriptclass_p.h>
-#include <qmlscriptstring.h>
-#include <private/qmlglobal_p.h>
 #include <QtCore/qcryptographichash.h>
-#include <private/qmlworkerscript_p.h>
+
+#include <private/qobject_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
-#include "qt_windows.h"
-#include "qlibrary.h"
+#include <qt_windows.h>
+#include <qlibrary.h>
+
 #define CSIDL_APPDATA		0x001a	// <username>\Application Data
 #endif
 
@@ -440,7 +444,8 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     }
 
     data->context = context;
-    context->d_func()->contextObjects.append(object);
+    data->nextContextObject = context->d_func()->contextObjects;
+    data->prevContextObject = &context->d_func()->contextObjects;
 }
 
 void qmlExecuteDeferred(QObject *object)
@@ -493,9 +498,10 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 }
 
 QmlDeclarativeData::QmlDeclarativeData(QmlContext *ctxt)
-: context(ctxt), bindings(0), bindingBitsSize(0), bindingBits(0), 
-  outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0), 
-  deferredIdx(0), attachedProperties(0), propertyCache(0)
+: context(ctxt), bindings(0), nextContextObject(0), prevContextObject(0),
+  bindingBitsSize(0), bindingBits(0), outerContext(0), lineNumber(0), 
+  columnNumber(0), deferredComponent(0), deferredIdx(0), attachedProperties(0), 
+  propertyCache(0)
 {
 }
 
@@ -505,8 +511,11 @@ void QmlDeclarativeData::destroyed(QObject *object)
         deferredComponent->release();
     if (attachedProperties)
         delete attachedProperties;
-    if (context)
-        static_cast<QmlContextPrivate *>(QObjectPrivate::get(context))->contextObjects.removeAll(object);
+
+    if (nextContextObject) 
+        nextContextObject->prevContextObject = prevContextObject;
+    if (prevContextObject)
+        *prevContextObject = nextContextObject;
 
     QmlAbstractBinding *binding = bindings;
     while (binding) {
@@ -1210,8 +1219,9 @@ QmlEnginePrivate::Imports::~Imports()
         delete d;
 }
 
-#include <qmlmetatype.h>
-#include <private/qmltypenamecache_p.h>
+#include "qmlmetatype.h"
+#include "qmltypenamecache_p.h"
+
 static QmlTypeNameCache *cacheForNamespace(QmlEngine *engine, const QmlEnginePrivate::ImportedNamespace &set, QmlTypeNameCache *cache)
 {
     if (!cache)

@@ -39,17 +39,20 @@
 **
 ****************************************************************************/
 
-#include <private/qobject_p.h>
+#include "qmlstateoperations_p.h"
+
 #include <qml.h>
 #include <qmlcontext.h>
 #include <qmlexpression.h>
-#include "qmlstateoperations_p.h"
-#include <QtCore/qdebug.h>
 #include <qmlinfo.h>
-#include <private/qmlgraphicsanchors_p_p.h>
-#include <private/qmlgraphicsitem_p.h>
+#include <qmlgraphicsanchors_p_p.h>
+#include <qmlgraphicsitem_p.h>
+
+#include <QtCore/qdebug.h>
 #include <QtGui/qgraphicsitem.h>
 #include <QtCore/qmath.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -823,8 +826,8 @@ void QmlAnchorChanges::saveCurrentValues()
     d->rewindBaseline = d->target->anchors()->baseline();
 }
 
-#include "qmlstateoperations.moc"
-#include "moc_qmlstateoperations_p.cpp"
+#include <qmlstateoperations.moc>
+#include <moc_qmlstateoperations_p.cpp>
 
 QT_END_NAMESPACE
 

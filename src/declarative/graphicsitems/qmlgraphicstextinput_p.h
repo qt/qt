@@ -44,6 +44,7 @@
 
 #include "qmlgraphicstext_p.h"
 #include "qmlgraphicspainteditem_p.h"
+
 #include <QGraphicsSceneMouseEvent>
 #include <QIntValidator>
 

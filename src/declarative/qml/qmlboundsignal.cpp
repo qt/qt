@@ -40,15 +40,17 @@
 ****************************************************************************/
 
 #include "qmlboundsignal_p.h"
-#include "private/qmetaobjectbuilder_p.h"
-#include "private/qmlengine_p.h"
-#include "private/qmlexpression_p.h"
-#include "private/qmlcontext_p.h"
-#include <qmlmetatype.h>
-#include <qml.h>
-#include <qmlcontext.h>
+
+#include "qmetaobjectbuilder_p.h"
+#include "qmlengine_p.h"
+#include "qmlexpression_p.h"
+#include "qmlcontext_p.h"
+#include "qmlmetatype.h"
+#include "qml.h"
+#include "qmlcontext.h"
+#include "qmlglobal_p.h"
+
 #include <QtCore/qdebug.h>
-#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -259,4 +261,4 @@ int QmlBoundSignalParameters::metaCall(QMetaObject::Call c, int id, void **a)
 
 QT_END_NAMESPACE
 
-#include "qmlboundsignal.moc"
+#include <qmlboundsignal.moc>

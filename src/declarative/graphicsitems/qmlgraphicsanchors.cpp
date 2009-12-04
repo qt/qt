@@ -40,10 +40,13 @@
 ****************************************************************************/
 
 #include "qmlgraphicsanchors_p_p.h"
+
 #include "qmlgraphicsitem.h"
 #include "qmlgraphicsitem_p.h"
-#include <QDebug>
+
 #include <qmlinfo.h>
+
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -1006,7 +1009,7 @@ bool QmlGraphicsAnchorsPrivate::checkVAnchorValid(QmlGraphicsAnchorLine anchor) 
     return true;
 }
 
-#include "moc_qmlgraphicsanchors_p.cpp"
+#include <moc_qmlgraphicsanchors_p.cpp>
 
 QT_END_NAMESPACE
 

@@ -45,8 +45,10 @@
 #include "qmlcomponent_p.h"
 #include "qmlcontext.h"
 #include "qmlcontext_p.h"
-#include <private/qobject_p.h>
+
 #include <QtCore/qdebug.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -81,6 +83,16 @@ int QmlCompiledData::indexForByteArray(const QByteArray &data)
     if (idx == -1) {
         idx = datas.count();
         datas << data;
+    }
+    return idx;
+}
+
+int QmlCompiledData::indexForUrl(const QUrl &data)
+{
+    int idx = urls.indexOf(data);
+    if (idx == -1) {
+        idx = urls.count();
+        urls << data;
     }
     return idx;
 }

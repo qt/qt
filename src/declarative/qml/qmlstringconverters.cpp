@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
+#include "qmlstringconverters_p.h"
+
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qvariant.h>
-#include "qmlstringconverters_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -53,10 +53,11 @@
 // We mean it.
 //
 
-#include "private/qobject_p.h"
 #include "qmlgraphicspath_p.h"
-#include "qml.h"
 
+#include <qml.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 class QmlGraphicsPathPrivate : public QObjectPrivate

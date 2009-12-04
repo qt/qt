@@ -53,6 +53,22 @@
 // We mean it.
 //
 
+#include "qmlengine.h"
+
+#include "qmlclassfactory_p.h"
+#include "qmlcompositetypemanager_p.h"
+#include "qpodvector_p.h"
+#include "qml.h"
+#include "qmlbasicscript_p.h"
+#include "qmlvaluetype_p.h"
+#include "qmlcontext.h"
+#include "qmlexpression.h"
+#include "qmlmetaproperty_p.h"
+#include "qmlpropertycache_p.h"
+#include "qmlobjectscriptclass_p.h"
+#include "qmlcontextscriptclass_p.h"
+#include "qmlvaluetypescriptclass_p.h"
+
 #include <QtScript/QScriptClass>
 #include <QtScript/QScriptValue>
 #include <QtScript/QScriptString>
@@ -60,22 +76,9 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qstack.h>
-#include <private/qobject_p.h>
-#include <private/qmlclassfactory_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <private/qpodvector_p.h>
-#include <qml.h>
-#include <private/qmlbasicscript_p.h>
-#include <private/qmlvaluetype_p.h>
-#include <qmlcontext.h>
-#include <qmlengine.h>
-#include <qmlexpression.h>
 #include <QtScript/qscriptengine.h>
-#include <private/qmlmetaproperty_p.h>
-#include <private/qmlpropertycache_p.h>
-#include <private/qmlobjectscriptclass_p.h>
-#include <private/qmlcontextscriptclass_p.h>
-#include <private/qmlvaluetypescriptclass_p.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 

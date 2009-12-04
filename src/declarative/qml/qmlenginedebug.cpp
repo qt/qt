@@ -40,15 +40,17 @@
 ****************************************************************************/
 
 #include "qmlenginedebug_p.h"
+
 #include "qmlboundsignal_p.h"
-#include <QtCore/qdebug.h>
-#include <QtCore/qmetaobject.h>
-#include <qmlengine.h>
-#include <qmlmetatype.h>
-#include <qmlmetaproperty.h>
-#include <qmlbinding.h>
+#include "qmlengine.h"
+#include "qmlmetatype.h"
+#include "qmlmetaproperty.h"
+#include "qmlbinding.h"
 #include "qmlcontext_p.h"
 #include "qmlwatcher_p.h"
+
+#include <QtCore/qdebug.h>
+#include <QtCore/qmetaobject.h>
 
 QT_BEGIN_NAMESPACE
 

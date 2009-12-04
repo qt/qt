@@ -40,22 +40,21 @@
 ****************************************************************************/
 
 #include "qmlscriptparser_p.h"
-#include "qmlparser_p.h"
 
+#include "qmlparser_p.h"
 #include "parser/qmljsengine_p.h"
 #include "parser/qmljsparser_p.h"
 #include "parser/qmljslexer_p.h"
 #include "parser/qmljsnodepool_p.h"
 #include "parser/qmljsastvisitor_p.h"
 #include "parser/qmljsast_p.h"
-
 #include "qmlrewrite_p.h"
+
+#include <qfxperf_p_p.h>
 
 #include <QStack>
 #include <QCoreApplication>
 #include <QtDebug>
-
-#include <private/qfxperf_p_p.h>
 
 QT_BEGIN_NAMESPACE
 

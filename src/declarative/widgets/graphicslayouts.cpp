@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "graphicslayouts_p.h"
+
 #include <QtGui/qgraphicswidget.h>
 #include <QtCore/qdebug.h>
 
@@ -315,4 +316,4 @@ GridLayoutAttached *QGraphicsGridLayoutObject::qmlAttachedProperties(QObject *ob
 
 QT_END_NAMESPACE
 
-#include "graphicslayouts.moc"
+#include <graphicslayouts.moc>

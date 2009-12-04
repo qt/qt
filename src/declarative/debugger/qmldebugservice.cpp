@@ -40,12 +40,15 @@
 ****************************************************************************/
 
 #include "qmldebugservice_p.h"
+
+#include "qpacketprotocol_p.h"
+
 #include <QtCore/qdebug.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
-#include <private/qobject_p.h>
-#include <private/qpacketprotocol_p.h>
 #include <QtCore/qstringlist.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -387,4 +390,4 @@ void QmlDebugService::messageReceived(const QByteArray &)
 
 QT_END_NAMESPACE
 
-#include "qmldebugservice.moc"
+#include <qmldebugservice.moc>

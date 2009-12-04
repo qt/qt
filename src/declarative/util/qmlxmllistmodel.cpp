@@ -40,10 +40,10 @@
 ****************************************************************************/
 
 #include "qmlxmllistmodel_p.h"
-#include "private/qobject_p.h"
 
 #include <qmlcontext.h>
 #include <qmlengine.h>
+
 #include <QDebug>
 #include <QApplication>
 #include <QThread>
@@ -55,6 +55,8 @@
 #include <QBuffer>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -716,4 +718,4 @@ void QmlXmlListModel::queryCompleted(int id, int size)
 
 QT_END_NAMESPACE
 
-#include "qmlxmllistmodel.moc"
+#include <qmlxmllistmodel.moc>

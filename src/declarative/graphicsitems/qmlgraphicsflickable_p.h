@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSFLICKABLE_H
 #define QMLGRAPHICSFLICKABLE_H
 
-#include <qmlgraphicsitem.h>
+#include "qmlgraphicsitem.h"
 
 QT_BEGIN_HEADER
 

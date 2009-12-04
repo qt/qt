@@ -39,23 +39,27 @@
 **
 ****************************************************************************/
 
-#include <qmlcontext.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmlexpression_p.h>
-#include <private/qmlengine_p.h>
-#include <qmlengine.h>
+#include "qmlcontext.h"
+#include "qmlcontext_p.h"
+
+#include "qmlexpression_p.h"
+#include "qmlengine_p.h"
+#include "qmlengine.h"
+#include "qmlbindingoptimizations_p.h"
+#include "qmlinfo.h"
+
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qdebug.h>
-#include <private/qmlbindingoptimizations_p.h>
+
 #include <private/qscriptdeclarativeclass_p.h>
-#include <qmlinfo.h>
 
 QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
 : parent(0), engine(0), isInternal(false), propertyNames(0), notifyIndex(-1), 
-  highPriorityCount(0), imports(0), expressions(0), idValues(0), idValueCount(0)
+  highPriorityCount(0), imports(0), expressions(0), contextObjects(0),
+  idValues(0), idValueCount(0)
 {
 }
 
@@ -283,14 +287,14 @@ QmlContext::~QmlContext()
         expression = nextExpression;
     }
 
-    for (int ii = 0; ii < d->contextObjects.count(); ++ii) {
-        QObjectPrivate *p = QObjectPrivate::get(d->contextObjects.at(ii));
-        QmlDeclarativeData *data = 
-            static_cast<QmlDeclarativeData *>(p->declarativeData);
-        if(data) 
-            data->context = 0;
+    while (d->contextObjects) {
+        QmlDeclarativeData *co = d->contextObjects;
+        d->contextObjects = d->contextObjects->nextContextObject;
+
+        co->context = 0;
+        co->nextContextObject = 0;
+        co->prevContextObject = 0;
     }
-    d->contextObjects.clear();
 
     delete [] d->idValues;
 

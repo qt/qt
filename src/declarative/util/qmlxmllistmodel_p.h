@@ -43,8 +43,9 @@
 #define QMLXMLLISTMODEL_H
 
 #include <qml.h>
-#include <private/qlistmodelinterface_p.h>
 #include <qmlinfo.h>
+
+#include <qlistmodelinterface_p.h>
 
 QT_BEGIN_HEADER
 

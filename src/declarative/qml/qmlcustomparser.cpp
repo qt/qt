@@ -41,6 +41,7 @@
 
 #include "qmlcustomparser_p.h"
 #include "qmlcustomparser_p_p.h"
+
 #include "qmlparser_p.h"
 
 #include <QtCore/qdebug.h>

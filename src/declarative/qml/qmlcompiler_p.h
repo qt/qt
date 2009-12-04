@@ -53,18 +53,19 @@
 // We mean it.
 //
 
+#include "qml.h"
+#include "qmlerror.h"
+#include "qmlinstruction_p.h"
+#include "qmlcompositetypemanager_p.h"
+#include "qmlparser_p.h"
+#include "qmlengine_p.h"
+#include "qbitfield_p.h"
+#include "qmlpropertycache_p.h"
+#include "qmlintegercache_p.h"
+#include "qmltypenamecache_p.h"
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
-#include <qml.h>
-#include <qmlerror.h>
-#include <private/qmlinstruction_p.h>
-#include <private/qmlcompositetypemanager_p.h>
-#include <private/qmlparser_p.h>
-#include <private/qmlengine_p.h>
-#include <private/qbitfield_p.h>
-#include <private/qmlpropertycache_p.h>
-#include <private/qmlintegercache_p.h>
-#include <private/qmltypenamecache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,7 +80,7 @@ public:
     QmlCompiledData();
     virtual ~QmlCompiledData();
 
-    QByteArray name;
+    QString name;
     QUrl url;
     QmlEnginePrivate::Imports imports;
     QmlTypeNameCache *importCache;
@@ -118,6 +119,7 @@ public:
     QList<QmlPropertyCache *> propertyCaches;
     QList<QmlIntegerCache *> contextCaches;
     QList<QmlParser::Object::ScriptBlock> scripts;
+    QList<QUrl> urls;
 
     void dumpInstructions();
 private:
@@ -134,6 +136,7 @@ private:
     int indexForInt(int *, int);
     int indexForLocation(const QmlParser::Location &);
     int indexForLocation(const QmlParser::LocationSpan &);
+    int indexForUrl(const QUrl &);
 };
 
 class QMetaObjectBuilder;
@@ -245,6 +248,9 @@ private:
                               QmlParser::Object *obj,
                               QmlParser::Property *valueTypeProperty = 0);
     int genContextCache();
+
+    int genValueTypeData(QmlParser::Property *prop, QmlParser::Property *valueTypeProp);
+    int genPropertyData(QmlParser::Property *prop);
 
     int componentTypeRef();
 

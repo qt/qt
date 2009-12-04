@@ -41,18 +41,20 @@
 
 #include "qmlgraphicsimagebase_p.h"
 #include "qmlgraphicsimagebase_p_p.h"
+
+#include <qmlengine.h>
+#include <qmlpixmapcache_p.h>
+
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>
-#include <qmlengine.h>
-#include <private/qmlpixmapcache_p.h>
 
 QT_BEGIN_NAMESPACE
 
 QmlGraphicsImageBase::QmlGraphicsImageBase(QmlGraphicsImageBasePrivate &dd, QmlGraphicsItem *parent)
   : QmlGraphicsItem(dd, parent)
 {
-    setFlag(QGraphicsItem::ItemHasNoContents, true);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QmlGraphicsImageBase::~QmlGraphicsImageBase()

@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include "qmlgraphicslayoutitem_p.h"
+
 #include <QDebug>
+
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE

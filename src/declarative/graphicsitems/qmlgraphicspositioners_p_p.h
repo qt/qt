@@ -53,13 +53,16 @@
 // We mean it.
 //
 
-#include <private/qmlgraphicsitem_p.h>
+#include "qmlgraphicspositioners_p.h"
+
+#include "qmlgraphicsitem_p.h"
+
+#include <qmlstate_p.h>
+#include <qmltransitionmanager_p_p.h>
+#include <qmlstateoperations_p.h>
+
 #include <QtCore/QObject>
 #include <QtCore/QString>
-#include <private/qmlgraphicspositioners_p.h>
-#include <private/qmlstate_p.h>
-#include <private/qmltransitionmanager_p_p.h>
-#include <private/qmlstateoperations_p.h>
 #include <QtCore/QTimer>
 
 QT_BEGIN_NAMESPACE
@@ -85,6 +88,11 @@ public:
     void init(QmlGraphicsBasePositioner::AutoUpdateType at)
     {
         aut = at;
+        if (prePosIdx == -1) {
+            prePosIdx = QmlGraphicsBasePositioner::staticMetaObject.indexOfSlot("prePositioning()");
+            visibleIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("visibleChanged()");
+            opacityIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("opacityChanged()");
+        }
     }
 
     bool _ep;
@@ -105,13 +113,16 @@ public:
     QmlTransitionManager addTransitionManager;
     QmlTransitionManager moveTransitionManager;
     QmlTransitionManager removeTransitionManager;
-//    QmlStateGroup *stateGroup;
     QmlGraphicsItem *_movingItem;
 
     void watchChanges(QmlGraphicsItem *other);
     void unwatchChanges(QmlGraphicsItem* other);
     QList<QGuard<QmlGraphicsItem> > watched;
     bool queuedPositioning;
+
+    static int prePosIdx;
+    static int visibleIdx;
+    static int opacityIdx;
 
     virtual void otherSiblingOrderChange(QmlGraphicsItemPrivate* other)
     {

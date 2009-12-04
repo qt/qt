@@ -40,34 +40,38 @@
 ****************************************************************************/
 
 #include "qmlvme_p.h"
+
 #include "qmlcompiler_p.h"
-#include <private/qfxperf_p_p.h>
-#include <private/qmlboundsignal_p.h>
-#include <private/qmlstringconverters_p.h>
-#include "private/qmetaobjectbuilder_p.h"
-#include "private/qmldeclarativedata_p.h"
-#include <qml.h>
-#include <private/qmlcustomparser_p.h>
+#include "qmlboundsignal_p.h"
+#include "qmlstringconverters_p.h"
+#include "qmetaobjectbuilder_p.h"
+#include "qmldeclarativedata_p.h"
+#include "qml.h"
+#include "qmlcustomparser_p.h"
+#include "qmlengine.h"
+#include "qmlcontext.h"
+#include "qmlcomponent.h"
+#include "qmlbinding.h"
+#include "qmlengine_p.h"
+#include "qmlcomponent_p.h"
+#include "qmlvmemetaobject_p.h"
+#include "qmlbinding_p.h"
+#include "qmlcontext_p.h"
+#include "qmlbindingoptimizations_p.h"
+#include "qmlglobal_p.h"
+#include "qmlscriptstring.h"
+
+#include <qfxperf_p_p.h>
+
 #include <QStack>
 #include <QWidget>
 #include <QColor>
 #include <QPointF>
 #include <QSizeF>
 #include <QRectF>
-#include <qmlengine.h>
-#include <qmlcontext.h>
-#include <qmlcomponent.h>
-#include <qmlbinding.h>
-#include <private/qmlengine_p.h>
-#include <private/qmlcomponent_p.h>
-#include "private/qmlvmemetaobject_p.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qapplication.h>
-#include <private/qmlbinding_p.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmlbindingoptimizations_p.h>
-#include <qmlscriptstring.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -102,7 +106,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp,
                      int start, int count, 
                      const QBitField &bindingSkipList)
 {
-    QStack<QObject *> stack;
+    QmlVMEStack<QObject *> stack;
 
     if (start == -1) start = 0;
     if (count == -1) count = comp->bytecode.count();
@@ -121,14 +125,14 @@ void QmlVME::runDeferred(QObject *object)
     QmlCompiledData *comp = data->deferredComponent;
     int start = data->deferredIdx + 1;
     int count = data->deferredComponent->bytecode.at(data->deferredIdx).defer.deferCount;
-    QStack<QObject *> stack;
+    QmlVMEStack<QObject *> stack;
     stack.push(object);
 
     run(stack, ctxt, comp, start, count, QBitField());
 }
 
 QBitField bindingSkipList;
-QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, 
+QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt, 
                      QmlCompiledData *comp, 
                      int start, int count, 
                      const QBitField &bindingSkipList)
@@ -143,11 +147,12 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
     const QList<float> &floatData = comp->floatData;
     const QList<QmlPropertyCache *> &propertyCaches = comp->propertyCaches;
     const QList<QmlParser::Object::ScriptBlock> &scripts = comp->scripts;
+    const QList<QUrl> &urls = comp->urls;
 
     QmlEnginePrivate::SimpleList<QmlAbstractBinding> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
 
-    QStack<ListInstance> qliststack;
+    QmlVMEStack<ListInstance> qliststack;
 
     vmeErrors.clear();
     QmlEnginePrivate *ep = QmlEnginePrivate::get(ctxt->engine());
@@ -157,7 +162,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
     QmlMetaProperty::WriteFlags flags = QmlMetaProperty::BypassInterceptor;
 
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
-        QmlInstruction &instr = comp->bytecode[ii];
+        const QmlInstruction &instr = comp->bytecode.at(ii);
 
         switch(instr.type) {
         case QmlInstruction::Init:
@@ -214,7 +219,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                             // TODO: parent might be a layout 
                         } 
                     } else { 
-                        o->setParent(parent); 
+			    QmlGraphics_setParent_noEvent(o, parent);
+       //                 o->setParent(parent); 
                     } 
                 }
                 stack.push(o);
@@ -295,8 +301,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreUrl:
             {
                 QObject *target = stack.top();
-                QUrl u(primitives.at(instr.storeUrl.value));
-                void *a[] = { &u, 0, &status, &flags };
+                void *a[] = { (void *)&urls.at(instr.storeUrl.value), 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeUrl.propertyIndex, a);
             }
@@ -542,7 +547,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QmlBoundSignal *bs = new QmlBoundSignal(target, signal, target);
                 QmlExpression *expr = 
                     new QmlExpression(ctxt, primitives.at(instr.storeSignal.value), target);
-                expr->setSourceLocation(comp->url, instr.line);
+                expr->setSourceLocation(comp->name, instr.line);
                 bs->setExpression(expr);
             }
             break;
@@ -587,15 +592,15 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *context = 
                     stack.at(stack.count() - 1 - instr.assignBinding.context);
 
-                QmlMetaProperty mp;
-                QmlMetaPropertyPrivate::restore(mp, instr.assignBinding.property, target, ctxt);
+                QmlMetaProperty mp = 
+                    QmlMetaPropertyPrivate::restore(datas.at(instr.assignBinding.property), target, ctxt);
 
                 int coreIndex = mp.coreIndex();
 
                 if (stack.count() == 1 && bindingSkipList.testBit(coreIndex))  
                     break;
 
-                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, comp->url, instr.line, 0);
+                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, comp->name, instr.line, 0);
                 bindValues.append(bind);
                 bind->m_mePtr = &bindValues.values[bindValues.count - 1];
                 bind->setTarget(mp);
@@ -644,8 +649,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *obj = stack.pop();
                 QmlPropertyValueSource *vs = reinterpret_cast<QmlPropertyValueSource *>(reinterpret_cast<char *>(obj) + instr.assignValueSource.castValue);
                 QObject *target = stack.at(stack.count() - 1 - instr.assignValueSource.owner);
-                QmlMetaProperty prop;
-                QmlMetaPropertyPrivate::restore(prop, instr.assignValueSource.property, target, ctxt);
+
+                QmlMetaProperty prop = 
+                    QmlMetaPropertyPrivate::restore(datas.at(instr.assignValueSource.property), target, ctxt);
                 obj->setParent(target);
                 vs->setTarget(prop);
             }
@@ -656,8 +662,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *obj = stack.pop();
                 QmlPropertyValueInterceptor *vi = reinterpret_cast<QmlPropertyValueInterceptor *>(reinterpret_cast<char *>(obj) + instr.assignValueInterceptor.castValue);
                 QObject *target = stack.at(stack.count() - 1 - instr.assignValueInterceptor.owner);
-                QmlMetaProperty prop;
-                QmlMetaPropertyPrivate::restore(prop, instr.assignValueInterceptor.property, target, ctxt);
+                QmlMetaProperty prop = 
+                    QmlMetaPropertyPrivate::restore(datas.at(instr.assignValueInterceptor.property), target, ctxt);
                 obj->setParent(target);
                 vi->setTarget(prop);
                 QmlVMEMetaObject *mo = static_cast<QmlVMEMetaObject *>((QMetaObject*)target->metaObject());

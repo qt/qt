@@ -39,11 +39,13 @@
 **
 ****************************************************************************/
 
-#include "QtCore/qcoreapplication.h"
-#include "QtCore/qpauseanimation.h"
-#include "private/qobject_p.h"
 #include "qmltimer_p.h"
-#include "qdebug.h"
+
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qpauseanimation.h>
+#include <qdebug.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 

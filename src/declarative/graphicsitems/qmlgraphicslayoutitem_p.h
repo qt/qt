@@ -41,8 +41,9 @@
 
 #ifndef QMLGRAPHICSGRAPHICSLAYOUTITEM_H
 #define QMLGRAPHICSGRAPHICSLAYOUTITEM_H
+#include "qmlgraphicsitem.h"
+
 #include <QGraphicsLayoutItem>
-#include <QmlGraphicsItem>
 #include <QSizeF>
 
 QT_BEGIN_HEADER

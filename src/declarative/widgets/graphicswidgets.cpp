@@ -160,4 +160,4 @@ QML_DEFINE_INTERFACE(QGraphicsItem)
 
 QT_END_NAMESPACE
 
-#include "graphicswidgets.moc"
+#include <graphicswidgets.moc>

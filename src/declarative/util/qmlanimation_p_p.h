@@ -53,18 +53,22 @@
 // We mean it.
 //
 
-#include <private/qobject_p.h>
-#include <private/qmlnullablevalue_p_p.h>
-#include <private/qvariantanimation_p.h>
+#include "qmlanimation_p.h"
+
+#include "qmlnullablevalue_p_p.h"
+#include "qmltimeline_p_p.h"
+
+#include <qml.h>
+#include <qmlcontext.h>
+
 #include <QtCore/QPauseAnimation>
 #include <QtCore/QVariantAnimation>
 #include <QtCore/QAnimationGroup>
 #include <QtGui/QColor>
-#include <private/qmlanimation_p.h>
-#include <qml.h>
-#include <qmlcontext.h>
-#include <private/qmltimeline_p_p.h>
 #include <QDebug>
+
+#include <private/qobject_p.h>
+#include <private/qvariantanimation_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -201,14 +205,14 @@ public:
       connectedTimeLine(false), componentComplete(true), startOnCompletion(false),
       target(0), group(0) {}
 
-    bool running;
-    bool paused;
-    bool alwaysRunToEnd;
-    bool repeat;
-    bool connectedTimeLine;
+    bool running:1;
+    bool paused:1;
+    bool alwaysRunToEnd:1;
+    bool repeat:1;
+    bool connectedTimeLine:1;
 
-    bool componentComplete;
-    bool startOnCompletion;
+    bool componentComplete:1;
+    bool startOnCompletion:1;
 
     void commence();
 

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qpacketprotocol_p.h"
+
 #include <QBuffer>
 
 QT_BEGIN_NAMESPACE
@@ -494,5 +495,4 @@ QPacketAutoSend::~QPacketAutoSend()
 
 QT_END_NAMESPACE
 
-#include "qpacketprotocol.moc"
-
+#include <qpacketprotocol.moc>

@@ -53,11 +53,11 @@
 // We mean it.
 //
 
-#include <QtCore/QHash>
-#include <QtCore/QString>
-
 #include "qmljsglobal_p.h"
 #include "qmljsmemorypool_p.h"
+
+#include <QtCore/QHash>
+#include <QtCore/QString>
 
 QT_QML_BEGIN_NAMESPACE
 
@@ -106,7 +106,7 @@ inline NodeType *makeAstNode(MemoryPool *storage, Arg1 arg1, Arg2 arg2, Arg3 arg
     return node;
 }
 
-class NodePool : public MemoryPool
+class QML_PARSER_EXPORT NodePool : public MemoryPool
 {
 public:
     NodePool(const QString &fileName, Engine *engine);

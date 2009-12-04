@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include "private/qobject_p.h"
 #include "qmlpackage_p.h"
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -151,4 +152,4 @@ QML_DEFINE_TYPE(Qt,4,6,Package,QmlPackage)
 
 QT_END_NAMESPACE
 
-#include "qmlpackage.moc"
+#include <qmlpackage.moc>

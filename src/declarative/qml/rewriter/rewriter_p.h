@@ -42,11 +42,12 @@
 #ifndef REWRITER_H
 #define REWRITER_H
 
+#include "textwriter_p.h"
+
+#include <qmljsastvisitor_p.h>
+
 #include <QtCore/QList>
 #include <QtCore/QString>
-
-#include "textwriter_p.h"
-#include "qmljsastvisitor_p.h"
 
 QT_BEGIN_HEADER
 QT_QML_BEGIN_NAMESPACE

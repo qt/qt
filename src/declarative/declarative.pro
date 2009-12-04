@@ -14,8 +14,6 @@ exists("qml_enable_gcov") {
     LIBS += -lgcov
 }
 
-INCLUDEPATH += ../../include/QtDeclarative
-
 include(../qbase.pri)
 
 #modules

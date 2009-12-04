@@ -40,7 +40,8 @@
 ****************************************************************************/
 
 #include "qmlcleanup_p.h"
-#include <private/qmlengine_p.h>
+
+#include "qmlengine_p.h"
 
 /*!
 \internal

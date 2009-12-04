@@ -53,16 +53,20 @@
 // We mean it.
 //
 
-#include <qmlgraphicsitem.h>
-#include <private/qmlstate_p.h>
-#include <private/qmlgraphicsanchors_p.h>
-#include <private/qmlnullablevalue_p_p.h>
-#include <private/qmlgraphicsanchors_p_p.h>
+#include "qmlgraphicsitem.h"
+
+#include "qmlgraphicsanchors_p.h"
+#include "qmlgraphicsanchors_p_p.h"
+
+#include <qmlstate_p.h>
+#include <qmlnullablevalue_p_p.h>
 #include <qml.h>
 #include <qmlcontext.h>
+
 #include <QtCore/qlist.h>
-#include <private/qgraphicsitem_p.h>
 #include <QtCore/qdebug.h>
+
+#include <private/qgraphicsitem_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -109,7 +113,12 @@ public:
       _componentComplete(true), _keepMouse(false),
       smooth(false), keyHandler(0),
       width(0), height(0), implicitWidth(0), implicitHeight(0)
-    {}
+    {
+        if (widthIdx == -1) {
+            widthIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("widthChanged()");
+            heightIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("heightChanged()");
+        }
+    }
     ~QmlGraphicsItemPrivate()
     { delete _anchors; }
 
@@ -249,6 +258,19 @@ public:
     }
     virtual void otherSiblingOrderChange(QmlGraphicsItemPrivate* other) {Q_UNUSED(other)}
 
+    bool connectToWidthChanged(QObject *object, int index) {
+        return QMetaObject::connect(q_func(), widthIdx, object, index);
+    }
+    bool disconnectFromWidthChanged(QObject *object, int index) {
+        return QMetaObject::disconnect(q_func(), widthIdx, object, index);
+    }
+
+    bool connectToHeightChanged(QObject *object, int index) {
+        return QMetaObject::connect(q_func(), heightIdx, object, index);
+    }
+    bool disconnectFromHeightChanged(QObject *object, int index) {
+        return QMetaObject::disconnect(q_func(), heightIdx, object, index);
+    }
 
     static int consistentTime;
     static QTime currentTime();
@@ -256,6 +278,8 @@ public:
     static void start(QTime &);
     static int elapsed(QTime &);
     static int restart(QTime &);
+    static int widthIdx;
+    static int heightIdx;
 };
 
 QT_END_NAMESPACE

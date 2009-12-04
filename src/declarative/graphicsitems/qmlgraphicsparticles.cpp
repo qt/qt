@@ -39,10 +39,22 @@
 **
 ****************************************************************************/
 
-#include "private/qmlgraphicsitem_p.h"
+#include "qmlgraphicsparticles_p.h"
+
+#include "qmlgraphicsitem_p.h"
+
+#include <qmlpixmapcache_p.h>
+#include <qfxperf_p_p.h>
+#include <qmlanimation_p_p.h>
+
+#include <QNetworkReply>
+#include <QPainter>
+#include <QtGui/qdrawutil.h>
+#include <QVarLengthArray>
 
 #include <stdlib.h>
 #include <math.h>
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #define M_PI_2 (M_PI / 2.)
@@ -50,15 +62,6 @@
 #ifndef INT_MAX
 #define INT_MAX 2147483647
 #endif
-#include <private/qmlpixmapcache_p.h>
-#include <private/qfxperf_p_p.h>
-#include <private/qmlanimation_p_p.h>
-#include <QNetworkReply>
-
-#include "qmlgraphicsparticles_p.h"
-#include <QPainter>
-#include <QtGui/qdrawutil.h>
-#include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 #define PI_SQR 9.8696044

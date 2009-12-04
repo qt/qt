@@ -54,8 +54,10 @@
 //
 
 #include "qmlmetaproperty.h"
+
+#include "qmlpropertycache_p.h"
+
 #include <private/qobject_p.h>
-#include <private/qmlpropertycache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,25 +66,26 @@ class QmlMetaPropertyPrivate
 {
 public:
     QmlMetaPropertyPrivate()
-        : q(0), context(0), object(0), isDefaultProperty(false), valueTypeCoreIdx(-1), 
-          valueTypePropType(0), attachedFunc(-1) {}
+        : q(0), context(0), object(0), isDefaultProperty(false), isNameCached(false),
+          attachedFunc(-1) {}
 
     QmlMetaPropertyPrivate(const QmlMetaPropertyPrivate &other)
         : q(0), context(other.context), object(other.object), 
-          isDefaultProperty(other.isDefaultProperty), core(other.core), 
-          valueTypeCoreIdx(other.valueTypeCoreIdx), 
-          valueTypePropType(other.valueTypePropType), attachedFunc(other.attachedFunc) {}
+          isDefaultProperty(other.isDefaultProperty), isNameCached(other.isNameCached),
+          core(other.core), nameCache(other.nameCache),
+          valueType(other.valueType), attachedFunc(other.attachedFunc) {}
 
     QmlMetaProperty *q;
     QmlContext *context;
     QGuard<QObject> object;
 
-    bool isDefaultProperty;
+    bool isDefaultProperty:1;
+    bool isNameCached:1;
     QmlPropertyCache::Data core;
+    QString nameCache;
 
     // Describes the "virtual" value-type sub-property.  
-    int valueTypeCoreIdx;  // The prop index of the access property on the value type wrapper
-    int valueTypePropType; // The QVariant::Type of access property on the value type wrapper
+    QmlPropertyCache::ValueTypeData valueType;
 
     // The attached property accessor
     int attachedFunc;
@@ -104,9 +107,9 @@ public:
     static QmlAbstractBinding *setBinding(QObject *, const QmlPropertyCache::Data &, QmlAbstractBinding *,
                                           QmlMetaProperty::WriteFlags flags = QmlMetaProperty::DontRemoveBinding);
 
-    static void Q_AUTOTEST_EXPORT restore(QmlMetaProperty &prop, quint32, QObject *, QmlContext * = 0);
-    static quint32 Q_AUTOTEST_EXPORT saveValueType(int, int);
-    static quint32 Q_AUTOTEST_EXPORT saveProperty(int);
+    static QByteArray saveValueType(const QMetaObject *, int, int, int);
+    static QByteArray saveProperty(const QMetaObject *, int);
+    static QmlMetaProperty restore(const QByteArray &, QObject *, QmlContext * = 0);
 
     static bool equal(const QMetaObject *, const QMetaObject *);
     static bool canConvert(const QMetaObject *from, const QMetaObject *to);

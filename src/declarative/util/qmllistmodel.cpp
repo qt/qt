@@ -39,17 +39,20 @@
 **
 ****************************************************************************/
 
+#include "qmllistmodel_p.h"
+
+#include "qmlopenmetaobject_p.h"
+
+#include <qmlcustomparser_p.h>
+#include <qmlparser_p.h>
+#include <qmlengine_p.h>
+#include <qmlcontext.h>
+#include <qmlinfo.h>
+
 #include <QtCore/qdebug.h>
 #include <QtCore/qstack.h>
 #include <QXmlStreamReader>
-#include <private/qmlcustomparser_p.h>
-#include <private/qmlparser_p.h>
-#include "qmlopenmetaobject_p.h"
-#include <private/qmlengine_p.h>
-#include <qmlcontext.h>
-#include "qmllistmodel_p.h"
 #include <QtScript/qscriptvalueiterator.h>
-#include "qmlinfo.h"
 
 Q_DECLARE_METATYPE(QListModelInterface *)
 
@@ -442,6 +445,7 @@ void QmlListModel::clear()
     _root = 0;
     roleStrings.clear();
     emit itemsRemoved(0,cleared);
+    emit countChanged(0);
 }
 
 /*!
@@ -923,4 +927,4 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlListElement)
 
-#include "qmllistmodel.moc"
+#include <qmllistmodel.moc>

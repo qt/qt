@@ -55,7 +55,9 @@
 
 #include "qmlgraphicsitem.h"
 #include "qmlgraphicsitem_p.h"
-#include "qml.h"
+
+#include <qml.h>
+
 #include <QtGui/qtextlayout.h>
 
 QT_BEGIN_NAMESPACE
@@ -75,6 +77,8 @@ public:
         format(QmlGraphicsText::AutoText)
     {
     }
+
+    ~QmlGraphicsTextPrivate();
 
     void updateSize();
     void checkImgCache();
