@@ -639,6 +639,9 @@ static QByteArray headerName(QNetworkRequest::KnownHeaders header)
     case QNetworkRequest::SetCookieHeader:
         return "Set-Cookie";
 
+    case QNetworkRequest::ContentDispositionHeader:
+        return "Content-Disposition";
+
     // no default:
     // if new values are added, this will generate a compiler warning
     }
@@ -651,6 +654,7 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
     switch (header) {
     case QNetworkRequest::ContentTypeHeader:
     case QNetworkRequest::ContentLengthHeader:
+    case QNetworkRequest::ContentDispositionHeader:
         return value.toByteArray();
 
     case QNetworkRequest::LocationHeader:
@@ -810,6 +814,11 @@ QNetworkHeadersPrivate::findRawHeader(const QByteArray &key) const
             return it;
 
     return end;                 // not found
+}
+
+QNetworkHeadersPrivate::RawHeadersList QNetworkHeadersPrivate::allRawHeaders() const
+{
+    return rawHeaders;
 }
 
 QList<QByteArray> QNetworkHeadersPrivate::rawHeadersKeys() const
