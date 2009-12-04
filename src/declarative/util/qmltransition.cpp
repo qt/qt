@@ -85,7 +85,7 @@ public:
     QmlTransitionPrivate() : fromState(QLatin1String("*")), toState(QLatin1String("*"))
     , reversed(false), reversible(false), group(0), endState(0)
     {
-        operations.parent = this;
+        animations.parent = this;
     }
 
     QString fromState;
@@ -115,7 +115,7 @@ public:
 
         QmlTransitionPrivate *parent;
     };
-    AnimationList operations;
+    AnimationList animations;
 };
 
 void QmlTransitionPrivate::AnimationList::append(QmlAbstractAnimation *a)
@@ -169,12 +169,12 @@ void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
     Q_D(QmlTransition);
 
     if (d->reversed) {
-        for (int ii = d->operations.count() - 1; ii >= 0; --ii) {
-            d->operations.at(ii)->transition(actions, after, QmlAbstractAnimation::Backward);
+        for (int ii = d->animations.count() - 1; ii >= 0; --ii) {
+            d->animations.at(ii)->transition(actions, after, QmlAbstractAnimation::Backward);
         }
     } else {
-        for (int ii = 0; ii < d->operations.count(); ++ii) {
-            d->operations.at(ii)->transition(actions, after, QmlAbstractAnimation::Forward);
+        for (int ii = 0; ii < d->animations.count(); ++ii) {
+            d->animations.at(ii)->transition(actions, after, QmlAbstractAnimation::Forward);
         }
     }
 
@@ -254,7 +254,7 @@ void QmlTransition::setToState(const QString &t)
 QmlList<QmlAbstractAnimation *>* QmlTransition::animations()
 {
     Q_D(QmlTransition);
-    return &d->operations;
+    return &d->animations;
 }
 
 QT_END_NAMESPACE

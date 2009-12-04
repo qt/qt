@@ -6,6 +6,7 @@ Rectangle {
     height: 320
     Rectangle {
         id: MyRect
+        objectName: "MyRect"
         color: "red"
         width: 50; height: 50
         x: 100; y: 100
