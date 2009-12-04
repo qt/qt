@@ -293,21 +293,27 @@ QT_END_NAMESPACE
 
 - (void)draggingExited:(id < NSDraggingInfo >)sender
 {
-    if (*currentDragTarget())
+    QWidget *target = [self dragTargetHitTest:sender];
+    if (!target)
+        return [super draggingExited:sender];
+
+    if (*currentDragTarget()) {
         [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingExited:sender];
-    else
-        [super draggingExited:sender];
-    *currentDragTarget() = 0;
+        *currentDragTarget() = 0;
+    }
 }
 
 - (BOOL)performDragOperation:(id < NSDraggingInfo >)sender
 {
-    BOOL dropAccepted = NO;
-    if (*currentDragTarget())
-        dropAccepted = [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) performDragOperation:sender];
-    else
+    QWidget *target = [self dragTargetHitTest:sender];
+    if (!target)
         return [super performDragOperation:sender];
-    *currentDragTarget() = 0;
-    return dropAccepted;
+
+    BOOL dropResult = NO;
+    if (*currentDragTarget()) {
+        dropResult = [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) performDragOperation:sender];
+        *currentDragTarget() = 0;
+    }
+    return dropResult;
 }
 
