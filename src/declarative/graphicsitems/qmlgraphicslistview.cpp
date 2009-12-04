@@ -182,7 +182,7 @@ public:
         , snapMode(QmlGraphicsListView::NoSnap), overshootDist(0.0)
         , footerComponent(0), footer(0), headerComponent(0), header(0)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
-        , correctFlick(true)
+        , correctFlick(true), lazyRelease(false)
     {}
 
     void init();
@@ -208,7 +208,7 @@ public:
             if (item->index != -1 && item->endPosition() > pos)
                 return item;
         }
-        return 0;
+        return visibleItems.count() ? visibleItems.first() : 0;
     }
 
     FxListItem *nextVisibleItem() const {
@@ -483,6 +483,7 @@ public:
     bool autoHighlight : 1;
     bool haveHighlightRange : 1;
     bool correctFlick : 1;
+    bool lazyRelease : 1;
 
     static int itemResizedIdx;
 };
@@ -616,23 +617,27 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
         changed = true;
     }
 
-    while (visibleItems.count() > 1 && (item = visibleItems.first()) && item->endPosition() < from) {
-        if (item->attached->delayRemove())
-            break;
-        //qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endPosition();
-        if (item->index != -1)
-            visibleIndex++;
-        visibleItems.removeFirst();
-        releaseItem(item);
-        changed = true;
-    }
-    while (visibleItems.count() > 1 && (item = visibleItems.last()) && item->position() > to) {
-        if (item->attached->delayRemove())
-            break;
-        //qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1;
-        visibleItems.removeLast();
-        releaseItem(item);
-        changed = true;
+    if (!lazyRelease || !changed) { // avoid destroying items in the same frame that we create
+        while (visibleItems.count() > 1 && (item = visibleItems.first()) && item->endPosition() < from) {
+            if (item->attached->delayRemove())
+                break;
+            //qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endPosition();
+            if (item->index != -1)
+                visibleIndex++;
+            visibleItems.removeFirst();
+            releaseItem(item);
+            changed = true;
+        }
+        while (visibleItems.count() > 1 && (item = visibleItems.last()) && item->position() > to) {
+            if (item->attached->delayRemove())
+                break;
+            //qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1;
+            visibleItems.removeLast();
+            releaseItem(item);
+            changed = true;
+        }
+    } else {
+        qDebug() << "lazyRelease" << lazyRelease << "changed";
     }
     if (changed) {
         if (visibleItems.count())
@@ -646,6 +651,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
             updateFooter();
         updateViewport();
     }
+    lazyRelease = false;
 }
 
 void QmlGraphicsListViewPrivate::layout()
@@ -1892,6 +1898,7 @@ void QmlGraphicsListView::viewportMoved()
 {
     Q_D(QmlGraphicsListView);
     QmlGraphicsFlickable::viewportMoved();
+    d->lazyRelease = true;
     refill();
     if (isFlicking() || d->moving)
         d->moveReason = QmlGraphicsListViewPrivate::Mouse;
@@ -2230,42 +2237,75 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
     // At least some of the added items will be visible
 
     int index = modelIndex - d->visibleIndex;
-    int to = d->buffer+d->position()+d->size()-1;
     // index can be the next item past the end of the visible items list (i.e. appended)
     int pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
                                                 : d->visibleItems.at(index-1)->endPosition()+d->spacing+1;
     int initialPos = pos;
+    int diff = 0;
     QList<FxListItem*> added;
-    for (int i = 0; i < count && pos <= to; ++i) {
-        FxListItem *item = d->createItem(modelIndex + i);
-        d->visibleItems.insert(index, item);
-        item->setPosition(pos);
-        added.append(item);
-        pos += item->size() + d->spacing;
-        ++index;
+    FxListItem *firstVisible = d->firstVisibleItem();
+    if (firstVisible && pos < firstVisible->position()) {
+        // Insert items before the visible item.
+        int insertionIdx = index;
+        int i = 0;
+        int from = d->position() - d->buffer;
+        for (i = count-1; i >= 0 && pos > from; --i) {
+            FxListItem *item = d->createItem(modelIndex + i);
+            d->visibleItems.insert(insertionIdx, item);
+            pos -= item->size() + d->spacing;
+            item->setPosition(pos);
+            index++;
+        }
+        if (i >= 0) {
+            // If we didn't insert all our new items - anything
+            // before the current index is not visible - remove it.
+            while (insertionIdx--) {
+                FxListItem *item = d->visibleItems.takeFirst();
+                if (item->index != -1)
+                    d->visibleIndex++;
+                d->releaseItem(item);
+            }
+        } else {
+            // adjust pos of items before inserted items.
+            for (int i = insertionIdx-1; i >= 0; i--) {
+                FxListItem *listItem = d->visibleItems.at(i);
+                listItem->setPosition(listItem->position() - (initialPos - pos));
+            }
+        }
+    } else {
+        int i = 0;
+        int to = d->buffer+d->position()+d->size()-1;
+        for (i = 0; i < count && pos <= to; ++i) {
+            FxListItem *item = d->createItem(modelIndex + i);
+            d->visibleItems.insert(index, item);
+            item->setPosition(pos);
+            added.append(item);
+            pos += item->size() + d->spacing;
+            ++index;
+        }
+        if (i != count) {
+            // We didn't insert all our new items, which means anything
+            // beyond the current index is not visible - remove it.
+            while (d->visibleItems.count() > index)
+                d->releaseItem(d->visibleItems.takeLast());
+        }
+        diff = pos - initialPos;
     }
     if (d->currentIndex >= modelIndex) {
         // adjust current item index
         d->currentIndex += count;
         if (d->currentItem) {
             d->currentItem->index = d->currentIndex;
-            d->currentItem->setPosition(d->currentItem->position() + (pos - initialPos));
+            d->currentItem->setPosition(d->currentItem->position() + diff);
         }
     }
-    if (pos > to) {
-        // We didn't insert all our new items, which means anything
-        // beyond the current index is not visible - remove it.
-        while (d->visibleItems.count() > index)
-            d->releaseItem(d->visibleItems.takeLast());
-    } else {
-        // Update the indexes of the following visible items.
-        for (; index < d->visibleItems.count(); ++index) {
-            FxListItem *listItem = d->visibleItems.at(index);
-            if (listItem->item != d->currentItem->item)
-                listItem->setPosition(listItem->position() + (pos - initialPos));
-            if (listItem->index != -1)
-                listItem->index += count;
-        }
+    // Update the indexes of the following visible items.
+    for (; index < d->visibleItems.count(); ++index) {
+        FxListItem *listItem = d->visibleItems.at(index);
+        if (listItem->item != d->currentItem->item)
+            listItem->setPosition(listItem->position() + diff);
+        if (listItem->index != -1)
+            listItem->index += count;
     }
     // everything is in order now - emit add() signal
     for (int j = 0; j < added.count(); ++j)
@@ -2310,6 +2350,8 @@ void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
         return;
     }
 
+    FxListItem *firstVisible = d->firstVisibleItem();
+    int preRemovedSize = 0;
     // Remove the items from the visible list, skipping anything already marked for removal
     QList<FxListItem*>::Iterator it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
@@ -2329,11 +2371,18 @@ void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
                 connect(item->attached, SIGNAL(delayRemoveChanged()), this, SLOT(destroyRemoved()), Qt::QueuedConnection);
                 ++it;
             } else {
+                if (item == firstVisible)
+                    firstVisible = 0;
+                if (firstVisible && item->position() < firstVisible->position())
+                    preRemovedSize += item->size();
                 it = d->visibleItems.erase(it);
                 d->releaseItem(item);
             }
         }
     }
+
+    if (firstVisible && d->visibleItems.first() != firstVisible)
+        d->visibleItems.first()->setPosition(d->visibleItems.first()->position() + preRemovedSize);
 
     // fix current
     if (d->currentIndex >= modelIndex + count) {
@@ -2396,7 +2445,14 @@ void QmlGraphicsListView::destroyRemoved()
 void QmlGraphicsListView::itemsMoved(int from, int to, int count)
 {
     Q_D(QmlGraphicsListView);
-    qreal firstItemPos = d->visibleItems.first()->position();
+
+    if (d->visibleItems.isEmpty()) {
+        refill();
+        return;
+    }
+
+    FxListItem *firstVisible = d->firstVisibleItem();
+    qreal firstItemPos = firstVisible->position();
     QHash<int,FxListItem*> moved;
     int moveBy = 0;
 
@@ -2407,7 +2463,8 @@ void QmlGraphicsListView::itemsMoved(int from, int to, int count)
             // take the items that are moving
             item->index += (to-from);
             moved.insert(item->index, item);
-            moveBy += item->size();
+            if (item->position() < firstItemPos)
+                moveBy += item->size();
             it = d->visibleItems.erase(it);
         } else {
             // move everything after the moved items.
@@ -2427,6 +2484,8 @@ void QmlGraphicsListView::itemsMoved(int from, int to, int count)
             FxListItem *movedItem = moved.take(item->index);
             if (!movedItem)
                 movedItem = d->createItem(item->index);
+            if (item->index < firstVisible->index)
+                moveBy -= movedItem->size();
             it = d->visibleItems.insert(it, movedItem);
             ++it;
             --remaining;
@@ -2454,7 +2513,7 @@ void QmlGraphicsListView::itemsMoved(int from, int to, int count)
         d->releaseItem(moved.take(moved.begin().key()));
 
     // Ensure we don't cause an ugly list scroll.
-    d->visibleItems.first()->setPosition(firstItemPos);
+    d->visibleItems.first()->setPosition(d->visibleItems.first()->position() + moveBy);
 
     d->layout();
     d->updateSections();
