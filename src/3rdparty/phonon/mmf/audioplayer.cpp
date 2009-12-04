@@ -46,8 +46,8 @@ void MMF::AudioPlayer::construct()
     TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
     TRACE_ENTRY_0();
 
-    CPlayerType *player = 0;
-    QT_TRAP_THROWING(player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone));
+    NativePlayer *player = 0;
+    QT_TRAP_THROWING(player = NativePlayer::NewL(*this, 0, EMdaPriorityPreferenceNone));
     m_player.reset(player);
     m_player->RegisterForAudioLoadingNotification(*this);
 
@@ -60,6 +60,11 @@ MMF::AudioPlayer::~AudioPlayer()
     TRACE_ENTRY_0();
 
     TRACE_EXIT_0();
+}
+
+MMF::AudioPlayer::NativePlayer *MMF::AudioPlayer::nativePlayer() const
+{
+    return m_player.data();
 }
 
 //-----------------------------------------------------------------------------
@@ -222,12 +227,6 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
 
     TRACE_EXIT_0();
 }
-
-CPlayerType *MMF::AudioPlayer::player() const
-{
-    return m_player.data();
-}
-
 
 #ifdef QT_PHONON_MMF_AUDIO_DRM
 void MMF::AudioPlayer::MaloLoadingStarted()

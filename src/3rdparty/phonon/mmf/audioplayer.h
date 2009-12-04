@@ -26,12 +26,10 @@ class TTimeIntervalMicroSeconds;
 
 #ifdef QT_PHONON_MMF_AUDIO_DRM
 #include <drmaudiosampleplayer.h>
-typedef CDrmPlayerUtility CPlayerType;
-typedef MDrmAudioPlayerCallback MPlayerObserverType;
+typedef MDrmAudioPlayerCallback NativePlayerObserver;
 #else
 #include <mdaaudiosampleplayer.h>
-typedef CMdaAudioPlayerUtility CPlayerType;
-typedef MMdaAudioPlayerCallback MPlayerObserverType;
+typedef MMdaAudioPlayerCallback NativePlayerObserver;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -44,7 +42,7 @@ namespace MMF
  * @short Wrapper over MMF audio client utility
  */
 class AudioPlayer   :   public AbstractMediaPlayer
-                    ,   public MPlayerObserverType    // typedef
+                    ,   public NativePlayerObserver
                     ,   public MAudioLoadingObserver
 {
     Q_OBJECT
@@ -52,6 +50,14 @@ class AudioPlayer   :   public AbstractMediaPlayer
 public:
     AudioPlayer(MediaObject *parent = 0, const AbstractPlayer *player = 0);
     virtual ~AudioPlayer();
+
+#ifdef QT_PHONON_MMF_AUDIO_DRM
+typedef CDrmPlayerUtility NativePlayer;
+#else
+typedef CMdaAudioPlayerUtility NativePlayer;
+#endif
+
+    NativePlayer *nativePlayer() const;
 
     // AbstractMediaPlayer
     virtual void doPlay();
@@ -76,7 +82,7 @@ public:
     /**
      * This class owns the pointer.
      */
-    CPlayerType *player() const;
+    NativePlayer *player() const;
 
 private:
     void construct();
@@ -103,9 +109,10 @@ private:
      * Using CPlayerType typedef in order to be able to easily switch between
      * CMdaAudioPlayerUtility and CDrmPlayerUtility
      */
-    QScopedPointer<CPlayerType> m_player;
+    QScopedPointer<NativePlayer> m_player;
 
     qint64                      m_totalTime;
+
 };
 }
 }
