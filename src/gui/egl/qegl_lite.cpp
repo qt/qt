@@ -52,11 +52,11 @@
 
 QT_BEGIN_NAMESPACE
 
-bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
+EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
 {
     Q_UNUSED(device);
     Q_UNUSED(properties);
-    return false;
+    return 0;
 }
 
 EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
