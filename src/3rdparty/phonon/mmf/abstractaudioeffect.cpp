@@ -19,6 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "mediaobject.h"
 
 #include "abstractaudioeffect.h"
+#include "audioplayer.h"
+#include "mmf_videoplayer.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -34,16 +36,11 @@ using namespace Phonon::MMF;
 */
 
 AbstractAudioEffect::AbstractAudioEffect(QObject *parent,
-                                         const QList<EffectParameter> &params) : MediaNode::MediaNode(parent)
-                                                                               , m_params(params)
+                                         const QList<EffectParameter> &params)
+    :   MediaNode::MediaNode(parent)
+    ,   m_player(0)
+    ,   m_params(params)
 {
-}
-
-bool AbstractAudioEffect::disconnectMediaNode(MediaNode *target)
-{
-    MediaNode::disconnectMediaNode(target);
-    m_effect.reset();
-    return true;
 }
 
 QList<EffectParameter> AbstractAudioEffect::parameters() const
@@ -61,21 +58,44 @@ QVariant AbstractAudioEffect::parameterValue(const EffectParameter &queriedParam
         return val;
 }
 
-bool AbstractAudioEffect::activateOnMediaObject(MediaObject *mo)
-{
-    AudioPlayer *const ap = qobject_cast<AudioPlayer *>(mo->abstractPlayer());
-
-    if (ap)
-        return activateOn(ap->player());
-    else
-        return true;
-}
-
 void AbstractAudioEffect::setParameterValue(const EffectParameter &param,
                                             const QVariant &newValue)
 {
     m_values.insert(param.id(), newValue);
     parameterChanged(param.id(), newValue);
+    // TODO: handle audio effect errors
+    TRAP_IGNORE(m_effect->ApplyL());
+}
+
+void AbstractAudioEffect::connectMediaObject(MediaObject *mediaObject)
+{
+    Q_ASSERT_X(!m_player, Q_FUNC_INFO, "Player already connected");
+    Q_ASSERT_X(!m_effect.data(), Q_FUNC_INFO, "Effect already created");
+
+    AbstractMediaPlayer *const player =
+        qobject_cast<AbstractMediaPlayer *>(mediaObject->abstractPlayer());
+
+    if (player) {
+        m_player = player;
+
+        if (AudioPlayer *audioPlayer = qobject_cast<AudioPlayer *>(player)) {
+            connectAudioPlayer(audioPlayer->nativePlayer());
+        } else {
+            VideoPlayer *videoPlayer = qobject_cast<VideoPlayer *>(player);
+            Q_ASSERT_X(videoPlayer, Q_FUNC_INFO, "Player type not recognised");
+            connectVideoPlayer(videoPlayer->nativePlayer());
+        }
+
+        applyParameters();
+        // TODO: handle audio effect errors
+        TRAP_IGNORE(m_effect->EnableL());
+    }
+}
+
+void AbstractAudioEffect::disconnectMediaObject(MediaObject * /*mediaObject*/)
+{
+    m_player = 0;
+    m_effect.reset();
 }
 
 QT_END_NAMESPACE

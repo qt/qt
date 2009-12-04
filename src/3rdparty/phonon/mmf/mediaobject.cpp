@@ -358,6 +358,25 @@ void MMF::MediaObject::volumeChanged(qreal volume)
 }
 
 //-----------------------------------------------------------------------------
+// MediaNode
+//-----------------------------------------------------------------------------
+
+void MMF::MediaObject::connectMediaObject(MediaObject * /*mediaObject*/)
+{
+    // This function should never be called - see MediaNode::setMediaObject()
+    Q_ASSERT_X(false, Q_FUNC_INFO,
+        "Connection of MediaObject to MediaObject");
+}
+
+void MMF::MediaObject::disconnectMediaObject(MediaObject * /*mediaObject*/)
+{
+    // This function should never be called - see MediaNode::setMediaObject()
+    Q_ASSERT_X(false, Q_FUNC_INFO,
+        "Disconnection of MediaObject from MediaObject");
+}
+
+
+//-----------------------------------------------------------------------------
 // Video output
 //-----------------------------------------------------------------------------
 
@@ -370,12 +389,6 @@ void MMF::MediaObject::setVideoOutput(VideoOutput* videoOutput)
 AbstractPlayer *MMF::MediaObject::abstractPlayer() const
 {
     return m_player.data();
-}
-
-bool MMF::MediaObject::activateOnMediaObject(MediaObject *)
-{
-    // Guess what, we do nothing.
-    return true;
 }
 
 //-----------------------------------------------------------------------------

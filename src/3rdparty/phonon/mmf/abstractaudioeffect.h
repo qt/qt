@@ -19,15 +19,16 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_ABSTRACTEFFECT_H
 #define PHONON_MMF_ABSTRACTEFFECT_H
 
-#include "mmf_medianode.h"
-
 #include <QScopedPointer>
 
 #include <AudioEffectBase.h>
 
 #include <Phonon/EffectInterface>
 #include <Phonon/EffectParameter>
+
 #include "audioplayer.h"
+#include "mmf_medianode.h"
+#include "mmf_videoplayer.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -35,6 +36,7 @@ namespace Phonon
 {
 namespace MMF
 {
+class AbstractMediaPlayer;
 
 /**
  * @short Base class for all effects for MMF.
@@ -66,8 +68,6 @@ public:
     virtual void setParameterValue(const EffectParameter &,
                                    const QVariant &newValue);
 
-    virtual bool disconnectMediaNode(MediaNode *target);
-
     enum Type
     {
         EffectAudioEqualizer = 1,
@@ -81,21 +81,26 @@ public:
     };
 
 protected:
-    virtual bool activateOn(CPlayerType *player) = 0;
+    // MediaNode
+    void connectMediaObject(MediaObject *mediaObject);
+    void disconnectMediaObject(MediaObject *mediaObject);
+
+    virtual void connectAudioPlayer(AudioPlayer::NativePlayer *player) = 0;
+    virtual void connectVideoPlayer(VideoPlayer::NativePlayer *player) = 0;
+    virtual void applyParameters() = 0;
+
     virtual void parameterChanged(const int id,
                                   const QVariant &value) = 0;
 
-    /**
-     * Part of the implementation of AbstractAudioEffect. Forwards the call to
-     * activateOn(), essentially.
-     */
-    virtual bool activateOnMediaObject(MediaObject *mo);
-
+protected:
     QScopedPointer<CAudioEffect>    m_effect;
+
 private:
+    AbstractMediaPlayer *           m_player;
     const QList<EffectParameter>    m_params;
     QHash<int, QVariant>            m_values;
 };
+
 }
 }
 

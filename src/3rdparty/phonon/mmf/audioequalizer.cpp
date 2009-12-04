@@ -16,6 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include <AudioEqualizerBase.h>
 #include "audioequalizer.h"
 
 QT_BEGIN_NAMESPACE
@@ -34,18 +35,43 @@ AudioEqualizer::AudioEqualizer(QObject *parent) : AbstractAudioEffect::AbstractA
 void AudioEqualizer::parameterChanged(const int pid,
                                       const QVariant &value)
 {
-    // There is no way to return an error from this function, so we just
-    // have to trap and ignore exceptions.
-    TRAP_IGNORE(static_cast<CAudioEqualizer *>(m_effect.data())->SetBandLevelL(pid, value.toInt()));
+    if (m_effect.data()) {
+        const int band = pid;
+        const int level = value.toInt();
+        setBandLevel(band, level);
+    }
 }
 
-bool AudioEqualizer::activateOn(CPlayerType *player)
+void AudioEqualizer::connectAudioPlayer(AudioPlayer::NativePlayer *player)
 {
     CAudioEqualizer *ptr = 0;
     QT_TRAP_THROWING(ptr = CAudioEqualizer::NewL(*player));
     m_effect.reset(ptr);
+}
 
-    return true;
+void AudioEqualizer::connectVideoPlayer(VideoPlayer::NativePlayer *player)
+{
+    CAudioEqualizer *ptr = 0;
+    QT_TRAP_THROWING(ptr = CAudioEqualizer::NewL(*player));
+    m_effect.reset(ptr);
+}
+
+void AudioEqualizer::applyParameters()
+{
+    Q_ASSERT_X(m_effect.data(), Q_FUNC_INFO, "Effect not created");
+    EffectParameter param;
+    foreach (param, parameters()) {
+        const int band = param.id();
+        const int level = parameterValue(param).toInt();
+        setBandLevel(band, level);
+    }
+}
+
+void AudioEqualizer::setBandLevel(int band, int level)
+{
+    CAudioEqualizer *const effect = static_cast<CAudioEqualizer *>(m_effect.data());
+    // TODO: handle audio effect errors
+    TRAP_IGNORE(effect->SetBandLevelL(band, level));
 }
 
 QList<EffectParameter> AudioEqualizer::createParams()
@@ -57,7 +83,7 @@ QList<EffectParameter> AudioEqualizer::createParams()
     AudioPlayer dummyPlayer;
 
     CAudioEqualizer *eqPtr = 0;
-    QT_TRAP_THROWING(eqPtr = CAudioEqualizer::NewL(*dummyPlayer.player());)
+    QT_TRAP_THROWING(eqPtr = CAudioEqualizer::NewL(*dummyPlayer.nativePlayer()));
     QScopedPointer<CAudioEqualizer> e(eqPtr);
 
     TInt32 dbMin;

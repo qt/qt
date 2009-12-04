@@ -97,6 +97,11 @@ MMF::VideoPlayer::~VideoPlayer()
     TRACE_EXIT_0();
 }
 
+CVideoPlayerUtility* MMF::VideoPlayer::nativePlayer() const
+{
+    return m_player.data();
+}
+
 //-----------------------------------------------------------------------------
 // Public API
 //-----------------------------------------------------------------------------

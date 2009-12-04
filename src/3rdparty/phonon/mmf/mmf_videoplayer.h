@@ -47,6 +47,9 @@ public:
     VideoPlayer(MediaObject *parent = 0, const AbstractPlayer *player = 0);
     virtual ~VideoPlayer();
 
+    typedef CVideoPlayerUtility NativePlayer;
+    NativePlayer *nativePlayer() const;
+
     // AbstractPlayer
     virtual void doPlay();
     virtual void doPause();
@@ -105,7 +108,7 @@ private:
     virtual void MvloLoadingComplete();
 
 private:
-    QScopedPointer<CVideoPlayerUtility> m_player;
+    QScopedPointer<NativePlayer>        m_player;
 
     // Not owned
     RWsSession&                         m_wsSession;

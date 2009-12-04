@@ -75,6 +75,10 @@ public:
     virtual qint32 transitionTime() const;
     virtual void setTransitionTime(qint32);
 
+    // MediaNode
+    void connectMediaObject(MediaObject *mediaObject);
+    void disconnectMediaObject(MediaObject *mediaObject);
+
     /**
      * This class owns the AbstractPlayer, and will delete it upon
      * destruction.
@@ -82,8 +86,6 @@ public:
     AbstractPlayer *abstractPlayer() const;
 
     void setVideoOutput(VideoOutput* videoOutput);
-
-    virtual bool activateOnMediaObject(MediaObject *);
 
 public Q_SLOTS:
     void volumeChanged(qreal volume);
