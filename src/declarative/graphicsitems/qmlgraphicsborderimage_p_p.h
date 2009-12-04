@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include <private/qmlgraphicsimagebase_p_p.h>
-#include <private/qmlgraphicsscalegrid_p_p.h>
+#include "qmlgraphicsimagebase_p_p.h"
+#include "qmlgraphicsscalegrid_p_p.h"
 
 QT_BEGIN_NAMESPACE
 

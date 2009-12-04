@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSREPEATER_H
 #define QMLGRAPHICSREPEATER_H
 
-#include <qmlgraphicsitem.h>
+#include "qmlgraphicsitem.h"
 
 QT_BEGIN_HEADER
 

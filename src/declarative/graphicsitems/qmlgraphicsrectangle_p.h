@@ -42,9 +42,9 @@
 #ifndef QMLGRAPHICSRECT_H
 #define QMLGRAPHICSRECT_H
 
-#include <qmlgraphicsitem.h>
-#include <QtGui/qbrush.h>
+#include "qmlgraphicsitem.h"
 
+#include <QtGui/qbrush.h>
 
 QT_BEGIN_HEADER
 

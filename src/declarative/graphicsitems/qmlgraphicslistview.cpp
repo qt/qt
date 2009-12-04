@@ -39,13 +39,15 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicsflickable_p_p.h>
-#include <private/qmleasefollow_p.h>
-#include <private/qlistmodelinterface_p.h>
-#include <private/qmlgraphicsvisualitemmodel_p.h>
-#include <private/qmlgraphicslistview_p.h>
+#include "qmlgraphicslistview_p.h"
+
+#include "qmlgraphicsflickable_p_p.h"
+#include "qmlgraphicsvisualitemmodel_p.h"
+
+#include <qmleasefollow_p.h>
 #include <qmlexpression.h>
 
+#include <qlistmodelinterface_p.h>
 #include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
@@ -2492,4 +2494,4 @@ QML_DEFINE_TYPE(Qt,4,6,ListView,QmlGraphicsListView)
 
 QT_END_NAMESPACE
 
-#include "qmlgraphicslistview.moc"
+#include <qmlgraphicslistview.moc>

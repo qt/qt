@@ -42,11 +42,12 @@
 #ifndef QMLCOMPONENT_H
 #define QMLCOMPONENT_H
 
+#include "qml.h"
+#include "qmlerror.h"
+
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtScript/qscriptvalue.h>
-#include <qml.h>
-#include <qmlerror.h>
 
 QT_BEGIN_HEADER
 

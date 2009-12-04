@@ -42,11 +42,12 @@
 #ifndef QMLGRAPHICSPATH_H
 #define QMLGRAPHICSPATH_H
 
+#include "qmlgraphicsitem.h"
+
+#include <qml.h>
+
 #include <QtCore/QObject>
 #include <QtGui/QPainterPath>
-#include <qml.h>
-#include <qmlgraphicsitem.h>
-
 
 QT_BEGIN_HEADER
 

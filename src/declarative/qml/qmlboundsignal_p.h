@@ -53,9 +53,11 @@
 // We mean it.
 //
 
-#include <qmlexpression.h>
-#include <private/qobject_p.h>
+#include "qmlexpression.h"
+
 #include <QtCore/qmetaobject.h>
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -39,16 +39,18 @@
 **
 ****************************************************************************/
 
-#include <math.h>
+#include "qmlgraphicspathview_p.h"
+#include "qmlgraphicspathview_p_p.h"
+
+#include <qmlstate_p.h>
+#include <qmlopenmetaobject_p.h>
+
 #include <QDebug>
 #include <QEvent>
-#include <private/qmlstate_p.h>
-#include <private/qlistmodelinterface_p.h>
-#include <private/qmlopenmetaobject_p.h>
-
-#include <private/qmlgraphicspathview_p.h>
-#include <private/qmlgraphicspathview_p_p.h>
+#include <qlistmodelinterface_p.h>
 #include <QGraphicsSceneEvent>
+
+#include <math.h>
 
 static const int FlickThreshold = 5;
 
@@ -892,4 +894,4 @@ QObject *QmlGraphicsPathView::qmlAttachedProperties(QObject *obj)
 
 QT_END_NAMESPACE
 
-#include "qmlgraphicspathview.moc"
+#include <qmlgraphicspathview.moc>

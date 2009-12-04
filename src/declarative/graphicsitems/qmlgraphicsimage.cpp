@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicsimage_p.h>
-#include <private/qmlgraphicsimage_p_p.h>
+#include "qmlgraphicsimage_p.h"
+#include "qmlgraphicsimage_p_p.h"
 
 #include <QKeyEvent>
 #include <QPainter>
@@ -128,13 +128,11 @@ QML_DEFINE_TYPE(Qt,4,6,Image,QmlGraphicsImage)
 QmlGraphicsImage::QmlGraphicsImage(QmlGraphicsItem *parent)
   : QmlGraphicsImageBase(*(new QmlGraphicsImagePrivate), parent)
 {
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QmlGraphicsImage::QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent)
   : QmlGraphicsImageBase(dd, parent)
 {
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QmlGraphicsImage::~QmlGraphicsImage()

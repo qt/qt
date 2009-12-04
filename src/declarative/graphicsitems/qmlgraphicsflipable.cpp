@@ -39,10 +39,13 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicsflipable_p.h>
-#include <private/qmlgraphicsitem_p.h>
-#include "QtGui/qgraphicstransform.h"
+#include "qmlgraphicsflipable_p.h"
+
+#include "qmlgraphicsitem_p.h"
+
 #include <qmlinfo.h>
+
+#include <QtGui/qgraphicstransform.h>
 
 QT_BEGIN_NAMESPACE
 

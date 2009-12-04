@@ -40,19 +40,23 @@
 ****************************************************************************/
 
 #include "qmlmetaproperty.h"
-#include <private/qmlmetaproperty_p.h>
-#include <private/qmlcompositetypedata_p.h>
-#include <qml.h>
-#include <private/qfxperf_p_p.h>
-#include <QStringList>
+#include "qmlmetaproperty_p.h"
+
+#include "qmlcompositetypedata_p.h"
+#include "qml.h"
 #include "qmlbinding.h"
-#include <qmlcontext.h>
-#include <private/qmlboundsignal_p.h>
-#include <math.h>
+#include "qmlcontext.h"
+#include "qmlboundsignal_p.h"
+#include "qmlengine.h"
+#include "qmlengine_p.h"
+#include "qmldeclarativedata_p.h"
+
+#include <qfxperf_p_p.h>
+
+#include <QStringList>
 #include <QtCore/qdebug.h>
-#include <qmlengine.h>
-#include <private/qmlengine_p.h>
-#include <private/qmldeclarativedata_p.h>
+
+#include <math.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 

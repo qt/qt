@@ -1,5 +1,7 @@
+INCLUDEPATH += $$PWD
+
 HEADERS += \
-           3rdparty/qlistmodelinterface_p.h\
+    $$PWD/qlistmodelinterface_p.h\
 
 SOURCES += \
-           3rdparty/qlistmodelinterface.cpp \
+    $$PWD/qlistmodelinterface.cpp \

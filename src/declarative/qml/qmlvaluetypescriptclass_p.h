@@ -53,6 +53,7 @@
 // We mean it.
 //
 #include <QtScript/qscriptclass.h>
+
 #include <private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE

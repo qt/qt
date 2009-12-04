@@ -53,12 +53,15 @@
 // We mean it.
 //
 
-#include "qdatetime.h"
-#include <private/qmlgraphicspathview_p.h>
-#include <private/qmlgraphicsitem_p.h>
-#include <private/qmlgraphicsvisualitemmodel_p.h>
-#include "qml.h"
-#include <private/qmlanimation_p_p.h>
+#include "qmlgraphicspathview_p.h"
+
+#include "qmlgraphicsitem_p.h"
+#include "qmlgraphicsvisualitemmodel_p.h"
+
+#include <qml.h>
+#include <qmlanimation_p_p.h>
+
+#include <qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 

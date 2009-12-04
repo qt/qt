@@ -39,6 +39,15 @@
 **
 ****************************************************************************/
 
+#include "qmlgraphicswebview_p.h"
+#include "qmlgraphicswebview_p_p.h"
+
+#include "qmlgraphicspainteditem_p_p.h"
+
+#include <qml.h>
+#include <qmlengine.h>
+#include <qmlstate_p.h>
+
 #include <QDebug>
 #include <QPen>
 #include <QFile>
@@ -52,15 +61,7 @@
 #include <QtWebKit/QWebFrame>
 #include <QtWebKit/QWebElement>
 #include <QtWebKit/QWebSettings>
-
-#include "qml.h"
-#include "qmlengine.h"
-#include <private/qmlstate_p.h>
-#include <private/qlistmodelinterface_p.h>
-
-#include <private/qmlgraphicswebview_p.h>
-#include <private/qmlgraphicswebview_p_p.h>
-#include <private/qmlgraphicspainteditem_p_p.h>
+#include <qlistmodelinterface_p.h>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,WebView,QmlGraphicsWebView)
@@ -1321,4 +1322,4 @@ QWebPage *QmlGraphicsWebPage::createWindow(WebWindowType type)
 
 QT_END_NAMESPACE
 
-#include "qmlgraphicswebview.moc"
+#include <qmlgraphicswebview.moc>

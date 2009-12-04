@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include <private/qmlnumberformatter_p.h>
-#include "private/qobject_p.h"
+#include "qmlnumberformatter_p.h"
+
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 

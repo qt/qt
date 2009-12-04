@@ -42,15 +42,15 @@
 #ifndef QMLLISTMODEL_H
 #define QMLLISTMODEL_H
 
+#include <qml.h>
+
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QVariant>
-#include <qml.h>
-#include <private/qlistmodelinterface_p.h>
+#include <qlistmodelinterface_p.h>
 #include <QtScript/qscriptvalue.h>
-
 
 QT_BEGIN_HEADER
 

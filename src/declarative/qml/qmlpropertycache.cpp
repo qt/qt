@@ -39,9 +39,10 @@
 **
 ****************************************************************************/
 
-#include <private/qmlpropertycache_p.h>
-#include <private/qmlengine_p.h>
-#include <qmlbinding.h>
+#include "qmlpropertycache_p.h"
+
+#include "qmlengine_p.h"
+#include "qmlbinding.h"
 
 QT_BEGIN_NAMESPACE
 

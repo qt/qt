@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSGRAPHICSOBJECTCONTAINER_H
 #define QMLGRAPHICSGRAPHICSOBJECTCONTAINER_H
 
-#include <qmlgraphicsitem.h>
+#include "qmlgraphicsitem.h"
 
 QT_BEGIN_HEADER
 

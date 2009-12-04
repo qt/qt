@@ -39,17 +39,20 @@
 **
 ****************************************************************************/
 
-#include <qml.h>
 #include "qmlbinding.h"
-#include <private/qmlbinding_p.h>
-#include <qmlcontext.h>
-#include <qmlinfo.h>
+#include "qmlbinding_p.h"
+
+#include "qml.h"
+#include "qmlcontext.h"
+#include "qmlinfo.h"
+#include "qmlcontext_p.h"
+#include "qmldeclarativedata_p.h"
+#include "qmlstringconverters_p.h"
+
+#include <qfxperf_p_p.h>
+
 #include <QVariant>
-#include <private/qfxperf_p_p.h>
 #include <QtCore/qdebug.h>
-#include <private/qmlcontext_p.h>
-#include <private/qmldeclarativedata_p.h>
-#include <private/qmlstringconverters_p.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 

@@ -54,9 +54,9 @@
 //
 
 #include "qmlgraphicsitem.h"
-#include <private/qmlgraphicspainteditem_p_p.h>
-#include "qml.h"
+#include "qmlgraphicspainteditem_p_p.h"
 
+#include <qml.h>
 
 QT_BEGIN_NAMESPACE
 class QTextLayout;

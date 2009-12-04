@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#include <private/qmlgraphicsmouseregion_p.h>
-#include <private/qmlgraphicsmouseregion_p_p.h>
-#include <private/qmlgraphicsevents_p_p.h>
-#include <QGraphicsSceneMouseEvent>
+#include "qmlgraphicsmouseregion_p.h"
+#include "qmlgraphicsmouseregion_p_p.h"
 
+#include "qmlgraphicsevents_p_p.h"
+
+#include <QGraphicsSceneMouseEvent>
 
 QT_BEGIN_NAMESPACE
 static const qreal DragThreshold = 5;

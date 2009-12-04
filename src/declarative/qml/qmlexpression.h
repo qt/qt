@@ -42,9 +42,10 @@
 #ifndef QMLEXPRESSION_H
 #define QMLEXPRESSION_H
 
+#include "qmlerror.h"
+
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
-#include <qmlerror.h>
 
 QT_BEGIN_HEADER
 

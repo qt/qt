@@ -43,6 +43,7 @@
 #define GRAPHICSWIDGETS_H
 
 #include <qml.h>
+
 #include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsView>
 #include <QtGui/QGraphicsWidget>

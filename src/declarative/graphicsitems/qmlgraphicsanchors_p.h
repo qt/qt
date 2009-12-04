@@ -42,9 +42,11 @@
 #ifndef QMLGRAPHICSANCHORS_H
 #define QMLGRAPHICSANCHORS_H
 
-#include <QtCore/QObject>
+#include "qmlgraphicsitem.h"
+
 #include <qml.h>
-#include <qmlgraphicsitem.h>
+
+#include <QtCore/QObject>
 
 QT_BEGIN_HEADER
 

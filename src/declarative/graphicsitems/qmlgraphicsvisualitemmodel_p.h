@@ -42,10 +42,10 @@
 #ifndef QMLGRAPHICSVISUALDATAMODEL_H
 #define QMLGRAPHICSVISUALDATAMODEL_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qabstractitemmodel.h>
 #include <qml.h>
 
+#include <QtCore/qobject.h>
+#include <QtCore/qabstractitemmodel.h>
 
 QT_BEGIN_HEADER
 

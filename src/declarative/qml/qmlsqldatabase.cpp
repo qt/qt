@@ -39,9 +39,14 @@
 **
 ****************************************************************************/
 
+#include "qmlsqldatabase_p.h"
+
+#include "qmlengine.h"
+#include "qmlengine_p.h"
+#include "qmlrefcount_p.h"
+#include "qmlengine_p.h"
+
 #include <QtCore/qobject.h>
-#include <qmlengine.h>
-#include <private/qmlengine_p.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtScript/qscriptvalueiterator.h>
 #include <QtScript/qscriptcontext.h>
@@ -51,11 +56,8 @@
 #include <QtSql/qsqlquery.h>
 #include <QtSql/qsqlerror.h>
 #include <QtSql/qsqlrecord.h>
-#include <private/qmlrefcount_p.h>
-#include <private/qmlengine_p.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qcryptographichash.h>
-#include <private/qmlsqldatabase_p.h>
 #include <QtCore/qsettings.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qdebug.h>
@@ -260,8 +262,9 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
     instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql,1));
     QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
 
-    if (from_version!=context->thisObject().property(QLatin1String("version")).toString()) {
-        THROW_SQL(2,QmlEngine::tr("Version mismatch"));
+    QString foundvers = context->thisObject().property(QLatin1String("version")).toString();
+    if (from_version!=foundvers) {
+        THROW_SQL(2,QmlEngine::tr("Version mismatch: expected %1, found %2").arg(from_version).arg(foundvers));
         return engine->undefinedValue();
     }
 

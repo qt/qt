@@ -39,13 +39,16 @@
 **
 ****************************************************************************/
 
-#include <private/qmlpixmapcache_p.h>
+#include "qmlpixmapcache_p.h"
+
+#include "qfxperf_p_p.h"
+
+#include <qmlengine.h>
+
 #include <QImageReader>
 #include <QHash>
 #include <QNetworkReply>
 #include <QPixmapCache>
-#include <private/qfxperf_p_p.h>
-#include <qmlengine.h>
 #include <QFile>
 #include <QtCore/qdebug.h>
 
@@ -147,59 +150,62 @@ bool QmlPixmapCache::find(const QUrl& url, QPixmap *pixmap)
     QmlPerfTimer<QmlPerf::PixmapLoad> perf;
 #endif
 
-    QString key = url.toString();
     bool ok = true;
-    if (!QPixmapCache::find(key,pixmap)) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-        QString lf = toLocalFileOrQrc(url);
-        if (!lf.isEmpty()) {
+    QString lf = toLocalFileOrQrc(url);
+    if (!lf.isEmpty()) {
+        if (!QPixmapCache::find(lf,pixmap)) {
             QFile f(lf);
             if (f.open(QIODevice::ReadOnly)) {
                 if (!readImage(&f, pixmap)) {
                     qWarning() << "Format error loading" << url;
                     *pixmap = QPixmap();
                     ok = false;
+                } else {
+                    QPixmapCache::insert(lf, *pixmap);
+                    ok = !pixmap->isNull();
                 }
             } else {
                 *pixmap = QPixmap();
                 ok = false;
             }
-        } else
+        } else {
+            ok = !pixmap->isNull();
+        }
+        return ok;
+    }
 #endif
-        {
-            QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
-            if (iter == qfxActiveNetworkReplies.end()) {
-                // API usage error
-                qWarning() << "QmlPixmapCache: URL not loaded" << url;
+
+    QString key = url.toString();
+    if (!QPixmapCache::find(key,pixmap)) {
+        QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+        if (iter == qfxActiveNetworkReplies.end()) {
+            // API usage error
+            qWarning() << "QmlPixmapCache: URL not loaded" << url;
+            ok = false;
+        } else {
+            if ((*iter)->reply->error()) {
+                qWarning() << "Network error loading" << url << (*iter)->reply->errorString();
+                *pixmap = QPixmap();
+                ok = false;
+            } else if (!readImage((*iter)->reply, pixmap)) {
+                qWarning() << "Format error loading" << url;
+                *pixmap = QPixmap();
                 ok = false;
             } else {
-                if ((*iter)->reply->error()) {
-                    qWarning() << "Network error loading" << url << (*iter)->reply->errorString();
-                    *pixmap = QPixmap();
-                    ok = false;
-                } else if (!readImage((*iter)->reply, pixmap)) {
-                    qWarning() << "Format error loading" << url;
-                    *pixmap = QPixmap();
-                    ok = false;
-                } else {
-                    if ((*iter)->refCount > 1)
-                        (*iter)->pixmap = *pixmap;
-                }
-                (*iter)->release();
+                if ((*iter)->refCount > 1)
+                    (*iter)->pixmap = *pixmap;
             }
+            (*iter)->release();
         }
         QPixmapCache::insert(key, *pixmap);
     } else {
         ok = !pixmap->isNull();
-#ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-        if (url.scheme()!=QLatin1String("file"))
-#endif
+
         // We may be the second finder. Still need to check for active replies.
-        {
-            QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
-            if (iter != qfxActiveNetworkReplies.end())
-                (*iter)->release();
-        }
+        QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+        if (iter != qfxActiveNetworkReplies.end())
+            (*iter)->release();
     }
     return ok;
 }
@@ -223,8 +229,7 @@ QNetworkReply *QmlPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     QString lf = toLocalFileOrQrc(url);
     if (!lf.isEmpty()) {
-        QString key = url.toString();
-        if (!QPixmapCache::find(key,pixmap)) {
+        if (!QPixmapCache::find(lf,pixmap)) {
             bool loaded = true;
             QFile f(lf);
             if (f.open(QIODevice::ReadOnly)) {
@@ -239,7 +244,7 @@ QNetworkReply *QmlPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *
                 loaded = false;
             }
             if (loaded)
-                QPixmapCache::insert(key, *pixmap);
+                QPixmapCache::insert(lf, *pixmap);
             if (ok) *ok = loaded;
         }
         return 0;
