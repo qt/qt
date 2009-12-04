@@ -654,7 +654,7 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::WindowText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
     palette->setColor(QPalette::ButtonText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 20, 0));
     palette->setColor(QPalette::Text,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
     palette->setColor(QPalette::ToolTipText,
@@ -753,13 +753,15 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     QApplication::setPalette(widgetPalette, "QTableView");
     widgetPalette = *palette;
 
+    widgetPalette.setColor(QPalette::Text,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 27, 0));
     widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QLineEdit");
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::Text,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 34, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 27, 0));
     widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QTextEdit");
