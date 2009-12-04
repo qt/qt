@@ -1341,7 +1341,7 @@ QmlNumberAnimation::~QmlNumberAnimation()
 qreal QmlNumberAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
-    return d->from.toDouble();
+    return d->from.toReal();
 }
 
 void QmlNumberAnimation::setFrom(qreal f)
@@ -1357,7 +1357,7 @@ void QmlNumberAnimation::setFrom(qreal f)
 qreal QmlNumberAnimation::to() const
 {
     Q_D(const QmlPropertyAnimation);
-    return d->to.toDouble();
+    return d->to.toReal();
 }
 
 void QmlNumberAnimation::setTo(qreal t)

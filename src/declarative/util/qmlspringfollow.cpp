@@ -200,7 +200,7 @@ void QmlSpringFollowPrivate::start()
         property.write(currentValue);
     } else if (sourceValue != currentValue && clock.state() != QAbstractAnimation::Running) {
         lastTime = 0;
-        currentValue = property.read().toDouble();
+        currentValue = property.read().toReal();
         clock.start(); // infinity??
         emit q->syncChanged();
     }
@@ -258,7 +258,7 @@ void QmlSpringFollow::setTarget(const QmlMetaProperty &property)
 {
     Q_D(QmlSpringFollow);
     d->property = property;
-    d->currentValue = property.read().toDouble();
+    d->currentValue = property.read().toReal();
 }
 
 qreal QmlSpringFollow::sourceValue() const
