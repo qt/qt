@@ -278,11 +278,6 @@ bool QSqlCachedResult::cacheNext()
     if (d->atEnd)
         return false;
 
-    if(isForwardOnly()) {
-        d->cache.clear();
-        d->cache.resize(d->colCount);
-    }
-
     if (!gotoNext(d->cache, d->nextIndex())) {
         d->revertLast();
         d->atEnd = true;
