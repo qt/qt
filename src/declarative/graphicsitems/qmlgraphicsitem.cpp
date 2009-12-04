@@ -1491,6 +1491,7 @@ QmlGraphicsItem::~QmlGraphicsItem()
     d->dependantAnchors.clear();
     delete d->_anchorLines; d->_anchorLines = 0;
     delete d->_anchors; d->_anchors = 0;
+    delete d->_stateGroup; d->_stateGroup = 0;
 }
 
 /*!
@@ -2620,7 +2621,7 @@ QmlStateGroup *QmlGraphicsItemPrivate::states()
 {
     Q_Q(QmlGraphicsItem);
     if (!_stateGroup) {
-        _stateGroup = new QmlStateGroup(q);
+        _stateGroup = new QmlStateGroup;
         if (!_componentComplete)
             _stateGroup->classBegin();
         QObject::connect(_stateGroup, SIGNAL(stateChanged(QString)),
