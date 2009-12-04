@@ -497,10 +497,8 @@ void QmlGraphicsListViewPrivate::init()
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
-    if (itemResizedIdx == -1) {
+    if (itemResizedIdx == -1)
         itemResizedIdx = QmlGraphicsListView::staticMetaObject.indexOfSlot("itemResized()");
-        qDebug() << "ri" << itemResizedIdx;
-    }
 }
 
 void QmlGraphicsListViewPrivate::clear()
@@ -1914,26 +1912,23 @@ void QmlGraphicsListView::viewportMoved()
         }
     }
 
-    if ((d->haveHighlightRange && d->highlightRange == QmlGraphicsListView::StrictlyEnforceRange)
-        || d->snapMode == QmlGraphicsListView::SnapToItem) {
-        if (d->flicked && d->correctFlick) {
-            // Near an end and it seems that the extent has changed?
-            // Recalculate the flick so that we don't end up in an odd position.
-            if (d->velocityY > 0) {
-                if (d->flickTargetY - d->_moveY.value() < height()/2 && minYExtent() != d->flickTargetY)
-                    d->flickY(-d->verticalVelocity.value());
-            } else if (d->velocityY < 0) {
-                if (d->_moveY.value() - d->flickTargetY < height()/2 && maxYExtent() != d->flickTargetY)
-                    d->flickY(-d->verticalVelocity.value());
-            }
+    if (d->flicked && d->correctFlick) {
+        // Near an end and it seems that the extent has changed?
+        // Recalculate the flick so that we don't end up in an odd position.
+        if (d->velocityY > 0) {
+            if (d->flickTargetY - d->_moveY.value() < height()/2 && minYExtent() != d->flickTargetY)
+                d->flickY(-d->verticalVelocity.value());
+        } else if (d->velocityY < 0) {
+            if (d->_moveY.value() - d->flickTargetY < height()/2 && maxYExtent() != d->flickTargetY)
+                d->flickY(-d->verticalVelocity.value());
+        }
 
-            if (d->velocityX > 0) {
-                if (d->flickTargetX - d->_moveX.value() < height()/2 && minXExtent() != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
-            } else if (d->velocityX < 0) {
-                if (d->_moveX.value() - d->flickTargetX < height()/2 && maxXExtent() != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
-            }
+        if (d->velocityX > 0) {
+            if (d->flickTargetX - d->_moveX.value() < height()/2 && minXExtent() != d->flickTargetX)
+                d->flickX(-d->verticalVelocity.value());
+        } else if (d->velocityX < 0) {
+            if (d->_moveX.value() - d->flickTargetX < height()/2 && maxXExtent() != d->flickTargetX)
+                d->flickX(-d->verticalVelocity.value());
         }
     }
 }
