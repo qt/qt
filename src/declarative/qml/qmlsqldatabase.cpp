@@ -196,6 +196,11 @@ static QScriptValue qmlsqldatabase_item(QScriptContext *context, QScriptEngine *
     return engine->undefinedValue();
 }
 
+static QScriptValue qmlsqldatabase_executeSql_outsidetransaction(QScriptContext *context, QScriptEngine *engine)
+{
+    THROW_SQL(DATABASE_ERR,QmlEngine::tr("executeSql called outside transaction()"));
+}
+
 static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEngine *engine)
 {
     QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
@@ -308,6 +313,8 @@ static QScriptValue qmlsqldatabase_transaction_shared(QScriptContext *context, Q
 
     db.transaction();
     callback.call(QScriptValue(), QScriptValueList() << tx);
+    instance.setProperty(QLatin1String("executeSql"),
+        engine->newFunction(qmlsqldatabase_executeSql_outsidetransaction));
     if (engine->hasUncaughtException()) {
         db.rollback();
     } else {
