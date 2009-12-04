@@ -54,7 +54,30 @@
 QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
+extern const QStringList& qEnabledDraggedTypes(); // qmime_mac.cpp
+
+Q_GLOBAL_STATIC(QPointer<QWidget>, currentDragTarget);
+
 QT_END_NAMESPACE
+
+- (id)initWithContentRect:(NSRect)contentRect
+    styleMask:(NSUInteger)windowStyle
+    backing:(NSBackingStoreType)bufferingType
+    defer:(BOOL)deferCreation
+{
+    self = [super initWithContentRect:contentRect styleMask:windowStyle
+        backing:bufferingType defer:deferCreation];
+    if (self) {
+        currentCustomDragTypes = 0;
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    delete currentCustomDragTypes;
+    [super dealloc];
+}
 
 - (BOOL)canBecomeKeyWindow
 {
@@ -183,5 +206,108 @@ QT_END_NAMESPACE
     if (styleMask & QtMacCustomizeWindow)
         return [QT_MANGLE_NAMESPACE(QCocoaWindowCustomThemeFrame) class];
     return [super frameViewClassForStyleMask:styleMask];
+}
+
+-(void)registerDragTypes
+{
+    // Calling registerForDraggedTypes below is slow, so only do
+    // it once for each window, or when the custom types change.
+    QMacCocoaAutoReleasePool pool;
+    const QStringList& customTypes = qEnabledDraggedTypes();
+    if (currentCustomDragTypes == 0 || *currentCustomDragTypes != customTypes) {
+        if (currentCustomDragTypes == 0)
+            currentCustomDragTypes = new QStringList();
+        *currentCustomDragTypes = customTypes;
+        const NSString* mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
+        NSMutableArray *supportedTypes = [NSMutableArray arrayWithObjects:NSColorPboardType,
+                       NSFilenamesPboardType, NSStringPboardType,
+                       NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType,
+                       NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType,
+                       NSRulerPboardType, NSFileContentsPboardType, NSColorPboardType,
+                       NSRTFDPboardType, NSHTMLPboardType, NSPICTPboardType,
+                       NSURLPboardType, NSPDFPboardType, NSVCardPboardType,
+                       NSFilesPromisePboardType, NSInkTextPboardType,
+                       NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
+        // Add custom types supported by the application.
+        for (int i = 0; i < customTypes.size(); i++) {
+           [supportedTypes addObject:reinterpret_cast<const NSString *>(QCFString::toCFStringRef(customTypes[i]))];
+        }
+        [self registerForDraggedTypes:supportedTypes];
+    }
+}
+
+- (QWidget *)dragTargetHitTest:(id <NSDraggingInfo>)sender
+{
+    // Do a hittest to find the NSView under the
+    // mouse, and return the corresponding QWidget:
+    NSPoint windowPoint = [sender draggingLocation];
+    NSView *candidateView = [[self contentView] hitTest:windowPoint];
+    if (![candidateView isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]])
+        return 0;
+    return [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(candidateView) qt_qwidget];
+}
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+    // The user dragged something into the window. Send a draggingEntered message
+    // to the QWidget under the mouse. As the drag moves over the window, and over
+    // different widgets, we will handle enter and leave events from within 
+    // draggingUpdated below. The reason why we handle this ourselves rather than
+    // subscribing for drag events directly in QCocoaView is that calling 
+    // registerForDraggedTypes on the views will severly degrade initialization time
+    // for an application that uses a lot of drag subscribing widgets.
+
+    QWidget *target = [self dragTargetHitTest:sender];
+    if (!target)
+        return [super draggingEntered:sender];
+    if (target->testAttribute(Qt::WA_DropSiteRegistered) == false)
+        return NSDragOperationNone;
+
+    *currentDragTarget() = target;
+    return [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingEntered:sender];
+ }
+
+- (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender
+{
+    QWidget *target = [self dragTargetHitTest:sender];
+    if (!target)
+        return [super draggingUpdated:sender];
+
+    if (target == *currentDragTarget()) {
+        // The drag continues to move over the widget that we have sendt
+        // a draggingEntered message to. So just update the view:
+        return [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingUpdated:sender];
+    } else {
+        // The widget under the mouse has changed.
+        // So we need to fake enter/leave events:
+        if (*currentDragTarget())
+            [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingExited:sender];
+        if (target->testAttribute(Qt::WA_DropSiteRegistered) == false) {
+            *currentDragTarget() = 0;
+            return NSDragOperationNone;
+        }
+        *currentDragTarget() = target;
+        return [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingEntered:sender];
+    }
+}
+
+- (void)draggingExited:(id < NSDraggingInfo >)sender
+{
+    if (*currentDragTarget())
+        [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) draggingExited:sender];
+    else
+        [super draggingExited:sender];
+    *currentDragTarget() = 0;
+}
+
+- (BOOL)performDragOperation:(id < NSDraggingInfo >)sender
+{
+    BOOL dropAccepted = NO;
+    if (*currentDragTarget())
+        dropAccepted = [reinterpret_cast<NSView *>((*currentDragTarget())->winId()) performDragOperation:sender];
+    else
+        return [super performDragOperation:sender];
+    *currentDragTarget() = 0;
+    return dropAccepted;
 }
 

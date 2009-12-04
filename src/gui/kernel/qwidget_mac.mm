@@ -4554,9 +4554,12 @@ void QWidgetPrivate::registerDropSite(bool on)
 #ifndef QT_MAC_USE_COCOA
     SetControlDragTrackingEnabled(qt_mac_nativeview_for(q), on);
 #else
-    NSView *view = qt_mac_nativeview_for(q);
-    if (on && [view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
-        [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes];
+    NSWindow *win = qt_mac_window_for(q);
+    if (on) {
+        if ([win isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaWindow) class]])
+            [static_cast<QT_MANGLE_NAMESPACE(QCocoaWindow) *>(win) registerDragTypes];
+        else if ([win isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaPanel) class]])
+            [static_cast<QT_MANGLE_NAMESPACE(QCocoaPanel) *>(win) registerDragTypes];
     }
 #endif
 }
