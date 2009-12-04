@@ -586,7 +586,15 @@ void tst_QListView::indexAt()
     index = view.indexAt(QPoint(20,2 * sz.height()));
     QVERIFY(!index.isValid());
 
-
+    // Check when peeking out of the viewport bounds
+    index = view.indexAt(QPoint(view.viewport()->rect().width(), 0));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(-1, 0));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(20, view.viewport()->rect().height()));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(20, -1));
+    QVERIFY(!index.isValid());
 
     model.rCount = 30;
     QListViewShowEventListener view2;
@@ -1898,7 +1906,7 @@ void tst_QListView::taskQTBUG_5877_skippingItemInPageDownUp()
     QTest::qWaitForWindowShown(&vu);
 
     int itemHeight = vu.visualRect(model.index(0, 0)).height();
-    int visibleRowCount = vu.height() / itemHeight;
+    int visibleRowCount = vu.viewport()->height() / itemHeight;
     int scrolledRowCount = visibleRowCount - 1;
 
     for (int i = 0; i < currentItemIndexes.size(); ++i) {

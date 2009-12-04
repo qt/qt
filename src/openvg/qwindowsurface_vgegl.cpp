@@ -200,6 +200,42 @@ static QEglContext *createContext(QPaintDevice *device)
     else
         eglSwapInterval(context->display(), 1);
 
+#ifdef EGL_RENDERABLE_TYPE
+    // Has the user specified an explicit EGL configuration to use?
+    QByteArray configId = qgetenv("QT_VG_EGL_CONFIG");
+    if (!configId.isEmpty()) {
+        EGLint cfgId = configId.toInt();
+        EGLint properties[] = {
+            EGL_CONFIG_ID, cfgId,
+            EGL_NONE
+        };
+        EGLint matching = 0;
+        EGLConfig cfg;
+        if (eglChooseConfig
+                    (context->display(), properties, &cfg, 1, &matching) &&
+                matching > 0) {
+            // Check that the selected configuration actually supports OpenVG
+            // and then create the context with it.
+            EGLint id = 0;
+            EGLint type = 0;
+            eglGetConfigAttrib
+                (context->display(), cfg, EGL_CONFIG_ID, &id);
+            eglGetConfigAttrib
+                (context->display(), cfg, EGL_RENDERABLE_TYPE, &type);
+            if (cfgId == id && (type & EGL_OPENVG_BIT) != 0) {
+                context->setConfig(cfg);
+                if (!context->createContext()) {
+                    delete context;
+                    return 0;
+                }
+                return context;
+            } else {
+                qWarning("QT_VG_EGL_CONFIG: %d is not a valid OpenVG configuration", int(cfgId));
+            }
+        }
+    }
+#endif
+
     // Choose an appropriate configuration for rendering into the device.
     QEglProperties configProps;
     configProps.setPaintDeviceFormat(device);
@@ -211,19 +247,19 @@ static QEglContext *createContext(QPaintDevice *device)
     configProps.setValue(EGL_ALPHA_MASK_SIZE, 1);
 #endif
 #ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
-    configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT |
+    configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT |
                          EGL_VG_ALPHA_FORMAT_PRE_BIT);
     configProps.setRenderableType(QEgl::OpenVG);
     if (!context->chooseConfig(configProps)) {
         // Try again without the "pre" bit.
-        configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT);
+        configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
         if (!context->chooseConfig(configProps)) {
             delete context;
             return 0;
         }
     }
 #else
-    configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT);
+    configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
     configProps.setRenderableType(QEgl::OpenVG);
     if (!context->chooseConfig(configProps)) {
         delete context;

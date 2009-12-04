@@ -3780,12 +3780,19 @@ int QWindowsXPStyle::styleHint(StyleHint hint, const QStyleOption *option, const
             QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask *>(returnData);
             const QStyleOptionTitleBar *titlebar = qstyleoption_cast<const QStyleOptionTitleBar *>(option);
             if (mask && titlebar) {
+                // Note certain themes will not return the whole window frame but only the titlebar part when
+                // queried This function needs to return the entire window mask, hence we will only fetch the mask for the
+                // titlebar itself and add the remaining part of the window rect at the bottom.
+                int tbHeight = proxy()->pixelMetric(PM_TitleBarHeight, option, widget);
+                QRect titleBarRect = option->rect;
+                titleBarRect.setHeight(tbHeight);
                 XPThemeData themeData;
                 if (titlebar->titleBarState & Qt::WindowMinimized) {
-                    themeData = XPThemeData(widget, 0, QLatin1String("WINDOW"), WP_MINCAPTION, CS_ACTIVE, option->rect);
+                    themeData = XPThemeData(widget, 0, QLatin1String("WINDOW"), WP_MINCAPTION, CS_ACTIVE, titleBarRect);
                 } else
-                    themeData = XPThemeData(widget, 0, QLatin1String("WINDOW"), WP_CAPTION, CS_ACTIVE, option->rect);
-                mask->region = d->region(themeData);
+                    themeData = XPThemeData(widget, 0, QLatin1String("WINDOW"), WP_CAPTION, CS_ACTIVE, titleBarRect);
+                mask->region = d->region(themeData) +
+                               QRect(0, tbHeight, option->rect.width(), option->rect.height() - tbHeight);
             }
         }
         break;

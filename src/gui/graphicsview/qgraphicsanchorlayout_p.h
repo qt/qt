@@ -124,8 +124,7 @@ struct AnchorData : public QSimplexVariable {
         : QSimplexVariable(), from(0), to(0),
           minSize(0), prefSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
-          sizeAtMaximum(0), item(0),
-          graphicsAnchor(0), skipInPreferred(0),
+          sizeAtMaximum(0), item(0), graphicsAnchor(0),
           type(Normal), isLayoutAnchor(false),
           isCenterAnchor(false), orientation(0),
           dependency(Independent) {}
@@ -169,7 +168,6 @@ struct AnchorData : public QSimplexVariable {
     QGraphicsLayoutItem *item;
     QGraphicsAnchor *graphicsAnchor;
 
-    uint skipInPreferred : 1;
     uint type : 2;            // either Normal, Sequential or Parallel
     uint isLayoutAnchor : 1;  // if this anchor is an internal layout anchor
     uint isCenterAnchor : 1;

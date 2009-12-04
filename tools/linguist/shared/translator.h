@@ -55,10 +55,12 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_BOOTSTRAPPED
-struct QObject {
+class QObject {
+public:
     static QString tr(const char *sourceText, const char * = 0, int n = -1);
 };
-struct QCoreApplication : public QObject {
+class QCoreApplication : public QObject {
+public:
     enum Encoding { CodecForTr };
     static QString translate(const char *, const char *sourceText, const char * = 0,
                              Encoding = CodecForTr, int n = -1)

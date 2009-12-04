@@ -376,7 +376,10 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         t << "START EXTENSION s60/mifconv" << endl;
 
         QFileInfo iconInfo = fileInfo(icon);
-        QString iconPath = iconInfo.path();
+
+        QFileInfo bldinf(project->values("MAKEFILE").first());
+        QString iconPath = bldinf.dir().relativeFilePath(iconInfo.path());
+
         QString iconFile = iconInfo.baseName();
 
         QFileInfo iconTargetInfo = fileInfo(iconTargetFile);

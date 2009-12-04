@@ -138,7 +138,12 @@ void QLineControl::copy(QClipboard::Mode mode) const
 */
 void QLineControl::paste()
 {
-    insert(QApplication::clipboard()->text(QClipboard::Clipboard));
+    QString clip = QApplication::clipboard()->text(QClipboard::Clipboard);
+    if (!clip.isEmpty() || hasSelectedText()) {
+        separate(); //make it a separate undo/redo command
+        insert(clip);
+        separate();
+    }
 }
 
 #endif // !QT_NO_CLIPBOARD
@@ -1581,16 +1586,16 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         }
     }
 #endif //QT_NO_CLIPBOARD
-    else if (event == QKeySequence::MoveToStartOfLine) {
+    else if (event == QKeySequence::MoveToStartOfLine || event == QKeySequence::MoveToStartOfBlock) {
         home(0);
     }
-    else if (event == QKeySequence::MoveToEndOfLine) {
+    else if (event == QKeySequence::MoveToEndOfLine || event == QKeySequence::MoveToEndOfBlock) {
         end(0);
     }
-    else if (event == QKeySequence::SelectStartOfLine) {
+    else if (event == QKeySequence::SelectStartOfLine || event == QKeySequence::SelectStartOfBlock) {
         home(1);
     }
-    else if (event == QKeySequence::SelectEndOfLine) {
+    else if (event == QKeySequence::SelectEndOfLine || event == QKeySequence::SelectEndOfBlock) {
         end(1);
     }
     else if (event == QKeySequence::MoveToNextChar) {

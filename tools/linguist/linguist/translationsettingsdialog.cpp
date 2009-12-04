@@ -60,15 +60,7 @@ TranslationSettingsDialog::TranslationSettingsDialog(QWidget *parent)
     m_ui.srcCbLanguageList->model()->sort(0, Qt::AscendingOrder);
     m_ui.srcCbLanguageList->insertItem(0, QLatin1String("POSIX"), QVariant(QLocale::C));
 
-    for (int i = QLocale::AnyCountry + 1; i < QLocale::LastCountry; ++i) {
-        QString country = QLocale::countryToString(QLocale::Country(i));
-        m_ui.srcCbCountryList->addItem(country, QVariant(i));
-    }
-    m_ui.srcCbCountryList->model()->sort(0, Qt::AscendingOrder);
-    m_ui.srcCbCountryList->insertItem(0, tr("Any Country"), QVariant(QLocale::AnyCountry));
-
     m_ui.tgtCbLanguageList->setModel(m_ui.srcCbLanguageList->model());
-    m_ui.tgtCbCountryList->setModel(m_ui.srcCbCountryList->model());
 }
 
 void TranslationSettingsDialog::setDataModel(DataModel *dataModel)
@@ -85,6 +77,31 @@ void TranslationSettingsDialog::setPhraseBook(PhraseBook *phraseBook)
     m_dataModel = 0;
     QString fn = QFileInfo(phraseBook->fileName()).baseName();
     setWindowTitle(tr("Settings for '%1' - Qt Linguist").arg(fn));
+}
+
+static void fillCountryCombo(const QVariant &lng, QComboBox *combo)
+{
+    combo->clear();
+    QLocale::Language lang = QLocale::Language(lng.toInt());
+    if (lang != QLocale::C) {
+        foreach (QLocale::Country cntr, QLocale::countriesForLanguage(lang)) {
+            QString country = QLocale::countryToString(cntr);
+            combo->addItem(country, QVariant(cntr));
+        }
+        combo->model()->sort(0, Qt::AscendingOrder);
+    }
+    combo->insertItem(0, TranslationSettingsDialog::tr("Any Country"), QVariant(QLocale::AnyCountry));
+    combo->setCurrentIndex(0);
+}
+
+void TranslationSettingsDialog::on_srcCbLanguageList_currentIndexChanged(int idx)
+{
+    fillCountryCombo(m_ui.srcCbLanguageList->itemData(idx), m_ui.srcCbCountryList);
+}
+
+void TranslationSettingsDialog::on_tgtCbLanguageList_currentIndexChanged(int idx)
+{
+    fillCountryCombo(m_ui.tgtCbLanguageList->itemData(idx), m_ui.tgtCbCountryList);
 }
 
 void TranslationSettingsDialog::on_buttonBox_accepted()

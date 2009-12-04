@@ -2155,9 +2155,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
             wdi.titleWidth = tb->rect.width();
             QCFType<HIShapeRef> region;
             HIRect hirect = qt_hirectForQRect(tb->rect);
-            if (hirect.size.width == -1)
+            if (hirect.size.width <= 0)
                 hirect.size.width = 100;
-            if (hirect.size.height == -1)
+            if (hirect.size.height <= 0)
                 hirect.size.height = 30;
 
             HIThemeGetWindowShape(&hirect, &wdi, kWindowTitleBarRgn, &region);
@@ -4843,9 +4843,11 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 uint sc = SC_TitleBarMinButton;
                 ThemeTitleBarWidget tbw = kThemeWidgetCollapseBox;
                 bool active = titlebar->state & State_Active;
-                int border = 2;
-                titleBarRect.origin.x += border;
-                titleBarRect.origin.y -= border;
+                if (qMacVersion() < QSysInfo::MV_10_6) {
+                    int border = 2;
+                    titleBarRect.origin.x += border;
+                    titleBarRect.origin.y -= border;
+                }
 
                 while (sc <= SC_TitleBarCloseButton) {
                     if (sc & titlebar->subControls) {

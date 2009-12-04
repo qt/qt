@@ -229,7 +229,7 @@ void QMenuPrivate::updateActionRects() const
     Q_Q(const QMenu);
     if (!itemsDirty)
         return;
-		
+
     q->ensurePolished();
 
     //let's reinitialize the buffer
@@ -292,7 +292,7 @@ void QMenuPrivate::updateActionRects() const
         if (!action->isVisible() ||
             (collapsibleSeparators && previousWasSeparator && action->isSeparator()))
             continue; // we continue, this action will get an empty QRect
-        
+
         previousWasSeparator = action->isSeparator();
 
         //let the style modify the above size..
@@ -1139,7 +1139,7 @@ void QMenuPrivate::_q_actionTriggered()
             //we check the parent hierarchy
             QList< QPointer<QWidget> > list;
             for(QWidget *widget = q->parentWidget(); widget; ) {
-                if (qobject_cast<QMenu*>(widget) 
+                if (qobject_cast<QMenu*>(widget)
 #ifndef QT_NO_MENUBAR
                     || qobject_cast<QMenuBar*>(widget)
 #endif
@@ -1306,7 +1306,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     the addAction(), addActions() and insertAction() functions. An action
     is represented vertically and rendered by QStyle. In addition, actions
     can have a text label, an optional icon drawn on the very left side,
-    and shortcut key sequence such as "Ctrl+X". 
+    and shortcut key sequence such as "Ctrl+X".
 
     The existing actions held by a menu can be found with actions().
 
@@ -1906,9 +1906,9 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
                 pos.setX(qMax(p.x()-size.width(), screen.right()-desktopFrame-size.width()+1));
         } else {
             if (pos.x()+size.width()-1 > screen.right()-desktopFrame)
-                pos.setX(qMin(p.x()+size.width(), screen.right()-desktopFrame-size.width()+1));
+                pos.setX(screen.right()-desktopFrame-size.width()+1);
             if (pos.x() < screen.left()+desktopFrame)
-                pos.setX(qMax(p.x(), screen.left() + desktopFrame));
+                pos.setX(screen.left() + desktopFrame);
         }
         if (pos.y() + size.height() - 1 > screen.bottom() - desktopFrame) {
             if(snapToMouse)
