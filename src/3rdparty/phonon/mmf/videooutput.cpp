@@ -34,6 +34,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <coecntrl.h>
 
+#include <coemain.h>    // for CCoeEnv
+
 QT_BEGIN_NAMESPACE
 
 using namespace Phonon;
@@ -72,12 +74,8 @@ MMF::VideoOutput::VideoOutput
     setAttribute(Qt::WA_NoSystemBackground, true);
     setAutoFillBackground(false);
 
-    // Causes QSymbianControl::Draw not to BitBlt this widget's region of the
-    // backing store.  Since the backing store is (by default) a 16MU bitmap,
-    // blitting it results in this widget's screen region in the final
-    // framebuffer having opaque alpha values.  This in turn causes the video
-    // to be invisible when running on the target device.
-    qt_widget_private(this)->extraData()->disableBlit = true;
+    qt_widget_private(this)->extraData()->nativePaintMode = QWExtra::ZeroFill;
+    qt_widget_private(this)->extraData()->receiveNativePaintEvents = true;
 
     getVideoWindowRect();
     registerForAncestorMoved();
@@ -286,6 +284,19 @@ void MMF::VideoOutput::dump() const
     TRACE_0("Dumping VideoOutput:");
     dumper->dumpObject(*this);
 #endif
+}
+
+void MMF::VideoOutput::beginNativePaintEvent(const QRect& /*controlRect*/)
+{
+    emit beginVideoWindowNativePaint();
+}
+
+void MMF::VideoOutput::endNativePaintEvent(const QRect& /*controlRect*/)
+{
+    // Ensure that draw ops are executed into the WSERV output framebuffer
+    CCoeEnv::Static()->WsSession().Flush();
+
+    emit endVideoWindowNativePaint();
 }
 
 QT_END_NAMESPACE

@@ -47,6 +47,8 @@
 #include <QtCore/QTimerEvent>
 #include <QtGui/QShowEvent>
 #include <QtGui/QIcon>
+#include <QtCore/QBasicTimer>
+#include <QtGui/QAction>
 
 #include <Phonon/AudioOutput>
 #include <Phonon/BackendCapabilities>
@@ -67,6 +69,36 @@ class QMenu;
 class Ui_settings;
 QT_END_NAMESPACE
 
+class MediaPlayer;
+
+class MediaVideoWidget : public Phonon::VideoWidget
+{
+    Q_OBJECT
+
+public:
+    MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0);
+
+public slots:
+    // Over-riding non-virtual Phonon::VideoWidget slot
+    void setFullScreen(bool);
+
+signals:
+    void fullScreenChanged(bool);
+
+protected:
+    void mouseDoubleClickEvent(QMouseEvent *e);
+    void keyPressEvent(QKeyEvent *e);
+    bool event(QEvent *e);
+    void timerEvent(QTimerEvent *e);
+    void dropEvent(QDropEvent *e);
+    void dragEnterEvent(QDragEnterEvent *e);
+
+private:
+    MediaPlayer *m_player;
+    QBasicTimer m_timer;
+    QAction m_action;
+};
+
 class MediaPlayer :
             public QWidget
 {
@@ -74,7 +106,7 @@ class MediaPlayer :
 public:
     MediaPlayer(const QString &,
                 const bool hasSmallScreen);
-    
+
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
     void dropEvent(QDropEvent *e);
@@ -82,7 +114,7 @@ public:
     void setFile(const QString &text);
     void initVideoWindow();
     void initSettingsDialog();
-    
+
 public slots:
     void openFile();
     void rewind();
@@ -104,7 +136,7 @@ private slots:
     void stateChanged(Phonon::State newstate, Phonon::State oldstate);
     void effectChanged();
     void showSettingsDialog();
-    void showContextMenu(const QPoint &);
+    void showContextMenu(const QPoint& point);
     void bufferStatus(int percent);
     void openUrl();
     void openRamFile();
@@ -112,7 +144,7 @@ private slots:
     void hasVideoChanged(bool);
 
 private:
-    void playPauseForDialog();
+    bool playPauseForDialog();
 
     QIcon playIcon;
     QIcon pauseIcon;
@@ -131,11 +163,12 @@ private:
     Phonon::Effect *nextEffect;
     QDialog *settingsDialog;
     Ui_settings *ui;
-        
+    QAction *m_fullScreenAction;
+
     QWidget m_videoWindow;
     Phonon::MediaObject m_MediaObject;
     Phonon::AudioOutput m_AudioOutput;
-    Phonon::VideoWidget *m_videoWidget;
+    MediaVideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
     const bool m_hasSmallScreen;
 };
