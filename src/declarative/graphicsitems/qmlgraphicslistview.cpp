@@ -636,8 +636,6 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
             releaseItem(item);
             changed = true;
         }
-    } else {
-        qDebug() << "lazyRelease" << lazyRelease << "changed";
     }
     if (changed) {
         if (visibleItems.count())
