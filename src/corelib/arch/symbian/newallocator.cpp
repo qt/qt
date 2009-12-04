@@ -49,6 +49,7 @@
 #include <e32cmn.h>
 #include <hal.h>
 #include <e32panic.h>
+#define RND_SDK
 #ifndef RND_SDK
 struct SThreadCreateInfo
     {
@@ -84,17 +85,19 @@ struct SStdEpocThreadCreateInfo : public SThreadCreateInfo
 //This would need kernel support to do properly.
 #define NO_RESERVE_MEMORY
 
-//The BTRACE debug framework requires Symbian OS 9.3 or higher.
-//Required header files are not included in S60 3.2 and 5.0 SDKs, but
+//The BTRACE debug framework requires Symbian OS 9.4 or higher.
+//Required header files are not included in S60 5.0 SDKs, but
 //they are available for open source versions of Symbian OS.
+//Note that although Symbian OS 9.3 supports BTRACE, the usage in this file
+//depends on 9.4 header files.
 
 //This debug flag uses BTRACE to emit debug traces to identify the heaps.
 //Note that it uses the ETest1 trace category which is not reserved
-//#define TRACING_HEAPS
+#define TRACING_HEAPS
 //This debug flag uses BTRACE to emit debug traces to aid with debugging
 //allocs, frees & reallocs. It should be used together with the KUSERHEAPTRACE
 //kernel trace flag to enable heap tracing.
-//#define TRACING_ALLOCS
+#define TRACING_ALLOCS
 
 #if defined(TRACING_ALLOCS) || defined(TRACING_HEAPS)
 #include <e32btrace.h>
@@ -156,17 +159,11 @@ RNewAllocator::RNewAllocator(TInt aMaxLength, TInt aAlign, TBool aSingleThread)
 
 	Init(0, 0, 0);
 	}
-#ifdef TRACING_HEAPS
-RNewAllocator::RNewAllocator(TInt aChunkHandle, TInt aOffset, TInt aMinLength, TInt aMaxLength, TInt aGrowBy,
-			TInt aAlign, TBool aSingleThread)
-		: iMinLength(aMinLength), iMaxLength(aMaxLength), iOffset(aOffset), iChunkHandle(aChunkHandle), iNestingLevel(0), iAllocCount(0),
-			iAlign(aAlign),iFailType(ENone), iTestData(NULL), iChunkSize(aMinLength),iHighWaterMark(aMinLength)
-#else
+
 RNewAllocator::RNewAllocator(TInt aChunkHandle, TInt aOffset, TInt aMinLength, TInt aMaxLength, TInt aGrowBy,
 			TInt aAlign, TBool aSingleThread)
 		: iMinLength(aMinLength), iMaxLength(aMaxLength), iOffset(aOffset), iChunkHandle(aChunkHandle), iAlign(aAlign), iNestingLevel(0), iAllocCount(0),
-			iFailType(ENone), iTestData(NULL), iChunkSize(aMinLength)
-#endif
+			iFailType(ENone), iTestData(NULL), iChunkSize(aMinLength),iHighWaterMark(aMinLength)
 	{
 	iPageSize = malloc_getpagesize;
 	__ASSERT_ALWAYS(aOffset >=0, User::Panic(KDLHeapPanicCategory, ETHeapNewBadOffset));
@@ -393,112 +390,79 @@ void RNewAllocator::Free(TAny* aPtr)
 void RNewAllocator::Reset()
 	{
 	// TODO free everything
+    User::Panic(_L("RNewAllocator"), 1); //this should never be called
 	}
 
+inline void RNewAllocator::TraceReAlloc(TAny* aPtr, TInt aSize, TAny* aNewPtr, TInt aZone)
+	{
 #ifdef TRACING_ALLOCS
-TAny* RNewAllocator::DLReAllocImpl(TAny* aPtr, TInt aSize)
-	{
-	if(ptrdiff(aPtr,this)>=0)
-	{
-		// original cell is in DL zone
-		if(aSize >= slab_threshold && (aSize>>page_threshold)==0)
-			{
-			// and so is the new one
-			Lock();
-			TAny* addr = dlrealloc(aPtr,aSize);
-			Unlock();
-			return addr;
-			}
-	}
-	else if(lowbits(aPtr,pagesize)<=cellalign)
-	{
-		// original cell is either NULL or in paged zone
-		if (!aPtr)
-			return Alloc(aSize);
-		if(aSize >> page_threshold)
-			{
-			// and so is the new one
-			Lock();
-			TAny* addr = paged_reallocate(aPtr,aSize);
-			Unlock();
-			return addr;
-			}
-	}
-	else
-	{
-		// original cell is in slab znoe
-		if(aSize <= header_size(slab::slabfor(aPtr)->header))
-			return aPtr;
-	}
-	TAny* newp = Alloc(aSize);
-	if(newp)
-	{
-		TInt oldsize = AllocLen(aPtr);
-		memcpy(newp,aPtr,oldsize<aSize?oldsize:aSize);
-		Free(aPtr);
-	}
-	return newp;
-
-	}
+    if (aNewPtr && (iFlags & ETraceAllocs))
+        {
+        TUint32 traceData[3];
+        traceData[0] = AllocLen(aNewPtr);
+        traceData[1] = aSize;
+        traceData[2] = (TUint32)aPtr;
+        BTraceContextN(BTrace::EHeap, BTrace::EHeapReAlloc,(TUint32)this, (TUint32)aNewPtr,traceData, sizeof(traceData));
+        
+        //workaround for SAW not handling reallocs properly
+        if(aZone >= 0 && aPtr != aNewPtr) {
+            BTraceContextN(BTrace::EHeap, BTrace::EHeapFree, (TUint32)this, (TUint32)aPtr, &aZone, sizeof(aZone));
+        }
+        }
+#else
+    Q_UNUSED(aPtr);
+    Q_UNUSED(aSize);
+    Q_UNUSED(aNewPtr);
+    Q_UNUSED(aZone);
 #endif
+	}
+
 TAny* RNewAllocator::ReAlloc(TAny* aPtr, TInt aSize, TInt /*aMode = 0*/)
 	{
-#ifdef  TRACING_ALLOCS
-	TAny* retval = DLReAllocImpl(aPtr,aSize);
-
-#ifdef TRACING_ALLOCS
-	if (retval && (iFlags & ETraceAllocs))
-		{
-		TUint32 traceData[3];
-		traceData[0] = AllocLen(retval);
-		traceData[1] = aSize;
-		traceData[2] = (TUint32)aPtr;
-		BTraceContextN(BTrace::EHeap, BTrace::EHeapReAlloc,(TUint32)this, (TUint32)retval,traceData, sizeof(traceData));
-		}
-#endif
-	return retval;
-#else
-	if(ptrdiff(aPtr,this)>=0)
-	{
-		// original cell is in DL zone
-		if(aSize >= slab_threshold && (aSize>>page_threshold)==0)
-			{
-			// and so is the new one
-			Lock();
-			TAny* addr = dlrealloc(aPtr,aSize);
-			Unlock();
-			return addr;
-			}
-	}
-	else if(lowbits(aPtr,pagesize)<=cellalign)
-	{
-		// original cell is either NULL or in paged zone
-		if (!aPtr)
-			return Alloc(aSize);
-		if(aSize >> page_threshold)
-			{
-			// and so is the new one
-			Lock();
-			TAny* addr = paged_reallocate(aPtr,aSize);
-			Unlock();
-			return addr;
-			}
-	}
-	else
-	{
-		// original cell is in slab znoe
-		if(aSize <= header_size(slab::slabfor(aPtr)->header))
-			return aPtr;
-	}
-	TAny* newp = Alloc(aSize);
-	if(newp)
-	{
-		TInt oldsize = AllocLen(aPtr);
-		memcpy(newp,aPtr,oldsize<aSize?oldsize:aSize);
-		Free(aPtr);
-	}
-	return newp;
-#endif
+    if(ptrdiff(aPtr,this)>=0)
+    {
+        // original cell is in DL zone
+        if(aSize >= slab_threshold && (aSize>>page_threshold)==0)
+            {
+            // and so is the new one
+            Lock();
+            TAny* addr = dlrealloc(aPtr,aSize);
+            Unlock();
+            TraceReAlloc(aPtr, aSize, addr, 0);
+            return addr;
+            }
+    }
+    else if(lowbits(aPtr,pagesize)<=cellalign)
+    {
+        // original cell is either NULL or in paged zone
+        if (!aPtr)
+            return Alloc(aSize);
+        if(aSize >> page_threshold)
+            {
+            // and so is the new one
+            Lock();
+            TAny* addr = paged_reallocate(aPtr,aSize);
+            Unlock();
+            TraceReAlloc(aPtr, aSize, addr, 2);
+            return addr;
+            }
+    }
+    else
+    {
+        // original cell is in slab znoe
+        if(aSize <= header_size(slab::slabfor(aPtr)->header)) {
+            TraceReAlloc(aPtr, aSize, aPtr, 1);
+            return aPtr;
+        }
+    }
+    TAny* newp = Alloc(aSize);
+    if(newp)
+    {
+        TInt oldsize = AllocLen(aPtr);
+        memcpy(newp,aPtr,oldsize<aSize?oldsize:aSize);
+        Free(aPtr);
+    }
+    return newp;
 	}
 
 TInt RNewAllocator::Available(TInt& aBiggestBlock) const

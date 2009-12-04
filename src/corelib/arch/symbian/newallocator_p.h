@@ -151,6 +151,7 @@ protected:
 	TInt iChunkSize;				// currently allocated bytes in the chunk (== chunk.Size())
 	malloc_state iGlobalMallocState;
 	malloc_params mparams;
+	TInt iHighWaterMark;
 private:
 	void Init(TInt aBitmapSlab, TInt aPagePower, size_t aTrimThreshold);/*Init internal data structures*/
 	inline int init_mparams(size_t aTrimThreshold /*= DEFAULT_TRIM_THRESHOLD*/);
@@ -246,7 +247,7 @@ private:
 	// paged allocator structures
 	enum {npagecells=4};
 	pagecell pagelist[npagecells];		// descriptors for page-aligned large allocations
-	TAny* DLReAllocImpl(TAny* aPtr, TInt aSize);
+	inline void TraceReAlloc(TAny* aPtr, TInt aSize, TAny* aNewPtr, TInt aZone);
 	// to track maximum used
 	//TInt iHighWaterMark;
 
