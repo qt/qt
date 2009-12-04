@@ -188,7 +188,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
         }
     }
     if (ctx == EGL_NO_CONTEXT) {
-        ctx = eglCreateContext(dpy, cfg, 0, contextProps.properties());
+        ctx = eglCreateContext(dpy, cfg, EGL_NO_CONTEXT, contextProps.properties());
         if (ctx == EGL_NO_CONTEXT) {
             qWarning() << "QEglContext::createContext(): Unable to create EGL context:" << errorString(eglGetError());
             return false;
