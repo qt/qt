@@ -45,16 +45,14 @@
     \ingroup platform-specific
     \brief A summary of known issues in Qt %VERSION% at the time of release.
 
-    This page documents known problems with the packaging and installation in
-    Qt %VERSION%, as well as issues with third party software that we have
-    not been able to work around. For a list of such issues in previous Qt
-    versions refer to this page in the respective documentation.
+    An up-to-date list of known issues with Qt %VERSION% can be found via the
+    \l{http://bugreports.qt.nokia.com/}{Qt Bug Tracker}.
 
     For a list list of known bugs in Qt %VERSION%, see the \l{Task Tracker}
     on the Qt website.
 
     An overview of known issues may also be found at:
-    \l{http://qt.gitorious.org/qt/pages/Qt460BetaKnownIssues}
+    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues}
     {Known Issues Wiki}.
 
     \section1 Installation Issues
