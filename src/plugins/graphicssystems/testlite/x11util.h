@@ -44,6 +44,8 @@
 
 #include <QObject>
 #include <QImage>
+#include <qtimer.h>
+#include <QDateTime>
 
 #include <private/qt_x11_p.h>
 
@@ -52,6 +54,7 @@
 
 
 class MyWindow;
+class MyX11Cursors;
 
 class MyDisplay : public QObject
 {
@@ -77,6 +80,8 @@ public: //###
     int physicalHeight;
 
     QList<MyWindow*> windowList;
+
+    MyX11Cursors * cursors;
 };
 
 class QTestLiteWindowSurface; //### abstract callback interface, anyone?
@@ -109,7 +114,9 @@ public:
 
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
     void setVisible(bool visible);
-    void setCursorShape(int cshape);
+    void setCursor(QCursor * cursor);
+    Cursor createCursorShape(int cshape);
+    Cursor createCursorBitmap(QCursor * cursor);
 
     void setWindowTitle(const QString &title);
 
@@ -123,10 +130,62 @@ public: //###
     GC gc;
 
     QTestLiteWindowSurface *windowSurface;
+
+    int currentCursor;
 };
 
+class MyX11CursorNode
+{
+public:
+    MyX11CursorNode(int id, Cursor c) { idValue = id; cursorValue = c; refCount = 1; }
+    QDateTime expiration() { return t; }
+    void setExpiration(QDateTime val) { t = val; }
+    MyX11CursorNode * ante() { return before; }
+    void setAnte(MyX11CursorNode *node) { before = node; }
+    MyX11CursorNode * post() { return after; }
+    void setPost(MyX11CursorNode *node) { after = node; }
+    Cursor cursor() { return cursorValue; }
+    int id() { return idValue; }
+    unsigned int refCount;
 
+private:
+    MyX11CursorNode *before;
+    MyX11CursorNode *after;
+    QDateTime t;
+    Cursor cursorValue;
+    int idValue;
 
+    Display * display;
+};
 
+class MyX11Cursors : public QObject
+{
+    Q_OBJECT
+public:
+    MyX11Cursors(Display * d);
+    ~MyX11Cursors() { timer.stop(); }
+    void incrementUseCount(int id);
+    void decrementUseCount(int id);
+    void createNode(int id, Cursor c);
+    bool exists(int id) { return lookupMap.contains(id); }
+    Cursor cursor(int id);
+public slots:
+    void timeout();
+
+private:
+    void removeNode(MyX11CursorNode *node);
+    void insertNode(MyX11CursorNode *node);
+
+    // linked list of cursors currently not assigned to any window
+    MyX11CursorNode *firstExpired;
+    MyX11CursorNode *lastExpired;
+
+    QHash<int, MyX11CursorNode *> lookupMap;
+    QTimer timer;
+
+    Display *display;
+
+    int removalDelay;
+};
 
 #endif // MYX11UTIL_H

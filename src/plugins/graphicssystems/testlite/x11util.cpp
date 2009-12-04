@@ -57,6 +57,10 @@
 
 #include <X11/cursorfont.h>
 
+#include <QBitmap>
+#include <QCursor>
+#include <QDateTime>
+#include <QPixmap>
 
 //### remove stuff we don't want from qt_x11_p.h
 #undef ATOM
@@ -325,6 +329,7 @@ MyDisplay::MyDisplay()
     wmProtocolsAtom = XInternAtom (display, "WM_PROTOCOLS", False);
     wmDeleteWindowAtom = XInternAtom (display, "WM_DELETE_WINDOW", False);
 
+    cursors = new MyX11Cursors(display);
 }
 
 
@@ -401,6 +406,7 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
 
     setWindowTitle(QLatin1String("Qt Lighthouse"));
 
+    currentCursor = -1;
 }
 
 
@@ -802,69 +808,226 @@ void MyWindow::setVisible(bool visible)
         XUnmapWindow(xd->display, window);
 }
 
-
-void MyWindow::setCursorShape(int cshape)
+MyX11Cursors::MyX11Cursors(Display * d) : firstExpired(0), lastExpired(0), display(d), removalDelay(3)
 {
-    if (cshape < 0 || cshape > Qt::LastCursor)
-        return;
+    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
+}
 
-    static Cursor cursors[Qt::LastCursor+1] = {XNone};
-
-    Cursor cursor = cursors[cshape];
-    if (!cursor) {
-        switch (cshape) {
-        case Qt::ArrowCursor:
-            cursor =  XCreateFontCursor(xd->display, XC_left_ptr);
-            break;
-        case Qt::UpArrowCursor:
-            cursor =  XCreateFontCursor(xd->display, XC_center_ptr);
-            break;
-        case Qt::CrossCursor:
-            cursor =  XCreateFontCursor(xd->display, XC_crosshair);
-            break;
-        case Qt::WaitCursor:
-            cursor =  XCreateFontCursor(xd->display, XC_watch);
-            break;
-        case Qt::IBeamCursor:
-            cursor =  XCreateFontCursor(xd->display, XC_xterm);
-            break;
-        case Qt::SizeAllCursor:
-            cursor =  XCreateFontCursor(xd->display, XC_fleur);
-            break;
-        case Qt::PointingHandCursor:
-            cursor =  XCreateFontCursor(xd->display, XC_hand2);
-            break;
-        case Qt::SizeBDiagCursor:
-            cursor =  XCreateFontCursor(xd->display, XC_top_right_corner);
-            break;
-        case Qt::SizeFDiagCursor:
-            cursor =  XCreateFontCursor(xd->display, XC_bottom_right_corner);
-            break;
-        case Qt::SizeVerCursor:
-        case Qt::SplitVCursor:
-            cursor = XCreateFontCursor(xd->display, XC_sb_v_double_arrow);
-            break;
-        case Qt::SizeHorCursor:
-        case Qt::SplitHCursor:
-            cursor = XCreateFontCursor(xd->display, XC_sb_h_double_arrow);
-            break;
-        case Qt::WhatsThisCursor:
-            cursor = XCreateFontCursor(xd->display, XC_question_arrow);
-            break;
-        case Qt::ForbiddenCursor:
-            cursor = XCreateFontCursor(xd->display, XC_circle);
-            break;
-        case Qt::BusyCursor:
-            cursor = XCreateFontCursor(xd->display, XC_watch);
-            break;
-
-        default: //default cursor for all the rest
-            break;
-        }
-        cursors[cshape] = cursor;
+void MyX11Cursors::insertNode(MyX11CursorNode * node)
+{
+    QDateTime now = QDateTime::currentDateTime();
+    QDateTime timeout = now.addSecs(removalDelay);
+    node->setExpiration(timeout);
+    node->setPost(0);
+    if (lastExpired) {
+        lastExpired->setPost(node);
+        node->setAnte(lastExpired);
     }
-    XDefineCursor(xd->display, window, cursor);
+    lastExpired = node;
+    if (!firstExpired) {
+        firstExpired = node;
+        node->setAnte(0);
+        int interval = removalDelay * 1000;
+        timer.setInterval(interval);
+        timer.start();
+    }
+}
+
+void MyX11Cursors::removeNode(MyX11CursorNode * node)
+{
+    MyX11CursorNode *pre = node->ante();
+    MyX11CursorNode *post = node->post();
+    if (pre)
+        pre->setPost(post);
+    if (post)
+        post->setAnte(pre);
+    if (node == lastExpired)
+        lastExpired = pre;
+    if (node == firstExpired) {
+        firstExpired = post;
+        if (!firstExpired) {
+            timer.stop();
+            return;
+        }
+        int interval = QDateTime::currentDateTime().secsTo(firstExpired->expiration()) * 1000;
+        timer.stop();
+        timer.setInterval(interval);
+        timer.start();
+    }
+}
+
+void MyX11Cursors::incrementUseCount(int id)
+{
+    MyX11CursorNode * node = lookupMap.value(id);
+    Q_ASSERT(node);
+    if (!node->refCount)
+        removeNode(node);
+    node->refCount++;
+}
+
+void MyX11Cursors::decrementUseCount(int id)
+{
+    MyX11CursorNode * node = lookupMap.value(id);
+    Q_ASSERT(node);
+    node->refCount--;
+    if (!node->refCount)
+        insertNode(node);
+}
+
+void MyX11Cursors::createNode(int id, Cursor c)
+{
+    MyX11CursorNode * node = new MyX11CursorNode(id, c);
+    lookupMap.insert(id, node);
+}
+
+void MyX11Cursors::timeout()
+{
+    MyX11CursorNode * node;
+    node = firstExpired;
+    QDateTime now = QDateTime::currentDateTime();
+    while (node && now.secsTo(node->expiration()) < 1) {
+        Cursor c = node->cursor();
+        int id = node->id();
+        lookupMap.take(id);
+        MyX11CursorNode * tmp = node;
+        node = node->post();
+        delete tmp;
+        XFreeCursor(display, c);
+    }
+    firstExpired = node;
+    if (node == 0) {
+        timer.stop();
+        lastExpired = 0;
+    }
+    else {
+        int interval = QDateTime::currentDateTime().secsTo(firstExpired->expiration()) * 1000;
+        timer.setInterval(interval);
+        timer.start();
+    }
+}
+
+Cursor MyX11Cursors::cursor(int id)
+{
+    MyX11CursorNode * node = lookupMap.value(id);
+    Q_ASSERT(node);
+    return node->cursor();
+}
+
+void MyWindow::setCursor(QCursor * cursor)
+{
+    int id = cursor->handle();
+    if (id == currentCursor)
+        return;
+    Cursor c;
+    if (!xd->cursors->exists(id)) {
+        if (cursor->shape() == Qt::BitmapCursor)
+            c = createCursorBitmap(cursor);
+        else
+            c = createCursorShape(cursor->shape());
+        if (!c) {
+            return;
+        }
+        xd->cursors->createNode(id, c);
+    } else {
+        xd->cursors->incrementUseCount(id);
+        c = xd->cursors->cursor(id);
+    }
+
+    if (currentCursor != -1)
+        xd->cursors->decrementUseCount(currentCursor);
+    currentCursor = id;
+
+    XDefineCursor(xd->display, window, c);
     XFlush(xd->display);
+}
+
+Cursor MyWindow::createCursorBitmap(QCursor * cursor)
+{
+/*
+    XColor bg, fg;
+    bg.red   = 255 << 8;
+    bg.green = 255 << 8;
+    bg.blue  = 255 << 8;
+    fg.red   = 0;
+    fg.green = 0;
+    fg.blue  = 0;
+    QPoint spot = cursor->hotSpot();
+    Window rootwin = window;
+
+    const QBitmap * map = cursor->bitmap();
+    char * mapBits = reinterpret_cast<char *>(map->toImage().bits());
+    const QBitmap * mask = cursor->mask();
+    char * maskBits = reinterpret_cast<char *>(mask->toImage().bits());
+
+    Pixmap cp = XCreateBitmapFromData(xd->display, rootwin, mapBits, map->width(), map->height());
+    Pixmap mp = XCreateBitmapFromData(xd->display, rootwin, maskBits, map->width(), map->height());
+    Cursor c = XCreatePixmapCursor(xd->display, cp, mp, &fg, &bg, spot.x(), spot.y());
+    XFreePixmap(xd->display, cp);
+    XFreePixmap(xd->display, mp);
+
+    return c;
+*/
+    // correct pixmap cursor parsing not implemented yet
+    return createCursorShape(Qt::ArrowCursor);
+}
+
+Cursor MyWindow::createCursorShape(int cshape)
+{
+    Cursor cursor = 0;
+
+    if (cshape < 0 || cshape > Qt::LastCursor)
+        return 0;
+
+    switch (cshape) {
+    case Qt::ArrowCursor:
+        cursor =  XCreateFontCursor(xd->display, XC_left_ptr);
+        break;
+    case Qt::UpArrowCursor:
+        cursor =  XCreateFontCursor(xd->display, XC_center_ptr);
+        break;
+    case Qt::CrossCursor:
+        cursor =  XCreateFontCursor(xd->display, XC_crosshair);
+        break;
+    case Qt::WaitCursor:
+        cursor =  XCreateFontCursor(xd->display, XC_watch);
+        break;
+    case Qt::IBeamCursor:
+        cursor =  XCreateFontCursor(xd->display, XC_xterm);
+        break;
+    case Qt::SizeAllCursor:
+        cursor =  XCreateFontCursor(xd->display, XC_fleur);
+        break;
+    case Qt::PointingHandCursor:
+        cursor =  XCreateFontCursor(xd->display, XC_hand2);
+        break;
+    case Qt::SizeBDiagCursor:
+        cursor =  XCreateFontCursor(xd->display, XC_top_right_corner);
+        break;
+    case Qt::SizeFDiagCursor:
+        cursor =  XCreateFontCursor(xd->display, XC_bottom_right_corner);
+        break;
+    case Qt::SizeVerCursor:
+    case Qt::SplitVCursor:
+        cursor = XCreateFontCursor(xd->display, XC_sb_v_double_arrow);
+        break;
+    case Qt::SizeHorCursor:
+    case Qt::SplitHCursor:
+        cursor = XCreateFontCursor(xd->display, XC_sb_h_double_arrow);
+        break;
+    case Qt::WhatsThisCursor:
+        cursor = XCreateFontCursor(xd->display, XC_question_arrow);
+        break;
+    case Qt::ForbiddenCursor:
+        cursor = XCreateFontCursor(xd->display, XC_circle);
+        break;
+    case Qt::BusyCursor:
+        cursor = XCreateFontCursor(xd->display, XC_watch);
+        break;
+
+    default: //default cursor for all the rest
+        break;
+    }
+    return cursor;
 }
 
 

@@ -70,7 +70,7 @@ public:
         if (!ws)
             return;
 
-        ws->setCursor(cursor->shape());
+        ws->setCursor(cursor);
     }
 };
 

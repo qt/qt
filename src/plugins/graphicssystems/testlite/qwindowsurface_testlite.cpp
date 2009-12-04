@@ -595,8 +595,8 @@ void QTestLiteWindowSurface::setWindowTitle(const QString &title)
     xw->setWindowTitle(title);
 }
 
-void QTestLiteWindowSurface::setCursor(Qt::CursorShape shape)
+void QTestLiteWindowSurface::setCursor(QCursor *cursor)
 {
-    xw->setCursorShape(shape);
+    xw->setCursor(cursor);
 }
 QT_END_NAMESPACE

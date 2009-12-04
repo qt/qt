@@ -83,7 +83,7 @@ public:
     void lower();
     void setWindowTitle(const QString &title);
 
-    void setCursor(Qt::CursorShape shape);
+    void setCursor(QCursor * cursor);
 
 private:
     QTestLiteGraphicsSystem *mGraphicsSystem;
