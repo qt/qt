@@ -209,7 +209,7 @@ QmlPropertyChangesParser::compileList(QList<QPair<QByteArray, QVariant> > &list,
 
             QmlCustomParserProperty prop =
                 qvariant_cast<QmlCustomParserProperty>(value);
-            QByteArray pre = propName + ".";
+            QByteArray pre = propName + '.';
             compileList(list, pre, prop);
 
         } else {
@@ -384,7 +384,7 @@ QmlPropertyChanges::ActionList QmlPropertyChanges::actions()
             a.restore = restoreEntryValues();
 
             if (a.property.propertyType() == QVariant::Url &&
-                (a.toValue.type() == QVariant::String || a.toValue.type() == QVariant::ByteArray) && !a.toValue.isNull())
+                (a.toValue.userType() == QVariant::String || a.toValue.userType() == QVariant::ByteArray) && !a.toValue.isNull())
                 a.toValue.setValue(qmlContext(this)->resolvedUrl(QUrl(a.toValue.toString())));
 
             list << a;

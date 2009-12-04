@@ -460,7 +460,7 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
 
     QByteArray name = uri;
     if (uri)
-        name += "/";
+        name += '/';
     name += cname;
     name.replace('.','/');
 

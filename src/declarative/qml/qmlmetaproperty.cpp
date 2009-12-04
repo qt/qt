@@ -455,7 +455,7 @@ QString QmlMetaProperty::name() const
         // ###
         if (!d->object) {
         } else if (type() & ValueTypeProperty) {
-            QString rv = d->core.name(d->object) + QLatin1String(".");
+            QString rv = d->core.name(d->object) + QLatin1Char('.');
 
             QmlEnginePrivate *ep = d->context?QmlEnginePrivate::get(d->context->engine()):0;
             QmlValueType *valueType = 0;
@@ -724,16 +724,16 @@ bool QmlMetaPropertyPrivate::writeEnumProperty(const QMetaProperty &prop, int id
     QVariant v = value;
     if (prop.isEnumType()) {
         QMetaEnum menum = prop.enumerator();
-        if (v.type() == QVariant::String
+        if (v.userType() == QVariant::String
 #ifdef QT3_SUPPORT
-            || v.type() == QVariant::CString
+            || v.userType() == QVariant::CString
 #endif
             ) {
             if (prop.isFlagType())
                 v = QVariant(menum.keysToValue(value.toByteArray()));
             else
                 v = QVariant(menum.keyToValue(value.toByteArray()));
-        } else if (v.type() != QVariant::Int && v.type() != QVariant::UInt) {
+        } else if (v.userType() != QVariant::Int && v.userType() != QVariant::UInt) {
             int enumMetaTypeId = QMetaType::type(QByteArray(menum.scope()) + "::" + menum.name());
             if ((enumMetaTypeId == 0) || (v.userType() != enumMetaTypeId) || !v.constData())
                 return false;
@@ -803,7 +803,7 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
         QMetaProperty prop = object->metaObject()->property(property.coreIndex);
         QVariant v = value;
         // Enum values come through the script engine as doubles
-        if (value.type() == QVariant::Double) { 
+        if (value.userType() == QVariant::Double) { 
             double integral;
             double fractional = modf(value.toDouble(), &integral);
             if (qFuzzyCompare(fractional, (double)0.0))

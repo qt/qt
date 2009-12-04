@@ -169,7 +169,7 @@ public:
   };
 
   static const char  *const spell [];
-  static const int            lhs [];
+  static const unsigned char            lhs [];
   static const int            rhs [];
   static const int   goto_default [];
   static const int action_default [];
