@@ -1317,9 +1317,7 @@ void QGraphicsAnchorLayoutPrivate::restoreVertices(Orientation orientation)
     for (int i = parallelAnchors.count() - 1; i >= 0; --i) {
         ParallelAnchorData *parallel = static_cast<ParallelAnchorData *>(parallelAnchors.at(i));
         restoreSimplifiedConstraints(parallel);
-        delete parallel;
     }
-    parallelAnchors.clear();
 
     // Then, we will restore the vertices in the inverse order of creation, this way we ensure that
     // the vertex being restored was not wrapped by another simplification.
@@ -1365,6 +1363,8 @@ void QGraphicsAnchorLayoutPrivate::restoreVertices(Orientation orientation)
 
         delete pair;
     }
+    qDeleteAll(parallelAnchors);
+    parallelAnchors.clear();
     toRestore.clear();
 }
 
