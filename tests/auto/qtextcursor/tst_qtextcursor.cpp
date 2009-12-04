@@ -149,6 +149,8 @@ private slots:
 
     void adjustCursorsOnInsert();
 
+    void cursorPositionWithBlockUndoAndRedo();
+
 private:
     int blockCount();
 
@@ -1747,9 +1749,33 @@ void tst_QTextCursor::adjustCursorsOnInsert()
     QCOMPARE(selection.anchor(), posAfter);
     doc->undo();
 
+}
+void tst_QTextCursor::cursorPositionWithBlockUndoAndRedo()
+{
+    cursor.insertText("AAAABBBBCCCCDDDD");
+    cursor.beginEditBlock();
+    cursor.setPosition(12);
+    int cursorPositionBefore = cursor.position();
+    cursor.insertText("*");
+    cursor.setPosition(8);
+    cursor.insertText("*");
+    cursor.setPosition(4);
+    cursor.insertText("*");
+    cursor.setPosition(0);
+    cursor.insertText("*");
+    int cursorPositionAfter = cursor.position();
+    cursor.endEditBlock();
 
+    QVERIFY(doc->toPlainText() == "*AAAA*BBBB*CCCC*DDDD");
+    QCOMPARE(12, cursorPositionBefore);
+    QCOMPARE(1, cursorPositionAfter);
 
-
+    doc->undo(&cursor);
+    QVERIFY(doc->toPlainText() == "AAAABBBBCCCCDDDD");
+    QCOMPARE(cursor.position(), cursorPositionBefore);
+    doc->redo(&cursor);
+    QVERIFY(doc->toPlainText() == "*AAAA*BBBB*CCCC*DDDD");
+    QCOMPARE(cursor.position(), cursorPositionAfter);
 }
 
 QTEST_MAIN(tst_QTextCursor)
