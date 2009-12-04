@@ -119,6 +119,10 @@ class Generator
                                  CodeMarker *marker, 
                                  bool generate,
                                  int& numGeneratedAtoms);
+    void generateFileList(const FakeNode* fake,
+                          CodeMarker* marker,
+                          Node::SubType subtype,
+                          const QString& tag);
     void generateExampleFiles(const FakeNode *fake, CodeMarker *marker);
     void generateModuleWarning(const ClassNode *classe, CodeMarker *marker);
 
