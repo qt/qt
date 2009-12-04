@@ -1495,6 +1495,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     version_flags_cached = false;
     version_flags = QGLFormat::OpenGL_Version_None;
     current_fbo = 0;
+    default_fbo = 0;
     active_engine = 0;
 }
 
