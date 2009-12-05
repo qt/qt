@@ -88,7 +88,7 @@ UnixMakefileGenerator::init()
     if(project->isEmpty("QMAKE_LIBTOOL"))
         project->values("QMAKE_LIBTOOL").append("libtool --silent");
     if(project->isEmpty("QMAKE_SYMBOLIC_LINK"))
-        project->values("QMAKE_SYMBOLIC_LINK").append("ln -sf");
+        project->values("QMAKE_SYMBOLIC_LINK").append("ln -f -s");
 
     /* this should probably not be here, but I'm using it to wrap the .t files */
     if(project->first("TEMPLATE") == "app")

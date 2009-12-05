@@ -76,6 +76,16 @@ inline int qFloor(qreal v)
         return int(floor(v));
 }
 
+inline qreal qFabs(qreal v)
+{
+#ifdef QT_USE_MATH_H_FLOATS
+    if(sizeof(qreal) == sizeof(float))
+        return fabsf(float(v));
+    else
+#endif
+        return fabs(v);
+}
+
 inline qreal qSin(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
@@ -96,6 +106,16 @@ inline qreal qCos(qreal v)
         return cos(v);
 }
 
+inline qreal qTan(qreal v)
+{
+#ifdef QT_USE_MATH_H_FLOATS
+    if (sizeof(qreal) == sizeof(float))
+        return tanf(float(v));
+    else
+#endif
+        return tan(v);
+}
+
 inline qreal qAcos(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
@@ -104,6 +124,36 @@ inline qreal qAcos(qreal v)
     else
 #endif
         return acos(v);
+}
+
+inline qreal qAsin(qreal v)
+{
+#ifdef QT_USE_MATH_H_FLOATS
+    if (sizeof(qreal) == sizeof(float))
+        return asinf(float(v));
+    else
+#endif
+        return asin(v);
+}
+
+inline qreal qAtan(qreal v)
+{
+#ifdef QT_USE_MATH_H_FLOATS
+    if(sizeof(qreal) == sizeof(float))
+        return atanf(float(v));
+    else
+#endif
+        return atan(v);
+}
+
+inline qreal qAtan2(qreal x, qreal y)
+{
+#ifdef QT_USE_MATH_H_FLOATS
+    if(sizeof(qreal) == sizeof(float))
+        return atan2f(float(x), float(y));
+    else
+#endif
+        return atan2(x, y);
 }
 
 inline qreal qSqrt(qreal v)
@@ -124,6 +174,13 @@ inline qreal qLn(qreal v)
     else
 #endif
         return log(v);
+}
+
+inline qreal qExp(qreal v)
+{
+    // only one signature
+    // exists, exp(double)
+    return exp(v);
 }
 
 inline qreal qPow(qreal x, qreal y)

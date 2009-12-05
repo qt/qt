@@ -1787,8 +1787,10 @@ void tst_QListView::task262152_setModelColumnNavigate()
     view.setModelColumn(1);
 
     view.show();
+    QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(120);
+    QTest::qWait(30);
+    QTRY_COMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
     QTest::keyClick(&view, Qt::Key_Down);
     QTest::qWait(30);
     QTRY_COMPARE(view.currentIndex(), model.index(1,1));
