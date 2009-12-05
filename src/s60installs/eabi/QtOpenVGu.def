@@ -99,7 +99,7 @@ EXPORTS
 	_ZN16QVGWindowSurfaceD0Ev @ 98 NONAME
 	_ZN16QVGWindowSurfaceD1Ev @ 99 NONAME
 	_ZN16QVGWindowSurfaceD2Ev @ 100 NONAME
-	_ZN20QVGCompositionHelper10blitWindowEP26QVGEGLWindowSurfacePrivateRK5QRectRK6QPointi @ 101 NONAME
+	_ZN20QVGCompositionHelper10blitWindowEP26QVGEGLWindowSurfacePrivateRK5QRectRK6QPointi @ 101 NONAME ABSENT
 	_ZN20QVGCompositionHelper10setScissorERK7QRegion @ 102 NONAME
 	_ZN20QVGCompositionHelper12clearScissorEv @ 103 NONAME
 	_ZN20QVGCompositionHelper14endCompositingEv @ 104 NONAME
@@ -167,4 +167,6 @@ EXPORTS
 	_ZThn8_N16QVGWindowSurfaceD1Ev @ 166 NONAME
 	_ZThn8_NK16QVGWindowSurface11paintEngineEv @ 167 NONAME
 	_ZThn8_NK16QVGWindowSurface6metricEN12QPaintDevice17PaintDeviceMetricE @ 168 NONAME
+	_ZN14QVGPaintEngine10fillRegionERK7QRegionRK6QColorRK5QSize @ 169 NONAME
+	_ZN20QVGCompositionHelper10blitWindowEmRK5QSizeRK5QRectRK6QPointi @ 170 NONAME
 
