@@ -133,7 +133,7 @@ QmlGraphicsGridScaledImage::QmlGraphicsGridScaledImage(QIODevice *data)
 
     while(!data->atEnd()) {
         QString line = QString::fromUtf8(data->readLine().trimmed());
-        if (line.isEmpty() || line.startsWith(QLatin1String("#")))
+        if (line.isEmpty() || line.startsWith(QLatin1Char('#')))
             continue;
 
         QStringList list = line.split(QLatin1Char(':'));

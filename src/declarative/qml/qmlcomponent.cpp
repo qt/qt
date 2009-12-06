@@ -499,9 +499,9 @@ QString QmlComponent::errorsString() const
     if(!isError())
         return ret;
     foreach(const QmlError &e, d->errors) {
-        ret += e.url().toString() + QLatin1String(":") +
-               QString::number(e.line()) + QLatin1String(" ") +
-               e.description() + QLatin1String("\n");
+        ret += e.url().toString() + QLatin1Char(':') +
+               QString::number(e.line()) + QLatin1Char(' ') +
+               e.description() + QLatin1Char('\n');
     }
     return ret;
 }

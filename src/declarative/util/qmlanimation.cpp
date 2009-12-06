@@ -1341,7 +1341,7 @@ QmlNumberAnimation::~QmlNumberAnimation()
 qreal QmlNumberAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
-    return d->from.toDouble();
+    return d->from.toReal();
 }
 
 void QmlNumberAnimation::setFrom(qreal f)
@@ -1357,7 +1357,7 @@ void QmlNumberAnimation::setFrom(qreal f)
 qreal QmlNumberAnimation::to() const
 {
     Q_D(const QmlPropertyAnimation);
-    return d->to.toDouble();
+    return d->to.toReal();
 }
 
 void QmlNumberAnimation::setTo(qreal t)
@@ -1532,7 +1532,7 @@ QML_DEFINE_TYPE(Qt,4,6,ParallelAnimation,QmlParallelAnimation)
 //convert a variant from string type to another animatable type
 void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 {
-    if (variant.type() != QVariant::String) {
+    if (variant.userType() != QVariant::String) {
         variant.convert((QVariant::Type)type);
         return;
     }
