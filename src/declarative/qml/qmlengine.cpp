@@ -538,7 +538,7 @@ QmlDeclarativeData::QmlDeclarativeData(QmlContext *ctxt)
 {
 }
 
-void QmlDeclarativeData::destroyed(QObject *object)
+void QmlDeclarativeData::destroyed(QObject * /*object*/)
 {
     if (deferredComponent)
         deferredComponent->release();
@@ -800,9 +800,9 @@ QScriptValue QmlEnginePrivate::lighter(QScriptContext *ctxt, QScriptEngine *engi
         return engine->nullValue();
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
-    if (v.type() == QVariant::Color)
+    if (v.userType() == QVariant::Color)
         color = v.value<QColor>();
-    else if (v.type() == QVariant::String) {
+    else if (v.userType() == QVariant::String) {
         bool ok;
         color = QmlStringConverters::colorFromString(v.toString(), &ok);
         if (!ok)
@@ -819,9 +819,9 @@ QScriptValue QmlEnginePrivate::darker(QScriptContext *ctxt, QScriptEngine *engin
         return engine->nullValue();
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
-    if (v.type() == QVariant::Color)
+    if (v.userType() == QVariant::Color)
         color = v.value<QColor>();
-    else if (v.type() == QVariant::String) {
+    else if (v.userType() == QVariant::String) {
         bool ok;
         color = QmlStringConverters::colorFromString(v.toString(), &ok);
         if (!ok)
@@ -910,7 +910,7 @@ QScriptValue QmlEnginePrivate::consoleLog(QScriptContext *ctxt, QScriptEngine *e
         // does just ignore the format letter, which makes it pointless.
     }
 
-    qDebug("%s",msg.data());
+    qDebug(msg.constData());
 
     return e->newVariant(QVariant(true));
 }
@@ -921,7 +921,7 @@ void QmlEnginePrivate::sendQuit ()
     emit q->quit ();
 }
 
-QScriptValue QmlEnginePrivate::quit(QScriptContext *ctxt, QScriptEngine *e)
+QScriptValue QmlEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptEngine *e)
 {
     QmlEnginePrivate *qe = get (e);
     qe->sendQuit ();
@@ -954,9 +954,9 @@ QScriptValue QmlEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
     //get color
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
-    if (v.type() == QVariant::Color)
+    if (v.userType() == QVariant::Color)
         color = v.value<QColor>();
-    else if (v.type() == QVariant::String) {
+    else if (v.userType() == QVariant::String) {
         bool ok;
         color = QmlStringConverters::colorFromString(v.toString(), &ok);
         if (!ok)
@@ -967,9 +967,9 @@ QScriptValue QmlEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
     //get tint color
     v = ctxt->argument(1).toVariant();
     QColor tintColor;
-    if (v.type() == QVariant::Color)
+    if (v.userType() == QVariant::Color)
         tintColor = v.value<QColor>();
-    else if (v.type() == QVariant::String) {
+    else if (v.userType() == QVariant::String) {
         bool ok;
         tintColor = QmlStringConverters::colorFromString(v.toString(), &ok);
         if (!ok)
@@ -1070,7 +1070,7 @@ struct QmlEnginePrivate::ImportedNamespace {
 
             if (isBuiltin.at(i)) {
                 QByteArray qt = urls.at(i).toUtf8();
-                qt += "/";
+                qt += '/';
                 qt += type;
                 QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
                 if (vmajor) *vmajor = vmaj;
@@ -1081,7 +1081,7 @@ struct QmlEnginePrivate::ImportedNamespace {
                     return true;
                 }
             } else {
-                QUrl url = QUrl(urls.at(i) + QLatin1String("/") + QString::fromUtf8(type) + QLatin1String(".qml"));
+                QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
                 QString qmldircontent = qmlDirContent.at(i);
                 if (vmaj || vmin || !qmldircontent.isEmpty()) {
                     // Check version file - XXX cache these in QmlEngine!
@@ -1200,7 +1200,7 @@ public:
             if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return))
                 return true;
             if (s->urls.count() == 1 && !s->isBuiltin[0] && !s->isLibrary[0] && url_return) {
-                *url_return = QUrl(s->urls[0]+QLatin1String("/")).resolved(QUrl(QString::fromUtf8(unqualifiedtype) + QLatin1String(".qml")));
+                *url_return = QUrl(s->urls[0]+QLatin1Char('/')).resolved(QUrl(QString::fromUtf8(unqualifiedtype) + QLatin1String(".qml")));
                 return true;
             }
         }
@@ -1221,7 +1221,7 @@ public:
     int ref;
 
 private:
-    friend class QmlEnginePrivate::Imports;
+    friend struct QmlEnginePrivate::Imports;
     QmlEnginePrivate::ImportedNamespace unqualifiedset;
     QHash<QString,QmlEnginePrivate::ImportedNamespace* > set;
 };
@@ -1266,7 +1266,7 @@ static QmlTypeNameCache *cacheForNamespace(QmlEngine *engine, const QmlEnginePri
         if (!set.isBuiltin.at(ii))
             continue;
 
-        QByteArray base = set.urls.at(ii).toUtf8() + "/";
+        QByteArray base = set.urls.at(ii).toUtf8() + '/';
         int major = set.majversions.at(ii);
         int minor = set.minversions.at(ii);
 
@@ -1408,7 +1408,7 @@ bool QmlEnginePrivate::addToImport(Imports* imports, const QString& qmldirconten
 {
     bool ok = imports->d->add(imports->d->base,qmldircontent,uri,prefix,vmaj,vmin,importType,fileImportPath);
     if (qmlImportTrace())
-        qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << vmaj << "." << vmin << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
+        qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << vmaj << '.' << vmin << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
     return ok;
 }
 
@@ -1438,9 +1438,9 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
         if (imports.d->find(type,vmaj,vmin,type_return,url_return)) {
             if (qmlImportTrace()) {
                 if (type_return && *type_return)
-                    qDebug() << "QmlEngine::resolveType" << type << "=" << (*type_return)->typeName();
+                    qDebug() << "QmlEngine::resolveType" << type << '=' << (*type_return)->typeName();
                 if (url_return)
-                    qDebug() << "QmlEngine::resolveType" << type << "=" << *url_return;
+                    qDebug() << "QmlEngine::resolveType" << type << '=' << *url_return;
             }
             return true;
         }
@@ -1484,7 +1484,7 @@ void QmlEnginePrivate::registerCompositeType(QmlCompiledData *data)
 {
     QByteArray name = data->root->className();
 
-    QByteArray ptr = name + "*";
+    QByteArray ptr = name + '*';
     QByteArray lst = "QmlList<" + ptr + ">*";
 
     int ptr_type = QMetaType::registerType(ptr.constData(), voidptr_destructor,

@@ -317,10 +317,10 @@ public:
     QmlEaseFollow *highlightXAnimator;
     QmlEaseFollow *highlightYAnimator;
 
-    int ownModel : 1;
-    int wrap : 1;
-    int autoHighlight : 1;
-    int fixCurrentVisibility : 1;
+    bool ownModel : 1;
+    bool wrap : 1;
+    bool autoHighlight : 1;
+    bool fixCurrentVisibility : 1;
 };
 
 void QmlGraphicsGridViewPrivate::init()

@@ -80,7 +80,7 @@ QmlSystemPalette::QmlSystemPalette(QObject *parent)
     : QObject(*(new QmlSystemPalettePrivate), parent)
 {
     Q_D(QmlSystemPalette);
-    d->palette = qApp->palette();
+    d->palette = QApplication::palette();
     d->group = QPalette::Active;
     qApp->installEventFilter(this);
 }
@@ -293,7 +293,7 @@ bool QmlSystemPalette::event(QEvent *event)
 {
     Q_D(QmlSystemPalette);
     if (event->type() == QEvent::ApplicationPaletteChange) {
-        d->palette = qApp->palette();
+        d->palette = QApplication::palette();
         emit paletteChanged();
         return true;
     }

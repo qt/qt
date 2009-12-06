@@ -151,7 +151,7 @@ public:
 private:
     friend class QmlMetaType;
     friend class QmlTypePrivate;
-    friend class QmlMetaTypeData;
+    friend struct QmlMetaTypeData;
     QmlType(int, int, int, QmlPrivate::Func, const char *, int);
     QmlType(int, int, int, QmlPrivate::Func, const char *, int, int, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, int, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
     ~QmlType();
@@ -164,7 +164,7 @@ int qmlRegisterType(const char *typeName)
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + "*").constData()),
+        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<T *>(QByteArray("QList<" + name + "*>*").constData()),
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
@@ -185,7 +185,7 @@ int qmlRegisterType(const char *uri, int version_maj, int version_min, const cha
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + "*").constData()),
+        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<T *>(QByteArray("QList<" + name + "*>*").constData()),
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
@@ -207,7 +207,7 @@ int qmlRegisterExtendedType(const char *typeName)
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + "*").constData()),
+        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<T *>(QByteArray("QList<" + name + "*>*").constData()),
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
@@ -235,7 +235,7 @@ int qmlRegisterExtendedType(const char *uri, int version_maj, int version_min, c
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + "*").constData()),
+        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<T *>(QByteArray("QList<" + name + "*>*").constData()),
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
@@ -266,7 +266,7 @@ int qmlRegisterInterface(const char *typeName)
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + "*").constData()),
+        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<T *>(QByteArray("QList<" + name + "*>*").constData()),
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
@@ -281,7 +281,7 @@ int qmlRegisterCustomType(const char *uri, int version_maj, int version_min, con
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + "*").constData()),
+        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<T *>(QByteArray("QList<" + name + "*>*").constData()),
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };

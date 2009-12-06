@@ -44,7 +44,7 @@
 #include "qmldeclarativedata_p.h"
 #include "qmlcontext.h"
 
-#include <QtGui/qapplication.h>
+#include <QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,17 +88,17 @@ QmlInfo::QmlInfo(const QObject *object)
     if (ddata) {
         if (ddata->outerContext) {
             pos += ddata->outerContext->baseUrl().toString();
-            pos += QLatin1String(":");
+            pos += QLatin1Char(':');
             pos += QString::number(ddata->lineNumber);
-            pos += QLatin1String(":");
+            pos += QLatin1Char(':');
             pos += QString::number(ddata->columnNumber);
         } else {
-            pos += qApp->translate("QmlInfo","unknown location");
+            pos += QCoreApplication::translate("QmlInfo","unknown location");
         }
     } else {
-        pos += qApp->translate("QmlInfo","unknown location");
+        pos += QCoreApplication::translate("QmlInfo","unknown location");
     }
-    pos += QLatin1String(")");
+    pos += QLatin1Char(')');
     *this << pos;
     nospace();
 }

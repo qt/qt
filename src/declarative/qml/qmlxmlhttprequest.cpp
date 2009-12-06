@@ -1060,7 +1060,7 @@ void QmlXMLHttpRequest::addHeader(const QString &name, const QString &value)
     QByteArray utfname = name.toUtf8();
 
     if (m_request.hasRawHeader(utfname)) {
-        m_request.setRawHeader(utfname, m_request.rawHeader(utfname) + "," + value.toUtf8());
+        m_request.setRawHeader(utfname, m_request.rawHeader(utfname) + ',' + value.toUtf8());
     } else {
         m_request.setRawHeader(utfname, value.toUtf8());
     }

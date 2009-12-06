@@ -1186,7 +1186,7 @@ QmlGraphicsWebPage::~QmlGraphicsWebPage()
 
 void QmlGraphicsWebPage::javaScriptConsoleMessage(const QString& message, int lineNumber, const QString& sourceID)
 {
-    qWarning() << sourceID << ":" << lineNumber << ":" << message;
+    qWarning() << sourceID << ':' << lineNumber << ':' << message;
 }
 
 QString QmlGraphicsWebPage::chooseFile(QWebFrame *originatingFrame, const QString& oldFile)

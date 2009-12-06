@@ -97,7 +97,7 @@ void QmlGlobalScriptClass::setProperty(QScriptValue &object,
     Q_UNUSED(id);
     Q_UNUSED(value);
     QString error = QLatin1String("Invalid write to global property \"") + 
-                    name.toString() + QLatin1String("\"");
+                    name.toString() + QLatin1Char('\"');
     engine()->currentContext()->throwError(error);
 }
 

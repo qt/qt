@@ -1266,7 +1266,7 @@ QVariant QmlGraphicsKeysAttached::inputMethodQuery(Qt::InputMethodQuery query) c
                 QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
             if (i && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod) && i == d->imeItem) { //### how robust is i == d->imeItem check?
                 QVariant v = static_cast<QmlGraphicsItemAccessor *>(i)->doInputMethodQuery(query);
-                if (v.type() == QVariant::RectF)
+                if (v.userType() == QVariant::RectF)
                     v = d->item->mapRectFromItem(i, v.toRectF());  //### cost?
                 return v;
             }
@@ -2990,7 +2990,7 @@ QDebug operator<<(QDebug debug, QmlGraphicsItem *item)
     debug << item->metaObject()->className() << "(this =" << ((void*)item)
           << ", parent =" << ((void*)item->parentItem())
           << ", geometry =" << QRectF(item->pos(), QSizeF(item->width(), item->height()))
-          << ", z =" << item->zValue() << ")";
+          << ", z =" << item->zValue() << ')';
     return debug;
 }
 

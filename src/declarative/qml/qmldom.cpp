@@ -611,7 +611,7 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
 
         }
 
-        QByteArray name(property->name + ".");
+        QByteArray name(property->name + '.');
         for (Properties::Iterator iter = rv.begin(); iter != rv.end(); ++iter)
             iter->second.prepend(name);
 
