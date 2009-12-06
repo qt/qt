@@ -84,7 +84,7 @@ private:
 class QmlWorkerScript : public QObject, public QmlParserStatus
 {
     Q_OBJECT
-    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged);
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
 
 public:
     QmlWorkerScript(QObject *parent = 0);
