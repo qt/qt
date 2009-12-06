@@ -899,8 +899,8 @@ bool QGLFramebufferObject::release()
 #endif
 
     if (current) {
-        current->d_ptr->current_fbo = 0;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+        current->d_ptr->current_fbo = current->d_ptr->default_fbo;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, current->d_ptr->default_fbo);
     }
 
     return true;

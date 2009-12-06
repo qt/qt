@@ -4211,6 +4211,42 @@ void tst_QGraphicsScene::siblingIndexAlwaysValid()
     //If there are in the list that's bad, we crash...
     QVERIFY(!QGraphicsScenePrivate::get(&scene)->topLevelItems.contains(static_cast<QGraphicsItem *>(child)));
 
+    //Other case
+    QGraphicsScene scene2;
+    // works with bsp tree index
+    scene2.setItemIndexMethod(QGraphicsScene::NoIndex);
+
+    QGraphicsView view2(&scene2);
+
+    // first add the blue rect
+    QGraphicsRectItem* const item1 = new QGraphicsRectItem(QRect( 10, 10, 10, 10 ));
+    item1->setPen(QColor(Qt::blue));
+    item1->setBrush(Qt::blue);
+    scene2.addItem(item1);
+
+    // then add the red rect
+    QGraphicsRectItem* const item2 = new QGraphicsRectItem(5, 5, 10, 10);
+    item2->setPen(QColor(Qt::red));
+    item2->setBrush(Qt::red);
+    scene2.addItem(item2);
+
+    // now the blue one is visible on top of the red one -> swap them (important for the bug)
+    item1->setZValue(1.0);
+    item2->setZValue(0.0);
+
+    view2.show();
+
+    // handle events as a real life app would do
+    QApplication::processEvents();
+
+    // now delete the red rect
+    delete item2;
+
+    // handle events as a real life app would do
+     QApplication::processEvents();
+
+     //We should not crash
+
 }
 
 void tst_QGraphicsScene::taskQTBUG_5904_crashWithDeviceCoordinateCache()

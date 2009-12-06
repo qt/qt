@@ -185,6 +185,7 @@ class CppCodeParser : public CodeParser
     static QStringList exampleFiles;
     static QStringList exampleDirs;
     QString exampleNameFilter;
+    QString exampleImageFilter;
 };
 
 QT_END_NAMESPACE
