@@ -329,7 +329,7 @@ QString QmlViewer::getVideoFileName()
 QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
       , portraitOrientation(0), landscapeOrientation(0)
-      , m_scriptOptions(0), tester(0)
+      , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
 {
     devicemode = false;
     skin = 0;
@@ -714,16 +714,30 @@ void QmlViewer::reload()
 void QmlViewer::open()
 {
     QString cur = canvas->url().toLocalFile();
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
-    if (!fileName.isEmpty()) {
-        QFileInfo fi(fileName);
-        openQml(fi.absoluteFilePath());
+    if (useQmlFileBrowser) {
+#ifdef Q_OS_SYMBIAN
+        canvas->rootContext()->setContextProperty("initialFolder", "E:\\"); // Documents on your S60 phone
+#else
+        canvas->rootContext()->setContextProperty("initialFolder", QDir::currentPath());
+#endif
+        openQml("qrc:/content/Browser.qml");
+    } else {
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
+        if (!fileName.isEmpty()) {
+            QFileInfo fi(fileName);
+            openQml(fi.absoluteFilePath());
+        }
     }
 }
 
 void QmlViewer::executeErrors()
 {
     if (tester) tester->executefailure();
+}
+
+void QmlViewer::launch(const QString& file_or_url)
+{
+    QMetaObject::invokeMethod(this, "openQml", Qt::QueuedConnection, Q_ARG(QString, file_or_url));
 }
 
 void QmlViewer::openQml(const QString& file_or_url)
@@ -742,6 +756,8 @@ void QmlViewer::openQml(const QString& file_or_url)
         tester = new QmlGraphicsTester(m_script, m_scriptOptions, canvas);
 
     canvas->reset();
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("qmlViewer", this);
 
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
@@ -752,7 +768,6 @@ void QmlViewer::openQml(const QString& file_or_url)
                 return;
             }
 
-            QmlContext *ctxt = canvas->rootContext();
             QDir dir(fi.path()+"/dummydata", "*.qml");
             QStringList list = dir.entryList();
             for (int i = 0; i < list.size(); ++i) {

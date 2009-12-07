@@ -196,9 +196,9 @@ void QmlError::setColumn(int column)
 QString QmlError::toString() const
 {
     QString rv;
-    rv = url().toString() + QLatin1String(":") + QString::number(line());
+    rv = url().toString() + QLatin1Char(':') + QString::number(line());
     if(column() != -1) 
-        rv += QLatin1String(":") + QString::number(column());
+        rv += QLatin1Char(':') + QString::number(column());
 
     rv += QLatin1String(": ") + description();
 

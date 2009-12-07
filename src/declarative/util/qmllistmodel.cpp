@@ -902,7 +902,7 @@ static void dump(ModelNode *node, int ind)
     }
 
     for (QHash<QString, ModelNode *>::ConstIterator iter = node->properties.begin(); iter != node->properties.end(); ++iter) {
-        qWarning().nospace() << indent << "Property " << iter.key() << ":";
+        qWarning().nospace() << indent << "Property " << iter.key() << ':';
         dump(iter.value(), ind + 1);
     }
 }

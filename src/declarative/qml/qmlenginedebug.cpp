@@ -115,7 +115,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
     QVariant value = prop.read(obj);
     rv.value = valueContents(value);
 
-    if (prop.type() < QVariant::UserType) {
+    if (prop.userType() < QVariant::UserType) {
         rv.type = QmlObjectProperty::Basic;
     } else if (QmlMetaType::isObject(prop.userType()))  {
         rv.type = QmlObjectProperty::Object;
@@ -129,10 +129,10 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 
 QVariant QmlEngineDebugServer::valueContents(const QVariant &value) const
 {
-    if (value.type() < QVariant::UserType)
+    int userType = value.userType();
+    if (userType < QVariant::UserType)
         return value;
 
-    int userType = value.userType();
 
     if (QmlMetaType::isList(userType) || QmlMetaType::isQmlList(userType)) {
         int count = QmlMetaType::listCount(value);
@@ -189,7 +189,7 @@ void QmlEngineDebugServer::buildObjectDump(QDataStream &message,
                 prop.value = expr->expression();
                 QObject *scope = expr->scopeObject();
                 if (scope) {
-                    QString sig = scope->metaObject()->method(signal->index()).signature();
+                    QString sig = QLatin1String(scope->metaObject()->method(signal->index()).signature());
                     int lparen = sig.indexOf(QLatin1Char('('));
                     if (lparen >= 0) {
                         QString methodName = sig.mid(0, lparen);
@@ -280,7 +280,7 @@ QmlEngineDebugServer::objectData(QObject *object)
 
     QmlType *type = QmlMetaType::qmlType(object->metaObject());
     if (type) {
-        QString typeName = type->qmlTypeName();
+        QString typeName = QLatin1String(type->qmlTypeName());
         int lastSlash = typeName.lastIndexOf(QLatin1Char('/'));
         rv.objectType = lastSlash < 0 ? typeName : typeName.mid(lastSlash+1);
     } else {
