@@ -254,7 +254,10 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
             const int underlineShortCut = QApplication::style()->styleHint(QStyle::SH_UnderlineShortcut);
             QString iconText = softKeyAction->iconText();
             TPtrC text = qt_QString2TPtrC( underlineShortCut ? softKeyAction->text() : iconText);
-            QT_TRAP_THROWING(nativeContainer->SetCommandL(position, command, text));
+            QT_TRAP_THROWING(
+                nativeContainer->SetCommandL(position, command, text);
+                nativeContainer->DimCommand(command, !softKeyAction->isEnabled());
+            );
         }
     }
 
