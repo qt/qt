@@ -1058,21 +1058,27 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
             setValue(1000);
         }
 
-        //we use the French delimiters here
-        QString textFromValue (double value) const
-        { 
-            return locale().toString(value);
+        QLineEdit *lineEdit() const
+        {
+            return QDoubleSpinBox::lineEdit();
         }
 
-        using QDoubleSpinBox::lineEdit;
+        //we use the French delimiters here
+        QString textFromValue (double value) const
+        {
+            return locale().toString(value);
+        }
     } spinbox;
     spinbox.show();
     spinbox.activateWindow();
     spinbox.setFocus();
+    QApplication::setActiveWindow(&spinbox);
     QTest::qWaitForWindowShown(&spinbox);
-    QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));    
+    QTRY_VERIFY(spinbox.hasFocus());
+    QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
+    QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
     spinbox.lineEdit()->setCursorPosition(2); //just after the first thousand separator
-    QTest::keyClick(0, Qt::Key_0); // let's insert a 0    
+    QTest::keyClick(0, Qt::Key_0); // let's insert a 0
     QCOMPARE(spinbox.value(), 10000.);
     spinbox.clearFocus(); //make sure the value is correctly formatted
     QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));

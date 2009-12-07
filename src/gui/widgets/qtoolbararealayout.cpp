@@ -1296,6 +1296,8 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
     QList<QToolBar*> toolBars = _toolBars;
     int lines;
     stream >> lines;
+	if (!testing)
+	testing = mainWindow->unifiedTitleAndToolBarOnMac();
 
     for (int j = 0; j < lines; ++j) {
         int pos;
@@ -1306,6 +1308,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
         stream >> cnt;
 
         QToolBarAreaLayoutInfo &dock = docks[pos];
+		const bool applyingLayout = !testing && !(pos == QInternal::TopDock && mainWindow->unifiedTitleAndToolBarOnMac());
         QToolBarAreaLayoutLine line(dock.o);
 
         for (int k = 0; k < cnt; ++k) {
@@ -1346,7 +1349,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
                 continue;
             }
 
-            if (!testing) {
+            if (applyingLayout) {
                 item.widgetItem = new QWidgetItemV2(toolBar);
                 toolBar->setOrientation(floating ? ((shown & 2) ? Qt::Vertical : Qt::Horizontal) : dock.o);
                 toolBar->setVisible(shown & 1);
@@ -1357,7 +1360,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
             }
         }
 
-        if (!testing) {
+        if (applyingLayout) {
             dock.lines.append(line);
         }
     }
