@@ -67,15 +67,11 @@ QNetworkManagerEnginePlugin::~QNetworkManagerEnginePlugin()
 
 QStringList QNetworkManagerEnginePlugin::keys() const
 {
-    qDebug() << Q_FUNC_INFO;
-
     return QStringList() << QLatin1String("networkmanager");
 }
 
 QBearerEngine *QNetworkManagerEnginePlugin::create(const QString &key) const
 {
-    qDebug() << Q_FUNC_INFO;
-
     if (key == QLatin1String("networkmanager"))
         return new QNmWifiEngine;
     else

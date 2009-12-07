@@ -108,15 +108,11 @@ QNativeWifiEnginePlugin::~QNativeWifiEnginePlugin()
 
 QStringList QNativeWifiEnginePlugin::keys() const
 {
-    qDebug() << Q_FUNC_INFO;
-
     return QStringList() << QLatin1String("nativewifi");
 }
 
 QBearerEngine *QNativeWifiEnginePlugin::create(const QString &key) const
 {
-    qDebug() << Q_FUNC_INFO;
-
     if (key != QLatin1String("nativewifi"))
         return 0;
 

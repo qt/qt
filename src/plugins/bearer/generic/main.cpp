@@ -67,15 +67,11 @@ QGenericEnginePlugin::~QGenericEnginePlugin()
 
 QStringList QGenericEnginePlugin::keys() const
 {
-    qDebug() << Q_FUNC_INFO;
-
     return QStringList() << QLatin1String("generic");
 }
 
 QBearerEngine *QGenericEnginePlugin::create(const QString &key) const
 {
-    qDebug() << Q_FUNC_INFO;
-
     if (key == QLatin1String("generic"))
         return new QGenericEngine;
     else

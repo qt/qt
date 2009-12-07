@@ -67,15 +67,11 @@ QNlaEnginePlugin::~QNlaEnginePlugin()
 
 QStringList QNlaEnginePlugin::keys() const
 {
-    qDebug() << Q_FUNC_INFO;
-
     return QStringList() << QLatin1String("nla");
 }
 
 QBearerEngine *QNlaEnginePlugin::create(const QString &key) const
 {
-    qDebug() << Q_FUNC_INFO;
-
     if (key == QLatin1String("nla"))
         return new QNlaEngine;
     else

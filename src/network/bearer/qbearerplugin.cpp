@@ -48,7 +48,6 @@ QT_BEGIN_NAMESPACE
 QBearerEnginePlugin::QBearerEnginePlugin(QObject *parent)
 :   QObject(parent)
 {
-    qDebug() << Q_FUNC_INFO;
 }
 
 QBearerEnginePlugin::~QBearerEnginePlugin()

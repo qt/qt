@@ -67,15 +67,11 @@ QCoreWlanEnginePlugin::~QCoreWlanEnginePlugin()
 
 QStringList QCoreWlanEnginePlugin::keys() const
 {
-    qDebug() << Q_FUNC_INFO;
-
     return QStringList() << QLatin1String("corewlan");
 }
 
 QBearerEngine *QCoreWlanEnginePlugin::create(const QString &key) const
 {
-    qDebug() << Q_FUNC_INFO;
-
     if (key == QLatin1String("corewlan"))
         return new QCoreWlanEngine;
     else
