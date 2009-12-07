@@ -96,7 +96,9 @@ public:
      *
      * Appends a human-readable version of symbianErrorCode to the error message,
      * e.g.
-     *      setError(NormalError, "Opening file failed", KErrPermissionDenied)
+     * @code
+     *      setError("Opening file failed", KErrPermissionDenied)
+     * @endcode
      * results in the following error message:
      *      "Opening file failed: permission denied"
      */

@@ -84,67 +84,67 @@ QString MMF::Utils::symbianErrorToString(int errorCode)
     {
     // System-wide errors
     case KErrNone:
-        return tr("no error");
+        return tr("No error");
     case KErrNotFound:
-        return tr("not found");
+        return tr("Not found");
     case KErrNoMemory:
-        return tr("out of memory");
+        return tr("Out of memory");
     case KErrNotSupported:
-        return tr("not supported");
+        return tr("Not supported");
     case KErrOverflow:
-        return tr("overflow");
+        return tr("Overflow");
     case KErrUnderflow:
-        return tr("underflow");
+        return tr("Underflow");
     case KErrAlreadyExists:
-        return tr("already exists");
+        return tr("Already exists");
     case KErrPathNotFound:
-        return tr("path not found");
+        return tr("Path not found");
     case KErrInUse:
-        return tr("in use");
+        return tr("In use");
     case KErrNotReady:
-        return tr("not ready");
+        return tr("Not ready");
     case KErrAccessDenied:
-        return tr("access denied");
+        return tr("Access denied");
     case KErrCouldNotConnect:
-        return tr("could not connect");
+        return tr("Could not connect");
     case KErrDisconnected:
-        return tr("disconnected");
+        return tr("Disconnected");
     case KErrPermissionDenied:
-        return tr("permission denied");
+        return tr("Permission denied");
 
     // Multimedia framework errors
     case KErrMMNotEnoughBandwidth:
-        return tr("insufficient bandwidth");
+        return tr("Insufficient bandwidth");
     case KErrMMSocketServiceNotFound:
     case KErrMMServerSocket:
-        return tr("network unavailable");
+        return tr("Network unavailable");
     case KErrMMNetworkRead:
     case KErrMMNetworkWrite:
     case KErrMMUDPReceive:
-        return tr("network communication error");
+        return tr("Network communication error");
     case KErrMMServerNotSupported:
-        return tr("streaming not supported");
+        return tr("Streaming not supported");
     case KErrMMServerAlert:
-        return tr("server alert");
+        return tr("Server alert");
     case KErrMMInvalidProtocol:
-        return tr("invalid protocol");
+        return tr("Invalid protocol");
     case KErrMMInvalidURL:
-        return tr("invalid URL");
+        return tr("Invalid URL");
     case KErrMMMulticast:
-        return tr("multicast error");
+        return tr("Multicast error");
     case KErrMMProxyServer:
     case KErrMMProxyServerConnect:
-        return tr("proxy server error");
+        return tr("Proxy server error");
     case KErrMMProxyServerNotSupported:
-        return tr("proxy server not supported");
+        return tr("Proxy server not supported");
     case KErrMMAudioDevice:
-        return tr("audio output error");
+        return tr("Audio output error");
     case KErrMMVideoDevice:
-        return tr("video output error");
+        return tr("Video output error");
     case KErrMMDecoder:
-        return tr("decoder error");
+        return tr("Decoder error");
     case KErrMMPartialPlayback:
-        return tr("audio or video components could not be played");
+        return tr("Audio or video components could not be played");
     case KErrMMDRMNotAuthorized:
         return tr("DRM error");
 
@@ -160,11 +160,9 @@ QString MMF::Utils::symbianErrorToString(int errorCode)
 
     // Catch-all for errors other than those above
     default:
-        {
-        QString errorString;
-        errorString.setNum(errorCode);
-        return tr("unknown error") + " (" + errorString + ")";
-        }
+    {
+        return tr("Unknown error (%1)").arg(errorCode);
+    }
     }
 }
 
