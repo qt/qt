@@ -506,7 +506,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     if (!flatmenu)
         settingsMenu->addAction(recordOptions);
 
-    QMenu *propertiesMenu = new QMenu(tr("Properties"));
+    QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
     QActionGroup *orientation = new QActionGroup(parent);
     orientation->setExclusive(true);
     portraitOrientation = new QAction(tr("orientation: Portrait"), parent);
@@ -520,8 +520,6 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(landscapeOrientation, SIGNAL(triggered()), this, SLOT(setLandscape()));
     orientation->addAction(landscapeOrientation);
     propertiesMenu->addAction(landscapeOrientation);
-
-    settingsMenu->addMenu(propertiesMenu);
 
     if (flatmenu) flatmenu->addSeparator();
 

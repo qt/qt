@@ -200,6 +200,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
     namedNodeMapClass = 0;
     delete sqlQueryClass;
     sqlQueryClass = 0;
+    delete globalClass;
+    globalClass = 0;
 
     for(int ii = 0; ii < bindValues.count(); ++ii)
         clear(bindValues[ii]);
