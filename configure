@@ -2894,7 +2894,7 @@ fi
 
 # pass on $CFG_SDK to the configure tests.
 if [ '!' -z "$CFG_SDK" ]; then
-    MAC_CONFIG_TEST_COMMANDLINE="-sdk $CFG_SDK"
+    MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -sdk $CFG_SDK"
 fi
 
 # find the default framework value
