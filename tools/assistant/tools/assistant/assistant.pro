@@ -11,6 +11,7 @@ PROJECTNAME = Assistant
 DESTDIR = ../../../../bin
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
+DEPENDPATH += ../shared
 
 # ## Work around a qmake issue when statically linking to
 # ## not-yet-installed plugins
