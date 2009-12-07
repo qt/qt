@@ -34,9 +34,9 @@ qhp.Qt.extraFiles          = classic.css \
                              images/dynamiclayouts-example.png \
                              images/stylesheet-coffee-plastique.png
 
-qhp.Qt.filterAttributes    = qt 4.6.0 qtrefdoc
-qhp.Qt.customFilters.Qt.name = Qt 4.6.0
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.6.0
+qhp.Qt.filterAttributes    = qt 4.6.1 qtrefdoc
+qhp.Qt.customFilters.Qt.name = Qt 4.6.1
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.6.1
 qhp.Qt.subprojects         = classes overviews examples
 qhp.Qt.subprojects.classes.title = Classes
 qhp.Qt.subprojects.classes.indexTitle = Qt's Classes
@@ -100,6 +100,7 @@ excludedirs             = $QTDIR/src/3rdparty/clucene \
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"
 examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"
+examples.imageextensions = "*.png"
 
 exampledirs             = $QTDIR/doc/src \
                           $QTDIR/examples \

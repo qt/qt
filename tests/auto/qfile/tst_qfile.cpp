@@ -2783,10 +2783,21 @@ void tst_QFile::mapOpenMode()
 
 void tst_QFile::openDirectory()
 {
-    QFile f1("resources");
+    QFile f1(SRCDIR "resources");
+    // it's a directory, it must exist
+    QVERIFY(f1.exists());
+
+    // ...but not be openable
     QVERIFY(!f1.open(QIODevice::ReadOnly));
     f1.close();
     QVERIFY(!f1.open(QIODevice::ReadOnly|QIODevice::Unbuffered));
+    f1.close();
+    QVERIFY(!f1.open(QIODevice::ReadWrite));
+    f1.close();
+    QVERIFY(!f1.open(QIODevice::WriteOnly));
+    f1.close();
+    QVERIFY(!f1.open(QIODevice::WriteOnly|QIODevice::Unbuffered));
+    f1.close();
 }
 
 void tst_QFile::openStandardStreams()

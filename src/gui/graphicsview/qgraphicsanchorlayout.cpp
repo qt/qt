@@ -158,7 +158,7 @@ QGraphicsAnchor::~QGraphicsAnchor()
     \property QGraphicsAnchor::sizePolicy
     \brief the size policy for the QGraphicsAnchor.
 
-    By setting the size policy on an anchor you can configure how the item can resize itself
+    By setting the size policy on an anchor you can configure how the anchor can resize itself
     from its preferred spacing. For instance, if the anchor has the size policy
     QSizePolicy::Minimum, the spacing is the minimum size of the anchor. However, its size
     can grow up to the anchors maximum size. If the default size policy is QSizePolicy::Fixed,
@@ -247,7 +247,7 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
 
 /*!
     Creates an anchor between the edge \a firstEdge of item \a firstItem and the edge \a secondEdge
-    of item \a secondItem. The magnitude of the anchor is picked up from the style. Anchors
+    of item \a secondItem. The spacing of the anchor is picked up from the style. Anchors
     between a layout edge and an item edge will have a size of 0.
     If there is already an anchor between the edges, the the new anchor will replace the old one.
 
@@ -370,12 +370,6 @@ void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
 
-    // ### We don't support negative spacing yet
-    if (spacing < 0) {
-        spacing = 0;
-        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
-    }
-
     d->spacings[0] = spacing;
     invalidate();
 }
@@ -389,12 +383,6 @@ void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
 
-    // ### We don't support negative spacing yet
-    if (spacing < 0) {
-        spacing = 0;
-        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
-    }
-
     d->spacings[1] = spacing;
     invalidate();
 }
@@ -405,21 +393,14 @@ void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
     If an item is anchored with no spacing associated with the anchor, it will use the default
     spacing.
 
-    Currently QGraphicsAnchorLayout does not support negative default spacings.
+    QGraphicsAnchorLayout does not support negative spacings. Setting a negative value will unset the
+    previous spacing and make the layout use the spacing provided by the current widget style.
 
     \sa setHorizontalSpacing(), setVerticalSpacing()
 */
 void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
-
-    // ### Currently we do not support negative anchors inside the graph.
-    // To avoid those being created by a negative spacing, we must
-    // make this test.
-    if (spacing < 0) {
-        spacing = 0;
-        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
-    }
 
     d->spacings[0] = d->spacings[1] = spacing;
     invalidate();

@@ -625,10 +625,11 @@ void QFontDialogPrivate::setFont(void *delegate, const QFont &font)
         }
 
         NSFontManager *mgr = [NSFontManager sharedFontManager];
-        nsFont = [mgr fontWithFamily:qt_mac_QStringToNSString(font.family())
+        QFontInfo fontInfo(font);
+        nsFont = [mgr fontWithFamily:qt_mac_QStringToNSString(fontInfo.family())
             traits:mask
             weight:weight
-            size:QFontInfo(font).pointSize()];
+            size:fontInfo.pointSize()];
     }
 
     [mgr setSelectedFont:nsFont isMultiple:NO];

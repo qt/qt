@@ -184,6 +184,7 @@ void QHelpSearchIndexWriter::updateIndex(const QString &collectionFile,
                                          const QString &indexFilesFolder,
                                          bool reindex)
 {
+    wait();
     QMutexLocker lock(&mutex);
 
     this->m_cancel = false;

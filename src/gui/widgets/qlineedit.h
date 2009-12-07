@@ -83,6 +83,10 @@ class Q_GUI_EXPORT QLineEdit : public QWidget
     Q_PROPERTY(bool undoAvailable READ isUndoAvailable)
     Q_PROPERTY(bool redoAvailable READ isRedoAvailable)
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput)
+// ### Qt 4.7: remove this #if guard
+#if (QT_VERSION >= 0x407000) || defined(Q_WS_MAEMO_5)
+    Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
+#endif
 
 public:
     explicit QLineEdit(QWidget* parent=0);
@@ -97,6 +101,12 @@ public:
     QString text() const;
 
     QString displayText() const;
+
+// ### Qt 4.7: remove this #if guard
+#if (QT_VERSION >= 0x407000) || defined(Q_WS_MAEMO_5)
+    QString placeholderText() const;
+    void setPlaceholderText(const QString &);
+#endif
 
     int maxLength() const;
     void setMaxLength(int);
