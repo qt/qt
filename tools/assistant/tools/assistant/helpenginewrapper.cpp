@@ -96,6 +96,7 @@ HelpEngineWrapper::HelpEngineWrapper(const QString &collectionFile)
             this, SIGNAL(currentFilterChanged(QString)));
     connect(m_helpEngine, SIGNAL(setupFinished()),
             this, SIGNAL(setupFinished()));
+    initFileSystemWatchers();
 }
 
 void HelpEngineWrapper::initFileSystemWatchers()
@@ -146,6 +147,7 @@ const QString HelpEngineWrapper::collectionFile() const
 
 bool HelpEngineWrapper::registerDocumentation(const QString &docFile)
 {
+    assertDocFilesWatched();
     if (!m_helpEngine->registerDocumentation(docFile))
         return false;
     m_qchWatcher->addPath(docFile);
@@ -155,11 +157,11 @@ bool HelpEngineWrapper::registerDocumentation(const QString &docFile)
 
 bool HelpEngineWrapper::unregisterDocumentation(const QString &namespaceName)
 {
-    const QString &internalFile =
-        m_helpEngine->documentationFileName(namespaceName);
+    assertDocFilesWatched();
+    const QString &file = m_helpEngine->documentationFileName(namespaceName);
     if (!m_helpEngine->unregisterDocumentation(namespaceName))
         return false;
-    m_qchWatcher->removePath(internalFile);
+    m_qchWatcher->removePath(file);
     assertDocFilesWatched();
     return true;
 }

@@ -55,13 +55,13 @@ namespace {
     const QString CacheDirRelativeToCollectionKey(QLatin1String("CacheDirRelativeToCollection"));
     const QString CreationTimeKey(QLatin1String("CreationTime"));
     const QString DefaultHomePageKey(QLatin1String("defaultHomepage"));
-    const QString DocUpdatePendingKey(QLatin1String("DocUpdate"));
     const QString EnableAddressBarKey(QLatin1String("EnableAddressBar"));
     const QString EnableDocManagerKey(QLatin1String("EnableDocumentationManager"));
     const QString EnableFilterKey(QLatin1String("EnableFilterFunctionality"));
     const QString HideAddressBarKey(QLatin1String("HideAddressBar"));
     const QString FilterToolbarHiddenKey(QLatin1String("HideFilterFunctionality"));
     const QString LastPageKey(QLatin1String("LastTabPage"));
+    const QString LastRegisterTime(QLatin1String("LastRegisterTime"));
     const QString LastShownPagesKey(QLatin1String("LastShownPages"));
     const QString LastZoomFactorsKey(QLatin1String(
 #if !defined(QT_NO_WEBKIT)
@@ -237,17 +237,6 @@ void CollectionConfiguration::setDefaultHomePage(QHelpEngineCore &helpEngine,
     helpEngine.setCustomValue(DefaultHomePageKey, page);
 }
 
-bool CollectionConfiguration::docUpdatePending(const QHelpEngineCore &helpEngine)
-{
-    return helpEngine.customValue(DocUpdatePendingKey, false).toBool();
-}
-
-void CollectionConfiguration::setDocUpdatePending(QHelpEngineCore &helpEngine,
-                                                  bool pending)
-{
-    helpEngine.setCustomValue(DocUpdatePendingKey, pending);
-}
-
 const QStringList CollectionConfiguration::lastShownPages(const QHelpEngineCore &helpEngine)
 {
     return helpEngine.customValue(LastShownPagesKey).toString().
@@ -283,6 +272,16 @@ void CollectionConfiguration::setLastTabPage(QHelpEngineCore &helpEngine,
                                              int lastPage)
 {
     helpEngine.setCustomValue(LastPageKey, lastPage);
+}
+
+const QDateTime CollectionConfiguration::lastRegisterTime(const QHelpEngineCore &helpEngine)
+{
+    return helpEngine.customValue(LastRegisterTime, QDateTime()).toDateTime();
+}
+
+void CollectionConfiguration::updateLastRegisterTime(QHelpEngineCore &helpEngine)
+{
+    helpEngine.setCustomValue(LastRegisterTime, QDateTime::currentDateTime());
 }
 
 bool CollectionConfiguration::isNewer(const QHelpEngineCore &newer,

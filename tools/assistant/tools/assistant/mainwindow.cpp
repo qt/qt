@@ -244,7 +244,6 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else
             checkInitState();
 
-        helpEngineWrapper.initFileSystemWatchers();
         connect(&helpEngineWrapper, SIGNAL(documentationRemoved(QString)),
                 this, SLOT(documentationRemoved(QString)));
         connect(&helpEngineWrapper, SIGNAL(documentationUpdated(QString)),

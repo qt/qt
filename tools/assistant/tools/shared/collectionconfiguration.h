@@ -44,6 +44,7 @@
 
 #include <QtCore/QByteArray>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDateTime>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 
@@ -111,9 +112,6 @@ public:
     static void setDefaultHomePage(QHelpEngineCore &helpEngine,
                                    const QString &page);
 
-    static bool docUpdatePending(const QHelpEngineCore &helpEngine);
-    static void setDocUpdatePending(QHelpEngineCore &helpEngine, bool pending);
-
     // TODO: Don't allow last pages and zoom factors to be set in isolation
     //       Perhaps also fill up missing elements automatically or assert.
     static const QStringList lastShownPages(const QHelpEngineCore &helpEngine);
@@ -130,6 +128,13 @@ public:
                         const QHelpEngineCore &older);
     static void copyConfiguration(const QHelpEngineCore &source,
                                   QHelpEngineCore &target);
+
+    /*
+     * Note that this only reflects register actions caused by the
+     * "-register" command line switch, not GUI or remote control actions.
+     */
+    static const QDateTime lastRegisterTime(const QHelpEngineCore &helpEngine);
+    static void updateLastRegisterTime(QHelpEngineCore &helpEngine);
 
     static const QString DefaultZoomFactor;
     static const QString ListSeparator;

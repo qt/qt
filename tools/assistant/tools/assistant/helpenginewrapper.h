@@ -75,8 +75,6 @@ public:
     static HelpEngineWrapper &instance(const QString &collectionFile = QString());
     static void removeInstance();
 
-    void initFileSystemWatchers();
-
     // Forwarded help engine member functions, possibly enriched.
     QHelpSearchEngine *searchEngine() const;
     QHelpContentModel *contentModel() const;
@@ -200,6 +198,7 @@ private slots:
 
 private:
     HelpEngineWrapper(const QString &collectionFile);
+    void initFileSystemWatchers();
     void assertDocFilesWatched();
 
     static HelpEngineWrapper *helpEngineWrapper;
