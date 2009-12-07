@@ -80,14 +80,14 @@ QT_USE_NAMESPACE
  Represents the name and value found in "-param name=value".
  */
 typedef QPair<QString, QString> Parameter;
-Q_DECLARE_METATYPE(Parameter);
+Q_DECLARE_METATYPE(Parameter)
 
 /*!
  \internal
  \since 4.4
  For the -output switch.
  */
-Q_DECLARE_METATYPE(QIODevice *);
+Q_DECLARE_METATYPE(QIODevice *)
 
 /*!
  \class PatternistApplicationParser

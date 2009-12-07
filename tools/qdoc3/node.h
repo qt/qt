@@ -89,6 +89,7 @@ class Node
         Example, 
         HeaderFile, 
         File,
+        Image,
         Group,
         Module,
         Page,

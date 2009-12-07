@@ -199,6 +199,8 @@ private slots:
 
     void QTBUG_5251_data() { generic_data("QPSQL"); }
     void QTBUG_5251();
+    void QTBUG_6421_data() { generic_data("QOCI"); }
+    void QTBUG_6421();
 
 private:
     // returns all database connections
@@ -302,7 +304,8 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "more_results" )
                << qTableName( "blobstest" )
                << qTableName( "oraRowId" )
-               << qTableName( "qtest_batch" );
+               << qTableName( "qtest_batch" )
+               << qTableName(QLatin1String("bug6421")).toUpper();
 
     if ( db.driverName().startsWith("QPSQL") )
         tablenames << qTableName("task_233829");
@@ -2933,6 +2936,29 @@ void tst_QSqlQuery::QTBUG_5251()
     QVERIFY_SQL(timetestModel, select());
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:11:22.330"));
 
+}
+
+void tst_QSqlQuery::QTBUG_6421()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+
+    QSqlQuery q(db);
+    QString tableName=qTableName(QLatin1String("bug6421")).toUpper();
+
+    QVERIFY_SQL(q, exec("create table "+tableName+"(COL1 char(10), COL2 char(10), COL3 char(10))"));
+    QVERIFY_SQL(q, exec("create index INDEX1 on "+tableName+" (COL1 desc)"));
+    QVERIFY_SQL(q, exec("create index INDEX2 on "+tableName+" (COL2 desc)"));
+    QVERIFY_SQL(q, exec("create index INDEX3 on "+tableName+" (COL3 desc)"));
+    q.setForwardOnly(true);
+    QVERIFY_SQL(q, exec("select COLUMN_EXPRESSION from ALL_IND_EXPRESSIONS where TABLE_NAME='"+tableName+"'"));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toString(), QLatin1String("\"COL1\""));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toString(), QLatin1String("\"COL2\""));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toString(), QLatin1String("\"COL3\""));
 }
 
 QTEST_MAIN( tst_QSqlQuery )

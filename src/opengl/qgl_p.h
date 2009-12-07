@@ -328,6 +328,7 @@ public:
     GLint max_texture_size;
 
     GLuint current_fbo;
+    GLuint default_fbo;
     QPaintEngine *active_engine;
 
     static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }

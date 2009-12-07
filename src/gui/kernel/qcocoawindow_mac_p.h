@@ -50,13 +50,18 @@
 // We mean it.
 //
 
-#include "qmacdefines_mac.h"
 #ifdef QT_MAC_USE_COCOA
+#include "qmacdefines_mac.h"
 #import <Cocoa/Cocoa.h>
 
 enum { QtMacCustomizeWindow = 1 << 21 }; // This will one day be run over by
 
 QT_FORWARD_DECLARE_CLASS(QWidget);
+QT_FORWARD_DECLARE_CLASS(QStringList);
+
+@interface NSWindow (QtCoverForHackWithCategory)
++ (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
+@end
 
 @interface NSWindow (QT_MANGLE_NAMESPACE(QWidgetIntegration))
 - (id)QT_MANGLE_NAMESPACE(qt_initWithQWidget):(QWidget *)widget contentRect:(NSRect)rect styleMask:(NSUInteger)mask;
@@ -70,3 +75,4 @@ QT_FORWARD_DECLARE_CLASS(QWidget);
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
 @end
 #endif
+

@@ -1025,7 +1025,6 @@ QVariant QDB2Result::data(int field)
             break;
         case QVariant::Double:
             {
-            QString value=qGetStringData(d->hStmt, field, info.length() + 1, isNull);
             switch(numericalPrecisionPolicy()) {
                 case QSql::LowPrecisionInt32:
                     v = new QVariant(qGetIntData(d->hStmt, field, isNull));
