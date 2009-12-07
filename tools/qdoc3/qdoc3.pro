@@ -105,3 +105,5 @@ SOURCES += apigenerator.cpp \
            webxmlgenerator.cpp \
 	   yyindent.cpp
 
+target.path = $$[QT_INSTALL_BINS]
+INSTALLS += target
