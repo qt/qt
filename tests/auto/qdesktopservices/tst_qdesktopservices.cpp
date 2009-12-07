@@ -70,6 +70,7 @@ private slots:
     void openMailtoUrl();
     void openFileUrl_data();
     void openFileUrl();
+    void openMultipleFileUrls();
 #endif
     void handlers();
     void storageLocation_data();
@@ -197,6 +198,7 @@ void tst_qdesktopservices::openMailtoUrl()
     QFETCH(QUrl, url);
     QFETCH(bool, result);
     QCOMPARE(QDesktopServices::openUrl(url), result);
+    QTest::qWait(5000);
 }
 
 void tst_qdesktopservices::openFileUrl_data()
@@ -239,7 +241,19 @@ void tst_qdesktopservices::openFileUrl()
     QFETCH(QUrl, url);
     QFETCH(bool, result);
     QCOMPARE(QDesktopServices::openUrl(url), result);
-    QTest::qWait(15000);
+    QTest::qWait(5000);
+}
+
+void tst_qdesktopservices::openMultipleFileUrls()
+{
+#ifndef RUN_MANUAL_TESTS
+    QSKIP("Test disabled -- only for manual purposes", SkipAll);
+#endif
+
+    QCOMPARE(QDesktopServices::openUrl(QUrl("file:///c:/data/images/image.bmp")), true);
+    QCOMPARE(QDesktopServices::openUrl(QUrl("file:///c:/data/images/image.png")), true);
+    QCOMPARE(QDesktopServices::openUrl(QUrl("file:///c:/data/others/noendofline.txt")), true); 
+    QCOMPARE(QDesktopServices::openUrl(QUrl("file:///c:/data/installs/ErrRd.sisx")), true);      
 }
 #endif
 

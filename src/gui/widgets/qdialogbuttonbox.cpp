@@ -259,6 +259,30 @@ static const int layouts[2][5][14] =
     }
 };
 
+class QDialogButtonEnabledProxy : public QObject
+{
+public:
+    QDialogButtonEnabledProxy(QObject *parent, QWidget *src, QAction *trg) : QObject(parent), source(src), target(trg)
+    {
+        source->installEventFilter(this);
+    }
+    ~QDialogButtonEnabledProxy()
+    {
+        source->removeEventFilter(this);
+    }
+    bool eventFilter(QObject *object, QEvent *event)
+    {
+        if (object == source && event->type() == QEvent::EnabledChange) {
+            target->setEnabled(source->isEnabled());
+        }
+        return false;
+    };
+private:
+    QWidget *source;
+    QAction *target;
+};
+
+
 class QDialogButtonBoxPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QDialogButtonBox)
@@ -548,7 +572,9 @@ void QDialogButtonBoxPrivate::addButton(QAbstractButton *button, QDialogButtonBo
     QObject::connect(button, SIGNAL(destroyed()), q, SLOT(_q_handleButtonDestroyed()));
     buttonLists[role].append(button);
 #ifdef QT_SOFTKEYS_ENABLED
-    softKeyActions.insert(button, createSoftKey(button, role));
+    QAction *action = createSoftKey(button, role);
+    softKeyActions.insert(button, action);
+    new QDialogButtonEnabledProxy(action, button, action);
 #endif
     if (doLayout)
         layoutButtons();
