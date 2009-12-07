@@ -343,7 +343,7 @@ class QmlPropertyAnimationPrivate : public QmlAbstractAnimationPrivate
 public:
     QmlPropertyAnimationPrivate()
     : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0),
+      rangeIsSet(false), defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0),
       value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
 
     void init();
@@ -358,9 +358,10 @@ public:
     QList<QObject *> exclude;
 
     bool fromSourced;
-    bool fromIsDefined;
-    bool toIsDefined;
-    bool defaultToInterpolatorType;
+    bool fromIsDefined:1;
+    bool toIsDefined:1;
+    bool rangeIsSet:1;
+    bool defaultToInterpolatorType:1;
     int interpolatorType;
     QVariantAnimation::Interpolator interpolator;
 

@@ -1608,9 +1608,6 @@ void QmlPropertyAnimationPrivate::init()
     Q_Q(QmlPropertyAnimation);
     va = new QmlTimeLineValueAnimator;
     QmlGraphics_setParent_noEvent(va, q);
-
-    va->setStartValue(QVariant(0.0f));
-    va->setEndValue(QVariant(1.0f));
 }
 
 /*!
@@ -2022,6 +2019,12 @@ void QmlPropertyAnimation::prepare(QmlMetaProperty &p)
     else
         d->property = d->userProperty;
 
+    if (!d->rangeIsSet) {
+        d->va->setStartValue(QVariant(0.0f));
+        d->va->setEndValue(QVariant(1.0f));
+        d->rangeIsSet = true;
+    }
+
     int propType = d->property.propertyType();
     d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : propType);
     if (d->fromIsDefined)
@@ -2179,6 +2182,11 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     }
 
     if (data->actions.count()) {
+        if (!d->rangeIsSet) {
+            d->va->setStartValue(QVariant(0.0f));
+            d->va->setEndValue(QVariant(1.0f));
+            d->rangeIsSet = true;
+        }
         d->va->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
     } else {
         delete data;

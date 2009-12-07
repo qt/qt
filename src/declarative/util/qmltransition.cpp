@@ -83,7 +83,7 @@ class QmlTransitionPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlTransition)
 public:
     QmlTransitionPrivate() : fromState(QLatin1String("*")), toState(QLatin1String("*"))
-    , reversed(false), reversible(false), group(0), endState(0)
+    , reversed(false), reversible(false), endState(0)
     {
         animations.parent = this;
     }
@@ -92,13 +92,12 @@ public:
     QString toState;
     bool reversed;
     bool reversible;
-    ParallelAnimationWrapper *group;
+    ParallelAnimationWrapper group;
     QmlTransitionManager *endState;
 
     void init()
     {
-        group = new ParallelAnimationWrapper;
-        group->trans = this;
+        group.trans = this;
     }
 
     void complete()
@@ -121,7 +120,7 @@ public:
 void QmlTransitionPrivate::AnimationList::append(QmlAbstractAnimation *a)
 {
     QmlConcreteList<QmlAbstractAnimation *>::append(a);
-    parent->group->addAnimation(a->qtAnimation());
+    parent->group.addAnimation(a->qtAnimation());
 }
 
 void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
@@ -146,14 +145,12 @@ QmlTransition::QmlTransition(QObject *parent)
 
 QmlTransition::~QmlTransition()
 {
-    Q_D(QmlTransition);
-    delete d->group;
 }
 
 void QmlTransition::stop()
 {
     Q_D(QmlTransition);
-    d->group->stop();
+    d->group.stop();
 }
 
 void QmlTransition::setReversed(bool r)
@@ -179,8 +176,8 @@ void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
     }
 
     d->endState = endState;
-    d->group->setDirection(d->reversed ? QAbstractAnimation::Backward : QAbstractAnimation::Forward);
-    d->group->start();
+    d->group.setDirection(d->reversed ? QAbstractAnimation::Backward : QAbstractAnimation::Forward);
+    d->group.start();
 }
 
 /*!
