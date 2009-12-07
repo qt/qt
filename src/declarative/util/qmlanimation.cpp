@@ -422,50 +422,6 @@ void QmlAbstractAnimation::setGroup(QmlAnimationGroup *g)
         setParent(g);
 }
 
-QObject *QmlAbstractAnimation::target() const
-{
-    Q_D(const QmlAbstractAnimation);
-    return d->target;
-}
-
-void QmlAbstractAnimation::setTarget(QObject *o)
-{
-    Q_D(QmlAbstractAnimation);
-    if (d->target == o)
-        return;
-
-    d->target = o;
-    if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = d->createProperty(d->target, d->propertyName, this);
-    } else {
-        d->userProperty.invalidate();
-    }
-
-    emit targetChanged(d->target, d->propertyName);
-}
-
-QString QmlAbstractAnimation::property() const
-{
-    Q_D(const QmlAbstractAnimation);
-    return d->propertyName;
-}
-
-void QmlAbstractAnimation::setProperty(const QString &n)
-{
-    Q_D(QmlAbstractAnimation);
-    if (d->propertyName == n)
-        return;
-
-    d->propertyName = n;
-    if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = d->createProperty(d->target, d->propertyName, this);
-    } else {
-        d->userProperty.invalidate();
-    }
-
-    emit targetChanged(d->target, d->propertyName);
-}
-
 /*!
     \qmlmethod Animation::start()
     \brief Starts the animation.
@@ -886,6 +842,28 @@ void QmlPropertyActionPrivate::init()
     is being used.  Refer to the \l animation documentation for details.
 */
 
+QObject *QmlPropertyAction::target() const
+{
+    Q_D(const QmlPropertyAction);
+    return d->target;
+}
+
+void QmlPropertyAction::setTarget(QObject *o)
+{
+    Q_D(QmlPropertyAction);
+    if (d->target == o)
+        return;
+
+    d->target = o;
+    if (d->target && !d->propertyName.isEmpty()) {
+        d->userProperty = d->createProperty(d->target, d->propertyName, this);
+    } else {
+        d->userProperty.invalidate();
+    }
+
+    emit targetChanged(d->target, d->propertyName);
+}
+
 /*!
     \qmlproperty string PropertyAction::property
     This property holds an explicit property to animated.
@@ -893,6 +871,28 @@ void QmlPropertyActionPrivate::init()
     The exact effect of the \c property property depends on how the animation
     is being used.  Refer to the \l animation documentation for details.
 */
+
+QString QmlPropertyAction::property() const
+{
+    Q_D(const QmlPropertyAction);
+    return d->propertyName;
+}
+
+void QmlPropertyAction::setProperty(const QString &n)
+{
+    Q_D(QmlPropertyAction);
+    if (d->propertyName == n)
+        return;
+
+    d->propertyName = n;
+    if (d->target && !d->propertyName.isEmpty()) {
+        d->userProperty = d->createProperty(d->target, d->propertyName, this);
+    } else {
+        d->userProperty.invalidate();
+    }
+
+    emit targetChanged(d->target, d->propertyName);
+}
 
 /*!
     \qmlproperty string PropertyAction::matchProperties
@@ -1445,10 +1445,10 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
     }
 
     //needed for Behavior
-    if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
+    if (d->userProperty.isValid()) {
         for (int i = 0; i < d->animations.count(); ++i)
             d->animations.at(i)->setTarget(d->userProperty);
-   }
+    }
 
     for (int ii = from; ii < d->animations.count() && ii >= 0; ii += inc) {
         d->animations.at(ii)->transition(actions, modified, direction);
@@ -1517,7 +1517,7 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
     Q_D(QmlAnimationGroup);
 
     //needed for Behavior
-    if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
+    if (d->userProperty.isValid()) {
         for (int i = 0; i < d->animations.count(); ++i)
             d->animations.at(i)->setTarget(d->userProperty);
     }
@@ -1608,9 +1608,6 @@ void QmlPropertyAnimationPrivate::init()
     Q_Q(QmlPropertyAnimation);
     va = new QmlTimeLineValueAnimator;
     QmlGraphics_setParent_noEvent(va, q);
-
-    va->setStartValue(QVariant(0.0f));
-    va->setEndValue(QVariant(1.0f));
 }
 
 /*!
@@ -1884,6 +1881,28 @@ void QmlPropertyAnimation::setEasing(const QString &e)
     \sa property matchTargets
 */
 
+QObject *QmlPropertyAnimation::target() const
+{
+    Q_D(const QmlPropertyAnimation);
+    return d->target;
+}
+
+void QmlPropertyAnimation::setTarget(QObject *o)
+{
+    Q_D(QmlPropertyAnimation);
+    if (d->target == o)
+        return;
+
+    d->target = o;
+    if (d->target && !d->propertyName.isEmpty()) {
+        d->userProperty = d->createProperty(d->target, d->propertyName, this);
+    } else {
+        d->userProperty.invalidate();
+    }
+
+    emit targetChanged(d->target, d->propertyName);
+}
+
 /*!
     \qmlproperty string PropertyAnimation::property
     This property holds an explicit property name to animate.
@@ -1893,6 +1912,28 @@ void QmlPropertyAnimation::setEasing(const QString &e)
 
     \sa target matchProperties
 */
+
+QString QmlPropertyAnimation::property() const
+{
+    Q_D(const QmlPropertyAnimation);
+    return d->propertyName;
+}
+
+void QmlPropertyAnimation::setProperty(const QString &n)
+{
+    Q_D(QmlPropertyAnimation);
+    if (d->propertyName == n)
+        return;
+
+    d->propertyName = n;
+    if (d->target && !d->propertyName.isEmpty()) {
+        d->userProperty = d->createProperty(d->target, d->propertyName, this);
+    } else {
+        d->userProperty.invalidate();
+    }
+
+    emit targetChanged(d->target, d->propertyName);
+}
 
 /*!
     \qmlproperty string PropertyAnimation::matchProperties
@@ -2021,6 +2062,12 @@ void QmlPropertyAnimation::prepare(QmlMetaProperty &p)
         d->property = p;
     else
         d->property = d->userProperty;
+
+    if (!d->rangeIsSet) {
+        d->va->setStartValue(QVariant(0.0f));
+        d->va->setEndValue(QVariant(1.0f));
+        d->rangeIsSet = true;
+    }
 
     int propType = d->property.propertyType();
     d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : propType);
@@ -2179,6 +2226,11 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     }
 
     if (data->actions.count()) {
+        if (!d->rangeIsSet) {
+            d->va->setStartValue(QVariant(0.0f));
+            d->va->setEndValue(QVariant(1.0f));
+            d->rangeIsSet = true;
+        }
         d->va->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
     } else {
         delete data;
