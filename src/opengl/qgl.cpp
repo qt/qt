@@ -127,18 +127,6 @@ Q_GLOBAL_STATIC(QGLDefaultOverlayFormat, defaultOverlayFormatInstance)
 QGLExtensions::Extensions QGLExtensions::glExtensions = 0;
 bool QGLExtensions::nvidiaFboNeedsFinish = false;
 
-#ifndef APIENTRY
-# define APIENTRY
-#endif
-typedef void (APIENTRY *pfn_glCompressedTexImage2DARB) (GLenum, GLint, GLenum, GLsizei,
-                                                        GLsizei, GLint, GLsizei, const GLvoid *);
-static pfn_glCompressedTexImage2DARB qt_glCompressedTexImage2DARB = 0;
-
-
-#ifndef APIENTRY
-#define APIENTRY
-#endif
-
 Q_GLOBAL_STATIC(QGLSignalProxy, theSignalProxy)
 QGLSignalProxy *QGLSignalProxy::instance()
 {
@@ -185,12 +173,12 @@ public:
 #else
             // We can't do this in the constructor for this object because it
             // needs to be called *before* the QApplication constructor.
-            // Also check for the FragmentProgram extension in conjunction with
+            // Also check for the FragmentShader extension in conjunction with
             // the 2.0 version flag, to cover the case where we export the display
             // from an old GL 1.1 server to a GL 2.x client. In that case we can't
             // use GL 2.0.
             if ((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
-                && (QGLExtensions::glExtensions & QGLExtensions::FragmentProgram)
+                && (QGLExtensions::glExtensions & QGLExtensions::FragmentShader)
                 && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty())
                 engineType = QPaintEngine::OpenGL2;
             else
@@ -1887,118 +1875,42 @@ void QGLContextPrivate::cleanup()
 {
 }
 
-typedef QHash<QString, GLuint> QGLDDSCache;
-Q_GLOBAL_STATIC(QGLDDSCache, qgl_dds_cache)
-
 /*!
     \overload
 
-    Reads the DirectDrawSurface (DDS) compressed file \a fileName and
-    generates a 2D GL texture from it.
+    Reads the compressed texture file \a fileName and generates a 2D GL
+    texture from it.
 
-    Only the DXT1, DXT3 and DXT5 DDS formats are supported.
+    This function can load DirectDrawSurface (DDS) textures in the
+    DXT1, DXT3 and DXT5 DDS formats if the \c GL_ARB_texture_compression
+    and \c GL_EXT_texture_compression_s3tc extensions are supported.
 
-    Note that this will only work if the implementation supports the
-    \c GL_ARB_texture_compression and \c GL_EXT_texture_compression_s3tc
-    extensions.
+    Since 4.6.1, textures in the ETC1 format can be loaded if the
+    \c GL_OES_compressed_ETC1_RGB8_texture extension is supported
+    and the ETC1 texture has been encapsulated in the PVR container format.
+    Also, textures in the PVRTC2 and PVRTC4 formats can be loaded
+    if the \c GL_IMG_texture_compression_pvrtc extension is supported.
 
     \sa deleteTexture()
 */
 
 GLuint QGLContext::bindTexture(const QString &fileName)
 {
-    if (!qt_glCompressedTexImage2DARB) {
-        qWarning("QGLContext::bindTexture(): The GL implementation does not support texture"
-                 "compression extensions.");
-        return 0;
-    }
-
-    QGLDDSCache::const_iterator it = qgl_dds_cache()->constFind(fileName);
-    if (it != qgl_dds_cache()->constEnd()) {
+    Q_D(QGLContext);
+    QGLDDSCache *dds_cache = &(d->group->m_dds_cache);
+    QGLDDSCache::const_iterator it = dds_cache->constFind(fileName);
+    if (it != dds_cache->constEnd()) {
         glBindTexture(GL_TEXTURE_2D, it.value());
         return it.value();
     }
 
-    QFile f(fileName);
-    f.open(QIODevice::ReadOnly);
-
-    char tag[4];
-    f.read(&tag[0], 4);
-    if (strncmp(tag,"DDS ", 4) != 0) {
-        qWarning("QGLContext::bindTexture(): not a DDS image file.");
+    QGLTexture texture(this);
+    QSize size = texture.bindCompressedTexture(fileName);
+    if (!size.isValid())
         return 0;
-    }
 
-    DDSFormat ddsHeader;
-    f.read((char *) &ddsHeader, sizeof(DDSFormat));
-
-    if (!ddsHeader.dwLinearSize) {
-        qWarning("QGLContext::bindTexture() DDS image size is not valid.");
-        return 0;
-    }
-
-    int factor = 4;
-    int bufferSize = 0;
-    int blockSize = 16;
-    GLenum format;
-
-    switch(ddsHeader.ddsPixelFormat.dwFourCC) {
-    case FOURCC_DXT1:
-        format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-        factor = 2;
-        blockSize = 8;
-        break;
-    case FOURCC_DXT3:
-        format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-        break;
-    case FOURCC_DXT5:
-        format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-        break;
-    default:
-        qWarning("QGLContext::bindTexture() DDS image format not supported.");
-        return 0;
-    }
-
-    if (ddsHeader.dwMipMapCount > 1)
-        bufferSize = ddsHeader.dwLinearSize * factor;
-    else
-        bufferSize = ddsHeader.dwLinearSize;
-
-    GLubyte *pixels = (GLubyte *) malloc(bufferSize*sizeof(GLubyte));
-    f.seek(ddsHeader.dwSize + 4);
-    f.read((char *) pixels, bufferSize);
-    f.close();
-
-    GLuint tx_id;
-    glGenTextures(1, &tx_id);
-    glBindTexture(GL_TEXTURE_2D, tx_id);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-    int size;
-    int offset = 0;
-    int w = ddsHeader.dwWidth;
-    int h = ddsHeader.dwHeight;
-
-    // load mip-maps
-    for(int i = 0; i < (int) ddsHeader.dwMipMapCount; ++i) {
-        if (w == 0) w = 1;
-        if (h == 0) h = 1;
-
-        size = ((w+3)/4) * ((h+3)/4) * blockSize;
-        qt_glCompressedTexImage2DARB(GL_TEXTURE_2D, i, format, w, h, 0,
-                                     size, pixels + offset);
-        offset += size;
-
-        // half size for each mip-map level
-        w = w/2;
-        h = h/2;
-    }
-
-    free(pixels);
-
-    qgl_dds_cache()->insert(fileName, tx_id);
-    return tx_id;
+    dds_cache->insert(fileName, texture.id);
+    return texture.id;
 }
 
 static inline QRgb qt_gl_convertToGLFormatHelper(QRgb src_pixel, GLenum texture_format)
@@ -2593,17 +2505,20 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, Q
 */
 void QGLContext::deleteTexture(GLuint id)
 {
+    Q_D(QGLContext);
+
     if (QGLTextureCache::instance()->remove(this, id))
         return;
 
     // check the DDS cache if the texture wasn't found in the pixmap/image
     // cache
-    QList<QString> ddsKeys = qgl_dds_cache()->keys();
+    QGLDDSCache *dds_cache = &(d->group->m_dds_cache);
+    QList<QString> ddsKeys = dds_cache->keys();
     for (int i = 0; i < ddsKeys.size(); ++i) {
-        GLuint texture = qgl_dds_cache()->value(ddsKeys.at(i));
+        GLuint texture = dds_cache->value(ddsKeys.at(i));
         if (id == texture) {
             glDeleteTextures(1, &texture);
-            qgl_dds_cache()->remove(ddsKeys.at(i));
+            dds_cache->remove(ddsKeys.at(i));
             return;
         }
     }
@@ -4907,10 +4822,18 @@ void QGLExtensions::init_extensions()
         glExtensions |= SampleBuffers;
     if (extensions.contains("GL_SGIS_generate_mipmap"))
         glExtensions |= GenerateMipmap;
-    if (extensions.contains("GL_EXT_texture_compression_s3tc"))
+    if (extensions.contains("GL_ARB_texture_compression"))
         glExtensions |= TextureCompression;
+    if (extensions.contains("GL_EXT_texture_compression_s3tc"))
+        glExtensions |= DDSTextureCompression;
+    if (extensions.contains("GL_OES_compressed_ETC1_RGB8_texture"))
+        glExtensions |= ETC1TextureCompression;
+    if (extensions.contains("GL_IMG_texture_compression_pvrtc"))
+        glExtensions |= PVRTCTextureCompression;
     if (extensions.contains("GL_ARB_fragment_program"))
         glExtensions |= FragmentProgram;
+    if (extensions.contains("GL_ARB_fragment_shader"))
+        glExtensions |= FragmentShader;
     if (extensions.contains("GL_ARB_texture_mirrored_repeat"))
         glExtensions |= MirroredRepeat;
     if (extensions.contains("GL_EXT_framebuffer_object"))
@@ -4928,6 +4851,7 @@ void QGLExtensions::init_extensions()
 #if defined(QT_OPENGL_ES_2)
     glExtensions |= FramebufferObject;
     glExtensions |= GenerateMipmap;
+    glExtensions |= FragmentShader;
 #endif
 #if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
     if (extensions.contains("GL_OES_framebuffer_object"))
@@ -4951,12 +4875,6 @@ void QGLExtensions::init_extensions()
 
     if (extensions.contains("GL_EXT_bgra"))
         glExtensions |= BGRATextureFormat;
-
-
-    QGLContext cx(QGLFormat::defaultFormat());
-    if (glExtensions & TextureCompression) {
-        qt_glCompressedTexImage2DARB = (pfn_glCompressedTexImage2DARB) cx.getProcAddress(QLatin1String("glCompressedTexImage2DARB"));
-    }
 }
 
 /*
@@ -5111,5 +5029,341 @@ void QGLSharedResourceGuard::setContext(const QGLContext *context)
         m_group = 0;
     }
 }
+
+QSize QGLTexture::bindCompressedTexture
+    (const QString& fileName, const char *format)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+        return QSize();
+    QByteArray contents = file.readAll();
+    file.close();
+    return bindCompressedTexture
+        (contents.constData(), contents.size(), format);
+}
+
+// PVR header format for container files that store textures compressed
+// with the ETC1, PVRTC2, and PVRTC4 encodings.  Format information from the
+// PowerVR SDK at http://www.imgtec.com/powervr/insider/powervr-sdk.asp
+// "PVRTexTool Reference Manual, version 1.11f".
+struct PvrHeader
+{
+    quint32 headerSize;
+    quint32 height;
+    quint32 width;
+    quint32 mipMapCount;
+    quint32 flags;
+    quint32 dataSize;
+    quint32 bitsPerPixel;
+    quint32 redMask;
+    quint32 greenMask;
+    quint32 blueMask;
+    quint32 alphaMask;
+    quint32 magic;
+    quint32 surfaceCount;
+};
+
+#define PVR_MAGIC               0x21525650      // "PVR!" in little-endian
+
+#define PVR_FORMAT_MASK         0x000000FF
+#define PVR_FORMAT_PVRTC2       0x00000018
+#define PVR_FORMAT_PVRTC4       0x00000019
+#define PVR_FORMAT_ETC1         0x00000036
+
+#define PVR_HAS_MIPMAPS         0x00000100
+#define PVR_TWIDDLED            0x00000200
+#define PVR_NORMAL_MAP          0x00000400
+#define PVR_BORDER_ADDED        0x00000800
+#define PVR_CUBE_MAP            0x00001000
+#define PVR_FALSE_COLOR_MIPMAPS 0x00002000
+#define PVR_VOLUME_TEXTURE      0x00004000
+#define PVR_ALPHA_IN_TEXTURE    0x00008000
+#define PVR_VERTICAL_FLIP       0x00010000
+
+#ifndef GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+#define GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG      0x8C00
+#define GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG      0x8C01
+#define GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG     0x8C02
+#define GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG     0x8C03
+#endif
+
+#ifndef GL_ETC1_RGB8_OES
+#define GL_ETC1_RGB8_OES                        0x8D64
+#endif
+
+bool QGLTexture::canBindCompressedTexture
+    (const char *buf, int len, const char *format, bool *hasAlpha)
+{
+    if (QSysInfo::ByteOrder != QSysInfo::LittleEndian) {
+        // Compressed texture loading only supported on little-endian
+        // systems such as x86 and ARM at the moment.
+        return false;
+    }
+    if (!format) {
+        // Auto-detect the format from the header.
+        if (len >= 4 && !qstrncmp(buf, "DDS ", 4)) {
+            *hasAlpha = true;
+            return true;
+        } else if (len >= 52 && !qstrncmp(buf + 44, "PVR!", 4)) {
+            const PvrHeader *pvrHeader =
+                reinterpret_cast<const PvrHeader *>(buf);
+            *hasAlpha = (pvrHeader->alphaMask != 0);
+            return true;
+        }
+    } else {
+        // Validate the format against the header.
+        if (!qstricmp(format, "DDS")) {
+            if (len >= 4 && !qstrncmp(buf, "DDS ", 4)) {
+                *hasAlpha = true;
+                return true;
+            }
+        } else if (!qstricmp(format, "PVR") || !qstricmp(format, "ETC1")) {
+            if (len >= 52 && !qstrncmp(buf + 44, "PVR!", 4)) {
+                const PvrHeader *pvrHeader =
+                    reinterpret_cast<const PvrHeader *>(buf);
+                *hasAlpha = (pvrHeader->alphaMask != 0);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+#define ctx QGLContext::currentContext()
+
+QSize QGLTexture::bindCompressedTexture
+    (const char *buf, int len, const char *format)
+{
+    if (QSysInfo::ByteOrder != QSysInfo::LittleEndian) {
+        // Compressed texture loading only supported on little-endian
+        // systems such as x86 and ARM at the moment.
+        return QSize();
+    }
+#if !defined(QT_OPENGL_ES)
+    if (!glCompressedTexImage2D) {
+        if (!(QGLExtensions::glExtensions & QGLExtensions::TextureCompression)) {
+            qWarning("QGLContext::bindTexture(): The GL implementation does "
+                     "not support texture compression extensions.");
+            return QSize();
+        }
+        glCompressedTexImage2D = (_glCompressedTexImage2DARB) ctx->getProcAddress(QLatin1String("glCompressedTexImage2DARB"));
+        if (!glCompressedTexImage2D) {
+            qWarning("QGLContext::bindTexture(): could not resolve "
+                     "glCompressedTexImage2DARB.");
+            return QSize();
+        }
+    }
+#endif
+    if (!format) {
+        // Auto-detect the format from the header.
+        if (len >= 4 && !qstrncmp(buf, "DDS ", 4))
+            return bindCompressedTextureDDS(buf, len);
+        else if (len >= 52 && !qstrncmp(buf + 44, "PVR!", 4))
+            return bindCompressedTexturePVR(buf, len);
+    } else {
+        // Validate the format against the header.
+        if (!qstricmp(format, "DDS")) {
+            if (len >= 4 && !qstrncmp(buf, "DDS ", 4))
+                return bindCompressedTextureDDS(buf, len);
+        } else if (!qstricmp(format, "PVR") || !qstricmp(format, "ETC1")) {
+            if (len >= 52 && !qstrncmp(buf + 44, "PVR!", 4))
+                return bindCompressedTexturePVR(buf, len);
+        }
+    }
+    return QSize();
+}
+
+QSize QGLTexture::bindCompressedTextureDDS(const char *buf, int len)
+{
+    // We only support 2D texture loading at present.
+    if (target != GL_TEXTURE_2D)
+        return QSize();
+
+    // Bail out if the necessary extension is not present.
+    if (!(QGLExtensions::glExtensions & QGLExtensions::DDSTextureCompression)) {
+        qWarning("QGLContext::bindTexture(): DDS texture compression is not supported.");
+        return QSize();
+    }
+
+    const DDSFormat *ddsHeader = reinterpret_cast<const DDSFormat *>(buf + 4);
+    if (!ddsHeader->dwLinearSize) {
+        qWarning("QGLContext::bindTexture(): DDS image size is not valid.");
+        return QSize();
+    }
+
+    int blockSize = 16;
+    GLenum format;
+
+    switch(ddsHeader->ddsPixelFormat.dwFourCC) {
+    case FOURCC_DXT1:
+        format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        blockSize = 8;
+        break;
+    case FOURCC_DXT3:
+        format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+        break;
+    case FOURCC_DXT5:
+        format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        break;
+    default:
+        qWarning("QGLContext::bindTexture(): DDS image format not supported.");
+        return QSize();
+    }
+
+    const GLubyte *pixels =
+        reinterpret_cast<const GLubyte *>(buf + ddsHeader->dwSize + 4);
+
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    int size;
+    int offset = 0;
+    int available = len - int(ddsHeader->dwSize + 4);
+    int w = ddsHeader->dwWidth;
+    int h = ddsHeader->dwHeight;
+
+    // load mip-maps
+    for(int i = 0; i < (int) ddsHeader->dwMipMapCount; ++i) {
+        if (w == 0) w = 1;
+        if (h == 0) h = 1;
+
+        size = ((w+3)/4) * ((h+3)/4) * blockSize;
+        if (size > available)
+            break;
+        glCompressedTexImage2D(GL_TEXTURE_2D, i, format, w, h, 0,
+                               size, pixels + offset);
+        offset += size;
+        available -= size;
+
+        // half size for each mip-map level
+        w = w/2;
+        h = h/2;
+    }
+
+    // DDS images are not inverted.
+    options &= ~QGLContext::InvertedYBindOption;
+
+    return QSize(ddsHeader->dwWidth, ddsHeader->dwHeight);
+}
+
+QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
+{
+    // We only support 2D texture loading at present.  Cube maps later.
+    if (target != GL_TEXTURE_2D)
+        return QSize();
+
+    // Determine which texture format we will be loading.
+    const PvrHeader *pvrHeader = reinterpret_cast<const PvrHeader *>(buf);
+    GLenum textureFormat;
+    quint32 minWidth, minHeight;
+    switch (pvrHeader->flags & PVR_FORMAT_MASK) {
+    case PVR_FORMAT_PVRTC2:
+        if (pvrHeader->alphaMask)
+            textureFormat = GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+        else
+            textureFormat = GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+        minWidth = 16;
+        minHeight = 8;
+        break;
+
+    case PVR_FORMAT_PVRTC4:
+        if (pvrHeader->alphaMask)
+            textureFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+        else
+            textureFormat = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+        minWidth = 8;
+        minHeight = 8;
+        break;
+
+    case PVR_FORMAT_ETC1:
+        textureFormat = GL_ETC1_RGB8_OES;
+        minWidth = 4;
+        minHeight = 4;
+        break;
+
+    default:
+        qWarning("QGLContext::bindTexture(): PVR image format 0x%x not supported.", int(pvrHeader->flags & PVR_FORMAT_MASK));
+        return QSize();
+    }
+
+    // Bail out if the necessary extension is not present.
+    if (textureFormat == GL_ETC1_RGB8_OES) {
+        if (!(QGLExtensions::glExtensions &
+                    QGLExtensions::ETC1TextureCompression)) {
+            qWarning("QGLContext::bindTexture(): ETC1 texture compression is not supported.");
+            return QSize();
+        }
+    } else {
+        if (!(QGLExtensions::glExtensions &
+                    QGLExtensions::PVRTCTextureCompression)) {
+            qWarning("QGLContext::bindTexture(): PVRTC texture compression is not supported.");
+            return QSize();
+        }
+    }
+
+    // Boundary check on the buffer size.
+    quint32 bufferSize = pvrHeader->headerSize + pvrHeader->dataSize;
+    if (bufferSize > quint32(len)) {
+        qWarning("QGLContext::bindTexture(): PVR image size is not valid.");
+        return QSize();
+    }
+
+    // Create the texture.
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+    if (pvrHeader->mipMapCount) {
+        if ((options & QGLContext::LinearFilteringBindOption) != 0) {
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        } else {
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+        }
+    } else if ((options & QGLContext::LinearFilteringBindOption) != 0) {
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    } else {
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    }
+
+    // Load the compressed mipmap levels.
+    const GLubyte *buffer =
+        reinterpret_cast<const GLubyte *>(buf + pvrHeader->headerSize);
+    bufferSize = pvrHeader->dataSize;
+    quint32 level = 0;
+    quint32 width = pvrHeader->width;
+    quint32 height = pvrHeader->height;
+    while (bufferSize > 0 && level < pvrHeader->mipMapCount) {
+        quint32 size =
+            (qMax(width, minWidth) * qMax(height, minHeight) *
+             pvrHeader->bitsPerPixel) / 8;
+        if (size > bufferSize)
+            break;
+        glCompressedTexImage2D(GL_TEXTURE_2D, GLint(level), textureFormat,
+                               GLsizei(width), GLsizei(height), 0,
+                               GLsizei(size), buffer);
+        width /= 2;
+        height /= 2;
+        buffer += size;
+        ++level;
+    }
+
+    // Restore the default pixel alignment for later texture uploads.
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+    // Set the invert flag for the texture.
+    if ((pvrHeader->flags & PVR_VERTICAL_FLIP) != 0)
+        options |= QGLContext::InvertedYBindOption;
+    else
+        options &= ~QGLContext::InvertedYBindOption;
+
+    return QSize(pvrHeader->width, pvrHeader->height);
+}
+
+#undef ctx
 
 QT_END_NAMESPACE
