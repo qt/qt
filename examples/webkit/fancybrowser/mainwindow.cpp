@@ -120,6 +120,7 @@ void MainWindow::slotSourceDownloaded()
     textEdit->setAttribute(Qt::WA_DeleteOnClose);
     textEdit->show();
     textEdit->setPlainText(reply->readAll());
+    reply->deleteLater();
 }
 
 //! [4]
