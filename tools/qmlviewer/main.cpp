@@ -47,6 +47,37 @@
 #include <QTranslator>
 #include <QDebug>
 
+#if defined (Q_OS_SYMBIAN)
+#define SYMBIAN_NETWORK_INIT
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
+#if defined (SYMBIAN_NETWORK_INIT)
+#include <QTextCodec>
+#include "sym_iap_util.h"
+#endif
+
+#if defined (Q_OS_SYMBIAN)
+void myMessageOutput(QtMsgType type, const char *msg)
+{
+    static int fd = -1;
+    if (fd == -1)
+        fd = ::open("E:\\qmlviewer.log", O_WRONLY | O_CREAT);
+
+    ::write(fd, msg, strlen(msg));
+    ::write(fd, "\n", 1);
+    ::fsync(fd);
+
+    switch (type) {
+    case QtFatalMsg:
+        abort();
+    }
+}
+#endif
+
 void usage()
 {
     qWarning("Usage: qmlviewer [options] <filename>");
@@ -99,6 +130,10 @@ void scriptOptsUsage()
 
 int main(int argc, char ** argv)
 {
+#if defined (Q_OS_SYMBIAN)
+    qInstallMsgHandler(myMessageOutput);
+#endif
+
     //### default to using raster graphics backend for now
     bool gsSpecified = false;
     for (int i = 0; i < argc; ++i) {
@@ -108,8 +143,12 @@ int main(int argc, char ** argv)
             break;
         }
     }
+
+#if !defined (Q_OS_SYMBIAN)
     if (!gsSpecified)
         QApplication::setGraphicsSystem("raster");
+#endif
+
 
     QApplication app(argc, argv);
     app.setApplicationName("viewer");
@@ -259,6 +298,10 @@ int main(int argc, char ** argv)
     }  else if (!script.isEmpty()) {
         usage();
     }
+
+#if defined(SYMBIAN_NETWORK_INIT)
+        qt_SetDefaultIap();
+#endif
 
     viewer.setUseGL(useGL);
     foreach (QString lib, libraries)
