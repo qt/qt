@@ -42,6 +42,7 @@
 #ifndef QMLVIEWER_H
 #define QMLVIEWER_H
 
+#include <QMainWindow>
 #include <QMenuBar>
 #include <private/qmltimer_p.h>
 #include <QTime>
@@ -56,7 +57,12 @@ class QProcess;
 class RecordingDialog;
 class QmlGraphicsTester;
 
-class QmlViewer : public QWidget
+class QmlViewer
+#if defined(Q_OS_SYMBIAN)
+    : public QMainWindow
+#else
+    : public QWidget
+#endif
 {
 Q_OBJECT
 public:
@@ -85,6 +91,7 @@ public:
     void setNetworkCacheSize(int size);
     void addLibraryPath(const QString& lib);
     void setUseGL(bool use);
+    void setUseNativeFileBrowser(bool);
 
     QStringList builtinSkins() const;
 
@@ -122,6 +129,8 @@ private slots:
     void adjustSizeSlot();
     void setPortrait();
     void setLandscape();
+    void startNetwork();
+    void toggleFullScreen();
 
 private:
     void setupProxy();

@@ -48,19 +48,11 @@
 #include <QDebug>
 
 #if defined (Q_OS_SYMBIAN)
-#define SYMBIAN_NETWORK_INIT
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
-#endif
 
-#if defined (SYMBIAN_NETWORK_INIT)
-#include <QTextCodec>
-#include "sym_iap_util.h"
-#endif
-
-#if defined (Q_OS_SYMBIAN)
 void myMessageOutput(QtMsgType type, const char *msg)
 {
     static int fd = -1;
@@ -149,7 +141,6 @@ int main(int argc, char ** argv)
         QApplication::setGraphicsSystem("raster");
 #endif
 
-
     QApplication app(argc, argv);
     app.setApplicationName("viewer");
     app.setOrganizationName("Nokia");
@@ -176,6 +167,12 @@ int main(int argc, char ** argv)
     bool fullScreen = false;
     bool stayOnTop = false;
     bool maximized = false;
+    bool useNativeFileBrowser = true;
+
+#if defined(Q_OS_SYMBIAN)
+    maximized = true;
+    useNativeFileBrowser = false;
+#endif
 
     for (int i = 1; i < argc; ++i) {
         bool lastArg = (i == argc - 1);
@@ -258,7 +255,7 @@ int main(int argc, char ** argv)
     Qt::WFlags wflags = (frameless ? Qt::FramelessWindowHint : Qt::Widget);
     if (stayOnTop)
         wflags |= Qt::WindowStaysOnTopHint;
-        
+
     QmlViewer viewer(0, wflags);
     if (!scriptopts.isEmpty()) {
         QStringList options = 
@@ -299,10 +296,6 @@ int main(int argc, char ** argv)
         usage();
     }
 
-#if defined(SYMBIAN_NETWORK_INIT)
-        qt_SetDefaultIap();
-#endif
-
     viewer.setUseGL(useGL);
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);
@@ -328,14 +321,19 @@ int main(int argc, char ** argv)
     viewer.setRecordDither(dither);
     if (recordargs.count())
         viewer.setRecordArgs(recordargs);
+
+    viewer.setUseNativeFileBrowser(useNativeFileBrowser);
     if (fullScreen && maximized)
         qWarning() << "Both -fullscreen and -maximized specified. Using -fullscreen.";
     if (!fileName.isEmpty()) {
         viewer.openQml(fileName);
         fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
     } else {
+        if (!useNativeFileBrowser)
+            viewer.open();
         fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
-        viewer.open();
+        if (useNativeFileBrowser)
+            viewer.open();
     }
     viewer.raise();
 

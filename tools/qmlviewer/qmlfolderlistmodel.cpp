@@ -193,11 +193,25 @@ void QmlFolderListModel::setFolder(const QUrl &folder)
 
 QUrl QmlFolderListModel::parentFolder() const
 {
-    int pos = d->folder.path().lastIndexOf(QLatin1Char('/'));
-    if (pos == -1)
-        return QUrl();
-    QUrl r = d->folder;
-    r.setPath(d->folder.path().left(pos));
+    QUrl r;
+    QString localFile = d->folder.toLocalFile();
+    if (!localFile.isEmpty()) {
+        QDir dir(localFile);
+#if defined(Q_OS_SYMBIAN)
+        if (dir.isRoot())
+            dir.setPath("");
+        else
+#endif
+            dir.cdUp();
+        r = d->folder;
+        r.setPath(dir.path());
+    } else {
+        int pos = d->folder.path().lastIndexOf(QLatin1Char('/'));
+        if (pos == -1)
+            return QUrl();
+        r = d->folder;
+        r.setPath(d->folder.path().left(pos));
+    }
     return r;
 }
 
