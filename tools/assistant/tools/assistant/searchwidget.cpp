@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "mainwindow.h"
 #include "searchwidget.h"
@@ -65,6 +66,7 @@ SearchWidget::SearchWidget(QHelpSearchEngine *engine, QWidget *parent)
     , attached(false)
     , searchEngine(engine)
 {
+    TRACE_OBJ
     QVBoxLayout *vLayout = new QVBoxLayout(this);
 
     resultWidget = searchEngine->resultWidget();
@@ -91,11 +93,13 @@ SearchWidget::SearchWidget(QHelpSearchEngine *engine, QWidget *parent)
 
 SearchWidget::~SearchWidget()
 {
+    TRACE_OBJ
     // nothing todo
 }
 
 void SearchWidget::zoomIn()
 {
+    TRACE_OBJ
     QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
     if (browser && zoomCount != 10) {
         zoomCount++;
@@ -105,6 +109,7 @@ void SearchWidget::zoomIn()
 
 void SearchWidget::zoomOut()
 {
+    TRACE_OBJ
     QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
     if (browser && zoomCount != -5) {
         zoomCount--;
@@ -114,6 +119,7 @@ void SearchWidget::zoomOut()
 
 void SearchWidget::resetZoom()
 {
+    TRACE_OBJ
     if (zoomCount == 0)
         return;
 
@@ -126,33 +132,39 @@ void SearchWidget::resetZoom()
 
 bool SearchWidget::isAttached() const
 {
+    TRACE_OBJ
     return attached;
 }
 
 void SearchWidget::setAttached(bool state)
 {
+    TRACE_OBJ
     attached = state;
 }
 
 void SearchWidget::search() const
 {
+    TRACE_OBJ
     QList<QHelpSearchQuery> query = searchEngine->queryWidget()->query();
     searchEngine->search(query);
 }
 
 void SearchWidget::searchingStarted()
 {
+    TRACE_OBJ
     qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
 }
 
 void SearchWidget::searchingFinished(int hits)
 {
+    TRACE_OBJ
     Q_UNUSED(hits)
     qApp->restoreOverrideCursor();
 }
 
 bool SearchWidget::eventFilter(QObject* o, QEvent *e)
 {
+    TRACE_OBJ
     QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
     if (browser && o == browser->viewport()
         && e->type() == QEvent::MouseButtonRelease){
@@ -171,6 +183,7 @@ bool SearchWidget::eventFilter(QObject* o, QEvent *e)
 
 void SearchWidget::keyPressEvent(QKeyEvent *keyEvent)
 {
+    TRACE_OBJ
     if (keyEvent->key() == Qt::Key_Escape)
         MainWindow::activateCurrentBrowser();
     else
@@ -179,6 +192,7 @@ void SearchWidget::keyPressEvent(QKeyEvent *keyEvent)
 
 void SearchWidget::contextMenuEvent(QContextMenuEvent *contextMenuEvent)
 {
+    TRACE_OBJ
     QMenu menu;
     QPoint point = contextMenuEvent->globalPos();
 

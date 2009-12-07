@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "xbelsupport.h"
 #include "bookmarkmanager.h"
@@ -56,11 +57,13 @@ XbelWriter::XbelWriter(BookmarkModel *model)
     : QXmlStreamWriter()
     , treeModel(model)
 {
+    TRACE_OBJ
     setAutoFormatting(true);
 }
 
 void XbelWriter::writeToFile(QIODevice *device)
 {
+    TRACE_OBJ
     setDevice(device);
 
     writeStartDocument();
@@ -77,6 +80,7 @@ void XbelWriter::writeToFile(QIODevice *device)
 
 void XbelWriter::writeData(QStandardItem *child)
 {
+    TRACE_OBJ
     Bookmark entry;
     entry.title = child->data(Qt::DisplayRole).toString();
     entry.url = child->data(Qt::UserRole + 10).toString();
@@ -111,12 +115,14 @@ XbelReader::XbelReader(BookmarkModel *tree, BookmarkModel *list)
     , treeModel(tree)
     , listModel(list)
 {
+    TRACE_OBJ
     folderIcon = QApplication::style()->standardIcon(QStyle::SP_DirClosedIcon);
     bookmarkIcon = QIcon(QLatin1String(":/trolltech/assistant/images/bookmark.png"));
 }
 
 bool XbelReader::readFromFile(QIODevice *device)
 {
+    TRACE_OBJ
     setDevice(device);
 
     while (!atEnd()) {
@@ -138,6 +144,7 @@ bool XbelReader::readFromFile(QIODevice *device)
 
 void XbelReader::readXBEL()
 {
+    TRACE_OBJ
     while (!atEnd()) {
         readNext();
 
@@ -157,6 +164,7 @@ void XbelReader::readXBEL()
 
 void XbelReader::readUnknownElement()
 {
+    TRACE_OBJ
     while (!atEnd()) {
         readNext();
 
@@ -170,6 +178,7 @@ void XbelReader::readUnknownElement()
 
 void XbelReader::readFolder(QStandardItem *item)
 {
+    TRACE_OBJ
     QStandardItem *folder = createChildItem(item);
     folder->setIcon(folderIcon);
     folder->setData(QLatin1String("Folder"), Qt::UserRole + 10);
@@ -199,6 +208,7 @@ void XbelReader::readFolder(QStandardItem *item)
 
 void XbelReader::readBookmark(QStandardItem *item)
 {
+    TRACE_OBJ
     QStandardItem *bookmark = createChildItem(item);
     bookmark->setIcon(bookmarkIcon);
     bookmark->setText(QCoreApplication::tr("Unknown title"));
@@ -224,6 +234,7 @@ void XbelReader::readBookmark(QStandardItem *item)
 
 QStandardItem *XbelReader::createChildItem(QStandardItem *item)
 {
+    TRACE_OBJ
     QStandardItem *childItem = new QStandardItem();
     childItem->setEditable(false);
 

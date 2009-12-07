@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "preferencesdialog.h"
 #include "filternamedialog.h"
@@ -68,6 +69,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
     , m_browserFontChanged(false)
     , helpEngine(HelpEngineWrapper::instance())
 {
+    TRACE_OBJ
     m_ui.setupUi(this);
 
     connect(m_ui.buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()),
@@ -117,6 +119,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
 
 PreferencesDialog::~PreferencesDialog()
 {
+    TRACE_OBJ
     if (m_appFontChanged) {
         helpEngine.setAppFont(m_appFontPanel->selectedFont());
         helpEngine.setUseAppFont(m_appFontPanel->isChecked());
@@ -145,12 +148,14 @@ PreferencesDialog::~PreferencesDialog()
 
 void PreferencesDialog::showDialog()
 {
+    TRACE_OBJ
     if (exec() != Accepted)
         m_appFontChanged = m_browserFontChanged = false;
 }
 
 void PreferencesDialog::updateFilterPage()
 {
+    TRACE_OBJ
     m_ui.filterWidget->clear();
     m_ui.attributeWidget->clear();
 
@@ -174,6 +179,7 @@ void PreferencesDialog::updateFilterPage()
 
 void PreferencesDialog::updateAttributes(QListWidgetItem *item)
 {
+    TRACE_OBJ
     QStringList checkedList;
     if (item)
         checkedList = m_filterMap.value(item->text());
@@ -189,6 +195,7 @@ void PreferencesDialog::updateAttributes(QListWidgetItem *item)
 
 void PreferencesDialog::updateFilterMap()
 {
+    TRACE_OBJ
     if (!m_ui.filterWidget->currentItem())
         return;
     QString filter = m_ui.filterWidget->currentItem()->text();
@@ -207,6 +214,7 @@ void PreferencesDialog::updateFilterMap()
 
 void PreferencesDialog::addFilter()
 {
+    TRACE_OBJ
     FilterNameDialog dia(this);
     if (dia.exec() == QDialog::Rejected)
         return;
@@ -224,6 +232,7 @@ void PreferencesDialog::addFilter()
 
 void PreferencesDialog::removeFilter()
 {
+    TRACE_OBJ
     QListWidgetItem *item =
         m_ui.filterWidget ->takeItem(m_ui.filterWidget->currentRow());
     if (!item)
@@ -238,6 +247,7 @@ void PreferencesDialog::removeFilter()
 
 void PreferencesDialog::addDocumentationLocal()
 {
+    TRACE_OBJ
     const QStringList fileNames = QFileDialog::getOpenFileNames(this,
         tr("Add Documentation"), QString(), tr("Qt Compressed Help Files (*.qch)"));
     if (fileNames.isEmpty())
@@ -291,6 +301,7 @@ void PreferencesDialog::addDocumentationLocal()
 
 void PreferencesDialog::removeDocumentation()
 {
+    TRACE_OBJ
     bool foundBefore = false;
     CentralWidget* widget = CentralWidget::instance();
     QMap<int, QString> openedDocList = widget->currentSourceFileList();
@@ -322,6 +333,7 @@ void PreferencesDialog::removeDocumentation()
 
 void PreferencesDialog::applyChanges()
 {
+    TRACE_OBJ
     bool filtersWereChanged = false;
     if (!m_hideFiltersTab) {
         if (m_filterMap.count() != m_filterMapBackup.count()) {
@@ -375,6 +387,7 @@ void PreferencesDialog::applyChanges()
 
 void PreferencesDialog::updateFontSettingsPage()
 {
+    TRACE_OBJ
     m_browserFontPanel = new FontPanel(this);
     m_browserFontPanel->setCheckable(true);
     m_ui.stackedWidget_2->insertWidget(0, m_browserFontPanel);
@@ -426,30 +439,35 @@ void PreferencesDialog::updateFontSettingsPage()
 
 void PreferencesDialog::appFontSettingToggled(bool on)
 {
+    TRACE_OBJ
     Q_UNUSED(on)
     m_appFontChanged = true;
 }
 
 void PreferencesDialog::appFontSettingChanged(int index)
 {
+    TRACE_OBJ
     Q_UNUSED(index)
     m_appFontChanged = true;
 }
 
 void PreferencesDialog::browserFontSettingToggled(bool on)
 {
+    TRACE_OBJ
     Q_UNUSED(on)
     m_browserFontChanged = true;
 }
 
 void PreferencesDialog::browserFontSettingChanged(int index)
 {
+    TRACE_OBJ
     Q_UNUSED(index)
     m_browserFontChanged = true;
 }
 
 void PreferencesDialog::updateOptionsPage()
 {
+    TRACE_OBJ
     m_ui.homePageLineEdit->setText(helpEngine.homePage());
 
     int option = helpEngine.startOption();
@@ -462,11 +480,13 @@ void PreferencesDialog::updateOptionsPage()
 
 void PreferencesDialog::setBlankPage()
 {
+    TRACE_OBJ
     m_ui.homePageLineEdit->setText(QLatin1String("about:blank"));
 }
 
 void PreferencesDialog::setCurrentPage()
 {
+    TRACE_OBJ
     QString homepage = CentralWidget::instance()->currentSource().toString();
     if (homepage.isEmpty())
         homepage = QLatin1String("help");
@@ -476,6 +496,7 @@ void PreferencesDialog::setCurrentPage()
 
 void PreferencesDialog::setDefaultPage()
 {
+    TRACE_OBJ
     m_ui.homePageLineEdit->setText(helpEngine.defaultHomePage());
 }
 

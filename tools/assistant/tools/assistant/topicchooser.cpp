@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include <QtCore/QMap>
 #include <QtCore/QUrl>
@@ -50,6 +51,7 @@ TopicChooser::TopicChooser(QWidget *parent, const QString &keyword,
                          const QMap<QString, QUrl> &links)
     : QDialog(parent)
 {
+    TRACE_OBJ
     ui.setupUi(this);
     ui.label->setText(tr("Choose a topic for <b>%1</b>:").arg(keyword));
 
@@ -72,6 +74,7 @@ TopicChooser::TopicChooser(QWidget *parent, const QString &keyword,
 
 QUrl TopicChooser::link() const
 {
+    TRACE_OBJ
     QListWidgetItem *item = ui.listWidget->currentItem();
     if (!item)
         return QUrl();

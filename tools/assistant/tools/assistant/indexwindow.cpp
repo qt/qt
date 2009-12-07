@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "indexwindow.h"
 #include "centralwidget.h"
@@ -61,6 +62,7 @@ IndexWindow::IndexWindow(QWidget *parent)
     , m_searchLineEdit(new QLineEdit)
     , m_indexWidget(HelpEngineWrapper::instance().indexWidget())
 {
+    TRACE_OBJ
     QVBoxLayout *layout = new QVBoxLayout(this);
     QLabel *l = new QLabel(tr("&Look for:"));
     layout->addWidget(l);
@@ -91,10 +93,12 @@ IndexWindow::IndexWindow(QWidget *parent)
 
 IndexWindow::~IndexWindow()
 {
+    TRACE_OBJ
 }
 
 void IndexWindow::filterIndices(const QString &filter)
 {
+    TRACE_OBJ
     if (filter.contains(QLatin1Char('*')))
         m_indexWidget->filterIndices(filter, filter);
     else
@@ -103,6 +107,7 @@ void IndexWindow::filterIndices(const QString &filter)
 
 bool IndexWindow::eventFilter(QObject *obj, QEvent *e)
 {
+    TRACE_OBJ
     if (obj == m_searchLineEdit && e->type() == QEvent::KeyPress) {
         QKeyEvent *ke = static_cast<QKeyEvent*>(e);
         QModelIndex idx = m_indexWidget->currentIndex();
@@ -168,22 +173,26 @@ bool IndexWindow::eventFilter(QObject *obj, QEvent *e)
 
 void IndexWindow::enableSearchLineEdit()
 {
+    TRACE_OBJ
     m_searchLineEdit->setDisabled(false);
     filterIndices(m_searchLineEdit->text());
 }
 
 void IndexWindow::disableSearchLineEdit()
 {
+    TRACE_OBJ
     m_searchLineEdit->setDisabled(true);
 }
 
 void IndexWindow::setSearchLineEditText(const QString &text)
 {
+    TRACE_OBJ
     m_searchLineEdit->setText(text);
 }
 
 void IndexWindow::focusInEvent(QFocusEvent *e)
 {
+    TRACE_OBJ
     if (e->reason() != Qt::MouseFocusReason) {
         m_searchLineEdit->selectAll();
         m_searchLineEdit->setFocus();
@@ -192,6 +201,7 @@ void IndexWindow::focusInEvent(QFocusEvent *e)
 
 void IndexWindow::open(QHelpIndexWidget* indexWidget, const QModelIndex &index)
 {
+    TRACE_OBJ
     QHelpIndexModel *model = qobject_cast<QHelpIndexModel*>(indexWidget->model());
     if (model) {
         QString keyword = model->data(index, Qt::DisplayRole).toString();

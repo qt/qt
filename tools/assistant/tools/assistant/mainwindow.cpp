@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "mainwindow.h"
 #include "centralwidget.h"
@@ -101,6 +102,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     , m_qtDocInstaller(0)
     , m_connectedInitSignals(false)
 {
+    TRACE_OBJ
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
 
@@ -254,17 +256,20 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    TRACE_OBJ
     if (m_qtDocInstaller)
         delete m_qtDocInstaller;
 }
 
 bool MainWindow::usesDefaultCollection() const
 {
+    TRACE_OBJ
     return m_cmdLine->collectionFile().isEmpty();
 }
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
+    TRACE_OBJ
     m_bookmarkManager->saveBookmarks();
     HelpEngineWrapper::instance().setMainWindow(saveState());
     HelpEngineWrapper::instance().setMainWindowGeometry(saveGeometry());
@@ -273,6 +278,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 
 bool MainWindow::initHelpDB()
 {
+    TRACE_OBJ
     HelpEngineWrapper &helpEngineWrapper = HelpEngineWrapper::instance();
     if (!helpEngineWrapper.setupData())
         return false;
@@ -323,6 +329,7 @@ bool MainWindow::initHelpDB()
 
 void MainWindow::lookForNewQtDocumentation()
 {
+    TRACE_OBJ
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QStringList docs;
     docs << QLatin1String("assistant")
@@ -348,6 +355,7 @@ void MainWindow::lookForNewQtDocumentation()
 
 void MainWindow::qtDocumentationInstalled(bool newDocsInstalled)
 {
+    TRACE_OBJ
     if (newDocsInstalled)
         HelpEngineWrapper::instance().setupData();
     statusBar()->clearMessage();
@@ -356,6 +364,7 @@ void MainWindow::qtDocumentationInstalled(bool newDocsInstalled)
 
 void MainWindow::checkInitState()
 {
+    TRACE_OBJ
     if (!m_cmdLine->enableRemoteControl())
         return;
 
@@ -380,6 +389,7 @@ void MainWindow::checkInitState()
 
 void MainWindow::updateBookmarkMenu()
 {
+    TRACE_OBJ
     if (m_bookmarkManager) {
         m_bookmarkMenu->removeAction(m_importBookmarkAction);
         m_bookmarkMenu->removeAction(m_exportBookmarkAction);
@@ -398,6 +408,7 @@ void MainWindow::updateBookmarkMenu()
 
 void MainWindow::showBookmark(QAction *action)
 {
+    TRACE_OBJ
     if (m_bookmarkManager) {
         const QUrl &url = m_bookmarkManager->urlForAction(action);
         if (url.isValid())
@@ -407,6 +418,7 @@ void MainWindow::showBookmark(QAction *action)
 
 void MainWindow::insertLastPages()
 {
+    TRACE_OBJ
     if (m_cmdLine->url().isValid())
         m_centralWidget->setSource(m_cmdLine->url());
     else
@@ -418,6 +430,7 @@ void MainWindow::insertLastPages()
 
 void MainWindow::setupActions()
 {
+    TRACE_OBJ
     QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 #ifdef Q_OS_MAC
     setUnifiedTitleAndToolBarOnMac(true);
@@ -643,6 +656,7 @@ void MainWindow::setupActions()
 
 QMenu *MainWindow::toolBarMenu()
 {
+    TRACE_OBJ
     if (!m_toolBarMenu) {
         m_viewMenu->addSeparator();
         m_toolBarMenu = m_viewMenu->addMenu(tr("Toolbars"));
@@ -652,6 +666,7 @@ QMenu *MainWindow::toolBarMenu()
 
 void MainWindow::setupFilterToolbar()
 {
+    TRACE_OBJ
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     if (!helpEngine.filterFunctionalityEnabled())
         return;
@@ -682,6 +697,7 @@ void MainWindow::setupFilterToolbar()
 
 void MainWindow::setupAddressToolbar()
 {
+    TRACE_OBJ
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     if (!helpEngine.addressBarEnabled())
         return;
@@ -710,6 +726,7 @@ void MainWindow::setupAddressToolbar()
 
 void MainWindow::updateAboutMenuText()
 {
+    TRACE_OBJ
     QByteArray ba = HelpEngineWrapper::instance().aboutMenuTexts();
     if (ba.size() > 0) {
         QString lang;
@@ -737,27 +754,32 @@ void MainWindow::updateAboutMenuText()
 
 void MainWindow::showNewAddress()
 {
+    TRACE_OBJ
     showNewAddress(m_centralWidget->currentSource());
 }
 
 void MainWindow::showNewAddress(const QUrl &url)
 {
+    TRACE_OBJ
     m_addressLineEdit->setText(url.toString());
 }
 
 void MainWindow::addBookmark()
 {
+    TRACE_OBJ
     addNewBookmark(m_centralWidget->currentTitle(),
         m_centralWidget->currentSource().toString());
 }
 
 void MainWindow::gotoAddress()
 {
+    TRACE_OBJ
     m_centralWidget->setSource(m_addressLineEdit->text());
 }
 
 void MainWindow::updateNavigationItems()
 {
+    TRACE_OBJ
     bool hasCurrentViewer = m_centralWidget->isHomeAvailable();
     m_copyAction->setEnabled(m_centralWidget->hasSelection());
     m_homeAction->setEnabled(hasCurrentViewer);
@@ -771,12 +793,14 @@ void MainWindow::updateNavigationItems()
 
 void MainWindow::updateTabCloseAction()
 {
+    TRACE_OBJ
     m_closeTabAction->setEnabled(m_centralWidget->enableTabCloseAction());
 }
 
 void MainWindow::showTopicChooser(const QMap<QString, QUrl> &links,
                                   const QString &keyword)
 {
+    TRACE_OBJ
     TopicChooser tc(this, keyword, links);
     if (tc.exec() == QDialog::Accepted) {
         m_centralWidget->setSource(tc.link());
@@ -785,6 +809,7 @@ void MainWindow::showTopicChooser(const QMap<QString, QUrl> &links,
 
 void MainWindow::showPreferences()
 {
+    TRACE_OBJ
     PreferencesDialog dia(this);
 
     connect(&dia, SIGNAL(updateApplicationFont()), this,
@@ -797,6 +822,7 @@ void MainWindow::showPreferences()
 
 void MainWindow::syncContents()
 {
+    TRACE_OBJ
     qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
     const QUrl url = m_centralWidget->currentSource();
     showContents();
@@ -808,11 +834,13 @@ void MainWindow::syncContents()
 
 void MainWindow::copyAvailable(bool yes)
 {
+    TRACE_OBJ
     m_copyAction->setEnabled(yes);
 }
 
 void MainWindow::addNewBookmark(const QString &title, const QString &url)
 {
+    TRACE_OBJ
     if (url.isEmpty() || url == QLatin1String("about:blank"))
         return;
 
@@ -821,6 +849,7 @@ void MainWindow::addNewBookmark(const QString &title, const QString &url)
 
 void MainWindow::showAboutDialog()
 {
+    TRACE_OBJ
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QByteArray contents;
     QByteArray ba = helpEngine.aboutTexts();
@@ -874,6 +903,7 @@ void MainWindow::showAboutDialog()
 
 void MainWindow::setContentsVisible(bool visible)
 {
+    TRACE_OBJ
     if (visible)
         showContents();
     else
@@ -882,16 +912,19 @@ void MainWindow::setContentsVisible(bool visible)
 
 void MainWindow::showContents()
 {
+    TRACE_OBJ
     activateDockWidget(m_contentWindow);
 }
 
 void MainWindow::hideContents()
 {
+    TRACE_OBJ
     m_contentWindow->parentWidget()->hide();
 }
 
 void MainWindow::setIndexVisible(bool visible)
 {
+    TRACE_OBJ
     if (visible)
         showIndex();
     else
@@ -900,16 +933,19 @@ void MainWindow::setIndexVisible(bool visible)
 
 void MainWindow::showIndex()
 {
+    TRACE_OBJ
     activateDockWidget(m_indexWindow);
 }
 
 void MainWindow::hideIndex()
 {
+    TRACE_OBJ
     m_indexWindow->parentWidget()->hide();
 }
 
 void MainWindow::setBookmarksVisible(bool visible)
 {
+    TRACE_OBJ
     if (visible)
         showBookmarks();
     else
@@ -919,16 +955,19 @@ void MainWindow::setBookmarksVisible(bool visible)
 
 void MainWindow::showBookmarks()
 {
+    TRACE_OBJ
     activateDockWidget(m_bookmarkWidget);
 }
 
 void MainWindow::hideBookmarks()
 {
+    TRACE_OBJ
     m_bookmarkWidget->parentWidget()->hide();
 }
 
 void MainWindow::setSearchVisible(bool visible)
 {
+    TRACE_OBJ
     if (visible)
         showSearch();
     else
@@ -937,16 +976,19 @@ void MainWindow::setSearchVisible(bool visible)
 
 void MainWindow::showSearch()
 {
+    TRACE_OBJ
     m_centralWidget->activateSearchWidget();
 }
 
 void MainWindow::hideSearch()
 {
+    TRACE_OBJ
     m_centralWidget->removeSearchWidget();
 }
 
 void MainWindow::activateDockWidget(QWidget *w)
 {
+    TRACE_OBJ
     w->parentWidget()->show();
     w->parentWidget()->raise();
     w->setFocus();
@@ -954,11 +996,13 @@ void MainWindow::activateDockWidget(QWidget *w)
 
 void MainWindow::setIndexString(const QString &str)
 {
+    TRACE_OBJ
     m_indexWindow->setSearchLineEditText(str);
 }
 
 void MainWindow::activateCurrentBrowser()
 {
+    TRACE_OBJ
     CentralWidget *cw = CentralWidget::instance();
     if (cw) {
         cw->activateTab(true);
@@ -967,16 +1011,19 @@ void MainWindow::activateCurrentBrowser()
 
 void MainWindow::activateCurrentCentralWidgetTab()
 {
+    TRACE_OBJ
     m_centralWidget->activateTab();
 }
 
 void MainWindow::showSearchWidget()
 {
+    TRACE_OBJ
     m_centralWidget->activateSearchWidget(true);
 }
 
 void MainWindow::updateApplicationFont()
 {
+    TRACE_OBJ
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QFont font = qApp->font();
     if (helpEngine.usesAppFont())
@@ -987,6 +1034,7 @@ void MainWindow::updateApplicationFont()
 
 void MainWindow::setupFilterCombo()
 {
+    TRACE_OBJ
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     QString curFilter = m_filterCombo->currentText();
     if (curFilter.isEmpty())
@@ -1001,17 +1049,20 @@ void MainWindow::setupFilterCombo()
 
 void MainWindow::filterDocumentation(const QString &customFilter)
 {
+    TRACE_OBJ
     HelpEngineWrapper::instance().setCurrentFilter(customFilter);
 }
 
 void MainWindow::expandTOC(int depth)
 {
+    TRACE_OBJ
     Q_ASSERT(depth >= -1);
     m_contentWindow->expandToDepth(depth);
 }
 
 void MainWindow::indexingStarted()
 {
+    TRACE_OBJ
     if (!m_progressWidget) {
         m_progressWidget = new QWidget();
         QLayout* hlayout = new QHBoxLayout(m_progressWidget);
@@ -1037,6 +1088,7 @@ void MainWindow::indexingStarted()
 
 void MainWindow::indexingFinished()
 {
+    TRACE_OBJ
     statusBar()->removeWidget(m_progressWidget);
     delete m_progressWidget;
     m_progressWidget = 0;
@@ -1044,6 +1096,7 @@ void MainWindow::indexingFinished()
 
 QWidget* MainWindow::setupBookmarkWidget()
 {
+    TRACE_OBJ
     m_bookmarkManager = new BookmarkManager;
     m_bookmarkWidget = new BookmarkWidget(m_bookmarkManager, this);
     connect(m_bookmarkWidget, SIGNAL(addBookmark()), this, SLOT(addBookmark()));
@@ -1052,6 +1105,7 @@ QWidget* MainWindow::setupBookmarkWidget()
 
 QString MainWindow::collectionFileDirectory(bool createDir, const QString &cacheDir)
 {
+    TRACE_OBJ
     QString collectionPath =
         QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     if (collectionPath.isEmpty()) {
@@ -1077,6 +1131,7 @@ QString MainWindow::collectionFileDirectory(bool createDir, const QString &cache
 
 QString MainWindow::defaultHelpCollectionFileName()
 {
+    TRACE_OBJ
     return collectionFileDirectory() + QDir::separator() +
         QString(QLatin1String("qthelpcollection_%1.qhc")).
         arg(QLatin1String(QT_VERSION_STR));
@@ -1084,6 +1139,7 @@ QString MainWindow::defaultHelpCollectionFileName()
 
 void MainWindow::importBookmarks()
 {
+    TRACE_OBJ
     const QString &fileName = QFileDialog::getOpenFileName(0, tr("Open File"),
         QDir::currentPath(), tr("Files (*.xbel)"));
 
@@ -1100,6 +1156,7 @@ void MainWindow::importBookmarks()
 
 void MainWindow::exportBookmarks()
 {
+    TRACE_OBJ
     QString fileName = QFileDialog::getSaveFileName(0, tr("Save File"),
         "untitled.xbel", tr("Files (*.xbel)"));
 
@@ -1119,6 +1176,7 @@ void MainWindow::exportBookmarks()
 
 void MainWindow::currentFilterChanged(const QString &filter)
 {
+    TRACE_OBJ
     const int index = m_filterCombo->findText(filter);
     Q_ASSERT(index != -1);
     m_filterCombo->setCurrentIndex(index);
@@ -1126,12 +1184,14 @@ void MainWindow::currentFilterChanged(const QString &filter)
 
 void MainWindow::documentationRemoved(const QString &namespaceName)
 {
+    TRACE_OBJ
     CentralWidget* widget = CentralWidget::instance();
     widget->closeTabs(widget->currentSourceFileList().keys(namespaceName));
 }
 
 void MainWindow::documentationUpdated(const QString &namespaceName)
 {
+    TRACE_OBJ
     // TODO: Check whether the documents still exists and if they do, reload.
     CentralWidget* widget = CentralWidget::instance();
     widget->closeTabs(widget->currentSourceFileList().keys(namespaceName));
@@ -1139,6 +1199,7 @@ void MainWindow::documentationUpdated(const QString &namespaceName)
 
 void MainWindow::resetQtDocInfo(const QString &component)
 {
+    TRACE_OBJ
     HelpEngineWrapper::instance().setQtDocInfo(component,
         QStringList(QDateTime().toString(Qt::ISODate)));
 }
@@ -1146,6 +1207,7 @@ void MainWindow::resetQtDocInfo(const QString &component)
 void MainWindow::registerDocumentation(const QString &component,
                                        const QString &absFileName)
 {
+    TRACE_OBJ
     QString ns = QHelpEngineCore::namespaceName(absFileName);
     if (ns.isEmpty())
         return;

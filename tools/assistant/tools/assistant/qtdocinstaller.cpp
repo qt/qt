@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QLibraryInfo>
@@ -52,10 +53,12 @@ QT_BEGIN_NAMESPACE
 QtDocInstaller::QtDocInstaller(const QList<DocInfo> &docInfos)
     : m_abort(false), m_docInfos(docInfos)
 {
+    TRACE_OBJ
 }
 
 QtDocInstaller::~QtDocInstaller()
 {
+    TRACE_OBJ
     if (!isRunning())
         return;
     m_mutex.lock();
@@ -66,11 +69,13 @@ QtDocInstaller::~QtDocInstaller()
 
 void QtDocInstaller::installDocs()
 {
+    TRACE_OBJ
     start(LowPriority);
 }
 
 void QtDocInstaller::run()
 {
+    TRACE_OBJ
     m_qchDir = QLibraryInfo::location(QLibraryInfo::DocumentationPath)
         + QDir::separator() + QLatin1String("qch");
     m_qchFiles = m_qchDir.entryList(QStringList() << QLatin1String("*.qch"));
@@ -90,6 +95,7 @@ void QtDocInstaller::run()
 
 bool QtDocInstaller::installDoc(const DocInfo &docInfo)
 {
+    TRACE_OBJ
     const QString &component = docInfo.first;
     const QStringList &info = docInfo.second;
     QDateTime dt;

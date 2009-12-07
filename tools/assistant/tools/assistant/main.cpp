@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
@@ -76,6 +77,7 @@ namespace {
 void
 updateLastPagesOnUnregister(QHelpEngineCore& helpEngine, const QString& nsName)
 {
+    TRACE_OBJ
     int lastPage = CollectionConfiguration::lastTabPage(helpEngine);
     QStringList currentPages = CollectionConfiguration::lastShownPages(helpEngine);
     if (!currentPages.isEmpty()) {
@@ -100,6 +102,7 @@ updateLastPagesOnUnregister(QHelpEngineCore& helpEngine, const QString& nsName)
 bool
 updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
 {
+    TRACE_OBJ
     if (!CollectionConfiguration::isNewer(caller, user))
         return false;
     CollectionConfiguration::copyConfiguration(caller, user);
@@ -108,6 +111,7 @@ updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
 
 void stripNonexistingDocs(QHelpEngineCore& collection)
 {
+    TRACE_OBJ
     const QStringList &namespaces = collection.registeredDocumentations();
     foreach (const QString &ns, namespaces) {
         QFileInfo fi(collection.documentationFileName(ns));
@@ -118,6 +122,7 @@ void stripNonexistingDocs(QHelpEngineCore& collection)
 
 QString indexFilesFolder(const QString &collectionFile)
 {
+    TRACE_OBJ
     QString indexFilesFolder = QLatin1String(".fulltextsearch");
     if (!collectionFile.isEmpty()) {
         QFileInfo fi(collectionFile);
@@ -134,6 +139,7 @@ QString indexFilesFolder(const QString &collectionFile)
  */
 QString constructCachedCollectionFilePath(const QHelpEngineCore &collection)
 {
+    TRACE_OBJ
     const QString &filePath = collection.collectionFile();
     const QString &fileName = QFileInfo(filePath).fileName();
     const QString &cacheDir = CollectionConfiguration::cacheDir(collection);
@@ -149,6 +155,7 @@ bool synchronizeDocs(QHelpEngineCore &collection,
                      QHelpEngineCore &cachedCollection,
                      CmdLineParser &cmd)
 {
+    TRACE_OBJ
     const QDateTime &lastCollectionRegisterTime =
         CollectionConfiguration::lastRegisterTime(collection);
     if (!lastCollectionRegisterTime.isValid() || lastCollectionRegisterTime
@@ -180,6 +187,7 @@ bool synchronizeDocs(QHelpEngineCore &collection,
 
 bool removeSearchIndex(const QString &collectionFile)
 {
+    TRACE_OBJ
     QString path = QFileInfo(collectionFile).path();
     path += QLatin1Char('/') + indexFilesFolder(collectionFile);
 
@@ -199,6 +207,7 @@ bool removeSearchIndex(const QString &collectionFile)
 
 bool checkForSqlite(CmdLineParser &cmd)
 {
+    TRACE_OBJ
     QSqlDatabase db;
     QStringList sqlDrivers(db.drivers());
     if (!sqlDrivers.contains(QLatin1String("QSQLITE"))) {
@@ -211,6 +220,7 @@ bool checkForSqlite(CmdLineParser &cmd)
 
 bool useGui(int argc, char *argv[])
 {
+    TRACE_OBJ
     bool gui = true;
 #ifndef Q_OS_WIN
     // Look for arguments that imply command-line mode.
@@ -232,6 +242,7 @@ bool useGui(int argc, char *argv[])
 bool registerDocumentation(QHelpEngineCore &collection, CmdLineParser &cmd,
                            bool printSuccess)
 {
+    TRACE_OBJ
     if (!collection.registerDocumentation(cmd.helpFile())) {
         cmd.showMessage(
                 QObject::tr("Could not register documentation file\n%1\n\nReason:\n%2")
@@ -248,6 +259,7 @@ bool registerDocumentation(QHelpEngineCore &collection, CmdLineParser &cmd,
 bool unregisterDocumentation(QHelpEngineCore &collection,
     const QString &namespaceName, CmdLineParser &cmd, bool printSuccess)
 {
+    TRACE_OBJ
     if (!collection.unregisterDocumentation(namespaceName)) {
         cmd.showMessage(QObject::tr("Could not unregister documentation"
                                     " file\n%1\n\nReason:\n%2").
@@ -263,6 +275,7 @@ bool unregisterDocumentation(QHelpEngineCore &collection,
 
 void setupTranslations(QApplication &app)
 {
+    TRACE_OBJ
     const QString& locale = QLocale::system().name();
     QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 
@@ -283,6 +296,7 @@ void setupTranslations(QApplication &app)
 
 int main(int argc, char *argv[])
 {
+    TRACE_OBJ
     QApplication a(argc, argv, useGui(argc, argv));
     a.addLibraryPath(a.applicationDirPath() + QLatin1String("/plugins"));
 

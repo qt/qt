@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "remotecontrol.h"
 #include "mainwindow.h"
@@ -68,16 +69,19 @@ QT_BEGIN_NAMESPACE
 StdInListenerWin::StdInListenerWin(QObject *parent)
     : QThread(parent)
 {
+    TRACE_OBJ
 }
 
 StdInListenerWin::~StdInListenerWin()
 {
+    TRACE_OBJ
     terminate();
     wait();
 }
 
 void StdInListenerWin::run()
 {
+    TRACE_OBJ
     bool ok = true;
     char chBuf[4096];
     DWORD dwRead;
@@ -117,6 +121,7 @@ RemoteControl::RemoteControl(MainWindow *mainWindow)
     , helpEngine(HelpEngineWrapper::instance())
 
 {
+    TRACE_OBJ
     connect(m_mainWindow, SIGNAL(initDone()), this, SLOT(applyCache()));
 #ifdef Q_OS_WIN
     StdInListenerWin *l = new StdInListenerWin(this);
@@ -133,6 +138,7 @@ RemoteControl::RemoteControl(MainWindow *mainWindow)
 
 void RemoteControl::receivedData()
 {
+    TRACE_OBJ
     QByteArray ba;
     while (true) {
         char c = getc(stdin);
@@ -148,6 +154,7 @@ void RemoteControl::receivedData()
 
 void RemoteControl::handleCommandString(const QString &cmdString)
 {
+    TRACE_OBJ
     QStringList cmds = cmdString.split(QLatin1Char(';'));
     QStringList::const_iterator it = cmds.constBegin();
     while (it != cmds.constEnd()) {
@@ -192,6 +199,7 @@ void RemoteControl::handleCommandString(const QString &cmdString)
 void RemoteControl::splitInputString(const QString &input, QString &cmd,
                                      QString &arg)
 {
+    TRACE_OBJ
     QString cmdLine = input.trimmed();
     int i = cmdLine.indexOf(QLatin1Char(' '));
     cmd = cmdLine.left(i);
@@ -201,11 +209,13 @@ void RemoteControl::splitInputString(const QString &input, QString &cmd,
 
 void RemoteControl::handleDebugCommand(const QString &arg)
 {
+    TRACE_OBJ
     m_debug = arg == QLatin1String("on");
 }
 
 void RemoteControl::handleShowOrHideCommand(const QString &arg, bool show)
 {
+    TRACE_OBJ
     if (arg.toLower() == QLatin1String("contents"))
         m_mainWindow->setContentsVisible(show);
     else if (arg.toLower() == QLatin1String("index"))
@@ -218,6 +228,7 @@ void RemoteControl::handleShowOrHideCommand(const QString &arg, bool show)
 
 void RemoteControl::handleSetSourceCommand(const QString &arg)
 {
+    TRACE_OBJ
     QUrl url(arg);
     if (url.isValid()) {
         if (url.isRelative())
@@ -233,6 +244,7 @@ void RemoteControl::handleSetSourceCommand(const QString &arg)
 
 void RemoteControl::handleSyncContentsCommand()
 {
+    TRACE_OBJ
     if (m_caching)
         m_syncContents = true;
     else
@@ -241,6 +253,7 @@ void RemoteControl::handleSyncContentsCommand()
 
 void RemoteControl::handleActivateKeywordCommand(const QString &arg)
 {
+    TRACE_OBJ
     if (m_caching) {
         clearCache();
         m_activateKeyword = arg;
@@ -253,6 +266,7 @@ void RemoteControl::handleActivateKeywordCommand(const QString &arg)
 
 void RemoteControl::handleActivateIdentifierCommand(const QString &arg)
 {
+    TRACE_OBJ
     if (m_caching) {
         clearCache();
         m_activateIdentifier = arg;
@@ -265,6 +279,7 @@ void RemoteControl::handleActivateIdentifierCommand(const QString &arg)
 
 void RemoteControl::handleExpandTocCommand(const QString &arg)
 {
+    TRACE_OBJ
     bool ok = false;
     int depth = -2;
     if (!arg.isEmpty())
@@ -280,6 +295,7 @@ void RemoteControl::handleExpandTocCommand(const QString &arg)
 
 void RemoteControl::handleSetCurrentFilterCommand(const QString &arg)
 {
+    TRACE_OBJ
     if (helpEngine.customFilters().contains(arg)) {
         if (m_caching) {
             clearCache();
@@ -292,6 +308,7 @@ void RemoteControl::handleSetCurrentFilterCommand(const QString &arg)
 
 void RemoteControl::handleRegisterCommand(const QString &arg)
 {
+    TRACE_OBJ
     const QString &absFileName = QFileInfo(arg).absoluteFilePath();
     if (helpEngine.registeredDocumentations().
         contains(QHelpEngineCore::namespaceName(absFileName)))
@@ -302,6 +319,7 @@ void RemoteControl::handleRegisterCommand(const QString &arg)
 
 void RemoteControl::handleUnregisterCommand(const QString &arg)
 {
+    TRACE_OBJ
     const QString &absFileName = QFileInfo(arg).absoluteFilePath();
     const QString &ns = QHelpEngineCore::namespaceName(absFileName);
     if (helpEngine.registeredDocumentations().contains(ns)) {
@@ -314,6 +332,7 @@ void RemoteControl::handleUnregisterCommand(const QString &arg)
 
 void RemoteControl::applyCache()
 {
+    TRACE_OBJ
     if (m_setSource.isValid()) {
         CentralWidget::instance()->setSource(m_setSource);
     } else if (!m_activateKeyword.isEmpty()) {
@@ -340,6 +359,7 @@ void RemoteControl::applyCache()
 
 void RemoteControl::clearCache()
 {
+    TRACE_OBJ
     m_currentFilter.clear();
     m_setSource.clear();
     m_syncContents = false;

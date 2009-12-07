@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "contentwindow.h"
 #include "centralwidget.h"
@@ -55,6 +56,7 @@ ContentWindow::ContentWindow()
     : m_contentWidget(HelpEngineWrapper::instance().contentWidget())
     , m_expandDepth(-2)
 {
+    TRACE_OBJ
     m_contentWidget->viewport()->installEventFilter(this);
     m_contentWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -74,10 +76,12 @@ ContentWindow::ContentWindow()
 
 ContentWindow::~ContentWindow()
 {
+    TRACE_OBJ
 }
 
 bool ContentWindow::syncToContent(const QUrl& url)
 {
+    TRACE_OBJ
     QModelIndex idx = m_contentWidget->indexOf(url);
     if (!idx.isValid())
         return false;
@@ -87,6 +91,7 @@ bool ContentWindow::syncToContent(const QUrl& url)
 
 void ContentWindow::expandTOC()
 {
+    TRACE_OBJ
     Q_ASSERT(m_expandDepth >= -2);
     if (m_expandDepth > -2) {
         expandToDepth(m_expandDepth);
@@ -96,6 +101,7 @@ void ContentWindow::expandTOC()
 
 void ContentWindow::expandToDepth(int depth)
 {
+    TRACE_OBJ
     Q_ASSERT(depth >= -2);
     m_expandDepth = depth;
     if (depth == -1)
@@ -108,18 +114,21 @@ void ContentWindow::expandToDepth(int depth)
 
 void ContentWindow::focusInEvent(QFocusEvent *e)
 {
+    TRACE_OBJ
     if (e->reason() != Qt::MouseFocusReason)
         m_contentWidget->setFocus();
 }
 
 void ContentWindow::keyPressEvent(QKeyEvent *e)
 {
+    TRACE_OBJ
     if (e->key() == Qt::Key_Escape)
         emit escapePressed();
 }
 
 bool ContentWindow::eventFilter(QObject *o, QEvent *e)
 {
+    TRACE_OBJ
     if (m_contentWidget && o == m_contentWidget->viewport()
         && e->type() == QEvent::MouseButtonRelease) {
         QMouseEvent *me = static_cast<QMouseEvent*>(e);
@@ -148,6 +157,7 @@ bool ContentWindow::eventFilter(QObject *o, QEvent *e)
 
 void ContentWindow::showContextMenu(const QPoint &pos)
 {
+    TRACE_OBJ
     if (!m_contentWidget->indexAt(pos).isValid())
         return;
 
@@ -173,6 +183,7 @@ void ContentWindow::showContextMenu(const QPoint &pos)
 
 void ContentWindow::itemClicked(const QModelIndex &index)
 {
+    TRACE_OBJ
     QHelpContentModel *contentModel =
         qobject_cast<QHelpContentModel*>(m_contentWidget->model());
 
@@ -185,6 +196,7 @@ void ContentWindow::itemClicked(const QModelIndex &index)
 
 bool ContentWindow::isPdfFile(QHelpContentItem *item) const
 {
+    TRACE_OBJ
     const QString &path = item->url().path();
     return path.endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive);
 }

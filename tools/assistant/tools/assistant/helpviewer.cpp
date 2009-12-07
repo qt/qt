@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "helpviewer.h"
 #include "centralwidget.h"
@@ -93,6 +94,7 @@ HelpNetworkReply::HelpNetworkReply(const QNetworkRequest &request,
         const QByteArray &fileData, const QString& mimeType)
     : data(fileData), origLen(fileData.length())
 {
+    TRACE_OBJ
     setRequest(request);
     setOpenMode(QIODevice::ReadOnly);
 
@@ -104,11 +106,13 @@ HelpNetworkReply::HelpNetworkReply(const QNetworkRequest &request,
 
 void HelpNetworkReply::abort()
 {
+    TRACE_OBJ
     // nothing to do
 }
 
 qint64 HelpNetworkReply::readData(char *buffer, qint64 maxlen)
 {
+    TRACE_OBJ
     qint64 len = qMin(qint64(data.length()), maxlen);
     if (len) {
         qMemCopy(buffer, data.constData(), len);
@@ -132,11 +136,13 @@ protected:
 HelpNetworkAccessManager::HelpNetworkAccessManager(QObject *parent)
     : QNetworkAccessManager(parent)
 {
+    TRACE_OBJ
 }
 
 QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
     const QNetworkRequest &request, QIODevice* /*outgoingData*/)
 {
+    TRACE_OBJ
     const QUrl& url = request.url();
     QString mimeType = url.toString();
     if (mimeType.endsWith(QLatin1String(".svg"))
@@ -187,10 +193,12 @@ HelpPage::HelpPage(CentralWidget *central, QObject *parent)
     , m_pressedButtons(Qt::NoButton)
     , m_keyboardModifiers(Qt::NoModifier)
 {
+    TRACE_OBJ
 }
 
 QWebPage *HelpPage::createWindow(QWebPage::WebWindowType)
 {
+    TRACE_OBJ
     HelpPage* newPage = static_cast<HelpPage*>(centralWidget->newEmptyTab()->page());
     if (newPage)
         newPage->closeNewTabIfNeeded = closeNewTabIfNeeded;
@@ -200,6 +208,7 @@ QWebPage *HelpPage::createWindow(QWebPage::WebWindowType)
 
 static bool isLocalUrl(const QUrl &url)
 {
+    TRACE_OBJ
     const QString scheme = url.scheme();
     if (scheme.isEmpty()
         || scheme == QLatin1String("file")
@@ -213,6 +222,7 @@ static bool isLocalUrl(const QUrl &url)
 
 void HelpPage::triggerAction(WebAction action, bool checked)
 {
+    TRACE_OBJ
     switch (action) {
         case OpenLinkInNewWindow:
             closeNewTabIfNeeded = true;
@@ -225,6 +235,7 @@ void HelpPage::triggerAction(WebAction action, bool checked)
 bool HelpPage::acceptNavigationRequest(QWebFrame *,
     const QNetworkRequest &request, QWebPage::NavigationType type)
 {
+    TRACE_OBJ
     const QUrl &url = request.url();
     const bool closeNewTab = closeNewTabIfNeeded;
     closeNewTabIfNeeded = false;
@@ -274,6 +285,7 @@ HelpViewer::HelpViewer(CentralWidget *parent)
     , loadFinished(false)
     , helpEngine(HelpEngineWrapper::instance())
 {
+    TRACE_OBJ
     setAcceptDrops(false);
 
     setPage(new HelpPage(parent, this));
@@ -303,6 +315,7 @@ HelpViewer::HelpViewer(CentralWidget *parent)
 
 void HelpViewer::setSource(const QUrl &url)
 {
+    TRACE_OBJ
     loadFinished = false;
     if (url.toString() == QLatin1String("help")) {
         load(QUrl(QLatin1String("qthelp://com.trolltech.com."
@@ -314,21 +327,25 @@ void HelpViewer::setSource(const QUrl &url)
 
 void HelpViewer::resetZoom()
 {
+    TRACE_OBJ
     setTextSizeMultiplier(1.0);
 }
 
 void HelpViewer::zoomIn(qreal range)
 {
+    TRACE_OBJ
     setTextSizeMultiplier(textSizeMultiplier() + range / 10.0);
 }
 
 void HelpViewer::zoomOut(qreal range)
 {
+    TRACE_OBJ
     setTextSizeMultiplier(qMax(0.0, textSizeMultiplier() - range / 10.0));
 }
 
 void HelpViewer::wheelEvent(QWheelEvent *e)
 {
+    TRACE_OBJ
     if (e->modifiers() & Qt::ControlModifier) {
         const int delta = e->delta();
         if (delta > 0)
@@ -343,6 +360,7 @@ void HelpViewer::wheelEvent(QWheelEvent *e)
 
 void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
 {
+    TRACE_OBJ
     if (e->button() == Qt::XButton1) {
         triggerPageAction(QWebPage::Back);
         return;
@@ -358,6 +376,7 @@ void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
 
 void HelpViewer::actionChanged()
 {
+    TRACE_OBJ
     QAction *a = qobject_cast<QAction *>(sender());
     if (a == pageAction(QWebPage::Copy))
         emit copyAvailable(a->isEnabled());
@@ -369,6 +388,7 @@ void HelpViewer::actionChanged()
 
 void HelpViewer::mousePressEvent(QMouseEvent *event)
 {
+    TRACE_OBJ
     HelpPage *currentPage = static_cast<HelpPage*>(page());
     if (currentPage) {
         currentPage->m_pressedButtons = event->buttons();
@@ -379,6 +399,7 @@ void HelpViewer::mousePressEvent(QMouseEvent *event)
 
 void HelpViewer::setLoadFinished(bool ok)
 {
+    TRACE_OBJ
     loadFinished = ok;
     emit sourceChanged(url());
 }
@@ -393,11 +414,13 @@ HelpViewer::HelpViewer(CentralWidget *parent)
     , parentWidget(parent)
     , helpEngine(HelpEngineWrapper::instance())
 {
+    TRACE_OBJ
    document()->setDocumentMargin(8);
 }
 
 void HelpViewer::setSource(const QUrl &url)
 {
+    TRACE_OBJ
     bool help = url.toString() == QLatin1String("help");
     if (url.isValid() && !help) {
         if (launchedWithExternalApp(url))
@@ -422,6 +445,7 @@ void HelpViewer::setSource(const QUrl &url)
 
 void HelpViewer::resetZoom()
 {
+    TRACE_OBJ
     if (zoomCount == 0)
         return;
 
@@ -431,6 +455,7 @@ void HelpViewer::resetZoom()
 
 void HelpViewer::zoomIn(int range)
 {
+    TRACE_OBJ
     if (zoomCount == 10)
         return;
 
@@ -440,6 +465,7 @@ void HelpViewer::zoomIn(int range)
 
 void HelpViewer::zoomOut(int range)
 {
+    TRACE_OBJ
     if (zoomCount == -5)
         return;
 
@@ -449,6 +475,7 @@ void HelpViewer::zoomOut(int range)
 
 bool HelpViewer::launchedWithExternalApp(const QUrl &url)
 {
+    TRACE_OBJ
     bool isPdf = url.path().endsWith(QLatin1String(".pdf"));
     if (url.scheme() == QLatin1String("http")
         || url.scheme() == QLatin1String("ftp")
@@ -484,6 +511,7 @@ bool HelpViewer::launchedWithExternalApp(const QUrl &url)
 
 QVariant HelpViewer::loadResource(int type, const QUrl &name)
 {
+    TRACE_OBJ
     QByteArray ba;
     if (type < 4) {
         ba = helpEngine.fileData(name);
@@ -499,6 +527,7 @@ QVariant HelpViewer::loadResource(int type, const QUrl &name)
 
 void HelpViewer::openLinkInNewTab()
 {
+    TRACE_OBJ
     if(lastAnchor.isEmpty())
         return;
 
@@ -508,12 +537,14 @@ void HelpViewer::openLinkInNewTab()
 
 void HelpViewer::openLinkInNewTab(const QString &link)
 {
+    TRACE_OBJ
     lastAnchor = link;
     openLinkInNewTab();
 }
 
 bool HelpViewer::hasAnchorAt(const QPoint& pos)
 {
+    TRACE_OBJ
     lastAnchor = anchorAt(pos);
     if (lastAnchor.isEmpty())
         return false;
@@ -530,6 +561,7 @@ bool HelpViewer::hasAnchorAt(const QPoint& pos)
 
 void HelpViewer::contextMenuEvent(QContextMenuEvent *e)
 {
+    TRACE_OBJ
     QMenu menu(QLatin1String(""), 0);
 
     QUrl link;
@@ -553,6 +585,7 @@ void HelpViewer::contextMenuEvent(QContextMenuEvent *e)
 
 void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
 {
+    TRACE_OBJ
     if (e->button() == Qt::XButton1) {
         QTextBrowser::backward();
         return;
@@ -575,6 +608,7 @@ void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
 
 void HelpViewer::keyPressEvent(QKeyEvent *e)
 {
+    TRACE_OBJ
     if ((e->key() == Qt::Key_Home && e->modifiers() != Qt::NoModifier)
         || (e->key() == Qt::Key_End && e->modifiers() != Qt::NoModifier)) {
         QKeyEvent* event = new QKeyEvent(e->type(), e->key(), Qt::NoModifier,
@@ -586,6 +620,7 @@ void HelpViewer::keyPressEvent(QKeyEvent *e)
 
 void HelpViewer::wheelEvent(QWheelEvent *e)
 {
+    TRACE_OBJ
     if (e->modifiers() == Qt::CTRL) {
         e->accept();
         (e->delta() > 0) ? zoomIn() : zoomOut();
@@ -599,6 +634,7 @@ void HelpViewer::wheelEvent(QWheelEvent *e)
 
 void HelpViewer::home()
 {
+    TRACE_OBJ
     setSource(helpEngine.homePage());
 }
 
