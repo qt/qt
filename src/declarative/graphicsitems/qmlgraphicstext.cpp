@@ -483,19 +483,19 @@ void QmlGraphicsTextPrivate::updateSize()
 
         //setup instance of QTextLayout for all cases other than richtext
         if (!richText)
-            {
-                tmp = text;
-                tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
-                singleline = !tmp.contains(QChar::LineSeparator);
-                if (singleline && elideMode != QmlGraphicsText::ElideNone && q->widthValid())
-                    tmp = fm.elidedText(tmp,(Qt::TextElideMode)elideMode,q->width()); // XXX still worth layout...?
-                layout.clearLayout();
-                layout.setFont(font);
-                layout.setText(tmp);
-                size = setupTextLayout(&layout);
-                cachedLayoutSize = size;
-            }
-        if (richText) {
+        {
+            tmp = text;
+            tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
+            singleline = !tmp.contains(QChar::LineSeparator);
+            if (singleline && elideMode != QmlGraphicsText::ElideNone && q->widthValid())
+                tmp = fm.elidedText(tmp,(Qt::TextElideMode)elideMode,q->width()); // XXX still worth layout...?
+            layout.clearLayout();
+            layout.setFont(font);
+            layout.setText(tmp);
+            size = setupTextLayout(&layout);
+            cachedLayoutSize = size;
+            dy -= size.height();
+        } else {
             singleline = false; // richtext can't elide or be optimized for single-line case
             doc->setDefaultFont(font);
             QTextOption option((Qt::Alignment)int(hAlign | vAlign));
@@ -509,8 +509,6 @@ void QmlGraphicsTextPrivate::updateSize()
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
             dy -= (int)doc->size().height();
-        } else {
-            dy -= size.height();
         }
         int yoff = 0;
 

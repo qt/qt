@@ -88,6 +88,7 @@ private slots:
     void spacingPersistency();
     void snakeParallelWithLayout();
     void parallelToHalfLayout();
+    void globalSpacing();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1975,6 +1976,46 @@ void tst_QGraphicsAnchorLayout::parallelToHalfLayout()
     QCOMPARE(preferredSizeHint, QSizeF(300, 100) + overhead);
     QCOMPARE(maximumSizeHint, QSizeF(400, 100) + overhead);
 }
+
+void tst_QGraphicsAnchorLayout::globalSpacing()
+{
+    QGraphicsWidget *a = createItem();
+    QGraphicsWidget *b = createItem();
+
+    QGraphicsWidget w;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&w);
+
+    l->addCornerAnchors(l, Qt::TopLeftCorner, a, Qt::TopLeftCorner);
+    l->addCornerAnchors(a, Qt::BottomRightCorner, b, Qt::TopLeftCorner);
+    l->addCornerAnchors(b, Qt::BottomRightCorner, l, Qt::BottomRightCorner);
+
+    w.resize(w.effectiveSizeHint(Qt::PreferredSize));
+    qreal vSpacing = b->geometry().top() - a->geometry().bottom();
+    qreal hSpacing = b->geometry().left() - a->geometry().right();
+
+    // Set spacings manually
+    l->setVerticalSpacing(vSpacing + 10);
+    l->setHorizontalSpacing(hSpacing + 5);
+
+    w.resize(w.effectiveSizeHint(Qt::PreferredSize));
+    qreal newVSpacing = b->geometry().top() - a->geometry().bottom();
+    qreal newHSpacing = b->geometry().left() - a->geometry().right();
+
+    QCOMPARE(newVSpacing, vSpacing + 10);
+    QCOMPARE(newHSpacing, hSpacing + 5);
+
+    // Set a negative spacing. This will unset the previous spacing and
+    // bring back the widget-defined spacing.
+    l->setSpacing(-1);
+
+    w.resize(w.effectiveSizeHint(Qt::PreferredSize));
+    newVSpacing = b->geometry().top() - a->geometry().bottom();
+    newHSpacing = b->geometry().left() - a->geometry().right();
+
+    QCOMPARE(newVSpacing, vSpacing);
+    QCOMPARE(newHSpacing, hSpacing);
+}
+
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
 #include "tst_qgraphicsanchorlayout.moc"

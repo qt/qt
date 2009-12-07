@@ -754,10 +754,10 @@ QScriptValue NamedNodeMap::create(QScriptEngine *engine, NodeImpl *data, QList<N
 
     instance.setData(engine->newVariant(qVariantFromValue(map)));
 
-    if (!QmlEnginePrivate::get(engine)->namedNodeMapClass)
-        QmlEnginePrivate::get(engine)->namedNodeMapClass= new NamedNodeMapClass(engine);
+    if (!QmlScriptEngine::get(engine)->namedNodeMapClass)
+        QmlScriptEngine::get(engine)->namedNodeMapClass= new NamedNodeMapClass(engine);
 
-    instance.setScriptClass(QmlEnginePrivate::get(engine)->namedNodeMapClass);
+    instance.setScriptClass(QmlScriptEngine::get(engine)->namedNodeMapClass);
 
     return instance;
 }
@@ -811,10 +811,10 @@ QScriptValue NodeList::create(QScriptEngine *engine, NodeImpl *data)
 
     instance.setData(engine->newVariant(qVariantFromValue(list)));
 
-    if (!QmlEnginePrivate::get(engine)->nodeListClass)
-        QmlEnginePrivate::get(engine)->nodeListClass= new NodeListClass(engine);
+    if (!QmlScriptEngine::get(engine)->nodeListClass)
+        QmlScriptEngine::get(engine)->nodeListClass= new NodeListClass(engine);
 
-    instance.setScriptClass(QmlEnginePrivate::get(engine)->nodeListClass);
+    instance.setScriptClass(QmlScriptEngine::get(engine)->nodeListClass);
 
     return instance;
 }
@@ -939,7 +939,7 @@ public:
                  Opened = 1, HeadersReceived = 2,
                  Loading = 3, Done = 4 };
 
-    QmlXMLHttpRequest(QmlEngine *engine);
+    QmlXMLHttpRequest();
     virtual ~QmlXMLHttpRequest();
 
     QScriptValue callback() const;
@@ -965,8 +965,6 @@ private slots:
     void finished();
 
 private:
-    QmlEngine *m_engine;
-
     State m_state;
     bool m_errorFlag;
     bool m_sendFlag;
@@ -987,13 +985,22 @@ private:
     QNetworkRequest m_request;
     QNetworkReply *m_network;
     void destroyNetwork();
+
+    QNetworkAccessManager *m_nam;
+    QNetworkAccessManager *networkAccessManager()
+    {
+        if (!m_nam) {
+            m_nam = new QNetworkAccessManager;
+            // XXX proxy, etc...
+        }
+        return m_nam;
+    }
 };
 
-QmlXMLHttpRequest::QmlXMLHttpRequest(QmlEngine *engine)
-: m_engine(engine), m_state(Unsent), m_errorFlag(false), m_sendFlag(false),
-  m_network(0)
+QmlXMLHttpRequest::QmlXMLHttpRequest()
+: m_state(Unsent), m_errorFlag(false), m_sendFlag(false),
+  m_network(0), m_nam(0)
 {
-    Q_ASSERT(m_engine);
 }
 
 QmlXMLHttpRequest::~QmlXMLHttpRequest()
@@ -1053,7 +1060,7 @@ void QmlXMLHttpRequest::addHeader(const QString &name, const QString &value)
     QByteArray utfname = name.toUtf8();
 
     if (m_request.hasRawHeader(utfname)) {
-        m_request.setRawHeader(utfname, m_request.rawHeader(utfname) + "," + value.toUtf8());
+        m_request.setRawHeader(utfname, m_request.rawHeader(utfname) + ',' + value.toUtf8());
     } else {
         m_request.setRawHeader(utfname, value.toUtf8());
     }
@@ -1138,13 +1145,13 @@ void QmlXMLHttpRequest::send(const QByteArray &data)
     }
 
     if (m_method == QLatin1String("GET"))
-        m_network = m_engine->networkAccessManager()->get(request);
+        m_network = networkAccessManager()->get(request);
     else if (m_method == QLatin1String("HEAD"))
-        m_network = m_engine->networkAccessManager()->head(request);
+        m_network = networkAccessManager()->head(request);
     else if(m_method == QLatin1String("POST"))
-        m_network = m_engine->networkAccessManager()->post(request, data);
+        m_network = networkAccessManager()->post(request, data);
     else if(m_method == QLatin1String("PUT"))
-        m_network = m_engine->networkAccessManager()->put(request, data);
+        m_network = networkAccessManager()->put(request, data);
 
     QObject::connect(m_network, SIGNAL(downloadProgress(qint64,qint64)), 
                      this, SLOT(downloadProgress(qint64)));
@@ -1291,9 +1298,7 @@ static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngin
     QUrl url(context->argument(1).toString());
 
     if (url.isRelative()) {
-        QmlContext *ctxt = QmlEnginePrivate::get(engine)->getContext(context);
-        Q_ASSERT(ctxt);
-        url = ctxt->resolvedUrl(url);
+        url = QmlScriptEngine::get(engine)->resolvedUrl(context,url);
     }
 
     // Argument 2 - async (optional)
@@ -1527,7 +1532,7 @@ static QScriptValue qmlxmlhttprequest_onreadystatechange(QScriptContext *context
 static QScriptValue qmlxmlhttprequest_new(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->isCalledAsConstructor()) {
-        context->thisObject().setData(engine->newQObject(new QmlXMLHttpRequest(QmlEnginePrivate::getEngine(engine)), QScriptEngine::ScriptOwnership));
+        context->thisObject().setData(engine->newQObject(new QmlXMLHttpRequest(), QScriptEngine::ScriptOwnership));
     }
     return engine->undefinedValue();
 }

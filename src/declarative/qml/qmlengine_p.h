@@ -104,6 +104,31 @@ class QmlCleanup;
 class QmlBindingData;
 class QmlWorkerScriptEngine;
 
+class QmlScriptEngine : public QScriptEngine
+{
+public:
+    QmlScriptEngine(QmlEnginePrivate *priv);
+
+    ~QmlScriptEngine();
+
+    QUrl resolvedUrl(QScriptContext *context, const QUrl& url); // resolved against p's context, or baseUrl if no p
+    static QScriptValue resolvedUrl(QScriptContext *ctxt, QScriptEngine *engine);
+
+    static QmlScriptEngine *get(QScriptEngine* e) { return static_cast<QmlScriptEngine*>(e); }
+
+    QmlEnginePrivate *p;
+
+    // User by SQL API
+    QScriptClass *sqlQueryClass;
+    QString offlineStoragePath;
+
+    // Used by DOM Core 3 API
+    QScriptClass *namedNodeMapClass;
+    QScriptClass *nodeListClass;
+
+    QUrl baseUrl;
+};
+
 class QmlEnginePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlEngine)
@@ -137,11 +162,6 @@ public:
     QmlListScriptClass *listClass;
     // Global script class
     QScriptClass *globalClass;
-    // Used by DOM Core 3 API
-    QScriptClass *nodeListClass;
-    QScriptClass *namedNodeMapClass;
-    // Used by SQL database API
-    QScriptClass *sqlQueryClass;
 
     // Registered cleanup handlers
     QmlCleanup *cleanup;
@@ -150,12 +170,6 @@ public:
     QmlBindingData *erroredBindings;
     int inProgressCreations;
 
-    struct QmlScriptEngine : public QScriptEngine
-    {
-        QmlScriptEngine(QmlEnginePrivate *priv)
-            : p(priv) {}
-        QmlEnginePrivate *p;
-    };
     QmlScriptEngine scriptEngine;
 
     QmlWorkerScriptEngine *getWorkerScriptEngine();

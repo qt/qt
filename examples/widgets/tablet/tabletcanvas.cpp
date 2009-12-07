@@ -50,7 +50,7 @@ TabletCanvas::TabletCanvas()
     resize(500, 500);
     myBrush = QBrush();
     myPen = QPen();
-    initImage();
+    initPixmap();
     setAutoFillBackground(true);
     deviceDown = false;
     myColor = Qt::red;
@@ -60,29 +60,29 @@ TabletCanvas::TabletCanvas()
     lineWidthType = LineWidthPressure;
 }
 
-void TabletCanvas::initImage()
+void TabletCanvas::initPixmap()
 {
-    QImage newImage = QImage(width(), height(), QImage::Format_ARGB32);
-    QPainter painter(&newImage);
-    painter.fillRect(0, 0, newImage.width(), newImage.height(), Qt::white);
-    if (!image.isNull())
-        painter.drawImage(0, 0, image);
+    QPixmap newPixmap = QPixmap(width(), height());
+    newPixmap.fill(Qt::white);
+    QPainter painter(&newPixmap);
+    if (!pixmap.isNull())
+        painter.drawPixmap(0, 0, pixmap);
     painter.end();
-    image = newImage;
+    pixmap = newPixmap;
 }
 //! [0]
 
 //! [1]
 bool TabletCanvas::saveImage(const QString &file)
 {
-    return image.save(file);
+    return pixmap.save(file);
 }
 //! [1]
 
 //! [2]
 bool TabletCanvas::loadImage(const QString &file)
 {
-    bool success = image.load(file);
+    bool success = pixmap.load(file);
 
     if (success) {
         update();
@@ -114,8 +114,8 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
 
             if (deviceDown) {
                 updateBrush(event);
-                QPainter painter(&image);
-                paintImage(painter, event);
+                QPainter painter(&pixmap);
+                paintPixmap(painter, event);
             }
             break;
         default:
@@ -129,12 +129,12 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
 void TabletCanvas::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    painter.drawImage(QPoint(0, 0), image);
+    painter.drawPixmap(0, 0, pixmap);
 }
 //! [4]
 
 //! [5]
-void TabletCanvas::paintImage(QPainter &painter, QTabletEvent *event)
+void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
 {
     QPoint brushAdjust(10, 10);
 
@@ -271,6 +271,6 @@ void TabletCanvas::updateBrush(QTabletEvent *event)
 
 void TabletCanvas::resizeEvent(QResizeEvent *)
 {
-    initImage();
+    initPixmap();
     polyLine[0] = polyLine[1] = polyLine[2] = QPoint();
 }

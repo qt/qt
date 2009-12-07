@@ -119,8 +119,6 @@ public:
             heightIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("heightChanged()");
         }
     }
-    ~QmlGraphicsItemPrivate()
-    { delete _anchors; }
 
     void init(QmlGraphicsItem *parent)
     {

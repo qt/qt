@@ -1101,16 +1101,6 @@ void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
         }
     }
 
-#ifndef QT_NO_QOBJECT
-    {
-        QHash<QObject*, QScript::QObjectData*>::const_iterator it;
-        for (it = m_qobjectData.constBegin(); it != m_qobjectData.constEnd(); ++it) {
-            QScript::QObjectData *qdata = it.value();
-            qdata->mark(markStack);
-        }
-    }
-#endif
-
     {
         QHash<int, QScriptTypeInfo*>::const_iterator it;
         for (it = m_typeInfos.constBegin(); it != m_typeInfos.constEnd(); ++it) {
@@ -1134,6 +1124,17 @@ void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
             context = context->parentContext();
         }
     }
+
+#ifndef QT_NO_QOBJECT
+    markStack.drain(); // make sure everything is marked before marking qobject data
+    {
+        QHash<QObject*, QScript::QObjectData*>::const_iterator it;
+        for (it = m_qobjectData.constBegin(); it != m_qobjectData.constEnd(); ++it) {
+            QScript::QObjectData *qdata = it.value();
+            qdata->mark(markStack);
+        }
+    }
+#endif
 }
 
 bool QScriptEnginePrivate::isCollecting() const

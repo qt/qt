@@ -101,9 +101,9 @@ class QmlWorkerScriptEnginePrivate : public QObject
 public:
     QmlWorkerScriptEnginePrivate();
 
-    struct ScriptEngine : public QScriptEngine 
+    struct ScriptEngine : public QmlScriptEngine 
     {
-        ScriptEngine(QmlWorkerScriptEnginePrivate *parent) : p(parent) {}
+        ScriptEngine(QmlWorkerScriptEnginePrivate *parent) : QmlScriptEngine(0), p(parent) {}
         QmlWorkerScriptEnginePrivate *p;
     };
     ScriptEngine *workerEngine;
@@ -259,6 +259,7 @@ void QmlWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
         QScriptContext *ctxt = workerEngine->pushContext();
         ctxt->setActivationObject(activation);
 
+        workerEngine->baseUrl = url;
         workerEngine->evaluate(script);
 
         workerEngine->popContext();
@@ -276,7 +277,7 @@ QVariant QmlWorkerScriptEnginePrivate::scriptValueToVariant(const QScriptValue &
     } else if (value.isArray()) {
         QVariantList list;
 
-        quint32 length = (quint32)value.property("length").toNumber();
+        quint32 length = (quint32)value.property(QLatin1String("length")).toNumber();
 
         for (quint32 ii = 0; ii < length; ++ii) {
             QVariant v = scriptValueToVariant(ii);
@@ -303,21 +304,21 @@ QVariant QmlWorkerScriptEnginePrivate::scriptValueToVariant(const QScriptValue &
 
 QScriptValue QmlWorkerScriptEnginePrivate::variantToScriptValue(const QVariant &value, QScriptEngine *engine)
 {
-    if (value.type() == QVariant::Bool) {
+    if (value.userType() == QVariant::Bool) {
         return QScriptValue(value.toBool());
-    } else if (value.type() == QVariant::String) {
+    } else if (value.userType() == QVariant::String) {
         return QScriptValue(value.toString());
-    } else if (value.type() == (QVariant::Type)QMetaType::QReal) {
+    } else if (value.userType() == QMetaType::QReal) {
         return QScriptValue(value.toReal());
-    } else if (value.type() == (QVariant::Type)QMetaType::QVariantList) {
+    } else if (value.userType() == QMetaType::QVariantList) {
         QVariantList list = qvariant_cast<QVariantList>(value);
         QScriptValue rv = engine->newArray(list.count());
 
-        for (quint32 ii = 0; ii < list.count(); ++ii) 
+        for (quint32 ii = 0; ii < quint32(list.count()); ++ii) 
             rv.setProperty(ii, variantToScriptValue(list.at(ii), engine));
 
         return rv;
-    } else if (value.type() == (QVariant::Type)QMetaType::QVariantHash) {
+    } else if (value.userType() == QMetaType::QVariantHash) {
 
         QVariantHash hash = qvariant_cast<QVariantHash>(value);
 

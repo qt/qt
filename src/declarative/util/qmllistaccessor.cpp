@@ -73,9 +73,9 @@ void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
 
     if (!d.isValid()) {
         m_type = Invalid;
-    } else if (d.type() == QVariant::StringList) {
+    } else if (d.userType() == QVariant::StringList) {
         m_type = StringList;
-    } else if (d.type() == (QVariant::Type)QMetaType::QVariantList) {
+    } else if (d.userType() == QMetaType::QVariantList) {
         m_type = VariantList;
     } else if (d.canConvert(QVariant::Int)) {
         m_type = Integer;

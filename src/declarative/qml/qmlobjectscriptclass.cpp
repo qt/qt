@@ -307,10 +307,10 @@ QScriptValue QmlObjectScriptClass::tostring(QScriptContext *context, QScriptEngi
         if (!objectName.isEmpty()) {
             ret += QLatin1String(", \"");
             ret += objectName;
-            ret += QLatin1String("\"");
+            ret += QLatin1Char('\"');
         }
 
-        ret += QLatin1String(")");
+        ret += QLatin1Char(')');
     }else{
         ret += QLatin1String("null");
     }

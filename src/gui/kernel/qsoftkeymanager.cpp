@@ -190,7 +190,7 @@ bool QSoftKeyManager::event(QEvent *e)
                 }
 
                 QWidget *parent = source->parentWidget();
-                if (parent && softKeys.isEmpty())
+                if (parent && softKeys.isEmpty() && !source->isWindow())
                     source = parent;
                 else
                     break;
