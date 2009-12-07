@@ -555,6 +555,10 @@ extern "C" {
 
 - (void)updateTrackingAreas
 {
+    // [NSView addTrackingArea] is slow, so bail out early if we can:
+    if (NSIsEmptyRect([self visibleRect]))
+        return;
+
     QMacCocoaAutoReleasePool pool;
     if (NSArray *trackingArray = [self trackingAreas]) {
         NSUInteger size = [trackingArray count];
