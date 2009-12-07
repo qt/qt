@@ -203,7 +203,7 @@ public:
     QmlAbstractAnimationPrivate()
     : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
       connectedTimeLine(false), componentComplete(true), startOnCompletion(false),
-      target(0), group(0) {}
+      group(0) {}
 
     bool running:1;
     bool paused:1;
@@ -217,8 +217,6 @@ public:
     void commence();
 
     QmlNullableValue<QmlMetaProperty> userProperty;
-    QObject *target;
-    QString propertyName;
 
     QmlMetaProperty property;
     QmlAnimationGroup *group;
@@ -264,10 +262,12 @@ class QmlPropertyActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlPropertyAction)
 public:
     QmlPropertyActionPrivate()
-    : QmlAbstractAnimationPrivate(), proxy(this), spa(0) {}
+    : QmlAbstractAnimationPrivate(), target(0), proxy(this), spa(0) {}
 
     void init();
 
+    QObject *target;
+    QString propertyName;
     QString properties;
     QList<QObject *> targets;
     QList<QObject *> exclude;
@@ -342,7 +342,7 @@ class QmlPropertyAnimationPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlPropertyAnimation)
 public:
     QmlPropertyAnimationPrivate()
-    : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
+    : QmlAbstractAnimationPrivate(), target(0), fromSourced(false), fromIsDefined(false), toIsDefined(false),
       rangeIsSet(false), defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0),
       value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
 
@@ -353,6 +353,8 @@ public:
 
     QString easing;
 
+    QObject *target;
+    QString propertyName;
     QString properties;
     QList<QObject *> targets;
     QList<QObject *> exclude;
