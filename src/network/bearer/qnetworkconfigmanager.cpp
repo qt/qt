@@ -45,6 +45,7 @@
 #include "qnetworkconfigmanager_s60_p.h"
 #else
 #include "qnetworkconfigmanager_p.h"
+#include "qnetworksessionengine_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -234,28 +235,31 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
 {
     QList<QNetworkConfiguration> result;
     QNetworkConfigurationManagerPrivate* conPriv = connManager();
-    QList<QString> cpsIdents = conPriv->accessPointConfigurations.keys();
 
-    //find all InternetAccessPoints
-    foreach( QString ii, cpsIdents) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p = 
-            conPriv->accessPointConfigurations.value(ii);
-        if ( (p->state & filter) == filter ) {
-            QNetworkConfiguration pt;
-            pt.d = conPriv->accessPointConfigurations.value(ii);
-            result << pt;
+    foreach (QNetworkSessionEngine *engine, conPriv->sessionEngines) {
+        QStringList cpsIdents = engine->accessPointConfigurations.keys();
+
+        //find all InternetAccessPoints
+        foreach (const QString &ii, cpsIdents) {
+            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p =
+                    engine->accessPointConfigurations.value(ii);
+            if ((p->state & filter) == filter) {
+                QNetworkConfiguration pt;
+                pt.d = engine->accessPointConfigurations.value(ii);
+                result << pt;
+            }
         }
-    }
 
-    //find all service networks
-    cpsIdents = conPriv->snapConfigurations.keys();
-    foreach( QString ii, cpsIdents) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p = 
-            conPriv->snapConfigurations.value(ii);
-        if ( (p->state & filter) == filter ) {
-            QNetworkConfiguration pt;
-            pt.d = conPriv->snapConfigurations.value(ii);
-            result << pt;
+        //find all service networks
+        cpsIdents = engine->snapConfigurations.keys();
+        foreach (const QString &ii, cpsIdents) {
+            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p =
+                    engine->snapConfigurations.value(ii);
+            if ((p->state & filter) == filter) {
+                QNetworkConfiguration pt;
+                pt.d = engine->snapConfigurations.value(ii);
+                result << pt;
+            }
         }
     }
 
@@ -271,15 +275,23 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
 QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(const QString& identifier) const
 {
     QNetworkConfigurationManagerPrivate* conPriv = connManager();
-    QNetworkConfiguration item;
-    if (conPriv->accessPointConfigurations.contains(identifier))
-        item.d = conPriv->accessPointConfigurations.value(identifier);
-    else if (conPriv->snapConfigurations.contains(identifier))
-        item.d = conPriv->snapConfigurations.value(identifier);
-    else if (conPriv->userChoiceConfigurations.contains(identifier))
-        item.d = conPriv->userChoiceConfigurations.value(identifier);
-    return item;
 
+    QNetworkConfiguration item;
+
+    foreach (QNetworkSessionEngine *engine, conPriv->sessionEngines) {
+        if (engine->accessPointConfigurations.contains(identifier))
+            item.d = engine->accessPointConfigurations.value(identifier);
+        else if (engine->snapConfigurations.contains(identifier))
+            item.d = engine->snapConfigurations.value(identifier);
+        else if (engine->userChoiceConfigurations.contains(identifier))
+            item.d = engine->userChoiceConfigurations.value(identifier);
+        else
+            continue;
+
+        return item;
+    }
+
+    return item;
 }
 
 /*!

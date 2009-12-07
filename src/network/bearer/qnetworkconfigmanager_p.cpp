@@ -53,50 +53,34 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")))
 
+QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
+{
+    while (!sessionEngines.isEmpty())
+        delete sessionEngines.takeFirst();
+}
+
 void QNetworkConfigurationManagerPrivate::registerPlatformCapabilities()
 {
     capFlags = QNetworkConfigurationManager::ForcedRoaming;
 }
 
-void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurationPrivate *cpPriv, QNetworkSessionEngine *engine)
+void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurationPrivatePointer ptr)
 {
-    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr(new QNetworkConfigurationPrivate);
-
-    ptr.data()->isValid = cpPriv->isValid;
-    ptr.data()->name = cpPriv->name;
-    ptr.data()->id = cpPriv->id;
-    ptr.data()->state = cpPriv->state;
-    ptr.data()->type = cpPriv->type;
-    ptr.data()->roamingSupported = cpPriv->roamingSupported;
-    ptr.data()->purpose = cpPriv->purpose;
-    ptr.data()->internet = cpPriv->internet;
-
-    accessPointConfigurations.insert(cpPriv->id, ptr);
-    configurationEngine.insert(cpPriv->id, engine);
-
     if (!firstUpdate) {
         QNetworkConfiguration item;
         item.d = ptr;
         emit configurationAdded(item);
     }
 
-    if (ptr.data()->state == QNetworkConfiguration::Active) {
+    if (ptr->state == QNetworkConfiguration::Active) {
         ++onlineConfigurations;
         if (!firstUpdate && onlineConfigurations == 1)
             emit onlineStateChanged(true);
     }
 }
 
-void QNetworkConfigurationManagerPrivate::configurationRemoved(const QString &id)
+void QNetworkConfigurationManagerPrivate::configurationRemoved(QNetworkConfigurationPrivatePointer ptr)
 {
-    if (!accessPointConfigurations.contains(id))
-        return;
-
-    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr =
-        accessPointConfigurations.take(id);
-
-    configurationEngine.remove(id);
-
     ptr.data()->isValid = false;
 
     if (!firstUpdate) {
@@ -112,57 +96,34 @@ void QNetworkConfigurationManagerPrivate::configurationRemoved(const QString &id
     }
 }
 
-void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigurationPrivate *cpPriv)
+void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigurationPrivatePointer ptr)
 {
-    if (!accessPointConfigurations.contains(cpPriv->id))
-        return;
+    if (!firstUpdate) {
+        QNetworkConfiguration item;
+        item.d = ptr;
+        emit configurationChanged(item);
+    }
 
-    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr =
-        accessPointConfigurations.value(cpPriv->id);
+    qDebug() << "Need to recalculate online state.";
+    QNetworkConfiguration::StateFlags oldState = ptr->state;
 
-    if (ptr.data()->isValid != cpPriv->isValid ||
-        ptr.data()->name != cpPriv->name ||
-        ptr.data()->id != cpPriv->id ||
-        ptr.data()->state != cpPriv->state ||
-        ptr.data()->type != cpPriv->type ||
-        ptr.data()->roamingSupported != cpPriv->roamingSupported ||
-        ptr.data()->purpose != cpPriv->purpose ||
-        ptr.data()->internet != cpPriv->internet) {
-
-        const QNetworkConfiguration::StateFlags oldState = ptr.data()->state;
-
-        ptr.data()->isValid = cpPriv->isValid;
-        ptr.data()->name = cpPriv->name;
-        ptr.data()->id = cpPriv->id;
-        ptr.data()->state = cpPriv->state;
-        ptr.data()->type = cpPriv->type;
-        ptr.data()->roamingSupported = cpPriv->roamingSupported;
-        ptr.data()->purpose = cpPriv->purpose;
-        ptr.data()->internet = cpPriv->internet;
-
-        if (!firstUpdate) {
-            QNetworkConfiguration item;
-            item.d = ptr;
-            emit configurationChanged(item);
-        }
-
-        if (ptr.data()->state == QNetworkConfiguration::Active && oldState != ptr.data()->state) {
-            // configuration went online
-            ++onlineConfigurations;
-            if (!firstUpdate && onlineConfigurations == 1)
-                emit onlineStateChanged(true);
-        } else if (ptr.data()->state != QNetworkConfiguration::Active && oldState == QNetworkConfiguration::Active) {
-            // configuration went offline
-            --onlineConfigurations;
-            if (!firstUpdate && onlineConfigurations == 0)
-                emit onlineStateChanged(false);
-        }
+    if (ptr->state == QNetworkConfiguration::Active && oldState != ptr->state) {
+        // configuration went online
+        ++onlineConfigurations;
+        if (!firstUpdate && onlineConfigurations == 1)
+            emit onlineStateChanged(true);
+    } else if (ptr->state != QNetworkConfiguration::Active && oldState == QNetworkConfiguration::Active) {
+        // configuration went offline
+        --onlineConfigurations;
+        if (!firstUpdate && onlineConfigurations == 0)
+            emit onlineStateChanged(false);
     }
 }
 
 void QNetworkConfigurationManagerPrivate::updateInternetServiceConfiguration()
 {
-    if (!snapConfigurations.contains(QLatin1String("Internet Service Network"))) {
+#if 0
+    if (!generic->snapConfigurations.contains(QLatin1String("Internet Service Network"))) {
         QNetworkConfigurationPrivate *serviceNetwork = new QNetworkConfigurationPrivate;
         serviceNetwork->name = tr("Internet");
         serviceNetwork->isValid = true;
@@ -172,7 +133,7 @@ void QNetworkConfigurationManagerPrivate::updateInternetServiceConfiguration()
 
         QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr(serviceNetwork);
 
-        snapConfigurations.insert(serviceNetwork->id, ptr);
+        generic->snapConfigurations.insert(serviceNetwork->id, ptr);
 
         if (!firstUpdate) {
             QNetworkConfiguration item;
@@ -182,15 +143,15 @@ void QNetworkConfigurationManagerPrivate::updateInternetServiceConfiguration()
     }
 
     QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr =
-        snapConfigurations.value(QLatin1String("Internet Service Network"));
+        generic->snapConfigurations.value(QLatin1String("Internet Service Network"));
 
     QList<QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > serviceNetworkMembers;
 
     QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> >::const_iterator i =
-        accessPointConfigurations.constBegin();
+        generic->accessPointConfigurations.constBegin();
 
     QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Defined;
-    while (i != accessPointConfigurations.constEnd()) {
+    while (i != generic->accessPointConfigurations.constEnd()) {
         QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> child = i.value();
 
         if (child.data()->internet && ((child.data()->state & QNetworkConfiguration::Defined)
@@ -212,186 +173,92 @@ void QNetworkConfigurationManagerPrivate::updateInternetServiceConfiguration()
         item.d = ptr;
         emit configurationChanged(item);
     }
+#endif
 }
 
 void QNetworkConfigurationManagerPrivate::updateConfigurations()
 {
     if (firstUpdate) {
-        updateState = NotUpdating;
         onlineConfigurations = 0;
 
         QFactoryLoader *l = loader();
         QStringList keys = l->keys();
 
-#if defined (Q_OS_DARWIN)
-        coreWifi = 0;
         if (keys.contains(QLatin1String("corewlan"))) {
             QBearerEnginePlugin *coreWlanPlugin =
                 qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("corewlan")));
             if (coreWlanPlugin) {
-                coreWifi = coreWlanPlugin->create(QLatin1String("corewlan"));
+                QNetworkSessionEngine *coreWifi = coreWlanPlugin->create(QLatin1String("corewlan"));
                 if (coreWifi) {
-                    connect(coreWifi, SIGNAL(configurationsChanged()),
-                            this, SLOT(updateConfigurations()));
+                    sessionEngines.append(coreWifi);
                 }
             }
         }
-#else
-#ifdef BACKEND_NM
-        nmWifi = 0;
+
         if (keys.contains(QLatin1String("networkmanager"))) {
             QBearerEnginePlugin *nmPlugin =
                 qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("networkmanager")));
             if (nmPlugin) {
-                nmWifi = nmPlugin->create(QLatin1String("networkmanager"));
+                QNetworkSessionEngine *nmWifi = nmPlugin->create(QLatin1String("networkmanager"));
                 if (nmWifi) {
-                    connect(nmWifi, SIGNAL(configurationsChanged()),
-                            this, SLOT(updateConfigurations()));
+                    sessionEngines.append(nmWifi);
                 }
             }
         }
-#endif
 
-        generic = 0;
         if (keys.contains(QLatin1String("generic"))) {
             QBearerEnginePlugin *genericPlugin =
                 qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("generic")));
             if (genericPlugin) {
-                generic = genericPlugin->create(QLatin1String("generic"));
+                QNetworkSessionEngine *generic = genericPlugin->create(QLatin1String("generic"));
                 if (generic) {
-                    connect(generic, SIGNAL(configurationsChanged()),
-                            this, SLOT(updateConfigurations()));
+                    sessionEngines.append(generic);
+                    connect(generic, SIGNAL(updateCompleted()),
+                            this, SIGNAL(configurationUpdateComplete()));
+                    connect(generic, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
+                    connect(generic, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
+                    connect(generic, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
                 }
             }
         }
-#endif
 
-#ifdef Q_OS_WIN
-        nla = 0;
         if (keys.contains(QLatin1String("nla"))) {
             QBearerEnginePlugin *nlaPlugin =
                 qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("nla")));
             if (nlaPlugin) {
-                qDebug() << "creating nla backend";
-                nla = nlaPlugin->create(QLatin1String("nla"));
+                QNetworkSessionEngine *nla = nlaPlugin->create(QLatin1String("nla"));
                 if (nla) {
-                    connect(nla, SIGNAL(configurationsChanged()),
-                            this, SLOT(updateConfigurations()));
+                    sessionEngines.append(nla);
                 }
             }
         }
-#endif
 
-#ifdef Q_OS_WIN32
-        nativeWifi = 0;
         if (keys.contains(QLatin1String("nativewifi"))) {
             QBearerEnginePlugin *nativeWifiPlugin =
                 qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("nativewifi")));
             if (nativeWifiPlugin) {
-                qDebug() << "Creating native wifi backend";
-                nativeWifi = nativeWifiPlugin->create(QLatin1String("nativewifi"));
+                QNetworkSessionEngine *nativeWifi = nativeWifiPlugin->create(QLatin1String("nativewifi"));
                 if (nativeWifi) {
-                    connect(nativeWifi, SIGNAL(configurationsChanged()),
-                            this, SLOT(updateConfigurations()));
+                    sessionEngines.append(nativeWifi);
 
                     capFlags |= QNetworkConfigurationManager::CanStartAndStopInterfaces;
                 }
             }
         }
-#endif
     }
 
     QNetworkSessionEngine *engine = qobject_cast<QNetworkSessionEngine *>(sender());
-    if (updateState & Updating && engine) {
-#if defined (Q_OS_DARWIN)
-        if (engine == coreWifi)
-            updateState &= ~CoreWifiUpdating;
-#else
-#if defined(BACKEND_NM)
-        if (engine == nmWifi)
-            updateState &= ~NmUpdating;
-        if (engine == generic)
-            updateState &= ~GenericUpdating;
-#else
-        if (engine == generic)
-            updateState &= ~GenericUpdating;
-#endif
-#endif
-
-#ifdef Q_OS_WIN
-        else if (engine == nla)
-            updateState &= ~NlaUpdating;
-#ifdef Q_OS_WIN32
-        else if (engine == nativeWifi)
-            updateState &= ~NativeWifiUpdating;
-#endif
-#endif
-    }
-    QList<QNetworkSessionEngine *> engines;
-    if (firstUpdate) {
-#if defined (Q_OS_DARWIN)
-        if (coreWifi)
-            engines << coreWifi;
-#else
-#if defined(BACKEND_NM)
-        if (nmWifi)
-            engines << nmWifi;
-        if (generic)
-            engines << generic;
-#else
-        if (generic)
-            engines << generic;
-#endif
-#endif
-
-#ifdef Q_OS_WIN
-        if (nla)
-            engines << nla;
-#ifdef Q_OS_WIN32
-        if (nativeWifi)
-            engines << nativeWifi;
-#endif
-#endif
-    } else if (engine) {
-        engines << engine;
+    if (!updatingEngines.isEmpty() && engine) {
+        int index = sessionEngines.indexOf(engine);
+        if (index >= 0)
+            updatingEngines.remove(index);
     }
 
-    while (!engines.isEmpty()) {
-        engine = engines.takeFirst();
-
-        bool ok;
-        QList<QNetworkConfigurationPrivate *> foundConfigurations = engine->getConfigurations(&ok);
-
-        // Find removed configurations.
-        QList<QString> removedIdentifiers = configurationEngine.keys();
-        for (int i = 0; i < foundConfigurations.count(); ++i)
-            removedIdentifiers.removeOne(foundConfigurations.at(i)->id);
-
-        // Update or add configurations.
-        while (!foundConfigurations.isEmpty()) {
-            QNetworkConfigurationPrivate *cpPriv = foundConfigurations.takeFirst();
-
-            if (accessPointConfigurations.contains(cpPriv->id))
-                configurationChanged(cpPriv);
-            else
-                configurationAdded(cpPriv, engine);
-
-            delete cpPriv;
-        }
-
-        // Remove configurations.
-        while (!removedIdentifiers.isEmpty()) {
-            const QString id = removedIdentifiers.takeFirst();
-
-            if (configurationEngine.value(id) == engine)
-                configurationRemoved(id);
-        }
-    }
-
-    updateInternetServiceConfiguration();
-
-    if (updateState == Updating) {
-        updateState = NotUpdating;
+    if (updating && updatingEngines.isEmpty()) {
+        updating = false;
         emit configurationUpdateComplete();
     }
 
@@ -407,22 +274,25 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 */
 QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration()
 {
-    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> firstActive;
-    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> firstDiscovered;
+    QNetworkConfigurationPrivatePointer firstActive;
+    QNetworkConfigurationPrivatePointer firstDiscovered;
 
-    QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> >::const_iterator i =
-        accessPointConfigurations.constBegin();
-    while (i != accessPointConfigurations.constEnd()) {
-        QNetworkConfigurationPrivate *priv = i.value().data();
+    foreach (QNetworkSessionEngine *engine, sessionEngines) {
+        QHash<QString, QNetworkConfigurationPrivatePointer>::const_iterator i =
+                engine->accessPointConfigurations.constBegin();
 
-        if (!firstActive && priv->isValid &&
-            (priv->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active)
-            firstActive = i.value();
-        if (!firstDiscovered && priv->isValid &&
-            (priv->state & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered)
-            firstDiscovered = i.value();
+        while (i != engine->accessPointConfigurations.constEnd()) {
+            QNetworkConfigurationPrivatePointer priv = i.value();
 
-        ++i;
+            if (!firstActive && priv->isValid &&
+                (priv->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active)
+                firstActive = priv;
+            if (!firstDiscovered && priv->isValid &&
+                (priv->state & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered)
+                firstDiscovered = priv;
+
+            ++i;
+        }
     }
 
     QNetworkConfiguration item;
@@ -437,42 +307,12 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
 
 void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
 {
-    updateState = Updating;
-#if defined (Q_OS_DARWIN)
-    if (coreWifi) {
-        updateState |= CoreWifiUpdating;
-        coreWifi->requestUpdate();
-    }
-#else
-#if defined(BACKEND_NM)
-    if (nmWifi) {
-        updateState |= NmUpdating;
-        nmWifi->requestUpdate();
-    }
-    if (generic) {
-        updateState |= GenericUpdating;
-        generic->requestUpdate();
-    }
-#else
-    if (generic) {
-        updateState |= GenericUpdating;
-        generic->requestUpdate();
-    }
-#endif
-#endif
-#ifdef Q_OS_WIN
-    if (nla) {
-        updateState |= NlaUpdating;
-        nla->requestUpdate();
-    }
-#endif
+    updating = true;
 
-#ifdef Q_OS_WIN32
-    if (nativeWifi) {
-        updateState |= NativeWifiUpdating;
-        nativeWifi->requestUpdate();
+    for (int i = 0; i < sessionEngines.count(); ++i) {
+        updatingEngines.insert(i);
+        sessionEngines.at(i)->requestUpdate();
     }
-#endif
 }
 
 QT_END_NAMESPACE

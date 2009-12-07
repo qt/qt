@@ -80,7 +80,7 @@ public:
     QNmWifiEngine(QObject *parent = 0);
     ~QNmWifiEngine();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
+    QList<QNetworkConfigurationPrivatePointer> getConfigurations(bool *ok = 0);
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 
@@ -94,7 +94,7 @@ public:
     static QNmWifiEngine *instance();
 
     QStringList knownSsids;
-    inline void emitConfigurationsChanged() { emit configurationsChanged(); }
+    //inline void emitConfigurationsChanged() { emit configurationsChanged(); }
     QNetworkConfigurationPrivate * addAccessPoint(const QString &, QDBusObjectPath );
 
     QStringList getConnectionPathForId(const QString &uuid);

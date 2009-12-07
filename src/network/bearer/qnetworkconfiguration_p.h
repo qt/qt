@@ -59,6 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> QNetworkConfigurationPrivatePointer;
 class QNetworkConfigurationPrivate : public QSharedData
 {
 public:
@@ -89,7 +90,7 @@ public:
     bool internet;
 #endif
 
-    QList<QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > serviceNetworkMembers;
+    QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
     QNetworkInterface serviceInterface;
 
 private:

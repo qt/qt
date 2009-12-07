@@ -53,14 +53,19 @@
 // We mean it.
 //
 
+#include "qnetworkconfiguration_p.h"
+
 #include <QtCore/qobject.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkConfigurationPrivate;
+class QNetworkConfiguration;
+
 class Q_NETWORK_EXPORT QNetworkSessionEngine : public QObject
 {
     Q_OBJECT
@@ -76,7 +81,6 @@ public:
     QNetworkSessionEngine(QObject *parent = 0);
     virtual ~QNetworkSessionEngine();
 
-    virtual QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0) = 0;
     virtual QString getInterfaceFromId(const QString &id) = 0;
     virtual bool hasIdentifier(const QString &id) = 0;
 
@@ -87,8 +91,21 @@ public:
 
     virtual void requestUpdate() = 0;
 
+public:
+    //this table contains an up to date list of all configs at any time.
+    //it must be updated if configurations change, are added/removed or
+    //the members of ServiceNetworks change
+    QHash<QString, QNetworkConfigurationPrivatePointer> accessPointConfigurations;
+    QHash<QString, QNetworkConfigurationPrivatePointer> snapConfigurations;
+    QHash<QString, QNetworkConfigurationPrivatePointer> userChoiceConfigurations;
+
 Q_SIGNALS:
-    void configurationsChanged();
+    void configurationAdded(QNetworkConfigurationPrivatePointer config);
+    void configurationRemoved(QNetworkConfigurationPrivatePointer config);
+    void configurationChanged(QNetworkConfigurationPrivatePointer config);
+
+    void updateCompleted();
+
     void connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error);
 };
 

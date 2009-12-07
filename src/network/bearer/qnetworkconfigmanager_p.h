@@ -56,20 +56,9 @@
 #include "qnetworkconfigmanager.h"
 #include "qnetworkconfiguration_p.h"
 
-#include <QHash>
-#include <QStringList>
-
 QT_BEGIN_NAMESPACE
 
-#ifdef BEARER_ENGINE
 class QNetworkSessionEngine;
-class QGenericEngine;
-class QNlaEngine;
-class QNativeWifiEngine;
-class QNmWifiEngine;
-class QCoreWlanEngine;
-#endif
-
 
 class QNetworkConfigurationManagerPrivate : public QObject
 {
@@ -82,22 +71,7 @@ public:
         updateConfigurations();
     }
 
-    virtual ~QNetworkConfigurationManagerPrivate() 
-    {
-        QList<QString> configIdents = snapConfigurations.keys();
-        foreach(const QString oldIface, configIdents) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = snapConfigurations.take(oldIface);
-            priv->isValid = false;
-            priv->id.clear();
-        }
-
-        configIdents = accessPointConfigurations.keys();
-        foreach(const QString oldIface, configIdents) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.take(oldIface);
-            priv->isValid = false;
-            priv->id.clear();
-        }
-    }
+    virtual ~QNetworkConfigurationManagerPrivate();
 
     QNetworkConfiguration defaultConfiguration();
 
@@ -106,12 +80,6 @@ public:
 
     void performAsyncConfigurationUpdate();
 
-    //this table contains an up to date list of all configs at any time.
-    //it must be updated if configurations change, are added/removed or
-    //the members of ServiceNetworks change
-    QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > accessPointConfigurations;
-    QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > snapConfigurations;
-    QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > userChoiceConfigurations;
 #ifdef BEARER_ENGINE
     QHash<QString, QNetworkSessionEngine *> configurationEngine;
 #endif
@@ -135,41 +103,21 @@ private:
 #endif
 
 #ifdef BEARER_ENGINE
-    QNetworkSessionEngine *generic;
-#ifdef Q_OS_WIN
-    QNetworkSessionEngine *nla;
-#ifndef Q_OS_WINCE
-    QNetworkSessionEngine *nativeWifi;
-#endif
-#endif
-#ifdef BACKEND_NM
-    QNetworkSessionEngine *nmWifi;
-#endif
-#ifdef Q_OS_DARWIN
-    QNetworkSessionEngine *coreWifi;
-#endif
+public:
+    QList<QNetworkSessionEngine *> sessionEngines;
 
+private:
     uint onlineConfigurations;
 
-    enum EngineUpdate {
-        NotUpdating = 0x00,
-        Updating = 0x01,
-        GenericUpdating = 0x02,
-        NlaUpdating = 0x04,
-        NativeWifiUpdating = 0x08,
-        NmUpdating = 0x20,
-        CoreWifiUpdating = 0x40,
-    };
-    Q_DECLARE_FLAGS(EngineUpdateState, EngineUpdate)
-
-    EngineUpdateState updateState;
+    bool updating;
+    QSet<int> updatingEngines;
 #endif
 
 private Q_SLOTS:
 #ifdef BEARER_ENGINE
-    void configurationAdded(QNetworkConfigurationPrivate *cpPriv, QNetworkSessionEngine *engine);
-    void configurationRemoved(const QString &id);
-    void configurationChanged(QNetworkConfigurationPrivate *cpPriv);
+    void configurationAdded(QNetworkConfigurationPrivatePointer ptr);
+    void configurationRemoved(QNetworkConfigurationPrivatePointer ptr);
+    void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
 #endif
 };
 

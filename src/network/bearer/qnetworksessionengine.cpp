@@ -50,6 +50,17 @@ QNetworkSessionEngine::QNetworkSessionEngine(QObject *parent)
 
 QNetworkSessionEngine::~QNetworkSessionEngine()
 {
+    foreach (const QString &oldIface, snapConfigurations.keys()) {
+        QNetworkConfigurationPrivatePointer priv = snapConfigurations.take(oldIface);
+        priv->isValid = false;
+        priv->id.clear();
+    }
+
+    foreach (const QString &oldIface, accessPointConfigurations.keys()) {
+        QNetworkConfigurationPrivatePointer priv = accessPointConfigurations.take(oldIface);
+        priv->isValid = false;
+        priv->id.clear();
+    }
 }
 
 #include "moc_qnetworksessionengine_p.cpp"

@@ -112,7 +112,7 @@ QString QNmWifiEngine::getNameForConfiguration(QNetworkManagerInterfaceDevice *d
 }
 
 
-QList<QNetworkConfigurationPrivate *> QNmWifiEngine::getConfigurations(bool *ok)
+QList<QNetworkConfigurationPrivatePointer> QNmWifiEngine::getConfigurations(bool *ok)
 {
 //    qWarning() << Q_FUNC_INFO << updated;
     if (ok)
@@ -133,7 +133,7 @@ QList<QNetworkConfigurationPrivate *> QNmWifiEngine::getConfigurations(bool *ok)
         //add access points
         updated = true;
     }
-    return foundConfigurations;
+    return QList<QNetworkConfigurationPrivatePointer>(); //foundConfigurations;
 }
 
 void QNmWifiEngine::findConnections()
@@ -411,7 +411,7 @@ bool QNmWifiEngine::hasIdentifier(const QString &id)
 {
     if (configurationInterface.contains(id))
         return true;
-    foreach (QNetworkConfigurationPrivate *cpPriv, getConfigurations()) {
+    foreach (QNetworkConfigurationPrivatePointer cpPriv, getConfigurations()) {
         if (cpPriv->id == id)
             return true;
     }
@@ -506,7 +506,7 @@ void QNmWifiEngine::requestUpdate()
     updated = false;
     knownSsids.clear();
     availableAccessPoints.clear();
-    emitConfigurationsChanged();
+    //emitConfigurationsChanged();
 }
 
 QNmWifiEngine *QNmWifiEngine::instance()

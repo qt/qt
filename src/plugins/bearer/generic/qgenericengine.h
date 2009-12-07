@@ -59,7 +59,6 @@ public:
     QGenericEngine(QObject *parent = 0);
     ~QGenericEngine();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 
@@ -71,6 +70,9 @@ public:
     void requestUpdate();
 
     static QGenericEngine *instance();
+
+private Q_SLOTS:
+    void doRequestUpdate();
 
 private:
     QMap<uint, QString> configurationInterface;
