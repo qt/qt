@@ -46,6 +46,7 @@
 #include <QtGui/qdialog.h>
 #include <QtGui/qapplication.h>
 #include <QtGui/private/qwidget_p.h>
+#include <QtGui/qaction.h>
 
 #include "qdialogbuttonbox.h"
 
