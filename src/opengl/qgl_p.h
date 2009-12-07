@@ -383,7 +383,8 @@ public:
         BGRATextureFormat       = 0x00004000,
         DDSTextureCompression   = 0x00008000,
         ETC1TextureCompression  = 0x00010000,
-        PVRTCTextureCompression = 0x00020000
+        PVRTCTextureCompression = 0x00020000,
+        FragmentShader          = 0x00040000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 

@@ -173,12 +173,12 @@ public:
 #else
             // We can't do this in the constructor for this object because it
             // needs to be called *before* the QApplication constructor.
-            // Also check for the FragmentProgram extension in conjunction with
+            // Also check for the FragmentShader extension in conjunction with
             // the 2.0 version flag, to cover the case where we export the display
             // from an old GL 1.1 server to a GL 2.x client. In that case we can't
             // use GL 2.0.
             if ((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
-                && (QGLExtensions::glExtensions & QGLExtensions::FragmentProgram)
+                && (QGLExtensions::glExtensions & QGLExtensions::FragmentShader)
                 && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty())
                 engineType = QPaintEngine::OpenGL2;
             else
@@ -4832,6 +4832,8 @@ void QGLExtensions::init_extensions()
         glExtensions |= PVRTCTextureCompression;
     if (extensions.contains("GL_ARB_fragment_program"))
         glExtensions |= FragmentProgram;
+    if (extensions.contains("GL_ARB_fragment_shader"))
+        glExtensions |= FragmentShader;
     if (extensions.contains("GL_ARB_texture_mirrored_repeat"))
         glExtensions |= MirroredRepeat;
     if (extensions.contains("GL_EXT_framebuffer_object"))
@@ -4849,6 +4851,7 @@ void QGLExtensions::init_extensions()
 #if defined(QT_OPENGL_ES_2)
     glExtensions |= FramebufferObject;
     glExtensions |= GenerateMipmap;
+    glExtensions |= FragmentShader;
 #endif
 #if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
     if (extensions.contains("GL_OES_framebuffer_object"))
