@@ -910,8 +910,7 @@ void tst_QMenu::deleteActionInTriggered()
 void tst_QMenu::pushButtonPopulateOnAboutToShow()
 {
     QPushButton b("Test PushButton");
-    b.setWindowFlags(Qt::FramelessWindowHint);
-    b.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    b.setWindowFlags(Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
     lastMenu = new QMenu;
     b.setMenu(lastMenu);
     const int scrNumber = QApplication::desktop()->screenNumber(&b);
