@@ -49,7 +49,7 @@
 #include "qmljsnodepool_p.h"
 
 #include <QtCore/QtDebug>
-#include <QtGui/QApplication>
+#include <QtCore/QCoreApplication>
 #include <QVarLengthArray>
 
 #include <string.h>
@@ -266,7 +266,7 @@ case 18: {
         QString text;
         for (AST::UiQualifiedId *q = qualifiedId; q; q = q->next) {
 	   text += q->name->asString();
-           if (q->next) text += QLatin1String(".");
+           if (q->next) text += QLatin1Char('.');
         }
         node = makeAstNode<AST::UiImport>(driver->nodePool(), qualifiedId);
         node->fileNameToken = loc(2);
@@ -1722,7 +1722,7 @@ case 337: {
             yylloc.startColumn += yylloc.length;
             yylloc.length = 0;
 
-            //const QString msg = qApp->translate("QmlParser", "Missing `;'");
+            //const QString msg = QCoreApplication::translate("QmlParser", "Missing `;'");
             //diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Warning, yylloc, msg));
 
             first_token = &token_buffer[0];
@@ -1747,7 +1747,7 @@ case 337: {
         token_buffer[1].loc   = yylloc  = location(lexer);
 
         if (t_action(errorState, yytoken)) {
-            const QString msg = qApp->translate("QmlParser", "Unexpected token `%1'").arg(QLatin1String(spell[token_buffer[0].token]));
+            const QString msg = QCoreApplication::translate("QmlParser", "Unexpected token `%1'").arg(QLatin1String(spell[token_buffer[0].token]));
             diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
 
             action = errorState;
@@ -1775,7 +1775,7 @@ case 337: {
         for (int *tk = tokens; *tk != EOF_SYMBOL; ++tk) {
             int a = t_action(errorState, *tk);
             if (a > 0 && t_action(a, yytoken)) {
-                const QString msg = qApp->translate("QmlParser", "Expected token `%1'").arg(QLatin1String(spell[*tk]));
+                const QString msg = QCoreApplication::translate("QmlParser", "Expected token `%1'").arg(QLatin1String(spell[*tk]));
                 diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
 
                 yytoken = *tk;
@@ -1798,7 +1798,7 @@ case 337: {
 
             int a = t_action(errorState, tk);
             if (a > 0 && t_action(a, yytoken)) {
-                const QString msg = qApp->translate("QmlParser", "Expected token `%1'").arg(QLatin1String(spell[tk]));
+                const QString msg = QCoreApplication::translate("QmlParser", "Expected token `%1'").arg(QLatin1String(spell[tk]));
                 diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
 
                 yytoken = tk;
@@ -1811,7 +1811,7 @@ case 337: {
             }
         }
 
-        const QString msg = qApp->translate("QmlParser", "Syntax error");
+        const QString msg = QCoreApplication::translate("QmlParser", "Syntax error");
         diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, token_buffer[0].loc, msg));
     }
 

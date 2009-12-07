@@ -259,7 +259,7 @@ void QmlXmlQuery::doQueryJob()
         QXmlResultItems result;
         QXmlQuery countquery;
         countquery.bindVariable(QLatin1String("inputDocument"), &b);
-        countquery.setQuery(namespaces + QLatin1String("count(") + prefix + QLatin1String(")"));
+        countquery.setQuery(namespaces + QLatin1String("count(") + prefix + QLatin1Char(')'));
         countquery.evaluateTo(&result);
         QXmlItem item(result.next());
         if (item.isAtomicValue())
@@ -267,7 +267,7 @@ void QmlXmlQuery::doQueryJob()
     }
     //qDebug() << count;
 
-    m_prefix = namespaces + prefix + QLatin1String("/");
+    m_prefix = namespaces + prefix + QLatin1Char('/');
     m_data = xml;
     if (count > 0)
         m_size = count;

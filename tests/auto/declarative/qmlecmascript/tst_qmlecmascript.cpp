@@ -106,6 +106,7 @@ private slots:
     void signalTriggeredBindings();
     void listProperties();
     void exceptionClearsOnReeval();
+    void exceptionProducesWarning();
     void transientErrors();
     void shutdownErrors();
     void externalScript();
@@ -907,6 +908,18 @@ void tst_qmlecmascript::exceptionClearsOnReeval()
     object->setObjectProperty(&object2);
 
     QCOMPARE(object->property("test").toBool(), true);
+}
+
+void tst_qmlecmascript::exceptionProducesWarning()
+{
+    QmlComponent component(&engine, TEST_FILE("exceptionProducesWarning.qml"));
+    QString url = component.url().toString();
+
+    QString warning = "Expected error - QTBUG-6507";
+
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
 }
 
 static int transientErrorsMsgCount = 0;

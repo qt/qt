@@ -445,6 +445,7 @@ void QmlListModel::clear()
     _root = 0;
     roleStrings.clear();
     emit itemsRemoved(0,cleared);
+    emit countChanged(0);
 }
 
 /*!
@@ -901,7 +902,7 @@ static void dump(ModelNode *node, int ind)
     }
 
     for (QHash<QString, ModelNode *>::ConstIterator iter = node->properties.begin(); iter != node->properties.end(); ++iter) {
-        qWarning().nospace() << indent << "Property " << iter.key() << ":";
+        qWarning().nospace() << indent << "Property " << iter.key() << ':';
         dump(iter.value(), ind + 1);
     }
 }

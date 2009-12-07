@@ -196,6 +196,11 @@ static QScriptValue qmlsqldatabase_item(QScriptContext *context, QScriptEngine *
     return engine->undefinedValue();
 }
 
+static QScriptValue qmlsqldatabase_executeSql_outsidetransaction(QScriptContext *context, QScriptEngine * /*engine*/)
+{
+    THROW_SQL(DATABASE_ERR,QmlEngine::tr("executeSql called outside transaction()"));
+}
+
 static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEngine *engine)
 {
     QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
@@ -262,8 +267,9 @@ static QScriptValue qmlsqldatabase_change_version(QScriptContext *context, QScri
     instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql,1));
     QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
 
-    if (from_version!=context->thisObject().property(QLatin1String("version")).toString()) {
-        THROW_SQL(2,QmlEngine::tr("Version mismatch"));
+    QString foundvers = context->thisObject().property(QLatin1String("version")).toString();
+    if (from_version!=foundvers) {
+        THROW_SQL(2,QmlEngine::tr("Version mismatch: expected %1, found %2").arg(from_version).arg(foundvers));
         return engine->undefinedValue();
     }
 
@@ -307,6 +313,8 @@ static QScriptValue qmlsqldatabase_transaction_shared(QScriptContext *context, Q
 
     db.transaction();
     callback.call(QScriptValue(), QScriptValueList() << tx);
+    instance.setProperty(QLatin1String("executeSql"),
+        engine->newFunction(qmlsqldatabase_executeSql_outsidetransaction));
     if (engine->hasUncaughtException()) {
         db.rollback();
     } else {

@@ -160,7 +160,7 @@ protected:
     virtual void updateCurrentValue(const QVariant &value)
     {
         if (animValue)
-            animValue->setValue(value.toDouble());
+            animValue->setValue(value.toReal());
     }
     virtual void updateState(State newState, State oldState)
     {

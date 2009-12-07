@@ -152,6 +152,7 @@ void tst_sql::testQml_data()
     QTest::newRow("iteration-forwardonly") << "data/iteration-forwardonly.js";
     QTest::newRow("error-a") << "data/error-a.js";
     QTest::newRow("error-notransaction") << "data/error-notransaction.js";
+    QTest::newRow("error-outsidetransaction") << "data/error-outsidetransaction.js"; // reuse above
     QTest::newRow("reopen1") << "data/reopen1.js";
     QTest::newRow("reopen2") << "data/reopen2.js"; // re-uses above DB
 

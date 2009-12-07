@@ -121,8 +121,6 @@ QmlGraphicsText::~QmlGraphicsText()
 
 QmlGraphicsTextPrivate::~QmlGraphicsTextPrivate()
 {
-    delete control;
-    delete doc;
 }
 
 /*!

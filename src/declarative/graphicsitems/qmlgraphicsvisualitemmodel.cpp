@@ -761,8 +761,7 @@ QmlGraphicsVisualDataModel::ReleaseFlags QmlGraphicsVisualDataModel::release(Qml
         if (inPackage)
             emit destroyingPackage(qobject_cast<QmlPackage*>(obj));
         stat |= Destroyed;
-        obj->setParent(0);
-        obj->deleteLater();
+        delete obj;
     } else if (!inPackage) {
         stat |= Referenced;
     }
