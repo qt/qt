@@ -10717,7 +10717,6 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
         return QPixmap();
     }
-
     if (!item->d_ptr->scene)
         return QPixmap();
     QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
@@ -10725,9 +10724,11 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     const QRectF sourceRect = boundingRect(system);
     QRectF effectRectF;
 
+    bool unpadded = false;
     if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
         if (info) {
             effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
+            unpadded = (effectRectF.size() == sourceRect.size());
             if (info && system == Qt::LogicalCoordinates)
                 effectRectF = info->painter->worldTransform().inverted().mapRect(effectRectF);
         } else {
@@ -10739,12 +10740,21 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         effectRectF = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5);
     } else {
         effectRectF = sourceRect;
+        unpadded = true;
     }
 
     QRect effectRect = effectRectF.toAlignedRect();
 
     if (offset)
         *offset = effectRect.topLeft();
+
+    bool untransformed = !deviceCoordinates
+            || info->painter->worldTransform().type() <= QTransform::TxTranslate;
+    if (untransformed && unpadded && isPixmap()) {
+        if (offset)
+            *offset = boundingRect(system).topLeft().toPoint();
+        return static_cast<QGraphicsPixmapItem *>(item)->pixmap();
+    }
 
     if (deviceCoordinates) {
         // Clip to viewport rect.
@@ -10772,12 +10782,6 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     }
     if (effectRect.isEmpty())
         return QPixmap();
-
-    if (system == Qt::LogicalCoordinates
-        && effectRect.size() == sourceRect.size()
-        && isPixmap()) {
-        return static_cast<QGraphicsPixmapItem *>(item)->pixmap();
-    }
 
     QPixmap pixmap(effectRect.size());
     pixmap.fill(Qt::transparent);
