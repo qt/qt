@@ -806,7 +806,7 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
         if (value.userType() == QVariant::Double) { 
             double integral;
             double fractional = modf(value.toDouble(), &integral);
-            if (qFuzzyCompare(fractional, (double)0.0))
+            if (qFuzzyIsNull(fractional))
                 v.convert(QVariant::Int);
         }
         return writeEnumProperty(prop, coreIdx, object, v, flags);

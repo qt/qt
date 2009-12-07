@@ -147,7 +147,7 @@ QmlScriptEngine::QmlScriptEngine(QmlEnginePrivate *priv)
         newQMetaObject(StaticQtMetaObject::get());
     globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
-    offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation).replace('/', QDir::separator())
+    offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation).replace(QLatin1Char('/'), QDir::separator())
         + QDir::separator() + QLatin1String("QML")
         + QDir::separator() + QLatin1String("OfflineStorage");
     qt_add_qmlxmlhttprequest(this);
