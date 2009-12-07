@@ -63,10 +63,9 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsBasePositioner : public QmlGraphicsItem
     Q_PROPERTY(int spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
     Q_PROPERTY(QmlTransition *move READ move WRITE setMove)
     Q_PROPERTY(QmlTransition *add READ add WRITE setAdd)
-    Q_PROPERTY(QmlTransition *remove READ remove WRITE setRemove)
 public:
-    enum AutoUpdateType { None = 0x0, Horizontal = 0x1, Vertical = 0x2, Both = 0x3 };
-    QmlGraphicsBasePositioner(AutoUpdateType, QmlGraphicsItem *parent);
+    enum PositionerType { None = 0x0, Horizontal = 0x1, Vertical = 0x2, Both = 0x3 };
+    QmlGraphicsBasePositioner(PositionerType, QmlGraphicsItem *parent);
 
     int spacing() const;
     void setSpacing(int);
@@ -77,23 +76,13 @@ public:
     QmlTransition *add() const;
     void setAdd(QmlTransition *);
 
-    QmlTransition *remove() const;
-    void setRemove(QmlTransition *);
-
 protected:
+    QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPrivate &dd, PositionerType at, QmlGraphicsItem *parent);
     virtual void componentComplete();
     virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
-    virtual bool event(QEvent *);
-    QSet<QmlGraphicsItem *>* newItems();
-    QSet<QmlGraphicsItem *>* leavingItems();
-    QSet<QmlGraphicsItem *>* items();
-    void applyAdd(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target);
-    void applyMove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target);
-    void applyRemove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target);
     void finishApplyTransitions();
 
 Q_SIGNALS:
-    void layoutItemChanged();
     void spacingChanged();
 
 protected Q_SLOTS:
@@ -103,13 +92,11 @@ private Q_SLOTS:
     void prePositioning();
 
 protected:
-    QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPrivate &dd, AutoUpdateType at, QmlGraphicsItem *parent);
-    void setMovingItem(QmlGraphicsItem *);
     QList<QmlGraphicsItem *> positionedItems;
+    void positionX(int,QmlGraphicsItem* target);
+    void positionY(int,QmlGraphicsItem* target);
 
 private:
-    void applyTransition(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target,
-            QmlStateOperation::ActionList &actions);
     Q_DISABLE_COPY(QmlGraphicsBasePositioner)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsBasePositioner)
 };
