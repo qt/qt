@@ -627,7 +627,7 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
 {
     // halve the radius if we're using two passes
     if (improvedQuality)
-        radius *= 0.5;
+        radius *= qreal(0.5);
 
     Q_ASSERT(img.format() == QImage::Format_ARGB32_Premultiplied
              || img.format() == QImage::Format_RGB32);
@@ -638,7 +638,7 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
     const qreal cutOffIntensity = 2;
     int alpha = radius <= qreal(1e-5)
         ? ((1 << aprec)-1)
-        : qRound((1<<aprec)*(1 - qPow(cutOffIntensity / 255, 1 / radius)));
+        : qRound((1<<aprec)*(1 - qPow(cutOffIntensity * (1 / qreal(255)), 1 / radius)));
 
     int img_height = img.height();
     for (int row = 0; row < img_height; ++row) {
@@ -873,7 +873,7 @@ Q_GUI_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage, qreal radius, boo
     if (radius >= 4) {
         blurImage = qt_halfScaled(blurImage);
         scale = 2;
-        radius *= 0.5;
+        radius *= qreal(0.5);
     }
 
     if (alphaOnly)
@@ -896,6 +896,8 @@ Q_GUI_EXPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, in
         expblur<12, 10, false>(blurImage, radius, quality, transposed);
 }
 
+bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+
 /*!
     \internal
 */
@@ -914,11 +916,16 @@ void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap 
         return;
     }
 
+    qreal scaledRadius = radiusScale * d->radius;
+    qreal scale;
+    if (qt_scaleForTransform(painter->transform(), &scale))
+        scaledRadius /= scale;
+
     QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
         static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
     QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
     if (blurFilter) {
-        blurFilter->setRadius(radiusScale * d->radius);
+        blurFilter->setRadius(scaledRadius);
         blurFilter->setBlurHints(d->hints);
         blurFilter->draw(painter, p, src, srcRect);
         return;
@@ -936,7 +943,7 @@ void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap 
 
     QTransform transform = painter->worldTransform();
     painter->translate(p);
-    qt_blurImage(painter, srcImage, radiusScale * d->radius, (d->hints & QGraphicsBlurEffect::QualityHint), false);
+    qt_blurImage(painter, srcImage, scaledRadius, (d->hints & QGraphicsBlurEffect::QualityHint), false);
     painter->setWorldTransform(transform);
 }
 

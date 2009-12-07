@@ -68,7 +68,7 @@ class Q_OPENGL_EXPORT QGLCustomShaderStage
 public:
     QGLCustomShaderStage();
     virtual ~QGLCustomShaderStage();
-    virtual void setUniforms(QGLShaderProgram*) = 0;
+    virtual void setUniforms(QGLShaderProgram*) {}
 
     void setUniformsDirty();
 

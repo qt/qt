@@ -844,22 +844,19 @@ QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
 void QGraphicsBlurEffect::draw(QPainter *painter)
 {
     Q_D(QGraphicsBlurEffect);
-    if (d->filter->radius() <= 0) {
+    if (d->filter->radius() < 1) {
         drawSource(painter);
         return;
     }
 
     PixmapPadMode mode = PadToEffectiveBoundingRect;
     if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
-        mode = PadToTransparentBorder;
+        mode = NoPad;
 
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
-    const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset, mode);
-    QTransform restoreTransform = painter->worldTransform();
-    painter->setWorldTransform(QTransform());
+    QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset, mode);
     d->filter->draw(painter, offset, pixmap);
-    painter->setWorldTransform(restoreTransform);
 }
 
 /*!
@@ -1040,7 +1037,7 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter)
 
     PixmapPadMode mode = PadToEffectiveBoundingRect;
     if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
-        mode = PadToTransparentBorder;
+        mode = NoPad;
 
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
