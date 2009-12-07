@@ -311,7 +311,7 @@ QmlWorkerScriptEngine *QmlEnginePrivate::getWorkerScriptEngine()
 
     \code
     QmlEngine engine;
-    QmlComponent component(&engine, "Text { text: \"Hello world!\" }");
+    QmlComponent component(&engine, "import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
     QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(component.create());
 
     //add item to view, etc
