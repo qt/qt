@@ -101,11 +101,11 @@ public:
     QPixmap imgStyleCache;
     QmlGraphicsText::HAlignment hAlign;
     QmlGraphicsText::VAlignment vAlign;
-    QmlGraphicsText::TextElideMode elideMode;
-    bool dirty;
-    bool wrap;
-    bool richText;
-    bool singleline;
+    QmlGraphicsText::TextElideMode elideMode;    
+    bool dirty:1;
+    bool wrap:1;
+    bool richText:1;
+    bool singleline:1;
     QTextControl *control;
     QTextDocument *doc;
     QTextLayout layout;

@@ -94,12 +94,6 @@ public:
     QmlAnimationGroup *group() const;
     void setGroup(QmlAnimationGroup *);
 
-    //### these belong at a lower level in the hierarchy
-    QObject *target() const;
-    void setTarget(QObject *);
-    QString property() const;
-    void setProperty(const QString &);
-
     virtual void setTarget(const QmlMetaProperty &);
 
     void classBegin();
@@ -111,7 +105,6 @@ Q_SIGNALS:
     void runningChanged(bool);
     void pausedChanged(bool);
     void repeatChanged(bool);
-    void targetChanged(QObject *, const QString &);
     void alwaysRunToEndChanged(bool);
 
 public Q_SLOTS:
@@ -202,6 +195,12 @@ public:
     QmlPropertyAction(QObject *parent=0);
     virtual ~QmlPropertyAction();
 
+    QObject *target() const;
+    void setTarget(QObject *);
+
+    QString property() const;
+    void setProperty(const QString &);
+
     QString properties() const;
     void setProperties(const QString &);
 
@@ -214,6 +213,7 @@ public:
 Q_SIGNALS:
     void valueChanged(const QVariant &);
     void propertiesChanged(const QString &);
+    void targetChanged(QObject *, const QString &);
 
 protected:
     virtual void transition(QmlStateActions &actions,
@@ -286,6 +286,12 @@ public:
     QString easing() const;
     void setEasing(const QString &);
 
+    QObject *target() const;
+    void setTarget(QObject *);
+
+    QString property() const;
+    void setProperty(const QString &);
+
     QString properties() const;
     void setProperties(const QString &);
 
@@ -305,6 +311,7 @@ Q_SIGNALS:
     void toChanged(QVariant);
     void easingChanged(const QString &);
     void propertiesChanged(const QString &);
+    void targetChanged(QObject *, const QString &);
 };
 
 class Q_AUTOTEST_EXPORT QmlColorAnimation : public QmlPropertyAnimation

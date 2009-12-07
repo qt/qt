@@ -284,7 +284,7 @@ void tst_animations::badTypes()
 
         rect->setState("state1");
         QTest::qWait(1000 + 50);
-        QmlGraphicsRectangle *myRect = qobject_cast<QmlGraphicsRectangle*>(rect->QGraphicsObject::children().at(3));    //### not robust
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("MyRect");
         QVERIFY(myRect);
         QCOMPARE(myRect->x(),qreal(200));
     }
@@ -324,7 +324,7 @@ void tst_animations::mixedTypes()
 
         rect->setState("state1");
         QTest::qWait(500);
-        QmlGraphicsRectangle *myRect = qobject_cast<QmlGraphicsRectangle*>(rect->QGraphicsObject::children().at(3));    //### not robust
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("MyRect");
         QVERIFY(myRect);
 
         //rather inexact -- is there a better way?
@@ -340,7 +340,7 @@ void tst_animations::mixedTypes()
 
         rect->setState("state1");
         QTest::qWait(500);
-        QmlGraphicsRectangle *myRect = qobject_cast<QmlGraphicsRectangle*>(rect->QGraphicsObject::children().at(3));    //### not robust
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("MyRect");
         QVERIFY(myRect);
 
         //rather inexact -- is there a better way?
