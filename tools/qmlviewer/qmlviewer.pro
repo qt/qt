@@ -16,11 +16,14 @@ contains(QT_CONFIG, opengl) {
 HEADERS += qmlviewer.h \
            proxysettings.h \
            qfxtester.h \
-           deviceorientation.h
+           deviceorientation.h \
+           qmlfolderlistmodel.h
 SOURCES += main.cpp \
            qmlviewer.cpp \
            proxysettings.cpp \
-           qfxtester.cpp
+           qfxtester.cpp \
+           qmlfolderlistmodel.cpp
+RESOURCES = qmlviewer.qrc
 maemo5 {
     SOURCES += deviceorientation_maemo.cpp
 } else {

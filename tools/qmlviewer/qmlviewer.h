@@ -105,6 +105,7 @@ public slots:
     void setScaleView();
     void executeErrors();
     void setSlowMode(bool);
+    void launch(const QString &);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
@@ -162,6 +163,8 @@ private:
     QString m_script;
     ScriptOptions m_scriptOptions;
     QmlGraphicsTester *tester;
+
+    bool useQmlFileBrowser;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QmlViewer::ScriptOptions)
 
