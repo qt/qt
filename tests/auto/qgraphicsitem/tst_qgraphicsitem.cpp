@@ -7962,6 +7962,22 @@ void tst_QGraphicsItem::setGraphicsEffect()
     delete item;
     QVERIFY(!blurEffect);
     delete anotherItem;
+
+    // Ensure the effect is uninstalled when deleting it
+    item = new QGraphicsRectItem(0, 0, 10, 10);
+    blurEffect = new QGraphicsBlurEffect;
+    item->setGraphicsEffect(blurEffect);
+    delete blurEffect;
+    QVERIFY(!item->graphicsEffect());
+
+    // Ensure the existing effect is uninstalled and deleted when setting a null effect
+    blurEffect = new QGraphicsBlurEffect;
+    item->setGraphicsEffect(blurEffect);
+    item->setGraphicsEffect(0);
+    QVERIFY(!item->graphicsEffect());
+    QVERIFY(!blurEffect);
+
+    delete item;
 }
 
 void tst_QGraphicsItem::panel()

@@ -744,6 +744,7 @@ private:
     friend struct QWidgetExceptionCleaner;
     friend class QGestureManager;
     friend class QWinNativePanGestureRecognizer;
+    friend class QWidgetEffectSourcePrivate;
 
 #ifdef Q_WS_MAC
     friend class QCoreGraphicsPaintEnginePrivate;
