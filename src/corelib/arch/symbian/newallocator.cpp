@@ -49,8 +49,8 @@
 #include <e32cmn.h>
 #include <hal.h>
 #include <e32panic.h>
-#define RND_SDK
-#ifndef RND_SDK
+
+#ifndef QT_SYMBIAN_HAVE_U32STD_H
 struct SThreadCreateInfo
     {
     TAny* iHandle;
@@ -93,11 +93,14 @@ struct SStdEpocThreadCreateInfo : public SThreadCreateInfo
 
 //This debug flag uses BTRACE to emit debug traces to identify the heaps.
 //Note that it uses the ETest1 trace category which is not reserved
-#define TRACING_HEAPS
+//#define TRACING_HEAPS
 //This debug flag uses BTRACE to emit debug traces to aid with debugging
 //allocs, frees & reallocs. It should be used together with the KUSERHEAPTRACE
 //kernel trace flag to enable heap tracing.
-#define TRACING_ALLOCS
+//#define TRACING_ALLOCS
+//This debug flag turns on tracing of the call stack for each alloc trace.
+//It is dependent on TRACING_ALLOCS.
+//#define TRACING_CALLSTACKS
 
 #if defined(TRACING_ALLOCS) || defined(TRACING_HEAPS)
 #include <e32btrace.h>
@@ -128,6 +131,32 @@ LOCAL_C void Panic(TCdtPanic aPanic)
 	{
 	User::Panic(_L("USER"),aPanic);
 	}
+
+#define STACKSIZE 32
+inline void RNewAllocator::TraceCallStack()
+{
+#ifdef TRACING_CALLSTACKS
+    TUint32 filteredStack[STACKSIZE];
+    TThreadStackInfo info;
+    TUint32 *sp = (TUint32*)&sp;
+    RThread().StackInfo(info);
+    Lock();
+    TInt i;
+    for (i=0;i<STACKSIZE;i++) {
+        if ((TLinAddr)sp>=info.iBase) break;
+        while ((TLinAddr)sp < info.iBase) {
+            TUint32 cur = *sp++;
+            TUint32 range = cur & 0xF0000000;
+            if (range == 0x80000000 || range == 0x70000000) {
+                filteredStack[i] = cur;
+                break;
+            }
+        }
+    }
+    Unlock();
+    BTraceContextBig(BTrace::EHeap, BTrace::EHeapCallStack, (TUint32)this, filteredStack, i * 4);
+#endif
+}
 
 size_t getpagesize()
 {
@@ -313,6 +342,7 @@ TAny* RNewAllocator::Alloc(TInt aSize)
 		traceData[1] = aSize;
 		traceData[2] = aCnt;
 		BTraceContextN(BTrace::EHeap, BTrace::EHeapAlloc, (TUint32)this, (TUint32)addr, traceData, sizeof(traceData));
+		TraceCallStack();
 		}
 #endif
 
@@ -382,6 +412,7 @@ void RNewAllocator::Free(TAny* aPtr)
 		TUint32 traceData;
 		traceData = aCnt;
 		BTraceContextN(BTrace::EHeap, BTrace::EHeapFree, (TUint32)this, (TUint32)aPtr, &traceData, sizeof(traceData));
+		TraceCallStack();
 		}
 #endif
 }
@@ -393,29 +424,30 @@ void RNewAllocator::Reset()
     User::Panic(_L("RNewAllocator"), 1); //this should never be called
 	}
 
-inline void RNewAllocator::TraceReAlloc(TAny* aPtr, TInt aSize, TAny* aNewPtr, TInt aZone)
-	{
 #ifdef TRACING_ALLOCS
-    if (aNewPtr && (iFlags & ETraceAllocs))
-        {
+inline void RNewAllocator::TraceReAlloc(TAny* aPtr, TInt aSize, TAny* aNewPtr, TInt aZone)
+{
+    if (aNewPtr && (iFlags & ETraceAllocs)) {
         TUint32 traceData[3];
         traceData[0] = AllocLen(aNewPtr);
         traceData[1] = aSize;
-        traceData[2] = (TUint32)aPtr;
-        BTraceContextN(BTrace::EHeap, BTrace::EHeapReAlloc,(TUint32)this, (TUint32)aNewPtr,traceData, sizeof(traceData));
-        
+        traceData[2] = (TUint32) aPtr;
+        BTraceContextN(BTrace::EHeap, BTrace::EHeapReAlloc, (TUint32) this, (TUint32) aNewPtr,
+            traceData, sizeof(traceData));
+        TraceCallStack();
         //workaround for SAW not handling reallocs properly
-        if(aZone >= 0 && aPtr != aNewPtr) {
-            BTraceContextN(BTrace::EHeap, BTrace::EHeapFree, (TUint32)this, (TUint32)aPtr, &aZone, sizeof(aZone));
+        if (aZone >= 0 && aPtr != aNewPtr) {
+            BTraceContextN(BTrace::EHeap, BTrace::EHeapFree, (TUint32) this, (TUint32) aPtr,
+                &aZone, sizeof(aZone));
+            TraceCallStack();
         }
-        }
+    }
+}
 #else
-    Q_UNUSED(aPtr);
-    Q_UNUSED(aSize);
-    Q_UNUSED(aNewPtr);
-    Q_UNUSED(aZone);
+//Q_UNUSED generates code that prevents the compiler optimising out the empty inline function
+inline void RNewAllocator::TraceReAlloc(TAny* , TInt , TAny* , TInt )
+{}
 #endif
-	}
 
 TAny* RNewAllocator::ReAlloc(TAny* aPtr, TInt aSize, TInt /*aMode = 0*/)
 	{

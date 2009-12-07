@@ -248,6 +248,7 @@ private:
 	enum {npagecells=4};
 	pagecell pagelist[npagecells];		// descriptors for page-aligned large allocations
 	inline void TraceReAlloc(TAny* aPtr, TInt aSize, TAny* aNewPtr, TInt aZone);
+	inline void TraceCallStack();
 	// to track maximum used
 	//TInt iHighWaterMark;
 
