@@ -115,60 +115,99 @@ struct StaticQtMetaObject : public QObject
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), globalClass(0),
-  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), cleanup(0), erroredBindings(0), 
+  cleanup(0), erroredBindings(0), 
   inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttacheds(0), 
   rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
 {
+    globalClass = new QmlGlobalScriptClass(&scriptEngine);
+}
+
+QUrl QmlScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
+{
+    if (p) {
+        QmlContext *ctxt = QmlEnginePrivate::get(this)->getContext(context);
+        Q_ASSERT(ctxt);
+        return ctxt->resolvedUrl(url);
+    }
+    return baseUrl.resolved(url);
+}
+
+QmlScriptEngine::QmlScriptEngine(QmlEnginePrivate *priv)
+    : p(priv),
+        sqlQueryClass(0),
+        namedNodeMapClass(0),
+        nodeListClass(0)
+{
     // Note that all documentation for stuff put on the global object goes in
     // doc/src/declarative/globalobject.qdoc
+
+    bool mainthread = priv != 0;
+
     QScriptValue qtObject =
-        scriptEngine.newQMetaObject(StaticQtMetaObject::get());
-    scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
+        newQMetaObject(StaticQtMetaObject::get());
+    globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
     offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation)
         + QDir::separator() + QLatin1String("QML")
         + QDir::separator() + QLatin1String("OfflineStorage");
-    qt_add_qmlxmlhttprequest(&scriptEngine);
-    qt_add_qmlsqldatabase(&scriptEngine);
+    qt_add_qmlxmlhttprequest(this);
+    qt_add_qmlsqldatabase(this);
 
     //types
-    qtObject.setProperty(QLatin1String("rgba"), scriptEngine.newFunction(QmlEnginePrivate::rgba, 4));
-    qtObject.setProperty(QLatin1String("hsla"), scriptEngine.newFunction(QmlEnginePrivate::hsla, 4));
-    qtObject.setProperty(QLatin1String("rect"), scriptEngine.newFunction(QmlEnginePrivate::rect, 4));
-    qtObject.setProperty(QLatin1String("point"), scriptEngine.newFunction(QmlEnginePrivate::point, 2));
-    qtObject.setProperty(QLatin1String("size"), scriptEngine.newFunction(QmlEnginePrivate::size, 2));
-    qtObject.setProperty(QLatin1String("vector3d"), scriptEngine.newFunction(QmlEnginePrivate::vector, 3));
+    qtObject.setProperty(QLatin1String("rgba"), newFunction(QmlEnginePrivate::rgba, 4));
+    qtObject.setProperty(QLatin1String("hsla"), newFunction(QmlEnginePrivate::hsla, 4));
+    qtObject.setProperty(QLatin1String("rect"), newFunction(QmlEnginePrivate::rect, 4));
+    qtObject.setProperty(QLatin1String("point"), newFunction(QmlEnginePrivate::point, 2));
+    qtObject.setProperty(QLatin1String("size"), newFunction(QmlEnginePrivate::size, 2));
+    qtObject.setProperty(QLatin1String("vector3d"), newFunction(QmlEnginePrivate::vector, 3));
 
-    //color helpers
-    qtObject.setProperty(QLatin1String("lighter"), scriptEngine.newFunction(QmlEnginePrivate::lighter, 1));
-    qtObject.setProperty(QLatin1String("darker"), scriptEngine.newFunction(QmlEnginePrivate::darker, 1));
-    qtObject.setProperty(QLatin1String("tint"), scriptEngine.newFunction(QmlEnginePrivate::tint, 2));
+    if (mainthread) {
+        //color helpers
+        qtObject.setProperty(QLatin1String("lighter"), newFunction(QmlEnginePrivate::lighter, 1));
+        qtObject.setProperty(QLatin1String("darker"), newFunction(QmlEnginePrivate::darker, 1));
+        qtObject.setProperty(QLatin1String("tint"), newFunction(QmlEnginePrivate::tint, 2));
+    }
 
     //misc methods
-    qtObject.setProperty(QLatin1String("closestAngle"), scriptEngine.newFunction(QmlEnginePrivate::closestAngle, 2));
-    qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
-    qtObject.setProperty(QLatin1String("openUrlExternally"),scriptEngine.newFunction(desktopOpenUrl, 1));
-    qtObject.setProperty(QLatin1String("md5"),scriptEngine.newFunction(md5, 1));
-    qtObject.setProperty(QLatin1String("btoa"),scriptEngine.newFunction(btoa, 1));
-    qtObject.setProperty(QLatin1String("atob"),scriptEngine.newFunction(atob, 1));
-    qtObject.setProperty(QLatin1String("quit"), scriptEngine.newFunction(QmlEnginePrivate::quit, 0));
+    qtObject.setProperty(QLatin1String("closestAngle"), newFunction(QmlEnginePrivate::closestAngle, 2));
+    qtObject.setProperty(QLatin1String("playSound"), newFunction(QmlEnginePrivate::playSound, 1));
+    qtObject.setProperty(QLatin1String("openUrlExternally"),newFunction(QmlEnginePrivate::desktopOpenUrl, 1));
+    qtObject.setProperty(QLatin1String("md5"),newFunction(QmlEnginePrivate::md5, 1));
+    qtObject.setProperty(QLatin1String("btoa"),newFunction(QmlEnginePrivate::btoa, 1));
+    qtObject.setProperty(QLatin1String("atob"),newFunction(QmlEnginePrivate::atob, 1));
+    qtObject.setProperty(QLatin1String("quit"), newFunction(QmlEnginePrivate::quit, 0));
+    qtObject.setProperty(QLatin1String("resolvedUrl"),newFunction(QmlScriptEngine::resolvedUrl, 1));
 
     //firebug/webkit compat
-    QScriptValue consoleObject = scriptEngine.newObject();
-    consoleObject.setProperty(QLatin1String("log"),scriptEngine.newFunction(consoleLog, 1));
-    consoleObject.setProperty(QLatin1String("debug"),scriptEngine.newFunction(consoleLog, 1));
-    scriptEngine.globalObject().setProperty(QLatin1String("console"), consoleObject);
+    QScriptValue consoleObject = newObject();
+    consoleObject.setProperty(QLatin1String("log"),newFunction(QmlEnginePrivate::consoleLog, 1));
+    consoleObject.setProperty(QLatin1String("debug"),newFunction(QmlEnginePrivate::consoleLog, 1));
+    globalObject().setProperty(QLatin1String("console"), consoleObject);
 
-    scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
-            scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
-    scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
-            scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
+    if (mainthread) {
+        globalObject().setProperty(QLatin1String("createQmlObject"),
+                newFunction(QmlEnginePrivate::createQmlObject, 1));
+        globalObject().setProperty(QLatin1String("createComponent"),
+                newFunction(QmlEnginePrivate::createComponent, 1));
+    }
 
     // translation functions need to be installed
     // before the global script class is constructed (QTBUG-6437)
-    scriptEngine.installTranslatorFunctions();
+    installTranslatorFunctions();
+}
 
-    globalClass = new QmlGlobalScriptClass(&scriptEngine);
+QmlScriptEngine::~QmlScriptEngine()
+{
+    delete sqlQueryClass;
+    delete nodeListClass;
+    delete namedNodeMapClass;
+}
+
+QScriptValue QmlScriptEngine::resolvedUrl(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    QString arg = ctxt->argument(0).toString();
+    QUrl r = QmlScriptEngine::get(engine)->resolvedUrl(ctxt,QUrl(arg));
+    return QScriptValue(r.toString());
 }
 
 QmlEnginePrivate::~QmlEnginePrivate()
@@ -194,12 +233,6 @@ QmlEnginePrivate::~QmlEnginePrivate()
     typeNameClass = 0;
     delete listClass;
     listClass = 0;
-    delete nodeListClass;
-    nodeListClass = 0;
-    delete namedNodeMapClass;
-    namedNodeMapClass = 0;
-    delete sqlQueryClass;
-    sqlQueryClass = 0;
 
     for(int ii = 0; ii < bindValues.count(); ++ii)
         clear(bindValues[ii]);
@@ -877,7 +910,7 @@ QScriptValue QmlEnginePrivate::consoleLog(QScriptContext *ctxt, QScriptEngine *e
         // does just ignore the format letter, which makes it pointless.
     }
 
-    qDebug(msg.constData());
+    qDebug("%s",msg.constData());
 
     return e->newVariant(QVariant(true));
 }
@@ -1347,13 +1380,13 @@ void QmlEngine::addImportPath(const QString& path)
 void QmlEngine::setOfflineStoragePath(const QString& dir)
 {
     Q_D(QmlEngine);
-    d->offlineStoragePath = dir;
+    d->scriptEngine.offlineStoragePath = dir;
 }
 
 QString QmlEngine::offlineStoragePath() const
 {
     Q_D(const QmlEngine);
-    return d->offlineStoragePath;
+    return d->scriptEngine.offlineStoragePath;
 }
 
 

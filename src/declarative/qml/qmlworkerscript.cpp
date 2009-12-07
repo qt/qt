@@ -101,9 +101,9 @@ class QmlWorkerScriptEnginePrivate : public QObject
 public:
     QmlWorkerScriptEnginePrivate();
 
-    struct ScriptEngine : public QScriptEngine 
+    struct ScriptEngine : public QmlScriptEngine 
     {
-        ScriptEngine(QmlWorkerScriptEnginePrivate *parent) : p(parent) {}
+        ScriptEngine(QmlWorkerScriptEnginePrivate *parent) : QmlScriptEngine(0), p(parent) {}
         QmlWorkerScriptEnginePrivate *p;
     };
     ScriptEngine *workerEngine;
@@ -259,6 +259,7 @@ void QmlWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
         QScriptContext *ctxt = workerEngine->pushContext();
         ctxt->setActivationObject(activation);
 
+        workerEngine->baseUrl = url;
         workerEngine->evaluate(script);
 
         workerEngine->popContext();
