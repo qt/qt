@@ -910,7 +910,7 @@ QScriptValue QmlEnginePrivate::consoleLog(QScriptContext *ctxt, QScriptEngine *e
         // does just ignore the format letter, which makes it pointless.
     }
 
-    qDebug(msg.constData());
+    qDebug("%s",msg.constData());
 
     return e->newVariant(QVariant(true));
 }
