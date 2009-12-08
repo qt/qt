@@ -56,6 +56,8 @@ QmlGraphicsRepeaterPrivate::QmlGraphicsRepeaterPrivate()
 
 QmlGraphicsRepeaterPrivate::~QmlGraphicsRepeaterPrivate()
 {
+    if (ownModel)
+        delete model;
 }
 
 QML_DEFINE_TYPE(Qt,4,6,Repeater,QmlGraphicsRepeater)

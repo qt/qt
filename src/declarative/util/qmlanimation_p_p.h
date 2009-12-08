@@ -102,6 +102,7 @@ public:
     QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped), running(false) {}
     QActionAnimation(QAbstractAnimationAction *action, QObject *parent = 0)
         : QAbstractAnimation(parent), animAction(action), policy(KeepWhenStopped), running(false) {}
+    ~QActionAnimation() { if (policy == DeleteWhenStopped) { delete animAction; animAction = 0; } }
     virtual int duration() const { return 0; }
     void setAnimAction(QAbstractAnimationAction *action, DeletionPolicy p)
     {
@@ -145,6 +146,7 @@ class QmlTimeLineValueAnimator : public QVariantAnimation
     Q_OBJECT
 public:
     QmlTimeLineValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), fromSourced(0), policy(KeepWhenStopped) {}
+    ~QmlTimeLineValueAnimator() { if (policy == DeleteWhenStopped) { delete animValue; animValue = 0; } }
     void setAnimValue(QmlTimeLineValue *value, DeletionPolicy p)
     {
         if (state() == Running)
