@@ -40,11 +40,9 @@ AudioEqualizer::AudioEqualizer(QObject *parent, const QList<EffectParameter>& pa
 void AudioEqualizer::parameterChanged(const int pid,
                                       const QVariant &value)
 {
-    if (m_effect.data()) {
-        const int band = pid;
-        const qreal level = value.toReal();
-        setBandLevel(band, level);
-    }
+    const int band = pid;
+    const qreal level = value.toReal();
+    setBandLevel(band, level);
 }
 
 void AudioEqualizer::applyParameters()
