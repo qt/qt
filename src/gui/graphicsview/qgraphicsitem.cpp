@@ -2563,32 +2563,19 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
     if (d_ptr->graphicsEffect == effect)
         return;
 
-    if (d_ptr->graphicsEffect && effect) {
+    if (d_ptr->graphicsEffect) {
         delete d_ptr->graphicsEffect;
         d_ptr->graphicsEffect = 0;
     }
 
-    if (!effect) {
-        // Unset current effect.
-        QGraphicsEffectPrivate *oldEffectPrivate = d_ptr->graphicsEffect->d_func();
-        d_ptr->graphicsEffect = 0;
-        if (oldEffectPrivate) {
-            oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
-            if (d_ptr->scene) { // Update the views directly.
-                d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/false,
-                                                  /*force=*/false, /*ignoreOpacity=*/false,
-                                                  /*removeItemFromScene=*/true);
-            }
-        }
-    } else {
+    if (effect) {
         // Set new effect.
         QGraphicsEffectSourcePrivate *sourced = new QGraphicsItemEffectSourcePrivate(this);
         QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
         d_ptr->graphicsEffect = effect;
         effect->d_func()->setGraphicsEffectSource(source);
+        prepareGeometryChange();
     }
-
-    prepareGeometryChange();
 }
 #endif //QT_NO_GRAPHICSEFFECT
 
