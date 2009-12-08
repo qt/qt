@@ -310,7 +310,7 @@ QDBusPendingCall &QDBusPendingCall::operator=(const QDBusPendingCall &other)
 
 bool QDBusPendingCall::isFinished() const
 {
-    return d && (d->replyMessage.type() != QDBusMessage::InvalidMessage);
+    return !d || (d->replyMessage.type() != QDBusMessage::InvalidMessage);
 }
 
 void QDBusPendingCall::waitForFinished()

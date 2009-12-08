@@ -93,6 +93,7 @@ private slots:
     }
 
     void init();
+    void unconnected();
     void simpleTypes();
     void complexTypes();
     void wrongTypes();
@@ -250,6 +251,30 @@ void tst_QDBusPendingReply::init()
 {
     QVERIFY(iface);
     QVERIFY(iface->isValid());
+}
+
+void tst_QDBusPendingReply::unconnected()
+{
+    QDBusConnection con("invalid stored connection");
+    QVERIFY(!con.isConnected());
+    QDBusInterface iface("doesnt.matter", "/", "doesnt.matter", con);
+    QVERIFY(!iface.isValid());
+
+    QDBusPendingReply<> rvoid = iface.asyncCall("ReloadConfig");
+    QVERIFY(rvoid.isFinished());
+    QVERIFY(!rvoid.isValid());
+    QVERIFY(rvoid.isError());
+    rvoid.waitForFinished();
+    QVERIFY(!rvoid.isValid());
+    QVERIFY(rvoid.isError());
+
+    QDBusPendingReply<QString> rstring = iface.asyncCall("GetId");
+    QVERIFY(rstring.isFinished());
+    QVERIFY(!rstring.isValid());
+    QVERIFY(rstring.isError());
+    rstring.waitForFinished();
+    QVERIFY(!rstring.isValid());
+    QVERIFY(rstring.isError());
 }
 
 void tst_QDBusPendingReply::simpleTypes()
