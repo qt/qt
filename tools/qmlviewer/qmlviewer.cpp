@@ -43,8 +43,8 @@
 #include "ui_recopts.h"
 
 #include "qmlviewer.h"
-#include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlcontext.h>
+#include <qmlengine.h>
 #include "qml.h"
 #include <private/qperformancelog_p_p.h>
 #include <private/qabstractanimation_p.h>
@@ -547,7 +547,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     settingsMenu->addAction(fullscreenAction);
 #endif
 
-    QMenu *propertiesMenu = new QMenu(tr("Properties"));
+    QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
     QActionGroup *orientation = new QActionGroup(parent);
     orientation->setExclusive(true);
     portraitOrientation = new QAction(tr("orientation: Portrait"), parent);
@@ -561,8 +561,6 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(landscapeOrientation, SIGNAL(triggered()), this, SLOT(setLandscape()));
     orientation->addAction(landscapeOrientation);
     propertiesMenu->addAction(landscapeOrientation);
-
-    settingsMenu->addMenu(propertiesMenu);
 
     if (flatmenu) flatmenu->addSeparator();
 

@@ -871,7 +871,10 @@ void QmlGraphicsTextEditPrivate::init()
     q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
 
     control = new QTextControl(q);
+
+#if QT_VERSION >= 0x040601 // XXX see bug QT-2236
     control->setIgnoreUnusedNavigationEvents(true);
+#endif
 
     QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(updateImgCache(QRectF)));
 
