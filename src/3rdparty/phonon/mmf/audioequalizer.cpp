@@ -96,7 +96,7 @@ void AudioEqualizer::getParameters(NativeEffect *effect,
         const qint32 defVol = effect->BandLevel(i);
 
         parameters.append(EffectParameter(i,
-                                      tr("Frequency band, %1 Hz").arg(hz),
+                                      tr("%1 Hz").arg(hz),
                                       EffectParameter::LogarithmicHint,
                                       QVariant(qint32(defVol)),
                                       QVariant(qint32(dbMin)),
