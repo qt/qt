@@ -147,7 +147,7 @@ QmlScriptEngine::QmlScriptEngine(QmlEnginePrivate *priv)
         newQMetaObject(StaticQtMetaObject::get());
     globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
-    offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation)
+    offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation).replace(QLatin1Char('/'), QDir::separator())
         + QDir::separator() + QLatin1String("QML")
         + QDir::separator() + QLatin1String("OfflineStorage");
     qt_add_qmlxmlhttprequest(this);
@@ -233,6 +233,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
     typeNameClass = 0;
     delete listClass;
     listClass = 0;
+    delete globalClass;
+    globalClass = 0;
 
     for(int ii = 0; ii < bindValues.count(); ++ii)
         clear(bindValues[ii]);
@@ -309,7 +311,7 @@ QmlWorkerScriptEngine *QmlEnginePrivate::getWorkerScriptEngine()
 
     \code
     QmlEngine engine;
-    QmlComponent component(&engine, "Text { text: \"Hello world!\" }");
+    QmlComponent component(&engine, "import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
     QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(component.create());
 
     //add item to view, etc

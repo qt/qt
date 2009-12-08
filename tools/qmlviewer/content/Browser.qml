@@ -11,12 +11,12 @@ Rectangle {
     FolderListModel {
         id: folders1
         nameFilters: [ "*.qml" ]
-        folder: initialFolder
+        folder: qmlViewerFolder
     }
     FolderListModel {
         id: folders2
         nameFilters: [ "*.qml" ]
-        folder: initialFolder
+        folder: qmlViewerFolder
     }
 
     SystemPalette { id: palette }

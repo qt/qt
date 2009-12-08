@@ -103,12 +103,12 @@ void QLineEditPrivate::_q_handleWindowActivate()
 void QLineEditPrivate::_q_textEdited(const QString &text)
 {
     Q_Q(QLineEdit);
+    emit q->textEdited(text);
 #ifndef QT_NO_COMPLETER
-    if (control->completer() &&
-            control->completer()->completionMode() != QCompleter::InlineCompletion)
+    if (control->completer()
+        && control->completer()->completionMode() != QCompleter::InlineCompletion)
         control->complete(-1); // update the popup on cut/paste/del
 #endif
-    emit q->textEdited(text);
 }
 
 void QLineEditPrivate::_q_cursorPositionChanged(int from, int to)

@@ -72,6 +72,8 @@ public Q_SLOTS:
     void videoWindowChanged();
     void aspectRatioChanged();
     void scaleModeChanged();
+    void suspendDirectScreenAccess();
+    void resumeDirectScreenAccess();
 
 private:
     void construct();
@@ -88,6 +90,9 @@ private:
 
     void applyPendingChanges();
     void applyVideoWindowChange();
+
+    void startDirectScreenAccess();
+    bool stopDirectScreenAccess();
 
     // AbstractMediaPlayer
     virtual int numberOfMetaDataEntries() const;
@@ -111,6 +116,8 @@ private:
     qint64                              m_totalTime;
 
     bool                                m_pendingChanges;
+    bool                                m_dsaActive;
+    bool                                m_dsaWasActive;
 
 };
 

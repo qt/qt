@@ -47,6 +47,29 @@
 #include <QTranslator>
 #include <QDebug>
 
+#if defined (Q_OS_SYMBIAN)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+void myMessageOutput(QtMsgType type, const char *msg)
+{
+    static int fd = -1;
+    if (fd == -1)
+        fd = ::open("E:\\qmlviewer.log", O_WRONLY | O_CREAT);
+
+    ::write(fd, msg, strlen(msg));
+    ::write(fd, "\n", 1);
+    ::fsync(fd);
+
+    switch (type) {
+    case QtFatalMsg:
+        abort();
+    }
+}
+#endif
+
 void usage()
 {
     qWarning("Usage: qmlviewer [options] <filename>");
@@ -99,6 +122,10 @@ void scriptOptsUsage()
 
 int main(int argc, char ** argv)
 {
+#if defined (Q_OS_SYMBIAN)
+    qInstallMsgHandler(myMessageOutput);
+#endif
+
     //### default to using raster graphics backend for now
     bool gsSpecified = false;
     for (int i = 0; i < argc; ++i) {
@@ -108,8 +135,11 @@ int main(int argc, char ** argv)
             break;
         }
     }
+
+#if !defined (Q_OS_SYMBIAN)
     if (!gsSpecified)
         QApplication::setGraphicsSystem("raster");
+#endif
 
     QApplication app(argc, argv);
     app.setApplicationName("viewer");
@@ -137,6 +167,12 @@ int main(int argc, char ** argv)
     bool fullScreen = false;
     bool stayOnTop = false;
     bool maximized = false;
+    bool useNativeFileBrowser = true;
+
+#if defined(Q_OS_SYMBIAN)
+    maximized = true;
+    useNativeFileBrowser = false;
+#endif
 
     for (int i = 1; i < argc; ++i) {
         bool lastArg = (i == argc - 1);
@@ -219,7 +255,7 @@ int main(int argc, char ** argv)
     Qt::WFlags wflags = (frameless ? Qt::FramelessWindowHint : Qt::Widget);
     if (stayOnTop)
         wflags |= Qt::WindowStaysOnTopHint;
-        
+
     QmlViewer viewer(0, wflags);
     if (!scriptopts.isEmpty()) {
         QStringList options = 
@@ -285,14 +321,19 @@ int main(int argc, char ** argv)
     viewer.setRecordDither(dither);
     if (recordargs.count())
         viewer.setRecordArgs(recordargs);
+
+    viewer.setUseNativeFileBrowser(useNativeFileBrowser);
     if (fullScreen && maximized)
         qWarning() << "Both -fullscreen and -maximized specified. Using -fullscreen.";
     if (!fileName.isEmpty()) {
         viewer.openQml(fileName);
         fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
     } else {
+        if (!useNativeFileBrowser)
+            viewer.open();
         fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
-        viewer.open();
+        if (useNativeFileBrowser)
+            viewer.open();
     }
     viewer.raise();
 

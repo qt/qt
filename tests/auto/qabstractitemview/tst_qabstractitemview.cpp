@@ -46,6 +46,7 @@
 #include <qstandarditemmodel.h>
 #include <qapplication.h>
 #include <qlistview.h>
+#include <qlistwidget.h>
 #include <qtableview.h>
 #include <qtreeview.h>
 #include <qtreewidget.h>
@@ -224,6 +225,7 @@ private slots:
     void shiftArrowSelectionAfterScrolling();
     void shiftSelectionAfterRubberbandSelection();
     void ctrlRubberbandSelection();
+    void QTBUG6407_extendedSelection();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1431,6 +1433,46 @@ void tst_QAbstractItemView::ctrlRubberbandSelection()
     selected = view.selectionModel()->selectedIndexes();
     QCOMPARE(selected.count(), 1);
     QVERIFY(selected.contains(index2));
+}
+
+void tst_QAbstractItemView::QTBUG6407_extendedSelection()
+{
+    QListWidget view;
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    for(int i = 0; i < 50; ++i)
+        view.addItem(QString::number(i));
+
+    view.resize(200,200);
+
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
+
+    view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
+    QTest::qWait(20);
+
+    QModelIndex index49 = view.model()->index(49,0);
+    QPoint p = view.visualRect(index49).center();
+    QVERIFY(view.viewport()->rect().contains(p));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
+    QCOMPARE(view.currentIndex(), index49);
+    QCOMPARE(view.selectedItems().count(), 1);
+
+    QModelIndex index47 = view.model()->index(47,0);
+    p = view.visualRect(index47).center();
+    QVERIFY(view.viewport()->rect().contains(p));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, p);
+    QCOMPARE(view.currentIndex(), index47);
+    QCOMPARE(view.selectedItems().count(), 3); //49, 48, 47;
+
+    QModelIndex index44 = view.model()->index(44,0);
+    p = view.visualRect(index44).center();
+    QVERIFY(view.viewport()->rect().contains(p));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, p);
+    QCOMPARE(view.currentIndex(), index44);
+    QCOMPARE(view.selectedItems().count(), 6); //49 .. 44;
+
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

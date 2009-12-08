@@ -82,6 +82,19 @@
 
 #include <qfxtester.h>
 
+#if defined (Q_OS_SYMBIAN)
+#define SYMBIAN_NETWORK_INIT
+#endif
+
+#if defined (SYMBIAN_NETWORK_INIT)
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <QTextCodec>
+#include "sym_iap_util.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -327,7 +340,12 @@ QString QmlViewer::getVideoFileName()
 
 
 QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
-    : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
+#if defined(Q_OS_SYMBIAN)
+    : QMainWindow(parent, flags)
+#else
+    : QWidget(parent, flags)
+#endif
+      , frame_stream(0), scaleSkin(true), mb(0)
       , portraitOrientation(0), landscapeOrientation(0)
       , m_scriptOptions(0), tester(0), useQmlFileBrowser(true)
 {
@@ -374,6 +392,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
         setPortrait();
     }
 
+#if !defined(Q_OS_SYMBIAN)
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(0);
     layout->setSpacing(0);
@@ -381,6 +400,9 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     if (mb)
         layout->addWidget(mb);
     layout->addWidget(canvas);
+#else
+    setCentralWidget(canvas);
+#endif
 
     setupProxy();
     canvas->engine()->networkAccessManager()->setCookieJar(new PersistentCookieJar(this));
@@ -401,8 +423,12 @@ void QmlViewer::adjustSizeSlot()
 
 QMenuBar *QmlViewer::menuBar() const
 {
+#if !defined(Q_OS_SYMBIAN)
     if (!mb)
         mb = new SizedMenuBar((QWidget*)this, canvas);
+#else
+    mb = QMainWindow::menuBar();
+#endif
 
     return mb;
 }
@@ -423,6 +449,13 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
     fileMenu->addAction(reloadAction);
 
+#if defined(Q_OS_SYMBIAN)
+    QAction *networkAction = new QAction(tr("Start &Network"), parent);
+    connect(networkAction, SIGNAL(triggered()), this, SLOT(startNetwork()));
+    fileMenu->addAction(networkAction);
+#endif
+
+#if !defined(Q_OS_SYMBIAN)
     if (flatmenu) flatmenu->addSeparator();
 
     QMenu *recordMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Recording"));
@@ -498,15 +531,23 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(mapper, SIGNAL(mapped(QString)), this, SLOT(setSkin(QString)));
 
     if (flatmenu) flatmenu->addSeparator();
+#endif // Q_OS_SYMBIAN
 
     QMenu *settingsMenu = flatmenu ? flatmenu : menu->addMenu(tr("S&ettings"));
     QAction *proxyAction = new QAction(tr("Http &proxy..."), parent);
     connect(proxyAction, SIGNAL(triggered()), this, SLOT(showProxySettings()));
     settingsMenu->addAction(proxyAction);
+#if !defined(Q_OS_SYMBIAN)
     if (!flatmenu)
         settingsMenu->addAction(recordOptions);
+#else
+    QAction *fullscreenAction = new QAction(tr("Full Screen"), parent);
+    fullscreenAction->setCheckable(true);
+    connect(fullscreenAction, SIGNAL(triggered()), this, SLOT(toggleFullScreen()));
+    settingsMenu->addAction(fullscreenAction);
+#endif
 
-    QMenu *propertiesMenu = new QMenu(tr("Properties"));
+    QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
     QActionGroup *orientation = new QActionGroup(parent);
     orientation->setExclusive(true);
     portraitOrientation = new QAction(tr("orientation: Portrait"), parent);
@@ -520,8 +561,6 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(landscapeOrientation, SIGNAL(triggered()), this, SLOT(setLandscape()));
     orientation->addAction(landscapeOrientation);
     propertiesMenu->addAction(landscapeOrientation);
-
-    settingsMenu->addMenu(propertiesMenu);
 
     if (flatmenu) flatmenu->addSeparator();
 
@@ -566,6 +605,14 @@ void QmlViewer::setLandscape()
 {
     DeviceOrientation::instance()->setOrientation(DeviceOrientation::Landscape);
     landscapeOrientation->setChecked(true);
+}
+
+void QmlViewer::toggleFullScreen()
+{
+    if (isFullScreen())
+        showMaximized();
+    else
+        showFullScreen();
 }
 
 void QmlViewer::setScaleSkin()
@@ -715,11 +762,6 @@ void QmlViewer::open()
 {
     QString cur = canvas->url().toLocalFile();
     if (useQmlFileBrowser) {
-#ifdef Q_OS_SYMBIAN
-        canvas->rootContext()->setContextProperty("initialFolder", "E:\\"); // Documents on your S60 phone
-#else
-        canvas->rootContext()->setContextProperty("initialFolder", QDir::currentPath());
-#endif
         openQml("qrc:/content/Browser.qml");
     } else {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
@@ -758,6 +800,11 @@ void QmlViewer::openQml(const QString& file_or_url)
     canvas->reset();
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("qmlViewer", this);
+#ifdef Q_OS_SYMBIAN
+    ctxt->setContextProperty("qmlViewerFolder", "E:\\"); // Documents on your S60 phone
+#else
+    ctxt->setContextProperty("qmlViewerFolder", QDir::currentPath());
+#endif
 
     QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
@@ -811,7 +858,8 @@ void QmlViewer::openQml(const QString& file_or_url)
         canvas->updateGeometry();
         if (mb)
             mb->updateGeometry();
-        resize(sizeHint());
+        if (!isFullScreen() && !isMaximized())
+            resize(sizeHint());
     } else {
         if (scaleSkin)
             canvas->resize(canvas->sizeHint());
@@ -823,6 +871,13 @@ void QmlViewer::openQml(const QString& file_or_url)
 
 #ifdef QTOPIA
     show();
+#endif
+}
+
+void QmlViewer::startNetwork()
+{
+#if defined(SYMBIAN_NETWORK_INIT)
+    qt_SetDefaultIap();
 #endif
 }
 
@@ -1237,6 +1292,12 @@ void QmlViewer::setUseGL(bool useGL)
     }
 #endif
 }
+
+void QmlViewer::setUseNativeFileBrowser(bool use)
+{
+    useQmlFileBrowser = !use;
+}
+
 QT_END_NAMESPACE
 
 #include "qmlviewer.moc"

@@ -56,6 +56,7 @@ public:
 
 private slots:
     void outOfMemory();
+    void QTBUG6416_reserve();
 };
 
 int fooCtor;
@@ -218,6 +219,19 @@ void tst_QVector::outOfMemory()
             QCOMPARE(b.capacity(), 0);
         }
     }
+}
+
+void tst_QVector::QTBUG6416_reserve()
+{
+    fooCtor = 0;
+    fooDtor = 0;
+    {
+        QVector<Foo> a;
+        a.resize(2);
+        QVector<Foo> b(a);
+        b.reserve(1);
+    }
+    QCOMPARE(fooCtor, fooDtor);
 }
 
 QTEST_APPLESS_MAIN(tst_QVector)

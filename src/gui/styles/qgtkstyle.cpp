@@ -645,6 +645,15 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
         return buttonsHaveIcons;
     }
 
+    case SH_UnderlineShortcut: {
+        gboolean underlineShortcut = true;
+        if (!d->gtk_check_version(2, 12, 0)) {
+            GtkSettings *settings = d->gtk_settings_get_default();
+            g_object_get(settings, "gtk-enable-mnemonics", &underlineShortcut, NULL);
+        }
+        return underlineShortcut;
+    }
+
     default:
         return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
     }

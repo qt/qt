@@ -138,14 +138,15 @@ void Generator::initialize(const Config &config)
     while (g != generators.end()) {
         if (outputFormats.contains((*g)->format())) {
             (*g)->initializeGenerator(config);
-            QStringList extraImages = config.getStringList(CONFIG_EXTRAIMAGES +
-                                                           Config::dot +
-                                                           (*g)->format());
+            QStringList extraImages =
+                config.getStringList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
             QStringList::ConstIterator e = extraImages.begin();
             while (e != extraImages.end()) {
                 QString userFriendlyFilePath;
                 QString filePath = Config::findFile(config.lastLocation(),
-                                                    imageFiles, imageDirs, *e,
+                                                    imageFiles,
+                                                    imageDirs,
+                                                    *e,
                                                     imgFileExts[(*g)->format()],
                                                     userFriendlyFilePath);
                 if (!filePath.isEmpty())
@@ -529,32 +530,79 @@ void Generator::generateInheritedBy(const ClassNode *classe,
     }
 }
 
+void Generator::generateFileList(const FakeNode* fake,
+                                 CodeMarker* marker,
+                                 Node::SubType subtype,
+                                 const QString& tag)
+{
+    int count = 0;
+    Text text;
+    OpenedList openedList(OpenedList::Bullet);
+
+    text << Atom::ParaLeft << tag << Atom::ParaRight
+         << Atom(Atom::ListLeft, openedList.styleString());
+
+    foreach (const Node* child, fake->childNodes()) {
+        if (child->subType() == subtype) {
+            ++count;
+            QString file = child->name();
+
+            if (file == "network/qftp/images/dir.png")
+                qDebug() << "FILE:" << file;
+
+            openedList.next();
+            text << Atom(Atom::ListItemNumber, openedList.numberString())
+                 << Atom(Atom::ListItemLeft, openedList.styleString())
+                 << Atom::ParaLeft
+                 << Atom(Atom::Link, file)
+                 << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                 << file
+                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                 << Atom::ParaRight
+                 << Atom(Atom::ListItemRight, openedList.styleString());
+        }
+    }
+    text << Atom(Atom::ListRight, openedList.styleString());
+    if (count > 0)
+        generateText(text, fake, marker);
+}
+
 void Generator::generateExampleFiles(const FakeNode *fake, CodeMarker *marker)
 {
     if (fake->childNodes().isEmpty())
         return;
-
-    OpenedList openedList(OpenedList::Bullet);
-
-    Text text;
-    text << Atom::ParaLeft << "Files:" << Atom::ParaRight
-         << Atom(Atom::ListLeft, openedList.styleString());
-    foreach (const Node *child, fake->childNodes()) {
-        QString exampleFile = child->name();
-        openedList.next();
-        text << Atom(Atom::ListItemNumber, openedList.numberString())
-             << Atom(Atom::ListItemLeft, openedList.styleString())
-             << Atom::ParaLeft
-             << Atom(Atom::Link, exampleFile)
-             << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-             << exampleFile
-             << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-             << Atom::ParaRight
-             << Atom(Atom::ListItemRight, openedList.styleString());
-    }
-    text << Atom(Atom::ListRight, openedList.styleString());
-    generateText(text, fake, marker);
+    generateFileList(fake, marker, Node::File, QString("Files:"));
+    generateFileList(fake, marker, Node::Image, QString("Images:"));
 }
+
+#if 0
+    QList<Generator *>::ConstIterator g = generators.begin();
+    while (g != generators.end()) {
+        if (outputFormats.contains((*g)->format())) {
+            (*g)->initializeGenerator(config);
+            QStringList extraImages =
+                config.getStringList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
+            QStringList::ConstIterator e = extraImages.begin();
+            while (e != extraImages.end()) {
+                QString userFriendlyFilePath;
+                QString filePath = Config::findFile(config.lastLocation(),
+                                                    imageFiles,
+                                                    imageDirs,
+                                                    *e,
+                                                    imgFileExts[(*g)->format()],
+                                                    userFriendlyFilePath);
+                if (!filePath.isEmpty())
+                    Config::copyFile(config.lastLocation(),
+                                     filePath,
+                                     userFriendlyFilePath,
+                                     (*g)->outputDir() +
+                                     "/images");
+                ++e;
+            }
+        }
+        ++g;
+    }
+#endif
 
 void Generator::generateModuleWarning(const ClassNode *classe,
                                       CodeMarker *marker)

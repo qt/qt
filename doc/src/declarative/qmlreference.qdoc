@@ -90,5 +90,6 @@
     \list
     \o \l {elements}{QML Elements}
     \o \l {QML Global Object}
+    \o \l {QML Internationalization}
     \endlist
 */

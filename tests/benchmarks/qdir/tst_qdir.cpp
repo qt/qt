@@ -68,7 +68,8 @@ public slots:
     void cleanupTestCase() {
         {
             QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
-
+            testdir.setSorting(QDir::Unsorted);
+            testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
             foreach (const QString &filename, testdir.entryList()) {
                 testdir.remove(filename);
             }
@@ -77,6 +78,8 @@ public slots:
         temp.rmdir(QLatin1String("test_speed"));
     }
 private slots:
+    void baseline() {}
+
     void sizeSpeed() {
         QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         QBENCHMARK {
@@ -87,6 +90,18 @@ private slots:
             }
         }
     }
+    void sizeSpeedIterator() {
+        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
+        QBENCHMARK {
+            QDirIterator dit(testdir.path(), QDir::Files);
+            while (dit.hasNext()) {
+                dit.fileInfo().isDir();
+                dit.fileInfo().size();
+                dit.next();
+            }
+        }
+    }
+
     void sizeSpeedWithoutFilter() {
         QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         QBENCHMARK {
@@ -96,6 +111,18 @@ private slots:
             }
         }
     }
+    void sizeSpeedWithoutFilterIterator() {
+        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
+        QBENCHMARK {
+            QDirIterator dit(testdir.path());
+            while (dit.hasNext()) {
+                dit.fileInfo().isDir();
+                dit.fileInfo().size();
+                dit.next();
+            }
+        }
+    }
+
     void sizeSpeedWithoutFileInfoList() {
         QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         testdir.setSorting(QDir::Unsorted);
@@ -107,6 +134,7 @@ private slots:
             }
         }
     }
+
     void iDontWantAnyStat() {
         QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         testdir.setSorting(QDir::Unsorted);
@@ -118,8 +146,16 @@ private slots:
             }
         }
     }
+    void iDontWantAnyStatIterator() {
+        QBENCHMARK {
+            QDirIterator dit(QDir::tempPath() + QLatin1String("/test_speed"));
+            while (dit.hasNext()) {
+                dit.next();
+            }
+        }
+    }
 
-    void testLowLevel() {
+    void sizeSpeedWithoutFilterLowLevel() {
 #ifdef Q_OS_WIN
         const wchar_t *dirpath = (wchar_t*)testdir.absolutePath().utf16();
         wchar_t appendedPath[MAX_PATH];
