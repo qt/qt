@@ -513,6 +513,13 @@ void QGraphicsSystemCursorImage::set(Qt::CursorShape id)
     hot = cursor->hot;
 }
 
+void QGraphicsSystemCursorImage::set(const QImage * image, int hx, int hy)
+{
+    hot.setX(hx);
+    hot.setY(hy);
+    cursorImage = *image;
+}
+
 void QGraphicsSystemCursorImage::set(const uchar *data, const uchar *mask,
                     int width, int height, int hx, int hy)
 {
