@@ -2064,8 +2064,8 @@ void QmlPropertyAnimation::prepare(QmlMetaProperty &p)
         d->property = d->userProperty;
 
     if (!d->rangeIsSet) {
-        d->va->setStartValue(QVariant(0.0f));
-        d->va->setEndValue(QVariant(1.0f));
+        d->va->setStartValue(qreal(0));
+        d->va->setEndValue(qreal(1));
         d->rangeIsSet = true;
     }
 
@@ -2227,8 +2227,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
 
     if (data->actions.count()) {
         if (!d->rangeIsSet) {
-            d->va->setStartValue(QVariant(0.0f));
-            d->va->setEndValue(QVariant(1.0f));
+            d->va->setStartValue(qreal(0));
+            d->va->setEndValue(qreal(1));
             d->rangeIsSet = true;
         }
         d->va->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);

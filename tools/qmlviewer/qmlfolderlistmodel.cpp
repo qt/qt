@@ -42,7 +42,7 @@
 #include "qmlfolderlistmodel.h"
 #include <QDirModel>
 #include <QDebug>
-#include <QtDeclarative/qmlcontext.h>
+#include <qmlcontext.h>
 
 class QmlFolderListModelPrivate
 {
