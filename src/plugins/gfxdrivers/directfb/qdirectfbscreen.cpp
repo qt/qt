@@ -1259,11 +1259,14 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     setIntOption(displayArgs, QLatin1String("height"), &h);
 
 #ifndef QT_NO_DIRECTFB_LAYER
-    result = d_ptr->dfb->GetDisplayLayer(d_ptr->dfb, DLID_PRIMARY,
+    int layerId = DLID_PRIMARY;
+    setIntOption(displayArgs, QLatin1String("layerid"), &layerId);
+
+    result = d_ptr->dfb->GetDisplayLayer(d_ptr->dfb, static_cast<DFBDisplayLayerID>(layerId),
                                          &d_ptr->dfbLayer);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBScreen::connect: "
-                      "Unable to get primary display layer!", result);
+                      "Unable to get display layer!", result);
         return false;
     }
     result = d_ptr->dfbLayer->GetScreen(d_ptr->dfbLayer, &d_ptr->dfbScreen);
