@@ -3058,10 +3058,8 @@ void tst_QObject::isSignalConnected()
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig05()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig15()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig29()")));
-    if (sizeof(void *) >= 8) { //on 32bit isSignalConnected only works with the first 32 signals
-        QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig60()")));
-        QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig61()")));
-    }
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig60()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig61()")));
 #endif
 
     QObject::connect(&o, SIGNAL(sig00()), &o, SIGNAL(sig69()));
@@ -3115,6 +3113,8 @@ void tst_QObject::isSignalConnected()
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig04()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig21()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig25()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig55()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig61()")));
 #endif
 
     emit o.sig00();
