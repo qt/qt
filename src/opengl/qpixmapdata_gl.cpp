@@ -424,6 +424,7 @@ bool QGLPixmapData::fromFile(const QString &filename, const char *format,
         resize(0, 0);
         data = file.readAll();
         file.close();
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
         QSize size = m_texture.bindCompressedTexture
             (data.constData(), data.size(), format);
         if (!size.isEmpty()) {
@@ -449,6 +450,7 @@ bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
     const char *buf = reinterpret_cast<const char *>(buffer);
     if (m_texture.canBindCompressedTexture(buf, int(len), format, &alpha)) {
         resize(0, 0);
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
         QSize size = m_texture.bindCompressedTexture(buf, int(len), format);
         if (!size.isEmpty()) {
             w = size.width();
