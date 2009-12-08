@@ -131,7 +131,7 @@ compilerSupportsFlag()
     cat >conftest.cpp <<EOF
 int main() { return 0; }
 EOF
-    "$TEST_COMPILER" "$@" -o /dev/null conftest.cpp
+    "$TEST_COMPILER" "$@" -o conftest.o conftest.cpp
     ret=$?
     rm -f conftest.cpp conftest.o
     return $ret

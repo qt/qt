@@ -218,22 +218,22 @@ void tst_QLibrary::load_data()
 #else
     QString currDir = QDir::currentPath();
 #endif
-    QTest::newRow( "ok00" ) << currDir + "/mylib" << (bool)true;
-    QTest::newRow( "notexist" ) << currDir + "/nolib" << (bool)false;
-    QTest::newRow( "badlibrary" ) << currDir + "/qlibrary.pro" << (bool)false;
+    QTest::newRow( "ok00" ) << currDir + "/mylib" << true;
+    QTest::newRow( "notexist" ) << currDir + "/nolib" << false;
+    QTest::newRow( "badlibrary" ) << currDir + "/qlibrary.pro" << false;
 
 #ifdef Q_OS_MAC
-    QTest::newRow("ok (libmylib ver. 1)") << currDir + "/libmylib" <<(bool)true;
+    QTest::newRow("ok (libmylib ver. 1)") << currDir + "/libmylib" <<true;
 #endif
 
 # if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << (bool)true;
-    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << (bool)true;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.dll" << (bool)true;
+    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << true;
+    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << true;
+    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.dll" << true;
 # elif defined Q_OS_UNIX
-    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/libmylib" SUFFIX << (bool)true;
-    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << (bool)true;
-    QTest::newRow( "ok03 (with non-standard suffix)" ) << currDir + "/system.trolltech.test.mylib.so" << (bool)true;
+    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/libmylib" SUFFIX << true;
+    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << true;
+    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.so" << true;
 # endif  // Q_OS_UNIX
 }
 
@@ -262,12 +262,12 @@ void tst_QLibrary::unload_data()
     QString currDir = QDir::currentPath();
 #endif
 
-    QTest::newRow( "mylib" ) << currDir + "/mylib" << (bool)TRUE;
+    QTest::newRow( "mylib" ) << currDir + "/mylib" << true;
 #ifdef Q_WS_MAC
     if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_3)
         QEXPECT_FAIL("mylib", "dlcompat cannot unload libraries", Continue);
 #endif
-    QTest::newRow( "ok01" ) << currDir + "/nolib" << (bool)FALSE;
+    QTest::newRow( "ok01" ) << currDir + "/nolib" << false;
 }
 
 void tst_QLibrary::unload()
@@ -312,9 +312,9 @@ void tst_QLibrary::resolve_data()
     QString currDir = QDir::currentPath();
 #endif
 
-    QTest::newRow( "ok00" ) << currDir + "/mylib" << QString("mylibversion") << (bool)TRUE;
-    QTest::newRow( "bad00" ) << currDir + "/mylib" << QString("nosym") << (bool)FALSE;
-    QTest::newRow( "bad01" ) << currDir + "/nolib" << QString("nosym") << (bool)FALSE;
+    QTest::newRow( "ok00" ) << currDir + "/mylib" << QString("mylibversion") << true;
+    QTest::newRow( "bad00" ) << currDir + "/mylib" << QString("nosym") << false;
+    QTest::newRow( "bad01" ) << currDir + "/nolib" << QString("nosym") << false;
 }
 
 void tst_QLibrary::resolve()
@@ -479,9 +479,9 @@ void tst_QLibrary::loadHints_data()
 #if defined(Q_OS_AIX)
     if (QFile::exists("/usr/lib/libGL.a") || QFile::exists("/usr/X11R6/lib/libGL.a")) {
 # if QT_POINTER_SIZE == 4
-        QTest::newRow( "ok03 (Archive member)" ) << "libGL.a(shr.o)" << int(QLibrary::LoadArchiveMemberHint) << (bool)TRUE;
+        QTest::newRow( "ok03 (Archive member)" ) << "libGL.a(shr.o)" << int(QLibrary::LoadArchiveMemberHint) << true;
 # else
-        QTest::newRow( "ok03 (Archive member)" ) << "libGL.a(shr_64.o)" << int(QLibrary::LoadArchiveMemberHint) << (bool)TRUE;
+        QTest::newRow( "ok03 (Archive member)" ) << "libGL.a(shr_64.o)" << int(QLibrary::LoadArchiveMemberHint) << true;
 #endif
     }
 #endif
@@ -494,13 +494,13 @@ void tst_QLibrary::loadHints_data()
 
     lh |= QLibrary::ResolveAllSymbolsHint;
 # if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << int(lh) << (bool)TRUE;
-    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << int(lh) << (bool)TRUE;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.dll" << int(lh) << (bool)TRUE;
+    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << int(lh) << true;
+    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << int(lh) << true;
+    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.dll" << int(lh) << true;
 # elif defined Q_OS_UNIX
-    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/libmylib" SUFFIX << int(lh) << (bool)TRUE;
-    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << int(lh) << (bool)TRUE;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.so" << int(lh) << (bool)TRUE;
+    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/libmylib" SUFFIX << int(lh) << true;
+    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << int(lh) << true;
+    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.so" << int(lh) << true;
 # endif  // Q_OS_UNIX
 }
 
@@ -535,10 +535,10 @@ void tst_QLibrary::fileName_data()
                             << sys_qualifiedLibraryName(QLatin1String("mylib"));
 #ifdef Q_WS_WIN
 #ifndef Q_OS_WINCE
-    QTest::newRow( "ok02" ) << "user32"
+    QTest::newRow( "ok03" ) << "user32"
                             << "USER32.dll";
 #else
-    QTest::newRow( "ok02" ) << "coredll"
+    QTest::newRow( "ok03" ) << "coredll"
                             << "coredll.dll";
 #endif
 #endif
