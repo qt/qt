@@ -198,7 +198,6 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
         cache->stringCache.insert(methodName, data);
         cache->identifierCache.insert(data->identifier.identifier, data);
         data->addref();
-        data->addref();
     }
 
     return cache;
