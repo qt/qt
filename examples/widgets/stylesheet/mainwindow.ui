@@ -41,7 +41,7 @@
           <string>Please read the LICENSE file before checking</string>
          </property>
          <property name="text" >
-          <string>I &amp;accept the terms and &amp;conditions</string>
+          <string>I accept the terms and &amp;conditions</string>
          </property>
         </widget>
        </item>
