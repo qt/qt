@@ -872,7 +872,7 @@ void QmlGraphicsTextEditPrivate::init()
 
     control = new QTextControl(q);
 
-#if QT_VERSION >= 0x040700 // XXX see bug QT-2236
+#if QT_VERSION >= 0x040601 // XXX see bug QT-2236
     control->setIgnoreUnusedNavigationEvents(true);
 #endif
 
