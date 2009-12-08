@@ -250,13 +250,17 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
                     ? EAknSoftkeyOptions
                     : s60CommandStart + index;
 
+        // _q_menuSoftKeyAction action is set to "invisible" and all invisible actions are by default
+        // disabled. However we never want to dim options softkey, even it is set to "invisible"
+        bool dimmed = (command == EAknSoftkeyOptions) ? false : !softKeyAction->isEnabled();
+
         if (position != -1) {
             const int underlineShortCut = QApplication::style()->styleHint(QStyle::SH_UnderlineShortcut);
             QString iconText = softKeyAction->iconText();
             TPtrC text = qt_QString2TPtrC( underlineShortCut ? softKeyAction->text() : iconText);
             QT_TRAP_THROWING(
                 nativeContainer->SetCommandL(position, command, text);
-                nativeContainer->DimCommand(command, !softKeyAction->isEnabled());
+                nativeContainer->DimCommand(command, dimmed);
             );
         }
     }

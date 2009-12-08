@@ -266,6 +266,7 @@ public:
     QDialogButtonEnabledProxy(QObject *parent, QWidget *src, QAction *trg) : QObject(parent), source(src), target(trg)
     {
         source->installEventFilter(this);
+        target->setEnabled(source->isEnabled());
     }
     ~QDialogButtonEnabledProxy()
     {
