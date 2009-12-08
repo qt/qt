@@ -466,25 +466,27 @@ void CentralWidget::setLastShownPages()
             setSource(QUrl(QLatin1String("about:blank")));
         return;
     }
-
     QStringList zoomFactors = helpEngine.lastZoomFactors();
     while (zoomFactors.count() < pageCount)
         zoomFactors.append(CollectionConfiguration::DefaultZoomFactor);
 
-    QStringList::const_iterator zIt = zoomFactors.constBegin();
-    QStringList::const_iterator it = lastShownPageList.constBegin();
-    for (; it != lastShownPageList.constEnd(); ++it, ++zIt)
-        setSourceInNewTab((*it), (*zIt).toFloat());
-
-    int tab = helpEngine.lastTabPage();
-
     const bool searchIsAttached = m_searchWidget->isAttached();
     const bool searchWasAttached = helpEngine.searchWasAttached();
+    int tabToShow = helpEngine.lastTabPage();
     if (searchWasAttached && !searchIsAttached)
-        --tab;
+        --tabToShow;
     else if (!searchWasAttached && searchIsAttached)
-        ++tab;
-    tabWidget->setCurrentIndex(tab);
+        ++tabToShow;
+
+    for (int curTab = 0; curTab < pageCount; ++curTab) {
+        const QString &curFile = lastShownPageList.at(curTab);
+        if (helpEngine.findFile(curFile).isValid())
+            setSourceInNewTab(curFile, zoomFactors.at(curTab).toFloat());
+        else if (curTab + searchIsAttached <= tabToShow)
+            --tabToShow;
+    }
+
+    tabWidget->setCurrentIndex(tabToShow);
 }
 
 bool CentralWidget::hasSelection() const
