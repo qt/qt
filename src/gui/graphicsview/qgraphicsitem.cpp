@@ -2554,6 +2554,8 @@ QGraphicsEffect *QGraphicsItem::graphicsEffect() const
     If \a effect is the installed on a different item, setGraphicsEffect() will remove
     the effect from the item and install it on this item.
 
+    QGraphicsItem takes ownership of \a effect.
+
     \note This function will apply the effect on itself and all its children.
 
     \since 4.6
@@ -7289,13 +7291,6 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
   by QObject::parent().
 
   \sa QGraphicsItem::setParentItem(), QGraphicsItem::parentObject()
-*/
-
-/*!
-  \property QGraphicsObject::id
-  \brief the id of of the item
-
-  \sa QObject::objectName(), QObject::setObjectName()
 */
 
 /*!
