@@ -389,6 +389,7 @@ QmlWorkerScriptEngine::QmlWorkerScriptEngine(QObject *parent)
 
 QmlWorkerScriptEngine::~QmlWorkerScriptEngine()
 {
+    qDeleteAll(d->workers);
     delete d; d = 0;
 }
 

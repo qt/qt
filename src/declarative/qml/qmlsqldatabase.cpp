@@ -409,7 +409,6 @@ void qt_add_qmlsqldatabase(QScriptEngine *engine)
 {
     QScriptValue openDatabase = engine->newFunction(qmlsqldatabase_open_sync, 4);
     engine->globalObject().setProperty(QLatin1String("openDatabaseSync"), openDatabase);
-qDebug() << "qt_add_qmlsqldatabase" << engine;
 
     QScriptValue sqlExceptionPrototype = engine->newObject();
     for (int i=0; sqlerror[i]; ++i)

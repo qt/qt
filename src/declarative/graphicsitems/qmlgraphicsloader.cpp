@@ -263,6 +263,7 @@ void QmlGraphicsLoaderPrivate::_q_sourceLoaded()
 
         QObject *obj = component->create(ctxt);
         if (obj) {
+            ctxt->setParent(obj);
             item = qobject_cast<QmlGraphicsItem *>(obj);
             if (item) {
                 item->setParentItem(q);
@@ -271,6 +272,7 @@ void QmlGraphicsLoaderPrivate::_q_sourceLoaded()
             }
         } else {
             delete obj;
+            delete ctxt;
             source = QUrl();
         }
         emit q->sourceChanged();

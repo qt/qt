@@ -103,8 +103,7 @@ public:
 
     QBasicTimer pressTimer;
     QPoint pressPoint;
-    int pressTime; // milliseconds before it's a "hold" XXX not currently settable
-    static const int pressDragLength = 15; // XXX #pixels before it's no longer a "hold"; device-specific
+    int pressTime; // milliseconds before it's a "hold"
 
     void updateWindowObjects();
     class WindowObjectList : public QmlConcreteList<QObject *>
@@ -612,6 +611,28 @@ bool QmlGraphicsWebView::heuristicZoom(int clickX, int clickY, qreal maxzoom)
     }
 }
 
+/*!
+    \qmlproperty int WebView::pressGrabTime
+
+    The number of milliseconds the user must press before the WebView
+    starts passing move events through to the web engine (rather than
+    letting other QML elements such as a Flickable take them).
+
+    Defaults to 400ms. Set to 0 to always grab and pass move events to
+    the web engine.
+*/
+int QmlGraphicsWebView::pressGrabTime() const
+{
+    Q_D(const QmlGraphicsWebView);
+    return d->pressTime;
+}
+
+void QmlGraphicsWebView::setPressGrabTime(int ms)
+{
+    Q_D(QmlGraphicsWebView);
+    d->pressTime = ms;
+}
+
 void QmlGraphicsWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsWebView);
@@ -620,8 +641,13 @@ void QmlGraphicsWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
 
     d->pressPoint = me->pos();
-    d->pressTimer.start(d->pressTime,this);
-    setKeepMouseGrab(false);
+    if (d->pressTime) {
+        d->pressTimer.start(d->pressTime,this);
+        setKeepMouseGrab(false);
+    } else {
+        grabMouse();
+        setKeepMouseGrab(true);
+    }
 
     page()->event(me);
     event->setAccepted(
@@ -684,7 +710,7 @@ void QmlGraphicsWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
     if (d->pressTimer.isActive()) {
-        if ((me->pos() - d->pressPoint).manhattanLength() > d->pressDragLength)  {
+        if ((me->pos() - d->pressPoint).manhattanLength() > QApplication::startDragDistance())  {
             d->pressTimer.stop();
         }
     }

@@ -147,11 +147,18 @@ QmlScriptEngine::QmlScriptEngine(QmlEnginePrivate *priv)
         newQMetaObject(StaticQtMetaObject::get());
     globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
-    offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation).replace('/', QDir::separator())
+    offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation).replace(QLatin1Char('/'), QDir::separator())
         + QDir::separator() + QLatin1String("QML")
         + QDir::separator() + QLatin1String("OfflineStorage");
+
+
     qt_add_qmlxmlhttprequest(this);
     qt_add_qmlsqldatabase(this);
+    // XXX A Multimedia "Qt.Sound" class also needs to be made available,
+    // XXX but we don't want a dependency in that cirection.
+    // XXX When the above a done some better way, that way should also be
+    // XXX used to add Qt.Sound class.
+
 
     //types
     qtObject.setProperty(QLatin1String("rgba"), newFunction(QmlEnginePrivate::rgba, 4));
@@ -233,6 +240,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
     typeNameClass = 0;
     delete listClass;
     listClass = 0;
+    delete globalClass;
+    globalClass = 0;
 
     for(int ii = 0; ii < bindValues.count(); ++ii)
         clear(bindValues[ii]);
@@ -309,7 +318,7 @@ QmlWorkerScriptEngine *QmlEnginePrivate::getWorkerScriptEngine()
 
     \code
     QmlEngine engine;
-    QmlComponent component(&engine, "Text { text: \"Hello world!\" }");
+    QmlComponent component(&engine, "import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
     QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(component.create());
 
     //add item to view, etc
