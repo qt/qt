@@ -157,7 +157,7 @@ public:
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
     , ownModel(false), wrap(false), autoHighlight(true)
-    , fixCurrentVisibility(false) {}
+    , fixCurrentVisibility(false), lazyRelease(false) {}
 
     void init();
     void clear();
@@ -264,6 +264,16 @@ public:
         return 0;
     }
 
+    FxGridItem *firstVisibleItem() const {
+        const qreal pos = position();
+        for (int i = 0; i < visibleItems.count(); ++i) {
+            FxGridItem *item = visibleItems.at(i);
+            if (item->index != -1 && item->endRowPos() > pos)
+                return item;
+        }
+        return visibleItems.count() ? visibleItems.first() : 0;
+    }
+
     // Map a model index to visibleItems list index.
     // These may differ if removed items are still present in the visible list,
     // e.g. doing a removal animation
@@ -321,6 +331,7 @@ public:
     bool wrap : 1;
     bool autoHighlight : 1;
     bool fixCurrentVisibility : 1;
+    bool lazyRelease : 1;
 };
 
 void QmlGraphicsGridViewPrivate::init()
@@ -406,17 +417,24 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
             --i;
         modelIndex = visibleItems.at(i)->index + 1;
     }
+    int colNum = colPos / colSize();
 
     FxGridItem *item = 0;
-    while (modelIndex < model->count() && rowPos <= to) {
+
+    // Item creation and release is staggered in order to avoid
+    // creating/releasing multiple items in one frame
+    // while flicking (as much as possible).
+    while (modelIndex < model->count() && rowPos <= to + rowSize()*(columns - colNum)/(columns+1)) {
         //qDebug() << "refill: append item" << modelIndex;
         if (!(item = createItem(modelIndex)))
             break;
         item->setPosition(colPos, rowPos);
         visibleItems.append(item);
         colPos += colSize();
+        colNum++;
         if (colPos > colSize() * (columns-1)) {
             colPos = 0;
+            colNum = 0;
             rowPos += rowSize();
         }
         ++modelIndex;
@@ -431,7 +449,8 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
             rowPos -= rowSize();
         }
     }
-    while (visibleIndex > 0 && rowPos + rowSize() - 1 >= from){
+    colNum = colPos / colSize();
+    while (visibleIndex > 0 && rowPos + rowSize() - 1 >= from - rowSize()*(colNum+1)/(columns+1)){
         //qDebug() << "refill: prepend item" << visibleIndex-1 << "top pos" << rowPos << colPos;
         if (!(item = createItem(visibleIndex-1)))
             break;
@@ -439,30 +458,38 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
         item->setPosition(colPos, rowPos);
         visibleItems.prepend(item);
         colPos -= colSize();
+        colNum--;
         if (colPos < 0) {
             colPos = colSize() * (columns - 1);
+            colNum = columns-1;
             rowPos -= rowSize();
         }
         changed = true;
     }
 
-    while (visibleItems.count() > 1 && (item = visibleItems.first()) && item->endRowPos() < from) {
-        if (item->attached->delayRemove())
-            break;
-        //qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endRowPos();
-        if (item->index != -1)
-            visibleIndex++;
-        visibleItems.removeFirst();
-        releaseItem(item);
-        changed = true;
-    }
-    while (visibleItems.count() > 1 && (item = visibleItems.last()) && item->rowPos() > to) {
-        if (item->attached->delayRemove())
-            break;
-        //qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1;
-        visibleItems.removeLast();
-        releaseItem(item);
-        changed = true;
+    if (!lazyRelease || !changed) { // avoid destroying items in the same frame that we create
+        while (visibleItems.count() > 1
+               && (item = visibleItems.first())
+                    && item->endRowPos() < from - rowSize()*(item->colPos()/colSize()+1)/(columns+1)) {
+            if (item->attached->delayRemove())
+                break;
+            //qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endRowPos();
+            if (item->index != -1)
+                visibleIndex++;
+            visibleItems.removeFirst();
+            releaseItem(item);
+            changed = true;
+        }
+        while (visibleItems.count() > 1
+               && (item = visibleItems.last())
+                    && item->rowPos() > to + rowSize()*(columns - item->colPos()/colSize())/(columns+1)) {
+            if (item->attached->delayRemove())
+                break;
+            //qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1;
+            visibleItems.removeLast();
+            releaseItem(item);
+            changed = true;
+        }
     }
     if (changed) {
         if (flow == QmlGraphicsGridView::LeftToRight)
@@ -470,6 +497,7 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
         else
             q->setViewportWidth(endPosition() - startPosition());
     }
+    lazyRelease = false;
 }
 
 void QmlGraphicsGridViewPrivate::updateGrid()
@@ -1127,7 +1155,9 @@ void QmlGraphicsGridView::sizeChange()
 
 void QmlGraphicsGridView::viewportMoved()
 {
+    Q_D(QmlGraphicsGridView);
     QmlGraphicsFlickable::viewportMoved();
+    d->lazyRelease = true;
     refill();
 }
 
@@ -1177,7 +1207,6 @@ void QmlGraphicsGridView::keyPressEvent(QKeyEvent *event)
     QmlGraphicsFlickable::keyPressEvent(event);
     if (event->isAccepted())
         return;
-
     if (d->model && d->model->count() && d->interactive) {
         d->moveReason = QmlGraphicsGridViewPrivate::SetIndex;
         int oldCurrent = currentIndex();
@@ -1430,21 +1459,71 @@ void QmlGraphicsGridView::itemsInserted(int modelIndex, int count)
     }
 
     QList<FxGridItem*> added;
-    int i = 0;
-    for (; i < insertCount && rowPos + d->rowSize() - 1 <= to; ++i) {
-        int mod = (modelIndex+i) % d->columns;
-        while (mod++ < d->columns && modelIndex + i < d->model->count() && i < insertCount) {
-            FxGridItem *item = d->createItem(modelIndex + i);
-            d->visibleItems.insert(index, item);
-            item->setPosition(colPos, rowPos);
-            added.append(item);
-            colPos += d->colSize();
-            if (colPos > d->colSize() * (d->columns-1)) {
-                colPos = 0;
-                rowPos += d->rowSize();
+    FxGridItem *firstItem = d->firstVisibleItem();
+    if (firstItem && rowPos < firstItem->rowPos()) {
+        int from = d->position() - d->buffer;
+        int i = 0;
+        int insertionIdx = index;
+        for (i = insertCount-1; i >= 0 && rowPos > from; --i) {
+            int mod = (modelIndex+i) % d->columns;
+            while (mod++ < d->columns && modelIndex + i < d->model->count() && i < insertCount) {
+                FxGridItem *item = d->createItem(modelIndex + i);
+                d->visibleItems.insert(insertionIdx, item);
+                item->setPosition(colPos, rowPos);
+                added.append(item);
+                colPos -= d->colSize();
+                if (colPos < 0) {
+                    colPos = d->colSize() * (d->columns-1);
+                    rowPos -= d->rowSize();
+                }
+                ++index;
+                ++i;
             }
-            ++index;
-            ++i;
+        }
+        if (i >= 0) {
+            // If we didn't insert all our new items - anything
+            // before the current index is not visible - remove it.
+            while (insertionIdx--) {
+                FxGridItem *item = d->visibleItems.takeFirst();
+                if (item->index != -1)
+                    d->visibleIndex++;
+                d->releaseItem(item);
+            }
+        } else {
+            // adjust pos of items before inserted items.
+            for (int i = insertionIdx-1; i >= 0; i--) {
+                FxGridItem *gridItem = d->visibleItems.at(i);
+                gridItem->setPosition(colPos, rowPos);
+                colPos -= d->colSize();
+                if (colPos < 0) {
+                    colPos = d->colSize() * (d->columns-1);
+                    rowPos -= d->rowSize();
+                }
+            }
+        }
+    } else {
+        int i = 0;
+        for (i = 0; i < insertCount && rowPos + d->rowSize() - 1 <= to; ++i) {
+            int mod = (modelIndex+i) % d->columns;
+            while (mod++ < d->columns && modelIndex + i < d->model->count() && i < insertCount) {
+                FxGridItem *item = d->createItem(modelIndex + i);
+                d->visibleItems.insert(index, item);
+                item->setPosition(colPos, rowPos);
+                added.append(item);
+                colPos += d->colSize();
+                if (colPos > d->colSize() * (d->columns-1)) {
+                    colPos = 0;
+                    rowPos += d->rowSize();
+                }
+                ++index;
+                ++i;
+            }
+        }
+        if (i < insertCount) {
+            // We didn't insert all our new items, which means anything
+            // beyond the current index is not visible - remove it.
+            while (d->visibleItems.count() > index)
+                d->releaseItem(d->visibleItems.takeLast());
         }
     }
 
@@ -1456,19 +1535,13 @@ void QmlGraphicsGridView::itemsInserted(int modelIndex, int count)
             d->currentItem->setPosition(d->colPosAt(d->currentIndex), d->rowPosAt(d->currentIndex));
         }
     }
-    if (i < insertCount) {
-        // We didn't insert all our new items, which means anything
-        // beyond the current index is not visible - remove it.
-        while (d->visibleItems.count() > index)
-            d->releaseItem(d->visibleItems.takeLast());
-    } else {
-        // Update the indexes of the following visible items.
-        for (; index < d->visibleItems.count(); ++index) {
-            FxGridItem *listItem = d->visibleItems.at(index);
-            if (listItem->index != -1)
-                listItem->index += count;
-        }
+    // Update the indexes of the following visible items.
+    for (; index < d->visibleItems.count(); ++index) {
+        FxGridItem *listItem = d->visibleItems.at(index);
+        if (listItem->index != -1)
+            listItem->index += count;
     }
+
     // everything is in order now - emit add() signal
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
@@ -1587,6 +1660,12 @@ void QmlGraphicsGridView::itemsMoved(int from, int to, int count)
     Q_D(QmlGraphicsGridView);
     QHash<int,FxGridItem*> moved;
 
+    bool removedBeforeVisible = false;
+    FxGridItem *firstItem = d->firstVisibleItem();
+
+    if (from < to && from < d->visibleIndex && to > d->visibleIndex)
+        removedBeforeVisible = true;
+
     QList<FxGridItem*>::Iterator it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
         FxGridItem *item = *it;
@@ -1595,12 +1674,16 @@ void QmlGraphicsGridView::itemsMoved(int from, int to, int count)
             item->index += (to-from);
             moved.insert(item->index, item);
             it = d->visibleItems.erase(it);
+            if (item->rowPos() < firstItem->rowPos())
+                removedBeforeVisible = true;
         } else {
             if (item->index > from && item->index != -1) {
                 // move everything after the moved items.
                 item->index -= count;
                 if (item->index < d->visibleIndex)
                     d->visibleIndex = item->index;
+            } else if (item->index != -1) {
+                removedBeforeVisible = true;
             }
             ++it;
         }
@@ -1642,7 +1725,7 @@ void QmlGraphicsGridView::itemsMoved(int from, int to, int count)
     while (moved.count())
         d->releaseItem(moved.take(moved.begin().key()));
 
-    d->layout();
+    d->layout(removedBeforeVisible);
 }
 
 void QmlGraphicsGridView::createdItem(int index, QmlGraphicsItem *item)
