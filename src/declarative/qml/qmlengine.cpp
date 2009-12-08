@@ -150,8 +150,15 @@ QmlScriptEngine::QmlScriptEngine(QmlEnginePrivate *priv)
     offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation).replace(QLatin1Char('/'), QDir::separator())
         + QDir::separator() + QLatin1String("QML")
         + QDir::separator() + QLatin1String("OfflineStorage");
+
+
     qt_add_qmlxmlhttprequest(this);
     qt_add_qmlsqldatabase(this);
+    // XXX A Multimedia "Qt.Sound" class also needs to be made available,
+    // XXX but we don't want a dependency in that cirection.
+    // XXX When the above a done some better way, that way should also be
+    // XXX used to add Qt.Sound class.
+
 
     //types
     qtObject.setProperty(QLatin1String("rgba"), newFunction(QmlEnginePrivate::rgba, 4));
