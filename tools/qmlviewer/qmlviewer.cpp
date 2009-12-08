@@ -43,8 +43,8 @@
 #include "ui_recopts.h"
 
 #include "qmlviewer.h"
-#include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlcontext.h>
+#include <qmlengine.h>
 #include "qml.h"
 #include <private/qperformancelog_p_p.h>
 #include <private/qabstractanimation_p.h>
