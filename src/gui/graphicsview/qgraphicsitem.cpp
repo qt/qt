@@ -7292,13 +7292,6 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
 */
 
 /*!
-  \property QGraphicsObject::id
-  \brief the id of of the item
-
-  \sa QObject::objectName(), QObject::setObjectName()
-*/
-
-/*!
   \property QGraphicsObject::opacity
   \brief the opacity of the item
 
