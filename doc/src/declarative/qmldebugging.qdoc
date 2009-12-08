@@ -40,27 +40,32 @@
 ****************************************************************************/
 
 /*!
-\page qmli18n.html
-\title QML Internationalization
+\page qmldebugging.html
+\title Debugging QML
 
-Strings in QML can be marked for translation using the qsTr(), qsTranslate(),
-QT_TR_NOOP(), and QT_TRANSLATE_NOOP() functions.
+\section1 Logging
 
-For example:
+console.log can be used to print debugging information to the console. For example:
+
 \qml
-Text { text: qsTr("Pictures") }
+Rectangle {
+    width: 200; height: 200
+    MouseRegion {
+        anchors.fill: parent
+        onClicked: console.log("clicked")
+    }
+}
 \endqml
 
-These functions are standard QtScript functions; for more details see
-QScriptEngine::installTranslatorFunctions().
+\section1 The QML Inspector
 
-QML relies on the core internationalization capabilities provided by Qt. These
-capabilities are described more fully in:
-\list
-\o \l {Internationalization with Qt}
-\o \l {Qt Linguist Manual}
-\endlist
+qmldebugger provides an experimental inspector to aid with debugging. It can
+be run as a Qt Creator plugin or as a standalone application.
 
-You can test a translation in \l {qmlviewer} using the -translation option.
+\section1 Debugging Transitions
+
+When a transition doesn't look quite right, it can be helpful to view it in slow
+motion to see more clearly what is happening. \l {qmlviewer} provides a menu option
+"Slow Down Animations" to facilitate this.
 
 */
