@@ -84,9 +84,6 @@ extern Q_GUI_EXPORT int qt_defaultDpiY();
 const QS60StylePrivate::SkinElementFlags QS60StylePrivate::KDefaultSkinElementFlags =
     SkinElementFlags(SF_PointNorth | SF_StateEnabled);
 
-static const QByteArray propertyKeyLayouts = "layouts";
-static const QByteArray propertyKeyCurrentlayout = "currentlayout";
-
 static const qreal goldenRatio = 1.618;
 
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
