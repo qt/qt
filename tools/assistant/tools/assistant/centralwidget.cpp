@@ -314,7 +314,7 @@ CentralWidget::~CentralWidget()
     }
 
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
-    helpEngine.setLastTabPage(lastTabPage);
+    helpEngine.setLastTabPage(tabWidget->currentIndex());
     helpEngine.setLastShownPages(currentPages);
     helpEngine.setSearchWasAttached(searchAttached);
     helpEngine.setLastZoomFactors(zoomFactors);
@@ -473,7 +473,7 @@ void CentralWidget::setLastShownPages()
     const bool searchIsAttached = m_searchWidget->isAttached();
     const bool searchWasAttached = helpEngine.searchWasAttached();
     int tabToShow = helpEngine.lastTabPage();
-    if (searchWasAttached && !searchIsAttached)
+    if (searchWasAttached && !searchIsAttached && tabToShow != 0)
         --tabToShow;
     else if (!searchWasAttached && searchIsAttached)
         ++tabToShow;
