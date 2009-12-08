@@ -914,7 +914,8 @@ QObject::~QObject()
         // disconnect all receivers
         if (d->connectionLists) {
             ++d->connectionLists->inUse;
-            for (int signal = -1; signal < d->connectionLists->count(); ++signal) {
+            int connectionListsCount = d->connectionLists->count();
+            for (int signal = -1; signal < connectionListsCount; ++signal) {
                 QObjectPrivate::ConnectionList &connectionList =
                     (*d->connectionLists)[signal];
 
@@ -951,16 +952,17 @@ QObject::~QObject()
         // disconnect all senders
         QObjectPrivate::Connection *node = d->senders;
         while (node) {
-            QMutex *m = signalSlotLock(node->sender);
+            QObject *sender = node->sender;
+            QMutex *m = signalSlotLock(sender);
             node->prev = &node;
             bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
             //the node has maybe been removed while the mutex was unlocked in relock?
-            if (!node || signalSlotLock(node->sender) != m) {
+            if (!node || node->sender != sender) {
                 m->unlock();
                 continue;
             }
             node->receiver = 0;
-            QObjectConnectionListVector *senderLists = node->sender->d_func()->connectionLists;
+            QObjectConnectionListVector *senderLists = sender->d_func()->connectionLists;
             if (senderLists)
                 senderLists->dirty = true;
 
