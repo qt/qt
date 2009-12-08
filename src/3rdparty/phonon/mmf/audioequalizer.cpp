@@ -95,14 +95,15 @@ void AudioEqualizer::getParameters(NativeEffect *effect,
 
         const qint32 defVol = effect->BandLevel(i);
 
-        parameters.append(EffectParameter(i,
-                                      tr("%1 Hz").arg(hz),
-                                      EffectParameter::LogarithmicHint,
-                                      QVariant(qint32(defVol)),
-                                      QVariant(qint32(dbMin)),
-                                      QVariant(qint32(dbMax)),
-                                      QVariantList(),
-                                      QString()));
+        parameters.append(EffectParameter(
+             /* parameterId */        i,
+             /* name */               tr("%1 Hz").arg(hz),
+             /* hints */              EffectParameter::LogarithmicHint,
+             /* defaultValue */       QVariant(qint32(defVol)),
+             /* minimumValue */       QVariant(qint32(dbMin)),
+             /* maximumValue */       QVariant(qint32(dbMax)),
+             /* values */             QVariantList(),
+             /* description */        QString()));
     }
 }
 
