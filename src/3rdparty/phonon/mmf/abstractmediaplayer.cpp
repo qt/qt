@@ -182,6 +182,7 @@ void MMF::AbstractMediaPlayer::seek(qint64 ms)
         }
 
         doSeek(ms);
+        resetMarksIfRewound();
 
         if(wasPlaying && state() != ErrorState) {
             doPlay();
@@ -402,6 +403,14 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
 
 void MMF::AbstractMediaPlayer::positionTick()
 {
+    emitMarksIfReached();
+
+    const qint64 current = currentTime();
+    emit MMF::AbstractPlayer::tick(current);
+}
+
+void MMF::AbstractMediaPlayer::emitMarksIfReached()
+{
     const qint64 current = currentTime();
     const qint64 total = totalTime();
     const qint64 remaining = total - current;
@@ -419,9 +428,21 @@ void MMF::AbstractMediaPlayer::positionTick()
             emit aboutToFinish();
         }
     }
+}
 
-    // For the MWC compiler, we need to qualify the base class.
-    emit MMF::AbstractPlayer::tick(current);
+void MMF::AbstractMediaPlayer::resetMarksIfRewound()
+{
+    const qint64 current = currentTime();
+    const qint64 total = totalTime();
+    const qint64 remaining = total - current;
+
+    if (prefinishMark() && m_prefinishMarkSent)
+        if (remaining >= (prefinishMark() + tickInterval()/2))
+            m_prefinishMarkSent = false;
+
+    if (m_aboutToFinishSent)
+        if (remaining >= tickInterval())
+            m_aboutToFinishSent = false;
 }
 
 void MMF::AbstractMediaPlayer::bufferStatusTick()

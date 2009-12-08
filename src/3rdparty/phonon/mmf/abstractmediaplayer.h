@@ -91,6 +91,8 @@ private:
     void stopBufferStatusTimer();
     void stopTimers();
     void doVolumeChanged();
+    void emitMarksIfReached();
+    void resetMarksIfRewound();
 
 private Q_SLOTS:
     void positionTick();
