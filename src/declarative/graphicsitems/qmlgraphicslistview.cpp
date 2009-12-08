@@ -1256,6 +1256,8 @@ QmlGraphicsListView::~QmlGraphicsListView()
     d->clear();
     if (d->ownModel)
         delete d->model;
+    delete d->header;
+    delete d->footer;
 }
 
 /*!
