@@ -708,10 +708,7 @@ void tst_QSharedMemory::simpleThreadedProducerConsumer()
 void tst_QSharedMemory::simpleProcessProducerConsumer_data()
 {
     QTest::addColumn<int>("processes");
-    int tries = 10;
-#ifdef Q_OS_WIN
-    tries = 5;
-#endif
+    int tries = 5;
     for (int i = 0; i < tries; ++i) {
         QTest::newRow("1 process") << 1;
         QTest::newRow("5 processes") << 5;
@@ -737,7 +734,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 #endif
     QProcess producer;
     producer.setProcessChannelMode(QProcess::ForwardedChannels);
-    producer.start( QFileInfo("./lackey/lackey.exe").absoluteFilePath(), arguments);
+    producer.start( "./lackey/lackey", arguments);
     producer.waitForStarted();
     QVERIFY(producer.error() != QProcess::FailedToStart);
 

@@ -63,10 +63,16 @@ public:
     // Debugging output
     void dump() const;
 
+public Q_SLOTS:
+    void beginNativePaintEvent(const QRect& /*controlRect*/);
+    void endNativePaintEvent(const QRect& /*controlRect*/);
+
 Q_SIGNALS:
     void videoWindowChanged();
     void aspectRatioChanged();
     void scaleModeChanged();
+    void beginVideoWindowNativePaint();
+    void endVideoWindowNativePaint();
 
 protected:
     // Override QWidget functions

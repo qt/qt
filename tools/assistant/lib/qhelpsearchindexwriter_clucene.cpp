@@ -578,6 +578,7 @@ void QHelpSearchIndexWriter::cancelIndexing()
 void QHelpSearchIndexWriter::updateIndex(const QString &collectionFile,
     const QString &indexFilesFolder, bool reindex)
 {
+    wait();
     mutex.lock();
     this->m_cancel = false;
     this->m_reindex = reindex;

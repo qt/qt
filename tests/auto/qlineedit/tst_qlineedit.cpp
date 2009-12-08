@@ -3362,6 +3362,7 @@ void tst_QLineEdit::task174640_editingFinished()
     QApplication::setActiveWindow(&mw);
     mw.activateWindow();
     QTest::qWaitForWindowShown(&mw);
+    QTRY_COMPARE(&mw, QApplication::activeWindow());
 
     QSignalSpy editingFinishedSpy(le1, SIGNAL(editingFinished()));
 
