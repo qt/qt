@@ -263,7 +263,7 @@ bool QStaticText::isEmpty() const
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
-        : items(0), itemCount(0), glyphPool(0), positionPool(0)
+        : items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false)
 {
     ref = 1;    
 }
@@ -482,10 +482,17 @@ void QStaticTextPrivate::init()
         painter.setFont(font);
         painter.setTransform(matrix);
 
-        if (size.isValid())
-            painter.drawText(QRectF(QPointF(0, 0), size), text);
-        else
+        if (size.isValid()) {
+            QRectF boundingRect;
+            painter.drawText(QRectF(QPointF(0, 0), size), 0, text, &boundingRect);
+
+            needsClipRect = boundingRect.width() > size.width()
+                            || boundingRect.height() > size.height();
+
+        } else {
             painter.drawText(0, 0, text);
+            needsClipRect = false;
+        }
     }
 
 }

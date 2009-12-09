@@ -5773,7 +5773,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     }
 
     bool restoreWhenFinished = false;
-    if (staticText_d->size.isValid()) {
+    if (staticText_d->needsClipRect) {
         save();
         setClipRect(QRectF(position, staticText_d->size));
 

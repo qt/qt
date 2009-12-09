@@ -62,7 +62,6 @@ class Q_GUI_EXPORT QStaticTextItem
 public:    
     QStaticTextItem() : chars(0), numChars(0), fontEngine(0) {}
 
-    // ### Use constant length arrays here to minimize memory consumption
     QFixedPoint *glyphPositions;                 // 8 bytes per glyph
     glyph_t *glyphs;                             // 4 bytes per glyph
     const QChar *chars;                          // 2 bytes per glyph
@@ -98,6 +97,8 @@ public:
     int itemCount;             // 4 bytes per text
     glyph_t *glyphPool;        // 4 bytes per text
     QFixedPoint *positionPool; // 4 bytes per text
+
+    char needsClipRect : 1;    // 1 byte per text
                                // ================
                                // 144 bytes per text
 
