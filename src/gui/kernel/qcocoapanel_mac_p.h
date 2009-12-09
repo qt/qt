@@ -54,12 +54,10 @@
 #ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
 
-
 @interface QT_MANGLE_NAMESPACE(QCocoaPanel) : NSPanel {
     bool leftButtonIsRightButton;
 }
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
-
 @end
 #endif

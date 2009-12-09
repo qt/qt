@@ -397,8 +397,7 @@ static inline GLint qgluProject(GLdouble objx, GLdouble objy, GLdouble objz,
     \i \link setDirectRendering() Direct rendering:\endlink Enabled.
     \i \link setOverlay() Overlay:\endlink Disabled.
     \i \link setPlane() Plane:\endlink 0 (i.e., normal plane).
-    \i \link setSampleBuffers() Multisample buffers:\endlink Enabled on
-       OpenGL/ES 2.0, disabled on other platforms.
+    \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
     \endlist
 */
 
@@ -4094,7 +4093,7 @@ void QGLWidget::qglColor(const QColor& c) const
     const QGLContext *ctx = QGLContext::currentContext();
     if (ctx) {
         if (ctx->format().rgba())
-            glColor4ub(c.red(), c.green(), c.blue(), c.alpha());
+            glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF());
         else if (!d->cmap.isEmpty()) { // QGLColormap in use?
             int i = d->cmap.find(c.rgb());
             if (i < 0)
