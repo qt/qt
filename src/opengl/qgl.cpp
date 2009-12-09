@@ -4094,7 +4094,7 @@ void QGLWidget::qglColor(const QColor& c) const
     const QGLContext *ctx = QGLContext::currentContext();
     if (ctx) {
         if (ctx->format().rgba())
-            glColor4ub(c.red(), c.green(), c.blue(), c.alpha());
+            glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF());
         else if (!d->cmap.isEmpty()) { // QGLColormap in use?
             int i = d->cmap.find(c.rgb());
             if (i < 0)

@@ -206,7 +206,8 @@ embedded {
                 qcocoaapplication_mac_p.h \
                 qcocoaapplicationdelegate_mac_p.h \
                 qmacgesturerecognizer_mac_p.h \
-                qmultitouch_mac_p.h
+                qmultitouch_mac_p.h \
+                qcocoasharedwindowmethods_mac_p.h
 
         OBJECTIVE_SOURCES += \
                 kernel/qcursor_mac.mm \

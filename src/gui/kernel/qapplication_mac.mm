@@ -1687,7 +1687,10 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             UInt32 mac_buttons = 0;
             GetEventParameter(event, kEventParamMouseChord, typeUInt32, 0,
                               sizeof(mac_buttons), 0, &mac_buttons);
-            buttons = qt_mac_get_buttons(mac_buttons);
+            if (ekind != kEventMouseWheelMoved)
+                buttons = qt_mac_get_buttons(mac_buttons);
+            else
+                buttons = QApplication::mouseButtons();
         }
 
         int wheel_deltaX = 0;

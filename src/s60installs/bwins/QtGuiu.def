@@ -12517,9 +12517,8 @@ EXPORTS
 	?effectiveFocusWidget@QWidgetPrivate@@QAEPAVQWidget@@XZ @ 12516 NONAME ; class QWidget * QWidgetPrivate::effectiveFocusWidget(void)
 	?ignoreUnusedNavigationEvents@QTextControl@@QBE_NXZ @ 12517 NONAME ; bool QTextControl::ignoreUnusedNavigationEvents(void) const
 	?setIgnoreUnusedNavigationEvents@QTextControl@@QAEX_N@Z @ 12518 NONAME ; void QTextControl::setIgnoreUnusedNavigationEvents(bool)
-	??1QImagePixmapCleanupHooks@@QAE@XZ @ 12519 NONAME ; QImagePixmapCleanupHooks::~QImagePixmapCleanupHooks(void)
-	??1QVectorPath@@QAE@XZ @ 12520 NONAME ; QVectorPath::~QVectorPath(void)
+	?discardUpdateRequest@QGraphicsItemPrivate@@QBE_N_N00@Z @ 12519 NONAME ; bool QGraphicsItemPrivate::discardUpdateRequest(bool, bool, bool) const
+	??1QImagePixmapCleanupHooks@@QAE@XZ @ 12520 NONAME ; QImagePixmapCleanupHooks::~QImagePixmapCleanupHooks(void)
 	?addCacheData@QVectorPath@@QBEPAUCacheEntry@1@PAVQPaintEngineEx@@PAXP6AX01@Z@Z @ 12521 NONAME ; struct QVectorPath::CacheEntry * QVectorPath::addCacheData(class QPaintEngineEx *, void *, void (*)(class QPaintEngineEx *, void *)) const
-	?discardUpdateRequest@QGraphicsItemPrivate@@QBE_N_N00@Z @ 12522 NONAME ; bool QGraphicsItemPrivate::discardUpdateRequest(bool, bool, bool) const
-	?makeCacheable@QVectorPath@@QBEXXZ @ 12523 NONAME ; void QVectorPath::makeCacheable(void) const
-
+	?makeCacheable@QVectorPath@@QBEXXZ @ 12522 NONAME ; void QVectorPath::makeCacheable(void) const
+	??1QVectorPath@@QAE@XZ @ 12523 NONAME ; QVectorPath::~QVectorPath(void)
