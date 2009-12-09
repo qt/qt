@@ -40,70 +40,141 @@
 ****************************************************************************/
 
 #include "qmlopenmetaobject_p.h"
-
+#include "qmlpropertycache_p.h"
+#include "qmldeclarativedata_p.h"
 #include <qmetaobjectbuilder_p.h>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
-class QmlOpenMetaObjectPrivate
+
+class QmlOpenMetaObjectTypePrivate
 {
 public:
-    QmlOpenMetaObjectPrivate() : parent(0), mem(0) {}
+    QmlOpenMetaObjectTypePrivate() : mem(0), engine(0) {}
 
-    bool autoCreate;
-    QAbstractDynamicMetaObject *parent;
+    void init(QObject *obj);
+
     int propertyOffset;
     int signalOffset;
-    QList<QVariant> data;
     QHash<QByteArray, int> names;
     QMetaObjectBuilder mob;
     QMetaObject *mem;
+    QmlEngine *engine;
+};
+
+QmlOpenMetaObjectType::QmlOpenMetaObjectType(QmlEngine *engine)
+    : d(new QmlOpenMetaObjectTypePrivate)
+{
+    d->engine = engine;
+}
+
+QmlOpenMetaObjectType::~QmlOpenMetaObjectType()
+{
+    qFree(d->mem);
+}
+
+void QmlOpenMetaObjectTypePrivate::init(QObject *obj)
+{
+    if (!mem) {
+        mob.setSuperClass(obj->metaObject());
+        mob.setClassName(obj->metaObject()->className());
+        mob.setFlags(QMetaObjectBuilder::DynamicMetaObject);
+
+        QObjectPrivate *op = QObjectPrivate::get(obj);
+        if (op->metaObject)
+            mob.setSuperClass(op->metaObject);
+        mem = mob.toMetaObject();
+
+        propertyOffset = mem->propertyOffset();
+        signalOffset = mem->methodOffset();
+    }
+}
+
+class QmlOpenMetaObjectPrivate
+{
+public:
+    QmlOpenMetaObjectPrivate(QmlOpenMetaObject *_q) : q(_q), parent(0), type(0), ownType(false) {}
+
+    inline QVariant &getData(int idx) {
+        while (data.count() <= idx)
+            data << QPair<QVariant, bool>(QVariant(), false);
+        QPair<QVariant, bool> &prop = data[idx];
+        if (!prop.second) {
+            prop.first = q->initialValue(idx);
+            prop.second = true;
+        }
+        return prop.first;
+    }
+
+    inline void writeData(int idx, const QVariant &value) {
+        while (data.count() <= idx)
+            data << QPair<QVariant, bool>(QVariant(), false);
+        QPair<QVariant, bool> &prop = data[idx];
+        prop.first = value;
+        prop.second = true;
+    }
+
+    bool autoCreate;
+    QmlOpenMetaObject *q;
+    QAbstractDynamicMetaObject *parent;
+    QList<QPair<QVariant, bool> > data;
     QObject *object;
+    QmlOpenMetaObjectType *type;
+    bool ownType;
 };
 
 QmlOpenMetaObject::QmlOpenMetaObject(QObject *obj, bool automatic)
-: d(new QmlOpenMetaObjectPrivate)
+: d(new QmlOpenMetaObjectPrivate(this))
 {
     d->autoCreate = automatic;
     d->object = obj;
 
-    d->mob.setSuperClass(obj->metaObject());
-    d->mob.setClassName(obj->metaObject()->className());
-    d->mob.setFlags(QMetaObjectBuilder::DynamicMetaObject);
+    d->type = new QmlOpenMetaObjectType(0);
+    d->ownType = true;
+    d->type->d->init(obj);
 
     QObjectPrivate *op = QObjectPrivate::get(obj);
-    if (op->metaObject)
-        d->mob.setSuperClass(op->metaObject);
-
-    d->mem = d->mob.toMetaObject();
-    *static_cast<QMetaObject *>(this) = *d->mem;
+    *static_cast<QMetaObject *>(this) = *d->type->d->mem;
     op->metaObject = this;
-    d->propertyOffset = propertyOffset();
-    d->signalOffset = methodOffset();
+}
+
+QmlOpenMetaObject::QmlOpenMetaObject(QObject *obj, QmlOpenMetaObjectType *type, bool automatic)
+: d(new QmlOpenMetaObjectPrivate(this))
+{
+    d->autoCreate = automatic;
+    d->object = obj;
+
+    d->type = type;
+    d->type->d->init(obj);
+
+    QObjectPrivate *op = QObjectPrivate::get(obj);
+    *static_cast<QMetaObject *>(this) = *d->type->d->mem;
+    op->metaObject = this;
 }
 
 QmlOpenMetaObject::~QmlOpenMetaObject()
 {
     if (d->parent)
         delete d->parent;
-    qFree(d->mem);
+    if (d->ownType)
+        delete d->type;
     delete d;
 }
 
 int QmlOpenMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
 {
     if (( c == QMetaObject::ReadProperty || c == QMetaObject::WriteProperty)
-            && id >= d->propertyOffset) {
-        int propId = id - d->propertyOffset;
+            && id >= d->type->d->propertyOffset) {
+        int propId = id - d->type->d->propertyOffset;
         if (c == QMetaObject::ReadProperty) {
             propertyRead(propId);
-            *reinterpret_cast<QVariant *>(a[0]) = d->data[propId];
+            *reinterpret_cast<QVariant *>(a[0]) = d->getData(propId);
         } else if (c == QMetaObject::WriteProperty) {
-            if (d->data[propId] != *reinterpret_cast<QVariant *>(a[0]))  {
+            if (d->data[propId].first != *reinterpret_cast<QVariant *>(a[0]))  {
                 propertyWrite(propId);
-                d->data[propId] = *reinterpret_cast<QVariant *>(a[0]);
-                activate(d->object, d->signalOffset + propId, 0);
+                d->writeData(propId, *reinterpret_cast<QVariant *>(a[0]));
+                activate(d->object, d->type->d->signalOffset + propId, 0);
             }
         } 
         return -1;
@@ -117,50 +188,49 @@ int QmlOpenMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
 
 QVariant QmlOpenMetaObject::value(int id) const
 {
-    Q_ASSERT(id >= 0 && id < d->data.count());
-    return d->data.at(id);
+    return d->getData(id);
 }
 
 void QmlOpenMetaObject::setValue(int id, const QVariant &value)
 {
-    Q_ASSERT(id >= 0 && id < d->data.count());
-    d->data[id] = value;
-    activate(d->object, id + d->signalOffset, 0);
+    d->writeData(id, value);
+    activate(d->object, id + d->type->d->signalOffset, 0);
 }
 
 QVariant QmlOpenMetaObject::value(const QByteArray &name) const
 {
-    QHash<QByteArray, int>::ConstIterator iter = d->names.find(name);
-    if (iter == d->names.end())
+    QHash<QByteArray, int>::ConstIterator iter = d->type->d->names.find(name);
+    if (iter == d->type->d->names.end())
         return QVariant();
 
-    return d->data.at(*iter);
+    return d->getData(*iter);
 }
 
 QVariant &QmlOpenMetaObject::operator[](const QByteArray &name)
 {
-    QHash<QByteArray, int>::ConstIterator iter = d->names.find(name);
-    Q_ASSERT(iter != d->names.end());
+    QHash<QByteArray, int>::ConstIterator iter = d->type->d->names.find(name);
+    Q_ASSERT(iter != d->type->d->names.end());
 
-    return d->data[*iter];
+    return d->getData(*iter);
 }
 
 void QmlOpenMetaObject::setValue(const QByteArray &name, const QVariant &val)
 {
-    QHash<QByteArray, int>::ConstIterator iter = d->names.find(name);
+    QHash<QByteArray, int>::ConstIterator iter = d->type->d->names.find(name);
 
     int id = -1;
-    if (iter == d->names.end()) {
-        id = doCreateProperty(name.constData()) - d->propertyOffset;
+    if (iter == d->type->d->names.end()) {
+        id = doCreateProperty(name.constData()) - d->type->d->propertyOffset;
     } else {
         id = *iter;
     }
 
-    if (d->data[id] == val)
+    QVariant &dataVal = d->getData(id);
+    if (dataVal == val)
         return;
 
-    d->data[id] = val;
-    activate(d->object, id + d->signalOffset, 0);
+    dataVal = val;
+    activate(d->object, id + d->type->d->signalOffset, 0);
 }
 
 int QmlOpenMetaObject::createProperty(const char *name, const char *)
@@ -173,17 +243,18 @@ int QmlOpenMetaObject::createProperty(const char *name, const char *)
 
 int QmlOpenMetaObject::doCreateProperty(const char *name)
 {
-    int id = d->mob.propertyCount();
-    d->mob.addSignal("__" + QByteArray::number(id) + "()");
-    QMetaPropertyBuilder build = d->mob.addProperty(name, "QVariant", id);
+    qDebug() << "doCreateProperty()" << name;
+    int id = d->type->d->mob.propertyCount();
+    d->type->d->mob.addSignal("__" + QByteArray::number(id) + "()");
+    QMetaPropertyBuilder build = d->type->d->mob.addProperty(name, "QVariant", id);
     build.setDynamic(true);
-    d->data << propertyCreated(id, build);
-    qFree(d->mem);
-    d->mem = d->mob.toMetaObject();
-    *static_cast<QMetaObject *>(this) = *d->mem;
-    d->names.insert(name, id);
+    propertyCreated(id, build);
+    qFree(d->type->d->mem);
+    d->type->d->mem = d->type->d->mob.toMetaObject();
+    *static_cast<QMetaObject *>(this) = *d->type->d->mem;
+    d->type->d->names.insert(name, id);
 
-    return d->propertyOffset + id;
+    return d->type->d->propertyOffset + id;
 }
 
 void QmlOpenMetaObject::propertyRead(int)
@@ -194,21 +265,25 @@ void QmlOpenMetaObject::propertyWrite(int)
 {
 }
 
-QVariant QmlOpenMetaObject::propertyCreated(int, QMetaPropertyBuilder &)
+void QmlOpenMetaObject::propertyCreated(int id, QMetaPropertyBuilder &)
+{
+}
+
+QVariant QmlOpenMetaObject::initialValue(int)
 {
     return QVariant();
 }
 
 int QmlOpenMetaObject::count() const
 {
-    return d->data.count();
+    return d->type->d->names.count();
 }
 
 QByteArray QmlOpenMetaObject::name(int idx) const
 {
-    Q_ASSERT(idx >= 0 && idx < d->data.count());
+    Q_ASSERT(idx >= 0 && idx < d->type->d->names.count());
 
-    return d->mob.property(idx).name();
+    return d->type->d->mob.property(idx).name();
 }
 
 QObject *QmlOpenMetaObject::object() const

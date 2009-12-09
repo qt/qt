@@ -341,6 +341,9 @@ public:
     QmlGraphicsVisualDataModelParts *m_parts;
     friend class QmlGraphicsVisualItemParts;
 
+    QmlOpenMetaObjectType *m_delegateDataType;
+    friend class QmlGraphicsVisualDataModelData;
+
     QmlGraphicsVisualDataModelData *data(QObject *item);
 
     QVariant m_modelVariant;
@@ -362,10 +365,11 @@ public:
 class QmlGraphicsVisualDataModelDataMetaObject : public QmlOpenMetaObject
 {
 public:
-    QmlGraphicsVisualDataModelDataMetaObject(QObject *parent)
-    : QmlOpenMetaObject(parent) {}
+    QmlGraphicsVisualDataModelDataMetaObject(QObject *parent, QmlOpenMetaObjectType *type)
+    : QmlOpenMetaObject(parent, type) {}
 
-    virtual QVariant propertyCreated(int, QMetaPropertyBuilder &);
+    virtual void propertyCreated(int, QMetaPropertyBuilder &);
+    virtual QVariant initialValue(int);
     virtual int createProperty(const char *, const char *);
 
 private:
@@ -442,20 +446,22 @@ int QmlGraphicsVisualDataModelDataMetaObject::createProperty(const char *name, c
     return -1;
 }
 
-QVariant 
-QmlGraphicsVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
+void QmlGraphicsVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
 {
     prop.setWritable(false);
+}
 
+QVariant QmlGraphicsVisualDataModelDataMetaObject::initialValue(int propId)
+{
     QmlGraphicsVisualDataModelData *data =
         static_cast<QmlGraphicsVisualDataModelData *>(object());
 
     Q_ASSERT(data->m_model);
     QmlGraphicsVisualDataModelPrivate *model = QmlGraphicsVisualDataModelPrivate::get(data->m_model);
 
-    QString name = QString::fromUtf8(prop.name());
+    QString strName = QString::fromUtf8(name(propId));
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
-        if (name == QLatin1String("modelData")) {
+        if (strName == QLatin1String("modelData")) {
             if (model->m_listAccessor->type() == QmlListAccessor::Instance) {
                 QObject *object = model->m_listAccessor->at(0).value<QObject*>();
                 return object->metaObject()->property(1).read(object); // the first property after objectName
@@ -464,11 +470,11 @@ QmlGraphicsVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuil
         } else {
             // return any property of a single object instance.
             QObject *object = model->m_listAccessor->at(data->m_index).value<QObject*>();
-            return object->property(prop.name());
+            return object->property(name(propId));
         }
     } else if (model->m_listModelInterface) {
         model->ensureRoles();
-        QHash<QString,int>::const_iterator it = model->m_roleNames.find(name);
+        QHash<QString,int>::const_iterator it = model->m_roleNames.find(strName);
         if (it != model->m_roleNames.end()) {
             roles.append(*it);
             QHash<int,QVariant> values = model->m_listModelInterface->data(data->m_index, QList<int>() << *it);
@@ -476,7 +482,7 @@ QmlGraphicsVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuil
                 return QVariant();
             else
                 return values.value(*it);
-        } else if (model->m_roles.count() == 1 && name == QLatin1String("modelData")) {
+        } else if (model->m_roles.count() == 1 && strName == QLatin1String("modelData")) {
             //for compatability with other lists, assign modelData if there is only a single role
             QHash<int,QVariant> values = model->m_listModelInterface->data(data->m_index, QList<int>() << model->m_roles.first());
             if (values.isEmpty())
@@ -486,7 +492,7 @@ QmlGraphicsVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuil
         }
     } else if (model->m_abstractItemModel) {
         model->ensureRoles();
-        QHash<QString,int>::const_iterator it = model->m_roleNames.find(name);
+        QHash<QString,int>::const_iterator it = model->m_roleNames.find(strName);
         if (it != model->m_roleNames.end()) {
             roles.append(*it);
             QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0);
@@ -500,7 +506,7 @@ QmlGraphicsVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuil
 QmlGraphicsVisualDataModelData::QmlGraphicsVisualDataModelData(int index,
                                                QmlGraphicsVisualDataModel *model)
 : m_index(index), m_model(model), 
-  m_meta(new QmlGraphicsVisualDataModelDataMetaObject(this))
+m_meta(new QmlGraphicsVisualDataModelDataMetaObject(this, QmlGraphicsVisualDataModelPrivate::get(model)->m_delegateDataType))
 {
 }
 
@@ -526,7 +532,8 @@ public:
     QmlGraphicsVisualDataModelPartsMetaObject(QObject *parent)
     : QmlOpenMetaObject(parent) {}
 
-    virtual QVariant propertyCreated(int, QMetaPropertyBuilder &);
+    virtual void propertyCreated(int, QMetaPropertyBuilder &);
+    virtual QVariant initialValue(int);
 };
 
 class QmlGraphicsVisualDataModelParts : public QObject
@@ -540,14 +547,16 @@ private:
     QmlGraphicsVisualDataModel *model;
 };
 
-QVariant 
-QmlGraphicsVisualDataModelPartsMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
+void QmlGraphicsVisualDataModelPartsMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
 {
     prop.setWritable(false);
+}
 
+QVariant QmlGraphicsVisualDataModelPartsMetaObject::initialValue(int id)
+{
     QmlGraphicsVisualDataModel *m = new QmlGraphicsVisualDataModel;
     m->setParent(object());
-    m->setPart(QString::fromUtf8(prop.name()));
+    m->setPart(QString::fromUtf8(property(id).name()));
     m->setModel(QVariant::fromValue(static_cast<QmlGraphicsVisualDataModelParts *>(object())->model));
 
     QVariant var = QVariant::fromValue((QObject *)m);
@@ -562,7 +571,7 @@ QmlGraphicsVisualDataModelParts::QmlGraphicsVisualDataModelParts(QmlGraphicsVisu
 
 QmlGraphicsVisualDataModelPrivate::QmlGraphicsVisualDataModelPrivate(QmlContext *ctxt)
 : m_listModelInterface(0), m_abstractItemModel(0), m_visualItemModel(0), m_delegate(0)
-, m_context(ctxt), m_parts(0), m_listAccessor(0)
+, m_context(ctxt), m_parts(0), m_delegateDataType(0), m_listAccessor(0)
 {
 }
 
@@ -639,6 +648,8 @@ void QmlGraphicsVisualDataModel::setModel(const QVariant &model)
 
     d->m_roles.clear();
     d->m_roleNames.clear();
+    delete d->m_delegateDataType;
+    d->m_delegateDataType = new QmlOpenMetaObjectType(d->m_context->engine());
 
     QObject *object = qvariant_cast<QObject *>(model);
     if (object && (d->m_listModelInterface = qobject_cast<QListModelInterface *>(object))) {
@@ -761,7 +772,7 @@ QmlGraphicsVisualDataModel::ReleaseFlags QmlGraphicsVisualDataModel::release(Qml
         if (inPackage)
             emit destroyingPackage(qobject_cast<QmlPackage*>(obj));
         stat |= Destroyed;
-        delete obj;
+        obj->deleteLater();
     } else if (!inPackage) {
         stat |= Referenced;
     }

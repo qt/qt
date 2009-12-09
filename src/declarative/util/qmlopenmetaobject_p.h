@@ -53,12 +53,27 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QmlEngine;
+class QmlOpenMetaObjectTypePrivate;
+class QmlOpenMetaObjectType
+{
+public:
+    QmlOpenMetaObjectType(QmlEngine *engine);
+    ~QmlOpenMetaObjectType();
+
+private:
+    QmlOpenMetaObjectTypePrivate *d;
+    friend class QmlOpenMetaObject;
+    friend class QmlOpenMetaObjectPrivate;
+};
+
 class QmlOpenMetaObjectPrivate;
 class QMetaPropertyBuilder;
 class Q_DECLARATIVE_EXPORT QmlOpenMetaObject : public QAbstractDynamicMetaObject
 {
 public:
     QmlOpenMetaObject(QObject *, bool = true);
+    QmlOpenMetaObject(QObject *, QmlOpenMetaObjectType *, bool = true);
     ~QmlOpenMetaObject();
 
     QVariant value(const QByteArray &) const;
@@ -71,13 +86,14 @@ public:
     QByteArray name(int) const;
 
     QObject *object() const;
+    virtual QVariant initialValue(int);
 protected:
     virtual int metaCall(QMetaObject::Call _c, int _id, void **_a);
     virtual int createProperty(const char *, const char *);
 
     virtual void propertyRead(int);
     virtual void propertyWrite(int);
-    virtual QVariant propertyCreated(int, QMetaPropertyBuilder &);
+    virtual void propertyCreated(int, QMetaPropertyBuilder &);
 
 private:
     int doCreateProperty(const char *);
