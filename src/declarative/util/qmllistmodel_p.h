@@ -49,7 +49,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QVariant>
-#include <qlistmodelinterface_p.h>
+#include "../3rdparty/qlistmodelinterface_p.h"
 #include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_HEADER
