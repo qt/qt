@@ -58,8 +58,8 @@
 #include "qmlgraphicsanchors_p.h"
 #include "qmlgraphicsanchors_p_p.h"
 
-#include <qmlstate_p.h>
-#include <qmlnullablevalue_p_p.h>
+#include "../util/qmlstate_p.h"
+#include "../util/qmlnullablevalue_p_p.h"
 #include <qml.h>
 #include <qmlcontext.h>
 

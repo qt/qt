@@ -327,7 +327,7 @@ void tst_qmlqt::createQmlObject()
     QString warning2 = "    " + TEST_FILE("main.qml").toString() + ":4:1: Duplicate property name";
     QString warning3 = "QmlEngine::createQmlObject(): Component is not ready";
     QString warning4 = "QmlEngine::createQmlObject():";
-    QString warning5 = "    :3: Cannot assign object type QObject with no default method";
+    QString warning5 = "    " + TEST_FILE("inline").toString() + ":3: Cannot assign object type QObject with no default method";
 
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));

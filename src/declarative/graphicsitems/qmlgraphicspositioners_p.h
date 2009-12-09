@@ -44,7 +44,7 @@
 
 #include "qmlgraphicsitem.h"
 
-#include <qmlstate_p.h>
+#include "../util/qmlstate_p.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -87,8 +87,6 @@ Q_SIGNALS:
 
 protected Q_SLOTS:
     virtual void doPositioning()=0;
-
-private Q_SLOTS:
     void prePositioning();
 
 protected:
@@ -145,11 +143,39 @@ private:
     Q_DISABLE_COPY(QmlGraphicsGrid)
 };
 
+class QmlGraphicsFlowPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsFlow: public QmlGraphicsBasePositioner
+{
+    Q_OBJECT
+    Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
+public:
+    QmlGraphicsFlow(QmlGraphicsItem *parent=0);
+
+    Q_ENUMS(Flow)
+    enum Flow { LeftToRight, TopToBottom };
+    Flow flow() const;
+    void setFlow(Flow);
+
+Q_SIGNALS:
+    void flowChanged();
+
+protected Q_SLOTS:
+    virtual void doPositioning();
+
+protected:
+    QmlGraphicsFlow(QmlGraphicsFlowPrivate &dd, QmlGraphicsItem *parent);
+private:
+    Q_DISABLE_COPY(QmlGraphicsFlow)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsFlow)
+};
+
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlGraphicsColumn)
 QML_DECLARE_TYPE(QmlGraphicsRow)
 QML_DECLARE_TYPE(QmlGraphicsGrid)
+QML_DECLARE_TYPE(QmlGraphicsFlow)
 
 QT_END_HEADER
 

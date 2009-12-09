@@ -45,7 +45,7 @@
 
 \section1 Logging
 
-console.log can be used to print debugging information to the console. For example:
+\c console.log can be used to print debugging information to the console. For example:
 
 \qml
 Rectangle {
@@ -56,6 +56,13 @@ Rectangle {
     }
 }
 \endqml
+
+\section1 Debugging Transitions
+
+When a transition doesn't look quite right, it can be helpful to view it in slow
+motion to see what is happening more clearly. \l {qmlviewer} provides a 
+"Slow Down Animations" menu option to facilitate this.
+
 
 \section1 The QML Inspector
 
@@ -109,12 +116,5 @@ to an available port number and run the \c qmlviewer. For example:
 
 Then in another process, start the \c qmldebugger tool, enter the port number into the corresponding spinbox
 in the top right hand corner, and press the "Connect" button.
-
-
-\section1 Debugging Transitions
-
-When a transition doesn't look quite right, it can be helpful to view it in slow
-motion to see more clearly what is happening. \l {qmlviewer} provides a menu option
-"Slow Down Animations" to facilitate this.
 
 */

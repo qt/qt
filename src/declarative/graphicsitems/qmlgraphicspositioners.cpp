@@ -47,6 +47,7 @@
 #include <qmlstategroup_p.h>
 #include <qmlstateoperations_p.h>
 #include <qfxperf_p_p.h>
+#include <QtCore/qmath.h>
 
 #include <QDebug>
 #include <QCoreApplication>
@@ -698,5 +699,142 @@ void QmlGraphicsGrid::doPositioning()
         }
     }
 }
+
+
+QML_DEFINE_TYPE(Qt,4,6,Flow,QmlGraphicsFlow)
+/*!
+  \qmlclass Flow QmlGraphicsFlow
+  \brief The Flow item lines up its children side by side, wrapping as necessary.
+  \inherits Item
+
+
+*/
+/*!
+    \qmlproperty Transition Flow::add
+    This property holds the transition to apply when adding an item to the positioner.
+    The transition will only be applied to the added item(s).
+    Positioner transitions will only affect the position (x,y) of items.
+
+    Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
+
+
+*/
+/*!
+    \qmlproperty Transition Flow::move
+    This property holds the transition to apply when moving an item within the positioner.
+    Positioner transitions will only affect the position (x,y) of items.
+
+    This can happen when other items are added or removed from the positioner, or when items resize themselves.
+
+    \qml
+Flow {
+    id: positioner
+    move: Transition {
+        NumberAnimation {
+            matchProperties: "x,y"
+            ease: "easeOutBounce"
+        }
+    }
+}
+    \endqml
+
+*/
+/*!
+  \qmlproperty int Flow::spacing
+
+  spacing is the amount in pixels left empty between each adjacent
+  item, and defaults to 0.
+
+*/
+
+class QmlGraphicsFlowPrivate : public QmlGraphicsBasePositionerPrivate
+{
+    Q_DECLARE_PUBLIC(QmlGraphicsFlow)
+
+public:
+    QmlGraphicsFlowPrivate()
+        : QmlGraphicsBasePositionerPrivate(), flow(QmlGraphicsFlow::LeftToRight)
+    {}
+
+    QmlGraphicsFlow::Flow flow;
+};
+
+QmlGraphicsFlow::QmlGraphicsFlow(QmlGraphicsItem *parent)
+: QmlGraphicsBasePositioner(*(new QmlGraphicsFlowPrivate), Both, parent)
+{
+}
+
+/*!
+    \qmlproperty enumeration Flow::flow
+    This property holds the flow of the layout.
+
+    Possible values are \c LeftToRight (default) and \c TopToBottom.
+
+    If \a flow is \c LeftToRight, the items are positioned next to
+    to each other from left to right until the width of the Flow
+    is exceeded, then wrapped to the next line.
+    If \a flow is \c TopToBottom, the items are positioned next to each
+    other from top to bottom until the height of the Flow is exceeded,
+    then wrapped to the next column.
+*/
+QmlGraphicsFlow::Flow QmlGraphicsFlow::flow() const
+{
+    Q_D(const QmlGraphicsFlow);
+    return d->flow;
+}
+
+void QmlGraphicsFlow::setFlow(Flow flow)
+{
+    Q_D(QmlGraphicsFlow);
+    if (d->flow != flow) {
+        d->flow = flow;
+        prePositioning();
+        emit flowChanged();
+    }
+}
+
+void QmlGraphicsFlow::doPositioning()
+{
+    Q_D(QmlGraphicsFlow);
+
+    int hoffset = 0;
+    int voffset = 0;
+    int linemax = 0;
+
+    foreach(QmlGraphicsItem* child, positionedItems){
+        if (!child || isInvisible(child))
+            continue;
+
+        if (d->flow == LeftToRight)  {
+            if (hoffset && hoffset + child->width() > width()) {
+                hoffset = 0;
+                voffset += linemax + spacing();
+                linemax = 0;
+            }
+        } else {
+            if (voffset && voffset + child->height() > height()) {
+                voffset = 0;
+                hoffset += linemax + spacing();
+                linemax = 0;
+            }
+        }
+
+        if(child->x() != hoffset || child->y() != voffset){
+            positionX(hoffset, child);
+            positionY(voffset, child);
+        }
+
+        if (d->flow == LeftToRight)  {
+            hoffset += child->width();
+            hoffset += spacing();
+            linemax = qMax(linemax, qCeil(child->height()));
+        } else {
+            voffset += child->height();
+            voffset += spacing();
+            linemax = qMax(linemax, qCeil(child->width()));
+        }
+    }
+}
+
 
 QT_END_NAMESPACE
