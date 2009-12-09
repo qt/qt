@@ -1824,11 +1824,12 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                             cleans.append(files);
                     }
                 }
-                if(!cleans.isEmpty())
+                if(!cleans.isEmpty()) {
                     if (isForSymbian())
                         t << valGlue(cleans, "\n\t" + del_statement, " 2> NUL\n\t" + del_statement, " 2> NUL");
                     else
                         t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
+                }
                 if(!wrote_clean_cmds) {
                     for(QStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
                         t << "\n\t" << replaceExtraCompilerVariables(tmp_clean_cmds, (*input),

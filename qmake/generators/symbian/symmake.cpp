@@ -1515,7 +1515,7 @@ void SymbianMakefileGenerator::readRssRules(QString &numberOfIcons, QString &ico
     if (!numberOfIcons.isEmpty()) {
         bool ok;
         numberOfIcons = numberOfIcons.simplified();
-        int tmp = numberOfIcons.toInt(&ok);
+        numberOfIcons.toInt(&ok);
         if (!ok) {
             numberOfIcons.clear();
             iconFile.clear();
