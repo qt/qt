@@ -820,7 +820,9 @@ void* QS60PixmapData::toNativeType(NativeType type)
         if(displayMode == EGray2) {
             //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
             //So invert mono bitmaps so that masks work correctly.
+            beginDataAccess();
             image.invertPixels();
+            endDataAccess();
             needsCopy = true;
         }
 
@@ -828,7 +830,9 @@ void* QS60PixmapData::toNativeType(NativeType type)
             QImage source;
 
             if (convertToArgb32) {
+                beginDataAccess();
                 source = image.convertToFormat(QImage::Format_ARGB32);
+                endDataAccess();
                 displayMode = EColor16MA;
             } else {
                 source = image;
@@ -858,7 +862,9 @@ void* QS60PixmapData::toNativeType(NativeType type)
 
         if(displayMode == EGray2) {
             // restore pixels
+            beginDataAccess();
             image.invertPixels();
+            endDataAccess();
         }
 
         return reinterpret_cast<void*>(bitmap);
