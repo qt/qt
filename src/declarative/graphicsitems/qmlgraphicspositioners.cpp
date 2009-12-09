@@ -710,18 +710,6 @@ QML_DEFINE_TYPE(Qt,4,6,Flow,QmlGraphicsFlow)
 
 */
 /*!
-    \qmlproperty Transition Flow::remove
-    This property holds the transition to apply when removing an item from the positioner.
-    The transition will only be applied to the removed item(s).
-    Positioner transitions will only affect the position (x,y) of items.
-
-    Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
-
-    Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
-
-
-*/
-/*!
     \qmlproperty Transition Flow::add
     This property holds the transition to apply when adding an item to the positioner.
     The transition will only be applied to the added item(s).
@@ -808,20 +796,12 @@ void QmlGraphicsFlow::setFlow(Flow flow)
 void QmlGraphicsFlow::doPositioning()
 {
     Q_D(QmlGraphicsFlow);
-    foreach(QmlGraphicsItem* item, *leavingItems()){
-        if (remove()){
-            QList<QPair<QString,QVariant> > changes;
-            applyRemove(changes, item);
-        }
-    }
 
     int hoffset = 0;
     int voffset = 0;
     int linemax = 0;
 
-    QList<QmlGraphicsItem *> children = positionedItems;
-    for (int ii = 0; ii < children.count(); ++ii) {
-        QmlGraphicsItem *child = children.at(ii);
+    foreach(QmlGraphicsItem* child, positionedItems){
         if (!child || isInvisible(child))
             continue;
 
@@ -839,24 +819,9 @@ void QmlGraphicsFlow::doPositioning()
             }
         }
 
-        bool needMove = (child->x() != hoffset || child->y() != voffset);
-
-        if (newItems()->contains(child) && add()) {
-            QList<QPair<QString, QVariant> > changes;
-            changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
-            changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
-            applyAdd(changes,child);
-        } else if (needMove) {
-            if (move()){
-                QList<QPair<QString, QVariant> > changes;
-                changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
-                changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
-                applyMove(changes,child);
-            } else {
-                setMovingItem(child);
-                child->setPos(QPointF(hoffset, voffset));
-                setMovingItem(0);
-            }
+        if(child->x() != hoffset || child->y() != voffset){
+            positionX(hoffset, child);
+            positionY(voffset, child);
         }
 
         if (d->flow == LeftToRight)  {

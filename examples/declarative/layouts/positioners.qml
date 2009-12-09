@@ -133,11 +133,6 @@ Rectangle {
         x: 260
         y: 250
         width: 150
-        remove: Transition {
-            NumberAnimation {
-                matchProperties: "x,y"; easing: "easeOutBounce"
-            }
-        }
 
         move: Transition {
             NumberAnimation {
