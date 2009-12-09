@@ -1076,14 +1076,11 @@ void QmlGraphicsListViewPrivate::flickX(qreal velocity)
                 accel = v2 / (2.0f * qAbs(dist));
                 overshootDist = 0.0;
             } else {
-                if (velocity > 0)
-                    flickTargetX = minX;
-                else
-                    flickTargetX = maxX;
+                flickTargetX = velocity > 0 ? minX : maxX;
                 overshootDist = overShoot ? 30 : 0;
             }
             timeline.reset(_moveX);
-            timeline.accel(_moveX, v, accel, maxDistance);
+            timeline.accel(_moveX, v, accel, maxDistance + overshootDist);
             timeline.execute(fixupXEvent);
             flicked = true;
             emit q->flickingChanged();
@@ -1091,14 +1088,15 @@ void QmlGraphicsListViewPrivate::flickX(qreal velocity)
             correctFlick = true;
         } else {
             // reevaluate the target boundary.
-            qreal newtarget = -snapPosAt(-(flickTargetX - highlightRangeStart)) + highlightRangeStart;
-            if (newtarget < maxX) {
+            qreal newtarget = flickTargetX;
+            if (snapMode != QmlGraphicsListView::NoSnap || highlightRange == QmlGraphicsListView::StrictlyEnforceRange)
+                newtarget = -snapPosAt(-(flickTargetX - highlightRangeStart)) + highlightRangeStart;
+            if (velocity < 0 && newtarget < maxX)
                 newtarget = maxX;
-            }
-            if (newtarget == flickTargetX) {
-                // boundary unchanged - nothing to do
+            else if (velocity > 0 && newtarget > minX)
+                newtarget = minX;
+            if (newtarget == flickTargetX) // boundary unchanged - nothing to do
                 return;
-            }
             flickTargetX = newtarget;
             qreal dist = -newtarget + _moveX.value();
             if ((v < 0 && dist < 0) || (v > 0 && dist > 0)) {
@@ -1175,14 +1173,11 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
                 accel = v2 / (2.0f * qAbs(dist));
                 overshootDist = 0.0;
             } else {
-                if (velocity > 0)
-                    flickTargetY = minY;
-                else
-                    flickTargetY = maxY;
+                flickTargetY = velocity > 0 ? minY : maxY;
                 overshootDist = overShoot ? 30 : 0;
             }
             timeline.reset(_moveY);
-            timeline.accel(_moveY, v, accel, maxDistance);
+            timeline.accel(_moveY, v, accel, maxDistance + overshootDist);
             timeline.execute(fixupYEvent);
             flicked = true;
             emit q->flickingChanged();
@@ -1190,14 +1185,15 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
             correctFlick = true;
         } else {
             // reevaluate the target boundary.
-            qreal newtarget = -snapPosAt(-(flickTargetY - highlightRangeStart)) + highlightRangeStart;
-            if (newtarget < maxY) {
+            qreal newtarget = flickTargetY;
+            if (snapMode != QmlGraphicsListView::NoSnap || highlightRange == QmlGraphicsListView::StrictlyEnforceRange)
+                newtarget = -snapPosAt(-(flickTargetY - highlightRangeStart)) + highlightRangeStart;
+            if (velocity < 0 && newtarget < maxY)
                 newtarget = maxY;
-            }
-            if (newtarget == flickTargetY) {
-                // boundary unchanged - nothing to do
+            else if (velocity > 0 && newtarget > minY)
+                newtarget = minY;
+            if (newtarget == flickTargetY) // boundary unchanged - nothing to do
                 return;
-            }
             flickTargetY = newtarget;
             qreal dist = -newtarget + _moveY.value();
             if ((v < 0 && dist < 0) || (v > 0 && dist > 0)) {
@@ -1922,20 +1918,32 @@ void QmlGraphicsListView::viewportMoved()
     if (d->flicked && d->correctFlick) {
         // Near an end and it seems that the extent has changed?
         // Recalculate the flick so that we don't end up in an odd position.
-        if (d->velocityY > 0) {
-            if (d->flickTargetY - d->_moveY.value() < height()/2 && minYExtent() != d->flickTargetY)
-                d->flickY(-d->verticalVelocity.value());
-        } else if (d->velocityY < 0) {
-            if (d->_moveY.value() - d->flickTargetY < height()/2 && maxYExtent() != d->flickTargetY)
-                d->flickY(-d->verticalVelocity.value());
+        if (yflick()) {
+            if (d->velocityY > 0) {
+                const qreal minY = minYExtent();
+                if ((minY - d->_moveY.value() < height()/2 || d->flickTargetY - d->_moveY.value() < height()/2)
+                    && minY != d->flickTargetY)
+                    d->flickY(-d->verticalVelocity.value());
+            } else if (d->velocityY < 0) {
+                const qreal maxY = maxYExtent();
+                if ((d->_moveY.value() - maxY < height()/2 || d->_moveY.value() - d->flickTargetY < height()/2)
+                    && maxY != d->flickTargetY)
+                    d->flickY(-d->verticalVelocity.value());
+            }
         }
 
-        if (d->velocityX > 0) {
-            if (d->flickTargetX - d->_moveX.value() < height()/2 && minXExtent() != d->flickTargetX)
-                d->flickX(-d->verticalVelocity.value());
-        } else if (d->velocityX < 0) {
-            if (d->_moveX.value() - d->flickTargetX < height()/2 && maxXExtent() != d->flickTargetX)
-                d->flickX(-d->verticalVelocity.value());
+        if (xflick()) {
+            if (d->velocityX > 0) {
+                const qreal minX = minXExtent();
+                if ((minX - d->_moveX.value() < height()/2 || d->flickTargetX - d->_moveX.value() < height()/2)
+                    && minX != d->flickTargetX)
+                    d->flickX(-d->verticalVelocity.value());
+            } else if (d->velocityX < 0) {
+                const qreal maxX = maxXExtent();
+                if ((d->_moveX.value() - maxX < height()/2 || d->_moveX.value() - d->flickTargetX < height()/2)
+                    && maxX != d->flickTargetX)
+                    d->flickX(-d->verticalVelocity.value());
+            }
         }
     }
 }
