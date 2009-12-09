@@ -183,14 +183,14 @@ void QmlGraphicsAnchorsPrivate::centerInChanged()
         ++updatingCenterIn;
 
         if (centerIn == item->parentItem()) {
-            QPointF p((item->parentItem()->width() - item->width()) / 2.,
-                      (item->parentItem()->height() - item->height()) / 2.);
+            QPointF p((item->parentItem()->width() - item->width()) / 2. + hCenterOffset,
+                      (item->parentItem()->height() - item->height()) / 2. + vCenterOffset);
             setItemPos(p);
 
         } else if (centerIn->parentItem() == item->parentItem()) {
 
-            QPointF p(centerIn->x() + (centerIn->width() - item->width()) / 2.,
-                      centerIn->y() + (centerIn->height() - item->height()) / 2.);
+            QPointF p(centerIn->x() + (centerIn->width() - item->width()) / 2. + hCenterOffset,
+                      centerIn->y() + (centerIn->height() - item->height()) / 2. + vCenterOffset);
             setItemPos(p);
         }
 
