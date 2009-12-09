@@ -1179,13 +1179,25 @@ CentralWidget::highlightSearchTerms()
 }
 
 
-void CentralWidget::closeTabs(const QList<int> &indices)
+void CentralWidget::closeOrReloadTabs(const QList<int> &indices, bool tryReload)
 {
     TRACE_OBJ
     QList<int> sortedIndices = indices;
     qSort(sortedIndices);
-    for (int i = sortedIndices.count(); --i >= 0;)
-        closeTabAt(sortedIndices.at(i));
+    for (int i = sortedIndices.count(); --i >= 0;) {
+        const int tab = sortedIndices.at(i);
+        bool close = true;
+        if (tryReload) {
+            HelpViewer *viewer =
+                    qobject_cast<HelpViewer*>(tabWidget->widget(tab));
+            if (HelpEngineWrapper::instance().findFile(viewer->url()).isValid()) {
+                viewer->reload();
+                close = false;
+            }
+        }
+        if (close)
+            closeTabAt(tab);
+    }
     if (availableHelpViewer() == 0)
         setSource(QUrl(QLatin1String("about:blank")));
 }
@@ -1202,7 +1214,7 @@ QMap<int, QString> CentralWidget::currentSourceFileList() const
 {
     TRACE_OBJ
     QMap<int, QString> sourceList;
-    for (int i = 1; i < tabWidget->count(); ++i) {
+    for (int i = 0; i < tabWidget->count(); ++i) {
         HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(i));
         if (viewer && viewer->source().isValid())
             sourceList.insert(i, viewer->source().host());

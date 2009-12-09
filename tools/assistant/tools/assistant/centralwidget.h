@@ -135,7 +135,7 @@ public:
     int availableHelpViewer() const;
     bool enableTabCloseAction() const;
 
-    void closeTabs(const QList<int> &indices);
+    void closeOrReloadTabs(const QList<int> &indices, bool tryReload);
     void closeTabAt(int index);
     QMap<int, QString> currentSourceFileList() const;
 

@@ -1186,15 +1186,16 @@ void MainWindow::documentationRemoved(const QString &namespaceName)
 {
     TRACE_OBJ
     CentralWidget* widget = CentralWidget::instance();
-    widget->closeTabs(widget->currentSourceFileList().keys(namespaceName));
+    widget->closeOrReloadTabs(widget->currentSourceFileList().
+        keys(namespaceName), false);
 }
 
 void MainWindow::documentationUpdated(const QString &namespaceName)
 {
     TRACE_OBJ
-    // TODO: Check whether the documents still exists and if they do, reload.
     CentralWidget* widget = CentralWidget::instance();
-    widget->closeTabs(widget->currentSourceFileList().keys(namespaceName));
+    widget->closeOrReloadTabs(widget->currentSourceFileList().
+        keys(namespaceName), true);
 }
 
 void MainWindow::resetQtDocInfo(const QString &component)

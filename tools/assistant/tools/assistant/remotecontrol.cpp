@@ -324,7 +324,7 @@ void RemoteControl::handleUnregisterCommand(const QString &arg)
     const QString &ns = QHelpEngineCore::namespaceName(absFileName);
     if (helpEngine.registeredDocumentations().contains(ns)) {
         CentralWidget* widget = CentralWidget::instance();
-        widget->closeTabs(widget->currentSourceFileList().keys(ns));
+        widget->closeOrReloadTabs(widget->currentSourceFileList().keys(ns), false);
         if (helpEngine.unregisterDocumentation(ns))
             helpEngine.setupData();
     }

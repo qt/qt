@@ -374,7 +374,7 @@ void PreferencesDialog::applyChanges()
         }
     }
 
-    CentralWidget::instance()->closeTabs(m_TabsToClose);
+    CentralWidget::instance()->closeOrReloadTabs(m_TabsToClose, false);
 
     foreach (const QString &doc, m_unregDocs)
         helpEngine.unregisterDocumentation(doc);
