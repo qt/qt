@@ -182,7 +182,7 @@ public:
         , snapMode(QmlGraphicsListView::NoSnap), overshootDist(0.0)
         , footerComponent(0), footer(0), headerComponent(0), header(0)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
-        , correctFlick(true), lazyRelease(false)
+        , correctFlick(true), inFlickCorrection(false), lazyRelease(false)
     {}
 
     void init();
@@ -322,8 +322,7 @@ public:
             if (item->index == -1)
                 continue;
             qreal itemTop = item->position();
-            if ((item->index == model->count()-1 || itemTop >= pos-item->size()/2)
-                && (item->index == 0 || itemTop <= pos+item->size()/2))
+            if (item->index == model->count()-1 || (itemTop+item->size()/2 >= pos))
                 return item->position();
         }
         if (visibleItems.count()) {
@@ -343,8 +342,7 @@ public:
             if (item->index == -1)
                 continue;
             qreal itemTop = item->position();
-            if ((item->index == model->count()-1 || itemTop >= pos-item->size()/2)
-                && (item->index == 0 || itemTop <= pos+item->size()/2))
+            if (item->index == model->count()-1 || (itemTop+item->size()/2 >= pos))
                 return item;
         }
         if (visibleItems.count() && visibleItems.first()->position() <= pos)
@@ -483,6 +481,7 @@ public:
     bool autoHighlight : 1;
     bool haveHighlightRange : 1;
     bool correctFlick : 1;
+    bool inFlickCorrection : 1;
     bool lazyRelease : 1;
 
     static int itemResizedIdx;
@@ -1915,7 +1914,8 @@ void QmlGraphicsListView::viewportMoved()
         }
     }
 
-    if (d->flicked && d->correctFlick) {
+    if (d->flicked && d->correctFlick && !d->inFlickCorrection) {
+        d->inFlickCorrection = true;
         // Near an end and it seems that the extent has changed?
         // Recalculate the flick so that we don't end up in an odd position.
         if (yflick()) {
@@ -1945,6 +1945,7 @@ void QmlGraphicsListView::viewportMoved()
                     d->flickX(-d->verticalVelocity.value());
             }
         }
+        d->inFlickCorrection = false;
     }
 }
 
