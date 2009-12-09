@@ -610,10 +610,6 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
                     concat << base_concat + QDir::separator() + "win32";
                 break;
             }
-        case Option::TARG_MAC9_MODE:
-            concat << base_concat + QDir::separator() + "mac";
-            concat << base_concat + QDir::separator() + "mac9";
-            break;
         }
         concat << base_concat;
     }
@@ -1612,12 +1608,7 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
     if((Option::target_mode == Option::TARG_MACX_MODE ||
         Option::target_mode == Option::TARG_UNIX_MODE) && x == "unix")
         return !isForSymbian();
-    else if(Option::target_mode == Option::TARG_MACX_MODE && x == "macx")
-        return !isForSymbian();
-    else if(Option::target_mode == Option::TARG_MAC9_MODE && x == "mac9")
-        return !isForSymbian();
-    else if((Option::target_mode == Option::TARG_MAC9_MODE || Option::target_mode == Option::TARG_MACX_MODE) &&
-            x == "mac")
+    else if(Option::target_mode == Option::TARG_MACX_MODE && (x == "macx" || x == "mac"))
         return !isForSymbian();
     else if(Option::target_mode == Option::TARG_WIN_MODE && x == "win32")
         return !isForSymbian();

@@ -2164,9 +2164,7 @@ QString MakefileGenerator::buildArgs(const QString &outdir)
         ret += " -nodependheuristics";
     if(!Option::mkfile::qmakespec_commandline.isEmpty())
         ret += " -spec " + specdir(outdir);
-    if(Option::target_mode == Option::TARG_MAC9_MODE)
-        ret += " -mac9";
-    else if(Option::target_mode == Option::TARG_MACX_MODE)
+    if(Option::target_mode == Option::TARG_MACX_MODE)
         ret += " -macx";
     else if(Option::target_mode == Option::TARG_UNIX_MODE)
         ret += " -unix";
