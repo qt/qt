@@ -199,6 +199,8 @@ static void dump(ModelNode *node, int ind);
     When creating content dynamically, note that the set of available properties cannot be changed
     except by first clearing the model - whatever properties are first added are then the
     only permitted properties in the model.
+
+    \sa {qmlmodels}{Data Models}
 */
 
 class ModelObject : public QObject

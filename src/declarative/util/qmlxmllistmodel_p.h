@@ -45,7 +45,7 @@
 #include <qml.h>
 #include <qmlinfo.h>
 
-#include <qlistmodelinterface_p.h>
+#include "../3rdparty/qlistmodelinterface_p.h"
 
 QT_BEGIN_HEADER
 

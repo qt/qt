@@ -75,7 +75,7 @@ void QNumberFormat::handleFormat()
 {
     // ### is extremely messy 
     if (_format.isEmpty()) {
-        _text = QString(QLatin1String("%1")).arg(_number, -1, 'f', -1);
+        _text = QString::number(_number, 'f', -1);
         return;
     }
 
@@ -115,7 +115,7 @@ void QNumberFormat::handleFormat()
     }
 
     // round given the decimal length/precision
-    inputString = QString(QLatin1String("%1")).arg(_number, -1, 'f', decimalLength);
+    inputString = QString::number(_number, 'f', decimalLength);
 
     QStringList parts = inputString.split(QLatin1Char('.'));
     QStringList formatParts = _format.split(QLatin1Char('.'));
