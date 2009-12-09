@@ -44,7 +44,7 @@
 
 #include "qmlgraphicsborderimage_p.h"
 
-#include <qmlpixmapcache_p.h>
+#include "../util/qmlpixmapcache_p.h"
 #include <qml.h>
 
 #include <QtCore/QString>

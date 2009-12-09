@@ -45,7 +45,7 @@
 
 \section1 Logging
 
-console.log can be used to print debugging information to the console. For example:
+\c console.log can be used to print debugging information to the console. For example:
 
 \qml
 Rectangle {
@@ -57,15 +57,64 @@ Rectangle {
 }
 \endqml
 
-\section1 The QML Inspector
-
-qmldebugger provides an experimental inspector to aid with debugging. It can
-be run as a Qt Creator plugin or as a standalone application.
-
 \section1 Debugging Transitions
 
 When a transition doesn't look quite right, it can be helpful to view it in slow
-motion to see more clearly what is happening. \l {qmlviewer} provides a menu option
-"Slow Down Animations" to facilitate this.
+motion to see what is happening more clearly. \l {qmlviewer} provides a 
+"Slow Down Animations" menu option to facilitate this.
+
+
+\section1 The QML Inspector
+
+The \c qmldebugger tool provides an experimental inspector to aid with debugging.
+It can be run as a Qt Creator plugin or as a standalone application.
+
+\section2 Qt Creator plugin
+
+The Qt Creator plugin currently builds against Qt Creator 1.3.
+
+To build the Qt Creator plugin:
+
+\list
+\o Set an environment variable \c CREATOR_SRC_DIR that points to the Qt Creator
+   source directory
+\o Set an environment variable \c CREATOR_BUILD_DIR that points to the Qt Creator
+   build directory
+\o Run \c qmake on \c $QTDIR/tools/qmldebugger/qmldebugger.pro
+\endlist
+
+This builds the plugin into your Qt Creator installation.
+
+The plugin adds a "QML Inspect" mode into Qt Creator that provides:
+
+\list
+\o An object tree showing all objects and their children
+\o The current property values for the object selected in the object tree
+   (this table is dynamically updated for all properties that have property changed
+   notifications)
+\o An expression evaluator for querying and setting values dynamically
+\o A table of watched properties (double-click on a property in the property
+   table to add it to the watch table)
+\o A graph that shows the frame rate of your application
+\endlist
+
+
+To start the debugger, open a QML project and click the "QML Inspect" mode, then click the green
+"play" button in the toolbar of the bottom-right debugger window.
+
+\image qmldebugger-creator.png
+
+
+\section2 Standalone qmldebugger tool
+
+To run the standalone \c qmldebugger tool, set an environment variable \c QML_DEBUG_SERVER_PORT
+to an available port number and run the \c qmlviewer. For example:
+
+\code
+    QML_DEBUG_SERVER_PORT=3768 qmlviewer myqmlfile.qml
+\endcode
+
+Then in another process, start the \c qmldebugger tool, enter the port number into the corresponding spinbox
+in the top right hand corner, and press the "Connect" button.
 
 */

@@ -47,6 +47,7 @@
 #include <qmlstategroup_p.h>
 #include <qmlstateoperations_p.h>
 #include <qfxperf_p_p.h>
+#include <QtCore/qmath.h>
 
 #include <QDebug>
 #include <QCoreApplication>
@@ -888,5 +889,177 @@ void QmlGraphicsGrid::doPositioning()
         }
     }
 }
+
+
+QML_DEFINE_TYPE(Qt,4,6,Flow,QmlGraphicsFlow)
+/*!
+  \qmlclass Flow QmlGraphicsFlow
+  \brief The Flow item lines up its children side by side, wrapping as necessary.
+  \inherits Item
+
+
+*/
+/*!
+    \qmlproperty Transition Flow::remove
+    This property holds the transition to apply when removing an item from the positioner.
+    The transition will only be applied to the removed item(s).
+    Positioner transitions will only affect the position (x,y) of items.
+
+    Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
+
+    Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
+
+
+*/
+/*!
+    \qmlproperty Transition Flow::add
+    This property holds the transition to apply when adding an item to the positioner.
+    The transition will only be applied to the added item(s).
+    Positioner transitions will only affect the position (x,y) of items.
+
+    Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
+
+
+*/
+/*!
+    \qmlproperty Transition Flow::move
+    This property holds the transition to apply when moving an item within the positioner.
+    Positioner transitions will only affect the position (x,y) of items.
+
+    This can happen when other items are added or removed from the positioner, or when items resize themselves.
+
+    \qml
+Flow {
+    id: positioner
+    move: Transition {
+        NumberAnimation {
+            matchProperties: "x,y"
+            ease: "easeOutBounce"
+        }
+    }
+}
+    \endqml
+
+*/
+/*!
+  \qmlproperty int Flow::spacing
+
+  spacing is the amount in pixels left empty between each adjacent
+  item, and defaults to 0.
+
+*/
+
+class QmlGraphicsFlowPrivate : public QmlGraphicsBasePositionerPrivate
+{
+    Q_DECLARE_PUBLIC(QmlGraphicsFlow)
+
+public:
+    QmlGraphicsFlowPrivate()
+        : QmlGraphicsBasePositionerPrivate(), flow(QmlGraphicsFlow::LeftToRight)
+    {}
+
+    QmlGraphicsFlow::Flow flow;
+};
+
+QmlGraphicsFlow::QmlGraphicsFlow(QmlGraphicsItem *parent)
+: QmlGraphicsBasePositioner(*(new QmlGraphicsFlowPrivate), Both, parent)
+{
+}
+
+/*!
+    \qmlproperty enumeration Flow::flow
+    This property holds the flow of the layout.
+
+    Possible values are \c LeftToRight (default) and \c TopToBottom.
+
+    If \a flow is \c LeftToRight, the items are positioned next to
+    to each other from left to right until the width of the Flow
+    is exceeded, then wrapped to the next line.
+    If \a flow is \c TopToBottom, the items are positioned next to each
+    other from top to bottom until the height of the Flow is exceeded,
+    then wrapped to the next column.
+*/
+QmlGraphicsFlow::Flow QmlGraphicsFlow::flow() const
+{
+    Q_D(const QmlGraphicsFlow);
+    return d->flow;
+}
+
+void QmlGraphicsFlow::setFlow(Flow flow)
+{
+    Q_D(QmlGraphicsFlow);
+    if (d->flow != flow) {
+        d->flow = flow;
+        prePositioning();
+        emit flowChanged();
+    }
+}
+
+void QmlGraphicsFlow::doPositioning()
+{
+    Q_D(QmlGraphicsFlow);
+    foreach(QmlGraphicsItem* item, *leavingItems()){
+        if (remove()){
+            QList<QPair<QString,QVariant> > changes;
+            applyRemove(changes, item);
+        }
+    }
+
+    int hoffset = 0;
+    int voffset = 0;
+    int linemax = 0;
+
+    QList<QmlGraphicsItem *> children = positionedItems;
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QmlGraphicsItem *child = children.at(ii);
+        if (!child || isInvisible(child))
+            continue;
+
+        if (d->flow == LeftToRight)  {
+            if (hoffset && hoffset + child->width() > width()) {
+                hoffset = 0;
+                voffset += linemax + spacing();
+                linemax = 0;
+            }
+        } else {
+            if (voffset && voffset + child->height() > height()) {
+                voffset = 0;
+                hoffset += linemax + spacing();
+                linemax = 0;
+            }
+        }
+
+        bool needMove = (child->x() != hoffset || child->y() != voffset);
+
+        if (newItems()->contains(child) && add()) {
+            QList<QPair<QString, QVariant> > changes;
+            changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
+            changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
+            applyAdd(changes,child);
+        } else if (needMove) {
+            if (move()){
+                QList<QPair<QString, QVariant> > changes;
+                changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
+                changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
+                applyMove(changes,child);
+            } else {
+                setMovingItem(child);
+                child->setPos(QPointF(hoffset, voffset));
+                setMovingItem(0);
+            }
+        }
+
+        if (d->flow == LeftToRight)  {
+            hoffset += child->width();
+            hoffset += spacing();
+            linemax = qMax(linemax, qCeil(child->height()));
+        } else {
+            voffset += child->height();
+            voffset += spacing();
+            linemax = qMax(linemax, qCeil(child->width()));
+        }
+    }
+}
+
 
 QT_END_NAMESPACE

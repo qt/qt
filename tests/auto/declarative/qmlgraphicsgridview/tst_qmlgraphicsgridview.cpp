@@ -525,13 +525,13 @@ void tst_QmlGraphicsGridView::moved()
     QTest::qWait(300);
 
     // Confirm items positioned correctly and indexes correct
-    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
-    for (int i = 3; i < model.count() && i < itemCount; ++i) {
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count()-1;
+    for (int i = 6; i < model.count()-6 && i < itemCount+6; ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
         QCOMPARE(item->x(), qreal((i%3)*80));
-        QCOMPARE(item->y(), qreal((i/3)*60 + 60));
+        QCOMPARE(item->y(), qreal((i/3)*60));
         name = findItem<QmlGraphicsText>(viewport, "textName", i);
         QVERIFY(name != 0);
         QCOMPARE(name->text(), model.name(i));
@@ -547,12 +547,12 @@ void tst_QmlGraphicsGridView::moved()
     QTest::qWait(300);
 
     // Confirm items positioned correctly and indexes correct
-    for (int i = 3; i < model.count() && i < itemCount; ++i) {
+    for (int i = 6; i < model.count()-6 && i < itemCount+6; ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
         QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60 + 60);
+        QVERIFY(item->y() == (i/3)*60);
         name = findItem<QmlGraphicsText>(viewport, "textName", i);
         QVERIFY(name != 0);
         QCOMPARE(name->text(), model.name(i));
@@ -648,6 +648,7 @@ void tst_QmlGraphicsGridView::currentIndex()
 
     // Test keys
     canvas->show();
+    canvas->setFocus();
     qApp->processEvents();
 
     QEvent wa(QEvent::WindowActivate);

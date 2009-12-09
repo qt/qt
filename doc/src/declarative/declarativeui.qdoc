@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\title Declarative UI
+\title Declarative UI (QML)
 \page declarativeui.html
 
 \brief The Qt Declarative module provides a declarative framework for building
@@ -102,5 +102,6 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {Extending QML}
 \o \l {QML Internationalization}
 \o \l {QtDeclarative Module}
+\o \l {Debugging QML}
 \endlist
 */
