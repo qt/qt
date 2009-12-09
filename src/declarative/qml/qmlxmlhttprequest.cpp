@@ -1006,6 +1006,7 @@ QmlXMLHttpRequest::QmlXMLHttpRequest()
 QmlXMLHttpRequest::~QmlXMLHttpRequest()
 {
     destroyNetwork();
+    delete m_nam;
 }
 
 QScriptValue QmlXMLHttpRequest::callback() const
