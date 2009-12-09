@@ -474,11 +474,23 @@ void tst_valuetypes::valueSources()
     delete object;
 }
 
+static void checkNoErrors(QmlComponent& component)
+{
+    QList<QmlError> errors = component.errors();
+    if (errors.isEmpty())
+        return;
+    for (int ii = 0; ii < errors.count(); ++ii) {
+        const QmlError &error = errors.at(ii);
+        qWarning("%d:%d:%s",error.line(),error.column(),error.description().toUtf8().constData());
+    }
+}
+
 // Test that property value interceptors can be applied to value types
 void tst_valuetypes::valueInterceptors()
 {
     QmlComponent component(&engine, TEST_FILE("valueInterceptors.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    checkNoErrors(component);
     QVERIFY(object != 0);
 
     QCOMPARE(object->rect().x(), 26);
