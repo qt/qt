@@ -68,7 +68,8 @@ public slots:
     void cleanupTestCase() {
         {
             QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
-
+            testdir.setSorting(QDir::Unsorted);
+            testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
             foreach (const QString &filename, testdir.entryList()) {
                 testdir.remove(filename);
             }

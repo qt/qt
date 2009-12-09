@@ -1025,7 +1025,7 @@ void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
 
         //we use the French delimiters here
         QString textFromValue (int value) const
-        { 
+        {
             return locale().toString(value);
         }
 
@@ -1033,7 +1033,10 @@ void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
     spinbox.show();
     spinbox.activateWindow();
     spinbox.setFocus();
+    QApplication::setActiveWindow(&spinbox);
     QTest::qWaitForWindowShown(&spinbox);
+    QTRY_VERIFY(spinbox.hasFocus());
+    QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
     QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
     spinbox.lineEdit()->setCursorPosition(2); //just after the first thousand separator
     QTest::keyClick(0, Qt::Key_0); // let's insert a 0

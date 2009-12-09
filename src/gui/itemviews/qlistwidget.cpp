@@ -176,7 +176,8 @@ void QListModel::move(int srcRow, int dstRow)
         || dstRow < 0 || dstRow >= items.count())
         return;
 
-    beginMoveRows(QModelIndex(), srcRow, srcRow, QModelIndex(), dstRow);
+    if (!beginMoveRows(QModelIndex(), srcRow, srcRow, QModelIndex(), dstRow))
+        return;
     if (srcRow < dstRow)
         --dstRow;
     items.move(srcRow, dstRow);

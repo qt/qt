@@ -196,8 +196,8 @@ void tst_QGraphicsEffect::source()
     // Uninstall effect on QGraphicsItem.
     effect->reset();
     item->setGraphicsEffect(0);
-    QVERIFY(!effect->source());
-    QVERIFY(effect->m_sourceChangedFlags & QGraphicsEffect::SourceDetached);
+    QVERIFY(!effect);
+    effect = new CustomEffect;
 
     // The item takes ownership and should delete the effect when destroyed.
     item->setGraphicsEffect(effect);
@@ -249,10 +249,10 @@ void tst_QGraphicsEffect::boundingRect()
     QCOMPARE(effect->boundingRect(), effect->boundingRectFor(itemRect));
 
     // Uninstall effect on QGraphicsItem.
+    QPointer<CustomEffect> ptr = effect;
     item->setGraphicsEffect(0);
-    QCOMPARE(effect->boundingRect(), QRectF());
+    QVERIFY(!ptr);
 
-    delete effect;
     delete item;
 }
 
@@ -343,11 +343,11 @@ void tst_QGraphicsEffect::draw()
     QCOMPARE(item->numRepaints, 0);
 
     // Make sure uninstalling an effect triggers a repaint.
+    QPointer<CustomEffect> ptr = effect;
     item->setGraphicsEffect(0);
+    QVERIFY(!ptr);
     QTest::qWait(50);
-    QCOMPARE(effect->numRepaints, 0);
     QCOMPARE(item->numRepaints, 1);
-    delete effect;
 }
 
 void tst_QGraphicsEffect::opacity()

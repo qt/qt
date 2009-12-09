@@ -142,6 +142,8 @@ public:
     int topTextMargin;
     int rightTextMargin;
     int bottomTextMargin;
+
+    QString placeholderText;
 };
 
 #endif // QT_NO_LINEEDIT

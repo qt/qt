@@ -9,7 +9,7 @@ defineReplace(prependAll) {
 }
 
 LUPDATE = $$QT_BUILD_TREE/bin/lupdate -locations relative -no-ui-lines
-win32:isEmpty(QMAKE_SH):LUPDATE ~= s|/|\\|g
+LUPDATE ~= s,/,$$QMAKE_DIR_SEP,
 
 ###### Qt Libraries
 

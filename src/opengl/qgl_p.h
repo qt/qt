@@ -222,6 +222,8 @@ public:
 class QGLContextResource;
 class QGLSharedResourceGuard;
 
+typedef QHash<QString, GLuint> QGLDDSCache;
+
 // QGLContextPrivate has the responsibility of creating context groups.
 // QGLContextPrivate and QGLShareRegister will both maintain the reference counter and destroy
 // context groups when needed.
@@ -246,6 +248,7 @@ private:
     QHash<QGLContextResource *, void *> m_resources;
     QGLSharedResourceGuard *m_guards; // double-linked list of active guards.
     QAtomicInt m_refs;
+    QGLDDSCache m_dds_cache;
 
     void cleanupResources(const QGLContext *ctx);
 
@@ -328,6 +331,7 @@ public:
     GLint max_texture_size;
 
     GLuint current_fbo;
+    GLuint default_fbo;
     QPaintEngine *active_engine;
 
     static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }
@@ -376,7 +380,11 @@ public:
         PixelBufferObject       = 0x00000800,
         FramebufferBlit         = 0x00001000,
         NPOTTextures            = 0x00002000,
-        BGRATextureFormat       = 0x00004000
+        BGRATextureFormat       = 0x00004000,
+        DDSTextureCompression   = 0x00008000,
+        ETC1TextureCompression  = 0x00010000,
+        PVRTCTextureCompression = 0x00020000,
+        FragmentShader          = 0x00040000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
@@ -389,7 +397,7 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
 
-class Q_AUTOTEST_EXPORT QGLShareRegister
+class Q_OPENGL_EXPORT QGLShareRegister
 {
 public:
     QGLShareRegister() {}
@@ -481,6 +489,14 @@ public:
     QPixmapData* boundPixmap;
 #endif
 
+    bool canBindCompressedTexture
+        (const char *buf, int len, const char *format, bool *hasAlpha);
+    QSize bindCompressedTexture
+        (const QString& fileName, const char *format = 0);
+    QSize bindCompressedTexture
+        (const char *buf, int len, const char *format = 0);
+    QSize bindCompressedTextureDDS(const char *buf, int len);
+    QSize bindCompressedTexturePVR(const char *buf, int len);
 };
 
 class QGLTextureCache {
@@ -517,7 +533,8 @@ bool qt_gl_preferGL2Engine();
 
 inline GLenum qt_gl_preferredTextureFormat()
 {
-    return QSysInfo::ByteOrder == QSysInfo::BigEndian ? GL_RGBA : GL_BGRA;
+    return (QGLExtensions::glExtensions & QGLExtensions::BGRATextureFormat) && QSysInfo::ByteOrder == QSysInfo::LittleEndian
+        ? GL_BGRA : GL_RGBA;
 }
 
 inline GLenum qt_gl_preferredTextureTarget()

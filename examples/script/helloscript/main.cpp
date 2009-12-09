@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 //! [2]
 
 //! [3]
-    QString fileName(":/helloscript.qs");
+    QString fileName(":/helloscript.js");
     QFile scriptFile(fileName);
     scriptFile.open(QIODevice::ReadOnly);
     QTextStream stream(&scriptFile);

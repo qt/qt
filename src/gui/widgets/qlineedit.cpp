@@ -383,6 +383,38 @@ void QLineEdit::setText(const QString& text)
     d->control->setText(text);
 }
 
+// ### Qt 4.7: remove this #if guard
+#if (QT_VERSION >= 0x407000) || defined(Q_WS_MAEMO_5)
+/*!
+    \since 4.7
+
+    \property QLineEdit::placeholderText
+    \brief the line edit's placeholder text
+
+    Setting this property makes the line edit display a grayed-out
+    placeholder text as long as the text() is empty and the widget doesn't
+    have focus.
+
+    By default, this property contains an empty string.
+
+    \sa text()
+*/
+QString QLineEdit::placeholderText() const
+{
+    Q_D(const QLineEdit);
+    return d->placeholderText;
+}
+
+void QLineEdit::setPlaceholderText(const QString& placeholderText)
+{
+    Q_D(QLineEdit);
+    if (d->placeholderText != placeholderText) {
+        d->placeholderText = placeholderText;
+        if (!hasFocus())
+            update();
+    }
+}
+#endif
 
 /*!
     \property QLineEdit::displayText
@@ -1517,7 +1549,7 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
     }
 #endif
 
-    if (!isReadOnly())
+    if (!isReadOnly() && rect().contains(e->pos()))
         d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
@@ -1828,6 +1860,18 @@ void QLineEdit::paintEvent(QPaintEvent *)
          break;
     }
     QRect lineRect(r.x() + d->horizontalMargin, d->vscroll, r.width() - 2*d->horizontalMargin, fm.height());
+
+    if (d->control->text().isEmpty()) {
+        if (!hasFocus() && !d->placeholderText.isEmpty()) {
+            QColor col = pal.text().color();
+            col.setAlpha(128);
+            QPen oldpen = p.pen();
+            p.setPen(col);
+            p.drawText(lineRect, va, d->placeholderText);
+            p.setPen(oldpen);
+            return;
+        }
+    }
 
     int cix = qRound(d->control->cursorToX());
 
