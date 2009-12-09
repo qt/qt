@@ -943,7 +943,6 @@ void MyWindow::setCursor(QCursor * cursor)
 
 Cursor MyWindow::createCursorBitmap(QCursor * cursor)
 {
-/*
     XColor bg, fg;
     bg.red   = 255 << 8;
     bg.green = 255 << 8;
@@ -954,21 +953,35 @@ Cursor MyWindow::createCursorBitmap(QCursor * cursor)
     QPoint spot = cursor->hotSpot();
     Window rootwin = window;
 
-    const QBitmap * map = cursor->bitmap();
-    char * mapBits = reinterpret_cast<char *>(map->toImage().bits());
-    const QBitmap * mask = cursor->mask();
-    char * maskBits = reinterpret_cast<char *>(mask->toImage().bits());
+    QImage mapImage = cursor->bitmap()->toImage().convertToFormat(QImage::Format_MonoLSB);
+    QImage maskImage = cursor->mask()->toImage().convertToFormat(QImage::Format_MonoLSB);
 
-    Pixmap cp = XCreateBitmapFromData(xd->display, rootwin, mapBits, map->width(), map->height());
-    Pixmap mp = XCreateBitmapFromData(xd->display, rootwin, maskBits, map->width(), map->height());
+    int width = cursor->bitmap()->width();
+    int height = cursor->bitmap()->height();
+    int bytesPerLine = mapImage.bytesPerLine();
+    int destLineSize = width / 8;
+    if (width % 8)
+        destLineSize++;
+
+    const uchar * map = mapImage.bits();
+    const uchar * mask = maskImage.bits();
+
+    char * mapBits = new char[height * destLineSize];
+    char * maskBits = new char[height * destLineSize];
+    for (int i = 0; i < height; i++) {
+        memcpy(mapBits + (destLineSize * i),map + (bytesPerLine * i), destLineSize);
+        memcpy(maskBits + (destLineSize * i),mask + (bytesPerLine * i), destLineSize);
+    }
+
+    Pixmap cp = XCreateBitmapFromData(xd->display, rootwin, mapBits, width, height);
+    Pixmap mp = XCreateBitmapFromData(xd->display, rootwin, maskBits, width, height);
     Cursor c = XCreatePixmapCursor(xd->display, cp, mp, &fg, &bg, spot.x(), spot.y());
     XFreePixmap(xd->display, cp);
     XFreePixmap(xd->display, mp);
+    delete[] mapBits;
+    delete[] maskBits;
 
     return c;
-*/
-    // correct pixmap cursor parsing not implemented yet
-    return createCursorShape(Qt::ArrowCursor);
 }
 
 Cursor MyWindow::createCursorShape(int cshape)
