@@ -2238,11 +2238,13 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         }
         break;
 
+    case PE_PanelScrollAreaCorner:
+        break;
+
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
     case PE_IndicatorDockWidgetResizeHandle:
     case PE_PanelTipLabel:
-    case PE_PanelScrollAreaCorner:
 
 #ifndef QT_NO_TABBAR
     case PE_IndicatorTabTear: // No tab tear in S60
