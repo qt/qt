@@ -882,7 +882,7 @@ QObject::~QObject()
         // all the signal/slots connections are still in place - if we don't
         // quit now, we will crash pretty soon.
         qWarning("Detected an unexpected exception in ~QObject while emitting destroyed().");
-#if defined(Q_AUTOTEST_EXPORT) && !defined(QT_NO_EXCEPTIONS)
+#if defined(Q_BUILD_INTERNAL) && !defined(QT_NO_EXCEPTIONS)
         struct AutotestException : public std::exception
         {
             const char *what() const throw() { return "autotest swallow"; }
@@ -914,7 +914,8 @@ QObject::~QObject()
         // disconnect all receivers
         if (d->connectionLists) {
             ++d->connectionLists->inUse;
-            for (int signal = -1; signal < d->connectionLists->count(); ++signal) {
+            int connectionListsCount = d->connectionLists->count();
+            for (int signal = -1; signal < connectionListsCount; ++signal) {
                 QObjectPrivate::ConnectionList &connectionList =
                     (*d->connectionLists)[signal];
 
@@ -951,16 +952,17 @@ QObject::~QObject()
         // disconnect all senders
         QObjectPrivate::Connection *node = d->senders;
         while (node) {
-            QMutex *m = signalSlotLock(node->sender);
+            QObject *sender = node->sender;
+            QMutex *m = signalSlotLock(sender);
             node->prev = &node;
             bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
             //the node has maybe been removed while the mutex was unlocked in relock?
-            if (!node || signalSlotLock(node->sender) != m) {
+            if (!node || node->sender != sender) {
                 m->unlock();
                 continue;
             }
             node->receiver = 0;
-            QObjectConnectionListVector *senderLists = node->sender->d_func()->connectionLists;
+            QObjectConnectionListVector *senderLists = sender->d_func()->connectionLists;
             if (senderLists)
                 senderLists->dirty = true;
 
