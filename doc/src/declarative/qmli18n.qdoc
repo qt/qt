@@ -43,6 +43,8 @@
 \page qmli18n.html
 \title QML Internationalization
 
+\section1 Overview
+
 Strings in QML can be marked for translation using the qsTr(), qsTranslate(),
 QT_TR_NOOP(), and QT_TRANSLATE_NOOP() functions.
 
@@ -63,4 +65,31 @@ capabilities are described more fully in:
 
 You can test a translation in \l {qmlviewer} using the -translation option.
 
+\section1 Example
+
+First we create a simple QML file with text to be translated. The string
+that needs to be translated is enclosed in a call to \c qsTr().
+
+hello.qml:
+\qml
+import Qt 4.6
+
+Rectangle {
+ width: 200; height: 200
+ Text { text: qsTr("Hello"); anchors.centerIn: parent }
+}
+\endqml
+
+Next we create a translation source file using lupdate:
+\code
+lupdate hello.qml -ts hello.ts
+\endcode
+
+Then we open \c hello.ts in \l {Linguist}, provide a translation
+and create the release file \c hello.qm.
+
+Finally, we can test the translation in qmlviewer:
+\code
+qmlviewer -translation hello.qm hello.qml
+\endcode
 */
