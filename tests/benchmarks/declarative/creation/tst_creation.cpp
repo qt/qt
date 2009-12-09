@@ -44,7 +44,9 @@
 #include <QmlComponent>
 #include <QmlMetaType>
 #include <QDebug>
+#include <QGraphicsScene>
 #include <QGraphicsItem>
+#include <QmlGraphicsItem>
 #include <private/qobject_p.h>
 
 class tst_creation : public QObject
@@ -64,6 +66,13 @@ private slots:
 
     void qgraphicsitem();
     void qgraphicsitem_tree();
+
+    void itemtree_notree_cpp();
+    void itemtree_objtree_cpp();
+    void itemtree_cpp();
+    void itemtree_data_cpp();
+    void itemtree_qml();
+    void itemtree_scene_cpp();
 
 private:
     QmlEngine engine;
@@ -239,6 +248,100 @@ void tst_creation::qgraphicsitem_tree()
 
         delete i1;
     }
+}
+
+struct QmlGraphics_DerivedObject : public QObject
+{
+    void setParent_noEvent(QObject *parent) {
+        bool sce = d_ptr->sendChildEvents;
+        d_ptr->sendChildEvents = false;
+        setParent(parent);
+        d_ptr->sendChildEvents = sce;
+    }
+};
+
+inline void QmlGraphics_setParent_noEvent(QObject *object, QObject *parent)
+{
+    static_cast<QmlGraphics_DerivedObject *>(object)->setParent_noEvent(parent);
+}
+
+void tst_creation::itemtree_notree_cpp()
+{
+    QBENCHMARK {
+        QmlGraphicsItem *item = new QmlGraphicsItem;
+        for (int i = 0; i < 30; ++i) {
+            QmlGraphicsItem *child = new QmlGraphicsItem;
+        }
+        delete item;
+    }
+}
+
+void tst_creation::itemtree_objtree_cpp()
+{
+    QBENCHMARK {
+        QmlGraphicsItem *item = new QmlGraphicsItem;
+        for (int i = 0; i < 30; ++i) {
+            QmlGraphicsItem *child = new QmlGraphicsItem;
+            QmlGraphics_setParent_noEvent(child,item);
+        }
+        delete item;
+    }
+}
+
+void tst_creation::itemtree_cpp()
+{
+    QBENCHMARK {
+        QmlGraphicsItem *item = new QmlGraphicsItem;
+        for (int i = 0; i < 30; ++i) {
+            QmlGraphicsItem *child = new QmlGraphicsItem;
+            QmlGraphics_setParent_noEvent(child,item);
+            child->setParentItem(item);
+        }
+        delete item;
+    }
+}
+
+void tst_creation::itemtree_data_cpp()
+{
+    QBENCHMARK {
+        QmlGraphicsItem *item = new QmlGraphicsItem;
+        for (int i = 0; i < 30; ++i) {
+            QmlGraphicsItem *child = new QmlGraphicsItem;
+            QmlGraphics_setParent_noEvent(child,item);
+            item->data()->append(child);
+        }
+        delete item;
+    }
+}
+
+void tst_creation::itemtree_qml()
+{
+    QmlComponent component(&engine, TEST_FILE("item.qml"));
+    QObject *obj = component.create();
+    delete obj;
+
+    QBENCHMARK {
+        QObject *obj = component.create();
+        delete obj;
+    }
+}
+
+void tst_creation::itemtree_scene_cpp()
+{
+    QGraphicsScene scene;
+    QmlGraphicsItem *root = new QmlGraphicsItem;
+    scene.addItem(root);
+    QBENCHMARK {
+        QmlGraphicsItem *item = new QmlGraphicsItem;
+        for (int i = 0; i < 30; ++i) {
+            QmlGraphicsItem *child = new QmlGraphicsItem;
+            QmlGraphics_setParent_noEvent(child,item);
+            child->setParentItem(item);
+        }
+        item->setParentItem(root);
+        delete item;
+    }
+    delete root;
 }
 
 

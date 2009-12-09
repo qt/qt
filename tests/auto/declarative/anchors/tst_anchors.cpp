@@ -71,6 +71,7 @@ private slots:
     void nullItem();
     void nullItem_data();
     void crash1();
+    void centerIn();
 };
 
 /*
@@ -374,6 +375,21 @@ void tst_anchors::crash1()
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
     view->execute();
     qApp->processEvents();
+
+    delete view;
+}
+
+void tst_anchors::centerIn()
+{
+    QmlView *view = new QmlView;
+
+    view->setUrl(QUrl("file://" SRCDIR "/data/centerin.qml"));
+
+    view->execute();
+    qApp->processEvents();
+
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("centered"))->x(), 85.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("centered"))->y(), 105.0);
 
     delete view;
 }

@@ -72,9 +72,8 @@ class QmlGraphicsBasePositionerPrivate : public QmlGraphicsItemPrivate
 
 public:
     QmlGraphicsBasePositionerPrivate()
-        : _ep(false), _componentComplete(false), _spacing(0),
-        aut(QmlGraphicsBasePositioner::None), moveTransition(0), addTransition(0),
-        removeTransition(0), _movingItem(0), queuedPositioning(false)
+        : spacing(0), type(QmlGraphicsBasePositioner::None), moveTransition(0), addTransition(0),
+          queuedPositioning(false)
     {
     }
 
@@ -85,9 +84,9 @@ public:
             unwatchChanges(other);//Need to deregister from a list in QmlGI Private
     }
 
-    void init(QmlGraphicsBasePositioner::AutoUpdateType at)
+    void init(QmlGraphicsBasePositioner::PositionerType at)
     {
-        aut = at;
+        type = at;
         if (prePosIdx == -1) {
             prePosIdx = QmlGraphicsBasePositioner::staticMetaObject.indexOfSlot("prePositioning()");
             visibleIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("visibleChanged()");
@@ -95,29 +94,20 @@ public:
         }
     }
 
-    bool _ep;
-    bool _componentComplete;
-    int _spacing;
-    QmlGraphicsBasePositioner::AutoUpdateType aut;
+    int spacing;
+    QmlGraphicsBasePositioner::PositionerType type;
     QmlTransition *moveTransition;
     QmlTransition *addTransition;
-    QmlTransition *removeTransition;
-    QSet<QmlGraphicsItem *> _items;
-    QSet<QmlGraphicsItem *> _leavingItems;
-    QSet<QmlGraphicsItem *> _stableItems;
-    QSet<QmlGraphicsItem *> _newItems;
-    QSet<QmlGraphicsItem *> _animated;
+    QSet<QmlGraphicsItem *> items;
+    QSet<QmlGraphicsItem *> newItems;
     QmlStateOperation::ActionList addActions;
     QmlStateOperation::ActionList moveActions;
-    QmlStateOperation::ActionList removeActions;
     QmlTransitionManager addTransitionManager;
     QmlTransitionManager moveTransitionManager;
-    QmlTransitionManager removeTransitionManager;
-    QmlGraphicsItem *_movingItem;
 
     void watchChanges(QmlGraphicsItem *other);
     void unwatchChanges(QmlGraphicsItem* other);
-    QList<QGuard<QmlGraphicsItem> > watched;
+    QList<QGuard<QmlGraphicsItem> > watched;//Can't have QSet and QGuard at the same time?
     bool queuedPositioning;
 
     static int prePosIdx;
@@ -130,6 +120,7 @@ public:
         Q_UNUSED(other);
         if(!queuedPositioning){
             //Delay is due to many children often being reordered at once
+            //And we only want to reposition them all once
             QTimer::singleShot(0,q,SLOT(prePositioning()));
             queuedPositioning = true;
         }

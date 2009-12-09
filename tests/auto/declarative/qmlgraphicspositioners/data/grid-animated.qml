@@ -7,12 +7,7 @@ Item {
         columns: 3
         add: Transition {
             NumberAnimation {
-                matchProperties: "x,y"; from: -100
-            }
-        }
-        remove: Transition {
-            NumberAnimation {
-                matchProperties: "x,y"; to: -100
+                matchProperties: "x,y";
             }
         }
         move: Transition {
@@ -23,11 +18,15 @@ Item {
         Rectangle {
             objectName: "one"
             color: "red"
+            x: -100
+            y: -100
             width: 50
             height: 50
         }
         Rectangle {
             objectName: "two"
+            x: -100
+            y: -100
             opacity: 0
             color: "green"
             width: 50
@@ -36,18 +35,24 @@ Item {
         Rectangle {
             objectName: "three"
             color: "blue"
+            x: -100
+            y: -100
             width: 50
             height: 50
         }
         Rectangle {
             objectName: "four"
             color: "cyan"
+            x: -100
+            y: -100
             width: 50
             height: 50
         }
         Rectangle {
             objectName: "five"
             color: "magenta"
+            x: -100
+            y: -100
             width: 50
             height: 50
         }

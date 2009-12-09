@@ -67,8 +67,10 @@ void QmlGraphicsBasePositionerPrivate::watchChanges(QmlGraphicsItem *other)
 
     QmlGraphicsItemPrivate *otherPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other));
 
-    otherPrivate->connectToHeightChanged(q, prePosIdx);
-    otherPrivate->connectToWidthChanged(q, prePosIdx);
+    if(type == QmlGraphicsBasePositioner::Vertical || type == QmlGraphicsBasePositioner::Both)
+        otherPrivate->connectToHeightChanged(q, prePosIdx);
+    if(type == QmlGraphicsBasePositioner::Horizontal || type == QmlGraphicsBasePositioner::Both)
+        otherPrivate->connectToWidthChanged(q, prePosIdx);
 
     otherPrivate->registerSiblingOrderNotification(this);
     watched << other;
@@ -78,11 +80,14 @@ void QmlGraphicsBasePositionerPrivate::unwatchChanges(QmlGraphicsItem* other)
 {
     Q_Q(QmlGraphicsBasePositioner);
     QmlGraphicsItemPrivate *otherPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other));
-    bool stillAlive = false; //Use the return from disconnect to see if it was deleted or just reparented
+    bool stillAlive = false; //Use the returns from disconnect to see if it was deleted or just reparented
     stillAlive |= QMetaObject::disconnect(other, visibleIdx, q, prePosIdx);
     stillAlive |= QMetaObject::disconnect(other, opacityIdx, q, prePosIdx);
-    stillAlive |= otherPrivate->disconnectFromHeightChanged(q, prePosIdx);
-    stillAlive |= otherPrivate->disconnectFromWidthChanged(q, prePosIdx);
+    //Is disconnect expensive enough to be worth this check?
+    if(type == QmlGraphicsBasePositioner::Vertical || type == QmlGraphicsBasePositioner::Both)
+        stillAlive |= otherPrivate->disconnectFromHeightChanged(q, prePosIdx);
+    if(type == QmlGraphicsBasePositioner::Horizontal || type == QmlGraphicsBasePositioner::Both)
+        stillAlive |= otherPrivate->disconnectFromWidthChanged(q, prePosIdx);
 
     if(stillAlive)
         otherPrivate->unregisterSiblingOrderNotification(this);
@@ -97,24 +102,24 @@ void QmlGraphicsBasePositionerPrivate::unwatchChanges(QmlGraphicsItem* other)
 
     To create a QmlGraphics Positioner, simply subclass QmlGraphicsBasePositioner and implement
     doLayout(), which is automatically called when the layout might need
-    updating.
+    updating. In doLayout() use the setX and setY functions from QmlBasePositioner, and the
+    base class will apply the positions along with the appropriate transitions. The items to
+    position are provided in order as the protected member positionedItems.
 
-    It is strongly recommended that in your implementation of doLayout()
-    that you use the move, remove and add transitions when those conditions
-    arise. You can use the applyAdd, applyMove and applyRemove functions
-    to do this easily.
+    You also need to set a PositionerType, to declare whether you are positioning the x, y or both
+    for the child items. Depending on the chosen type, only x or y changes will be applied.
 
-    Note also that the subclass is responsible for adding the
+    Note that the subclass is responsible for adding the
     spacing in between items.
 */
-QmlGraphicsBasePositioner::QmlGraphicsBasePositioner(AutoUpdateType at, QmlGraphicsItem *parent)
+QmlGraphicsBasePositioner::QmlGraphicsBasePositioner(PositionerType at, QmlGraphicsItem *parent)
     : QmlGraphicsItem(*(new QmlGraphicsBasePositionerPrivate), parent)
 {
     Q_D(QmlGraphicsBasePositioner);
     d->init(at);
 }
 
-QmlGraphicsBasePositioner::QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPrivate &dd, AutoUpdateType at, QmlGraphicsItem *parent)
+QmlGraphicsBasePositioner::QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPrivate &dd, PositionerType at, QmlGraphicsItem *parent)
     : QmlGraphicsItem(dd, parent)
 {
     Q_D(QmlGraphicsBasePositioner);
@@ -124,15 +129,15 @@ QmlGraphicsBasePositioner::QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPr
 int QmlGraphicsBasePositioner::spacing() const
 {
     Q_D(const QmlGraphicsBasePositioner);
-    return d->_spacing;
+    return d->spacing;
 }
 
 void QmlGraphicsBasePositioner::setSpacing(int s)
 {
     Q_D(QmlGraphicsBasePositioner);
-    if (s==d->_spacing)
+    if (s==d->spacing)
         return;
-    d->_spacing = s;
+    d->spacing = s;
     prePositioning();
     emit spacingChanged();
 }
@@ -161,18 +166,6 @@ void QmlGraphicsBasePositioner::setAdd(QmlTransition *add)
     d->addTransition = add;
 }
 
-QmlTransition *QmlGraphicsBasePositioner::remove() const
-{
-    Q_D(const QmlGraphicsBasePositioner);
-    return d->removeTransition;
-}
-
-void QmlGraphicsBasePositioner::setRemove(QmlTransition *remove)
-{
-    Q_D(QmlGraphicsBasePositioner);
-    d->removeTransition = remove;
-}
-
 void QmlGraphicsBasePositioner::componentComplete()
 {
     QmlGraphicsItem::componentComplete();
@@ -193,114 +186,49 @@ QVariant QmlGraphicsBasePositioner::itemChange(GraphicsItemChange change,
     return QmlGraphicsItem::itemChange(change, value);
 }
 
-bool QmlGraphicsBasePositioner::event(QEvent *e)
-{
-    Q_D(QmlGraphicsBasePositioner);
-    if (e->type() == QEvent::User) {
-        d->_ep = false;
-        d->_stableItems += d->_newItems;
-        d->_leavingItems.clear();
-        d->_newItems.clear();
-        return true;
-    }
-    return QmlGraphicsItem::event(e);
-}
-
-/*!
-  Items that have just been added to the positioner. This includes invisible items
-  that have turned visible.
-*/
-QSet<QmlGraphicsItem *>* QmlGraphicsBasePositioner::newItems()
-{
-    Q_D(QmlGraphicsBasePositioner);
-    return &d->_newItems;
-}
-
-/*!
-  Items that are visible in the positioner, not including ones that have just been added.
-*/
-QSet<QmlGraphicsItem *>* QmlGraphicsBasePositioner::items()
-{
-    Q_D(QmlGraphicsBasePositioner);
-    return &d->_stableItems;
-}
-
-/*!
-  Items that have just left the positioner. This includes visible items
-  that have turned invisible.
-*/
-QSet<QmlGraphicsItem *>* QmlGraphicsBasePositioner::leavingItems()
-{
-    Q_D(QmlGraphicsBasePositioner);
-    return &d->_leavingItems;
-}
-
 void QmlGraphicsBasePositioner::prePositioning()
 {
     Q_D(QmlGraphicsBasePositioner);
-    if (!isComponentComplete() || d->_movingItem)
+    if (!isComponentComplete())
         return;
 
     d->queuedPositioning = false;
-    if (!d->_ep) {
-        d->_ep = true;
-        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
-    }
     //Need to order children by creation order modified by stacking order
-    //###can we avoid using the QGraphicsItemPrivate?
     QList<QGraphicsItem *> children = childItems();
     qSort(children.begin(), children.end(), d->insertionOrder);
     positionedItems.clear();
+    d->newItems.clear();
 
-    if (d->_items.isEmpty()) {
-        for (int ii = 0; ii < children.count(); ++ii) {
-            QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
-            if (!child)
-                continue;
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
+        if (!child)
+            continue;
+        if(!d->watched.contains(child))
             d->watchChanges(child);
-            d->_items += child;
-            if (child->opacity() != 0.0)
-                d->_newItems += child;
-            positionedItems << child;
+        if(child->opacity() <= 0.0 || !child->isVisible())
+            continue;
+        if (!d->items.contains(child)){
+            d->items += child;
+            d->newItems += child;
         }
-    } else {
-        QSet<QmlGraphicsItem *> allItems;
-        allItems.reserve(children.count());
-        for (int ii = 0; ii < children.count(); ++ii) {
-            QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
-            if (!child)
-                continue;
-            if (!d->_items.contains(child)){
-                d->watchChanges(child);
-                d->_items += child;
-            }
-            if (child->opacity() == 0.0){
-                if (d->_stableItems.contains(child)){
-                    d->_leavingItems += child;
-                    d->_stableItems -= child;
-                }
-            }else if (!d->_stableItems.contains(child)){
-                d->_newItems+=child;
-            }
-            allItems += child;
-            positionedItems << child;
-        }
-        if (d->_items.count() != allItems.count()) {
-            QSet<QmlGraphicsItem *> deletedItems = d->_items - allItems;
-            foreach(QmlGraphicsItem *child, deletedItems){
-                d->unwatchChanges(child);
-                d->_items -= child;
-            }
+        positionedItems << child;
+    }
+    if(d->items.count() > positionedItems.count()){
+        //Assumed that (aside from init) every add/remove triggers this check
+        //thus the above check will be triggered every time an item is removed
+        QSet<QmlGraphicsItem *> deletedItems = d->items - positionedItems.toSet();
+        foreach(QmlGraphicsItem *child, deletedItems){
+            d->unwatchChanges(child);
+            d->items -= child;
         }
     }
-    d->_animated.clear();
     doPositioning();
-    finishApplyTransitions();
+    if(d->addTransition || d->moveTransition)
+        finishApplyTransitions();
     //Set implicit size to the size of its children
-    //###To keep this valid, do we need to update on pos change as well?
     qreal h = 0.0f;
     qreal w = 0.0f;
-    foreach(QmlGraphicsItem *child, d->_items){
+    foreach(QmlGraphicsItem *child, d->items){
         if(!child->isVisible() || child->opacity() <= 0)
             continue;
         h = qMax(h, child->y() + child->height());
@@ -310,69 +238,45 @@ void QmlGraphicsBasePositioner::prePositioning()
     setImplicitWidth(w);
 }
 
-void QmlGraphicsBasePositioner::applyTransition(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target, QmlStateOperation::ActionList &actions)
+void QmlGraphicsBasePositioner::positionX(int x, QmlGraphicsItem* target)
 {
     Q_D(QmlGraphicsBasePositioner);
-    if (!target)
-        return;
-
-    for (int ii=0; ii<changes.size(); ++ii){
-
-        QVariant val = changes[ii].second;
-        actions << Action(target, changes[ii].first, val);
-
+    if(d->type == Horizontal || d->type == Both){
+        if(!d->addTransition && !d->moveTransition){
+            target->setX(x);
+        }else{
+            if(d->newItems.contains(target))
+                d->addActions << Action(target, QLatin1String("x"), QVariant(x));
+            else
+                d->moveActions << Action(target, QLatin1String("x"), QVariant(x));
+        }
     }
+}
 
-    d->_animated << target;
+void QmlGraphicsBasePositioner::positionY(int y, QmlGraphicsItem* target)
+{
+    Q_D(QmlGraphicsBasePositioner);
+    if(d->type == Vertical || d->type == Both){
+        if(!d->addTransition && !d->moveTransition){
+            target->setY(y);
+        }else{
+            if(d->newItems.contains(target))
+                d->addActions << Action(target, QLatin1String("y"), QVariant(y));
+            else
+                d->moveActions << Action(target, QLatin1String("y"), QVariant(y));
+        }
+    }
 }
 
 void QmlGraphicsBasePositioner::finishApplyTransitions()
 {
     Q_D(QmlGraphicsBasePositioner);
     // Note that if a transition is not set the transition manager will
-    // apply the changes directly, in the case someone uses applyAdd/Move/Remove
-    // without testing add()/move()/remove().
+    // apply the changes directly, in the case add/move aren't set
     d->addTransitionManager.transition(d->addActions, d->addTransition);
     d->moveTransitionManager.transition(d->moveActions, d->moveTransition);
-    d->removeTransitionManager.transition(d->removeActions, d->removeTransition);
     d->addActions.clear();
     d->moveActions.clear();
-    d->removeActions.clear();
-}
-void QmlGraphicsBasePositioner::setMovingItem(QmlGraphicsItem *i)
-{
-    Q_D(QmlGraphicsBasePositioner);
-    d->_movingItem = i;
-}
-
-/*!
-  Applies the positioner's add transition to the \a target item.\a changes is a list of property,value
-  pairs which will be changed on the target using the add transition.
-*/
-void QmlGraphicsBasePositioner::applyAdd(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target)
-{
-    Q_D(QmlGraphicsBasePositioner);
-    applyTransition(changes,target, d->addActions);
-}
-
-/*!
-  Applies the positioner's move transition to the \a target.\a changes is a list of property,value pairs
-  which will be changed on the target using the move transition.
-*/
-void QmlGraphicsBasePositioner::applyMove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target)
-{
-    Q_D(QmlGraphicsBasePositioner);
-    applyTransition(changes,target, d->moveActions);
-}
-
-/*!
-  Applies the positioner's remove transition to the \a target item.\a changes is a list of
-  property,value pairs which will be changed on the target using the remove transition.
-*/
-void QmlGraphicsBasePositioner::applyRemove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target)
-{
-    Q_D(QmlGraphicsBasePositioner);
-    applyTransition(changes,target, d->removeActions);
 }
 
 QML_DEFINE_TYPE(Qt,4,6,Column,QmlGraphicsColumn)
@@ -423,14 +327,6 @@ Column {
   will not change. If you manually change the x or y properties in script, bind
   the x or y properties, or use anchors on a child of a positioner, then the
   positioner may exhibit strange behaviour.
-
-*/
-/*!
-    \qmlproperty Transition Column::remove
-    This property holds the transition to apply when removing an item from the positioner. The transition is only applied to the removed items.
-    Positioner transitions will only affect the position (x,y) of items.
-
-    Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
 
 */
 /*!
@@ -500,36 +396,14 @@ void QmlGraphicsColumn::doPositioning()
 {
     int voffset = 0;
 
-    foreach(QmlGraphicsItem* item, *leavingItems()){
-        if (remove()){
-            QList<QPair<QString,QVariant> > changes;
-            applyRemove(changes, item);
-        }
-    }
-
-    QList<QmlGraphicsItem *> children = positionedItems;
-    for (int ii = 0; ii < children.count(); ++ii) {
-        QmlGraphicsItem *child = children.at(ii);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        QmlGraphicsItem *child = positionedItems.at(ii);
         if (!child || isInvisible(child))
             continue;
 
-        bool needMove = (child->y() != voffset || child->x());
+        if(child->y() != voffset)
+            positionY(voffset, child);
 
-        if (needMove && move() && items()->contains(child)) {
-            QList<QPair<QString, QVariant> > changes;
-            changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
-            changes << qMakePair(QString(QLatin1String("x")),QVariant(0));
-            applyMove(changes,child);
-        } else if (add() && !items()->contains(child)) {
-            QList<QPair<QString, QVariant> > changes;
-            changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
-            changes << qMakePair(QString(QLatin1String("x")),QVariant(0));
-            applyAdd(changes,child);
-        } else if (needMove) {
-            setMovingItem(child);
-            child->setY(voffset);
-            setMovingItem(0);
-        }
         voffset += child->height();
         voffset += spacing();
     }
@@ -565,18 +439,6 @@ Row {
   will not change. If you manually change the x or y properties in script, bind
   the x or y properties, or use anchors on a child of a positioner, then the
   positioner may exhibit strange behaviour.
-
-*/
-/*!
-    \qmlproperty Transition Row::remove
-    This property holds the transition to apply when removing an item from the positioner.
-    The transition will only be applied to the removed item(s).
-    Positioner transitions will only affect the position (x,y) of items.
-
-    Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
-
-    Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
-
 
 */
 /*!
@@ -639,35 +501,14 @@ void QmlGraphicsRow::doPositioning()
 {
     int hoffset = 0;
 
-    foreach(QmlGraphicsItem* item, *leavingItems()){
-        if (remove()){
-            QList<QPair<QString,QVariant> > changes;
-            applyRemove(changes, item);
-        }
-    }
-    QList<QmlGraphicsItem *> children = positionedItems;
-    for (int ii = 0; ii < children.count(); ++ii) {
-        QmlGraphicsItem *child = children.at(ii);
+    for (int ii = 0; ii < positionedItems.count(); ++ii) {
+        QmlGraphicsItem *child = positionedItems.at(ii);
         if (!child || isInvisible(child))
             continue;
 
-        bool needMove = (child->x() != hoffset || child->y());
+        if(child->x() != hoffset)
+            positionX(hoffset, child);
 
-        if (needMove && move() && items()->contains(child)) {
-            QList<QPair<QString, QVariant> > changes;
-            changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
-            changes << qMakePair(QString(QLatin1String("y")),QVariant(0));
-            applyMove(changes,child);
-        } else if (add() && !items()->contains(child)) {
-            QList<QPair<QString, QVariant> > changes;
-            changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
-            changes << qMakePair(QString(QLatin1String("y")),QVariant(0));
-            applyAdd(changes,child);
-        } else if (needMove) {
-            setMovingItem(child);
-            child->setX(hoffset);
-            setMovingItem(0);
-        }
         hoffset += child->width();
         hoffset += spacing();
     }
@@ -719,19 +560,6 @@ Grid {
   will not change. If you manually change the x or y properties in script, bind
   the x or y properties, or use anchors on a child of a positioner, then the
   positioner may exhibit strange behaviour.
-*/
-/*!
-    \qmlproperty Transition Grid::remove
-    This property holds the transition to apply when removing an item from the positioner.
-    The transition is only applied to the removed item(s).
-    Positioner transitions will only affect the position (x,y) of items.
-
-    Removed can mean that either the object has been deleted or
-    reparented, and thus is now longer a child of the positioner, or that
-    the object has had its opacity set to zero, and thus is no longer
-    visible.
-
-
 */
 /*!
     \qmlproperty Transition Grid::add
@@ -816,7 +644,7 @@ QmlGraphicsGrid::QmlGraphicsGrid(QmlGraphicsItem *parent) :
 void QmlGraphicsGrid::doPositioning()
 {
     int c=_columns,r=_rows;//Actual number of rows/columns
-    int numVisible = items()->size() + newItems()->size();
+    int numVisible = positionedItems.count();
     if (_columns==-1 && _rows==-1){
         c = 4;
         r = (numVisible+3)/4;
@@ -829,7 +657,6 @@ void QmlGraphicsGrid::doPositioning()
     QList<int> maxColWidth;
     QList<int> maxRowHeight;
     int childIndex =0;
-    QList<QmlGraphicsItem *> children = positionedItems;
     for (int i=0; i<r; i++){
         for (int j=0; j<c; j++){
             if (j==0)
@@ -837,9 +664,9 @@ void QmlGraphicsGrid::doPositioning()
             if (i==0)
                 maxColWidth << 0;
 
-            if (childIndex == children.count())
+            if (childIndex == positionedItems.count())
                 continue;
-            QmlGraphicsItem *child = children.at(childIndex++);
+            QmlGraphicsItem *child = positionedItems.at(childIndex++);
             if (!child || isInvisible(child))
                 continue;
             if (child->width() > maxColWidth[j])
@@ -853,29 +680,12 @@ void QmlGraphicsGrid::doPositioning()
     int yoffset=0;
     int curRow =0;
     int curCol =0;
-    foreach(QmlGraphicsItem* item, *leavingItems()){
-        if (remove()){
-            QList<QPair<QString,QVariant> > changes;
-            applyRemove(changes, item);
-        }
-    }
-    foreach(QmlGraphicsItem* child, children){
+    foreach(QmlGraphicsItem* child, positionedItems){
         if (!child || isInvisible(child))
             continue;
-        bool needMove = (child->x()!=xoffset)||(child->y()!=yoffset);
-        QList<QPair<QString, QVariant> > changes;
-        changes << qMakePair(QString(QLatin1String("x")),QVariant(xoffset));
-        changes << qMakePair(QString(QLatin1String("y")),QVariant(yoffset));
-        if (newItems()->contains(child) && add()) {
-            applyAdd(changes,child);
-        } else if (needMove) {
-            if (move()){
-                applyMove(changes,child);
-            }else{
-                setMovingItem(child);
-                child->setPos(QPointF(xoffset, yoffset));
-                setMovingItem(0);
-            }
+        if((child->x()!=xoffset)||(child->y()!=yoffset)){
+            positionX(xoffset, child);
+            positionY(yoffset, child);
         }
         xoffset+=maxColWidth[curCol]+spacing();
         curCol++;
@@ -896,18 +706,6 @@ QML_DEFINE_TYPE(Qt,4,6,Flow,QmlGraphicsFlow)
   \qmlclass Flow QmlGraphicsFlow
   \brief The Flow item lines up its children side by side, wrapping as necessary.
   \inherits Item
-
-
-*/
-/*!
-    \qmlproperty Transition Flow::remove
-    This property holds the transition to apply when removing an item from the positioner.
-    The transition will only be applied to the removed item(s).
-    Positioner transitions will only affect the position (x,y) of items.
-
-    Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
-
-    Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
 
 
 */
@@ -998,20 +796,12 @@ void QmlGraphicsFlow::setFlow(Flow flow)
 void QmlGraphicsFlow::doPositioning()
 {
     Q_D(QmlGraphicsFlow);
-    foreach(QmlGraphicsItem* item, *leavingItems()){
-        if (remove()){
-            QList<QPair<QString,QVariant> > changes;
-            applyRemove(changes, item);
-        }
-    }
 
     int hoffset = 0;
     int voffset = 0;
     int linemax = 0;
 
-    QList<QmlGraphicsItem *> children = positionedItems;
-    for (int ii = 0; ii < children.count(); ++ii) {
-        QmlGraphicsItem *child = children.at(ii);
+    foreach(QmlGraphicsItem* child, positionedItems){
         if (!child || isInvisible(child))
             continue;
 
@@ -1029,24 +819,9 @@ void QmlGraphicsFlow::doPositioning()
             }
         }
 
-        bool needMove = (child->x() != hoffset || child->y() != voffset);
-
-        if (newItems()->contains(child) && add()) {
-            QList<QPair<QString, QVariant> > changes;
-            changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
-            changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
-            applyAdd(changes,child);
-        } else if (needMove) {
-            if (move()){
-                QList<QPair<QString, QVariant> > changes;
-                changes << qMakePair(QString(QLatin1String("x")),QVariant(hoffset));
-                changes << qMakePair(QString(QLatin1String("y")),QVariant(voffset));
-                applyMove(changes,child);
-            } else {
-                setMovingItem(child);
-                child->setPos(QPointF(hoffset, voffset));
-                setMovingItem(0);
-            }
+        if(child->x() != hoffset || child->y() != voffset){
+            positionX(hoffset, child);
+            positionY(voffset, child);
         }
 
         if (d->flow == LeftToRight)  {
