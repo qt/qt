@@ -54,7 +54,6 @@
 #define REGISTRATION_RESOURCE_DIRECTORY_HW "/private/10003a3f/import/apps"
 #define PLUGIN_COMMON_DEF_FILE_FOR_MMP "./plugin_common.def"
 #define PLUGIN_COMMON_DEF_FILE_ACTUAL "plugin_commonU.def"
-#define BLD_INF_FILENAME_LEN (sizeof(BLD_INF_FILENAME) - 1)
 
 #define BLD_INF_RULES_BASE "BLD_INF_RULES."
 #define BLD_INF_TAG_PLATFORMS "prj_platforms"
@@ -227,7 +226,9 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     QString wrapperFileName("Makefile");
     QString outputFileName = fileInfo(Option::output.fileName()).fileName();
     if (outputFileName != BLD_INF_FILENAME) {
-        wrapperFileName.append(".").append((outputFileName.size() > BLD_INF_FILENAME_LEN && outputFileName.left(BLD_INF_FILENAME_LEN) == BLD_INF_FILENAME) ? outputFileName.mid(8) : outputFileName);
+        wrapperFileName.append(".").append(outputFileName.startsWith(BLD_INF_FILENAME)
+                                           ? outputFileName.mid(sizeof(BLD_INF_FILENAME))
+                                           : outputFileName);
         isPrimaryMakefile = false;
     }
 
