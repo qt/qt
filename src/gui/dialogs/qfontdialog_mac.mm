@@ -394,7 +394,9 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     }
     [mFontPanel setDelegate:nil];
     [[NSFontManager sharedFontManager] setDelegate:nil];
+#ifdef QT_MAC_USE_COCOA
     [[NSFontManager sharedFontManager] setTarget:nil];
+#endif
 }
 @end
 
@@ -518,7 +520,9 @@ void *QFontDialogPrivate::openCocoaFontPanel(const QFont &initial,
                                                    extraHeight:dialogExtraHeight];
     [ourPanel setDelegate:delegate];
     [[NSFontManager sharedFontManager] setDelegate:delegate];
+#ifdef QT_MAC_USE_COCOA
     [[NSFontManager sharedFontManager] setTarget:delegate];
+#endif
     setFont(delegate, initial);
 
     // hack to get correct initial layout
