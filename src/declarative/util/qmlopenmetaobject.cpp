@@ -243,7 +243,6 @@ int QmlOpenMetaObject::createProperty(const char *name, const char *)
 
 int QmlOpenMetaObject::doCreateProperty(const char *name)
 {
-    qDebug() << "doCreateProperty()" << name;
     int id = d->type->d->mob.propertyCount();
     d->type->d->mob.addSignal("__" + QByteArray::number(id) + "()");
     QMetaPropertyBuilder build = d->type->d->mob.addProperty(name, "QVariant", id);
