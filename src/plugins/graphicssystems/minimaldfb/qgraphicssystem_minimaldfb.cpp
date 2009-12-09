@@ -97,15 +97,14 @@ IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect, 
 
     DFBWindowDescription description;
     memset(&description,0,sizeof(DFBWindowDescription));
-//    description.flags = DWDESC_SURFACE_CAPS;
+    description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_POSX|DWDESC_POSY|DWDESC_SURFACE_CAPS|DWDESC_OPTIONS|DWDESC_CAPS);
     description.width = rect.width();
     description.height = rect.height();
     description.posx = rect.x();
     description.posy = rect.y();
-//    description.flags |= DWDESC_OPTIONS;
-//    description.options = DWOP_GHOST|DWOP_ALPHACHANNEL;
-//    description.caps = (DFBWindowDescription) (DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER);
-//    description.surface_caps = DSCAPS_PREMULTIPLIED;
+    description.options = DFBWindowOptions(DWOP_GHOST|DWOP_ALPHACHANNEL);
+    description.caps = DFBWindowCapabilities(DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER);
+    description.surface_caps = DSCAPS_PREMULTIPLIED;
 
     DFBResult result = m_layer->CreateWindow(m_layer,&description,&window);
     if (result != DFB_OK) {

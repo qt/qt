@@ -79,7 +79,7 @@ QImage *QDirectFbBlitter::doLock()
         QImage::Format format = QDirectFbConvenience::imageFormatFromSurface(m_surface);
         int w, h;
         m_surface->GetSize(m_surface,&w,&h);
-        m_image = QImage(static_cast<uchar *>(mem),w,h,format);
+        m_image = QImage(static_cast<uchar *>(mem),w,h,bpl,format);
     } else {
         DirectFBError("Failed to lock image", result);
     }
