@@ -69,8 +69,6 @@ void tst_QmlListAccessor::invalid()
     QCOMPARE(accessor.type(), QmlListAccessor::Invalid);
 
     QCOMPARE(accessor.count(), 0);
-    QCOMPARE(accessor.at(0), QVariant());
-    QCOMPARE(accessor.at(4), QVariant());
     QVERIFY(!accessor.append(QVariant(10)));
     QVERIFY(!accessor.insert(0, QVariant(10)));
     QVERIFY(!accessor.removeAt(0));
@@ -83,8 +81,6 @@ void tst_QmlListAccessor::invalid()
     QCOMPARE(accessor.type(), QmlListAccessor::Invalid);
 
     QCOMPARE(accessor.count(), 0);
-    QCOMPARE(accessor.at(0), QVariant());
-    QCOMPARE(accessor.at(4), QVariant());
     QVERIFY(!accessor.append(QVariant(10)));
     QVERIFY(!accessor.insert(0, QVariant(10)));
     QVERIFY(!accessor.removeAt(0));
