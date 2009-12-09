@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\title Declarative UI
+\title Declarative UI (QML)
 \page declarativeui.html
 
 \brief The Qt Declarative module provides a declarative framework for building
