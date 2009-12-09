@@ -227,6 +227,10 @@ extern "C" {
 
 - (void)resetCursorRects
 {
+    // [NSView addCursorRect] is slow, so bail out early if we can:
+    if (NSIsEmptyRect([self visibleRect]))
+        return;
+
     QWidget *cursorWidget = qwidget;
 
     if (cursorWidget->testAttribute(Qt::WA_TransparentForMouseEvents))
