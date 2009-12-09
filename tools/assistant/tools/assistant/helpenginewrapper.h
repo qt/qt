@@ -42,8 +42,11 @@
 #ifndef HELPENGINEWRAPPER_H
 #define HELPENGINEWRAPPER_H
 
+#include <QtCore/QDateTime>
 #include <QtCore/QMap>
 #include <QtCore/QObject>
+#include <QtCore/QPair>
+#include <QtCore/QSharedPointer>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QUrl>
@@ -65,6 +68,20 @@ enum {
     ShowHomePage = 0,
     ShowBlankPage = 1,
     ShowLastPages = 2
+};
+
+
+class TimeoutForwarder : public QObject
+{
+    Q_OBJECT
+public:
+    TimeoutForwarder(const QString &fileName);
+private slots:
+    void forward();
+private:
+    friend class HelpEngineWrapper;
+
+    const QString m_fileName;
 };
 
 class HelpEngineWrapper : public QObject
@@ -197,13 +214,19 @@ private slots:
     void qchFileChanged(const QString &fileName);
 
 private:
+    friend class TimeoutForwarder;
+
     HelpEngineWrapper(const QString &collectionFile);
     void initFileSystemWatchers();
     void assertDocFilesWatched();
+    void qchFileChanged(const QString &fileName, bool fromTimeout);
 
+    static const int UpdateGracePeriod = 2000;
     static HelpEngineWrapper *helpEngineWrapper;
     QHelpEngine * const m_helpEngine;
     QFileSystemWatcher * const m_qchWatcher;
+    typedef QPair<QDateTime, QSharedPointer<TimeoutForwarder> > RecentSignal;
+    QMap<QString, RecentSignal> m_recentQchUpdates;
 };
 
 QT_END_NAMESPACE

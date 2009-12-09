@@ -45,6 +45,7 @@
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QFileSystemWatcher>
+#include <QtCore/QTimer>
 #include <QtHelp/QHelpContentModel>
 #include <QtHelp/QHelpEngine>
 #include <QtHelp/QHelpIndexModel>
@@ -646,9 +647,28 @@ void HelpEngineWrapper::assertDocFilesWatched()
              == m_helpEngine->registeredDocumentations().count());
 }
 
+TimeoutForwarder::TimeoutForwarder(const QString &fileName)
+    : m_fileName(fileName)
+{
+    TRACE_OBJ
+}
+
+void TimeoutForwarder::forward()
+{
+    TRACE_OBJ
+    HelpEngineWrapper::instance().qchFileChanged(m_fileName, true);
+}
+
 void HelpEngineWrapper::qchFileChanged(const QString &fileName)
 {
     TRACE_OBJ
+    qchFileChanged(fileName, false);
+}
+
+void HelpEngineWrapper::qchFileChanged(const QString &fileName, bool fromTimeout)
+{
+    TRACE_OBJ
+
     /*
      * We don't use QHelpEngineCore::namespaceName(fileName), because the file
      * may not exist anymore or contain a different namespace.
@@ -665,9 +685,39 @@ void HelpEngineWrapper::qchFileChanged(const QString &fileName)
      * We can't do an assertion here, because QFileSystemWatcher may send the
      * signal more than  once.
      */
-    if (ns.isEmpty())
+    if (ns.isEmpty()) {
+        m_recentQchUpdates.remove(fileName);
         return;
+    }
 
+    /*
+     * Since the QFileSystemWatcher typically sends the signal more than once,
+     * we repeatedly delay our reaction a bit until we think the last signal
+     * was sent.
+     */
+
+    QMap<QString, RecentSignal>::Iterator it = m_recentQchUpdates.find(fileName);
+    const QDateTime &now = QDateTime::currentDateTime();
+
+     // Case 1: This is the first recent signal for the file.
+    if (it == m_recentQchUpdates.end()) {
+        QSharedPointer<TimeoutForwarder> forwarder(new TimeoutForwarder(fileName));
+        m_recentQchUpdates.insert(fileName, RecentSignal(now, forwarder));
+        QTimer::singleShot(UpdateGracePeriod, forwarder.data(), SLOT(forward()));
+        return;
+    }
+
+    // Case 2: The last signal for this file has not expired yet.
+    if (it.value().first > now.addMSecs(-UpdateGracePeriod)) {
+        if (!fromTimeout)
+            it.value().first = now;
+        else
+            QTimer::singleShot(UpdateGracePeriod, it.value().second.data(),
+                               SLOT(forward()));
+        return;
+    }
+
+    // Case 3: The last signal for this file has expired.
     if (m_helpEngine->unregisterDocumentation(ns)) {
         if (!QFileInfo(fileName).exists()
             || !m_helpEngine->registerDocumentation(fileName)) {
@@ -678,6 +728,7 @@ void HelpEngineWrapper::qchFileChanged(const QString &fileName)
         }
         m_helpEngine->setupData();
     }
+    m_recentQchUpdates.erase(it);
 }
 
 QT_END_NAMESPACE
