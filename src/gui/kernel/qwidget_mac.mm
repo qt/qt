@@ -3309,13 +3309,23 @@ void QWidgetPrivate::show_sys()
 #else
             // sync the opacity value back (in case of a fade).
             [window setAlphaValue:q->windowOpacity()];
-            [window makeKeyAndOrderFront:window];
 
-            // If this window is app modal, we need to start spinning
-            // a modal session for it. Interrupting
-            // the event dispatcher will make this happend:
-            if (data.window_modality == Qt::ApplicationModal)
-                QEventDispatcherMac::instance()->interrupt();
+            QWidget *top = 0;
+            if (QApplicationPrivate::tryModalHelper(q, &top)) {
+                [window makeKeyAndOrderFront:window];
+                // If this window is app modal, we need to start spinning
+                // a modal session for it. Interrupting
+                // the event dispatcher will make this happend:
+                if (data.window_modality == Qt::ApplicationModal)
+                    QEventDispatcherMac::instance()->interrupt();
+            } else {
+                // The window is modally shaddowed, so we need to make
+                // sure that we don't pop in front of the modal window:
+                [window orderFront:window];
+                if (NSWindow *modalWin = qt_mac_window_for(top))
+                    [modalWin orderFront:window];
+            }
+
 #endif
             if (q->windowType() == Qt::Popup) {
 			    if (q->focusWidget())
@@ -3334,8 +3344,6 @@ void QWidgetPrivate::show_sys()
         } else if (!q->testAttribute(Qt::WA_ShowWithoutActivating)) {
 #ifndef QT_MAC_USE_COCOA
             qt_event_request_activate(q);
-#else
-            [qt_mac_window_for(q) makeKeyWindow];
 #endif
         }
     } else if(topData()->embedded || !q->parentWidget() || q->parentWidget()->isVisible()) {
@@ -3411,12 +3419,15 @@ void QWidgetPrivate::hide_sys()
             }
 #endif
         }
-        if(q->isActiveWindow() && !(q->windowType() == Qt::Popup)) {
+#ifndef QT_MAC_USE_COCOA
+        // If the window we now hide was the active window, we need
+        // to find, and activate another window on screen. NB: Cocoa takes care of this
+        // logic for us (and distinquishes between main windows and key windows)
+        if (q->isActiveWindow() && !(q->windowType() == Qt::Popup)) {
             QWidget *w = 0;
             if(q->parentWidget())
                 w = q->parentWidget()->window();
             if(!w || (!w->isVisible() && !w->isMinimized())) {
-#ifndef QT_MAC_USE_COCOA
                 for (WindowPtr wp = GetFrontWindowOfClass(kMovableModalWindowClass, true);
                     wp; wp = GetNextWindowOfClass(wp, kMovableModalWindowClass, true)) {
                     if((w = qt_mac_find_window(wp)))
@@ -3436,24 +3447,12 @@ void QWidgetPrivate::hide_sys()
                             break;
                     }
                 }
-#else
-                NSArray *windows = [NSApp windows];
-                NSUInteger totalWindows = [windows count];
-                for (NSUInteger i = 0; i < totalWindows; ++i) {
-                    OSWindowRef wp = [windows objectAtIndex:i];
-                    if ((w = qt_mac_find_window(wp)))
-                        break;
-                }
-#endif
             }
             if(w && w->isVisible() && !w->isMinimized()) {
-#ifndef QT_MAC_USE_COCOA
-            qt_event_request_activate(w);
-#else
-            [qt_mac_window_for(w) makeKeyWindow];
-#endif
+                qt_event_request_activate(w);
             }
         }
+#endif
     } else {
          invalidateBuffer(q->rect());
 #ifndef QT_MAC_USE_COCOA
