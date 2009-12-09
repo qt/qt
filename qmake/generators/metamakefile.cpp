@@ -466,7 +466,7 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
             mkfile = new NmakeMakefileGenerator;
     } else if(gen == "MSVC.NET") {
         // Visual Studio >= v7.0
-        if(proj->first("TEMPLATE").indexOf(QRegExp("^vc.*")) != -1 || proj->first("TEMPLATE").indexOf(QRegExp("^ce.*")) != -1)
+        if(proj->first("TEMPLATE").indexOf(QRegExp("^vc.*")) != -1)
             mkfile = new VcprojGenerator;
         else
             mkfile = new NmakeMakefileGenerator;
