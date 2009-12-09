@@ -29,7 +29,7 @@ QDirectFbBlitter::QDirectFbBlitter(const QRect &rect, IDirectFBSurface *surface)
 
 QDirectFbBlitter::~QDirectFbBlitter()
 {
-    delete m_surface;
+    m_surface->Release(m_surface);
 }
 
 void QDirectFbBlitter::fillRect(const QRectF &rect, const QColor &color)

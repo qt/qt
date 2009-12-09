@@ -11,10 +11,12 @@ SOURCES = main.cpp \
     qgraphicssystem_minimaldfb.cpp \
     qwindowsurface_minimaldfb.cpp \
     qblitter_directfb.cpp \
-    qdirectfbconvenience.cpp
+    qdirectfbconvenience.cpp \
+    qdirectfbinput.cpp
 HEADERS = qgraphicssystem_minimaldfb.h \
     qwindowsurface_minimaldfb.h \
     qblitter_directfb.h \
-    qdirectfbconvenience.h
+    qdirectfbconvenience.h \
+    qdirectfbinput.h
 target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
 INSTALLS += target

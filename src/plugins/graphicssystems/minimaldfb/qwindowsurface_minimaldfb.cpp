@@ -53,7 +53,7 @@ QDirectFbWindowSurface::QDirectFbWindowSurface
     : QWindowSurface(window), m_screen(screen), m_lock(false)
 {
     window->setWindowSurface(this);
-    m_dfbWindow = m_screen->createWindow(window->rect());
+    m_dfbWindow = m_screen->createWindow(window->rect(),window);
     DFBResult result = m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
     if (result != DFB_OK) {
         DirectFBError("QDirectFbWindowSurface::QDirectFbWindowSurface: unable to get windows surface",result);
@@ -66,7 +66,6 @@ QDirectFbWindowSurface::QDirectFbWindowSurface
     pmdata->setBlittable(blitter);
 
     m_pixmap = new QPixmap(pmdata);
-
 }
 
 QDirectFbWindowSurface::~QDirectFbWindowSurface()

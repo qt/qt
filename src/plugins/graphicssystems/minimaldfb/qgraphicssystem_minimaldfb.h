@@ -42,6 +42,8 @@
 #ifndef QGRAPHICSSYSTEM_MINIMAL_H
 #define QGRAPHICSSYSTEM_MINIMAL_H
 
+#include "qdirectfbinput.h"
+
 #include <QtGui/private/qgraphicssystem_p.h>
 #include <directfb.h>
 
@@ -58,7 +60,7 @@ public:
     QImage::Format format() const { return m_format; }
     QSize physicalSize() const { return m_physicalSize; }
 
-    IDirectFBWindow *createWindow(const QRect &);
+    IDirectFBWindow *createWindow(const QRect &,QWidget *tlw);
 
 public:
     QRect m_geometry;
@@ -66,8 +68,11 @@ public:
     QImage::Format m_format;
     QSize m_physicalSize;
 
+    QDirectFbInput m_input;
+
     IDirectFBScreen *m_screen;
     IDirectFBDisplayLayer *m_layer;
+
 };
 
 class QDirectFbGraphicsSystem : public QGraphicsSystem

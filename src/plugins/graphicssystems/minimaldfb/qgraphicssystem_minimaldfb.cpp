@@ -55,6 +55,7 @@
 QT_BEGIN_NAMESPACE
 
 QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int display)
+    :QGraphicsSystemScreen() , m_input(this)
 {
     DFBResult result  = dfb->GetDisplayLayer(dfb, DLID_PRIMARY, &m_layer);
     if (result != DFB_OK) {
@@ -90,7 +91,7 @@ QDirectFbGraphicsSystemScreen::~QDirectFbGraphicsSystemScreen()
 {
 }
 
-IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect)
+IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect, QWidget *tlw)
 {
     IDirectFBWindow *window;
 
@@ -110,6 +111,10 @@ IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect)
     if (result != DFB_OK) {
         DirectFBError("QDirectFbGraphicsSystemScreen: failed to create window",result);
     }
+
+    DFBWindowID id;
+    window->GetID(window, &id);
+    m_input.addWindow(id,tlw);
     return window;
 }
 
