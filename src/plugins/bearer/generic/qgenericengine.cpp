@@ -136,12 +136,12 @@ QGenericEngine::~QGenericEngine()
 
 QString QGenericEngine::getInterfaceFromId(const QString &id)
 {
-    return configurationInterface.value(id.toUInt());
+    return configurationInterface.value(id);
 }
 
 bool QGenericEngine::hasIdentifier(const QString &id)
 {
-    return configurationInterface.contains(id.toUInt());
+    return configurationInterface.contains(id);
 }
 
 QString QGenericEngine::bearerName(const QString &id)
@@ -258,6 +258,7 @@ void QGenericEngine::doRequestUpdate()
             ptr->type = QNetworkConfiguration::InternetAccessPoint;
 
             accessPointConfigurations.insert(id, ptr);
+            configurationInterface.insert(id, interface.name());
 
             emit configurationAdded(ptr);
         }
@@ -267,6 +268,7 @@ void QGenericEngine::doRequestUpdate()
         QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr =
             accessPointConfigurations.take(previous.takeFirst());
 
+        configurationInterface.remove(ptr->id);
         emit configurationRemoved(ptr);
     }
 

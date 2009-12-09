@@ -75,7 +75,7 @@ private Q_SLOTS:
     void doRequestUpdate();
 
 private:
-    QMap<uint, QString> configurationInterface;
+    QMap<QString, QString> configurationInterface;
     QTimer pollTimer;
 };
 
