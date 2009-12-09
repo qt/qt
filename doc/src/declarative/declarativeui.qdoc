@@ -102,5 +102,6 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {Extending QML}
 \o \l {QML Internationalization}
 \o \l {QtDeclarative Module}
+\o \l {Debugging QML}
 \endlist
 */
