@@ -71,11 +71,17 @@ class QEglContext;
 
 // Create an EGL context, but don't bind it to a surface.  If single-context
 // mode is enabled, this will return the previously-created context.
-Q_OPENVG_EXPORT QEglContext *qt_vg_create_context(QPaintDevice *device);
+// "devType" indicates the type of device using the context, usually
+// QInternal::Widget or QInternal::Pixmap.
+Q_OPENVG_EXPORT QEglContext *qt_vg_create_context
+    (QPaintDevice *device, int devType);
 
 // Destroy an EGL context that was created by qt_vg_create_context().
 // If single-context mode is enabled, this will decrease the reference count.
-Q_OPENVG_EXPORT void qt_vg_destroy_context(QEglContext *context);
+// "devType" indicates the type of device destroying the context, usually
+// QInternal::Widget or QInternal::Pixmap.
+Q_OPENVG_EXPORT void qt_vg_destroy_context
+    (QEglContext *context, int devType);
 
 // Return the shared pbuffer surface that can be made current to
 // destroy VGImage objects when there is no other surface available.
