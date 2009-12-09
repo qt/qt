@@ -1562,11 +1562,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     QGLTextureGlyphCache *cache =
-        (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, QTransform());
+        (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, QTransform(), glyphType);
 
     if (!cache || cache->cacheType() != glyphType) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
-        ti.fontEngine->setGlyphCache(ctx, cache);
+        ti.fontEngine->setGlyphCache(ctx, cache, glyphType);
     }
 
     cache->setPaintEnginePrivate(this);

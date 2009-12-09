@@ -742,14 +742,15 @@ void QFontEngine::expireGlyphCache()
     }
 }
 
-void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
+void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data, QFontEngineGlyphCache::Type type)
 {
     Q_ASSERT(data);
     QList<QFontEngineGlyphCache*> items = m_glyphPointerHash.value(key);
 
     for (QList<QFontEngineGlyphCache*>::iterator it = items.begin(), end = items.end(); it != end; ++it) {
         QFontEngineGlyphCache *c = *it;
-        if (qtransform_equals_no_translate(c->m_transform, data->m_transform)) {
+        if (qtransform_equals_no_translate(c->m_transform, data->m_transform)
+            && c->cacheType() == type) {
             if (c == data)
                 return;
             items.removeAll(c);
@@ -786,13 +787,14 @@ void QFontEngine::setGlyphCache(QFontEngineGlyphCache::Type key, QFontEngineGlyp
     expireGlyphCache();
 }
 
-QFontEngineGlyphCache *QFontEngine::glyphCache(void *key, const QTransform &transform) const
+QFontEngineGlyphCache *QFontEngine::glyphCache(void *key, const QTransform &transform, QFontEngineGlyphCache::Type type) const
 {
     QList<QFontEngineGlyphCache*> items = m_glyphPointerHash.value(key);
 
     for (QList<QFontEngineGlyphCache*>::iterator it = items.begin(), end = items.end(); it != end; ++it) {
         QFontEngineGlyphCache *c = *it;
-        if (qtransform_equals_no_translate(c->m_transform, transform)) {
+        if (qtransform_equals_no_translate(c->m_transform, transform)
+            && type == c->cacheType()) {
             m_glyphCacheQueue.removeAll(c); // last used, move it up
             m_glyphCacheQueue.append(c);
             return c;

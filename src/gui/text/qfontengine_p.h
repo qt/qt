@@ -218,9 +218,9 @@ public:
 
     virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
 
-    void setGlyphCache(void *key, QFontEngineGlyphCache *data);
+    void setGlyphCache(void *key, QFontEngineGlyphCache *data, QFontEngineGlyphCache::Type type);
     void setGlyphCache(QFontEngineGlyphCache::Type key, QFontEngineGlyphCache *data);
-    QFontEngineGlyphCache *glyphCache(void *key, const QTransform &transform) const;
+    QFontEngineGlyphCache *glyphCache(void *key, const QTransform &transform, QFontEngineGlyphCache::Type type) const;
     QFontEngineGlyphCache *glyphCache(QFontEngineGlyphCache::Type key, const QTransform &transform) const;
 
     static const uchar *getCMap(const uchar *table, uint tableSize, bool *isSymbolFont, int *cmapSize);
