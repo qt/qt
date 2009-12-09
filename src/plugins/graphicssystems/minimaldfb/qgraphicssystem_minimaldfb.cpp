@@ -102,8 +102,8 @@ IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect, 
     description.height = rect.height();
     description.posx = rect.x();
     description.posy = rect.y();
-    description.options = DFBWindowOptions(DWOP_GHOST|DWOP_ALPHACHANNEL);
-    description.caps = DFBWindowCapabilities(DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER);
+    description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
+    description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER);
     description.surface_caps = DSCAPS_PREMULTIPLIED;
 
     DFBResult result = m_layer->CreateWindow(m_layer,&description,&window);
