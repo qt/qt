@@ -146,7 +146,7 @@ void tst_QGraphicsLinearLayout::initTestCase()
 {
     // since the style will influence the results, we have to ensure
     // that the tests are run using the same style on all platforms
-#ifdef Q_WS_S60
+#if defined( Q_WS_S60 )|| defined (Q_WS_WINCE)
     QApplication::setStyle(new QWindowsStyle);
 #else
     QApplication::setStyle(new QPlastiqueStyle);
