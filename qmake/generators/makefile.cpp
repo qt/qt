@@ -65,12 +65,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef Q_OS_WIN32
-#define NO_STDERR "2> NUL"
-#else
-#define NO_STDERR "2>/dev/null"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // Well, Windows doesn't have this, so here's the macro
@@ -1814,8 +1808,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 tmp_clean = tmp_out;
             if(tmp_clean.indexOf("${QMAKE_") == -1) {
                 t << "\n\t" << "-$(DEL_FILE) " << tmp_clean;
-                if (isForSymbian())
-                    t << " " << NO_STDERR; // Eliminate unnecessary warnings
                 wrote_clean = true;
             }
             if(!wrote_clean_cmds || !wrote_clean) {
@@ -1843,12 +1835,8 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                             cleans.append(files);
                     }
                 }
-                if(!cleans.isEmpty()) {
-                    if (isForSymbian())
-                        t << valGlue(cleans, "\n\t" + del_statement, " " NO_STDERR "\n\t" + del_statement, " " NO_STDERR);
-                    else
-                        t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
-                }
+                if(!cleans.isEmpty())
+                    t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
                 if(!wrote_clean_cmds) {
                     for(QStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
                         t << "\n\t" << replaceExtraCompilerVariables(tmp_clean_cmds, (*input),
