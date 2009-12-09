@@ -371,25 +371,34 @@ QML_DEFINE_TYPE(Qt,4,6,Flickable,QmlGraphicsFlickable)
 */
 
 /*!
-    \internal
-    \class QmlGraphicsFlickable
-    \brief The QmlGraphicsFlickable class provides a view that can be "flicked".
+    \qmlsignal Flickable::onMovementStarted()
 
-    \ingroup group_widgets
+    This handler is called when the view begins moving due to user
+    interaction.
+*/
 
-    QmlGraphicsFlickable allows its children to be dragged and flicked.
+/*!
+    \qmlsignal Flickable::onMovementEnded()
 
-\code
-Flickable {
-    width: 320; height: 480; viewportWidth: image.width; viewportHeight: image.height
-    Image { id: image; source: "bigimage.png" }
-}
-\endcode
+    This handler is called when the view stops moving due to user
+    interaction.  If a flick was generated, this handler will
+    be triggered once the flick stops.  If a flick was not
+    generated, the handler will be triggered when the
+    user stops dragging - i.e. a mouse or touch release.
+*/
 
-    Note that QmlGraphicsFlickable does not automatically clip its contents. If
-    it is not full-screen it is likely that QmlGraphicsItem::clip should be set
-    to true.
+/*!
+    \qmlsignal Flickable::onFlickStarted()
 
+    This handler is called when the view is flicked.  A flick
+    starts from the point that the mouse or touch is released,
+    while still in motion.
+*/
+
+/*!
+    \qmlsignal Flickable::onFlickEnded()
+
+    This handler is called when the view stops moving due to a flick.
 */
 
 /*!
@@ -1195,6 +1204,12 @@ void QmlGraphicsFlickable::setFlickDeceleration(qreal deceleration)
     d->deceleration = deceleration;
 }
 
+/*!
+    \qmlproperty bool Flickable::flicking
+
+    This property holds whether the view is currently moving due to
+    the user flicking the view.
+*/
 bool QmlGraphicsFlickable::isFlicking() const
 {
     Q_D(const QmlGraphicsFlickable);
@@ -1242,6 +1257,12 @@ void QmlGraphicsFlickable::setReportedVelocitySmoothing(qreal reportedVelocitySm
     emit reportedVelocitySmoothingChanged(reportedVelocitySmoothing);
 }
 
+/*!
+    \qmlproperty bool Flickable::moving
+
+    This property holds whether the view is currently moving due to
+    the user either dragging or flicking the view.
+*/
 bool QmlGraphicsFlickable::isMoving() const
 {
     Q_D(const QmlGraphicsFlickable);
