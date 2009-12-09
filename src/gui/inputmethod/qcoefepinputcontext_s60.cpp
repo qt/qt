@@ -437,6 +437,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attributes)
 {
     TCharFormat cFormat;
+    QColor styleTextColor = QApplication::palette("QLineEdit").text().color();
+    TLogicalRgb tontColor(TRgb(styleTextColor.red(), styleTextColor.green(), styleTextColor.blue(), styleTextColor.alpha()));
+    cFormat.iFontPresentation.iTextColor = tontColor;
+
     TInt numChars = 0;
     TInt charPos = 0;
     int oldSize = attributes->size();

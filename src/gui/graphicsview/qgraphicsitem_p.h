@@ -562,7 +562,10 @@ public:
     {}
 
     inline void detach()
-    { item->setGraphicsEffect(0); }
+    {
+        item->d_ptr->graphicsEffect = 0;
+        item->prepareGeometryChange();
+    }
 
     inline const QGraphicsItem *graphicsItem() const
     { return item; }

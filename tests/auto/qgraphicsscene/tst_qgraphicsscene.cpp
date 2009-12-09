@@ -280,6 +280,7 @@ private slots:
     void task160653_selectionChanged();
     void task250680_childClip();
     void taskQTBUG_5904_crashWithDeviceCoordinateCache();
+    void taskQT657_paintIntoCacheWithTransparentParts();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -1462,6 +1463,7 @@ void tst_QGraphicsScene::focusItemLostFocus()
 class ClearTestItem : public QGraphicsRectItem
 {
 public:
+    ClearTestItem(QGraphicsItem *parent = 0) : QGraphicsRectItem(parent) {}
     ~ClearTestItem() { qDeleteAll(items); }
     QList<QGraphicsItem *> items;
 };
@@ -1486,6 +1488,11 @@ void tst_QGraphicsScene::clear()
     scene.addItem(secondItem);
     QCOMPARE(scene.items().at(0), firstItem);
     QCOMPARE(scene.items().at(1), secondItem);
+
+    ClearTestItem *thirdItem = new ClearTestItem(firstItem);
+    QGraphicsItem *forthItem = new QGraphicsRectItem(firstItem);
+    thirdItem->items += forthItem;
+
     // must not crash even if firstItem deletes secondItem
     scene.clear();
     QVERIFY(scene.items().isEmpty());
@@ -4262,6 +4269,44 @@ void tst_QGraphicsScene::taskQTBUG_5904_crashWithDeviceCoordinateCache()
     scene.render(&painter);
     painter.end();
     // No crash, then it passed!
+}
+
+void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
+{
+    QWidget *w = new QWidget();
+    w->setPalette(Qt::blue);
+    w->setGeometry(0, 0, 50, 50);
+
+    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsView *view = new QGraphicsView(scene);
+
+    QGraphicsProxyWidget *proxy = scene->addWidget(w);
+    proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    proxy->rotate(15);
+
+    view->show();
+    QTest::qWaitForWindowShown(view);
+    w->update(10,10,10,10);
+    QTest::qWait(50);
+
+    QPixmap pix;
+    QGraphicsItemPrivate* itemp = QGraphicsItemPrivate::get(proxy);
+    QPixmapCache::Key key = itemp->extraItemCache()->deviceData.value(view->viewport()).key;
+    QVERIFY(QPixmapCache::find(key, &pix));
+
+    QTransform t = proxy->sceneTransform();
+    // Map from scene coordinates to pixmap coordinates.
+    // X origin in the pixmap is the most-left point
+    // of the item's boundingRect in the scene.
+    qreal adjust = t.mapRect(proxy->boundingRect().toRect()).left();
+    QRect rect = t.mapRect(QRect(10, 10, 10, 10)).adjusted(-adjust, 0, -adjust + 1, 1);
+    QPixmap subpix = pix.copy(rect);
+
+    QImage im = subpix.toImage();
+    for(int i = 0; i < im.width(); i++) {
+        for(int j = 0; j < im.height(); j++)
+            QCOMPARE(qAlpha(im.pixel(i, j)), 255);
+    }
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

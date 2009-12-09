@@ -182,6 +182,7 @@ public:
     }
     void init();
 
+    static QMenuPrivate *get(QMenu *m) { return m->d_func(); }
     int scrollerHeight() const;
 
     //item calculations

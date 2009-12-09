@@ -396,10 +396,10 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
 void QToolBarPrivate::unplug(const QRect &_r)
 {
     Q_Q(QToolBar);
-    layout->setExpanded(false);
     QRect r = _r;
     r.moveTopLeft(q->mapToGlobal(QPoint(0, 0)));
     setWindowState(true, true, r);
+    layout->setExpanded(false);
 }
 
 void QToolBarPrivate::plug(const QRect &r)
