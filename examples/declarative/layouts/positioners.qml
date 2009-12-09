@@ -16,12 +16,7 @@ Rectangle {
         }
         add: Transition {
             NumberAnimation {
-                matchProperties: "y"; from: 500; duration:500; easing: "easeOutQuad"
-            }
-        }
-        remove: Transition {
-            NumberAnimation {
-                matchProperties:"y"; to: 500; duration:500; easing: "easeInQuad"
+                matchProperties: "y"; easing: "easeOutQuad"
             }
         }
         Rectangle { color: "red"; width: 100; height: 50; border.color: "black"; radius: 15 }
@@ -45,12 +40,7 @@ Rectangle {
         }
         add: Transition {
             NumberAnimation {
-                matchProperties: "x"; from: 500; duration:500; easing: "easeOutQuad"
-            }
-        }
-        remove: Transition {
-            NumberAnimation {
-                matchProperties: "x"; to: 500; duration:500; easing: "easeInQuad"
+                matchProperties: "x"; easing: "easeOutQuad"
             }
         }
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
@@ -102,12 +92,6 @@ Rectangle {
         x: 260
         y: 0
         columns: 3
-
-        remove: Transition {
-            NumberAnimation {
-                matchProperties: "x,y"; easing: "easeOutBounce"
-            }
-        }
 
         move: Transition {
             NumberAnimation {
