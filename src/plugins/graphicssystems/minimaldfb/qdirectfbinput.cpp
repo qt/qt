@@ -64,12 +64,10 @@ void QDirectFbInput::handleEvents()
             switch (event.window.type) {
             case DWET_BUTTONDOWN:
             case DWET_BUTTONUP:
-//            case DWET_MOTION:
+            case DWET_MOTION:
             case DWET_WHEEL:
                 handleMouseEvents(event);
                 break;
-            case DWET_KEYDOWN:
-                qDebug() << "FOOOOBAR!";
             }
 
         } else

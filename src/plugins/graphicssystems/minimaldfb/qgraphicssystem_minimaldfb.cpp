@@ -151,7 +151,10 @@ QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
 
 QPixmapData *QDirectFbGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
-    return new QBlittablePixmapData(type);
+    if (type == QPixmapData::BitmapType)
+        return new QRasterPixmapData(type);
+    else
+        return new QBlittablePixmapData(type);
 }
 
 QWindowSurface *QDirectFbGraphicsSystem::createWindowSurface(QWidget *widget) const

@@ -103,8 +103,7 @@ void QBlittablePixmapData::fromImage(const QImage &image,
     resize(image.width(),image.height());
     QImage *thisImg = blittable()->lock();
     QPainter p(thisImg);
-    p.drawImage(0,0,image,flags);
-
+    p.drawImage(blittable()->rect(),image,image.rect());
 }
 
 QPaintEngine *QBlittablePixmapData::paintEngine() const
