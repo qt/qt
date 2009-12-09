@@ -56,6 +56,9 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#if defined(Q_OS_MAC)
+# include <private/qcore_mac_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -147,8 +150,20 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
     char *ret = 0;
 #if defined(Q_OS_MAC)
     // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) {
         ret = realpath(path.toLocal8Bit().constData(), (char*)0);
+    } else {
+        // on 10.5 we can use FSRef to resolve the file path.
+        FSRef fsref;
+        if (FSPathMakeRef((const UInt8 *)QDir::cleanPath(path).toUtf8().data(), &fsref, 0) == noErr) {
+            CFURLRef urlref = CFURLCreateFromFSRef(NULL, &fsref);
+            CFStringRef canonicalPath = CFURLCopyFileSystemPath(urlref, kCFURLPOSIXPathStyle);
+            QString ret = QCFString::toQString(canonicalPath);
+            CFRelease(canonicalPath);
+            CFRelease(urlref);
+            return ret;
+        }
+    }
 #else
     ret = realpath(path.toLocal8Bit().constData(), (char*)0);
 #endif
