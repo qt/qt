@@ -73,15 +73,15 @@ void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurati
     }
 
     if (ptr->state == QNetworkConfiguration::Active) {
-        ++onlineConfigurations;
-        if (!firstUpdate && onlineConfigurations == 1)
+        onlineConfigurations.insert(ptr);
+        if (!firstUpdate && onlineConfigurations.count() == 1)
             emit onlineStateChanged(true);
     }
 }
 
 void QNetworkConfigurationManagerPrivate::configurationRemoved(QNetworkConfigurationPrivatePointer ptr)
 {
-    ptr.data()->isValid = false;
+    ptr->isValid = false;
 
     if (!firstUpdate) {
         QNetworkConfiguration item;
@@ -89,11 +89,9 @@ void QNetworkConfigurationManagerPrivate::configurationRemoved(QNetworkConfigura
         emit configurationRemoved(item);
     }
 
-    if (ptr.data()->state == QNetworkConfiguration::Active) {
-        --onlineConfigurations;
-        if (!firstUpdate && onlineConfigurations == 0)
-            emit onlineStateChanged(false);
-    }
+    onlineConfigurations.remove(ptr);
+    if (!firstUpdate && onlineConfigurations.isEmpty())
+        emit onlineStateChanged(false);
 }
 
 void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigurationPrivatePointer ptr)
@@ -104,20 +102,17 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
         emit configurationChanged(item);
     }
 
-    qDebug() << "Need to recalculate online state.";
-    QNetworkConfiguration::StateFlags oldState = ptr->state;
+    bool previous = !onlineConfigurations.isEmpty();
 
-    if (ptr->state == QNetworkConfiguration::Active && oldState != ptr->state) {
-        // configuration went online
-        ++onlineConfigurations;
-        if (!firstUpdate && onlineConfigurations == 1)
-            emit onlineStateChanged(true);
-    } else if (ptr->state != QNetworkConfiguration::Active && oldState == QNetworkConfiguration::Active) {
-        // configuration went offline
-        --onlineConfigurations;
-        if (!firstUpdate && onlineConfigurations == 0)
-            emit onlineStateChanged(false);
-    }
+    if (ptr->state == QNetworkConfiguration::Active)
+        onlineConfigurations.insert(ptr);
+    else
+        onlineConfigurations.remove(ptr);
+
+    bool online = !onlineConfigurations.isEmpty();
+
+    if (!firstUpdate && online != previous)
+        emit onlineStateChanged(online);
 }
 
 void QNetworkConfigurationManagerPrivate::updateInternetServiceConfiguration()
@@ -179,7 +174,7 @@ void QNetworkConfigurationManagerPrivate::updateInternetServiceConfiguration()
 void QNetworkConfigurationManagerPrivate::updateConfigurations()
 {
     if (firstUpdate) {
-        onlineConfigurations = 0;
+        updating = false;
 
         QFactoryLoader *l = loader();
         QStringList keys = l->keys();
@@ -202,6 +197,14 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 QNetworkSessionEngine *nmWifi = nmPlugin->create(QLatin1String("networkmanager"));
                 if (nmWifi) {
                     sessionEngines.append(nmWifi);
+                    connect(nmWifi, SIGNAL(updateCompleted()),
+                            this, SIGNAL(configurationUpdateComplete()));
+                    connect(nmWifi, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
+                    connect(nmWifi, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
+                    connect(nmWifi, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
                 }
             }
         }

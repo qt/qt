@@ -7,12 +7,12 @@ DEFINES += BEARER_ENGINE BACKEND_NM
 
 HEADERS += qnmdbushelper.h \
            qnetworkmanagerservice.h \
-           qnmwifiengine.h
+           qnetworkmanagerengine.h
 
 SOURCES += main.cpp \
            qnmdbushelper.cpp \
            qnetworkmanagerservice.cpp \
-           qnmwifiengine.cpp
+           qnetworkmanagerengine.cpp
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer

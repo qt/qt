@@ -249,7 +249,7 @@ void QGenericEngine::doRequestUpdate()
             if (changed)
                 emit configurationChanged(ptr);
         } else {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr(new QNetworkConfigurationPrivate);
+            QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
 
             ptr->name = name;
             ptr->isValid = true;
@@ -275,6 +275,30 @@ void QGenericEngine::doRequestUpdate()
     pollTimer.start();
 
     emit updateCompleted();
+}
+
+QNetworkSession::State QGenericEngine::sessionStateForId(const QString &id)
+{
+    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+
+    if (!ptr)
+        return QNetworkSession::Invalid;
+
+    if (!ptr->isValid) {
+        return QNetworkSession::Invalid;
+    } else if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+        return QNetworkSession::Connected;
+    } else if ((ptr->state & QNetworkConfiguration::Discovered) ==
+                QNetworkConfiguration::Discovered) {
+        return QNetworkSession::Disconnected;
+    } else if ((ptr->state & QNetworkConfiguration::Defined) == QNetworkConfiguration::Defined) {
+        return QNetworkSession::NotAvailable;
+    } else if ((ptr->state & QNetworkConfiguration::Undefined) ==
+                QNetworkConfiguration::Undefined) {
+        return QNetworkSession::NotAvailable;
+    }
+
+    return QNetworkSession::Invalid;
 }
 
 QT_END_NAMESPACE

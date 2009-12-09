@@ -69,6 +69,8 @@ public:
 
     void requestUpdate();
 
+    QNetworkSession::State sessionStateForId(const QString &id);
+
     static QGenericEngine *instance();
 
 private Q_SLOTS:

@@ -95,6 +95,7 @@ QNetworkManagerInterface::~QNetworkManagerInterface()
 {
     delete d->connectionInterface;
     delete d;
+    delete nmDBusHelper;
 }
 
 bool QNetworkManagerInterface::isValid()
@@ -692,9 +693,12 @@ bool QNetworkManagerSettingsConnection::setConnections()
 
     bool allOk = false;
     if(!dbusConnection.connect(d->service, d->path,
-                           NM_DBUS_IFACE_SETTINGS_CONNECTION, "NewConnection",
+                           NM_DBUS_IFACE_SETTINGS_CONNECTION, "Updated",
                            this, SIGNAL(updated(QNmSettingsMap)))) {
         allOk = true;
+    } else {
+        QDBusError error = dbusConnection.lastError();
+        qDebug() << error.name() << error.message() << error.type();
     }
 
     nmDBusHelper = new QNmDBusHelper;

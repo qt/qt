@@ -56,9 +56,10 @@ static QNetworkSessionEngine *getEngineFromId(const QString &id)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
 
-    QNetworkSessionEngine *engine = priv->configurationEngine.value(id);
-    if (engine && engine->hasIdentifier(id))
-        return engine;
+    foreach (QNetworkSessionEngine *engine, priv->sessionEngines) {
+        if (engine->hasIdentifier(id))
+            return engine;
+    }
 
     return 0;
 }
@@ -104,6 +105,7 @@ void QNetworkSessionPrivate::syncStateWithInterface()
             this, SLOT(forcedSessionClose(QNetworkConfiguration)));
 
     opened = false;
+    isActive = false;
     state = QNetworkSession::Invalid;
     lastError = QNetworkSession::UnknownSessionError;
 
@@ -341,6 +343,7 @@ void QNetworkSessionPrivate::updateStateFromServiceNetwork()
         }
 
         state = QNetworkSession::Connected;
+        qDebug() << oldState << "->" << state;
         if (state != oldState)
             emit q->stateChanged(state);
 
@@ -352,31 +355,22 @@ void QNetworkSessionPrivate::updateStateFromServiceNetwork()
     else
         state = QNetworkSession::Disconnected;
 
+    qDebug() << oldState << "->" << state;
     if (state != oldState)
         emit q->stateChanged(state);
 }
 
 void QNetworkSessionPrivate::updateStateFromActiveConfig()
 {
+    if (!engine)
+        return;
+
     QNetworkSession::State oldState = state;
 
-    bool newActive = false;
-
-    if (!activeConfig.isValid()) {
-        state = QNetworkSession::Invalid;
-    } else if ((activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
-        state = QNetworkSession::Connected;
-        newActive = opened;
-    } else if ((activeConfig.state() & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered) {
-        state = QNetworkSession::Disconnected;
-    } else if ((activeConfig.state() & QNetworkConfiguration::Defined) == QNetworkConfiguration::Defined) {
-        state = QNetworkSession::NotAvailable;
-    } else if ((activeConfig.state() & QNetworkConfiguration::Undefined) == QNetworkConfiguration::Undefined) {
-        state = QNetworkSession::NotAvailable;
-    }
+    state = engine->sessionStateForId(activeConfig.identifier());
 
     bool oldActive = isActive;
-    isActive = newActive;
+    isActive = (state == QNetworkSession::Connected) ? opened : false;
 
     if (!oldActive && isActive)
         emit quitPendingWaitsForOpened();

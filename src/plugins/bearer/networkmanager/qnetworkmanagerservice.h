@@ -329,8 +329,8 @@ public:
 
 Q_SIGNALS:
     
-    void updated(QMap< QString, QMap<QString,QVariant> > s);
-    void removed(const QString &);
+    void updated(const QNmSettingsMap &settings);
+    void removed(const QString &path);
 
 private:
     QNmDBusHelper *nmDBusHelper;

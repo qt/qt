@@ -54,6 +54,7 @@
 //
 
 #include "qnetworkconfiguration_p.h"
+#include "qnetworksession.h"
 
 #include <QtCore/qobject.h>
 #include <QtCore/qglobal.h>
@@ -90,6 +91,8 @@ public:
     virtual void disconnectFromId(const QString &id) = 0;
 
     virtual void requestUpdate() = 0;
+
+    virtual QNetworkSession::State sessionStateForId(const QString &id) = 0;
 
 public:
     //this table contains an up to date list of all configs at any time.

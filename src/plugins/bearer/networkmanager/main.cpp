@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qnmwifiengine.h"
+#include "qnetworkmanagerengine.h"
 
 #include <QtNetwork/qbearerplugin.h>
 
@@ -73,7 +73,7 @@ QStringList QNetworkManagerEnginePlugin::keys() const
 QBearerEngine *QNetworkManagerEnginePlugin::create(const QString &key) const
 {
     if (key == QLatin1String("networkmanager"))
-        return new QNmWifiEngine;
+        return new QNetworkManagerEngine;
     else
         return 0;
 }

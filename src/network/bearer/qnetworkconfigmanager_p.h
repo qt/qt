@@ -80,9 +80,6 @@ public:
 
     void performAsyncConfigurationUpdate();
 
-#ifdef BEARER_ENGINE
-    QHash<QString, QNetworkSessionEngine *> configurationEngine;
-#endif
     bool firstUpdate;
 
 public slots:
@@ -107,7 +104,7 @@ public:
     QList<QNetworkSessionEngine *> sessionEngines;
 
 private:
-    uint onlineConfigurations;
+    QSet<QNetworkConfigurationPrivatePointer> onlineConfigurations;
 
     bool updating;
     QSet<int> updatingEngines;

@@ -48,6 +48,8 @@
 #include "qnetworksessionengine_p.h"
 #endif
 
+#include <QtCore/qstringlist.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNetworkConfigurationManagerPrivate, connManager);
