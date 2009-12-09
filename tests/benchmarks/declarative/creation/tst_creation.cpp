@@ -44,6 +44,7 @@
 #include <QmlComponent>
 #include <QmlMetaType>
 #include <QDebug>
+#include <QGraphicsScene>
 #include <QGraphicsItem>
 #include <QmlGraphicsItem>
 #include <private/qobject_p.h>
@@ -71,6 +72,7 @@ private slots:
     void itemtree_cpp();
     void itemtree_data_cpp();
     void itemtree_qml();
+    void itemtree_scene_cpp();
 
 private:
     QmlEngine engine;
@@ -322,6 +324,24 @@ void tst_creation::itemtree_qml()
         QObject *obj = component.create();
         delete obj;
     }
+}
+
+void tst_creation::itemtree_scene_cpp()
+{
+    QGraphicsScene scene;
+    QmlGraphicsItem *root = new QmlGraphicsItem;
+    scene.addItem(root);
+    QBENCHMARK {
+        QmlGraphicsItem *item = new QmlGraphicsItem;
+        for (int i = 0; i < 30; ++i) {
+            QmlGraphicsItem *child = new QmlGraphicsItem;
+            QmlGraphics_setParent_noEvent(child,item);
+            child->setParentItem(item);
+        }
+        item->setParentItem(root);
+        delete item;
+    }
+    delete root;
 }
 
 
