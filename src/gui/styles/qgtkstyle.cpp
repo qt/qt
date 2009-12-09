@@ -3389,7 +3389,7 @@ QRect QGtkStyle::subElementRect(SubElement element, const QStyleOption *option, 
             GtkBorder *border = 0;
             d->gtk_widget_style_get(gtkButton, "inner-border", &border, NULL);
             if (border) {
-                r = option->rect.adjusted(border->left, border->top, -border->right, -border->top);
+                r = option->rect.adjusted(border->left, border->top, -border->right, -border->bottom);
                 d->gtk_border_free(border);
             } else {
                 r = option->rect.adjusted(1, 1, -1, -1);
