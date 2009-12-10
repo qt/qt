@@ -41,6 +41,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/mediaobject.h            \
            $$PHONON_MMF_DIR/mmf_medianode.h          \
            $$PHONON_MMF_DIR/mmf_videoplayer.h        \
+           $$PHONON_MMF_DIR/stereowidening.h         \
            $$PHONON_MMF_DIR/objectdump.h             \
            $$PHONON_MMF_DIR/objectdump_symbian.h     \
            $$PHONON_MMF_DIR/objecttree.h             \
@@ -66,6 +67,7 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/mediaobject.cpp          \
            $$PHONON_MMF_DIR/mmf_medianode.cpp        \
            $$PHONON_MMF_DIR/mmf_videoplayer.cpp      \
+           $$PHONON_MMF_DIR/stereowidening.cpp       \
            $$PHONON_MMF_DIR/objectdump.cpp           \
            $$PHONON_MMF_DIR/objectdump_symbian.cpp   \
            $$PHONON_MMF_DIR/objecttree.cpp           \
