@@ -145,7 +145,9 @@ QmlOpenMetaObject::QmlOpenMetaObject(QObject *obj, QmlOpenMetaObjectType *type, 
     d->autoCreate = automatic;
     d->object = obj;
 
-    d->type = type;
+//    d->type = type;
+    d->type = new QmlOpenMetaObjectType(0);
+    d->ownType = true;
     d->type->d->init(obj);
 
     QObjectPrivate *op = QObjectPrivate::get(obj);
