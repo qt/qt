@@ -3018,10 +3018,10 @@ void QRasterPaintEngine::drawCachedGlyphs(const QPointF &p, const QTextItemInt &
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat) : d->glyphCacheType;
 
     QImageTextureGlyphCache *cache =
-        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(glyphType, s->matrix);
+        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(0, glyphType, s->matrix);
     if (!cache) {
         cache = new QImageTextureGlyphCache(glyphType, s->matrix);
-        ti.fontEngine->setGlyphCache(glyphType, cache);
+        ti.fontEngine->setGlyphCache(0, cache);
     }
 
     cache->populate(ti, glyphs, positions);
