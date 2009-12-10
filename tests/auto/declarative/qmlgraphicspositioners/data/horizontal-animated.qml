@@ -6,12 +6,7 @@ Item {
     Row {
         add: Transition {
             NumberAnimation {
-                matchProperties: "x"; from: -100
-            }
-        }
-        remove: Transition {
-            NumberAnimation {
-                matchProperties: "x"; to: -100
+                matchProperties: "x";
             }
         }
         move: Transition {
@@ -22,19 +17,22 @@ Item {
         Rectangle {
             objectName: "one"
             color: "red"
+            x: -100;
             width: 50
             height: 50
         }
         Rectangle {
             objectName: "two"
             color: "blue"
+            x: -100;
             opacity: 0
             width: 50
             height: 50
         }
         Rectangle {
             objectName: "three"
-            color: "red"
+            x: -100;
+            color: "green"
             width: 50
             height: 50
         }

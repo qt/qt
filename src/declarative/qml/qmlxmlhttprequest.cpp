@@ -1296,7 +1296,7 @@ static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngin
 
 
     // Argument 1 - URL
-    QUrl url(context->argument(1).toString());
+    QUrl url = QUrl::fromEncoded(context->argument(1).toString().toUtf8());
 
     if (url.isRelative()) {
         url = QmlScriptEngine::get(engine)->resolvedUrl(context,url);

@@ -495,8 +495,12 @@ void QmlGraphicsAnchorsPrivate::updateVerticalAnchors()
             }
         } else if (usedAnchors & QmlGraphicsAnchors::HasBaselineAnchor) {
             //Handle baseline
-            if (baseline.item->parentItem() == item->parentItem()) {
-                setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset() + baselineOffset);
+            if (baseline.item == item->parentItem()) {
+                setItemY(adjustedPosition(baseline.item, baseline.anchorLine)
+                        - item->baselineOffset() + baselineOffset);
+            } else if (baseline.item->parentItem() == item->parentItem()) {
+                setItemY(position(baseline.item, baseline.anchorLine)
+                        - item->baselineOffset() + baselineOffset);
             }
         }
         --updatingVerticalAnchor;

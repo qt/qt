@@ -2172,7 +2172,6 @@ void QmlGraphicsListView::trackedPositionChanged()
         } else {
             if (trackedPos < viewPos && d->currentItem->position() < viewPos) {
                 d->setPosition(d->currentItem->position() < trackedPos ? trackedPos : d->currentItem->position());
-                d->fixupPosition();
             } else if (d->trackedItem->endPosition() > viewPos + d->size()
                         && d->currentItem->endPosition() > viewPos + d->size()) {
                 qreal pos;
@@ -2186,7 +2185,6 @@ void QmlGraphicsListView::trackedPositionChanged()
                         pos = d->currentItem->position();
                 }
                 d->setPosition(pos);
-                d->fixupPosition();
             }
         }
     }
@@ -2493,7 +2491,7 @@ void QmlGraphicsListView::itemsMoved(int from, int to, int count)
             FxListItem *movedItem = moved.take(item->index);
             if (!movedItem)
                 movedItem = d->createItem(item->index);
-            if (item->index < firstVisible->index)
+            if (item->index <= firstVisible->index)
                 moveBy -= movedItem->size();
             it = d->visibleItems.insert(it, movedItem);
             ++it;
