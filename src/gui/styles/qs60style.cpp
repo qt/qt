@@ -454,9 +454,6 @@ void QS60StylePrivate::setThemePalette(QApplication *app) const
     Q_UNUSED(app)
     QPalette widgetPalette = QPalette(Qt::white);
     setThemePalette(&widgetPalette);
-    QApplication::setPalette(widgetPalette); //calling QApplication::setPalette clears palette hash
-    setThemePaletteHash(&widgetPalette);
-    storeThemePalette(&widgetPalette);
 }
 
 QPalette* QS60StylePrivate::themePalette()
@@ -470,8 +467,6 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     QPalette applicationPalette = QApplication::palette();
     applicationPalette.setBrush(QPalette::Window, backgroundTexture());
     setThemePalette(&applicationPalette);
-    QApplication::setPalette(applicationPalette);
-    setThemePaletteHash(&applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
@@ -659,7 +654,7 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::WindowText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
     palette->setColor(QPalette::ButtonText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 20, 0));
     palette->setColor(QPalette::Text,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
     palette->setColor(QPalette::ToolTipText,
@@ -687,6 +682,10 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::Midlight, palette->color(QPalette::Button).lighter(125));
     palette->setColor(QPalette::Mid, palette->color(QPalette::Button).darker(150));
     palette->setColor(QPalette::Shadow, Qt::black);
+
+    QApplication::setPalette(*palette); //calling QApplication::setPalette clears palette hash
+    setThemePaletteHash(palette);
+    storeThemePalette(palette);
 }
 
 void QS60StylePrivate::deleteThemePalette()
@@ -754,13 +753,15 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     QApplication::setPalette(widgetPalette, "QTableView");
     widgetPalette = *palette;
 
+    widgetPalette.setColor(QPalette::Text,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 27, 0));
     widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QLineEdit");
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::Text,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 34, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 27, 0));
     widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QTextEdit");
@@ -2344,10 +2345,10 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     int retValue = -1;
     switch (sh) {
         case SH_Table_GridLineColor:
-            retValue = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors,2,0).rgb();
+            retValue = int(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors,2,0).rgba());
             break;
         case SH_GroupBox_TextLabelColor:
-            retValue = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors,6,0).rgb();
+            retValue = int(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors,6,0).rgba());
             break;
         case SH_ScrollBar_ScrollWhenPointerLeavesControl:
             retValue = true;
@@ -2403,10 +2404,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             retValue = QFormLayout::WrapLongRows;
             break;
         default:
+            retValue = QCommonStyle::styleHint(sh, opt, widget, hret);
             break;
     }
-    if (retValue == -1)
-        retValue = QCommonStyle::styleHint(sh, opt, widget, hret);
     return retValue;
 }
 

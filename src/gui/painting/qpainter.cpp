@@ -7630,7 +7630,7 @@ start_lengthVariant:
                 // in the paint engines when drawing on floating point offsets
                 const qreal scale = painter->transform().m22();
                 if (scale != 0)
-                    yoff = qRound(yoff * scale) / scale;
+                    yoff = -qRound(-yoff * scale) / scale;
             }
         }
     }

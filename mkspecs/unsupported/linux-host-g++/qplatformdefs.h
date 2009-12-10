@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,49 +39,4 @@
 **
 ****************************************************************************/
 
-#include "private/qabstractbutton_p.h"
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-QT_BEGIN_NAMESPACE
-
-class QDialog;
-class QPushButton;
-
-class QPushButtonPrivate : public QAbstractButtonPrivate
-{
-    Q_DECLARE_PUBLIC(QPushButton)
-public:
-    enum AutoDefaultValue { Off = 0, On = 1, Auto = 2 };
-
-    QPushButtonPrivate()
-        : QAbstractButtonPrivate(QSizePolicy::PushButton), autoDefault(Auto),
-          defaultButton(false), flat(false), menuOpen(false), lastAutoDefault(false) {}
-
-    inline void init() { resetLayoutItemMargins(); }
-    static QPushButtonPrivate* get(QPushButton *b) { return b->d_func(); }
-#ifndef QT_NO_MENU
-    QPoint adjustedMenuPosition();
-#endif
-    void resetLayoutItemMargins();
-    void _q_popupPressed();
-    QDialog *dialogParent() const;
-
-    QPointer<QMenu> menu;
-    uint autoDefault : 2;
-    uint defaultButton : 1;
-    uint flat : 1;
-    uint menuOpen : 1;
-    mutable uint lastAutoDefault : 1;
-};
-
-QT_END_NAMESPACE
+#include "../../linux-g++/qplatformdefs.h"

@@ -574,7 +574,7 @@ void QmlGraphicsMouseRegion::setHovered(bool h)
     \list
     \o Qt.LeftButton
     \o Qt.RightButton
-    \o Qt.MiddleButton
+    \o Qt.MidButton
     \endlist
 
     To accept more than one button the flags can be combined with the

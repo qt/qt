@@ -598,16 +598,21 @@ int QToolBarAreaLayoutInfo::distance(const QPoint &pos) const
 {
     switch (dockPos) {
         case QInternal::LeftDock:
-            return pos.x() - rect.right();
+            if (pos.y() < rect.bottom())
+                return pos.x() - rect.right();
         case QInternal::RightDock:
-            return rect.left() - pos.x();
+            if (pos.y() < rect.bottom())
+                return rect.left() - pos.x();
         case QInternal::TopDock:
-            return pos.y() - rect.bottom();
+            if (pos.x() < rect.right())
+                return pos.y() - rect.bottom();
         case QInternal::BottomDock:
-            return rect.top() - pos.y();
+            if (pos.x() < rect.right())
+                return rect.top() - pos.y();
         default:
-            return -1;
+            break;
     }
+    return -1;
 }
 
 /******************************************************************************

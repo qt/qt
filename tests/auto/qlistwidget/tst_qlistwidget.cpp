@@ -867,6 +867,7 @@ void tst_QListWidget::moveItemsPriv_data()
     QTest::newRow("Same place") << 5 << 2 << 2 << false;
     QTest::newRow("Up") << 5 << 4 << 2 << true;
     QTest::newRow("Down") << 5 << 2 << 4 << true;
+    QTest::newRow("QTBUG-6532 assert") << 5 << 0 << 1 << false;
 }
 
 void tst_QListWidget::moveItemsPriv()
