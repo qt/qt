@@ -2584,6 +2584,35 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 /*!
     \internal
     \since 4.6
+    Returns the effective bounding rect of the given item space rect.
+    If the item has no effect, the rect is returned unmodified.
+    If the item has an effect, the effective rect can be extend beyond the
+    item's bounding rect, depending on the effect.
+
+    \sa boundingRect()
+*/
+QRectF QGraphicsItemPrivate::effectiveBoundingRect(const QRectF &rect) const
+{
+#ifndef QT_NO_GRAPHICSEFFECT
+    Q_Q(const QGraphicsItem);
+    QGraphicsEffect *effect = graphicsEffect;
+    if (scene && effect && effect->isEnabled()) {
+        QRectF sceneRect = q->mapRectToScene(rect);
+        QRectF sceneEffectRect;
+        foreach (QGraphicsView *view, scene->views()) {
+            QRectF deviceRect = view->d_func()->mapRectFromScene(sceneRect);
+            QRect deviceEffectRect = effect->boundingRectFor(deviceRect).toAlignedRect();
+            sceneEffectRect |= view->d_func()->mapRectToScene(deviceEffectRect);
+        }
+        return q->mapRectFromScene(sceneEffectRect);
+    }
+#endif //QT_NO_GRAPHICSEFFECT
+    return rect;
+}
+
+/*!
+    \internal
+    \since 4.6
     Returns the effective bounding rect of the item.
     If the item has no effect, this is the same as the item's bounding rect.
     If the item has an effect, the effective rect can be larger than the item's
@@ -2594,16 +2623,19 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 QRectF QGraphicsItemPrivate::effectiveBoundingRect() const
 {
 #ifndef QT_NO_GRAPHICSEFFECT
-    QGraphicsEffect *effect = graphicsEffect;
-    QRectF brect = effect && effect->isEnabled() ? effect->boundingRect() : q_ptr->boundingRect();
+    Q_Q(const QGraphicsItem);
+    QRectF brect = effectiveBoundingRect(q_ptr->boundingRect());
     if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
         return brect;
 
     const QGraphicsItem *effectParent = parent;
     while (effectParent) {
-        effect = effectParent->d_ptr->graphicsEffect;
-        if (effect && effect->isEnabled())
-            brect = effect->boundingRectFor(brect);
+        QGraphicsEffect *effect = effectParent->d_ptr->graphicsEffect;
+        if (scene && effect && effect->isEnabled()) {
+            const QRectF brectInParentSpace = q->mapRectToItem(effectParent, brect);
+            const QRectF effectRectInParentSpace = effectParent->d_ptr->effectiveBoundingRect(brectInParentSpace);
+            brect = effectParent->mapRectToItem(q, effectRectInParentSpace);
+        }
         if (effectParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
             return brect;
         effectParent = effectParent->d_ptr->parent;
@@ -10649,16 +10681,20 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
 
     const QRectF sourceRect = boundingRect(system);
-    QRect effectRect;
+    QRectF effectRectF;
 
     if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
-        effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+        effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
+        if (system == Qt::LogicalCoordinates)
+            effectRectF = info->painter->worldTransform().inverted().mapRect(effectRectF);
     } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
         // adjust by 1.5 to account for cosmetic pens
-        effectRect = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5).toAlignedRect();
+        effectRectF = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5);
     } else {
-        effectRect = sourceRect.toAlignedRect();
+        effectRectF = sourceRect;
     }
+
+    QRect effectRect = effectRectF.toAlignedRect();
 
     if (offset)
         *offset = effectRect.topLeft();
