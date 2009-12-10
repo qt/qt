@@ -44,6 +44,7 @@
 
 #include "qmltransition_p.h"
 #include "qmlstate_p.h"
+#include "../../gui/math3d/qvector3d.h"
 
 #include <qmlpropertyvaluesource.h>
 #include <qml.h>
@@ -351,6 +352,26 @@ public:
     void setTo(qreal);
 };
 
+class Q_AUTOTEST_EXPORT QmlVector3dAnimation : public QmlPropertyAnimation
+{
+
+	Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlPropertyAnimation)
+
+    Q_PROPERTY(QVector3D from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(QVector3D to READ to WRITE setTo NOTIFY toChanged)
+
+public:
+    QmlVector3dAnimation(QObject *parent=0);
+    virtual ~QmlVector3dAnimation();
+
+    QVector3D from() const;
+    void setFrom(QVector3D);
+
+    QVector3D to() const;
+    void setTo(QVector3D);
+};
+
 class QmlAnimationGroupPrivate;
 class QmlAnimationGroup : public QmlAbstractAnimation
 {
@@ -414,6 +435,7 @@ QML_DECLARE_TYPE(QmlColorAnimation)
 QML_DECLARE_TYPE(QmlNumberAnimation)
 QML_DECLARE_TYPE(QmlSequentialAnimation)
 QML_DECLARE_TYPE(QmlParallelAnimation)
+QML_DECLARE_TYPE(QmlVector3dAnimation)
 
 QT_END_HEADER
 
