@@ -73,6 +73,7 @@ private slots:
     void crash1();
     void centerIn();
     void fill();
+    void margins();
 };
 
 /*
@@ -389,8 +390,8 @@ void tst_anchors::fill()
     view->execute();
     qApp->processEvents();
     QmlGraphicsRectangle* rect = findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("filler"));
-    QCOMPARE(rect->x(), 0.0 + 10);
-    QCOMPARE(rect->y(), 0.0 + 30);
+    QCOMPARE(rect->x(), 0.0 + 10.0);
+    QCOMPARE(rect->y(), 0.0 + 30.0);
     QCOMPARE(rect->width(), 200.0 - 10.0 - 20.0);
     QCOMPARE(rect->height(), 200.0 - 30.0 - 40.0);
     //Alter Offsets (QTBUG-6631)
@@ -422,6 +423,31 @@ void tst_anchors::centerIn()
     rect->anchors()->setVerticalCenterOffset(-10.0);
     QCOMPARE(rect->x(), 75.0 - 20.0);
     QCOMPARE(rect->y(), 75.0 - 10.0);
+
+    delete view;
+}
+
+void tst_anchors::margins()
+{
+    QmlView *view = new QmlView;
+
+    view->setUrl(QUrl("file://" SRCDIR "/data/margins.qml"));
+
+    view->execute();
+    qApp->processEvents();
+    QmlGraphicsRectangle* rect = findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("filler"));
+    QCOMPARE(rect->x(), 5.0);
+    QCOMPARE(rect->y(), 6.0);
+    QCOMPARE(rect->width(), 200.0 - 5.0 - 10.0);
+    QCOMPARE(rect->height(), 200.0 - 6.0 - 10.0);
+
+    rect->anchors()->setTopMargin(0.0);
+    rect->anchors()->setMargins(20.0);
+
+    QCOMPARE(rect->x(), 5.0);
+    QCOMPARE(rect->y(), 20.0);
+    QCOMPARE(rect->width(), 200.0 - 5.0 - 20.0);
+    QCOMPARE(rect->height(), 200.0 - 20.0 - 20.0);
 
     delete view;
 }

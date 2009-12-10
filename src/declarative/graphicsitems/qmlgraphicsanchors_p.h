@@ -67,6 +67,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsAnchors : public QObject
     Q_PROPERTY(QmlGraphicsAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom NOTIFY bottomChanged)
     Q_PROPERTY(QmlGraphicsAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter NOTIFY verticalCenterChanged)
     Q_PROPERTY(QmlGraphicsAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline NOTIFY baselineChanged)
+    Q_PROPERTY(qreal margins READ margins WRITE setMargins NOTIFY marginsChanged)
     Q_PROPERTY(qreal leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged)
     Q_PROPERTY(qreal rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged)
     Q_PROPERTY(qreal horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged())
@@ -137,6 +138,9 @@ public:
     qreal bottomMargin() const;
     void setBottomMargin(qreal);
 
+    qreal margins() const;
+    void setMargins(qreal);
+
     qreal verticalCenterOffset() const;
     void setVerticalCenterOffset(qreal);
 
@@ -172,6 +176,7 @@ Q_SIGNALS:
     void rightMarginChanged();
     void topMarginChanged();
     void bottomMarginChanged();
+    void marginsChanged();
     void verticalCenterOffsetChanged();
     void horizontalCenterOffsetChanged();
     void baselineOffsetChanged();

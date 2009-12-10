@@ -859,6 +859,31 @@ void QmlGraphicsAnchors::setRightMargin(qreal offset)
     emit rightMarginChanged();
 }
 
+qreal QmlGraphicsAnchors::margins() const
+{
+    Q_D(const QmlGraphicsAnchors);
+    return d->margins;
+}
+
+void QmlGraphicsAnchors::setMargins(qreal offset)
+{
+    Q_D(QmlGraphicsAnchors);
+    if (d->margins == offset)
+        return;
+    //###Is it significantly faster to set them directly so we can call fillChanged only once?
+    if(!d->rightMargin || d->rightMargin == d->margins)
+        setRightMargin(offset);
+    if(!d->leftMargin || d->leftMargin == d->margins)
+        setLeftMargin(offset);
+    if(!d->topMargin || d->topMargin == d->margins)
+        setTopMargin(offset);
+    if(!d->bottomMargin || d->bottomMargin == d->margins)
+        setBottomMargin(offset);
+    d->margins = offset;
+    emit marginsChanged();
+
+}
+
 qreal QmlGraphicsAnchors::horizontalCenterOffset() const
 {
     Q_D(const QmlGraphicsAnchors);
