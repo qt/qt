@@ -1856,8 +1856,10 @@ QValidator::State QSpinBoxValidator::validate(QString &input, int &pos) const
     if (dptr->specialValueText.size() > 0 && input == dptr->specialValueText)
         return QValidator::Acceptable;
 
-    if (!dptr->prefix.isEmpty() && !input.startsWith(dptr->prefix))
+    if (!dptr->prefix.isEmpty() && !input.startsWith(dptr->prefix)) {
         input.prepend(dptr->prefix);
+        pos += dptr->prefix.length();
+    }
 
     if (!dptr->suffix.isEmpty() && !input.endsWith(dptr->suffix))
         input.append(dptr->suffix);
