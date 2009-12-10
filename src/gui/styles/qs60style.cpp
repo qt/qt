@@ -1317,6 +1317,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             painter->setClipRect(voptAdj.rect);
             const bool isSelected = (vopt->state & QStyle::State_Selected);
+            const bool hasFocus = (vopt->state & QStyle::State_HasFocus);
 
             bool isScrollBarVisible = false;
             int scrollBarWidth = 0;
@@ -1359,7 +1360,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);}
 
             // draw the focus rect
-            if (isSelected) {
+            if (isSelected | hasFocus) {
                 QRect highlightRect = option->rect.adjusted(1,1,-1,-1);
                 QAbstractItemView::SelectionBehavior selectionBehavior =
                     itemView ? itemView->selectionBehavior() : QAbstractItemView::SelectItems;
