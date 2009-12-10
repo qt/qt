@@ -341,6 +341,7 @@ public:
     // for controlling when to send posted events
     QAtomicInt serialNumber;
     int lastSerialNumber;
+    int lastMessageTime;
     QAtomicInt wakeUps;
 
     // timers
@@ -364,7 +365,8 @@ public:
 };
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
-    : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), getMessageHook(0), serialNumber(0), lastSerialNumber(0), wakeUps(0)
+    : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), getMessageHook(0),
+      serialNumber(0), lastSerialNumber(0), lastMessageTime(0), wakeUps(0)
 {
     resolveTimerAPI();
 }
@@ -479,6 +481,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         int localSerialNumber = d->serialNumber;
         if (localSerialNumber != d->lastSerialNumber) {
             d->lastSerialNumber = localSerialNumber;
+            d->lastMessageTime = GetMessageTime();
             QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
         }
         return 0;
@@ -495,9 +498,10 @@ LRESULT CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
         if (q) {
             QEventDispatcherWin32Private *d = q->d_func();
             int localSerialNumber = d->serialNumber;
-            if (HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER)) == 0) {
-                // no more input or timer events in the message queue, we can allow posted events to be
-                // sent now
+            if (HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER)) == 0
+                || GetMessageTime() - d->lastMessageTime >= 10) {
+                // no more input or timer events in the message queue or more than 10ms has elapsed since
+                // we send posted events, we can allow posted events to be sent now
                 (void) d->wakeUps.fetchAndStoreRelease(0);
                 MSG *msg = (MSG *) lp;
                 if (localSerialNumber != d->lastSerialNumber
@@ -732,7 +736,9 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             }
             if (haveMessage) {
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
-                    if (seenWM_QT_SENDPOSTEDEVENTS) {
+                    if (seenWM_QT_SENDPOSTEDEVENTS && !(flags & QEventLoop::EventLoopExec)) {
+                        // when calling processEvents() "manually", we only want to send posted
+                        // events once
                         needWM_QT_SENDPOSTEDEVENTS = true;
                         continue;
                     }
