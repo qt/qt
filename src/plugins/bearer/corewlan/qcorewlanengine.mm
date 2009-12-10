@@ -66,8 +66,6 @@ QMap <QString, QString> networkInterfaces;
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QCoreWlanEngine, coreWlanEngine)
-
 inline QString cfstringRefToQstring(CFStringRef cfStringRef) {
 //    return QString([cfStringRef UTF8String]);
     QString retVal;
@@ -308,11 +306,6 @@ void QCoreWlanEngine::requestUpdate()
 {
     getAllScInterfaces();
     emit configurationsChanged();
-}
-
-QCoreWlanEngine *QCoreWlanEngine::instance()
-{
-    return coreWlanEngine();
 }
 
 QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::scanForSsids(const QString &interfaceName)

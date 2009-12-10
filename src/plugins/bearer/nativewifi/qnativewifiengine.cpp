@@ -50,8 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QNativeWifiEngine, nativeWifiEngine)
-
 WlanOpenHandleProto local_WlanOpenHandle = 0;
 WlanRegisterNotificationProto local_WlanRegisterNotification = 0;
 WlanEnumInterfacesProto local_WlanEnumInterfaces = 0;
@@ -62,8 +60,6 @@ WlanDisconnectProto local_WlanDisconnect = 0;
 WlanScanProto local_WlanScan = 0;
 WlanFreeMemoryProto local_WlanFreeMemory = 0;
 WlanCloseHandleProto local_WlanCloseHandle = 0;
-
-
 
 void qNotificationCallback(WLAN_NOTIFICATION_DATA *data, QNativeWifiEngine *d)
 {

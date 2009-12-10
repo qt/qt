@@ -53,8 +53,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QNlaEngine, nlaEngine)
-
 QWindowsSockInit2::QWindowsSockInit2()
 :   version(0)
 {
@@ -579,13 +577,6 @@ void QNlaEngine::requestUpdate()
     nlaThread->forceUpdate();
 }
 
-QNlaEngine *QNlaEngine::instance()
-{
-    return nlaEngine();
-}
-
 #include "qnlaengine.moc"
 QT_END_NAMESPACE
-
-
 

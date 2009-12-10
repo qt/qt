@@ -56,8 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QGenericEngine, genericEngine)
-
 static QString qGetInterfaceType(const QString &interface)
 {
 #ifdef Q_OS_WIN32
@@ -168,11 +166,6 @@ void QGenericEngine::requestUpdate()
 {
     pollTimer.stop();
     QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
-}
-
-QGenericEngine *QGenericEngine::instance()
-{
-    return genericEngine();
 }
 
 void QGenericEngine::doRequestUpdate()

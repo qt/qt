@@ -92,8 +92,6 @@ public:
 
     void requestUpdate();
 
-    static QNlaEngine *instance();
-
 private:
     QWindowsSockInit2 winSock;
     QNlaThread *nlaThread;

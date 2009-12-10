@@ -70,7 +70,6 @@ public:
 
     void requestUpdate();
 
-    static QCoreWlanEngine *instance();
     static bool getAllScInterfaces();
 
 private:
