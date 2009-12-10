@@ -1097,6 +1097,11 @@ QString::QString(QChar ch)
     \internal
 */
 
+/*! \fn bool QString::isSharedWith(const QString &other) const
+
+    \internal
+*/
+
 // ### Qt 5: rename freeData() to avoid confusion. See task 197625.
 void QString::free(Data *d)
 {

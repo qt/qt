@@ -130,6 +130,7 @@ public:
 
     inline bool isDetached() const { return d->ref == 1; }
     inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
+    inline bool isSharedWith(const QList<T> &other) const { return d == other.d; }
 
     inline bool isEmpty() const { return p.isEmpty(); }
 

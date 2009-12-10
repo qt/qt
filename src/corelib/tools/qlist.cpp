@@ -599,6 +599,11 @@ void **QListData::erase(void **xi)
     \internal
 */
 
+/*! \fn bool QList::isSharedWith(const QList<T> &other) const
+
+    \internal
+*/
+
 /*! \fn bool QList::isEmpty() const
 
     Returns true if the list contains no items; otherwise returns
