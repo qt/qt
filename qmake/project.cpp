@@ -1591,26 +1591,27 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
     else if(x == "false")
         return false;
 
-    static QString spec;
-    if(spec.isEmpty())
-        spec = QFileInfo(Option::mkfile::qmakespec).fileName();
-
     // Symbian is an exception to how scopes are resolved. Since we do not
     // have a separate target mode for Symbian, but we expect the scope to resolve
     // on other platforms we base it entirely on the mkspec. This means that
     // using a mkspec starting with 'symbian*' will resolve both the 'symbian'
     // and the 'unix' (because of Open C) scopes to true.
-    if(isForSymbian() && (x == "symbian" || x == "unix"))
-        return true;
+    if (x == "unix") {
+        return Option::target_mode == Option::TARG_UNIX_MODE
+               || Option::target_mode == Option::TARG_MACX_MODE
+               || isForSymbian();
+    } else if (x == "macx" || x == "mac") {
+        return Option::target_mode == Option::TARG_MACX_MODE && !isForSymbian();
+    } else if (x == "symbian") {
+        return isForSymbian();
+    } else if (x == "win32") {
+        return Option::target_mode == Option::TARG_WIN_MODE && !isForSymbian();
+    }
 
     //mkspecs
-    if((Option::target_mode == Option::TARG_MACX_MODE ||
-        Option::target_mode == Option::TARG_UNIX_MODE) && x == "unix")
-        return !isForSymbian();
-    else if(Option::target_mode == Option::TARG_MACX_MODE && (x == "macx" || x == "mac"))
-        return !isForSymbian();
-    else if(Option::target_mode == Option::TARG_WIN_MODE && x == "win32")
-        return !isForSymbian();
+    static QString spec;
+    if(spec.isEmpty())
+        spec = QFileInfo(Option::mkfile::qmakespec).fileName();
     QRegExp re(x, Qt::CaseSensitive, QRegExp::Wildcard);
     if((regex && re.exactMatch(spec)) || (!regex && spec == x))
         return true;
