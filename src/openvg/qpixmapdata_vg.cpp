@@ -65,11 +65,20 @@ QVGPixmapData::QVGPixmapData(PixelType type)
     recreate = true;
 #if !defined(QT_NO_EGL)
     context = 0;
+    qt_vg_register_pixmap(this);
 #endif
     setSerialNumber(++qt_vg_pixmap_serial);
 }
 
 QVGPixmapData::~QVGPixmapData()
+{
+    destroyImageAndContext();
+#if !defined(QT_NO_EGL)
+    qt_vg_unregister_pixmap(this);
+#endif
+}
+
+void QVGPixmapData::destroyImageAndContext()
 {
     if (vgImage != VG_INVALID_HANDLE) {
         // We need to have a context current to destroy the image.
@@ -93,11 +102,16 @@ QVGPixmapData::~QVGPixmapData()
         if (vgImageOpacity != VG_INVALID_HANDLE)
             vgDestroyImage(vgImageOpacity);
 #endif
+        vgImage = VG_INVALID_HANDLE;
+        vgImageOpacity = VG_INVALID_HANDLE;
     }
 #if !defined(QT_NO_EGL)
-    if (context)
-        qt_vg_destroy_context(context);
+    if (context) {
+        qt_vg_destroy_context(context, QInternal::Pixmap);
+        context = 0;
+    }
 #endif
+    recreate = true;
 }
 
 QPixmapData *QVGPixmapData::createCompatiblePixmapData() const
@@ -217,7 +231,7 @@ VGImage QVGPixmapData::toVGImage()
 #if !defined(QT_NO_EGL)
     // Increase the reference count on the shared context.
     if (!context)
-        context = qt_vg_create_context(0);
+        context = qt_vg_create_context(0, QInternal::Pixmap);
 #endif
 
     if (recreate && prevSize != QSize(w, h)) {
@@ -284,6 +298,17 @@ VGImage QVGPixmapData::toVGImage(qreal opacity)
     Q_UNUSED(opacity);
     return toVGImage();
 #endif
+}
+
+void QVGPixmapData::hibernate()
+{
+    // If the image was imported (e.g, from an SgImage under Symbian),
+    // then we cannot copy it back to main memory for storage.
+    if (vgImage != VG_INVALID_HANDLE && source.isNull())
+        return;
+
+    forceToImage();
+    destroyImageAndContext();
 }
 
 extern int qt_defaultDpiX();
@@ -376,7 +401,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         // when "0" used as argument then
         // default display, context are used
         if (!context)
-            context = qt_vg_create_context(0);
+            context = qt_vg_create_context(0, QInternal::Pixmap);
 
         if (vgImage != VG_INVALID_HANDLE) {
             vgDestroyImage(vgImage);

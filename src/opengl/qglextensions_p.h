@@ -184,6 +184,10 @@ typedef void (APIENTRY *_glBlitFramebufferEXT) (int srcX0, int srcY0, int srcX1,
 typedef void (APIENTRY *_glRenderbufferStorageMultisampleEXT) (GLenum target, GLsizei samples,
                                                                GLenum internalformat, GLsizei width, GLsizei height);
 
+// ARB_texture_compression
+typedef void (APIENTRY *_glCompressedTexImage2DARB) (GLenum, GLint, GLenum, GLsizei,
+                                                     GLsizei, GLint, GLsizei, const GLvoid *);
+
 QT_BEGIN_NAMESPACE
 
 struct QGLExtensionFuncs
@@ -289,6 +293,11 @@ struct QGLExtensionFuncs
 #endif
         qt_glMapBufferARB = 0;
         qt_glUnmapBufferARB = 0;
+
+#if !defined(QT_OPENGL_ES)
+        // Texture compression
+        qt_glCompressedTexImage2DARB = 0;
+#endif
     }
 
 
@@ -397,6 +406,10 @@ struct QGLExtensionFuncs
     _glMapBufferARB qt_glMapBufferARB;
     _glUnmapBufferARB qt_glUnmapBufferARB;
 
+#if !defined(QT_OPENGL_ES)
+    // Texture compression
+    _glCompressedTexImage2DARB qt_glCompressedTexImage2DARB;
+#endif
 };
 
 
@@ -730,6 +743,10 @@ struct QGLExtensionFuncs
 
 #if defined(QT_OPENGL_ES_2)
 #define glClearDepth glClearDepthf
+#endif
+
+#if !defined(QT_OPENGL_ES)
+#define glCompressedTexImage2D QGLContextPrivate::extensionFuncs(ctx).qt_glCompressedTexImage2DARB
 #endif
 
 extern bool qt_resolve_framebufferobject_extensions(QGLContext *ctx);

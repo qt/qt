@@ -5046,6 +5046,8 @@ QGraphicsEffect *QWidget::graphicsEffect() const
     If \a effect is the installed on a different widget, setGraphicsEffect() will remove
     the effect from the widget and install it on this widget.
 
+    QWidget takes ownership of \a effect.
+
     \note This function will apply the effect on itself and all its children.
 
     \since 4.6
@@ -5059,28 +5061,22 @@ void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
     if (d->graphicsEffect == effect)
         return;
 
-    if (d->graphicsEffect && effect) {
+    if (d->graphicsEffect) {
+        d->invalidateBuffer(rect());
         delete d->graphicsEffect;
         d->graphicsEffect = 0;
     }
 
-    if (!effect) {
-        // Unset current effect.
-        QGraphicsEffectPrivate *oldEffectPrivate = d->graphicsEffect->d_func();
-        d->graphicsEffect = 0;
-        if (oldEffectPrivate) {
-            oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
-        }
-    } else {
+    if (effect) {
         // Set new effect.
         QGraphicsEffectSourcePrivate *sourced = new QWidgetEffectSourcePrivate(this);
         QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
         d->graphicsEffect = effect;
         effect->d_func()->setGraphicsEffectSource(source);
+        update();
     }
 
     d->updateIsOpaque();
-    update();
 }
 #endif //QT_NO_GRAPHICSEFFECT
 

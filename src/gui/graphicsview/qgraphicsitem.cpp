@@ -1342,8 +1342,8 @@ QGraphicsItem::~QGraphicsItem()
     }
 
     if (!d_ptr->children.isEmpty()) {
-        QList<QGraphicsItem *> oldChildren = d_ptr->children;
-        qDeleteAll(oldChildren);
+        while (!d_ptr->children.isEmpty())
+            delete d_ptr->children.first();
         Q_ASSERT(d_ptr->children.isEmpty());
     }
 
@@ -2555,6 +2555,8 @@ QGraphicsEffect *QGraphicsItem::graphicsEffect() const
     If \a effect is the installed on a different item, setGraphicsEffect() will remove
     the effect from the item and install it on this item.
 
+    QGraphicsItem takes ownership of \a effect.
+
     \note This function will apply the effect on itself and all its children.
 
     \since 4.6
@@ -2564,32 +2566,19 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
     if (d_ptr->graphicsEffect == effect)
         return;
 
-    if (d_ptr->graphicsEffect && effect) {
+    if (d_ptr->graphicsEffect) {
         delete d_ptr->graphicsEffect;
         d_ptr->graphicsEffect = 0;
     }
 
-    if (!effect) {
-        // Unset current effect.
-        QGraphicsEffectPrivate *oldEffectPrivate = d_ptr->graphicsEffect->d_func();
-        d_ptr->graphicsEffect = 0;
-        if (oldEffectPrivate) {
-            oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
-            if (d_ptr->scene) { // Update the views directly.
-                d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/false,
-                                                  /*force=*/false, /*ignoreOpacity=*/false,
-                                                  /*removeItemFromScene=*/true);
-            }
-        }
-    } else {
+    if (effect) {
         // Set new effect.
         QGraphicsEffectSourcePrivate *sourced = new QGraphicsItemEffectSourcePrivate(this);
         QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
         d_ptr->graphicsEffect = effect;
         effect->d_func()->setGraphicsEffectSource(source);
+        prepareGeometryChange();
     }
-
-    prepareGeometryChange();
 }
 #endif //QT_NO_GRAPHICSEFFECT
 
@@ -7303,13 +7292,6 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
   by QObject::parent().
 
   \sa QGraphicsItem::setParentItem(), QGraphicsItem::parentObject()
-*/
-
-/*!
-  \property QGraphicsObject::id
-  \brief the id of of the item
-
-  \sa QObject::objectName(), QObject::setObjectName()
 */
 
 /*!

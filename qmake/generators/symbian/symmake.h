@@ -96,7 +96,14 @@ protected:
     QString generateUID3();
 
     void initMmpVariables();
-    void checkOverridability(QStringList &overridableKeywords, QString &checkString);
+    void handleMmpRulesOverrides(QString &checkString,
+                                 bool &inResourceBlock,
+                                 QStringList &restrictedMmpKeywords,
+                                 const QStringList &restrictableMmpKeywords,
+                                 const QStringList &overridableMmpKeywords);
+    void appendKeywordIfMatchFound(QStringList &list,
+                                   const QStringList &keywordList,
+                                   QString &checkString);
 
     void writeHeader(QTextStream &t);
     void writeBldInfContent(QTextStream& t, bool addDeploymentExtension, const QString &iconFile);

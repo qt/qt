@@ -106,8 +106,8 @@ void QImagePixmapCleanupHooks::executePixmapModificationHooks(QPixmap* pm)
 void QImagePixmapCleanupHooks::executePixmapDestructionHooks(QPixmap* pm)
 {
     QImagePixmapCleanupHooks *h = qt_image_and_pixmap_cleanup_hooks();
-    for (int i = 0; i < h->pixmapModificationHooks.count(); ++i)
-        qt_image_and_pixmap_cleanup_hooks()->pixmapDestructionHooks[i](pm);
+    for (int i = 0; i < h->pixmapDestructionHooks.count(); ++i)
+        h->pixmapDestructionHooks[i](pm);
 
     if (qt_pixmap_cleanup_hook_64)
         qt_pixmap_cleanup_hook_64(pm->cacheKey());

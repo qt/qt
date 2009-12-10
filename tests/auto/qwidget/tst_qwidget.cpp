@@ -9549,6 +9549,22 @@ void tst_QWidget::setGraphicsEffect()
     delete widget;
     QVERIFY(!blurEffect);
     delete anotherWidget;
+
+    // Ensure the effect is uninstalled when deleting it
+    widget = new QWidget;
+    blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    delete blurEffect;
+    QVERIFY(!widget->graphicsEffect());
+
+    // Ensure the existing effect is uninstalled and deleted when setting a null effect
+    blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    widget->setGraphicsEffect(0);
+    QVERIFY(!widget->graphicsEffect());
+    QVERIFY(!blurEffect);
+
+    delete widget;
 }
 
 void tst_QWidget::activateWindow()
