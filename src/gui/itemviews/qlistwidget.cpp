@@ -173,7 +173,7 @@ void QListModel::move(int srcRow, int dstRow)
 {
     if (srcRow == dstRow
         || srcRow < 0 || srcRow >= items.count()
-        || dstRow < 0 || dstRow >= items.count())
+        || dstRow < 0 || dstRow > items.count())
         return;
 
     if (!beginMoveRows(QModelIndex(), srcRow, srcRow, QModelIndex(), dstRow))
