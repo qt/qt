@@ -72,6 +72,7 @@ private slots:
     void nullItem_data();
     void crash1();
     void centerIn();
+    void fill();
 };
 
 /*
@@ -379,6 +380,32 @@ void tst_anchors::crash1()
     delete view;
 }
 
+void tst_anchors::fill()
+{
+    QmlView *view = new QmlView;
+
+    view->setUrl(QUrl("file://" SRCDIR "/data/fill.qml"));
+
+    view->execute();
+    qApp->processEvents();
+    QmlGraphicsRectangle* rect = findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("filler"));
+    QCOMPARE(rect->x(), 0.0 + 10);
+    QCOMPARE(rect->y(), 0.0 + 30);
+    QCOMPARE(rect->width(), 200.0 - 10.0 - 20.0);
+    QCOMPARE(rect->height(), 200.0 - 30.0 - 40.0);
+    //Alter Offsets (QTBUG-6631)
+    rect->anchors()->setLeftMargin(20.0);
+    rect->anchors()->setRightMargin(0.0);
+    rect->anchors()->setBottomMargin(0.0);
+    rect->anchors()->setTopMargin(10.0);
+    QCOMPARE(rect->x(), 0.0 + 20.0);
+    QCOMPARE(rect->y(), 0.0 + 10.0);
+    QCOMPARE(rect->width(), 200.0 - 20.0);
+    QCOMPARE(rect->height(), 200.0 - 10.0);
+
+    delete view;
+}
+
 void tst_anchors::centerIn()
 {
     QmlView *view = new QmlView;
@@ -387,9 +414,14 @@ void tst_anchors::centerIn()
 
     view->execute();
     qApp->processEvents();
-
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("centered"))->x(), 85.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("centered"))->y(), 105.0);
+    QmlGraphicsRectangle* rect = findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("centered"));
+    QCOMPARE(rect->x(), 75.0 + 10);
+    QCOMPARE(rect->y(), 75.0 + 30);
+    //Alter Offsets (QTBUG-6631)
+    rect->anchors()->setHorizontalCenterOffset(-20.0);
+    rect->anchors()->setVerticalCenterOffset(-10.0);
+    QCOMPARE(rect->x(), 75.0 - 20.0);
+    QCOMPARE(rect->y(), 75.0 - 10.0);
 
     delete view;
 }

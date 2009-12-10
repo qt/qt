@@ -833,7 +833,10 @@ void QmlGraphicsAnchors::setLeftMargin(qreal offset)
     if (d->leftMargin == offset)
         return;
     d->leftMargin = offset;
-    d->updateHorizontalAnchors();
+    if(d->fill)
+        d->fillChanged();
+    else
+        d->updateHorizontalAnchors();
     emit leftMarginChanged();
 }
 
@@ -849,7 +852,10 @@ void QmlGraphicsAnchors::setRightMargin(qreal offset)
     if (d->rightMargin == offset)
         return;
     d->rightMargin = offset;
-    d->updateHorizontalAnchors();
+    if(d->fill)
+        d->fillChanged();
+    else
+        d->updateHorizontalAnchors();
     emit rightMarginChanged();
 }
 
@@ -865,7 +871,10 @@ void QmlGraphicsAnchors::setHorizontalCenterOffset(qreal offset)
     if (d->hCenterOffset == offset)
         return;
     d->hCenterOffset = offset;
-    d->updateHorizontalAnchors();
+    if(d->centerIn)
+        d->centerInChanged();
+    else
+        d->updateHorizontalAnchors();
     emit horizontalCenterOffsetChanged();
 }
 
@@ -881,7 +890,10 @@ void QmlGraphicsAnchors::setTopMargin(qreal offset)
     if (d->topMargin == offset)
         return;
     d->topMargin = offset;
-    d->updateVerticalAnchors();
+    if(d->fill)
+        d->fillChanged();
+    else
+        d->updateVerticalAnchors();
     emit topMarginChanged();
 }
 
@@ -897,7 +909,10 @@ void QmlGraphicsAnchors::setBottomMargin(qreal offset)
     if (d->bottomMargin == offset)
         return;
     d->bottomMargin = offset;
-    d->updateVerticalAnchors();
+    if(d->fill)
+        d->fillChanged();
+    else
+        d->updateVerticalAnchors();
     emit bottomMarginChanged();
 }
 
@@ -913,7 +928,10 @@ void QmlGraphicsAnchors::setVerticalCenterOffset(qreal offset)
     if (d->vCenterOffset == offset)
         return;
     d->vCenterOffset = offset;
-    d->updateVerticalAnchors();
+    if(d->centerIn)
+        d->centerInChanged();
+    else
+        d->updateVerticalAnchors();
     emit verticalCenterOffsetChanged();
 }
 
