@@ -1380,7 +1380,7 @@ QML_DEFINE_TYPE(Qt,4,6,NumberAnimation,QmlNumberAnimation)
 
 /*!
     \internal
-    \class Vector3dAnimation
+    \class QmlVector3dAnimation
 */
 
 QmlVector3dAnimation::QmlVector3dAnimation(QObject *parent)
