@@ -23,6 +23,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "audioequalizer.h"
 #include "bassboost.h"
+#include "loudness.h"
 
 #include "effectfactory.h"
 
@@ -76,6 +77,8 @@ AbstractAudioEffect *EffectFactory::createAudioEffect(Type type,
     case TypeEnvironmentalReverb:
     case TypeListenerOrientation:
     case TypeLoudness:
+        effect = new Loudness(parent, parameters);
+        break;
     case TypeSourceOrientation:
     case TypeStereoWidening:
     default:
@@ -126,6 +129,7 @@ void EffectFactory::initialize()
 
     INITIALIZE_EFFECT(AudioEqualizer)
     INITIALIZE_EFFECT(BassBoost)
+    INITIALIZE_EFFECT(Loudness)
 
     m_initialized = true;
 }
