@@ -81,7 +81,6 @@ public:
     QNlaEngine(QObject *parent = 0);
     ~QNlaEngine();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 
@@ -91,6 +90,11 @@ public:
     void disconnectFromId(const QString &id);
 
     void requestUpdate();
+
+    QNetworkSession::State sessionStateForId(const QString &id);
+
+private Q_SLOTS:
+    void networksChanged();
 
 private:
     QWindowsSockInit2 winSock;

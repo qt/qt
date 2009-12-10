@@ -198,7 +198,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 if (nmWifi) {
                     sessionEngines.append(nmWifi);
                     connect(nmWifi, SIGNAL(updateCompleted()),
-                            this, SIGNAL(configurationUpdateComplete()));
+                            this, SLOT(updateConfigurations()));
                     connect(nmWifi, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
                             this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
                     connect(nmWifi, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
@@ -217,7 +217,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 if (generic) {
                     sessionEngines.append(generic);
                     connect(generic, SIGNAL(updateCompleted()),
-                            this, SIGNAL(configurationUpdateComplete()));
+                            this, SLOT(updateConfigurations()));
                     connect(generic, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
                             this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
                     connect(generic, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
@@ -235,6 +235,14 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 QNetworkSessionEngine *nla = nlaPlugin->create(QLatin1String("nla"));
                 if (nla) {
                     sessionEngines.append(nla);
+                    connect(nla, SIGNAL(updateCompleted()),
+                            this, SLOT(updateConfigurations()));
+                    connect(nla, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
+                    connect(nla, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
+                    connect(nla, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
                 }
             }
         }
