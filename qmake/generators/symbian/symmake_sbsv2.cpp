@@ -234,7 +234,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     // create execution target
     if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
         t << "run:" << endl;
-        t << "\t-call " << epocRoot() << "epoc32/release/winscw/udeb/" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << endl << endl;
+        t << "\t-call " << epocRoot() << "epoc32/release/winscw/udeb/" << fixedTarget << ".exe" << endl << endl;
     }
 }
 
