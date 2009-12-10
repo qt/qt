@@ -1092,7 +1092,7 @@ QString::QString(QChar ch)
     \internal
 */
 
-/*! \fn void QString::isDetached() const
+/*! \fn bool QString::isDetached() const
 
     \internal
 */
