@@ -36,6 +36,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/dummyplayer.h            \
            $$PHONON_MMF_DIR/effectfactory.h          \
            $$PHONON_MMF_DIR/effectparameter.h        \
+           $$PHONON_MMF_DIR/environmentalreverb.h    \
            $$PHONON_MMF_DIR/loudness.h               \
            $$PHONON_MMF_DIR/mediaobject.h            \
            $$PHONON_MMF_DIR/mmf_medianode.h          \
@@ -60,6 +61,7 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/dummyplayer.cpp          \
            $$PHONON_MMF_DIR/effectfactory.cpp        \
            $$PHONON_MMF_DIR/effectparameter.cpp      \
+           $$PHONON_MMF_DIR/environmentalreverb.cpp  \
            $$PHONON_MMF_DIR/loudness.cpp             \
            $$PHONON_MMF_DIR/mediaobject.cpp          \
            $$PHONON_MMF_DIR/mmf_medianode.cpp        \

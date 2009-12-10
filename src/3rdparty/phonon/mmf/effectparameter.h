@@ -57,6 +57,8 @@ public:
     void setInternalRange(qint32 min, qint32 max);
     qint32 toInternalValue(qreal external) const;
 
+    static qreal toExternalValue(qint32 value, qint32 min, qint32 max);
+
 private:
     bool                    m_hasInternalRange;
     QPair<qint32, qint32>   m_internalRange;

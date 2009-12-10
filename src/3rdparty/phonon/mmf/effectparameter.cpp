@@ -59,5 +59,13 @@ qint32 MMF::EffectParameter::toInternalValue(qreal external) const
     return m_internalRange.first + ((1.0 + external) / 2) * range;
 }
 
+qreal MMF::EffectParameter::toExternalValue
+    (qint32 value, qint32 min, qint32 max)
+{
+    Q_ASSERT_X(max >= min, Q_FUNC_INFO, "Invalid range");
+    const qint32 range = max - min;
+    return range == 0 ? 0.0 : ((2.0 * value - min) / range) - 1.0;
+}
+
 QT_END_NAMESPACE
 

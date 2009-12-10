@@ -23,6 +23,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "audioequalizer.h"
 #include "bassboost.h"
+#include "environmentalreverb.h"
 #include "loudness.h"
 
 #include "effectfactory.h"
@@ -73,14 +74,19 @@ AbstractAudioEffect *EffectFactory::createAudioEffect(Type type,
     case TypeAudioEqualizer:
         effect = new AudioEqualizer(parent, parameters);
         break;
-    case TypeDistanceAttenuation:
     case TypeEnvironmentalReverb:
-    case TypeListenerOrientation:
+        effect = new EnvironmentalReverb(parent, parameters);
+        break;
     case TypeLoudness:
         effect = new Loudness(parent, parameters);
         break;
+
+    // Not implemented
+    case TypeDistanceAttenuation:
+    case TypeListenerOrientation:
     case TypeSourceOrientation:
     case TypeStereoWidening:
+    // Fall through
     default:
         Q_ASSERT_X(false, Q_FUNC_INFO, "Unknown effect");
     }
@@ -129,6 +135,7 @@ void EffectFactory::initialize()
 
     INITIALIZE_EFFECT(AudioEqualizer)
     INITIALIZE_EFFECT(BassBoost)
+    INITIALIZE_EFFECT(EnvironmentalReverb)
     INITIALIZE_EFFECT(Loudness)
 
     m_initialized = true;
