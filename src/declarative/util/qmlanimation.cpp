@@ -247,6 +247,11 @@ void QmlAbstractAnimation::setRunning(bool r)
 
     d->running = r;
     if (d->running) {
+        if (d->alwaysRunToEnd && d->repeat
+            && qtAnimation()->state() == QAbstractAnimation::Running) {
+            qtAnimation()->setLoopCount(-1);
+        }
+
         if (!d->connectedTimeLine) {
             QObject::connect(qtAnimation(), SIGNAL(finished()),
                              this, SLOT(timelineComplete()));
