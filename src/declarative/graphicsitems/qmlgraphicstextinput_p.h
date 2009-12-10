@@ -72,6 +72,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsTextInput : public QmlGraphicsPaintedItem
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
+    Q_PROPERTY(QRect cursorRect READ cursorRect NOTIFY cursorPositionChanged)
     Q_PROPERTY(QmlComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate)
     Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
     Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
