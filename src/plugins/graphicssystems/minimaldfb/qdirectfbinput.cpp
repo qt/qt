@@ -68,6 +68,9 @@ void QDirectFbInput::handleEvents()
             case DWET_WHEEL:
                 handleMouseEvents(event);
                 break;
+            case DWET_KEYDOWN:
+            case DWET_KEYUP:
+                handleKeyEvents(event);
             }
 
         } else
@@ -85,10 +88,19 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
     Qt::MouseButton button = QDirectFbConvenience::mouseButton(event.window.button);
     Qt::MouseButtons buttons = QDirectFbConvenience::mouseButtons(event.window.buttons);
 
-    qDebug() << QDirectFbConvenience::keyMap()->value(event.window.key_symbol);
     QMouseEvent mouseEvent(type,p,globalPos,button, buttons,(Qt::KeyboardModifiers)0);
     QWidget *tlw = tlwMap.value(event.window.window_id);
     QApplicationPrivate::handleMouseEvent(tlw,mouseEvent);
+}
+
+void QDirectFbInput::handleKeyEvents(const DFBEvent &event)
+{
+    QEvent::Type type = QDirectFbConvenience::eventType(event.window.type);
+    Qt::Key key = QDirectFbConvenience::keyMap()->value(event.window.key_symbol);
+
+    QKeyEvent keyEvent(type,key,0,QChar(event.window.key_symbol));//,"",true,0);
+    QWidget *tlw = tlwMap.value(event.window.window_id);
+    QApplicationPrivate::handleKeyEvent(tlw,&keyEvent);
 }
 
 inline QPoint QDirectFbInput::globalPoint(const DFBEvent &event) const

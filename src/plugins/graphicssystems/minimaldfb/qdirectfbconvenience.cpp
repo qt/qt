@@ -83,6 +83,10 @@ QEvent::Type QDirectFbConvenience::eventType(DFBWindowEventType type)
         return QEvent::MouseMove;
     case DWET_WHEEL:
         return QEvent::Wheel;
+    case DWET_KEYDOWN:
+        return QEvent::KeyPress;
+    case DWET_KEYUP:
+        return QEvent::KeyRelease;
     default:
         return QEvent::None;
     }
