@@ -517,12 +517,12 @@
     </message>
     <message>
         <location line="+89"/>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+907"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+915"/>
         <source>Move action</source>
         <translation>Przenieś akcję</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-424"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-432"/>
         <source>Change Title</source>
         <translation>Zmień tytuł</translation>
     </message>
@@ -703,7 +703,7 @@
 <context>
     <name>ConnectionDelegate</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+643"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+644"/>
         <source>&lt;object&gt;</source>
         <translation>&lt;obiekt&gt;</translation>
     </message>
@@ -1028,7 +1028,7 @@
 <context>
     <name>FormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+359"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+375"/>
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values</extracomment>
         <translation>Niepoprawna wartość rozciągniecia dla &apos;%1&apos;: &apos;%2&apos;</translation>
@@ -1413,7 +1413,7 @@
         <translation>Niepoprawny plik UI: brak głównego elementu &lt;ui&gt;.</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+104"/>
         <source>The creation of a widget of the class &apos;%1&apos; failed.</source>
         <translation>Utworzenie widżetu klasy &apos;%1&apos; nie powiodło się.</translation>
     </message>
@@ -2277,7 +2277,7 @@ Strony pojemników powinny być dodawane jedynie poprzez wyspecyfikowanie ich w 
 <context>
     <name>QFormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+163"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+168"/>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method</extracomment>
         <translation>Pusta nazwa klasy została przekazana do %1 (nazwa obiektu: &apos;%2&apos;).</translation>
@@ -4709,7 +4709,7 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location line="+1"/>
         <source>The file &quot;%1&quot; has changed outside Designer. Do you want to reload it?</source>
-        <translation type="unfinished">Plik &quot;%1&quot; zmienił się na zewnątrz Designera. Czy chcesz go ponownie załadować?</translation>
+        <translation>Plik &quot;%1&quot; zmienił się na zewnątrz Designera. Czy chcesz go ponownie załadować?</translation>
     </message>
 </context>
 <context>
@@ -4834,7 +4834,7 @@ Czy chcesz nadpisać szablon?</translation>
 <context>
     <name>qdesigner_internal::FormWindowManager</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+364"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+365"/>
         <source>Cu&amp;t</source>
         <translation>Wy&amp;tnij</translation>
     </message>
@@ -5560,17 +5560,14 @@ Wybierz inną nazwę.</translation>
 <context>
     <name>qdesigner_internal::ObjectInspector</name>
     <message>
-        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+754"/>
-        <source>&amp;Find in Text...</source>
-        <translation>Z&amp;najdź w tekście...</translation>
-    </message>
-</context>
-<context>
-    <name>qdesigner_internal::ObjectInspector::ObjectInspectorPrivate</name>
-    <message>
-        <location line="-438"/>
+        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+316"/>
         <source>Change Current Page</source>
         <translation>Zmień bieżącą stronę</translation>
+    </message>
+    <message>
+        <location line="+438"/>
+        <source>&amp;Find in Text...</source>
+        <translation>Z&amp;najdź w tekście...</translation>
     </message>
 </context>
 <context>
@@ -5785,9 +5782,6 @@ Wybierz inną nazwę.</translation>
         <source>Browse...</source>
         <translation>Przeglądaj...</translation>
     </message>
-</context>
-<context>
-    <name>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate</name>
     <message>
         <location line="+118"/>
         <source>Load Custom Device Skin</source>
