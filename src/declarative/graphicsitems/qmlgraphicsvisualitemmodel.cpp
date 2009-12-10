@@ -556,7 +556,7 @@ QVariant QmlGraphicsVisualDataModelPartsMetaObject::initialValue(int id)
 {
     QmlGraphicsVisualDataModel *m = new QmlGraphicsVisualDataModel;
     m->setParent(object());
-    m->setPart(QString::fromUtf8(property(id).name()));
+    m->setPart(QString::fromUtf8(name(id)));
     m->setModel(QVariant::fromValue(static_cast<QmlGraphicsVisualDataModelParts *>(object())->model));
 
     QVariant var = QVariant::fromValue((QObject *)m);
@@ -649,7 +649,7 @@ void QmlGraphicsVisualDataModel::setModel(const QVariant &model)
     d->m_roles.clear();
     d->m_roleNames.clear();
     delete d->m_delegateDataType;
-    d->m_delegateDataType = new QmlOpenMetaObjectType(d->m_context->engine());
+    d->m_delegateDataType = new QmlOpenMetaObjectType(d->m_context?d->m_context->engine():qmlEngine(this));
 
     QObject *object = qvariant_cast<QObject *>(model);
     if (object && (d->m_listModelInterface = qobject_cast<QListModelInterface *>(object))) {
