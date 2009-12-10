@@ -44,7 +44,7 @@
 
 #include "qmltransition_p.h"
 #include "qmlstate_p.h"
-#include "../../gui/math3d/qvector3d.h"
+#include <QtGui/qvector3d.h>
 
 #include <qmlpropertyvaluesource.h>
 #include <qml.h>
