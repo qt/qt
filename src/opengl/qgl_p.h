@@ -133,9 +133,6 @@ public:
         : ref(1)
     {
         opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering | QGL::StencilBuffer;
-#if defined(QT_OPENGL_ES_2)
-        opts |= QGL::SampleBuffers;
-#endif
         pln = 0;
         depthSize = accumSize = stencilSize = redSize = greenSize = blueSize = alphaSize = -1;
         numSamples = -1;

@@ -82,9 +82,10 @@ public:
     };
 
     bool smallDecimalPoint() const;
-
+#ifdef QT_DEPRECATED
     QT_DEPRECATED int numDigits() const;
     QT_DEPRECATED void setNumDigits(int nDigits);
+#endif
     int digitCount() const;
     void setDigitCount(int nDigits);
 

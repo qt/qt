@@ -743,7 +743,7 @@ bool QGraphicsWidgetPrivate::hasDecoration() const
 /**
  * is called after a reparent has taken place to fix up the focus chain(s)
  */
-void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *newParent, QGraphicsScene *newScene)
+void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *newParent, QGraphicsScene *oldScene, QGraphicsScene *newScene)
 {
     Q_Q(QGraphicsWidget);
 
@@ -789,7 +789,7 @@ void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *new
     // update tabFocusFirst for oldScene if the item is going to be removed from oldScene
     if (newParent)
         newScene = newParent->scene();
-    QGraphicsScene *oldScene = q->scene();
+
     if (oldScene && newScene != oldScene)
         oldScene->d_func()->tabFocusFirst = firstOld;
 
