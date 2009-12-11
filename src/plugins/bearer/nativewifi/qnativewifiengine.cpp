@@ -68,7 +68,7 @@ void qNotificationCallback(WLAN_NOTIFICATION_DATA *data, QNativeWifiEngine *d)
     switch (data->NotificationCode) {
     case wlan_notification_acm_connection_complete:
     case wlan_notification_acm_disconnected:
-        d->emitConfigurationsChanged();
+        QMetaObject::invokeMethod(d, "scanComplete", Qt::QueuedConnection);
         break;
     default:
         qDebug() << "wlan unknown notification";
@@ -96,8 +96,9 @@ QNativeWifiEngine::QNativeWifiEngine(QObject *parent)
 
     // On Windows XP SP2 and SP3 only connection and disconnection notifications are available.
     // We need to poll for changes in available wireless networks.
-    connect(&pollTimer, SIGNAL(timeout()), this, SIGNAL(configurationsChanged()));
+    connect(&pollTimer, SIGNAL(timeout()), this, SLOT(scanComplete()));
     pollTimer.setInterval(10000);
+    scanComplete();
 }
 
 QNativeWifiEngine::~QNativeWifiEngine()
@@ -105,19 +106,16 @@ QNativeWifiEngine::~QNativeWifiEngine()
     local_WlanCloseHandle(handle, 0);
 }
 
-QList<QNetworkConfigurationPrivate *> QNativeWifiEngine::getConfigurations(bool *ok)
+void QNativeWifiEngine::scanComplete()
 {
-    if (ok)
-        *ok = false;
-
-    QList<QNetworkConfigurationPrivate *> foundConfigurations;
+    QStringList previous = accessPointConfigurations.keys();
 
     // enumerate interfaces
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
     if (result != ERROR_SUCCESS) {
         qWarning("%s: WlanEnumInterfaces failed with error %ld\n", __FUNCTION__, result);
-        return foundConfigurations;
+        return;
     }
 
     for (unsigned int i = 0; i < interfaceList->dwNumberOfItems; ++i) {
@@ -146,36 +144,66 @@ QList<QNetworkConfigurationPrivate *> QNativeWifiEngine::getConfigurations(bool 
                                          network.dot11Ssid.uSSIDLength);
             }
 
-            // don't add duplicate networks
+            const QString id = QString::number(qHash(QLatin1String("WLAN:") + networkName));
+
+            previous.removeAll(id);
+
+            QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Undefined;
+
+            if (!(network.dwFlags & WLAN_AVAILABLE_NETWORK_HAS_PROFILE))
+                state = QNetworkConfiguration::Undefined;
+
+            if (network.strProfileName[0] != 0) {
+                if (network.bNetworkConnectable) {
+                    if (network.dwFlags & WLAN_AVAILABLE_NETWORK_CONNECTED)
+                        state = QNetworkConfiguration::Active;
+                    else
+                        state = QNetworkConfiguration::Discovered;
+                } else {
+                    state = QNetworkConfiguration::Defined;
+                }
+            }
+
             if (seenNetworks.contains(networkName))
                 continue;
             else
                 seenNetworks.append(networkName);
 
-            QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate;
+            if (accessPointConfigurations.contains(id)) {
+                QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
-            cpPriv->isValid = true;
+                bool changed = false;
 
-            cpPriv->name = networkName;
-            cpPriv->id = QString::number(qHash(QLatin1String("WLAN:") + cpPriv->name));
-
-            if (!(network.dwFlags & WLAN_AVAILABLE_NETWORK_HAS_PROFILE))
-                cpPriv->state = QNetworkConfiguration::Undefined;
-
-            if (network.strProfileName[0] != 0) {
-                if (network.bNetworkConnectable) {
-                    if (network.dwFlags & WLAN_AVAILABLE_NETWORK_CONNECTED)
-                        cpPriv->state = QNetworkConfiguration::Active;
-                    else
-                        cpPriv->state = QNetworkConfiguration::Discovered;
-                } else {
-                    cpPriv->state = QNetworkConfiguration::Defined;
+                if (!ptr->isValid) {
+                    ptr->isValid = true;
+                    changed = true;
                 }
+
+                if (ptr->name != networkName) {
+                    ptr->name = networkName;
+                    changed = true;
+                }
+
+                if (ptr->state != state) {
+                    ptr->state = state;
+                    changed = true;
+                }
+
+                if (changed)
+                    emit configurationChanged(ptr);
+            } else {
+                QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
+
+                ptr->name = networkName;
+                ptr->isValid = true;
+                ptr->id = id;
+                ptr->state = state;
+                ptr->type = QNetworkConfiguration::InternetAccessPoint;
+
+                accessPointConfigurations.insert(id, ptr);
+
+                emit configurationAdded(ptr);
             }
-
-            cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
-
-            foundConfigurations.append(cpPriv);
         }
 
         local_WlanFreeMemory(networkList);
@@ -183,12 +211,16 @@ QList<QNetworkConfigurationPrivate *> QNativeWifiEngine::getConfigurations(bool 
 
     local_WlanFreeMemory(interfaceList);
 
-    if (ok)
-        *ok = true;
+    while (!previous.isEmpty()) {
+        QNetworkConfigurationPrivatePointer ptr =
+            accessPointConfigurations.take(previous.takeFirst());
+
+        emit configurationRemoved(ptr);
+    }
 
     pollTimer.start();
 
-    return foundConfigurations;
+    emit updateCompleted();
 }
 
 QString QNativeWifiEngine::getInterfaceFromId(const QString &id)
@@ -227,12 +259,15 @@ QString QNativeWifiEngine::getInterfaceFromId(const QString &id)
                 guid = guid.arg(interface.InterfaceGuid.Data4[i], 2, 16, QChar('0'));
 
             local_WlanFreeMemory(connectionAttributes);
+            local_WlanFreeMemory(interfaceList);
 
             return guid.toUpper();
         }
 
         local_WlanFreeMemory(connectionAttributes);
     }
+
+    local_WlanFreeMemory(interfaceList);
 
     return QString();
 }
@@ -397,6 +432,32 @@ void QNativeWifiEngine::requestUpdate()
         if (result != ERROR_SUCCESS)
             qWarning("%s: WlanScan failed with error %ld\n", __FUNCTION__, result);
     }
+
+    local_WlanFreeMemory(interfaceList);
+}
+
+QNetworkSession::State QNativeWifiEngine::sessionStateForId(const QString &id)
+{
+    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+
+    if (!ptr)
+        return QNetworkSession::Invalid;
+
+    if (!ptr->isValid) {
+        return QNetworkSession::Invalid;
+    } else if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+        return QNetworkSession::Connected;
+    } else if ((ptr->state & QNetworkConfiguration::Discovered) ==
+                QNetworkConfiguration::Discovered) {
+        return QNetworkSession::Disconnected;
+    } else if ((ptr->state & QNetworkConfiguration::Defined) == QNetworkConfiguration::Defined) {
+        return QNetworkSession::NotAvailable;
+    } else if ((ptr->state & QNetworkConfiguration::Undefined) ==
+                QNetworkConfiguration::Undefined) {
+        return QNetworkSession::NotAvailable;
+    }
+
+    return QNetworkSession::Invalid;
 }
 
 QT_END_NAMESPACE

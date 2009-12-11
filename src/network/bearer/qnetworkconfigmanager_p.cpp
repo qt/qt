@@ -251,9 +251,21 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
             QBearerEnginePlugin *nativeWifiPlugin =
                 qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("nativewifi")));
             if (nativeWifiPlugin) {
-                QNetworkSessionEngine *nativeWifi = nativeWifiPlugin->create(QLatin1String("nativewifi"));
+                QNetworkSessionEngine *nativeWifi =
+                    nativeWifiPlugin->create(QLatin1String("nativewifi"));
                 if (nativeWifi) {
                     sessionEngines.append(nativeWifi);
+                    connect(nativeWifi, SIGNAL(updateCompleted()),
+                            this, SLOT(updateConfigurations()));
+                    connect(nativeWifi,
+                            SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
+                    connect(nativeWifi,
+                            SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
+                    connect(nativeWifi,
+                            SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
 
                     capFlags |= QNetworkConfigurationManager::CanStartAndStopInterfaces;
                 }

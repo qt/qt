@@ -60,6 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
+struct WLAN_NOTIFICATION_DATA;
 
 class QNativeWifiEngine : public QNetworkSessionEngine
 {
@@ -69,7 +70,6 @@ public:
     QNativeWifiEngine(QObject *parent = 0);
     ~QNativeWifiEngine();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 
@@ -80,9 +80,12 @@ public:
 
     void requestUpdate();
 
-    inline void emitConfigurationsChanged() { emit configurationsChanged(); }
+    QNetworkSession::State sessionStateForId(const QString &id);
 
     inline bool available() const { return handle != 0; }
+
+public Q_SLOTS:
+    void scanComplete();
 
 private:
     QTimer pollTimer;
