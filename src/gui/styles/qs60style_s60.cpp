@@ -143,6 +143,8 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnGrafTabPassiveL */            {KAknsIIDQgnGrafTabPassiveL,            EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafTabPassiveM */            {KAknsIIDQgnGrafTabPassiveM,            EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafTabPassiveR */            {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_All,    -1,-1},
+
+    // In 3.1 there is no slider groove.
     /* SP_QgnGrafNsliderEndLeft */         {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19cf /* KAknsIIDQgnGrafNsliderEndLeft */},
     /* SP_QgnGrafNsliderEndRight */        {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d0 /* KAknsIIDQgnGrafNsliderEndRight */},
     /* SP_QgnGrafNsliderMiddle */          {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d2 /* KAknsIIDQgnGrafNsliderMiddle */},
@@ -161,8 +163,10 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnIndiNaviArrowRight */         {KAknsIIDQgnIndiNaviArrowRight,         EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnIndiRadiobuttOff */           {KAknsIIDQgnIndiRadiobuttOff,           EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnIndiRadiobuttOn */            {KAknsIIDQgnIndiRadiobuttOn,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafNsliderMarker */          {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d1 /* KAknsIIDQgnGrafNsliderMarker */},
-    /* SP_QgnGrafNsliderMarkerSelected */  {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x1a4a /* KAknsIIDQgnGrafNsliderMarkerSelected */},
+
+    // In 3.1 there different slider graphic and no pressed state.
+    /* SP_QgnGrafNsliderMarker */          {KAknsIIDQgnIndiSliderEdit,             EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d1 /* KAknsIIDQgnGrafNsliderMarker */},
+    /* SP_QgnGrafNsliderMarkerSelected */  {KAknsIIDQgnIndiSliderEdit,             EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x1a4a /* KAknsIIDQgnGrafNsliderMarkerSelected */},
     /* SP_QgnIndiSubMenu */                {KAknsIIDQgnIndiSubmenu,                EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnNoteErased */                 {KAknsIIDQgnNoteErased,                 EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnNoteError */                  {KAknsIIDQgnNoteError,                  EDrawIcon,   ES60_All,    -1,-1},
