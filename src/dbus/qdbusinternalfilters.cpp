@@ -41,7 +41,7 @@
 
 #include "qdbusconnection_p.h"
 
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qstringlist.h>
