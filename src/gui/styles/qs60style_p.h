@@ -119,6 +119,9 @@ public:
         SP_QgnGrafTabPassiveL,
         SP_QgnGrafTabPassiveM,
         SP_QgnGrafTabPassiveR,
+        SP_QgnGrafNsliderEndLeft,
+        SP_QgnGrafNsliderEndRight,
+        SP_QgnGrafNsliderMiddle,
         SP_QgnIndiCheckboxOff,
         SP_QgnIndiCheckboxOn,
         SP_QgnIndiHlColSuper,     // Available in S60 release 3.2 and later.
@@ -313,6 +316,8 @@ public:
         SE_ScrollBarHandleVertical,
         SE_SliderHandleHorizontal,
         SE_SliderHandleVertical,
+        SE_SliderGrooveVertical,
+        SE_SliderGrooveHorizontal,
         SE_TabBarTabEastActive,
         SE_TabBarTabEastInactive,
         SE_TabBarTabNorthActive,

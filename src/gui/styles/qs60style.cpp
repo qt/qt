@@ -204,6 +204,13 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
         break;
     case SE_SliderHandleVertical:
         drawPart(QS60StyleEnums::SP_QgnIndiSliderEdit, painter, rect, flags | SF_PointEast);
+    case SE_SliderGrooveVertical:
+        drawRow(QS60StyleEnums::SP_QgnGrafNsliderEndLeft, QS60StyleEnums::SP_QgnGrafNsliderMiddle,
+                QS60StyleEnums::SP_QgnGrafNsliderEndRight, Qt::Vertical, painter, rect, flags | SF_PointEast);
+        break;
+    case SE_SliderGrooveHorizontal:
+        drawRow(QS60StyleEnums::SP_QgnGrafNsliderEndLeft, QS60StyleEnums::SP_QgnGrafNsliderMiddle,
+                QS60StyleEnums::SP_QgnGrafNsliderEndRight, Qt::Horizontal, painter, rect, flags | SF_PointNorth);
         break;
     case SE_TabBarTabEastActive:
         drawRow(QS60StyleEnums::SP_QgnGrafTabActiveL, QS60StyleEnums::SP_QgnGrafTabActiveM,
@@ -807,7 +814,12 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
             //ratio of 1:2 for horizontal tab bars (and 2:1 for vertical ones).
             result.setWidth(result.height()>>1);
             break;
-        case QS60StyleEnums::SP_QgnIndiSliderEdit:
+            
+        case QS60StyleEnums::SP_QgnGrafNsliderEndLeft:
+        case QS60StyleEnums::SP_QgnGrafNsliderEndRight:
+        case QS60StyleEnums::SP_QgnGrafNsliderMiddle:
+            result.setWidth(result.height()>>1);
+            break;
             result.scale(pixelMetric(QStyle::PM_SliderLength),
                 pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
             break;
@@ -928,19 +940,20 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
     case CC_Slider:
         if (const QStyleOptionSlider *optionSlider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
 
-            // The groove is just a centered line. Maybe a qgn_graf_line_* at some point
             const QRect sliderGroove = subControlRect(control, optionSlider, SC_SliderGroove, widget);
-            const QPoint sliderGrooveCenter = sliderGroove.center();
             const bool horizontal = optionSlider->orientation == Qt::Horizontal;
-            painter->save();
-            if (widget)
-                painter->setPen(widget->palette().windowText().color());
-            if (horizontal)
-                painter->drawLine(0, sliderGrooveCenter.y(), sliderGroove.right(), sliderGrooveCenter.y());
-            else
-                painter->drawLine(sliderGrooveCenter.x(), 0, sliderGrooveCenter.x(), sliderGroove.bottom());
-            painter->restore();
 
+            //Highlight
+/*            if (optionSlider->state & QStyle::State_HasFocus)
+                drawPrimitive(PE_FrameFocusRect, optionSlider, painter, widget);*/
+            
+            //Groove graphics
+            const QS60StylePrivate::SkinElements grooveElement = horizontal ? 
+                QS60StylePrivate::SE_SliderGrooveHorizontal : 
+            QS60StylePrivate::SE_SliderGrooveVertical;
+            QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
+
+            //Handle graphics
             const QRect sliderHandle = subControlRect(control, optionSlider, SC_SliderHandle, widget);
             const QS60StylePrivate::SkinElements handleElement =
                 horizontal ? QS60StylePrivate::SE_SliderHandleHorizontal : QS60StylePrivate::SE_SliderHandleVertical;
