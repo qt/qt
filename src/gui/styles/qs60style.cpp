@@ -200,10 +200,17 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
             QS60StyleEnums::SP_QsnCpScrollHandleBottom, Qt::Vertical, painter, rect, flags | SF_PointNorth);
         break;
     case SE_SliderHandleHorizontal:
-        drawPart(QS60StyleEnums::SP_QgnIndiSliderEdit, painter, rect, flags | SF_PointNorth);
+        drawPart(QS60StyleEnums::SP_QgnGrafNsliderMarker, painter, rect, flags | SF_PointNorth);
         break;
     case SE_SliderHandleVertical:
-        drawPart(QS60StyleEnums::SP_QgnIndiSliderEdit, painter, rect, flags | SF_PointEast);
+        drawPart(QS60StyleEnums::SP_QgnGrafNsliderMarker, painter, rect, flags | SF_PointEast);
+        break;
+    case SE_SliderHandleSelectedHorizontal:
+        drawPart(QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected, painter, rect, flags | SF_PointNorth);
+        break;
+    case SE_SliderHandleSelectedVertical:
+        drawPart(QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected, painter, rect, flags | SF_PointEast);
+        break;
     case SE_SliderGrooveVertical:
         drawRow(QS60StyleEnums::SP_QgnGrafNsliderEndLeft, QS60StyleEnums::SP_QgnGrafNsliderMiddle,
                 QS60StyleEnums::SP_QgnGrafNsliderEndRight, Qt::Vertical, painter, rect, flags | SF_PointEast);
@@ -820,6 +827,9 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafNsliderMiddle:
             result.setWidth(result.height()>>1);
             break;
+            
+        case QS60StyleEnums::SP_QgnGrafNsliderMarker:
+        case QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected:
             result.scale(pixelMetric(QStyle::PM_SliderLength),
                 pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
             break;
@@ -955,8 +965,13 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             //Handle graphics
             const QRect sliderHandle = subControlRect(control, optionSlider, SC_SliderHandle, widget);
-            const QS60StylePrivate::SkinElements handleElement =
-                horizontal ? QS60StylePrivate::SE_SliderHandleHorizontal : QS60StylePrivate::SE_SliderHandleVertical;
+            QS60StylePrivate::SkinElements handleElement;
+            if (optionSlider->state & QStyle::State_Sunken)
+                handleElement =
+                        horizontal ? QS60StylePrivate::SE_SliderHandleSelectedHorizontal : QS60StylePrivate::SE_SliderHandleSelectedVertical;
+            else    
+                handleElement =
+                    horizontal ? QS60StylePrivate::SE_SliderHandleHorizontal : QS60StylePrivate::SE_SliderHandleVertical;
             QS60StylePrivate::drawSkinElement(handleElement, painter, sliderHandle, flags);
         }
         break;

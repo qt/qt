@@ -151,29 +151,30 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
 
     // Following 5 items (SP_QgnIndiHlColSuper - SP_QgnIndiHlLineStraight) are available starting from S60 release 3.2.
     // In 3.1 CommonStyle drawing is used for these QTreeView elements, since no similar icons in AVKON UI.
-    /* SP_QgnIndiHlColSuper */          {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d5 /* KAknsIIDQgnIndiHlColSuper */},
-    /* SP_QgnIndiHlExpSuper */          {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d6 /* KAknsIIDQgnIndiHlExpSuper */},
-    /* SP_QgnIndiHlLineBranch */        {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d7 /* KAknsIIDQgnIndiHlLineBranch */},
-    /* SP_QgnIndiHlLineEnd */           {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d8 /* KAknsIIDQgnIndiHlLineEnd */},
-    /* SP_QgnIndiHlLineStraight */      {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d9 /* KAknsIIDQgnIndiHlLineStraight */},
-    /* SP_QgnIndiMarkedAdd */           {KAknsIIDQgnIndiMarkedAdd,              EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiNaviArrowLeft */       {KAknsIIDQgnIndiNaviArrowLeft,          EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiNaviArrowRight */      {KAknsIIDQgnIndiNaviArrowRight,         EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiRadiobuttOff */        {KAknsIIDQgnIndiRadiobuttOff,           EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiRadiobuttOn */         {KAknsIIDQgnIndiRadiobuttOn,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiSliderEdit */          {KAknsIIDQgnIndiSliderEdit,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiSubMenu */             {KAknsIIDQgnIndiSubmenu,                EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteErased */              {KAknsIIDQgnNoteErased,                 EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteError */               {KAknsIIDQgnNoteError,                  EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteInfo */                {KAknsIIDQgnNoteInfo,                   EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteOk */                  {KAknsIIDQgnNoteOk,                     EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteQuery */               {KAknsIIDQgnNoteQuery,                  EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteWarning */             {KAknsIIDQgnNoteWarning,                EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropFileSmall */           {KAknsIIDQgnPropFileSmall,              EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropFolderCurrent */       {KAknsIIDQgnPropFolderCurrent,          EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropFolderSmall */         {KAknsIIDQgnPropFolderSmall,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropFolderSmallNew */      {KAknsIIDQgnPropFolderSmallNew,         EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropPhoneMemcLarge */      {KAknsIIDQgnPropPhoneMemcLarge,         EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiHlColSuper */             {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d5 /* KAknsIIDQgnIndiHlColSuper */},
+    /* SP_QgnIndiHlExpSuper */             {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d6 /* KAknsIIDQgnIndiHlExpSuper */},
+    /* SP_QgnIndiHlLineBranch */           {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d7 /* KAknsIIDQgnIndiHlLineBranch */},
+    /* SP_QgnIndiHlLineEnd */              {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d8 /* KAknsIIDQgnIndiHlLineEnd */},
+    /* SP_QgnIndiHlLineStraight */         {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d9 /* KAknsIIDQgnIndiHlLineStraight */},
+    /* SP_QgnIndiMarkedAdd */              {KAknsIIDQgnIndiMarkedAdd,              EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiNaviArrowLeft */          {KAknsIIDQgnIndiNaviArrowLeft,          EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiNaviArrowRight */         {KAknsIIDQgnIndiNaviArrowRight,         EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiRadiobuttOff */           {KAknsIIDQgnIndiRadiobuttOff,           EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiRadiobuttOn */            {KAknsIIDQgnIndiRadiobuttOn,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafNsliderMarker */          {KAknsIIDQgnGrafNsliderMarker,          EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafNsliderMarkerSelected */  {KAknsIIDQgnGrafNsliderMarkerSelected,  EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiSubMenu */                {KAknsIIDQgnIndiSubmenu,                EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteErased */                 {KAknsIIDQgnNoteErased,                 EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteError */                  {KAknsIIDQgnNoteError,                  EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteInfo */                   {KAknsIIDQgnNoteInfo,                   EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteOk */                     {KAknsIIDQgnNoteOk,                     EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteQuery */                  {KAknsIIDQgnNoteQuery,                  EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteWarning */                {KAknsIIDQgnNoteWarning,                EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropFileSmall */              {KAknsIIDQgnPropFileSmall,              EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropFolderCurrent */          {KAknsIIDQgnPropFolderCurrent,          EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropFolderSmall */            {KAknsIIDQgnPropFolderSmall,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropFolderSmallNew */         {KAknsIIDQgnPropFolderSmallNew,         EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropPhoneMemcLarge */         {KAknsIIDQgnPropPhoneMemcLarge,         EDrawIcon,   ES60_All,    -1,-1},
 
     // 3.1 & 3.2 do not have pressed state for scrollbar, so use normal scrollbar graphics instead.
     /* SP_QsnCpScrollHandleBottomPressed*/ {KAknsIIDQsnCpScrollHandleBottom,    EDrawIcon,   ES60_3_X,    EAknsMajorGeneric, 0x20f8}, /*KAknsIIDQsnCpScrollHandleBottomPressed*/
@@ -435,8 +436,11 @@ void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &style
         case QS60StyleEnums::SP_QgnIndiRadiobuttOn:
             fallbackIndex = EMbmAvkonQgn_indi_radiobutt_on;
             break;
-        case QS60StyleEnums::SP_QgnIndiSliderEdit:
-            fallbackIndex = EMbmAvkonQgn_indi_slider_edit;
+        case QS60StyleEnums::SP_QgnGrafNsliderMarker:
+            fallbackIndex = EMbmAvkonQgn_graf_nslider_marker;
+            break;
+        case QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected:
+            fallbackIndex = EMbmAvkonQgn_graf_nslider_marker_selected;
             break;
         case QS60StyleEnums::SP_QgnIndiSubMenu:
             fallbackIndex = EMbmAvkonQgn_indi_submenu;
