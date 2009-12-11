@@ -3,8 +3,6 @@ include(../../qpluginbase.pri)
 
 QT += network
 
-DEFINES += BEARER_ENGINE
-
 HEADERS += qnativewifiengine.h platformdefs.h
 SOURCES += qnativewifiengine.cpp main.cpp
 

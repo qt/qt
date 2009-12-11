@@ -9,8 +9,6 @@ QT += network
     LIBS += -lWs2
 }
 
-DEFINES += BEARER_ENGINE
-
 HEADERS += qnlaengine.h \
            ../platformdefs_win.h
 SOURCES += qnlaengine.cpp main.cpp

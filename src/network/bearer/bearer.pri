@@ -69,8 +69,6 @@ symbian {
 
     INSTALLS += pkgconfig documentation
 } else {
-    DEFINES += BEARER_ENGINE
-
     HEADERS += bearer/qnetworkconfigmanager_p.h \
                bearer/qnetworkconfiguration_p.h \
                bearer/qnetworksession_p.h \

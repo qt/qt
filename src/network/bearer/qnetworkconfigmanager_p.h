@@ -93,13 +93,10 @@ Q_SIGNALS:
     void onlineStateChanged(bool isOnline);
 
 private:
-#ifdef BEARER_ENGINE
     void updateInternetServiceConfiguration();
 
     void abort();
-#endif
 
-#ifdef BEARER_ENGINE
 public:
     QList<QNetworkSessionEngine *> sessionEngines;
 
@@ -108,14 +105,11 @@ private:
 
     bool updating;
     QSet<int> updatingEngines;
-#endif
 
 private Q_SLOTS:
-#ifdef BEARER_ENGINE
     void configurationAdded(QNetworkConfigurationPrivatePointer ptr);
     void configurationRemoved(QNetworkConfigurationPrivatePointer ptr);
     void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
-#endif
 };
 
 QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();

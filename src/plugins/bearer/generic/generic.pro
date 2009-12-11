@@ -3,8 +3,6 @@ include(../../qpluginbase.pri)
 
 QT += network
 
-DEFINES += BEARER_ENGINE
-
 HEADERS += qgenericengine.h \
            ../platformdefs_win.h
 SOURCES += qgenericengine.cpp main.cpp

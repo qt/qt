@@ -11,8 +11,6 @@ contains(QT_CONFIG, corewlan) {
     }
 }
 
-DEFINES += BEARER_ENGINE
-
 HEADERS += qcorewlanengine.h
 SOURCES += qcorewlanengine.mm main.cpp
 

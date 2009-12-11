@@ -64,12 +64,9 @@ class QNetworkConfigurationPrivate : public QSharedData
 {
 public:
     QNetworkConfigurationPrivate ()
-        : isValid(false), type(QNetworkConfiguration::Invalid), 
-          roamingSupported(false), purpose(QNetworkConfiguration::UnknownPurpose)
+    :   isValid(false), type(QNetworkConfiguration::Invalid),
+        roamingSupported(false), purpose(QNetworkConfiguration::UnknownPurpose), internet(false)
     {
-#ifdef BEARER_ENGINE
-        internet = false;
-#endif
     }
 
     ~QNetworkConfigurationPrivate()
@@ -86,9 +83,7 @@ public:
     bool roamingSupported;
     QNetworkConfiguration::Purpose purpose;
 
-#ifdef BEARER_ENGINE
     bool internet;
-#endif
 
     QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
     QNetworkInterface serviceInterface;

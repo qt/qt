@@ -55,9 +55,7 @@
 
 #include "qnetworkconfigmanager_p.h"
 #include "qnetworksession.h"
-#ifdef BEARER_ENGINE
 #include "qnetworksessionengine_p.h"
-#endif
 
 #include "qnetworksession.h"
 #include <QNetworkInterface>
@@ -65,9 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef BEARER_ENGINE
 class QNetworkSessionEngine;
-#endif
 
 class QNetworkSessionPrivate : public QObject
 {
@@ -117,12 +113,10 @@ Q_SIGNALS:
     void quitPendingWaitsForOpened();
 
 private Q_SLOTS:
-#ifdef BEARER_ENGINE
     void networkConfigurationsChanged();
     void configurationChanged(const QNetworkConfiguration &config);
     void forcedSessionClose(const QNetworkConfiguration &config);
     void connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error);
-#endif
 
 private:
     QNetworkConfigurationManager manager;
@@ -146,17 +140,16 @@ private:
     QNetworkSession::State state;
     bool isActive;
 
-#ifdef BEARER_ENGINE
     bool opened;
 
     QNetworkSessionEngine *engine;
-#endif
+
     QNetworkSession::SessionError lastError;
 
     QNetworkSession* q;
     friend class QNetworkSession;
 
-#if defined(BEARER_ENGINE) && defined(BACKEND_NM)
+#if defined(BACKEND_NM)
     QDateTime startTime;
     void setActiveTimeStamp();
 #endif
