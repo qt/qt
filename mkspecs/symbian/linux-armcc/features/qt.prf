@@ -5,63 +5,59 @@ isEmpty(DESTDIR) {
 }
 
 for(libraries, LIBS) {
-    isLib = $$find(libraries, \.lib)
-    isEmpty(isLib) {
-        LIBS += $${libraries}.lib\\(VtblExports.o\\)
+    isFullName = $$find(libraries, \.)
+    isEmpty(isFullName) {
+        LIBS = $$replace(LIBS, "$$libraries", "$${libraries}.dso")
     }
 }
 for(libraries, QMAKE_LIBS) {
-    isLib = $$find(libraries, \.lib)
-    isEmpty(isLib) {
-        QMAKE_LIBS += $${libraries}.lib\\(VtblExports.o\\)
+    isFullName = $$find(libraries, \.)
+    isEmpty(isFullName) {
+        QMAKE_LIBS = $$replace(QMAKE_LIBS, "$$libraries", "$${libraries}.dso")
     }
 }
 
 # This needs to be done after the above LIBS mangling.
 include(../platformlibs.conf)
 
+elf2e32_LIBPATH =
+for(libPath, QMAKE_LIBDIR) {
+    elf2e32_LIBPATH += "--libpath=$$libPath"
+}
+
+splitVersion = $$split(VERSION, ".")
+intVersion = "00"
+for(verNumber, splitVersion) {
+    # Poor man's printf
+    !contains(verNumber, "[0-9][0-9]"):intVersion = "$${intVersion}0"
+    intVersion = "$${intVersion}$${verNumber}"
+}
+
+intUid3 = $$lower($$replace(TARGET.UID3, "^0x", ""))
+
 contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
-    exports.commands = winewrapper getexports.exe ${QMAKE_FILE_NAME} > ${OBJECTS_DIR}${QMAKE_FILE_BASE}.exports
-    exports.output = $$OBJECTS_DIR/${QMAKE_FILE_BASE}.exports
-    exports.input = OBJECTS
-    exports.variable_out = ORDINALMAP
-    exports.CONFIG = no_link
-
-    deffile.input = ORDINALMAP
-    deffile.output = $$OBJECTS_DIR/$${TARGET}.def
-    deffile.commands = makedeffile $$OBJECTS_DIR/$${TARGET}.def ${QMAKE_FILE_NAME}
-    deffile.variable_out = DEFFILE
-    deffile.CONFIG = no_link combine
-
-    expfile.input = DEFFILE
-    expfile.output = $$OBJECTS_DIR/$${TARGET}.exp
-    expfile.commands = makeexpfile ${QMAKE_FILE_NAME} $$OBJECTS_DIR/$${TARGET}.exp
-    expfile.variable_out = QMAKE_LIBS
-    expfile.CONFIG = target_predeps
-
-    ordinalmap.input = DEFFILE
-    ordinalmap.output = $$DESTDIR/$${TARGET}.lib
-    ordinalmap.commands = makeordinalmap $$OBJECTS_DIR ${QMAKE_FILE_NAME} $${TARGET}.dll $$DESTDIR/$${TARGET}.lib
-    ordinalmap.variable_out = PRE_TARGETDEPS
-
     !isEmpty($$QMAKE_POST_LINK):QMAKE_POST_LINK += &&
     QMAKE_POST_LINK += $$QMAKE_MOVE $$DESTDIR/$${TARGET}.dll $$DESTDIR/$${TARGET}.sym
-    QMAKE_POST_LINK += && winewrapper elftran.exe  -version 4.1536 -sid 0xe001b2dc  -allow -nocall -heap 0x00020000 0x00800000 -stack 0x00014000 -unpaged         -uid1 0x10000079 -uid2 0x1000008d -uid3 0xe001b2dc         -fpu softvfp -capability None $${DESTDIR}/$${TARGET}.sym $${DESTDIR}/$${TARGET}.dll
+    QMAKE_POST_LINK += && elf2e32  --version 4.1536 --sid 0xe001b2dc  --uid1 0x10000079 --uid2 0x1000008d --uid3 0xe001b2dc --dlldata --heap=0x00020000,0x00800000 --stack=0x00014000 --capability=None --fpu=softvfp --targettype=DLL --elfinput=$${DESTDIR}/$${TARGET}.sym --output=$${DESTDIR}/$${TARGET}.dll --dso=$$DESTDIR/$${TARGET}.dso --defoutput=$$OBJECTS_DIR/$${TARGET}.def --unfrozen --linkas=$${TARGET}\\{$${intVersion}\\}\\[$${intUid3}\\].dll --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged
     QMAKE_DISTCLEAN += $${DESTDIR}/$${TARGET}.sym
+    QMAKE_DISTCLEAN += $${DESTDIR}/$${TARGET}.dso
+    QMAKE_CLEAN += $${OBJECTS_DIR}/$${TARGET}.def
 
-    QMAKE_EXTRA_COMPILERS += exports
-    QMAKE_EXTRA_COMPILERS += deffile
-    QMAKE_EXTRA_COMPILERS += expfile
-    QMAKE_EXTRA_COMPILERS += ordinalmap
+    QMAKE_LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
 
-    QMAKE_LIBS += -ledllstub -ledll.lib\\(uc_dll_.o\\)
+    QMAKE_LFLAGS += --symver_soname --soname $${TARGET}\\{$${intVersion}\\}\\[$${intUid3}\\].dll
 }
 
 contains(TEMPLATE, app) {
-    QMAKE_POST_LINK += winewrapper elftran.exe  -version 10.0 -sid 0xe4d10fc9  -nocall -heap 0x00020000 0x00800000 -stack 0x00014000 -unpaged         -uid1 0x1000007a -uid2 0x1000008d -uid3 0xe4d10fc9         -fpu softvfp -capability None $${DESTDIR}/$${TARGET} $${DESTDIR}/$${TARGET}.tran
-    QMAKE_DISTCLEAN += $${DESTDIR}/$${TARGET}.tran
+    !isEmpty($$QMAKE_POST_LINK):QMAKE_POST_LINK += &&
+
+    QMAKE_POST_LINK += $$QMAKE_MOVE $$DESTDIR/$${TARGET} $$DESTDIR/$${TARGET}.sym
+    QMAKE_POST_LINK += && elf2e32  --version 4.1536 --sid 0xe001b2dc  --uid1 0x10000079 --uid2 0x1000008d --uid3 $$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 --stack=0x00014000 --capability=None --fpu=softvfp --targettype=EXE --elfinput=$${DESTDIR}/$${TARGET}.sym --output=$${DESTDIR}/$${TARGET}.exe --unfrozen --linkas=$${TARGET}\\{$${intVersion}\\}\\[$${intUid3}\\].exe --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged
+    QMAKE_DISTCLEAN += $${DESTDIR}/$${TARGET}.exe
 
     QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
+
+    QMAKE_LFLAGS += --symver_soname --soname $${TARGET}\\{$${intVersion}\\}\\[$${intUid3}\\].dll
 }
 
 # Symbian resource files

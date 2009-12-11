@@ -456,11 +456,7 @@ UnixMakefileGenerator::findLibraries()
                         libdirs.append(f);
                 } else if(opt.startsWith("-l")) {
                     if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
-                        if (opt.indexOf(".lib") == -1) {
-                            (*it) = opt.mid(2) + ".lib";
-                        } else {
-                            (*it) = opt.mid(2);
-                        }
+                        (*it) = opt.mid(2);
                     } else if (project->isActiveConfig("rvct_linker")) {
                         (*it) = "lib" + opt.mid(2) + ".so";
                     } else {
