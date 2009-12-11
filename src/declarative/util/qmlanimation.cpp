@@ -247,6 +247,11 @@ void QmlAbstractAnimation::setRunning(bool r)
 
     d->running = r;
     if (d->running) {
+        if (d->alwaysRunToEnd && d->repeat
+            && qtAnimation()->state() == QAbstractAnimation::Running) {
+            qtAnimation()->setLoopCount(-1);
+        }
+
         if (!d->connectedTimeLine) {
             QObject::connect(qtAnimation(), SIGNAL(finished()),
                              this, SLOT(timelineComplete()));
@@ -1366,6 +1371,64 @@ void QmlNumberAnimation::setTo(qreal t)
 }
 
 QML_DEFINE_TYPE(Qt,4,6,NumberAnimation,QmlNumberAnimation)
+
+/*!
+    \qmlclass Vector3dAnimation QmlVector3dAnimation
+    \inherits PropertyAnimation
+    \brief The Vector3dAnimation element allows you to animate changes in properties of type QVector3d.
+*/
+
+/*!
+    \internal
+    \class QmlVector3dAnimation
+*/
+
+QmlVector3dAnimation::QmlVector3dAnimation(QObject *parent)
+: QmlPropertyAnimation(parent)
+{
+    Q_D(QmlPropertyAnimation);
+    d->interpolatorType = QMetaType::QVector3D;
+    d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
+	d->defaultToInterpolatorType = true;
+}
+
+QmlVector3dAnimation::~QmlVector3dAnimation()
+{
+}
+
+/*!
+    \qmlproperty real Vector3dAnimation::from
+    This property holds the starting value.
+    If not set, then the value defined in the start state of the transition.
+*/
+QVector3D QmlVector3dAnimation::from() const
+{
+    Q_D(const QmlPropertyAnimation);
+    return d->from.value<QVector3D>();
+}
+
+void QmlVector3dAnimation::setFrom(QVector3D f)
+{
+    QmlPropertyAnimation::setFrom(f);
+}
+
+/*!
+    \qmlproperty real Vector3dAnimation::to
+    This property holds the ending value.
+    If not set, then the value defined in the end state of the transition.
+*/
+QVector3D QmlVector3dAnimation::to() const
+{
+    Q_D(const QmlPropertyAnimation);
+    return d->to.value<QVector3D>();
+}
+
+void QmlVector3dAnimation::setTo(QVector3D t)
+{
+    QmlPropertyAnimation::setTo(t);
+}
+
+QML_DEFINE_TYPE(Qt,4,6,Vector3dAnimation,QmlVector3dAnimation)
 
 QmlAnimationGroup::QmlAnimationGroup(QObject *parent)
 : QmlAbstractAnimation(*(new QmlAnimationGroupPrivate), parent)

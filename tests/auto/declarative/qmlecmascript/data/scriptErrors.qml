@@ -10,6 +10,8 @@ MyQmlObject {
     property int y: (a.value, undefinedObject)
 
     onBasicSignal: { console.log(a.value); }
-
+    id: myObj
+    onAnotherBasicSignal: myObj.trueProperty = false;
+    onThirdBasicSignal: myObj.fakeProperty = "";
 }
 

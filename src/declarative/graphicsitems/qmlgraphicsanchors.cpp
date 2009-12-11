@@ -833,7 +833,10 @@ void QmlGraphicsAnchors::setLeftMargin(qreal offset)
     if (d->leftMargin == offset)
         return;
     d->leftMargin = offset;
-    d->updateHorizontalAnchors();
+    if(d->fill)
+        d->fillChanged();
+    else
+        d->updateHorizontalAnchors();
     emit leftMarginChanged();
 }
 
@@ -849,8 +852,36 @@ void QmlGraphicsAnchors::setRightMargin(qreal offset)
     if (d->rightMargin == offset)
         return;
     d->rightMargin = offset;
-    d->updateHorizontalAnchors();
+    if(d->fill)
+        d->fillChanged();
+    else
+        d->updateHorizontalAnchors();
     emit rightMarginChanged();
+}
+
+qreal QmlGraphicsAnchors::margins() const
+{
+    Q_D(const QmlGraphicsAnchors);
+    return d->margins;
+}
+
+void QmlGraphicsAnchors::setMargins(qreal offset)
+{
+    Q_D(QmlGraphicsAnchors);
+    if (d->margins == offset)
+        return;
+    //###Is it significantly faster to set them directly so we can call fillChanged only once?
+    if(!d->rightMargin || d->rightMargin == d->margins)
+        setRightMargin(offset);
+    if(!d->leftMargin || d->leftMargin == d->margins)
+        setLeftMargin(offset);
+    if(!d->topMargin || d->topMargin == d->margins)
+        setTopMargin(offset);
+    if(!d->bottomMargin || d->bottomMargin == d->margins)
+        setBottomMargin(offset);
+    d->margins = offset;
+    emit marginsChanged();
+
 }
 
 qreal QmlGraphicsAnchors::horizontalCenterOffset() const
@@ -865,7 +896,10 @@ void QmlGraphicsAnchors::setHorizontalCenterOffset(qreal offset)
     if (d->hCenterOffset == offset)
         return;
     d->hCenterOffset = offset;
-    d->updateHorizontalAnchors();
+    if(d->centerIn)
+        d->centerInChanged();
+    else
+        d->updateHorizontalAnchors();
     emit horizontalCenterOffsetChanged();
 }
 
@@ -881,7 +915,10 @@ void QmlGraphicsAnchors::setTopMargin(qreal offset)
     if (d->topMargin == offset)
         return;
     d->topMargin = offset;
-    d->updateVerticalAnchors();
+    if(d->fill)
+        d->fillChanged();
+    else
+        d->updateVerticalAnchors();
     emit topMarginChanged();
 }
 
@@ -897,7 +934,10 @@ void QmlGraphicsAnchors::setBottomMargin(qreal offset)
     if (d->bottomMargin == offset)
         return;
     d->bottomMargin = offset;
-    d->updateVerticalAnchors();
+    if(d->fill)
+        d->fillChanged();
+    else
+        d->updateVerticalAnchors();
     emit bottomMarginChanged();
 }
 
@@ -913,7 +953,10 @@ void QmlGraphicsAnchors::setVerticalCenterOffset(qreal offset)
     if (d->vCenterOffset == offset)
         return;
     d->vCenterOffset = offset;
-    d->updateVerticalAnchors();
+    if(d->centerIn)
+        d->centerInChanged();
+    else
+        d->updateVerticalAnchors();
     emit verticalCenterOffsetChanged();
 }
 

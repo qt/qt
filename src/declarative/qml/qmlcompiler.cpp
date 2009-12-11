@@ -1933,6 +1933,9 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
     Q_ASSERT(prop->index != -1);
     Q_ASSERT(v->object->type != -1);
 
+    if (!obj->metaObject()->property(prop->index).isWritable())
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
+
     if (QmlMetaType::isInterface(prop->type)) {
 
         // Assigning an object to an interface ptr property

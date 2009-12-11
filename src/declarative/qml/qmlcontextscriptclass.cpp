@@ -173,7 +173,7 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
 
     if (scopeObject) {
         QScriptClass::QueryFlags rv = 
-            ep->objectClass->queryProperty(scopeObject, name, flags, bindContext);
+            ep->objectClass->queryProperty(scopeObject, name, flags, bindContext, QmlObjectScriptClass::ImplicitObject);
         if (rv) {
             lastScopeObject = scopeObject;
             lastContext = bindContext;
@@ -183,7 +183,7 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
 
     for (int ii = cp->defaultObjects.count() - 1; ii >= 0; --ii) {
         QScriptClass::QueryFlags rv = 
-            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, bindContext);
+            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, bindContext, QmlObjectScriptClass::ImplicitObject);
 
         if (rv) {
             lastDefaultObject = ii;

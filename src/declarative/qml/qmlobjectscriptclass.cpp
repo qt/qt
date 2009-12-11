@@ -123,7 +123,8 @@ QmlObjectScriptClass::queryProperty(Object *object, const Identifier &name,
 
 QScriptClass::QueryFlags 
 QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name, 
-                                    QScriptClass::QueryFlags flags, QmlContext *evalContext)
+                                    QScriptClass::QueryFlags flags, QmlContext *evalContext,
+                                    QueryHints hints)
 {
     Q_UNUSED(flags);
     lastData = 0;
@@ -155,12 +156,8 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
             lastData = &local;
     }
 
-    if (lastData) {
-        QScriptClass::QueryFlags rv = QScriptClass::HandlesReadAccess;
-        if (lastData->flags & QmlPropertyCache::Data::IsWritable)
-            rv |= QScriptClass::HandlesWriteAccess;
-        return rv;
-    } 
+    if (lastData)
+        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess; 
 
     if (!evalContext && context()) {
         // Global object, QScriptContext activation object, QmlContext object
@@ -183,6 +180,12 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
         }
     }
 
+    if (!(hints & ImplicitObject)) {
+        local.coreIndex = -1;
+        lastData = &local;
+        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess;
+    }
+
     return 0;
 }
 
@@ -197,6 +200,9 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
         return m_destroy;
     else if (name == m_toStringId.identifier)
         return m_toString;
+
+    if (lastData && !lastData->isValid())
+        return QmlEnginePrivate::getScriptEngine(engine)->undefinedValue();
 
     Q_ASSERT(obj);
 
@@ -266,6 +272,22 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
 
     Q_ASSERT(obj);
     Q_ASSERT(lastData);
+
+    if (!lastData->isValid()) {
+        QString error = QLatin1String("Cannot assign to non-existant property \"") +
+                        toString(name) + QLatin1Char('\"');
+        if (context())
+            context()->throwError(error);
+        return;
+    }
+
+    if (!(lastData->flags & QmlPropertyCache::Data::IsWritable)) {
+        QString error = QLatin1String("Cannot assign to read-only property \"") +
+                        toString(name) + QLatin1Char('\"');
+        if (context())
+            context()->throwError(error);
+        return;
+    }
 
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
 

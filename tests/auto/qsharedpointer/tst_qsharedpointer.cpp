@@ -73,6 +73,7 @@ private slots:
     void forwardDeclaration2();
     void memoryManagement();
     void downCast();
+    void functionCallDownCast();
     void upCast();
     void qobjectWeakManagement();
     void noSharedPointerFromWeakQObject();
@@ -501,6 +502,15 @@ void tst_QSharedPointer::downCast()
         QVERIFY(baseweakptr == ptr);
     }
     QCOMPARE(DerivedData::derivedDestructorCounter, destructorCount + 1);
+}
+
+void functionDataByValue(QSharedPointer<Data> p) { Q_UNUSED(p); };
+void functionDataByRef(const QSharedPointer<Data> &p) { Q_UNUSED(p); };
+void tst_QSharedPointer::functionCallDownCast()
+{
+    QSharedPointer<DerivedData> p(new DerivedData());
+    functionDataByValue(p);
+    functionDataByRef(p);
 }
 
 void tst_QSharedPointer::upCast()

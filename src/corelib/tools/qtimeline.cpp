@@ -125,7 +125,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
 #ifdef QTIMELINE_DEBUG
     qDebug() << "QTimeLinePrivate::setCurrentTime: frameForTime" << currentTime << currentFrame;
 #endif
-    if (lastValue != q->currentValue())
+    if (!qFuzzyCompare(lastValue, q->currentValue()))
         emit q->valueChanged(q->currentValue());
     if (lastFrame != currentFrame) {
         const int transitionframe = (direction == QTimeLine::Forward ? endFrame : startFrame);

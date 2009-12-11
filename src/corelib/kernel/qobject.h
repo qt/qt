@@ -91,7 +91,11 @@ template<typename T> inline QList<T> qFindChildren(const QObject *, const QRegEx
 # endif
 #endif
 
-class QObjectData {
+class
+#if defined(__INTEL_COMPILER) && defined(Q_OS_WIN)
+Q_CORE_EXPORT
+#endif
+QObjectData {
 public:
     virtual ~QObjectData() = 0;
     QObject *q_ptr;

@@ -68,6 +68,10 @@ public:
           defaultButton(false), flat(false), menuOpen(false), lastAutoDefault(false) {}
 
     inline void init() { resetLayoutItemMargins(); }
+    static QPushButtonPrivate* get(QPushButton *b) { return b->d_func(); }
+#ifndef QT_NO_MENU
+    QPoint adjustedMenuPosition();
+#endif
     void resetLayoutItemMargins();
     void _q_popupPressed();
     QDialog *dialogParent() const;
