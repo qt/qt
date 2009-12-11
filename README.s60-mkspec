@@ -34,9 +34,10 @@ Compiling:
 
  2. Switch out a few variables in profiles. Open
     mkspecs/symbian/linux-armcc/qmake.conf, search for
-    "FIXME/Epoc32" and switch out the FIXME part with your SDK
+    "FIXME" and switch out the FIXME part with your SDK
     installation directory. You might have to switch the case of the
     Epoc32 directory as well.
+    There may also be other FIXMEs.
 
  3. Run configure. It needs a bit more switches than usual, so here's
     the full line:
