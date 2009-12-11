@@ -1630,6 +1630,29 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     m_myObject->emitMySignalWithVariantArg(123);
     QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
     QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
+
+    // signal with argument type that's unknown to the meta-type system
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithScriptEngineArg(QScriptEngine*)));
+    m_engine->evaluate("gotSignal = false");
+    QTest::ignoreMessage(QtWarningMsg, "QScriptEngine: Unable to handle unregistered datatype 'QScriptEngine*' when invoking handler of signal MyQObject::mySignalWithScriptEngineArg(QScriptEngine*)");
+    m_myObject->emitMySignalWithScriptEngineArg(m_engine);
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isUndefined());
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.disconnect(myHandler)").isUndefined());
+
+    // signal with QVariant arg: argument conversion should work
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithVariantArg(QVariant)));
+    m_engine->evaluate("gotSignal = false");
+    m_myObject->emitMySignalWithVariantArg(123);
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
     QVERIFY(m_engine->evaluate("signalArgs[0]").isNumber());
     QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
     QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());

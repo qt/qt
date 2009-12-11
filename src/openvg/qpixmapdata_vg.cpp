@@ -250,6 +250,10 @@ VGImage QVGPixmapData::toVGImage()
     if (vgImage == VG_INVALID_HANDLE) {
         vgImage = vgCreateImage
             (VG_sARGB_8888_PRE, w, h, VG_IMAGE_QUALITY_FASTER);
+
+        // Bail out if we run out of GPU memory - try again next time.
+        if (vgImage == VG_INVALID_HANDLE)
+            return VG_INVALID_HANDLE;
     }
 
     if (!source.isNull() && recreate) {
@@ -280,6 +284,10 @@ VGImage QVGPixmapData::toVGImage(qreal opacity)
         if (vgImageOpacity == VG_INVALID_HANDLE) {
             vgImageOpacity = vgCreateImage
                 (VG_sARGB_8888_PRE, w, h, VG_IMAGE_QUALITY_FASTER);
+
+            // Bail out if we run out of GPU memory - try again next time.
+            if (vgImageOpacity == VG_INVALID_HANDLE)
+                return VG_INVALID_HANDLE;
         }
         VGfloat matrix[20] = {
             1.0f, 0.0f, 0.0f, 0.0f,

@@ -236,6 +236,8 @@ public:
     QRectF effectiveBoundingRect() const;
     QRectF sceneEffectiveBoundingRect() const;
 
+    QRectF effectiveBoundingRect(const QRectF &rect) const;
+
     virtual void resolveFont(uint inheritedMask)
     {
         for (int i = 0; i < children.size(); ++i)

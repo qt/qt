@@ -233,6 +233,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     {
         hints = painter->renderHints();
+        painter->setBrush(brush);
         painter->drawRect(boundingRect());
         ++repaints;
     }
@@ -247,6 +248,7 @@ public:
     QPainter::RenderHints hints;
     int repaints;
     QRectF br;
+    QBrush brush;
 };
 
 class tst_QGraphicsItem : public QObject
@@ -7646,17 +7648,20 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     EventTester *item1 = new EventTester;
     item1->br = itemBoundingRect;
     item1->setPos(-200, -200);
+    item1->brush = Qt::red;
 
     EventTester *item2 = new EventTester;
     item2->br = itemBoundingRect;
     item2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     item2->setParentItem(item1);
     item2->setPos(200, 200);
+    item2->brush = Qt::green;
 
     EventTester *item3 = new EventTester;
     item3->br = itemBoundingRect;
     item3->setParentItem(item2);
     item3->setPos(80, 80);
+    item3->brush = Qt::blue;
 
     scene.addItem(item1);
     QTest::qWait(100);
@@ -7671,8 +7676,8 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     item1->setGraphicsEffect(shadow);
     QTest::qWait(50);
 
-    // Make sure all items are repainted.
-    QCOMPARE(item1->repaints, 1);
+    // Make sure all visible items are repainted.
+    QCOMPARE(item1->repaints, 0);
     QCOMPARE(item2->repaints, 1);
     QCOMPARE(item3->repaints, 1);
 

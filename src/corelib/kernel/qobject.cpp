@@ -145,7 +145,7 @@ QObjectPrivate::QObjectPrivate(int version)
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;
-    connectedSignals = 0;
+    connectedSignals[0] = connectedSignals[1] = 0;
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
@@ -2924,9 +2924,9 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
 
     QObjectPrivate *const sender_d = QObjectPrivate::get(s);
     if (signal_index < 0) {
-        sender_d->connectedSignals = ~ulong(0);
+        sender_d->connectedSignals[0] = sender_d->connectedSignals[1] = ~0;
     } else if (signal_index < (int)sizeof(sender_d->connectedSignals) * 8) {
-        sender_d->connectedSignals |= ulong(1) << signal_index;
+        sender_d->connectedSignals[signal_index >> 5] |= (1 << (signal_index & 0x1f));
     }
 
     return true;

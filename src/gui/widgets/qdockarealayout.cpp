@@ -1303,9 +1303,9 @@ QDockAreaLayoutInfo *QDockAreaLayoutInfo::info(const QList<int> &path)
         index = -index - 1;
     if (index >= item_list.count())
         return this;
-    if (path.count() == 1 || item_list.at(index).subinfo == 0)
+    if (path.count() == 1 || item_list[index].subinfo == 0)
         return this;
-    return item_list.at(index).subinfo->info(path.mid(1));
+    return item_list[index].subinfo->info(path.mid(1));
 }
 
 QRect QDockAreaLayoutInfo::itemRect(int index) const
