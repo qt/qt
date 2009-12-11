@@ -72,6 +72,28 @@ Qt::MouseButtons QDirectFbConvenience::mouseButtons(DFBInputDeviceButtonMask mas
     return buttons;
 }
 
+Qt::KeyboardModifiers QDirectFbConvenience::keyboardModifiers(DFBInputDeviceModifierMask mask)
+{
+    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+
+    if (mask & DIMM_SHIFT) {
+        modifiers |= Qt::ShiftModifier;
+    }
+    if (mask & DIMM_ALT) {
+        modifiers |= Qt::AltModifier;
+    }
+    if (mask & DIMM_ALTGR) {
+        modifiers |= Qt::MetaModifier;
+    }
+    if (mask & DIMM_CONTROL) {
+        modifiers |= Qt::ControlModifier;
+    }
+    if (mask & DIMM_META) {
+        modifiers | Qt::MetaModifier;
+    }
+    return modifiers;
+}
+
 QEvent::Type QDirectFbConvenience::eventType(DFBWindowEventType type)
 {
     switch(type) {

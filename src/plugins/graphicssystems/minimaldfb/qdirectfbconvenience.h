@@ -23,6 +23,7 @@ public:
     static IDirectFB *dfbInterface() { return dfb; }
     static Qt::MouseButton mouseButton(DFBInputDeviceButtonIdentifier identifier);
     static Qt::MouseButtons mouseButtons(DFBInputDeviceButtonMask mask);
+    static Qt::KeyboardModifiers keyboardModifiers(DFBInputDeviceModifierMask mask);
     static QEvent::Type eventType(DFBWindowEventType type);
 
     static QDirectFbKeyMap *keyMap();
