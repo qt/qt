@@ -10537,6 +10537,20 @@ void QGraphicsItemGroup::addToGroup(QGraphicsItem *item)
     if (!item->pos().isNull())
         newItemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
 
+    // removing additional transformations properties applied with itemTransform()
+    QPointF origin = item->transformOriginPoint();
+    QMatrix4x4 m;
+    QList<QGraphicsTransform*> transformList = item->transformations();
+    for (int i = 0; i < transformList.size(); ++i)
+        transformList.at(i)->applyTo(&m);
+    newItemTransform *= m.toTransform().inverted();
+    newItemTransform.translate(origin.x(), origin.y());
+    newItemTransform.rotate(-item->rotation());
+    newItemTransform.scale(1/item->scale(), 1/item->scale());
+    newItemTransform.translate(-origin.x(), -origin.y());
+
+    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
+
     item->setTransform(newItemTransform);
     item->d_func()->setIsMemberOfGroup(true);
     prepareGeometryChange();
@@ -10561,11 +10575,39 @@ void QGraphicsItemGroup::removeFromGroup(QGraphicsItem *item)
     }
 
     QGraphicsItem *newParent = d_ptr->parent;
+
+    // COMBINE
+    bool ok;
+    QTransform itemTransform;
+    if (newParent)
+        itemTransform = item->itemTransform(newParent, &ok);
+    else
+        itemTransform = item->sceneTransform();
+
     QPointF oldPos = item->mapToItem(newParent, 0, 0);
     item->setParentItem(newParent);
-    // ### This function should remap the item's matrix to keep the item's
-    // transformation unchanged relative to the scene.
     item->setPos(oldPos);
+
+    // removing position from translation component of the new transform
+    if (!item->pos().isNull())
+        itemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
+
+    // removing additional transformations properties applied
+    // with itemTransform() or sceneTransform()
+    QPointF origin = item->transformOriginPoint();
+    QMatrix4x4 m;
+    QList<QGraphicsTransform*> transformList = item->transformations();
+    for (int i = 0; i < transformList.size(); ++i)
+        transformList.at(i)->applyTo(&m);
+    itemTransform *= m.toTransform().inverted();
+    itemTransform.translate(origin.x(), origin.y());
+    itemTransform.rotate(-item->rotation());
+    itemTransform.scale(1 / item->scale(), 1 / item->scale());
+    itemTransform.translate(-origin.x(), -origin.y());
+
+    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
+
+    item->setTransform(itemTransform);
     item->d_func()->setIsMemberOfGroup(item->group() != 0);
 
     // ### Quite expensive. But removeFromGroup() isn't called very often.
@@ -10684,9 +10726,14 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     QRectF effectRectF;
 
     if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
-        effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
-        if (system == Qt::LogicalCoordinates)
-            effectRectF = info->painter->worldTransform().inverted().mapRect(effectRectF);
+        if (info) {
+            effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
+            if (info && system == Qt::LogicalCoordinates)
+                effectRectF = info->painter->worldTransform().inverted().mapRect(effectRectF);
+        } else {
+            // no choice but to send a logical coordinate bounding rect to boundingRectFor
+            effectRectF = item->graphicsEffect()->boundingRectFor(sourceRect);
+        }
     } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
         // adjust by 1.5 to account for cosmetic pens
         effectRectF = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5);

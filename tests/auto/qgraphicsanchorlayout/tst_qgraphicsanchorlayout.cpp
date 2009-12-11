@@ -90,6 +90,7 @@ private slots:
     void parallelToHalfLayout();
     void globalSpacing();
     void graphicsAnchorHandling();
+    void invalidHierarchyCheck();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -2056,6 +2057,25 @@ void tst_QGraphicsAnchorLayout::graphicsAnchorHandling()
     QCOMPARE(object.children().size(), 0);
 
     delete a;
+}
+
+void tst_QGraphicsAnchorLayout::invalidHierarchyCheck()
+{
+    QGraphicsWidget window(0, Qt::Window);
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    window.setLayout(l);
+
+    QCOMPARE(l->count(), 0);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): "
+                         "You cannot add the parent of the layout to the layout.");
+    QVERIFY(!l->addAnchor(l, Qt::AnchorLeft, &window, Qt::AnchorLeft));
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): "
+                         "You cannot add the parent of the layout to the layout.");
+    l->addAnchors(l, &window);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): "
+                         "You cannot add the parent of the layout to the layout.");
+    l->addCornerAnchors(l, Qt::TopLeftCorner, &window, Qt::TopLeftCorner);
+    QCOMPARE(l->count(), 0);
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)

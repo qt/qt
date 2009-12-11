@@ -1445,6 +1445,16 @@ bool QLineEdit::event(QEvent * e)
         d->control->processEvent(e);
     } else if (e->type() == QEvent::KeyRelease) {
         d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
+    } else if (e->type() == QEvent::Show) {
+        //In order to get the cursor blinking if QComboBox::setEditable is called when the combobox has focus
+        if (hasFocus()) {
+            d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
+            QStyleOptionFrameV2 opt;
+            initStyleOption(&opt);
+            if ((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
+                || style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
+                d->setCursorVisible(true);
+        }
     }
 
 #ifdef QT_KEYPAD_NAVIGATION
