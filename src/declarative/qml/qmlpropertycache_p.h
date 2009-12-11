@@ -110,6 +110,8 @@ public:
         int valueTypePropType; // The QVariant::Type of access property on the value type wrapper
     };
 
+    void update(QmlEngine *, const QMetaObject *);
+
     static QmlPropertyCache *create(QmlEngine *, const QMetaObject *);
     static Data create(const QMetaObject *, const QString &);
 

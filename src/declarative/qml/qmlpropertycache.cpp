@@ -43,6 +43,7 @@
 
 #include "qmlengine_p.h"
 #include "qmlbinding.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -119,7 +120,6 @@ QmlPropertyCache::Data QmlPropertyCache::create(const QMetaObject *metaObject,
     Q_ASSERT(metaObject);
 
     QmlPropertyCache::Data rv;
-
     int idx = metaObject->indexOfProperty(property.toUtf8());
     if (idx != -1) {
         rv.load(metaObject->property(idx));
@@ -151,13 +151,22 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
     Q_ASSERT(metaObject);
 
     QmlPropertyCache *cache = new QmlPropertyCache(engine);
+    cache->update(engine, metaObject);
+    return cache;
+}
 
+void QmlPropertyCache::update(QmlEngine *engine, const QMetaObject *metaObject)
+{
+    Q_ASSERT(engine);
+    Q_ASSERT(metaObject);
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
+
+    clear();
 
     // ### The properties/methods should probably be spliced on a per-metaobject basis
     int propCount = metaObject->propertyCount();
 
-    cache->indexCache.resize(propCount);
+    indexCache.resize(propCount);
     for (int ii = propCount - 1; ii >= 0; --ii) {
         QMetaProperty p = metaObject->property(ii);
         QString propName = QString::fromUtf8(p.name());
@@ -167,13 +176,13 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
 
         data->load(p);
 
-        cache->indexCache[ii] = data;
+        indexCache[ii] = data;
 
-        if (cache->stringCache.contains(propName))
+        if (stringCache.contains(propName))
             continue;
 
-        cache->stringCache.insert(propName, data);
-        cache->identifierCache.insert(data->identifier.identifier, data);
+        stringCache.insert(propName, data);
+        identifierCache.insert(data->identifier.identifier, data);
         data->addref();
         data->addref();
     }
@@ -187,7 +196,7 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
         Q_ASSERT(parenIdx != -1);
         methodName = methodName.left(parenIdx);
 
-        if (cache->stringCache.contains(methodName))
+        if (stringCache.contains(methodName))
             continue;
 
         RData *data = new RData;
@@ -195,12 +204,10 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
 
         data->load(m);
 
-        cache->stringCache.insert(methodName, data);
-        cache->identifierCache.insert(data->identifier.identifier, data);
+        stringCache.insert(methodName, data);
+        identifierCache.insert(data->identifier.identifier, data);
         data->addref();
     }
-
-    return cache;
 }
 
 QmlPropertyCache::Data *

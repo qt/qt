@@ -42,6 +42,7 @@
 #ifndef QMLOPENMETAOBJECT_H
 #define QMLOPENMETAOBJECT_H
 
+#include <qmlrefcount_p.h>
 #include <QtCore/QMetaObject>
 #include <QtCore/QObject>
 
@@ -54,12 +55,18 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QmlEngine;
+class QMetaPropertyBuilder;
 class QmlOpenMetaObjectTypePrivate;
-class QmlOpenMetaObjectType
+class QmlOpenMetaObjectType : public QmlRefCount
 {
 public:
-    QmlOpenMetaObjectType(QmlEngine *engine);
+    QmlOpenMetaObjectType(const QMetaObject *base, QmlEngine *engine);
     ~QmlOpenMetaObjectType();
+
+    int createProperty(const QByteArray &name);
+
+protected:
+    virtual void propertyCreated(int, QMetaPropertyBuilder &);
 
 private:
     QmlOpenMetaObjectTypePrivate *d;
@@ -68,7 +75,6 @@ private:
 };
 
 class QmlOpenMetaObjectPrivate;
-class QMetaPropertyBuilder;
 class Q_DECLARATIVE_EXPORT QmlOpenMetaObject : public QAbstractDynamicMetaObject
 {
 public:
@@ -87,6 +93,13 @@ public:
 
     QObject *object() const;
     virtual QVariant initialValue(int);
+
+    // Be careful - once setCached(true) is called createProperty() is no
+    // longer automatically called for new properties.
+    void setCached(bool);
+
+    QmlOpenMetaObjectType *type() const;
+
 protected:
     virtual int metaCall(QMetaObject::Call _c, int _id, void **_a);
     virtual int createProperty(const char *, const char *);
@@ -96,9 +109,8 @@ protected:
     virtual void propertyCreated(int, QMetaPropertyBuilder &);
 
 private:
-    int doCreateProperty(const char *);
-
     QmlOpenMetaObjectPrivate *d;
+    friend class QmlOpenMetaObjectType;
 };
 
 QT_END_NAMESPACE
