@@ -10684,9 +10684,14 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     QRectF effectRectF;
 
     if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
-        effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
-        if (system == Qt::LogicalCoordinates)
-            effectRectF = info->painter->worldTransform().inverted().mapRect(effectRectF);
+        if (info) {
+            effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
+            if (info && system == Qt::LogicalCoordinates)
+                effectRectF = info->painter->worldTransform().inverted().mapRect(effectRectF);
+        } else {
+            // no choice but to send a logical coordinate bounding rect to boundingRectFor
+            effectRectF = item->graphicsEffect()->boundingRectFor(sourceRect);
+        }
     } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
         // adjust by 1.5 to account for cosmetic pens
         effectRectF = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5);
