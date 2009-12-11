@@ -7177,9 +7177,16 @@ void QGraphicsItem::prepareGeometryChange()
 
     QGraphicsItem *parent = this;
     while ((parent = parent->d_ptr->parent)) {
-        parent->d_ptr->dirtyChildrenBoundingRect = 1;
+        QGraphicsItemPrivate *parentp = parent->d_ptr.data();
+        parentp->dirtyChildrenBoundingRect = 1;
         // ### Only do this if the parent's effect applies to the entire subtree.
-        parent->d_ptr->notifyBoundingRectChanged = 1;
+        parentp->notifyBoundingRectChanged = 1;
+#ifndef QT_NO_GRAPHICSEFFECT
+        if (parentp->scene && parentp->graphicsEffect) {
+            parentp->notifyInvalidated = 1;
+            static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()->source->d_func())->invalidateCache();
+        }
+#endif
     }
 }
 
