@@ -295,6 +295,9 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
             } else if (!star) {
                 // move const to the front (but not if const comes after a *)
                 result.prepend("const ");
+            } else {
+                // keep const after a *
+                result += "const";
             }
         }
     }
