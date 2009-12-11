@@ -374,10 +374,14 @@ QGraphicsEffectSourcePrivate::~QGraphicsEffectSourcePrivate()
     invalidateCache();
 }
 
-void QGraphicsEffectSourcePrivate::invalidateCache(bool effectRectChanged) const
+void QGraphicsEffectSourcePrivate::invalidateCache(InvalidateReason reason) const
 {
-    if (effectRectChanged && m_cachedMode != QGraphicsEffect::PadToEffectiveBoundingRect)
+    if (m_cachedMode != QGraphicsEffect::PadToEffectiveBoundingRect
+        && (reason == EffectRectChanged
+            || reason == TransformChanged
+               && m_cachedSystem == Qt::LogicalCoordinates))
         return;
+
     QPixmapCache::remove(m_cacheKey);
 }
 
@@ -523,7 +527,7 @@ void QGraphicsEffect::updateBoundingRect()
     Q_D(QGraphicsEffect);
     if (d->source) {
         d->source->d_func()->effectBoundingRectChanged();
-        d->source->d_func()->invalidateCache(true);
+        d->source->d_func()->invalidateCache(QGraphicsEffectSourcePrivate::EffectRectChanged);
     }
 }
 
