@@ -33,6 +33,7 @@
 #include "qscriptvalue_p.h"
 #include "qscriptvalueiterator.h"
 #include "qscriptclass.h"
+#include "qscriptcontextinfo.h"
 #include "qscriptprogram.h"
 #include "qscriptprogram_p.h"
 #include "qdebug.h"
@@ -698,9 +699,9 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
         return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): third argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
     QString context;
-// ### implement context resolution
-//    if (ctx->parentContext())
-//        context = QFileInfo(ctx->parentContext()->fileName()).baseName();
+    QScriptContext *ctx = QScriptEnginePrivate::contextForFrame(exec);
+    if (ctx && ctx->parentContext())
+        context = QFileInfo(QScriptContextInfo(ctx->parentContext()).fileName()).baseName();
 #endif
     QString text(args.at(0).toString(exec));
 #ifndef QT_NO_QOBJECT

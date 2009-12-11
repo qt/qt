@@ -66,12 +66,12 @@ in the \l{Qt for X11 Requirements} document.
     For the open source version you do not need a license file.
 
 \o  Unpack the archive if you have not done so already. For example,
-    if you have the \c{qt-x11-opensource-desktop-%VERSION%.tar.gz}
+    if you have the \c{qt-everywhere-opensource-src-%VERSION%.tar.gz}
     package, type the following commands at a command line prompt:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 0
 
-    This creates the directory \c{/tmp/qt-x11-opensource-desktop-%VERSION%}
+    This creates the directory \c{/tmp/qt-everywhere-opensource-src-%VERSION%}
     containing the files from the archive. We only support the GNU version of
     the tar archiving utility. Note that on some systems it is called gtar.
 
@@ -299,12 +299,12 @@ The following instructions describe how to install Qt from the source package.
     For the open source version you do not need a license file.
 
 \o  Unpack the archive if you have not done so already. For example,
-    if you have the \c{qt-mac-opensource-desktop-%VERSION%.tar.gz}
+    if you have the \c{qt-everywhere-opensource-src-%VERSION%.tar.gz}
     package, type the following commands at a command line prompt:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 11
 
-    This creates the directory \c{/tmp/qt-mac-opensource-desktop-%VERSION%}
+    This creates the directory \c{/tmp/qt-everywhere-opensource-src-%VERSION%}
     containing the files from the archive.
 
 \o  Building
@@ -710,6 +710,10 @@ If you are using pre-built binaries, follow the instructions given in the
     first install the Visual Studio Service Pack 1 available
     \l{http://www.microsoft.com/downloads/details.aspx?FamilyId=BB4A75AB-E2D4-4C96-B39D-37BAF6B5B1DC&amp;displaylang=en}{here}
     to avoid runtime conflicts.
+
+    If you are using a source code package of Qt, you must first install Perl so 
+    that the syncqt script invoked by configure can be executed. You can download
+    this \l{http://www.activestate/downloads/}{here}.  
 
     To build Qt with Phonon on Windows, you require:
 

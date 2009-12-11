@@ -131,7 +131,7 @@ compilerSupportsFlag()
     cat >conftest.cpp <<EOF
 int main() { return 0; }
 EOF
-    "$TEST_COMPILER" "$@" -o /dev/null conftest.cpp
+    "$TEST_COMPILER" "$@" -o conftest.o conftest.cpp
     ret=$?
     rm -f conftest.cpp conftest.o
     return $ret
@@ -3663,7 +3663,7 @@ Qt/X11 only:
     -no-opengl ......... Do not support OpenGL.
  +  -opengl <api> ...... Enable OpenGL support.
                          With no parameter, this will auto-detect the "best"
-                         OpenGL API to use. If desktop OpenGL is avaliable, it
+                         OpenGL API to use. If desktop OpenGL is available, it
                          will be used. Use desktop, es1, es1cl or es2 for <api>
                          to force the use of the Desktop (OpenGL 1.x or 2.x),
                          OpenGL ES 1.x Common profile, 1.x Common Lite profile

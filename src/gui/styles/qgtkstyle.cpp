@@ -645,6 +645,15 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
         return buttonsHaveIcons;
     }
 
+    case SH_UnderlineShortcut: {
+        gboolean underlineShortcut = true;
+        if (!d->gtk_check_version(2, 12, 0)) {
+            GtkSettings *settings = d->gtk_settings_get_default();
+            g_object_get(settings, "gtk-enable-mnemonics", &underlineShortcut, NULL);
+        }
+        return underlineShortcut;
+    }
+
     default:
         return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
     }
@@ -3366,12 +3375,28 @@ QIcon QGtkStyle::standardIconImplementation(StandardPixmap standardIcon,
 /*! \reimp */
 QRect QGtkStyle::subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const
 {
+    Q_D(const QGtkStyle);
+
     QRect r = QCleanlooksStyle::subElementRect(element, option, widget);
     switch (element) {
     case SE_ProgressBarLabel:
     case SE_ProgressBarContents:
     case SE_ProgressBarGroove:
         return option->rect;
+    case SE_PushButtonContents:
+        if (!d->gtk_check_version(2, 10, 0)) {
+            GtkWidget *gtkButton = d->gtkWidget(QLS("GtkButton"));
+            GtkBorder *border = 0;
+            d->gtk_widget_style_get(gtkButton, "inner-border", &border, NULL);
+            if (border) {
+                r = option->rect.adjusted(border->left, border->top, -border->right, -border->bottom);
+                d->gtk_border_free(border);
+            } else {
+                r = option->rect.adjusted(1, 1, -1, -1);
+            }
+            r = visualRect(option->direction, option->rect, r);
+        }
+        break;
     default:
         break;
     }

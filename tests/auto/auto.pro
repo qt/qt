@@ -148,7 +148,6 @@ SUBDIRS += \
            qfontmetrics \
            qftp \
            qgetputenv \
-           qgl \
            qglobal \
            qgraphicseffect \
            qgraphicseffectsource \
@@ -443,7 +442,6 @@ SUBDIRS += \
            qsharedmemory \
            qsidebar \
            qsizegrip \
-           qsoftkeymanager \
            qsqldriver \
            qsystemsemaphore \
            qtconcurrentfilter \
@@ -458,7 +456,9 @@ SUBDIRS += \
            rcc \
            windowsmobile
 
-!wince*:SUBDIRS += $$Q3SUBDIRS
+contains(QT_CONFIG,opengl):SUBDIRS += qgl
+
+contains(QT_CONFIG,qt3support):!wince*:SUBDIRS += $$Q3SUBDIRS
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {
@@ -474,6 +474,10 @@ embedded:!wince* {
 }
 !win32: {
     SUBDIRS += qtextpiecetable
+}
+
+symbian {
+    SUBDIRS += qsoftkeymanager
 }
 
 # Enable the tests specific to QtXmlPatterns. If you add a test, remember to
