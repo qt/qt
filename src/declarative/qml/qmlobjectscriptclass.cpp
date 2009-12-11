@@ -155,12 +155,8 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
             lastData = &local;
     }
 
-    if (lastData) {
-        QScriptClass::QueryFlags rv = QScriptClass::HandlesReadAccess;
-        if (lastData->flags & QmlPropertyCache::Data::IsWritable)
-            rv |= QScriptClass::HandlesWriteAccess;
-        return rv;
-    } 
+    if (lastData)
+        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess; 
 
     if (!evalContext && context()) {
         // Global object, QScriptContext activation object, QmlContext object
@@ -266,6 +262,13 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
 
     Q_ASSERT(obj);
     Q_ASSERT(lastData);
+
+    if (!(lastData->flags & QmlPropertyCache::Data::IsWritable)) {
+        QString error = QLatin1String("Cannot assign to read-only property \"") +
+                        toString(name) + QLatin1Char('\"');
+        if (context())
+            context()->throwError(error);
+    }
 
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
 

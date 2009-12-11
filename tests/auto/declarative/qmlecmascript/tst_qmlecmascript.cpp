@@ -830,6 +830,7 @@ void tst_qmlecmascript::scriptErrors()
     QString warning4 = url + ":12: TypeError: Result of expression 'a' [undefined] is not an object.";
     QString warning5 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
     QString warning6 = url + ":9: Unable to assign [undefined] to int";
+    QString warning7 = url + ":14: Error: Cannot assign to read-only property \"trueProperty\"";
 
     QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
     QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
@@ -841,6 +842,9 @@ void tst_qmlecmascript::scriptErrors()
 
     QTest::ignoreMessage(QtWarningMsg, warning4.toLatin1().constData());
     emit object->basicSignal();
+
+    QTest::ignoreMessage(QtWarningMsg, warning7.toLatin1().constData());
+    emit object->anotherBasicSignal();
 }
 
 /*

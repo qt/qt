@@ -117,6 +117,7 @@ signals:
     void argumentSignal(int a, QString b, qreal c);
     void stringChanged();
     void objectChanged();
+    void anotherBasicSignal();
 
 public slots:
     void deleteMe() { delete this; }
