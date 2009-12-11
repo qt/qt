@@ -101,6 +101,7 @@ symbian_resources_INCLUDES = $$replace(symbian_resources_INCLUDES, ",", " -I")
 symbian_resources_INCLUDES += $$join(INCLUDEPATH, " -I", "-I")
 symbian_resources_DEFINES = $$join(DEFINES, " -D", "-D")
 symbian_resources_RCC_DIR = $$replace(RCC_DIR, "/$", "")
+symbian_resources_INCLUDES += "-I $$symbian_resources_RCC_DIR"
 
 for(symbian_resource, SYMBIAN_RESOURCES) {
     symbian_resource = $$basename(symbian_resource)
@@ -122,6 +123,7 @@ symbianresources.commands = cpp -nostdinc -undef \
                             -o$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsc \
                             -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsg \
                             -i${QMAKE_FILE_NAME}
+symbianresources.dependency_type = TYPE_C
 symbianresources.CONFIG = no_link
 
 QMAKE_EXTRA_COMPILERS += symbianresources
