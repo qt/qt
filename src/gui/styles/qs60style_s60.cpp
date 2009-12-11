@@ -143,9 +143,9 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnGrafTabPassiveL */            {KAknsIIDQgnGrafTabPassiveL,            EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafTabPassiveM */            {KAknsIIDQgnGrafTabPassiveM,            EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafTabPassiveR */            {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafNsliderEndLeft */         {KAknsIIDQgnGrafNsliderEndLeft,         EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafNsliderEndRight */        {KAknsIIDQgnGrafNsliderEndRight,        EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafNsliderMiddle */          {KAknsIIDQgnGrafNsliderMiddle,          EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafNsliderEndLeft */         {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19cf /* KAknsIIDQgnGrafNsliderEndLeft */},
+    /* SP_QgnGrafNsliderEndRight */        {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d0 /* KAknsIIDQgnGrafNsliderEndRight */},
+    /* SP_QgnGrafNsliderMiddle */          {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d2 /* KAknsIIDQgnGrafNsliderMiddle */},
     /* SP_QgnIndiCheckboxOff */            {KAknsIIDQgnIndiCheckboxOff,            EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnIndiCheckboxOn */             {KAknsIIDQgnIndiCheckboxOn,             EDrawIcon,   ES60_All,    -1,-1},
 
@@ -161,8 +161,8 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnIndiNaviArrowRight */         {KAknsIIDQgnIndiNaviArrowRight,         EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnIndiRadiobuttOff */           {KAknsIIDQgnIndiRadiobuttOff,           EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnIndiRadiobuttOn */            {KAknsIIDQgnIndiRadiobuttOn,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafNsliderMarker */          {KAknsIIDQgnGrafNsliderMarker,          EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafNsliderMarkerSelected */  {KAknsIIDQgnGrafNsliderMarkerSelected,  EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafNsliderMarker */          {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d1 /* KAknsIIDQgnGrafNsliderMarker */},
+    /* SP_QgnGrafNsliderMarkerSelected */  {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x1a4a /* KAknsIIDQgnGrafNsliderMarkerSelected */},
     /* SP_QgnIndiSubMenu */                {KAknsIIDQgnIndiSubmenu,                EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnNoteErased */                 {KAknsIIDQgnNoteErased,                 EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnNoteError */                  {KAknsIIDQgnNoteError,                  EDrawIcon,   ES60_All,    -1,-1},
@@ -437,10 +437,10 @@ void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &style
             fallbackIndex = EMbmAvkonQgn_indi_radiobutt_on;
             break;
         case QS60StyleEnums::SP_QgnGrafNsliderMarker:
-            fallbackIndex = EMbmAvkonQgn_graf_nslider_marker;
+            fallbackIndex = 17572; /* EMbmAvkonQgn_graf_nslider_marker */
             break;
         case QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected:
-            fallbackIndex = EMbmAvkonQgn_graf_nslider_marker_selected;
+            fallbackIndex = 17574; /* EMbmAvkonQgn_graf_nslider_marker_selected */
             break;
         case QS60StyleEnums::SP_QgnIndiSubMenu:
             fallbackIndex = EMbmAvkonQgn_indi_submenu;
@@ -593,6 +593,11 @@ bool QS60StylePrivate::isTouchSupported()
 bool QS60StylePrivate::isToolBarBackground()
 {
     return (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
+}
+
+bool QS60StylePrivate::hasSliderGrooveGraphic()
+{
+    return QSysInfo::s60Version() != QSysInfo::SV_S60_3_1;
 }
 
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)

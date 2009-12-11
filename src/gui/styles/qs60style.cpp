@@ -958,10 +958,24 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 drawPrimitive(PE_FrameFocusRect, optionSlider, painter, widget);*/
             
             //Groove graphics
-            const QS60StylePrivate::SkinElements grooveElement = horizontal ? 
-                QS60StylePrivate::SE_SliderGrooveHorizontal : 
-            QS60StylePrivate::SE_SliderGrooveVertical;
-            QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
+            if (QS60StylePrivate::hasSliderGrooveGraphic()) {
+                const QS60StylePrivate::SkinElements grooveElement = horizontal ? 
+                    QS60StylePrivate::SE_SliderGrooveHorizontal : 
+                    QS60StylePrivate::SE_SliderGrooveVertical;
+                QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
+            } else {
+                const QRect sliderGroove = subControlRect(control, optionSlider, SC_SliderGroove, widget);
+                const QPoint sliderGrooveCenter = sliderGroove.center();
+                const bool horizontal = optionSlider->orientation == Qt::Horizontal;
+                painter->save();
+                if (widget)
+                    painter->setPen(widget->palette().windowText().color());
+                if (horizontal)
+                    painter->drawLine(0, sliderGrooveCenter.y(), sliderGroove.right(), sliderGrooveCenter.y());
+                else
+                    painter->drawLine(sliderGrooveCenter.x(), 0, sliderGrooveCenter.x(), sliderGroove.bottom());
+                painter->restore();
+            }
 
             //Handle graphics
             const QRect sliderHandle = subControlRect(control, optionSlider, SC_SliderHandle, widget);
