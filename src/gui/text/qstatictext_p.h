@@ -100,7 +100,7 @@ public:
 
     char needsClipRect : 1;    // 1 byte per text
                                // ================
-                               // 144 bytes per text
+                               // 145 bytes per text
 
     static QStaticTextPrivate *get(const QStaticText *q);
 };
