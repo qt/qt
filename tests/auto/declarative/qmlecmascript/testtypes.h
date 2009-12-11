@@ -118,6 +118,7 @@ signals:
     void stringChanged();
     void objectChanged();
     void anotherBasicSignal();
+    void thirdBasicSignal();
 
 public slots:
     void deleteMe() { delete this; }

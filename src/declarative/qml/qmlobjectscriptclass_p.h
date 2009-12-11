@@ -76,11 +76,16 @@ public:
     QObject *toQObject(const QScriptValue &) const;
     int objectType(const QScriptValue &) const;
 
-    enum QueryMode { IncludeAttachedProperties, SkipAttachedProperties };
+    enum QueryHint {
+        ImplicitObject = 0x01,
+        SkipAttachedProperties = 0x02
+    };
+    Q_DECLARE_FLAGS(QueryHints, QueryHint)
 
     QScriptClass::QueryFlags queryProperty(QObject *, const Identifier &, 
                                            QScriptClass::QueryFlags flags, 
-                                           QmlContext *evalContext);
+                                           QmlContext *evalContext,
+                                           QueryHints hints = 0);
     QScriptValue property(QObject *, const Identifier &);
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
                      QmlContext *evalContext = 0);
