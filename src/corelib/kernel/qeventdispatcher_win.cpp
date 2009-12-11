@@ -341,7 +341,9 @@ public:
     // for controlling when to send posted events
     QAtomicInt serialNumber;
     int lastSerialNumber;
+#ifndef Q_OS_WINCE
     int lastMessageTime;
+#endif
     QAtomicInt wakeUps;
 
     // timers
@@ -366,7 +368,11 @@ public:
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), getMessageHook(0),
-      serialNumber(0), lastSerialNumber(0), lastMessageTime(0), wakeUps(0)
+      serialNumber(0), lastSerialNumber(0),
+#ifndef Q_OS_WINCE
+      lastMessageTime(0),
+#endif
+      wakeUps(0)
 {
     resolveTimerAPI();
 }
@@ -481,7 +487,9 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         int localSerialNumber = d->serialNumber;
         if (localSerialNumber != d->lastSerialNumber) {
             d->lastSerialNumber = localSerialNumber;
+#ifndef Q_OS_WINCE
             d->lastMessageTime = GetMessageTime();
+#endif
             QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
         }
         return 0;
@@ -499,7 +507,10 @@ LRESULT CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
             QEventDispatcherWin32Private *d = q->d_func();
             int localSerialNumber = d->serialNumber;
             if (HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER)) == 0
-                || GetMessageTime() - d->lastMessageTime >= 10) {
+#ifndef Q_OS_WINCE
+                || GetMessageTime() - d->lastMessageTime >= 10
+#endif
+                ) {
                 // no more input or timer events in the message queue or more than 10ms has elapsed since
                 // we send posted events, we can allow posted events to be sent now
                 (void) d->wakeUps.fetchAndStoreRelease(0);
