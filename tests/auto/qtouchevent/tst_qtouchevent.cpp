@@ -496,7 +496,7 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         res = QApplication::sendEvent(view.viewport(), &touchUpdateEvent);
         QVERIFY(res);
         // the scene accepts the event, since it found an item to send the event to
-        QVERIFY(touchUpdateEvent.isAccepted());
+        QVERIFY(!touchUpdateEvent.isAccepted());
         QVERIFY(child.seenTouchUpdate);
         QVERIFY(!root.seenTouchUpdate);
 
@@ -510,7 +510,7 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         res = QApplication::sendEvent(view.viewport(), &touchEndEvent);
         QVERIFY(res);
         // the scene accepts the event, since it found an item to send the event to
-        QVERIFY(touchEndEvent.isAccepted());
+        QVERIFY(!touchEndEvent.isAccepted());
         QVERIFY(child.seenTouchEnd);
         QVERIFY(!root.seenTouchEnd);
     }
