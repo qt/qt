@@ -52,8 +52,6 @@
 
 #include <math.h>
 
-static const int FlickThreshold = 5;
-
 QT_BEGIN_NAMESPACE
 
 QML_DEFINE_TYPE(Qt,4,6,PathView,QmlGraphicsPathView)
@@ -412,7 +410,7 @@ void QmlGraphicsPathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (!d->stealMouse) {
         QPointF delta = event->pos() - d->startPoint;
-        if (qAbs(delta.x()) > FlickThreshold && qAbs(delta.y()) > FlickThreshold)
+        if (qAbs(delta.x()) > QApplication::startDragDistance() && qAbs(delta.y()) > QApplication::startDragDistance())
             d->stealMouse = true;
     }
 

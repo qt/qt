@@ -47,7 +47,6 @@
 #include <QGraphicsSceneMouseEvent>
 
 QT_BEGIN_NAMESPACE
-static const qreal DragThreshold = 5;
 static const int PressAndHoldDelay = 800;
 
 QML_DEFINE_TYPE(Qt,4,6,Drag,QmlGraphicsDrag)
@@ -396,13 +395,14 @@ void QmlGraphicsMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             curLocalPos = event->scenePos();
         }
 
+        const int dragThreshold = QApplication::startDragDistance();
         qreal dx = qAbs(curLocalPos.x() - startLocalPos.x());
         qreal dy = qAbs(curLocalPos.y() - startLocalPos.y());
-        if ((d->dragX && !(dx < DragThreshold)) || (d->dragY && !(dy < DragThreshold)))
+        if ((d->dragX && !(dx < dragThreshold)) || (d->dragY && !(dy < dragThreshold)))
             d->dragged = true;
         if (!keepMouseGrab()) {
-            if ((!d->dragY && dy < DragThreshold && d->dragX && dx > DragThreshold)
-                || (!d->dragX && dx < DragThreshold && d->dragY && dy > DragThreshold)
+            if ((!d->dragY && dy < dragThreshold && d->dragX && dx > dragThreshold)
+                || (!d->dragX && dx < dragThreshold && d->dragY && dy > dragThreshold)
                 || (d->dragX && d->dragY)) {
                 setKeepMouseGrab(true);
             }

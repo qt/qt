@@ -49,12 +49,8 @@
 QT_BEGIN_NAMESPACE
 
 
-// These are highly device dependant.
-// DragThreshold determines how far the "mouse" must move before
-// we begin a drag.
 // FlickThreshold determines how far the "mouse" must have moved
 // before we perform a flick.
-static const int DragThreshold = 8;
 static const int FlickThreshold = 20;
 
 // Really slow flicks can be annoying.
@@ -647,7 +643,7 @@ void QmlGraphicsFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
 
     if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());
-        if (qAbs(dy) > DragThreshold || QmlGraphicsItemPrivate::elapsed(pressTime) > 200) {
+        if (qAbs(dy) > QApplication::startDragDistance() || QmlGraphicsItemPrivate::elapsed(pressTime) > 200) {
             qreal newY = dy + pressY;
             const qreal minY = q->minYExtent();
             const qreal maxY = q->maxYExtent();
@@ -667,14 +663,14 @@ void QmlGraphicsFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
                 _moveY.setValue(newY);
                 moved = true;
             }
-            if (qAbs(dy) > DragThreshold)
+            if (qAbs(dy) > QApplication::startDragDistance())
                 stealMouse = true;
         }
     }
 
     if (q->xflick()) {
         int dx = int(event->pos().x() - pressPos.x());
-        if (qAbs(dx) > DragThreshold || QmlGraphicsItemPrivate::elapsed(pressTime) > 200) {
+        if (qAbs(dx) > QApplication::startDragDistance() || QmlGraphicsItemPrivate::elapsed(pressTime) > 200) {
             qreal newX = dx + pressX;
             const qreal minX = q->minXExtent();
             const qreal maxX = q->maxXExtent();
@@ -695,7 +691,7 @@ void QmlGraphicsFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
                 moved = true;
             }
 
-            if (qAbs(dx) > DragThreshold)
+            if (qAbs(dx) > QApplication::startDragDistance())
                 stealMouse = true;
         }
     }
