@@ -3940,12 +3940,12 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <message>
         <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+24"/>
         <source>Print all</source>
-        <translation>Wydrukuj wszystko</translation>
+        <translation>Drukuj wszystko</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Print range</source>
-        <translation>Wydrukuj zakres</translation>
+        <translation>Drukuj zakres</translation>
     </message>
     <message>
         <location filename="../src/gui/painting/qprinterinfo_unix.cpp" line="+473"/>
@@ -3993,12 +3993,12 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <location line="+13"/>
         <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="-2"/>
         <source>Print</source>
-        <translation>Wydrukuj</translation>
+        <translation>Drukowanie</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-359"/>
         <source>Print To File ...</source>
-        <translation>Wydrukuj do pliku ...</translation>
+        <translation>Drukuj do pliku ...</translation>
     </message>
     <message>
         <location line="+82"/>
@@ -4034,7 +4034,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+227"/>
         <source>Print selection</source>
-        <translation>Wydrukuj zaznaczone</translation>
+        <translation>Drukuj zaznaczone</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qpagesetupdialog_unix.cpp" line="-232"/>
@@ -4200,7 +4200,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="-63"/>
         <source>&amp;Print</source>
-        <translation>&amp;Drukuj</translation>
+        <translation>Wy&amp;drukuj</translation>
     </message>
     <message>
         <location line="+67"/>
@@ -4210,12 +4210,12 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+253"/>
         <source>Print to File (PDF)</source>
-        <translation>Wydrukuj do pliku (PDF)</translation>
+        <translation>Drukuj do pliku (PDF)</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Print to File (Postscript)</source>
-        <translation>Wydrukuj do pliku (Postscript)</translation>
+        <translation>Drukuj do pliku (Postscript)</translation>
     </message>
     <message>
         <location line="+47"/>
@@ -4243,7 +4243,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+68"/>
         <source>Print Preview</source>
-        <translation>Wydrukuj podgląd</translation>
+        <translation>Podgląd wydruku</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -4370,12 +4370,12 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location/>
         <source>Print range</source>
-        <translation>Wydrukuj zakres</translation>
+        <translation>Zakres wydruku</translation>
     </message>
     <message>
         <location/>
         <source>Print all</source>
-        <translation>Wydrukuj wszystko</translation>
+        <translation>Drukuj wszystko</translation>
     </message>
     <message>
         <location/>
@@ -6078,7 +6078,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="-8"/>
         <source>Print</source>
-        <translation>Print</translation>
+        <translation>Wydrukuj</translation>
     </message>
     <message>
         <location line="+152"/>

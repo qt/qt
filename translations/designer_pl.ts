@@ -1050,7 +1050,7 @@
     <message>
         <location line="+4"/>
         <source>Preview Zoom</source>
-        <translation>Powiększenie podglądu</translation>
+        <translation>Powiększanie podglądu</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1259,7 +1259,7 @@
     <message>
         <location line="-34"/>
         <source>Show this Dialog on Startup</source>
-        <translation>Pokaż to okno przy uruchamianiu</translation>
+        <translation>Pokazuj to okno przy uruchamianiu</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1594,7 +1594,7 @@ Skrypt: %3</translation>
     <message>
         <location line="-10"/>
         <source>Edit Widgets</source>
-        <translation>Edytuj widżety</translation>
+        <translation>Modyfikuj widżety</translation>
     </message>
     <message>
         <location line="+195"/>
@@ -1803,7 +1803,7 @@ Czy chcesz zaktualizować położenie pliku lub wygenerować nowy formularz?</tr
     <message>
         <location line="+1"/>
         <source>&amp;Print...</source>
-        <translation>Wy&amp;drukuj...</translation>
+        <translation>&amp;Drukuj...</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2669,7 +2669,7 @@ Strony pojemników powinny być dodawane jedynie poprzez wyspecyfikowanie ich w 
     <message>
         <location filename="../tools/shared/qtgradienteditor/qtgradientdialog.ui"/>
         <source>Edit Gradient</source>
-        <translation>Edytuj gradient</translation>
+        <translation>Modyfikuj gradient</translation>
     </message>
 </context>
 <context>
@@ -3042,7 +3042,7 @@ Strony pojemników powinny być dodawane jedynie poprzez wyspecyfikowanie ich w 
         <location/>
         <location filename="../tools/shared/qtgradienteditor/qtgradientview.cpp" line="+1"/>
         <source>Edit...</source>
-        <translation>Edytuj...</translation>
+        <translation>Modyfikuj...</translation>
     </message>
     <message>
         <location/>
@@ -3499,7 +3499,7 @@ jako:
     <message>
         <location line="+20"/>
         <source>Edit Resources...</source>
-        <translation>Edytuj zasoby...</translation>
+        <translation>Modyfikuj zasoby...</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -3961,12 +3961,12 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location line="+98"/>
         <source>Edit action</source>
-        <translation>Edytuj akcję</translation>
+        <translation>Modyfikuj akcję</translation>
     </message>
     <message>
         <location line="-417"/>
         <source>Edit...</source>
-        <translation>Edytuj...</translation>
+        <translation>Modyfikuj...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4126,7 +4126,7 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_plugin.cpp" line="+73"/>
         <source>Edit Buddies</source>
-        <translation>Edytuj skojarzone etykiety</translation>
+        <translation>Modyfikuj skojarzone etykiety</translation>
     </message>
 </context>
 <context>
@@ -4134,7 +4134,7 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location filename="../tools/designer/src/components/buddyeditor/buddyeditor_tool.cpp" line="+56"/>
         <source>Edit Buddies</source>
-        <translation>Edytuj skojarzone etykiety</translation>
+        <translation>Modyfikuj skojarzone etykiety</translation>
     </message>
 </context>
 <context>
@@ -4254,7 +4254,7 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location filename="../tools/designer/src/components/taskmenu/combobox_taskmenu.cpp" line="+68"/>
         <source>Edit Items...</source>
-        <translation>Edytuj elementy...</translation>
+        <translation>Modyfikuj elementy...</translation>
     </message>
     <message>
         <location line="+38"/>
@@ -4653,7 +4653,7 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location line="+6"/>
         <source>Edit the selected profile</source>
-        <translation>Edytuj zaznaczony profil</translation>
+        <translation>Modyfikuj zaznaczony profil</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -4673,7 +4673,7 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location line="+35"/>
         <source>Edit Profile</source>
-        <translation>Edytuj profil</translation>
+        <translation>Modyfikuj profil</translation>
     </message>
     <message>
         <location line="+26"/>
@@ -4725,7 +4725,7 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="-1267"/>
         <source>Edit contents</source>
-        <translation>Edytuj zawartość</translation>
+        <translation>Modyfikuj zawartość</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5290,12 +5290,12 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location line="+32"/>
         <source>Edit List Widget</source>
-        <translation>Edytuj listę</translation>
+        <translation>Modyfikuj listę</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Edit Combobox</source>
-        <translation>Edytuj combobox</translation>
+        <translation>Modyfikuj combobox</translation>
     </message>
 </context>
 <context>
@@ -5303,7 +5303,7 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location filename="../tools/designer/src/components/taskmenu/listwidget_taskmenu.cpp" line="+67"/>
         <source>Edit Items...</source>
-        <translation>Edytuj elementy...</translation>
+        <translation>Modyfikuj elementy...</translation>
     </message>
     <message>
         <location line="+38"/>
@@ -5608,7 +5608,7 @@ Wybierz inną nazwę.</translation>
     <message>
         <location filename="../tools/designer/src/components/propertyeditor/paletteeditor.ui"/>
         <source>Edit Palette</source>
-        <translation>Edytuj paletę</translation>
+        <translation>Modyfikuj paletę</translation>
     </message>
     <message>
         <location/>
@@ -5716,7 +5716,7 @@ Wybierz inną nazwę.</translation>
     <message>
         <location filename="../tools/designer/src/lib/shared/plaintexteditor.cpp" line="+65"/>
         <source>Edit text</source>
-        <translation>Edytuj tekst</translation>
+        <translation>Modyfikuj tekst</translation>
     </message>
 </context>
 <context>
@@ -6196,12 +6196,12 @@ Klasa: %2</translation>
     <message>
         <location line="+235"/>
         <source>Edit ToolTip</source>
-        <translation>Edytuj podpowiedź</translation>
+        <translation>Modyfikuj podpowiedź</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Edit WhatsThis</source>
-        <translation>Edytuj &quot;Co to jest&quot;</translation>
+        <translation>Modyfikuj &quot;Co to jest&quot;</translation>
     </message>
 </context>
 <context>
@@ -6326,7 +6326,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/lib/shared/richtexteditor.cpp" line="+436"/>
         <source>Edit text</source>
-        <translation>Edytuj tekst</translation>
+        <translation>Modyfikuj tekst</translation>
     </message>
     <message>
         <location line="+32"/>
@@ -6427,7 +6427,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/lib/shared/scriptdialog.cpp" line="+66"/>
         <source>Edit script</source>
-        <translation>Edytuj skrypt</translation>
+        <translation>Modyfikuj skrypt</translation>
     </message>
     <message>
         <location line="+56"/>
@@ -6477,7 +6477,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_plugin.cpp" line="+72"/>
         <source>Edit Signals/Slots</source>
-        <translation>Edytuj sygnały/sloty</translation>
+        <translation>Modyfikuj sygnały/sloty</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -6490,7 +6490,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditor_tool.cpp" line="+58"/>
         <source>Edit Signals/Slots</source>
-        <translation>Edytuj sygnały/sloty</translation>
+        <translation>Modyfikuj sygnały/sloty</translation>
     </message>
 </context>
 <context>
@@ -6514,7 +6514,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/lib/shared/stylesheeteditor.cpp" line="+97"/>
         <source>Edit Style Sheet</source>
-        <translation>Edytuj arkusz stylu</translation>
+        <translation>Modyfikuj arkusz stylu</translation>
     </message>
     <message>
         <location line="-7"/>
@@ -6581,7 +6581,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_plugin.cpp" line="+73"/>
         <source>Edit Tab Order</source>
-        <translation>Edytuj kolejność tabulacji</translation>
+        <translation>Modyfikuj kolejność tabulacji</translation>
     </message>
 </context>
 <context>
@@ -6589,7 +6589,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/components/tabordereditor/tabordereditor_tool.cpp" line="+57"/>
         <source>Edit Tab Order</source>
-        <translation>Edytuj kolejność tabulacji</translation>
+        <translation>Modyfikuj kolejność tabulacji</translation>
     </message>
 </context>
 <context>
@@ -6597,7 +6597,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/components/taskmenu/tablewidgeteditor.ui"/>
         <source>Edit Table Widget</source>
-        <translation>Edytuj tablę</translation>
+        <translation>Modyfikuj tablę</translation>
     </message>
     <message>
         <location/>
@@ -6646,7 +6646,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/components/taskmenu/tablewidget_taskmenu.cpp" line="+64"/>
         <source>Edit Items...</source>
-        <translation>Edytuj elementy...</translation>
+        <translation>Modyfikuj elementy...</translation>
     </message>
 </context>
 <context>
@@ -6682,12 +6682,12 @@ Klasa: %2</translation>
     <message>
         <location line="-1"/>
         <source>Edit HTML</source>
-        <translation>Edytuj HTML</translation>
+        <translation>Modyfikuj HTML</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Edit Text</source>
-        <translation>Edytuj tekst</translation>
+        <translation>Modyfikuj tekst</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -6751,7 +6751,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/components/taskmenu/treewidgeteditor.ui"/>
         <source>Edit Tree Widget</source>
-        <translation>Edytuj drzewo</translation>
+        <translation>Modyfikuj drzewo</translation>
     </message>
     <message>
         <location/>
@@ -6877,7 +6877,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/components/taskmenu/treewidget_taskmenu.cpp" line="+63"/>
         <source>Edit Items...</source>
-        <translation>Edytuj elementy...</translation>
+        <translation>Modyfikujj elementy...</translation>
     </message>
 </context>
 <context>
@@ -6928,7 +6928,7 @@ Klasa: %2</translation>
     <message>
         <location line="+2"/>
         <source>Edit name</source>
-        <translation>Edytuj nazwę</translation>
+        <translation>Modyfikuj nazwę</translation>
     </message>
 </context>
 <context>
@@ -6944,7 +6944,7 @@ Klasa: %2</translation>
     <message>
         <location filename="../tools/designer/src/components/formeditor/tool_widgeteditor.cpp" line="+67"/>
         <source>Edit Widgets</source>
-        <translation>Edytuj widżety</translation>
+        <translation>Modyfikuj widżety</translation>
     </message>
 </context>
 <context>
