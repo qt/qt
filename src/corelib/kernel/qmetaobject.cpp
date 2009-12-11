@@ -497,7 +497,7 @@ static inline int indexOfMethodRelative(const QMetaObject **baseObject,
         int i = (MethodType == MethodSignal && priv(m->d.data)->revision >= 4)
                 ? (priv(m->d.data)->signalCount - 1) : (priv(m->d.data)->methodCount - 1);
         const int end = (MethodType == MethodSlot && priv(m->d.data)->revision >= 4)
-                        ? (priv(m->d.data)->signalCount - 1) : 0;
+                        ? (priv(m->d.data)->signalCount) : 0;
         if (!normalizeStringData) {
             for (; i >= end; --i) {
                 if ((MethodType == 0 || (m->d.data[priv(m->d.data)->methodData + 5*i + 4] & MethodTypeMask) == MethodType)
