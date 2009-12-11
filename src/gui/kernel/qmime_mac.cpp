@@ -154,6 +154,7 @@ CFStringRef qt_mac_mime_typeUTI = CFSTR("com.pasteboard.trolltech.marker");
     \i public.url - converts to "text/uri-list"
     \i public.file-url - converts to "text/uri-list"
     \i public.tiff - converts to "application/x-qt-image"
+    \i public.vcard - converts to "text/plain"
     \i com.apple.traditional-mac-plain-text - converts to "text/plain"
     \i com.apple.pict - converts to "application/x-qt-image"
   \endlist
@@ -909,6 +910,61 @@ QList<QByteArray> QMacPasteboardMimeUrl::convertFromMime(const QString &mime, QV
     return ret;
 }
 
+class QMacPasteboardMimeVCard : public QMacPasteboardMime
+{
+public:
+    QMacPasteboardMimeVCard() : QMacPasteboardMime(MIME_ALL){ }
+    QString convertorName();
+
+    QString flavorFor(const QString &mime);
+    QString mimeFor(QString flav);
+    bool canConvert(const QString &mime, QString flav);
+    QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav);
+    QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav);
+};
+
+QString QMacPasteboardMimeVCard::convertorName()
+{
+    return QString("VCard");
+}
+
+bool QMacPasteboardMimeVCard::canConvert(const QString &mime, QString flav)
+{
+    return mimeFor(flav) == mime;
+}
+
+QString QMacPasteboardMimeVCard::flavorFor(const QString &mime)
+{
+    if(mime.startsWith(QLatin1String("text/plain")))
+        return QLatin1String("public.vcard");
+    return QString();
+}
+
+QString QMacPasteboardMimeVCard::mimeFor(QString flav)
+{
+    if (flav == QLatin1String("public.vcard"))
+        return QLatin1String("text/plain");
+    return QString();
+}
+
+QVariant QMacPasteboardMimeVCard::convertToMime(const QString &mime, QList<QByteArray> data, QString)
+{
+    QByteArray cards;
+    if (mime == QLatin1String("text/plain")) {
+        for (int i=0; i<data.size(); ++i)
+            cards += data[i];
+    }
+    return QVariant(cards);
+}
+
+QList<QByteArray> QMacPasteboardMimeVCard::convertFromMime(const QString &mime, QVariant data, QString)
+{
+    QList<QByteArray> ret;
+    if (mime == QLatin1String("text/plain"))
+        ret.append(data.toString().toUtf8());
+    return ret;
+}
+
 #ifdef QT3_SUPPORT
 class QMacPasteboardMimeQt3Any : public QMacPasteboardMime {
 private:
@@ -1116,6 +1172,7 @@ void QMacPasteboardMime::initialize()
         new QMacPasteboardMimeFileUri;
         new QMacPasteboardMimeUrl;
         new QMacPasteboardMimeTypeName;
+        new QMacPasteboardMimeVCard;
         //make sure our "non-standard" types are always last! --Sam
         new QMacPasteboardMimeAny;
 #ifdef QT3_SUPPORT

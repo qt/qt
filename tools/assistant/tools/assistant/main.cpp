@@ -52,7 +52,8 @@
 #include <QtGui/QApplication>
 #include <QtGui/QDesktopServices>
 
-#include <QtHelp/QHelpEngineCore>
+#include <QtHelp/QHelpEngine>
+#include <QtHelp/QHelpSearchEngine>
 
 #include <QtNetwork/QLocalSocket>
 
@@ -205,6 +206,23 @@ bool removeSearchIndex(const QString &collectionFile)
     return true;
 }
 
+bool rebuildSearchIndex(QCoreApplication &app, const QString &collectionFile,
+                        CmdLineParser &cmd)
+{
+    TRACE_OBJ
+    QHelpEngine engine(collectionFile);
+    if (!engine.setupData()) {
+        cmd.showMessage(QObject::tr("Error: %1").arg(engine.error()), true);
+        return false;
+    }
+
+    QHelpSearchEngine * const searchEngine = engine.searchEngine();
+    QObject::connect(searchEngine, SIGNAL(indexingFinished()), &app,
+                     SLOT(quit()));
+    searchEngine->reindexDocumentation();
+    return app.exec() == 0;
+}
+
 bool checkForSqlite(CmdLineParser &cmd)
 {
     TRACE_OBJ
@@ -225,7 +243,8 @@ bool useGui(int argc, char *argv[])
 #ifndef Q_OS_WIN
     // Look for arguments that imply command-line mode.
     const char * cmdModeArgs[] = {
-        "-help", "-register", "-unregister", "-remove-search-index"
+        "-help", "-register", "-unregister", "-remove-search-index",
+        "-rebuild-search-index"
     };
     for (int i = 1; i < argc; ++i) {
         for (size_t j = 0; j < sizeof cmdModeArgs/sizeof *cmdModeArgs; ++j) {
@@ -376,7 +395,13 @@ int main(int argc, char *argv[])
     }
 
     if (cmd.removeSearchIndex()) {
-        return removeSearchIndex(cachedCollectionFile) ? EXIT_SUCCESS : EXIT_FAILURE;
+        return removeSearchIndex(cachedCollectionFile)
+            ? EXIT_SUCCESS : EXIT_FAILURE;
+    }
+
+    if (cmd.rebuildSearchIndex()) {
+        return rebuildSearchIndex(a, cachedCollectionFile, cmd)
+            ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
     if (!checkForSqlite(cmd))

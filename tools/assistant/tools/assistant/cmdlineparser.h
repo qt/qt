@@ -70,6 +70,7 @@ public:
     ShowState search() const;
     QString currentFilter() const;
     bool removeSearchIndex() const;
+    bool rebuildSearchIndex() const;
     RegisterState registerRequest() const;
     QString helpFile() const;
 
@@ -106,6 +107,7 @@ private:
     RegisterState m_register;
     QString m_currentFilter;
     bool m_removeSearchIndex;
+    bool m_rebuildSearchIndex;
     bool m_quiet;
     QString m_error;
 };

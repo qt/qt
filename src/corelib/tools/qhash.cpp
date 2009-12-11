@@ -847,6 +847,11 @@ void QHashData::checkSanity()
     \internal
 */
 
+/*! \fn bool QHash::isSharedWith(const QHash<Key, T> &other) const
+
+    \internal
+*/
+
 /*! \fn void QHash::clear()
 
     Removes all items from the hash.
