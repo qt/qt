@@ -747,7 +747,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             }
             if (haveMessage) {
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
-                    if (seenWM_QT_SENDPOSTEDEVENTS && !(flags & QEventLoop::EventLoopExec)) {
+                    if (seenWM_QT_SENDPOSTEDEVENTS) {
                         // when calling processEvents() "manually", we only want to send posted
                         // events once
                         needWM_QT_SENDPOSTEDEVENTS = true;
