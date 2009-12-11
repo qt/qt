@@ -313,7 +313,10 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     // Shortcut, no cache for childless pixmap items...
     const QGraphicsItem *item = graphicsItem();
     if (system == Qt::LogicalCoordinates && mode == QGraphicsEffect::NoPad && item && isPixmap()) {
-        return ((QGraphicsPixmapItem *) item)->pixmap();
+        const QGraphicsPixmapItem *pixmapItem = static_cast<const QGraphicsPixmapItem *>(item);
+        if (offset)
+            *offset = pixmapItem->offset().toPoint();
+        return pixmapItem->pixmap();
     }
 
     if (system == Qt::DeviceCoordinates && item
