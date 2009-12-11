@@ -5959,9 +5959,9 @@ case "$PLATFORM,$CFG_MAC_COCOA" in
 	;;
 esac
 
-# disable Qt 3 support on VxWorks
+# disable Qt 3 support on VxWorks and Symbian
 case "$XPLATFORM" in
-    unsupported/vxworks*)
+    unsupported/vxworks*|symbian*)
 	CFG_QT3SUPPORT="no"
     ;;
 esac
