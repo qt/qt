@@ -44,7 +44,7 @@
 #include <qdebug.h>
 #include <qvarlengtharray.h>
 
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 #include "qdbusmessage.h"
 #include "qdbusmessage_p.h"
 
