@@ -409,7 +409,7 @@ QMouseEventEx::~QMouseEventEx()
     consider a top-level window A containing a child B which in turn contains a
     child C (all with mouse tracking enabled):
 
-    \image hoverEvents.png
+    \image hoverevents.png
 
     Now, if you move the cursor from the top to the bottom in the middle of A,
     you will get the following QEvent::MouseMove events:
@@ -432,7 +432,7 @@ QMouseEventEx::~QMouseEventEx()
         \o A::HoverMove, B::HoverMove
         \o A::HoverMove, B::HoverMove, C::HoverMove
     \endlist
-    
+
 */
 
 /*!
