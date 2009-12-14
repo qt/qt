@@ -707,7 +707,17 @@ bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> &keywords,
 
     int i = 0;
     d->query->exec(QLatin1String("BEGIN"));
-    foreach (QHelpDataIndexItem itm, keywords) {
+    QSet<QString> indices;
+    foreach (const QHelpDataIndexItem &itm, keywords) {
+
+        /*
+         * Identical ids make no sense and just confuse the Assistant user,
+         * so we ignore all repetitions.
+         */
+        if (indices.contains(itm.identifier))
+            continue;
+        indices.insert(itm.identifier);
+
         pos = itm.reference.indexOf(QLatin1Char('#'));
         fileName = itm.reference.left(pos);
         if (pos > -1)
@@ -753,7 +763,7 @@ bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> &keywords,
     d->query->exec(QLatin1String("COMMIT"));
 
     d->query->exec(QLatin1String("SELECT COUNT(Id) FROM IndexTable"));
-    if (d->query->next() && d->query->value(0).toInt() >= keywords.count())
+    if (d->query->next() && d->query->value(0).toInt() >= indices.count())
         return true;
     return false;
 }
