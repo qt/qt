@@ -1779,7 +1779,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        int d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = qPointDistanceFromLine(point, v1, v2);
         if (d == 0) {
             result.first = result.second = current;
             break;
@@ -1793,7 +1793,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        int d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = qPointDistanceFromLine(point, v1, v2);
         Q_ASSERT(d >= 0);
         if (d == 0) {
             result.first = current;
@@ -1807,7 +1807,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        int d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = qPointDistanceFromLine(point, v1, v2);
         Q_ASSERT(d <= 0);
         if (d == 0) {
             result.second = current;
@@ -1828,7 +1828,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        int d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = qPointDistanceFromLine(point, v1, v2);
         if (d == 0)
             break;
         if (d < 0) {
@@ -1849,7 +1849,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        int d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = qPointDistanceFromLine(point, v1, v2);
         Q_ASSERT(d >= 0);
         if (d == 0) {
             current = current->left;
@@ -1863,7 +1863,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        int d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = qPointDistanceFromLine(point, v1, v2);
         Q_ASSERT(d <= 0);
         if (d == 0) {
             current = current->right;
