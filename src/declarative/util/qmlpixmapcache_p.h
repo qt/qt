@@ -53,16 +53,50 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QmlEngine;
 class QNetworkReply;
+
+class QmlPixmapReplyPrivate;
+class Q_DECLARATIVE_EXPORT QmlPixmapReply : public QObject
+{
+    Q_OBJECT
+public:
+    QmlPixmapReply(const QString &key, QNetworkReply *reply);
+    ~QmlPixmapReply();
+
+    enum Status { Ready, Error, Unrequested, Loading, Decoding };
+    Status status() const;
+
+Q_SIGNALS:
+    void finished();
+    void downloadProgress(qint64, qint64);
+
+protected:
+    bool event(QEvent *event);
+
+private:
+    QIODevice *device();
+    void addRef();
+    bool release(bool defer=false);
+
+private Q_SLOTS:
+    void networkRequestDone();
+
+private:
+    Q_DISABLE_COPY(QmlPixmapReply)
+    Q_DECLARE_PRIVATE(QmlPixmapReply)
+    friend class QmlImageReader;
+    friend class QmlPixmapCache;
+};
+
 class Q_DECLARATIVE_EXPORT QmlPixmapCache
 {
 public:
-    static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap, bool *ok=0);
-    static void cancelGet(const QUrl& url, QObject* obj);
-
-    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QmlPixmapCache::get, and any returned reply finished.
-
-    static int pendingRequests(); // mainly for test verification
+    static QmlPixmapReply::Status get(const QUrl& url, QPixmap *pixmap);
+    static QmlPixmapReply *request(QmlEngine *, const QUrl& url);
+    static void cancel(const QUrl& url, QObject *obj);
+    static int pendingRequests();
 };
+
+
 
 QT_END_NAMESPACE
 

@@ -61,7 +61,7 @@ QmlGraphicsImageBase::~QmlGraphicsImageBase()
 {
     Q_D(QmlGraphicsImageBase);
     if (d->pendingPixmapCache)
-        QmlPixmapCache::cancelGet(d->url, this);
+        QmlPixmapCache::cancel(d->url, this);
 }
 
 QmlGraphicsImageBase::Status QmlGraphicsImageBase::status() const
@@ -91,7 +91,7 @@ void QmlGraphicsImageBase::setSource(const QUrl &url)
         return;
 
     if (d->pendingPixmapCache) {
-        QmlPixmapCache::cancelGet(d->url, this);
+        QmlPixmapCache::cancel(d->url, this);
         d->pendingPixmapCache = false;
     }
 
@@ -112,16 +112,16 @@ void QmlGraphicsImageBase::setSource(const QUrl &url)
         update();
     } else {
         d->status = Loading;
-        bool ok = true;
-        QNetworkReply *reply = QmlPixmapCache::get(qmlEngine(this), d->url, &d->pix, &ok);
-        if (reply) {
+        QmlPixmapReply::Status status = QmlPixmapCache::get(d->url, &d->pix);
+        if (status != QmlPixmapReply::Ready && status != QmlPixmapReply::Error) {
+            QmlPixmapReply *reply = QmlPixmapCache::request(qmlEngine(this), d->url);
             d->pendingPixmapCache = true;
             connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
             connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
                     this, SLOT(requestProgress(qint64,qint64)));
         } else {
             //### should be unified with requestFinished
-            if (ok) {
+            if (status == QmlPixmapReply::Ready) {
                 setImplicitWidth(d->pix.width());
                 setImplicitHeight(d->pix.height());
 
@@ -148,7 +148,7 @@ void QmlGraphicsImageBase::requestFinished()
 
     d->pendingPixmapCache = false;
 
-    if (!QmlPixmapCache::find(d->url, &d->pix))
+    if (QmlPixmapCache::get(d->url, &d->pix) != QmlPixmapReply::Ready)
         d->status = Error;
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
