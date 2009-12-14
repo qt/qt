@@ -466,7 +466,7 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
     } else if(gen == "PROJECTBUILDER" || gen == "XCODE") {
         mkfile = new ProjectBuilderMakefileGenerator;
     } else if(gen == "MSVC.NET") {
-        if(proj->first("TEMPLATE").indexOf(QRegExp("^vc.*")) != -1)
+        if (proj->first("TEMPLATE").startsWith("vc"))
             mkfile = new VcprojGenerator;
         else
             mkfile = new NmakeMakefileGenerator;
