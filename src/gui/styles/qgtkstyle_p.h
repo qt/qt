@@ -176,6 +176,7 @@ typedef GtkWidget* (*Ptr_gtk_file_chooser_dialog_new)(const gchar *title,
 typedef void (*Ptr_gtk_file_chooser_set_current_name) (GtkFileChooser *, const gchar *);
 typedef gboolean (*Ptr_gtk_file_chooser_set_filename) (GtkFileChooser *chooser, const gchar *name);
 typedef gint (*Ptr_gtk_dialog_run) (GtkDialog*);
+typedef void (*Ptr_gtk_border_free)(GtkBorder *);
 
 typedef guchar* (*Ptr_gdk_pixbuf_get_pixels) (const GdkPixbuf *pixbuf);
 typedef int (*Ptr_gdk_pixbuf_get_width) (const GdkPixbuf *pixbuf);
@@ -371,6 +372,7 @@ public:
     static Ptr_gtk_widget_get_type gtk_widget_get_type;
     static Ptr_gtk_rc_get_style_by_paths gtk_rc_get_style_by_paths;
     static Ptr_gtk_check_version gtk_check_version;
+    static Ptr_gtk_border_free gtk_border_free;
 
     static Ptr_pango_font_description_get_size pango_font_description_get_size;
     static Ptr_pango_font_description_get_weight pango_font_description_get_weight;
