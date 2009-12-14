@@ -141,6 +141,7 @@ private slots:
 #if defined QTEST_HAVE_GIF
     void gifHandlerBugs();
     void animatedGif();
+    void gifImageCount();
 #endif
 
     void readCorruptImage_data();
@@ -737,6 +738,136 @@ void tst_QImageReader::animatedGif()
         QString frameName = QString(":images/qt%1.gif").arg(++i);
         QCOMPARE(image, QImage(frameName));
         image = io.read();
+    }
+}
+
+// http://bugreports.qt.nokia.com/browse/QTBUG-6696
+// Check the count of images in various call orders...
+void tst_QImageReader::gifImageCount()
+{
+    // just read every frame... and see how much we got..
+    {
+        QImageReader io(":images/four-frames.gif");
+
+        QVERIFY(io.canRead());
+        QImage blackFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QImage whiteFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QImage greenFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QImage blueFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QImage emptyFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QCOMPARE(blackFrame.pixel(0,0), qRgb(0, 0, 0));
+        QCOMPARE(blackFrame.size(), QSize(64,64));
+
+        QCOMPARE(whiteFrame.pixel(0,0), qRgb(0xff, 0xff, 0xff));
+        QCOMPARE(whiteFrame.size(), QSize(64,64));
+
+        QCOMPARE(greenFrame.pixel(0,0), qRgb(0x0, 0xff, 0x0));
+        QCOMPARE(greenFrame.size(), QSize(64,64));
+
+        QCOMPARE(blueFrame.pixel(0,0), qRgb(0x0, 0x0, 0xff));
+        QCOMPARE(blueFrame.size(), QSize(64,64));
+        QVERIFY(emptyFrame.isNull());
+    }
+
+    // Read and get the size
+    {
+        QImageReader io(":images/four-frames.gif");
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QVERIFY(io.canRead());
+        QImage blackFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QVERIFY(io.canRead());
+        QImage whiteFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QVERIFY(io.canRead());
+        QImage greenFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QVERIFY(io.canRead());
+        QImage blueFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QCOMPARE(io.size(), QSize());
+        QCOMPARE(io.size(), QSize());
+        QVERIFY(!io.canRead());
+        QImage emptyFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QCOMPARE(blackFrame.pixel(0,0), qRgb(0, 0, 0));
+        QCOMPARE(blackFrame.size(), QSize(64,64));
+
+        QCOMPARE(whiteFrame.pixel(0,0), qRgb(0xff, 0xff, 0xff));
+        QCOMPARE(whiteFrame.size(), QSize(64,64));
+
+        QCOMPARE(greenFrame.pixel(0,0), qRgb(0x0, 0xff, 0x0));
+        QCOMPARE(greenFrame.size(), QSize(64,64));
+
+        QCOMPARE(blueFrame.pixel(0,0), qRgb(0x0, 0x0, 0xff));
+        QCOMPARE(blueFrame.size(), QSize(64,64));
+        QVERIFY(emptyFrame.isNull());
+    }
+
+    // Do a Size query as substitute for canRead
+    {
+        QImageReader io(":images/four-frames.gif");
+
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QImage blackFrame = io.read();
+
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QImage whiteFrame = io.read();
+
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QImage greenFrame = io.read();
+
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QImage blueFrame = io.read();
+
+        QCOMPARE(io.size(), QSize());
+        QVERIFY(!io.canRead());
+        QImage emptyFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QCOMPARE(blackFrame.pixel(0,0), qRgb(0, 0, 0));
+        QCOMPARE(blackFrame.size(), QSize(64,64));
+
+        QCOMPARE(whiteFrame.pixel(0,0), qRgb(0xff, 0xff, 0xff));
+        QCOMPARE(whiteFrame.size(), QSize(64,64));
+
+        QCOMPARE(greenFrame.pixel(0,0), qRgb(0x0, 0xff, 0x0));
+        QCOMPARE(greenFrame.size(), QSize(64,64));
+
+        QCOMPARE(blueFrame.pixel(0,0), qRgb(0x0, 0x0, 0xff));
+        QCOMPARE(blueFrame.size(), QSize(64,64));
+        QVERIFY(emptyFrame.isNull());
     }
 }
 #endif
