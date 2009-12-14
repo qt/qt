@@ -593,6 +593,17 @@ void QDirectFBPixmapData::invalidate()
     imageFormat = QImage::Format_Invalid;
 }
 
+#ifndef QT_DIRECTFB_PLUGIN
+Q_GUI_EXPORT IDirectFBSurface *qt_directfb_surface_for_pixmap(const QPixmap &pixmap)
+{
+    const QPixmapData *data = pixmap.pixmapData();
+    if (!data || data->classId() != QPixmapData::DirectFBClass)
+        return 0;
+    const QDirectFBPixmapData *dfbData = static_cast<const QDirectFBPixmapData*>(data);
+    return dfbData->directFBSurface();
+}
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_QWS_DIRECTFB
