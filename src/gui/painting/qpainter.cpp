@@ -1321,8 +1321,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     QPainter is a rich framework that allows developers to do a great
     variety of graphical operations, such as gradients, composition
-    modes and vector graphcis. And QPainter can do this across a
-    variety of different hardware and software stack. Naturally the
+    modes and vector graphics. And QPainter can do this across a
+    variety of different hardware and software stacks. Naturally the
     underlying combination of hardware and software has some
     implications for performance, and ensuring that every single
     operation is fast in combination with all the various combinations
@@ -1344,13 +1344,13 @@ void QPainterPrivate::updateState(QPainterState *newState)
     including QImage::Format_ARGB32, has significantly worse
     performance. This engine is also used by default on Windows and on
     QWS. It can be used as default graphics system on any
-    OS/hardware/software combination by passing \c {-graphcissystem
+    OS/hardware/software combination by passing \c {-graphicssystem
     raster} on the command line
 
     \o OpenGL 2.0 (ES) - This backend is the primary backend for
-    hardware accellerated graphics. It can be run on desktop machines
+    hardware accelerated graphics. It can be run on desktop machines
     and embedded devices supporting the OpenGL 2.0 or OpenGL/ES 2.0
-    spesification. This includes most graphics chips produced in the
+    specification. This includes most graphics chips produced in the
     last couple of years. The engine can be enabled by using QPainter
     onto a QGLWidget or by passing \c {-graphicssystem opengl} on the
     command line when the underlying system supports it.
@@ -1366,7 +1366,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \o \c drawPixmap() in combination with simple transformations and
     opacity with non-smooth transformation mode
-    (\c QPainter::SmoothPixmapTransform not enabled as a render hint);
+    (\c QPainter::SmoothPixmapTransform not enabled as a render hint).
 
     \o Text drawing with regular font sizes with simple
     transformations with solid colors using no or 8-bit antialiasing.
