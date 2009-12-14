@@ -298,6 +298,7 @@ public:
 
     QSet<QVectorPath::CacheEntry *> pathCaches;
     QVector<GLuint> unusedVBOSToClean;
+    QVector<GLuint> unusedIBOSToClean;
 };
 
 QT_END_NAMESPACE
