@@ -83,6 +83,7 @@ struct Instr {
         LoadId,                  // load
         LoadScope,               // load
         LoadRoot,                // load
+        LoadAttached,            // attached
 
         ConvertIntToReal,        // unaryop
         ConvertRealToInt,        // unaryop
@@ -117,6 +118,7 @@ struct Instr {
         FindPropertyTerminal,    // find 
         CleanupGeneric,          // cleanup
         ConvertGenericToReal,    // genericunaryop
+        ConvertGenericToBool,    // genericunaryop
         ConvertGenericToString,  // genericunaryop
 
     } type;
@@ -137,8 +139,13 @@ struct Instr {
         } load;
         struct {
             int output;
-            int index;
             int reg;
+            int index;
+        } attached;
+        struct {
+            int output;
+            int reg;
+            int index;
         } store;
         struct {
             int output;
@@ -221,6 +228,8 @@ struct QmlBindingCompiler
         const QMetaObject *metaObject;
         int type;
         int reg;
+
+        QSet<QString> subscriptionSet;
     };
 
     QmlBindingCompiler() : registers(0), strings(0) {}
@@ -230,6 +239,8 @@ struct QmlBindingCompiler
     QmlParser::Object *component;
     QmlParser::Property *destination;
     QHash<QString, QmlParser::Object *> ids;
+    QmlEnginePrivate::Imports imports;
+    QmlEnginePrivate *engine;
 
     bool compile(QmlJS::AST::Node *);
 
@@ -262,11 +273,14 @@ struct QmlBindingCompiler
     QByteArray data;
 
     QSet<QString> subscriptionSet;
-    bool subscription(const QStringList &);
+    QHash<QString, int> subscriptionIds;
+    bool subscription(const QStringList &, Result *);
+    int subscriptionIndex(const QStringList &);
+    bool subscriptionNeutral(const QSet<QString> &base, const QSet<QString> &lhs, const QSet<QString> &rhs);
     QVector<Instr> bytecode;
 };
 
-QByteArray QmlBindingVME::compile(const QmlBasicScript::Expression &expression)
+QByteArray QmlBindingVME::compile(const QmlBasicScript::Expression &expression, QmlEnginePrivate *engine)
 {
     if (!expression.expression.asAST()) return false;
 
@@ -275,6 +289,8 @@ QByteArray QmlBindingVME::compile(const QmlBasicScript::Expression &expression)
     bsc.component = expression.component;
     bsc.destination = expression.property;
     bsc.ids = expression.ids;
+    bsc.imports = expression.imports;
+    bsc.engine = engine;
 
     bool ok = bsc.compile(expression.expression.asAST());
 
@@ -475,7 +491,7 @@ static bool findgeneric(Register *output,                                 // val
 }
 
 
-// Conversion functions
+// Conversion functions - these MUST match the QtScript expression path
 inline static qreal toReal(Register *reg, int type, bool *ok = 0)
 {
     if (ok) *ok = true;
@@ -593,6 +609,15 @@ void QmlBindingVME::run(const char *programData, Config *config,
 
     case Instr::LoadRoot:
         registers[instr->load.reg].setQObject(context->defaultObjects.at(0));
+        break;
+
+    case Instr::LoadAttached:
+        {
+            QObject *o = qmlAttachedPropertiesObjectById(instr->attached.index, 
+                                                         registers[instr->attached.reg].getQObject(), 
+                                                         true);
+            registers[instr->attached.output].setQObject(o);
+        }
         break;
 
     case Instr::ConvertIntToReal:
@@ -730,6 +755,13 @@ void QmlBindingVME::run(const char *programData, Config *config,
         }
         break;
 
+    case Instr::ConvertGenericToBool:
+        {
+            int type = registers[instr->genericunaryop.srcType].getint();
+            registers[instr->genericunaryop.output].setbool(toBool(registers + instr->genericunaryop.src, type));
+        }
+        break;
+
     case Instr::ConvertGenericToString:
         {
             int type = registers[instr->genericunaryop.srcType].getint();
@@ -774,6 +806,9 @@ void QmlBindingVME::dump(const QByteArray &programData)
             break;
         case Instr::LoadRoot:
             qWarning().nospace() << "LoadRoot" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
+            break;
+        case Instr::LoadAttached:
+            qWarning().nospace() << "LoadAttached" << "\t\t" << instr->attached.output << "\t" << instr->attached.reg << "\t" << instr->attached.index;
             break;
         case Instr::ConvertIntToReal:
             qWarning().nospace() << "ConvertIntToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
@@ -836,13 +871,16 @@ void QmlBindingVME::dump(const QByteArray &programData)
             qWarning().nospace() << "FindProperty" << "\t\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.typeReg << "\t" << instr->find.name;
             break;
         case Instr::FindPropertyTerminal:
-            qWarning().nospace() << "FindPropertyTerminal" << "\t\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.typeReg << "\t" << instr->find.name;
+            qWarning().nospace() << "FindPropertyTerminal" << "\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.typeReg << "\t" << instr->find.name;
             break;
         case Instr::CleanupGeneric:
             qWarning().nospace() << "CleanupGeneric" << "\t\t" << instr->cleanup.reg << "\t" << instr->cleanup.typeReg;
             break;
         case Instr::ConvertGenericToReal:
             qWarning().nospace() << "ConvertGenericToReal" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
+            break;
+        case Instr::ConvertGenericToBool:
+            qWarning().nospace() << "ConvertGenericToBool" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
             break;
         case Instr::ConvertGenericToString:
             qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
@@ -881,14 +919,15 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
 
         Instr init;
         init.type = Instr::Init;
-        init.init.subscriptions = subscriptionSet.count();
+        init.init.subscriptions = subscriptionIds.count();
         init.init.identifiers = strings;
         bytecode.prepend(init);
     }
 
     if (type.unknownType) {
         if (destination->type != QMetaType::QReal &&
-            destination->type != QVariant::String)
+            destination->type != QVariant::String &&
+            destination->type != QMetaType::Bool)
             return false;
 
         int convertReg = acquireReg();
@@ -903,6 +942,13 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
         } else if (destination->type == QVariant::String) {
             Instr convert;
             convert.type = Instr::ConvertGenericToString;
+            convert.genericunaryop.output = convertReg;
+            convert.genericunaryop.src = type.reg;
+            convert.genericunaryop.srcType = 2; // XXX
+            bytecode << convert;
+        } else if (destination->type == QMetaType::Bool) {
+            Instr convert;
+            convert.type = Instr::ConvertGenericToBool;
             convert.genericunaryop.output = convertReg;
             convert.genericunaryop.src = type.reg;
             convert.genericunaryop.srcType = 2; // XXX
@@ -1025,6 +1071,8 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
 
     QStringList subscribeName;
 
+    bool wasAttachedObject = false;
+
     for (int ii = 0; ii < nameParts.count(); ++ii) {
         const QString &name = nameParts.at(ii);
 
@@ -1032,13 +1080,47 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
         if (name.length() > 2 && name.startsWith(QLatin1String("on")) &&
             name.at(2).isUpper())
             return false;
-        if (name.at(0).isUpper())
-            return false;
 
+        QmlType *attachType = 0;
+        if (name.at(0).isUpper()) {
+            // Could be an attached property
+            if (ii == nameParts.count() - 1)
+                return false;
+            if (nameParts.at(ii + 1).at(0).isUpper())
+                return false;
+
+            QmlEnginePrivate::ImportedNamespace *ns = 0;
+            if (!engine->resolveType(imports, name.toUtf8(), &attachType, 0, 0, 0, &ns))
+                return false;
+            if (ns || !attachType || !attachType->attachedPropertiesType())
+                return false;
+
+            wasAttachedObject = true;
+        } 
 
         if (ii == 0) {
 
-            if (ids.contains(name)) {
+            if (attachType) {
+                Instr instr;
+                instr.type = Instr::LoadScope;
+                instr.load.index = 0;
+                instr.load.reg = reg;
+                bytecode << instr;
+
+                Instr attach;
+                attach.type = Instr::LoadAttached;
+                attach.attached.output = reg;
+                attach.attached.reg = reg;
+                attach.attached.index = attachType->index();
+                bytecode << attach;
+
+                absType = 0;
+                type.metaObject = attachType->attachedPropertiesType();
+
+                subscribeName << QLatin1String("$$$ATTACH_") + name;
+
+                continue;
+            } else if (ids.contains(name)) {
                 QmlParser::Object *idObject = ids.value(name);
                 absType = idObject;
                 type.metaObject = absType->metaObject();
@@ -1066,10 +1148,10 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
 
                     subscribeName << QLatin1String("$$$ID_") + name;
 
-                    if (subscription(subscribeName)) {
+                    if (subscription(subscribeName, &type)) {
                         Instr sub;
                         sub.type = Instr::SubscribeId;
-                        sub.subscribe.offset = subscriptionSet.count() - 1;
+                        sub.subscribe.offset = subscriptionIndex(subscribeName);
                         sub.subscribe.reg = reg;
                         sub.subscribe.index = instr.load.index;
                         bytecode << sub;
@@ -1121,8 +1203,8 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
                     find.find.name = registerString(name);
 
                     subscribeName << QString(QLatin1String("$$$Generic_") + name);
-                    if (subscription(subscribeName)) 
-                        find.find.subscribeIndex = subscriptionSet.count() - 1;
+                    if (subscription(subscribeName, &type)) 
+                        find.find.subscribeIndex = subscriptionIndex(subscribeName);
                     else
                         find.find.subscribeIndex = -1;
 
@@ -1135,6 +1217,21 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
             } 
 
         } else {
+
+            if (attachType) {
+                Instr attach;
+                attach.type = Instr::LoadAttached;
+                attach.attached.output = reg;
+                attach.attached.reg = reg;
+                attach.attached.index = attachType->index();
+                bytecode << attach;
+
+                absType = 0;
+                type.metaObject = attachType->attachedPropertiesType();
+
+                subscribeName << QLatin1String("$$$ATTACH_") + name;
+                continue;
+            }
 
             const QMetaObject *mo = 0;
             if (absType)
@@ -1150,7 +1247,7 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
 
             subscribeName << name;
 
-            if (absType || (mo && mo->property(idx).isFinal())) {
+            if (absType || (wasAttachedObject && idx != -1) || (mo && mo->property(idx).isFinal())) {
                 absType = 0; 
                 type = fetch(mo, reg, idx, subscribeName);
                 if (type.type == -1)
@@ -1167,8 +1264,8 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
                 prop.find.src = reg;
                 prop.find.typeReg = 2; // XXX 
                 prop.find.name = registerString(name);
-                if (subscription(subscribeName))
-                    prop.find.subscribeIndex = subscriptionSet.count() - 1;
+                if (subscription(subscribeName, &type))
+                    prop.find.subscribeIndex = subscriptionIndex(subscribeName);
                 else
                     prop.find.subscribeIndex = -1;
 
@@ -1179,6 +1276,8 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
                 bytecode << prop;
             }
         }
+
+        wasAttachedObject = false;
     }
 
     return true;
@@ -1335,7 +1434,9 @@ bool QmlBindingCompiler::parseConditional(QmlJS::AST::Node *node, Result &type)
     // Release to allow reuse of reg
     releaseReg(etype.reg);
 
-    int preConditionalSubscriptions = subscriptionSet.count();
+    QSet<QString> preSubSet = subscriptionSet;
+
+    // int preConditionalSubscriptions = subscriptionSet.count();
 
     Result ok;
     if (!parseExpression(expression->ok, ok)) return false;
@@ -1349,6 +1450,8 @@ bool QmlBindingCompiler::parseConditional(QmlJS::AST::Node *node, Result &type)
     releaseReg(ok.reg);
     bytecode[skipIdx].skip.count = bytecode.count() - skipIdx - 1;
 
+    subscriptionSet = preSubSet;
+
     Result ko;
     if (!parseExpression(expression->ko, ko)) return false;
     if (ko.unknownType) return false;
@@ -1360,7 +1463,9 @@ bool QmlBindingCompiler::parseConditional(QmlJS::AST::Node *node, Result &type)
     if (ok != ko)
         return false; // Must be same type and in same register
 
-    if (preConditionalSubscriptions != subscriptionSet.count())
+    subscriptionSet = preSubSet;
+
+    if (!subscriptionNeutral(subscriptionSet, ok.subscriptionSet, ko.subscriptionSet))
         return false; // Conditionals cannot introduce new subscriptions
 
     type = ok;
@@ -1434,10 +1539,11 @@ QmlBindingCompiler::Result
 QmlBindingCompiler::fetch(const QMetaObject *mo, int reg, int idx, const QStringList &subName)
 {
     QMetaProperty prop = mo->property(idx);
-    if (subscription(subName) && prop.hasNotifySignal() && prop.notifySignalIndex() != -1) {
+    Result rv;
+    if (subscription(subName, &rv) && prop.hasNotifySignal() && prop.notifySignalIndex() != -1) {
         Instr sub;
         sub.type = Instr::Subscribe;
-        sub.subscribe.offset = subscriptionSet.count() - 1;
+        sub.subscribe.offset = subscriptionIndex(subName);
         sub.subscribe.reg = reg;
         sub.subscribe.index = prop.notifySignalIndex();
         bytecode << sub;
@@ -1450,7 +1556,6 @@ QmlBindingCompiler::fetch(const QMetaObject *mo, int reg, int idx, const QString
     instr.fetch.output = reg;
     bytecode << instr;
 
-    Result rv;
     rv.type = prop.userType();
     rv.metaObject = QmlMetaType::metaObjectForType(rv.type);
     rv.reg = reg;
@@ -1503,9 +1608,10 @@ int QmlBindingCompiler::registerString(const QString &string)
     return strings - 1;
 }
 
-bool QmlBindingCompiler::subscription(const QStringList &sub)
+bool QmlBindingCompiler::subscription(const QStringList &sub, Result *result)
 {
     QString str = sub.join(QLatin1String("."));
+    result->subscriptionSet.insert(str);
 
     if (subscriptionSet.contains(str)) {
         return false;
@@ -1515,5 +1621,32 @@ bool QmlBindingCompiler::subscription(const QStringList &sub)
     }
 }
 
+int QmlBindingCompiler::subscriptionIndex(const QStringList &sub)
+{
+    QString str = sub.join(QLatin1String("."));
+    QHash<QString, int>::ConstIterator iter = subscriptionIds.find(str);
+    if (iter == subscriptionIds.end()) 
+        iter = subscriptionIds.insert(str, subscriptionIds.count());
+    return *iter;
+}
+
+/*
+    Returns true if lhs contains no subscriptions that aren't also in base or rhs AND
+    rhs contains no subscriptions that aren't also in base or lhs.
+*/ 
+bool QmlBindingCompiler::subscriptionNeutral(const QSet<QString> &base, 
+                                             const QSet<QString> &lhs, 
+                                             const QSet<QString> &rhs)
+{
+    QSet<QString> difflhs = lhs;
+    difflhs.subtract(rhs);
+    QSet<QString> diffrhs = rhs;
+    diffrhs.subtract(lhs);
+
+    difflhs.unite(diffrhs);
+    difflhs.subtract(base);
+
+    return difflhs.isEmpty();
+}
 QT_END_NAMESPACE
 

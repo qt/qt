@@ -2536,12 +2536,13 @@ bool QmlCompiler::completeComponentBuild()
         expr.context = binding.bindingContext.object;
         expr.property = binding.property;
         expr.expression = binding.expression;
+        expr.imports = unit->imports;
 
         bs.compile(expr);
 
         if (qmlExperimental() && (!bs.isValid() || (!bs.isSingleIdFetch() && !bs.isSingleContextProperty()))) {
 
-            QByteArray qmvdata = QmlBindingVME::compile(expr);
+            QByteArray qmvdata = QmlBindingVME::compile(expr, QmlEnginePrivate::get(engine));
             if (!qmvdata.isEmpty()) {
                 qWarning() << expr.expression.asScript();
                 QmlBindingVME::dump(qmvdata);
@@ -2566,6 +2567,7 @@ bool QmlCompiler::completeComponentBuild()
 
             // Pre-rewrite the expression
             QString expression = binding.expression.asScript();
+            qWarning() << "Unoptimized" << expression;
 
             // ### Optimize
             QmlRewrite::SharedBindingTester sharableTest;

@@ -54,6 +54,7 @@
 //
 
 #include "qmlparser_p.h"
+#include "qmlengine_p.h"
 
 #include <QtCore/QList>
 #include <QtCore/QByteArray>
@@ -88,6 +89,7 @@ public:
         QmlParser::Property *property;
         QmlParser::Variant expression;
         QHash<QString, QmlParser::Object *> ids;
+        QmlEnginePrivate::Imports imports;
     };
 
     bool compile(const Expression &);

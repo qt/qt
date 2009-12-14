@@ -59,7 +59,6 @@
 #include "qmlcompositetypemanager_p.h"
 #include "qpodvector_p.h"
 #include "qml.h"
-#include "qmlbasicscript_p.h"
 #include "qmlvaluetype_p.h"
 #include "qmlcontext.h"
 #include "qmlexpression.h"
@@ -86,7 +85,6 @@ class QmlContext;
 class QmlEngine;
 class QmlContextPrivate;
 class QmlExpression;
-class QmlBasicScriptNodeCache;
 class QmlContextScriptClass;
 class QmlObjectScriptClass;
 class QmlTypeNameScriptClass;

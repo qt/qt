@@ -80,7 +80,7 @@ public:
         QScriptDeclarativeClass::PersistentIdentifier *identifiers;
     };
 
-    static QByteArray compile(const QmlBasicScript::Expression &);
+    static QByteArray compile(const QmlBasicScript::Expression &, QmlEnginePrivate *);
     static void run(const char *program, 
                     Config *config, QmlContextPrivate *context, 
                     QObject **scopes, QObject **outputs);
