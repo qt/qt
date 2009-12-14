@@ -64,9 +64,12 @@
 #include "qmlscriptstring.h"
 #include "qmlglobal_p.h"
 #include "qmlscriptparser_p.h"
+#include "qmlbinding.h"
+#include "qmlbindingvme_p.h"
 
 #include <qfxperf_p_p.h>
 
+#include <QCoreApplication>
 #include <QColor>
 #include <QDebug>
 #include <QPointF>
@@ -74,12 +77,12 @@
 #include <QRectF>
 #include <QAtomicInt>
 #include <QtCore/qdebug.h>
-#include <QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
 DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATISTICS_DUMP);
+DEFINE_BOOL_CONFIG_OPTION(qmlExperimental, QML_EXPERIMENTAL);
 
 using namespace QmlParser;
 
@@ -2417,11 +2420,27 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     Q_ASSERT(compileState.bindings.contains(binding));
 
     const BindingReference &ref = compileState.bindings.value(binding);
+    if (ref.dataType == BindingReference::Experimental) {
+        QmlInstruction store;
+        store.type = QmlInstruction::StoreCompiledBinding;
+        store.assignBinding.value = output->indexForByteArray(ref.compiledData);
+        store.assignBinding.context = ref.bindingContext.stack;
+        store.assignBinding.owner = ref.bindingContext.owner;
+        if (valueTypeProperty) 
+            store.assignBinding.property = (valueTypeProperty->index & 0xFFFF) |
+                                           ((valueTypeProperty->type & 0xFF)) << 16 |
+                                           ((prop->index & 0xFF) << 24);
+        else 
+            store.assignBinding.property = prop->index;
+        store.line = binding->location.start.line;
+        output->bytecode << store;
+        return;
+    }
 
     QmlInstruction store;
 
     QmlBasicScript bs;
-    if (ref.isBasicScript) 
+    if (ref.dataType == BindingReference::BasicScript) 
         bs.load(ref.compiledData.constData() + sizeof(quint32));
 
     if (bs.isSingleIdFetch()) {
@@ -2519,16 +2538,31 @@ bool QmlCompiler::completeComponentBuild()
         expr.expression = binding.expression;
 
         bs.compile(expr);
+
+        if (qmlExperimental() && (!bs.isValid() || (!bs.isSingleIdFetch() && !bs.isSingleContextProperty()))) {
+
+            QByteArray qmvdata = QmlBindingVME::compile(expr);
+            if (!qmvdata.isEmpty()) {
+                qWarning() << expr.expression.asScript();
+                QmlBindingVME::dump(qmvdata);
+                binding.dataType = BindingReference::Experimental;
+                binding.compiledData = qmvdata;
+                componentStat.optimizedBindings++;
+                continue;
+            }
+        }
+
         quint32 type;
         if (bs.isValid()) {
             binding.compiledData =
                 QByteArray(bs.compileData(), bs.compileDataSize());
             type = QmlExpressionPrivate::BasicScriptEngineData;
-            binding.isBasicScript = true;
+            binding.dataType = BindingReference::BasicScript;
 
             componentStat.optimizedBindings++;
         } else {
             type = QmlExpressionPrivate::PreTransformedQtScriptData;
+            binding.dataType = BindingReference::QtScript;
 
             // Pre-rewrite the expression
             QString expression = binding.expression.asScript();
@@ -2557,7 +2591,6 @@ bool QmlCompiler::completeComponentBuild()
                 QByteArray((const char *)&length, sizeof(quint32)) +
                 QByteArray((const char *)expression.constData(), 
                            expression.length() * sizeof(QChar));
-            binding.isBasicScript = false;
 
             componentStat.scriptBindings++;
         }

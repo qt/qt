@@ -269,7 +269,10 @@ private:
         QmlParser::Variant expression;
         QmlParser::Property *property;
         QmlParser::Value *value;
-        bool isBasicScript;
+
+        enum DataType { QtScript, BasicScript, Experimental };
+        DataType dataType;
+
         QByteArray compiledData;
         BindingContext bindingContext;
     };

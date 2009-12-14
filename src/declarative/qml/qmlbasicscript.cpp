@@ -121,6 +121,16 @@ public:
     }
 };
 
+// anchors.left: (nop convert)(qobject)parent.(anchorline)right
+
+/*
+    Property chains: a.b.c.d
+    if else value selection statements: if(a) b else if(c) d else e
+    trinary selection: a?b:c
+    addition: a + b
+    negation: a - a
+    equality: ==
+*/
 static QVariant fetch_value(QObject *o, int idx, int type)
 {
     if (!o)

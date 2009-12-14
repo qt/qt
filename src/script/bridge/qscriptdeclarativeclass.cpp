@@ -36,6 +36,7 @@
 QT_BEGIN_NAMESPACE
 
 QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier()
+: identifier(0)
 {
     new (&d) JSC::Identifier();
 }
