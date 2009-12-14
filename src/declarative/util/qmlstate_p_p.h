@@ -116,16 +116,15 @@ public:
         }
     };
 
-    typedef QList<OperationGuard> GuardedOpList;
-    class OperationList : public GuardedOpList, public QmlList<QmlStateOperation*>
+    class OperationList : public QList<OperationGuard>, public QmlList<QmlStateOperation*>
     {
     public:
-        virtual void append(QmlStateOperation* v) { GuardedOpList::append(OperationGuard(v, this)); }
-        virtual void insert(int i, QmlStateOperation* v) { GuardedOpList::insert(i, OperationGuard(v, this)); }
-        virtual void clear() { GuardedOpList::clear(); }
-        virtual QmlStateOperation* at(int i) const { return GuardedOpList::at(i); }
-        virtual void removeAt(int i) { GuardedOpList::removeAt(i); }
-        virtual int count() const { return GuardedOpList::count(); }
+        virtual void append(QmlStateOperation* v) { QList<OperationGuard>::append(OperationGuard(v, this)); }
+        virtual void insert(int i, QmlStateOperation* v) { QList<OperationGuard>::insert(i, OperationGuard(v, this)); }
+        virtual void clear() { QList<OperationGuard>::clear(); }
+        virtual QmlStateOperation* at(int i) const { return QList<OperationGuard>::at(i); }
+        virtual void removeAt(int i) { QList<OperationGuard>::removeAt(i); }
+        virtual int count() const { return QList<OperationGuard>::count(); }
     };
     OperationList operations;
 
