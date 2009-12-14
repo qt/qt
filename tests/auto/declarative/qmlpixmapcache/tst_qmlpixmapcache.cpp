@@ -122,8 +122,8 @@ void tst_qmlpixmapcache::single()
     QFETCH(bool, neterror);
 
     if (neterror) {
-        QString expected = "Network error loading  QUrl( \""
-                +target.toString()+"\" )  \"Error downloading "
+        QString expected = "Network error loading \""
+                +target.toString()+"\" \"Error downloading "
                 +target.toString()+" - server replied: Not Found\" ";
         QTest::ignoreMessage(QtWarningMsg, expected.toLatin1());
     } else if (!exists) {
@@ -133,15 +133,18 @@ void tst_qmlpixmapcache::single()
 
     QPixmap pixmap;
     QVERIFY(pixmap.width() <= 0); // Check Qt assumption
-    QNetworkReply *reply= QmlPixmapCache::get(&engine, target, &pixmap);
+    QmlPixmapReply::Status status = QmlPixmapCache::get(target, &pixmap);
 
     if (incache) {
-        QVERIFY(!reply);
-        if (exists)
+        if (exists) {
+            QVERIFY(status == QmlPixmapReply::Ready);
             QVERIFY(pixmap.width() > 0);
-        else
+        } else {
+            QVERIFY(status == QmlPixmapReply::Error);
             QVERIFY(pixmap.width() <= 0);
+        }
     } else {
+        QmlPixmapReply *reply = QmlPixmapCache::request(&engine, target);
         QVERIFY(reply);
         QVERIFY(pixmap.width() <= 0);
 
@@ -151,10 +154,10 @@ void tst_qmlpixmapcache::single()
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(getter.gotslot);
         if (exists) {
-            QVERIFY(QmlPixmapCache::find(target, &pixmap));
+            QVERIFY(QmlPixmapCache::get(target, &pixmap) == QmlPixmapReply::Ready);
             QVERIFY(pixmap.width() > 0);
         } else {
-            QVERIFY(!QmlPixmapCache::find(target, &pixmap));
+            QVERIFY(QmlPixmapCache::get(target, &pixmap) == QmlPixmapReply::Error);
             QVERIFY(pixmap.width() <= 0);
         }
     }
@@ -225,12 +228,15 @@ void tst_qmlpixmapcache::parallel()
     QList<QUrl> targets;
     targets << target1 << target2;
 
-    QList<QNetworkReply*> replies;
+    QList<QmlPixmapReply*> replies;
     QList<Slotter*> getters;
     for (int i=0; i<targets.count(); ++i) {
         QUrl target = targets.at(i);
         QPixmap pixmap;
-        QNetworkReply *reply = QmlPixmapCache::get(&engine, target, &pixmap);
+        QmlPixmapReply::Status status = QmlPixmapCache::get(target, &pixmap);
+        QmlPixmapReply *reply = 0;
+        if (status != QmlPixmapReply::Error && status != QmlPixmapReply::Ready)
+            reply = QmlPixmapCache::request(&engine, target);
         replies.append(reply);
         if (!reply) {
             QVERIFY(pixmap.width() > 0);
@@ -246,7 +252,7 @@ void tst_qmlpixmapcache::parallel()
     QCOMPARE(QmlPixmapCache::pendingRequests(), requests);
 
     if (cancel >= 0) {
-        QmlPixmapCache::cancelGet(targets.at(cancel), getters[cancel]);
+        QmlPixmapCache::cancel(targets.at(cancel), getters[cancel]);
         slotters--;
     }
 
@@ -256,14 +262,14 @@ void tst_qmlpixmapcache::parallel()
     }
 
     for (int i=0; i<targets.count(); ++i) {
-        QNetworkReply *reply = replies[i];
+        QmlPixmapReply *reply = replies[i];
         if (reply) {
             if (i == cancel) {
                 QVERIFY(!getters[i]->gotslot);
             } else {
                 QVERIFY(getters[i]->gotslot);
                 QPixmap pixmap;
-                QVERIFY(QmlPixmapCache::find(targets[i], &pixmap));
+                QVERIFY(QmlPixmapCache::get(targets[i], &pixmap) == QmlPixmapReply::Ready);
                 QVERIFY(pixmap.width() > 0);
             }
             delete getters[i];

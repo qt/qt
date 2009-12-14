@@ -262,6 +262,8 @@ void QmlPixmapReply::networkRequestDone()
     if (d->reply->error()) {
         d->pixmap = QPixmap();
         d->status = Error;
+        QPixmapCache::insert(d->urlKey, d->pixmap);
+        qWarning() << "Network error loading" << d->urlKey << d->reply->errorString();
         emit finished();
     } else {
         qmlImageReader()->read(this);
@@ -278,11 +280,11 @@ bool QmlPixmapReply::event(QEvent *event)
             d->status = de->error ? Error : Ready;
             if (d->status == Ready) {
                 d->pixmap = QPixmap::fromImage(de->image);
-                QPixmapCache::insert(d->urlKey, d->pixmap);
                 d->image = QImage();
             } else {
                 qWarning() << "Error decoding" << d->urlKey;
             }
+            QPixmapCache::insert(d->urlKey, d->pixmap);
             emit finished();
         }
         return true;
