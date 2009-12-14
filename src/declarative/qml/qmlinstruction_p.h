@@ -128,6 +128,7 @@ public:
         AssignCustomType,         /* assignCustomType */
 
         StoreBinding,             /* assignBinding */
+        StoreCompiledBinding,     /* assignBinding */
         StoreIdOptBinding,        /* assignIdOptBinding */
         StoreObjPropBinding,      /* assignObjPropBinding */
         StoreValueSource,         /* assignValueSource */
@@ -196,7 +197,7 @@ public:
             int castValue;
         } assignValueInterceptor;
         struct {
-            int property;
+            unsigned int property;
             int value;
             short context;
             short owner;

@@ -343,6 +343,7 @@ void tst_QmlPainting::drawScaleGridRoundedRect()
         rp.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, rectImage.width()-(pw+1), rectImage.height()-(pw+1)), radius, radius);
     else
         rp.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, rectImage.width()-pw, rectImage.height()-pw), radius, radius);
+    QPixmap rectPixmap = QPixmap::fromImage(rectImage);
 
     //setup surface
     QImage surface(100, 100, QImage::Format_RGB16);
@@ -351,11 +352,11 @@ void tst_QmlPainting::drawScaleGridRoundedRect()
 
     QBENCHMARK {
         const int pw = 2;
-        int offset = int(radius+1.5+pw);
+        //int offset = int(radius+1.5+pw);
         int width = 80;
         int height = 80;
 
-        int w = width+pw;
+        /*int w = width+pw;
         int h = height+pw;
         int xOffset = offset;
         int xSide = xOffset * 2;
@@ -372,41 +373,17 @@ void tst_QmlPainting::drawScaleGridRoundedRect()
             yMiddles = false;
             yOffset = h/2 + 1;
             ySide = yOffset * 2;
-        }
+        }*/
 
-        // Upper left
-        p.drawImage(QRect(-pw/2, -pw/2, xOffset, yOffset), rectImage, QRect(0, 0, xOffset, yOffset));
+        int xOffset = (rectPixmap.width()-1)/2;
+        int yOffset = (rectPixmap.height()-1)/2;
+        Q_ASSERT(rectPixmap.width() == 2*xOffset + 1);
+        Q_ASSERT(rectPixmap.height() == 2*yOffset + 1);
 
-        // Upper middle
-        if (xMiddles)
-            p.drawImage(QRect(xOffset-pw/2, -pw/2, width - xSide + pw, yOffset), rectImage,
-                                  QRect(rectImage.width()/2, 0, 1, yOffset));
-        // Upper right
-        p.drawImage(QPoint(width-xOffset+pw/2, -pw/2), rectImage,
-                              QRect(rectImage.width()-xOffset, 0, xOffset, yOffset));
-        // Middle left
-        if (yMiddles)
-            p.drawImage(QRect(-pw/2, yOffset-pw/2, xOffset, height - ySide + pw), rectImage,
-                                  QRect(0, rectImage.height()/2, xOffset, 1));
-
-        // Middle
-        if (xMiddles && yMiddles)
-            p.drawImage(QRect(xOffset-pw/2, yOffset-pw/2, width - xSide + pw, height - ySide + pw), rectImage,
-                                QRect(rectImage.width()/2, rectImage.height()/2, 1, 1));
-        // Middle right
-        if (yMiddles)
-            p.drawImage(QRect(width-xOffset+pw/2, yOffset-pw/2, xOffset, height - ySide + pw), rectImage,
-                                QRect(rectImage.width()-xOffset, rectImage.height()/2, xOffset, 1));
-        // Lower left
-        p.drawImage(QPoint(-pw/2, height - yOffset + pw/2), rectImage, QRect(0, rectImage.height() - yOffset, xOffset, yOffset));
-
-        // Lower Middle
-        if (xMiddles)
-            p.drawImage(QRect(xOffset-pw/2, height - yOffset +pw/2, width - xSide + pw, yOffset), rectImage,
-                                QRect(rectImage.width()/2, rectImage.height() - yOffset, 1, yOffset));
-        // Lower Right
-        p.drawImage(QPoint(width-xOffset+pw/2, height - yOffset+pw/2), rectImage,
-                        QRect(rectImage.width()-xOffset, rectImage.height() - yOffset, xOffset, yOffset));
+        QMargins margins(xOffset, yOffset, xOffset, yOffset);
+        QTileRules rules(Qt::StretchTile, Qt::StretchTile);
+        //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
+        qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width+pw, height+pw), margins, rectPixmap, rectPixmap.rect(), margins, rules);
     }
     surface.save("rsg.png");
 }
@@ -442,6 +419,8 @@ void tst_QmlPainting::drawScaledScaleGridRoundedRect()
     else
         rp.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, rectImage.width()-pw, rectImage.height()-pw), radius, radius);
 
+    QPixmap rectPixmap = QPixmap::fromImage(rectImage);
+
     //setup surface
     QImage surface(400, 400, QImage::Format_RGB16);
     surface.fill(QColor(255,255,255).rgb());
@@ -450,11 +429,11 @@ void tst_QmlPainting::drawScaledScaleGridRoundedRect()
 
     QBENCHMARK {
         const int pw = 2;
-        int offset = int(radius+1.5+pw);
+        //int offset = int(radius+1.5+pw);
         int width = 80;
         int height = 80;
 
-        int w = width+pw;
+        /*int w = width+pw;
         int h = height+pw;
         int xOffset = offset;
         int xSide = xOffset * 2;
@@ -471,41 +450,17 @@ void tst_QmlPainting::drawScaledScaleGridRoundedRect()
             yMiddles = false;
             yOffset = h/2 + 1;
             ySide = yOffset * 2;
-        }
+        }*/
 
-        // Upper left
-        p.drawImage(QRect(10-pw/2, 10-pw/2, xOffset, yOffset), rectImage, QRect(0, 0, xOffset, yOffset));
+        int xOffset = (rectPixmap.width()-1)/2;
+        int yOffset = (rectPixmap.height()-1)/2;
+        Q_ASSERT(rectPixmap.width() == 2*xOffset + 1);
+        Q_ASSERT(rectPixmap.height() == 2*yOffset + 1);
 
-        // Upper middle
-        if (xMiddles)
-            p.drawImage(QRect(10+xOffset-pw/2, 10+-pw/2, width - xSide + pw, yOffset), rectImage,
-                                  QRect(rectImage.width()/2, 0, 1, yOffset));
-        // Upper right
-        p.drawImage(QPoint(10+width-xOffset+pw/2, 10+-pw/2), rectImage,
-                              QRect(rectImage.width()-xOffset, 0, xOffset, yOffset));
-        // Middle left
-        if (yMiddles)
-            p.drawImage(QRect(10+-pw/2, 10+yOffset-pw/2, xOffset, height - ySide + pw), rectImage,
-                                  QRect(0, rectImage.height()/2, xOffset, 1));
-
-        // Middle
-        if (xMiddles && yMiddles)
-            p.drawImage(QRect(10+xOffset-pw/2, 10+yOffset-pw/2, width - xSide + pw, height - ySide + pw), rectImage,
-                                QRect(rectImage.width()/2, rectImage.height()/2, 1, 1));
-        // Middle right
-        if (yMiddles)
-            p.drawImage(QRect(10+width-xOffset+pw/2, 10+yOffset-pw/2, xOffset, height - ySide + pw), rectImage,
-                                QRect(rectImage.width()-xOffset, rectImage.height()/2, xOffset, 1));
-        // Lower left
-        p.drawImage(QPoint(10+-pw/2, 10+height - yOffset + pw/2), rectImage, QRect(0, rectImage.height() - yOffset, xOffset, yOffset));
-
-        // Lower Middle
-        if (xMiddles)
-            p.drawImage(QRect(10+xOffset-pw/2, 10+height - yOffset +pw/2, width - xSide + pw, yOffset), rectImage,
-                                QRect(rectImage.width()/2, rectImage.height() - yOffset, 1, yOffset));
-        // Lower Right
-        p.drawImage(QPoint(10+width-xOffset+pw/2, 10+height - yOffset+pw/2), rectImage,
-                        QRect(rectImage.width()-xOffset, rectImage.height() - yOffset, xOffset, yOffset));
+        QMargins margins(xOffset, yOffset, xOffset, yOffset);
+        QTileRules rules(Qt::StretchTile, Qt::StretchTile);
+        //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
+        qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width+pw, height+pw), margins, rectPixmap, rectPixmap.rect(), margins, rules);
     }
     surface.save("ssg.png");
 }
@@ -542,6 +497,8 @@ void tst_QmlPainting::drawTransformedScaleGridRoundedRect()
     else
         rp.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, rectImage.width()-pw, rectImage.height()-pw), radius, radius);
 
+    QPixmap rectPixmap = QPixmap::fromImage(rectImage);
+
     //setup surface
     QImage surface(400, 400, QImage::Format_RGB16);
     surface.fill(QColor(255,255,255).rgb());
@@ -550,11 +507,11 @@ void tst_QmlPainting::drawTransformedScaleGridRoundedRect()
     QBENCHMARK {
         p.setWorldTransform(transform);
         const int pw = 2;
-        int offset = int(radius+1.5+pw);
+        //int offset = int(radius+1.5+pw);
         int width = 80;
         int height = 80;
 
-        int w = width+pw;
+        /*int w = width+pw;
         int h = height+pw;
         int xOffset = offset;
         int xSide = xOffset * 2;
@@ -571,41 +528,17 @@ void tst_QmlPainting::drawTransformedScaleGridRoundedRect()
             yMiddles = false;
             yOffset = h/2 + 1;
             ySide = yOffset * 2;
-        }
+        }*/
 
-        // Upper left
-        p.drawImage(QRect(100-pw/2, 100-pw/2, xOffset, yOffset), rectImage, QRect(0, 0, xOffset, yOffset));
+        int xOffset = (rectPixmap.width()-1)/2;
+        int yOffset = (rectPixmap.height()-1)/2;
+        Q_ASSERT(rectPixmap.width() == 2*xOffset + 1);
+        Q_ASSERT(rectPixmap.height() == 2*yOffset + 1);
 
-        // Upper middle
-        if (xMiddles)
-            p.drawImage(QRect(100+xOffset-pw/2, 100+-pw/2, width - xSide + pw, yOffset), rectImage,
-                                  QRect(rectImage.width()/2, 0, 1, yOffset));
-        // Upper right
-        p.drawImage(QPoint(100+width-xOffset+pw/2, 100+-pw/2), rectImage,
-                              QRect(rectImage.width()-xOffset, 0, xOffset, yOffset));
-        // Middle left
-        if (yMiddles)
-            p.drawImage(QRect(100+-pw/2, 100+yOffset-pw/2, xOffset, height - ySide + pw), rectImage,
-                                  QRect(0, rectImage.height()/2, xOffset, 1));
-
-        // Middle
-        if (xMiddles && yMiddles)
-            p.drawImage(QRect(100+xOffset-pw/2, 100+yOffset-pw/2, width - xSide + pw, height - ySide + pw), rectImage,
-                                QRect(rectImage.width()/2, rectImage.height()/2, 1, 1));
-        // Middle right
-        if (yMiddles)
-            p.drawImage(QRect(100+width-xOffset+pw/2, 100+yOffset-pw/2, xOffset, height - ySide + pw), rectImage,
-                                QRect(rectImage.width()-xOffset, rectImage.height()/2, xOffset, 1));
-        // Lower left
-        p.drawImage(QPoint(100+-pw/2, 100+height - yOffset + pw/2), rectImage, QRect(0, rectImage.height() - yOffset, xOffset, yOffset));
-
-        // Lower Middle
-        if (xMiddles)
-            p.drawImage(QRect(100+xOffset-pw/2, 100+height - yOffset +pw/2, width - xSide + pw, yOffset), rectImage,
-                                QRect(rectImage.width()/2, rectImage.height() - yOffset, 1, yOffset));
-        // Lower Right
-        p.drawImage(QPoint(100+width-xOffset+pw/2, 100+height - yOffset+pw/2), rectImage,
-                        QRect(rectImage.width()-xOffset, rectImage.height() - yOffset, xOffset, yOffset));
+        QMargins margins(xOffset, yOffset, xOffset, yOffset);
+        QTileRules rules(Qt::StretchTile, Qt::StretchTile);
+        //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
+        qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width+pw, height+pw), margins, rectPixmap, rectPixmap.rect(), margins, rules);
     }
     surface.save("tsg.png");
 }

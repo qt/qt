@@ -55,10 +55,44 @@
 
 #include "qmlexpression_p.h"
 #include "qmlbinding.h"
+#include "qmlbasicscript_p.h"
+#include "qmlbindingvme_p.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
+
+class QmlBinding_Basic : public QObject,
+                         public QmlAbstractExpression,
+                         public QmlAbstractBinding
+{
+    Q_OBJECT
+public:
+    QmlBinding_Basic(QObject *target, int property,
+                     const char *data, QmlRefCount *ref,
+                     QObject *scope, QmlContext *context);
+    virtual ~QmlBinding_Basic();
+
+    // Inherited from QmlAbstractBinding
+    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
+    virtual int propertyIndex();
+    virtual void update(QmlMetaProperty::WriteFlags flags);
+
+private slots:
+    void reeval();
+
+private:
+    bool m_enabled:1;
+    bool m_updating:1;
+    QObject *m_scope;
+    QObject *m_target;
+    int m_property;
+    const char *m_data;
+    QmlBindingVME::Config m_config;
+    QGuard<QObject> m_scope2;
+
+    static int reevalIndex;
+};
 
 class QmlBinding_Id : public QmlAbstractExpression, 
                       public QmlAbstractBinding

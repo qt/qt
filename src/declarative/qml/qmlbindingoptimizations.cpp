@@ -42,8 +42,95 @@
 #include "qmlbindingoptimizations_p.h"
 
 #include "qmlcontext_p.h"
+#include <QtDeclarative/qmlinfo.h>
+#include "qmlbindingvme_p.h"
 
 QT_BEGIN_NAMESPACE
+
+int QmlBinding_Basic::reevalIndex = -1;
+
+QmlBinding_Basic::QmlBinding_Basic(QObject *target, int property,
+                                   const char *data, QmlRefCount *ref,
+                                   QObject *scope, QmlContext *context)
+: m_enabled(false), m_updating(false), m_scope(scope), m_target(target), 
+  m_property(property), m_data(data)
+{
+    if (reevalIndex == -1) 
+        reevalIndex = QmlBinding_Basic::staticMetaObject.indexOfSlot("reeval()");
+
+    m_config.target = this;
+    m_config.targetSlot = reevalIndex;
+    m_scope2 = m_scope;
+
+    QmlAbstractExpression::setContext(context);
+}
+
+QmlBinding_Basic::~QmlBinding_Basic()
+{
+}
+
+void QmlBinding_Basic::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)
+{
+    if (e) {
+        addToObject(m_target);
+        update(flags);
+    } else {
+        removeFromObject();
+    }
+
+    QmlAbstractBinding::setEnabled(e, flags);
+
+    if (m_enabled != e) {
+        m_enabled = e;
+
+        if (e) update(flags);
+    }
+}
+
+int QmlBinding_Basic::propertyIndex()
+{
+    return m_property & 0xFFFF;
+}
+
+void QmlBinding_Basic::update(QmlMetaProperty::WriteFlags flags)
+{
+    if (!m_enabled)
+        return;
+
+    if (m_updating) {
+        qmlInfo(m_target) << tr("Binding loop detected");
+        return;
+    }
+
+    QmlContext *context = QmlAbstractExpression::context();
+    if (!context)
+        return;
+    QmlContextPrivate *cp = QmlContextPrivate::get(context);
+
+    m_updating = true;
+
+    if (m_property & 0xFFFF0000) {
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(cp->engine);
+
+        QmlValueType *vt = ep->valueTypes[(m_property >> 16) & 0xFF];
+        Q_ASSERT(vt);
+        vt->read(m_target, m_property & 0xFFFF);
+
+        QObject *target = vt;
+        QmlBindingVME::run(m_data, &m_config, cp, &m_scope, &target);
+
+        vt->write(m_target, m_property & 0xFFFF, flags);
+    } else {
+        QmlBindingVME::run(m_data, &m_config, cp, &m_scope, &m_target);
+    }
+
+    m_updating = false;
+}
+
+void QmlBinding_Basic::reeval()
+{
+    update(QmlMetaProperty::DontRemoveBinding);
+}
 
 /*
     The QmlBinding_Id optimization handles expressions of the type:

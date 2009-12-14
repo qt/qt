@@ -130,7 +130,9 @@ public:
     static QmlContextPrivate *get(QmlContext *context) {
         return static_cast<QmlContextPrivate *>(QObjectPrivate::get(context));
     }
-
+    static QmlContext *get(QmlContextPrivate *context) {
+        return static_cast<QmlContext *>(context->q_func());
+    }
     // Only used for debugging
     QList<QPointer<QObject> > instances;
 };
