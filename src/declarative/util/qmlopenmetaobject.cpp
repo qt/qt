@@ -76,6 +76,8 @@ QmlOpenMetaObjectType::~QmlOpenMetaObjectType()
 {
     if (d->mem)
         qFree(d->mem);
+    if (d->cache)
+        d->cache->release();
     delete d;
 }
 
