@@ -44,81 +44,164 @@
 #include "qfxperf_p_p.h"
 
 #include <qmlengine.h>
+#include <private/qmlglobal_p.h>
 
+#include <QCoreApplication>
 #include <QImageReader>
 #include <QHash>
 #include <QNetworkReply>
 #include <QPixmapCache>
 #include <QFile>
+#include <QThread>
+#include <QMutex>
+#include <QWaitCondition>
 #include <QtCore/qdebug.h>
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QSharedNetworkReply;
-typedef QHash<QString, QSharedNetworkReply *> QmlGraphicsSharedNetworkReplyHash;
-static QmlGraphicsSharedNetworkReplyHash qfxActiveNetworkReplies;
-
-class QSharedNetworkReply
+class QmlImageReader : public QThread
 {
+    Q_OBJECT
 public:
-    QSharedNetworkReply(QNetworkReply *r) : reply(r), refCount(1) {}
-    ~QSharedNetworkReply()
-    {
-        reply->deleteLater();
-    }
-    QNetworkReply *reply;
-    QPixmap pixmap; // ensure reference to pixmap to QPixmapCache does not discard
+    QmlImageReader(QObject *parent=0);
+    ~QmlImageReader();
 
-    int refCount;
-    void addRef()
-    {
-        ++refCount;
-    }
-    void release()
-    {
-        Q_ASSERT(refCount > 0);
-        --refCount;
-        if (refCount == 0) {
-            QString key = reply->url().toString();
-            qfxActiveNetworkReplies.remove(key);
-            delete this;
-        }
-    }
+    void read(QmlPixmapReply *rep);
+    void cancel(QmlPixmapReply *rep);
+
+protected:
+    void run();
+
+private:
+    struct Job {
+        Job() : reply(0), error(false) {}
+        QmlPixmapReply *reply;
+        QImage img;
+        bool error;
+    };
+
+    void loadImage(Job &job);
+
+    QList<Job> jobs;
+    Job runningJob;
+    QMutex mutex;
+    QWaitCondition haveJob;
+    bool quit;
 };
 
+class QmlImageDecodeEvent : public QCustomEvent
+{
+public:
+    QmlImageDecodeEvent(bool err, QImage &img) : QCustomEvent(QEvent::User), error(err), image(img) {}
+
+    bool error;
+    QImage image;
+};
+
+Q_GLOBAL_STATIC(QmlImageReader, qmlImageReader)
+
+
+QmlImageReader::QmlImageReader(QObject *parent) : QThread(parent), quit(false)
+{
+    start(QThread::LowPriority);
+}
+
+QmlImageReader::~QmlImageReader()
+{
+    quit = true;
+    haveJob.wakeOne();
+}
+
+void QmlImageReader::read(QmlPixmapReply *reply)
+{
+    mutex.lock();
+    Job job;
+    job.reply = reply;
+    jobs.append(job);
+    haveJob.wakeOne();
+    mutex.unlock();
+}
+
+void QmlImageReader::cancel(QmlPixmapReply *reply)
+{
+    mutex.lock();
+    if (runningJob.reply != reply) {
+        QList<Job>::iterator it = jobs.begin();
+        while (it != jobs.end()) {
+            if ((*it).reply == reply) {
+                jobs.erase(it);
+                break;
+            }
+            ++it;
+        }
+    }
+    mutex.unlock();
+}
+
+void QmlImageReader::loadImage(Job &job)
+{
+    QImageReader imgio(job.reply->device());
+    if (imgio.read(&job.img)) {
+        job.error = false;
+    } else {
+        job.error = true;
+        qWarning() << imgio.errorString();
+    }
+}
+
+void QmlImageReader::run()
+{
+    while (1) {
+        mutex.lock();
+        if (!jobs.count())
+            haveJob.wait(&mutex);
+        if (quit)
+            break;
+        runningJob = jobs.takeFirst();
+        runningJob.reply->addRef();
+        mutex.unlock();
+        loadImage(runningJob);
+        mutex.lock();
+        QCoreApplication::postEvent(runningJob.reply, new QmlImageDecodeEvent(runningJob.error, runningJob.img));
+        runningJob.reply = 0;
+        mutex.unlock();
+    }
+}
+
 static bool readImage(QIODevice *dev, QPixmap *pixmap)
-    {
-        QImageReader imgio(dev);
+{
+    QImageReader imgio(dev);
 
 //#define QT_TEST_SCALED_SIZE
 #ifdef QT_TEST_SCALED_SIZE
-        /*
-        Some mechanism is needed for loading images at a limited size, especially
-        for remote images. Loading only thumbnails of remote progressive JPEG
-        images can be efficient. (Qt jpeg handler does not do so currently)
-        */
+    /*
+    Some mechanism is needed for loading images at a limited size, especially
+    for remote images. Loading only thumbnails of remote progressive JPEG
+    images can be efficient. (Qt jpeg handler does not do so currently)
+    */
 
-        QSize limit(60,60);
-        QSize sz = imgio.size();
-        if (sz.width() > limit.width() || sz.height() > limit.height()) {
-            sz.scale(limit,Qt::KeepAspectRatio);
-            imgio.setScaledSize(sz);
-        }
-#endif
-
-        QImage img;
-        if (imgio.read(&img)) {
-#ifdef QT_TEST_SCALED_SIZE
-            if (!sz.isValid())
-                img = img.scaled(limit,Qt::KeepAspectRatio);
-#endif
-            *pixmap = QPixmap::fromImage(img);
-            return true;
-        } else {
-            qWarning() << imgio.errorString();
-            return false;
-        }
+    QSize limit(60,60);
+    QSize sz = imgio.size();
+    if (sz.width() > limit.width() || sz.height() > limit.height()) {
+        sz.scale(limit,Qt::KeepAspectRatio);
+        imgio.setScaledSize(sz);
     }
+#endif
+
+    QImage img;
+    if (imgio.read(&img)) {
+#ifdef QT_TEST_SCALED_SIZE
+        if (!sz.isValid())
+            img = img.scaled(limit,Qt::KeepAspectRatio);
+#endif
+        *pixmap = QPixmap::fromImage(img);
+        return true;
+    } else {
+        qWarning() << imgio.errorString();
+        return false;
+    }
+}
 
 /*!
     \internal
@@ -136,155 +219,208 @@ static QString toLocalFileOrQrc(const QUrl& url)
     return r;
 }
 
+typedef QHash<QString, QmlPixmapReply *> QmlPixmapReplyHash;
+static QmlPixmapReplyHash qmlActivePixmapReplies;
+
+class QmlPixmapReplyPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QmlPixmapReply)
+
+public:
+    QmlPixmapReplyPrivate(const QString &url, QNetworkReply *r)
+        : QObjectPrivate(), refCount(1), urlKey(url), reply(r), status(QmlPixmapReply::Loading) {
+    }
+
+    int refCount;
+    QString urlKey;
+    QNetworkReply *reply;
+    QPixmap pixmap; // ensure reference to pixmap so QPixmapCache does not discard
+    QImage image;
+    QmlPixmapReply::Status status;
+};
+
+
+QmlPixmapReply::QmlPixmapReply(const QString &key, QNetworkReply *reply)
+  : QObject(*new QmlPixmapReplyPrivate(key, reply), 0)
+{
+    Q_D(QmlPixmapReply);
+    connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)), this, SIGNAL(downloadProgress(qint64,qint64)));
+    connect(d->reply, SIGNAL(finished()), this, SLOT(networkRequestDone()));
+}
+
+QmlPixmapReply::~QmlPixmapReply()
+{
+    Q_D(QmlPixmapReply);
+    if (d->status == Decoding)
+        qmlImageReader()->cancel(this);
+    delete d->reply;
+}
+
+void QmlPixmapReply::networkRequestDone()
+{
+    Q_D(QmlPixmapReply);
+    if (d->reply->error()) {
+        d->pixmap = QPixmap();
+        d->status = Error;
+        emit finished();
+    } else {
+        qmlImageReader()->read(this);
+        d->status = Decoding;
+    }
+}
+
+bool QmlPixmapReply::event(QEvent *event)
+{
+    Q_D(QmlPixmapReply);
+    if (event->type() == QEvent::User) {
+        if (!release(true)) {
+            QmlImageDecodeEvent *de = static_cast<QmlImageDecodeEvent*>(event);
+            d->status = de->error ? Error : Ready;
+            if (d->status == Ready) {
+                d->pixmap = QPixmap::fromImage(de->image);
+                QPixmapCache::insert(d->urlKey, d->pixmap);
+                d->image = QImage();
+            } else {
+                qWarning() << "Error decoding" << d->urlKey;
+            }
+            emit finished();
+        }
+        return true;
+    }
+
+    return QObject::event(event);
+}
+
+QmlPixmapReply::Status QmlPixmapReply::status() const
+{
+    Q_D(const QmlPixmapReply);
+    return d->status;
+}
+
+QIODevice *QmlPixmapReply::device()
+{
+    Q_D(QmlPixmapReply);
+    return d->reply;
+}
+
+void QmlPixmapReply::addRef()
+{
+    Q_D(QmlPixmapReply);
+    ++d->refCount;
+}
+
+bool QmlPixmapReply::release(bool defer)
+{
+    Q_D(QmlPixmapReply);
+    Q_ASSERT(d->refCount > 0);
+    --d->refCount;
+    if (d->refCount == 0) {
+        qmlActivePixmapReplies.remove(d->urlKey);
+        if (defer)
+            deleteLater();
+        else
+            delete this;
+        return true;
+    }
+
+    return false;
+}
+
 /*!
     Finds the cached pixmap corresponding to \a url.
-    A previous call to get() must have requested the URL,
-    and the QNetworkReply must have finished before calling
-    this function.
+    If the image is a network resource and has not yet
+    been retrieved and cached, request() must be called.
 
-    Returns true if the image was loaded without error.
+    Returns Ready, or Error if the image has been retrieved,
+    otherwise the current retrieval status.
 */
-bool QmlPixmapCache::find(const QUrl& url, QPixmap *pixmap)
+QmlPixmapReply::Status QmlPixmapCache::get(const QUrl& url, QPixmap *pixmap)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QmlPerfTimer<QmlPerf::PixmapLoad> perf;
-#endif
+    QmlPixmapReply::Status status = QmlPixmapReply::Unrequested;
 
-    bool ok = true;
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     QString lf = toLocalFileOrQrc(url);
     if (!lf.isEmpty()) {
+        status = QmlPixmapReply::Ready;
         if (!QPixmapCache::find(lf,pixmap)) {
             QFile f(lf);
             if (f.open(QIODevice::ReadOnly)) {
                 if (!readImage(&f, pixmap)) {
                     qWarning() << "Format error loading" << url;
                     *pixmap = QPixmap();
-                    ok = false;
-                } else {
-                    QPixmapCache::insert(lf, *pixmap);
-                    ok = !pixmap->isNull();
+                    status = QmlPixmapReply::Error;
                 }
             } else {
+                qWarning() << "Cannot open" << url;
                 *pixmap = QPixmap();
-                ok = false;
+                status = QmlPixmapReply::Error;
             }
-        } else {
-            ok = !pixmap->isNull();
+            if (status == QmlPixmapReply::Ready)
+                QPixmapCache::insert(lf, *pixmap);
         }
-        return ok;
+        return status;
     }
 #endif
 
     QString key = url.toString();
-    if (!QPixmapCache::find(key,pixmap)) {
-        QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
-        if (iter == qfxActiveNetworkReplies.end()) {
-            // API usage error
-            qWarning() << "QmlPixmapCache: URL not loaded" << url;
-            ok = false;
+    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(key);
+    if (QPixmapCache::find(key, pixmap)) {
+        if (iter != qmlActivePixmapReplies.end()) {
+            status = (*iter)->status();
+            (*iter)->release();
         } else {
-            if ((*iter)->reply->error()) {
-                qWarning() << "Network error loading" << url << (*iter)->reply->errorString();
-                *pixmap = QPixmap();
-                ok = false;
-            } else if (!readImage((*iter)->reply, pixmap)) {
-                qWarning() << "Format error loading" << url;
-                *pixmap = QPixmap();
-                ok = false;
-            } else {
-                if ((*iter)->refCount > 1)
-                    (*iter)->pixmap = *pixmap;
-            }
-            (*iter)->release();
+            status = pixmap->isNull() ? QmlPixmapReply::Error : QmlPixmapReply::Ready;
         }
-        QPixmapCache::insert(key, *pixmap);
-    } else {
-        ok = !pixmap->isNull();
-
-        // We may be the second finder. Still need to check for active replies.
-        QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
-        if (iter != qfxActiveNetworkReplies.end())
-            (*iter)->release();
+    } else if (iter != qmlActivePixmapReplies.end()) {
+        status = QmlPixmapReply::Loading;
     }
-    return ok;
+
+    return status;
 }
 
 /*!
     Starts a network request to load \a url.
 
-    Returns a QNetworkReply if the image is not immediately available, otherwise
-    returns 0.  Caller should connect to QNetworkReply::finished() to then call
-    find() when the image is available.
+    Returns a QmlPixmapReply.  Caller should connect to QmlPixmapReply::finished()
+    and call get() when the image is available.
 
-    The returned QNetworkReply will be deleted when all get() calls are
-    matched by a corresponding find() call.
-
-    If the \a ok parameter is passed and \a url is a local file,
-    its value will be set to false if the pixmap could not be loaded;
-    otherwise the pixmap was loaded and *ok will be true.
+    The returned QmlPixmapReply will be deleted when all request() calls are
+    matched by a corresponding get() call.
 */
-QNetworkReply *QmlPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap, bool *ok)
+QmlPixmapReply *QmlPixmapCache::request(QmlEngine *engine, const QUrl &url)
 {
-#ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-    QString lf = toLocalFileOrQrc(url);
-    if (!lf.isEmpty()) {
-        if (!QPixmapCache::find(lf,pixmap)) {
-            bool loaded = true;
-            QFile f(lf);
-            if (f.open(QIODevice::ReadOnly)) {
-                if (!readImage(&f, pixmap)) {
-                    qWarning() << "Format error loading" << url;
-                    *pixmap = QPixmap();
-                    loaded = false;
-                }
-            } else {
-                qWarning() << "Cannot open" << url;
-                *pixmap = QPixmap();
-                loaded = false;
-            }
-            if (loaded)
-                QPixmapCache::insert(lf, *pixmap);
-            if (ok) *ok = loaded;
-        }
-        return 0;
-    }
-#endif
-
     QString key = url.toString();
-    if (QPixmapCache::find(key,pixmap)) {
-        return 0;
-    }
-
-    QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
-    if (iter == qfxActiveNetworkReplies.end()) {
+    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(key);
+    if (iter == qmlActivePixmapReplies.end()) {
         QNetworkRequest req(url);
-        QSharedNetworkReply *item = new QSharedNetworkReply(engine->networkAccessManager()->get(req));
-        iter = qfxActiveNetworkReplies.insert(key, item);
+        QmlPixmapReply *item = new QmlPixmapReply(key, engine->networkAccessManager()->get(req));
+        iter = qmlActivePixmapReplies.insert(key, item);
     } else {
         (*iter)->addRef();
     }
 
-    return (*iter)->reply;
+    return (*iter);
 }
 
 /*!
-    Cancels a previous call to get().
+    Cancels a previous call to request().
 
     May also cancel loading (eg. if no other pending request).
 
-    Any connections from the QNetworkReply returned by get() to \a obj will be
+    Any connections from the QmlPixmapReply returned by request() to \a obj will be
     disconnected.
 */
-void QmlPixmapCache::cancelGet(const QUrl& url, QObject* obj)
+void QmlPixmapCache::cancel(const QUrl& url, QObject *obj)
 {
     QString key = url.toString();
-    QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
-    if (iter == qfxActiveNetworkReplies.end())
+    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(key);
+    if (iter == qmlActivePixmapReplies.end())
         return;
+
+    QmlPixmapReply *reply = *iter;
     if (obj)
-        QObject::disconnect((*iter)->reply, 0, obj, 0);
-    (*iter)->release();
+        QObject::disconnect(reply, 0, obj, 0);
+    reply->release();
 }
 
 /*!
@@ -293,7 +429,9 @@ void QmlPixmapCache::cancelGet(const QUrl& url, QObject* obj)
 */
 int QmlPixmapCache::pendingRequests()
 {
-    return qfxActiveNetworkReplies.count();
+    return qmlActivePixmapReplies.count();
 }
+
+#include <qmlpixmapcache.moc>
 
 QT_END_NAMESPACE

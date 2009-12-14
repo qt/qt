@@ -641,7 +641,7 @@ QmlGraphicsParticles::~QmlGraphicsParticles()
 {
     Q_D(QmlGraphicsParticles);
     if (d->pendingPixmapCache)
-        QmlPixmapCache::cancelGet(d->url, this);
+        QmlPixmapCache::cancel(d->url, this);
 }
 
 /*!
@@ -663,7 +663,7 @@ void QmlGraphicsParticles::imageLoaded()
 {
     Q_D(QmlGraphicsParticles);
     d->pendingPixmapCache = false;
-    QmlPixmapCache::find(d->url, &d->image);
+    QmlPixmapCache::get(d->url, &d->image);
     d->paintItem->updateSize();
     d->paintItem->update();
 }
@@ -676,7 +676,7 @@ void QmlGraphicsParticles::setSource(const QUrl &name)
         return;
 
     if (d->pendingPixmapCache) {
-        QmlPixmapCache::cancelGet(d->url, this);
+        QmlPixmapCache::cancel(d->url, this);
         d->pendingPixmapCache = false;
     }
     if (name.isEmpty()) {
@@ -687,8 +687,9 @@ void QmlGraphicsParticles::setSource(const QUrl &name)
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
-        QNetworkReply *reply = QmlPixmapCache::get(qmlEngine(this), d->url, &d->image);
-        if (reply) {
+        QmlPixmapReply::Status status = QmlPixmapCache::get(d->url, &d->image);
+        if (status != QmlPixmapReply::Ready && status != QmlPixmapReply::Error) {
+            QmlPixmapReply *reply = QmlPixmapCache::request(qmlEngine(this), d->url);
             connect(reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
             d->pendingPixmapCache = true;
         } else {

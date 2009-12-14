@@ -79,7 +79,7 @@ QmlGraphicsBorderImage::~QmlGraphicsBorderImage()
     if (d->sciReply)
         d->sciReply->deleteLater();
     if (d->sciPendingPixmapCache)
-        QmlPixmapCache::cancelGet(d->sciurl, this);
+        QmlPixmapCache::cancel(d->sciurl, this);
 }
 /*!
     \qmlproperty enum BorderImage::status
@@ -159,11 +159,11 @@ void QmlGraphicsBorderImage::setSource(const QUrl &url)
     }
 
     if (d->pendingPixmapCache) {
-        QmlPixmapCache::cancelGet(d->url, this);
+        QmlPixmapCache::cancel(d->url, this);
         d->pendingPixmapCache = false;
     }
     if (d->sciPendingPixmapCache) {
-        QmlPixmapCache::cancelGet(d->sciurl, this);
+        QmlPixmapCache::cancel(d->sciurl, this);
         d->sciPendingPixmapCache = false;
     }
 
@@ -200,8 +200,9 @@ void QmlGraphicsBorderImage::setSource(const QUrl &url)
                                  this, SLOT(sciRequestFinished()));
             }
         } else {
-            QNetworkReply *reply = QmlPixmapCache::get(qmlEngine(this), d->url, &d->pix);
-            if (reply) {
+            QmlPixmapReply::Status status = QmlPixmapCache::get(d->url, &d->pix);
+            if (status != QmlPixmapReply::Ready && status != QmlPixmapReply::Error) {
+                QmlPixmapReply *reply = QmlPixmapCache::request(qmlEngine(this), d->url);
                 d->pendingPixmapCache = true;
                 connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
                 connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
@@ -319,8 +320,9 @@ void QmlGraphicsBorderImage::setGridScaledImage(const QmlGraphicsGridScaledImage
         d->verticalTileMode = sci.verticalTileRule();
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        QNetworkReply *reply = QmlPixmapCache::get(qmlEngine(this), d->sciurl, &d->pix);
-        if (reply) {
+        QmlPixmapReply::Status status = QmlPixmapCache::get(d->sciurl, &d->pix);
+        if (status != QmlPixmapReply::Ready && status != QmlPixmapReply::Error) {
+            QmlPixmapReply *reply = QmlPixmapCache::request(qmlEngine(this), d->sciurl);
             d->sciPendingPixmapCache = true;
             connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
             connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
@@ -349,10 +351,10 @@ void QmlGraphicsBorderImage::requestFinished()
 
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
         d->sciPendingPixmapCache = false;
-        QmlPixmapCache::find(d->sciurl, &d->pix);
+        QmlPixmapCache::get(d->sciurl, &d->pix);
     } else {
         d->pendingPixmapCache = false;
-        if (!QmlPixmapCache::find(d->url, &d->pix))
+        if (QmlPixmapCache::get(d->url, &d->pix) != QmlPixmapReply::Ready)
             d->status = Error;
     }
     setImplicitWidth(d->pix.width());
