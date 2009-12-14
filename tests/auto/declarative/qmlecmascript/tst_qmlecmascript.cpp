@@ -111,6 +111,8 @@ private slots:
     void shutdownErrors();
     void externalScript();
 
+    void bug1();
+
 private:
     QmlEngine engine;
 };
@@ -1013,6 +1015,26 @@ void tst_qmlecmascript::externalScript()
 
         delete object;
     }
+}
+
+void tst_qmlecmascript::bug1()
+{
+    QmlComponent component(&engine, TEST_FILE("bug.1.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toInt(), 14);
+
+    object->setProperty("a", 11);
+
+    QCOMPARE(object->property("test").toInt(), 3);
+
+    object->setProperty("b", true);
+
+    QEXPECT_FAIL("", "QTBUG-6781", Continue);
+    QCOMPARE(object->property("test").toInt(), 9);
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qmlecmascript)
