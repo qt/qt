@@ -195,13 +195,23 @@ InputTest::InputTest()
 
     pullMode = true;
 
-    // AudioInfo class only supports mono S16LE samples!
     format.setFrequency(8000);
     format.setChannels(1);
     format.setSampleSize(16);
     format.setSampleType(QAudioFormat::SignedInt);
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setCodec("audio/pcm");
+
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultInputDevice());
+    if (!info.isFormatSupported(format)) {
+        qWarning()<<"default format not supported try to use nearest";
+        format = info.nearestFormat(format);
+    }
+
+    if(format.sampleSize() != 16) {
+        qWarning()<<"audio device doesn't support 16 bit samples, example cannot run";
+        return;
+    }
 
     audioInput = new QAudioInput(format,this);
     connect(audioInput,SIGNAL(notify()),SLOT(status()));
