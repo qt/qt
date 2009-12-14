@@ -762,7 +762,6 @@ void QmlGraphicsListViewPrivate::createHighlight()
         }
         if (item) {
             item->setParent(q->viewport());
-            item->setZValue(0);
             highlight = new FxListItem(item, q);
             if (orient == QmlGraphicsListView::Vertical)
                 highlight->item->setHeight(currentItem->item->height());

@@ -628,7 +628,6 @@ void QmlGraphicsGridViewPrivate::createHighlight()
             item->setParent(q->viewport());
         }
         if (item) {
-            item->setZValue(0);
             item->setParent(q->viewport());
             highlight = new FxGridItem(item, q);
             highlightXAnimator = new QmlEaseFollow(q);
