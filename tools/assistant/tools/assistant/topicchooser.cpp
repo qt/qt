@@ -40,9 +40,6 @@
 ****************************************************************************/
 #include "tracer.h"
 
-#include <QtCore/QMap>
-#include <QtCore/QUrl>
-
 #include "topicchooser.h"
 
 QT_BEGIN_NAMESPACE
@@ -55,10 +52,11 @@ TopicChooser::TopicChooser(QWidget *parent, const QString &keyword,
     ui.setupUi(this);
     ui.label->setText(tr("Choose a topic for <b>%1</b>:").arg(keyword));
 
-    m_links = links;
-    QMap<QString, QUrl>::const_iterator it = m_links.constBegin();
-    for (; it != m_links.constEnd(); ++it)
+    QMap<QString, QUrl>::const_iterator it = links.constBegin();
+    for (; it != links.constEnd(); ++it) {
         ui.listWidget->addItem(it.key());
+        m_links.append(it.value());
+    }
     
     if (ui.listWidget->count() != 0)
         ui.listWidget->setCurrentRow(0);
@@ -80,10 +78,12 @@ QUrl TopicChooser::link() const
         return QUrl();
 
     QString title = item->text();
-    if (title.isEmpty() || !m_links.contains(title))
+    if (title.isEmpty())
         return QUrl();
 
-    return m_links.value(title);
+    const int row = ui.listWidget->row(item);
+    Q_ASSERT(row < m_links.count());
+    return m_links.at(row);
 }
 
 QT_END_NAMESPACE
