@@ -323,7 +323,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         const FakeNode *fake = static_cast<const FakeNode *>(node);
         if (fake->subType() == Node::Example)
             generateExampleFiles(fake, marker);
-        else if (fake->subType() == Node::File)
+        else if ((fake->subType() == Node::File) || (fake->subType() == Node::Image))
             quiet = true;
     }
 
@@ -546,9 +546,6 @@ void Generator::generateFileList(const FakeNode* fake,
         if (child->subType() == subtype) {
             ++count;
             QString file = child->name();
-
-            if (file == "network/qftp/images/dir.png")
-                qDebug() << "FILE:" << file;
 
             openedList.next();
             text << Atom(Atom::ListItemNumber, openedList.numberString())
