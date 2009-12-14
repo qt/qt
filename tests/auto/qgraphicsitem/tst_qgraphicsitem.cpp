@@ -318,6 +318,7 @@ private slots:
     void childrenBoundingRect3();
     void group();
     void setGroup();
+    void setGroup2();
     void nestedGroups();
     void warpChildrenIntoGroup();
     void removeFromGroup();
@@ -3343,6 +3344,35 @@ void tst_QGraphicsItem::setGroup()
     rect->setGroup(0);
     QCOMPARE(rect->group(), (QGraphicsItemGroup *)0);
     QCOMPARE(rect->parentItem(), (QGraphicsItem *)0);
+}
+
+void tst_QGraphicsItem::setGroup2()
+{
+    QGraphicsScene scene;
+    QGraphicsItemGroup group;
+    scene.addItem(&group);
+
+    QGraphicsRectItem *rect = scene.addRect(50,50,50,50,Qt::NoPen,Qt::black);
+    rect->setTransformOriginPoint(50,50);
+    rect->setRotation(45);
+    rect->setScale(1.5);
+    rect->translate(20,20);
+    group.translate(-30,-40);
+    group.setRotation(180);
+    group.setScale(0.5);
+
+    QTransform oldSceneTransform = rect->sceneTransform();
+    rect->setGroup(&group);
+    QCOMPARE(rect->sceneTransform(), oldSceneTransform);
+
+    group.setRotation(20);
+    group.setScale(2);
+    rect->setRotation(90);
+    rect->setScale(0.8);
+
+    oldSceneTransform = rect->sceneTransform();
+    rect->setGroup(0);
+    QCOMPARE(rect->sceneTransform(), oldSceneTransform);
 }
 
 void tst_QGraphicsItem::nestedGroups()
