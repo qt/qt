@@ -569,14 +569,10 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     item->d_ptr->clearSubFocus();
 
-    if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
-        widget->d_func()->fixFocusChainBeforeReparenting(0, 0);
-    }
-
     if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
         unregisterScenePosItem(item);
 
+    QGraphicsScene *oldScene = item->d_func()->scene;
     item->d_func()->scene = 0;
 
     //We need to remove all children first because they might use their parent
@@ -585,6 +581,11 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         // Remove all children recursively
         for (int i = 0; i < item->d_ptr->children.size(); ++i)
             q->removeItem(item->d_ptr->children.at(i));
+    }
+
+    if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
+        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
+        widget->d_func()->fixFocusChainBeforeReparenting(0, oldScene, 0);
     }
 
     // Unregister focus proxy.

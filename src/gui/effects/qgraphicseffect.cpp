@@ -160,6 +160,10 @@ QRectF QGraphicsEffectSource::boundingRect(Qt::CoordinateSystem system) const
 /*!
     Returns the bounding rectangle of the source mapped to the given \a system.
 
+    Calling this function with Qt::DeviceCoordinates outside of
+    QGraphicsEffect::draw() will give undefined results, as there is no device
+    context available.
+
     \sa draw()
 */
 QRectF QGraphicsEffect::sourceBoundingRect(Qt::CoordinateSystem system) const
@@ -348,6 +352,10 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     The returned pixmap is clipped to the current painter's device rectangle when
     \a system is Qt::DeviceCoordinates.
 
+    Calling this function with Qt::DeviceCoordinates outside of
+    QGraphicsEffect::draw() will give undefined results, as there is no device
+    context available.
+
     \sa draw(), boundingRect()
 */
 QPixmap QGraphicsEffect::sourcePixmap(Qt::CoordinateSystem system, QPoint *offset, QGraphicsEffect::PixmapPadMode mode) const
@@ -398,8 +406,8 @@ QGraphicsEffect::~QGraphicsEffect()
 
 /*!
     Returns the effective bounding rectangle for this effect, i.e., the
-    bounding rectangle of the source, adjusted by any margins applied by
-    the effect itself.
+    bounding rectangle of the source in device coordinates, adjusted by
+    any margins applied by the effect itself.
 
     \sa boundingRectFor(), updateBoundingRect()
 */
@@ -413,7 +421,7 @@ QRectF QGraphicsEffect::boundingRect() const
 
 /*!
     Returns the effective bounding rectangle for this effect, given the
-    provided \a rect in the source's coordinate space. When writing
+    provided \a rect in the device coordinates. When writing
     you own custom effect, you must call updateBoundingRect() whenever any
     parameters are changed that may cause this this function to return a
     different value.

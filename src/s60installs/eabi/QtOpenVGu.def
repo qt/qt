@@ -1,8 +1,8 @@
 EXPORTS
 	_Z16qPixmapToVGImageRK7QPixmap @ 1 NONAME
-	_Z20qt_vg_create_contextP12QPaintDevice @ 2 NONAME
+	_Z20qt_vg_create_contextP12QPaintDevice @ 2 NONAME ABSENT
 	_Z20qt_vg_shared_surfacev @ 3 NONAME
-	_Z21qt_vg_destroy_contextP11QEglContext @ 4 NONAME
+	_Z21qt_vg_destroy_contextP11QEglContext @ 4 NONAME ABSENT
 	_Z24qt_vg_image_to_vg_formatN6QImage6FormatE @ 5 NONAME
 	_Z25qt_vg_config_to_vg_formatP11QEglContext @ 6 NONAME
 	_Z25qt_vg_create_paint_enginev @ 7 NONAME
@@ -169,4 +169,8 @@ EXPORTS
 	_ZThn8_NK16QVGWindowSurface6metricEN12QPaintDevice17PaintDeviceMetricE @ 168 NONAME
 	_ZN14QVGPaintEngine10fillRegionERK7QRegionRK6QColorRK5QSize @ 169 NONAME
 	_ZN20QVGCompositionHelper10blitWindowEmRK5QSizeRK5QRectRK6QPointi @ 170 NONAME
+	_Z20qt_vg_create_contextP12QPaintDevicei @ 171 NONAME
+	_Z21qt_vg_destroy_contextP11QEglContexti @ 172 NONAME
+	_ZN13QVGPixmapData22destroyImageAndContextEv @ 173 NONAME
+	_ZN13QVGPixmapData9hibernateEv @ 174 NONAME
 
