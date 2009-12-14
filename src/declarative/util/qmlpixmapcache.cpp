@@ -55,6 +55,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
+#include <QCustomEvent>
 #include <QtCore/qdebug.h>
 #include <private/qobject_p.h>
 

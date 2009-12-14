@@ -55,7 +55,7 @@ class QmlEngine;
 class QNetworkReply;
 
 class QmlPixmapReplyPrivate;
-class QmlPixmapReply : public QObject
+class Q_DECLARATIVE_EXPORT QmlPixmapReply : public QObject
 {
     Q_OBJECT
 public:
@@ -87,7 +87,7 @@ private:
     friend class QmlPixmapCache;
 };
 
-class QmlPixmapCache
+class Q_DECLARATIVE_EXPORT QmlPixmapCache
 {
 public:
     static QmlPixmapReply::Status get(const QUrl& url, QPixmap *pixmap);
