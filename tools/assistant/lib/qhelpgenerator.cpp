@@ -538,7 +538,8 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
         }
 
         int fileId = -1;
-        if (!d->fileMap.contains(fileName)) {
+        QMap<QString, int>::Iterator fileMapIt = d->fileMap.find(fileName);
+        if (fileMapIt == d->fileMap.end()) {
             fileDataList.append(qCompress(data));
 
             fileNameData.name = fileName;
@@ -552,18 +553,20 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
 
             ++tableFileId;
         } else {
-            fileId = d->fileMap.value(fileName);
+            fileId = fileMapIt.value();
+            QSet<int> &fileFilterSet = d->fileFilterMap[fileId];
+            QSet<int> &tmpFileFilterSet = tmpFileFilterMap[fileId];
             foreach (const int &filter, filterAtts) {
-                if (!d->fileFilterMap.value(fileId).contains(filter)
-                    && !tmpFileFilterMap.value(fileId).contains(filter)) {
-                        d->fileFilterMap[fileId].insert(filter);
-                        tmpFileFilterMap[fileId].insert(filter);
+                if (!fileFilterSet.contains(filter)
+                    && !tmpFileFilterSet.contains(filter)) {
+                    fileFilterSet.insert(filter);
+                    tmpFileFilterSet.insert(filter);
                 }
             }
         }
     }
 
-    if (tmpFileFilterMap.count()) {
+    if (!tmpFileFilterMap.isEmpty()) {
         d->query->exec(QLatin1String("BEGIN"));
         QMap<int, QSet<int> >::const_iterator it = tmpFileFilterMap.constBegin();
         while (it != tmpFileFilterMap.constEnd()) {
@@ -626,8 +629,7 @@ bool QHelpGenerator::registerCustomFilter(const QString &filterName,
     while (d->query->next()) {
         attributeMap.insert(d->query->value(1).toString(),
             d->query->value(0).toInt());
-        if (idsToInsert.contains(d->query->value(1).toString()))
-            idsToInsert.removeAll(d->query->value(1).toString());
+        idsToInsert.removeAll(d->query->value(1).toString());
     }
 
     foreach (QString id, idsToInsert) {
@@ -675,7 +677,7 @@ bool QHelpGenerator::registerCustomFilter(const QString &filterName,
     return true;
 }
 
-bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> keywords,
+bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> &keywords,
                                     const QStringList &filterAttributes)
 {
     if (!d->query)
@@ -717,8 +719,9 @@ bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> keywords,
         if (fName.startsWith(QLatin1String("./")))
             fName = fName.mid(2);
 
-        if (d->fileMap.contains(fName))
-            fileId = d->fileMap.value(fName);
+        QMap<QString, int>::ConstIterator it = d->fileMap.find(fName);
+        if (it != d->fileMap.end())
+            fileId = it.value();
         else
             fileId = 1;
 
