@@ -55,7 +55,6 @@
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
-#include <QCustomEvent>
 #include <QtCore/qdebug.h>
 #include <private/qobject_p.h>
 
@@ -91,10 +90,10 @@ private:
     bool quit;
 };
 
-class QmlImageDecodeEvent : public QCustomEvent
+class QmlImageDecodeEvent : public QEvent
 {
 public:
-    QmlImageDecodeEvent(bool err, QImage &img) : QCustomEvent(QEvent::User), error(err), image(img) {}
+    QmlImageDecodeEvent(bool err, QImage &img) : QEvent(QEvent::User), error(err), image(img) {}
 
     bool error;
     QImage image;
