@@ -2567,7 +2567,6 @@ bool QmlCompiler::completeComponentBuild()
 
             // Pre-rewrite the expression
             QString expression = binding.expression.asScript();
-            qWarning() << "Unoptimized" << expression;
 
             // ### Optimize
             QmlRewrite::SharedBindingTester sharableTest;
