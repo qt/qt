@@ -654,6 +654,7 @@ void QToolBarLayout::setExpanded(bool exp)
     if (!tb)
         return;
     if (QMainWindow *win = qobject_cast<QMainWindow*>(tb->parentWidget())) {
+        animating = !tb->isWindow() && win->isAnimated();
         QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
         if (expanded) {
             tb->raise();
@@ -664,7 +665,7 @@ void QToolBarLayout::setExpanded(bool exp)
                 layoutActions(rect.size());
             }
         }
-        layout->layoutState.toolBarAreaLayout.apply(win->isAnimated());
+        layout->layoutState.toolBarAreaLayout.apply(animating);
     }
 }
 

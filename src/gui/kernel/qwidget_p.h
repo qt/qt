@@ -823,7 +823,7 @@ public:
     {}
 
     inline void detach()
-    { m_widget->setGraphicsEffect(0); }
+    { m_widget->d_func()->graphicsEffect = 0; }
 
     inline const QGraphicsItem *graphicsItem() const
     { return 0; }

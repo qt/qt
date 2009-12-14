@@ -256,6 +256,7 @@ SUBDIRS += \
            qprinter \
            qprinterinfo \
            qprocess \
+	   qprocessenvironment \
            qprogressbar \
            qprogressdialog \
            qpropertyanimation \
@@ -442,7 +443,6 @@ SUBDIRS += \
            qsharedmemory \
            qsidebar \
            qsizegrip \
-           qsoftkeymanager \
            qsqldriver \
            qsystemsemaphore \
            qtconcurrentfilter \
@@ -475,6 +475,10 @@ embedded:!wince* {
 }
 !win32: {
     SUBDIRS += qtextpiecetable
+}
+
+symbian {
+    SUBDIRS += qsoftkeymanager
 }
 
 # Enable the tests specific to QtXmlPatterns. If you add a test, remember to

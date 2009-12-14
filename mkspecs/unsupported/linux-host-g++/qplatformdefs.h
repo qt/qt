@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDBus module of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,47 +39,4 @@
 **
 ****************************************************************************/
 
-#ifndef QDBUSXMLPARSER_H
-#define QDBUSXMLPARSER_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/qmap.h>
-#include <QtXml/qdom.h>
-#include <qdbusmacros.h>
-#include "qdbusintrospection_p.h"
-
-QT_BEGIN_NAMESPACE
-
-/*!
-    \internal
-*/
-class QDBusXmlParser
-{
-    QString m_service;
-    QString m_path;
-    QDomElement m_node;
-
-public:
-    QDBusXmlParser(const QString& service, const QString& path,
-                   const QString& xmlData);
-    QDBusXmlParser(const QString& service, const QString& path,
-                   const QDomElement& node);
-
-    QDBusIntrospection::Interfaces interfaces() const;
-    QSharedDataPointer<QDBusIntrospection::Object> object() const;
-    QSharedDataPointer<QDBusIntrospection::ObjectTree> objectTree() const;
-};
-
-QT_END_NAMESPACE
-
-#endif
+#include "../../linux-g++/qplatformdefs.h"

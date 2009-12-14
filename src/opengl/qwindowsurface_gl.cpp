@@ -493,7 +493,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
             }
 #endif
             d_ptr->paintedRegion = QRegion();
-
             context()->swapBuffers();
         } else {
             glFlush();
@@ -688,11 +687,13 @@ void QGLWindowSurface::updateGeometry() {
     d_ptr->size = rect.size();
 
     if (d_ptr->ctx) {
+#ifndef QT_OPENGL_ES_2
         if (d_ptr->destructive_swap_buffers) {
             glBindTexture(target, d_ptr->tex_id);
             glTexImage2D(target, 0, GL_RGBA, rect.width(), rect.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
             glBindTexture(target, 0);
         }
+#endif
         return;
     }
 
@@ -756,11 +757,7 @@ void QGLWindowSurface::updateGeometry() {
 
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-#ifndef QT_OPENGL_ES
             glOrtho(0, d_ptr->pb->width(), d_ptr->pb->height(), 0, -999999, 999999);
-#else
-            glOrthof(0, d_ptr->pb->width(), d_ptr->pb->height(), 0, -999999, 999999);
-#endif
 
             d_ptr->pb->d_ptr->qctx->d_func()->internal_context = true;
             return;
@@ -774,6 +771,7 @@ void QGLWindowSurface::updateGeometry() {
 
     ctx->makeCurrent();
 
+#ifndef QT_OPENGL_ES_2
     if (d_ptr->destructive_swap_buffers) {
         glGenTextures(1, &d_ptr->tex_id);
         glBindTexture(target, d_ptr->tex_id);
@@ -783,6 +781,7 @@ void QGLWindowSurface::updateGeometry() {
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glBindTexture(target, 0);
     }
+#endif
 
     qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;;
     d_ptr->ctx = ctx;

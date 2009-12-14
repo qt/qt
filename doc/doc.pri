@@ -34,12 +34,9 @@ win32-g++:isEmpty(QMAKE_SH) {
 	QT_DOCUMENTATION = $$replace(QT_DOCUMENTATION, "/", "\\\\")
 }
 
-
-!wince*:!cross_compile:SUBDIRS += tools/qdoc3
-
 # Build rules:
 adp_docs.commands = ($$QDOC $$ADP_DOCS_QDOCCONF_FILE)
-adp_docs.depends += sub-tools-qdoc3
+adp_docs.depends += sub-tools # qdoc3
 qch_docs.commands = $$QT_DOCUMENTATION
 qch_docs.depends += sub-tools
 

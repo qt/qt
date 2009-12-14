@@ -273,7 +273,7 @@ void QNetworkReplyImplPrivate::handleNotifications()
     if (state != Working)
         return;
 
-    while (!current.isEmpty()) {
+    while (state == Working && !current.isEmpty()) {
         InternalNotifications notification = current.dequeue();
         switch (notification) {
         case NotifyDownstreamReadyWrite:
@@ -580,7 +580,7 @@ QNetworkReplyImpl::~QNetworkReplyImpl()
 void QNetworkReplyImpl::abort()
 {
     Q_D(QNetworkReplyImpl);
-    if (d->state == QNetworkReplyImplPrivate::Aborted)
+    if (d->state == QNetworkReplyImplPrivate::Finished || d->state == QNetworkReplyImplPrivate::Aborted)
         return;
 
     // stop both upload and download

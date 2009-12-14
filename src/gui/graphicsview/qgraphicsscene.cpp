@@ -613,6 +613,19 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (item == lastActivePanel)
         lastActivePanel = 0;
 
+    // Cancel active touches
+    {
+        QMap<int, QGraphicsItem *>::iterator it = itemForTouchPointId.begin();
+        while (it != itemForTouchPointId.end()) {
+            if (it.value() == item) {
+                sceneCurrentTouchPoints.remove(it.key());
+                it = itemForTouchPointId.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+
     // Disable selectionChanged() for individual items
     ++selectionChanging;
     int oldSelectedItemsSize = selectedItems.size();
@@ -4233,7 +4246,6 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     if (!subPix.isNull()) {
         // Blit the subpixmap into the main pixmap.
         pixmapPainter.begin(pix);
-        pixmapPainter.setCompositionMode(QPainter::CompositionMode_Source);
         pixmapPainter.setClipRegion(pixmapExposed);
         pixmapPainter.drawPixmap(br.topLeft(), subPix);
         pixmapPainter.end();
@@ -5680,17 +5692,22 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         touchEvent->setAccepted(acceptTouchEvents);
         res = acceptTouchEvents && sendEvent(item, touchEvent);
         eventAccepted = touchEvent->isAccepted();
-        item->d_ptr->acceptedTouchBeginEvent = (res && eventAccepted);
+        if (itemForTouchPointId.value(touchEvent->touchPoints().first().id()) == 0) {
+            // item was deleted
+            item = 0;
+        } else {
+            item->d_ptr->acceptedTouchBeginEvent = (res && eventAccepted);
+        }
         touchEvent->spont = false;
         if (res && eventAccepted) {
             // the first item to accept the TouchBegin gets an implicit grab.
             for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
                 const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
-                itemForTouchPointId[touchPoint.id()] = item;
+                itemForTouchPointId[touchPoint.id()] = item; // can be zero
             }
             break;
         }
-        if (item->isPanel())
+        if (item && item->isPanel())
             break;
     }
 

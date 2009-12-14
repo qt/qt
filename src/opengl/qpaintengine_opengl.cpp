@@ -110,11 +110,7 @@ static bool DEBUG_TEMP_FLAG;
 
 static inline void qt_glColor4ubv(unsigned char *col)
 {
-#ifdef QT_OPENGL_ES
-        glColor4f(col[0]/255.0, col[1]/255.0, col[2]/255.0, col[3]/255.0);
-#else
-        glColor4ubv(col);
-#endif
+    glColor4f(col[0]/255.0f, col[1]/255.0f, col[2]/255.0f, col[3]/255.0f);
 }
 
 struct QT_PointF {
