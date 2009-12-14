@@ -86,7 +86,9 @@ public:
     QHelpSearchQueryWidget* queryWidget();
     QHelpSearchResultWidget* resultWidget();
 
+#ifdef QT_DEPRECATED
     QT_DEPRECATED int hitsCount() const;
+#endif
     int hitCount() const;
 
     typedef QPair<QString, QString> SearchHit;

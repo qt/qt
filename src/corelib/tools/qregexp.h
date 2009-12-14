@@ -119,7 +119,9 @@ public:
 #endif
     int matchedLength() const;
 #ifndef QT_NO_REGEXP_CAPTURE
+#ifdef QT_DEPRECATED
     QT_DEPRECATED int numCaptures() const;
+#endif
     int captureCount() const;
     QStringList capturedTexts() const;
     QStringList capturedTexts();

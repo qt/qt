@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,60 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTENGINEGLYPHCACHE_P_H
-#define QFONTENGINEGLYPHCACHE_P_H
+#ifndef WIDGET_H
+#define WIDGET_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "customitem.h"
 
+#include <QWidget>
+#include <QGraphicsItemGroup>
+#include <QPainter>
 
-#include "QtCore/qglobal.h"
-#include "QtCore/qatomic.h"
-#include <QtCore/qvarlengtharray.h>
-#include "private/qfont_p.h"
+namespace Ui {
+    class Widget;
+}
 
-#ifdef Q_WS_WIN
-#   include "QtCore/qt_windows.h"
-#endif
+class QGraphicsOpacityEffect;
+class QPropertyAnimation;
 
-#ifdef Q_WS_MAC
-#   include "private/qt_mac_p.h"
-#   include "QtCore/qmap.h"
-#   include "QtCore/qcache.h"
-#   include "private/qcore_mac_p.h"
-#endif
-
-QT_BEGIN_NAMESPACE
-
-class QFontEngineGlyphCache
+class Widget : public QWidget
 {
+    Q_OBJECT
 public:
-    enum Type {
-        Raster_RGBMask,
-        Raster_A8,
-        Raster_Mono
-    };
+    Widget(QWidget *parent = 0);
+    ~Widget();
 
-    QFontEngineGlyphCache(const QTransform &matrix, Type type) : m_transform(matrix), m_type(type) { }
+protected Q_SLOTS:
+    void on_rotate_valueChanged(int value);
+    void on_scale_valueChanged(int value);
+    void on_rotateItem_valueChanged(int value);
+    void on_scaleItem_valueChanged(int value);
+    void on_group_clicked();
+    void on_dismantle_clicked();
+    void on_merge_clicked();
+    void onSceneSelectionChanged();
+    void on_ungroup_clicked();
+    void on_buttonGroup_buttonClicked();
 
-    virtual ~QFontEngineGlyphCache() { }
+private:
+    void updateUngroupButton();
+    CustomItem * checkedItem() const;
 
-    Type cacheType() const { return m_type; }
-
-    QTransform m_transform;
-    QFontEngineGlyphCache::Type m_type;
+    Ui::Widget *ui;
+    CustomScene *scene;
+    CustomItem *rectBlue;
+    CustomItem *rectRed;
+    CustomItem *rectGreen;
+    CustomItem *rectYellow;
+    QGraphicsOpacityEffect* effect;
+    QPropertyAnimation *fadeIn;
+    QPropertyAnimation *fadeOut;
+    int previousSelectionCount;
 };
-typedef QHash<void *, QList<QFontEngineGlyphCache *> > GlyphPointerHash;
-typedef QHash<int, QList<QFontEngineGlyphCache *> > GlyphIntHash;
 
-QT_END_NAMESPACE
-
-#endif
+#endif // WIDGET_H
