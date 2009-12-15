@@ -1988,7 +1988,7 @@ void QmlGraphicsItemPrivate::addGeometryListener(QmlGraphicsItemGeometryListener
 
 void QmlGraphicsItemPrivate::removeGeometryListener(QmlGraphicsItemGeometryListener *listener)
 {
-    geometryListeners.removeAll(listener);
+    geometryListeners.removeOne(listener);
 }
 
 /*! \internal */
