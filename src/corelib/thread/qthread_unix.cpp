@@ -74,6 +74,10 @@
 #  endif
 #endif
 
+#ifdef Q_OS_HPUX
+#include <sys/pstat.h>
+#endif
+
 #if defined(Q_OS_MAC)
 # ifdef qDebug
 #   define old_qDebug qDebug
