@@ -960,26 +960,13 @@ void QS60StylePrivate::setActiveLayout()
 {
     const QSize activeScreenSize(screenSize());
     int activeLayoutIndex = -1;
-    const bool mirrored = !QApplication::isLeftToRight();
     const short screenHeight = (short)activeScreenSize.height();
     const short screenWidth = (short)activeScreenSize.width();
     for (int i=0; i<m_numberOfLayouts; i++) {
         if (screenHeight==m_layoutHeaders[i].height &&
-            screenWidth==m_layoutHeaders[i].width &&
-            mirrored==m_layoutHeaders[i].mirroring) {
+            screenWidth==m_layoutHeaders[i].width) {
             activeLayoutIndex = i;
             break;
-        }
-    }
-
-    //not found, lets try without mirroring info
-    if (activeLayoutIndex==-1){
-        for (int i=0; i<m_numberOfLayouts; i++) {
-            if (screenHeight==m_layoutHeaders[i].height &&
-                screenWidth==m_layoutHeaders[i].width) {
-                activeLayoutIndex = i;
-                break;
-            }
         }
     }
 
@@ -988,9 +975,8 @@ void QS60StylePrivate::setActiveLayout()
         const QSysInfo::S60Version currentRelease = QSysInfo::s60Version();
         const bool landscape = screenHeight < screenWidth;
 
-        activeLayoutIndex = (currentRelease == QSysInfo::SV_S60_3_1 || currentRelease == QSysInfo::SV_S60_3_2) ? 0 : 4;
-        activeLayoutIndex += (!landscape) ? 2 : 0;
-        activeLayoutIndex += (!mirrored) ? 1 : 0;
+        activeLayoutIndex = (currentRelease == QSysInfo::SV_S60_3_1 || currentRelease == QSysInfo::SV_S60_3_2) ? 0 : 2;
+        activeLayoutIndex += (!landscape) ? 1 : 0;
     }
 
     m_pmPointer = data[activeLayoutIndex];
