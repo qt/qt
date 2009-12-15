@@ -67,10 +67,8 @@ void QmlGraphicsBasePositionerPrivate::watchChanges(QmlGraphicsItem *other)
 
     QmlGraphicsItemPrivate *otherPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other));
 
-    if(type == QmlGraphicsBasePositioner::Vertical || type == QmlGraphicsBasePositioner::Both)
-        otherPrivate->connectToHeightChanged(q, prePosIdx);
-    if(type == QmlGraphicsBasePositioner::Horizontal || type == QmlGraphicsBasePositioner::Both)
-        otherPrivate->connectToWidthChanged(q, prePosIdx);
+    otherPrivate->connectToHeightChanged(q, prePosIdx);
+    otherPrivate->connectToWidthChanged(q, prePosIdx);
 
     otherPrivate->registerSiblingOrderNotification(this);
     watched << other;
@@ -83,11 +81,8 @@ void QmlGraphicsBasePositionerPrivate::unwatchChanges(QmlGraphicsItem* other)
     bool stillAlive = false; //Use the returns from disconnect to see if it was deleted or just reparented
     stillAlive |= QMetaObject::disconnect(other, visibleIdx, q, prePosIdx);
     stillAlive |= QMetaObject::disconnect(other, opacityIdx, q, prePosIdx);
-    //Is disconnect expensive enough to be worth this check?
-    if(type == QmlGraphicsBasePositioner::Vertical || type == QmlGraphicsBasePositioner::Both)
-        stillAlive |= otherPrivate->disconnectFromHeightChanged(q, prePosIdx);
-    if(type == QmlGraphicsBasePositioner::Horizontal || type == QmlGraphicsBasePositioner::Both)
-        stillAlive |= otherPrivate->disconnectFromWidthChanged(q, prePosIdx);
+    stillAlive |= otherPrivate->disconnectFromHeightChanged(q, prePosIdx);
+    stillAlive |= otherPrivate->disconnectFromWidthChanged(q, prePosIdx);
 
     if(stillAlive)
         otherPrivate->unregisterSiblingOrderNotification(this);
