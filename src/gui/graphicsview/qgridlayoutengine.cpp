@@ -51,6 +51,7 @@
 #include "qvarlengtharray.h"
 
 #include <QtDebug>
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,7 +71,7 @@ static void insertOrRemoveItems(QVector<T> &items, int index, int delta)
 static qreal growthFactorBelowPreferredSize(qreal desired, qreal sumAvailable, qreal sumDesired)
 {
     Q_ASSERT(sumDesired != 0.0);
-    return desired * ::pow(sumAvailable / sumDesired, desired / sumDesired);
+    return desired * qPow(sumAvailable / sumDesired, desired / sumDesired);
 }
 
 static qreal fixedDescent(qreal descent, qreal ascent, qreal targetSize)
