@@ -2344,10 +2344,10 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
     QStringList alias = astNodeToStringList(node);
 
     if (alias.count() != 1 && alias.count() != 2)
-        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QmlCompiler","Invalid alias location"));
+        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QmlCompiler","Invalid alias reference. An alias reference must be specified as <id> or <id>.<property>"));
 
     if (!compileState.ids.contains(alias.at(0)))
-        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QmlCompiler","Invalid alias location"));
+        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QmlCompiler","Invalid alias reference. Unable to find id \"%1\"").arg(alias.at(0)));
 
     Object *idObject = compileState.ids[alias.at(0)];
 
