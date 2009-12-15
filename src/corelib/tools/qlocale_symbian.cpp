@@ -46,10 +46,94 @@
 #include <QThread>
 
 #include <e32std.h>
+#include <e32const.h>
+#include <e32base.h>
 #include "private/qcore_symbian_p.h"
-
+#include "private/qcoreapplication_p.h"
+#include "qlocale_p.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
+
+class CLocaleChangeNotifier : public CActive
+{
+public:
+    static CLocaleChangeNotifier *NewL();
+    ~CLocaleChangeNotifier();
+
+private:
+    CLocaleChangeNotifier();
+    void ConstructL();
+    void RunL();
+    void DoCancel();
+
+private:
+    RChangeNotifier changeNotifier;
+};
+
+static CLocaleChangeNotifier *qt_changeNotifier = NULL;
+
+CLocaleChangeNotifier *CLocaleChangeNotifier::NewL()
+{
+    CLocaleChangeNotifier *self = new (ELeave) CLocaleChangeNotifier();
+    CleanupStack::PushL(self);
+    self->ConstructL();
+    CleanupStack::Pop();
+    return self;
+}
+
+CLocaleChangeNotifier::CLocaleChangeNotifier()
+    : CActive(CActive::EPriorityStandard)
+{
+}
+
+
+CLocaleChangeNotifier::~CLocaleChangeNotifier()
+{
+    Cancel();
+    changeNotifier.Close();
+}
+
+void CLocaleChangeNotifier::ConstructL()
+{
+    changeNotifier.Create();
+    CActiveScheduler::Add(this);
+    SetActive();
+}
+
+void CLocaleChangeNotifier::DoCancel()
+{
+    changeNotifier.LogonCancel();
+}
+
+void CLocaleChangeNotifier::RunL()
+{
+    SetActive();
+    if (changeNotifier.Logon(iStatus) == KErrNone) {
+        if (iStatus.Int() == EChangesLocale) {
+            RDebug::Print(_L("notifier:locale changed"));
+            QT_TRYCATCH_LEAVING(QLocalePrivate::updateSystemPrivate());
+        } else {
+            RDebug::Print(_L("notifier:something else changed"));
+        }
+    } else {
+        RDebug::Print(_L("notifier:logon failed"));
+    }
+}
+
+static void qt_cleanupLocaleNotifier()
+{
+    delete qt_changeNotifier;
+    qt_changeNotifier = NULL;
+}
+
+void QLocalePrivate::symbianRegisterLocaleNotifier()
+{
+    if (!qt_changeNotifier) {
+        QT_TRAP_THROWING(qt_changeNotifier = CLocaleChangeNotifier::NewL());
+        qAddPostRoutine(qt_cleanupLocaleNotifier);
+    }
+}
 
 // Located in qlocale.cpp
 extern void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry);
@@ -65,6 +149,7 @@ static FormatFunc ptrTimeFormatL = NULL;
 static FormatSpecFunc ptrGetTimeFormatSpec = NULL;
 static FormatSpecFunc ptrGetLongDateFormatSpec = NULL;
 static FormatSpecFunc ptrGetShortDateFormatSpec = NULL;
+static FormatSpecFunc ptrRefreshLocaleInfo = NULL;
 
 // Default functions if functions cannot be resolved
 static void defaultTimeFormatL(TTime&, TDes& des, const TDesC&, const TLocale&)
@@ -214,6 +299,8 @@ static const char *jp_locale_dep[] = {
 */
 static QString s60ToQtFormat(const QString &sys_fmt)
 {
+    RDebug::Print(_L("Time Format \"%S\""), &timeFormat);
+
     TLocale *locale = _s60Locale.GetLocale();
 
     QString result;
@@ -679,6 +766,8 @@ static QString symbianDateFormat(bool short_format)
         dateFormat.Set(ptrGetLongDateFormatSpec(_s60Locale));
     }
 
+    RDebug::Print(_L("symDateFormat: \"%S\""), &dateFormat);
+
     return s60ToQtFormat(qt_TDesC2QString(dateFormat));
 }
 
@@ -688,6 +777,8 @@ static QString symbianDateFormat(bool short_format)
 */
 static QString symbianTimeFormat()
 {
+    TPtrC timeFormat = ptrGetTimeFormatSpec(_s60Locale);
+    RDebug::Print(_L("symTimeFormat: \"%S\""), &timeFormat);
     return s60ToQtFormat(qt_TDesC2QString(ptrGetTimeFormatSpec(_s60Locale)));
 }
 
@@ -771,22 +862,35 @@ static QLocale::MeasurementSystem symbianMeasurementSystem()
         return QLocale::MetricSystem;
 }
 
-QLocale QSystemLocale::fallbackLocale() const
+void symbianUpdateSystemPrivate()
 {
+    RDebug::Print(_L("symbianUpdateSystemPrivate"));
     // load system data before query calls
+    _s60Locale.LoadSystemSettings();
+    if (ptrRefreshLocaleInfo)
+        ptrRefreshLocaleInfo();
+}
+
+void symbianInitSystemLocale()
+{
+    RDebug::Print(_L("symbianInitSystemLocale"));
     static QBasicAtomicInt initDone = Q_BASIC_ATOMIC_INITIALIZER(0);
     if (initDone.testAndSetRelaxed(0, 1)) {
-        _s60Locale.LoadSystemSettings();
+        if (!qt_changeNotifier) {
+            QMetaObject::invokeMethod(qApp, SLOT(_q_symbianRegisterLocaleNotifier()), Qt::AutoConnection);
+        }
 
         // Initialize platform version dependent function pointers
         ptrTimeFormatL = reinterpret_cast<FormatFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_TimeFormatL));
+                         (qt_resolveS60PluginFunc(S60Plugin_TimeFormatL));
         ptrGetTimeFormatSpec = reinterpret_cast<FormatSpecFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_GetTimeFormatSpec));
+                               (qt_resolveS60PluginFunc(S60Plugin_GetTimeFormatSpec));
         ptrGetLongDateFormatSpec = reinterpret_cast<FormatSpecFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_GetLongDateFormatSpec));
+                                   (qt_resolveS60PluginFunc(S60Plugin_GetLongDateFormatSpec));
         ptrGetShortDateFormatSpec = reinterpret_cast<FormatSpecFunc>
-            (qt_resolveS60PluginFunc(S60Plugin_GetShortDateFormatSpec));
+                                    (qt_resolveS60PluginFunc(S60Plugin_GetShortDateFormatSpec));
+        ptrRefreshLocaleInfo = reinterpret_cast<FormatSpecFunc>
+                                    (qt_resolveS60PluginFunc(S60Plugin_RefreshLocaleInfo));
         if (!ptrTimeFormatL)
             ptrTimeFormatL = &defaultTimeFormatL;
         if (!ptrGetTimeFormatSpec)
@@ -801,7 +905,10 @@ QLocale QSystemLocale::fallbackLocale() const
     }
     while(initDone != 2)
         QThread::yieldCurrentThread();
+}
 
+QLocale QSystemLocale::fallbackLocale() const
+{
     TLanguage lang = User::Language();
     QString locale = QLatin1String(qt_symbianLocaleName(lang));
     return QLocale(locale);

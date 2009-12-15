@@ -65,6 +65,8 @@ QMap<QString, QStringList> Generator::imgFileExts;
 QSet<QString> Generator::outputFormats;
 QStringList Generator::imageFiles;
 QStringList Generator::imageDirs;
+QStringList Generator::exampleDirs;
+QStringList Generator::exampleImgExts;
 QString Generator::outDir;
 QString Generator::project;
 
@@ -120,12 +122,19 @@ void Generator::initialize(const Config &config)
         if (!dirInfo.mkdir(outDir + "/images"))
             config.lastLocation().fatal(tr("Cannot create output directory '%1'")
                                         .arg(outDir + "/images"));
+        if (!dirInfo.mkdir(outDir + "/images/used-in-examples"))
+            config.lastLocation().fatal(tr("Cannot create output directory '%1'")
+                                        .arg(outDir + "/images/used-in-examples"));
     }
 
     imageFiles = config.getStringList(CONFIG_IMAGES);
     imageDirs = config.getStringList(CONFIG_IMAGEDIRS);
+    exampleDirs = config.getStringList(CONFIG_EXAMPLEDIRS);
+    exampleImgExts = config.getStringList(CONFIG_EXAMPLES + Config::dot +
+                                          CONFIG_IMAGEEXTENSIONS);
 
-    QString imagesDotFileExtensions = CONFIG_IMAGES + Config::dot + CONFIG_FILEEXTENSIONS;
+    QString imagesDotFileExtensions =
+        CONFIG_IMAGES + Config::dot + CONFIG_FILEEXTENSIONS;
     QSet<QString> formats = config.subVars(imagesDotFileExtensions);
     QSet<QString>::ConstIterator f = formats.begin();
     while (f != formats.end()) {
@@ -530,6 +539,13 @@ void Generator::generateInheritedBy(const ClassNode *classe,
     }
 }
 
+/*!
+  This function is called when the documentation for an
+  example is being formatted. It outputs the list of source
+  files comprising the example, and the list of images used
+  by the example. The images are copied into a subtree of
+  \c{...doc/html/images/used-in-examples/...} 
+ */
 void Generator::generateFileList(const FakeNode* fake,
                                  CodeMarker* marker,
                                  Node::SubType subtype,
@@ -546,6 +562,30 @@ void Generator::generateFileList(const FakeNode* fake,
         if (child->subType() == subtype) {
             ++count;
             QString file = child->name();
+            if (subtype == Node::Image) {
+                if (!file.isEmpty()) {
+                    QDir dirInfo;
+                    QString userFriendlyFilePath;
+                    QString srcPath = Config::findFile(fake->location(),
+                                                       QStringList(),
+                                                       exampleDirs,
+                                                       file,
+                                                       exampleImgExts,
+                                                       userFriendlyFilePath);
+                    userFriendlyFilePath.truncate(userFriendlyFilePath.lastIndexOf('/'));
+
+                    QString imgOutDir = outDir + "/images/used-in-examples/" + userFriendlyFilePath;
+                    if (!dirInfo.mkpath(imgOutDir))
+                        fake->location().fatal(tr("Cannot create output directory '%1'")
+                                               .arg(imgOutDir));
+
+                    QString imgOutName = Config::copyFile(fake->location(),
+                                                          srcPath,
+                                                          file,
+                                                          imgOutDir);
+                }
+
+            }
 
             openedList.next();
             text << Atom(Atom::ListItemNumber, openedList.numberString())

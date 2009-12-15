@@ -129,6 +129,10 @@ inline bool isascii(int c)
 }
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+void symbianUpdateSystemPrivate();
+#endif
+
 /******************************************************************************
 ** Helpers for accessing Qt locale database
 */
@@ -1388,7 +1392,8 @@ QSystemLocale::QSystemLocale()
 
 /*! \internal */
 QSystemLocale::QSystemLocale(bool)
-{ }
+{
+}
 
 /*!
   Deletes the object.
@@ -1407,16 +1412,29 @@ static const QSystemLocale *systemLocale()
 {
     if (_systemLocale)
         return _systemLocale;
+#if defined(Q_OS_SYMBIAN)
+    symbianInitSystemLocale();
+#endif
     return QSystemLocale_globalSystemLocale();
 }
 
-void QLocalePrivate::updateSystemPrivate()
+void QLocalePrivate::updateSystemPrivate(bool initialize)
 {
     const QSystemLocale *sys_locale = systemLocale();
     if (!system_lp)
         system_lp = globalLocalePrivate();
     *system_lp = *sys_locale->fallbackLocale().d();
+    system_lp->m_language_id = 0;
 
+#if defined(Q_OS_SYMBIAN)
+    RDebug::Print(_L("updateSystemPrivate"));
+#endif
+    if (!initialize)
+        return;
+
+#if defined(Q_OS_SYMBIAN)
+    symbianUpdateSystemPrivate();
+#endif
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
     if (!res.isNull())
         system_lp->m_language_id = res.toInt();
@@ -1446,12 +1464,12 @@ void QLocalePrivate::updateSystemPrivate()
 }
 #endif
 
-static const QLocalePrivate *systemPrivate()
+static const QLocalePrivate *systemPrivate(bool initialize = true)
 {
 #ifndef QT_NO_SYSTEMLOCALE
     // copy over the information from the fallback locale and modify
     if (!system_lp || system_lp->m_language_id == 0)
-        QLocalePrivate::updateSystemPrivate();
+        QLocalePrivate::updateSystemPrivate(initialize);
 
     return system_lp;
 #else
@@ -1459,10 +1477,10 @@ static const QLocalePrivate *systemPrivate()
 #endif
 }
 
-static const QLocalePrivate *defaultPrivate()
+static const QLocalePrivate *defaultPrivate(bool initialize = true)
 {
     if (!default_lp)
-        default_lp = systemPrivate();
+        default_lp = systemPrivate(initialize);
     return default_lp;
 }
 
@@ -2169,7 +2187,7 @@ QLocale::QLocale()
     : v(0)
 {
     p.numberOptions = default_number_options;
-    p.index = localePrivateIndex(defaultPrivate());
+    p.index = localePrivateIndex(defaultPrivate(false));
 }
 
 /*!
@@ -2199,7 +2217,7 @@ QLocale::QLocale(Language language, Country country)
     // If not found, should default to system
     if (d->languageId() == QLocale::C && language != QLocale::C) {
         p.numberOptions = default_number_options;
-        p.index = localePrivateIndex(defaultPrivate());
+        p.index = localePrivateIndex(defaultPrivate(false));
     } else {
         p.numberOptions = 0;
         p.index = localePrivateIndex(d);
@@ -2283,6 +2301,7 @@ void QLocale::setDefault(const QLocale &locale)
 */
 QLocale::Language QLocale::language() const
 {
+    systemPrivate(); // make sure inline data is initialized from the system.
     return Language(d()->languageId());
 }
 
@@ -2293,6 +2312,7 @@ QLocale::Language QLocale::language() const
 */
 QLocale::Country QLocale::country() const
 {
+    systemPrivate(); // make sure inline data is initialized from the system.
     return Country(d()->countryId());
 }
 
@@ -3021,6 +3041,7 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format) cons
 */
 QChar QLocale::decimalPoint() const
 {
+    systemPrivate(); // make sure inline data is initialized from the system.
     return d()->decimal();
 }
 
@@ -3031,6 +3052,7 @@ QChar QLocale::decimalPoint() const
 */
 QChar QLocale::groupSeparator() const
 {
+    systemPrivate(); // make sure inline data is initialized from the system.
     return d()->group();
 }
 
@@ -3041,6 +3063,7 @@ QChar QLocale::groupSeparator() const
 */
 QChar QLocale::percent() const
 {
+    systemPrivate(); // make sure inline data is initialized from the system.
     return d()->percent();
 }
 
@@ -3051,6 +3074,7 @@ QChar QLocale::percent() const
 */
 QChar QLocale::zeroDigit() const
 {
+    systemPrivate(); // make sure inline data is initialized from the system.
     return d()->zero();
 }
 
@@ -3061,6 +3085,7 @@ QChar QLocale::zeroDigit() const
 */
 QChar QLocale::negativeSign() const
 {
+    systemPrivate(); // make sure inline data is initialized from the system.
     return d()->minus();
 }
 
@@ -3071,6 +3096,7 @@ QChar QLocale::negativeSign() const
 */
 QChar QLocale::positiveSign() const
 {
+    systemPrivate(); // make sure inline data is initialized from the system.
     return d()->plus();
 }
 
@@ -3081,6 +3107,7 @@ QChar QLocale::positiveSign() const
 */
 QChar QLocale::exponential() const
 {
+    systemPrivate(); // make sure inline data is initialized from the system.
     return d()->exponential();
 }
 
