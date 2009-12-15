@@ -181,6 +181,7 @@ public:
         , highlightMoveSpeed(400), highlightResizeSpeed(400), highlightRange(QmlGraphicsListView::NoHighlightRange)
         , snapMode(QmlGraphicsListView::NoSnap), overshootDist(0.0)
         , footerComponent(0), footer(0), headerComponent(0), header(0)
+        , bufferMode(NoBuffer)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
         , correctFlick(true), inFlickCorrection(false), lazyRelease(false)
     {}
@@ -423,7 +424,7 @@ public:
         }
     }
 
-    void refill(qreal from, qreal to);
+    void refill(qreal from, qreal to, bool doBuffer = false);
     void layout();
     void updateUnrequestedIndexes();
     void updateUnrequestedPositions();
@@ -475,6 +476,8 @@ public:
     FxListItem *footer;
     QmlComponent *headerComponent;
     FxListItem *header;
+    enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
+    BufferMode bufferMode;
 
     bool ownModel : 1;
     bool wrap : 1;
@@ -574,13 +577,20 @@ void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
     delete item;
 }
 
-void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
+void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
 {
     Q_Q(QmlGraphicsListView);
     if (!isValid() || !q->isComponentComplete())
         return;
-    from -= buffer;
-    to += buffer;
+    qreal bufferFrom = from - buffer;
+    qreal bufferTo = to + buffer;
+    qreal fillFrom = from;
+    qreal fillTo = to;
+    if (doBuffer && (bufferMode & BufferAfter))
+        fillTo = bufferTo;
+    if (doBuffer && (bufferMode & BufferBefore))
+        fillFrom = bufferFrom;
+
     int modelIndex = visibleIndex;
     qreal itemEnd = visiblePos-1;
     if (!visibleItems.isEmpty()) {
@@ -595,7 +605,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
     bool changed = false;
     FxListItem *item = 0;
     int pos = itemEnd + 1;
-    while (modelIndex < model->count() && pos <= to) {
+    while (modelIndex < model->count() && pos <= fillTo) {
         //qDebug() << "refill: append item" << modelIndex;
         if (!(item = createItem(modelIndex)))
             break;
@@ -604,8 +614,10 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
         visibleItems.append(item);
         ++modelIndex;
         changed = true;
+        if (doBuffer) // never buffer more than one item per frame
+            break;
     }
-    while (visibleIndex > 0 && visibleIndex <= model->count() && visiblePos > from) {
+    while (visibleIndex > 0 && visibleIndex <= model->count() && visiblePos > fillFrom) {
         //qDebug() << "refill: prepend item" << visibleIndex-1 << "current top pos" << visiblePos;
         if (!(item = createItem(visibleIndex-1)))
             break;
@@ -614,10 +626,12 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
         item->setPosition(visiblePos);
         visibleItems.prepend(item);
         changed = true;
+        if (doBuffer) // never buffer more than one item per frame
+            break;
     }
 
     if (!lazyRelease || !changed) { // avoid destroying items in the same frame that we create
-        while (visibleItems.count() > 1 && (item = visibleItems.first()) && item->endPosition() < from) {
+        while (visibleItems.count() > 1 && (item = visibleItems.first()) && item->endPosition() < bufferFrom) {
             if (item->attached->delayRemove())
                 break;
             //qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endPosition();
@@ -627,7 +641,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
             releaseItem(item);
             changed = true;
         }
-        while (visibleItems.count() > 1 && (item = visibleItems.last()) && item->position() > to) {
+        while (visibleItems.count() > 1 && (item = visibleItems.last()) && item->position() > bufferTo) {
             if (item->attached->delayRemove())
                 break;
             //qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1;
@@ -647,6 +661,8 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
         if (footer)
             updateFooter();
         updateViewport();
+    } else if (!doBuffer && buffer && bufferMode != NoBuffer) {
+        refill(from, to, true);
     }
     lazyRelease = false;
 }
@@ -1923,11 +1939,13 @@ void QmlGraphicsListView::viewportMoved()
                 if ((minY - d->_moveY.value() < height()/2 || d->flickTargetY - d->_moveY.value() < height()/2)
                     && minY != d->flickTargetY)
                     d->flickY(-d->verticalVelocity.value());
+                d->bufferMode = QmlGraphicsListViewPrivate::BufferBefore;
             } else if (d->velocityY < 0) {
                 const qreal maxY = maxYExtent();
                 if ((d->_moveY.value() - maxY < height()/2 || d->_moveY.value() - d->flickTargetY < height()/2)
                     && maxY != d->flickTargetY)
                     d->flickY(-d->verticalVelocity.value());
+                d->bufferMode = QmlGraphicsListViewPrivate::BufferAfter;
             }
         }
 
@@ -2548,6 +2566,7 @@ void QmlGraphicsListView::animStopped()
 {
     Q_D(QmlGraphicsListView);
     d->moveReason = QmlGraphicsListViewPrivate::Other;
+    d->bufferMode = QmlGraphicsListViewPrivate::NoBuffer;
 }
 
 QmlGraphicsListViewAttached *QmlGraphicsListView::qmlAttachedProperties(QObject *obj)
