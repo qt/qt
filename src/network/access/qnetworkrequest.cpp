@@ -49,6 +49,7 @@
 #include "QtCore/qdatetime.h"
 
 #include <ctype.h>
+#include <stdio.h>
 
 QT_BEGIN_NAMESPACE
 
