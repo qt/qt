@@ -75,6 +75,7 @@ private slots:
     void graphicsViewClipping();
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
+    void glWidgetWithAlpha();
     void glWidgetRendering();
     void glFBOSimpleRendering();
     void glFBORendering();
@@ -925,6 +926,17 @@ void tst_QGL::glPBufferRendering()
     p.end();
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
+}
+
+void tst_QGL::glWidgetWithAlpha()
+{
+    QGLWidget* w = new QGLWidget(QGLFormat(QGL::AlphaChannel));
+    w->show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(w);
+#endif
+
+    delete w;
 }
 
 class GLWidget : public QGLWidget
