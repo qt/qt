@@ -447,8 +447,6 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 
     qreal actualRadius = radius();
 
-    QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
-
     QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
 
     QGLBlurTextureCache *blurTextureCache = QGLBlurTextureCache::cacheForContext(ctx);
