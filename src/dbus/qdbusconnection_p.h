@@ -67,7 +67,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qvector.h>
 
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 
 #include <qdbusmessage.h>
 

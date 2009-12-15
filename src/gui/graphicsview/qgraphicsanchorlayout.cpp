@@ -321,14 +321,14 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
     // Horizontal anchor
     Qt::AnchorPoint firstEdge = (firstCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
     Qt::AnchorPoint secondEdge = (secondCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
-    d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
+    if (d->addAnchor(firstItem, firstEdge, secondItem, secondEdge)) {
+        // Vertical anchor
+        firstEdge = (firstCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
+        secondEdge = (secondCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
+        d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
 
-    // Vertical anchor
-    firstEdge = (firstCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
-    secondEdge = (secondCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
-    d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
-
-    invalidate();
+        invalidate();
+    }
 }
 
 /*!
@@ -351,11 +351,14 @@ void QGraphicsAnchorLayout::addAnchors(QGraphicsLayoutItem *firstItem,
                                        QGraphicsLayoutItem *secondItem,
                                        Qt::Orientations orientations)
 {
+    bool ok = true;
     if (orientations & Qt::Horizontal) {
-        addAnchor(secondItem, Qt::AnchorLeft, firstItem, Qt::AnchorLeft);
-        addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
+        // Currently, if the first is ok, then the rest of the calls should be ok
+        ok = addAnchor(secondItem, Qt::AnchorLeft, firstItem, Qt::AnchorLeft) != 0;
+        if (ok)
+            addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
     }
-    if (orientations & Qt::Vertical) {
+    if (orientations & Qt::Vertical && ok) {
         addAnchor(secondItem, Qt::AnchorTop, firstItem, Qt::AnchorTop);
         addAnchor(firstItem, Qt::AnchorBottom, secondItem, Qt::AnchorBottom);
     }

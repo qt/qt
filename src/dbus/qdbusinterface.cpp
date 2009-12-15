@@ -41,7 +41,7 @@
 
 #include "qdbusinterface.h"
 
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 #include <QtCore/qpointer.h>
 #include <QtCore/qstringlist.h>
 

@@ -524,7 +524,11 @@ LRESULT CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
             }
         }
     }
+#ifdef Q_OS_WINCE
+    return 0;
+#else
     return CallNextHookEx(0, code, wp, lp);
+#endif
 }
 
 static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatcher)
@@ -651,11 +655,13 @@ void QEventDispatcherWin32::createInternalHwnd()
         return;
     d->internalHwnd = qt_create_internal_window(this);
 
+#ifndef Q_OS_WINCE
     // setup GetMessage hook needed to drive our posted events
     d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
     if (!d->getMessageHook) {
         qFatal("Qt: INTERNALL ERROR: failed to install GetMessage hook");
     }
+#endif
 
     // register all socket notifiers
     QList<int> sockets = (d->sn_read.keys().toSet()
@@ -746,6 +752,11 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
             }
             if (haveMessage) {
+#ifdef Q_OS_WINCE
+                // WinCE doesn't support hooks at all, so we have to call this by hand :(
+                (void) qt_GetMessageHook(0, PM_REMOVE, (LPARAM) &msg);
+#endif
+
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     if (seenWM_QT_SENDPOSTEDEVENTS) {
                         // when calling processEvents() "manually", we only want to send posted
@@ -1082,9 +1093,11 @@ void QEventDispatcherWin32::closingDown()
     d->timerVec.clear();
     d->timerDict.clear();
 
+#ifndef Q_OS_WINCE
     if (d->getMessageHook)
         UnhookWindowsHookEx(d->getMessageHook);
     d->getMessageHook = 0;
+#endif
 }
 
 bool QEventDispatcherWin32::event(QEvent *e)

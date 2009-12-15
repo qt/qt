@@ -4092,9 +4092,15 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
             touchEvent->setWidget(widget);
             touchEvent->setAccepted(acceptTouchEvents);
+            QWeakPointer<QWidget> p = widget;
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
             eventAccepted = touchEvent->isAccepted();
-            widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
+            if (p.isNull()) {
+                // widget was deleted
+                widget = 0;
+            } else {
+                widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
+            }
             touchEvent->spont = false;
             if (res && eventAccepted) {
                 // the first widget to accept the TouchBegin gets an implicit grab.
@@ -4103,7 +4109,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     d->widgetForTouchPointId[touchPoint.id()] = widget;
                 }
                 break;
-            } else if (widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
+            } else if (p.isNull() || widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
                 break;
             }
             QPoint offset = widget->pos();

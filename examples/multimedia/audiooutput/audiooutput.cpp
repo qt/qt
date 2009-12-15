@@ -170,6 +170,18 @@ AudioTest::AudioTest()
     settings.setCodec("audio/pcm");
     settings.setByteOrder(QAudioFormat::LittleEndian);
     settings.setSampleType(QAudioFormat::SignedInt);
+
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (!info.isFormatSupported(settings)) {
+        qWarning()<<"default format not supported try to use nearest";
+        settings = info.nearestFormat(settings);
+    }
+
+    if(settings.sampleSize() != 16) {
+        qWarning()<<"audio device doesn't support 16 bit samples, example cannot run";
+        return;
+    }
+
     audioOutput = new QAudioOutput(settings,this);
     connect(audioOutput,SIGNAL(notify()),SLOT(status()));
     connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));

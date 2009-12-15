@@ -2493,7 +2493,6 @@ void tst_QSqlDatabase::oci_tables()
     QString systemTableName("system."+qTableName("mypassword"));
     QVERIFY_SQL(q, exec("CREATE TABLE "+systemTableName+"(name VARCHAR(20))"));
     QVERIFY(!db.tables().contains(systemTableName.toUpper()));
-    qDebug() << db.tables(QSql::SystemTables);
     QVERIFY(db.tables(QSql::SystemTables).contains(systemTableName.toUpper()));
 }
 

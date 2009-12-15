@@ -166,8 +166,6 @@ inline void QBezier::coefficients(qreal t, qreal &a, qreal &b, qreal &c, qreal &
 
 inline QPointF QBezier::pointAt(qreal t) const
 {
-    Q_ASSERT(t >= 0);
-    Q_ASSERT(t <= 1);
 #if 1
     qreal a, b, c, d;
     coefficients(t, a, b, c, d);

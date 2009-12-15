@@ -145,22 +145,13 @@ QObjectPrivate::QObjectPrivate(int version)
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;
-    connectedSignals = 0;
+    connectedSignals[0] = connectedSignals[1] = 0;
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
     metaObject = 0;
     hasGuards = false;
 }
-
-#ifdef Q_CC_INTEL
-/* Workaround for a bug in win32-icc where it seems to inline ~QObjectPrivate too aggressive.
-   When icc compiles QtGui, it inlines ~QObjectPrivate so that it would generate a call to
-  ~QObjectData. However, ~QObjectData is not exported from QtCore, so it does not link.
-  See also QTBUG-5145 for info on how this manifested itself.
- */
-# pragma auto_inline(off)
-#endif
 
 QObjectPrivate::~QObjectPrivate()
 {
@@ -173,9 +164,6 @@ QObjectPrivate::~QObjectPrivate()
     delete extraData;
 #endif
 }
-#ifdef Q_CC_INTEL
-# pragma auto_inline(on)
-#endif
 
 
 int *QObjectPrivate::setDeleteWatch(QObjectPrivate *d, int *w) {
@@ -2950,9 +2938,9 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
 
     QObjectPrivate *const sender_d = QObjectPrivate::get(s);
     if (signal_index < 0) {
-        sender_d->connectedSignals = ~ulong(0);
+        sender_d->connectedSignals[0] = sender_d->connectedSignals[1] = ~0;
     } else if (signal_index < (int)sizeof(sender_d->connectedSignals) * 8) {
-        sender_d->connectedSignals |= ulong(1) << signal_index;
+        sender_d->connectedSignals[signal_index >> 5] |= (1 << (signal_index & 0x1f));
     }
 
     return true;

@@ -42,7 +42,7 @@
 #include "qdbusmetatype.h"
 
 #include <string.h>
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 
 #include <qbytearray.h>
 #include <qglobal.h>
