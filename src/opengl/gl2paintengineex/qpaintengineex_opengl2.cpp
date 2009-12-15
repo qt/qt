@@ -884,6 +884,8 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             QVectorPath::CacheEntry *data = path.lookupCacheData(q);
             QGL2PEVectorPathCache *cache;
 
+            bool updateCache = false;
+
             if (data) {
                 cache = (QGL2PEVectorPathCache *) data->data;
                 // Check if scale factor is exceeded for curved paths and generate curves if so...
@@ -898,23 +900,23 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                         qFree(cache->vertices);
                         Q_ASSERT(cache->indices == 0);
 #endif
-                        cache->vertexCount = 0;
+                        updateCache = true;
                     }
                 }
             } else {
                 cache = new QGL2PEVectorPathCache;
-                cache->vertexCount = 0;
-                cache->indexCount = 0;
                 data = const_cast<QVectorPath &>(path).addCacheData(q, cache, qopengl2paintengine_cleanup_vectorpath);
+                updateCache = true;
             }
 
             // Flatten the path at the current scale factor and fill it into the cache struct.
-            if (!cache->vertexCount) {
+            if (updateCache) {
                 vertexCoordinateArray.clear();
                 vertexCoordinateArray.addPath(path, inverseScale, false);
                 int vertexCount = vertexCoordinateArray.vertexCount();
                 int floatSizeInBytes = vertexCount * 2 * sizeof(float);
                 cache->vertexCount = vertexCount;
+                cache->indexCount = 0;
                 cache->primitiveType = GL_TRIANGLE_FAN;
                 cache->iscale = inverseScale;
 #ifdef QT_OPENGL_CACHE_AS_VBOS
@@ -951,17 +953,21 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         }
 
     } else {
+        bool useCache = path.isCacheable();
+        if (useCache) {
+            QRectF bbox = path.controlPointRect();
+            // If the path doesn't fit within these limits, it is possible that the triangulation will fail.
+            useCache &= (bbox.left() > -0x8000 * inverseScale)
+                     && (bbox.right() < 0x8000 * inverseScale)
+                     && (bbox.top() > -0x8000 * inverseScale)
+                     && (bbox.bottom() < 0x8000 * inverseScale);
+        }
 
-        QRectF bbox = path.controlPointRect();
-        // If the path doesn't fit within these limits, it is possible that the triangulation will fail.
-        bool pathIsWithinLimits = (bbox.left() > -0x8000 * inverseScale)
-                                && (bbox.right() < 0x8000 * inverseScale)
-                                && (bbox.top() > -0x8000 * inverseScale)
-                                && (bbox.bottom() < 0x8000 * inverseScale);
-
-        if (path.isCacheable() && pathIsWithinLimits) {
+        if (useCache) {
             QVectorPath::CacheEntry *data = path.lookupCacheData(q);
             QGL2PEVectorPathCache *cache;
+
+            bool updateCache = false;
 
             if (data) {
                 cache = (QGL2PEVectorPathCache *) data->data;
@@ -972,24 +978,21 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 #ifdef QT_OPENGL_CACHE_AS_VBOS
                         glDeleteBuffers(1, &cache->vbo);
                         glDeleteBuffers(1, &cache->ibo);
-                        cache->vbo = cache->ibo = 0;
 #else
                         qFree(cache->vertices);
                         qFree(cache->indices);
 #endif
-                        cache->vertexCount = 0;
-                        cache->indexCount = 0;
+                        updateCache = true;
                     }
                 }
             } else {
                 cache = new QGL2PEVectorPathCache;
-                cache->vertexCount = 0;
-                cache->indexCount = 0;
                 data = const_cast<QVectorPath &>(path).addCacheData(q, cache, qopengl2paintengine_cleanup_vectorpath);
+                updateCache = true;
             }
 
             // Flatten the path at the current scale factor and fill it into the cache struct.
-            if (!cache->vertexCount) {
+            if (updateCache) {
                 QTriangleSet polys = qTriangulate(path, QTransform().scale(1 / inverseScale, 1 / inverseScale));
                 cache->vertexCount = polys.vertices.size() / 2;
                 cache->indexCount = polys.indices.size();
