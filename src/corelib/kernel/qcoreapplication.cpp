@@ -69,6 +69,7 @@
 #  include <f32file.h>
 #  include "qeventdispatcher_symbian_p.h"
 #  include "private/qcore_symbian_p.h"
+#  include "private/qlocale_p.h"
 #elif defined(Q_OS_UNIX)
 #  if !defined(QT_NO_GLIB)
 #    include "qeventdispatcher_glib_p.h"
@@ -2601,4 +2602,13 @@ int QCoreApplication::loopLevel()
     \sa Q_OBJECT, QObject::tr(), QObject::trUtf8()
 */
 
+#if defined(Q_OS_SYMBIAN)
+void QCoreApplicationPrivate::_q_symbianRegisterLocaleNotifier()
+{
+    QLocalePrivate::symbianRegisterLocaleNotifier();
+}
+#endif
+
 QT_END_NAMESPACE
+
+#include "moc_qcoreapplication.cpp"

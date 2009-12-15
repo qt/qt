@@ -463,9 +463,6 @@ void QMainWindowLayout::removeFromMacToolbar(QToolBar *toolbar)
             NSToolbarItem *item = static_cast<NSToolbarItem *>(it.key());
             [[qt_mac_window_for(layoutState.mainWindow->window()) toolbar]
                 removeItemAtIndex:toolbarItemsCopy.indexOf(item)];
-            // In Carbon this hash and list gets emptied via events. In Cocoa, we have to do it ourselves here.
-            it = unifiedToolbarHash.erase(it);
-            qtoolbarsInUnifiedToolbarList.removeAll(toolbar);
 #endif
             break;
         }
