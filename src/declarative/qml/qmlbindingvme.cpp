@@ -66,6 +66,7 @@ struct Register {
     bool getbool() { return *((bool *)data); }
 
     QVariant *getvariantptr() { return (QVariant *)typeDataPtr(); }
+    QString *getstringptr() { return (QString *)typeDataPtr(); }
 
     void *typeDataPtr() { return (void *)&data; }
     void *typeMemory() { return (void *)data; }
@@ -75,6 +76,8 @@ struct Register {
 
 struct Instr {
     enum {
+        Noop,
+
         Init,                    // init
 
         Subscribe,               // subscribe
@@ -98,11 +101,18 @@ struct Instr {
         MinusReal,               // binaryop
         MinusInt,                // binaryop
 
+        CompareReal,             // binaryop
+        CompareString,           // binaryop
+
+        NotCompareReal,          // binaryop
+        NotCompareString,        // binaryop
+        
         GreaterThanReal,         // binaryop
 
         NewString,               // construct
         CleanupString,           // cleanup
 
+        Copy,                    // copy
         Fetch,                   // fetch
         Store,                   // store
 
@@ -152,6 +162,10 @@ struct Instr {
             int objectReg;
             int index;
         } fetch;
+        struct {
+            int reg;
+            int src;
+        } copy;
         struct {
             int reg;
         } construct;
@@ -262,10 +276,12 @@ struct QmlBindingCompiler
     bool parseConstant(QmlJS::AST::Node *, Result &);
 
     bool buildName(QStringList &, QmlJS::AST::Node *);
-    Result fetch(const QMetaObject *, int reg, int idx, const QStringList &);
+    bool fetch(Result &type, const QMetaObject *, int reg, int idx, const QStringList &);
 
     quint32 registers;
-    int acquireReg();
+    QHash<int, QPair<int, int> > registerCleanups;
+    int acquireReg(int cleanup = Instr::Noop, int cleanupType = 0);
+    void registerCleanup(int reg, int cleanup, int cleanupType = 0);
     void releaseReg(int);
 
     int registerString(const QString &);
@@ -372,6 +388,9 @@ static bool findproperty(QObject *obj,
                          const QScriptDeclarativeClass::Identifier &name,
                          bool isTerminal)
 {
+    if (!obj)
+        return false;
+
     QmlPropertyCache::Data local;
     QmlPropertyCache::Data *property = findproperty(obj, name, enginePriv, local);
 
@@ -576,6 +595,8 @@ void QmlBindingVME::run(const char *programData, Config *config,
     while (instr) {
 
     switch (instr->type) {
+    case Instr::Noop:
+        break;
     case Instr::Init:
         if (!config->subscriptions && instr->init.subscriptions)
             config->subscriptions = new Config::Subscription[instr->init.subscriptions];
@@ -660,6 +681,26 @@ void QmlBindingVME::run(const char *programData, Config *config,
                                                  registers[instr->binaryop.src2].getint());
         break;
 
+    case Instr::CompareReal:
+        registers[instr->binaryop.output].setbool(registers[instr->binaryop.src1].getqreal() ==
+                                                  registers[instr->binaryop.src2].getqreal());
+        break;
+
+    case Instr::CompareString:
+        registers[instr->binaryop.output].setbool(*registers[instr->binaryop.src1].getstringptr() ==
+                                                  *registers[instr->binaryop.src2].getstringptr());
+        break;
+
+    case Instr::NotCompareReal:
+        registers[instr->binaryop.output].setbool(registers[instr->binaryop.src1].getqreal() !=
+                                                  registers[instr->binaryop.src2].getqreal());
+        break;
+
+    case Instr::NotCompareString:
+        registers[instr->binaryop.output].setbool(*registers[instr->binaryop.src1].getstringptr() !=
+                                                  *registers[instr->binaryop.src2].getstringptr());
+        break;
+
     case Instr::GreaterThanReal:
         registers[instr->binaryop.output].setbool(registers[instr->binaryop.src1].getqreal() > 
                                                   registers[instr->binaryop.src2].getqreal());
@@ -693,6 +734,10 @@ void QmlBindingVME::run(const char *programData, Config *config,
             QMetaObject::metacall(outputs[instr->store.output], QMetaObject::WriteProperty, 
                                   instr->store.index, argv);
         }
+        break;
+
+    case Instr::Copy:
+        registers[instr->copy.reg] = registers[instr->copy.src];
         break;
 
     case Instr::Skip:
@@ -789,6 +834,9 @@ void QmlBindingVME::dump(const QByteArray &programData)
     while (count--) {
 
         switch (instr->type) {
+        case Instr::Noop:
+            qWarning().nospace() << "Noop";
+            break;
         case Instr::Init:
             qWarning().nospace() << "Init" << "\t\t\t" << instr->init.subscriptions << "\t" << instr->init.identifiers;
             break;
@@ -837,6 +885,18 @@ void QmlBindingVME::dump(const QByteArray &programData)
         case Instr::MinusInt:
             qWarning().nospace() << "MinusInt" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
             break;
+        case Instr::CompareReal:
+            qWarning().nospace() << "CompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+            break;
+        case Instr::CompareString:
+            qWarning().nospace() << "CompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+            break;
+        case Instr::NotCompareReal:
+            qWarning().nospace() << "NotCompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+            break;
+        case Instr::NotCompareString:
+            qWarning().nospace() << "NotCompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+            break;
         case Instr::GreaterThanReal:
             qWarning().nospace() << "GreaterThanReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
             break;
@@ -851,6 +911,9 @@ void QmlBindingVME::dump(const QByteArray &programData)
             break;
         case Instr::Store:
             qWarning().nospace() << "Store" << "\t\t\t" << instr->store.output << "\t" << instr->store.index << "\t" << instr->store.reg;
+            break;
+        case Instr::Copy:
+            qWarning().nospace() << "Copy" << "\t\t\t" << instr->copy.reg << "\t" << instr->copy.src;
             break;
         case Instr::Skip:
             qWarning().nospace() << "Skip" << "\t\t\t" << instr->skip.reg << "\t" << instr->skip.count;
@@ -1018,6 +1081,8 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
             instr.store.reg = type.reg;
             bytecode << instr;
 
+            releaseReg(type.reg);
+
             Instr done;
             done.type = Instr::Done;
             bytecode << done;
@@ -1178,7 +1243,7 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
                     subscribeName << QLatin1String("$$$Scope");
                     subscribeName << name;
 
-                    type = fetch(context->metaObject(), reg, d0Idx, subscribeName);
+                    fetch(type, context->metaObject(), reg, d0Idx, subscribeName);
                 } else if(d1Idx != -1) {
                     Instr instr;
                     instr.type = Instr::LoadRoot;
@@ -1189,7 +1254,7 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
                     subscribeName << QLatin1String("$$$Root");
                     subscribeName << name;
 
-                    type = fetch(component->metaObject(), reg, d1Idx, subscribeName);
+                    fetch(type, component->metaObject(), reg, d1Idx, subscribeName);
                 } else {
                     Instr find;
                     if (nameParts.count() == 1)
@@ -1249,7 +1314,7 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
 
             if (absType || (wasAttachedObject && idx != -1) || (mo && mo->property(idx).isFinal())) {
                 absType = 0; 
-                type = fetch(mo, reg, idx, subscribeName);
+                fetch(type, mo, reg, idx, subscribeName);
                 if (type.type == -1)
                     return false;
             } else {
@@ -1300,6 +1365,8 @@ bool QmlBindingCompiler::parseArith(QmlJS::AST::Node *node, Result &type)
 {
     AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
 
+    type.reg = acquireReg();
+
     Result lhs;
     Result rhs;
 
@@ -1343,13 +1410,6 @@ bool QmlBindingCompiler::parseArith(QmlJS::AST::Node *node, Result &type)
         qFatal("Unsupported arithmetic operator");
     }
 
-    // We release early so we can reuse one of the registers as 
-    // the output
-    releaseReg(lhs.reg);
-    releaseReg(rhs.reg);
-
-    type.reg = acquireReg();
-
     arith.binaryop.output = type.reg;
     arith.binaryop.src1 = lhs.reg;
     arith.binaryop.src2 = rhs.reg;
@@ -1357,6 +1417,11 @@ bool QmlBindingCompiler::parseArith(QmlJS::AST::Node *node, Result &type)
 
     type.metaObject = 0;
     type.type = nativeReal?QMetaType::QReal:QMetaType::Int;
+    type.subscriptionSet.unite(lhs.subscriptionSet);
+    type.subscriptionSet.unite(rhs.subscriptionSet);
+
+    releaseReg(lhs.reg);
+    releaseReg(rhs.reg);
 
     return true;
 }
@@ -1367,7 +1432,9 @@ bool QmlBindingCompiler::tryLogic(QmlJS::AST::Node *node)
         return false;
 
     AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
-    if (expression->op == QSOperator::Gt)
+    if (expression->op == QSOperator::Gt ||
+        expression->op == QSOperator::Equal ||
+        expression->op == QSOperator::NotEqual)
         return true;
     else
         return false;
@@ -1383,24 +1450,47 @@ bool QmlBindingCompiler::parseLogic(QmlJS::AST::Node *node, Result &type)
     if (!parseExpression(expression->left, lhs)) return false;
     if (!parseExpression(expression->right, rhs)) return false;
 
-    if (lhs.type != QMetaType::QReal || rhs.type != QMetaType::QReal)
-        return false;
-
-    // We release early so we can reuse one of the registers as 
-    // the output
-    releaseReg(lhs.reg);
-    releaseReg(rhs.reg);
-
     type.reg = acquireReg();
     type.metaObject = 0;
     type.type = QVariant::Bool;
 
-    Instr op;
-    op.type = Instr::GreaterThanReal;
-    op.binaryop.output = type.reg;
-    op.binaryop.src1 = lhs.reg;
-    op.binaryop.src2 = rhs.reg;
-    bytecode << op;
+    if (lhs.type == QMetaType::QReal && rhs.type == QMetaType::QReal) {
+
+        Instr op;
+        if (expression->op == QSOperator::Gt)
+            op.type = Instr::GreaterThanReal;
+        else if (expression->op == QSOperator::Equal)
+            op.type = Instr::CompareReal;
+        else if (expression->op == QSOperator::NotEqual)
+            op.type = Instr::NotCompareReal;
+        else
+            return false;
+        op.binaryop.output = type.reg;
+        op.binaryop.src1 = lhs.reg;
+        op.binaryop.src2 = rhs.reg;
+        bytecode << op;
+
+
+    } else if (lhs.type == QMetaType::QString && rhs.type == QMetaType::QString) {
+
+        Instr op;
+        if (expression->op == QSOperator::Equal)
+            op.type = Instr::CompareString;
+        else if (expression->op == QSOperator::NotEqual)
+            op.type = Instr::NotCompareString;
+        else
+            return false;
+        op.binaryop.output = type.reg;
+        op.binaryop.src1 = lhs.reg;
+        op.binaryop.src2 = rhs.reg;
+        bytecode << op;
+
+    } else {
+        return false;
+    }
+
+    releaseReg(lhs.reg);
+    releaseReg(rhs.reg);
 
     return true;
 }
@@ -1535,11 +1625,13 @@ bool QmlBindingCompiler::buildName(QStringList &name,
     return true;
 }
 
-QmlBindingCompiler::Result
-QmlBindingCompiler::fetch(const QMetaObject *mo, int reg, int idx, const QStringList &subName)
+
+bool QmlBindingCompiler::fetch(Result &rv, const QMetaObject *mo, int reg, int idx, const QStringList &subName)
 {
     QMetaProperty prop = mo->property(idx);
-    Result rv;
+    rv.metaObject = 0;
+    rv.type = 0;
+
     if (subscription(subName, &rv) && prop.hasNotifySignal() && prop.notifySignalIndex() != -1) {
         Instr sub;
         sub.type = Instr::Subscribe;
@@ -1549,32 +1641,63 @@ QmlBindingCompiler::fetch(const QMetaObject *mo, int reg, int idx, const QString
         bytecode << sub;
     }
 
-    Instr instr;
-    instr.type = Instr::Fetch;
-    instr.fetch.objectReg = reg;
-    instr.fetch.index = idx;
-    instr.fetch.output = reg;
-    bytecode << instr;
+    Instr fetch;
+    fetch.type = Instr::Fetch;
+    fetch.fetch.objectReg = reg;
+    fetch.fetch.index = idx;
+    fetch.fetch.output = reg;
 
     rv.type = prop.userType();
     rv.metaObject = QmlMetaType::metaObjectForType(rv.type);
     rv.reg = reg;
 
+    if (rv.type == QMetaType::QString) {
+        int tmp = acquireReg();
+        Instr copy;
+        copy.type = Instr::Copy;
+        copy.copy.reg = tmp;
+        copy.copy.src = reg;
+        bytecode << copy;
+        releaseReg(tmp);
+        fetch.fetch.objectReg = tmp;
+
+        Instr setup;
+        setup.type = Instr::NewString;
+        setup.construct.reg = reg;
+        bytecode << setup;
+        registerCleanup(reg, Instr::CleanupString);
+    }
+
+    bytecode << fetch;
+
     if (!rv.metaObject &&
         rv.type != QMetaType::QReal &&
         rv.type != QMetaType::Int &&
         rv.type != QMetaType::Bool &&
-        rv.type != qMetaTypeId<QmlGraphicsAnchorLine>())
-        return Result(); // Unsupported type (string not supported yet);
+        rv.type != qMetaTypeId<QmlGraphicsAnchorLine>() &&
+        rv.type != QMetaType::QString) {
+        rv.metaObject = 0;
+        rv.type = 0;
+        return false; // Unsupported type (string not supported yet);
+    }
 
-    return rv;
+    return true;
 }
 
-int QmlBindingCompiler::acquireReg()
+void QmlBindingCompiler::registerCleanup(int reg, int cleanup, int cleanupType)
+{
+    registerCleanups.insert(reg, qMakePair(cleanup, cleanupType));
+}
+
+int QmlBindingCompiler::acquireReg(int cleanup, int cleanupType)
 {
     for (int ii = 0; ii < 32; ++ii) {
         if (!(registers & (1 << ii))) {
             registers |= (1 << ii);
+
+            if (cleanup != Instr::Noop)
+                registerCleanup(ii, cleanup, cleanupType);
+
             return ii;
         }
     }
@@ -1584,6 +1707,16 @@ int QmlBindingCompiler::acquireReg()
 void QmlBindingCompiler::releaseReg(int reg)
 {
     Q_ASSERT(reg >= 0 && reg <= 31);
+
+    if (registerCleanups.contains(reg)) {
+        QPair<int, int> c = registerCleanups[reg];
+        registerCleanups.remove(reg);
+        Instr cleanup;
+        (int &)cleanup.type = c.first;
+        cleanup.cleanup.reg = reg;
+        cleanup.cleanup.typeReg = c.second;
+        bytecode << cleanup;
+    }
 
     quint32 mask = 1 << reg;
     registers &= ~mask;
