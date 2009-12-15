@@ -3810,6 +3810,11 @@ bool QGLWidget::event(QEvent *e)
     }
 
 #if defined(QT_OPENGL_ES)
+    // A re-parent is likely to destroy the X11 window and re-create it. It is important
+    // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
+    if (e->type() == QEvent::ParentAboutToChange)
+        d->glcx->d_func()->destroyEglSurfaceForDevice();
+
     if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
         // The window may have been re-created during re-parent or state change - if so, the EGL
         // surface will need to be re-created.

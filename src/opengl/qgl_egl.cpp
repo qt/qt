@@ -142,19 +142,7 @@ void QGLContext::reset()
     d->cleanup();
     doneCurrent();
     if (d->eglContext) {
-        if (d->eglSurface != EGL_NO_SURFACE) {
-#ifdef Q_WS_X11
-            // Make sure we don't call eglDestroySurface on a surface which
-            // was created for a different winId:
-            if (d->paintDevice->devType() == QInternal::Widget) {
-                QGLWidget* w = static_cast<QGLWidget*>(d->paintDevice);
-
-                if (w->d_func()->eglSurfaceWindowId == w->winId())
-                    eglDestroySurface(d->eglContext->display(), d->eglSurface);
-            } else
-#endif
-                eglDestroySurface(d->eglContext->display(), d->eglSurface);
-        }
+        d->destroyEglSurfaceForDevice();
         delete d->eglContext;
     }
     d->eglContext = 0;
@@ -196,6 +184,26 @@ void QGLContext::swapBuffers() const
         return;
 
     d->eglContext->swapBuffers(d->eglSurface);
+}
+
+void QGLContextPrivate::destroyEglSurfaceForDevice()
+{
+    if (eglSurface != EGL_NO_SURFACE) {
+#ifdef Q_WS_X11
+        // Make sure we don't call eglDestroySurface on a surface which
+        // was created for a different winId:
+        if (paintDevice->devType() == QInternal::Widget) {
+            QGLWidget* w = static_cast<QGLWidget*>(paintDevice);
+
+            if (w->d_func()->eglSurfaceWindowId == w->winId())
+                eglDestroySurface(eglContext->display(), eglSurface);
+            else
+                qWarning("WARNING: Potential EGL surface leak!");
+        } else
+#endif
+            eglDestroySurface(eglContext->display(), eglSurface);
+        eglSurface = EGL_NO_SURFACE;
+    }
 }
 
 void QGLWidget::setMouseTracking(bool enable)
