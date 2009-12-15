@@ -594,9 +594,10 @@ void QNetworkAccessHttpBackend::open()
     if (transparentProxy.type() == QNetworkProxy::DefaultProxy &&
         cacheProxy.type() == QNetworkProxy::DefaultProxy) {
         // unsuitable proxies
-        error(QNetworkReply::ProxyNotFoundError,
-              tr("No suitable proxy found"));
-        finished();
+        QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+                                  Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProxyNotFoundError),
+                                  Q_ARG(QString, QCoreApplication::translate("QNetworkAccessHttpBackend", "No suitable proxy found")));
+        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
         return;
     }
 #endif
