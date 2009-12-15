@@ -3601,7 +3601,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
     item->setFlag(QGraphicsItem::ItemIsFocusable);
     scene.addItem(item);
     scene.setFocusItem(item);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
 
     item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
@@ -3616,35 +3616,35 @@ void tst_QGraphicsView::inputMethodSensitivity()
     scene.addItem(item2);
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item2);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     scene.setFocusItem(item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(0);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item2);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     view.setScene(0);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item2);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     scene.setFocusItem(item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 }
 
 class InputContextTester : public QInputContext
@@ -3878,7 +3878,7 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
         { lastBackgroundExposedRect = rect; }
         QRectF lastBackgroundExposedRect;
     };
-    
+
     class CustomRectItem : public QGraphicsRectItem
     {
     public:
