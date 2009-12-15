@@ -44,7 +44,7 @@
 #include "qmlengine.h"
 #include "qmlengine_p.h"
 #include "qmlrefcount_p.h"
-#include "qmlengine_p.h"
+#include "qmlexpression_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtScript/qscriptvalue.h>
@@ -319,6 +319,10 @@ static QScriptValue qmlsqldatabase_transaction_shared(QScriptContext *context, Q
     instance.setProperty(QLatin1String("executeSql"),
         engine->newFunction(qmlsqldatabase_executeSql_outsidetransaction));
     if (engine->hasUncaughtException()) {
+        QmlError error;
+        QmlExpressionPrivate::exceptionToError(engine, error);
+        qWarning() << error;
+        engine->clearExceptions();
         db.rollback();
     } else {
         if (!db.commit())
