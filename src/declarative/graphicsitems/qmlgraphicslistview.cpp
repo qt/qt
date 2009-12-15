@@ -166,7 +166,7 @@ public:
 
 //----------------------------------------------------------------------------
 
-class QmlGraphicsListViewPrivate : public QmlGraphicsFlickablePrivate
+class QmlGraphicsListViewPrivate : public QmlGraphicsFlickablePrivate, private QmlGraphicsItemGeometryListener
 {
     Q_DECLARE_PUBLIC(QmlGraphicsListView)
 
@@ -410,6 +410,13 @@ public:
             q->setViewportWidth(q->minXExtent() - q->maxXExtent());
     }
 
+    void itemGeometryChanged(QmlGraphicsItem *, const QRectF &newGeometry, const QRectF &oldGeometry) {
+        if (orient == QmlGraphicsListView::Vertical && newGeometry.height() != oldGeometry.height()
+            || newGeometry.width() != oldGeometry.width()) {
+            layout();
+            fixupPosition();
+        }
+    }
 
     // for debugging only
     void checkVisible() const {
@@ -486,11 +493,7 @@ public:
     bool correctFlick : 1;
     bool inFlickCorrection : 1;
     bool lazyRelease : 1;
-
-    static int itemResizedIdx;
 };
-
-int QmlGraphicsListViewPrivate::itemResizedIdx = -1;
 
 void QmlGraphicsListViewPrivate::init()
 {
@@ -500,8 +503,6 @@ void QmlGraphicsListViewPrivate::init()
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
-    if (itemResizedIdx == -1)
-        itemResizedIdx = QmlGraphicsListView::staticMetaObject.indexOfSlot("itemResized()");
 }
 
 void QmlGraphicsListViewPrivate::clear()
@@ -543,10 +544,7 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
         listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
         QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item));
-        if (orient == QmlGraphicsListView::Vertical)
-            itemPrivate->connectToHeightChanged(q, itemResizedIdx);
-        else
-            itemPrivate->connectToWidthChanged(q, itemResizedIdx);
+        itemPrivate->addGeometryListener(this);
     }
     requestedIndex = -1;
 
@@ -565,14 +563,11 @@ void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
         QObject::disconnect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
     }
+    QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item->item));
+    itemPrivate->removeGeometryListener(this);
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
-        QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item->item));
-        if (orient == QmlGraphicsListView::Vertical)
-            itemPrivate->disconnectFromHeightChanged(q, itemResizedIdx);
-        else
-            itemPrivate->disconnectFromWidthChanged(q, itemResizedIdx);
     }
     delete item;
 }
@@ -2204,16 +2199,6 @@ void QmlGraphicsListView::trackedPositionChanged()
                 d->setPosition(pos);
             }
         }
-    }
-}
-
-void QmlGraphicsListView::itemResized()
-{
-    Q_D(QmlGraphicsListView);
-    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(sender());
-    if (item) {
-        d->layout();
-        d->fixupPosition();
     }
 }
 

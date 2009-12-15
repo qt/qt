@@ -241,22 +241,20 @@ void QmlGraphicsAnchorsPrivate::clearItem(QmlGraphicsItem *item)
 
 void QmlGraphicsAnchorsPrivate::addDepend(QmlGraphicsItem *item)
 {
-    Q_Q(QmlGraphicsAnchors);
     if (!item)
         return;
     QmlGraphicsItemPrivate *p =
         static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(item));
-    p->dependantAnchors.append(q);
+    p->addGeometryListener(this);
 }
 
 void QmlGraphicsAnchorsPrivate::remDepend(QmlGraphicsItem *item)
 {
-    Q_Q(QmlGraphicsAnchors);
     if (!item)
         return;
     QmlGraphicsItemPrivate *p =
         static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(item));
-    p->dependantAnchors.removeOne(q);
+    p->removeGeometryListener(this);
 }
 
 bool QmlGraphicsAnchorsPrivate::isItemComplete() const
@@ -332,7 +330,7 @@ void QmlGraphicsAnchorsPrivate::updateOnComplete()
     updateVerticalAnchors();
 }
 
-void QmlGraphicsAnchorsPrivate::update(QmlGraphicsItem *, const QRectF &newG, const QRectF &oldG)
+void QmlGraphicsAnchorsPrivate::itemGeometryChanged(QmlGraphicsItem *, const QRectF &newG, const QRectF &oldG)
 {
     fillChanged();
     centerInChanged();

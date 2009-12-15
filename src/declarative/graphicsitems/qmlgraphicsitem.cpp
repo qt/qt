@@ -1478,17 +1478,18 @@ QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItemPrivate &dd, QmlGraphicsItem *pa
 QmlGraphicsItem::~QmlGraphicsItem()
 {
     Q_D(QmlGraphicsItem);
-    for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-        QmlGraphicsAnchors *anchor = d->dependantAnchors.at(ii);
-        anchor->d_func()->clearItem(this);
+    for (int ii = 0; ii < d->geometryListeners.count(); ++ii) {
+        QmlGraphicsAnchorsPrivate *anchor = d->geometryListeners.at(ii)->anchorPrivate();
+        if (anchor)
+            anchor->clearItem(this);
     }
     if (!d->parent || (parentItem() && !parentItem()->QGraphicsItem::d_ptr->inDestructor))
-        for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-            QmlGraphicsAnchors *anchor = d->dependantAnchors.at(ii);
-            if (anchor->d_func()->item && anchor->d_func()->item->parentItem() != this) //child will be deleted anyway
-                anchor->d_func()->updateOnComplete();
+        for (int ii = 0; ii < d->geometryListeners.count(); ++ii) {
+            QmlGraphicsAnchorsPrivate *anchor = d->geometryListeners.at(ii)->anchorPrivate();
+            if (anchor && anchor->item && anchor->item->parentItem() != this) //child will be deleted anyway
+                anchor->updateOnComplete();
         }
-    d->dependantAnchors.clear();
+    d->geometryListeners.clear();
     delete d->_anchorLines; d->_anchorLines = 0;
     delete d->_anchors; d->_anchors = 0;
     delete d->_stateGroup; d->_stateGroup = 0;
@@ -1974,10 +1975,20 @@ void QmlGraphicsItem::geometryChanged(const QRectF &newGeometry,
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
 
-    for(int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-        QmlGraphicsAnchors *anchor = d->dependantAnchors.at(ii);
-        anchor->d_func()->update(this, newGeometry, oldGeometry);
+    for(int ii = 0; ii < d->geometryListeners.count(); ++ii) {
+        QmlGraphicsItemGeometryListener *listener = d->geometryListeners.at(ii);
+        listener->itemGeometryChanged(this, newGeometry, oldGeometry);
     }
+}
+
+void QmlGraphicsItemPrivate::addGeometryListener(QmlGraphicsItemGeometryListener *listener)
+{
+    geometryListeners.append(listener);
+}
+
+void QmlGraphicsItemPrivate::removeGeometryListener(QmlGraphicsItemGeometryListener *listener)
+{
+    geometryListeners.removeAll(listener);
 }
 
 /*! \internal */
@@ -2227,9 +2238,10 @@ void QmlGraphicsItem::setBaselineOffset(qreal offset)
     d->_baselineOffset = offset;
     emit baselineOffsetChanged();
 
-    for(int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-        QmlGraphicsAnchors *anchor = d->dependantAnchors.at(ii);
-        anchor->d_func()->updateVerticalAnchors();
+    for(int ii = 0; ii < d->geometryListeners.count(); ++ii) {
+        QmlGraphicsAnchorsPrivate *anchor = d->geometryListeners.at(ii)->anchorPrivate();
+        if (anchor)
+            anchor->updateVerticalAnchors();
     }
 }
 

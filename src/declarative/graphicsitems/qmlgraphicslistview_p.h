@@ -188,7 +188,6 @@ protected:
 private Q_SLOTS:
     void refill();
     void trackedPositionChanged();
-    void itemResized();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
