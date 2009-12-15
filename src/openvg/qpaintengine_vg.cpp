@@ -43,6 +43,7 @@
 #include "qpixmapdata_vg_p.h"
 #include "qpixmapfilter_vg_p.h"
 #include "qvgcompositionhelper_p.h"
+#include "qvgimagepool_p.h"
 #if !defined(QT_NO_EGL)
 #include <QtGui/private/qegl_p.h>
 #include "qwindowsurface_vgegl_p.h"
@@ -1018,7 +1019,7 @@ static VGImage toVGImage
 
     const uchar *pixels = img.bits();
 
-    VGImage vgImg = vgCreateImage
+    VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (format, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
     vgImageSubData
         (vgImg, pixels, img.bytesPerLine(), format, 0, 0,
@@ -1063,7 +1064,7 @@ static VGImage toVGImageSubRect
     const uchar *pixels = img.bits() + bpp * sr.x() +
                           img.bytesPerLine() * sr.y();
 
-    VGImage vgImg = vgCreateImage
+    VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (format, sr.width(), sr.height(), VG_IMAGE_QUALITY_FASTER);
     vgImageSubData
         (vgImg, pixels, img.bytesPerLine(), format, 0, 0,
@@ -1084,7 +1085,7 @@ static VGImage toVGImageWithOpacity(const QImage & image, qreal opacity)
 
     const uchar *pixels = img.bits();
 
-    VGImage vgImg = vgCreateImage
+    VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
     vgImageSubData
         (vgImg, pixels, img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0,
@@ -1106,7 +1107,7 @@ static VGImage toVGImageWithOpacitySubRect
 
     const uchar *pixels = img.bits();
 
-    VGImage vgImg = vgCreateImage
+    VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
     vgImageSubData
         (vgImg, pixels, img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0,
@@ -1194,6 +1195,12 @@ VGPaintType QVGPaintEnginePrivate::setBrush
             if (pd->classId() == QPixmapData::OpenVGClass) {
                 QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
                 vgImg = vgpd->toVGImage();
+
+                // We don't want the pool to reclaim this image
+                // because we cannot predict when the paint object
+                // will stop using it.  Replacing the image with
+                // new data will make the paint object invalid.
+                vgpd->detachImageFromPool();
             } else {
                 vgImg = toVGImage(*(pd->buffer()));
                 deref = true;
@@ -1201,6 +1208,7 @@ VGPaintType QVGPaintEnginePrivate::setBrush
         } else if (pd->classId() == QPixmapData::OpenVGClass) {
             QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
             vgImg = vgpd->toVGImage(opacity);
+            vgpd->detachImageFromPool();
         } else {
             vgImg = toVGImageWithOpacity(*(pd->buffer()), opacity);
             deref = true;

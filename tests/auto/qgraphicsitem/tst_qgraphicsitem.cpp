@@ -1354,6 +1354,7 @@ void tst_QGraphicsItem::selected()
     view.setFixedSize(250, 250);
     view.show();
 
+    QTest::qWaitForWindowShown(&view);
     qApp->processEvents();
     qApp->processEvents();
 

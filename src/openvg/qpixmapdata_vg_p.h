@@ -63,6 +63,7 @@ class RSGImage;
 QT_BEGIN_NAMESPACE
 
 class QEglContext;
+class QVGImagePool;
 
 #if !defined(QT_NO_EGL)
 class QVGPixmapData;
@@ -101,6 +102,9 @@ public:
     // Return the VGImage form for a specific opacity setting.
     virtual VGImage toVGImage(qreal opacity);
 
+    // Detach this image from the image pool.
+    virtual void detachImageFromPool();
+
     // Release the VG resources associated with this pixmap and copy
     // the pixmap's contents out of the GPU back into main memory.
     // The VG resource will be automatically recreated the next time
@@ -108,6 +112,10 @@ public:
     // hibernated for some reason (e.g. VGImage is shared with another
     // process via a SgImage).
     virtual void hibernate();
+
+    // Called when the QVGImagePool wants to reclaim this pixmap's
+    // VGImage objects to reuse storage.
+    virtual void reclaimImages();
 
     QSize size() const { return QSize(w, h); }
 
@@ -123,8 +131,13 @@ protected:
     void cleanup();
 #endif
 
-#if !defined(QT_NO_EGL)
 private:
+    QVGPixmapData *nextLRU;
+    QVGPixmapData *prevLRU;
+    bool inLRU;
+    friend class QVGImagePool;
+
+#if !defined(QT_NO_EGL)
     QVGPixmapData *next;
     QVGPixmapData *prev;
 
@@ -140,6 +153,7 @@ protected:
     qreal cachedOpacity;
     mutable QImage source;
     mutable bool recreate;
+    bool inImagePool;
 #if !defined(QT_NO_EGL)
     mutable QEglContext *context;
 #endif
@@ -148,6 +162,7 @@ protected:
     QImage::Format sourceFormat() const;
 
     void destroyImageAndContext();
+    void destroyImages();
 };
 
 QT_END_NAMESPACE
