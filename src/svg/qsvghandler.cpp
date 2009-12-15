@@ -1147,12 +1147,12 @@ static QMatrix parseTransformationMatrix(const QStringRef &value)
             if (points.count() != 1)
                 goto error;
             const qreal deg2rad = qreal(0.017453292519943295769);
-            matrix.shear(tan(points[0]*deg2rad), 0);
+            matrix.shear(qTan(points[0]*deg2rad), 0);
         } else if (state == SkewY) {
             if (points.count() != 1)
                 goto error;
             const qreal deg2rad = qreal(0.017453292519943295769);
-            matrix.shear(0, tan(points[0]*deg2rad));
+            matrix.shear(0, qTan(points[0]*deg2rad));
         }
     }
   error:
@@ -1481,8 +1481,8 @@ static void pathArc(QPainterPath &path,
     yc = 0.5 * (y0 + y1) + sfactor * (x1 - x0);
     /* (xc, yc) is center of the circle. */
 
-    th0 = atan2(y0 - yc, x0 - xc);
-    th1 = atan2(y1 - yc, x1 - xc);
+    th0 = qAtan2(y0 - yc, x0 - xc);
+    th1 = qAtan2(y1 - yc, x1 - xc);
 
     th_arc = th1 - th0;
     if (th_arc < 0 && sweep_flag)
