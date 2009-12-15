@@ -44,16 +44,25 @@
 #include <QPainter>
 #include <QSize>
 #include <qmath.h>
+#include <private/qtextcontrol_p.h>
 
 class tst_text : public QObject
 {
     Q_OBJECT
 public:
-    tst_text() {}
+    tst_text()
+    {
+        m_text = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+    }
 
 private slots:
     void layout();
-    void paintToPixmap();
+    void paintLayoutToPixmap();
+    void document();
+    void paintDocToPixmap();
+
+private:
+    QString m_text;
 };
 
 QSize setupTextLayout(QTextLayout *layout)
@@ -94,18 +103,18 @@ QSize setupTextLayout(QTextLayout *layout)
 void tst_text::layout()
 {
     //get rid of initialization effects
-    QTextLayout layout("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+    QTextLayout layout(m_text);
     setupTextLayout(&layout);
 
     QBENCHMARK {
-        QTextLayout layout("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+        QTextLayout layout(m_text);
         setupTextLayout(&layout);
     }
 }
 
-void tst_text::paintToPixmap()
+void tst_text::paintLayoutToPixmap()
 {
-    QTextLayout layout("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+    QTextLayout layout(m_text);
     QSize size = setupTextLayout(&layout);
 
     QBENCHMARK {
@@ -113,6 +122,32 @@ void tst_text::paintToPixmap()
         img.fill(Qt::transparent);
         QPainter p(&img);
         layout.draw(&p, QPointF(0, 0));
+    }
+}
+
+void tst_text::document()
+{
+    QTextControl *control = new QTextControl(m_text);
+
+    QBENCHMARK {
+        QTextControl *control = new QTextControl;
+        QTextDocument *doc = control->document();
+        doc->setHtml(m_text);
+    }
+}
+
+void tst_text::paintDocToPixmap()
+{
+    QTextControl *control = new QTextControl;
+    QTextDocument *doc = control->document();
+    doc->setHtml(m_text);
+    QSize size = doc->size().toSize();
+
+    QBENCHMARK {
+        QPixmap img(size);
+        img.fill(Qt::transparent);
+        QPainter p(&img);
+        control->drawContents(&p, QRectF(QPointF(0, 0), QSizeF(size)));
     }
 }
 

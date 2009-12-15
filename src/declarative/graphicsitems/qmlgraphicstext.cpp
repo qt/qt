@@ -578,8 +578,6 @@ QSize QmlGraphicsTextPrivate::setupTextLayout(QTextLayout *layout)
     Q_Q(QmlGraphicsText);
     layout->setCacheEnabled(true);
 
-    QFontMetrics fm = QFontMetrics(font);
-
     int height = 0;
     qreal widthUsed = 0;
     qreal lineWidth = 0;
