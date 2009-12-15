@@ -63,6 +63,7 @@ void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
         props.setPixelFormat(static_cast<QImage *>(device)->format());
 }
 
+// Chooses the EGL config and creates the EGL context
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
@@ -73,56 +74,74 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     int devType = device()->devType();
 
     // Get the display and initialize it.
-    d->eglContext = new QEglContext();
-    d->eglContext->setApi(QEgl::OpenGL);
-    if (!d->eglContext->openDisplay(device())) {
-        delete d->eglContext;
-        d->eglContext = 0;
-        return false;
-    }
+    if (d->eglContext == 0) {
+        d->eglContext = new QEglContext();
+        d->eglContext->setApi(QEgl::OpenGL);
+        if (!d->eglContext->openDisplay(device())) {
+            delete d->eglContext;
+            d->eglContext = 0;
+            return false;
+        }
 
-    // Construct the configuration we need for this surface.
-    QEglProperties configProps;
-    qt_egl_set_format(configProps, devType, d->glFormat);
-    qt_egl_add_platform_config(configProps, device());
-    configProps.setRenderableType(QEgl::OpenGL);
+        // Construct the configuration we need for this surface.
+        QEglProperties configProps;
+        qt_egl_set_format(configProps, devType, d->glFormat);
+        qt_egl_add_platform_config(configProps, device());
+        configProps.setRenderableType(QEgl::OpenGL);
 
-    QEgl::PixelFormatMatch matchType = QEgl::BestPixelFormat;
-    if (device()->depth() == 16) {
-        configProps.setValue(EGL_RED_SIZE, 5);
-        configProps.setValue(EGL_GREEN_SIZE, 6);
-        configProps.setValue(EGL_BLUE_SIZE, 5);
-        configProps.setValue(EGL_ALPHA_SIZE, 0);
-        matchType = QEgl::ExactPixelFormat;
-    }
-    configProps.setRenderableType(QEgl::OpenGL);
+#if We_have_an_EGL_library_which_bothers_to_check_EGL_BUFFER_SIZE
+        if (device()->depth() == 16 && configProps.value(EGL_ALPHA_SIZE) <= 0) {
+            qDebug("Setting EGL_BUFFER_SIZE to 16");
+            configProps.setValue(EGL_BUFFER_SIZE, 16);
+            configProps.setValue(EGL_ALPHA_SIZE, 0);
+        }
 
-    // Search for a matching configuration, reducing the complexity
-    // each time until we get something that matches.
-    if (!d->eglContext->chooseConfig(configProps, matchType)) {
-        delete d->eglContext;
-        d->eglContext = 0;
-        return false;
+        if (!d->eglContext->chooseConfig(configProps, QEgl::BestPixelFormat)) {
+            delete d->eglContext;
+            d->eglContext = 0;
+            return false;
+        }
+#else
+        QEgl::PixelFormatMatch matchType = QEgl::BestPixelFormat;
+        if ((device()->depth() == 16) && configProps.value(EGL_ALPHA_SIZE) == 0) {
+            configProps.setValue(EGL_RED_SIZE, 5);
+            configProps.setValue(EGL_GREEN_SIZE, 6);
+            configProps.setValue(EGL_BLUE_SIZE, 5);
+            configProps.setValue(EGL_ALPHA_SIZE, 0);
+            matchType = QEgl::ExactPixelFormat;
+        }
+
+        // Search for a matching configuration, reducing the complexity
+        // each time until we get something that matches.
+        if (!d->eglContext->chooseConfig(configProps, matchType)) {
+            delete d->eglContext;
+            d->eglContext = 0;
+            return false;
+        }
+#endif
+
+//        qDebug("QGLContext::chooseContext() - using EGL config %d:", d->eglContext->config());
+//        qDebug() << QEglProperties(d->eglContext->config()).toString();
+
+        // Create a new context for the configuration.
+        if (!d->eglContext->createContext
+                (shareContext ? shareContext->d_func()->eglContext : 0)) {
+            delete d->eglContext;
+            d->eglContext = 0;
+            return false;
+        }
+        d->sharing = d->eglContext->isSharing();
+        if (d->sharing && shareContext)
+            const_cast<QGLContext *>(shareContext)->d_func()->sharing = true;
+
+#if defined(EGL_VERSION_1_1)
+        if (d->glFormat.swapInterval() != -1 && devType == QInternal::Widget)
+            eglSwapInterval(d->eglContext->display(), d->glFormat.swapInterval());
+#endif
     }
 
     // Inform the higher layers about the actual format properties.
     qt_egl_update_format(*(d->eglContext), d->glFormat);
-
-    // Create a new context for the configuration.
-    if (!d->eglContext->createContext
-            (shareContext ? shareContext->d_func()->eglContext : 0)) {
-        delete d->eglContext;
-        d->eglContext = 0;
-        return false;
-    }
-    d->sharing = d->eglContext->isSharing();
-    if (d->sharing && shareContext)
-        const_cast<QGLContext *>(shareContext)->d_func()->sharing = true;
-
-#if defined(EGL_VERSION_1_1)
-    if (d->glFormat.swapInterval() != -1 && devType == QInternal::Widget)
-        eglSwapInterval(d->eglContext->display(), d->glFormat.swapInterval());
-#endif
 
     return true;
 }
@@ -160,6 +179,9 @@ bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig conf
 
     memset(&vi, 0, sizeof(XVisualInfo));
 
+    EGLint eglConfigColorSize;
+    eglGetConfigAttrib(display, config, EGL_BUFFER_SIZE, &eglConfigColorSize);
+
     // Check to see if EGL is suggesting an appropriate visual id:
     EGLint nativeVisualId;
     eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &nativeVisualId);
@@ -189,8 +211,12 @@ bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig conf
             } else
 #endif
             {
-//                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
-                vi = *chosenVisualInfo;
+                if (eglConfigColorSize == chosenVisualInfo->depth) {
+//                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+                    vi = *chosenVisualInfo;
+                } else
+                    qWarning("Warning: EGL suggested using X visual ID %d (%d bpp) for config %d (%d bpp), but the depths do not match!",
+                             nativeVisualId, chosenVisualInfo->depth, (int)config, eglConfigColorSize);
             }
             XFree(chosenVisualInfo);
         }
@@ -300,6 +326,8 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
 
     bool createFailed = false;
     if (!d->glcx->isValid()) {
+        // Create the QGLContext here, which in turn chooses the EGL config
+        // and creates the EGL context:
         if (!d->glcx->create(shareContext ? shareContext : oldcx))
             createFailed = true;
     }

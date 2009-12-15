@@ -148,6 +148,10 @@ QT_BEGIN_NAMESPACE
     
     \a parent is passed to QGraphicsLayoutItem's constructor and the
     QGraphicsLayoutItem's isLayout argument is set to \e true.
+
+    If \a parent is a QGraphicsWidget the layout will be installed
+    on that widget. (Note that installing a layout will delete the old one
+    installed.)
 */
 QGraphicsLayout::QGraphicsLayout(QGraphicsLayoutItem *parent)
     : QGraphicsLayoutItem(*new QGraphicsLayoutPrivate)

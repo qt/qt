@@ -56,7 +56,7 @@
 #include <QtCore/qmap.h>
 #include <QtXml/qdom.h>
 #include <qdbusmacros.h>
-#include <qdbusintrospection_p.h>
+#include "qdbusintrospection_p.h"
 
 QT_BEGIN_NAMESPACE
 

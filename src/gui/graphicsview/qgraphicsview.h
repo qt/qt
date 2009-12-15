@@ -278,6 +278,7 @@ private:
     friend class QGraphicsSceneWidget;
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
+    friend class QGraphicsItemPrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsView::CacheMode)

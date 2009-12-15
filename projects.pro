@@ -48,7 +48,7 @@ for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
        contains(QT_BUILD_PARTS, tools) {
           include(translations/translations.pri)  # ts targets
        } else {
-          SUBDIRS += tools/linguist/lrelease
+          !wince*:!symbian:SUBDIRS += tools/linguist/lrelease
        }
        SUBDIRS += translations                    # qm build step
     } else:isEqual(PROJECT, qmake) {
