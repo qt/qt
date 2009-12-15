@@ -67,6 +67,7 @@ struct Register {
 
     QVariant *getvariantptr() { return (QVariant *)typeDataPtr(); }
     QString *getstringptr() { return (QString *)typeDataPtr(); }
+    QUrl *geturlptr() { return (QUrl *)typeDataPtr(); }
 
     void *typeDataPtr() { return (void *)&data; }
     void *typeMemory() { return (void *)data; }
@@ -110,6 +111,9 @@ struct Instr {
         GreaterThanReal,         // binaryop
 
         NewString,               // construct
+        NewUrl,                  // construct
+
+        CleanupUrl,              // cleanup
         CleanupString,           // cleanup
 
         Copy,                    // copy
@@ -130,6 +134,7 @@ struct Instr {
         ConvertGenericToReal,    // genericunaryop
         ConvertGenericToBool,    // genericunaryop
         ConvertGenericToString,  // genericunaryop
+        ConvertGenericToUrl,     // genericunaryop
 
     } type;
 
@@ -572,12 +577,15 @@ inline static QUrl toUrl(Register *reg, int type, QmlContextPrivate *context, bo
             if (ok) *ok = false;
             return QUrl();
         }
-    } else { 
+    } else {
         if (ok) *ok = false;
         return QUrl();
     }
 
-    return QUrl();
+    if (base.isRelative())
+        return context->url.resolved(base);
+    else
+        return base;
 }
 
 void QmlBindingVME::run(const char *programData, Config *config, 
@@ -710,8 +718,16 @@ void QmlBindingVME::run(const char *programData, Config *config,
         new (registers[instr->construct.reg].typeMemory()) QString;
         break;
 
+    case Instr::NewUrl:
+        new (registers[instr->construct.reg].typeMemory()) QUrl;
+        break;
+
     case Instr::CleanupString:
-        ((QString *)(registers[instr->cleanup.reg].typeDataPtr()))->~QString();
+        registers[instr->cleanup.reg].getstringptr()->~QString();
+        break;
+
+    case Instr::CleanupUrl:
+        registers[instr->cleanup.reg].geturlptr()->~QUrl();
         break;
 
     case Instr::Fetch:
@@ -815,6 +831,14 @@ void QmlBindingVME::run(const char *programData, Config *config,
         }
         break;
 
+    case Instr::ConvertGenericToUrl:
+        {
+            int type = registers[instr->genericunaryop.srcType].getint();
+            void *regPtr = registers[instr->genericunaryop.output].typeDataPtr();
+            new (regPtr) QUrl(toUrl(registers + instr->genericunaryop.src, type, context));
+        }
+        break;
+
     default:
         qFatal("EEK");
         break;
@@ -903,8 +927,14 @@ void QmlBindingVME::dump(const QByteArray &programData)
         case Instr::NewString:
             qWarning().nospace() << "NewString" << "\t\t" << instr->construct.reg;
             break;
+        case Instr::NewUrl:
+            qWarning().nospace() << "NewUrl" << "\t\t\t" << instr->construct.reg;
+            break;
         case Instr::CleanupString:
             qWarning().nospace() << "CleanupString" << "\t\t" << instr->cleanup.reg << "\t" << instr->cleanup.typeReg;
+            break;
+        case Instr::CleanupUrl:
+            qWarning().nospace() << "CleanupUrl" << "\t\t" << instr->cleanup.reg << "\t" << instr->cleanup.typeReg;
             break;
         case Instr::Fetch:
             qWarning().nospace() << "Fetch" << "\t\t\t" << instr->fetch.output << "\t" << instr->fetch.index << "\t" << instr->fetch.objectReg;
@@ -948,6 +978,9 @@ void QmlBindingVME::dump(const QByteArray &programData)
         case Instr::ConvertGenericToString:
             qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
             break;
+        case Instr::ConvertGenericToUrl:
+            qWarning().nospace() << "ConvertGenericToUrl" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
+            break;
         default:
             qWarning().nospace() << "Unknown";
             break;
@@ -990,7 +1023,8 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
     if (type.unknownType) {
         if (destination->type != QMetaType::QReal &&
             destination->type != QVariant::String &&
-            destination->type != QMetaType::Bool)
+            destination->type != QMetaType::Bool &&
+            destination->type != QVariant::Url)
             return false;
 
         int convertReg = acquireReg();
@@ -1016,6 +1050,13 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
             convert.genericunaryop.src = type.reg;
             convert.genericunaryop.srcType = 2; // XXX
             bytecode << convert;
+        } else if (destination->type == QVariant::Url) {
+            Instr convert;
+            convert.type = Instr::ConvertGenericToUrl;
+            convert.genericunaryop.output = convertReg;
+            convert.genericunaryop.src = type.reg;
+            convert.genericunaryop.srcType = 2; // XXX
+            bytecode << convert;
         }
 
         Instr cleanup;
@@ -1034,6 +1075,12 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
         if (destination->type == QVariant::String) {
             Instr cleanup;
             cleanup.type = Instr::CleanupString;
+            cleanup.cleanup.reg = convertReg;
+            cleanup.cleanup.typeReg = -1;
+            bytecode << cleanup;
+        } else if (destination->type == QVariant::Url) {
+            Instr cleanup;
+            cleanup.type = Instr::CleanupUrl;
             cleanup.cleanup.reg = convertReg;
             cleanup.cleanup.typeReg = -1;
             bytecode << cleanup;
