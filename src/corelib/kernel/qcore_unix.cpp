@@ -129,7 +129,7 @@ static inline bool time_update(struct timeval *tv, const struct timeval &start,
     // clock source is monotonic, so we can recalculate how much timeout is left
     struct timeval now = qt_gettime();
     *tv = timeout + start - now;
-    return true;
+    return tv->tv_sec >= 0;
 }
 
 int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
@@ -154,7 +154,8 @@ int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
 
         // recalculate the timeout
         if (!time_update(&timeout, start, *orig_timeout)) {
-            // clock reset, fake timeout error
+            // timeout during update
+            // or clock reset, fake timeout error
             return 0;
         }
     }

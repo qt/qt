@@ -347,6 +347,7 @@ public:
     QMap<int, QPointer<QAbstractItemDelegate> > columnDelegates;
     QPointer<QItemSelectionModel> selectionModel;
     QItemSelectionModel::SelectionFlag ctrlDragSelectionFlag;
+    bool noSelectionOnMousePress;
 
     QAbstractItemView::SelectionMode selectionMode;
     QAbstractItemView::SelectionBehavior selectionBehavior;

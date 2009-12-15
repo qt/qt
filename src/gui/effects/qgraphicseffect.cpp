@@ -313,7 +313,10 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     // Shortcut, no cache for childless pixmap items...
     const QGraphicsItem *item = graphicsItem();
     if (system == Qt::LogicalCoordinates && mode == QGraphicsEffect::NoPad && item && isPixmap()) {
-        return ((QGraphicsPixmapItem *) item)->pixmap();
+        const QGraphicsPixmapItem *pixmapItem = static_cast<const QGraphicsPixmapItem *>(item);
+        if (offset)
+            *offset = pixmapItem->offset().toPoint();
+        return pixmapItem->pixmap();
     }
 
     if (system == Qt::DeviceCoordinates && item
@@ -371,10 +374,14 @@ QGraphicsEffectSourcePrivate::~QGraphicsEffectSourcePrivate()
     invalidateCache();
 }
 
-void QGraphicsEffectSourcePrivate::invalidateCache(bool effectRectChanged) const
+void QGraphicsEffectSourcePrivate::invalidateCache(InvalidateReason reason) const
 {
-    if (effectRectChanged && m_cachedMode != QGraphicsEffect::PadToEffectiveBoundingRect)
+    if (m_cachedMode != QGraphicsEffect::PadToEffectiveBoundingRect
+        && (reason == EffectRectChanged
+            || reason == TransformChanged
+               && m_cachedSystem == Qt::LogicalCoordinates))
         return;
+
     QPixmapCache::remove(m_cacheKey);
 }
 
@@ -520,7 +527,7 @@ void QGraphicsEffect::updateBoundingRect()
     Q_D(QGraphicsEffect);
     if (d->source) {
         d->source->d_func()->effectBoundingRectChanged();
-        d->source->d_func()->invalidateCache(true);
+        d->source->d_func()->invalidateCache(QGraphicsEffectSourcePrivate::EffectRectChanged);
     }
 }
 
@@ -837,22 +844,19 @@ QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
 void QGraphicsBlurEffect::draw(QPainter *painter)
 {
     Q_D(QGraphicsBlurEffect);
-    if (d->filter->radius() <= 0) {
+    if (d->filter->radius() < 1) {
         drawSource(painter);
         return;
     }
 
     PixmapPadMode mode = PadToEffectiveBoundingRect;
     if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
-        mode = PadToTransparentBorder;
+        mode = NoPad;
 
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
-    const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset, mode);
-    QTransform restoreTransform = painter->worldTransform();
-    painter->setWorldTransform(QTransform());
+    QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset, mode);
     d->filter->draw(painter, offset, pixmap);
-    painter->setWorldTransform(restoreTransform);
 }
 
 /*!
@@ -1033,7 +1037,7 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter)
 
     PixmapPadMode mode = PadToEffectiveBoundingRect;
     if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
-        mode = PadToTransparentBorder;
+        mode = NoPad;
 
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;

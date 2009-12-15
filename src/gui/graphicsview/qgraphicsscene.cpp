@@ -614,6 +614,19 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (item == lastActivePanel)
         lastActivePanel = 0;
 
+    // Cancel active touches
+    {
+        QMap<int, QGraphicsItem *>::iterator it = itemForTouchPointId.begin();
+        while (it != itemForTouchPointId.end()) {
+            if (it.value() == item) {
+                sceneCurrentTouchPoints.remove(it.key());
+                it = itemForTouchPointId.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+
     // Disable selectionChanged() for individual items
     ++selectionChanging;
     int oldSelectedItemsSize = selectedItems.size();
@@ -4658,10 +4671,13 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             painter->setWorldTransform(*transformPtr);
         painter->setOpacity(opacity);
 
-        if (sourced->lastEffectTransform != painter->worldTransform()) {
+        if (sourced->currentCachedSystem() != Qt::LogicalCoordinates
+            && sourced->lastEffectTransform != painter->worldTransform())
+        {
             sourced->lastEffectTransform = painter->worldTransform();
-            sourced->invalidateCache();
+            sourced->invalidateCache(QGraphicsEffectSourcePrivate::TransformChanged);
         }
+
         item->d_ptr->graphicsEffect->draw(painter);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;
@@ -5680,17 +5696,22 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         touchEvent->setAccepted(acceptTouchEvents);
         res = acceptTouchEvents && sendEvent(item, touchEvent);
         eventAccepted = touchEvent->isAccepted();
-        item->d_ptr->acceptedTouchBeginEvent = (res && eventAccepted);
+        if (itemForTouchPointId.value(touchEvent->touchPoints().first().id()) == 0) {
+            // item was deleted
+            item = 0;
+        } else {
+            item->d_ptr->acceptedTouchBeginEvent = (res && eventAccepted);
+        }
         touchEvent->spont = false;
         if (res && eventAccepted) {
             // the first item to accept the TouchBegin gets an implicit grab.
             for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
                 const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
-                itemForTouchPointId[touchPoint.id()] = item;
+                itemForTouchPointId[touchPoint.id()] = item; // can be zero
             }
             break;
         }
-        if (item->isPanel())
+        if (item && item->isPanel())
             break;
     }
 

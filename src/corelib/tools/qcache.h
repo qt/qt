@@ -70,9 +70,9 @@ class QCache
         if (l == &n) l = n.p;
         if (f == &n) f = n.n;
         total -= n.c;
-        T *object = n.t;
+        T *obj = n.t;
         hash.remove(*n.keyPtr);
-        delete object;
+        delete obj;
     }
     inline T *relink(const Key &key) {
         typename QHash<Key, Node>::iterator i = hash.find(key);

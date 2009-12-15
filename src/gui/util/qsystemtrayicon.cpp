@@ -380,6 +380,9 @@ bool QSystemTrayIcon::supportsMessages()
     On Windows, the \a millisecondsTimeoutHint is usually ignored by the system
     when the application has focus.
 
+    On Mac OS X, the Growl notification system must be installed for this function to
+    display messages.
+ 
     \sa show() supportsMessages()
   */
 void QSystemTrayIcon::showMessage(const QString& title, const QString& msg,

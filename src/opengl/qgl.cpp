@@ -2063,6 +2063,29 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
 // #define QGL_BIND_TEXTURE_DEBUG
 
+// map from Qt's ARGB endianness-dependent format to GL's big-endian RGBA layout
+static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
+{
+    const int width = img.width();
+    const int height = img.height();
+
+    if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
+        || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian))
+    {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
+        }
+    } else {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
+        }
+    }
+}
+
 QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint internalFormat,
                                            const qint64 key, QGLContext::BindOptions options)
 {
@@ -2215,23 +2238,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         // 32 in the switch above is for the RGB16 case, where we set
         // the format to GL_RGB
         Q_ASSERT(img.depth() == 32);
-        const int width = img.width();
-        const int height = img.height();
-
-        if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
-            || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian)) {
-            for (int i=0; i < height; ++i) {
-                uint *p = (uint *) img.scanLine(i);
-                for (int x=0; x<width; ++x)
-                    p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
-            }
-        } else {
-            for (int i=0; i < height; ++i) {
-                uint *p = (uint *) img.scanLine(i);
-                for (int x=0; x<width; ++x)
-                    p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
-            }
-        }
+        qgl_byteSwapImage(img, pixel_type);
     }
 #ifdef QT_OPENGL_ES
     // OpenGL/ES requires that the internal and external formats be identical.
