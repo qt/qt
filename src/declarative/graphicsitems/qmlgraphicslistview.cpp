@@ -51,6 +51,31 @@
 #include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
+
+void QmlGraphicsViewSection::setProperty(const QString &property)
+{
+    if (property != m_property) {
+        m_property = property;
+        emit changed();
+    }
+}
+
+void QmlGraphicsViewSection::setCriteria(QmlGraphicsViewSection::SectionCriteria criteria)
+{
+    if (criteria != m_criteria) {
+        m_criteria = criteria;
+        emit changed();
+    }
+}
+
+QString QmlGraphicsViewSection::sectionString(const QString &value)
+{
+    if (m_criteria == FirstCharacter)
+        return value.at(0);
+    else
+        return value;
+}
+
 class QmlGraphicsListViewAttached : public QObject
 {
     Q_OBJECT
@@ -177,7 +202,8 @@ public:
         , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
         , highlightRangeStart(0), highlightRangeEnd(0)
         , highlightComponent(0), highlight(0), trackedItem(0)
-        , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0.0)
+        , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0)
+        , sectionCriteria(0), spacing(0.0)
         , highlightMoveSpeed(400), highlightResizeSpeed(400), highlightRange(QmlGraphicsListView::NoHighlightRange)
         , snapMode(QmlGraphicsListView::NoSnap), overshootDist(0.0)
         , footerComponent(0), footer(0), headerComponent(0), header(0)
@@ -291,12 +317,15 @@ public:
     }
 
     QString sectionAt(int modelIndex) {
-        Q_Q(QmlGraphicsListView);
         if (FxListItem *item = visibleItem(modelIndex))
             return item->attached->section();
+
         QString section;
-        if (!sectionExpression.isEmpty())
-            section = model->evaluate(modelIndex, sectionExpression, q).toString();
+        if (sectionCriteria) {
+            QString propValue = model->value(modelIndex, sectionCriteria->property()).toString();
+            section = sectionCriteria->sectionString(propValue);
+        }
+
         return section;
     }
 
@@ -411,7 +440,7 @@ public:
     }
 
     void itemGeometryChanged(QmlGraphicsItem *, const QRectF &newGeometry, const QRectF &oldGeometry) {
-        if (orient == QmlGraphicsListView::Vertical && newGeometry.height() != oldGeometry.height()
+        if ((orient == QmlGraphicsListView::Vertical && newGeometry.height() != oldGeometry.height())
             || newGeometry.width() != oldGeometry.width()) {
             layout();
             fixupPosition();
@@ -471,7 +500,7 @@ public:
     int buffer;
     QmlEaseFollow *highlightPosAnimator;
     QmlEaseFollow *highlightSizeAnimator;
-    QString sectionExpression;
+    QmlGraphicsViewSection *sectionCriteria;
     QString currentSection;
     qreal spacing;
     qreal highlightMoveSpeed;
@@ -528,10 +557,9 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
         listItem = new FxListItem(item, q);
         listItem->index = modelIndex;
         // initialise attached properties
-        if (!sectionExpression.isEmpty()) {
-            QmlExpression e(qmlContext(listItem->item), sectionExpression, q);
-            e.setTrackChange(false);
-            listItem->attached->m_section = e.value().toString();
+        if (sectionCriteria) {
+            QString propValue = model->value(modelIndex, sectionCriteria->property()).toString();
+            listItem->attached->m_section = sectionCriteria->sectionString(propValue);
             if (modelIndex > 0) {
                 if (FxListItem *item = visibleItem(modelIndex-1))
                     listItem->attached->m_prevSection = item->attached->section();
@@ -649,7 +677,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         if (visibleItems.count())
             visiblePos = visibleItems.first()->position();
         updateAverage();
-        if (!sectionExpression.isEmpty())
+        if (sectionCriteria)
             updateCurrentSection();
         if (header)
             updateHeader();
@@ -816,7 +844,7 @@ void QmlGraphicsListViewPrivate::updateHighlight()
 
 void QmlGraphicsListViewPrivate::updateSections()
 {
-    if (!sectionExpression.isEmpty()) {
+    if (sectionCriteria) {
         QString prevSection;
         if (visibleIndex > 0)
             prevSection = sectionAt(visibleIndex-1);
@@ -832,7 +860,7 @@ void QmlGraphicsListViewPrivate::updateSections()
 
 void QmlGraphicsListViewPrivate::updateCurrentSection()
 {
-    if (sectionExpression.isEmpty() || visibleItems.isEmpty()) {
+    if (sectionCriteria || visibleItems.isEmpty()) {
         currentSection = QString();
         return;
     }
@@ -1289,7 +1317,7 @@ QmlGraphicsListView::~QmlGraphicsListView()
 
     It is attached to each instance of the delegate.
 
-    The section is evaluated using the \l {ListView::sectionExpression}{sectionExpression} property.
+    The section is evaluated using the \l {ListView::section.property}{section} properties.
 */
 
 /*!
@@ -1298,7 +1326,7 @@ QmlGraphicsListView::~QmlGraphicsListView()
 
     It is attached to each instance of the delegate.
 
-    The section is evaluated using the \l {ListView::sectionExpression}{sectionExpression} property.
+    The section is evaluated using the \l {ListView::section.property}{section} properties.
 */
 
 /*!
@@ -1747,8 +1775,19 @@ void QmlGraphicsListView::setCacheBuffer(int b)
 }
 
 /*!
-    \qmlproperty string ListView::sectionExpression
-    This property holds the expression to be evaluated for the section attached property.
+    \qmlproperty string ListView::section.property
+    \qmlproperty enumeration ListView::section.criteria
+    These properties hold the expression to be evaluated for the section attached property.
+
+    section.property hold the name of the property to use to determine
+    the section the item is in.
+
+    section.criteria holds the criteria to use to get the section. It
+    can be either:
+    \list
+    \o ViewSection.FullString (default) - section is the value of the property.
+    \o ViewSection.FirstCharacter - section is the first character of the property value.
+    \endlist
 
     Each item in the list has attached properties named \c ListView.section and
     \c ListView.prevSection.  These may be used to place a section header for
@@ -1760,19 +1799,12 @@ void QmlGraphicsListView::setCacheBuffer(int b)
 
     \image ListViewSections.png
 */
-QString QmlGraphicsListView::sectionExpression() const
-{
-    Q_D(const QmlGraphicsListView);
-    return d->sectionExpression;
-}
-
-void QmlGraphicsListView::setSectionExpression(const QString &expression)
+QmlGraphicsViewSection *QmlGraphicsListView::sectionCriteria()
 {
     Q_D(QmlGraphicsListView);
-    if (d->sectionExpression != expression) {
-        d->sectionExpression = expression;
-        emit sectionExpressionChanged();
-    }
+    if (!d->sectionCriteria)
+        d->sectionCriteria = new QmlGraphicsViewSection(this);
+    return d->sectionCriteria;
 }
 
 /*!
@@ -2560,6 +2592,7 @@ QmlGraphicsListViewAttached *QmlGraphicsListView::qmlAttachedProperties(QObject 
 }
 
 QML_DEFINE_TYPE(Qt,4,6,ListView,QmlGraphicsListView)
+QML_DEFINE_TYPE(Qt,4,6,ViewSection,QmlGraphicsViewSection)
 
 QT_END_NAMESPACE
 

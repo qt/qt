@@ -64,7 +64,8 @@ Rectangle {
         highlight: petHighlight
         // The sectionExpression is simply the size of the pet.
         // We use this to determine which section we are in above.
-        sectionExpression: "size"
+        section.property: "size"
+        section.criteria: ViewSection.FullString
         focus: true
     }
 }
