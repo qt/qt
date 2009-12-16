@@ -91,7 +91,7 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
     for (int i = 0 ; i < rects.size(); i++) {
         const QRect rect = rects.at(i);
         DFBRegion dfbReg = { rect.x() + offset.x(),rect.y() + offset.y(),rect.right() + offset.x(),rect.bottom() + offset.y()};
-        m_dfbSurface->Flip(m_dfbSurface,&dfbReg,DSFLIP_BLIT);
+        m_dfbSurface->Flip(m_dfbSurface, &dfbReg, DFBSurfaceFlipFlags(DSFLIP_BLIT|DSFLIP_ONSYNC));
     }
 }
 
