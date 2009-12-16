@@ -444,10 +444,10 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     if (stateChangeDebug()) {
         foreach(const Action &action, applyList) {
             if (action.event)
-                qWarning() << "    Action event:" << action.event;
+                qWarning() << "    Action event:" << action.event->typeName();
             else
                 qWarning() << "    Action:" << action.property.object()
-                           << action.property.name() << action.toValue;
+                           << action.property.name() << action.fromValue << action.toValue;
         }
     }
 
