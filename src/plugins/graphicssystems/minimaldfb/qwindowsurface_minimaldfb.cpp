@@ -59,6 +59,10 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *sc
     if (result != DFB_OK) {
         DirectFBError("QDirectFbWindowSurface::QDirectFbWindowSurface: unable to get windows surface",result);
     }
+    if (m_dfbSurface) {
+        m_dfbSurface->Clear(m_dfbSurface, 0, 0, 0, 0);
+        m_dfbSurface->Flip(m_dfbSurface, 0, DSFLIP_ONSYNC);
+    }
     QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
     pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
     int width,height;
@@ -105,8 +109,14 @@ void QDirectFbWindowSurface::setGeometry(const QRect &rect)
         m_dfbSurface = 0;
     }
     DFBResult result = m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
+
     if (result != DFB_OK)
         DirectFBError("QDirectFbWindowSurface::setGeometry() failed to retrieve new surface",result);
+
+    if (m_dfbSurface) {
+        m_dfbSurface->Clear(m_dfbSurface, 0, 0, 0, 0);
+        m_dfbSurface->Flip(m_dfbSurface, 0, DSFLIP_ONSYNC);
+    }
 
     QDirectFbBlitter *blitter = new QDirectFbBlitter(rect, m_dfbSurface);
     pmdata->resize(rect.width(),rect.height());
