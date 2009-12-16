@@ -173,8 +173,20 @@ void QmlGraphicsBasePositioner::componentComplete()
 QVariant QmlGraphicsBasePositioner::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
-    if (change == ItemChildAddedChange ||
-               change == ItemChildRemovedChange) {
+    Q_D(QmlGraphicsBasePositioner);
+    if (change == ItemChildAddedChange){
+        QmlGraphicsItem* child = value.value<QmlGraphicsItem*>();
+        if(!child)
+            return QVariant();
+        if(!d->watched.contains(child))
+            d->watchChanges(child);
+        prePositioning();
+    }else if (change == ItemChildRemovedChange) {
+        QmlGraphicsItem* child = value.value<QmlGraphicsItem*>();
+        if(!child)
+            return QVariant();
+        if(d->watched.contains(child))
+            d->unwatchChanges(child);
         prePositioning();
     }
 
@@ -212,10 +224,8 @@ void QmlGraphicsBasePositioner::prePositioning()
         //Assumed that (aside from init) every add/remove triggers this check
         //thus the above check will be triggered every time an item is removed
         QSet<QmlGraphicsItem *> deletedItems = d->items - positionedItems.toSet();
-        foreach(QmlGraphicsItem *child, deletedItems){
-            d->unwatchChanges(child);
+        foreach(QmlGraphicsItem *child, deletedItems)
             d->items -= child;
-        }
     }
     doPositioning();
     if(d->addTransition || d->moveTransition)
