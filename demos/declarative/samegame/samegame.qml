@@ -67,6 +67,12 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
+        Button {
+            id: btnB; text: "Quit"; onClicked: {Qt.quit();}
+            anchors.left: btnA.right; anchors.leftMargin: 3
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
         Text {
             id: score
             text: "Score: " + gameCanvas.score; font.bold: true
