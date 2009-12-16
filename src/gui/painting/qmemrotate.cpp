@@ -572,5 +572,26 @@ QT_IMPL_MEMROTATE(quint32, qrgb_generic16)
 QT_IMPL_MEMROTATE(quint16, qrgb_generic16)
 #endif
 
+struct qrgb_gl_rgba
+{
+public:
+    inline qrgb_gl_rgba(quint32 v) {
+        if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
+            data = ((v << 16) & 0xff0000) | ((v >> 16) & 0xff) | (v & 0xff00ff00);
+        else
+            data = (v << 8) | ((v >> 24) & 0xff);
+    }
+
+    inline operator quint32() const { return data; }
+
+private:
+    quint32 data;
+} Q_PACKED;
+
+void Q_GUI_EXPORT qt_memrotate90_gl(const quint32 *src, int srcWidth, int srcHeight, int srcStride,
+                                    quint32 *dest, int dstStride)
+{
+    qt_memrotate90_template(src, srcWidth, srcHeight, srcStride, reinterpret_cast<qrgb_gl_rgba *>(dest), dstStride);
+}
 
 QT_END_NAMESPACE

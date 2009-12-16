@@ -42,6 +42,7 @@
 #include "qwindowsurface_vgegl_p.h"
 #include "qpaintengine_vg_p.h"
 #include "qpixmapdata_vg_p.h"
+#include "qvgimagepool_p.h"
 #include "qvg_p.h"
 
 #if !defined(QT_NO_EGL)
@@ -359,6 +360,9 @@ void qt_vg_hibernate_pixmaps(QVGSharedContext *shared)
         pd->hibernate();
         pd = pd->next;
     }
+
+    // Hibernate any remaining VGImage's in the image pool.
+    QVGImagePool::instance()->hibernate();
 
     // Don't need the current context any more.
     shared->context->lazyDoneCurrent();
