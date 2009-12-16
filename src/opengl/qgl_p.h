@@ -288,6 +288,7 @@ public:
 #if defined(QT_OPENGL_ES)
     QEglContext *eglContext;
     EGLSurface eglSurface;
+    void destroyEglSurfaceForDevice();
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif
