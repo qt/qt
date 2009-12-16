@@ -2068,9 +2068,13 @@ void QAbstractItemView::focusInEvent(QFocusEvent *event)
 {
     Q_D(QAbstractItemView);
     QAbstractScrollArea::focusInEvent(event);
-    if (selectionModel()
+
+    const QItemSelectionModel* model = selectionModel();
+    const bool currentIndexValid = currentIndex().isValid();
+
+    if (model
         && !d->currentIndexSet
-        && !currentIndex().isValid()) {
+        && !currentIndexValid) {
         bool autoScroll = d->autoScroll;
         d->autoScroll = false;
         QModelIndex index = moveCursor(MoveNext, Qt::NoModifier); // first visible index
@@ -2078,6 +2082,17 @@ void QAbstractItemView::focusInEvent(QFocusEvent *event)
             selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
     }
+
+    if (model && currentIndexValid) {
+        if (currentIndex().flags() != Qt::ItemIsEditable)
+            setAttribute(Qt::WA_InputMethodEnabled, false);
+        else
+            setAttribute(Qt::WA_InputMethodEnabled);
+    }
+
+    if (!currentIndexValid)
+        setAttribute(Qt::WA_InputMethodEnabled, false);
+
     d->viewport->update();
 }
 

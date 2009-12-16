@@ -2503,7 +2503,7 @@ EXPORTS
 	?cacheMode@QMovie@@QAE?AW4CacheMode@1@XZ @ 2502 NONAME ; enum QMovie::CacheMode QMovie::cacheMode(void)
 	?cacheMode@QMovie@@QBE?AW4CacheMode@1@XZ @ 2503 NONAME ; enum QMovie::CacheMode QMovie::cacheMode(void) const
 	?cacheStatistics@QFont@@SAXXZ @ 2504 NONAME ; void QFont::cacheStatistics(void)
-	?cacheType@QTextureGlyphCache@@QBE?AW4Type@QFontEngineGlyphCache@@XZ @ 2505 NONAME ABSENT ; enum QFontEngineGlyphCache::Type QTextureGlyphCache::cacheType(void) const
+	?cacheType@QTextureGlyphCache@@QBE?AW4Type@QFontEngineGlyphCache@@XZ @ 2505 NONAME ; enum QFontEngineGlyphCache::Type QTextureGlyphCache::cacheType(void) const
 	?calcEffectiveOpacity@QGraphicsItemPrivate@@QBEMXZ @ 2506 NONAME ; float QGraphicsItemPrivate::calcEffectiveOpacity(void) const
 	?calculateTabWidth@QTextEngine@@QBE?AUQFixed@@HU2@@Z @ 2507 NONAME ; struct QFixed QTextEngine::calculateTabWidth(int, struct QFixed) const
 	?calendarPopup@QDateTimeEdit@@QBE_NXZ @ 2508 NONAME ; bool QDateTimeEdit::calendarPopup(void) const
@@ -4299,7 +4299,7 @@ EXPORTS
 	?expandingDirections@QSpacerItem@@UBE?AV?$QFlags@W4Orientation@Qt@@@@XZ @ 4298 NONAME ; class QFlags<enum Qt::Orientation> QSpacerItem::expandingDirections(void) const
 	?expandingDirections@QWidgetItem@@UBE?AV?$QFlags@W4Orientation@Qt@@@@XZ @ 4299 NONAME ; class QFlags<enum Qt::Orientation> QWidgetItem::expandingDirections(void) const
 	?expandsOnDoubleClick@QTreeView@@QBE_NXZ @ 4300 NONAME ; bool QTreeView::expandsOnDoubleClick(void) const
-	?expireGlyphCache@QFontEngine@@AAEXXZ @ 4301 NONAME ABSENT ; void QFontEngine::expireGlyphCache(void)
+	?expireGlyphCache@QFontEngine@@AAEXXZ @ 4301 NONAME ; void QFontEngine::expireGlyphCache(void)
 	?extension@QDialog@@QBEPAVQWidget@@XZ @ 4302 NONAME ; class QWidget * QDialog::extension(void) const
 	?extension@QGraphicsEllipseItem@@MBE?AVQVariant@@ABV2@@Z @ 4303 NONAME ; class QVariant QGraphicsEllipseItem::extension(class QVariant const &) const
 	?extension@QGraphicsItem@@MBE?AVQVariant@@ABV2@@Z @ 4304 NONAME ; class QVariant QGraphicsItem::extension(class QVariant const &) const
@@ -4933,8 +4933,8 @@ EXPORTS
 	?globalY@QMouseEvent@@QBEHXZ @ 4932 NONAME ; int QMouseEvent::globalY(void) const
 	?globalY@QTabletEvent@@QBEHXZ @ 4933 NONAME ; int QTabletEvent::globalY(void) const
 	?globalY@QWheelEvent@@QBEHXZ @ 4934 NONAME ; int QWheelEvent::globalY(void) const
-	?glyphCache@QFontEngine@@QBEPAVQFontEngineGlyphCache@@PAXABVQTransform@@@Z @ 4935 NONAME ABSENT ; class QFontEngineGlyphCache * QFontEngine::glyphCache(void *, class QTransform const &) const
-	?glyphCache@QFontEngine@@QBEPAVQFontEngineGlyphCache@@W4Type@2@ABVQTransform@@@Z @ 4936 NONAME ABSENT ; class QFontEngineGlyphCache * QFontEngine::glyphCache(enum QFontEngineGlyphCache::Type, class QTransform const &) const
+	?glyphCache@QFontEngine@@QBEPAVQFontEngineGlyphCache@@PAXABVQTransform@@@Z @ 4935 NONAME ; class QFontEngineGlyphCache * QFontEngine::glyphCache(void *, class QTransform const &) const
+	?glyphCache@QFontEngine@@QBEPAVQFontEngineGlyphCache@@W4Type@2@ABVQTransform@@@Z @ 4936 NONAME ; class QFontEngineGlyphCache * QFontEngine::glyphCache(enum QFontEngineGlyphCache::Type, class QTransform const &) const
 	?glyphCount@QFontEngine@@UBEHXZ @ 4937 NONAME ; int QFontEngine::glyphCount(void) const
 	?glyphMargin@QTextureGlyphCache@@UBEHXZ @ 4938 NONAME ; int QTextureGlyphCache::glyphMargin(void) const
 	?gotFocus@QFocusEvent@@QBE_NXZ @ 4939 NONAME ; bool QFocusEvent::gotFocus(void) const
@@ -9103,7 +9103,7 @@ EXPORTS
 	?setGestureCancelPolicy@QGesture@@QAEXW4GestureCancelPolicy@1@@Z @ 9102 NONAME ; void QGesture::setGestureCancelPolicy(enum QGesture::GestureCancelPolicy)
 	?setGlobalStrut@QApplication@@SAXABVQSize@@@Z @ 9103 NONAME ; void QApplication::setGlobalStrut(class QSize const &)
 	?setGlyphCache@QFontEngine@@QAEXPAXPAVQFontEngineGlyphCache@@@Z @ 9104 NONAME ; void QFontEngine::setGlyphCache(void *, class QFontEngineGlyphCache *)
-	?setGlyphCache@QFontEngine@@QAEXW4Type@QFontEngineGlyphCache@@PAV3@@Z @ 9105 NONAME ABSENT ; void QFontEngine::setGlyphCache(enum QFontEngineGlyphCache::Type, class QFontEngineGlyphCache *)
+	?setGlyphCache@QFontEngine@@QAEXW4Type@QFontEngineGlyphCache@@PAV3@@Z @ 9105 NONAME ; void QFontEngine::setGlyphCache(enum QFontEngineGlyphCache::Type, class QFontEngineGlyphCache *)
 	?setGraphicsEffect@QGraphicsItem@@QAEXPAVQGraphicsEffect@@@Z @ 9106 NONAME ; void QGraphicsItem::setGraphicsEffect(class QGraphicsEffect *)
 	?setGraphicsEffect@QWidget@@QAEXPAVQGraphicsEffect@@@Z @ 9107 NONAME ; void QWidget::setGraphicsEffect(class QGraphicsEffect *)
 	?setGraphicsEffectSource@QGraphicsEffectPrivate@@QAEXPAVQGraphicsEffectSource@@@Z @ 9108 NONAME ; void QGraphicsEffectPrivate::setGraphicsEffectSource(class QGraphicsEffectSource *)
@@ -12517,8 +12517,9 @@ EXPORTS
 	?effectiveFocusWidget@QWidgetPrivate@@QAEPAVQWidget@@XZ @ 12516 NONAME ; class QWidget * QWidgetPrivate::effectiveFocusWidget(void)
 	?ignoreUnusedNavigationEvents@QTextControl@@QBE_NXZ @ 12517 NONAME ; bool QTextControl::ignoreUnusedNavigationEvents(void) const
 	?setIgnoreUnusedNavigationEvents@QTextControl@@QAEX_N@Z @ 12518 NONAME ; void QTextControl::setIgnoreUnusedNavigationEvents(bool)
-	?discardUpdateRequest@QGraphicsItemPrivate@@QBE_N_N00@Z @ 12519 NONAME ; bool QGraphicsItemPrivate::discardUpdateRequest(bool, bool, bool) const
-	??1QImagePixmapCleanupHooks@@QAE@XZ @ 12520 NONAME ; QImagePixmapCleanupHooks::~QImagePixmapCleanupHooks(void)
+	??1QImagePixmapCleanupHooks@@QAE@XZ @ 12519 NONAME ; QImagePixmapCleanupHooks::~QImagePixmapCleanupHooks(void)
+	??1QVectorPath@@QAE@XZ @ 12520 NONAME ; QVectorPath::~QVectorPath(void)
 	?addCacheData@QVectorPath@@QBEPAUCacheEntry@1@PAVQPaintEngineEx@@PAXP6AX01@Z@Z @ 12521 NONAME ; struct QVectorPath::CacheEntry * QVectorPath::addCacheData(class QPaintEngineEx *, void *, void (*)(class QPaintEngineEx *, void *)) const
-	?makeCacheable@QVectorPath@@QBEXXZ @ 12522 NONAME ; void QVectorPath::makeCacheable(void) const
-	??1QVectorPath@@QAE@XZ @ 12523 NONAME ; QVectorPath::~QVectorPath(void)
+	?discardUpdateRequest@QGraphicsItemPrivate@@QBE_N_N00@Z @ 12522 NONAME ; bool QGraphicsItemPrivate::discardUpdateRequest(bool, bool, bool) const
+	?makeCacheable@QVectorPath@@QBEXXZ @ 12523 NONAME ; void QVectorPath::makeCacheable(void) const
+

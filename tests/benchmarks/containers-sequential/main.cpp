@@ -59,7 +59,7 @@ public:
 };
 
 template <typename T>
-static T * f(T *ts) // dummy function to prevent code from being optimized away by the compiler
+T * f(T *ts) // dummy function to prevent code from being optimized away by the compiler
 {
     return ts;
 }
@@ -81,7 +81,7 @@ class UseCases_QVector : public UseCases<T>
     void lookup(int size)
     {
         QVector<T> v;
-    
+
         T t;
         for (int i = 0; i < size; ++i)
             v.append(t);
@@ -113,7 +113,7 @@ class UseCases_stdvector : public UseCases<T>
     void lookup(int size)
     {
         std::vector<T> v;
-    
+
         T t;
         for (int i = 0; i < size; ++i)
             v.push_back(t);
@@ -131,6 +131,13 @@ class UseCases_stdvector : public UseCases<T>
 struct Large { // A "large" item type
     int x[1000];
 };
+
+// Symbian devices typically have limited memory
+#ifdef Q_OS_SYMBIAN
+#  define LARGE_MAX_SIZE 2000
+#else
+#  define LARGE_MAX_SIZE 20000
+#endif
 
 class tst_vector_vs_std : public QObject
 {
@@ -190,7 +197,7 @@ void tst_vector_vs_std::insert_Large_data()
     QTest::addColumn<bool>("useStd");
     QTest::addColumn<int>("size");
 
-    for (int size = 10; size < 20000; size += 100) {
+    for (int size = 10; size < LARGE_MAX_SIZE; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
         QTest::newRow(("std::vector-Large--" + sizeString).constData()) << true << size;
         QTest::newRow(("QVector-Large--" + sizeString).constData()) << false << size;
@@ -236,7 +243,7 @@ void tst_vector_vs_std::lookup_Large_data()
     QTest::addColumn<bool>("useStd");
     QTest::addColumn<int>("size");
 
-    for (int size = 10; size < 20000; size += 100) {
+    for (int size = 10; size < LARGE_MAX_SIZE; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
         QTest::newRow(("std::vector-Large--" + sizeString).constData()) << true << size;
         QTest::newRow(("QVector-Large--" + sizeString).constData()) << false << size;

@@ -88,15 +88,15 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         t << "# ==============================================================================" << "\n" << endl;
 
         t << endl << endl;
-        
+
         t << "MAKE = make" << endl;
         t << endl;
-        
+
         t << "VISUAL_CFG = RELEASE" << endl;
-        t << "ifeq \"$(CFG)\" \"UDEB\"" << endl;        
-        t << "VISUAL_CFG = DEBUG" << endl;        
-        t << "endif" << endl;           
-        t << endl;        
+        t << "ifeq \"$(CFG)\" \"UDEB\"" << endl;
+        t << "VISUAL_CFG = DEBUG" << endl;
+        t << "endif" << endl;
+        t << endl;
 
         t << DO_NOTHING_TARGET " :" << endl;
         t << "\t" << "@rem " DO_NOTHING_TARGET << endl << endl;
@@ -113,8 +113,8 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
             cleanDepsWinscw.append(WINSCW_DEPLOYMENT_CLEAN_TARGET);
             finalDeps.append(DO_NOTHING_TARGET);
             finalDepsWinscw.append(WINSCW_DEPLOYMENT_TARGET);
-            wrapperTargets << WINSCW_DEPLOYMENT_TARGET 
-                << WINSCW_DEPLOYMENT_CLEAN_TARGET 
+            wrapperTargets << WINSCW_DEPLOYMENT_TARGET
+                << WINSCW_DEPLOYMENT_CLEAN_TARGET
                 << STORE_BUILD_TARGET;
         } else {
             buildDeps.append(CREATE_TEMPS_TARGET " " PRE_TARGETDEPS_TARGET " " STORE_BUILD_TARGET);
@@ -153,9 +153,9 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         QString makefile(Option::fixPathToTargetOS(fileInfo(wrapperFileName).canonicalFilePath()));
         foreach(QString target, wrapperTargets) {
             t << target << " : " << makefile << endl;
-            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SIS_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;                    
-        }     
-        
+            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SIS_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;
+        }
+
         t << endl;
     } // if(ft.open(QIODevice::WriteOnly))
 }
@@ -375,7 +375,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     // Create execution target
     if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
         t << "run:" << endl;
-        t << "\t-call " << epocRoot() << "epoc32\\release\\winscw\\udeb\\" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << endl << endl;
+        t << "\t-call " << epocRoot() << "epoc32\\release\\winscw\\udeb\\" << fixedTarget << ".exe" << endl << endl;
     }
 }
 
