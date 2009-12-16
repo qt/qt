@@ -47,32 +47,50 @@
 
 QT_BEGIN_NAMESPACE
 
-int QmlBinding_Basic::reevalIndex = -1;
+int QmlOptimizedBindings::methodCount = -1;
 
-QmlBinding_Basic::QmlBinding_Basic(QObject *target, int property,
-                                   const char *data, QmlRefCount *ref,
-                                   QObject *scope, QmlContext *context)
-: m_enabled(false), m_updating(false), m_scope(scope), m_target(target), 
-  m_property(property), m_data(data)
+QmlOptimizedBindings::QmlOptimizedBindings(const char *program, QmlContext *context)
+: m_program(program)
 {
-    if (reevalIndex == -1) 
-        reevalIndex = QmlBinding_Basic::staticMetaObject.indexOfSlot("reeval()");
+    if (methodCount == -1)
+        methodCount = QmlOptimizedBindings::staticMetaObject.methodCount();
 
     m_config.target = this;
-    m_config.targetSlot = reevalIndex;
-    m_scope2 = m_scope;
+    m_config.targetSlot = metaObject()->methodCount();
+
+    quint32 bindings = 0;
+    QmlBindingVME::init(m_program, &m_config, &m_signalTable, &bindings);
+
+    m_bindings = new Binding[bindings];
 
     QmlAbstractExpression::setContext(context);
 }
 
-QmlBinding_Basic::~QmlBinding_Basic()
+QmlOptimizedBindings::~QmlOptimizedBindings()
 {
+    delete [] m_bindings;
 }
 
-void QmlBinding_Basic::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)
+QmlAbstractBinding *QmlOptimizedBindings::configBinding(int index, QObject *target, 
+                                                        QObject *scope, int property)
+{
+    Binding *rv = m_bindings + index;
+
+    rv->index = index;
+    rv->property = property;
+    rv->target = target;
+    rv->scope = scope;
+    rv->parent = this;
+
+    addref(); // This is decremented in Binding::destroy()
+
+    return rv;
+}
+
+void QmlOptimizedBindings::Binding::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)
 {
     if (e) {
-        addToObject(m_target);
+        addToObject(target);
         update(flags);
     } else {
         removeFromObject();
@@ -80,56 +98,74 @@ void QmlBinding_Basic::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)
 
     QmlAbstractBinding::setEnabled(e, flags);
 
-    if (m_enabled != e) {
-        m_enabled = e;
+    if (enabled != e) {
+        enabled = e;
 
         if (e) update(flags);
     }
 }
 
-int QmlBinding_Basic::propertyIndex()
+int QmlOptimizedBindings::Binding::propertyIndex()
 {
-    return m_property & 0xFFFF;
+    return property & 0xFFFF;
 }
 
-void QmlBinding_Basic::update(QmlMetaProperty::WriteFlags flags)
+void QmlOptimizedBindings::Binding::update(QmlMetaProperty::WriteFlags)
 {
-    if (!m_enabled)
-        return;
+    parent->run(this);
+}
 
-    if (m_updating) {
-        qmlInfo(m_target) << tr("Binding loop detected");
-        return;
+void QmlOptimizedBindings::Binding::destroy()
+{
+    enabled = false;
+    removeFromObject();
+    parent->release();
+}
+
+int QmlOptimizedBindings::qt_metacall(QMetaObject::Call c, int id, void **)
+{
+    if (c == QMetaObject::InvokeMetaMethod && id >= methodCount) {
+        id -= methodCount;
+
+        quint32 *reeval = m_signalTable + m_signalTable[id];
+        quint32 count = *reeval;
+        ++reeval;
+        for (quint32 ii = 0; ii < count; ++ii) {
+            run(m_bindings + reeval[ii]);
+        }
     }
+    return -1;
+}
+
+void QmlOptimizedBindings::run(Binding *binding)
+{
+    if (!binding->enabled)
+        return;
+    if (binding->updating)
+        qWarning("ERROR: Circular binding");
 
     QmlContext *context = QmlAbstractExpression::context();
     if (!context)
         return;
     QmlContextPrivate *cp = QmlContextPrivate::get(context);
 
-    m_updating = true;
-
-    if (m_property & 0xFFFF0000) {
+    if (binding->property & 0xFFFF0000) {
         QmlEnginePrivate *ep = QmlEnginePrivate::get(cp->engine);
 
-        QmlValueType *vt = ep->valueTypes[(m_property >> 16) & 0xFF];
+        QmlValueType *vt = ep->valueTypes[(binding->property >> 16) & 0xFF];
         Q_ASSERT(vt);
-        vt->read(m_target, m_property & 0xFFFF);
+        vt->read(binding->target, binding->property & 0xFFFF);
 
         QObject *target = vt;
-        QmlBindingVME::run(m_data, &m_config, cp, &m_scope, &target);
+        QmlBindingVME::run(m_program, binding->index, &m_config, cp, 
+                           &binding->scope, &target);
 
-        vt->write(m_target, m_property & 0xFFFF, flags);
+        vt->write(binding->target, binding->property & 0xFFFF, 
+                  QmlMetaProperty::DontRemoveBinding);
     } else {
-        QmlBindingVME::run(m_data, &m_config, cp, &m_scope, &m_target);
+        QmlBindingVME::run(m_program, binding->index, &m_config, cp, 
+                           &binding->scope, &binding->target);
     }
-
-    m_updating = false;
-}
-
-void QmlBinding_Basic::reeval()
-{
-    update(QmlMetaProperty::DontRemoveBinding);
 }
 
 /*

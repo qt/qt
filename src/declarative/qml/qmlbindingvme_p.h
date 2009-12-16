@@ -80,11 +80,32 @@ public:
         QScriptDeclarativeClass::PersistentIdentifier *identifiers;
     };
 
-    static QByteArray compile(const QmlBasicScript::Expression &, QmlEnginePrivate *);
-    static void run(const char *program, 
+    static void init(const char *program, Config *config, 
+                     quint32 **sigTable, quint32 *bindingCount);
+    static void run(const char *program, int instr,
                     Config *config, QmlContextPrivate *context, 
                     QObject **scopes, QObject **outputs);
     static void dump(const QByteArray &);
+};
+
+class QmlBindingCompilerPrivate;
+class QmlBindingCompiler
+{
+public:
+    QmlBindingCompiler();
+    ~QmlBindingCompiler();
+
+    // Returns true if bindings were compiled
+    bool isValid() const;
+
+    // -1 on failure, otherwise the binding index to use
+    int compile(const QmlBasicScript::Expression &, QmlEnginePrivate *);
+
+    // Returns the compiled program
+    QByteArray program() const;
+
+private:
+    QmlBindingCompilerPrivate *d;
 };
 
 QT_END_NAMESPACE

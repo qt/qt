@@ -62,36 +62,44 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlBinding_Basic : public QObject,
-                         public QmlAbstractExpression,
-                         public QmlAbstractBinding
+class QmlOptimizedBindings : public QObject, public QmlAbstractExpression, public QmlRefCount
 {
-    Q_OBJECT
 public:
-    QmlBinding_Basic(QObject *target, int property,
-                     const char *data, QmlRefCount *ref,
-                     QObject *scope, QmlContext *context);
-    virtual ~QmlBinding_Basic();
+    QmlOptimizedBindings(const char *program, QmlContext *context);
+    virtual ~QmlOptimizedBindings();
+    QmlAbstractBinding *configBinding(int index, QObject *target, QObject *scope, int property);
 
-    // Inherited from QmlAbstractBinding
-    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
-    virtual int propertyIndex();
-    virtual void update(QmlMetaProperty::WriteFlags flags);
-
-private slots:
-    void reeval();
+protected:
+    int qt_metacall(QMetaObject::Call, int, void **);
 
 private:
-    bool m_enabled:1;
-    bool m_updating:1;
-    QObject *m_scope;
-    QObject *m_target;
-    int m_property;
-    const char *m_data;
-    QmlBindingVME::Config m_config;
-    QGuard<QObject> m_scope2;
+    struct Binding : public QmlAbstractBinding {
+        Binding() : enabled(false), updating(0), property(0),
+                    scope(0), target(0), parent(0) {}
 
-    static int reevalIndex;
+        // Inherited from QmlAbstractBinding
+        virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
+        virtual int propertyIndex();
+        virtual void update(QmlMetaProperty::WriteFlags flags);
+        virtual void destroy();
+
+        int index:30;
+        bool enabled:1;
+        bool updating:1;
+        int property;
+        QObject *scope;
+        QObject *target;
+
+        QmlOptimizedBindings *parent;
+    };
+    void run(Binding *);
+
+    QmlBindingVME::Config m_config;
+    const char *m_program;
+    Binding *m_bindings;
+    quint32 *m_signalTable;
+
+    static int methodCount;
 };
 
 class QmlBinding_Id : public QmlAbstractExpression, 

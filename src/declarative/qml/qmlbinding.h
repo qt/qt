@@ -61,6 +61,8 @@ public:
     QmlAbstractBinding();
     virtual ~QmlAbstractBinding();
 
+    virtual void destroy();
+
     virtual QString expression() const;
 
     void setEnabled(bool e) { setEnabled(e, QmlMetaProperty::DontRemoveBinding); }

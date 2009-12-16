@@ -643,6 +643,10 @@ void QmlCompiler::compileTree(Object *tree)
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
     init.init.contextCache = genContextCache();
+    if (compileState.compiledBindingData.isEmpty())
+        init.init.compiledBinding = -1;
+    else
+        init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
     output->bytecode << init;
 
     genObject(tree);
@@ -1010,6 +1014,10 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
     init.init.contextCache = genContextCache();
+    if (compileState.compiledBindingData.isEmpty())
+        init.init.compiledBinding = -1;
+    else
+        init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
     init.line = obj->location.start.line;
     output->bytecode << init;
 
@@ -2423,7 +2431,7 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     if (ref.dataType == BindingReference::Experimental) {
         QmlInstruction store;
         store.type = QmlInstruction::StoreCompiledBinding;
-        store.assignBinding.value = output->indexForByteArray(ref.compiledData);
+        store.assignBinding.value = ref.compiledIndex;
         store.assignBinding.context = ref.bindingContext.stack;
         store.assignBinding.owner = ref.bindingContext.owner;
         if (valueTypeProperty) 
@@ -2529,6 +2537,8 @@ bool QmlCompiler::completeComponentBuild()
     expr.component = compileState.root;
     expr.ids = compileState.ids;
 
+    QmlBindingCompiler bindingCompiler;
+
     for (QHash<QmlParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); iter != compileState.bindings.end(); ++iter) {
         BindingReference &binding = *iter;
 
@@ -2541,15 +2551,15 @@ bool QmlCompiler::completeComponentBuild()
         bs.compile(expr);
 
         if (qmlExperimental() && (!bs.isValid() || (!bs.isSingleIdFetch() && !bs.isSingleContextProperty()))) {
-
-            QByteArray qmvdata = QmlBindingVME::compile(expr, QmlEnginePrivate::get(engine));
-            if (!qmvdata.isEmpty()) {
-                qWarning() << expr.expression.asScript();
-                QmlBindingVME::dump(qmvdata);
+            int index = bindingCompiler.compile(expr, QmlEnginePrivate::get(engine));
+            if (index != -1) {
+                qWarning() << "Accepted for optimization:" << qPrintable(expr.expression.asScript());
                 binding.dataType = BindingReference::Experimental;
-                binding.compiledData = qmvdata;
+                binding.compiledIndex = index;
                 componentStat.optimizedBindings++;
                 continue;
+            } else {
+                qWarning() << "Rejected for optimization:" << qPrintable(expr.expression.asScript());
             }
         }
 
@@ -2597,6 +2607,11 @@ bool QmlCompiler::completeComponentBuild()
         }
         binding.compiledData.prepend(QByteArray((const char *)&type, 
                                                 sizeof(quint32)));
+    }
+
+    if (bindingCompiler.isValid()) {
+        compileState.compiledBindingData = bindingCompiler.program();
+        QmlBindingVME::dump(compileState.compiledBindingData);
     }
 
     saveComponentState();

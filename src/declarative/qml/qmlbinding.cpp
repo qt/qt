@@ -276,6 +276,11 @@ QmlAbstractBinding::~QmlAbstractBinding()
         *m_mePtr = 0;
 }
 
+void QmlAbstractBinding::destroy()
+{
+    delete this;
+}
+
 void QmlAbstractBinding::addToObject(QObject *object)
 {
     Q_ASSERT(object);

@@ -273,6 +273,8 @@ private:
         enum DataType { QtScript, BasicScript, Experimental };
         DataType dataType;
 
+        int compiledIndex;
+
         QByteArray compiledData;
         BindingContext bindingContext;
     };
@@ -286,6 +288,8 @@ private:
         QHash<int, QmlParser::Object *> idIndexes;
         int parserStatusCount;
         int pushedProperties;
+
+        QByteArray compiledBindingData;
 
         QHash<QmlParser::Value *, BindingReference> bindings;
         QList<QmlParser::Object *> aliasingObjects;
