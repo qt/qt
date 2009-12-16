@@ -68,6 +68,14 @@ void QmlGraphicsViewSection::setCriteria(QmlGraphicsViewSection::SectionCriteria
     }
 }
 
+void QmlGraphicsViewSection::setDelegate(QmlComponent *delegate)
+{
+    if (delegate != m_delegate) {
+        m_delegate = delegate;
+        emit delegateChanged();
+    }
+}
+
 QString QmlGraphicsViewSection::sectionString(const QString &value)
 {
     if (m_criteria == FirstCharacter)
@@ -162,14 +170,23 @@ QHash<QObject*, QmlGraphicsListViewAttached*> QmlGraphicsListViewAttached::attac
 class FxListItem
 {
 public:
-    FxListItem(QmlGraphicsItem *i, QmlGraphicsListView *v) : item(i), view(v) {
+    FxListItem(QmlGraphicsItem *i, QmlGraphicsListView *v) : item(i), section(0), view(v) {
         attached = QmlGraphicsListViewAttached::properties(item);
         attached->m_view = view;
     }
     ~FxListItem() {}
-
-    qreal position() const { return (view->orientation() == QmlGraphicsListView::Vertical ? item->y() : item->x()); }
-    int size() const { return (view->orientation() == QmlGraphicsListView::Vertical ? item->height() : item->width()); }
+    qreal position() const {
+        if (section)
+            return (view->orientation() == QmlGraphicsListView::Vertical ? section->y() : section->x());
+        else
+            return (view->orientation() == QmlGraphicsListView::Vertical ? item->y() : item->x());
+    }
+    int size() const {
+        if (section)
+            return (view->orientation() == QmlGraphicsListView::Vertical ? item->height()+section->height() : item->width()+section->height());
+        else
+            return (view->orientation() == QmlGraphicsListView::Vertical ? item->height() : item->width());
+    }
     qreal endPosition() const {
         return (view->orientation() == QmlGraphicsListView::Vertical
                                         ? item->y() + (item->height() > 0 ? item->height() : 1)
@@ -177,13 +194,22 @@ public:
     }
     void setPosition(qreal pos) {
         if (view->orientation() == QmlGraphicsListView::Vertical) {
+            if (section) {
+                section->setY(pos);
+                pos += section->height();
+            }
             item->setY(pos);
         } else {
+            if (section) {
+                section->setX(pos);
+                pos += section->width();
+            }
             item->setX(pos);
         }
     }
 
     QmlGraphicsItem *item;
+    QmlGraphicsItem *section;
     QmlGraphicsListView *view;
     QmlGraphicsListViewAttached *attached;
     int index;
@@ -467,6 +493,7 @@ public:
     void updateTrackedItem();
     void createHighlight();
     void updateHighlight();
+    void createSection(FxListItem *);
     void updateSections();
     void updateCurrentSection();
     void updateCurrent(int);
@@ -573,6 +600,11 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
         listItem->item->setParent(q->viewport());
         QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item));
         itemPrivate->addGeometryListener(this);
+        if (sectionCriteria && sectionCriteria->delegate()) {
+            qDebug() << "have delegate";
+            if (listItem->attached->m_prevSection != listItem->attached->m_section)
+                createSection(listItem);
+        }
     }
     requestedIndex = -1;
 
@@ -597,6 +629,8 @@ void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
     }
+    if (item->section)
+        delete item->section;
     delete item;
 }
 
@@ -693,6 +727,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
 void QmlGraphicsListViewPrivate::layout()
 {
     Q_Q(QmlGraphicsListView);
+    updateSections();
     if (!visibleItems.isEmpty()) {
         int oldEnd = visibleItems.last()->endPosition();
         int pos = visibleItems.first()->endPosition() + spacing + 1;
@@ -842,6 +877,36 @@ void QmlGraphicsListViewPrivate::updateHighlight()
     updateTrackedItem();
 }
 
+void QmlGraphicsListViewPrivate::createSection(FxListItem *listItem)
+{
+    Q_Q(QmlGraphicsListView);
+    if (!sectionCriteria || !sectionCriteria->delegate())
+        return;
+    if (listItem->attached->m_prevSection != listItem->attached->m_section) {
+        if (!listItem->section) {
+            qDebug() << "create Section";
+            QmlContext *context = new QmlContext(qmlContext(q));
+            QObject *nobj = sectionCriteria->delegate()->create(context);
+            if (nobj) {
+                context->setParent(nobj);
+                listItem->section = qobject_cast<QmlGraphicsItem *>(nobj);
+                if (!listItem->section) {
+                    delete nobj;
+                } else {
+                    context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
+                    listItem->section->setZValue(1);
+                    listItem->section->setParent(q->viewport());
+                }
+            } else {
+                delete context;
+            }
+        }
+    } else {
+        delete listItem->section;
+        listItem->section = 0;
+    }
+}
+
 void QmlGraphicsListViewPrivate::updateSections()
 {
     if (sectionCriteria) {
@@ -852,6 +917,7 @@ void QmlGraphicsListViewPrivate::updateSections()
             if (visibleItems.at(i)->index != -1) {
                 QmlGraphicsListViewAttached *attached = visibleItems.at(i)->attached;
                 attached->setPrevSection(prevSection);
+                createSection(visibleItems.at(i));
                 prevSection = attached->section();
             }
         }
@@ -2240,7 +2306,6 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
     d->updateUnrequestedIndexes();
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->layout();
-        d->updateSections();
         d->updateCurrent(qMax(0, qMin(d->currentIndex, d->model->count()-1)));
         emit countChanged();
         return;
@@ -2351,11 +2416,7 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
     // everything is in order now - emit add() signal
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
-    d->updateUnrequestedPositions();
-    d->updateViewport();
-    d->updateSections();
-    d->updateHeader();
-    d->updateFooter();
+    d->layout();
     emit countChanged();
 }
 
@@ -2386,7 +2447,6 @@ void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
             d->updateCurrent(qMin(modelIndex, d->model->count()-1));
         }
         d->layout();
-        d->updateSections();
         emit countChanged();
         return;
     }
@@ -2459,7 +2519,6 @@ void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
     } else {
         // Correct the positioning of the items
         d->layout();
-        d->updateSections();
     }
 
     emit countChanged();
@@ -2557,7 +2616,6 @@ void QmlGraphicsListView::itemsMoved(int from, int to, int count)
     d->visibleItems.first()->setPosition(d->visibleItems.first()->position() + moveBy);
 
     d->layout();
-    d->updateSections();
 }
 
 void QmlGraphicsListView::createdItem(int index, QmlGraphicsItem *item)

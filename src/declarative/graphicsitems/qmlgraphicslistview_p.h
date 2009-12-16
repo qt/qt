@@ -55,9 +55,10 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsViewSection : public QObject
     Q_OBJECT
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY changed)
     Q_PROPERTY(SectionCriteria criteria READ criteria WRITE setCriteria NOTIFY changed)
+    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_ENUMS(SectionCriteria)
 public:
-    QmlGraphicsViewSection(QObject *parent=0) : QObject(parent), m_criteria(FullString) {}
+    QmlGraphicsViewSection(QObject *parent=0) : QObject(parent), m_criteria(FullString), m_delegate(0) {}
 
     QString property() const { return m_property; }
     void setProperty(const QString &);
@@ -66,14 +67,19 @@ public:
     SectionCriteria criteria() const { return m_criteria; }
     void setCriteria(SectionCriteria);
 
+    QmlComponent *delegate() const { return m_delegate; }
+    void setDelegate(QmlComponent *delegate);
+
     QString sectionString(const QString &value);
 
 Q_SIGNALS:
     void changed();
+    void delegateChanged();
 
 private:
     QString m_property;
     SectionCriteria m_criteria;
+    QmlComponent *m_delegate;
 };
 
 
