@@ -2882,6 +2882,8 @@ int QAbstractItemView::sizeHintForRow(int row) const
     if (row < 0 || row >= d->model->rowCount() || !model())
         return -1;
 
+    ensurePolished();
+
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
     int height = 0;
     int colCount = d->model->columnCount(d->root);
@@ -2910,6 +2912,8 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 
     if (column < 0 || column >= d->model->columnCount() || !model())
         return -1;
+
+    ensurePolished();
 
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
     int width = 0;

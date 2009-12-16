@@ -77,8 +77,12 @@ QT_BEGIN_NAMESPACE
     file, you can:
 
     \code
+      QFile outputFile;   // class member.
+      QAudioInput* audio; // class member.
+    \endcode
+
+    \code
     {
-      QFile outputFile;
       outputFile.setFileName("/tmp/test.raw");
       outputFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
 
@@ -91,7 +95,13 @@ QT_BEGIN_NAMESPACE
       format.setByteOrder(QAudioFormat::LittleEndian);
       format.setSampleType(QAudioFormat::UnSignedInt);
 
-      QAudioInput *audio = new QAudioInput(format, this);
+      if (QAudioDeviceInfo info(QAudioDeviceInfo::defaultInputDevice());
+      if (!info.isFormatSupported(format)) {
+          qWarning()<<"default format not supported try to use nearest";
+          format = info.nearestFormat(format);
+      }
+
+      audio = new QAudioInput(format, this);
       QTimer::singleShot(3000, this, SLOT(stopRecording()));
       audio->start(outputFile);
       // Records audio for 3000ms
@@ -109,6 +119,7 @@ QT_BEGIN_NAMESPACE
     {
       audio->stop();
       outputFile->close();
+      delete audio;
     }
     \endcode
 

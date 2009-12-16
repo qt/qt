@@ -54,8 +54,8 @@
 #ifndef QDBUSINTERFACEPRIVATE_H
 #define QDBUSINTERFACEPRIVATE_H
 
-#include <qdbusabstractinterface_p.h>
-#include <qdbusmetaobject_p.h>
+#include "qdbusabstractinterface_p.h"
+#include "qdbusmetaobject_p.h"
 #include <qdbusinterface.h>
 
 QT_BEGIN_NAMESPACE
