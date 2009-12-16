@@ -601,7 +601,6 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
         QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item));
         itemPrivate->addGeometryListener(this);
         if (sectionCriteria && sectionCriteria->delegate()) {
-            qDebug() << "have delegate";
             if (listItem->attached->m_prevSection != listItem->attached->m_section)
                 createSection(listItem);
         }
@@ -884,8 +883,8 @@ void QmlGraphicsListViewPrivate::createSection(FxListItem *listItem)
         return;
     if (listItem->attached->m_prevSection != listItem->attached->m_section) {
         if (!listItem->section) {
-            qDebug() << "create Section";
             QmlContext *context = new QmlContext(qmlContext(q));
+            context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
             QObject *nobj = sectionCriteria->delegate()->create(context);
             if (nobj) {
                 context->setParent(nobj);
@@ -893,7 +892,6 @@ void QmlGraphicsListViewPrivate::createSection(FxListItem *listItem)
                 if (!listItem->section) {
                     delete nobj;
                 } else {
-                    context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
                     listItem->section->setZValue(1);
                     listItem->section->setParent(q->viewport());
                 }
