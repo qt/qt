@@ -1002,11 +1002,12 @@ This does not clear the global "commited binding" states.
 void QmlBindingCompilerPrivate::resetInstanceState()
 {
     registers = 0;
+    registerCleanups.clear();
     strings = committed.strings;
     data = committed.data;
-    subscriptionIds = committed.subscriptionIds;
-    subscriptionSet.clear();
     usedSubscriptionIds.clear();
+    subscriptionSet.clear();
+    subscriptionIds = committed.subscriptionIds;
     bytecode.clear();
 }
 
@@ -1870,7 +1871,7 @@ Returns true if any bindings were compiled.
 */
 bool QmlBindingCompiler::isValid() const
 {
-    return d->bytecode.count();
+    return !d->committed.bytecode.isEmpty();
 }
 
 /* 
