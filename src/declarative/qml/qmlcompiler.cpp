@@ -2190,6 +2190,14 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     newClassName.append("_QML_");
     int idx = classIndexCounter()->fetchAndAddRelaxed(1);
     newClassName.append(QByteArray::number(idx));
+    if (compileState.root == obj) {
+        QString path = output->url.path();
+        int lastSlash = path.lastIndexOf(QLatin1Char('/'));
+        if (lastSlash > -1) {
+            QString nameBase = path.mid(lastSlash + 1, path.length()-lastSlash-5);
+            newClassName = nameBase.toUtf8() + "_QMLTYPE_" + QByteArray::number(idx);
+        }
+    }
 
     QMetaObjectBuilder builder;
     builder.setClassName(newClassName);

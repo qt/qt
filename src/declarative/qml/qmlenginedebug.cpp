@@ -285,6 +285,9 @@ QmlEngineDebugServer::objectData(QObject *object)
         rv.objectType = lastSlash < 0 ? typeName : typeName.mid(lastSlash+1);
     } else {
         rv.objectType = QString::fromUtf8(object->metaObject()->className());
+        int marker = rv.objectType.indexOf(QLatin1String("_QMLTYPE_"));
+        if (marker != -1)
+            rv.objectType = rv.objectType.left(marker);
     }
 
     return rv;
