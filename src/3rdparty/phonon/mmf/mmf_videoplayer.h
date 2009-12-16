@@ -23,7 +23,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractmediaplayer.h"
 #include "videooutput.h"
-#include "videooutputobserver.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -40,7 +39,6 @@ namespace MMF
  */
 class VideoPlayer : public AbstractMediaPlayer
                   , public MVideoPlayerUtilityObserver
-                  , public VideoOutputObserver
 {
     Q_OBJECT
 
@@ -70,8 +68,12 @@ public:
     virtual void MvpuoPlayComplete(TInt aError);
     virtual void MvpuoEvent(const TMMFEvent &aEvent);
 
-    // VideoOutputObserver
-    virtual void videoOutputRegionChanged();
+public Q_SLOTS:
+    void videoWindowChanged();
+    void aspectRatioChanged();
+    void scaleModeChanged();
+    void suspendDirectScreenAccess();
+    void resumeDirectScreenAccess();
 
 private:
     void construct();
@@ -81,10 +83,20 @@ private:
     // AbstractPlayer
     virtual void videoOutputChanged();
 
-    // Returns true if handles have changed
-    bool getNativeWindowSystemHandles();
+    void getVideoWindow();
+    void initVideoOutput();
 
-    void updateMmfOutput();
+    void updateVideoRect();
+
+    void applyPendingChanges();
+    void applyVideoWindowChange();
+
+    void startDirectScreenAccess();
+    bool stopDirectScreenAccess();
+
+    // AbstractMediaPlayer
+    virtual int numberOfMetaDataEntries() const;
+    virtual QPair<QString, QString> metaDataEntry(int index) const;
 
 private:
     QScopedPointer<CVideoPlayerUtility> m_player;
@@ -93,12 +105,19 @@ private:
     RWsSession&                         m_wsSession;
     CWsScreenDevice&                    m_screenDevice;
     RWindowBase*                        m_window;
-    TRect                               m_rect;
 
-    QSize                               m_frameSize;
+    /* Extent of the video display - will be clipped to m_windowRect */
+    TRect                               m_videoRect;
+
+    TReal32                             m_scaleWidth;
+    TReal32                             m_scaleHeight;
+
+    QSize                               m_videoFrameSize;
     qint64                              m_totalTime;
 
-    bool                                m_mmfOutputChangePending;
+    bool                                m_pendingChanges;
+    bool                                m_dsaActive;
+    bool                                m_dsaWasActive;
 
 };
 

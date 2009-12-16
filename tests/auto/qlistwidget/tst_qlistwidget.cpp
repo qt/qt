@@ -46,6 +46,7 @@
 #include <qlist.h>
 
 #include <qlistwidget.h>
+#include <private/qlistwidget_p.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -95,6 +96,8 @@ private slots:
     void insertItem();
     void insertItems_data();
     void insertItems();
+    void moveItemsPriv_data();
+    void moveItemsPriv();
 
     void itemAssignment();
     void item_data();
@@ -847,6 +850,69 @@ void tst_QListWidget::removeItems()
             QCOMPARE(testWidget->item(r)->text(), QString::number(r + removeRows));
 
 
+}
+
+void tst_QListWidget::moveItemsPriv_data()
+{
+    QTest::addColumn<int>("rowCount");
+    QTest::addColumn<int>("srcRow");
+    QTest::addColumn<int>("dstRow");
+    QTest::addColumn<bool>("shouldHaveSignaled");
+
+    QTest::newRow("Empty") << 0 << 0 << 0 << false;
+    QTest::newRow("Overflow src") << 5 << 5 << 2 << false;
+    QTest::newRow("Underflow src") << 5 << -1 << 2 << false;
+    QTest::newRow("Overflow dst") << 5 << 2 << 6 << false;
+    QTest::newRow("Underflow dst") << 5 << 2 << -1 << false;
+    QTest::newRow("Same place") << 5 << 2 << 2 << false;
+    QTest::newRow("Up") << 5 << 4 << 2 << true;
+    QTest::newRow("Down") << 5 << 2 << 4 << true;
+    QTest::newRow("QTBUG-6532 assert") << 5 << 0 << 1 << false;
+    QTest::newRow("QTBUG-6565 to the end") << 5 << 3 << 5 << true;
+    QTest::newRow("Same place 2") << 2 << 0 << 1 << false;
+    QTest::newRow("swap") << 2 << 0 << 2 << true;
+    QTest::newRow("swap2") << 4 << 1 << 3 << true;
+    QTest::newRow("swap3") << 4 << 3 << 2 << true;
+    QTest::newRow("swap4") << 2 << 1 << 0 << true;
+}
+
+void tst_QListWidget::moveItemsPriv()
+{
+    QFETCH(int, rowCount);
+    QFETCH(int, srcRow);
+    QFETCH(int, dstRow);
+    QFETCH(bool, shouldHaveSignaled);
+
+    for (int r = 0; r < rowCount; ++r)
+        new QListWidgetItem(QString::number(r), testWidget);
+
+    QListModel *model = qobject_cast<QListModel *>(testWidget->model());
+    QVERIFY(model);
+    QSignalSpy beginMoveSpy(model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
+    QSignalSpy movedSpy(model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
+    model->move(srcRow, dstRow);
+
+    if (shouldHaveSignaled) {
+        if (srcRow < dstRow)
+            QCOMPARE(testWidget->item(dstRow - 1)->text(), QString::number(srcRow));
+        else
+            QCOMPARE(testWidget->item(dstRow)->text(), QString::number(srcRow));
+
+        QCOMPARE(beginMoveSpy.count(), 1);
+        const QList<QVariant> &beginMoveArgs = beginMoveSpy.takeFirst();
+        QCOMPARE(beginMoveArgs.at(1).toInt(), srcRow);
+        QCOMPARE(beginMoveArgs.at(2).toInt(), srcRow);
+        QCOMPARE(beginMoveArgs.at(4).toInt(), dstRow);
+
+        QCOMPARE(movedSpy.count(), 1);
+        const QList<QVariant> &movedArgs = movedSpy.takeFirst();
+        QCOMPARE(movedArgs.at(1).toInt(), srcRow);
+        QCOMPARE(movedArgs.at(2).toInt(), srcRow);
+        QCOMPARE(movedArgs.at(4).toInt(), dstRow);
+    } else {
+        QCOMPARE(beginMoveSpy.count(), 0);
+        QCOMPARE(movedSpy.count(), 0);
+    }
 }
 
 void tst_QListWidget::itemStreaming_data()

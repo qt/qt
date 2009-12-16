@@ -54,6 +54,20 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef QT_BOOTSTRAPPED
+class QObject {
+public:
+    static QString tr(const char *sourceText, const char * = 0, int n = -1);
+};
+class QCoreApplication : public QObject {
+public:
+    enum Encoding { CodecForTr };
+    static QString translate(const char *, const char *sourceText, const char * = 0,
+                             Encoding = CodecForTr, int n = -1)
+        { return tr(sourceText, 0, n); }
+};
+#endif
+
 class QIODevice;
 
 // A struct of "interesting" data passed to and from the load and save routines
@@ -85,7 +99,8 @@ public:
 public:
     QString m_defaultContext;
     QByteArray m_codecForSource; // CPP, PO & QM specific
-    QByteArray m_outputCodec; // PO specific
+    QByteArray m_outputCodec; // CPP & PO specific
+    QString m_unTrPrefix; // QM specific
     QString m_sourceFileName;
     QString m_targetFileName;
     QDir m_sourceDir;
@@ -112,18 +127,13 @@ public:
     bool save(const QString &filename, ConversionData &err, const QString &format /*= "auto"*/) const;
     bool release(QFile *iod, ConversionData &cd) const;
 
-    bool contains(const QString &context, const QString &sourceText,
-        const QString &comment) const;
-    TranslatorMessage find(const QString &context,
-        const QString &sourceText, const QString &comment) const;
-
+    int find(const TranslatorMessage &msg) const;
     TranslatorMessage find(const QString &context,
         const QString &comment, const TranslatorMessage::References &refs) const;
 
     bool contains(const QString &context) const;
     TranslatorMessage find(const QString &context) const;
 
-    void replace(const TranslatorMessage &msg);
     void replaceSorted(const TranslatorMessage &msg);
     void extend(const TranslatorMessage &msg); // Only for single-location messages
     void append(const TranslatorMessage &msg);
@@ -137,12 +147,14 @@ public:
     void dropTranslations();
     void dropUiLines();
     void makeFileNamesAbsolute(const QDir &originalPath);
-    QSet<TranslatorMessagePtr> resolveDuplicates();
-    static void reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
-                                 const QString &fileName, bool verbose);
+
+    struct Duplicates { QSet<int> byId, byContents; };
+    Duplicates resolveDuplicates();
+    void reportDuplicates(const Duplicates &dupes, const QString &fileName, bool verbose);
 
     void setCodecName(const QByteArray &name);
-    QByteArray codecName() const { return m_codecName; }
+    QByteArray codecName() const;
+    QTextCodec *codec() const { return m_codec; }
 
     QString languageCode() const { return m_language; }
     QString sourceLanguageCode() const { return m_sourceLanguage; }
@@ -202,7 +214,7 @@ private:
     typedef QList<TranslatorMessage> TMM;       // int stores the sequence position.
 
     TMM m_messages;
-    QByteArray m_codecName;
+    QTextCodec *m_codec;
     LocationsType m_locationsType;
 
     // A string beginning with a 2 or 3 letter language code (ISO 639-1

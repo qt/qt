@@ -97,6 +97,12 @@ public:
                 );
     }
 
+    // ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
+    void markDirty(const QRegion &rgn, QWidget *widget, bool updateImmediately = false,
+                   bool invalidateBuffer = false);
+    void markDirty(const QRect &rect, QWidget *widget, bool updateImmediately = false,
+                   bool invalidateBuffer = false);
+
 private:
     QWidget *tlw;
     QRegion dirtyOnScreen; // needsFlush
@@ -126,11 +132,6 @@ private:
     QRegion dirtyRegion(QWidget *widget = 0) const;
     QRegion staticContents(QWidget *widget = 0, const QRect &withinClipRect = QRect()) const;
 
-    // ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
-    void markDirty(const QRegion &rgn, QWidget *widget, bool updateImmediately = false,
-                   bool invalidateBuffer = false);
-    void markDirty(const QRect &rect, QWidget *widget, bool updateImmediately = false,
-                   bool invalidateBuffer = false);
     void markDirtyOnScreen(const QRegion &dirtyOnScreen, QWidget *widget, const QPoint &topLevelOffset);
 
     void removeDirtyWidget(QWidget *w);
@@ -145,9 +146,11 @@ private:
     {
         if (widget && !widget->d_func()->inDirtyList && !widget->data->in_destructor) {
             QWidgetPrivate *widgetPrivate = widget->d_func();
+#ifndef QT_NO_GRAPHICSEFFECT
             if (widgetPrivate->graphicsEffect)
                 widgetPrivate->dirty = widgetPrivate->effectiveRectFor(rgn.boundingRect());
             else
+#endif //QT_NO_GRAPHICSEFFECT
                 widgetPrivate->dirty = rgn;
             dirtyWidgets.append(widget);
             widgetPrivate->inDirtyList = true;

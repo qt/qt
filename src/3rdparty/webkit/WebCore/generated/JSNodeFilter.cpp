@@ -90,8 +90,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSNodeFilterConstructor::s_info = { "NodeFilterConstructor", 0, &JSNodeFilterConstructorTable, 0 };
@@ -164,7 +167,7 @@ JSNodeFilter::JSNodeFilter(NonNullPassRefPtr<Structure> structure, JSDOMGlobalOb
 
 JSNodeFilter::~JSNodeFilter()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSNodeFilter::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

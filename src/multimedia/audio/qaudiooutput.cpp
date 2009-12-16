@@ -73,7 +73,11 @@ QT_BEGIN_NAMESPACE
     simple as:
 
     \code
-      QFile inputFile;
+      QFile inputFile;     // class member.
+      QAudioOutput* audio; // class member.
+    \endcode
+
+    \code
       inputFile.setFileName("/tmp/test.raw");
       inputFile.open(QIODevice::ReadOnly);
 
@@ -86,7 +90,13 @@ QT_BEGIN_NAMESPACE
       format.setByteOrder(QAudioFormat::LittleEndian);
       format.setSampleType(QAudioFormat::UnSignedInt);
 
-      QAudioOutput *audio = new QAudioOutput(format, this);
+      QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+      if (!info.isFormatSupported(format)) {
+          qWarning()<<"raw audio format not supported by backend, cannot play audio.";
+          return;
+      }
+
+      audio = new QAudioOutput(format, this);
       connect(audio,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlaying(QAudio::State)));
       audio->start(inputFile);
 
@@ -104,6 +114,7 @@ QT_BEGIN_NAMESPACE
         if(state == QAudio::IdleState) {
           audio->stop();
           inputFile.close();
+          delete audio;
         }
       }
     \endcode
@@ -125,12 +136,12 @@ QT_BEGIN_NAMESPACE
     not emitted. A typical use-case would be to update a
     \l{QSlider}{slider} that allows seeking in the stream.
     If you want the time since playback started regardless of which
-    states the audio output has been in, clock() is the function for you.
+    states the audio output has been in, elapsedUSecs() is the function for you.
 
     If an error occurs, you can fetch the \l{QAudio::Error}{error
     type} with the error() function. Please see the QAudio::Error enum
     for a description of the possible errors that are reported.  When
-    an error is encountered, the state changes to QAudio::StopState.
+    an error is encountered, the state changes to QAudio::StoppedState.
     You can check for errors by connecting to the stateChanged()
     signal:
 
@@ -188,36 +199,42 @@ QAudioFormat QAudioOutput::format() const
 
 /*!
     Uses the \a device as the QIODevice to transfer data.
-    If \a device is null then the class creates an internal QIODevice.
-    Returns a pointer to the QIODevice being used to handle the data
-    transfer. This QIODevice can be used to write() audio data
-    directly.
     Passing a QIODevice allows the data to be transfered without any extra code.
     All that is required is to open the QIODevice.
 
     \sa QIODevice
 */
 
-QIODevice* QAudioOutput::start(QIODevice* device)
+void QAudioOutput::start(QIODevice* device)
 {
     /*
-    PULL MODE (valid QIODevice)
-    -If currently not StopState, stop.
+    -If currently not StoppedState, stop.
     -If previous start was push mode, delete internal QIODevice.
     -open audio output.
-    -If ok, NoError and ActiveState, else OpenError and StopState
+    -If ok, NoError and ActiveState, else OpenError and StoppedState
     -emit stateChanged()
-    -return device
+    */
+    d->start(device);
+}
 
-    PUSH MODE (device = 0)
-    -If currently not StopState, stop.
+/*!
+    Returns a pointer to the QIODevice being used to handle the data
+    transfer. This QIODevice can be used to write() audio data directly.
+
+    \sa QIODevice
+*/
+
+QIODevice* QAudioOutput::start()
+{
+    /*
+    -If currently not StoppedState, stop.
     -If no internal QIODevice, create one.
     -open audio output.
-    -If ok, NoError and IdleState, else OpenError and StopState
+    -If ok, NoError and IdleState, else OpenError and StoppedState
     -emit stateChanged()
     -return internal QIODevice
     */
-    return d->start(device);
+    return d->start(0);
 }
 
 /*!
@@ -227,8 +244,8 @@ QIODevice* QAudioOutput::start(QIODevice* device)
 void QAudioOutput::stop()
 {
     /*
-    -If StopState, return
-    -set to StopState
+    -If StoppedState, return
+    -set to StoppedState
     -detach from audio device
     -emit stateChanged()
     */
@@ -257,7 +274,7 @@ void QAudioOutput::suspend()
     /*
     -If not ActiveState|IdleState, return
     -stop processing audio, saving all buffered audio data
-    -set NoError and SuspendState
+    -set NoError and SuspendedState
     -emit stateChanged()
     */
     d->suspend();
@@ -270,7 +287,7 @@ void QAudioOutput::suspend()
 void QAudioOutput::resume()
 {
     /*
-    -If SuspendState, return
+    -If SuspendedState, return
     -resume audio
     -(PULL MODE): set ActiveState, NoError
     -(PUSH MODE): set IdleState, NoError
@@ -358,9 +375,9 @@ int QAudioOutput::notifyInterval() const
     was called in microseconds.
 */
 
-qint64 QAudioOutput::totalTime() const
+qint64 QAudioOutput::processedUSecs() const
 {
-    return d->totalTime();
+    return d->processedUSecs();
 }
 
 /*!
@@ -368,9 +385,9 @@ qint64 QAudioOutput::totalTime() const
     Suspend states.
 */
 
-qint64 QAudioOutput::clock() const
+qint64 QAudioOutput::elapsedUSecs() const
 {
-    return d->clock();
+    return d->elapsedUSecs();
 }
 
 /*!

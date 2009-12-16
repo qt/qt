@@ -114,10 +114,10 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
         }
     } else if (old_height > span->height()) {
         //remove the span from all the subspans lists that intersect the columns not covered anymore
-        Index::iterator it_y = index.lowerBound(-span->bottom());
+        Index::iterator it_y = index.lowerBound(qMin(-span->bottom(), 0));
         Q_ASSERT(it_y != index.end()); //it_y must exist since the span is in the list
         while (-it_y.key() <= span->top() + old_height -1) {
-            if(-it_y.key() != span->bottom()) {
+            if (-it_y.key() > span->bottom()) {
                 (*it_y).remove(-span->left());
                 if (it_y->isEmpty()) {
                     it_y = index.erase(it_y) - 1;
@@ -543,6 +543,47 @@ void QSpanCollection::updateRemovedColumns(int start, int end)
 #endif
     qDeleteAll(toBeDeleted);
 }
+
+#ifdef QT_BUILD_INTERNAL
+/*!
+  \internal
+  Checks whether the span index structure is self-consistent, and consistent with the spans list.
+*/
+bool QSpanCollection::checkConsistency() const
+{
+    for (Index::const_iterator it_y = index.begin(); it_y != index.end(); ++it_y) {
+        int y = -it_y.key();
+        const SubIndex &subIndex = it_y.value();
+        for (SubIndex::const_iterator it = subIndex.begin(); it != subIndex.end(); ++it) {
+            int x = -it.key();
+            Span *span = it.value();
+            if (!spans.contains(span) || span->left() != x
+                || y < span->top() || y > span->bottom())
+                return false;
+        }
+    }
+
+    foreach (const Span *span, spans) {
+        if (span->width() < 1 || span->height() < 1
+            || (span->width() == 1 && span->height() == 1))
+            return false;
+        for (int y = span->top(); y <= span->bottom(); ++y) {
+            Index::const_iterator it_y = index.find(-y);
+            if (it_y == index.end()) {
+                if (y == span->top())
+                    return false;
+                else
+                    continue;
+            }
+            const SubIndex &subIndex = it_y.value();
+            SubIndex::const_iterator it = subIndex.find(-span->left());
+            if (it == subIndex.end() || it.value() != span)
+                return false;
+        }
+    }
+    return true;
+}
+#endif
 
 class QTableCornerButton : public QAbstractButton
 {
@@ -1023,14 +1064,29 @@ QTableView::~QTableView()
 void QTableView::setModel(QAbstractItemModel *model)
 {
     Q_D(QTableView);
-    connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
-    connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
-    connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
-    connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+    if (model == d->model)
+        return;
+    //let's disconnect from the old model
+    if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
+        disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+    }
+    if (model) { //and connect to the new one
+        connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
+        connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
+        connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
+        connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+                this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
+    }
     d->verticalHeader->setModel(model);
     d->horizontalHeader->setModel(model);
     QAbstractItemView::setModel(model);
@@ -2065,6 +2121,8 @@ int QTableView::sizeHintForRow(int row) const
     if (!model())
         return -1;
 
+    ensurePolished();
+
     int left = qMax(0, columnAt(0));
     int right = columnAt(d->viewport->width());
     if (right == -1) // the table don't have enough columns to fill the viewport
@@ -2121,6 +2179,8 @@ int QTableView::sizeHintForColumn(int column) const
 
     if (!model())
         return -1;
+
+    ensurePolished();
 
     int top = qMax(0, rowAt(0));
     int bottom = rowAt(d->viewport->height());

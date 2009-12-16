@@ -602,15 +602,30 @@ void tst_QAlgorithms::test_qUpperBound()
 void tst_QAlgorithms::test_qBinaryFind_data()
 {
     QTest::addColumn<QList<int> >("data");
-    QTest::addColumn<int>("resultValue");
+    QTest::addColumn<int>("resultValue"); // -42 means not found
 
     QTest::newRow("sorted-duplicate") << (QList<int>() << 1 << 2 << 2 << 3) << 2;
+    QTest::newRow("sorted-end") << (QList<int>() << -5 << -2 << 0 << 8) << 8;
+    QTest::newRow("sorted-beginning") << (QList<int>() << -5 << -2 << 0 << 8) << -5;
+    QTest::newRow("sorted-duplicate-beginning") << (QList<int>() << -5 << -5 << -2 << 0 << 8) << -5;
+    QTest::newRow("empty") << (QList<int>()) << -42;
+    QTest::newRow("not found 1 ") << (QList<int>() << 1 << 5 << 8 << 65) << -42;
+    QTest::newRow("not found 2 ") << (QList<int>() << -456 << -5 << 8 << 65) << -42;
 }
 
 void tst_QAlgorithms::test_qBinaryFind()
 {
     QFETCH(QList<int>, data);
     QFETCH(int, resultValue);
+
+    //-42 means not found
+    if (resultValue == -42) {
+        QVERIFY(qBinaryFind(data.constBegin(), data.constEnd(), resultValue) == data.constEnd());
+        QVERIFY(qBinaryFind(data, resultValue) == data.constEnd());
+        QVERIFY(qBinaryFind(data.begin(), data.end(), resultValue) == data.end());
+        QVERIFY(qBinaryFind(data.begin(), data.end(), resultValue, qLess<int>()) == data.end());
+        return;
+    }
 
     QCOMPARE(*qBinaryFind(data.constBegin(), data.constEnd(), resultValue), resultValue);
     QCOMPARE(*qBinaryFind(data.begin(), data.end(), resultValue), resultValue);

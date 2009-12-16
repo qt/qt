@@ -391,16 +391,27 @@ void tst_QImageWriter::readWriteNonDestructive_data()
 {
     QTest::addColumn<QImage::Format>("format");
     QTest::addColumn<QImage::Format>("expectedFormat");
-    QTest::newRow("tiff mono") << QImage::Format_Mono << QImage::Format_Mono;
-    QTest::newRow("tiff indexed") << QImage::Format_Indexed8 << QImage::Format_Indexed8;
-    QTest::newRow("tiff rgb32") << QImage::Format_ARGB32 << QImage::Format_ARGB32;
+    QTest::addColumn<bool>("grayscale");
+    QTest::newRow("tiff mono") << QImage::Format_Mono << QImage::Format_Mono << false;
+    QTest::newRow("tiff indexed") << QImage::Format_Indexed8 << QImage::Format_Indexed8 << false;
+    QTest::newRow("tiff rgb32") << QImage::Format_ARGB32 << QImage::Format_ARGB32 << false;
+    QTest::newRow("tiff grayscale") << QImage::Format_Indexed8 << QImage::Format_Indexed8 << true;
 }
 
 void tst_QImageWriter::readWriteNonDestructive()
 {
     QFETCH(QImage::Format, format);
     QFETCH(QImage::Format, expectedFormat);
+    QFETCH(bool, grayscale);
     QImage image = QImage(prefix + "colorful.bmp").convertToFormat(format);
+
+    if (grayscale) {
+        QVector<QRgb> colors;
+        for (int i = 0; i < 256; ++i)
+            colors << qRgb(i, i, i);
+        image.setColorTable(colors);
+    }
+
     QVERIFY(image.save(prefix + "gen-readWriteNonDestructive.tiff"));
 
     QImage image2 = QImage(prefix + "gen-readWriteNonDestructive.tiff");
@@ -546,7 +557,7 @@ void tst_QImageWriter::saveWithNoFormat()
     QFETCH(QImageWriter::ImageWriterError, error);
 
     QImage niceImage(64, 64, QImage::Format_ARGB32);
-    qMemSet(niceImage.bits(), 0, niceImage.numBytes());
+    qMemSet(niceImage.bits(), 0, niceImage.byteCount());
 
     QImageWriter writer(fileName /* , 0 - no format! */);
     if (error != 0) {

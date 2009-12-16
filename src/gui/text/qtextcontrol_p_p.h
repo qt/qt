@@ -131,10 +131,10 @@ public:
     QString anchorForCursor(const QTextCursor &anchor) const;
 
     void keyPressEvent(QKeyEvent *e);
-    void mousePressEvent(Qt::MouseButton button, const QPointF &pos,
+    void mousePressEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos,
                          Qt::KeyboardModifiers modifiers,
                          Qt::MouseButtons buttons,
-                         const QPoint &globalPos = QPoint());
+                         const QPoint &globalPos);
     void mouseMoveEvent(Qt::MouseButtons buttons, const QPointF &pos);
     void mouseReleaseEvent(Qt::MouseButton button, const QPointF &pos);
     void mouseDoubleClickEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos);
@@ -206,6 +206,7 @@ public:
     QString anchorOnMousePress;
     bool hadSelectionOnMousePress;
 
+    bool ignoreUnusedNavigationEvents;
     bool openExternalLinks;
 
     QString linkToCopy;

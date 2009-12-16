@@ -399,6 +399,7 @@ private:
     friend class QGLTextureGlyphCache;
     friend class QGLShareRegister;
     friend class QGLSharedResourceGuard;
+    friend class QGLPixmapBlurFilter;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
 #ifdef Q_WS_MAC
 public:
@@ -411,6 +412,7 @@ private:
     friend class QGLFramebufferObjectPrivate;
     friend class QGLFBOGLPaintDevice;
     friend class QGLPaintDevice;
+    friend class QX11GLPixmapData;
 private:
     Q_DISABLE_COPY(QGLContext)
 };

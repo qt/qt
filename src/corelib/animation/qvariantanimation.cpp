@@ -104,15 +104,32 @@ QT_BEGIN_NAMESPACE
         \o \l{QMetaType::}{QLine}
         \o \l{QMetaType::}{QLineF}
         \o \l{QMetaType::}{QPoint}
+        \o \l{QMetaType::}{QPointF}
         \o \l{QMetaType::}{QSize}
         \o \l{QMetaType::}{QSizeF}
         \o \l{QMetaType::}{QRect}
         \o \l{QMetaType::}{QRectF}
+        \o \l{QMetaType::}{QColor}
     \endlist
 
     If you need to interpolate other variant types, including custom
     types, you have to implement interpolation for these yourself.
-    You do this by reimplementing interpolated(), which returns
+    To do this, you can register an interpolator function for a given
+    type. This function takes 3 parameters: the start value, the end value
+    and the current progress.
+
+    Example:
+    \code
+        QVariant myColorInterpolator(const QColor &start, const QColor &end, qreal progress)
+        {
+            ...
+            return QColor(...);
+        }
+        ...
+        qRegisterAnimationInterpolator<QColor>(myColorInterpolator);
+    \endcode
+
+    Another option is to reimplement interpolated(), which returns
     interpolation values for the value being interpolated.
 
     \omit We need some snippets around here. \endomit
@@ -355,6 +372,13 @@ QVariantAnimation::~QVariantAnimation()
     QEasingCurve::InCirc, which provides a circular entry curve.
     Another example is QEasingCurve::InOutElastic, which provides an
     elastic effect on the values of the interpolated variant.
+
+    QVariantAnimation will use the QEasingCurve::valueForProgress() to
+    transform the "normalized progress" (currentTime / totalDuration)
+    of the animation into the effective progress actually
+    used by the animation. It is this effective progress that will be
+    the progress when interpolated() is called. Also, the steps in the
+    keyValues are referring to this effective progress.
 
     The easing curve is used with the interpolator, the interpolated()
     virtual function, the animation's duration, and iterationCount, to
@@ -621,8 +645,8 @@ bool QVariantAnimation::event(QEvent *event)
 /*!
     \reimp
 */
-void QVariantAnimation::updateState(QAbstractAnimation::State oldState,
-                                    QAbstractAnimation::State newState)
+void QVariantAnimation::updateState(QAbstractAnimation::State newState,
+                                    QAbstractAnimation::State oldState)
 {
     Q_UNUSED(oldState);
     Q_UNUSED(newState);

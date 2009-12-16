@@ -61,6 +61,7 @@
 #include <private/qgraphicstransform_p.h>
 
 #include <private/qgraphicseffect_p.h>
+#include <qgraphicseffect.h>
 
 #include <QtCore/qpoint.h>
 
@@ -151,8 +152,6 @@ public:
         dirty(0),
         dirtyChildren(0),
         localCollisionHack(0),
-        dirtyClipPath(1),
-        emptyClipPath(0),
         inSetPosHelper(0),
         needSortChildren(1), // ### can be 0 by default?
         allChildrenDirty(0),
@@ -177,6 +176,8 @@ public:
         wantsActive(0),
         holesInSiblingIndex(0),
         sequentialOrdering(1),
+        updateDueToGraphicsEffect(0),
+        scenePosDescendants(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -218,9 +219,12 @@ public:
     void appendGraphicsTransform(QGraphicsTransform *t);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
-    bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
+    bool discardUpdateRequest(bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     int depth() const;
+#ifndef QT_NO_GRAPHICSEFFECT
+    void invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
     void invalidateDepthRecursively();
     void resolveDepth();
     void addChild(QGraphicsItem *child);
@@ -231,6 +235,8 @@ public:
                          const QRegion &exposedRegion, bool allItems = false) const;
     QRectF effectiveBoundingRect() const;
     QRectF sceneEffectiveBoundingRect() const;
+
+    QRectF effectiveBoundingRect(const QRectF &rect) const;
 
     virtual void resolveFont(uint inheritedMask)
     {
@@ -301,26 +307,6 @@ public:
     QGraphicsItemCache *extraItemCache() const;
     void removeExtraItemCache();
 
-    inline void setCachedClipPath(const QPainterPath &path)
-    {
-        cachedClipPath = path;
-        dirtyClipPath = 0;
-        emptyClipPath = 0;
-    }
-
-    inline void setEmptyCachedClipPath()
-    {
-        emptyClipPath = 1;
-        dirtyClipPath = 0;
-    }
-
-    void setEmptyCachedClipPathRecursively(const QRectF &emptyIfOutsideThisRect = QRectF());
-
-    inline void invalidateCachedClipPath()
-    { /*static int count = 0 ;qWarning("%i", ++count);*/ dirtyClipPath = 1; emptyClipPath = 0; }
-
-    void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
-    void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
     inline void ensureSceneTransform()
     {
@@ -403,17 +389,12 @@ public:
         return true;
     }
 
-    inline bool isClippedAway() const
-    { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
-
     inline bool childrenClippedToShape() const
     { return (flags & QGraphicsItem::ItemClipsChildrenToShape) || children.isEmpty(); }
 
     inline bool isInvisible() const
     {
-        return !visible
-               || (childrenClippedToShape() && isClippedAway())
-               || (childrenCombineOpacity() && isFullyTransparent());
+        return !visible || (childrenCombineOpacity() && isFullyTransparent());
     }
 
     void setFocusHelper(Qt::FocusReason focusReason, bool climb);
@@ -426,8 +407,9 @@ public:
     inline void ensureSortedChildren();
     static inline bool insertionOrder(QGraphicsItem *a, QGraphicsItem *b);
     void ensureSequentialSiblingIndex();
+    inline void sendScenePosChange();
+    virtual void siblingOrderChange();
 
-    QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
     QRectF needsRepaint;
     QMap<QWidget *, QRect> paintedViewBoundingRects;
@@ -450,7 +432,7 @@ public:
     QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
     QGraphicsItem::PanelModality panelModality;
-    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
+    QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
     // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
@@ -472,15 +454,13 @@ public:
     quint32 dirty : 1;
     quint32 dirtyChildren : 1;
     quint32 localCollisionHack : 1;
-    quint32 dirtyClipPath : 1;
-    quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
 
     // Packed 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 16;
+    quint32 flags : 17;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -495,13 +475,15 @@ public:
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
-    quint32 mouseSetsFocus : 1;
 
     // New 32 bits
+    quint32 mouseSetsFocus : 1;
     quint32 explicitActivate : 1;
     quint32 wantsActive : 1;
     quint32 holesInSiblingIndex : 1;
     quint32 sequentialOrdering : 1;
+    quint32 updateDueToGraphicsEffect : 1;
+    quint32 scenePosDescendants : 1;
 
     // Optional stacking order
     int globalStackingOrder;
@@ -573,6 +555,7 @@ struct QGraphicsItemPaintInfo
     quint32 drawItem : 1;
 };
 
+#ifndef QT_NO_GRAPHICSEFFECT
 class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
@@ -581,7 +564,10 @@ public:
     {}
 
     inline void detach()
-    { item->setGraphicsEffect(0); }
+    {
+        item->d_ptr->graphicsEffect = 0;
+        item->prepareGeometryChange();
+    }
 
     inline const QGraphicsItem *graphicsItem() const
     { return item; }
@@ -589,16 +575,21 @@ public:
     inline const QWidget *widget() const
     { return 0; }
 
-    inline void update()
-    { item->update(); }
+    inline void update() {
+        item->d_ptr->updateDueToGraphicsEffect = true;
+        item->update();
+        item->d_ptr->updateDueToGraphicsEffect = false;
+    }
 
     inline void effectBoundingRectChanged()
     { item->prepareGeometryChange(); }
 
     inline bool isPixmap() const
     {
-        return (item->type() == QGraphicsPixmapItem::Type);
-            //|| (item->d_ptr->isObject && qobject_cast<QFxImage *>(q_func()));
+        return item->type() == QGraphicsPixmapItem::Type
+               && !(item->flags() & QGraphicsItem::ItemIsSelectable)
+               && item->d_ptr->children.size() == 0;
+            //|| (item->d_ptr->isObject && qobject_cast<QmlGraphicsImage *>(q_func()));
     }
 
     inline const QStyleOption *styleOption() const
@@ -615,12 +606,80 @@ public:
 
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *);
-    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+    QPixmap pixmap(Qt::CoordinateSystem system,
+                   QPoint *offset,
+                   QGraphicsEffect::PixmapPadMode mode) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;
+    QTransform lastEffectTransform;
 };
+#endif //QT_NO_GRAPHICSEFFECT
 
+/*!
+    Returns true if \a item1 is on top of \a item2.
+    The items dont need to be siblings.
+
+    \internal
+*/
+inline bool qt_closestItemFirst(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    // Siblings? Just check their z-values.
+    const QGraphicsItemPrivate *d1 = item1->d_ptr.data();
+    const QGraphicsItemPrivate *d2 = item2->d_ptr.data();
+    if (d1->parent == d2->parent)
+        return qt_closestLeaf(item1, item2);
+
+    // Find common ancestor, and each item's ancestor closest to the common
+    // ancestor.
+    int item1Depth = d1->depth();
+    int item2Depth = d2->depth();
+    const QGraphicsItem *p = item1;
+    const QGraphicsItem *t1 = item1;
+    while (item1Depth > item2Depth && (p = p->d_ptr->parent)) {
+        if (p == item2) {
+            // item2 is one of item1's ancestors; item1 is on top
+            return !(t1->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent);
+        }
+        t1 = p;
+        --item1Depth;
+    }
+    p = item2;
+    const QGraphicsItem *t2 = item2;
+    while (item2Depth > item1Depth && (p = p->d_ptr->parent)) {
+        if (p == item1) {
+            // item1 is one of item2's ancestors; item1 is not on top
+            return (t2->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent);
+        }
+        t2 = p;
+        --item2Depth;
+    }
+
+    // item1Ancestor is now at the same level as item2Ancestor, but not the same.
+    const QGraphicsItem *p1 = t1;
+    const QGraphicsItem *p2 = t2;
+    while (t1 && t1 != t2) {
+        p1 = t1;
+        p2 = t2;
+        t1 = t1->d_ptr->parent;
+        t2 = t2->d_ptr->parent;
+    }
+
+    // in case we have a common ancestor, we compare the immediate children in the ancestor's path.
+    // otherwise we compare the respective items' topLevelItems directly.
+    return qt_closestLeaf(p1, p2);
+}
+
+/*!
+    Returns true if \a item2 is on top of \a item1.
+    The items dont need to be siblings.
+
+    \internal
+*/
+inline bool qt_closestItemLast(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    return qt_closestItemFirst(item2, item1);
+}
 
 /*!
     \internal
@@ -642,7 +701,7 @@ inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item
 /*!
     \internal
 */
-static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
 { return qt_closestLeaf(item2, item1); }
 
 /*

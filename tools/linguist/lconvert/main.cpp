@@ -46,6 +46,8 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 
+#include <iostream>
+
 static int usage(const QStringList &args)
 {
     Q_UNUSED(args);
@@ -55,7 +57,7 @@ static int usage(const QStringList &args)
     foreach (Translator::FileFormat format, Translator::registeredFileFormats())
         loaders += line.arg(format.extension, -5).arg(format.description);
 
-    qWarning("%s", qPrintable(QString(QLatin1String("\nUsage:\n"
+    std::cerr << qPrintable(QString(QLatin1String("\nUsage:\n"
         "    lconvert [options] <infile> [<infile>...]\n\n"
         "lconvert is part of Qt's Linguist tool chain. It can be used as a\n"
         "stand-alone tool to convert and filter translation data files.\n"
@@ -117,7 +119,7 @@ static int usage(const QStringList &args)
         "    0 on success\n"
         "    1 on command line parse failures\n"
         "    2 on read failures\n"
-        "    3 on write failures\n")).arg(loaders)));
+        "    3 on write failures\n")).arg(loaders));
     return 1;
 }
 
@@ -239,7 +241,7 @@ int main(int argc, char *argv[])
         qWarning() << qPrintable(cd.error());
         return 2;
     }
-    Translator::reportDuplicates(tr.resolveDuplicates(), inFiles[0].name, verbose);
+    tr.reportDuplicates(tr.resolveDuplicates(), inFiles[0].name, verbose);
 
     for (int i = 1; i < inFiles.size(); ++i) {
         Translator tr2;
@@ -247,7 +249,7 @@ int main(int argc, char *argv[])
             qWarning() << qPrintable(cd.error());
             return 2;
         }
-        Translator::reportDuplicates(tr2.resolveDuplicates(), inFiles[i].name, verbose);
+        tr2.reportDuplicates(tr2.resolveDuplicates(), inFiles[i].name, verbose);
         for (int j = 0; j < tr2.messageCount(); ++j)
             tr.replaceSorted(tr2.message(j));
     }

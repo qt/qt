@@ -115,14 +115,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <limits.h>
 QT_END_INCLUDE_NAMESPACE
 
-static const int windowsItemFrame        =  2; // menu item frame width
-static const int windowsSepHeight        =  9; // separator item height
-static const int windowsItemHMargin      =  3; // menu item hor text margin
-static const int windowsItemVMargin      =  2; // menu item ver text margin
-static const int windowsArrowHMargin     =  6; // arrow horizontal margin
-static const int windowsRightBorder      = 15; // right border on windows
-static const int windowsCheckMarkWidth   = 12; // checkmarks width on windows
-
 enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
 
 /*
@@ -221,10 +213,12 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
     case QEvent::StyleChange:
     case QEvent::Show:
         if (QProgressBar *bar = qobject_cast<QProgressBar *>(o)) {
-            d->bars << bar;
-            if (d->bars.size() == 1) {
-                Q_ASSERT(d->animationFps> 0);
-                d->animateTimer = startTimer(1000 / d->animationFps);
+            if (!d->bars.contains(bar)) {
+                d->bars << bar;
+                if (d->bars.size() == 1) {
+                    Q_ASSERT(d->animationFps> 0);
+                    d->animateTimer = startTimer(1000 / d->animationFps);
+                }
             }
         }
         break;
@@ -454,9 +448,6 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         ret = proxy()->pixelMetric(PM_LargeIconSize, opt, widget);
         break;
 
-    case PM_ToolBarIconSize:
-        ret = int(QStyleHelper::dpiScaled(24.));
-        break;
     case PM_DockWidgetTitleMargin:
         ret = int(QStyleHelper::dpiScaled(2.));
         break;
@@ -1850,7 +1841,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             bool act = menuitem->state & State_Selected;
 
             // windows always has a check column, regardless whether we have an icon or not
-            int checkcol = qMax(menuitem->maxIconWidth, windowsCheckMarkWidth);
+            int checkcol = qMax<int>(menuitem->maxIconWidth, QWindowsStylePrivate::windowsCheckMarkWidth);
 
             QBrush fill = menuitem->palette.brush(act ? QPalette::Highlight : QPalette::Button);
             p->fillRect(menuitem->rect.adjusted(0, 0, -1, 0), fill);
@@ -1906,8 +1897,10 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                     newMi.state |= State_Enabled;
                 if (act)
                     newMi.state |= State_On;
-                newMi.rect = visualRect(opt->direction, menuitem->rect, QRect(menuitem->rect.x() + windowsItemFrame, menuitem->rect.y() + windowsItemFrame,
-                                                                              checkcol - 2 * windowsItemFrame, menuitem->rect.height() - 2*windowsItemFrame));
+                newMi.rect = visualRect(opt->direction, menuitem->rect, QRect(menuitem->rect.x() + QWindowsStylePrivate::windowsItemFrame,
+                                                                              menuitem->rect.y() + QWindowsStylePrivate::windowsItemFrame,
+                                                                              checkcol - 2 * QWindowsStylePrivate::windowsItemFrame,
+                                                                              menuitem->rect.height() - 2 * QWindowsStylePrivate::windowsItemFrame));
                 proxy()->drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, widget);
             }
             p->setPen(act ? menuitem->palette.highlightedText().color() : menuitem->palette.buttonText().color());
@@ -1918,9 +1911,10 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 p->setPen(discol);
             }
 
-            int xm = windowsItemFrame + checkcol + windowsItemHMargin;
+            int xm = QWindowsStylePrivate::windowsItemFrame + checkcol + QWindowsStylePrivate::windowsItemHMargin;
             int xpos = menuitem->rect.x() + xm;
-            QRect textRect(xpos, y + windowsItemVMargin, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
+            QRect textRect(xpos, y + QWindowsStylePrivate::windowsItemVMargin,
+                           w - xm - QWindowsStylePrivate::windowsRightBorder - tab + 1, h - 2 * QWindowsStylePrivate::windowsItemVMargin);
             QRect vTextRect = visualRect(opt->direction, menuitem->rect, textRect);
             QString s = menuitem->text;
             if (!s.isEmpty()) {                     // draw text
@@ -1954,10 +1948,10 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 p->restore();
             }
             if (menuitem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
-                int dim = (h - 2 * windowsItemFrame) / 2;
+                int dim = (h - 2 * QWindowsStylePrivate::windowsItemFrame) / 2;
                 PrimitiveElement arrow;
                 arrow = (opt->direction == Qt::RightToLeft) ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
-                xpos = x + w - windowsArrowHMargin - windowsItemFrame - dim;
+                xpos = x + w - QWindowsStylePrivate::windowsArrowHMargin - QWindowsStylePrivate::windowsItemFrame - dim;
                 QRect  vSubMenuRect = visualRect(opt->direction, menuitem->rect, QRect(xpos, y + h / 2 - dim / 2, dim, dim));
                 QStyleOptionMenuItem newMI = *menuitem;
                 newMI.rect = vSubMenuRect;
@@ -3194,7 +3188,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
 
             if (mi->menuItemType == QStyleOptionMenuItem::Separator) {
-                sz = QSize(10, windowsSepHeight);
+                sz = QSize(10, QWindowsStylePrivate::windowsSepHeight);
             }
             else if (mi->icon.isNull()) {
                 sz.setHeight(sz.height() - 2);
@@ -3205,14 +3199,14 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
                 sz.setHeight(qMax(sz.height(),
                                   mi->icon.actualSize(QSize(iconExtent, iconExtent)).height()
-                                  + 2 * windowsItemFrame));
+                                  + 2 * QWindowsStylePrivate::windowsItemFrame));
             }
             int maxpmw = mi->maxIconWidth;
             int tabSpacing = 20;
             if (mi->text.contains(QLatin1Char('\t')))
                 w += tabSpacing;
             else if (mi->menuItemType == QStyleOptionMenuItem::SubMenu)
-                w += 2 * windowsArrowHMargin;
+                w += 2 * QWindowsStylePrivate::windowsArrowHMargin;
             else if (mi->menuItemType == QStyleOptionMenuItem::DefaultItem) {
                 // adjust the font and add the difference in size.
                 // it would be better if the font could be adjusted in the initStyleOption qmenu func!!
@@ -3223,9 +3217,9 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 w += fmBold.width(mi->text) - fm.width(mi->text);
             }
 
-            int checkcol = qMax(maxpmw, windowsCheckMarkWidth); // Windows always shows a check column
+            int checkcol = qMax<int>(maxpmw, QWindowsStylePrivate::windowsCheckMarkWidth); // Windows always shows a check column
             w += checkcol;
-            w += windowsRightBorder + 10;
+            w += QWindowsStylePrivate::windowsRightBorder + 10;
             sz.setWidth(w);
         }
         break;
@@ -3233,7 +3227,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 #ifndef QT_NO_MENUBAR
     case CT_MenuBarItem:
         if (!sz.isEmpty())
-            sz += QSize(windowsItemHMargin * 4, windowsItemVMargin * 2);
+            sz += QSize(QWindowsStylePrivate::windowsItemHMargin * 4, QWindowsStylePrivate::windowsItemVMargin * 2);
         break;
 #endif
                 // Otherwise, fall through

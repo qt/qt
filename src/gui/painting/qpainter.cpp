@@ -284,7 +284,7 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
 
     // Update matrix.
     if (q->d_ptr->state->WxF) {
-        q->d_ptr->state->redirectionMatrix *= q->d_ptr->state->worldMatrix;
+        q->d_ptr->state->redirectionMatrix = q->d_ptr->state->matrix;
         q->d_ptr->state->redirectionMatrix.translate(-offset.x(), -offset.y());
         q->d_ptr->state->worldMatrix = QTransform();
         q->d_ptr->state->WxF = false;
@@ -1317,6 +1317,90 @@ void QPainterPrivate::updateState(QPainterState *newState)
     Another workaround is to convert the paths to polygons first and then draw the
     polygons instead.
 
+    \section1 Performance
+
+    QPainter is a rich framework that allows developers to do a great
+    variety of graphical operations, such as gradients, composition
+    modes and vector graphics. And QPainter can do this across a
+    variety of different hardware and software stacks. Naturally the
+    underlying combination of hardware and software has some
+    implications for performance, and ensuring that every single
+    operation is fast in combination with all the various combinations
+    of composition modes, brushes, clipping, transformation, etc, is
+    close to an impossible task because of the number of
+    permutations. As a compromise we have selected a subset of the
+    QPainter API and backends, were performance is guaranteed to be as
+    good as we can sensibly get it for the given combination of
+    hardware and software.
+
+    The backends we focus on as high-performance engines are:
+
+    \list
+
+    \o Raster - This backend implements all rendering in pure software
+    and is always used to render into QImages. For optimal performance
+    only use the format types QImage::Format_ARGB32_Premultiplied,
+    QImage::Format_RGB32 or QImage::Format_RGB16. Any other format,
+    including QImage::Format_ARGB32, has significantly worse
+    performance. This engine is also used by default on Windows and on
+    QWS. It can be used as default graphics system on any
+    OS/hardware/software combination by passing \c {-graphicssystem
+    raster} on the command line
+
+    \o OpenGL 2.0 (ES) - This backend is the primary backend for
+    hardware accelerated graphics. It can be run on desktop machines
+    and embedded devices supporting the OpenGL 2.0 or OpenGL/ES 2.0
+    specification. This includes most graphics chips produced in the
+    last couple of years. The engine can be enabled by using QPainter
+    onto a QGLWidget or by passing \c {-graphicssystem opengl} on the
+    command line when the underlying system supports it.
+
+    \o OpenVG - This backend implements the Khronos standard for 2D
+    and Vector Graphics. It is primarily for embedded devices with
+    hardware support for OpenVG.  The engine can be enabled by
+    passing \c {-graphicssystem openvg} on the command line when
+    the underlying system supports it.
+
+    \endlist
+
+    These operations are:
+
+    \list
+
+    \o Simple transformations, meaning translation and scaling, pluss
+    0, 90, 180, 270 degree rotations.
+
+    \o \c drawPixmap() in combination with simple transformations and
+    opacity with non-smooth transformation mode
+    (\c QPainter::SmoothPixmapTransform not enabled as a render hint).
+
+    \o Text drawing with regular font sizes with simple
+    transformations with solid colors using no or 8-bit antialiasing.
+
+    \o Rectangle fills with solid color, two-color linear gradients
+    and simple transforms.
+
+    \o Rectangular clipping with simple transformations and intersect
+    clip.
+
+    \o Composition Modes \c QPainter::CompositionMode_Source and
+    QPainter::CompositionMode_SourceOver
+
+    \o Rounded rectangle filling using solid color and two-color
+    linear gradients fills.
+
+    \o 3x3 patched pixmaps, via qDrawBorderPixmap.
+
+    \endlist
+
+    This list gives an indication of which features to safely use in
+    an application where performance is critical. For certain setups,
+    other operations may be fast too, but before making extensive use
+    of them, it is recommended to benchmark and verify them on the
+    system where the software will run in the end. There are also
+    cases where expensive operations are ok to use, for instance when
+    the result is cached in a QPixmap.
+
     \sa QPaintDevice, QPaintEngine, {QtSvg Module}, {Basic Drawing Example},
         {Drawing Utility Functions}
 */
@@ -2275,8 +2359,9 @@ void QPainter::setBrushOrigin(const QPointF &p)
 /*!
     Sets the composition mode to the given \a mode.
 
-    \warning You can only set the composition mode for QPainter
-    objects that operates on a QImage.
+    \warning Only a QPainter operating on a QImage fully supports all
+    composition modes. The RasterOp modes are supported for X11 as
+    described in compositionMode().
 
     \sa compositionMode()
 */
@@ -3786,27 +3871,14 @@ void QPainter::setPen(const QPen &pen)
     if (d->state->pen == pen)
         return;
 
+    d->state->pen = pen;
+
     if (d->extended) {
-        d->state->pen = pen;
         d->checkEmulation();
         d->extended->penChanged();
         return;
     }
 
-    // Do some checks to see if we are the same pen.
-    Qt::PenStyle currentStyle = d->state->pen.style();
-    if (currentStyle == pen.style() && currentStyle != Qt::CustomDashLine) {
-        if (currentStyle == Qt::NoPen ||
-            (d->state->pen.isSolid() && pen.isSolid()
-             && d->state->pen.color() == pen.color()
-             && d->state->pen.widthF() == pen.widthF()
-             && d->state->pen.capStyle() == pen.capStyle()
-             && d->state->pen.joinStyle() == pen.joinStyle()
-             && d->state->pen.isCosmetic() == pen.isCosmetic()))
-            return;
-    }
-
-    d->state->pen = pen;
     d->state->dirtyFlags |= QPaintEngine::DirtyPen;
 }
 
@@ -3887,14 +3959,6 @@ void QPainter::setBrush(const QBrush &brush)
         d->checkEmulation();
         d->extended->brushChanged();
         return;
-    }
-
-    Qt::BrushStyle currentStyle = d->state->brush.style();
-    if (currentStyle == brush.style()) {
-        if (currentStyle == Qt::NoBrush
-            || (currentStyle == Qt::SolidPattern
-                && d->state->brush.color() == brush.color()))
-            return;
     }
 
     d->state->brush = brush;
@@ -5163,7 +5227,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine || pm.isNull())
         return;
 
 #ifndef QT_NO_DEBUG
@@ -5906,7 +5970,12 @@ void QPainter::drawText(const QRectF &r, const QString &text, const QTextOption 
     Draws the text item \a ti at position \a p.
 */
 
-/*! \internal
+/*!
+    \fn void QPainter::drawTextItem(const QPointF &p, const QTextItem &ti)
+
+    \internal
+    \since 4.1
+
     Draws the text item \a ti at position \a p.
 
     This method ignores the painters background mode and
@@ -5919,34 +5988,57 @@ void QPainter::drawText(const QRectF &r, const QString &text, const QTextOption 
     ignored aswell. You'll need to pass in the correct flags to get
     underlining and strikeout.
 */
-static QPainterPath generateWavyPath(qreal minWidth, qreal maxRadius, QPaintDevice *device)
+
+static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
 {
-    extern int qt_defaultDpi();
+    const qreal radiusBase = qMax(qreal(1), maxRadius);
+
+    QString key = QLatin1String("WaveUnderline-");
+    key += pen.color().name();
+    key += QLatin1Char('-');
+    key += QString::number(radiusBase);
+
+    QPixmap pixmap;
+    if (QPixmapCache::find(key, pixmap))
+        return pixmap;
+
+    const qreal halfPeriod = qMax(qreal(2), qreal(radiusBase * 1.61803399)); // the golden ratio
+    const int width = qCeil(100 / (2 * halfPeriod)) * (2 * halfPeriod);
+    const int radius = qFloor(radiusBase);
+
     QPainterPath path;
 
-    bool up = true;
-    const qreal radius = qMax(qreal(.5), qMin(qreal(1.25 * device->logicalDpiY() / qt_defaultDpi()), maxRadius));
-    qreal xs, ys;
-    int i = 0;
-    path.moveTo(0, radius);
-    do {
-        xs = i*(2*radius);
-        ys = 0;
+    qreal xs = 0;
+    qreal ys = radius;
 
-        qreal remaining = minWidth - xs;
-        qreal angle = 180;
+    while (xs < width) {
+        xs += halfPeriod;
+        ys = -ys;
+        path.quadTo(xs - halfPeriod / 2, ys, xs, 0);
+    }
 
-        // cut-off at the last arc segment
-        if (remaining < 2 * radius)
-            angle = 180 * remaining / (2 * radius);
+    pixmap = QPixmap(width, radius * 2);
+    pixmap.fill(Qt::transparent);
+    {
+        QPen wavePen = pen;
+        wavePen.setCapStyle(Qt::SquareCap);
 
-        path.arcTo(xs, ys, 2*radius, 2*radius, 180, up ? angle : -angle);
+        // This is to protect against making the line too fat, as happens on Mac OS X
+        // due to it having a rather thick width for the regular underline.
+        const qreal maxPenWidth = .8 * radius;
+        if (wavePen.widthF() > maxPenWidth)
+            wavePen.setWidth(maxPenWidth);
 
-        up = !up;
-        ++i;
-    } while (xs + 2*radius < minWidth);
+        QPainter imgPainter(&pixmap);
+        imgPainter.setPen(wavePen);
+        imgPainter.setRenderHint(QPainter::Antialiasing);
+        imgPainter.translate(0, radius);
+        imgPainter.drawPath(path);
+    }
 
-    return path;
+    QPixmapCache::insert(key, pixmap);
+
+    return pixmap;
 }
 
 static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const QTextItemInt &ti)
@@ -5967,9 +6059,11 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     pen.setCapStyle(Qt::FlatCap);
 
     QLineF line(pos.x(), pos.y(), pos.x() + ti.width.toReal(), pos.y());
+
+    const qreal underlineOffset = fe->underlinePosition().toReal();
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal underlinePos = pos.y() + qCeil(fe->underlinePosition().toReal());
+    const qreal underlinePos = pos.y() + qCeil(underlineOffset);
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         underlineStyle = QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));
@@ -5977,16 +6071,18 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     if (underlineStyle == QTextCharFormat::WaveUnderline) {
         painter->save();
-        painter->setRenderHint(QPainter::Antialiasing);
-        painter->translate(pos.x(), underlinePos);
+        painter->translate(0, pos.y() + 1);
 
         QColor uc = ti.charFormat.underlineColor();
         if (uc.isValid())
-            painter->setPen(uc);
+            pen.setColor(uc);
 
-        painter->drawPath(generateWavyPath(ti.width.toReal(),
-                                           fe->underlinePosition().toReal(),
-                                           painter->device()));
+        // Adapt wave to underlineOffset or pen width, whatever is larger, to make it work on all platforms
+        const QPixmap wave = generateWavyPixmap(qMax(underlineOffset, pen.widthF()), pen);
+        const int descent = (int) ti.descent.toReal();
+
+        painter->setBrushOrigin(painter->brushOrigin().x(), 0);
+        painter->fillRect(pos.x(), 0, qCeil(ti.width.toReal()), qMin(wave.height(), descent), wave);
         painter->restore();
     } else if (underlineStyle != QTextCharFormat::NoUnderline) {
         QLineF underLine(line.x1(), underlinePos, line.x2(), underlinePos);
@@ -6021,10 +6117,6 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     painter->setBrush(oldBrush);
 }
 
-/*!
-    \internal
-    \since 4.1
-*/
 void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
 {
 #ifdef QT_DEBUG_DRAW
@@ -7603,7 +7695,7 @@ start_lengthVariant:
             l.setPosition(QPointF(0., height));
             height += l.height();
             width = qMax(width, l.naturalTextWidth());
-            if (!brect && height >= r.height())
+            if (!dontclip && !brect && height >= r.height())
                 break;
         }
         textLayout.endLayout();
@@ -7622,7 +7714,7 @@ start_lengthVariant:
                 // in the paint engines when drawing on floating point offsets
                 const qreal scale = painter->transform().m22();
                 if (scale != 0)
-                    yoff = qRound(yoff * scale) / scale;
+                    yoff = -qRound(-yoff * scale) / scale;
             }
         }
     }

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -51,6 +51,9 @@
 #include <private/qcore_symbian_p.h>
 #if defined(QT_NO_FREETYPE)
 #include <OPENFONT.H>
+#ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
+#include <graphics/openfontrasterizer.h> // COpenFontRasterizer has moved to a new header file
+#endif // SYMBIAN_ENABLE_SPLIT_HEADERS
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -136,6 +139,23 @@ QFontDatabaseS60StoreImplementation::~QFontDatabaseS60StoreImplementation()
     m_heap->Close();
 }
 
+#ifndef FNTSTORE_H_INLINES_SUPPORT_FMM
+/*
+ Workaround: fntstore.h has an inlined function 'COpenFont* CBitmapFont::OpenFont()'
+ that returns a private data member. The header will change between SDKs. But Qt has
+ to build on any SDK version and run on other versions of Symbian OS.
+ This function performs the needed pointer arithmetic to get the right COpenFont*
+*/
+COpenFont* OpenFontFromBitmapFont(const CBitmapFont* aBitmapFont)
+{
+    const TInt offsetIOpenFont = 92; // '_FOFF(CBitmapFont, iOpenFont)' ..if iOpenFont weren't private
+    const TUint valueIOpenFont = *(TUint*)PtrAdd(aBitmapFont, offsetIOpenFont);
+    return (valueIOpenFont & 1) ?
+            (COpenFont*)PtrAdd(aBitmapFont, valueIOpenFont & ~1) : // New behavior: iOpenFont is offset
+            (COpenFont*)valueIOpenFont; // Old behavior: iOpenFont is pointer
+}
+#endif // FNTSTORE_H_INLINES_SUPPORT_FMM
+
 const QFontEngineS60Extensions *QFontDatabaseS60StoreImplementation::extension(const QString &typeface) const
 {
     if (!m_extensions.contains(typeface)) {
@@ -144,8 +164,14 @@ const QFontEngineS60Extensions *QFontDatabaseS60StoreImplementation::extension(c
         spec.iHeight = 1;
         const TInt err = m_store->GetNearestFontToDesignHeightInPixels(font, spec);
         Q_ASSERT(err == KErrNone && font);
-        CBitmapFont *bitmapFont = static_cast<CBitmapFont*>(font);
-        m_extensions.insert(typeface, new QFontEngineS60Extensions(font, bitmapFont->OpenFont()));
+        const CBitmapFont *bitmapFont = static_cast<CBitmapFont*>(font);
+        COpenFont *openFont =
+#ifdef FNTSTORE_H_INLINES_SUPPORT_FMM
+            bitmapFont->openFont();
+#else
+            OpenFontFromBitmapFont(bitmapFont);
+#endif // FNTSTORE_H_INLINES_SUPPORT_FMM
+        m_extensions.insert(typeface, new QFontEngineS60Extensions(font, openFont));
     }
     return m_extensions.value(typeface);
 }

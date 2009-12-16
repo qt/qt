@@ -43,7 +43,7 @@ class HTMLSourceElement;
 class MediaError;
 class KURL;
 class TimeRanges;
-    
+
 class HTMLMediaElement : public HTMLElement, public MediaPlayerClient {
 public:
     HTMLMediaElement(const QualifiedName&, Document*);
@@ -73,6 +73,8 @@ public:
     // Eventually overloaded in HTMLVideoElement
     virtual bool supportsFullscreen() const { return false; };
     virtual bool supportsSave() const;
+    
+    PlatformMedia platformMedia() const;
 
     void scheduleLoad();
     
@@ -141,6 +143,8 @@ public:
     void beginScrubbing();
     void endScrubbing();
 
+    const IntRect screenRect();
+
     bool canPlay() const;
 
     float percentLoaded() const;
@@ -154,6 +158,9 @@ public:
 #endif
 
     bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
+    
+    void enterFullscreen();
+    void exitFullscreen();
 
 protected:
     float getTimeOffsetAttribute(const QualifiedName&, float valueOnError) const;
@@ -233,6 +240,7 @@ private:
     bool endedPlayback() const;
     bool stoppedDueToErrors() const;
     bool pausedForUserInteraction() const;
+    bool couldPlayIfEnoughData() const;
 
     float minTimeSeekable() const;
     float maxTimeSeekable() const;
@@ -309,6 +317,8 @@ protected:
     // Not all media engines provide enough information about a file to be able to
     // support progress events so setting m_sendProgressEvents disables them 
     bool m_sendProgressEvents : 1;
+
+    bool m_isFullscreen : 1;
 
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     bool m_needWidgetUpdate : 1;

@@ -50,29 +50,21 @@ void JSSVGElementInstance::markChildren(MarkStack& markStack)
 
 JSValue JSSVGElementInstance::addEventListener(ExecState* exec, const ArgList& args)
 {
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(impl()->scriptExecutionContext());
-    if (!globalObject)
-        return jsUndefined();
-
     JSValue listener = args.at(1);
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false), args.at(2).toBoolean(exec));
+    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
 JSValue JSSVGElementInstance::removeEventListener(ExecState* exec, const ArgList& args)
 {
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(impl()->scriptExecutionContext());
-    if (!globalObject)
-        return jsUndefined();
-
     JSValue listener = args.at(1);
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false).get(), args.at(2).toBoolean(exec));
+    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)).get(), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 

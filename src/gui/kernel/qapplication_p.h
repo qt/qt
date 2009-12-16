@@ -72,7 +72,7 @@
 #include <private/qgraphicssystem_qws_p.h>
 #endif
 #ifdef Q_OS_SYMBIAN
-#include <w32std.h> 
+#include <w32std.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -84,7 +84,6 @@ class QInputContext;
 class QObject;
 class QWidget;
 class QSocketNotifier;
-class QGestureManager;
 
 extern bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
@@ -441,9 +440,6 @@ public:
 #ifdef Q_WS_MAC
     static bool native_modal_dialog_active;
 #endif
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
-    static bool inSizeMove;
-#endif
 
     static void setSystemPalette(const QPalette &pal);
     static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
@@ -513,9 +509,9 @@ public:
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
-    QGestureManager *gestureManager;
+    QWidget *gestureWidget;
 
-    QMap<int, QWidget *> widgetForTouchPointId;
+    QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();

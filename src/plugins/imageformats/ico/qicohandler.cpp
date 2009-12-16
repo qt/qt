@@ -379,7 +379,7 @@ void ICOReader::findColorInfo(QImage & image)
 void ICOReader::readColorTable(QImage & image)
 {
     if (iod) {
-        image.setNumColors(icoAttrib.ncolors);
+        image.setColorCount(icoAttrib.ncolors);
         uchar rgb[4];
         for (int i=0; i<icoAttrib.ncolors; i++) {
             if (iod->read((char*)rgb, 4) != 4) {
@@ -574,7 +574,7 @@ QImage ICOReader::iconAt(int index)
                         if (!image.isNull()) {
                             QImage mask(image.width(), image.height(), QImage::Format_Mono);
                             if (!mask.isNull()) {
-                                mask.setNumColors(2);
+                                mask.setColorCount(2);
                                 mask.setColor(0, qRgba(255,255,255,0xff));
                                 mask.setColor(1, qRgba(0  ,0  ,0  ,0xff));
                                 read1BitBMP(mask);

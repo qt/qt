@@ -28,17 +28,10 @@ Requires:
 Name: CssParser
 SeeAlso: ???
 
-Feature: THREAD
-Description: Supports multithreaded programming.
-Section: Kernel
-Requires:
-Name: QThread
-SeeAlso: ???
-
 Feature: CONCURRENT
 Description: Provides a high-level multi-threaded APIs
 Section: Kernel
-Requires: THREAD
+Requires:
 Name: QtConcurrent
 SeeAlso: ???
 
@@ -68,6 +61,13 @@ Description: Supports widget actions.
 Section: Kernel
 Requires:
 Name: QAction
+SeeAlso: ???
+
+Feature: SOFTKEYMANAGER
+Description: Supports softkeys.
+Section: Gui
+Requires: ACTION
+Name: QSoftKeyManager
 SeeAlso: ???
 
 Feature: CURSOR
@@ -147,6 +147,12 @@ Requires: XMLSTREAM
 Name: QXmlStreamWriter
 SeeAlso: ???
 
+Feature: IM
+Description: Inputmethods with QInputContext
+Section: Kernel
+Requires: LIBRARY
+Name: QInputContext
+SeeAlso: ???
 # Data structures
 
 Feature: STL
@@ -182,7 +188,7 @@ SeeAlso: ???
 Feature: PROCESS
 Description: Supports external process invocation.
 Section: File I/O
-Requires: THREAD
+Requires:
 Name: QProcess
 SeeAlso: ???
 
@@ -210,7 +216,7 @@ SeeAlso: ???
 Feature: SETTINGS
 Description: Supports persistent application settings.
 Section: File I/O
-Requires: TEXTSTREAM
+Requires:
 Name: QSettings
 SeeAlso: ???
 
@@ -232,7 +238,7 @@ Feature: FILESYSTEMWATCHER
 Description: Provides an interface for monitoring files and directories
 for modications.
 Section: File I/O
-Requires: THREAD
+Requires:
 Name: QFileSystemWatcher
 SeeAlso: ???
 
@@ -339,7 +345,7 @@ SeeAlso: ???
 Feature: COMBOBOX
 Description: Supports comboboxes presenting a list of options to the user.
 Section: Widgets
-Requires: LINEEDIT STANDARDITEMMODEL LISTVIEW
+Requires: LINEEDIT STANDARDITEMMODEL LISTVIEW 
 Name: QComboBox
 SeeAlso: ???
 
@@ -353,7 +359,7 @@ SeeAlso: ???
 Feature: TOOLBUTTON
 Description: Supports quick-access buttons to commands and options.
 Section: Widgets
-Requires: ICON ACTION
+Requires: ACTION
 Name: QToolButton
 SeeAlso: ???
 
@@ -367,7 +373,7 @@ SeeAlso: ???
 Feature: TOOLBOX
 Description:  Supports columns of tabbed widget items.
 Section: Widgets
-Requires: ICON TOOLBUTTON SCROLLAREA
+Requires: TOOLBUTTON SCROLLAREA
 Name: QToolBox
 SeeAlso: ???
 
@@ -403,7 +409,7 @@ SeeAlso: ???
 Feature: WORKSPACE
 Description: Supports workspace windows, e.g. used in an MDI application.
 Section: Widgets
-Requires: SCROLLBAR RESIZEHANDLER MENU TOOLBUTTON MAINWINDOW TOOLBAR MENUBAR
+Requires: SCROLLBAR MAINWINDOW MENUBAR
 Name: QWorkSpace
 SeeAlso: ???
 
@@ -485,6 +491,13 @@ Requires: SCROLLAREA
 Name: QGraphicsView
 SeeAlso: ???
 
+Feature: GRAPHICSEFFECT
+Description: Supports the graphicseffect classes.
+Section: Widgets
+Requires: GRAPHICSVIEW
+Name: QGraphicsEffect
+SeeAlso: ???
+
 Feature: SPINWIDGET
 Description: Supports spinbox control widgets.
 Section: Widgets
@@ -537,7 +550,7 @@ SeeAlso: ???
 Feature: WHATSTHIS
 Description: Supports displaying "What's this" help.
 Section: Widgets
-Requires: TOOLBUTTON ACTION
+Requires: TOOLBUTTON 
 Name: QWhatsThis
 SeeAlso: ???
 
@@ -567,7 +580,7 @@ Feature: PRINTPREVIEWWIDGET
 Description: Provides a widget for previewing page layouts for printer output.
 a date.
 Section: Widgets
-Requires: GRAPHICSVIEW PRINTER
+Requires: GRAPHICSVIEW PRINTER MAINWINDOW
 Name: QPrintPreviewWidget
 SeeAlso: ???
 
@@ -584,14 +597,14 @@ SeeAlso: ???
 Feature: COLORDIALOG
 Description: Supports a dialog widget for specifying colors.
 Section: Dialogs
-Requires: LINEEDIT VALIDATOR SPINBOX
+Requires: SPINBOX
 Name: QColorDialog
 SeeAlso: ???
 
 Feature: FILEDIALOG
 Description: Supports a dialog widget for selecting files or directories.
 Section: Dialogs
-Requires: DIRMODEL TREEVIEW COMBOBOX TOOLBUTTON BUTTONGROUP TOOLTIP SPLITTER STACKEDWIDGET FILESYSTEMMODEL
+Requires: DIRMODEL TREEVIEW COMBOBOX TOOLBUTTON BUTTONGROUP TOOLTIP SPLITTER STACKEDWIDGET PROXYMODEL
 Name: QFileDialog
 SeeAlso: ???
 
@@ -605,14 +618,14 @@ SeeAlso: ???
 Feature: PRINTDIALOG
 Description: Supports a dialog widget for specifying printer configuration.
 Section: Dialogs
-Requires: PRINTER COMBOBOX BUTTONGROUP SPINBOX TREEVIEW STACKEDWIDGET TABWIDGET
+Requires: PRINTER COMBOBOX BUTTONGROUP SPINBOX TREEVIEW TABWIDGET
 Name: QPrintDialog
 SeeAlso: ???
 
 Feature: PRINTPREVIEWDIALOG
 Description: Provides a dialog for previewing and configuring page layouts for printer output.
 Section: Dialogs
-Requires: PRINTPREVIEWWIDGET PRINTDIALOG MAINWINDOW
+Requires: PRINTPREVIEWWIDGET PRINTDIALOG TOOLBAR
 Name: QPrintPreviewDialog
 SeeAlso: ???
 
@@ -664,7 +677,7 @@ SeeAlso: ???
 Feature: DIRMODEL
 Description: Supports a data model for the local filesystem.
 Section: ItemViews
-Requires: ITEMVIEWS
+Requires: ITEMVIEWS FILESYSTEMMODEL 
 Name: QDirModel
 SeeAlso: ???
 
@@ -772,7 +785,7 @@ SeeAlso: ???
 Feature: STYLE_WINDOWSVISTA
 Description: Supports a Microsoft WindowsVista-like look and feel.
 Section: Styles
-Requires: STYLE_WINDOWS STYLE_WINDOWSXP
+Requires: STYLE_WINDOWSXP
 Name: QWindowsVistaStyle
 SeeAlso: ???
 
@@ -811,13 +824,6 @@ Description: Supports writing an image format plugin.
 Section: Images
 Requires:
 Name: QImageIOPlugin
-SeeAlso: ???
-
-Feature: ICON
-Description: Supports scalable icons in different modes and states.
-Section: Images
-Requires:
-Name: QIcon
 SeeAlso: ???
 
 Feature: MOVIE
@@ -910,7 +916,7 @@ SeeAlso: ???
 Feature: PRINTER
 Description: Supports printing
 Section: Painting
-Requires: TEXTSTREAM PICTURE
+Requires: TEXTSTREAM PICTURE TEMPORARYFILE
 Name: QPrinter
 SeeAlso: ???
 
@@ -1014,7 +1020,7 @@ SeeAlso: ???
 Feature: QWS_INPUTMETHODS
 Description: Supports international input methods.
 Section: Internationalization
-Requires:
+Requires: IM
 Name: QWSInputMethod
 SeeAlso: ???
 
@@ -1101,6 +1107,13 @@ Requires: PROXYMODEL
 Name: QCompleter
 SeeAlso: ???
 
+Feature: FSCOMPLETER
+Description: Provides completions based on an item model.
+Section: Utilities
+Requires: FILESYSTEMMODEL COMPLETER
+Name: QCompleter
+SeeAlso: ???
+
 Feature: DESKTOPSERVICES
 Description: Provides methods for accessing common desktop services.
 Section: Utilities
@@ -1111,7 +1124,7 @@ SeeAlso: ???
 Feature: SYSTEMTRAYICON
 Description: Provides an icon for an application in the system tray.
 Section: Utilities
-Requires: ICON
+Requires: 
 Name: QSystemTrayIcon
 SeeAlso: ???
 
@@ -1132,7 +1145,7 @@ SeeAlso: ???
 Feature: UNDOGROUP
 Description:
 Section: Utilities
-Requires: UNDOCOMMAND UNDOSTACK
+Requires: UNDOSTACK
 Name: QUndoGroup
 SeeAlso: ???
 
@@ -1146,7 +1159,7 @@ SeeAlso: ???
 Feature: ACCESSIBILITY
 Description: Provides accessibility support.
 Section: Utilities
-Requires: PROPERTIES
+Requires: PROPERTIES MENUBAR
 Name: Accessibility
 SeeAlso: ???
 
@@ -1317,6 +1330,20 @@ Requires:
 Name: QProxyScreen
 SeeAlso: ???
 
+Feature: QWS_VNC
+Description: Provides VNC screen driver
+Section: Qt for Embedded Linux
+Requires: QWS_PROXYSCREEN
+Name: QVncScreen
+SeeAlso: ???
+
+Feature: QWS_TRANSFORMED
+Description: Provides Transformed screen driver
+Section: Qt for Embedded Linux
+Requires: QWS_PROXYSCREEN
+Name: QVncTransformed
+SeeAlso: ???
+
 Feature: QWS_DYNAMICSCREENTRANSFORMATION
 Description: Enables dynamic setting of screen transformation/rotation.
 Section: Qt for Embedded Linux
@@ -1338,7 +1365,7 @@ SeeAlso: ???
 Feature: PHONON_PLATFORMPLUGIN
 Description: Support for platform plugin
 Section: Phonon
-Requires:
+Requires: LIBRARY
 Name: Phonon::PlatformPlugin
 SeeAlso: ???
 
@@ -1403,7 +1430,7 @@ SeeAlso: ???
 Feature: PHONON_VOLUMESLIDER
 Description: Support for the Volume Slider class
 Section: Phonon
-Requires: SLIDER
+Requires: SLIDER TOOLBUTTON
 Name: Phonon::VolumeSlider
 SeeAlso: ???
 
@@ -1418,5 +1445,12 @@ Feature: PHONON_ABSTRACTMEDIASTREAM
 Description: Support for streaming of raw data (QIODevice...)
 Section: Phonon
 Requires:
+Name: Phonon::AbstractMediaStream
+SeeAlso: ???
+
+Feature: PHONON_SETTINGSGROUP
+Description: Phonon settingsgroup
+Section: Phonon
+Requires: SETTINGS
 Name: Phonon::AbstractMediaStream
 SeeAlso: ???

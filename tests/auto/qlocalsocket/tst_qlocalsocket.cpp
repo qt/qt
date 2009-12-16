@@ -587,14 +587,16 @@ void tst_QLocalSocket::readBufferOverflow()
     char buffer[dataBufferSize];
     memset(buffer, 0, dataBufferSize);
     serverSocket->write(buffer, dataBufferSize);
-    serverSocket->flush();
+    serverSocket->waitForBytesWritten();
 
+    // wait until the first 128 bytes are ready to read
     QVERIFY(client.waitForReadyRead());
     QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
-#if defined(QT_LOCALSOCKET_TCP) || defined(Q_OS_SYMBIAN)
-    QTest::qWait(250);
-#endif
+    // wait until the second 128 bytes are ready to read
+    QVERIFY(client.waitForReadyRead());
     QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
+    // no more bytes available
+    QVERIFY(client.bytesAvailable() == 0);
 }
 
 // QLocalSocket/Server can take a name or path, check that it works as expected
@@ -693,7 +695,7 @@ public:
                   || socket.error() == QLocalSocket::ConnectionRefusedError)
              && tries < 1000);
         if (tries == 0 && socket.state() != QLocalSocket::ConnectedState) {
-            QVERIFY(socket.waitForConnected(3000));
+            QVERIFY(socket.waitForConnected(7000));
             QVERIFY(socket.state() == QLocalSocket::ConnectedState);
         }
 
@@ -723,7 +725,7 @@ public:
         int done = clients;
         while (done > 0) {
             bool timedOut = true;
-            QVERIFY(server.waitForNewConnection(3000, &timedOut));
+            QVERIFY(server.waitForNewConnection(7000, &timedOut));
             QVERIFY(!timedOut);
             QLocalSocket *serverSocket = server.nextPendingConnection();
             QVERIFY(serverSocket);
@@ -976,7 +978,7 @@ void tst_QLocalSocket::writeOnlySocket()
 #if defined(Q_OS_SYMBIAN)
         QTest::qWait(250);
 #endif
-    QVERIFY(server.waitForNewConnection());
+    QVERIFY(server.waitForNewConnection(200));
     QLocalSocket* serverSocket = server.nextPendingConnection();
     QVERIFY(serverSocket);
 

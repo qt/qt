@@ -81,8 +81,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSClipboardConstructor::s_info = { "ClipboardConstructor", 0, &JSClipboardConstructorTable, 0 };
@@ -142,7 +145,7 @@ JSClipboard::JSClipboard(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSClipboard::~JSClipboard()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSClipboard::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

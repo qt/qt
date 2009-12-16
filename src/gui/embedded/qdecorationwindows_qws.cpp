@@ -216,7 +216,7 @@ QRegion QDecorationWindows::region(const QWidget *widget, const QRect &rect, int
     bool hasMinimize = flags & Qt::WindowMinimizeButtonHint;
     bool hasMaximize = flags & Qt::WindowMaximizeButtonHint;
     const QFontMetrics fontMetrics = QApplication::fontMetrics();
-    int titleHeight = hasTitle ? qMax(20, fontMetrics.lineSpacing()) : 0;
+    int titleHeight = hasTitle ? qMax(20, fontMetrics.height()) : 0;
     int state = widget->windowState();
     bool isMinimized = state & Qt::WindowMinimized;
     bool isMaximized = state & Qt::WindowMaximized;

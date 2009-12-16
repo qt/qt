@@ -44,6 +44,7 @@
 
 #include <qscriptengine.h>
 #include <qscriptengineagent.h>
+#include <qscriptprogram.h>
 #include <qscriptvalueiterator.h>
 #include <qgraphicsitem.h>
 #include <qstandarditemmodel.h>
@@ -52,6 +53,7 @@
 
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QObjectList)
+Q_DECLARE_METATYPE(QScriptProgram)
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -151,6 +153,8 @@ private slots:
     void installTranslatorFunctions();
     void functionScopes();
     void nativeFunctionScopes();
+    void evaluateProgram();
+    void collectGarbageAfterConnect();
 
     void qRegExpInport_data();
     void qRegExpInport();
@@ -1145,7 +1149,7 @@ void tst_QScriptEngine::globalObjectProperties()
         QScriptValue::PropertyFlags flags = QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration;
         global.setProperty(name, val, flags);
         QVERIFY(global.property(name).equals(val));
-        QEXPECT_FAIL("", "custom Global Object properties don't retain attributes", Continue);
+        QEXPECT_FAIL("", "QTBUG-6134: custom Global Object properties don't retain attributes", Continue);
         QCOMPARE(global.propertyFlags(name), flags);
         global.setProperty(name, QScriptValue());
         QVERIFY(!global.property(name).isValid());
@@ -2030,7 +2034,7 @@ void tst_QScriptEngine::valueConversion()
         QScriptValue val = qScriptValueFromValue(&eng, in);
         QVERIFY(val.isRegExp());
         QRegExp out = val.toRegExp();
-        QEXPECT_FAIL("", "JSC-based back-end doesn't preserve QRegExp::patternSyntax (always uses RegExp2)", Continue);
+        QEXPECT_FAIL("", "QTBUG-6136: JSC-based back-end doesn't preserve QRegExp::patternSyntax (always uses RegExp2)", Continue);
         QCOMPARE(out.patternSyntax(), in.patternSyntax());
         QCOMPARE(out.pattern(), in.pattern());
         QCOMPARE(out.caseSensitivity(), in.caseSensitivity());
@@ -2047,7 +2051,7 @@ void tst_QScriptEngine::valueConversion()
         in.setMinimal(true);
         QScriptValue val = qScriptValueFromValue(&eng, in);
         QVERIFY(val.isRegExp());
-        QEXPECT_FAIL("", "JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
+        QEXPECT_FAIL("", "QTBUG-6136: JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
         QCOMPARE(val.toRegExp().isMinimal(), in.isMinimal());
     }
 }
@@ -2502,7 +2506,7 @@ void tst_QScriptEngine::stacktrace()
     QVERIFY(eng.hasUncaughtException());
     QVERIFY(result.isError());
 
-    QEXPECT_FAIL("", "", Abort);
+    QEXPECT_FAIL("", "QTBUG-6139: uncaughtExceptionBacktrace() doesn't give the full backtrace", Abort);
     QCOMPARE(eng.uncaughtExceptionBacktrace(), backtrace);
     QVERIFY(eng.hasUncaughtException());
     QVERIFY(result.strictlyEquals(eng.uncaughtException()));
@@ -3042,7 +3046,7 @@ void tst_QScriptEngine::errorConstructors()
             eng.clearExceptions();
             QVERIFY(ret.toString().startsWith(name));
             if (x != 0)
-                QEXPECT_FAIL("", "JSC doesn't assign lineNumber when errors are not thrown", Continue);
+                QEXPECT_FAIL("", "QTBUG-6138: JSC doesn't assign lineNumber when errors are not thrown", Continue);
             QCOMPARE(ret.property("lineNumber").toInt32(), i+2);
         }
     }
@@ -3060,14 +3064,19 @@ void tst_QScriptEngine::argumentsProperty()
 {
     {
         QScriptEngine eng;
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(eng.evaluate("arguments").isUndefined());
+        {
+            QScriptValue ret = eng.evaluate("arguments");
+            QVERIFY(ret.isError());
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: arguments"));
+        }
         eng.evaluate("arguments = 10");
-        QScriptValue ret = eng.evaluate("arguments");
-        QVERIFY(ret.isNumber());
-        QCOMPARE(ret.toInt32(), 10);
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(!eng.evaluate("delete arguments").toBoolean());
+        {
+            QScriptValue ret = eng.evaluate("arguments");
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 10);
+        }
+        QVERIFY(eng.evaluate("delete arguments").toBoolean());
+        QVERIFY(!eng.globalObject().property("arguments").isValid());
     }
     {
         QScriptEngine eng;
@@ -3078,11 +3087,11 @@ void tst_QScriptEngine::argumentsProperty()
     }
     {
         QScriptEngine eng;
+        QVERIFY(!eng.globalObject().property("arguments").isValid());
         QScriptValue ret = eng.evaluate("(function() { arguments = 456; return arguments; })()");
         QVERIFY(ret.isNumber());
         QCOMPARE(ret.toInt32(), 456);
-        QEXPECT_FAIL("", "", Continue);
-        QVERIFY(eng.evaluate("arguments").isUndefined());
+        QVERIFY(!eng.globalObject().property("arguments").isValid());
     }
 
     {
@@ -4289,6 +4298,169 @@ void tst_QScriptEngine::nativeFunctionScopes()
     }
 }
 
+static QScriptValue createProgram(QScriptContext *ctx, QScriptEngine *eng)
+{
+    QString code = ctx->argument(0).toString();
+    QScriptProgram result(code);
+    return qScriptValueFromValue(eng, result);
+}
+
+void tst_QScriptEngine::evaluateProgram()
+{
+    QScriptEngine eng;
+
+    {
+        QString code("1 + 2");
+        QString fileName("hello.js");
+        int lineNumber(123);
+        QScriptProgram program(code, fileName, lineNumber);
+        QVERIFY(!program.isNull());
+        QCOMPARE(program.sourceCode(), code);
+        QCOMPARE(program.fileName(), fileName);
+        QCOMPARE(program.firstLineNumber(), lineNumber);
+
+        QScriptValue expected = eng.evaluate(code);
+        for (int x = 0; x < 10; ++x) {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(ret.equals(expected));
+        }
+
+        // operator=
+        QScriptProgram sameProgram = program;
+        QVERIFY(sameProgram == program);
+        QVERIFY(eng.evaluate(sameProgram).equals(expected));
+
+        // copy constructor
+        QScriptProgram sameProgram2(program);
+        QVERIFY(sameProgram2 == program);
+        QVERIFY(eng.evaluate(sameProgram2).equals(expected));
+
+        QScriptProgram differentProgram("2 + 3");
+        QVERIFY(differentProgram != program);
+        QVERIFY(!eng.evaluate(differentProgram).equals(expected));
+    }
+
+    // Program that accesses variable in the scope
+    {
+        QScriptProgram program("a");
+        QVERIFY(!program.isNull());
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(ret.isError());
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: a"));
+        }
+
+        QScriptValue obj = eng.newObject();
+        obj.setProperty("a", 123);
+        QScriptContext *ctx = eng.currentContext();
+        ctx->pushScope(obj);
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(!ret.isError());
+            QVERIFY(ret.equals(obj.property("a")));
+        }
+
+        obj.setProperty("a", QScriptValue());
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(ret.isError());
+        }
+
+        QScriptValue obj2 = eng.newObject();
+        obj2.setProperty("a", 456);
+        ctx->pushScope(obj2);
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(!ret.isError());
+            QVERIFY(ret.equals(obj2.property("a")));
+        }
+
+        ctx->popScope();
+    }
+
+    // Program that creates closure
+    {
+        QScriptProgram program("(function() { var count = 0; return function() { return count++; }; })");
+        QVERIFY(!program.isNull());
+        QScriptValue createCounter = eng.evaluate(program);
+        QVERIFY(createCounter.isFunction());
+        QScriptValue counter = createCounter.call();
+        QVERIFY(counter.isFunction());
+        {
+            QScriptValue ret = counter.call();
+            QVERIFY(ret.isNumber());
+        }
+        QScriptValue counter2 = createCounter.call();
+        QVERIFY(counter2.isFunction());
+        QVERIFY(!counter2.equals(counter));
+        {
+            QScriptValue ret = counter2.call();
+            QVERIFY(ret.isNumber());
+        }
+    }
+
+    // Program created in a function call, then executed later
+    {
+        QScriptValue fun = eng.newFunction(createProgram);
+        QScriptProgram program = qscriptvalue_cast<QScriptProgram>(
+            fun.call(QScriptValue(), QScriptValueList() << "a + 1"));
+        QVERIFY(!program.isNull());
+        eng.globalObject().setProperty("a", QScriptValue());
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(ret.isError());
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: a"));
+        }
+        eng.globalObject().setProperty("a", 122);
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(!ret.isError());
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+        }
+    }
+
+    // Same program run in different engines
+    {
+        QString code("1 + 2");
+        QScriptProgram program(code);
+        QVERIFY(!program.isNull());
+        double expected = eng.evaluate(program).toNumber();
+        for (int x = 0; x < 2; ++x) {
+            QScriptEngine eng2;
+            for (int y = 0; y < 2; ++y) {
+                double ret = eng2.evaluate(program).toNumber();
+                QCOMPARE(ret, expected);
+            }
+        }
+    }
+
+    // No program
+    {
+        QScriptProgram program;
+        QVERIFY(program.isNull());
+        QScriptValue ret = eng.evaluate(program);
+        QVERIFY(!ret.isValid());
+    }
+}
+
+void tst_QScriptEngine::collectGarbageAfterConnect()
+{
+    // QTBUG-6366
+    QScriptEngine engine;
+    QPointer<QWidget> widget = new QWidget;
+    engine.globalObject().setProperty(
+        "widget", engine.newQObject(widget, QScriptEngine::ScriptOwnership));
+    QVERIFY(engine.evaluate("widget.customContextMenuRequested.connect(\n"
+                            "  function() { print('hello'); }\n"
+                            ");")
+            .isUndefined());
+    QVERIFY(widget != 0);
+    engine.evaluate("widget = null;");
+    collectGarbage_helper(engine);
+    QVERIFY(widget == 0);
+}
+
 static QRegExp minimal(QRegExp r) { r.setMinimal(true); return r; }
 
 void tst_QScriptEngine::qRegExpInport_data()
@@ -4336,7 +4508,7 @@ void tst_QScriptEngine::qRegExpInport()
     QScriptValue result = func.call(QScriptValue(),  QScriptValueList() << string << rexp);
 
     rx.indexIn(string);
-    for (int i = 0; i <= rx.numCaptures(); i++)  {
+    for (int i = 0; i <= rx.captureCount(); i++)  {
         QCOMPARE(result.property(i).toString(), rx.cap(i));
     }
 }

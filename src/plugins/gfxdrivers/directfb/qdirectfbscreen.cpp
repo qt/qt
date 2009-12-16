@@ -131,8 +131,8 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
     QWSSignalHandler::instance()->addObject(this);
 #endif
 #ifdef QT_DIRECTFB_WM
-    connect(QWSServer::instance(), SIGNAL(windowEvent(QWSWindow*, QWSServer::WindowEvent)),
-            this, SLOT(onWindowEvent(QWSWindow*, QWSServer::WindowEvent)));
+    connect(QWSServer::instance(), SIGNAL(windowEvent(QWSWindow*,QWSServer::WindowEvent)),
+            this, SLOT(onWindowEvent(QWSWindow*,QWSServer::WindowEvent)));
 #endif
 }
 
@@ -214,7 +214,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
             const int height = image.height();
             const int bplQt = image.bytesPerLine();
             if (bplQt == bplDFB && bplQt == (image.width() * image.depth() / 8)) {
-                memcpy(mem, image.bits(), image.numBytes());
+                memcpy(mem, image.bits(), image.byteCount());
             } else {
                 for (int i=0; i<height; ++i) {
                     memcpy(mem, image.scanLine(i), bplQt);
@@ -225,7 +225,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
         }
     }
 #ifdef QT_DIRECTFB_PALETTE
-    if (image.numColors() != 0 && surface)
+    if (image.colorCount() != 0 && surface)
         QDirectFBScreen::setSurfaceColorTable(surface, image);
 #endif
     return surface;
@@ -497,7 +497,7 @@ void QDirectFBScreen::setSurfaceColorTable(IDirectFBSurface *surface,
     if (!surface)
         return;
 
-    const int numColors = image.numColors();
+    const int numColors = image.colorCount();
     if (numColors == 0)
         return;
 
@@ -958,47 +958,47 @@ struct FlagDescription {
 };
 
 static const FlagDescription accelerationDescriptions[] = {
-    { " DFXL_NONE ", DFXL_NONE },
-    { " DFXL_FILLRECTANGLE", DFXL_FILLRECTANGLE },
-    { " DFXL_DRAWRECTANGLE", DFXL_DRAWRECTANGLE },
-    { " DFXL_DRAWLINE", DFXL_DRAWLINE },
-    { " DFXL_FILLTRIANGLE", DFXL_FILLTRIANGLE },
-    { " DFXL_BLIT", DFXL_BLIT },
-    { " DFXL_STRETCHBLIT", DFXL_STRETCHBLIT },
-    { " DFXL_TEXTRIANGLES", DFXL_TEXTRIANGLES },
-    { " DFXL_DRAWSTRING", DFXL_DRAWSTRING },
+    { "DFXL_NONE", DFXL_NONE },
+    { "DFXL_FILLRECTANGLE", DFXL_FILLRECTANGLE },
+    { "DFXL_DRAWRECTANGLE", DFXL_DRAWRECTANGLE },
+    { "DFXL_DRAWLINE", DFXL_DRAWLINE },
+    { "DFXL_FILLTRIANGLE", DFXL_FILLTRIANGLE },
+    { "DFXL_BLIT", DFXL_BLIT },
+    { "DFXL_STRETCHBLIT", DFXL_STRETCHBLIT },
+    { "DFXL_TEXTRIANGLES", DFXL_TEXTRIANGLES },
+    { "DFXL_DRAWSTRING", DFXL_DRAWSTRING },
     { 0, 0 }
 };
 
 static const FlagDescription blitDescriptions[] = {
-    { " DSBLIT_NOFX", DSBLIT_NOFX },
-    { " DSBLIT_BLEND_ALPHACHANNEL", DSBLIT_BLEND_ALPHACHANNEL },
-    { " DSBLIT_BLEND_COLORALPHA", DSBLIT_BLEND_COLORALPHA },
-    { " DSBLIT_COLORIZE", DSBLIT_COLORIZE },
-    { " DSBLIT_SRC_COLORKEY", DSBLIT_SRC_COLORKEY },
-    { " DSBLIT_DST_COLORKEY", DSBLIT_DST_COLORKEY },
-    { " DSBLIT_SRC_PREMULTIPLY", DSBLIT_SRC_PREMULTIPLY },
-    { " DSBLIT_DST_PREMULTIPLY", DSBLIT_DST_PREMULTIPLY },
-    { " DSBLIT_DEMULTIPLY", DSBLIT_DEMULTIPLY },
-    { " DSBLIT_DEINTERLACE", DSBLIT_DEINTERLACE },
+    { "DSBLIT_NOFX", DSBLIT_NOFX },
+    { "DSBLIT_BLEND_ALPHACHANNEL", DSBLIT_BLEND_ALPHACHANNEL },
+    { "DSBLIT_BLEND_COLORALPHA", DSBLIT_BLEND_COLORALPHA },
+    { "DSBLIT_COLORIZE", DSBLIT_COLORIZE },
+    { "DSBLIT_SRC_COLORKEY", DSBLIT_SRC_COLORKEY },
+    { "DSBLIT_DST_COLORKEY", DSBLIT_DST_COLORKEY },
+    { "DSBLIT_SRC_PREMULTIPLY", DSBLIT_SRC_PREMULTIPLY },
+    { "DSBLIT_DST_PREMULTIPLY", DSBLIT_DST_PREMULTIPLY },
+    { "DSBLIT_DEMULTIPLY", DSBLIT_DEMULTIPLY },
+    { "DSBLIT_DEINTERLACE", DSBLIT_DEINTERLACE },
 #if (Q_DIRECTFB_VERSION >= 0x000923)
-    { " DSBLIT_SRC_PREMULTCOLOR", DSBLIT_SRC_PREMULTCOLOR },
-    { " DSBLIT_XOR", DSBLIT_XOR },
+    { "DSBLIT_SRC_PREMULTCOLOR", DSBLIT_SRC_PREMULTCOLOR },
+    { "DSBLIT_XOR", DSBLIT_XOR },
 #endif
 #if (Q_DIRECTFB_VERSION >= 0x010000)
-    { " DSBLIT_INDEX_TRANSLATION", DSBLIT_INDEX_TRANSLATION },
+    { "DSBLIT_INDEX_TRANSLATION", DSBLIT_INDEX_TRANSLATION },
 #endif
     { 0, 0 }
 };
 
 static const FlagDescription drawDescriptions[] = {
-    { " DSDRAW_NOFX", DSDRAW_NOFX },
-    { " DSDRAW_BLEND", DSDRAW_BLEND },
-    { " DSDRAW_DST_COLORKEY", DSDRAW_DST_COLORKEY },
-    { " DSDRAW_SRC_PREMULTIPLY", DSDRAW_SRC_PREMULTIPLY },
-    { " DSDRAW_DST_PREMULTIPLY", DSDRAW_DST_PREMULTIPLY },
-    { " DSDRAW_DEMULTIPLY", DSDRAW_DEMULTIPLY },
-    { " DSDRAW_XOR", DSDRAW_XOR },
+    { "DSDRAW_NOFX", DSDRAW_NOFX },
+    { "DSDRAW_BLEND", DSDRAW_BLEND },
+    { "DSDRAW_DST_COLORKEY", DSDRAW_DST_COLORKEY },
+    { "DSDRAW_SRC_PREMULTIPLY", DSDRAW_SRC_PREMULTIPLY },
+    { "DSDRAW_DST_PREMULTIPLY", DSDRAW_DST_PREMULTIPLY },
+    { "DSDRAW_DEMULTIPLY", DSDRAW_DEMULTIPLY },
+    { "DSDRAW_XOR", DSDRAW_XOR },
     { 0, 0 }
 };
 #endif
@@ -1066,7 +1066,7 @@ static inline QColor colorFromName(const QString &name)
     QRegExp rx("#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])");
     rx.setCaseSensitivity(Qt::CaseInsensitive);
     if (rx.exactMatch(name)) {
-        Q_ASSERT(rx.numCaptures() == 4);
+        Q_ASSERT(rx.captureCount() == 4);
         int ints[4];
         int i;
         for (i=0; i<4; ++i) {
@@ -1259,11 +1259,14 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     setIntOption(displayArgs, QLatin1String("height"), &h);
 
 #ifndef QT_NO_DIRECTFB_LAYER
-    result = d_ptr->dfb->GetDisplayLayer(d_ptr->dfb, DLID_PRIMARY,
+    int layerId = DLID_PRIMARY;
+    setIntOption(displayArgs, QLatin1String("layerid"), &layerId);
+
+    result = d_ptr->dfb->GetDisplayLayer(d_ptr->dfb, static_cast<DFBDisplayLayerID>(layerId),
                                          &d_ptr->dfbLayer);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBScreen::connect: "
-                      "Unable to get primary display layer!", result);
+                      "Unable to get display layer!", result);
         return false;
     }
     result = d_ptr->dfbLayer->GetScreen(d_ptr->dfbLayer, &d_ptr->dfbScreen);
@@ -1564,7 +1567,7 @@ void QDirectFBScreen::exposeRegion(QRegion r, int)
             primary->SetColor(primary, 0xff, 0xff, 0xff, cmd.windowOpacity);
         }
         const QRegion &region = cmd.source;
-        const int rectCount = region.numRects();
+        const int rectCount = region.rectCount();
         DFBRectangle source;
         if (rectCount == 1) {
             ::initParameters(source, region.boundingRect(), cmd.windowPosition);
@@ -1619,7 +1622,7 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
     d_ptr->primarySurface->SetColor(d_ptr->primarySurface,
                                     color.red(), color.green(), color.blue(),
                                     color.alpha());
-    const int n = region.numRects();
+    const int n = region.rectCount();
     if (n == 1) {
         const QRect r = region.boundingRect();
         d_ptr->primarySurface->FillRectangle(d_ptr->primarySurface, r.x(), r.y(), r.width(), r.height());
@@ -1680,7 +1683,7 @@ void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags
     if (!(flipFlags & DSFLIP_BLIT)) {
         surface->Flip(surface, 0, flipFlags);
     } else {
-        if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.numRects() > 1) {
+        if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.rectCount() > 1) {
             const QVector<QRect> rects = region.rects();
             const DFBSurfaceFlipFlags nonWaitFlags = flipFlags & ~DSFLIP_WAIT;
             for (int i=0; i<rects.size(); ++i) {

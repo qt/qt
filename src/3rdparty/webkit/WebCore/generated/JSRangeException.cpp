@@ -82,8 +82,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSRangeExceptionConstructor::s_info = { "RangeExceptionConstructor", 0, &JSRangeExceptionConstructorTable, 0 };
@@ -142,7 +145,7 @@ JSRangeException::JSRangeException(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSRangeException::~JSRangeException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSRangeException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

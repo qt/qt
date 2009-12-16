@@ -62,12 +62,13 @@ class Q_GUI_EXPORT QGraphicsAnchor : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing RESET unsetSpacing)
+    Q_PROPERTY(QSizePolicy::Policy sizePolicy READ sizePolicy WRITE setSizePolicy)
 public:
     void setSpacing(qreal spacing);
     void unsetSpacing();
+    qreal spacing() const;
     void setSizePolicy(QSizePolicy::Policy policy);
     QSizePolicy::Policy sizePolicy() const;
-    qreal spacing() const;
     ~QGraphicsAnchor();
 private:
     QGraphicsAnchor(QGraphicsAnchorLayout *parent);
@@ -75,6 +76,7 @@ private:
     Q_DECLARE_PRIVATE(QGraphicsAnchor)
 
     friend class QGraphicsAnchorLayoutPrivate;
+    friend struct AnchorData;
 };
 
 class Q_GUI_EXPORT QGraphicsAnchorLayout : public QGraphicsLayout

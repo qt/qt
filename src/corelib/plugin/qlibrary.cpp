@@ -659,7 +659,10 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #endif
             if (!pHnd) {
 #ifdef Q_OS_WIN
+                //avoid 'Bad Image' message box
+                UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
                 hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, DONT_RESOLVE_DLL_REFERENCES);
+                SetErrorMode(oldmode);
 #else
 #  if defined(Q_OS_SYMBIAN)
                 //Guard against accidentally trying to load non-plugin libraries by making sure the stub exists
@@ -741,7 +744,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 
     pluginState = IsNotAPlugin; // be pessimistic
 
-    if ((qt_version > QT_VERSION) || ((QT_VERSION & 0xff0000) > (qt_version & 0xff0000))) {
+    if ((qt_version & 0x00ff00) > (QT_VERSION & 0x00ff00) || (qt_version & 0xff0000) != (QT_VERSION & 0xff0000)) {
         if (qt_debug_component()) {
             qWarning("In %s:\n"
                  "  Plugin uses incompatible Qt library (%d.%d.%d) [%s]",

@@ -114,7 +114,7 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
     while (!file.atEnd()) {
         const QString line(QLatin1String(file.readLine()));
         if (rxValue.indexIn(line) != -1) {
-            Q_ASSERT(rxValue.numCaptures() == 1);
+            Q_ASSERT(rxValue.captureCount() == 1);
             bool ok;
             val = rxValue.cap(1).toLongLong(&ok);
             Q_ASSERT(ok);

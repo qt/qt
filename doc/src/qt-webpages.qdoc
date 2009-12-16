@@ -50,7 +50,12 @@
 */
 
 /*!
-    \externalpage http://qt.nokia.com/bugreport-form
+    \externalpage http://bugreports.qt.nokia.com
+    \title Qt Bug Tracker
+*/
+
+/*!
+    \externalpage http://bugreports.qt.nokia.com
     \title Bug Report Form
 */
 
@@ -165,7 +170,7 @@
 */
 
 /*!
-    \externalpage http://qt.nokia.com/products/qtopia/
+    \externalpage http://www.qtextended.org/
     \title Qt Extended
 */
 
@@ -175,7 +180,7 @@
 */
 
 /*!
-    \externalpage http://qt.nokia.com/developer/task-tracker
+    \externalpage http://bugreports.qt.nokia.com
     \title Task Tracker
 */
 

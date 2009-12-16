@@ -177,7 +177,7 @@ namespace Phonon
 
         void WorkerThread::handleTask()
         {
-            QMutexLocker locker(Backend::directShowMutex());
+            QMutexLocker locker(Backend::directShowMutex);
             {
                 QMutexLocker locker(&m_mutex);
                 if (m_finished || m_queue.isEmpty()) {
@@ -361,17 +361,17 @@ namespace Phonon
                 m_graphs[i] = new MediaGraph(this, i);
             }
 
-            connect(&m_thread, SIGNAL(stateReady(Graph, Phonon::State)),
-                               SLOT(slotStateReady(Graph, Phonon::State)));
+            connect(&m_thread, SIGNAL(stateReady(Graph,Phonon::State)),
+                               SLOT(slotStateReady(Graph,Phonon::State)));
 
-            connect(&m_thread, SIGNAL(eventReady(Graph, long, long)),
-                               SLOT(handleEvents(Graph, long, long)));
+            connect(&m_thread, SIGNAL(eventReady(Graph,long,long)),
+                               SLOT(handleEvents(Graph,long,long)));
 
-            connect(&m_thread, SIGNAL(asyncRenderFinished(quint16, HRESULT, Graph)),
-                SLOT(finishLoading(quint16, HRESULT, Graph)));
+            connect(&m_thread, SIGNAL(asyncRenderFinished(quint16,HRESULT,Graph)),
+                SLOT(finishLoading(quint16,HRESULT,Graph)));
 
-            connect(&m_thread, SIGNAL(asyncSeekingFinished(quint16, qint64)),
-                SLOT(finishSeeking(quint16, qint64)));
+            connect(&m_thread, SIGNAL(asyncSeekingFinished(quint16,qint64)),
+                SLOT(finishSeeking(quint16,qint64)));
             //really special case
             m_mediaObject = this;
             m_thread.start();

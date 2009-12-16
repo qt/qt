@@ -53,6 +53,8 @@
 #include <private/qpaintengineex_opengl2_p.h>
 
 #include <qdesktopwidget.h>
+#include <qfile.h>
+#include <qimagereader.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -76,12 +78,34 @@ static inline int areaDiff(const QSize &size, const QGLFramebufferObject *fbo)
     return qAbs(size.width() * size.height() - fbo->width() * fbo->height());
 }
 
-QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat)
+extern int qt_next_power_of_two(int v);
+
+static inline QSize maybeRoundToNextPowerOfTwo(const QSize &sz)
+{
+#ifdef QT_OPENGL_ES_2
+    QSize rounded(qt_next_power_of_two(sz.width()), qt_next_power_of_two(sz.height()));
+    if (rounded.width() * rounded.height() < 1.20 * sz.width() * sz.height())
+        return rounded;
+#endif
+    return sz;
+}
+
+
+QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat, bool strictSize)
 {
     QGLFramebufferObject *chosen = 0;
     QGLFramebufferObject *candidate = 0;
     for (int i = 0; !chosen && i < m_fbos.size(); ++i) {
         QGLFramebufferObject *fbo = m_fbos.at(i);
+
+        if (strictSize) {
+            if (fbo->size() == requestSize && fbo->format() == requestFormat) {
+                chosen = fbo;
+                break;
+            } else {
+                continue;
+            }
+        }
 
         if (fbo->format() == requestFormat) {
             // choose the fbo with a matching format and the closest size
@@ -106,7 +130,7 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
 
             if (sz != fboSize) {
                 delete candidate;
-                candidate = new QGLFramebufferObject(sz, requestFormat);
+                candidate = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(sz), requestFormat);
             }
 
             chosen = candidate;
@@ -114,7 +138,10 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
     }
 
     if (!chosen) {
-        chosen = new QGLFramebufferObject(requestSize, requestFormat);
+        if (strictSize)
+            chosen = new QGLFramebufferObject(requestSize, requestFormat);
+        else
+            chosen = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(requestSize), requestFormat);
     }
 
     if (!chosen->isValid()) {
@@ -127,7 +154,8 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
 
 void QGLFramebufferObjectPool::release(QGLFramebufferObject *fbo)
 {
-    m_fbos << fbo;
+    if (fbo)
+        m_fbos << fbo;
 }
 
 
@@ -295,25 +323,47 @@ void QGLPixmapData::ensureCreated() const
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     m_ctx = ctx;
 
-    const GLenum format = qt_gl_preferredTextureFormat();
+    const GLenum internal_format = m_hasAlpha ? GL_RGBA : GL_RGB;
+#ifdef QT_OPENGL_ES_2
+    const GLenum external_format = internal_format;
+#else
+    const GLenum external_format = qt_gl_preferredTextureFormat();
+#endif
     const GLenum target = GL_TEXTURE_2D;
 
     if (!m_texture.id) {
         glGenTextures(1, &m_texture.id);
         glBindTexture(target, m_texture.id);
-        GLenum format = m_hasAlpha ? GL_RGBA : GL_RGB;
-        glTexImage2D(target, 0, format, w, h, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(target, 0, internal_format, w, h, 0, external_format, GL_UNSIGNED_BYTE, 0);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
     if (!m_source.isNull()) {
-        const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, format);
+        if (external_format == GL_RGB) {
+            QImage tx = m_source.convertToFormat(QImage::Format_RGB32);
 
-        glBindTexture(target, m_texture.id);
-        glTexSubImage2D(target, 0, 0, 0, w, h, format,
-                        GL_UNSIGNED_BYTE, tx.bits());
+            QVector<uchar> pixelData(w * h * 3);
+            uchar *p = &pixelData[0];
+            QRgb *src = (QRgb *)tx.bits();
+
+            for (int i = 0; i < w * h; ++i) {
+                *p++ = qRed(*src);
+                *p++ = qGreen(*src);
+                *p++ = qBlue(*src);
+                ++src;
+            }
+
+            glBindTexture(target, m_texture.id);
+            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
+                            GL_UNSIGNED_BYTE, &pixelData[0]);
+        } else {
+            const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, external_format);
+
+            glBindTexture(target, m_texture.id);
+            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
+                            GL_UNSIGNED_BYTE, tx.bits());
+        }
 
         if (useFramebufferObjects())
             m_source = QImage();
@@ -357,6 +407,63 @@ void QGLPixmapData::fromImage(const QImage &image,
         glDeleteTextures(1, &m_texture.id);
         m_texture.id = 0;
     }
+}
+
+bool QGLPixmapData::fromFile(const QString &filename, const char *format,
+                             Qt::ImageConversionFlags flags)
+{
+    if (pixelType() == QPixmapData::BitmapType)
+        return QPixmapData::fromFile(filename, format, flags);
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+    QByteArray data = file.peek(64);
+    bool alpha;
+    if (m_texture.canBindCompressedTexture
+            (data.constData(), data.size(), format, &alpha)) {
+        resize(0, 0);
+        data = file.readAll();
+        file.close();
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QSize size = m_texture.bindCompressedTexture
+            (data.constData(), data.size(), format);
+        if (!size.isEmpty()) {
+            w = size.width();
+            h = size.height();
+            is_null = false;
+            d = 32;
+            m_hasAlpha = alpha;
+            m_source = QImage();
+            m_dirty = isValid();
+            return true;
+        }
+        return false;
+    }
+    fromImage(QImageReader(&file, format).read(), flags);
+    return !isNull();
+}
+
+bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
+                             Qt::ImageConversionFlags flags)
+{
+    bool alpha;
+    const char *buf = reinterpret_cast<const char *>(buffer);
+    if (m_texture.canBindCompressedTexture(buf, int(len), format, &alpha)) {
+        resize(0, 0);
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QSize size = m_texture.bindCompressedTexture(buf, int(len), format);
+        if (!size.isEmpty()) {
+            w = size.width();
+            h = size.height();
+            is_null = false;
+            d = 32;
+            m_hasAlpha = alpha;
+            m_source = QImage();
+            m_dirty = isValid();
+            return true;
+        }
+    }
+    return QPixmapData::fromData(buffer, len, format, flags);
 }
 
 bool QGLPixmapData::scroll(int dx, int dy, const QRect &rect)
@@ -426,7 +533,7 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
     if (pixelType() == BitmapType) {
         img = QImage(w, h, QImage::Format_MonoLSB);
 
-        img.setNumColors(2);
+        img.setColorCount(2);
         img.setColor(0, QColor(Qt::color0).rgba());
         img.setColor(1, QColor(Qt::color1).rgba());
 

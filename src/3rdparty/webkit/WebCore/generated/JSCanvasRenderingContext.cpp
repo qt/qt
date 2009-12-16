@@ -76,8 +76,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSCanvasRenderingContextConstructor::s_info = { "CanvasRenderingContextConstructor", 0, &JSCanvasRenderingContextConstructorTable, 0 };
@@ -123,7 +126,7 @@ JSCanvasRenderingContext::JSCanvasRenderingContext(NonNullPassRefPtr<Structure> 
 
 JSCanvasRenderingContext::~JSCanvasRenderingContext()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCanvasRenderingContext::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

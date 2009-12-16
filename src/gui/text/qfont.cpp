@@ -1613,7 +1613,8 @@ bool QFont::operator==(const QFont &f) const
                 && f.d->underline == d->underline
                 && f.d->overline  == d->overline
                 && f.d->strikeOut == d->strikeOut
-                && f.d->kerning == d->kerning));
+                && f.d->kerning == d->kerning
+                && f.d->capital == d->capital));
 }
 
 
@@ -1645,6 +1646,7 @@ bool QFont::operator<(const QFont &f) const
 #ifdef Q_WS_X11
     if (r1.addStyle != r2.addStyle) return r1.addStyle < r2.addStyle;
 #endif // Q_WS_X11
+    if (f.d->capital != d->capital) return f.d->capital < d->capital;
 
     int f1attrs = (f.d->underline << 3) + (f.d->overline << 2) + (f.d->strikeOut<<1) + f.d->kerning;
     int f2attrs = (d->underline << 3) + (d->overline << 2) + (d->strikeOut<<1) + d->kerning;
@@ -2324,22 +2326,22 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
 */
 QFontInfo::QFontInfo(const QFont &font)
     : d(font.d.data())
-{ d->ref.ref(); }
+{
+}
 
 /*!
     Constructs a copy of \a fi.
 */
 QFontInfo::QFontInfo(const QFontInfo &fi)
-    : d(fi.d)
-{ d->ref.ref(); }
+    : d(fi.d.data())
+{
+}
 
 /*!
     Destroys the font info object.
 */
 QFontInfo::~QFontInfo()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -2347,7 +2349,7 @@ QFontInfo::~QFontInfo()
 */
 QFontInfo &QFontInfo::operator=(const QFontInfo &fi)
 {
-    qAtomicAssign(d, fi.d);
+    d = fi.d.data();
     return *this;
 }
 
@@ -2632,7 +2634,7 @@ QFontCache::~QFontCache()
     while (it != end) {
         if (--it.value().data->cache_count == 0) {
             if (it.value().data->ref == 0) {
-                FC_DEBUG("QFontCache::~QFontCache: deleting engine %p key=(%d / %g %d %d %d %d)",
+                FC_DEBUG("QFontCache::~QFontCache: deleting engine %p key=(%d / %g %g %d %d %d)",
                          it.value().data, it.key().script, it.key().def.pointSize,
                          it.key().def.pixelSize, it.key().def.weight, it.key().def.style,
                          it.key().def.fixedPitch);

@@ -40,7 +40,8 @@
 namespace WebCore {
 
     typedef HashSet<String, CaseFoldingHash> URLSchemesMap;
-    
+
+    class Document;
     class KURL;
     
     class SecurityOrigin : public ThreadSafeShared<SecurityOrigin> {
@@ -52,7 +53,7 @@ namespace WebCore {
 
         // Create a deep copy of this SecurityOrigin.  This method is useful
         // when marshalling a SecurityOrigin to another thread.
-        PassRefPtr<SecurityOrigin> copy();
+        PassRefPtr<SecurityOrigin> threadsafeCopy();
 
         // Set the domain property of this security origin to newDomain.  This
         // function does not check whether newDomain is a suffix of the current
@@ -80,6 +81,11 @@ namespace WebCore {
         // this security origin.  For example, call this function before
         // drawing an image onto an HTML canvas element with the drawImage API.
         bool taintsCanvas(const KURL&) const;
+
+        // Returns true for any non-local URL. If document parameter is supplied,
+        // its local load policy dictates, otherwise if referrer is non-empty and
+        // represents a local file, then the local load is allowed.
+        static bool canLoad(const KURL&, const String& referrer, Document* document);
 
         // Returns true if this SecurityOrigin can load local resources, such
         // as images, iframes, and style sheets, and can link to local URLs.
@@ -121,9 +127,8 @@ namespace WebCore {
         // SecurityOrigin is represented with the string "null".
         String toString() const;
 
-        // Serialize the security origin for storage in the database. This format is
-        // deprecated and should be used only for compatibility with old databases;
-        // use toString() and createFromString() instead.
+        // Serialize the security origin to a string that could be used as part of
+        // file names. This format should be used in storage APIs only.
         String databaseIdentifier() const;
 
         // This method checks for equality between SecurityOrigins, not whether
@@ -142,6 +147,17 @@ namespace WebCore {
         static const URLSchemesMap& localURLSchemes();
         static bool shouldTreatURLAsLocal(const String&);
         static bool shouldTreatURLSchemeAsLocal(const String&);
+
+        static bool shouldHideReferrer(const KURL&, const String& referrer);
+
+        enum LocalLoadPolicy {
+            AllowLocalLoadsForAll,  // No restriction on local loads.
+            AllowLocalLoadsForLocalAndSubstituteData,
+            AllowLocalLoadsForLocalOnly,
+        };
+        static void setLocalLoadPolicy(LocalLoadPolicy);
+        static bool restrictAccessToLocal();
+        static bool allowSubstituteDataAccessToLocal();
 
         static void registerURLSchemeAsNoAccess(const String&);
         static bool shouldTreatURLSchemeAsNoAccess(const String&);

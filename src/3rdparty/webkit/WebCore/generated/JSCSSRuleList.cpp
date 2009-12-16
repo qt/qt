@@ -79,8 +79,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSCSSRuleListConstructor::s_info = { "CSSRuleListConstructor", 0, &JSCSSRuleListConstructorTable, 0 };
@@ -137,7 +140,7 @@ JSCSSRuleList::JSCSSRuleList(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 
 JSCSSRuleList::~JSCSSRuleList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCSSRuleList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

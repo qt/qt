@@ -67,10 +67,10 @@ class Q_CORE_EXPORT QStateMachine : public QState
     Q_PROPERTY(RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
     Q_ENUMS(RestorePolicy)
 #ifndef QT_NO_ANIMATION
-    Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled)
+    Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
 #endif
 public:
-    class SignalEvent : public QEvent
+    class Q_CORE_EXPORT SignalEvent : public QEvent
     {
     public:
         SignalEvent(QObject *sender, int signalIndex,
@@ -89,7 +89,7 @@ public:
         friend class QSignalTransitionPrivate;
     };
 
-    class WrappedEvent : public QEvent
+    class Q_CORE_EXPORT WrappedEvent : public QEvent
     {
     public:
         WrappedEvent(QObject *object, QEvent *event);
@@ -109,7 +109,7 @@ public:
     };
 
     enum RestorePolicy {
-        DoNotRestoreProperties,
+        DontRestoreProperties,
         RestoreProperties
     };
 
@@ -133,8 +133,8 @@ public:
     bool isRunning() const;
 
 #ifndef QT_NO_ANIMATION
-    bool animationsEnabled() const;
-    void setAnimationsEnabled(bool enabled);
+    bool isAnimated() const;
+    void setAnimated(bool enabled);
 
     void addDefaultAnimation(QAbstractAnimation *animation);
     QList<QAbstractAnimation *> defaultAnimations() const;

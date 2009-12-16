@@ -252,7 +252,7 @@ static qreal easeOutInQuint(qreal t)
  */
 static qreal easeInSine(qreal t)
 {
-    return (t == 1.0) ? 1.0 : -::cos(t * M_PI_2) + 1.0;
+    return (t == 1.0) ? 1.0 : -::qCos(t * M_PI_2) + 1.0;
 }
 
 /**
@@ -263,7 +263,7 @@ static qreal easeInSine(qreal t)
  */
 static qreal easeOutSine(qreal t)
 {
-    return ::sin(t* M_PI_2);
+    return ::qSin(t* M_PI_2);
 }
 
 /**
@@ -274,7 +274,7 @@ static qreal easeOutSine(qreal t)
  */
 static qreal easeInOutSine(qreal t)
 {
-    return -0.5 * (::cos(M_PI*t) - 1);
+    return -0.5 * (::qCos(M_PI*t) - 1);
 }
 
 /**
@@ -397,15 +397,15 @@ static qreal easeInElastic_helper(qreal t, qreal b, qreal c, qreal d, qreal a, q
     if (t_adj==1) return b+c;
 
     qreal s;
-    if(a < ::fabs(c)) {
+    if(a < ::qFabs(c)) {
         a = c;
         s = p / 4.0f;
     } else {
-        s = p / (2 * M_PI) * ::asin(c / a);
+        s = p / (2 * M_PI) * ::qAsin(c / a);
     }
 
     t_adj -= 1.0f;
-    return -(a*::qPow(2.0f,10*t_adj) * ::sin( (t_adj*d-s)*(2*M_PI)/p )) + b;
+    return -(a*::qPow(2.0f,10*t_adj) * ::qSin( (t_adj*d-s)*(2*M_PI)/p )) + b;
 }
 
 /**
@@ -431,10 +431,10 @@ static qreal easeOutElastic_helper(qreal t, qreal /*b*/, qreal c, qreal /*d*/, q
         a = c;
         s = p / 4.0f;
     } else {
-        s = p / (2 * M_PI) * ::asin(c / a);
+        s = p / (2 * M_PI) * ::qAsin(c / a);
     }
 
-    return (a*::qPow(2.0f,-10*t) * ::sin( (t-s)*(2*M_PI)/p ) + c);
+    return (a*::qPow(2.0f,-10*t) * ::qSin( (t-s)*(2*M_PI)/p ) + c);
 }
 
 /**
@@ -469,11 +469,11 @@ static qreal easeInOutElastic(qreal t, qreal a, qreal p)
         a = 1.0;
         s = p / 4.0f;
     } else {
-        s = p / (2 * M_PI) * ::asin(1.0 / a);
+        s = p / (2 * M_PI) * ::qAsin(1.0 / a);
     }
 
-    if (t < 1) return -.5*(a*::qPow(2.0f,10*(t-1)) * ::sin( (t-1-s)*(2*M_PI)/p ));
-    return a*::qPow(2.0f,-10*(t-1)) * ::sin( (t-1-s)*(2*M_PI)/p )*.5 + 1.0;
+    if (t < 1) return -.5*(a*::qPow(2.0f,10*(t-1)) * ::qSin( (t-1-s)*(2*M_PI)/p ));
+    return a*::qPow(2.0f,-10*(t-1)) * ::qSin( (t-1-s)*(2*M_PI)/p )*.5 + 1.0;
 }
 
 /**

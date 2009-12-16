@@ -3679,15 +3679,21 @@ void tst_QUrl::binaryData()
 
 void tst_QUrl::fromUserInput_data()
 {
+    //
+    // most of this test is:
+    //  Copyright (C) Research In Motion Limited 2009. All rights reserved.
+    // Distributed under the BSD license.
+    // See qurl.cpp
+    //
+
     QTest::addColumn<QString>("string");
-    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QUrl>("guessUrlFromString");
 
     // Null
     QTest::newRow("null") << QString() << QUrl();
 
     // File
     QDirIterator it(QDir::homePath());
-    QString fileString;
     int c = 0;
     while (it.hasNext()) {
         it.next();
@@ -3695,49 +3701,56 @@ void tst_QUrl::fromUserInput_data()
     }
 
     // basic latin1
-    QTest::newRow("unicode-0") << QString::fromUtf8("\xC3\xA5.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xC3\xA5.com/").toUtf8(), QUrl::TolerantMode);
+    QTest::newRow("unicode-0") << QString::fromUtf8("\xc3\xa5.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xc3\xa5.com/").toUtf8(), QUrl::TolerantMode);
+    QTest::newRow("unicode-0b") << QString::fromUtf8("\xc3\xa5.com/") << QUrl::fromEncoded("http://%C3%A5.com/", QUrl::TolerantMode);
+    QTest::newRow("unicode-0c") << QString::fromUtf8("\xc3\xa5.com/") << QUrl::fromEncoded("http://xn--5ca.com/", QUrl::TolerantMode);
     // unicode
-    QTest::newRow("unicode-1") << QString::fromUtf8("\xCE\xBB.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xCE\xBB.com/").toUtf8(), QUrl::TolerantMode);
+    QTest::newRow("unicode-1") << QString::fromUtf8("\xce\xbb.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xce\xbb.com/").toUtf8(), QUrl::TolerantMode);
+    QTest::newRow("unicode-1b") << QString::fromUtf8("\xce\xbb.com/") << QUrl::fromEncoded("http://%CE%BB.com/", QUrl::TolerantMode);
+    QTest::newRow("unicode-1c") << QString::fromUtf8("\xce\xbb.com/") << QUrl::fromEncoded("http://xn--wxa.com/", QUrl::TolerantMode);
 
     // no scheme
-    QTest::newRow("add scheme-0") << "webkit.org" << QUrl("http://webkit.org");
-    QTest::newRow("add scheme-1") << "www.webkit.org" << QUrl("http://www.webkit.org");
-    QTest::newRow("add scheme-2") << "ftp.webkit.org" << QUrl("ftp://ftp.webkit.org");
-    QTest::newRow("add scheme-3") << "webkit" << QUrl("webkit");
+    QTest::newRow("add scheme-0") << "example.org" << QUrl("http://example.org");
+    QTest::newRow("add scheme-1") << "www.example.org" << QUrl("http://www.example.org");
+    QTest::newRow("add scheme-2") << "ftp.example.org" << QUrl("ftp://ftp.example.org");
+    QTest::newRow("add scheme-3") << "hostname" << QUrl("http://hostname");
 
     // QUrl's tolerant parser should already handle this
-    QTest::newRow("not-encoded-0") << "http://webkit.org/test page.html" << QUrl("http://webkit.org/test%20page.html");
+    QTest::newRow("not-encoded-0") << "http://example.org/test page.html" << QUrl::fromEncoded("http://example.org/test%20page.html");
 
     // Make sure the :80, i.e. port doesn't screw anything up
-    QUrl portUrl("http://webkit.org");
+    QUrl portUrl("http://example.org");
     portUrl.setPort(80);
-    QTest::newRow("port-0") << "webkit.org:80" << portUrl;
-    QTest::newRow("port-1") << "http://webkit.org:80" << portUrl;
+    QTest::newRow("port-0") << "example.org:80" << portUrl;
+    QTest::newRow("port-1") << "http://example.org:80" << portUrl;
+    portUrl.setPath("path");
+    QTest::newRow("port-1") << "example.org:80/path" << portUrl;
+    QTest::newRow("port-1") << "http://example.org:80/path" << portUrl;
 
     // mailto doesn't have a ://, but is valid
-    QUrl mailto("somebody@somewhere.net");
+    QUrl mailto("ben@example.net");
     mailto.setScheme("mailto");
-    QTest::newRow("mailto") << "mailto:somebody@somewhere.net" << mailto;
+    QTest::newRow("mailto") << "mailto:ben@example.net" << mailto;
 
     // misc
-    QTest::newRow("localhost-0") << "localhost" << QUrl("http://localhost");
     QTest::newRow("localhost-1") << "localhost:80" << QUrl("http://localhost:80");
-    QTest::newRow("spaces-0") << "  http://webkit.org/test page.html " << QUrl("http://webkit.org/test%20page.html");
-    QTest::newRow("trash-0") << "webkit.org/test?someData=42%&someOtherData=abcde#anchor" << QUrl::fromEncoded("http://webkit.org/test?someData=42%25&someOtherData=abcde#anchor");
+    QTest::newRow("spaces-0") << "  http://example.org/test page.html " << QUrl("http://example.org/test%20page.html");
+    QTest::newRow("trash-0") << "example.org/test?someData=42%&someOtherData=abcde#anchor" << QUrl::fromEncoded("http://example.org/test?someData=42%25&someOtherData=abcde#anchor");
+    QTest::newRow("other-scheme-0") << "spotify:track:0hO542doVbfGDAGQULMORT" << QUrl("spotify:track:0hO542doVbfGDAGQULMORT");
+    QTest::newRow("other-scheme-1") << "weirdscheme:80:otherstuff" << QUrl("weirdscheme:80:otherstuff");
 
     // FYI: The scheme in the resulting url user
     QUrl authUrl("user:pass@domain.com");
     QTest::newRow("misc-1") << "user:pass@domain.com" << authUrl;
 }
 
-// public static QUrl guessUrlFromString(QString const& string)
 void tst_QUrl::fromUserInput()
 {
     QFETCH(QString, string);
-    QFETCH(QUrl, url);
+    QFETCH(QUrl, guessUrlFromString);
 
-    QUrl guessedUrl = QUrl::fromUserInput(string);
-    QCOMPARE(guessedUrl, url);
+    QUrl url = QUrl::fromUserInput(string);
+    QCOMPARE(url, guessUrlFromString);
 }
 
 void tst_QUrl::task_199967()

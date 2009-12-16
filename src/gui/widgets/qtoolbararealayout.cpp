@@ -480,7 +480,7 @@ void QToolBarAreaLayoutInfo::moveToolBar(QToolBar *toolbar, int pos)
 }
 
 
-QList<int> QToolBarAreaLayoutInfo::gapIndex(const QPoint &pos) const
+QList<int> QToolBarAreaLayoutInfo::gapIndex(const QPoint &pos, int *minDistance) const
 {
     int p = pick(o, pos);
 
@@ -509,12 +509,19 @@ QList<int> QToolBarAreaLayoutInfo::gapIndex(const QPoint &pos) const
 
             QList<int> result;
             result << j << k;
+            *minDistance = 0; //we found a perfect match
             return result;
         }
-    } else if (appendLineDropRect().contains(pos)) {
-        QList<int> result;
-        result << lines.count() << 0;
-        return result;
+    } else {
+        const int dist = distance(pos);
+        //it will only return a path if the minDistance is higher than the current distance
+        if (dist >= 0 && *minDistance > dist) {
+            *minDistance = dist;
+
+            QList<int> result;
+            result << lines.count() << 0;
+            return result;
+        }
     }
 
     return QList<int>();
@@ -587,32 +594,25 @@ QRect QToolBarAreaLayoutInfo::itemRect(const QList<int> &path) const
     return result;
 }
 
-QRect QToolBarAreaLayoutInfo::appendLineDropRect() const
+int QToolBarAreaLayoutInfo::distance(const QPoint &pos) const
 {
-    QRect result;
-
     switch (dockPos) {
         case QInternal::LeftDock:
-            result = QRect(rect.right(), rect.top(),
-                            EmptyDockAreaSize, rect.height());
-            break;
+            if (pos.y() < rect.bottom())
+                return pos.x() - rect.right();
         case QInternal::RightDock:
-            result = QRect(rect.left() - EmptyDockAreaSize, rect.top(),
-                            EmptyDockAreaSize, rect.height());
-            break;
+            if (pos.y() < rect.bottom())
+                return rect.left() - pos.x();
         case QInternal::TopDock:
-            result = QRect(rect.left(), rect.bottom() + 1,
-                            rect.width(), EmptyDockAreaSize);
-            break;
+            if (pos.x() < rect.right())
+                return pos.y() - rect.bottom();
         case QInternal::BottomDock:
-            result = QRect(rect.left(), rect.top() - EmptyDockAreaSize,
-                            rect.width(), EmptyDockAreaSize);
-            break;
+            if (pos.x() < rect.right())
+                return rect.top() - pos.y();
         default:
             break;
     }
-
-    return result;
+    return -1;
 }
 
 /******************************************************************************
@@ -1022,21 +1022,24 @@ QList<int> QToolBarAreaLayout::indexOf(QWidget *toolBar) const
     return result;
 }
 
+//this functions returns the path to the possible gapindex for the position pos
 QList<int> QToolBarAreaLayout::gapIndex(const QPoint &pos) const
 {
     Qt::LayoutDirection dir = mainWindow->layoutDirection();
+    int minDistance = 80; // when a dock area is empty, how "wide" is it?
+    QList<int> ret; //return value
     for (int i = 0; i < QInternal::DockCount; ++i) {
         QPoint p = pos;
         if (docks[i].o == Qt::Horizontal)
             p = QStyle::visualPos(dir, docks[i].rect, p);
-        QList<int> result = docks[i].gapIndex(p);
+        QList<int> result = docks[i].gapIndex(p, &minDistance);
         if (!result.isEmpty()) {
             result.prepend(i);
-            return result;
+            ret = result;
         }
     }
 
-    return QList<int>();
+    return ret;
 }
 
 QList<int> QToolBarAreaLayout::currentGapIndex() const
@@ -1298,6 +1301,8 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
     QList<QToolBar*> toolBars = _toolBars;
     int lines;
     stream >> lines;
+	if (!testing)
+	testing = mainWindow->unifiedTitleAndToolBarOnMac();
 
     for (int j = 0; j < lines; ++j) {
         int pos;
@@ -1308,6 +1313,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
         stream >> cnt;
 
         QToolBarAreaLayoutInfo &dock = docks[pos];
+		const bool applyingLayout = !testing && !(pos == QInternal::TopDock && mainWindow->unifiedTitleAndToolBarOnMac());
         QToolBarAreaLayoutLine line(dock.o);
 
         for (int k = 0; k < cnt; ++k) {
@@ -1348,7 +1354,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
                 continue;
             }
 
-            if (!testing) {
+            if (applyingLayout) {
                 item.widgetItem = new QWidgetItemV2(toolBar);
                 toolBar->setOrientation(floating ? ((shown & 2) ? Qt::Vertical : Qt::Horizontal) : dock.o);
                 toolBar->setVisible(shown & 1);
@@ -1359,7 +1365,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
             }
         }
 
-        if (!testing) {
+        if (applyingLayout) {
             dock.lines.append(line);
         }
     }

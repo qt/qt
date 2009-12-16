@@ -89,7 +89,7 @@ static inline void markIfNeeded(MarkStack& markStack, JSValue v)
 static inline void markIfNeeded(MarkStack& markStack, const RefPtr<Structure>& s)
 {
     if (s)
-        s->markAggregate(markStack);
+        markIfNeeded(markStack, s->storedPrototype());
 }
 
 JSGlobalObject::~JSGlobalObject()
@@ -394,6 +394,21 @@ void JSGlobalObject::markChildren(MarkStack& markStack)
     markIfNeeded(markStack, d()->methodCallDummy);
 
     markIfNeeded(markStack, d()->errorStructure);
+    markIfNeeded(markStack, d()->argumentsStructure);
+    markIfNeeded(markStack, d()->arrayStructure);
+    markIfNeeded(markStack, d()->booleanObjectStructure);
+    markIfNeeded(markStack, d()->callbackConstructorStructure);
+    markIfNeeded(markStack, d()->callbackFunctionStructure);
+    markIfNeeded(markStack, d()->callbackObjectStructure);
+    markIfNeeded(markStack, d()->dateStructure);
+    markIfNeeded(markStack, d()->emptyObjectStructure);
+    markIfNeeded(markStack, d()->errorStructure);
+    markIfNeeded(markStack, d()->functionStructure);
+    markIfNeeded(markStack, d()->numberObjectStructure);
+    markIfNeeded(markStack, d()->prototypeFunctionStructure);
+    markIfNeeded(markStack, d()->regExpMatchesArrayStructure);
+    markIfNeeded(markStack, d()->regExpStructure);
+    markIfNeeded(markStack, d()->stringObjectStructure);
 
     // No need to mark the other structures, because their prototypes are all
     // guaranteed to be referenced elsewhere.
@@ -448,11 +463,7 @@ void JSGlobalObject::copyGlobalsTo(RegisterFile& registerFile)
 
 void* JSGlobalObject::operator new(size_t size, JSGlobalData* globalData)
 {
-#ifdef JAVASCRIPTCORE_BUILDING_ALL_IN_ONE_FILE
-    return globalData->heap.inlineAllocate(size);
-#else
     return globalData->heap.allocate(size);
-#endif
 }
 
 void JSGlobalObject::destroyJSGlobalObjectData(void* jsGlobalObjectData)

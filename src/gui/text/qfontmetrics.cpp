@@ -165,7 +165,6 @@ extern int qt_defaultDpi();
 QFontMetrics::QFontMetrics(const QFont &font)
     : d(font.d.data())
 {
-    d->ref.ref();
 }
 
 /*!
@@ -196,7 +195,6 @@ QFontMetrics::QFontMetrics(const QFont &font, QPaintDevice *paintdevice)
         d->screen = screen;
     } else {
         d = font.d.data();
-        d->ref.ref();
     }
 
 }
@@ -205,8 +203,9 @@ QFontMetrics::QFontMetrics(const QFont &font, QPaintDevice *paintdevice)
     Constructs a copy of \a fm.
 */
 QFontMetrics::QFontMetrics(const QFontMetrics &fm)
-    : d(fm.d)
-{ d->ref.ref(); }
+    : d(fm.d.data())
+{
+}
 
 /*!
     Destroys the font metrics object and frees all allocated
@@ -214,8 +213,6 @@ QFontMetrics::QFontMetrics(const QFontMetrics &fm)
 */
 QFontMetrics::~QFontMetrics()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -223,7 +220,7 @@ QFontMetrics::~QFontMetrics()
 */
 QFontMetrics &QFontMetrics::operator=(const QFontMetrics &fm)
 {
-    qAtomicAssign(d, fm.d);
+    d = fm.d.data();
     return *this;
 }
 
@@ -536,7 +533,7 @@ int QFontMetrics::width(const QString &text, int len) const
     if (len == 0)
         return 0;
 
-    QTextEngine layout(text, d);
+    QTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     return qRound(layout.width(0, len));
 }
@@ -612,7 +609,7 @@ int QFontMetrics::charWidth(const QString &text, int pos) const
         int from = qMax(0, pos - 8);
         int to = qMin(text.length(), pos + 8);
         QString cstr = QString::fromRawData(text.unicode() + from, to - from);
-        QTextEngine layout(cstr, d);
+        QTextEngine layout(cstr, d.data());
         layout.ignoreBidi = true;
         layout.itemize();
         width = qRound(layout.width(pos-from, 1));
@@ -661,7 +658,7 @@ QRect QFontMetrics::boundingRect(const QString &text) const
     if (text.length() == 0)
         return QRect();
 
-    QTextEngine layout(text, d);
+    QTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.boundingBox(0, text.length());
@@ -770,7 +767,7 @@ QRect QFontMetrics::boundingRect(const QRect &rect, int flags, const QString &te
 
     QRectF rb;
     QRectF rr(rect);
-    qt_format_text(QFont(d), rr, flags | Qt::TextDontPrint, text, &rb, tabStops, tabArray,
+    qt_format_text(QFont(d.data()), rr, flags | Qt::TextDontPrint, text, &rb, tabStops, tabArray,
                    tabArrayLen, 0);
 
     return rb.toAlignedRect();
@@ -831,7 +828,7 @@ QRect QFontMetrics::tightBoundingRect(const QString &text) const
     if (text.length() == 0)
         return QRect();
 
-    QTextEngine layout(text, d);
+    QTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.tightBoundingBox(0, text.length());
@@ -876,7 +873,7 @@ QString QFontMetrics::elidedText(const QString &text, Qt::TextElideMode mode, in
         }
         _text = _text.mid(posA);
     }
-    QStackTextEngine engine(_text, QFont(d));
+    QStackTextEngine engine(_text, QFont(d.data()));
     return engine.elidedText(mode, width, flags);
 }
 
@@ -989,9 +986,8 @@ int QFontMetrics::lineWidth() const
     from the given \a fontMetrics object.
 */
 QFontMetricsF::QFontMetricsF(const QFontMetrics &fontMetrics)
-    : d(fontMetrics.d)
+    : d(fontMetrics.d.data())
 {
-    d->ref.ref();
 }
 
 /*!
@@ -1001,7 +997,7 @@ QFontMetricsF::QFontMetricsF(const QFontMetrics &fontMetrics)
 */
 QFontMetricsF &QFontMetricsF::operator=(const QFontMetrics &other)
 {
-    qAtomicAssign(d, other.d);
+    d = other.d.data();
     return *this;
 }
 
@@ -1021,7 +1017,6 @@ QFontMetricsF &QFontMetricsF::operator=(const QFontMetrics &other)
 QFontMetricsF::QFontMetricsF(const QFont &font)
     : d(font.d.data())
 {
-    d->ref.ref();
 }
 
 /*!
@@ -1052,7 +1047,6 @@ QFontMetricsF::QFontMetricsF(const QFont &font, QPaintDevice *paintdevice)
         d->screen = screen;
     } else {
         d = font.d.data();
-        d->ref.ref();
     }
 
 }
@@ -1061,8 +1055,9 @@ QFontMetricsF::QFontMetricsF(const QFont &font, QPaintDevice *paintdevice)
     Constructs a copy of \a fm.
 */
 QFontMetricsF::QFontMetricsF(const QFontMetricsF &fm)
-    : d(fm.d)
-{ d->ref.ref(); }
+    : d(fm.d.data())
+{
+}
 
 /*!
     Destroys the font metrics object and frees all allocated
@@ -1070,8 +1065,6 @@ QFontMetricsF::QFontMetricsF(const QFontMetricsF &fm)
 */
 QFontMetricsF::~QFontMetricsF()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -1079,7 +1072,7 @@ QFontMetricsF::~QFontMetricsF()
 */
 QFontMetricsF &QFontMetricsF::operator=(const QFontMetricsF &fm)
 {
-    qAtomicAssign(d, fm.d);
+    d = fm.d.data();
     return *this;
 }
 
@@ -1374,10 +1367,13 @@ qreal QFontMetricsF::rightBearing(QChar ch) const
 */
 qreal QFontMetricsF::width(const QString &text) const
 {
-    QTextEngine layout(text, d);
+    int pos = text.indexOf(QLatin1Char('\x9c'));
+    int len = (pos != -1) ? pos : text.length();
+
+    QTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
-    return layout.width(0, text.length()).toReal();
+    return layout.width(0, len).toReal();
 }
 
 /*!
@@ -1451,7 +1447,7 @@ QRectF QFontMetricsF::boundingRect(const QString &text) const
     if (len == 0)
         return QRectF();
 
-    QTextEngine layout(text, d);
+    QTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.boundingBox(0, len);
@@ -1559,7 +1555,7 @@ QRectF QFontMetricsF::boundingRect(const QRectF &rect, int flags, const QString&
             tabArrayLen++;
 
     QRectF rb;
-    qt_format_text(QFont(d), rect, flags | Qt::TextDontPrint, text, &rb, tabStops, tabArray,
+    qt_format_text(QFont(d.data()), rect, flags | Qt::TextDontPrint, text, &rb, tabStops, tabArray,
                    tabArrayLen, 0);
     return rb;
 }
@@ -1594,7 +1590,7 @@ QRectF QFontMetricsF::boundingRect(const QRectF &rect, int flags, const QString&
 */
 QSizeF QFontMetricsF::size(int flags, const QString &text, int tabStops, int *tabArray) const
 {
-    return boundingRect(QRectF(), flags, text, tabStops, tabArray).size();
+    return boundingRect(QRectF(), flags | Qt::TextLongestVariant, text, tabStops, tabArray).size();
 }
 
 /*!
@@ -1624,7 +1620,7 @@ QRectF QFontMetricsF::tightBoundingRect(const QString &text) const
     if (text.length() == 0)
         return QRect();
 
-    QTextEngine layout(text, d);
+    QTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.tightBoundingBox(0, text.length());
@@ -1649,7 +1645,20 @@ QRectF QFontMetricsF::tightBoundingRect(const QString &text) const
 */
 QString QFontMetricsF::elidedText(const QString &text, Qt::TextElideMode mode, qreal width, int flags) const
 {
-    QStackTextEngine engine(text, QFont(d));
+    QString _text = text;
+    if (!(flags & Qt::TextLongestVariant)) {
+        int posA = 0;
+        int posB = _text.indexOf(QLatin1Char('\x9c'));
+        while (posB >= 0) {
+            QString portion = _text.mid(posA, posB - posA);
+            if (size(flags, portion).width() <= width)
+                return portion;
+            posA = posB + 1;
+            posB = _text.indexOf(QLatin1Char('\x9c'), posA);
+        }
+        _text = _text.mid(posA);
+    }
+    QStackTextEngine engine(_text, QFont(d.data()));
     return engine.elidedText(mode, QFixed::fromReal(width), flags);
 }
 

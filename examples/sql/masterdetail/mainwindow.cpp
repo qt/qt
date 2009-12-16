@@ -69,10 +69,10 @@ MainWindow::MainWindow(const QString &artistTable, const QString &albumTable,
     uniqueAlbumId = model->rowCount();
     uniqueArtistId = artistView->count();
 
-    connect(model, SIGNAL(rowsInserted(QModelIndex, int, int)),
-            this, SLOT(updateHeader(QModelIndex, int, int)));
-    connect(model, SIGNAL(rowsRemoved(QModelIndex, int, int)),
-            this, SLOT(updateHeader(QModelIndex, int, int)));
+    connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(updateHeader(QModelIndex,int,int)));
+    connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(updateHeader(QModelIndex,int,int)));
 
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(artists, 0, 0);

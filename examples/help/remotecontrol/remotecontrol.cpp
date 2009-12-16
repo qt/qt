@@ -68,7 +68,7 @@ RemoteControl::RemoteControl(QWidget *parent, Qt::WFlags flags)
     ui.startUrlLineEdit->setText(rc);
 
     process = new QProcess(this);
-    connect(process, SIGNAL(finished(int, QProcess::ExitStatus)),
+    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)),
         this, SLOT(helpViewerClosed()));
 }
 

@@ -884,7 +884,7 @@
 
     \value WA_InputMethodEnabled Enables input methods for Asian languages.
     Must be set when creating custom text editing widgets.
-    On Windows CE this flag can be used in addition to
+    On Windows CE and Symbian this flag can be used in addition to
     QApplication::autoSipEnabled to automatically display the SIP when
     entering a widget.
 
@@ -1609,6 +1609,98 @@
     \value Key_LaunchD
     \value Key_LaunchE
     \value Key_LaunchF
+    \value Key_MonBrightnessUp
+    \value Key_MonBrightnessDown
+    \value Key_KeyboardLightOnOff
+    \value Key_KeyboardBrightnessUp
+    \value Key_KeyboardBrightnessDown
+    \value Key_PowerOff
+    \value Key_WakeUp
+    \value Key_Eject
+    \value Key_ScreenSaver
+    \value Key_WWW
+    \value Key_Memo
+    \value Key_LightBulb
+    \value Key_Shop
+    \value Key_History
+    \value Key_AddFavorite
+    \value Key_HotLinks
+    \value Key_BrightnessAdjust
+    \value Key_Finance
+    \value Key_Community
+    \value Key_AudioRewind
+    \value Key_BackForward
+    \value Key_ApplicationLeft
+    \value Key_ApplicationRight
+    \value Key_Book
+    \value Key_CD
+    \value Key_Calculator
+    \value Key_ToDoList
+    \value Key_ClearGrab
+    \value Key_Close
+    \value Key_Copy
+    \value Key_Cut
+    \value Key_Display
+    \value Key_DOS
+    \value Key_Documents
+    \value Key_Excel
+    \value Key_Explorer
+    \value Key_Game
+    \value Key_Go
+    \value Key_iTouch
+    \value Key_LogOff
+    \value Key_Market
+    \value Key_Meeting
+    \value Key_MenuKB
+    \value Key_MenuPB
+    \value Key_MySites
+    \value Key_News
+    \value Key_OfficeHome
+    \value Key_Option
+    \value Key_Paste
+    \value Key_Phone
+    \value Key_Calendar
+    \value Key_Reply
+    \value Key_Reload
+    \value Key_RotateWindows
+    \value Key_RotationPB
+    \value Key_RotationKB
+    \value Key_Save
+    \value Key_Send
+    \value Key_Spell
+    \value Key_SplitScreen
+    \value Key_Support
+    \value Key_TaskPane
+    \value Key_Terminal
+    \value Key_Tools
+    \value Key_Travel
+    \value Key_Video
+    \value Key_Word
+    \value Key_Xfer
+    \value Key_ZoomIn
+    \value Key_ZoomOut
+    \value Key_Away
+    \value Key_Messenger
+    \value Key_WebCam
+    \value Key_MailForward
+    \value Key_Pictures
+    \value Key_Music
+    \value Key_Battery
+    \value Key_Bluetooth
+    \value Key_WLAN
+    \value Key_UWB
+    \value Key_AudioForward
+    \value Key_AudioRepeat
+    \value Key_AudioRandomPlay
+    \value Key_Subtitle
+    \value Key_AudioCycleTrack
+    \value Key_Time
+    \value Key_Hibernate
+    \value Key_View
+    \value Key_TopMenu
+    \value Key_PowerDown
+    \value Key_Suspend
+    \value Key_ContrastAdjust
     \value Key_MediaLast
     \value Key_unknown
 
@@ -1911,7 +2003,7 @@
     \value Tool    Indicates that the widget is a tool window. A tool
                    window is often a small window with a smaller than
                    usual title bar and decoration, typically used for
-                   collections of tool buttons. It there is a parent,
+                   collections of tool buttons. If there is a parent,
                    the tool window will always be kept on top of it.
                    If there isn't a parent, you may consider using
                    Qt::WindowStaysOnTopHint as well. If the window
@@ -2509,7 +2601,7 @@
 
     \value DisplayRole    The key data to be rendered in the form of text. (QString)
     \value DecorationRole The data to be rendered as a decoration in the form
-                          of an icon. (QColor)
+                          of an icon. (QColor, QIcon or QPixmap)
     \value EditRole       The data in a form suitable for editing in an
                           editor. (QString)
     \value ToolTipRole    The data displayed in the item's tooltip. (QString)
@@ -2818,31 +2910,36 @@
     \value PanGesture        A Pan gesture.
     \value PinchGesture      A Pinch gesture.
     \value SwipeGesture      A Swipe gesture.
-    \value CustomGesture     User-defined gesture ID.
-    \value LastGestureType   Last user gesture ID.
+    \value CustomGesture A flag that can be used to test if the gesture is a
+    user-defined gesture ID.
+    \omitvalue LastGestureType
 
     User-defined gestures are registered with the
-    QApplication::registerGestureRecognizer() function which generates a custom gesture ID
-    in the range of values from CustomGesture to LastGestureType.
+    QGestureRecognizer::registerRecognizer() function which generates a custom
+    gesture ID with the Qt::CustomGesture flag set.
 
-    \sa QGesture, QWidget::grabGesture()
+    \sa QGesture, QWidget::grabGesture(), QGraphicsObject::grabGesture()
 */
 
 /*!
-    \enum Qt::GestureContext
+    \enum Qt::GestureFlag
     \since 4.6
 
-    This enum type describes the context of a gesture.
+    This enum type describes additional flags that can be used when subscribing
+    to a gesture.
 
-    For a QGesture to trigger, the gesture recognizer should filter events for
-    a widget tree. This enum describes for which widget the gesture recognizer
-    should filter events:
+    \value DontStartGestureOnChildren By default gestures can start on the
+    widget or over any of its children. Use this flag to disable this and allow
+    a gesture to start on the widget only.
 
-    \value WidgetGesture Gestures can only start over the widget itself.
-    \value WidgetWithChildrenGesture Gestures can start on the widget or over
-    any of its children.
+    \value ReceivePartialGestures Allows any ignored gesture events to be
+    propagated to parent widgets which have specified this hint. By default
+    only gestures that are in the Qt::GestureStarted state are propagated and
+    the widget always gets the full gesture sequence starting with a gesture in
+    the Qt::GestureStarted state and ending with a gesture in the
+    Qt::GestureFinished or Qt::GestureCanceled states.
 
-    \sa QWidget::grabGesture()
+    \sa QWidget::grabGesture(), QGraphicsObject::grabGesture()
 */
 
 /*!
@@ -2870,18 +2967,3 @@
     \sa QApplication::setNavigationMode()
     \sa QApplication::navigationMode()
 */
-
-/*!
-    \enum Qt::RenderHint
-    \since 4.6
-
-    This enum describes the possible hints that can be used to control various
-    rendering operations.
-
-    \value QualityHint Indicates that rendering quality is the most important factor,
-    at the potential cost of lower performance.
-
-    \value PerformanceHint Indicates that rendering performance is the most important factor,
-    at the potential cost of lower quality.
-*/
-

@@ -456,10 +456,11 @@ template <typename T>
 inline void qVariantSetValue(QVariant &v, const T &t)
 {
     //if possible we reuse the current QVariant private
-    const int type = qMetaTypeId<T>(reinterpret_cast<T *>(0));
+    const uint type = qMetaTypeId<T>(reinterpret_cast<T *>(0));
     QVariant::Private &d = v.data_ptr();
-    if (v.isDetached() && (type <= int(QVariant::Char) || type == d.type)) {
+    if (v.isDetached() && (type == d.type || (type <= uint(QVariant::Char) && d.type <= uint(QVariant::Char)))) {
         d.type = type;
+        d.is_null = false;
         T *old = reinterpret_cast<T*>(d.is_shared ? d.data.shared->ptr : &d.data.ptr);
         if (QTypeInfo<T>::isComplex)
             old->~T();
@@ -468,6 +469,13 @@ inline void qVariantSetValue(QVariant &v, const T &t)
         v = QVariant(type, &t, QTypeInfo<T>::isPointer);
     }
 }
+
+template <>
+inline void qVariantSetValue<QVariant>(QVariant &v, const QVariant &t)
+{
+    v = t;
+}
+
 
 inline QVariant::QVariant() {}
 inline bool QVariant::isValid() const { return d.type != Invalid; }
@@ -558,9 +566,7 @@ inline bool operator!=(const QVariant &v1, const QVariantComparisonHelper &v2)
 #endif
 
 #ifndef QT_MOC
-#if !defined qdoc && defined Q_CC_MSVC && _MSC_VER < 1300
-
-template<typename T> T qvariant_cast(const QVariant &v, T * = 0)
+template<typename T> inline T qvariant_cast(const QVariant &v)
 {
     const int vid = qMetaTypeId<T>(static_cast<T *>(0));
     if (vid == v.userType())
@@ -573,28 +579,12 @@ template<typename T> T qvariant_cast(const QVariant &v, T * = 0)
     return T();
 }
 
-template<typename T>
-inline T qVariantValue(const QVariant &variant, T *t = 0)
-{ return qvariant_cast<T>(variant, t); }
-
-template<typename T>
-inline bool qVariantCanConvert(const QVariant &variant, T *t = 0)
+template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
 {
-    return variant.canConvert(static_cast<QVariant::Type>(qMetaTypeId<T>(t)));
-}
-#else
-
-template<typename T> T qvariant_cast(const QVariant &v)
-{
-    const int vid = qMetaTypeId<T>(static_cast<T *>(0));
+    static const int vid = qRegisterMetaType<QVariant>("QVariant");
     if (vid == v.userType())
-        return *reinterpret_cast<const T *>(v.constData());
-    if (vid < int(QMetaType::User)) {
-        T t;
-        if (qvariant_cast_helper(v, QVariant::Type(vid), &t))
-            return t;
-    }
-    return T();
+        return *reinterpret_cast<const QVariant *>(v.constData());
+    return v;
 }
 
 template<typename T>
@@ -607,7 +597,6 @@ inline bool qVariantCanConvert(const QVariant &variant)
     return variant.canConvert(static_cast<QVariant::Type>(
                 qMetaTypeId<T>(static_cast<T *>(0))));
 }
-#endif
 #endif
 Q_DECLARE_SHARED(QVariant)
 Q_DECLARE_TYPEINFO(QVariant, Q_MOVABLE_TYPE);

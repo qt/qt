@@ -118,7 +118,7 @@ public:
 
     void extendSize(Qt::Orientation o, int extent)
     {
-        int newSize = qMax(pick(o, minimumSize()), (preferredSize > 0 ? preferredSize : size) + extent);
+        int newSize = qMax(pick(o, minimumSize()), (preferredSize > 0 ? preferredSize : pick(o, sizeHint())) + extent);
         int sizeh = pick(o, sizeHint());
         if (newSize == sizeh) {
             preferredSize = -1;
@@ -155,8 +155,6 @@ public:
 class QToolBarAreaLayoutInfo
 {
 public:
-    enum { EmptyDockAreaSize = 80 }; // when a dock area is empty, how "wide" is it?
-
     QToolBarAreaLayoutInfo(QInternal::DockPosition pos = QInternal::TopDock);
 
     QList<QToolBarAreaLayoutLine> lines;
@@ -173,11 +171,11 @@ public:
     void removeToolBarBreak(QToolBar *before);
     void moveToolBar(QToolBar *toolbar, int pos); 
 
-    QList<int> gapIndex(const QPoint &pos) const;
+    QList<int> gapIndex(const QPoint &pos, int *maxDistance) const;
     bool insertGap(const QList<int> &path, QLayoutItem *item);
     void clear();
     QRect itemRect(const QList<int> &path) const;
-    QRect appendLineDropRect() const;
+    int distance(const QPoint &pos) const;
 
     QRect rect;
     Qt::Orientation o;

@@ -1326,4 +1326,116 @@
     <source>Close All Except %1</source>
     <target>Fermer tout sauf %1</target>
 </phrase>
+<phrase>
+    <source>Remove</source>
+    <target>Suppression</target>
+</phrase>
+<phrase>
+    <source>About...</source>
+    <target>À propos…</target>
+</phrase>
+<phrase>
+    <source>Minimize</source>
+    <target>Minimiser</target>
+</phrase>
+<phrase>
+    <source>Remove</source>
+    <target>Supprimer</target>
+</phrase>
+<phrase>
+    <source>Select All</source>
+    <target>Sélectionner tout</target>
+</phrase>
+<phrase>
+    <source>Cannot create directory: %1</source>
+    <target>Impossible de créer le répertoire : %1</target>
+</phrase>
+<phrase>
+    <source></source>
+    <target></target>
+</phrase>
+<phrase>
+    <source>Whole &amp;words</source>
+    <target>M&amp;ots complets</target>
+</phrase>
+<phrase>
+    <source>Title:</source>
+    <target>Titre :</target>
+</phrase>
+<phrase>
+    <source>Fonts</source>
+    <target>Polices</target>
+</phrase>
+<phrase>
+    <source>Insert</source>
+    <target>Insérer</target>
+</phrase>
+<phrase>
+    <source>Size</source>
+    <target>Taille</target>
+</phrase>
+<phrase>
+    <source>List View</source>
+    <target>Affichage liste</target>
+</phrase>
+<phrase>
+    <source>Read-only</source>
+    <target>Lecture seule</target>
+</phrase>
+<phrase>
+    <source>Minimize</source>
+    <target>Réduire</target>
+</phrase>
+<phrase>
+    <source>Maximize</source>
+    <target>Maximiser</target>
+</phrase>
+<phrase>
+    <source>Retry</source>
+    <target>Réessayer</target>
+</phrase>
+<phrase>
+    <source>Dock</source>
+    <target>Attacher</target>
+</phrase>
+<phrase>
+    <source>&amp;Redo</source>
+    <target>&amp;Rétablir</target>
+</phrase>
+<phrase>
+    <source>Edit</source>
+    <target>Éditer</target>
+</phrase>
+<phrase>
+    <source>PATH:</source>
+    <target>PATH :</target>
+</phrase>
+<phrase>
+    <source>Change:</source>
+    <target>Modification :</target>
+</phrase>
+<phrase>
+    <source>Edit...</source>
+    <target>Modifier...</target>
+</phrase>
+<phrase>
+    <source>&amp;Username:</source>
+    <target>&amp;Utilisateur :</target>
+</phrase>
+<phrase>
+    <source>Link</source>
+    <target>Lien</target>
+</phrase>
+<phrase>
+    <source>Paste:</source>
+    <target>Collage :</target>
+</phrase>
+<phrase>
+    <source>Label</source>
+    <target>Libellé</target>
+</phrase>
+<phrase>
+    <source>&amp;Debug</source>
+    <target>&amp;Déboguer</target>
+</phrase>
 </QPH>

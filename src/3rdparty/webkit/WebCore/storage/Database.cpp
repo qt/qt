@@ -46,6 +46,7 @@
 #include "NotImplemented.h"
 #include "Page.h"
 #include "OriginQuotaManager.h"
+#include "ScriptController.h"
 #include "SQLiteDatabase.h"
 #include "SQLiteFileSystem.h"
 #include "SQLiteStatement.h"
@@ -57,7 +58,6 @@
 
 #if USE(JSC)
 #include "JSDOMWindow.h"
-#include <runtime/InitializeThreading.h>
 #endif
 
 namespace WebCore {
@@ -89,6 +89,22 @@ static GuidVersionMap& guidToVersionMap()
     return map;
 }
 
+// NOTE: Caller must lock guidMutex().
+static inline void updateGuidVersionMap(int guid, String newVersion)
+{
+    // Ensure the the mutex is locked.
+    ASSERT(!guidMutex().tryLock());
+
+    // Note: It is not safe to put an empty string into the guidToVersionMap() map.
+    // That's because the map is cross-thread, but empty strings are per-thread.
+    // The copy() function makes a version of the string you can use on the current
+    // thread, but we need a string we can keep in a cross-thread data structure.
+    // FIXME: This is a quite-awkward restriction to have to program with.
+
+    // Map null string to empty string (see comment above).
+    guidToVersionMap().set(guid, newVersion.isEmpty() ? String() : newVersion.threadsafeCopy());
+}
+
 typedef HashMap<int, HashSet<Database*>*> GuidDatabaseMap;
 static GuidDatabaseMap& guidToDatabaseMap()
 {
@@ -112,7 +128,7 @@ PassRefPtr<Database> Database::openDatabase(Document* document, const String& na
         return 0;
     }
 
-    RefPtr<Database> database = adoptRef(new Database(document, name, expectedVersion));
+    RefPtr<Database> database = adoptRef(new Database(document, name, expectedVersion, displayName, estimatedSize));
 
     if (!database->openAndVerifyVersion(e)) {
        LOG(StorageAPI, "Failed to open and verify version (expected %s) of database %s", expectedVersion.ascii().data(), database->databaseDebugName().ascii().data());
@@ -131,29 +147,28 @@ PassRefPtr<Database> Database::openDatabase(Document* document, const String& na
     return database;
 }
 
-Database::Database(Document* document, const String& name, const String& expectedVersion)
+Database::Database(Document* document, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : m_transactionInProgress(false)
     , m_document(document)
-    , m_name(name.copy())
+    , m_name(name.crossThreadString())
     , m_guid(0)
-    , m_expectedVersion(expectedVersion)
+    , m_expectedVersion(expectedVersion.crossThreadString())
+    , m_displayName(displayName.crossThreadString())
+    , m_estimatedSize(estimatedSize)
     , m_deleted(false)
     , m_stopped(false)
     , m_opened(false)
 {
     ASSERT(document);
-    m_securityOrigin = document->securityOrigin();
+    m_mainThreadSecurityOrigin = document->securityOrigin();
+    m_databaseThreadSecurityOrigin = m_mainThreadSecurityOrigin->threadsafeCopy();
 
     if (m_name.isNull())
         m_name = "";
 
-#if USE(JSC)
-    JSC::initializeThreading();
-    // Database code violates the normal JSCore contract by calling jsUnprotect from a secondary thread, and thus needs additional locking.
-    JSDOMWindow::commonJSGlobalData()->heap.setGCProtectNeedsLocking();
-#endif
+    ScriptController::initializeThreading();
 
-    m_guid = guidForOriginAndName(m_securityOrigin->toString(), name);
+    m_guid = guidForOriginAndName(m_mainThreadSecurityOrigin->toString(), name);
 
     {
         MutexLocker locker(guidMutex());
@@ -169,7 +184,7 @@ Database::Database(Document* document, const String& name, const String& expecte
 
     ASSERT(m_document->databaseThread());
 
-    m_filename = DatabaseTracker::tracker().fullPathForDatabase(m_securityOrigin.get(), m_name);
+    m_filename = DatabaseTracker::tracker().fullPathForDatabase(m_mainThreadSecurityOrigin.get(), m_name);
 
     DatabaseTracker::tracker().addOpenDatabase(this);
     m_document->addOpenDatabase(this);
@@ -177,20 +192,6 @@ Database::Database(Document* document, const String& name, const String& expecte
 
 Database::~Database()
 {
-    {
-        MutexLocker locker(guidMutex());
-
-        HashSet<Database*>* hashSet = guidToDatabaseMap().get(m_guid);
-        ASSERT(hashSet);
-        ASSERT(hashSet->contains(this));
-        hashSet->remove(this);
-        if (hashSet->isEmpty()) {
-            guidToDatabaseMap().remove(m_guid);
-            delete hashSet;
-            guidToVersionMap().remove(m_guid);
-        }
-    }
-
     if (m_document->databaseThread())
         m_document->databaseThread()->unscheduleDatabaseTasks(this);
 
@@ -245,7 +246,7 @@ bool Database::getVersionFromDatabase(String& version)
 
     m_databaseAuthorizer->disable();
 
-    bool result = retrieveTextResultFromDatabase(m_sqliteDatabase, getVersionQuery.copy(), version);
+    bool result = retrieveTextResultFromDatabase(m_sqliteDatabase, getVersionQuery.threadsafeCopy(), version);
     if (!result)
         LOG_ERROR("Failed to retrieve version from database %s", databaseDebugName().ascii().data());
 
@@ -277,11 +278,13 @@ static bool setTextValueInDatabase(SQLiteDatabase& db, const String& query, cons
 
 bool Database::setVersionInDatabase(const String& version)
 {
+    // The INSERT will replace an existing entry for the database with the new version number, due to the UNIQUE ON CONFLICT REPLACE
+    // clause in the CREATE statement (see Database::performOpenAndVerify()).
     DEFINE_STATIC_LOCAL(String, setVersionQuery, ("INSERT INTO " + databaseInfoTableName() + " (key, value) VALUES ('" + databaseVersionKey() + "', ?);"));
 
     m_databaseAuthorizer->disable();
 
-    bool result = setTextValueInDatabase(m_sqliteDatabase, setVersionQuery.copy(), version);
+    bool result = setTextValueInDatabase(m_sqliteDatabase, setVersionQuery.threadsafeCopy(), version);
     if (!result)
         LOG_ERROR("Failed to set version %s in database (%s)", version.ascii().data(), setVersionQuery.ascii().data());
 
@@ -330,6 +333,20 @@ void Database::close()
         m_sqliteDatabase.close();
         m_document->databaseThread()->recordDatabaseClosed(this);
         m_opened = false;
+
+        {
+            MutexLocker locker(guidMutex());
+
+            HashSet<Database*>* hashSet = guidToDatabaseMap().get(m_guid);
+            ASSERT(hashSet);
+            ASSERT(hashSet->contains(this));
+            hashSet->remove(this);
+            if (hashSet->isEmpty()) {
+                guidToDatabaseMap().remove(m_guid);
+                delete hashSet;
+                guidToVersionMap().remove(m_guid);
+            }
+        }
     }
 }
 
@@ -350,20 +367,9 @@ void Database::stop()
     }
 }
 
-unsigned long long Database::databaseSize() const
-{
-    return SQLiteFileSystem::getDatabaseFileSize(m_filename);
-}
-
 unsigned long long Database::maximumSize() const
 {
-    // The maximum size for this database is the full quota for this origin, minus the current usage within this origin,
-    // except for the current usage of this database
-
-    OriginQuotaManager& manager(DatabaseTracker::tracker().originQuotaManager());
-    Locker<OriginQuotaManager> locker(manager);
-
-    return DatabaseTracker::tracker().quotaForOrigin(m_securityOrigin.get()) - manager.diskUsage(m_securityOrigin.get()) + databaseSize();
+    return DatabaseTracker::tracker().getMaxSizeForDatabase(this);
 }
 
 void Database::disableAuthorizer()
@@ -449,15 +455,9 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
     {
         MutexLocker locker(guidMutex());
 
-        // Note: It is not safe to put an empty string into the guidToVersionMap() map.
-        // That's because the map is cross-thread, but empty strings are per-thread.
-        // The copy() function makes a version of the string you can use on the current
-        // thread, but we need a string we can keep in a cross-thread data structure.
-        // FIXME: This is a quite-awkward restriction to have to program with.
-
         GuidVersionMap::iterator entry = guidToVersionMap().find(m_guid);
         if (entry != guidToVersionMap().end()) {
-            // Map null string to empty string (see comment above).
+            // Map null string to empty string (see updateGuidVersionMap()).
             currentVersion = entry->second.isNull() ? String("") : entry->second;
             LOG(StorageAPI, "Current cached version for guid %i is %s", m_guid, currentVersion.ascii().data());
         } else {
@@ -488,8 +488,7 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
                 currentVersion = m_expectedVersion;
             }
 
-            // Map empty string to null string (see comment above).
-            guidToVersionMap().set(m_guid, currentVersion.isEmpty() ? String() : currentVersion.copy());
+            updateGuidVersionMap(m_guid, currentVersion);
         }
     }
 
@@ -607,7 +606,7 @@ String Database::version() const
     if (m_deleted)
         return String();
     MutexLocker locker(guidMutex());
-    return guidToVersionMap().get(m_guid).copy();
+    return guidToVersionMap().get(m_guid).threadsafeCopy();
 }
 
 void Database::deliverPendingCallback(void* context)
@@ -632,18 +631,42 @@ Vector<String> Database::tableNames()
 
 void Database::setExpectedVersion(const String& version)
 {
-    m_expectedVersion = version.copy();
+    m_expectedVersion = version.threadsafeCopy();
+    // Update the in memory database version map.
+    MutexLocker locker(guidMutex());
+    updateGuidVersionMap(m_guid, version);
 }
 
-PassRefPtr<SecurityOrigin> Database::securityOriginCopy() const
+SecurityOrigin* Database::securityOrigin() const
 {
-    return m_securityOrigin->copy();
+    if (isMainThread())
+        return m_mainThreadSecurityOrigin.get();
+    if (currentThread() == document()->databaseThread()->getThreadID())
+        return m_databaseThreadSecurityOrigin.get();
+    return 0;
 }
 
 String Database::stringIdentifier() const
 {
     // Return a deep copy for ref counting thread safety
-    return m_name.copy();
+    return m_name.threadsafeCopy();
+}
+
+String Database::displayName() const
+{
+    // Return a deep copy for ref counting thread safety
+    return m_displayName.threadsafeCopy();
+}
+
+unsigned long Database::estimatedSize() const
+{
+    return m_estimatedSize;
+}
+
+String Database::fileName() const
+{
+    // Return a deep copy for ref counting thread safety
+    return m_filename.threadsafeCopy();
 }
 
 #endif

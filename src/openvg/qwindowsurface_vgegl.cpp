@@ -101,18 +101,6 @@ QImage::Format qt_vg_config_to_image_format(QEglContext *context)
         return argbFormat;       // XXX
 }
 
-static void copySubImage(QImage *image, VGImage vgImage, const QRect& rect)
-{
-    vgGetImageSubData
-        (vgImage,
-         image->bits() + rect.bottom() * image->bytesPerLine() +
-            rect.x() * (image->depth() / 8),
-         -(image->bytesPerLine()),
-         qt_vg_image_to_vg_format(image->format()),
-         rect.x(), (image->height() - 1) - rect.bottom(),
-         rect.width(), rect.height());
-}
-
 #if !defined(QVG_NO_SINGLE_CONTEXT)
 
 class QVGSharedContext
@@ -123,15 +111,19 @@ public:
 
     QEglContext *context;
     int refCount;
+    int widgetRefCount;
     QVGPaintEngine *engine;
     EGLSurface surface;
+    QVGPixmapData *firstPixmap;
 };
 
 QVGSharedContext::QVGSharedContext()
     : context(0)
     , refCount(0)
+    , widgetRefCount(0)
     , engine(0)
     , surface(EGL_NO_SURFACE)
+    , firstPixmap(0)
 {
 }
 
@@ -166,6 +158,28 @@ void qt_vg_destroy_paint_engine(QVGPaintEngine *engine)
     Q_UNUSED(engine);
 }
 
+void qt_vg_register_pixmap(QVGPixmapData *pd)
+{
+    QVGSharedContext *shared = sharedContext();
+    pd->next = shared->firstPixmap;
+    pd->prev = 0;
+    if (shared->firstPixmap)
+        shared->firstPixmap->prev = pd;
+    shared->firstPixmap = pd;
+}
+
+void qt_vg_unregister_pixmap(QVGPixmapData *pd)
+{
+    if (pd->next)
+        pd->next->prev = pd->prev;
+    if (pd->prev) {
+        pd->prev->next = pd->next;
+    } else {
+        QVGSharedContext *shared = sharedContext();
+        shared->firstPixmap = pd->next;
+    }
+}
+
 #else
 
 QVGPaintEngine *qt_vg_create_paint_engine(void)
@@ -176,6 +190,16 @@ QVGPaintEngine *qt_vg_create_paint_engine(void)
 void qt_vg_destroy_paint_engine(QVGPaintEngine *engine)
 {
     delete engine;
+}
+
+void qt_vg_register_pixmap(QVGPixmapData *pd)
+{
+    Q_UNUSED(pd);
+}
+
+void qt_vg_unregister_pixmap(QVGPixmapData *pd)
+{
+    Q_UNUSED(pd);
 }
 
 #endif
@@ -205,6 +229,49 @@ static QEglContext *createContext(QPaintDevice *device)
         return 0;
     }
 
+    // Set the swap interval for the display.
+    QByteArray interval = qgetenv("QT_VG_SWAP_INTERVAL");
+    if (!interval.isEmpty())
+        eglSwapInterval(context->display(), interval.toInt());
+    else
+        eglSwapInterval(context->display(), 1);
+
+#ifdef EGL_RENDERABLE_TYPE
+    // Has the user specified an explicit EGL configuration to use?
+    QByteArray configId = qgetenv("QT_VG_EGL_CONFIG");
+    if (!configId.isEmpty()) {
+        EGLint cfgId = configId.toInt();
+        EGLint properties[] = {
+            EGL_CONFIG_ID, cfgId,
+            EGL_NONE
+        };
+        EGLint matching = 0;
+        EGLConfig cfg;
+        if (eglChooseConfig
+                    (context->display(), properties, &cfg, 1, &matching) &&
+                matching > 0) {
+            // Check that the selected configuration actually supports OpenVG
+            // and then create the context with it.
+            EGLint id = 0;
+            EGLint type = 0;
+            eglGetConfigAttrib
+                (context->display(), cfg, EGL_CONFIG_ID, &id);
+            eglGetConfigAttrib
+                (context->display(), cfg, EGL_RENDERABLE_TYPE, &type);
+            if (cfgId == id && (type & EGL_OPENVG_BIT) != 0) {
+                context->setConfig(cfg);
+                if (!context->createContext()) {
+                    delete context;
+                    return 0;
+                }
+                return context;
+            } else {
+                qWarning("QT_VG_EGL_CONFIG: %d is not a valid OpenVG configuration", int(cfgId));
+            }
+        }
+    }
+#endif
+
     // Choose an appropriate configuration for rendering into the device.
     QEglProperties configProps;
     configProps.setPaintDeviceFormat(device);
@@ -216,19 +283,19 @@ static QEglContext *createContext(QPaintDevice *device)
     configProps.setValue(EGL_ALPHA_MASK_SIZE, 1);
 #endif
 #ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
-    configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT |
+    configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT |
                          EGL_VG_ALPHA_FORMAT_PRE_BIT);
     configProps.setRenderableType(QEgl::OpenVG);
     if (!context->chooseConfig(configProps)) {
         // Try again without the "pre" bit.
-        configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT);
+        configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
         if (!context->chooseConfig(configProps)) {
             delete context;
             return 0;
         }
     }
 #else
-    configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT);
+    configProps.setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
     configProps.setRenderableType(QEgl::OpenVG);
     if (!context->chooseConfig(configProps)) {
         delete context;
@@ -247,9 +314,11 @@ static QEglContext *createContext(QPaintDevice *device)
 
 #if !defined(QVG_NO_SINGLE_CONTEXT)
 
-QEglContext *qt_vg_create_context(QPaintDevice *device)
+QEglContext *qt_vg_create_context(QPaintDevice *device, int devType)
 {
     QVGSharedContext *shared = sharedContext();
+    if (devType == QInternal::Widget)
+        ++(shared->widgetRefCount);
     if (shared->context) {
         ++(shared->refCount);
         return shared->context;
@@ -260,23 +329,65 @@ QEglContext *qt_vg_create_context(QPaintDevice *device)
     }
 }
 
-void qt_vg_destroy_context(QEglContext *context)
+static void qt_vg_destroy_shared_context(QVGSharedContext *shared)
+{
+    shared->context->makeCurrent(qt_vg_shared_surface());
+    delete shared->engine;
+    shared->engine = 0;
+    shared->context->doneCurrent();
+    if (shared->surface != EGL_NO_SURFACE) {
+        eglDestroySurface(shared->context->display(), shared->surface);
+        shared->surface = EGL_NO_SURFACE;
+    }
+    delete shared->context;
+    shared->context = 0;
+}
+
+void qt_vg_hibernate_pixmaps(QVGSharedContext *shared)
+{
+    // Artificially increase the reference count to prevent the
+    // context from being destroyed until after we have finished
+    // the hibernation process.
+    ++(shared->refCount);
+
+    // We need a context current to hibernate the VGImage objects.
+    shared->context->makeCurrent(qt_vg_shared_surface());
+
+    // Scan all QVGPixmapData objects in the system and hibernate them.
+    QVGPixmapData *pd = shared->firstPixmap;
+    while (pd != 0) {
+        pd->hibernate();
+        pd = pd->next;
+    }
+
+    // Don't need the current context any more.
+    shared->context->lazyDoneCurrent();
+
+    // Decrease the reference count and destroy the context if necessary.
+    if (--(shared->refCount) <= 0)
+        qt_vg_destroy_shared_context(shared);
+}
+
+void qt_vg_destroy_context(QEglContext *context, int devType)
 {
     QVGSharedContext *shared = sharedContext();
     if (shared->context != context) {
         // This is not the shared context.  Shouldn't happen!
         delete context;
-    } else if (--(shared->refCount) <= 0) {
-        shared->context->makeCurrent(qt_vg_shared_surface());
-        delete shared->engine;
-        shared->engine = 0;
-        shared->context->doneCurrent();
-        if (shared->surface != EGL_NO_SURFACE) {
-            eglDestroySurface(shared->context->display(), shared->surface);
-            shared->surface = EGL_NO_SURFACE;
-        }
-        delete shared->context;
-        shared->context = 0;
+        return;
+    }
+    if (devType == QInternal::Widget)
+        --(shared->widgetRefCount);
+    if (--(shared->refCount) <= 0) {
+        qt_vg_destroy_shared_context(shared);
+    } else if (shared->widgetRefCount <= 0 && devType == QInternal::Widget) {
+        // All of the widget window surfaces have been destroyed
+        // but we still have VG pixmaps active.  Ask them to hibernate
+        // to free up GPU resources until a widget is shown again.
+        // This may eventually cause the EGLContext to be destroyed
+        // because nothing in the system needs a context, which will
+        // free up even more GPU resources.
+        qt_vg_hibernate_pixmaps(shared);
     }
 }
 
@@ -307,13 +418,15 @@ EGLSurface qt_vg_shared_surface(void)
 
 #else
 
-QEglContext *qt_vg_create_context(QPaintDevice *device)
+QEglContext *qt_vg_create_context(QPaintDevice *device, int devType)
 {
+    Q_UNUSED(devType);
     return createContext(device);
 }
 
-void qt_vg_destroy_context(QEglContext *context)
+void qt_vg_destroy_context(QEglContext *context, int devType)
 {
+    Q_UNUSED(devType);
     delete context;
 }
 
@@ -334,20 +447,6 @@ QVGEGLWindowSurfacePrivate::~QVGEGLWindowSurfacePrivate()
 {
     // Destroy the paint engine if it hasn't been destroyed already.
     destroyPaintEngine();
-}
-
-QVGEGLWindowSurfacePrivate *QVGEGLWindowSurfacePrivate::create
-    (SurfaceType type, QWindowSurface *win)
-{
-#if defined(QVG_VGIMAGE_BACKBUFFERS)
-    if (type == VGImageSurface)
-        return new QVGEGLWindowSurfaceVGImage(win);
-    else if (type == QImageSurface)
-        return new QVGEGLWindowSurfaceQImage(win);
-#endif
-    if (type == WindowSurface)
-        return new QVGEGLWindowSurfaceDirect(win);
-    return 0;
 }
 
 QVGPaintEngine *QVGEGLWindowSurfacePrivate::paintEngine()
@@ -417,7 +516,7 @@ QVGEGLWindowSurfaceVGImage::~QVGEGLWindowSurfaceVGImage()
         }
         if (windowSurface != EGL_NO_SURFACE)
             context->destroySurface(windowSurface);
-        qt_vg_destroy_context(context);
+        qt_vg_destroy_context(context, QInternal::Widget);
     }
 }
 
@@ -436,7 +535,7 @@ QEglContext *QVGEGLWindowSurfaceVGImage::ensureContext(QWidget *widget)
     if (!context) {
         // Create a new EGL context.  We create the surface in beginPaint().
         size = newSize;
-        context = qt_vg_create_context(widget);
+        context = qt_vg_create_context(widget, QInternal::Widget);
         if (!context)
             return 0;
         isPaintingActive = false;
@@ -514,39 +613,6 @@ EGLSurface QVGEGLWindowSurfaceVGImage::mainSurface() const
         return qt_vg_shared_surface();
 }
 
-QVGEGLWindowSurfaceQImage::QVGEGLWindowSurfaceQImage(QWindowSurface *win)
-    : QVGEGLWindowSurfaceVGImage(win)
-{
-}
-
-QVGEGLWindowSurfaceQImage::~QVGEGLWindowSurfaceQImage()
-{
-}
-
-void QVGEGLWindowSurfaceQImage::endPaint
-        (QWidget *widget, const QRegion& region, QImage *image)
-{
-    QEglContext *context = ensureContext(widget);
-    if (context) {
-        if (backBufferSurface != EGL_NO_SURFACE) {
-            if (isPaintingActive)
-                vgFlush();
-            context->makeCurrent(mainSurface());
-            QRegion rgn = region.intersected
-                (QRect(0, 0, image->width(), image->height()));
-            if (rgn.numRects() == 1) {
-                copySubImage(image, backBuffer, rgn.boundingRect());
-            } else {
-                QVector<QRect> rects = rgn.rects();
-                for (int index = 0; index < rects.size(); ++index)
-                    copySubImage(image, backBuffer, rects[index]);
-            }
-            context->lazyDoneCurrent();
-        }
-        isPaintingActive = false;
-    }
-}
-
 #endif // QVG_VGIMAGE_BACKBUFFERS
 
 QVGEGLWindowSurfaceDirect::QVGEGLWindowSurfaceDirect(QWindowSurface *win)
@@ -564,7 +630,7 @@ QVGEGLWindowSurfaceDirect::~QVGEGLWindowSurfaceDirect()
     if (context) {
         if (windowSurface != EGL_NO_SURFACE)
             context->destroySurface(windowSurface);
-        qt_vg_destroy_context(context);
+        qt_vg_destroy_context(context, QInternal::Widget);
     }
 }
 
@@ -603,7 +669,7 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
         qt_vg_destroy_paint_engine(engine);
         engine = 0;
         context->destroySurface(windowSurface);
-        qt_vg_destroy_context(context);
+        qt_vg_destroy_context(context, QInternal::Widget);
         context = 0;
         windowSurface = EGL_NO_SURFACE;
     }
@@ -612,7 +678,7 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
     if (!context) {
         // Create a new EGL context and bind it to the widget surface.
         size = newSize;
-        context = qt_vg_create_context(widget);
+        context = qt_vg_create_context(widget, QInternal::Widget);
         if (!context)
             return 0;
         // We want a direct to window rendering surface if possible.
@@ -629,7 +695,7 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
 #endif
         EGLSurface surface = context->createSurface(widget, &surfaceProps);
         if (surface == EGL_NO_SURFACE) {
-            qt_vg_destroy_context(context);
+            qt_vg_destroy_context(context, QInternal::Widget);
             context = 0;
             return 0;
         }

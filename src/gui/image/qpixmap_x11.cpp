@@ -416,6 +416,11 @@ void QX11PixmapData::fromImage(const QImage &img,
     d = img.depth();
     is_null = (w <= 0 || h <= 0);
 
+    if (is_null) {
+        w = h = 0;
+        return;
+    }
+
     if (defaultScreen >= 0 && defaultScreen != xinfo.screen()) {
         QX11InfoData* xd = xinfo.getX11Data(true);
         xd->screen = defaultScreen;
@@ -464,7 +469,7 @@ void QX11PixmapData::fromImage(const QImage &img,
         } else if ((flags & Qt::ColorMode_Mask) == Qt::ColorOnly) {
             conv8 = (d == 1);                        // native depth wanted
         } else if (d == 1) {
-            if (image.numColors() == 2) {
+            if (image.colorCount() == 2) {
                 QRgb c0 = image.color(0);        // Auto: convert to best
                 QRgb c1 = image.color(1);
                 conv8 = qMin(c0,c1) != qRgb(0,0,0) || qMax(c0,c1) != qRgb(255,255,255);
@@ -489,7 +494,7 @@ void QX11PixmapData::fromImage(const QImage &img,
     Visual *visual = (Visual *)xinfo.visual();
     XImage *xi = 0;
     bool    trucol = (visual->c_class >= TrueColor);
-    int     nbytes = image.numBytes();
+    int     nbytes = image.byteCount();
     uchar  *newbits= 0;
 
 #ifndef QT_NO_XRENDER
@@ -631,7 +636,7 @@ void QX11PixmapData::fromImage(const QImage &img,
 
         if (d8) {                                // setup pixel translation
             QVector<QRgb> ctable = cimage.colorTable();
-            for (int i=0; i < cimage.numColors(); i++) {
+            for (int i=0; i < cimage.colorCount(); i++) {
                 int r = qRed  (ctable[i]);
                 int g = qGreen(ctable[i]);
                 int b = qBlue (ctable[i]);
@@ -957,8 +962,8 @@ void QX11PixmapData::fromImage(const QImage &img,
     if (d == 8 && !trucol) {                        // 8 bit pixmap
         int  pop[256];                                // pixel popularity
 
-        if (image.numColors() == 0)
-            image.setNumColors(1);
+        if (image.colorCount() == 0)
+            image.setColorCount(1);
 
         const QImage &cimage = image;
         memset(pop, 0, sizeof(int)*256);        // reset popularity array
@@ -988,11 +993,11 @@ void QX11PixmapData::fromImage(const QImage &img,
             int          mindist;
         };
         int ncols = 0;
-        for (int i=0; i< cimage.numColors(); i++) { // compute number of colors
+        for (int i=0; i< cimage.colorCount(); i++) { // compute number of colors
             if (pop[i] > 0)
                 ncols++;
         }
-        for (int i = cimage.numColors(); i < 256; i++) // ignore out-of-range pixels
+        for (int i = cimage.colorCount(); i < 256; i++) // ignore out-of-range pixels
             pop[i] = 0;
 
         // works since we make sure above to have at least
@@ -1651,7 +1656,7 @@ QImage QX11PixmapData::toImage() const
     }
 
     if (d == 1) {                                // bitmap
-        image.setNumColors(2);
+        image.setColorCount(2);
         image.setColor(0, qRgb(255,255,255));
         image.setColor(1, qRgb(0,0,0));
     } else if (!trucol) {                        // pixmap with colormap
@@ -1707,10 +1712,10 @@ QImage QX11PixmapData::toImage() const
             int trans;
             if (ncols < 256) {
                 trans = ncols++;
-                image.setNumColors(ncols);        // create color table
+                image.setColorCount(ncols);        // create color table
                 image.setColor(trans, 0x00000000);
             } else {
-                image.setNumColors(ncols);        // create color table
+                image.setColorCount(ncols);        // create color table
                 // oh dear... no spare "transparent" pixel.
                 // use first pixel in image (as good as any).
                 trans = image.scanLine(0)[0];
@@ -1733,7 +1738,7 @@ QImage QX11PixmapData::toImage() const
                 }
             }
         } else {
-            image.setNumColors(ncols);        // create color table
+            image.setColorCount(ncols);        // create color table
         }
         QVector<QColor> colors = QColormap::instance(xinfo.screen()).colormap();
         int j = 0;
@@ -1916,8 +1921,8 @@ QPixmap QX11PixmapData::transformed(const QTransform &transform,
         free(dptr);
         return bm;
     } else {                                        // color pixmap
-        QPixmap pm;
-        QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(pm.data.data());
+        QX11PixmapData *x11Data = new QX11PixmapData(QPixmapData::PixmapType);
+        QPixmap pm(x11Data);
         x11Data->flags &= ~QX11PixmapData::Uninitialized;
         x11Data->xinfo = xinfo;
         x11Data->d = d;
@@ -1975,6 +1980,9 @@ void QPixmap::x11SetScreen(int screen)
         qWarning("QPixmap::x11SetScreen(): Cannot change screens during painting");
         return;
     }
+
+    if (isNull())
+        return;
 
     if (data->classId() != QPixmapData::X11Class)
         return;
@@ -2078,7 +2086,7 @@ bool QX11PixmapData::hasAlphaChannel() const
 
 const QX11Info &QPixmap::x11Info() const
 {
-    if (data->classId() == QPixmapData::X11Class)
+    if (data && data->classId() == QPixmapData::X11Class)
         return static_cast<QX11PixmapData*>(data.data())->xinfo;
     else {
         static QX11Info nullX11Info;
@@ -2135,7 +2143,7 @@ QPaintEngine* QX11PixmapData::paintEngine() const
 Qt::HANDLE QPixmap::x11PictureHandle() const
 {
 #ifndef QT_NO_XRENDER
-    if (data->classId() == QPixmapData::X11Class)
+    if (data && data->classId() == QPixmapData::X11Class)
         return static_cast<const QX11PixmapData*>(data.data())->picture;
     else
         return 0;

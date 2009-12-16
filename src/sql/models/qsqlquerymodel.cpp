@@ -314,6 +314,7 @@ void QSqlQueryModel::setQuery(const QSqlQuery &query)
     QSqlRecord newRec = query.record();
     bool columnsChanged = (newRec != d->rec);
     bool hasQuerySize = query.driver()->hasFeature(QSqlDriver::QuerySize);
+    bool hasNewData = (newRec != QSqlRecord()) || !query.lastError().isValid();
 
     if (d->colOffsets.size() != newRec.count() || columnsChanged)
         d->initColOffsets(newRec.count());
@@ -328,13 +329,13 @@ void QSqlQueryModel::setQuery(const QSqlQuery &query)
     d->error = QSqlError();
     d->query = query;
     d->rec = newRec;
-   
+
     if (mustClearModel)
         endRemoveRows();
-    
-    d->atEnd = false;    
 
-    if (columnsChanged)
+    d->atEnd = false;
+
+    if (columnsChanged && hasNewData)
         reset();
 
     if (!query.isActive() || query.isForwardOnly()) {
@@ -417,7 +418,7 @@ bool QSqlQueryModel::setHeaderData(int section, Qt::Orientation orientation,
                                    const QVariant &value, int role)
 {
     Q_D(QSqlQueryModel);
-    if (orientation != Qt::Horizontal || section < 0)
+    if (orientation != Qt::Horizontal || section < 0 || columnCount() <= section)
         return false;
 
     if (d->headers.size() <= section)

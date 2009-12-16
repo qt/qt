@@ -1419,7 +1419,7 @@ int QHeaderView::minimumSectionSize() const
         int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
         if (d->orientation == Qt::Horizontal)
             return qMax(strut.width(), (fontMetrics().maxWidth() + margin));
-        return qMax(strut.height(), (fontMetrics().lineSpacing() + margin));
+        return qMax(strut.height(), (fontMetrics().height() + margin));
     }
     return d->minimumSectionSize;
 }
@@ -1913,7 +1913,6 @@ void QHeaderView::initializeSections(int start, int end)
     Q_ASSERT(start >= 0);
     Q_ASSERT(end >= 0);
 
-    d->executePostedLayout();
     d->invalidateCachedSizeHint();
 
     if (end + 1 < d->sectionCount) {
@@ -1939,11 +1938,25 @@ void QHeaderView::initializeSections(int start, int end)
     d->sectionCount = end + 1;
 
     if (!d->logicalIndices.isEmpty()) {
-        d->logicalIndices.resize(d->sectionCount);
-        d->visualIndices.resize(d->sectionCount);
-        for (int i = start; i < d->sectionCount; ++i){
-            d->logicalIndices[i] = i;
-            d->visualIndices[i] = i;
+        if (oldCount <= d->sectionCount) {
+            d->logicalIndices.resize(d->sectionCount);
+            d->visualIndices.resize(d->sectionCount);
+            for (int i = oldCount; i < d->sectionCount; ++i) {
+                d->logicalIndices[i] = i;
+                d->visualIndices[i] = i;
+            }
+        } else {
+            int j = 0;
+            for (int i = 0; i < oldCount; ++i) {
+                int v = d->logicalIndices.at(i);
+                if (v < d->sectionCount) {
+                    d->logicalIndices[j] = v;
+                    d->visualIndices[v] = j;
+                    j++;
+                }
+            }
+            d->logicalIndices.resize(d->sectionCount);
+            d->visualIndices.resize(d->sectionCount);
         }
     }
 
@@ -2396,7 +2409,12 @@ bool QHeaderView::viewportEvent(QEvent *e)
         d->state = QHeaderViewPrivate::NoState;
         d->pressed = d->section = d->target = -1;
         d->updateSectionIndicator(d->section, -1);
-    }
+        break; }
+    case QEvent::Wheel: {
+        QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea *>(parentWidget());
+        if (asa)
+            return QApplication::sendEvent(asa->viewport(), e);
+        break; }
     default:
         break;
     }
@@ -2515,6 +2533,8 @@ QSize QHeaderView::sectionSizeFromContents(int logicalIndex) const
 {
     Q_D(const QHeaderView);
     Q_ASSERT(logicalIndex >= 0);
+
+    ensurePolished();
 
     // use SizeHintRole
     QVariant variant = d->model->headerData(logicalIndex, d->orientation, Qt::SizeHintRole);

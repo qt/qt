@@ -161,6 +161,11 @@ class Config
 #define CONFIG_VERSIONSYM               "versionsym"
 
 #define CONFIG_FILEEXTENSIONS           "fileextensions"
+#define CONFIG_IMAGEEXTENSIONS          "imageextensions"
+
+#ifdef QDOC_QML
+#define CONFIG_QMLONLY                  "qmlonly"
+#endif
 
 QT_END_NAMESPACE
 

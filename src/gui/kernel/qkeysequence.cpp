@@ -282,8 +282,8 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \i SelectPreviousPage   \i Shift+PgUp                       \i Shift+PgUp             \i Shift+PgUp     \i Shift+PgUp                            \i Shift+PgUp
     \row    \i SelectStartOfLine    \i Shift+Home                       \i Ctrl+Shift+Left        \i Shift+Home     \i Shift+Home                            \i Shift+Home
     \row    \i SelectEndOfLine      \i Shift+End                        \i Ctrl+Shift+Right       \i Shift+End      \i Shift+End                             \i Shift+End
-    \row    \i SelectStartOfBlock   \i (none)                           \i Alt+Shift+Up           \i (none)         \i (none)                                \i (none)
-    \row    \i SelectEndOfBlock     \i (none)                           \i Alt+Shift+Down         \i (none)         \i (none)                                \i (none)
+    \row    \i SelectStartOfBlock   \i (none)                           \i Alt+Shift+Up, Meta+Shift+A \i (none)     \i (none)                                \i (none)
+    \row    \i SelectEndOfBlock     \i (none)                           \i Alt+Shift+Down, Meta+Shift+E \i (none)   \i (none)                                \i (none)
     \row    \i SelectStartOfDocument\i Ctrl+Shift+Home                  \i Ctrl+Shift+Up, Shift+Home          \i Ctrl+Shift+Home\i Ctrl+Shift+Home           \i Ctrl+Shift+Home
     \row    \i SelectEndOfDocument  \i Ctrl+Shift+End                   \i Ctrl+Shift+Down, Shift+End        \i Ctrl+Shift+End \i Ctrl+Shift+End             \i Ctrl+Shift+End
     \row    \i DeleteStartOfWord    \i Ctrl+Backspace                   \i Alt+Backspace          \i Ctrl+Backspace \i Ctrl+Backspace                        \i (none)
@@ -416,47 +416,139 @@ static const struct {
     { Qt::Key_Menu,         QT_TRANSLATE_NOOP("QShortcut", "Menu") },
     { Qt::Key_Help,         QT_TRANSLATE_NOOP("QShortcut", "Help") },
 
-    // Multimedia keys
-    { Qt::Key_Back,         QT_TRANSLATE_NOOP("QShortcut", "Back") },
-    { Qt::Key_Forward,      QT_TRANSLATE_NOOP("QShortcut", "Forward") },
-    { Qt::Key_Stop,         QT_TRANSLATE_NOOP("QShortcut", "Stop") },
-    { Qt::Key_Refresh,      QT_TRANSLATE_NOOP("QShortcut", "Refresh") },
-    { Qt::Key_VolumeDown,   QT_TRANSLATE_NOOP("QShortcut", "Volume Down") },
-    { Qt::Key_VolumeMute,   QT_TRANSLATE_NOOP("QShortcut", "Volume Mute") },
-    { Qt::Key_VolumeUp,     QT_TRANSLATE_NOOP("QShortcut", "Volume Up") },
-    { Qt::Key_BassBoost,    QT_TRANSLATE_NOOP("QShortcut", "Bass Boost") },
-    { Qt::Key_BassUp,       QT_TRANSLATE_NOOP("QShortcut", "Bass Up") },
-    { Qt::Key_BassDown,     QT_TRANSLATE_NOOP("QShortcut", "Bass Down") },
-    { Qt::Key_TrebleUp,     QT_TRANSLATE_NOOP("QShortcut", "Treble Up") },
-    { Qt::Key_TrebleDown,   QT_TRANSLATE_NOOP("QShortcut", "Treble Down") },
-    { Qt::Key_MediaPlay,    QT_TRANSLATE_NOOP("QShortcut", "Media Play") },
-    { Qt::Key_MediaStop,    QT_TRANSLATE_NOOP("QShortcut", "Media Stop") },
-    { Qt::Key_MediaPrevious,QT_TRANSLATE_NOOP("QShortcut", "Media Previous") },
-    { Qt::Key_MediaNext,    QT_TRANSLATE_NOOP("QShortcut", "Media Next") },
-    { Qt::Key_MediaRecord,  QT_TRANSLATE_NOOP("QShortcut", "Media Record") },
-    { Qt::Key_HomePage,     QT_TRANSLATE_NOOP("QShortcut", "Home Page") },
-    { Qt::Key_Favorites,    QT_TRANSLATE_NOOP("QShortcut", "Favorites") },
-    { Qt::Key_Search,       QT_TRANSLATE_NOOP("QShortcut", "Search") },
-    { Qt::Key_Standby,      QT_TRANSLATE_NOOP("QShortcut", "Standby") },
-    { Qt::Key_OpenUrl,      QT_TRANSLATE_NOOP("QShortcut", "Open URL") },
-    { Qt::Key_LaunchMail,   QT_TRANSLATE_NOOP("QShortcut", "Launch Mail") },
-    { Qt::Key_LaunchMedia,  QT_TRANSLATE_NOOP("QShortcut", "Launch Media") },
-    { Qt::Key_Launch0,      QT_TRANSLATE_NOOP("QShortcut", "Launch (0)") },
-    { Qt::Key_Launch1,      QT_TRANSLATE_NOOP("QShortcut", "Launch (1)") },
-    { Qt::Key_Launch2,      QT_TRANSLATE_NOOP("QShortcut", "Launch (2)") },
-    { Qt::Key_Launch3,      QT_TRANSLATE_NOOP("QShortcut", "Launch (3)") },
-    { Qt::Key_Launch4,      QT_TRANSLATE_NOOP("QShortcut", "Launch (4)") },
-    { Qt::Key_Launch5,      QT_TRANSLATE_NOOP("QShortcut", "Launch (5)") },
-    { Qt::Key_Launch6,      QT_TRANSLATE_NOOP("QShortcut", "Launch (6)") },
-    { Qt::Key_Launch7,      QT_TRANSLATE_NOOP("QShortcut", "Launch (7)") },
-    { Qt::Key_Launch8,      QT_TRANSLATE_NOOP("QShortcut", "Launch (8)") },
-    { Qt::Key_Launch9,      QT_TRANSLATE_NOOP("QShortcut", "Launch (9)") },
-    { Qt::Key_LaunchA,      QT_TRANSLATE_NOOP("QShortcut", "Launch (A)") },
-    { Qt::Key_LaunchB,      QT_TRANSLATE_NOOP("QShortcut", "Launch (B)") },
-    { Qt::Key_LaunchC,      QT_TRANSLATE_NOOP("QShortcut", "Launch (C)") },
-    { Qt::Key_LaunchD,      QT_TRANSLATE_NOOP("QShortcut", "Launch (D)") },
-    { Qt::Key_LaunchE,      QT_TRANSLATE_NOOP("QShortcut", "Launch (E)") },
-    { Qt::Key_LaunchF,      QT_TRANSLATE_NOOP("QShortcut", "Launch (F)") },
+    // Special keys
+    // Includes multimedia, launcher, lan keys ( bluetooth, wireless )
+    // window navigation
+    { Qt::Key_Back,                       QT_TRANSLATE_NOOP("QShortcut", "Back") },
+    { Qt::Key_Forward,                    QT_TRANSLATE_NOOP("QShortcut", "Forward") },
+    { Qt::Key_Stop,                       QT_TRANSLATE_NOOP("QShortcut", "Stop") },
+    { Qt::Key_Refresh,                    QT_TRANSLATE_NOOP("QShortcut", "Refresh") },
+    { Qt::Key_VolumeDown,                 QT_TRANSLATE_NOOP("QShortcut", "Volume Down") },
+    { Qt::Key_VolumeMute,                 QT_TRANSLATE_NOOP("QShortcut", "Volume Mute") },
+    { Qt::Key_VolumeUp,                   QT_TRANSLATE_NOOP("QShortcut", "Volume Up") },
+    { Qt::Key_BassBoost,                  QT_TRANSLATE_NOOP("QShortcut", "Bass Boost") },
+    { Qt::Key_BassUp,                     QT_TRANSLATE_NOOP("QShortcut", "Bass Up") },
+    { Qt::Key_BassDown,                   QT_TRANSLATE_NOOP("QShortcut", "Bass Down") },
+    { Qt::Key_TrebleUp,                   QT_TRANSLATE_NOOP("QShortcut", "Treble Up") },
+    { Qt::Key_TrebleDown,                 QT_TRANSLATE_NOOP("QShortcut", "Treble Down") },
+    { Qt::Key_MediaPlay,                  QT_TRANSLATE_NOOP("QShortcut", "Media Play") },
+    { Qt::Key_MediaStop,                  QT_TRANSLATE_NOOP("QShortcut", "Media Stop") },
+    { Qt::Key_MediaPrevious,              QT_TRANSLATE_NOOP("QShortcut", "Media Previous") },
+    { Qt::Key_MediaNext,                  QT_TRANSLATE_NOOP("QShortcut", "Media Next") },
+    { Qt::Key_MediaRecord,                QT_TRANSLATE_NOOP("QShortcut", "Media Record") },
+    { Qt::Key_HomePage,                   QT_TRANSLATE_NOOP("QShortcut", "Home Page") },
+    { Qt::Key_Favorites,                  QT_TRANSLATE_NOOP("QShortcut", "Favorites") },
+    { Qt::Key_Search,                     QT_TRANSLATE_NOOP("QShortcut", "Search") },
+    { Qt::Key_Standby,                    QT_TRANSLATE_NOOP("QShortcut", "Standby") },
+    { Qt::Key_OpenUrl,                    QT_TRANSLATE_NOOP("QShortcut", "Open URL") },
+    { Qt::Key_LaunchMail,                 QT_TRANSLATE_NOOP("QShortcut", "Launch Mail") },
+    { Qt::Key_LaunchMedia,                QT_TRANSLATE_NOOP("QShortcut", "Launch Media") },
+    { Qt::Key_Launch0,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (0)") },
+    { Qt::Key_Launch1,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (1)") },
+    { Qt::Key_Launch2,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (2)") },
+    { Qt::Key_Launch3,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (3)") },
+    { Qt::Key_Launch4,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (4)") },
+    { Qt::Key_Launch5,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (5)") },
+    { Qt::Key_Launch6,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (6)") },
+    { Qt::Key_Launch7,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (7)") },
+    { Qt::Key_Launch8,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (8)") },
+    { Qt::Key_Launch9,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (9)") },
+    { Qt::Key_LaunchA,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (A)") },
+    { Qt::Key_LaunchB,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (B)") },
+    { Qt::Key_LaunchC,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (C)") },
+    { Qt::Key_LaunchD,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (D)") },
+    { Qt::Key_LaunchE,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (E)") },
+    { Qt::Key_LaunchF,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (F)") },
+    { Qt::Key_MonBrightnessUp,            QT_TRANSLATE_NOOP("QShortcut", "Monitor Brightness Up") },
+    { Qt::Key_MonBrightnessDown,          QT_TRANSLATE_NOOP("QShortcut", "Monitor Brightness Down") },
+    { Qt::Key_KeyboardLightOnOff,         QT_TRANSLATE_NOOP("QShortcut", "Keyboard Light On/Off") },
+    { Qt::Key_KeyboardBrightnessUp,       QT_TRANSLATE_NOOP("QShortcut", "Keyboard Brightness Up") },
+    { Qt::Key_KeyboardBrightnessDown,     QT_TRANSLATE_NOOP("QShortcut", "Keyboard Brightness Down") },
+    { Qt::Key_PowerOff,                   QT_TRANSLATE_NOOP("QShortcut", "Power Off") },
+    { Qt::Key_WakeUp,                     QT_TRANSLATE_NOOP("QShortcut", "Wake Up") },
+    { Qt::Key_Eject,                      QT_TRANSLATE_NOOP("QShortcut", "Eject") },
+    { Qt::Key_ScreenSaver,                QT_TRANSLATE_NOOP("QShortcut", "Screensaver") },
+    { Qt::Key_WWW,                        QT_TRANSLATE_NOOP("QShortcut", "WWW") },
+    { Qt::Key_Sleep,                      QT_TRANSLATE_NOOP("QShortcut", "Sleep") },
+    { Qt::Key_LightBulb,                  QT_TRANSLATE_NOOP("QShortcut", "LightBulb") },
+    { Qt::Key_Shop,                       QT_TRANSLATE_NOOP("QShortcut", "Shop") },
+    { Qt::Key_History,                    QT_TRANSLATE_NOOP("QShortcut", "History") },
+    { Qt::Key_AddFavorite,                QT_TRANSLATE_NOOP("QShortcut", "Add Favorite") },
+    { Qt::Key_HotLinks,                   QT_TRANSLATE_NOOP("QShortcut", "Hot Links") },
+    { Qt::Key_BrightnessAdjust,           QT_TRANSLATE_NOOP("QShortcut", "Adjust Brightness") },
+    { Qt::Key_Finance,                    QT_TRANSLATE_NOOP("QShortcut", "Finance") },
+    { Qt::Key_Community,                  QT_TRANSLATE_NOOP("QShortcut", "Community") },
+    { Qt::Key_AudioRewind,                QT_TRANSLATE_NOOP("QShortcut", "Audio Rewind") },
+    { Qt::Key_BackForward,                QT_TRANSLATE_NOOP("QShortcut", "Back Forward") },
+    { Qt::Key_ApplicationLeft,            QT_TRANSLATE_NOOP("QShortcut", "Application Left") },
+    { Qt::Key_ApplicationRight,           QT_TRANSLATE_NOOP("QShortcut", "Application Right") },
+    { Qt::Key_Book,                       QT_TRANSLATE_NOOP("QShortcut", "Book") },
+    { Qt::Key_CD,                         QT_TRANSLATE_NOOP("QShortcut", "CD") },
+    { Qt::Key_Calculator,                 QT_TRANSLATE_NOOP("QShortcut", "Calculator") },
+    { Qt::Key_Clear,                      QT_TRANSLATE_NOOP("QShortcut", "Clear") },
+    { Qt::Key_ClearGrab,                  QT_TRANSLATE_NOOP("QShortcut", "Clear Grab") },
+    { Qt::Key_Close,                      QT_TRANSLATE_NOOP("QShortcut", "Close") },
+    { Qt::Key_Copy,                       QT_TRANSLATE_NOOP("QShortcut", "Copy") },
+    { Qt::Key_Cut,                        QT_TRANSLATE_NOOP("QShortcut", "Cut") },
+    { Qt::Key_Display,                    QT_TRANSLATE_NOOP("QShortcut", "Display") },
+    { Qt::Key_DOS,                        QT_TRANSLATE_NOOP("QShortcut", "DOS") },
+    { Qt::Key_Documents,                  QT_TRANSLATE_NOOP("QShortcut", "Documents") },
+    { Qt::Key_Excel,                      QT_TRANSLATE_NOOP("QShortcut", "Spreadsheet") },
+    { Qt::Key_Explorer,                   QT_TRANSLATE_NOOP("QShortcut", "Browser") },
+    { Qt::Key_Game,                       QT_TRANSLATE_NOOP("QShortcut", "Game") },
+    { Qt::Key_Go,                         QT_TRANSLATE_NOOP("QShortcut", "Go") },
+    { Qt::Key_iTouch,                     QT_TRANSLATE_NOOP("QShortcut", "iTouch") },
+    { Qt::Key_LogOff,                     QT_TRANSLATE_NOOP("QShortcut", "Logoff") },
+    { Qt::Key_Market,                     QT_TRANSLATE_NOOP("QShortcut", "Market") },
+    { Qt::Key_Meeting,                    QT_TRANSLATE_NOOP("QShortcut", "Meeting") },
+    { Qt::Key_MenuKB,                     QT_TRANSLATE_NOOP("QShortcut", "Keyboard Menu") },
+    { Qt::Key_MenuPB,                     QT_TRANSLATE_NOOP("QShortcut", "Menu PB") },
+    { Qt::Key_MySites,                    QT_TRANSLATE_NOOP("QShortcut", "My Sites") },
+    { Qt::Key_News,                       QT_TRANSLATE_NOOP("QShortcut", "News") },
+    { Qt::Key_OfficeHome,                 QT_TRANSLATE_NOOP("QShortcut", "Home Office") },
+    { Qt::Key_Option,                     QT_TRANSLATE_NOOP("QShortcut", "Option") },
+    { Qt::Key_Paste,                      QT_TRANSLATE_NOOP("QShortcut", "Paste") },
+    { Qt::Key_Phone,                      QT_TRANSLATE_NOOP("QShortcut", "Phone") },
+    { Qt::Key_Reply,                      QT_TRANSLATE_NOOP("QShortcut", "Reply") },
+    { Qt::Key_Reload,                     QT_TRANSLATE_NOOP("QShortcut", "Reload") },
+    { Qt::Key_RotateWindows,              QT_TRANSLATE_NOOP("QShortcut", "Rotate Windows") },
+    { Qt::Key_RotationPB,                 QT_TRANSLATE_NOOP("QShortcut", "Rotation PB") },
+    { Qt::Key_RotationKB,                 QT_TRANSLATE_NOOP("QShortcut", "Rotation KB") },
+    { Qt::Key_Save,                       QT_TRANSLATE_NOOP("QShortcut", "Save") },
+    { Qt::Key_Send,                       QT_TRANSLATE_NOOP("QShortcut", "Send") },
+    { Qt::Key_Spell,                      QT_TRANSLATE_NOOP("QShortcut", "Spellchecker") },
+    { Qt::Key_SplitScreen,                QT_TRANSLATE_NOOP("QShortcut", "Split Screen") },
+    { Qt::Key_Support,                    QT_TRANSLATE_NOOP("QShortcut", "Support") },
+    { Qt::Key_TaskPane,                   QT_TRANSLATE_NOOP("QShortcut", "Task Panel") },
+    { Qt::Key_Terminal,                   QT_TRANSLATE_NOOP("QShortcut", "Terminal") },
+    { Qt::Key_Tools,                      QT_TRANSLATE_NOOP("QShortcut", "Tools") },
+    { Qt::Key_Travel,                     QT_TRANSLATE_NOOP("QShortcut", "Travel") },
+    { Qt::Key_Video,                      QT_TRANSLATE_NOOP("QShortcut", "Video") },
+    { Qt::Key_Word,                       QT_TRANSLATE_NOOP("QShortcut", "Word Processor") },
+    { Qt::Key_Xfer,                       QT_TRANSLATE_NOOP("QShortcut", "XFer") },
+    { Qt::Key_ZoomIn,                     QT_TRANSLATE_NOOP("QShortcut", "Zoom In") },
+    { Qt::Key_ZoomOut,                    QT_TRANSLATE_NOOP("QShortcut", "Zoom Out") },
+    { Qt::Key_Away,                       QT_TRANSLATE_NOOP("QShortcut", "Away") },
+    { Qt::Key_Messenger,                  QT_TRANSLATE_NOOP("QShortcut", "Messenger") },
+    { Qt::Key_WebCam,                     QT_TRANSLATE_NOOP("QShortcut", "WebCam") },
+    { Qt::Key_MailForward,                QT_TRANSLATE_NOOP("QShortcut", "Mail Forward") },
+    { Qt::Key_Pictures,                   QT_TRANSLATE_NOOP("QShortcut", "Pictures") },
+    { Qt::Key_Music,                      QT_TRANSLATE_NOOP("QShortcut", "Music") },
+    { Qt::Key_Battery,                    QT_TRANSLATE_NOOP("QShortcut", "Battery") },
+    { Qt::Key_Bluetooth,                  QT_TRANSLATE_NOOP("QShortcut", "Bluetooth") },
+    { Qt::Key_WLAN,                       QT_TRANSLATE_NOOP("QShortcut", "Wireless") },
+    { Qt::Key_UWB,                        QT_TRANSLATE_NOOP("QShortcut", "Ultra Wide Band") },
+    { Qt::Key_AudioForward,               QT_TRANSLATE_NOOP("QShortcut", "Audio Forward") },
+    { Qt::Key_AudioRepeat,                QT_TRANSLATE_NOOP("QShortcut", "Audio Repeat") },
+    { Qt::Key_AudioRandomPlay,            QT_TRANSLATE_NOOP("QShortcut", "Audio Random Play") },
+    { Qt::Key_Subtitle,                   QT_TRANSLATE_NOOP("QShortcut", "Subtitle") },
+    { Qt::Key_AudioCycleTrack,            QT_TRANSLATE_NOOP("QShortcut", "Audio Cycle Track") },
+    { Qt::Key_Time,                       QT_TRANSLATE_NOOP("QShortcut", "Time") },
+    { Qt::Key_Select,                     QT_TRANSLATE_NOOP("QShortcut", "Select") },
+    { Qt::Key_View,                       QT_TRANSLATE_NOOP("QShortcut", "View") },
+    { Qt::Key_TopMenu,                    QT_TRANSLATE_NOOP("QShortcut", "Top Menu") },
+    { Qt::Key_Suspend,                    QT_TRANSLATE_NOOP("QShortcut", "Suspend") },
+    { Qt::Key_Hibernate,                  QT_TRANSLATE_NOOP("QShortcut", "Hibernate") },
 
     // --------------------------------------------------------------
     // More consistent namings
@@ -640,6 +732,8 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_Down,                QApplicationPrivate::KB_Mac},
     {QKeySequence::MoveToPreviousPage,      0,          Qt::META | Qt::Key_PageUp,              QApplicationPrivate::KB_Mac},
     {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_PageDown,            QApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectStartOfBlock,      0,          Qt::META | Qt::SHIFT | Qt::Key_A,       QApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectEndOfBlock,        0,          Qt::META | Qt::SHIFT | Qt::Key_E,       QApplicationPrivate::KB_Mac},
     {QKeySequence::SelectStartOfLine,       0,          Qt::META | Qt::SHIFT | Qt::Key_Left,    QApplicationPrivate::KB_Mac},
     {QKeySequence::SelectEndOfLine,         0,          Qt::META | Qt::SHIFT | Qt::Key_Right,   QApplicationPrivate::KB_Mac}    
 };
@@ -922,9 +1016,12 @@ bool QKeySequence::isEmpty() const
 */
 QKeySequence QKeySequence::mnemonic(const QString &text)
 {
-    if(qt_sequence_no_mnemonics)
-	return QKeySequence();
+    QKeySequence ret;
 
+    if(qt_sequence_no_mnemonics)
+        return ret;
+
+    bool found = false;
     int p = 0;
     while (p >= 0) {
         p = text.indexOf(QLatin1Char('&'), p) + 1;
@@ -933,13 +1030,22 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
         if (text.at(p) != QLatin1Char('&')) {
             QChar c = text.at(p);
             if (c.isPrint()) {
-                c = c.toUpper();
-                return QKeySequence(c.unicode() + Qt::ALT);
+                if (!found) {
+                    c = c.toUpper();
+                    ret = QKeySequence(c.unicode() + Qt::ALT);
+#ifdef QT_NO_DEBUG
+                    return ret;
+#else
+                    found = true;
+                } else {
+                    qWarning("QKeySequence::mnemonic: \"%s\" contains multiple occurences of '&'", qPrintable(text));
+#endif
+                }
             }
         }
         p++;
     }
-    return QKeySequence();
+    return ret;
 }
 
 /*!

@@ -67,6 +67,7 @@
 #include "SVGFELightElement.cpp"
 #include "SVGFEMergeElement.cpp"
 #include "SVGFEMergeNodeElement.cpp"
+#include "SVGFEMorphologyElement.cpp"
 #include "SVGFEOffsetElement.cpp"
 #include "SVGFEPointLightElement.cpp"
 #include "SVGFESpecularLightingElement.cpp"
@@ -149,3 +150,4 @@
 #include "SVGViewSpec.cpp"
 #include "SVGZoomAndPan.cpp"
 #include "SVGZoomEvent.cpp"
+#include "SynchronizablePropertyController.cpp"

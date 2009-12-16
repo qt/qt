@@ -194,7 +194,7 @@ QSize QFontFamilyDelegate::sizeHint(const QStyleOptionViewItem &option,
 //     font.setFamily(text);
     font.setPointSize(QFontInfo(font).pointSize() * 3/2);
     QFontMetrics fontMetrics(font);
-    return QSize(fontMetrics.width(text), fontMetrics.lineSpacing());
+    return QSize(fontMetrics.width(text), fontMetrics.height());
 }
 
 
@@ -247,7 +247,14 @@ void QFontComboBoxPrivate::_q_updateModel()
     }
     list = result;
 
+    //we need to block the signals so that the model doesn't emit reset
+    //this prevents the current index from changing
+    //it will be updated just after this
+    ///TODO: we should finda way to avoid blocking signals and have a real update of the model
+    const bool old = m->blockSignals(true);
     m->setStringList(list);
+    m->blockSignals(old);
+
     if (list.isEmpty()) {
         if (currentFont != QFont()) {
             currentFont = QFont();
@@ -262,9 +269,8 @@ void QFontComboBoxPrivate::_q_updateModel()
 void QFontComboBoxPrivate::_q_currentChanged(const QString &text)
 {
     Q_Q(QFontComboBox);
-    QFont newFont(text);
-    if (currentFont.family() != newFont.family()) {
-        currentFont = newFont;
+    if (currentFont.family() != text) {
+        currentFont.setFamily(text);
         emit q->currentFontChanged(currentFont);
     }
 }
@@ -420,8 +426,10 @@ void QFontComboBox::setCurrentFont(const QFont &font)
     Q_D(QFontComboBox);
     if (font != d->currentFont) {
         d->currentFont = font;
-        emit currentFontChanged(d->currentFont);
         d->_q_updateModel();
+        if (d->currentFont == font) { //else the signal has already be emitted by _q_updateModel
+            emit currentFontChanged(d->currentFont);
+        }
     }
 }
 

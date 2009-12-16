@@ -67,7 +67,6 @@ public:
         LocalStorageDatabaseEnabled = LocalStorageEnabled,
 #endif
         LocalContentCanAccessRemoteUrls,
-        SessionStorageEnabled,
         DnsPrefetchEnabled
     };
     enum WebGraphic {
@@ -108,7 +107,7 @@ public:
     static void clearIconDatabase();
     static QIcon iconForUrl(const QUrl &url);
 
-    static QWebPluginDatabase *pluginDatabase();
+    //static QWebPluginDatabase *pluginDatabase();
 
     static void setWebGraphic(WebGraphic type, const QPixmap &graphic);
     static QPixmap webGraphic(WebGraphic type);

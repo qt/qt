@@ -269,6 +269,7 @@ MainWindow::MainWindow()
       m_editActiveModel(-1),
       m_statistics(0)
 {
+    setUnifiedTitleAndToolBarOnMac(true);
     m_ui.setupUi(this);
 
 #ifndef Q_WS_MAC
@@ -304,8 +305,6 @@ MainWindow::MainWindow()
     m_contextView->setModel(m_sortedContextsModel);
     m_contextView->header()->setMovable(false);
     m_contextView->setColumnHidden(0, true);
-    m_contextView->header()->setResizeMode(1, QHeaderView::Stretch);
-    m_contextView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
     m_contextView->header()->setStretchLastSection(false);
 
     m_contextDock->setWidget(m_contextView);
@@ -334,8 +333,6 @@ MainWindow::MainWindow()
     m_messageView->setModel(m_sortedMessagesModel);
     m_messageView->header()->setMovable(false);
     m_messageView->setColumnHidden(0, true);
-    m_messageView->setColumnHidden(2, true);
-    // last visible column auto-stretches
 
     m_messagesDock->setWidget(m_messageView);
 
@@ -442,6 +439,7 @@ MainWindow::MainWindow()
     statusBar()->addPermanentWidget(m_modifiedLabel);
 
     modelCountChanged();
+    initViewHeaders();
     resetSorting();
 
     connect(m_dataModel, SIGNAL(modifiedChanged(bool)),
@@ -472,7 +470,7 @@ MainWindow::MainWindow()
             this, SLOT(updateTranslatorComment(QString)));
     connect(m_findDialog, SIGNAL(findNext(QString,DataModel::FindLocation,bool,bool)),
             this, SLOT(findNext(QString,DataModel::FindLocation,bool,bool)));
-    connect(m_translateDialog, SIGNAL(requestMatchUpdate(bool &)), SLOT(updateTranslateHit(bool &)));
+    connect(m_translateDialog, SIGNAL(requestMatchUpdate(bool&)), SLOT(updateTranslateHit(bool&)));
     connect(m_translateDialog, SIGNAL(activated(int)), SLOT(translate(int)));
 
     QSize as(qApp->desktop()->size());
@@ -506,6 +504,14 @@ MainWindow::~MainWindow()
     delete m_dataModel;
     delete m_statistics;
     delete m_printer;
+}
+
+void MainWindow::initViewHeaders()
+{
+    m_contextView->header()->setResizeMode(1, QHeaderView::Stretch);
+    m_contextView->header()->setResizeMode(2, QHeaderView::ResizeToContents);
+    m_messageView->setColumnHidden(2, true);
+    // last visible column auto-stretches
 }
 
 void MainWindow::modelCountChanged()
@@ -739,6 +745,7 @@ bool MainWindow::closeAll()
         m_messageView->setUpdatesEnabled(false);
         m_dataModel->closeAll();
         modelCountChanged();
+        initViewHeaders();
         recentFiles().closeGroup();
         return true;
     }
@@ -2347,6 +2354,17 @@ void MainWindow::updatePhraseDicts()
     m_phraseView->update();
 }
 
+static bool haveMnemonic(const QString &str)
+{
+    QString mnemonic = QKeySequence::mnemonic(str);
+    if (mnemonic == QLatin1String("Alt+Space")) {
+        // "Nobody" ever really uses these, and they are highly annoying
+        // because we get a lot of false positives.
+        return false;
+    }
+    return !mnemonic.isEmpty();
+}
+
 void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)
 {
     MultiDataIndex curIdx = index;
@@ -2378,10 +2396,10 @@ void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)
             }
 
             if (m_ui.actionAccelerators->isChecked()) {
-                bool sk = !QKeySequence::mnemonic(source).isEmpty();
+                bool sk = haveMnemonic(source);
                 bool tk = true;
                 for (int i = 0; i < translations.count() && tk; ++i) {
-                    tk &= !QKeySequence::mnemonic(translations[i]).isEmpty();
+                    tk &= haveMnemonic(translations[i]);
                 }
 
                 if (!sk && tk) {

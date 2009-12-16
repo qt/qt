@@ -357,10 +357,8 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
     Q_D(QPlainTextDocumentLayout);
     QTextDocument *doc = document();
     qreal margin = doc->documentMargin();
-    QFontMetrics fm(doc->defaultFont());
     qreal blockMaximumWidth = 0;
 
-    int leading = qMax(0, fm.leading());
     qreal height = 0;
     QTextLayout *tl = block.layout();
     QTextOption option = doc->defaultTextOption();
@@ -381,9 +379,8 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
         QTextLine line = tl->createLine();
         if (!line.isValid())
             break;
+        line.setLeadingIncluded(true);
         line.setLineWidth(availableWidth);
-
-        height += leading;
         line.setPosition(QPointF(margin, height));
         height += line.height();
         blockMaximumWidth = qMax(blockMaximumWidth, line.naturalTextWidth() + 2*margin);
@@ -733,9 +730,6 @@ QPlainTextEditPrivate::QPlainTextEditPrivate()
     backgroundVisible = false;
     centerOnScroll = false;
     inDrag = false;
-#ifdef Q_WS_WIN
-    singleFingerPanEnabled = true;
-#endif
 }
 
 
@@ -767,6 +761,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(_q_cursorPositionChanged()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
 
+    QObject::connect(control, SIGNAL(textChanged(const QString &)), q, SLOT(updateMicroFocus()));
 
     // set a null page size initially to avoid any relayouting until the textedit
     // is shown. relayoutDocument() will take care of setting the page size to the
@@ -792,6 +787,9 @@ void QPlainTextEditPrivate::init(const QString &txt)
     viewport->setCursor(Qt::IBeamCursor);
 #endif
     originalOffsetY = 0;
+#ifdef Q_WS_WIN
+    setSingleFingerPanEnabled(true);
+#endif
 }
 
 void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
@@ -1453,6 +1451,29 @@ bool QPlainTextEdit::event(QEvent *e)
             d->sendControlEvent(e);
     }
 #endif
+    else if (e->type() == QEvent::Gesture) {
+        QGestureEvent *ge = static_cast<QGestureEvent *>(e);
+        QPanGesture *g = static_cast<QPanGesture *>(ge->gesture(Qt::PanGesture));
+        if (g) {
+            QScrollBar *hBar = horizontalScrollBar();
+            QScrollBar *vBar = verticalScrollBar();
+            if (g->state() == Qt::GestureStarted)
+                d->originalOffsetY = vBar->value();
+            QPointF offset = g->offset();
+            if (!offset.isNull()) {
+                if (QApplication::isRightToLeft())
+                    offset.rx() *= -1;
+                // QPlainTextEdit scrolls by lines only in vertical direction
+                QFontMetrics fm(document()->defaultFont());
+                int lineHeight = fm.height();
+                int newX = hBar->value() - g->delta().x();
+                int newY = d->originalOffsetY - offset.y()/lineHeight;
+                hBar->setValue(newX);
+                vBar->setValue(newY);
+            }
+        }
+        return true;
+    }
     return QAbstractScrollArea::event(e);
 }
 
@@ -1602,7 +1623,6 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
             return;
         }
     }
-#endif // QT_NO_SHORTCUT
 
     if (!(tif & Qt::TextEditable)) {
         switch (e->key()) {
@@ -1630,6 +1650,7 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
         }
         return;
     }
+#endif // QT_NO_SHORTCUT
 
     d->sendControlEvent(e);
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1781,6 +1802,9 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
 
     QTextBlock block = firstVisibleBlock();
     qreal maximumWidth = document()->documentLayout()->documentSize().width();
+
+    // Set a brush origin so that the WaveUnderline knows where the wave started
+    painter.setBrushOrigin(offset);
 
     // keep right margin clean from full-width selection
     int maxX = offset.x() + qMax((qreal)viewportRect.width(), maximumWidth)
@@ -1946,7 +1970,8 @@ void QPlainTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->ensureCursorVisible();
     }
 
-    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    if (!isReadOnly() && rect().contains(e->pos()))
+        d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
 
@@ -2931,30 +2956,6 @@ QAbstractTextDocumentLayout::PaintContext QPlainTextEdit::getPaintContext() cons
     This signal is emitted whenever redo operations become available
     (\a available is true) or unavailable (\a available is false).
 */
-
-//void QPlainTextEditPrivate::_q_gestureTriggered()
-//{
-//    Q_Q(QPlainTextEdit);
-//    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
-//    if (!g)
-//        return;
-//    QScrollBar *hBar = q->horizontalScrollBar();
-//    QScrollBar *vBar = q->verticalScrollBar();
-//    if (g->state() == Qt::GestureStarted)
-//        originalOffsetY = vBar->value();
-//    QSizeF totalOffset = g->totalOffset();
-//    if (!totalOffset.isNull()) {
-//        if (QApplication::isRightToLeft())
-//            totalOffset.rwidth() *= -1;
-//        // QPlainTextEdit scrolls by lines only in vertical direction
-//        QFontMetrics fm(q->document()->defaultFont());
-//        int lineHeight = fm.height();
-//        int newX = hBar->value() - g->lastOffset().width();
-//        int newY = originalOffsetY - totalOffset.height()/lineHeight;
-//        hbar->setValue(newX);
-//        vbar->setValue(newY);
-//    }
-//}
 
 QT_END_NAMESPACE
 

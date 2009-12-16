@@ -43,6 +43,7 @@
     \page winsystem.html
     \title Window System Specific Notes
     \ingroup platform-specific
+    \brief Collections of notes about Qt implementations on different window systems.
 
     Qt is a cross-platform GUI toolkit, so almost the entire API is the
     same on all platforms and window systems. If you wish to use
@@ -95,4 +96,15 @@
     When compiling for this platform, the macro \c{Q_WS_QWS} is
     defined (the window system is literally the Qt Window System). See
     the \l{Qt for Embedded Linux} documentation for more information.
+
+    \section1 Qt for Windows CE
+
+    When compiling for this platform, the macro \c{Q_WS_WINCE} is defined.
+    See the \l{Qt for Windows CE} documentation for more information.
+
+    \section1 Qt for the Symbian platform
+
+    When compiling for this platform, the macro \c{Q_WS_S60} is defined.
+    See the \l{The Symbian platform - Introduction to Qt} documentation for
+    more information.
 */

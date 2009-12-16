@@ -1437,7 +1437,9 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
         option.setTextDirection(dir);
         layout.setTextOption(option);
         layout.beginLayout();
-        layout.createLine();
+        QTextLine line = layout.createLine();
+        if (line.isValid())
+            line.setLeadingIncluded(true);
         layout.endLayout();
         layout.draw(painter, QPointF(r.left(), pos.y()));
         break;
@@ -1446,13 +1448,13 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
         painter->fillRect(r, brush);
         break;
     case QTextListFormat::ListCircle:
-        painter->drawEllipse(r);
+        painter->setPen(QPen(brush, 0));
+        painter->drawEllipse(r.translated(0.5, 0.5)); // pixel align for sharper rendering
         break;
     case QTextListFormat::ListDisc:
         painter->setBrush(brush);
         painter->setPen(Qt::NoPen);
         painter->drawEllipse(r);
-        painter->setBrush(Qt::NoBrush);
         break;
     case QTextListFormat::ListStyleUndefined:
         break;
@@ -2579,6 +2581,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
             QTextLine line = tl->createLine();
             if (!line.isValid())
                 break;
+            line.setLeadingIncluded(true);
 
             QFixed left, right;
             floatMargins(layoutStruct->y, layoutStruct, &left, &right);

@@ -181,6 +181,7 @@ private slots:
     void updateAndDelete();
     void inputMethod();
     void clickFocus();
+    void windowFrameMargins();
 };
 
 // Subclass that exposes the protected functions.
@@ -1286,8 +1287,9 @@ void tst_QGraphicsProxyWidget::paintEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+    QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(70);
+    QTRY_VERIFY(view.isActiveWindow());
 
     SubQGraphicsProxyWidget proxy;
 
@@ -1298,14 +1300,14 @@ void tst_QGraphicsProxyWidget::paintEvent()
     w->show();
     QTest::qWaitForWindowShown(w);
     QApplication::processEvents();
-    QTest::qWait(100);
+    QTest::qWait(30);
     proxy.setWidget(w);
     scene.addItem(&proxy);
 
     //make sure we flush all the paint events
-    QTest::qWait(70);
+    QTest::qWait(30);
     QTRY_VERIFY(proxy.paintCount > 1);
-    QTest::qWait(110);
+    QTest::qWait(30);
     proxy.paintCount = 0;
 
     w->update();
@@ -2007,8 +2009,10 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     edit1->setText("QLineEdit 1");
     QLineEdit *edit2 = new QLineEdit;
     edit2->setText("QLineEdit 2");
+    QFontComboBox *fontComboBox = new QFontComboBox;
     QVBoxLayout *vlayout = new QVBoxLayout;
     vlayout->addWidget(edit1);
+    vlayout->addWidget(fontComboBox);
     vlayout->addWidget(edit2);
 
     QGroupBox *box = new QGroupBox("QGroupBox");
@@ -2020,8 +2024,10 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     edit1_2->setText("QLineEdit 1_2");
     QLineEdit *edit2_2 = new QLineEdit;
     edit2_2->setText("QLineEdit 2_2");
+    QFontComboBox *fontComboBox2 = new QFontComboBox;
     vlayout = new QVBoxLayout;
     vlayout->addWidget(edit1_2);
+    vlayout->addWidget(fontComboBox2);
     vlayout->addWidget(edit2_2);
 
     QGroupBox *box_2 = new QGroupBox("QGroupBox 2");
@@ -2062,8 +2068,10 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     EventSpy eventSpy(edit1);
     EventSpy eventSpy2(edit2);
+    EventSpy eventSpy3(fontComboBox);
     EventSpy eventSpy1_2(edit1_2);
     EventSpy eventSpy2_2(edit2_2);
+    EventSpy eventSpy2_3(fontComboBox2);
     EventSpy eventSpyBox(box);
 
     // Tab into group box
@@ -2084,11 +2092,24 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 0);
 
+    // Tab to the font combobox
+    QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
+    QApplication::processEvents();
+    fontComboBox->hasFocus();
+    QVERIFY(!edit2->hasFocus());
+    QCOMPARE(eventSpy3.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy3.counts[QEvent::FocusOut], 0);
+    QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy.counts[QEvent::FocusOut], 1);
+
     // Tab into line edit 2
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
     QApplication::processEvents();
     edit2->hasFocus();
     QVERIFY(!edit1->hasFocus());
+    QCOMPARE(eventSpy2.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy2.counts[QEvent::FocusOut], 0);
+    QCOMPARE(eventSpy3.counts[QEvent::FocusOut], 1);
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 1);
 
@@ -2106,6 +2127,16 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusOut], 0);
 
+    // Tab into right font combobox
+    QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
+    QApplication::processEvents();
+    QVERIFY(!edit1_2->hasFocus());
+    fontComboBox2->hasFocus();
+    QCOMPARE(eventSpy1_2.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy1_2.counts[QEvent::FocusOut], 1);
+    QCOMPARE(eventSpy2_3.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy2_3.counts[QEvent::FocusOut], 0);
+
     // Tab into right bottom line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
     QApplication::processEvents();
@@ -2113,6 +2144,8 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     edit2_2->hasFocus();
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusOut], 1);
+    QCOMPARE(eventSpy2_3.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy2_3.counts[QEvent::FocusOut], 1);
     QCOMPARE(eventSpy2_2.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy2_2.counts[QEvent::FocusOut], 0);
 
@@ -2128,6 +2161,12 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QApplication::processEvents();
     QVERIFY(!rightDial->hasFocus());
     edit2_2->hasFocus();
+
+    // Backtab into the right font combobox
+    QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
+    QApplication::processEvents();
+    QVERIFY(!edit2_2->hasFocus());
+    fontComboBox2->hasFocus();
 
     // Backtab into line edit 1
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
@@ -2147,10 +2186,16 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QVERIFY(!rightDial->hasFocus());
     edit2->hasFocus();
 
-    // Backtab into line edit 1
+    // Backtab into the font combobox
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
     QApplication::processEvents();
     QVERIFY(!edit2->hasFocus());
+    fontComboBox->hasFocus();
+
+    // Backtab into line edit 1
+    QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
+    QApplication::processEvents();
+    QVERIFY(!fontComboBox->hasFocus());
     edit1->hasFocus();
 
     // Backtab into line box
@@ -2530,20 +2575,22 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
     proxy->setWidget(widget);
     proxy->show();
     scene.addItem(proxy);
+    QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
     QApplication::processEvents();
+    QTRY_VERIFY(view.isActiveWindow());
 
     // in
     QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
     sendMouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
-    QTest::qWait(125);
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
+    QTest::qWait(12);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
 
     // out
     QTest::mouseMove(view.viewport(), QPoint(1, 1));
     sendMouseMove(view.viewport(), QPoint(1, 1));
-    QTest::qWait(125);
-    QCOMPARE(view.viewport()->cursor().shape(), Qt::ArrowCursor);
+    QTest::qWait(12);
+    QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::ArrowCursor);
 #endif
 }
 
@@ -2703,10 +2750,12 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     widget->resize(100, 100);
     QGraphicsProxyWidget *proxy = scene.addWidget(widget);
     proxy->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+
+    QApplication::setActiveWindow(&view);
     view.show();
     QTest::qWaitForWindowShown(&view);
     QApplication::sendPostedEvents();
-    QTest::qWait(150);
+    QTRY_VERIFY(view.isActiveWindow());
 
     qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy signalSpy(&scene, SIGNAL(changed(const QList<QRectF> &)));
@@ -3456,6 +3505,29 @@ void tst_QGraphicsProxyWidget::clickFocus()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
     QVERIFY(!proxy->hasFocus());
     QVERIFY(!proxy->widget()->hasFocus());
+}
+
+void tst_QGraphicsProxyWidget::windowFrameMargins()
+{
+    // Make sure the top margin is non-zero when passing Qt::Window.
+    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(0, Qt::Window);
+
+    qreal left, top, right, bottom;
+    proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
+    QVERIFY(top > 0);
+
+    proxy->setWidget(new QPushButton("testtest"));
+    proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
+    QVERIFY(top > 0);
+
+    QGraphicsScene scene;
+    scene.addItem(proxy);
+    proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
+    QVERIFY(top > 0);
+
+    proxy->unsetWindowFrameMargins();
+    proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
+    QVERIFY(top > 0);
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)

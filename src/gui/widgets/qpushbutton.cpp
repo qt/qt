@@ -63,6 +63,7 @@
 #include "qaccessible.h"
 #endif
 
+#include "private/qmenu_p.h"
 #include "private/qpushbutton_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -575,12 +576,33 @@ void QPushButtonPrivate::_q_popupPressed()
         return;
 
     menu->setNoReplayFor(q);
+
+    QPoint menuPos = adjustedMenuPosition();
+
+    QPointer<QPushButton> guard(q);
+    QMenuPrivate::get(menu)->causedPopup.widget = guard;
+
+    //Because of a delay in menu effects, we must keep track of the
+    //menu visibility to avoid flicker on button release
+    menuOpen = true;
+    menu->exec(menuPos);
+    if (guard) {
+        menuOpen = false;
+        q->setDown(false);
+    }
+}
+
+QPoint QPushButtonPrivate::adjustedMenuPosition()
+{
+    Q_Q(QPushButton);
+
     bool horizontal = true;
 #if !defined(QT_NO_TOOLBAR)
     QToolBar *tb = qobject_cast<QToolBar*>(parent);
     if (tb && tb->orientation() == Qt::Vertical)
         horizontal = false;
 #endif
+
     QWidgetItem item(q);
     QRect rect = item.geometry();
     rect.setRect(rect.x() - q->x(), rect.y() - q->y(), rect.width(), rect.height());
@@ -590,7 +612,7 @@ void QPushButtonPrivate::_q_popupPressed()
     int x = globalPos.x();
     int y = globalPos.y();
     if (horizontal) {
-        if (globalPos.y() + rect.height() + menuSize.height() <= QApplication::desktop()->height()) {
+        if (globalPos.y() + rect.height() + menuSize.height() <= QApplication::desktop()->availableGeometry(q).height()) {
             y += rect.height();
         } else {
             y -= menuSize.height();
@@ -598,22 +620,15 @@ void QPushButtonPrivate::_q_popupPressed()
         if (q->layoutDirection() == Qt::RightToLeft)
             x += rect.width() - menuSize.width();
     } else {
-        if (globalPos.x() + rect.width() + menu->sizeHint().width() <= QApplication::desktop()->width())
+        if (globalPos.x() + rect.width() + menu->sizeHint().width() <= QApplication::desktop()->availableGeometry(q).width())
             x += rect.width();
         else
             x -= menuSize.width();
     }
-    QPointer<QPushButton> guard(q);
 
-    //Because of a delay in menu effects, we must keep track of the
-    //menu visibility to avoid flicker on button release
-    menuOpen = true;
-    menu->exec(QPoint(x, y));
-    if (guard) {
-        menuOpen = false;
-        q->setDown(false);
-    }
+    return QPoint(x,y);
 }
+
 #endif // QT_NO_MENU
 
 void QPushButtonPrivate::resetLayoutItemMargins()

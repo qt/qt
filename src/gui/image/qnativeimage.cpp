@@ -178,6 +178,8 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* 
     if (ok) {
         xshmimg->data = (char*)shmat(xshminfo.shmid, 0, 0);
         xshminfo.shmaddr = xshmimg->data;
+        if (shmctl(xshminfo.shmid, IPC_RMID, 0) == -1)
+            qWarning() << "Error while marking the shared memory segment to be destroyed";
         ok = (xshminfo.shmaddr != (char*)-1);
         if (ok)
             image = QImage((uchar *)xshmimg->data, width, height, systemFormat());
@@ -199,10 +201,12 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* 
             shmctl(xshminfo.shmid, IPC_RMID, 0);
         return;
     }
-    xshmpm = XShmCreatePixmap(X11->display, DefaultRootWindow(X11->display), xshmimg->data,
-                              &xshminfo, width, height, dd);
-    if (!xshmpm) {
-        qWarning() << "QNativeImage: Unable to create shared Pixmap.";
+    if (X11->use_mitshm_pixmaps) {
+        xshmpm = XShmCreatePixmap(X11->display, DefaultRootWindow(X11->display), xshmimg->data,
+                                  &xshminfo, width, height, dd);
+        if (!xshmpm) {
+            qWarning() << "QNativeImage: Unable to create shared Pixmap.";
+        }
     }
 }
 

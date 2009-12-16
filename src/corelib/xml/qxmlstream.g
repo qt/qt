@@ -158,6 +158,7 @@ public:
         if (tos + extraCapacity + 1 > cap) {
             cap = qMax(tos + extraCapacity + 1, cap << 1 );
             data = reinterpret_cast<T *>(qRealloc(data, cap * sizeof(T)));
+            Q_CHECK_PTR(data);
         }
     }
 
@@ -243,7 +244,7 @@ public:
 
 
 class QXmlStreamEntityResolver;
-
+#ifndef QT_NO_XMLSTREAMREADER
 class QXmlStreamReaderPrivate : public QXmlStreamReader_Table, public QXmlStreamPrivateTagStack{
     QXmlStreamReader *q_ptr;
     Q_DECLARE_PUBLIC(QXmlStreamReader)
@@ -914,6 +915,7 @@ markup ::= markup_start markup_list RBRACK;
 
 markup_list ::= markup_decl | space | pereference;
 markup_list ::= markup_list markup_decl | markup_list space | markup_list pereference;
+markup_list ::=;
 
 markup_decl ::= element_decl | attlist_decl | entity_decl | entity_done | notation_decl | processing_instruction | comment;
 
@@ -1840,4 +1842,6 @@ nmtoken ::= COLON;
     }
     return false;
 }
+#endif //QT_NO_XMLSTREAMREADER.xml
+
 ./

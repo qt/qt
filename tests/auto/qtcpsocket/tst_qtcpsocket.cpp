@@ -192,6 +192,8 @@ private slots:
     void connectToMultiIP();
     void moveToThread0();
     void increaseReadBufferSize();
+    void taskQtBug5799ConnectionErrorWaitForConnected();
+    void taskQtBug5799ConnectionErrorEventLoop();
 #ifdef TEST_QNETWORK_PROXY
     void invalidProxy_data();
     void invalidProxy();
@@ -369,7 +371,6 @@ void tst_QTcpSocket::constructing()
     QCOMPARE(socket->socketType(), QTcpSocket::TcpSocket);
 
     char c;
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
     QCOMPARE(socket->getChar(&c), false);
     QCOMPARE((int) socket->bytesAvailable(), 0);
     QCOMPARE(socket->canReadLine(), false);
@@ -775,7 +776,7 @@ void tst_QTcpSocket::unget()
 
     for (int i = 0; i < 10; i += 2) {
         while (socket->bytesAvailable() < 2)
-            QVERIFY(socket->waitForReadyRead(5000));
+            QVERIFY(socket->waitForReadyRead(10000));
         int bA = socket->bytesAvailable();
         QVERIFY(socket->read(buf, 2) == 2);
         buf[2] = '\0';
@@ -828,7 +829,6 @@ void tst_QTcpSocket::openCloseOpenClose()
         QVERIFY(socket->socketType() == QTcpSocket::TcpSocket);
 
         char c;
-        QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
         QCOMPARE(socket->getChar(&c), false);
         QCOMPARE((int) socket->bytesAvailable(), 0);
         QCOMPARE(socket->canReadLine(), false);
@@ -1957,7 +1957,6 @@ void tst_QTcpSocket::zeroAndMinusOneReturns()
     QCOMPARE(socket->write("BLUBBER"), qint64(-1));
     QCOMPARE(socket->read(c, 16), qint64(-1));
     QCOMPARE(socket->readLine(c, 16), qint64(-1));
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
     QVERIFY(!socket->getChar(c));
     QVERIFY(!socket->putChar('a'));
 
@@ -2096,7 +2095,7 @@ void tst_QTcpSocket::connectToMultiIP()
 
     stopWatch.restart();
     socket->connectToHost("multi.dev.troll.no", 81);
-    QVERIFY(!socket->waitForConnected(1000));
+    QVERIFY(!socket->waitForConnected(2000));
     QVERIFY(stopWatch.elapsed() < 2000);
     QCOMPARE(socket->error(), QAbstractSocket::SocketTimeoutError);
 
@@ -2116,7 +2115,7 @@ void tst_QTcpSocket::moveToThread0()
         QTcpSocket *socket = newSocket();;
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
         socket->moveToThread(0);
-        QVERIFY(socket->waitForConnected(1000));
+        QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
         QVERIFY(socket->waitForDisconnected());
@@ -2127,7 +2126,7 @@ void tst_QTcpSocket::moveToThread0()
         QTcpSocket *socket = newSocket();
         socket->moveToThread(0);
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
-        QVERIFY(socket->waitForConnected(1000));
+        QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
         QVERIFY(socket->waitForDisconnected());
@@ -2137,7 +2136,7 @@ void tst_QTcpSocket::moveToThread0()
         // Case 3: Moved after writing, while waiting for bytes to be written.
         QTcpSocket *socket = newSocket();
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
-        QVERIFY(socket->waitForConnected(1000));
+        QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         socket->moveToThread(0);
         QVERIFY(socket->waitForBytesWritten(5000));
@@ -2148,7 +2147,7 @@ void tst_QTcpSocket::moveToThread0()
         // Case 4: Moved after writing, while waiting for response.
         QTcpSocket *socket = newSocket();
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
-        QVERIFY(socket->waitForConnected(1000));
+        QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
         socket->moveToThread(0);
@@ -2214,6 +2213,47 @@ void tst_QTcpSocket::increaseReadBufferSize()
     delete active;
 }
 
+void tst_QTcpSocket::taskQtBug5799ConnectionErrorWaitForConnected()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // check that we get a proper error connecting to port 12346
+    // use waitForConnected, e.g. this should use a synchronous select() on the OS level
+
+    QTcpSocket socket;
+    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+    QTime timer;
+    timer.start();
+    socket.waitForConnected(10000);
+    QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");
+    QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
+    QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
+             QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
+}
+
+void tst_QTcpSocket::taskQtBug5799ConnectionErrorEventLoop()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // check that we get a proper error connecting to port 12346
+    // This testcase uses an event loop
+    QTcpSocket socket;
+    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY2(!QTestEventLoop::instance().timeout(), "Connection to closed port timed out instead of refusing, something is wrong");
+    QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
+    QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
+             QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
+}
+
+
+
 #ifdef TEST_QNETWORK_PROXY
 void tst_QTcpSocket::invalidProxy_data()
 {
@@ -2263,7 +2303,7 @@ void tst_QTcpSocket::invalidProxy()
         QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     } else {
         QCOMPARE(socket->state(), QAbstractSocket::ConnectingState);
-        QVERIFY(!socket->waitForConnected(1000));
+        QVERIFY(!socket->waitForConnected(5000));
     }
     QVERIFY(!socket->errorString().isEmpty());
 
@@ -2382,7 +2422,7 @@ void tst_QTcpSocket::proxyFactory()
         QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     } else {
         QCOMPARE(socket->state(), QAbstractSocket::ConnectingState);
-        QVERIFY(socket->waitForConnected(10000));
+        QVERIFY(socket->waitForConnected(5000));
         QCOMPARE(proxyAuthCalled, 1);
     }
     QVERIFY(!socket->errorString().isEmpty());

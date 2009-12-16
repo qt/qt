@@ -110,11 +110,7 @@ static bool DEBUG_TEMP_FLAG;
 
 static inline void qt_glColor4ubv(unsigned char *col)
 {
-#ifdef QT_OPENGL_ES
-        glColor4f(col[0]/255.0, col[1]/255.0, col[2]/255.0, col[3]/255.0);
-#else
-        glColor4ubv(col);
-#endif
+    glColor4f(col[0]/255.0f, col[1]/255.0f, col[2]/255.0f, col[3]/255.0f);
 }
 
 struct QT_PointF {
@@ -248,8 +244,8 @@ public:
           bound(false)
     {
         connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
     }
 
     inline void setDevice(QPaintDevice *pdev);
@@ -525,8 +521,8 @@ public:
     QGLProgramCache() {
         // we have to know when a context is deleted so we can free
         // any program handles it holds
-        connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupPrograms(const QGLContext *)));
+        connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupPrograms(const QGLContext*)));
 
     }
     ~QGLProgramCache() {
@@ -639,8 +635,8 @@ public:
         : p(priv)
     {
         connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
     }
 
 public Q_SLOTS:
@@ -746,7 +742,6 @@ public:
     uint has_brush : 1;
     uint has_fast_pen : 1;
     uint use_stencil_method : 1;
-    uint dirty_stencil : 1;
     uint dirty_drawable_texture : 1;
     uint has_stencil_face_ext : 1;
     uint use_fragment_programs : 1;
@@ -756,6 +751,8 @@ public:
     uint use_smooth_pixmap_transform : 1;
     uint use_system_clip : 1;
     uint use_emulation : 1;
+
+    QRegion dirty_stencil;
 
     void updateUseEmulation();
 
@@ -1009,8 +1006,8 @@ public:
     QGLGradientCache() : QObject(), buffer_ctx(0)
     {
         connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
     }
 
     inline GLuint getBuffer(const QGradient &gradient, qreal opacity, QGLContext *ctx) {
@@ -1259,7 +1256,9 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
     d->matrix = QTransform();
     d->has_antialiasing = false;
     d->high_quality_antialiasing = false;
-    d->dirty_stencil = true;
+
+    QSize sz(d->device->size());
+    d->dirty_stencil = QRect(0, 0, sz.width(), sz.height());
 
     d->use_emulation = false;
 
@@ -1347,7 +1346,6 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
 
     d->offscreen.begin();
 
-    QSize sz(d->device->size());
     glViewport(0, 0, sz.width(), sz.height()); // XXX (Embedded): We need a solution for GLWidgets that draw in a part or a bigger surface...
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -1949,33 +1947,33 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
 {
     Q_Q(QOpenGLPaintEngine);
 
-    if (dirty_stencil) {
+    QRect rect = dirty_stencil.boundingRect();
+
+    if (use_system_clip)
+        rect = q->systemClip().intersected(dirty_stencil).boundingRect();
+
+    glStencilMask(~0);
+
+    if (!rect.isEmpty()) {
         disableClipping();
 
-        if (use_system_clip) {
-            glEnable(GL_SCISSOR_TEST);
+        glEnable(GL_SCISSOR_TEST);
 
-            QRect rect = q->systemClip().boundingRect();
+        const int left = rect.left();
+        const int width = rect.width();
+        const int bottom = device->size().height() - (rect.bottom() + 1);
+        const int height = rect.height();
 
-            const int left = rect.left();
-            const int width = rect.width();
-            const int bottom = device->size().height() - (rect.bottom() + 1);
-            const int height = rect.height();
-
-            glScissor(left, bottom, width, height);
-        }
+        glScissor(left, bottom, width, height);
 
         glClearStencil(0);
         glClear(GL_STENCIL_BUFFER_BIT);
-        dirty_stencil = false;
+        dirty_stencil -= rect;
 
-        if (use_system_clip)
-            glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_SCISSOR_TEST);
 
         enableClipping();
     }
-
-    glStencilMask(~0);
 
     // Enable stencil.
     glEnable(GL_STENCIL_TEST);
@@ -4710,8 +4708,8 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
             QWidget *widget = static_cast<QWidget *>(context->device());
             connect(widget, SIGNAL(destroyed(QObject*)), SLOT(widgetDestroyed(QObject*)));
             connect(QGLSignalProxy::instance(),
-                    SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                    SLOT(cleanupContext(const QGLContext *)));
+                    SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                    SLOT(cleanupContext(const QGLContext*)));
         }
     } else {
         font_cache = dev_it.value();

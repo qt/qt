@@ -30,6 +30,7 @@
 #include "GraphicsTypes.h"
 #include "SVGPaint.h"
 #include "SVGRenderStyleDefs.h"
+#include "ShadowData.h"
 
 #include <wtf/Platform.h>
 
@@ -65,7 +66,6 @@ namespace WebCore {
         SVG_RS_DEFINE_ATTRIBUTE_INHERITED(LineJoin, JoinStyle, joinStyle, MiterJoin)
         SVG_RS_DEFINE_ATTRIBUTE_INHERITED(EShapeRendering, ShapeRendering, shapeRendering, SR_AUTO)
         SVG_RS_DEFINE_ATTRIBUTE_INHERITED(ETextAnchor, TextAnchor, textAnchor, TA_START)
-        SVG_RS_DEFINE_ATTRIBUTE_INHERITED(ETextRendering, TextRendering, textRendering, TR_AUTO)
         SVG_RS_DEFINE_ATTRIBUTE_INHERITED(EWritingMode, WritingMode, writingMode, WM_LRTB)
         SVG_RS_DEFINE_ATTRIBUTE_INHERITED(EGlyphOrientation, GlyphOrientationHorizontal, glyphOrientationHorizontal, GO_0DEG)
         SVG_RS_DEFINE_ATTRIBUTE_INHERITED(EGlyphOrientation, GlyphOrientationVertical, glyphOrientationVertical, GO_AUTO)
@@ -99,6 +99,8 @@ namespace WebCore {
         SVG_RS_DEFINE_ATTRIBUTE_DATAREF_WITH_INITIAL(Color, misc, lightingColor, LightingColor, lightingColor, Color(255, 255, 255))
         SVG_RS_DEFINE_ATTRIBUTE_DATAREF_WITH_INITIAL_REFCOUNTED(CSSValue, misc, baselineShiftValue, BaselineShiftValue, baselineShiftValue, 0)
 
+        SVG_RS_DEFINE_ATTRIBUTE_DATAREF_WITH_INITIAL_OWNPTR(ShadowData, shadowSVG, shadow, Shadow, shadow, 0)
+
         // convenience
         bool hasStroke() const { return (strokePaint()->paintType() != SVGPaint::SVG_PAINTTYPE_NONE); }
         bool hasFill() const { return (fillPaint()->paintType() != SVGPaint::SVG_PAINTTYPE_NONE); }
@@ -113,7 +115,6 @@ namespace WebCore {
                 return (_colorRendering == other._colorRendering) &&
                        (_imageRendering == other._imageRendering) &&
                        (_shapeRendering == other._shapeRendering) &&
-                       (_textRendering == other._textRendering) &&
                        (_clipRule == other._clipRule) &&
                        (_fillRule == other._fillRule) &&
                        (_capStyle == other._capStyle) &&
@@ -134,7 +135,6 @@ namespace WebCore {
             unsigned _colorRendering : 2; // EColorRendering
             unsigned _imageRendering : 2; // EImageRendering 
             unsigned _shapeRendering : 2; // EShapeRendering 
-            unsigned _textRendering : 2; // ETextRendering
             unsigned _clipRule : 1; // WindRule
             unsigned _fillRule : 1; // WindRule
             unsigned _capStyle : 2; // LineCap
@@ -175,6 +175,7 @@ namespace WebCore {
         DataRef<StyleClipData> clip;
         DataRef<StyleMaskData> mask;
         DataRef<StyleMiscData> misc;
+        DataRef<StyleShadowSVGData> shadowSVG;
 
     private:
         enum CreateDefaultType { CreateDefault };
@@ -190,7 +191,6 @@ namespace WebCore {
             svg_inherited_flags._fillRule = initialFillRule();
             svg_inherited_flags._imageRendering = initialImageRendering();
             svg_inherited_flags._shapeRendering = initialShapeRendering();
-            svg_inherited_flags._textRendering = initialTextRendering();
             svg_inherited_flags._textAnchor = initialTextAnchor();
             svg_inherited_flags._capStyle = initialCapStyle();
             svg_inherited_flags._joinStyle = initialJoinStyle();

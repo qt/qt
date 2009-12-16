@@ -184,6 +184,7 @@ void QHelpSearchIndexWriter::updateIndex(const QString &collectionFile,
                                          const QString &indexFilesFolder,
                                          bool reindex)
 {
+    wait();
     QMutexLocker lock(&mutex);
 
     this->m_cancel = false;
@@ -274,7 +275,7 @@ void QHelpSearchIndexWriter::run()
                     continue;
 
                 QTextStream s(data);
-                QString en = QHelpGlobal::charsetFromData(data);
+                QString en = QHelpGlobal::codecFromData(data);
                 s.setCodec(QTextCodec::codecForName(en.toLatin1().constData()));
 
                 QString text = s.readAll();

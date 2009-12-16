@@ -55,8 +55,6 @@
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qvg_p.h>
-#if !defined(QT_NO_EGL)
-#endif
 
 #if defined(Q_OS_SYMBIAN)
 class RSGImage;
@@ -65,6 +63,15 @@ class RSGImage;
 QT_BEGIN_NAMESPACE
 
 class QEglContext;
+
+#if !defined(QT_NO_EGL)
+class QVGPixmapData;
+class QVGSharedContext;
+
+void qt_vg_register_pixmap(QVGPixmapData *pd);
+void qt_vg_unregister_pixmap(QVGPixmapData *pd);
+void qt_vg_hibernate_pixmaps(QVGSharedContext *context);
+#endif
 
 class Q_OPENVG_EXPORT QVGPixmapData : public QPixmapData
 {
@@ -89,10 +96,18 @@ public:
 
     // Return the VGImage form of this pixmap, creating it if necessary.
     // This assumes that there is a VG context current.
-    VGImage toVGImage();
+    virtual VGImage toVGImage();
 
     // Return the VGImage form for a specific opacity setting.
-    VGImage toVGImage(qreal opacity);
+    virtual VGImage toVGImage(qreal opacity);
+
+    // Release the VG resources associated with this pixmap and copy
+    // the pixmap's contents out of the GPU back into main memory.
+    // The VG resource will be automatically recreated the next time
+    // toVGImage() is called.  Does nothing if the pixmap cannot be
+    // hibernated for some reason (e.g. VGImage is shared with another
+    // process via a SgImage).
+    virtual void hibernate();
 
     QSize size() const { return QSize(w, h); }
 
@@ -108,7 +123,18 @@ protected:
     void cleanup();
 #endif
 
+#if !defined(QT_NO_EGL)
 private:
+    QVGPixmapData *next;
+    QVGPixmapData *prev;
+
+    friend void qt_vg_register_pixmap(QVGPixmapData *pd);
+    friend void qt_vg_unregister_pixmap(QVGPixmapData *pd);
+    friend void qt_vg_hibernate_pixmaps(QVGSharedContext *context);
+#endif
+
+protected:
+    QSize prevSize;
     VGImage vgImage;
     VGImage vgImageOpacity;
     qreal cachedOpacity;
@@ -120,6 +146,8 @@ private:
 
     void forceToImage();
     QImage::Format sourceFormat() const;
+
+    void destroyImageAndContext();
 };
 
 QT_END_NAMESPACE

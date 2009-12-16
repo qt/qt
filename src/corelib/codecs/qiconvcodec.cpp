@@ -378,7 +378,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     }
 
     int invalidCount = 0;
-    do {
+    while (inBytesLeft != 0) {
         if (iconv(state->cd, inBytesPtr, &inBytesLeft, &outBytes, &outBytesLeft) == (size_t) -1) {
             if (errno == EINVAL && convState) {
                 // buffer ends in a surrogate
@@ -418,7 +418,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
                 }
             }
         }
-    } while (inBytesLeft != 0);
+    }
 
     // reset to initial state
     iconv(state->cd, 0, &inBytesLeft, 0, &outBytesLeft);

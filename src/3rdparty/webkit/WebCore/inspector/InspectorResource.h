@@ -103,6 +103,8 @@ namespace WebCore {
 
         void startTiming();
         void markResponseReceivedTime();
+        void markLoadEventTime();
+        void markDOMContentEventTime();
         void endTiming();
 
         void markFailed();
@@ -143,6 +145,8 @@ namespace WebCore {
         InspectorResource(long long identifier, DocumentLoader*);
         Type type() const;
 
+        CachedResource* cachedResource() const;
+
         long long m_identifier;
         RefPtr<DocumentLoader> m_loader;
         RefPtr<Frame> m_frame;
@@ -161,6 +165,8 @@ namespace WebCore {
         double m_startTime;
         double m_responseReceivedTime;
         double m_endTime;
+        double m_loadEventTime;
+        double m_domContentEventTime;
         ScriptString m_xmlHttpResponseText;
         Changes m_changes;
         bool m_isMainResource;

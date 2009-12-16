@@ -114,6 +114,7 @@ namespace WebCore {
         virtual bool isXMLHttpRequestProgressEvent() const;
         virtual bool isWebKitAnimationEvent() const;
         virtual bool isWebKitTransitionEvent() const;
+        virtual bool isBeforeLoadEvent() const;
 #if ENABLE(SVG)
         virtual bool isSVGZoomEvent() const;
 #endif
@@ -144,6 +145,9 @@ namespace WebCore {
 
         virtual Clipboard* clipboard() const { return 0; }
 
+        bool createdByDOM() const { return m_createdByDOM; }
+        void setCreatedByDOM(bool createdByDOM) { m_createdByDOM = createdByDOM; }
+
     protected:
         Event();
         Event(const AtomicString& type, bool canBubble, bool cancelable);
@@ -160,6 +164,9 @@ namespace WebCore {
         bool m_defaultPrevented;
         bool m_defaultHandled;
         bool m_cancelBubble;
+
+        // Whether this event was created by document.createEvent().
+        bool m_createdByDOM;
 
         unsigned short m_eventPhase;
         EventTarget* m_currentTarget;

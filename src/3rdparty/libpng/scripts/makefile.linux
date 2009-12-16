@@ -1,12 +1,16 @@
 # makefile for libpng.a and libpng12.so on Linux ELF with gcc
-# Copyright (C) 1998, 1999, 2002, 2006 Greg Roelofs and Glenn Randers-Pehrson
+# Copyright (C) 1998, 1999, 2002, 2006, 2008 Greg Roelofs and
+# Glenn Randers-Pehrson
 # Copyright (C) 1996, 1997 Andreas Dilger
-# For conditions of distribution and use, see copyright notice in png.h
+
+# This code is released under the libpng license.
+# For conditions of distribution and use, see the disclaimer
+# and license in png.h
 
 # Library name:
 LIBNAME = libpng12
 PNGMAJ = 0
-PNGMIN = 1.2.29
+PNGMIN = 1.2.40
 PNGVER = $(PNGMAJ).$(PNGMIN)
 
 # Shared library names:
@@ -47,7 +51,7 @@ WARNMORE=-Wwrite-strings -Wpointer-arith -Wshadow \
 
 # for pgcc version 2.95.1, -O3 is buggy; don't use it.
 
-CFLAGS=-I$(ZLIBINC) -Wall -O3 -funroll-loops -DPNG_NO_MMX_CODE \
+CFLAGS=-I$(ZLIBINC) -W -Wall -O3 -funroll-loops -DPNG_NO_MMX_CODE \
 	$(ALIGN) # $(WARNMORE) -g -DPNG_DEBUG=5
 
 LDFLAGS=-L. -Wl,-rpath,. -L$(ZLIBLIB) -Wl,-rpath,$(ZLIBLIB) -lpng12 -lz -lm
@@ -73,7 +77,7 @@ DI=$(DESTDIR)$(INCPATH)
 DL=$(DESTDIR)$(LIBPATH)
 DM=$(DESTDIR)$(MANPATH)
 
-OBJS = png.o pngset.o pngget.o pngrutil.o pngtrans.o pngwutil.o \
+OBJS =  png.o pngset.o pngget.o pngrutil.o pngtrans.o pngwutil.o \
 	pngread.o pngrio.o pngwio.o pngwrite.o pngrtran.o \
 	pngwtran.o pngmem.o pngerror.o pngpread.o
 

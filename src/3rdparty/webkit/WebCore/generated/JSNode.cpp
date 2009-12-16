@@ -124,8 +124,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSNodeConstructor::s_info = { "NodeConstructor", 0, &JSNodeConstructorTable, 0 };
@@ -218,7 +221,7 @@ JSNode::JSNode(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* global
 JSNode::~JSNode()
 {
     impl()->invalidateEventListeners();
-    forgetDOMNode(impl()->document(), impl());
+    forgetDOMNode(this, impl(), impl()->document());
 }
 
 JSObject* JSNode::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

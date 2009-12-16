@@ -50,7 +50,7 @@
 // so that we can keep dynamic and static values inline.
 // Please adjust version data if correcting dynamic PM calculations.
 const TInt KPMMajorVersion = 1;
-const TInt KPMMinorVersion = 14;
+const TInt KPMMinorVersion = 15;
 
 TPixelMetricsVersion PixelMetrics::Version()
     {
@@ -726,6 +726,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             value = -1; //disable - not in S60
             }
             break;
+        case QStyle::PM_SplitterWidth:
         case QStyle::PM_ScrollBarExtent:
             {
             TAknLayoutRect miscGraphicsRect;
@@ -811,12 +812,11 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             value = PixelMetricMenuValue(metric, mainPaneRect);
             break;
         case QStyle::PM_ButtonIconSize:
+            {
             //lets use voice recorder icons as a base
             //Unfortunately S60 graphics don't separate button bevel graphics from the actual icon.
             //Se we have no means to query the margin from bevel border to "central icon" border.
             //So, we need to make a estimate...
-
-            const TInt varietyForButtons = !landscape ? 0 : 1;
 
             TAknLayoutRect vRMainRect;
             vRMainRect.LayoutRect( mainPaneRect, AknLayoutScalable_Apps::main_vorec_pane() );
@@ -832,7 +832,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
 
             // 0.32 is the estimate how much the icon occupies of the button bevel area
             value = vRButtonCellGraphicsRect.Rect().Width() * 0.32;
-
+            }
             break;
         case QStyle::PM_SmallIconSize:
             {
@@ -1000,7 +1000,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
         case QStyle::PM_ButtonShiftVertical:
             value = 0;
             break;
-        
+
         case QStyle::PM_ToolBarExtensionExtent:
             value = PixelMetricTabValue(QStyle::PM_TabBarScrollButtonWidth, appWindow.Rect(), landscape);
             break;
@@ -1016,7 +1016,6 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
         case QStyle::PM_DockWidgetSeparatorExtent: // not in S60
         case QStyle::PM_MdiSubWindowMinimizedWidth: //no such thing in S60
         case QStyle::PM_HeaderGripMargin: // not in S60
-        case QStyle::PM_SplitterWidth: // not in S60
         case QStyle::PM_ToolBarSeparatorExtent: // not in S60
         case QStyle::PM_ToolBarHandleExtent: // not in s60
         case QStyle::PM_MenuButtonIndicator: // none???

@@ -46,6 +46,7 @@
 #include <qgraphicssceneevent.h>
 #include <qgraphicsview.h>
 #include <qstyleoption.h>
+#include <private/qobject_p.h>
 #include "../../shared/util.h"
 
 class tst_QGraphicsObject : public QObject {
@@ -65,6 +66,7 @@ private slots:
     void opacity();
     void enabled();
     void visible();
+    void deleted();
 };
 
 
@@ -249,6 +251,46 @@ void tst_QGraphicsObject::visible()
     QVERIFY(object.property("visible") == true);
 }
 
+class DeleteTester : public QGraphicsObject
+{
+public:
+    DeleteTester(bool *w, bool *pw, QGraphicsItem *parent = 0)
+        : QGraphicsObject(parent), wasDeleted(w), parentWasDeleted(pw)
+    { }
+
+    ~DeleteTester()
+    {
+        *wasDeleted = QObjectPrivate::get(this)->wasDeleted;
+        if (QGraphicsItem *p = parentItem()) {
+            if (QGraphicsObject *o = p->toGraphicsObject())
+                *parentWasDeleted = QObjectPrivate::get(o)->wasDeleted;
+        }
+    }
+
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget * = 0)
+    { }
+    QRectF boundingRect() const
+    { return QRectF(); }
+
+    bool *wasDeleted;
+    bool *parentWasDeleted;
+};
+
+void tst_QGraphicsObject::deleted()
+{
+    bool item1_parentWasDeleted = false;
+    bool item1_wasDeleted = false;
+    bool item2_parentWasDeleted = false;
+    bool item2_wasDeleted = false;
+    DeleteTester *item1 = new DeleteTester(&item1_wasDeleted, &item1_parentWasDeleted);
+    DeleteTester *item2 = new DeleteTester(&item2_wasDeleted, &item2_parentWasDeleted, item1);
+    delete item1;
+
+    QVERIFY(!item1_wasDeleted); // destructor not called yet
+    QVERIFY(!item1_parentWasDeleted); // no parent
+    QVERIFY(!item2_wasDeleted); // destructor not called yet
+    QVERIFY(item2_parentWasDeleted);
+}
 
 QTEST_MAIN(tst_QGraphicsObject)
 #include "tst_qgraphicsobject.moc"

@@ -91,7 +91,9 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLATTACHEDPROPERTY     Doc::alias("qmlattachedproperty")
 #define COMMAND_QMLINHERITS             Doc::alias("inherits")
 #define COMMAND_QMLSIGNAL               Doc::alias("qmlsignal")
+#define COMMAND_QMLATTACHEDSIGNAL       Doc::alias("qmlattachedsignal")
 #define COMMAND_QMLMETHOD               Doc::alias("qmlmethod")
+#define COMMAND_QMLATTACHEDMETHOD       Doc::alias("qmlattachedmethod")
 #define COMMAND_QMLDEFAULT              Doc::alias("default")
 #endif
 
@@ -195,8 +197,14 @@ CppCodeParser::CppCodeParser()
  */
 CppCodeParser::~CppCodeParser()
 {
+    // nothing.
 }
 
+/*!
+  The constructor initializes a map of special node types
+  for identifying important nodes. And it initializes
+  some filters for identifying certain kinds of files.
+ */
 void CppCodeParser::initializeParser(const Config &config)
 {
     CodeParser::initializeParser(config);
@@ -218,24 +226,46 @@ void CppCodeParser::initializeParser(const Config &config)
         exampleNameFilter = exampleFilePatterns.join(" ");
     else
         exampleNameFilter = "*.cpp *.h *.js *.xq *.svg *.xml *.ui";
+
+    QStringList exampleImagePatterns = config.getStringList(
+        CONFIG_EXAMPLES + Config::dot + CONFIG_IMAGEEXTENSIONS);
+
+    if (!exampleImagePatterns.isEmpty())
+        exampleImageFilter = exampleImagePatterns.join(" ");
+    else
+        exampleImageFilter = "*.png";
 }
 
+/*!
+  Clear the map of common node types and call
+  the same function in the base class.
+ */
 void CppCodeParser::terminateParser()
 {
     nodeTypeMap.clear();
     CodeParser::terminateParser();
 }
 
+/*!
+  Returns "Cpp".
+ */
 QString CppCodeParser::language()
 {
     return "Cpp";
 }
 
+/*!
+  Returns a list of extensions for header files.
+ */
 QString CppCodeParser::headerFileNameFilter()
 {
     return "*.ch *.h *.h++ *.hh *.hpp *.hxx";
 }
 
+/*!
+  Returns a list of extensions for source files, i.e. not
+  header files.
+ */
 QString CppCodeParser::sourceFileNameFilter()
 {
     return "*.c++ *.cc *.cpp *.cxx";
@@ -297,6 +327,12 @@ void CppCodeParser::parseSourceFile(const Location& location,
     fclose(in);
 }
 
+/*!
+  This is called after all the header files have been parsed.
+  I think the most important thing it does is resolve class
+  inheritance links in the tree. But it also initializes a
+  bunch of stuff.
+ */
 void CppCodeParser::doneParsingHeaderFiles(Tree *tree)
 {
     tree->resolveInheritance();
@@ -343,6 +379,12 @@ void CppCodeParser::doneParsingHeaderFiles(Tree *tree)
     mutableAssociativeIteratorClasses.clear();
 }
 
+/*!
+  This is called after all the source files (i.e., not the
+  header files) have been parsed. It traverses the tree to
+  resolve property links, normalize overload signatures, and
+  do other housekeeping of the tree.
+ */
 void CppCodeParser::doneParsingSourceFiles(Tree *tree)
 {
     tree->root()->makeUndocumentedChildrenInternal();
@@ -351,6 +393,13 @@ void CppCodeParser::doneParsingSourceFiles(Tree *tree)
     tree->resolveProperties();
 }
 
+/*!
+  This function searches the \a tree to find a FunctionNode
+  for a function with the signature \a synopsis. If the
+  \a relative node is provided, the search begins there. If
+  \a fuzzy is true, base classes are searched. The function
+  node is returned, if found.
+ */
 const FunctionNode *CppCodeParser::findFunctionNode(const QString& synopsis,
                                                     Tree *tree,
                                                     Node *relative,
@@ -485,7 +534,9 @@ QSet<QString> CppCodeParser::topicCommands()
                            << COMMAND_QMLPROPERTY
                            << COMMAND_QMLATTACHEDPROPERTY
                            << COMMAND_QMLSIGNAL
-                           << COMMAND_QMLMETHOD;
+                           << COMMAND_QMLATTACHEDSIGNAL
+                           << COMMAND_QMLMETHOD
+                           << COMMAND_QMLATTACHEDMETHOD;
 #else
                            << COMMAND_VARIABLE;
 #endif
@@ -678,18 +729,26 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         return new QmlClassNode(tre->root(), names[0], classNode);
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
-             (command == COMMAND_QMLMETHOD)) {
+             (command == COMMAND_QMLMETHOD) ||
+             (command == COMMAND_QMLATTACHEDSIGNAL) ||
+             (command == COMMAND_QMLATTACHEDMETHOD)) {
         QString element;
-        QString name;
+        QString type;
         QmlClassNode* qmlClass = 0;
-        if (splitQmlArg(doc,arg,element,name)) {
+        if (splitQmlMethodArg(doc,arg,type,element)) {
             Node* n = tre->findNode(QStringList(element),Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 qmlClass = static_cast<QmlClassNode*>(n);
                 if (command == COMMAND_QMLSIGNAL)
-                    return new QmlSignalNode(qmlClass,name);
+                    return makeFunctionNode(doc,arg,qmlClass,Node::QmlSignal,false,COMMAND_QMLSIGNAL);
+                else if (command == COMMAND_QMLATTACHEDSIGNAL)
+                    return makeFunctionNode(doc,arg,qmlClass,Node::QmlSignal,true,COMMAND_QMLATTACHEDSIGNAL);
+                else if (command == COMMAND_QMLMETHOD)
+                    return makeFunctionNode(doc,arg,qmlClass,Node::QmlMethod,false,COMMAND_QMLMETHOD);
+                else if (command == COMMAND_QMLATTACHEDMETHOD)
+                    return makeFunctionNode(doc,arg,qmlClass,Node::QmlMethod,true,COMMAND_QMLATTACHEDMETHOD);
                 else
-                    return new QmlMethodNode(qmlClass,name);
+                    return 0; // never get here.
             }
         }
     }
@@ -705,15 +764,15 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
   <type> <element>::<name>
 
   This function splits the argument into those three
-  parts, sets \a type, \a element, and \a property,
+  parts, sets \a type, \a element, and \a name,
   and returns true. If any of the parts isn't found,
-  a debug message is output and false is returned.
+  a qdoc warning is output and false is returned.
  */
 bool CppCodeParser::splitQmlPropertyArg(const Doc& doc,
                                         const QString& arg,
                                         QString& type,
                                         QString& element,
-                                        QString& property)
+                                        QString& name)
 {
     QStringList blankSplit = arg.split(" ");
     if (blankSplit.size() > 1) {
@@ -721,40 +780,47 @@ bool CppCodeParser::splitQmlPropertyArg(const Doc& doc,
         QStringList colonSplit(blankSplit[1].split("::"));
         if (colonSplit.size() > 1) {
             element = colonSplit[0];
-            property = colonSplit[1];
+            name = colonSplit[1];
             return true;
         }
         else
-            doc.location().warning(tr("Missing QML element name or property name"));
+            doc.location().warning(tr("Missing parent QML element name"));
     }
     else
-        doc.location().warning(tr("Missing QML property type or property path"));
+        doc.location().warning(tr("Missing property type"));
     return false;
 }
 
 /*!
   A QML signal or method argument has the form...
 
-  <element>::<name>
+  <type> <element>::<name>(<param>, <param>, ...)
 
   This function splits the argument into those two
   parts, sets \a element, and \a name, and returns
   true. If either of the parts isn't found, a debug
   message is output and false is returned.
  */
-bool CppCodeParser::splitQmlArg(const Doc& doc,
-                                const QString& arg,
-                                QString& element,
-                                QString& name)
+bool CppCodeParser::splitQmlMethodArg(const Doc& doc,
+                                      const QString& arg,
+                                      QString& type,
+                                      QString& element)
 {
     QStringList colonSplit(arg.split("::"));
     if (colonSplit.size() > 1) {
-        element = colonSplit[0];
-        name = colonSplit[1];
+        QStringList blankSplit = colonSplit[0].split(" ");
+        if (blankSplit.size() > 1) {
+            type = blankSplit[0];
+            element = blankSplit[1];
+        }
+        else {
+            type = QString("");
+            element = colonSplit[0];
+        }
         return true;
     }
     else
-        doc.location().warning(tr("Missing QML element name or signal/method name"));
+        doc.location().warning(tr("Missing parent QML element or method signature"));
     return false;
 }
 
@@ -787,14 +853,26 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
             }
         }
         if (qmlPropGroup) {
-            new QmlPropertyNode(qmlPropGroup,property,type,attached);
+            const ClassNode *correspondingClass = static_cast<const QmlClassNode*>(qmlPropGroup->parent())->classNode();
+            PropertyNode *correspondingProperty = 0;
+            if (correspondingClass)
+                correspondingProperty = static_cast<PropertyNode*>((Node*)correspondingClass->findNode(property, Node::Property));
+            QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup,property,type,attached);
+            if (correspondingProperty) {
+                bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+                qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
+            }
             ++arg;
             while (arg != args.end()) {
                 if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
-                    new QmlPropertyNode(qmlPropGroup,
-                                        property,
-                                        type,
-                                        attached);
+                    QmlPropertyNode* qmlPropNode = new QmlPropertyNode(qmlPropGroup,
+                                                                       property,
+                                                                       type,
+                                                                       attached);
+                    if (correspondingProperty) {
+                        bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+                        qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
+                    }
                 }
                 ++arg;
             }
@@ -1241,7 +1319,9 @@ bool CppCodeParser::matchParameter(FunctionNode *func)
 bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
                                       QStringList *parentPathPtr,
                                       FunctionNode **funcPtr,
-                                      const QString &templateStuff)
+                                      const QString &templateStuff,
+                                      Node::Type type,
+                                      bool attached)
 {
     CodeChunk returnType;
     QStringList parentPath;
@@ -1271,8 +1351,9 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
         if (tokenizer->parsingFnOrMacro()
                 && (match(Tok_Q_DECLARE_FLAGS) || match(Tok_Q_PROPERTY)))
             returnType = CodeChunk(previousLexeme());
-        else
+        else {
             return false;
+        }
     }
 
     if (returnType.toString() == "QBool")
@@ -1302,8 +1383,9 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
                 readToken();
             }
         }
-        if (tok != Tok_LeftParen)
+        if (tok != Tok_LeftParen) {
             return false;
+        }
     }
     else if (tok == Tok_LeftParen) {
         // constructor or destructor
@@ -1349,8 +1431,9 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
                     returnType.append(lexeme());
                     readToken();
                 }
-                if (tok != Tok_Semicolon)
+                if (tok != Tok_Semicolon) {
                     return false;
+                }
             }
             else if (tok == Tok_Colon) {
                 returnType.appendHotspot();
@@ -1359,8 +1442,9 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
                     returnType.append(lexeme());
                     readToken();
                 }
-                if (tok != Tok_Semicolon)
+                if (tok != Tok_Semicolon) {
                     return false;
+                }
             }
 
             VariableNode *var = new VariableNode(parent, name);
@@ -1373,12 +1457,13 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
             var->setStatic(sta);
             return false;
         }
-        if (tok != Tok_LeftParen)
+        if (tok != Tok_LeftParen) {
             return false;
+        }
     }
     readToken();
 
-    FunctionNode *func = new FunctionNode(parent, name);
+    FunctionNode *func = new FunctionNode(type, parent, name, attached);
     func->setAccess(access);
     func->setLocation(location());
     func->setReturnType(returnType.toString());
@@ -1399,12 +1484,14 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
 
     if (tok != Tok_RightParen) {
         do {
-            if (!matchParameter(func))
+            if (!matchParameter(func)) {
                 return false;
+            }
         } while (match(Tok_Comma));
     }
-    if (!match(Tok_RightParen))
+    if (!match(Tok_RightParen)) {
         return false;
+    }
 
     func->setConst(match(Tok_const));
 
@@ -1420,8 +1507,9 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
     if (!match(Tok_Semicolon) && tok != Tok_Eoi) {
         int braceDepth0 = tokenizer->braceDepth();
 
-        if (!match(Tok_LeftBrace))
+        if (!match(Tok_LeftBrace)) {
             return false;
+        }
         while (tokenizer->braceDepth() >= braceDepth0 && tok != Tok_Eoi)
             readToken();
         match(Tok_RightBrace);
@@ -1739,15 +1827,15 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
 
         if (key == "READ")
             tre->addPropertyFunction(property, value, PropertyNode::Getter);
-        else if (key == "WRITE")
+        else if (key == "WRITE") {
             tre->addPropertyFunction(property, value, PropertyNode::Setter);
-        else if (key == "STORED")
+            property->setWritable(true);
+        } else if (key == "STORED")
             property->setStored(value.toLower() == "true");
         else if (key == "DESIGNABLE")
             property->setDesignable(value.toLower() == "true");
         else if (key == "RESET")
             tre->addPropertyFunction(property, value, PropertyNode::Resetter);
-
         else if (key == "NOTIFY") {
             tre->addPropertyFunction(property, value, PropertyNode::Notifier);
         }
@@ -2068,7 +2156,9 @@ bool CppCodeParser::matchDocsAndStuff()
 bool CppCodeParser::makeFunctionNode(const QString& synopsis,
                                      QStringList *parentPathPtr,
                                      FunctionNode **funcPtr,
-                                     InnerNode *root)
+                                     InnerNode *root,
+                                     Node::Type type,
+                                     bool attached)
 {
     Tokenizer *outerTokenizer = tokenizer;
     int outerTok = tok;
@@ -2080,13 +2170,37 @@ bool CppCodeParser::makeFunctionNode(const QString& synopsis,
     tokenizer = &stringTokenizer;
     readToken();
 
-    bool ok = matchFunctionDecl(root, parentPathPtr, funcPtr);
+    bool ok = matchFunctionDecl(root, parentPathPtr, funcPtr, QString(), type, attached);
     // potential memory leak with funcPtr
 
     tokenizer = outerTokenizer;
     tok = outerTok;
-
     return ok;
+}
+
+/*!
+  Create a new FunctionNode for a QML method or signal, as
+  specified by \a type, as a child of \a parent. \a sig is
+  the complete signature, and if \a attached is true, the
+  method or signal is "attached". \a qdoctag is the text of
+  the \a type.
+ */
+FunctionNode* CppCodeParser::makeFunctionNode(const Doc& doc,
+                                              const QString& sig,
+                                              InnerNode* parent,
+                                              Node::Type type,
+                                              bool attached,
+                                              QString qdoctag)
+{
+    QStringList pp;
+    FunctionNode* fn = 0;
+    if (!makeFunctionNode(sig,&pp,&fn,parent,type,attached) &&
+        !makeFunctionNode("void "+sig,&pp,&fn,parent,type,attached)) {
+        doc.location().warning(tr("Invalid syntax in '\\%1'").arg(qdoctag));
+    }
+    if (fn)
+        return fn;
+    return 0;
 }
 
 void CppCodeParser::parseQiteratorDotH(const Location &location,
@@ -2145,6 +2259,7 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
                                         exampleDirs,
                                         proFileName,
                                         userFriendlyFilePath);
+    
     if (fullPath.isEmpty()) {
         QString tmp = proFileName;
         proFileName = examplePath + "/" + "qbuild.pro";
@@ -2164,8 +2279,18 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
     int sizeOfBoringPartOfName = fullPath.size() - proFileName.size();
     fullPath.truncate(fullPath.lastIndexOf('/'));
 
-    QStringList exampleFiles = Config::getFilesHere(fullPath,
-                                                    exampleNameFilter);
+    QStringList exampleFiles = Config::getFilesHere(fullPath,exampleNameFilter);
+    QString imagesPath = fullPath + "/images";
+    QStringList imageFiles = Config::getFilesHere(imagesPath,exampleImageFilter);
+
+#if 0    
+    qDebug() << "examplePath:" << examplePath;
+    qDebug() << " exampleFiles" <<  exampleFiles;
+    qDebug() << "imagesPath:" << imagesPath;
+    qDebug() << "fullPath:" << fullPath;
+    qDebug() << " imageFiles" <<  imageFiles;
+#endif    
+
     if (!exampleFiles.isEmpty()) {
         // move main.cpp and to the end, if it exists
         QString mainCpp;
@@ -2192,6 +2317,11 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
         (void) new FakeNode(fake,
                             exampleFile.mid(sizeOfBoringPartOfName),
                             Node::File);
+    foreach (const QString &imageFile, imageFiles) {
+        FakeNode* newFake = new FakeNode(fake,
+                                         imageFile.mid(sizeOfBoringPartOfName),
+                                         Node::Image);
+    }
 }
 
 QT_END_NAMESPACE

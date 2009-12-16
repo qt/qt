@@ -51,6 +51,7 @@
 #include "qdebug.h"
 #include "qboxlayout.h"
 #include "qpainter.h"
+#include "qmargins.h"
 
 #include "qabstractscrollarea_p.h"
 #include <qwidget.h>
@@ -293,13 +294,18 @@ void QAbstractScrollAreaPrivate::init()
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
+#ifndef Q_WS_MAC
+    viewport->grabGesture(Qt::PanGesture);
+#endif
 }
 
 #ifdef Q_WS_WIN
 void QAbstractScrollAreaPrivate::setSingleFingerPanEnabled(bool on)
 {
     singleFingerPanEnabled = on;
-    winSetupGestures();
+    QWidgetPrivate *dd = static_cast<QWidgetPrivate *>(QObjectPrivate::get(viewport));
+    if (dd)
+        dd->winSetupGestures();
 }
 #endif // Q_WS_WIN
 
@@ -539,6 +545,9 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         d->viewport->setParent(this);
         d->viewport->setFocusProxy(this);
         d->viewport->installEventFilter(d->viewportFilter.data());
+#ifndef Q_WS_MAC
+        d->viewport->grabGesture(Qt::PanGesture);
+#endif
         d->layoutChildren();
         if (isVisible())
             d->viewport->show();
@@ -864,6 +873,22 @@ void QAbstractScrollArea::setViewportMargins(int left, int top, int right, int b
 }
 
 /*!
+    \since 4.6
+    Sets \a margins around the scrolling area. This is useful for
+    applications such as spreadsheets with "locked" rows and columns.
+    The marginal space is is left blank; put widgets in the unused
+    area.
+
+    By default all margins are zero.
+
+*/
+void QAbstractScrollArea::setViewportMargins(const QMargins &margins)
+{
+    setViewportMargins(margins.left(), margins.top(),
+                       margins.right(), margins.bottom());
+}
+
+/*!
     \fn bool QAbstractScrollArea::event(QEvent *event)
 
     \reimp
@@ -935,6 +960,26 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
         return false;
+    case QEvent::Gesture:
+    {
+        QGestureEvent *ge = static_cast<QGestureEvent *>(e);
+        QPanGesture *g = static_cast<QPanGesture *>(ge->gesture(Qt::PanGesture));
+        if (g) {
+            QScrollBar *hBar = horizontalScrollBar();
+            QScrollBar *vBar = verticalScrollBar();
+            QPointF delta = g->delta();
+            if (!delta.isNull()) {
+                if (QApplication::isRightToLeft())
+                    delta.rx() *= -1;
+                int newX = hBar->value() - delta.x();
+                int newY = vBar->value() - delta.y();
+                hBar->setValue(newX);
+                vBar->setValue(newY);
+            }
+            return true;
+        }
+        return false;
+    }
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
     case QEvent::ApplicationLayoutDirectionChange:
@@ -990,6 +1035,8 @@ bool QAbstractScrollArea::viewportEvent(QEvent *e)
 #endif
         return QFrame::event(e);
     case QEvent::LayoutRequest:
+    case QEvent::Gesture:
+    case QEvent::GestureOverride:
         return event(e);
     default:
         break;
@@ -1087,10 +1134,13 @@ void QAbstractScrollArea::mouseMoveEvent(QMouseEvent *e)
 void QAbstractScrollArea::wheelEvent(QWheelEvent *e)
 {
     Q_D(QAbstractScrollArea);
-    if (static_cast<QWheelEvent*>(e)->orientation() == Qt::Horizontal)
-        QApplication::sendEvent(d->hbar, e);
-    else
-        QApplication::sendEvent(d->vbar, e);
+    QScrollBar *const bars[2] = { d->hbar, d->vbar };
+    int idx = (e->orientation() == Qt::Vertical) ? 1 : 0;
+    int other = (idx + 1) % 2;
+    if (!bars[idx]->isVisible() && bars[other]->isVisible())
+        idx = other;   // If the scrollbar of the event orientation is hidden, fallback to the other.
+
+    QApplication::sendEvent(bars[idx], e);
 }
 #endif
 
@@ -1266,11 +1316,13 @@ void QAbstractScrollAreaPrivate::_q_vslide(int y)
 void QAbstractScrollAreaPrivate::_q_showOrHideScrollBars()
 {
     layoutChildren();
-#ifdef Q_OS_WIN
+#ifdef Q_WS_WIN
     // Need to re-subscribe to gestures as the content changes to make sure we
     // enable/disable panning when needed.
-    winSetupGestures();
-#endif // Q_OS_WIN
+    QWidgetPrivate *dd = static_cast<QWidgetPrivate *>(QObjectPrivate::get(viewport));
+    if (dd)
+        dd->winSetupGestures();
+#endif // Q_WS_WIN
 }
 
 QPoint QAbstractScrollAreaPrivate::contentsOffset() const
@@ -1334,25 +1386,6 @@ void QAbstractScrollArea::setupViewport(QWidget *viewport)
 {
     Q_UNUSED(viewport);
 }
-
-//void QAbstractScrollAreaPrivate::_q_gestureTriggered()
-//{
-//    Q_Q(QAbstractScrollArea);
-//    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
-//    if (!g)
-//        return;
-//    QScrollBar *hBar = q->horizontalScrollBar();
-//    QScrollBar *vBar = q->verticalScrollBar();
-//    QSizeF delta = g->lastOffset();
-//    if (!delta.isNull()) {
-//        if (QApplication::isRightToLeft())
-//            delta.rwidth() *= -1;
-//        int newX = hBar->value() - delta.width();
-//        int newY = vBar->value() - delta.height();
-//        hbar->setValue(newX);
-//        vbar->setValue(newY);
-//    }
-//}
 
 QT_END_NAMESPACE
 

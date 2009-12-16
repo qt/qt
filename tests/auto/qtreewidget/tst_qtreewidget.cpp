@@ -167,6 +167,9 @@ private slots:
     void setCurrentItemExpandsParent();
     void task239150_editorWidth();
     void setTextUpdate();
+    void taskQTBUG2844_visualItemRect();
+    void setChildIndicatorPolicy();
+
 
 public slots:
     void itemSelectionChanged();
@@ -601,9 +604,9 @@ void tst_QTreeWidget::setItemHidden()
     testWidget->scrollToItem(child);
 
     QVERIFY(testWidget->visualItemRect(parent).isValid()
-           && testWidget->viewport()->rect().contains(testWidget->visualItemRect(parent)));
+           && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(parent)));
     QVERIFY(testWidget->visualItemRect(child).isValid()
-           && testWidget->viewport()->rect().contains(testWidget->visualItemRect(child)));
+           && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(child)));
 
     QVERIFY(!testWidget->isItemHidden(parent));
     QVERIFY(!testWidget->isItemHidden(child));
@@ -611,9 +614,9 @@ void tst_QTreeWidget::setItemHidden()
     testWidget->setItemHidden(parent, true);
 
     QVERIFY(!(testWidget->visualItemRect(parent).isValid()
-             && testWidget->viewport()->rect().contains(testWidget->visualItemRect(parent))));
+             && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(parent))));
     QVERIFY(!(testWidget->visualItemRect(child).isValid()
-             && testWidget->viewport()->rect().contains(testWidget->visualItemRect(child))));
+             && testWidget->viewport()->rect().intersects(testWidget->visualItemRect(child))));
 
     QVERIFY(testWidget->isItemHidden(parent));
     QVERIFY(!testWidget->isItemHidden(child));
@@ -3269,6 +3272,76 @@ void tst_QTreeWidget::setTextUpdate()
     item->setText(1, "42");
     QApplication::processEvents();
     QTRY_VERIFY(delegate.numPaints > 0);
+}
+
+void tst_QTreeWidget::taskQTBUG2844_visualItemRect()
+{
+    CustomTreeWidget tree;
+    tree.resize(150, 100);
+    tree.setColumnCount(3);
+    QTreeWidgetItem item(&tree);
+
+    QRect itemRect = tree.visualItemRect(&item);
+
+    QRect rectCol0 = tree.visualRect(tree.indexFromItem(&item, 0));
+    QRect rectCol1 = tree.visualRect(tree.indexFromItem(&item, 1));
+    QRect rectCol2 = tree.visualRect(tree.indexFromItem(&item, 2));
+
+    QCOMPARE(tree.visualItemRect(&item), rectCol0 | rectCol2);
+    tree.setColumnHidden(2, true);
+    QCOMPARE(tree.visualItemRect(&item), rectCol0 | rectCol1);
+}
+
+void tst_QTreeWidget::setChildIndicatorPolicy()
+{
+    QTreeWidget treeWidget;
+    treeWidget.setColumnCount(1);
+
+    class MyItemDelegate : public QStyledItemDelegate
+    {
+    public:
+        MyItemDelegate() : numPaints(0), expectChildren(false)  { }
+        void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+        {
+            numPaints++;
+            QCOMPARE(!(option.state & QStyle::State_Children), !expectChildren);
+            QStyledItemDelegate::paint(painter, option, index);
+        }
+        mutable int numPaints;
+        bool expectChildren;
+    } delegate;
+
+    treeWidget.setItemDelegate(&delegate);
+    treeWidget.show();
+
+    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList("Hello"));
+    treeWidget.insertTopLevelItem(0, item);
+    QTest::qWait(50);
+    QTRY_VERIFY(delegate.numPaints > 0);
+
+    delegate.numPaints = 0;
+    delegate.expectChildren = true;
+    item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
+    QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
+
+    delegate.numPaints = 0;
+    delegate.expectChildren = false;
+    item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicatorWhenChildless);
+    QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
+
+    delegate.numPaints = 0;
+    delegate.expectChildren = true;
+    new QTreeWidgetItem(item);
+    QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
+
+    delegate.numPaints = 0;
+    delegate.expectChildren = false;
+    item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+    QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
 }
 
 

@@ -161,6 +161,9 @@ static void qt_tablet_init()
     qt_tablet_widget = new QWidget(0);
     qt_tablet_widget->createWinId();
     qt_tablet_widget->setObjectName(QLatin1String("Qt internal tablet widget"));
+    // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+    if (QWidgetPrivate::allWidgets)
+        QWidgetPrivate::allWidgets->remove(qt_tablet_widget);
     LOGCONTEXT lcMine;
     qAddPostRoutine(qt_tablet_cleanup);
     struct tagAXIS tpOri[3];
@@ -674,7 +677,11 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
     QWidget *parentWindow = window();
     QWExtra *extra = parentWindow->d_func()->extra;
     if (!isVisible() || parentWindow->isMinimized() || !testAttribute(Qt::WA_WState_Created) || !internalWinId()
-        || (extra && extra->proxyWidget)) {
+        || (extra
+#ifndef QT_NO_GRAPHICSVIEW
+            && extra->proxyWidget
+#endif //QT_NO_GRAPHICSVIEW
+            )) {
         if (extra && extra->topextra && extra->topextra->embedded) {
             QPoint pt = mapTo(parentWindow, pos);
             POINT p = {pt.x(), pt.y()};
@@ -701,7 +708,11 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
     QWidget *parentWindow = window();
     QWExtra *extra = parentWindow->d_func()->extra;
     if (!isVisible() || parentWindow->isMinimized() || !testAttribute(Qt::WA_WState_Created) || !internalWinId()
-        || (extra && extra->proxyWidget)) {
+        || (extra
+#ifndef QT_NO_GRAPHICSVIEW
+            && extra->proxyWidget
+#endif //QT_NO_GRAPHICSVIEW
+            )) {
         if (extra && extra->topextra && extra->topextra->embedded) {
             POINT p = {pos.x(), pos.y()};
             ScreenToClient(parentWindow->effectiveWinId(), &p);
@@ -851,10 +862,13 @@ void QWidget::grabMouse()
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         SetCapture(effectiveWinId());
         mouseGrb = this;
+#ifndef QT_NO_CURSOR
         mouseGrbCur = new QCursor(mouseGrb->cursor());
+#endif
     }
 }
 
+#ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
     if (!qt_nograb()) {
@@ -868,6 +882,7 @@ void QWidget::grabMouse(const QCursor &cursor)
         mouseGrb = this;
     }
 }
+#endif
 
 void QWidget::releaseMouse()
 {
@@ -1324,8 +1339,15 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     if (isResize && !q->testAttribute(Qt::WA_StaticContents) && q->internalWinId())
         ValidateRgn(q->internalWinId(), 0);
 
+#ifdef Q_WS_WINCE
+    // On Windows CE we can't just fiddle around with the window state.
+    // Too much magic in setWindowState.
+    if (isResize && q->isMaximized())
+        q->setWindowState(q->windowState() & ~Qt::WindowMaximized);
+#else
     if (isResize)
         data.window_state &= ~Qt::WindowMaximized;
+#endif
 
     if (data.window_state & Qt::WindowFullScreen) {
         QTLWExtra *top = topData();
@@ -2025,16 +2047,21 @@ void QWidgetPrivate::registerTouchWindow()
 
 void QWidgetPrivate::winSetupGestures()
 {
+#if !defined(QT_NO_NATIVE_GESTURES)
     Q_Q(QWidget);
-    if (!q || !q->isVisible())
+    if (!q || !q->isVisible() || !nativeGesturePanEnabled)
         return;
+
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-    WId winid = q->effectiveWinId();
+    if (!qAppPriv->SetGestureConfig)
+        return;
+    WId winid = q->internalWinId();
 
     bool needh = false;
     bool needv = false;
     bool singleFingerPanEnabled = false;
 
+#ifndef QT_NO_SCROLLAREA
     if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q->parent())) {
         QScrollBar *hbar = asa->horizontalScrollBar();
         QScrollBar *vbar = asa->verticalScrollBar();
@@ -2045,8 +2072,12 @@ void QWidgetPrivate::winSetupGestures()
         needv = (vbarpolicy == Qt::ScrollBarAlwaysOn ||
                  (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
+        if (!winid) {
+            winid = q->winId(); // enforces the native winid on the viewport
+        }
     }
-    if (winid && qAppPriv->SetGestureConfig) {
+#endif //QT_NO_SCROLLAREA
+    if (winid) {
         GESTURECONFIG gc[1];
         memset(gc, 0, sizeof(gc));
         gc[0].dwID = GID_PAN;
@@ -2064,19 +2095,9 @@ void QWidgetPrivate::winSetupGestures()
             gc[0].dwBlock = GC_PAN;
         }
 
-//        gc[1].dwID = GID_ZOOM;
-//        if (gestures.pinch)
-//            gc[1].dwWant = GC_ZOOM;
-//        else
-//            gc[1].dwBlock = GC_ZOOM;
-//        gc[2].dwID = GID_ROTATE;
-//        if (gestures.pinch)
-//            gc[2].dwWant = GC_ROTATE;
-//        else
-//            gc[2].dwBlock = GC_ROTATE;
-
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }
+#endif
 }
 
 QT_END_NAMESPACE

@@ -54,9 +54,9 @@
 
 #include <windows.h>
 
-#include "qegl_p.h"
-#include "qgl_egl_p.h"
-#include "qgl_cl_p.h"
+#include <private/qegl_p.h>
+#include <private/qgl_egl_p.h>
+#include <private/qgl_cl_p.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -166,6 +166,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         d->eglContext = 0;
         return false;
     }
+    d->sharing = d->eglContext->isSharing();
+    if (d->sharing && shareContext)
+        const_cast<QGLContext *>(shareContext)->d_func()->sharing = true;
 
 #if defined(EGL_VERSION_1_1)
     if (d->glFormat.swapInterval() != -1 && devType == QInternal::Widget)

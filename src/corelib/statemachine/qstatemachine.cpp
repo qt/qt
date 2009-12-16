@@ -159,12 +159,12 @@ QT_BEGIN_NAMESPACE
     \brief the restore policy for states of this state machine.
 
     The default value of this property is
-    QStateMachine::DoNotRestoreProperties.
+    QStateMachine::DontRestoreProperties.
 */
 
 #ifndef QT_NO_ANIMATION
 /*!
-    \property QStateMachine::animationsEnabled
+    \property QStateMachine::animated
 
     \brief whether animations are enabled
 
@@ -178,6 +178,8 @@ QT_BEGIN_NAMESPACE
 
 QStateMachinePrivate::QStateMachinePrivate()
 {
+    QAbstractStatePrivate::isMachine = true;
+
     state = NotRunning;
     _startState = 0;
     processing = false;
@@ -185,10 +187,10 @@ QStateMachinePrivate::QStateMachinePrivate()
     stop = false;
     stopProcessingReason = EventQueueEmpty;
     error = QStateMachine::NoError;
-    globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
+    globalRestorePolicy = QStateMachine::DontRestoreProperties;
     signalEventGenerator = 0;
 #ifndef QT_NO_ANIMATION
-    animationsEnabled = true;
+    animated = true;
 #endif
 }
 
@@ -336,7 +338,7 @@ QSet<QAbstractTransition*> QStateMachinePrivate::selectTransitions(QEvent *event
         if (isPreempted(state, enabledTransitions))
             continue;
         QList<QState*> lst = properAncestors(state, rootState()->parentState());
-        if (QState *grp = qobject_cast<QState*>(state))
+        if (QState *grp = toStandardState(state))
             lst.prepend(grp);
         bool found = false;
         for (int j = 0; (j < lst.size()) && !found; ++j) {
@@ -414,7 +416,7 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(QEvent *event, const QLi
     qSort(statesToExit_sorted.begin(), statesToExit_sorted.end(), stateExitLessThan);
     for (int i = 0; i < statesToExit_sorted.size(); ++i) {
         QAbstractState *s = statesToExit_sorted.at(i);
-        if (QState *grp = qobject_cast<QState*>(s)) {
+        if (QState *grp = toStandardState(s)) {
             QList<QHistoryState*> hlst = QStatePrivate::get(grp)->historyStates();
             for (int j = 0; j < hlst.size(); ++j) {
                 QHistoryState *h = hlst.at(j);
@@ -563,7 +565,7 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
                                             QSet<QAbstractState*> &statesToEnter,
                                             QSet<QAbstractState*> &statesForDefaultEntry)
 {
-	if (QHistoryState *h = qobject_cast<QHistoryState*>(s)) {
+	if (QHistoryState *h = toHistoryState(s)) {
 		QList<QAbstractState*> hconf = QHistoryStatePrivate::get(h)->configuration;
 		if (!hconf.isEmpty()) {
 			for (int k = 0; k < hconf.size(); ++k) {
@@ -600,7 +602,7 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
             }
 		statesToEnter.insert(s);
 		if (isParallel(s)) {
-			QState *grp = qobject_cast<QState*>(s);
+			QState *grp = toStandardState(s);
 			QList<QAbstractState*> lst = QStatePrivate::get(grp)->childStates();
 			for (int i = 0; i < lst.size(); ++i) {
 				QAbstractState *child = lst.at(i);
@@ -608,7 +610,7 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
 			}
 		} else if (isCompound(s)) {
 			statesForDefaultEntry.insert(s);
-			QState *grp = qobject_cast<QState*>(s);
+			QState *grp = toStandardState(s);
 			QAbstractState *initial = grp->initialState();
 			if (initial != 0) {
                             Q_ASSERT(initial->machine() == q_func());
@@ -660,7 +662,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
     QHash<QAbstractState*, QList<QPropertyAssignment> > propertyAssignmentsForState;
     QHash<RestorableId, QVariant> pendingRestorables = registeredRestorables;
     for (int i = 0; i < enteredStates.size(); ++i) {
-        QState *s = qobject_cast<QState*>(enteredStates.at(i));
+        QState *s = toStandardState(enteredStates.at(i));
         if (!s)
             continue;
 
@@ -742,7 +744,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
 
     // Find the animations to use for the state change.
     QList<QAbstractAnimation*> selectedAnimations;
-    if (animationsEnabled) {
+    if (animated) {
         for (int i = 0; i < transitionList.size(); ++i) {
             QAbstractTransition *transition = transitionList.at(i);
 
@@ -807,7 +809,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             if (anim->state() == QAbstractAnimation::Running) {
                 // The animation is still running. This can happen if the
                 // animation is a group, and one of its children just finished,
-                // and that caused a state to emit its polished() signal, and
+                // and that caused a state to emit its propertiesAssigned() signal, and
                 // that triggered a transition in the machine.
                 // Just stop the animation so it is correctly restarted again.
                 anim->stop();
@@ -829,15 +831,15 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         }
     }
 
-    // Emit polished signal for entered states that have no animated properties.
+    // Emit propertiesAssigned signal for entered states that have no animated properties.
     for (int i = 0; i < enteredStates.size(); ++i) {
-        QState *s = qobject_cast<QState*>(enteredStates.at(i));
+        QState *s = toStandardState(enteredStates.at(i));
         if (s 
 #ifndef QT_NO_ANIMATION
             && !animationsForState.contains(s)
 #endif
             )
-            QStatePrivate::get(s)->emitPolished();
+            QStatePrivate::get(s)->emitPropertiesAssigned();
     }
 }
 
@@ -845,21 +847,21 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
 
 bool QStateMachinePrivate::isFinal(const QAbstractState *s)
 {
-    return qobject_cast<const QFinalState*>(s) != 0;
+    return s && (QAbstractStatePrivate::get(s)->stateType == QAbstractStatePrivate::FinalState);
 }
 
 bool QStateMachinePrivate::isParallel(const QAbstractState *s)
 {
-    const QState *ss = qobject_cast<const QState*>(s);
+    const QState *ss = toStandardState(s);
     return ss && (QStatePrivate::get(ss)->childMode == QState::ParallelStates);
 }
 
 bool QStateMachinePrivate::isCompound(const QAbstractState *s) const
 {
-    const QState *group = qobject_cast<const QState*>(s);
+    const QState *group = toStandardState(s);
     if (!group)
         return false;
-    bool isMachine = (qobject_cast<const QStateMachine*>(group) != 0);
+    bool isMachine = QStatePrivate::get(group)->isMachine;
     // Don't treat the machine as compound if it's a sub-state of this machine
     if (isMachine && (group != rootState()))
         return false;
@@ -869,11 +871,11 @@ bool QStateMachinePrivate::isCompound(const QAbstractState *s) const
 
 bool QStateMachinePrivate::isAtomic(const QAbstractState *s) const
 {
-    const QState *ss = qobject_cast<const QState*>(s);
+    const QState *ss = toStandardState(s);
     return (ss && QStatePrivate::get(ss)->childStates().isEmpty())
         || isFinal(s)
         // Treat the machine as atomic if it's a sub-state of this machine
-        || (ss && (qobject_cast<const QStateMachine*>(ss) != 0) && (ss != rootState()));
+        || (ss && QStatePrivate::get(ss)->isMachine && (ss != rootState()));
 }
 
 
@@ -897,10 +899,38 @@ QList<QState*> QStateMachinePrivate::properAncestors(const QAbstractState *state
     return result;
 }
 
+QState *QStateMachinePrivate::toStandardState(QAbstractState *state)
+{
+    if (state && (QAbstractStatePrivate::get(state)->stateType == QAbstractStatePrivate::StandardState))
+        return static_cast<QState*>(state);
+    return 0;
+}
+
+const QState *QStateMachinePrivate::toStandardState(const QAbstractState *state)
+{
+    if (state && (QAbstractStatePrivate::get(state)->stateType == QAbstractStatePrivate::StandardState))
+        return static_cast<const QState*>(state);
+    return 0;
+}
+
+QFinalState *QStateMachinePrivate::toFinalState(QAbstractState *state)
+{
+    if (state && (QAbstractStatePrivate::get(state)->stateType == QAbstractStatePrivate::FinalState))
+        return static_cast<QFinalState*>(state);
+    return 0;
+}
+
+QHistoryState *QStateMachinePrivate::toHistoryState(QAbstractState *state)
+{
+    if (state && (QAbstractStatePrivate::get(state)->stateType == QAbstractStatePrivate::HistoryState))
+        return static_cast<QHistoryState*>(state);
+    return 0;
+}
+
 bool QStateMachinePrivate::isInFinalState(QAbstractState* s) const
 {
     if (isCompound(s)) {
-        QState *grp = qobject_cast<QState*>(s);
+        QState *grp = toStandardState(s);
         QList<QAbstractState*> lst = QStatePrivate::get(grp)->childStates();
         for (int i = 0; i < lst.size(); ++i) {
             QAbstractState *cs = lst.at(i);
@@ -909,7 +939,7 @@ bool QStateMachinePrivate::isInFinalState(QAbstractState* s) const
         }
         return false;
     } else if (isParallel(s)) {
-        QState *grp = qobject_cast<QState*>(s);
+        QState *grp = toStandardState(s);
         QList<QAbstractState*> lst = QStatePrivate::get(grp)->childStates();
         for (int i = 0; i < lst.size(); ++i) {
             QAbstractState *cs = lst.at(i);
@@ -975,7 +1005,7 @@ QAbstractState *QStateMachinePrivate::findErrorState(QAbstractState *context)
     // Find error state recursively in parent hierarchy if not set explicitly for context state
     QAbstractState *errorState = 0;
     if (context != 0) {
-        QState *s = qobject_cast<QState*>(context);
+        QState *s = toStandardState(context);
         if (s != 0)
             errorState = s->errorState();
 
@@ -1100,7 +1130,7 @@ void QStateMachinePrivate::_q_animationFinished()
     animations.removeOne(anim);
     if (animations.isEmpty()) {
         animationsForState.erase(it);
-        QStatePrivate::get(qobject_cast<QState*>(state))->emitPolished();
+        QStatePrivate::get(toStandardState(state))->emitPropertiesAssigned();
     }
 }
 
@@ -1216,8 +1246,7 @@ void QStateMachinePrivate::_q_process()
             delete e;
             e = 0;
         }
-        if (enabledTransitions.isEmpty() && !internalEventQueue.isEmpty()) {
-            e = internalEventQueue.takeFirst();
+        if (enabledTransitions.isEmpty() && ((e = dequeueInternalEvent()) != 0)) {
 #ifdef QSTATEMACHINE_DEBUG
             qDebug() << q << ": dequeued internal event" << e << "of type" << e->type();
 #endif
@@ -1228,13 +1257,7 @@ void QStateMachinePrivate::_q_process()
             }
         }
         if (enabledTransitions.isEmpty()) {
-            if (externalEventQueue.isEmpty()) {
-                if (internalEventQueue.isEmpty()) {
-                    processing = false;
-                    stopProcessingReason = EventQueueEmpty;
-                }
-            } else {
-                e = externalEventQueue.takeFirst();
+            if ((e = dequeueExternalEvent()) != 0) {
 #ifdef QSTATEMACHINE_DEBUG
                 qDebug() << q << ": dequeued external event" << e << "of type" << e->type();
 #endif
@@ -1242,6 +1265,11 @@ void QStateMachinePrivate::_q_process()
                 if (enabledTransitions.isEmpty()) {
                     delete e;
                     e = 0;
+                }
+            } else {
+                if (isInternalEventQueueEmpty()) {
+                    processing = false;
+                    stopProcessingReason = EventQueueEmpty;
                 }
             }
         }
@@ -1278,17 +1306,60 @@ void QStateMachinePrivate::_q_process()
     }
 }
 
+void QStateMachinePrivate::postInternalEvent(QEvent *e)
+{
+    QMutexLocker locker(&internalEventMutex);
+    internalEventQueue.append(e);
+}
+
+void QStateMachinePrivate::postExternalEvent(QEvent *e)
+{
+    QMutexLocker locker(&externalEventMutex);
+    externalEventQueue.append(e);
+}
+
+QEvent *QStateMachinePrivate::dequeueInternalEvent()
+{
+    QMutexLocker locker(&internalEventMutex);
+    if (internalEventQueue.isEmpty())
+        return 0;
+    return internalEventQueue.takeFirst();
+}
+
+QEvent *QStateMachinePrivate::dequeueExternalEvent()
+{
+    QMutexLocker locker(&externalEventMutex);
+    if (externalEventQueue.isEmpty())
+        return 0;
+    return externalEventQueue.takeFirst();
+}
+
+bool QStateMachinePrivate::isInternalEventQueueEmpty()
+{
+    QMutexLocker locker(&internalEventMutex);
+    return internalEventQueue.isEmpty();
+}
+
+bool QStateMachinePrivate::isExternalEventQueueEmpty()
+{
+    QMutexLocker locker(&externalEventMutex);
+    return externalEventQueue.isEmpty();
+}
+
 void QStateMachinePrivate::processEvents(EventProcessingMode processingMode)
 {
+    Q_Q(QStateMachine);
     if ((state != Running) || processing || processingScheduled)
         return;
     switch (processingMode) {
     case DirectProcessing:
-        _q_process();
-        break;
+        if (QThread::currentThread() == q->thread()) {
+            _q_process();
+            break;
+        } // fallthrough -- processing must be done in the machine thread
     case QueuedProcessing:
         processingScheduled = true;
-        QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(q, "_q_process", Qt::QueuedConnection);
         break;
     }
 }
@@ -1296,6 +1367,7 @@ void QStateMachinePrivate::processEvents(EventProcessingMode processingMode)
 void QStateMachinePrivate::cancelAllDelayedEvents()
 {
     Q_Q(QStateMachine);
+    QMutexLocker locker(&delayedEventsMutex);
     QHash<int, QEvent*>::const_iterator it;
     for (it = delayedEvents.constBegin(); it != delayedEvents.constEnd(); ++it) {
         int id = it.key();
@@ -1346,7 +1418,7 @@ void QStateMachinePrivate::goToState(QAbstractState *targetState)
     if (state == Running) {
         QSet<QAbstractState*>::const_iterator it;
         for (it = configuration.constBegin(); it != configuration.constEnd(); ++it) {
-            sourceState = qobject_cast<QState*>(*it);
+            sourceState = toStandardState(*it);
             if (sourceState != 0)
                 break;
         }
@@ -1370,7 +1442,7 @@ void QStateMachinePrivate::goToState(QAbstractState *targetState)
 
 void QStateMachinePrivate::registerTransitions(QAbstractState *state)
 {
-    QState *group = qobject_cast<QState*>(state);
+    QState *group = toStandardState(state);
     if (!group)
         return;
     QList<QAbstractTransition*> transitions = QStatePrivate::get(group)->transitions();
@@ -1544,10 +1616,9 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
 }
 
 void QStateMachinePrivate::handleFilteredEvent(QObject *watched, QEvent *event)
-{
-    Q_ASSERT(qobjectEvents.contains(watched));
-    if (qobjectEvents[watched].contains(event->type())) {
-        internalEventQueue.append(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
+{    
+    if (qobjectEvents.value(watched).contains(event->type())) {
+        postInternalEvent(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
         processEvents(DirectProcessing);
     }
 }
@@ -1571,7 +1642,7 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
     qDebug() << q_func() << ": sending signal event ( sender =" << sender
              << ", signal =" << sender->metaObject()->method(signalIndex).signature() << ')';
 #endif
-    internalEventQueue.append(new QStateMachine::SignalEvent(sender, signalIndex, vargs));
+    postInternalEvent(new QStateMachine::SignalEvent(sender, signalIndex, vargs));
     processEvents(DirectProcessing);
 }
 
@@ -1654,7 +1725,7 @@ QStateMachine::~QStateMachine()
    already been saved by the state machine, it will not be overwritten until the property has been
    successfully restored. 
 
-   \value DoNotRestoreProperties The state machine should not save the initial values of properties 
+   \value DontRestoreProperties The state machine should not save the initial values of properties
           and restore them later.
    \value RestoreProperties The state machine should save the initial values of properties 
           and restore them later.
@@ -1704,7 +1775,7 @@ QStateMachine::RestorePolicy QStateMachine::globalRestorePolicy() const
 
 /*!
    Sets the restore policy of the state machine to \a restorePolicy. The default 
-   restore policy is QAbstractState::DoNotRestoreProperties.
+   restore policy is QAbstractState::DontRestoreProperties.
    
    \sa globalRestorePolicy()
 */
@@ -1825,6 +1896,8 @@ void QStateMachine::stop()
 }
 
 /*!
+  \threadsafe
+
   Posts the given \a event of the given \a priority for processing by this
   state machine.
 
@@ -1852,16 +1925,18 @@ void QStateMachine::postEvent(QEvent *event, EventPriority priority)
 #endif
     switch (priority) {
     case NormalPriority:
-        d->externalEventQueue.append(event);
+        d->postExternalEvent(event);
         break;
     case HighPriority:
-        d->internalEventQueue.append(event);
+        d->postInternalEvent(event);
         break;
     }
     d->processEvents(QStateMachinePrivate::QueuedProcessing);
 }
 
 /*!
+  \threadsafe
+
   Posts the given \a event for processing by this state machine, with the
   given \a delay in milliseconds. Returns an identifier associated with the
   delayed event, or -1 if the event could not be posted.
@@ -1893,12 +1968,15 @@ int QStateMachine::postDelayedEvent(QEvent *event, int delay)
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << this << ": posting event" << event << "with delay" << delay;
 #endif
+    QMutexLocker locker(&d->delayedEventsMutex);
     int tid = startTimer(delay);
     d->delayedEvents[tid] = event;
     return tid;
 }
 
 /*!
+  \threadsafe
+
   Cancels the delayed event identified by the given \a id. The id should be a
   value returned by a call to postDelayedEvent(). Returns true if the event
   was successfully cancelled, otherwise returns false.
@@ -1912,6 +1990,7 @@ bool QStateMachine::cancelDelayedEvent(int id)
         qWarning("QStateMachine::cancelDelayedEvent: the machine is not running");
         return false;
     }
+    QMutexLocker locker(&d->delayedEventsMutex);
     QEvent *e = d->delayedEvents.take(id);
     if (!e)
         return false;
@@ -1921,8 +2000,6 @@ bool QStateMachine::cancelDelayedEvent(int id)
 }
 
 /*!
-  \internal
-
    Returns the maximal consistent set of states (including parallel and final
    states) that this state machine is currently in. If a state \c s is in the
    configuration, it is always the case that the parent of \c s is also in
@@ -1963,18 +2040,23 @@ bool QStateMachine::event(QEvent *e)
         int tid = te->timerId();
         if (d->state != QStateMachinePrivate::Running) {
             // This event has been cancelled already
+            QMutexLocker locker(&d->delayedEventsMutex);
             Q_ASSERT(!d->delayedEvents.contains(tid));
             return true;
         }
+        d->delayedEventsMutex.lock();
         QEvent *ee = d->delayedEvents.take(tid);
         if (ee != 0) {
             killTimer(tid);
-            d->externalEventQueue.append(ee);
+            d->delayedEventsMutex.unlock();
+            d->postExternalEvent(ee);
             d->processEvents(QStateMachinePrivate::DirectProcessing);
             return true;
+        } else {
+            d->delayedEventsMutex.unlock();
         }
     }
-    return QObject::event(e);
+    return QState::event(e);
 }
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
@@ -2063,19 +2145,19 @@ void QStateMachine::onExit(QEvent *event)
 /*!
   Returns whether animations are enabled for this state machine.
 */
-bool QStateMachine::animationsEnabled() const
+bool QStateMachine::isAnimated() const
 {
     Q_D(const QStateMachine);
-    return d->animationsEnabled;
+    return d->animated;
 }
 
 /*!
   Sets whether animations are \a enabled for this state machine.
 */
-void QStateMachine::setAnimationsEnabled(bool enabled)
+void QStateMachine::setAnimated(bool enabled)
 {
     Q_D(QStateMachine);
-    d->animationsEnabled = enabled;
+    d->animated = enabled;
 }
 
 /*!

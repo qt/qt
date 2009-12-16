@@ -80,8 +80,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSClientRectConstructor::s_info = { "ClientRectConstructor", 0, &JSClientRectConstructorTable, 0 };
@@ -127,7 +130,7 @@ JSClientRect::JSClientRect(NonNullPassRefPtr<Structure> structure, JSDOMGlobalOb
 
 JSClientRect::~JSClientRect()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSClientRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

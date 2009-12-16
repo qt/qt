@@ -135,6 +135,11 @@ struct Namespace {
     // Nested classes may be forward-declared inside a definition, and defined in another file.
     // The latter will detach the class' child list, so clones need a backlink to the original
     // definition (either one in case of multiple definitions).
+    // Namespaces can have tr() functions as well, so we need to track parent definitions for
+    // them as well. The complication is that we may have to deal with a forrest instead of
+    // a tree - in that case the parent will be arbitrary. However, it seem likely that
+    // Q_DECLARE_TR_FUNCTIONS would be used either in "class-like" namespaces with a central
+    // header or only locally in a file.
     Namespace *classDef;
 
     QString trQualification;
@@ -256,17 +261,20 @@ private:
     bool qualifyOneCallbackUsing(const Namespace *ns, void *context) const;
     bool qualifyOne(const NamespaceList &namespaces, int nsCnt, const HashString &segment,
                     NamespaceList *resolved) const;
-    bool fullyQualify(const NamespaceList &namespaces, const QList<HashString> &segments,
-                      bool isDeclaration,
+    bool fullyQualify(const NamespaceList &namespaces, int nsCnt,
+                      const QList<HashString> &segments, bool isDeclaration,
                       NamespaceList *resolved, QStringList *unresolved) const;
-    bool fullyQualify(const NamespaceList &namespaces, const QString &segments,
-                      bool isDeclaration,
+    bool fullyQualify(const NamespaceList &namespaces,
+                      const QList<HashString> &segments, bool isDeclaration,
+                      NamespaceList *resolved, QStringList *unresolved) const;
+    bool fullyQualify(const NamespaceList &namespaces,
+                      const QString &segments, bool isDeclaration,
                       NamespaceList *resolved, QStringList *unresolved) const;
     bool findNamespaceCallback(const Namespace *ns, void *context) const;
     const Namespace *findNamespace(const NamespaceList &namespaces, int nsCount = -1) const;
     void enterNamespace(NamespaceList *namespaces, const HashString &name);
     void truncateNamespaces(NamespaceList *namespaces, int lenght);
-    Namespace *modifyNamespace(NamespaceList *namespaces, bool tryOrigin = true);
+    Namespace *modifyNamespace(NamespaceList *namespaces, bool haveLast = true);
 
     enum {
         Tok_Eof, Tok_class, Tok_friend, Tok_namespace, Tok_using, Tok_return,
@@ -298,7 +306,6 @@ private:
 
     // the string to read from and current position in the string
     QTextCodec *yySourceCodec;
-    bool yySourceIsUnicode;
     QString yyInStr;
     const ushort *yyInPtr;
 
@@ -345,7 +352,6 @@ void CppParser::setInput(const QString &in)
     yyInStr = in;
     yyFileName = QString();
     yySourceCodec = 0;
-    yySourceIsUnicode = true;
     yyForceUtf8 = true;
 }
 
@@ -354,7 +360,6 @@ void CppParser::setInput(QTextStream &ts, const QString &fileName)
     yyInStr = ts.readAll();
     yyFileName = fileName;
     yySourceCodec = ts.codec();
-    yySourceIsUnicode = yySourceCodec->name().startsWith("UTF-");
     yyForceUtf8 = false;
 }
 
@@ -780,7 +785,7 @@ uint CppParser::getToken()
                         if (yyCh == EOF) {
                             qWarning("%s:%d: Unterminated C++ comment\n",
                                      qPrintable(yyFileName), yyLineNo);
-                            return Tok_Comment;
+                            break;
                         }
                         *ptr++ = yyCh;
 
@@ -958,7 +963,7 @@ void CppParser::loadState(const SavedState *state)
     pendingContext = state->pendingContext;
 }
 
-Namespace *CppParser::modifyNamespace(NamespaceList *namespaces, bool tryOrigin)
+Namespace *CppParser::modifyNamespace(NamespaceList *namespaces, bool haveLast)
 {
     Namespace *pns, *ns = &results->rootNamespace;
     for (int i = 1; i < namespaces->count(); ++i) {
@@ -966,7 +971,7 @@ Namespace *CppParser::modifyNamespace(NamespaceList *namespaces, bool tryOrigin)
         if (!(ns = pns->children.value(namespaces->at(i)))) {
             do {
                 ns = new Namespace;
-                if (tryOrigin)
+                if (haveLast || i < namespaces->count() - 1)
                     if (const Namespace *ons = findNamespace(*namespaces, i + 1))
                         ns->classDef = ons->classDef;
                 pns->children.insert(namespaces->at(i), ns);
@@ -1052,7 +1057,18 @@ bool CppParser::qualifyOneCallbackOwn(const Namespace *ns, void *context) const
     }
     QHash<HashString, NamespaceList>::ConstIterator nsai = ns->aliases.constFind(data->segment);
     if (nsai != ns->aliases.constEnd()) {
-        *data->resolved = *nsai;
+        const NamespaceList &nsl = *nsai;
+        if (nsl.last().value().isEmpty()) { // Delayed alias resolution
+            NamespaceList &nslIn = *const_cast<NamespaceList *>(&nsl);
+            nslIn.removeLast();
+            NamespaceList nslOut;
+            if (!fullyQualify(data->namespaces, data->nsCount, nslIn, false, &nslOut, 0)) {
+                const_cast<Namespace *>(ns)->aliases.remove(data->segment);
+                return false;
+            }
+            nslIn = nslOut;
+        }
+        *data->resolved = nsl;
         return true;
     }
     return false;
@@ -1081,8 +1097,8 @@ bool CppParser::qualifyOne(const NamespaceList &namespaces, int nsCnt, const Has
     return visitNamespace(namespaces, nsCnt, &CppParser::qualifyOneCallbackUsing, &data);
 }
 
-bool CppParser::fullyQualify(const NamespaceList &namespaces, const QList<HashString> &segments,
-                             bool isDeclaration,
+bool CppParser::fullyQualify(const NamespaceList &namespaces, int nsCnt,
+                             const QList<HashString> &segments, bool isDeclaration,
                              NamespaceList *resolved, QStringList *unresolved) const
 {
     int nsIdx;
@@ -1099,7 +1115,7 @@ bool CppParser::fullyQualify(const NamespaceList &namespaces, const QList<HashSt
         nsIdx = 0;
     } else {
         initSegIdx = 0;
-        nsIdx = namespaces.count() - 1;
+        nsIdx = nsCnt - 1;
     }
 
     do {
@@ -1122,8 +1138,16 @@ bool CppParser::fullyQualify(const NamespaceList &namespaces, const QList<HashSt
     return false;
 }
 
-bool CppParser::fullyQualify(const NamespaceList &namespaces, const QString &quali,
-                             bool isDeclaration,
+bool CppParser::fullyQualify(const NamespaceList &namespaces,
+                             const QList<HashString> &segments, bool isDeclaration,
+                             NamespaceList *resolved, QStringList *unresolved) const
+{
+    return fullyQualify(namespaces, namespaces.count(),
+                        segments, isDeclaration, resolved, unresolved);
+}
+
+bool CppParser::fullyQualify(const NamespaceList &namespaces,
+                             const QString &quali, bool isDeclaration,
                              NamespaceList *resolved, QStringList *unresolved) const
 {
     static QString strColons(QLatin1String("::"));
@@ -1403,24 +1427,24 @@ QString CppParser::transcode(const QString &str, bool utf8)
 {
     static const char tab[] = "abfnrtv";
     static const char backTab[] = "\a\b\f\n\r\t\v";
-    const QString in = (!utf8 || yySourceIsUnicode)
-        ? str : QString::fromUtf8(yySourceCodec->fromUnicode(str).data());
-    QString out;
+    // This function has to convert back to bytes, as C's \0* sequences work at that level.
+    const QByteArray in = yyForceUtf8 ? str.toUtf8() : tor->codec()->fromUnicode(str);
+    QByteArray out;
 
     out.reserve(in.length());
     for (int i = 0; i < in.length();) {
-        ushort c = in[i++].unicode();
+        uchar c = in[i++];
         if (c == '\\') {
             if (i >= in.length())
                 break;
-            c = in[i++].unicode();
+            c = in[i++];
 
             if (c == '\n')
                 continue;
 
             if (c == 'x') {
                 QByteArray hex;
-                while (i < in.length() && isxdigit((c = in[i].unicode()))) {
+                while (i < in.length() && isxdigit((c = in[i]))) {
                     hex += c;
                     i++;
                 }
@@ -1429,7 +1453,7 @@ QString CppParser::transcode(const QString &str, bool utf8)
                 QByteArray oct;
                 int n = 0;
                 oct += c;
-                while (n < 2 && i < in.length() && (c = in[i].unicode()) >= '0' && c < '8') {
+                while (n < 2 && i < in.length() && (c = in[i]) >= '0' && c < '8') {
                     i++;
                     n++;
                     oct += c;
@@ -1437,13 +1461,14 @@ QString CppParser::transcode(const QString &str, bool utf8)
                 out += oct.toUInt(0, 8);
             } else {
                 const char *p = strchr(tab, c);
-                out += QChar(QLatin1Char(!p ? c : backTab[p - tab]));
+                out += !p ? c : backTab[p - tab];
             }
         } else {
             out += c;
         }
     }
-    return out;
+    return (utf8 || yyForceUtf8) ? QString::fromUtf8(out.constData(), out.length())
+                                 : tor->codec()->toUnicode(out);
 }
 
 void CppParser::recordMessage(
@@ -1633,9 +1658,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     }
                     if (fullName.isEmpty())
                         break;
-                    NamespaceList nsl;
-                    if (fullyQualify(namespaces, fullName, false, &nsl, 0))
-                        modifyNamespace(&namespaces, false)->aliases[ns] = nsl;
+                    fullName.append(HashString(QString())); // Mark as unresolved
+                    modifyNamespace(&namespaces)->aliases[ns] = fullName;
                 }
             } else if (yyTok == Tok_LeftBrace) {
                 // Anonymous namespace
@@ -1661,7 +1685,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 }
                 NamespaceList nsl;
                 if (fullyQualify(namespaces, fullName, false, &nsl, 0))
-                    modifyNamespace(&namespaces, false)->usings << HashStringList(nsl);
+                    modifyNamespace(&namespaces)->usings << HashStringList(nsl);
             } else {
                 QList<HashString> fullName;
                 if (yyTok == Tok_ColonColon)
@@ -1676,9 +1700,13 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 }
                 if (fullName.isEmpty())
                     break;
-                NamespaceList nsl;
-                if (fullyQualify(namespaces, fullName, false, &nsl, 0))
-                    modifyNamespace(&namespaces, true)->aliases[nsl.last()] = nsl;
+                // using-declarations cannot rename classes, so the last element of
+                // fullName is already the resolved name we actually want.
+                // As we do no resolution here, we'll collect useless usings of data
+                // members and methods as well. This is no big deal.
+                HashString &ns = fullName.last();
+                fullName.append(HashString(QString())); // Mark as unresolved
+                modifyNamespace(&namespaces)->aliases[ns] = fullName;
             }
             break;
         case Tok_tr:
@@ -1853,29 +1881,25 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         case Tok_trid:
             if (!tor)
                 goto case_default;
-            if (sourcetext.isEmpty()) {
-                yyTok = getToken();
-            } else {
-                if (!msgid.isEmpty())
-                    qWarning("%s:%d: //= cannot be used with qtTrId() / QT_TRID_NOOP(). Ignoring\n",
-                             qPrintable(yyFileName), yyLineNo);
-                //utf8 = false; // Maybe use //%% or something like that
-                line = yyLineNo;
-                yyTok = getToken();
-                if (match(Tok_LeftParen) && matchString(&msgid) && !msgid.isEmpty()) {
-                    bool plural = match(Tok_Comma);
-                    recordMessage(line, QString(), sourcetext, QString(), extracomment,
-                                  msgid, extra, false, plural);
-                }
-                sourcetext.clear();
+            if (!msgid.isEmpty())
+                qWarning("%s:%d: //= cannot be used with qtTrId() / QT_TRID_NOOP(). Ignoring\n",
+                         qPrintable(yyFileName), yyLineNo);
+            //utf8 = false; // Maybe use //%% or something like that
+            line = yyLineNo;
+            yyTok = getToken();
+            if (match(Tok_LeftParen) && matchString(&msgid) && !msgid.isEmpty()) {
+                bool plural = match(Tok_Comma);
+                recordMessage(line, QString(), sourcetext, QString(), extracomment,
+                              msgid, extra, false, plural);
             }
+            sourcetext.clear();
             extracomment.clear();
             msgid.clear();
             extra.clear();
             break;
         case Tok_Q_DECLARE_TR_FUNCTIONS:
             if (getMacroArgs()) {
-                Namespace *ns = modifyNamespace(&namespaces, true);
+                Namespace *ns = modifyNamespace(&namespaces);
                 ns->hasTrFunctions = true;
                 ns->trQualification = yyWord;
                 ns->trQualification.detach();
@@ -1883,7 +1907,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             yyTok = getToken();
             break;
         case Tok_Q_OBJECT:
-            modifyNamespace(&namespaces, true)->hasTrFunctions = true;
+            modifyNamespace(&namespaces)->hasTrFunctions = true;
             yyTok = getToken();
             break;
         case Tok_Ident:
@@ -1896,28 +1920,29 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     prospectiveContext.clear();
             }
             break;
-        case Tok_Comment:
+        case Tok_Comment: {
             if (!tor)
                 goto case_default;
-            if (yyWord.startsWith(QLatin1Char(':'))) {
-                yyWord.remove(0, 1);
+            const QChar *ptr = yyWord.unicode();
+            if (*ptr == QLatin1Char(':') && ptr[1].isSpace()) {
+                yyWord.remove(0, 2);
                 extracomment += yyWord;
                 extracomment.detach();
-            } else if (yyWord.startsWith(QLatin1Char('='))) {
-                yyWord.remove(0, 1);
+            } else if (*ptr == QLatin1Char('=') && ptr[1].isSpace()) {
+                yyWord.remove(0, 2);
                 msgid = yyWord.simplified();
                 msgid.detach();
-            } else if (yyWord.startsWith(QLatin1Char('~'))) {
-                yyWord.remove(0, 1);
+            } else if (*ptr == QLatin1Char('~') && ptr[1].isSpace()) {
+                yyWord.remove(0, 2);
                 text = yyWord.trimmed();
                 int k = text.indexOf(QLatin1Char(' '));
                 if (k > -1)
                     extra.insert(text.left(k), text.mid(k + 1).trimmed());
                 text.clear();
-            } else if (yyWord.startsWith(QLatin1Char('%'))) {
-                sourcetext.reserve(sourcetext.length() + yyWord.length());
+            } else if (*ptr == QLatin1Char('%') && ptr[1].isSpace()) {
+                sourcetext.reserve(sourcetext.length() + yyWord.length() - 2);
                 ushort *ptr = (ushort *)sourcetext.data() + sourcetext.length();
-                int p = 1, c;
+                int p = 2, c;
                 forever {
                     if (p >= yyWord.length())
                         break;
@@ -1977,6 +2002,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             }
             yyTok = getToken();
             break;
+        }
         case Tok_Arrow:
             yyTok = getToken();
             if (yyTok == Tok_tr || yyTok == Tok_trUtf8)
@@ -2122,9 +2148,9 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
         QTextStream ts(&file);
         ts.setCodec(codec);
         ts.setAutoDetectUnicode(true);
-        if (ts.codec()->name() == "UTF-16")
-            translator.setCodecName("System");
         parser.setInput(ts, filename);
+        if (cd.m_outputCodec.isEmpty() && ts.codec()->name() == "UTF-16")
+            translator.setCodecName("System");
         Translator *tor = new Translator;
         tor->setCodecName(translator.codecName());
         parser.setTranslator(tor);

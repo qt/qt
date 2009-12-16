@@ -3817,6 +3817,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
                 newSize.setWidth(80);
             if (!btn->icon.isNull() && btn->iconSize.height() > 16)
                 newSize -= QSize(0, 2);
+            newSize += QSize(0, 1);
         }
         if (const QPushButton *button = qobject_cast<const QPushButton *>(widget)) {
             if (qobject_cast<const QDialogButtonBox *>(button->parentWidget())) {
@@ -3825,6 +3826,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
             }
         }
         break;
+#ifndef QT_NO_GROUPBOX
     case CT_GroupBox:
         // Since we use a bold font we have to recalculate base width
         if (const QGroupBox *gb = qobject_cast<const QGroupBox*>(widget)) {
@@ -3840,6 +3842,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
         }
         newSize += QSize(0, 1);
         break;
+#endif //QT_NO_GROUPBOX
     case CT_RadioButton:
     case CT_CheckBox:
         newSize += QSize(0, 1);
@@ -3866,7 +3869,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 if (!menuItem->text.isEmpty()) {
-                    newSize.setHeight(menuItem->fontMetrics.lineSpacing());
+                    newSize.setHeight(menuItem->fontMetrics.height());
                 }
             }
 #ifndef QT_NO_COMBOBOX

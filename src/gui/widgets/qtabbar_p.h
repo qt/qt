@@ -75,9 +75,13 @@ class QTabBarPrivate  : public QWidgetPrivate
 public:
     QTabBarPrivate()
         :currentIndex(-1), pressedIndex(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
-        drawBase(true), scrollOffset(0), expanding(true), closeButtonOnTabs(false),
+        drawBase(true), scrollOffset(0), useScrollButtonsSetByUser(false) , expanding(true), closeButtonOnTabs(false),
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
-        dragInProgress(false), documentMode(false), movingTab(0) {}
+        dragInProgress(false), documentMode(false), movingTab(0)
+#ifdef Q_WS_MAC
+        , previousPressedIndex(-1)
+#endif
+        {}
 
     int currentIndex;
     int pressedIndex;
@@ -183,6 +187,7 @@ public:
     QSize iconSize;
     Qt::TextElideMode elideMode;
     bool useScrollButtons;
+    bool useScrollButtonsSetByUser;
 
     bool expanding;
     bool closeButtonOnTabs;
@@ -195,7 +200,9 @@ public:
     bool documentMode;
 
     QWidget *movingTab;
-
+#ifdef Q_WS_MAC
+    int previousPressedIndex;
+#endif
     // shared by tabwidget and qtabbar
     static void initStyleBaseOption(QStyleOptionTabBarBaseV2 *optTabBase, QTabBar *tabbar, QSize size)
     {

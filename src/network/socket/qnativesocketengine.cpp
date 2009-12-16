@@ -194,82 +194,82 @@ void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, Er
 
     switch (errorString) {
     case NonBlockingInitFailedErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Unable to initialize non-blocking socket"));
+        socketErrorString = QNativeSocketEngine::tr("Unable to initialize non-blocking socket");
         break;
     case BroadcastingInitFailedErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Unable to initialize broadcast socket"));
+        socketErrorString = QNativeSocketEngine::tr("Unable to initialize broadcast socket");
         break;
     case NoIpV6ErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Attempt to use IPv6 socket on a platform with no IPv6 support"));
+        socketErrorString = QNativeSocketEngine::tr("Attempt to use IPv6 socket on a platform with no IPv6 support");
         break;
     case RemoteHostClosedErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "The remote host closed the connection"));
+        socketErrorString = QNativeSocketEngine::tr("The remote host closed the connection");
         break;
     case TimeOutErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Network operation timed out"));
+        socketErrorString = QNativeSocketEngine::tr("Network operation timed out");
         break;
     case ResourceErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Out of resources"));
+        socketErrorString = QNativeSocketEngine::tr("Out of resources");
         break;
     case OperationUnsupportedErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Unsupported socket operation"));
+        socketErrorString = QNativeSocketEngine::tr("Unsupported socket operation");
         break;
     case ProtocolUnsupportedErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Protocol type not supported"));
+        socketErrorString = QNativeSocketEngine::tr("Protocol type not supported");
         break;
     case InvalidSocketErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Invalid socket descriptor"));
+        socketErrorString = QNativeSocketEngine::tr("Invalid socket descriptor");
         break;
     case HostUnreachableErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Host unreachable"));
+        socketErrorString = QNativeSocketEngine::tr("Host unreachable");
         break;
     case NetworkUnreachableErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Network unreachable"));
+        socketErrorString = QNativeSocketEngine::tr("Network unreachable");
         break;
     case AccessErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Permission denied"));
+        socketErrorString = QNativeSocketEngine::tr("Permission denied");
         break;
     case ConnectionTimeOutErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Connection timed out"));
+        socketErrorString = QNativeSocketEngine::tr("Connection timed out");
         break;
     case ConnectionRefusedErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Connection refused"));
+        socketErrorString = QNativeSocketEngine::tr("Connection refused");
         break;
     case AddressInuseErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "The bound address is already in use"));
+        socketErrorString = QNativeSocketEngine::tr("The bound address is already in use");
         break;
     case AddressNotAvailableErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "The address is not available"));
+        socketErrorString = QNativeSocketEngine::tr("The address is not available");
         break;
     case AddressProtectedErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "The address is protected"));
+        socketErrorString = QNativeSocketEngine::tr("The address is protected");
         break;
     case DatagramTooLargeErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Datagram was too large to send"));
+        socketErrorString = QNativeSocketEngine::tr("Datagram was too large to send");
         break;
     case SendDatagramErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Unable to send a message"));
+        socketErrorString = QNativeSocketEngine::tr("Unable to send a message");
         break;
     case ReceiveDatagramErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Unable to receive a message"));
+        socketErrorString = QNativeSocketEngine::tr("Unable to receive a message");
         break;
     case WriteErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Unable to write"));
+        socketErrorString = QNativeSocketEngine::tr("Unable to write");
         break;
     case ReadErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Network error"));
+        socketErrorString = QNativeSocketEngine::tr("Network error");
         break;
     case PortInuseErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Another socket is already listening on the same port"));
+        socketErrorString = QNativeSocketEngine::tr("Another socket is already listening on the same port");
         break;
     case NotSocketErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Operation on non-socket"));
+        socketErrorString = QNativeSocketEngine::tr("Operation on non-socket");
         break;
     case InvalidProxyTypeString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "The proxy type is invalid for this operation"));
+        socketErrorString = QNativeSocketEngine::tr("The proxy type is invalid for this operation");
         break;
     case UnknownSocketErrorString:
-        socketErrorString = QLatin1String(QT_TRANSLATE_NOOP("QNativeSocketEngine", "Unknown error"));
+        socketErrorString = QNativeSocketEngine::tr("Unknown error");
         break;
     }
 }
@@ -754,6 +754,12 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 size)
     return d->nativeWrite(data, size);
 }
 
+
+qint64 QNativeSocketEngine::bytesToWrite() const
+{
+    return 0;
+}
+
 /*!
     Reads up to \a maxSize bytes into \a data from the socket.
     Returns the number of bytes read, or -1 if an error occurred.
@@ -870,7 +876,7 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
 */
 bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
 {
-    Q_D(const QNativeSocketEngine);
+    Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForWrite(), false);
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForWrite(),
                       QAbstractSocket::UnconnectedState, false);
@@ -887,6 +893,24 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
         setState(QAbstractSocket::ConnectedState);
         d_func()->fetchConnectionParameters();
         return true;
+    } else {
+        int value = 0;
+        int valueSize = sizeof(value);
+        if (::getsockopt(d->socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
+            if (value == WSAECONNREFUSED) {
+                d->setError(QAbstractSocket::ConnectionRefusedError, QNativeSocketEnginePrivate::ConnectionRefusedErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            } else if (value == WSAETIMEDOUT) {
+                d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::ConnectionTimeOutErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            } else if (value == WSAEHOSTUNREACH) {
+                d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::HostUnreachableErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            }
+        }
     }
 #endif
 
@@ -907,7 +931,7 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
                                       bool checkRead, bool checkWrite,
                                       int msecs, bool *timedOut)
 {
-    Q_D(const QNativeSocketEngine);
+    Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForWrite(), false);
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForReadOrWrite(),
                       QAbstractSocket::UnconnectedState, false);
@@ -921,6 +945,24 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
         setState(QAbstractSocket::ConnectedState);
         d_func()->fetchConnectionParameters();
         return true;
+    } else {
+        int value = 0;
+        int valueSize = sizeof(value);
+        if (::getsockopt(d->socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
+            if (value == WSAECONNREFUSED) {
+                d->setError(QAbstractSocket::ConnectionRefusedError, QNativeSocketEnginePrivate::ConnectionRefusedErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            } else if (value == WSAETIMEDOUT) {
+                d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::ConnectionTimeOutErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            } else if (value == WSAEHOSTUNREACH) {
+                d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::HostUnreachableErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            }
+        }
     }
 #endif
     if (ret == 0) {

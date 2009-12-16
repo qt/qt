@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#ifndef QT_NO_ICON
 #include <private/qiconloader_p.h>
 
 #include <private/qapplication_p.h>
@@ -61,7 +61,6 @@
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
-#include <private/gtksymbols_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -92,11 +91,13 @@ QIconLoader::QIconLoader() :
     if (m_systemTheme.isEmpty())
         m_systemTheme = fallbackTheme();
 
+#ifndef QT_NO_LIBRARY
     QFactoryLoader iconFactoryLoader(QIconEngineFactoryInterfaceV2_iid,
                                      QLatin1String("/iconengines"),
                                      Qt::CaseInsensitive);
     if (iconFactoryLoader.keys().contains(QLatin1String("svg")))
         m_supportsSvg = true;
+#endif //QT_NO_LIBRARY
 }
 
 QIconLoader *QIconLoader::instance()
@@ -160,7 +161,7 @@ QIconTheme::QIconTheme(const QString &themeName)
             break;
         }
     }
-
+#ifndef QT_NO_SETTINGS
     if (themeIndex.exists()) {
         const QSettings indexReader(themeIndex.fileName(), QSettings::IniFormat);
         QStringListIterator keyIterator(indexReader.allKeys());
@@ -213,6 +214,7 @@ QIconTheme::QIconTheme(const QString &themeName)
         if (!m_parents.contains(QLatin1String("hicolor")))
             m_parents.append(QLatin1String("hicolor"));
     }
+#endif //QT_NO_SETTINGS
 }
 
 QThemeIconEntries QIconLoader::findIconHelper(const QString &themeName,
@@ -247,21 +249,19 @@ QThemeIconEntries QIconLoader::findIconHelper(const QString &themeName,
         const QIconDirInfo &dirInfo = subDirs.at(i);
         QString subdir = dirInfo.path;
         QDir currentDir(contentDir + subdir);
-
-        if (dirInfo.type == QIconDirInfo::Scalable && m_supportsSvg &&
-            currentDir.exists(iconName + svgext)) {
-            ScalableEntry *iconEntry = new ScalableEntry;
-            iconEntry->dir = dirInfo;
-            iconEntry->filename = currentDir.filePath(iconName + svgext);
-            entries.append(iconEntry);
-
-        } else if (currentDir.exists(iconName + pngext)) {
+        if (currentDir.exists(iconName + pngext)) {
             PixmapEntry *iconEntry = new PixmapEntry;
             iconEntry->dir = dirInfo;
             iconEntry->filename = currentDir.filePath(iconName + pngext);
             // Notice we ensure that pixmap entries allways come before
             // scalable to preserve search order afterwards
             entries.prepend(iconEntry);
+        } else if (m_supportsSvg &&
+            currentDir.exists(iconName + svgext)) {
+            ScalableEntry *iconEntry = new ScalableEntry;
+            iconEntry->dir = dirInfo;
+            iconEntry->filename = currentDir.filePath(iconName + svgext);
+            entries.append(iconEntry);
         }
     }
 
@@ -442,10 +442,8 @@ QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QSize &size)
 
 /*
  * Returns the actual icon size. For scalable svg's this is equivalent
- * to the requested size. Otherwise the closest match is returned.
- *
- * todo: the spec is a bit fuzzy in this area, but we should probably
- * allow scaling down pixmap icons as well.
+ * to the requested size. Otherwise the closest match is returned but
+ * we can never return a bigger size than the requested size.
  *
  */
 QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
@@ -458,8 +456,10 @@ QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
         const QIconDirInfo &dir = entry->dir;
         if (dir.type == QIconDirInfo::Scalable)
             return size;
-        else
-            return QSize(dir.size, dir.size);
+        else {
+            int result = qMin<int>(dir.size, qMin(size.width(), size.height()));
+            return QSize(result, result);
+        }
     }
     return QIconEngineV2::actualSize(size, mode, state);
 }
@@ -546,3 +546,5 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_ICON

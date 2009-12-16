@@ -82,11 +82,12 @@ private slots:
     void keyboardNavigation_data();
     void keyboardNavigation();
     void focus();
-	void overrideMenuAction();
+    void overrideMenuAction();
     void statusTip();
     void widgetActionFocus();
     void mouseActivation();
     void tearOff();
+    void layoutDirection();
 
 #if defined(QT3_SUPPORT)
     void indexBasedInsertion_data();
@@ -101,11 +102,15 @@ private slots:
     void menuSizeHint();
     void task258920_mouseBorder();
     void setFixedWidth();
+    void deleteActionInTriggered();
+    void pushButtonPopulateOnAboutToShow();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
     void onStatusMessageChanged(const QString &);
     void onStatusTipTimer();
+    void deleteAction(QAction *a) { delete a; }
+    void populateMenu();
 private:
     void createActions();
     QMenu *menus[2], *lastMenu;
@@ -253,6 +258,15 @@ tst_QMenu::onActivated(QAction *action)
 void tst_QMenu::onStatusMessageChanged(const QString &s)
 {
     statustip=s;
+}
+
+void tst_QMenu::populateMenu(){
+    //just adds 3 dummy actions and a separator.
+        lastMenu->addAction("Foo");
+        lastMenu->addAction("Bar");
+        lastMenu->addAction("FooBar");
+        lastMenu->addSeparator();
+
 }
 
 
@@ -594,6 +608,31 @@ void tst_QMenu::tearOff()
     QVERIFY(!torn->isVisible());
 }
 
+void tst_QMenu::layoutDirection()
+{
+    QMainWindow win;
+    win.setLayoutDirection(Qt::RightToLeft);
+
+    QMenu menu(&win);
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
+    menu.close();
+
+    menu.setParent(0);
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    QCOMPARE(menu.layoutDirection(), QApplication::layoutDirection());
+    menu.close();
+
+    //now the menubar
+    QAction *action = win.menuBar()->addMenu(&menu);
+    win.menuBar()->setActiveAction(action);
+    QTest::qWaitForWindowShown(&menu);
+    QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
+}
+
+
 
 #if defined(QT3_SUPPORT)
 void tst_QMenu::indexBasedInsertion_data()
@@ -858,6 +897,39 @@ void tst_QMenu::setFixedWidth()
     QCOMPARE(menu.sizeHint().width(), menu.minimumWidth());
 }
 
+void tst_QMenu::deleteActionInTriggered()
+{
+    // should not crash
+    QMenu m;
+    QObject::connect(&m, SIGNAL(triggered(QAction*)), this, SLOT(deleteAction(QAction*)));
+    QWeakPointer<QAction> a = m.addAction("action");
+    a.data()->trigger();
+    QVERIFY(!a);
+}
+
+void tst_QMenu::pushButtonPopulateOnAboutToShow()
+{
+    QPushButton b("Test PushButton");
+    b.setWindowFlags(Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
+    lastMenu = new QMenu;
+    b.setMenu(lastMenu);
+    const int scrNumber = QApplication::desktop()->screenNumber(&b);
+    connect(lastMenu, SIGNAL(aboutToShow()), this, SLOT(populateMenu()));
+    b.show();
+    const QRect screen = QApplication::desktop()->screenGeometry(scrNumber);
+
+    b.move(10, screen.bottom()-b.height()-5);
+    QTest::qWaitForWindowShown(&b);
+    QTimer::singleShot(300,lastMenu, SLOT(hide()));
+    QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
+    QVERIFY(!lastMenu->geometry().intersects(b.geometry()));
+
+    b.move(10, screen.bottom()-lastMenu->height()-5);
+    QTimer::singleShot(300,lastMenu, SLOT(hide()));
+    QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
+    QVERIFY(!lastMenu->geometry().intersects(b.geometry()));
+
+}
 
 
 QTEST_MAIN(tst_QMenu)

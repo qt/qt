@@ -75,14 +75,12 @@ public:
     QWidget *screen(int screen = -1);
 
     const QRect screenGeometry(int screen = -1) const;
-    const QRect screenGeometry(const QWidget *widget) const
-    { return screenGeometry(screenNumber(widget)); }
+    const QRect screenGeometry(const QWidget *widget) const;
     const QRect screenGeometry(const QPoint &point) const
     { return screenGeometry(screenNumber(point)); }
 
     const QRect availableGeometry(int screen = -1) const;
-    const QRect availableGeometry(const QWidget *widget) const
-    { return availableGeometry(screenNumber(widget)); }
+    const QRect availableGeometry(const QWidget *widget) const;
     const QRect availableGeometry(const QPoint &point) const
     { return availableGeometry(screenNumber(point)); }
 

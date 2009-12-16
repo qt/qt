@@ -243,8 +243,12 @@ static PtrWTGet ptrWTGet = 0;
 static PACKET localPacketBuf[QT_TABLET_NPACKETQSIZE];  // our own tablet packet queue.
 HCTX qt_tablet_context;  // the hardware context for the tablet (like a window handle)
 bool qt_tablet_tilt_support;
-static void tabletInit(UINT wActiveCsr, HCTX hTab);
+
+#ifndef QT_NO_TABLETEVENT
+static void tabletInit(const quint64 uniqueId, const UINT csr_type, HCTX hTab);
+static void tabletUpdateCursor(QTabletDeviceData &tdd, const UINT currentCursor);
 static void initWinTabFunctions();        // resolve the WINTAB api functions
+#endif // QT_NO_TABLETEVENT
 
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -256,7 +260,7 @@ extern QWidget* qt_get_tablet_widget();
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*);
 extern QRegion qt_dirtyRegion(QWidget *);
 
-typedef QHash<UINT, QTabletDeviceData> QTabletCursorInfo;
+typedef QHash<quint64, QTabletDeviceData> QTabletCursorInfo;
 Q_GLOBAL_STATIC(QTabletCursorInfo, tCursorInfo)
 QTabletDeviceData currentTabletPointer;
 
@@ -615,6 +619,8 @@ static void qt_set_windows_font_resources()
     if (qt_wince_is_mobile()) {
         smallerFont.setPointSize(systemFont.pointSize()-1);
         QApplication::setFont(smallerFont, "QTabBar");
+        smallerFont.setBold(true);
+        QApplication::setFont(smallerFont, "QAbstractButton");
     }
 #endif// Q_WS_WINCE
 }
@@ -789,7 +795,9 @@ void qt_init(QApplicationPrivate *priv, int)
     if (QApplication::desktopSettingsAware())
         qt_set_windows_resources();
 
+#ifndef QT_NO_TABLETEVENT
     initWinTabFunctions();
+#endif // QT_NO_TABLETEVENT
     QApplicationPrivate::inputContext = new QWinInputContext(0);
 
     // Read the initial cleartype settings...
@@ -830,6 +838,7 @@ void qt_init(QApplicationPrivate *priv, int)
     priv->GetGestureInfo = (PtrGetGestureInfo) &TKGetGestureInfo;
     priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs) &TKGetGestureExtraArguments;
 #elif !defined(Q_WS_WINCE)
+  #if !defined(QT_NO_NATIVE_GESTURES)
     priv->GetGestureInfo =
             (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
                                                  "GetGestureInfo");
@@ -845,6 +854,7 @@ void qt_init(QApplicationPrivate *priv, int)
     priv->GetGestureConfig =
             (PtrGetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
                                                    "GetGestureConfig");
+  #endif // QT_NO_NATIVE_GESTURES
     priv->BeginPanningFeedback =
             (PtrBeginPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
                                                        "BeginPanningFeedback");
@@ -1916,11 +1926,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 #ifndef Q_WS_WINCE
         case WM_ENTERSIZEMOVE:
             autoCaptureWnd = hwnd;
-            QApplicationPrivate::inSizeMove = true;
             break;
         case WM_EXITSIZEMOVE:
             autoCaptureWnd = 0;
-            QApplicationPrivate::inSizeMove = false;
             break;
 #endif
         case WM_MOVE:                                // move window
@@ -2323,25 +2331,43 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             }
             break;
         case WT_PROXIMITY:
-            if (ptrWTPacketsGet) {
-                bool enteredProximity = LOWORD(lParam) != 0;
-                PACKET proximityBuffer[QT_TABLET_NPACKETQSIZE];
-                int totalPacks = ptrWTPacketsGet(qt_tablet_context, QT_TABLET_NPACKETQSIZE, proximityBuffer);
-                if (totalPacks > 0 && enteredProximity) {
-                    uint currentCursor = proximityBuffer[0].pkCursor;
-                    if (!tCursorInfo()->contains(currentCursor))
-                        tabletInit(currentCursor, qt_tablet_context);
-                    currentTabletPointer = tCursorInfo()->value(currentCursor);
+
+            #ifndef QT_NO_TABLETEVENT
+            if (ptrWTPacketsGet && ptrWTInfo) {
+                const bool enteredProximity = LOWORD(lParam) != 0;
+                PACKET proximityBuffer[1]; // we are only interested in the first packet in this case
+                const int totalPacks = ptrWTPacketsGet(qt_tablet_context, 1, proximityBuffer);
+                if (totalPacks > 0) {
+                    const UINT currentCursor = proximityBuffer[0].pkCursor;
+
+                    UINT csr_physid;
+                    ptrWTInfo(WTI_CURSORS + currentCursor, CSR_PHYSID, &csr_physid);
+                    UINT csr_type;
+                    ptrWTInfo(WTI_CURSORS + currentCursor, CSR_TYPE, &csr_type);
+                    const UINT deviceIdMask = 0xFF6; // device type mask && device color mask
+                    quint64 uniqueId = (csr_type & deviceIdMask);
+                    uniqueId = (uniqueId << 32) | csr_physid;
+
+                    // initialising and updating the cursor should be done in response to
+                    // WT_CSRCHANGE. We do it in WT_PROXIMITY because some wintab never send
+                    // the event WT_CSRCHANGE even if asked with CXO_CSRMESSAGES
+                    const QTabletCursorInfo *const globalCursorInfo = tCursorInfo();
+                    if (!globalCursorInfo->contains(uniqueId))
+                        tabletInit(uniqueId, csr_type, qt_tablet_context);
+
+                    currentTabletPointer = globalCursorInfo->value(uniqueId);
+                    tabletUpdateCursor(currentTabletPointer, currentCursor);
                 }
                 qt_tabletChokeMouse = false;
-#ifndef QT_NO_TABLETEVENT
+
                 QTabletEvent tabletProximity(enteredProximity ? QEvent::TabletEnterProximity
                                                               : QEvent::TabletLeaveProximity,
                                              QPoint(), QPoint(), QPointF(), currentTabletPointer.currentDevice, currentTabletPointer.currentPointerType, 0, 0,
                                              0, 0, 0, 0, 0, currentTabletPointer.llId);
                 QApplication::sendEvent(qApp, &tabletProximity);
-#endif // QT_NO_TABLETEVENT
             }
+            #endif // QT_NO_TABLETEVENT
+
             break;
 #ifdef Q_WS_WINCE_WM
         case WM_SETFOCUS: {
@@ -2499,24 +2525,24 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             if (qAppPriv->GetGestureInfo)
                 bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
             if (bResult) {
-//                if (gi.dwID == GID_BEGIN) {
-//                    // find the alien widget for the gesture position.
-//                    // This might not be accurate as the position is the center
-//                    // point of two fingers for multi-finger gestures.
-//                    QPoint pt(gi.ptsLocation.x, gi.ptsLocation.y);
-//                    QWidget *w = widget->childAt(widget->mapFromGlobal(pt));
-//                    qAppPriv->gestureWidget = w ? w : widget;
-//                }
-//                if (qAppPriv->gestureWidget)
-//                    static_cast<QETWidget*>(qAppPriv->gestureWidget)->translateGestureEvent(msg, gi);
-//                if (qAppPriv->CloseGestureInfoHandle)
-//                    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
-//                if (gi.dwID == GID_END)
-//                    qAppPriv->gestureWidget = 0;
-//            } else {
-//                DWORD dwErr = GetLastError();
-//                if (dwErr > 0)
-//                    qWarning() << "translateGestureEvent: error = " << dwErr;
+                if (gi.dwID == GID_BEGIN) {
+                    // find the alien widget for the gesture position.
+                    // This might not be accurate as the position is the center
+                    // point of two fingers for multi-finger gestures.
+                    QPoint pt(gi.ptsLocation.x, gi.ptsLocation.y);
+                    QWidget *w = widget->childAt(widget->mapFromGlobal(pt));
+                    qAppPriv->gestureWidget = w ? w : widget;
+                }
+                if (qAppPriv->gestureWidget)
+                    static_cast<QETWidget*>(qAppPriv->gestureWidget)->translateGestureEvent(msg, gi);
+                if (qAppPriv->CloseGestureInfoHandle)
+                    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
+                if (gi.dwID == GID_END)
+                    qAppPriv->gestureWidget = 0;
+            } else {
+                DWORD dwErr = GetLastError();
+                if (dwErr > 0)
+                    qWarning() << "translateGestureEvent: error = " << dwErr;
             }
             result = true;
             break;
@@ -3315,63 +3341,57 @@ bool QETWidget::translateWheelEvent(const MSG &msg)
 
 // the following is adapted from the wintab syspress example (public domain)
 /* -------------------------------------------------------------------------- */
-static void tabletInit(UINT wActiveCsr, HCTX hTab)
-{
-    /* browse WinTab's many info items to discover pressure handling. */
-    if (ptrWTInfo && ptrWTGet) {
-        AXIS np;
-        LOGCONTEXT lc;
-        BYTE wPrsBtn;
-        BYTE logBtns[32];
-        UINT size;
-
-        /* discover the LOGICAL button generated by the pressure channel. */
-        /* get the PHYSICAL button from the cursor category and run it */
-        /* through that cursor's button map (usually the identity map). */
-        wPrsBtn = (BYTE)-1;
-        ptrWTInfo(WTI_CURSORS + wActiveCsr, CSR_NPBUTTON, &wPrsBtn);
-        size = ptrWTInfo(WTI_CURSORS + wActiveCsr, CSR_BUTTONMAP, &logBtns);
-        if ((UINT)wPrsBtn < size)
-            wPrsBtn = logBtns[wPrsBtn];
-
-        /* get the current context for its device variable. */
-        ptrWTGet(hTab, &lc);
-
-        /* get the size of the pressure axis. */
-        QTabletDeviceData tdd;
-        ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_NPRESSURE, &np);
-        tdd.minPressure = int(np.axMin);
-        tdd.maxPressure = int(np.axMax);
-
-        ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_TPRESSURE, &np);
-        tdd.minTanPressure = int(np.axMin);
-        tdd.maxTanPressure = int(np.axMax);
-
-        LOGCONTEXT lcMine;
-
-      	/* get default region */
-        ptrWTInfo(WTI_DEFCONTEXT, 0, &lcMine);
-
-        tdd.minX = 0;
-        tdd.maxX = int(lcMine.lcInExtX) - int(lcMine.lcInOrgX);
-
-        tdd.minY = 0;
-        tdd.maxY = int(lcMine.lcInExtY) - int(lcMine.lcInOrgY);
-
-        tdd.minZ = 0;
-        tdd.maxZ = int(lcMine.lcInExtZ) - int(lcMine.lcInOrgZ);
-
-        int csr_type,
-            csr_physid;
-        ptrWTInfo(WTI_CURSORS + wActiveCsr, CSR_TYPE, &csr_type);
-        ptrWTInfo(WTI_CURSORS + wActiveCsr, CSR_PHYSID, &csr_physid);
-        tdd.llId = csr_type & 0x0F06;
-        tdd.llId = (tdd.llId << 24) | csr_physid;
+// Initialize the "static" information of a cursor device (pen, airbrush, etc).
+// The QTabletDeviceData is initialized with the data that do not change in time
+// (number of button, type of device, etc) but do not initialize the variable data
+// (e.g.: pen or eraser)
 #ifndef QT_NO_TABLETEVENT
-        if (((csr_type & 0x0006) == 0x0002) && ((csr_type & 0x0F06) != 0x0902)) {
-            tdd.currentDevice = QTabletEvent::Stylus;
-        } else {
-            switch (csr_type & 0x0F06) {
+
+static void tabletInit(const quint64 uniqueId, const UINT csr_type, HCTX hTab)
+{
+    Q_ASSERT(ptrWTInfo);
+    Q_ASSERT(ptrWTGet);
+
+    Q_ASSERT(!tCursorInfo()->contains(uniqueId));
+
+    /* browse WinTab's many info items to discover pressure handling. */
+    AXIS np;
+    LOGCONTEXT lc;
+
+    /* get the current context for its device variable. */
+    ptrWTGet(hTab, &lc);
+
+    /* get the size of the pressure axis. */
+    QTabletDeviceData tdd;
+    tdd.llId = uniqueId;
+
+    ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_NPRESSURE, &np);
+    tdd.minPressure = int(np.axMin);
+    tdd.maxPressure = int(np.axMax);
+
+    ptrWTInfo(WTI_DEVICES + lc.lcDevice, DVC_TPRESSURE, &np);
+    tdd.minTanPressure = int(np.axMin);
+    tdd.maxTanPressure = int(np.axMax);
+
+    LOGCONTEXT lcMine;
+
+    /* get default region */
+    ptrWTInfo(WTI_DEFCONTEXT, 0, &lcMine);
+
+    tdd.minX = 0;
+    tdd.maxX = int(lcMine.lcInExtX) - int(lcMine.lcInOrgX);
+
+    tdd.minY = 0;
+    tdd.maxY = int(lcMine.lcInExtY) - int(lcMine.lcInOrgY);
+
+    tdd.minZ = 0;
+    tdd.maxZ = int(lcMine.lcInExtZ) - int(lcMine.lcInOrgZ);
+
+    const uint cursorTypeBitMask = 0x0F06; // bitmask to find the specific cursor type (see Wacom FAQ)
+    if (((csr_type & 0x0006) == 0x0002) && ((csr_type & cursorTypeBitMask) != 0x0902)) {
+        tdd.currentDevice = QTabletEvent::Stylus;
+    } else {
+        switch (csr_type & cursorTypeBitMask) {
             case 0x0802:
                 tdd.currentDevice = QTabletEvent::Stylus;
                 break;
@@ -3389,26 +3409,34 @@ static void tabletInit(UINT wActiveCsr, HCTX hTab)
                 break;
             default:
                 tdd.currentDevice = QTabletEvent::NoDevice;
-            }
         }
-
-        switch (wActiveCsr % 3) {
-        case 2:
-            tdd.currentPointerType = QTabletEvent::Eraser;
-            break;
-        case 1:
-            tdd.currentPointerType = QTabletEvent::Pen;
-            break;
-        case 0:
-            tdd.currentPointerType = QTabletEvent::Cursor;
-            break;
-        default:
-            tdd.currentPointerType = QTabletEvent::UnknownPointer;
-        }
+    }
+    tCursorInfo()->insert(uniqueId, tdd);
+}
 #endif // QT_NO_TABLETEVENT
-        tCursorInfo()->insert(wActiveCsr, tdd);
+
+// Update the "dynamic" informations of a cursor device (pen, airbrush, etc).
+// The dynamic information is the information of QTabletDeviceData that can change
+// in time (eraser or pen if a device is turned around).
+#ifndef QT_NO_TABLETEVENT
+
+static void tabletUpdateCursor(QTabletDeviceData &tdd, const UINT currentCursor)
+{
+    switch (currentCursor % 3) { // %3 for dual track
+    case 0:
+        tdd.currentPointerType = QTabletEvent::Cursor;
+        break;
+    case 1:
+        tdd.currentPointerType = QTabletEvent::Pen;
+        break;
+    case 2:
+        tdd.currentPointerType = QTabletEvent::Eraser;
+        break;
+    default:
+        tdd.currentPointerType = QTabletEvent::UnknownPointer;
     }
 }
+#endif // QT_NO_TABLETEVENT
 
 bool QETWidget::translateTabletEvent(const MSG &msg, PACKET *localPacketBuf,
                                       int numPackets)
@@ -3544,6 +3572,10 @@ bool QETWidget::translateTabletEvent(const MSG &msg, PACKET *localPacketBuf,
 }
 
 extern bool qt_is_gui_used;
+
+
+#ifndef QT_NO_TABLETEVENT
+
 static void initWinTabFunctions()
 {
 #if defined(Q_OS_WINCE)
@@ -3562,6 +3594,7 @@ static void initWinTabFunctions()
     }
 #endif // Q_OS_WINCE
 }
+#endif // QT_NO_TABLETEVENT
 
 
 //

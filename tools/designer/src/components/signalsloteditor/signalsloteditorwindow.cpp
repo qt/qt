@@ -73,6 +73,7 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QToolButton>
 #include <QtGui/QButtonGroup>
+#include <QtGui/QToolBar>
 
 QT_BEGIN_NAMESPACE
 
@@ -724,20 +725,20 @@ SignalSlotEditorWindow::SignalSlotEditorWindow(QDesignerFormEditorInterface *cor
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(0);
-    layout->addWidget(m_view);
+    layout->setSpacing(0);
 
-    QHBoxLayout *layout2 = new QHBoxLayout;
-    layout2->setMargin(3);
-    layout->addLayout(layout2);
-    layout2->addStretch();
+    QToolBar *toolBar = new QToolBar;
+    toolBar->setIconSize(QSize(22, 22));
+    m_add_button->setIcon(createIconSet(QLatin1String("plus.png")));
+    connect(m_add_button, SIGNAL(clicked()), this, SLOT(addConnection()));
+    toolBar->addWidget(m_add_button);
 
     m_remove_button->setIcon(createIconSet(QLatin1String("minus.png")));
     connect(m_remove_button, SIGNAL(clicked()), this, SLOT(removeConnection()));
-    layout2->addWidget(m_remove_button);
+    toolBar->addWidget(m_remove_button);
 
-    m_add_button->setIcon(createIconSet(QLatin1String("plus.png")));
-    connect(m_add_button, SIGNAL(clicked()), this, SLOT(addConnection()));
-    layout2->addWidget(m_add_button);
+    layout->addWidget(toolBar);
+    layout->addWidget(m_view);
 
     connect(core->formWindowManager(),
             SIGNAL(activeFormWindowChanged(QDesignerFormWindowInterface*)),
@@ -757,8 +758,8 @@ void SignalSlotEditorWindow::setActiveFormWindow(QDesignerFormWindowInterface *f
         disconnect(m_editor, SIGNAL(connectionSelected(Connection*)),
                     this, SLOT(updateDialogSelection(Connection*)));
         if (integration) {
-            disconnect(integration, SIGNAL(objectNameChanged(QDesignerFormWindowInterface *, QObject *, QString, QString)),
-                    this, SLOT(objectNameChanged(QDesignerFormWindowInterface *, QObject *, QString, QString)));
+            disconnect(integration, SIGNAL(objectNameChanged(QDesignerFormWindowInterface*,QObject*,QString,QString)),
+                    this, SLOT(objectNameChanged(QDesignerFormWindowInterface*,QObject*,QString,QString)));
         }
     }
 
@@ -776,8 +777,8 @@ void SignalSlotEditorWindow::setActiveFormWindow(QDesignerFormWindowInterface *f
         connect(m_editor, SIGNAL(connectionSelected(Connection*)),
                 this, SLOT(updateDialogSelection(Connection*)));
         if (integration) {
-            connect(integration, SIGNAL(objectNameChanged(QDesignerFormWindowInterface *, QObject *, QString, QString)),
-                    this, SLOT(objectNameChanged(QDesignerFormWindowInterface *, QObject *, QString, QString)));
+            connect(integration, SIGNAL(objectNameChanged(QDesignerFormWindowInterface*,QObject*,QString,QString)),
+                    this, SLOT(objectNameChanged(QDesignerFormWindowInterface*,QObject*,QString,QString)));
         }
     }
 

@@ -35,11 +35,7 @@ using namespace Phonon::MMF;
 // Constants
 //-----------------------------------------------------------------------------
 
-static const Phonon::VideoWidget::AspectRatio DefaultAspectRatio =
-    Phonon::VideoWidget::AspectRatioAuto;
 static const qreal DefaultBrightness = 1.0;
-static const Phonon::VideoWidget::ScaleMode DefaultScaleMode =
-    Phonon::VideoWidget::FitInView;
 static const qreal DefaultContrast = 1.0;
 static const qreal DefaultHue = 1.0;
 static const qreal DefaultSaturation = 1.0;
@@ -49,12 +45,11 @@ static const qreal DefaultSaturation = 1.0;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoWidget::VideoWidget(QWidget* parent)
+MMF::VideoWidget::VideoWidget
+    (AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent)
         :   MediaNode(parent)
-        ,   m_widget(new VideoOutput(parent))
-        ,   m_aspectRatio(DefaultAspectRatio)
+        ,   m_videoOutput(new VideoOutput(ancestorMoveMonitor, parent))
         ,   m_brightness(DefaultBrightness)
-        ,   m_scaleMode(DefaultScaleMode)
         ,   m_contrast(DefaultContrast)
         ,   m_hue(DefaultHue)
         ,   m_saturation(DefaultSaturation)
@@ -80,7 +75,7 @@ MMF::VideoWidget::~VideoWidget()
 
 Phonon::VideoWidget::AspectRatio MMF::VideoWidget::aspectRatio() const
 {
-    return m_aspectRatio;
+    return m_videoOutput->aspectRatio();
 }
 
 void MMF::VideoWidget::setAspectRatio
@@ -89,7 +84,7 @@ void MMF::VideoWidget::setAspectRatio
     TRACE_CONTEXT(VideoWidget::setAspectRatio, EVideoApi);
     TRACE("aspectRatio %d", aspectRatio);
 
-    m_aspectRatio = aspectRatio;
+    m_videoOutput->setAspectRatio(aspectRatio);
 }
 
 qreal MMF::VideoWidget::brightness() const
@@ -107,7 +102,7 @@ void MMF::VideoWidget::setBrightness(qreal brightness)
 
 Phonon::VideoWidget::ScaleMode MMF::VideoWidget::scaleMode() const
 {
-    return m_scaleMode;
+    return m_videoOutput->scaleMode();
 }
 
 void MMF::VideoWidget::setScaleMode(Phonon::VideoWidget::ScaleMode scaleMode)
@@ -115,7 +110,7 @@ void MMF::VideoWidget::setScaleMode(Phonon::VideoWidget::ScaleMode scaleMode)
     TRACE_CONTEXT(VideoWidget::setScaleMode, EVideoApi);
     TRACE("setScaleMode %d", setScaleMode);
 
-    m_scaleMode = scaleMode;
+    m_videoOutput->setScaleMode(scaleMode);
 }
 
 qreal MMF::VideoWidget::contrast() const
@@ -159,17 +154,12 @@ void MMF::VideoWidget::setSaturation(qreal saturation)
 
 QWidget* MMF::VideoWidget::widget()
 {
-    return m_widget.data();
-}
-
-VideoOutput& MMF::VideoWidget::videoOutput()
-{
-    return *static_cast<VideoOutput*>(widget());
+    return m_videoOutput.data();
 }
 
 bool MMF::VideoWidget::activateOnMediaObject(MediaObject *mo)
 {
-    mo->setVideoOutput(&videoOutput());
+    mo->setVideoOutput(m_videoOutput.data());
     return true;
 }
 

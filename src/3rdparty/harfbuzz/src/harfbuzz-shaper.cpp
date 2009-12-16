@@ -637,7 +637,9 @@ const HB_ScriptEngine HB_ScriptEngines[] = {
     // Runic
     { HB_BasicShape, 0 },
     // Khmer
-    { HB_KhmerShape, HB_KhmerAttributes }
+    { HB_KhmerShape, HB_KhmerAttributes },
+    // N'Ko
+    { HB_ArabicShape, 0}
 };
 
 void HB_GetCharAttributes(const HB_UChar16 *string, hb_uint32 stringLength,
@@ -877,7 +879,9 @@ static const OTScripts ot_scripts [] = {
     // Runic
     { HB_MAKE_TAG('r', 'u', 'n', 'r'), 0 },
     // Khmer
-    { HB_MAKE_TAG('k', 'h', 'm', 'r'), 1 }
+    { HB_MAKE_TAG('k', 'h', 'm', 'r'), 1 },
+    // N'Ko
+    { HB_MAKE_TAG('n', 'k', 'o', ' '), 1 }
 };
 enum { NumOTScripts = sizeof(ot_scripts)/sizeof(OTScripts) };
 
@@ -971,7 +975,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     face->glyphs_substituted = false;
     face->buffer = 0;
 
-    HB_Error error;
+    HB_Error error = HB_Err_Ok;
     HB_Stream stream;
     HB_Stream gdefStream;
 

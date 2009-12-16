@@ -26,13 +26,19 @@
 #include <stdlib.h>
 #include <new>
 
+#if COMPILER(GCC)
+#define WTF_FAST_MALLOC_EXPORT __attribute__((visibility("default")))
+#else
+#define WTF_FAST_MALLOC_EXPORT
+#endif
+
 namespace WTF {
 
     // These functions call CRASH() if an allocation fails.
-    void* fastMalloc(size_t);
+    void* fastMalloc(size_t) WTF_FAST_MALLOC_EXPORT;
     void* fastZeroedMalloc(size_t);
-    void* fastCalloc(size_t numElements, size_t elementSize);
-    void* fastRealloc(void*, size_t);
+    void* fastCalloc(size_t numElements, size_t elementSize) WTF_FAST_MALLOC_EXPORT;
+    void* fastRealloc(void*, size_t) WTF_FAST_MALLOC_EXPORT;
 
     struct TryMallocReturnValue {
         TryMallocReturnValue(void* data)
@@ -71,7 +77,7 @@ namespace WTF {
     TryMallocReturnValue tryFastCalloc(size_t n_elements, size_t element_size);
     TryMallocReturnValue tryFastRealloc(void* p, size_t n);
 
-    void fastFree(void*);
+    void fastFree(void*) WTF_FAST_MALLOC_EXPORT;
 
 #ifndef NDEBUG    
     void fastMallocForbid();
@@ -213,6 +219,9 @@ using WTF::fastMallocAllow;
 // debug-only code to make sure we don't use the system malloc via the default operator
 // new by accident.
 
+// We musn't customize the global operator new and delete for the Qt port.
+#if !PLATFORM(QT)
+
 WTF_PRIVATE_INLINE void* operator new(size_t size) { return fastMalloc(size); }
 WTF_PRIVATE_INLINE void* operator new(size_t size, const std::nothrow_t&) throw() { return fastMalloc(size); }
 WTF_PRIVATE_INLINE void operator delete(void* p) { fastFree(p); }
@@ -221,6 +230,8 @@ WTF_PRIVATE_INLINE void* operator new[](size_t size) { return fastMalloc(size); 
 WTF_PRIVATE_INLINE void* operator new[](size_t size, const std::nothrow_t&) throw() { return fastMalloc(size); }
 WTF_PRIVATE_INLINE void operator delete[](void* p) { fastFree(p); }
 WTF_PRIVATE_INLINE void operator delete[](void* p, const std::nothrow_t&) throw() { fastFree(p); }
+
+#endif
 
 #endif
 

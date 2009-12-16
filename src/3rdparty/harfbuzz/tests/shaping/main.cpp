@@ -178,9 +178,10 @@ private slots:
     void telugu();
     void kannada();
     void malayalam();
-    // sinhala missing
+    void sinhala();
 
     void khmer();
+    void nko();
     void linearB();
 };
 
@@ -510,6 +511,17 @@ void tst_QScriptEngine::bengali()
                   { 0x151, 0x276, 0x172, 0x143, 0x0 } },
                 { { 0x9b0, 0x9cd, 0x995, 0x9be, 0x983, 0x0 },
                   { 0x151, 0x276, 0x172, 0x144, 0x0 } }, 
+                // test decomposed two parts matras
+                { { 0x995, 0x9c7, 0x9be, 0x0 },
+                  { 0x179, 0x151, 0x172, 0x0 } },
+                { { 0x995, 0x9c7, 0x9d7, 0x0 },
+                  { 0x179, 0x151, 0x17e, 0x0 } },
+                { { 0x9b0, 0x9cd, 0x9ad, 0x0 },
+                  { 0x168, 0x276, 0x0 } },
+                { { 0x9f0, 0x9cd, 0x9ad, 0x0 },
+                  { 0x168, 0x276, 0x0 } },
+                { { 0x9f1, 0x9cd, 0x9ad, 0x0 },
+                  { 0x191, 0x17d, 0x168, 0x0 } },
 
 		{ {0}, {0} }
 	    };
@@ -638,15 +650,21 @@ void tst_QScriptEngine::bengali()
         if (face) {
 	    const ShapeTable shape_table [] = {
 		{ { 0x09a8, 0x09cd, 0x09af, 0x0 },
-		  { 0x0192, 0x0 } },
+                  { 0x01ca, 0x0 } },
 		{ { 0x09b8, 0x09cd, 0x09af, 0x0 },
-		  { 0x01d6, 0x0 } },
+                  { 0x020e, 0x0 } },
 		{ { 0x09b6, 0x09cd, 0x09af, 0x0 },
-		  { 0x01bc, 0x0 } },
+                  { 0x01f4, 0x0 } },
 		{ { 0x09b7, 0x09cd, 0x09af, 0x0 },
-		  { 0x01c6, 0x0 } },
+                  { 0x01fe, 0x0 } },
 		{ { 0x09b0, 0x09cd, 0x09a8, 0x09cd, 0x200d, 0x0 },
-		  { 0xd3, 0x12f, 0x0 } },
+                  { 0x10b, 0x167, 0x0 } },
+                { { 0x9b0, 0x9cd, 0x9ad, 0x0 },
+                  { 0xa1, 0x167, 0x0 } },
+                { { 0x9f0, 0x9cd, 0x9ad, 0x0 },
+                  { 0xa1, 0x167, 0x0 } },
+                { { 0x9f1, 0x9cd, 0x9ad, 0x0 },
+                  { 0x11c, 0xa1, 0x0 } },
 
 		{ {0}, {0} }
 	    };
@@ -668,7 +686,7 @@ void tst_QScriptEngine::bengali()
 void tst_QScriptEngine::gurmukhi()
 {
     {
-        FT_Face face = loadFace("lohit.punjabi.1.1.ttf");
+        FT_Face face = loadFace("lohit_pa.ttf");
         if (face) {
 	    const ShapeTable shape_table [] = {
 		{ { 0xA15, 0xA4D, 0xa39, 0x0 },
@@ -823,8 +841,9 @@ void tst_QScriptEngine::telugu()
                   { 0xe6, 0xb3, 0x83, 0x0 } },
                 { { 0xc15, 0xc4d, 0xc30, 0xc48, 0x0 },
                   { 0xe6, 0xb3, 0x9f, 0x0 } }, 
-		{ {0}, {0} }
-
+                { { 0xc15, 0xc46, 0xc56, 0x0 },
+                  { 0xe6, 0xb3, 0x0 } },
+                { {0}, {0} }
             };
 
 	    const ShapeTable *s = shape_table;
@@ -867,7 +886,6 @@ void tst_QScriptEngine::kannada()
 		  { 0x0036, 0x00c1, 0x0 } },
 		{ { 0x0cb0, 0x0ccd, 0x200d, 0x0c95, 0x0 },
 		  { 0x0050, 0x00a7, 0x0 } },
-
 		{ {0}, {0} }
 	    };
 
@@ -891,6 +909,17 @@ void tst_QScriptEngine::kannada()
 		  { 0x00b0, 0x006c, 0x0 } },
 		{ { 0x0cb7, 0x0ccd, 0x0 },
 		  { 0x0163, 0x0 } },
+                { { 0xc95, 0xcbf, 0xcd5, 0x0 },
+                  { 0x114, 0x73, 0x0 } },
+                { { 0xc95, 0xcc6, 0xcd5, 0x0 },
+                  { 0x90, 0x6c, 0x73, 0x0 } },
+                { { 0xc95, 0xcc6, 0xcd6, 0x0 },
+                  { 0x90, 0x6c, 0x74, 0x0 } },
+                { { 0xc95, 0xcc6, 0xcc2, 0x0 },
+                  { 0x90, 0x6c, 0x69, 0x0 } },
+                { { 0xc95, 0xcca, 0xcd5, 0x0 },
+                  { 0x90, 0x6c, 0x69, 0x73, 0x0 } },
+
 
 		{ {0}, {0} }
 	    };
@@ -943,7 +972,16 @@ void tst_QScriptEngine::malayalam()
 		  { 0x009e, 0x0 } },
 		{ { 0x0d30, 0x0d4d, 0x200d, 0x0 },
 		  { 0x009e, 0x0 } },
-
+                { { 0xd15, 0xd46, 0xd3e, 0x0 },
+                  { 0x5e, 0x34, 0x58, 0x0 } },
+                { { 0xd15, 0xd47, 0xd3e, 0x0 },
+                  { 0x5f, 0x34, 0x58, 0x0 } },
+                { { 0xd15, 0xd46, 0xd57, 0x0 },
+                  { 0x5e, 0x34, 0x65, 0x0 } },
+                { { 0xd15, 0xd57, 0x0 },
+                  { 0x34, 0x65, 0x0 } },
+                { { 0xd1f, 0xd4d, 0xd1f, 0xd41, 0xd4d, 0x0 },
+                  { 0x69, 0x5b, 0x64, 0x0 } },
 
 		{ {0}, {0} }
 	    };
@@ -960,8 +998,71 @@ void tst_QScriptEngine::malayalam()
 	    QSKIP("couln't find AkrutiMal2Normal.ttf", SkipAll);
 	}
     }
+
+    {
+        FT_Face face = loadFace("Rachana.ttf");
+        if (face) {
+            const ShapeTable shape_table [] = {
+                { { 0xd37, 0xd4d, 0xd1f, 0xd4d, 0xd30, 0xd40, 0x0 },
+                  { 0x385, 0xa3, 0x0 } },
+                { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
+                  { 0x2ff, 0x0 } },
+                { { 0xd33, 0xd4d, 0xd33, 0x0 },
+                  { 0x3f8, 0x0 } },
+                { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
+                  { 0x2ff, 0x0 } },
+
+                { {0}, {0} }
+            };
+
+
+            const ShapeTable *s = shape_table;
+            while (s->unicode[0]) {
+                QVERIFY( shaping(face, s, HB_Script_Malayalam) );
+                ++s;
+            }
+
+            FT_Done_Face(face);
+        } else {
+            QSKIP("couln't find Rachana.ttf", SkipAll);
+        }
+    }
+
 }
 
+void tst_QScriptEngine::sinhala()
+{
+    {
+        FT_Face face = loadFace("FM-MalithiUW46.ttf");
+        if (face) {
+            const ShapeTable shape_table [] = {
+                { { 0xd9a, 0xdd9, 0xdcf, 0x0 },
+                  { 0x4a, 0x61, 0x42, 0x0 } },
+                { { 0xd9a, 0xdd9, 0xddf, 0x0 },
+                  { 0x4a, 0x61, 0x50, 0x0 } },
+                { { 0xd9a, 0xdd9, 0xdca, 0x0 },
+                  { 0x4a, 0x62, 0x0 } },
+                { { 0xd9a, 0xddc, 0xdca, 0x0 },
+                  { 0x4a, 0x61, 0x42, 0x41, 0x0 } },
+                { { 0xd9a, 0xdda, 0x0 },
+                  { 0x4a, 0x62, 0x0 } },
+                { { 0xd9a, 0xddd, 0x0 },
+                  { 0x4a, 0x61, 0x42, 0x41, 0x0 } },
+                { {0}, {0} }
+            };
+
+            const ShapeTable *s = shape_table;
+            while (s->unicode[0]) {
+                QVERIFY( shaping(face, s, HB_Script_Sinhala) );
+                ++s;
+            }
+
+            FT_Done_Face(face);
+        } else {
+            QSKIP("couln't find FM-MalithiUW46.ttf", SkipAll);
+        }
+    }
+}
 
 
 void tst_QScriptEngine::khmer()
@@ -1005,10 +1106,44 @@ void tst_QScriptEngine::khmer()
     }
 }
 
+void tst_QScriptEngine::nko()
+{
+    {
+        FT_Face face = loadFace("DejaVuSans.ttf");
+        if (face) {
+	    const ShapeTable shape_table [] = {
+                { { 0x7ca, 0x0 },
+                  { 0x5c1, 0x0 } },
+                { { 0x7ca, 0x7ca, 0x0 },
+                  { 0x14db, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7fa, 0x7ca, 0x0 },
+                  { 0x14db, 0x5ec, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7f3, 0x7ca, 0x0 },
+                  { 0x14db, 0x5e7, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7f3, 0x7fa, 0x7ca, 0x0 },
+                  { 0x14db, 0x5e7, 0x5ec, 0x14d9, 0x0 } },
+                { {0}, {0} }
+	    };
+
+
+	    const ShapeTable *s = shape_table;
+	    while (s->unicode[0]) {
+                QVERIFY( shaping(face, s, HB_Script_Nko) );
+		++s;
+	    }
+
+            FT_Done_Face(face);
+	} else {
+	    QSKIP("couln't find DejaVuSans.ttf", SkipAll);
+	}
+    }
+}
+
+
 void tst_QScriptEngine::linearB()
 {
     {
-        FT_Face face = loadFace("PENUTURE.TTF");
+        FT_Face face = loadFace("penuture.ttf");
         if (face) {
 	    const ShapeTable shape_table [] = {
 		{ { 0xd800, 0xdc01, 0xd800, 0xdc02, 0xd800, 0xdc03,  0 },

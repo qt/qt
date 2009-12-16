@@ -48,7 +48,7 @@
 
 #include <QDebug>
 
-//#define QPAINTBUFFER_DEBUG_DRAW
+// #define QPAINTBUFFER_DEBUG_DRAW
 
 QT_BEGIN_NAMESPACE
 
@@ -247,23 +247,24 @@ void QPaintBuffer::draw(QPainter *painter, int frame) const
 #ifdef QPAINTBUFFER_DEBUG_DRAW
     qDebug() << "QPaintBuffer::draw() --------------------------------";
 
-//     printf("Float buffer:");
-//     for (int i=0; i<d->floats.size(); i++) {
-//         if ((i % 10) == 0) {
-//             printf("\n%4d-%4d: ", i, i+9);
-//         }
-//         printf("%4.2f  ", d->floats[i]);
-//     }
-//     printf("\n");
+    Q_D(const QPaintBuffer);
+    printf("Float buffer:");
+    for (int i=0; i<d->floats.size(); i++) {
+        if ((i % 10) == 0) {
+            printf("\n%4d-%4d: ", i, i+9);
+        }
+        printf("%4.2f  ", d->floats[i]);
+    }
+    printf("\n");
 
-//     printf("Int Buffer:");
-//     for (int i=0; i<d->ints.size(); i++) {
-//         if ((i % 10) == 0) {
-//             printf("\n%4d-%4d: ", i, i+10);
-//         }
-//         printf("%5d", d->ints[i]);
-//     }
-//     printf("\n");
+    printf("Int Buffer:");
+    for (int i=0; i<d->ints.size(); i++) {
+        if ((i % 10) == 0) {
+            printf("\n%4d-%4d: ", i, i+10);
+        }
+        printf("%5d", d->ints[i]);
+    }
+    printf("\n");
 #endif
 
     if (painter && !painter->isActive())
@@ -406,16 +407,17 @@ void QPaintBufferEngine::clipEnabledChanged()
 
 void QPaintBufferEngine::penChanged()
 {
-#ifdef QPAINTBUFFER_DEBUG_DRAW
-    qDebug() << "QPaintBufferEngine:" << state()->pen;
-#endif
     const QPen &pen = state()->pen;
 
     if (!buffer->commands.isEmpty()
         && buffer->commands.last().id == QPaintBufferPrivate::Cmd_SetPen) {
+#ifdef QPAINTBUFFER_DEBUG_DRAW
+    qDebug() << "QPaintBufferEngine: penChanged (compressed)" << state()->pen;
+#endif
         buffer->variants[buffer->commands.last().offset] = pen;
         return;
     }
+
     if (buffer->calculateBoundingRect) {
         if (pen.style() == Qt::NoPen) {
             buffer->penWidthAdjustment = 0;
@@ -427,22 +429,28 @@ void QPaintBufferEngine::penChanged()
             buffer->penWidthAdjustment = transformedWidth.x() / 2.0;
         }
     }
+#ifdef QPAINTBUFFER_DEBUG_DRAW
+    qDebug() << "QPaintBufferEngine: penChanged" << state()->pen;
+#endif
     buffer->addCommand(QPaintBufferPrivate::Cmd_SetPen, pen);
 }
 
 void QPaintBufferEngine::brushChanged()
 {
-#ifdef QPAINTBUFFER_DEBUG_DRAW
-    qDebug() << "QPaintBufferEngine:" << state()->brush;
-#endif
     const QBrush &brush = state()->brush;
 
     if (!buffer->commands.isEmpty()
         && buffer->commands.last().id == QPaintBufferPrivate::Cmd_SetBrush) {
+#ifdef QPAINTBUFFER_DEBUG_DRAW
+        qDebug() << "QPaintBufferEngine: brushChanged (compressed)" << state()->brush;
+#endif
         buffer->variants[buffer->commands.last().offset] = brush;
         return;
     }
 
+#ifdef QPAINTBUFFER_DEBUG_DRAW
+    qDebug() << "QPaintBufferEngine: brushChanged" << state()->brush;
+#endif
     buffer->addCommand(QPaintBufferPrivate::Cmd_SetBrush, brush);
 }
 
@@ -488,14 +496,14 @@ void QPaintBufferEngine::transformChanged()
     if (!buffer->commands.isEmpty()
         && buffer->commands.last().id == QPaintBufferPrivate::Cmd_SetTransform) {
 #ifdef QPAINTBUFFER_DEBUG_DRAW
-        qDebug() << "QPaintBufferEngine: compressing " << state()->matrix;
+        qDebug() << "QPaintBufferEngine: transformChanged (compressing) " << state()->matrix;
 #endif
         buffer->variants[buffer->commands.last().offset] = state()->matrix;
         return;
     }
 
 #ifdef QPAINTBUFFER_DEBUG_DRAW
-        qDebug() << "QPaintBufferEngine: " << state()->matrix;
+        qDebug() << "QPaintBufferEngine: transformChanged:" << state()->matrix;
 #endif
     buffer->addCommand(QPaintBufferPrivate::Cmd_SetTransform, state()->matrix);
 }
@@ -514,7 +522,18 @@ void QPaintBufferEngine::draw(const QVectorPath &path)
 #ifdef QPAINTBUFFER_DEBUG_DRAW
     qDebug() << "QPaintBufferEngine: draw vpath:" << path.elementCount();
 #endif
-    buffer->addCommand(QPaintBufferPrivate::Cmd_DrawVectorPath, path);
+
+    bool hasBrush = qbrush_style(state()->brush) != Qt::NoBrush;
+    bool hasPen = qpen_style(state()->pen) != Qt::NoPen
+                  && qbrush_style(qpen_brush(state()->pen)) != Qt::NoBrush;
+
+    if (hasPen || hasBrush)
+        buffer->addCommand(QPaintBufferPrivate::Cmd_DrawVectorPath, path);
+#ifdef QPAINTBUFFER_DEBUG_DRAW
+    else
+        qDebug() << " - no pen or brush active, discarded...\n";
+#endif
+
 //     if (buffer->calculateBoundingRect) {
 //         QRealRect r = path.controlPointRect();
 //         buffer->updateBoundingRect(QRectF(r.x1, r.y1, r.x2 - r.x1, r.y2 - r.y1));
@@ -745,15 +764,15 @@ void QPaintBufferEngine::drawEllipse(const QRect &r)
 
 void QPaintBufferEngine::drawPath(const QPainterPath &path)
 {
-#ifdef QPAINTBUFFER_DEBUG_DRAW
-    qDebug() << "QPaintBufferEngine: drawPath: element count:" << path.elementCount();
-#endif
-    // ### Path -> QVariant
-    // buffer->addCommand(QPaintBufferPrivate::Cmd_DrawPath, QVariant(path));
+// #ifdef QPAINTBUFFER_DEBUG_DRAW
+//     qDebug() << "QPaintBufferEngine: drawPath: element count:" << path.elementCount();
+// #endif
+//     // ### Path -> QVariant
+//     // buffer->addCommand(QPaintBufferPrivate::Cmd_DrawPath, QVariant(path));
     QPaintEngineEx::drawPath(path);
 
-    if (buffer->calculateBoundingRect)
-        buffer->updateBoundingRect(path.boundingRect());
+//     if (buffer->calculateBoundingRect)
+//         buffer->updateBoundingRect(path.boundingRect());
 }
 
 void QPaintBufferEngine::drawPoints(const QPoint *points, int pointCount)
@@ -1424,10 +1443,6 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         QTextItemInt &ti = (*tiCopy)();
         QString text(ti.text());
 
-#ifdef QPAINTBUFFER_DEBUG_DRAW
-        qDebug() << " -> Cmd_DrawTextItem:" << pos << " " << text << " " << scaleFactor;
-#endif
-
         QFont font(ti.font());
         font.setUnderline(false);
         font.setStrikeOut(false);
@@ -1438,6 +1453,10 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         if (si.justified)
             justificationWidth = si.width.toReal();
         qreal scaleFactor = font.d->dpi/qreal(qt_defaultDpiY());
+
+#ifdef QPAINTBUFFER_DEBUG_DRAW
+        qDebug() << " -> Cmd_DrawTextItem:" << pos << " " << text << " " << scaleFactor;
+#endif
 
         if (scaleFactor != 1.0) {
             QFont fnt(font);
@@ -1689,7 +1708,7 @@ void QPaintEngineExReplayer::process(const QPaintBufferCommand &cmd)
 
 QPaintBufferResource::QPaintBufferResource(FreeFunc f, QObject *parent) : QObject(parent), free(f)
 {
-    connect(QPaintBufferSignalProxy::instance(), SIGNAL(aboutToDestroy(const QPaintBufferPrivate *)), this, SLOT(remove(const QPaintBufferPrivate *)));
+    connect(QPaintBufferSignalProxy::instance(), SIGNAL(aboutToDestroy(const QPaintBufferPrivate*)), this, SLOT(remove(const QPaintBufferPrivate*)));
 }
 
 QPaintBufferResource::~QPaintBufferResource()

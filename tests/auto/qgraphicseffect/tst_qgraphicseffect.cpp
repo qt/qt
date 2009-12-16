@@ -49,6 +49,7 @@
 #include <QtGui/qstyleoption.h>
 
 #include "../../shared/util.h"
+#include <private/qgraphicseffect_p.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -131,16 +132,16 @@ public:
     int margin() const
     { return m_margin; }
 
-    void draw(QPainter *painter, QGraphicsEffectSource *source)
+    void draw(QPainter *painter)
     {
         ++numRepaints;
         if (doNothingInDraw)
             return;
-        m_source = source;
+        m_source = source();
         m_painter = painter;
-        m_styleOption = source->styleOption();
+        m_styleOption = source()->styleOption();
         m_opacity = painter->opacity();
-        source->draw(painter);
+        drawSource(painter);
     }
 
     void sourceChanged(QGraphicsEffect::ChangeFlags flags)
@@ -195,8 +196,8 @@ void tst_QGraphicsEffect::source()
     // Uninstall effect on QGraphicsItem.
     effect->reset();
     item->setGraphicsEffect(0);
-    QVERIFY(!effect->source());
-    QVERIFY(effect->m_sourceChangedFlags & QGraphicsEffect::SourceDetached);
+    QVERIFY(!effect);
+    effect = new CustomEffect;
 
     // The item takes ownership and should delete the effect when destroyed.
     item->setGraphicsEffect(effect);
@@ -248,10 +249,10 @@ void tst_QGraphicsEffect::boundingRect()
     QCOMPARE(effect->boundingRect(), effect->boundingRectFor(itemRect));
 
     // Uninstall effect on QGraphicsItem.
+    QPointer<CustomEffect> ptr = effect;
     item->setGraphicsEffect(0);
-    QCOMPARE(effect->boundingRect(), QRectF());
+    QVERIFY(!ptr);
 
-    delete effect;
     delete item;
 }
 
@@ -342,11 +343,11 @@ void tst_QGraphicsEffect::draw()
     QCOMPARE(item->numRepaints, 0);
 
     // Make sure uninstalling an effect triggers a repaint.
+    QPointer<CustomEffect> ptr = effect;
     item->setGraphicsEffect(0);
+    QVERIFY(!ptr);
     QTest::qWait(50);
-    QCOMPARE(effect->numRepaints, 0);
     QCOMPARE(item->numRepaints, 1);
-    delete effect;
 }
 
 void tst_QGraphicsEffect::opacity()
@@ -379,7 +380,8 @@ void tst_QGraphicsEffect::grayscale()
     item->setPen(Qt::NoPen);
     item->setBrush(QColor(122, 193, 66)); // Qt light green
 
-    QGraphicsGrayscaleEffect *effect = new QGraphicsGrayscaleEffect;
+    QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+    effect->setColor(Qt::black);
     item->setGraphicsEffect(effect);
 
     QPainter painter;

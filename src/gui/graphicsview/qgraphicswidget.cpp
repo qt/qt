@@ -318,6 +318,12 @@ void QGraphicsWidget::resize(const QSizeF &size)
 */
 
 /*!
+    \property QGraphicsWidget::sizePolicy
+    \brief the size policy for the widget
+    \sa sizePolicy(), setSizePolicy(), QWidget::sizePolicy()
+*/
+
+/*!
     \property QGraphicsWidget::geometry
     \brief the geometry of the widget
 
@@ -379,8 +385,6 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     QSizeF oldSize = size();
     QGraphicsLayoutItem::setGeometry(newGeom);
 
-    wd->invalidateCachedClipPathRecursively();
-
     // Send resize event
     bool resized = newGeom.size() != oldSize;
     if (resized) {
@@ -407,6 +411,27 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     \a x, \a y, \a w, \a h)).
 
     \sa geometry(), resize()
+*/
+
+/*!
+    \property QGraphicsWidget::minimumSize
+    \brief the minimum size of the widget
+
+    \sa setMinimumSize(), minimumSize(), preferredSize, maximumSize
+*/
+
+/*!
+    \property QGraphicsWidget::preferredSize
+    \brief the preferred size of the widget
+
+    \sa setPreferredSize(), preferredSize(), minimumSize, maximumSize
+*/
+
+/*!
+    \property QGraphicsWidget::maximumSize
+    \brief the maximum size of the widget
+
+    \sa setMaximumSize(), maximumSize(), minimumSize, preferredSize
 */
 
 /*!
@@ -1029,7 +1054,7 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         break;
     case ItemParentChange: {
         QGraphicsItem *parent = qVariantValue<QGraphicsItem *>(value);
-        d->fixFocusChainBeforeReparenting((parent && parent->isWidget()) ? static_cast<QGraphicsWidget *>(parent) : 0);
+        d->fixFocusChainBeforeReparenting((parent && parent->isWidget()) ? static_cast<QGraphicsWidget *>(parent) : 0, scene());
 
         // Deliver ParentAboutToChange.
         QEvent event(QEvent::ParentAboutToChange);
@@ -1276,7 +1301,8 @@ bool QGraphicsWidget::event(QEvent *event)
     case QEvent::Polish:
         polishEvent();
         d->polished = true;
-        d->updateFont(d->font);
+        if (!d->font.isCopyOf(QApplication::font()))
+            d->updateFont(d->font);
         break;
     case QEvent::WindowActivate:
     case QEvent::WindowDeactivate:
@@ -1352,6 +1378,8 @@ void QGraphicsWidget::changeEvent(QEvent *event)
     case QEvent::StyleChange:
         // ### Don't unset if the margins are explicitly set.
         unsetWindowFrameMargins();
+        if (d->layout)
+            d->layout->invalidate();
     case QEvent::FontChange:
         update();
         updateGeometry();

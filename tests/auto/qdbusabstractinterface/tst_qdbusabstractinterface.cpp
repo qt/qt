@@ -103,6 +103,8 @@ private slots:
     void getComplexSignal_data();
     void getComplexSignal();
 
+    void followSignal();
+
     void createErrors_data();
     void createErrors();
 
@@ -130,6 +132,9 @@ tst_QDBusAbstractInterface::tst_QDBusAbstractInterface()
 
 void tst_QDBusAbstractInterface::initTestCase()
 {
+    // enable debugging temporarily:
+    //putenv("QDBUS_DEBUG=1");
+
     // register the object
     QDBusConnection con = QDBusConnection::sessionBus();
     QVERIFY(con.isConnected());
@@ -430,6 +435,61 @@ void tst_QDBusAbstractInterface::getComplexSignal()
     QVERIFY(s[0].size() == 1);
     QCOMPARE(s[0][0].userType(), qMetaTypeId<RegisteredType>());
     QCOMPARE(s[0][0].value<RegisteredType>(), expectedValue);
+}
+
+void tst_QDBusAbstractInterface::followSignal()
+{
+    const QString serviceToFollow = "com.trolltech.tst_qdbusabstractinterface.FollowMe";
+    Pinger p = getPinger(serviceToFollow);
+    QVERIFY2(p, "Not connected to D-Bus");
+
+    QDBusConnection con = p->connection();
+    QVERIFY(!con.interface()->isServiceRegistered(serviceToFollow));
+    Pinger control = getPinger("");
+
+    // we need to connect the signal somewhere in order for D-Bus to enable the rules
+    QTestEventLoop::instance().connect(p.data(), SIGNAL(voidSignal()), SLOT(exitLoop()));
+    QTestEventLoop::instance().connect(control.data(), SIGNAL(voidSignal()), SLOT(exitLoop()));
+    QSignalSpy s(p.data(), SIGNAL(voidSignal()));
+
+    emit targetObj.voidSignal();
+    QTestEventLoop::instance().enterLoop(200);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // signal must not have been received because the service isn't registered
+    QVERIFY(s.isEmpty());
+
+    // now register the service
+    QDBusReply<QDBusConnectionInterface::RegisterServiceReply> r =
+            con.interface()->registerService(serviceToFollow, QDBusConnectionInterface::DontQueueService,
+                                             QDBusConnectionInterface::DontAllowReplacement);
+    QVERIFY(r.isValid() && r.value() == QDBusConnectionInterface::ServiceRegistered);
+    QVERIFY(con.interface()->isServiceRegistered(serviceToFollow));
+    QCoreApplication::instance()->processEvents();
+
+    // emit the signal again:
+    emit targetObj.voidSignal();
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // now the signal must have been received:
+    QCOMPARE(s.size(), 1);
+    QVERIFY(s.at(0).size() == 0);
+    s.clear();
+
+    // disconnect the signal
+    disconnect(p.data(), SIGNAL(voidSignal()), &QTestEventLoop::instance(), 0);
+
+    // emit the signal again:
+    emit targetObj.voidSignal();
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // and now it mustn't have been received
+    QVERIFY(s.isEmpty());
+
+    // cleanup:
+    con.interface()->unregisterService(serviceToFollow);
 }
 
 void tst_QDBusAbstractInterface::createErrors_data()

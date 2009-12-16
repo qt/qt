@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_VIDEOWIDGET_H
 
 #include "mmf_medianode.h"
+#include "videooutput.h"
 
 #include <QtGui/QWidget>
 #include <Phonon/VideoWidget>
@@ -31,6 +32,7 @@ namespace Phonon
 {
 namespace MMF
 {
+class AncestorMoveMonitor;
 class VideoOutput;
 
 class VideoWidget       :   public MediaNode
@@ -40,7 +42,7 @@ class VideoWidget       :   public MediaNode
     Q_INTERFACES(Phonon::VideoWidgetInterface)
 
 public:
-    VideoWidget(QWidget* parent);
+    VideoWidget(AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent);
     ~VideoWidget();
 
     // VideoWidgetInterface
@@ -58,17 +60,13 @@ public:
     virtual void setSaturation(qreal saturation);
     virtual QWidget *widget();
 
-    VideoOutput& videoOutput();
-
 protected:
     virtual bool activateOnMediaObject(MediaObject *mo);
 
 private:
-    QScopedPointer<QWidget>                 m_widget;
+    QScopedPointer<VideoOutput>             m_videoOutput;
 
-    Phonon::VideoWidget::AspectRatio        m_aspectRatio;
     qreal                                   m_brightness;
-    Phonon::VideoWidget::ScaleMode          m_scaleMode;
     qreal                                   m_contrast;
     qreal                                   m_hue;
     qreal                                   m_saturation;

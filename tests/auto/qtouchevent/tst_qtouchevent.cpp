@@ -48,6 +48,7 @@ public:
     QList<QTouchEvent::TouchPoint> touchBeginPoints, touchUpdatePoints, touchEndPoints;
     bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
     bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
+    bool deleteInTouchBegin, deleteInTouchUpdate, deleteInTouchEnd;
 
     tst_QTouchEventWidget()
         : QWidget()
@@ -62,6 +63,7 @@ public:
         touchEndPoints.clear();
         seenTouchBegin = seenTouchUpdate = seenTouchEnd = false;
         acceptTouchBegin = acceptTouchUpdate = acceptTouchEnd = true;
+        deleteInTouchBegin = deleteInTouchUpdate = deleteInTouchEnd = false;
     }
 
     bool event(QEvent *event)
@@ -74,6 +76,8 @@ public:
             seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
             touchBeginPoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchBegin);
+            if (deleteInTouchBegin)
+                delete this;
             break;
         case QEvent::TouchUpdate:
             if (!seenTouchBegin) qWarning("TouchUpdate: have not seen TouchBegin");
@@ -81,6 +85,8 @@ public:
             seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
             touchUpdatePoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchUpdate);
+            if (deleteInTouchUpdate)
+                delete this;
             break;
         case QEvent::TouchEnd:
             if (!seenTouchBegin) qWarning("TouchEnd: have not seen TouchBegin");
@@ -88,6 +94,8 @@ public:
             seenTouchEnd = seenTouchBegin && !seenTouchEnd;
             touchEndPoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchEnd);
+            if (deleteInTouchEnd)
+                delete this;
             break;
         default:
             return QWidget::event(event);
@@ -102,11 +110,19 @@ public:
     QList<QTouchEvent::TouchPoint> touchBeginPoints, touchUpdatePoints, touchEndPoints;
     bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
     bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
+    bool deleteInTouchBegin, deleteInTouchUpdate, deleteInTouchEnd;
+    tst_QTouchEventGraphicsItem **weakpointer;
 
     tst_QTouchEventGraphicsItem()
-        : QGraphicsItem()
+        : QGraphicsItem(), weakpointer(0)
     {
         reset();
+    }
+
+    ~tst_QTouchEventGraphicsItem()
+    {
+        if (weakpointer)
+            *weakpointer = 0;
     }
 
     void reset()
@@ -116,6 +132,7 @@ public:
         touchEndPoints.clear();
         seenTouchBegin = seenTouchUpdate = seenTouchEnd = false;
         acceptTouchBegin = acceptTouchUpdate = acceptTouchEnd = true;
+        deleteInTouchBegin = deleteInTouchUpdate = deleteInTouchEnd = false;
     }
 
     QRectF boundingRect() const { return QRectF(0, 0, 10, 10); }
@@ -131,6 +148,8 @@ public:
             seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
             touchBeginPoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchBegin);
+            if (deleteInTouchBegin)
+                delete this;
             break;
         case QEvent::TouchUpdate:
             if (!seenTouchBegin) qWarning("TouchUpdate: have not seen TouchBegin");
@@ -138,6 +157,8 @@ public:
             seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
             touchUpdatePoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchUpdate);
+            if (deleteInTouchUpdate)
+                delete this;
             break;
         case QEvent::TouchEnd:
             if (!seenTouchBegin) qWarning("TouchEnd: have not seen TouchBegin");
@@ -145,6 +166,8 @@ public:
             seenTouchEnd = seenTouchBegin && !seenTouchEnd;
             touchEndPoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchEnd);
+            if (deleteInTouchEnd)
+                delete this;
             break;
         default:
             return QGraphicsItem::sceneEvent(event);
@@ -168,6 +191,8 @@ private slots:
     void basicRawEventTranslation();
     void multiPointRawEventTranslationOnTouchScreen();
     void multiPointRawEventTranslationOnTouchPad();
+    void deleteInEventHandler();
+    void deleteInRawEventTranslation();
 };
 
 void tst_QTouchEvent::touchDisabledByDefault()
@@ -496,7 +521,7 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         res = QApplication::sendEvent(view.viewport(), &touchUpdateEvent);
         QVERIFY(res);
         // the scene accepts the event, since it found an item to send the event to
-        QVERIFY(touchUpdateEvent.isAccepted());
+        QVERIFY(!touchUpdateEvent.isAccepted());
         QVERIFY(child.seenTouchUpdate);
         QVERIFY(!root.seenTouchUpdate);
 
@@ -510,7 +535,7 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         res = QApplication::sendEvent(view.viewport(), &touchEndEvent);
         QVERIFY(res);
         // the scene accepts the event, since it found an item to send the event to
-        QVERIFY(touchEndEvent.isAccepted());
+        QVERIFY(!touchEndEvent.isAccepted());
         QVERIFY(child.seenTouchEnd);
         QVERIFY(!root.seenTouchEnd);
     }
@@ -1057,6 +1082,225 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
         QCOMPARE(rightTouchPoint.screenRect(), QRectF(centerScreenPos, QSizeF(0, 0)));
         QCOMPARE(rightTouchPoint.pressure(), qreal(0.));
     }
+}
+
+void tst_QTouchEvent::deleteInEventHandler()
+{
+    // QWidget
+    {
+        QWidget window;
+        tst_QTouchEventWidget *child1, *child2, *child3;
+        child1 = new tst_QTouchEventWidget;
+        child2 = new tst_QTouchEventWidget;
+        child3 = new tst_QTouchEventWidget;
+        child1->setParent(&window);
+        child2->setParent(&window);
+        child3->setParent(&window);
+        child1->setAttribute(Qt::WA_AcceptTouchEvents);
+        child2->setAttribute(Qt::WA_AcceptTouchEvents);
+        child3->setAttribute(Qt::WA_AcceptTouchEvents);
+        child1->deleteInTouchBegin = true;
+        child2->deleteInTouchUpdate = true;
+        child3->deleteInTouchEnd = true;
+
+        QList<QTouchEvent::TouchPoint> touchPoints;
+        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QTouchEvent touchBeginEvent(QEvent::TouchBegin,
+                                    QTouchEvent::TouchScreen,
+                                    Qt::NoModifier,
+                                    Qt::TouchPointPressed,
+                                    touchPoints);
+        QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointStationary,
+                               touchPoints);
+        QTouchEvent touchEndEvent(QEvent::TouchEnd,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointReleased,
+                               touchPoints);
+        QWeakPointer<QWidget> p;
+        bool res;
+
+        touchBeginEvent.ignore();
+        p = child1;
+        res = QApplication::sendEvent(child1, &touchBeginEvent);
+        // event is handled, but widget should be deleted
+        QVERIFY(res && touchBeginEvent.isAccepted() && p.isNull());
+
+        touchBeginEvent.ignore();
+        p = child2;
+        res = QApplication::sendEvent(child2, &touchBeginEvent);
+        QVERIFY(res && touchBeginEvent.isAccepted() && !p.isNull());
+        touchUpdateEvent.ignore();
+        res = QApplication::sendEvent(child2, &touchUpdateEvent);
+        QVERIFY(res && touchUpdateEvent.isAccepted() && p.isNull());
+
+        touchBeginEvent.ignore();
+        p = child3;
+        res = QApplication::sendEvent(child3, &touchBeginEvent);
+        QVERIFY(res && touchBeginEvent.isAccepted() && !p.isNull());
+        touchUpdateEvent.ignore();
+        res = QApplication::sendEvent(child3, &touchUpdateEvent);
+        QVERIFY(res && touchUpdateEvent.isAccepted() && !p.isNull());
+        touchEndEvent.ignore();
+        res = QApplication::sendEvent(child3, &touchEndEvent);
+        QVERIFY(res && touchEndEvent.isAccepted() && p.isNull());
+    }
+
+    // QGraphicsView
+    {
+        QGraphicsScene scene;
+        QGraphicsView view(&scene);
+        tst_QTouchEventGraphicsItem *root, *child1, *child2, *child3;
+        root = new tst_QTouchEventGraphicsItem;
+        child1 = new tst_QTouchEventGraphicsItem;
+        child2 = new tst_QTouchEventGraphicsItem;
+        child3 = new tst_QTouchEventGraphicsItem;
+        child1->setParentItem(root);
+        child2->setParentItem(root);
+        child3->setParentItem(root);
+        child1->setZValue(1.);
+        child2->setZValue(0.);
+        child3->setZValue(-1.);
+        child1->setAcceptTouchEvents(true);
+        child2->setAcceptTouchEvents(true);
+        child3->setAcceptTouchEvents(true);
+        child1->deleteInTouchBegin = true;
+        child2->deleteInTouchUpdate = true;
+        child3->deleteInTouchEnd = true;
+
+        scene.addItem(root);
+        view.resize(200, 200);
+        view.fitInView(scene.sceneRect());
+
+        QTouchEvent::TouchPoint touchPoint(0);
+        touchPoint.setState(Qt::TouchPointPressed);
+        touchPoint.setPos(view.mapFromScene(child1->mapToScene(child1->boundingRect().center())));
+        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.pos().toPoint()));
+        touchPoint.setScenePos(view.mapToScene(touchPoint.pos().toPoint()));
+        QList<QTouchEvent::TouchPoint> touchPoints;
+        touchPoints.append(touchPoint);
+        QTouchEvent touchBeginEvent(QEvent::TouchBegin,
+                                    QTouchEvent::TouchScreen,
+                                    Qt::NoModifier,
+                                    Qt::TouchPointPressed,
+                                    touchPoints);
+        touchPoints[0].setState(Qt::TouchPointMoved);
+        QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointMoved,
+                               touchPoints);
+        touchPoints[0].setState(Qt::TouchPointReleased);
+        QTouchEvent touchEndEvent(QEvent::TouchEnd,
+                               QTouchEvent::TouchScreen,
+                               Qt::NoModifier,
+                               Qt::TouchPointReleased,
+                               touchPoints);
+        bool res;
+
+        child1->weakpointer = &child1;
+        touchBeginEvent.ignore();
+        res = QApplication::sendEvent(view.viewport(), &touchBeginEvent);
+        QVERIFY(res && touchBeginEvent.isAccepted() && !child1);
+        touchUpdateEvent.ignore();
+        res = QApplication::sendEvent(view.viewport(), &touchUpdateEvent);
+        QVERIFY(res && touchUpdateEvent.isAccepted() && !child1);
+        touchEndEvent.ignore();
+        res = QApplication::sendEvent(view.viewport(), &touchEndEvent);
+        QVERIFY(res && touchUpdateEvent.isAccepted() && !child1);
+
+        child2->weakpointer = &child2;
+        touchBeginEvent.ignore();
+        res = QApplication::sendEvent(view.viewport(), &touchBeginEvent);
+        QVERIFY(res && touchBeginEvent.isAccepted() && child2);
+        touchUpdateEvent.ignore();
+        res = QApplication::sendEvent(view.viewport(), &touchUpdateEvent);
+        QVERIFY(res && !touchUpdateEvent.isAccepted() && !child2);
+        touchEndEvent.ignore();
+        res = QApplication::sendEvent(view.viewport(), &touchEndEvent);
+        QVERIFY(res && !touchUpdateEvent.isAccepted() && !child2);
+
+        child3->weakpointer = &child3;
+        res = QApplication::sendEvent(view.viewport(), &touchBeginEvent);
+        QVERIFY(res && touchBeginEvent.isAccepted() && child3);
+        res = QApplication::sendEvent(view.viewport(), &touchUpdateEvent);
+        QVERIFY(res && !touchUpdateEvent.isAccepted() && child3);
+        res = QApplication::sendEvent(view.viewport(), &touchEndEvent);
+        QVERIFY(res && !touchEndEvent.isAccepted() && !child3);
+
+        delete root;
+    }
+}
+
+void tst_QTouchEvent::deleteInRawEventTranslation()
+{
+    tst_QTouchEventWidget touchWidget;
+    touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
+    touchWidget.setGeometry(100, 100, 300, 300);
+
+    tst_QTouchEventWidget *leftWidget = new tst_QTouchEventWidget;
+    leftWidget->setParent(&touchWidget);
+    leftWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    leftWidget->setGeometry(0, 100, 100, 100);
+    leftWidget->deleteInTouchBegin = true;
+    leftWidget->show();
+
+    tst_QTouchEventWidget *centerWidget = new tst_QTouchEventWidget;
+    centerWidget->setParent(&touchWidget);
+    centerWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    centerWidget->setGeometry(100, 100, 100, 100);
+    centerWidget->deleteInTouchUpdate = true;
+    centerWidget->show();
+
+    tst_QTouchEventWidget *rightWidget = new tst_QTouchEventWidget;
+    rightWidget->setParent(&touchWidget);
+    rightWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    rightWidget->setGeometry(200, 100, 100, 100);
+    rightWidget->deleteInTouchEnd = true;
+    rightWidget->show();
+
+    QPointF leftPos = leftWidget->rect().center();
+    QPointF centerPos = centerWidget->rect().center();
+    QPointF rightPos = rightWidget->rect().center();
+    QPointF leftScreenPos = leftWidget->mapToGlobal(leftPos.toPoint());
+    QPointF centerScreenPos = centerWidget->mapToGlobal(centerPos.toPoint());
+    QPointF rightScreenPos = rightWidget->mapToGlobal(rightPos.toPoint());
+    QRectF screenGeometry = qApp->desktop()->screenGeometry(&touchWidget);
+
+    QWeakPointer<QWidget> pl = leftWidget, pc = centerWidget, pr = rightWidget;
+
+    QList<QTouchEvent::TouchPoint> rawTouchPoints;
+    rawTouchPoints.append(QTouchEvent::TouchPoint(0));
+    rawTouchPoints.append(QTouchEvent::TouchPoint(1));
+    rawTouchPoints.append(QTouchEvent::TouchPoint(2));
+    rawTouchPoints[0].setState(Qt::TouchPointPressed);
+    rawTouchPoints[0].setScreenPos(leftScreenPos);
+    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].pos(), screenGeometry));
+    rawTouchPoints[1].setState(Qt::TouchPointPressed);
+    rawTouchPoints[1].setScreenPos(centerScreenPos);
+    rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].pos(), screenGeometry));
+    rawTouchPoints[2].setState(Qt::TouchPointPressed);
+    rawTouchPoints[2].setScreenPos(rightScreenPos);
+    rawTouchPoints[2].setNormalizedPos(normalized(rawTouchPoints[2].pos(), screenGeometry));
+
+    // generate begin events on all widgets, the left widget should die
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
+    QVERIFY(pl.isNull() && !pc.isNull() && !pr.isNull());
+
+    // generate update events on all widget, the center widget should die
+    rawTouchPoints[0].setState(Qt::TouchPointMoved);
+    rawTouchPoints[1].setState(Qt::TouchPointMoved);
+    rawTouchPoints[2].setState(Qt::TouchPointMoved);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
+
+    // generate end events on all widget, the right widget should die
+    rawTouchPoints[0].setState(Qt::TouchPointReleased);
+    rawTouchPoints[1].setState(Qt::TouchPointReleased);
+    rawTouchPoints[2].setState(Qt::TouchPointReleased);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
 }
 
 QTEST_MAIN(tst_QTouchEvent)

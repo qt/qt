@@ -202,7 +202,6 @@ void JIT::privateCompileMainPass()
         DEFINE_BINARY_OP(op_less)
         DEFINE_BINARY_OP(op_lesseq)
         DEFINE_BINARY_OP(op_urshift)
-        DEFINE_UNARY_OP(op_get_pnames)
         DEFINE_UNARY_OP(op_is_boolean)
         DEFINE_UNARY_OP(op_is_function)
         DEFINE_UNARY_OP(op_is_number)
@@ -240,7 +239,9 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_eq_null)
         DEFINE_OP(op_get_by_id)
         DEFINE_OP(op_get_by_val)
+        DEFINE_OP(op_get_by_pname)
         DEFINE_OP(op_get_global_var)
+        DEFINE_OP(op_get_pnames)
         DEFINE_OP(op_get_scoped_var)
         DEFINE_OP(op_instanceof)
         DEFINE_OP(op_jeq_null)
@@ -385,6 +386,7 @@ void JIT::privateCompileSlowCases()
         DEFINE_SLOWCASE_OP(op_eq)
         DEFINE_SLOWCASE_OP(op_get_by_id)
         DEFINE_SLOWCASE_OP(op_get_by_val)
+        DEFINE_SLOWCASE_OP(op_get_by_pname)
         DEFINE_SLOWCASE_OP(op_instanceof)
         DEFINE_SLOWCASE_OP(op_jfalse)
         DEFINE_SLOWCASE_OP(op_jnless)
@@ -489,21 +491,21 @@ JITCode JIT::privateCompile()
             ASSERT(record.type == SwitchRecord::Immediate || record.type == SwitchRecord::Character); 
             ASSERT(record.jumpTable.simpleJumpTable->branchOffsets.size() == record.jumpTable.simpleJumpTable->ctiOffsets.size());
 
-            record.jumpTable.simpleJumpTable->ctiDefault = patchBuffer.locationOf(m_labels[bytecodeIndex + 3 + record.defaultOffset]);
+            record.jumpTable.simpleJumpTable->ctiDefault = patchBuffer.locationOf(m_labels[bytecodeIndex + record.defaultOffset]);
 
             for (unsigned j = 0; j < record.jumpTable.simpleJumpTable->branchOffsets.size(); ++j) {
                 unsigned offset = record.jumpTable.simpleJumpTable->branchOffsets[j];
-                record.jumpTable.simpleJumpTable->ctiOffsets[j] = offset ? patchBuffer.locationOf(m_labels[bytecodeIndex + 3 + offset]) : record.jumpTable.simpleJumpTable->ctiDefault;
+                record.jumpTable.simpleJumpTable->ctiOffsets[j] = offset ? patchBuffer.locationOf(m_labels[bytecodeIndex + offset]) : record.jumpTable.simpleJumpTable->ctiDefault;
             }
         } else {
             ASSERT(record.type == SwitchRecord::String);
 
-            record.jumpTable.stringJumpTable->ctiDefault = patchBuffer.locationOf(m_labels[bytecodeIndex + 3 + record.defaultOffset]);
+            record.jumpTable.stringJumpTable->ctiDefault = patchBuffer.locationOf(m_labels[bytecodeIndex + record.defaultOffset]);
 
             StringJumpTable::StringOffsetTable::iterator end = record.jumpTable.stringJumpTable->offsetTable.end();            
             for (StringJumpTable::StringOffsetTable::iterator it = record.jumpTable.stringJumpTable->offsetTable.begin(); it != end; ++it) {
                 unsigned offset = it->second.branchOffset;
-                it->second.ctiOffset = offset ? patchBuffer.locationOf(m_labels[bytecodeIndex + 3 + offset]) : record.jumpTable.stringJumpTable->ctiDefault;
+                it->second.ctiOffset = offset ? patchBuffer.locationOf(m_labels[bytecodeIndex + offset]) : record.jumpTable.stringJumpTable->ctiDefault;
             }
         }
     }

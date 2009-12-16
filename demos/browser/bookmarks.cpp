@@ -72,11 +72,11 @@ BookmarksManager::BookmarksManager(QObject *parent)
     , m_bookmarkRootNode(0)
     , m_bookmarkModel(0)
 {
-    connect(this, SIGNAL(entryAdded(BookmarkNode *)),
+    connect(this, SIGNAL(entryAdded(BookmarkNode*)),
             m_saveTimer, SLOT(changeOccurred()));
-    connect(this, SIGNAL(entryRemoved(BookmarkNode *, int, BookmarkNode *)),
+    connect(this, SIGNAL(entryRemoved(BookmarkNode*,int,BookmarkNode*)),
             m_saveTimer, SLOT(changeOccurred()));
-    connect(this, SIGNAL(entryChanged(BookmarkNode *)),
+    connect(this, SIGNAL(entryChanged(BookmarkNode*)),
             m_saveTimer, SLOT(changeOccurred()));
 }
 
@@ -362,12 +362,12 @@ BookmarksModel::BookmarksModel(BookmarksManager *bookmarkManager, QObject *paren
     , m_endMacro(false)
     , m_bookmarksManager(bookmarkManager)
 {
-    connect(bookmarkManager, SIGNAL(entryAdded(BookmarkNode *)),
-            this, SLOT(entryAdded(BookmarkNode *)));
-    connect(bookmarkManager, SIGNAL(entryRemoved(BookmarkNode *, int, BookmarkNode *)),
-            this, SLOT(entryRemoved(BookmarkNode *, int, BookmarkNode *)));
-    connect(bookmarkManager, SIGNAL(entryChanged(BookmarkNode *)),
-            this, SLOT(entryChanged(BookmarkNode *)));
+    connect(bookmarkManager, SIGNAL(entryAdded(BookmarkNode*)),
+            this, SLOT(entryAdded(BookmarkNode*)));
+    connect(bookmarkManager, SIGNAL(entryRemoved(BookmarkNode*,int,BookmarkNode*)),
+            this, SLOT(entryRemoved(BookmarkNode*,int,BookmarkNode*)));
+    connect(bookmarkManager, SIGNAL(entryChanged(BookmarkNode*)),
+            this, SLOT(entryChanged(BookmarkNode*)));
 }
 
 QModelIndex BookmarksModel::index(BookmarkNode *node) const
@@ -733,8 +733,8 @@ BookmarksMenu::BookmarksMenu(QWidget *parent)
     : ModelMenu(parent)
     , m_bookmarksManager(0)
 {
-    connect(this, SIGNAL(activated(const QModelIndex &)),
-            this, SLOT(activated(const QModelIndex &)));
+    connect(this, SIGNAL(activated(QModelIndex)),
+            this, SLOT(activated(QModelIndex)));
     setMaxRows(-1);
     setHoverRole(BookmarksModel::UrlStringRole);
     setSeparatorRole(BookmarksModel::SeparatorRole);
@@ -792,11 +792,11 @@ BookmarksDialog::BookmarksDialog(QWidget *parent, BookmarksManager *manager)
     int header = fm.width(QLatin1Char('m')) * 40;
     tree->header()->resizeSection(0, header);
     tree->header()->setStretchLastSection(true);
-    connect(tree, SIGNAL(activated(const QModelIndex&)),
+    connect(tree, SIGNAL(activated(QModelIndex)),
             this, SLOT(open()));
     tree->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(tree, SIGNAL(customContextMenuRequested(const QPoint &)),
-            this, SLOT(customContextMenuRequested(const QPoint &)));
+    connect(tree, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(customContextMenuRequested(QPoint)));
     connect(addFolderButton, SIGNAL(clicked()),
             this, SLOT(newFolder()));
     expandNodes(m_bookmarksManager->bookmarks());
@@ -884,9 +884,9 @@ BookmarksToolBar::BookmarksToolBar(BookmarksModel *model, QWidget *parent)
     connect(this, SIGNAL(actionTriggered(QAction*)), this, SLOT(triggered(QAction*)));
     setRootIndex(model->index(0, 0));
     connect(m_bookmarksModel, SIGNAL(modelReset()), this, SLOT(build()));
-    connect(m_bookmarksModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)), this, SLOT(build()));
-    connect(m_bookmarksModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)), this, SLOT(build()));
-    connect(m_bookmarksModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(build()));
+    connect(m_bookmarksModel, SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(build()));
+    connect(m_bookmarksModel, SIGNAL(rowsRemoved(QModelIndex,int,int)), this, SLOT(build()));
+    connect(m_bookmarksModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(build()));
     setAcceptDrops(true);
 }
 
@@ -956,8 +956,8 @@ void BookmarksToolBar::build()
             button->setArrowType(Qt::DownArrow);
             button->setText(idx.data().toString());
             ModelMenu *menu = new ModelMenu(this);
-            connect(menu, SIGNAL(activated(const QModelIndex &)),
-                    this, SLOT(activated(const QModelIndex &)));
+            connect(menu, SIGNAL(activated(QModelIndex)),
+                    this, SLOT(activated(QModelIndex)));
             menu->setModel(m_bookmarksModel);
             menu->setRootIndex(idx);
             menu->addAction(new QAction(menu));

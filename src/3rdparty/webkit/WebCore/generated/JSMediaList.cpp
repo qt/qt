@@ -79,8 +79,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSMediaListConstructor::s_info = { "MediaListConstructor", 0, &JSMediaListConstructorTable, 0 };
@@ -139,7 +142,7 @@ JSMediaList::JSMediaList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSMediaList::~JSMediaList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSMediaList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

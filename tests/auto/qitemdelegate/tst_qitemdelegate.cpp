@@ -877,7 +877,7 @@ void tst_QItemDelegate::decoration()
     }
     case QVariant::Image: {
         QImage img(size, QImage::Format_Mono);
-        qMemSet(img.bits(), 0, img.numBytes());
+        qMemSet(img.bits(), 0, img.byteCount());
         value = img;
         break;
     }

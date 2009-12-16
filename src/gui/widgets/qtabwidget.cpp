@@ -313,7 +313,16 @@ void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
                                                         : QTabBar::TriangularEast;
         break;
     }
+
     option->tabBarSize = t;
+
+    if (QStyleOptionTabWidgetFrameV2 *tabframe = qstyleoption_cast<QStyleOptionTabWidgetFrameV2*>(option)) {
+        QRect tbRect = tabBar()->geometry();
+        QRect selectedTabRect = tabBar()->tabRect(tabBar()->currentIndex());
+        tabframe->tabBarRect = tbRect;
+        selectedTabRect.moveTopLeft(selectedTabRect.topLeft() + tbRect.topLeft());
+        tabframe->selectedTabRect = selectedTabRect;
+    }
 }
 
 /*!
@@ -690,8 +699,8 @@ void QTabWidget::setTabBar(QTabBar* tb)
     setFocusProxy(d->tabs);
     connect(d->tabs, SIGNAL(currentChanged(int)),
             this, SLOT(_q_showTab(int)));
-    connect(d->tabs, SIGNAL(tabMoved(int, int)),
-            this, SLOT(_q_tabMoved(int, int)));
+    connect(d->tabs, SIGNAL(tabMoved(int,int)),
+            this, SLOT(_q_tabMoved(int,int)));
     if (d->tabs->tabsClosable())
         connect(d->tabs, SIGNAL(tabCloseRequested(int)),
                 this, SIGNAL(tabCloseRequested(int)));
@@ -756,7 +765,7 @@ void QTabWidget::setUpLayout(bool onlyCheck)
     if (onlyCheck && !d->dirty)
         return; // nothing to do
 
-    QStyleOptionTabWidgetFrame option;
+    QStyleOptionTabWidgetFrameV2 option;
     initStyleOption(&option);
 
     // this must be done immediately, because QWidgetItem relies on it (even if !isVisible())
@@ -1167,8 +1176,8 @@ void QTabWidget::tabRemoved(int index)
 void QTabWidget::paintEvent(QPaintEvent *)
 {
     Q_D(QTabWidget);
-    QStylePainter p(this);
     if (documentMode()) {
+        QStylePainter p(this, tabBar());
         if (QWidget *w = cornerWidget(Qt::TopLeftCorner)) {
             QStyleOptionTabBarBaseV2 opt;
             QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
@@ -1185,8 +1194,9 @@ void QTabWidget::paintEvent(QPaintEvent *)
         }
         return;
     }
+    QStylePainter p(this);
 
-    QStyleOptionTabWidgetFrame opt;
+    QStyleOptionTabWidgetFrameV2 opt;
     initStyleOption(&opt);
     opt.rect = d->panelRect;
     p.drawPrimitive(QStyle::PE_FrameTabWidget, opt);

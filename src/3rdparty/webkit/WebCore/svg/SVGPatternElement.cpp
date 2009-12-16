@@ -64,6 +64,10 @@ SVGPatternElement::SVGPatternElement(const QualifiedName& tagName, Document* doc
     , m_patternUnits(this, SVGNames::patternUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_patternContentUnits(this, SVGNames::patternContentUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
     , m_patternTransform(this, SVGNames::patternTransformAttr, SVGTransformList::create(SVGNames::patternTransformAttr))
+    , m_href(this, XLinkNames::hrefAttr)
+    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
+    , m_viewBox(this, SVGNames::viewBoxAttr)
+    , m_preserveAspectRatio(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create())
 {
 }
 
@@ -110,7 +114,7 @@ void SVGPatternElement::parseMappedAttribute(MappedAttribute* attr)
             return;
         if (SVGExternalResourcesRequired::parseMappedAttribute(attr))
             return;
-        if (SVGFitToViewBox::parseMappedAttribute(attr))
+        if (SVGFitToViewBox::parseMappedAttribute(document(), attr))
             return;
 
         SVGStyledElement::parseMappedAttribute(attr);
@@ -195,7 +199,7 @@ void SVGPatternElement::buildPattern(const FloatRect& targetRect) const
         }
     }
 
-    TransformationMatrix viewBoxCTM = viewBoxToViewTransform(patternBoundaries.width(), patternBoundaries.height()); 
+    TransformationMatrix viewBoxCTM = viewBoxToViewTransform(viewBox(), preserveAspectRatio(), patternBoundaries.width(), patternBoundaries.height()); 
     FloatRect patternBoundariesIncludingOverflow = patternBoundaries;
 
     // Apply objectBoundingBoxMode fixup for patternContentUnits, if viewBox is not set.

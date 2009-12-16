@@ -192,6 +192,8 @@ void QComboBoxPrivate::_q_modelReset()
         lineEdit->setText(QString());
         updateLineEditGeometry();
     }
+    if (currentIndex.row() != indexBeforeChange)
+        _q_emitCurrentIndexChanged(currentIndex);
     q->update();
 }
 
@@ -314,7 +316,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
 
 
         // height
-        sh.setHeight(qMax(fm.lineSpacing(), 14) + 2);
+        sh.setHeight(qMax(fm.height(), 14) + 2);
         if (hasIcon) {
             sh.setHeight(qMax(sh.height(), iconSize.height() + 2));
         }
@@ -402,13 +404,6 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     layout->setSpacing(0);
     layout->setMargin(0);
 
-#ifdef QT_SOFTKEYS_ENABLED
-    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, this);
-    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, this);
-    addAction(selectAction);
-    addAction(cancelAction);
-#endif
-
     // set item view
     setItemView(itemView);
 
@@ -494,18 +489,6 @@ void QComboBoxPrivateContainer::viewDestroyed()
 }
 
 /*
-    Sets currentIndex on entered if the LeftButton is not pressed. This
-    means that if mouseTracking(...) is on, we setCurrentIndex and select
-    even when LeftButton is not pressed.
-*/
-void QComboBoxPrivateContainer::setCurrentIndex(const QModelIndex &index)
-{
-    if (QComboBoxDelegate::isSeparator(index))
-        return;
-    view->setCurrentIndex(index);
-}
-
-/*
     Returns the item view used for the combobox popup.
 */
 QAbstractItemView *QComboBoxPrivateContainer::itemView() const
@@ -530,8 +513,6 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
         disconnect(view->verticalScrollBar(), SIGNAL(rangeChanged(int,int)),
                    this, SLOT(updateScrollers()));
 #endif
-        disconnect(view, SIGNAL(entered(QModelIndex)),
-                   this, SLOT(setCurrentIndex(QModelIndex)));
         disconnect(view, SIGNAL(destroyed()),
                    this, SLOT(viewDestroyed()));
 
@@ -568,10 +549,15 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
     connect(view->verticalScrollBar(), SIGNAL(rangeChanged(int,int)),
             this, SLOT(updateScrollers()));
 #endif
-    connect(view, SIGNAL(entered(QModelIndex)),
-            this, SLOT(setCurrentIndex(QModelIndex)));
     connect(view, SIGNAL(destroyed()),
             this, SLOT(viewDestroyed()));
+
+#ifdef QT_SOFTKEYS_ENABLED
+    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, itemView);
+    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, itemView);
+    addAction(selectAction);
+    addAction(cancelAction);
+#endif
 }
 
 /*!
@@ -653,16 +639,20 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             break;
         }
     break;
-    case QEvent::MouseMove: {
+    case QEvent::MouseMove:
         if (isVisible()) {
             QMouseEvent *m = static_cast<QMouseEvent *>(e);
             QWidget *widget = static_cast<QWidget *>(o);
             QPoint vector = widget->mapToGlobal(m->pos()) - initialClickPosition;
             if (vector.manhattanLength() > 9 && blockMouseReleaseTimer.isActive())
                 blockMouseReleaseTimer.stop();
+            QModelIndex indexUnderMouse = view->indexAt(m->pos());
+            if (indexUnderMouse.isValid() && indexUnderMouse != view->currentIndex()
+                    && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
+                view->setCurrentIndex(indexUnderMouse);
+            }
         }
         break;
-    }
     case QEvent::MouseButtonRelease: {
         QMouseEvent *m = static_cast<QMouseEvent *>(e);
         if (isVisible() && view->rect().contains(m->pos()) && view->currentIndex().isValid()
@@ -941,7 +931,10 @@ void QComboBoxPrivate::init()
                                  QSizePolicy::ComboBox));
     setLayoutItemMargins(QStyle::SE_ComboBoxLayoutItem);
     q->setModel(new QStandardItemModel(0, 1, q));
-    q->setAttribute(Qt::WA_InputMethodEnabled);
+    if (!q->isEditable())
+        q->setAttribute(Qt::WA_InputMethodEnabled, false);
+    else
+        q->setAttribute(Qt::WA_InputMethodEnabled);
 }
 
 QComboBoxPrivateContainer* QComboBoxPrivate::viewContainer()
@@ -992,14 +985,6 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
     }
 }
 
-void QComboBoxPrivate::_q_rowsAboutToBeInserted(const QModelIndex & parent,
-                                             int /*start*/, int /*end*/)
-{
-    if (parent != root)
-        return;
-    indexBeforeChange = currentIndex.row();
-}
-
 void QComboBoxPrivate::_q_rowsInserted(const QModelIndex &parent, int start, int end)
 {
     Q_Q(QComboBox);
@@ -1022,11 +1007,8 @@ void QComboBoxPrivate::_q_rowsInserted(const QModelIndex &parent, int start, int
     }
 }
 
-void QComboBoxPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &parent, int /*start*/, int /*end*/)
+void QComboBoxPrivate::_q_updateIndexBeforeChange()
 {
-    if (parent != root)
-        return;
-
     indexBeforeChange = currentIndex.row();
 }
 
@@ -1132,6 +1114,32 @@ void QComboBoxPrivate::updateLineEditGeometry()
     lineEdit->setGeometry(editRect);
 }
 
+Qt::MatchFlags QComboBoxPrivate::matchFlags() const
+{
+    // Base how duplicates are determined on the autocompletion case sensitivity
+    Qt::MatchFlags flags = Qt::MatchFixedString;
+#ifndef QT_NO_COMPLETER
+    if (!lineEdit->completer() || lineEdit->completer()->caseSensitivity() == Qt::CaseSensitive)
+#endif
+        flags |= Qt::MatchCaseSensitive;
+    return flags;
+}
+
+
+void QComboBoxPrivate::_q_editingFinished()
+{
+    Q_Q(QComboBox);
+    if (lineEdit && !lineEdit->text().isEmpty()) {
+        //here we just check if the current item was entered
+        const int index = q_func()->findText(lineEdit->text(), matchFlags());
+        if (index != -1 && itemText(currentIndex) != lineEdit->text()) {
+            q->setCurrentIndex(index);
+            emitActivated(currentIndex);
+        }
+    }
+
+}
+
 void QComboBoxPrivate::_q_returnPressed()
 {
     Q_Q(QComboBox);
@@ -1144,13 +1152,7 @@ void QComboBoxPrivate::_q_returnPressed()
         // check for duplicates (if not enabled) and quit
         int index = -1;
         if (!duplicatesEnabled) {
-            // Base how duplicates are determined on the autocompletion case sensitivity
-            Qt::MatchFlags flags = Qt::MatchFixedString;
-#ifndef QT_NO_COMPLETER
-            if (!lineEdit->completer() || lineEdit->completer()->caseSensitivity() == Qt::CaseSensitive)
-#endif
-                flags |= Qt::MatchCaseSensitive;
-            index = q->findText(text, flags);
+            index = q->findText(text, matchFlags());
             if (index != -1) {
                 q->setCurrentIndex(index);
                 emitActivated(currentIndex);
@@ -1685,6 +1687,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     if (d->lineEdit->parent() != this)
         d->lineEdit->setParent(this);
     connect(d->lineEdit, SIGNAL(returnPressed()), this, SLOT(_q_returnPressed()));
+    connect(d->lineEdit, SIGNAL(editingFinished()), this, SLOT(_q_editingFinished()));
     connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(editTextChanged(QString)));
 #ifdef QT3_SUPPORT
     connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(textChanged(QString)));
@@ -1868,15 +1871,17 @@ void QComboBox::setModel(QAbstractItemModel *model)
         disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                    this, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
         disconnect(d->model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-                   this, SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)));
+                   this, SLOT(_q_updateIndexBeforeChange()));
         disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                    this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-                   this, SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)));
+                   this, SLOT(_q_updateIndexBeforeChange()));
         disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                    this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(destroyed()),
                    this, SLOT(_q_modelDestroyed()));
+        disconnect(d->model, SIGNAL(modelAboutToBeReset()),
+                   this, SLOT(_q_updateIndexBeforeChange()));
         disconnect(d->model, SIGNAL(modelReset()),
                    this, SLOT(_q_modelReset()));
         if (d->model->QObject::parent() == this)
@@ -1888,15 +1893,17 @@ void QComboBox::setModel(QAbstractItemModel *model)
     connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
     connect(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-            this, SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)));
+            this, SLOT(_q_updateIndexBeforeChange()));
     connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
     connect(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)));
+            this, SLOT(_q_updateIndexBeforeChange()));
     connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
             this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
     connect(model, SIGNAL(destroyed()),
             this, SLOT(_q_modelDestroyed()));
+    connect(model, SIGNAL(modelAboutToBeReset()),
+            this, SLOT(_q_updateIndexBeforeChange()));
     connect(model, SIGNAL(modelReset()),
             this, SLOT(_q_modelReset()));
 
@@ -1977,7 +1984,7 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
     if (lineEdit) {
         QString newText = q->itemText(currentIndex.row());
         if (lineEdit->text() != newText)
-            lineEdit->setText(q->itemText(currentIndex.row()));
+            lineEdit->setText(newText);
         updateLineEditGeometry();
     }
     if (indexChanged) {
@@ -2452,15 +2459,15 @@ void QComboBox::showPopup()
 
 #if defined(Q_WS_WIN) && !defined(QT_NO_EFFECTS)
     bool scrollDown = (listRect.topLeft() == below);
-    if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo) 
+    if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo)
         && !style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this) && !window()->testAttribute(Qt::WA_DontShowOnScreen))
         qScrollEffect(container, scrollDown ? QEffects::DownScroll : QEffects::UpScroll, 150);
 #endif
 
 // Don't disable updates on Mac OS X. Windows are displayed immediately on this platform,
 // which means that the window will be visible before the call to container->show() returns.
-// If updates are disabled at this point we'll miss our chance at painting the popup 
-// menu before it's shown, causing flicker since the window then displays the standard gray 
+// If updates are disabled at this point we'll miss our chance at painting the popup
+// menu before it's shown, causing flicker since the window then displays the standard gray
 // background.
 #ifndef Q_WS_MAC
     container->setUpdatesEnabled(false);

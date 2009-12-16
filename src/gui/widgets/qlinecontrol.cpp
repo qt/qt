@@ -138,7 +138,12 @@ void QLineControl::copy(QClipboard::Mode mode) const
 */
 void QLineControl::paste()
 {
-    insert(QApplication::clipboard()->text(QClipboard::Clipboard));
+    QString clip = QApplication::clipboard()->text(QClipboard::Clipboard);
+    if (!clip.isEmpty() || hasSelectedText()) {
+        separate(); //make it a separate undo/redo command
+        insert(clip);
+        separate();
+    }
 }
 
 #endif // !QT_NO_CLIPBOARD
@@ -401,7 +406,8 @@ void QLineControl::moveCursor(int pos, bool mark)
 void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 {
     int priorState = 0;
-    bool isGettingInput = !event->commitString().isEmpty() || !event->preeditString().isEmpty()
+    bool isGettingInput = !event->commitString().isEmpty()
+            || event->preeditString() != preeditAreaText()
             || event->replacementLength() > 0;
     bool cursorPositionChanged = false;
 
@@ -413,7 +419,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 
 
     int c = m_cursor; // cursor position after insertion of commit string
-    if (event->replacementStart() <= 0)
+    if (event->replacementStart() == 0)
         c += event->commitString().length() + qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
@@ -447,8 +453,9 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
             cursorPositionChanged = true;
         }
     }
-
+#ifndef QT_NO_IM
     setPreeditArea(m_cursor, event->preeditString());
+#endif //QT_NO_IM
     m_preeditCursor = event->preeditString().length();
     m_hideCursor = false;
     QList<QTextLayout::FormatRange> formats;
@@ -1509,6 +1516,18 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
     }
 #endif // QT_NO_COMPLETER
 
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+        if (hasAcceptableInput() || fixup()) {
+            emit accepted();
+            emit editingFinished();
+        }
+        if (inlineCompletionAccepted)
+            event->accept();
+        else
+            event->ignore();
+        return;
+    }
+
     if (echoMode() == QLineEdit::PasswordEchoOnEdit
         && !passwordEchoEditing()
         && !isReadOnly()
@@ -1529,17 +1548,6 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         clear();
     }
 
-    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
-        if (hasAcceptableInput() || fixup()) {
-            emit accepted();
-            emit editingFinished();
-        }
-        if (inlineCompletionAccepted)
-            event->accept();
-        else
-            event->ignore();
-        return;
-    }
     bool unknown = false;
 
     if (false) {
@@ -1578,16 +1586,16 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         }
     }
 #endif //QT_NO_CLIPBOARD
-    else if (event == QKeySequence::MoveToStartOfLine) {
+    else if (event == QKeySequence::MoveToStartOfLine || event == QKeySequence::MoveToStartOfBlock) {
         home(0);
     }
-    else if (event == QKeySequence::MoveToEndOfLine) {
+    else if (event == QKeySequence::MoveToEndOfLine || event == QKeySequence::MoveToEndOfBlock) {
         end(0);
     }
-    else if (event == QKeySequence::SelectStartOfLine) {
+    else if (event == QKeySequence::SelectStartOfLine || event == QKeySequence::SelectStartOfBlock) {
         home(1);
     }
-    else if (event == QKeySequence::SelectEndOfLine) {
+    else if (event == QKeySequence::SelectEndOfLine || event == QKeySequence::SelectEndOfBlock) {
         end(1);
     }
     else if (event == QKeySequence::MoveToNextChar) {
@@ -1663,6 +1671,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
     }
 #endif // QT_NO_SHORTCUT
     else {
+        bool handled = false;
 #ifdef Q_WS_MAC
         if (event->key() == Qt::Key_Up || event->key() == Qt::Key_Down) {
             Qt::KeyboardModifiers myModifiers = (event->modifiers() & ~Qt::KeypadModifier);
@@ -1680,6 +1689,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
                     event->key() == Qt::Key_Up ? home(0) : end(0);
                 }
             }
+            handled = true;
         }
 #endif
         if (event->modifiers() & Qt::ControlModifier) {
@@ -1712,7 +1722,8 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
             break;
 #endif
             default:
-                unknown = true;
+                if (!handled)
+                    unknown = true;
             }
         } else { // ### check for *no* modifier
             switch (event->key()) {
@@ -1745,7 +1756,8 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
 #endif
 
             default:
-                unknown = true;
+                if (!handled)
+                    unknown = true;
             }
         }
     }

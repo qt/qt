@@ -101,7 +101,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
         Coord c = { 0, 0, // will be filled in later
                     glyph_width,
                     glyph_height, // texture coords
-                    metrics.x.truncate(),
+                    metrics.x.round().truncate(),
                     -metrics.y.truncate() }; // baseline for horizontal scripts
 
         listItemCoordinates.insert(glyph, c);
@@ -229,15 +229,8 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
 
 int QImageTextureGlyphCache::glyphMargin() const
 {
-#ifdef Q_WS_MAC
-
-#ifdef QT_MAC_USE_COCOA
-    // For cocoa the margin is built into the glyph it seems..
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
     return 0;
-#else
-    return 2;
-#endif
-
 #else
     return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;
 #endif

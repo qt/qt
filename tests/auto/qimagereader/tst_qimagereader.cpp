@@ -157,6 +157,8 @@ private slots:
 
     void tiffOrientation_data();
     void tiffOrientation();
+
+    void tiffGrayscale();
 #endif
 
     void autoDetectImageFormat();
@@ -1376,6 +1378,13 @@ void tst_QImageReader::tiffOrientation()
     QCOMPARE(expectedImage, orientedImage);
 }
 
+void tst_QImageReader::tiffGrayscale()
+{
+    QImage actualImage(prefix + "grayscale.tif");
+    QImage expectedImage(prefix + "grayscale-ref.tif");
+
+    QCOMPARE(expectedImage, actualImage.convertToFormat(expectedImage.format()));
+}
 #endif
 
 void tst_QImageReader::dotsPerMeter_data()

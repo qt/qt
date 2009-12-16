@@ -48,6 +48,11 @@
 #include "QtCore/qlocale.h"
 #include "QtCore/qdatetime.h"
 
+#include <ctype.h>
+#ifndef QT_NO_DATESTRING
+# include <stdio.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -606,26 +611,25 @@ static QNetworkRequest::KnownHeaders parseHeaderName(const QByteArray &headerNam
 {
     // headerName is not empty here
 
-    QByteArray lower = headerName.toLower();
-    switch (lower.at(0)) {
+    switch (tolower(headerName.at(0))) {
     case 'c':
-        if (lower == "content-type")
+        if (qstricmp(headerName.constData(), "content-type") == 0)
             return QNetworkRequest::ContentTypeHeader;
-        else if (lower == "content-length")
+        else if (qstricmp(headerName.constData(), "content-length") == 0)
             return QNetworkRequest::ContentLengthHeader;
-        else if (lower == "cookie")
+        else if (qstricmp(headerName.constData(), "cookie") == 0)
             return QNetworkRequest::CookieHeader;
         break;
 
     case 'l':
-        if (lower == "location")
+        if (qstricmp(headerName.constData(), "location") == 0)
             return QNetworkRequest::LocationHeader;
-        else if (lower == "last-modified")
+        else if (qstricmp(headerName.constData(), "last-modified") == 0)
             return QNetworkRequest::LastModifiedHeader;
         break;
 
     case 's':
-        if (lower == "set-cookie")
+        if (qstricmp(headerName.constData(), "set-cookie") == 0)
             return QNetworkRequest::SetCookieHeader;
         break;
     }
@@ -697,11 +701,10 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
 QNetworkHeadersPrivate::RawHeadersList::ConstIterator
 QNetworkHeadersPrivate::findRawHeader(const QByteArray &key) const
 {
-    QByteArray lowerKey = key.toLower();
     RawHeadersList::ConstIterator it = rawHeaders.constBegin();
     RawHeadersList::ConstIterator end = rawHeaders.constEnd();
     for ( ; it != end; ++it)
-        if (it->first.toLower() == lowerKey)
+        if (qstricmp(it->first.constData(), key.constData()) == 0)
             return it;
 
     return end;                 // not found
@@ -775,10 +778,9 @@ void QNetworkHeadersPrivate::setCookedHeader(QNetworkRequest::KnownHeaders heade
 
 void QNetworkHeadersPrivate::setRawHeaderInternal(const QByteArray &key, const QByteArray &value)
 {
-    QByteArray lowerKey = key.toLower();
     RawHeadersList::Iterator it = rawHeaders.begin();
     while (it != rawHeaders.end()) {
-        if (it->first.toLower() == lowerKey)
+        if (qstricmp(it->first.constData(), key.constData()) == 0)
             it = rawHeaders.erase(it);
         else
             ++it;
@@ -805,6 +807,68 @@ void QNetworkHeadersPrivate::parseAndSetHeader(const QByteArray &key, const QByt
     }
 }
 
+// Fast month string to int conversion. This code
+// assumes that the Month name is correct and that
+// the string is at least three chars long.
+static int name_to_month(const char* month_str)
+{
+    switch (month_str[0]) {
+    case 'J':
+        switch (month_str[1]) {
+        case 'a':
+            return 1;
+            break;
+        case 'u':
+            switch (month_str[2] ) {
+            case 'n':
+                return 6;
+                break;
+            case 'l':
+                return 7;
+                break;
+            }
+        }
+        break;
+    case 'F':
+        return 2;
+        break;
+    case 'M':
+        switch (month_str[2] ) {
+        case 'r':
+            return 3;
+            break;
+        case 'y':
+            return 5;
+            break;
+        }
+        break;
+    case 'A':
+        switch (month_str[1]) {
+        case 'p':
+            return 4;
+            break;
+        case 'u':
+            return 8;
+            break;
+        }
+        break;
+    case 'O':
+        return 10;
+        break;
+    case 'S':
+        return 9;
+        break;
+    case 'N':
+        return 11;
+        break;
+    case 'D':
+        return 12;
+        break;
+    }
+
+    return 0;
+}
+
 QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
 {
     // HTTP dates have three possible formats:
@@ -820,16 +884,20 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
         // no comma -> asctime(3) format
         dt = QDateTime::fromString(QString::fromLatin1(value), Qt::TextDate);
     } else {
-        // eat the weekday, the comma and the space following it
-        QString sansWeekday = QString::fromLatin1(value.constData() + pos + 2);
-
-        QLocale c = QLocale::c();
-        if (pos == 3)
-            // must be RFC 1123 date
-            dt = c.toDateTime(sansWeekday, QLatin1String("dd MMM yyyy hh:mm:ss 'GMT"));
-        else
+        // Use sscanf over QLocal/QDateTimeParser for speed reasons. See the
+        // QtWebKit performance benchmarks to get an idea.
+        if (pos == 3) {
+            char month_name[4];
+            int day, year, hour, minute, second;
+            if (sscanf(value.constData(), "%*3s, %d %3s %d %d:%d:%d 'GMT'", &day, month_name, &year, &hour, &minute, &second) == 6)
+                dt = QDateTime(QDate(year, name_to_month(month_name), day), QTime(hour, minute, second));
+        } else {
+            QLocale c = QLocale::c();
+            // eat the weekday, the comma and the space following it
+            QString sansWeekday = QString::fromLatin1(value.constData() + pos + 2);
             // must be RFC 850 date
             dt = c.toDateTime(sansWeekday, QLatin1String("dd-MMM-yy hh:mm:ss 'GMT'"));
+        }
     }
 #endif // QT_NO_DATESTRING
 

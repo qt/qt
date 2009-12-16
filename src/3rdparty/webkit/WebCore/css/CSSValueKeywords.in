@@ -501,6 +501,7 @@ square-button
 button
 button-bevel
 default-button
+list-button
 listbox
 listitem
 media-fullscreen-button
@@ -631,3 +632,9 @@ stroke
 # none
 antialiased
 subpixel-antialiased
+
+# text-rendering
+#auto
+optimizeSpeed
+optimizeLegibility
+geometricPrecision

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -189,8 +189,10 @@ QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
 }
 
 QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part, const QSize &size,
-                               QS60StylePrivate::SkinElementFlags flags)
+                               QPainter *painter, QS60StylePrivate::SkinElementFlags flags)
 {
+    Q_UNUSED(painter);
+
     const QString partKey = QS60Style::partKeys().at(part);
     const QPicture partPicture = QS60StyleModeSpecifics::m_partPictures.value(partKey);
     QSize partSize(partPicture.boundingRect().size());
@@ -306,21 +308,11 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     return result;
 }
 
-void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
-{
-    setStyleProperty(name, value);
-}
-
-QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
-{
-    return styleProperty(name);
-}
-
 QPixmap QS60StylePrivate::backgroundTexture()
 {
     if (!m_background) {
         const QSize size = QApplication::desktop()->screen()->size();
-        QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen, size);
+        QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen, size, 0);
         m_background = new QPixmap(background);
     }
     return *m_background;
@@ -343,6 +335,11 @@ bool QS60StylePrivate::isTouchSupported()
 bool QS60StylePrivate::isToolBarBackground()
 {
     return true;
+}
+
+bool QS60StylePrivate::hasSliderGrooveGraphic()
+{
+    return false;
 }
 
 QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize)

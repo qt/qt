@@ -841,8 +841,8 @@ void QMdiAreaPrivate::appendChild(QMdiSubWindow *child)
     child->installEventFilter(q);
 
     QObject::connect(child, SIGNAL(aboutToActivate()), q, SLOT(_q_deactivateAllWindows()));
-    QObject::connect(child, SIGNAL(windowStateChanged(Qt::WindowStates, Qt::WindowStates)),
-                     q, SLOT(_q_processWindowStateChanged(Qt::WindowStates, Qt::WindowStates)));
+    QObject::connect(child, SIGNAL(windowStateChanged(Qt::WindowStates,Qt::WindowStates)),
+                     q, SLOT(_q_processWindowStateChanged(Qt::WindowStates,Qt::WindowStates)));
 }
 
 /*!
@@ -1947,8 +1947,10 @@ QMdiSubWindow *QMdiArea::addSubWindow(QWidget *widget, Qt::WindowFlags windowFla
 /*!
     Removes \a widget from the MDI area. The \a widget must be
     either a QMdiSubWindow or a widget that is the internal widget of
-    a subwindow. Note that the subwindow is not deleted by QMdiArea
-    and that its parent is set to 0.
+    a subwindow. Note \a widget is never actually deleted by QMdiArea.
+    If a QMdiSubWindow is passed in its parent is set to 0 and it is
+    removed, but if an internal widget is passed in the child widget
+    is set to 0 but the QMdiSubWindow is not removed.
 
     \sa addSubWindow()
 */

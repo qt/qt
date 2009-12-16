@@ -132,6 +132,10 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 extern bool qt_cleartype_enabled;
 #endif
 
+#ifdef Q_WS_MAC
+extern bool qt_applefontsmoothing_enabled;
+#endif
+
 
 /********************************************************************************
  * Span functions
@@ -508,7 +512,7 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 #if defined(Q_WS_WIN)
     else if (qt_cleartype_enabled)
 #elif defined (Q_WS_MAC)
-    else if (true)
+    else if (qt_applefontsmoothing_enabled)
 #else
     else if (false)
 #endif
@@ -1358,7 +1362,7 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 
     Q_D(QRasterPaintEngine);
 
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         clip(region.boundingRect(), op);
         return;
     }
@@ -1682,7 +1686,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     if (!s->penData.blend)
         return;
 
-    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint
+    if (s->flags.fast_pen && !path.isCurved()
         && s->lastPen.brush().isOpaque()) {
         int count = path.elementCount();
         QPointF *points = (QPointF *) path.points();
@@ -1735,8 +1739,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
-            if (path.shape() == QVectorPath::LinesHint)
-                dashOffset = s->lastPen.dashOffset();
+            dashOffset = s->lastPen.dashOffset();
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
@@ -3015,10 +3018,10 @@ void QRasterPaintEngine::drawCachedGlyphs(const QPointF &p, const QTextItemInt &
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat) : d->glyphCacheType;
 
     QImageTextureGlyphCache *cache =
-        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(glyphType, s->matrix);
+        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(0, glyphType, s->matrix);
     if (!cache) {
         cache = new QImageTextureGlyphCache(glyphType, s->matrix);
-        ti.fontEngine->setGlyphCache(glyphType, cache);
+        ti.fontEngine->setGlyphCache(0, cache);
     }
 
     cache->populate(ti, glyphs, positions);
@@ -3237,7 +3240,8 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         drawCached = false;
 
     // don't try to cache huge fonts
-    if (ti.fontEngine->fontDef.pixelSize * qSqrt(s->matrix.determinant()) >= 64)
+    const qreal pixelSize = ti.fontEngine->fontDef.pixelSize;
+    if (pixelSize * pixelSize * qAbs(s->matrix.determinant()) >= 64 * 64)
         drawCached = false;
 
     // ### Remove the TestFontEngine and Box engine crap, in these
@@ -4533,7 +4537,7 @@ void QClipData::setClipRect(const QRect &rect)
  */
 void QClipData::setClipRegion(const QRegion &region)
 {
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         setClipRect(region.rects().at(0));
         return;
     }
@@ -5116,6 +5120,9 @@ void QSpanData::adjustSpanMethods()
 #else
         unclipped_blend = qBlendTexture;
 #endif
+        if (!texture.imageData)
+            unclipped_blend = 0;
+
         break;
     }
     // setup clipping

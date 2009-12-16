@@ -196,6 +196,10 @@ public:
     qreal ascent() const;
     qreal descent() const;
     qreal height() const;
+    qreal leading() const;
+
+    void setLeadingIncluded(bool included);
+    bool leadingIncluded() const;
 
     qreal naturalTextWidth() const;
     QRectF naturalTextRect() const;

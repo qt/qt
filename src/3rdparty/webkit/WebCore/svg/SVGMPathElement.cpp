@@ -31,6 +31,8 @@ namespace WebCore {
 
 SVGMPathElement::SVGMPathElement(const QualifiedName& qname, Document* doc)
     : SVGElement(qname, doc)
+    , m_href(this, XLinkNames::hrefAttr)
+    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
 {
 }
 
@@ -47,7 +49,7 @@ void SVGMPathElement::parseMappedAttribute(MappedAttribute* attr)
 
 SVGPathElement* SVGMPathElement::pathElement()
 {
-    Element* target = document()->getElementById(getTarget(SVGURIReference::href()));
+    Element* target = document()->getElementById(getTarget(href()));
     if (target && target->hasTagName(SVGNames::pathTag))
         return static_cast<SVGPathElement*>(target);
     return 0;

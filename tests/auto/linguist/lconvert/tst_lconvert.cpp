@@ -105,7 +105,7 @@ void tst_lconvert::doCompare(QIODevice *actualDev, const QString &expectedFn)
     QList<QByteArray> actual = actualDev->readAll().split('\n');
 
     QFile file(expectedFn);
-    QVERIFY(file.open(QIODevice::ReadOnly));
+    QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
     QList<QByteArray> expected = file.readAll().split('\n');
 
     int i = 0, ei = expected.size(), gi = actual.size();
@@ -179,7 +179,7 @@ void tst_lconvert::convertChain(const QString &_inFileName, const QString &_outF
         if (!argList.isEmpty())
             args += argList[i];
         args << "-if" << stations[i] << "-i" << "-" << "-of" << stations[i + 1];
-        cvts.at(i)->start(binDir + "/lconvert", args);
+        cvts.at(i)->start(binDir + "/lconvert", args, QIODevice::ReadWrite | QIODevice::Text);
     }
     int st = 0;
     foreach (QProcess *cvt, cvts)
@@ -213,6 +213,7 @@ void tst_lconvert::readverifies_data()
     QTest::newRow("relative locations") << "relative.ts" << "ts";
     QTest::newRow("message ids") << "msgid.ts" << "ts";
     QTest::newRow("length variants") << "variants.ts" << "ts";
+    QTest::newRow("qph") << "phrasebook.qph" << "qph";
 }
 
 void tst_lconvert::readverifies()
@@ -243,7 +244,9 @@ void tst_lconvert::converts()
     QString outFileNameFq = dataDir + outFileName;
 
     QProcess cvt;
-    cvt.start(binDir + "/lconvert", QStringList() << "-i" << (dataDir + inFileName) << "-of" << format);
+    cvt.start(binDir + "/lconvert",
+              QStringList() << "-i" << (dataDir + inFileName) << "-of" << format,
+              QIODevice::ReadWrite | QIODevice::Text);
     doWait(&cvt, 0);
     if (QTest::currentTestFailed())
         return;

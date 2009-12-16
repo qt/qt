@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -65,10 +65,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QCoeFepInputContext : public QInputContext,
-                                         public MCoeFepAwareTextEditor,
-                                         public MCoeFepAwareTextEditor_Extension1,
-                                         public MObjectProvider
+class QCoeFepInputContext : public QInputContext,
+                            public MCoeFepAwareTextEditor,
+                            public MCoeFepAwareTextEditor_Extension1,
+                            public MObjectProvider
 {
     Q_OBJECT
 
@@ -84,7 +84,7 @@ public:
 
     bool filterEvent(const QEvent *event);
     void mouseHandler( int x, QMouseEvent *event);
-    bool isComposing() const { return m_isEditing; }
+    bool isComposing() const { return !m_preeditString.isEmpty(); }
 
     void setFocusWidget(QWidget * w);
     void widgetDestroyed(QWidget *w);
@@ -97,6 +97,7 @@ private:
     void applyHints(Qt::InputMethodHints hints);
     void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
     void queueInputCapabilitiesChanged();
+    bool needsInputPanel();
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();
@@ -131,6 +132,7 @@ public:
     // From MObjectProvider
 public:
     TTypeUid::Ptr MopSupplyObject(TTypeUid id);
+    MObjectProvider *MopNext();
 
 private:
     QSymbianControl *m_parent;
@@ -138,13 +140,14 @@ private:
     QString m_preeditString;
     Qt::InputMethodHints m_lastImHints;
     TUint m_textCapabilities;
-    bool m_isEditing;
     bool m_inDestruction;
     bool m_pendingInputCapabilitiesChanged;
     int m_cursorVisibility;
     int m_inlinePosition;
     MFepInlineTextFormatRetriever *m_formatRetriever;
     MFepPointerEventHandlerDuringInlineEdit *m_pointerHandler;
+    int m_longPress;
+    int m_cursorPos;
 };
 
 QT_END_NAMESPACE

@@ -52,7 +52,6 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
-
 #ifndef QT_NO_COMBOBOX
 
 class QAbstractItemView;
@@ -305,12 +304,12 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_itemSelected(const QModelIndex &item))
     Q_PRIVATE_SLOT(d_func(), void _q_emitHighlighted(const QModelIndex &))
     Q_PRIVATE_SLOT(d_func(), void _q_emitCurrentIndexChanged(const QModelIndex &index))
+    Q_PRIVATE_SLOT(d_func(), void _q_editingFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_returnPressed())
     Q_PRIVATE_SLOT(d_func(), void _q_resetButton())
     Q_PRIVATE_SLOT(d_func(), void _q_dataChanged(const QModelIndex &, const QModelIndex &))
-    Q_PRIVATE_SLOT(d_func(), void _q_rowsAboutToBeInserted(const QModelIndex & parent, int start, int end))
+    Q_PRIVATE_SLOT(d_func(), void _q_updateIndexBeforeChange())
     Q_PRIVATE_SLOT(d_func(), void _q_rowsInserted(const QModelIndex & parent, int start, int end))
-    Q_PRIVATE_SLOT(d_func(), void _q_rowsAboutToBeRemoved(const QModelIndex & parent, int start, int end))
     Q_PRIVATE_SLOT(d_func(), void _q_rowsRemoved(const QModelIndex & parent, int start, int end))
     Q_PRIVATE_SLOT(d_func(), void _q_modelDestroyed())
     Q_PRIVATE_SLOT(d_func(), void _q_modelReset())

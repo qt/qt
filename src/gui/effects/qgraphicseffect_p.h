@@ -55,17 +55,60 @@
 
 #include "qgraphicseffect.h"
 
+#include <QPixmapCache>
+
 #include <private/qobject_p.h>
 #include <private/qpixmapfilter_p.h>
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
+
+class QGraphicsEffectSourcePrivate;
+class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
+{
+    Q_OBJECT
+public:
+    ~QGraphicsEffectSource();
+    const QGraphicsItem *graphicsItem() const;
+    const QWidget *widget() const;
+    const QStyleOption *styleOption() const;
+
+    bool isPixmap() const;
+    void draw(QPainter *painter);
+    void update();
+
+    QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
+    QRect deviceRect() const;
+    QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates,
+                   QPoint *offset = 0,
+                   QGraphicsEffect::PixmapPadMode mode = QGraphicsEffect::PadToEffectiveBoundingRect) const;
+
+protected:
+    QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
+
+private:
+    Q_DECLARE_PRIVATE(QGraphicsEffectSource)
+    Q_DISABLE_COPY(QGraphicsEffectSource)
+    friend class QGraphicsEffect;
+    friend class QGraphicsEffectPrivate;
+    friend class QGraphicsScenePrivate;
+    friend class QGraphicsItem;
+    friend class QGraphicsItemPrivate;
+    friend class QWidget;
+    friend class QWidgetPrivate;
+};
 
 class QGraphicsEffectSourcePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffectSource)
 public:
-    QGraphicsEffectSourcePrivate() : QObjectPrivate() {}
-    virtual ~QGraphicsEffectSourcePrivate() {}
+    QGraphicsEffectSourcePrivate()
+        : QObjectPrivate()
+        , m_cachedSystem(Qt::DeviceCoordinates)
+        , m_cachedMode(QGraphicsEffect::PadToTransparentBorder)
+    {}
+
+    virtual ~QGraphicsEffectSourcePrivate();
     virtual void detach() = 0;
     virtual QRectF boundingRect(Qt::CoordinateSystem system) const = 0;
     virtual QRect deviceRect() const = 0;
@@ -75,11 +118,20 @@ public:
     virtual void draw(QPainter *p) = 0;
     virtual void update() = 0;
     virtual bool isPixmap() const = 0;
-    virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0) const = 0;
+    virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0,
+                           QGraphicsEffect::PixmapPadMode mode = QGraphicsEffect::PadToTransparentBorder) const = 0;
     virtual void effectBoundingRectChanged() = 0;
+    void invalidateCache(bool effectRectChanged = false) const;
+
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
+
+private:
+    mutable Qt::CoordinateSystem m_cachedSystem;
+    mutable QGraphicsEffect::PixmapPadMode m_cachedMode;
+    mutable QPoint m_cachedOffset;
+    mutable QPixmapCache::Key m_cacheKey;
 };
 
 class Q_GUI_EXPORT QGraphicsEffectPrivate : public QObjectPrivate
@@ -93,6 +145,7 @@ public:
         QGraphicsEffect::ChangeFlags flags;
         if (source) {
             flags |= QGraphicsEffect::SourceDetached;
+            source->d_func()->invalidateCache();
             source->d_func()->detach();
             delete source;
         }
@@ -108,22 +161,6 @@ public:
     quint32 padding : 31; // feel free to use
 };
 
-class QGraphicsGrayscaleEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsGrayscaleEffect)
-public:
-    QGraphicsGrayscaleEffectPrivate()
-        : opaque(true)
-    {
-        filter = new QPixmapColorizeFilter;
-        filter->setColor(Qt::black);
-    }
-    ~QGraphicsGrayscaleEffectPrivate() { delete filter; }
-
-    QPixmapColorizeFilter *filter;
-    quint32 opaque : 1;
-    quint32 padding : 31;
-};
 
 class QGraphicsColorizeEffectPrivate : public QGraphicsEffectPrivate
 {
@@ -139,15 +176,6 @@ public:
     QPixmapColorizeFilter *filter;
     quint32 opaque : 1;
     quint32 padding : 31;
-};
-
-class QGraphicsPixelizeEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsPixelizeEffect)
-public:
-    QGraphicsPixelizeEffectPrivate() : pixelSize(3) {}
-
-    int pixelSize;
 };
 
 class QGraphicsBlurEffectPrivate : public QGraphicsEffectPrivate
@@ -185,19 +213,8 @@ public:
     uint hasOpacityMask : 1;
 };
 
-class QGraphicsBloomEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
-public:
-    QGraphicsBloomEffectPrivate() : brightness(70), strength(qreal(0.7)) {}
-
-    QPixmapBlurFilter blurFilter;
-    int colorTable[256];
-    int brightness;
-    qreal strength;
-};
-
 QT_END_NAMESPACE
 
+#endif //QT_NO_GRAPHICSEFFECT
 #endif // QGRAPHICSEFFECT_P_H
 

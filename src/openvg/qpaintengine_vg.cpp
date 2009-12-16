@@ -1178,6 +1178,8 @@ VGPaintType QVGPaintEnginePrivate::setBrush
     case Qt::TexturePattern: {
         // The brush is a texture specified by a QPixmap/QImage.
         QPixmapData *pd = brush.texture().pixmapData();
+        if (!pd)
+            break;  // null QPixmap
         VGImage vgImg;
         bool deref = false;
         if (pd->pixelType() == QPixmapData::BitmapType) {
@@ -1568,12 +1570,6 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
 
-    // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
-        QPaintEngineEx::clip(rect, op);
-        return;
-    }
-
     switch (op) {
         case Qt::NoClip:
         {
@@ -1609,12 +1605,6 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     QVGPainterState *s = state();
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
-
-    // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
-        QPaintEngineEx::clip(region, op);
-        return;
-    }
 
     switch (op) {
         case Qt::NoClip:
@@ -1751,13 +1741,13 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                 // QRegion copy on the heap for the test if we can.
                 QRegion clip = d->systemClip; // Reference-counted, no alloc.
                 QRect clipRect;
-                if (clip.numRects() == 1) {
+                if (clip.rectCount() == 1) {
                     clipRect = clip.boundingRect().intersected(r);
                 } else if (clip.isEmpty()) {
                     clipRect = r;
                 } else {
                     clip = clip.intersect(r);
-                    if (clip.numRects() != 1) {
+                    if (clip.rectCount() != 1) {
                         d->maskValid = false;
                         d->maskIsSet = false;
                         d->maskRect = QRect();
@@ -1808,7 +1798,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     Q_D(QVGPaintEngine);
 
     // Use the QRect case if the region consists of a single rectangle.
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         clip(region.boundingRect(), op);
         return;
     }
@@ -1851,7 +1841,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                     clip = r;
                 else
                     clip = clip.intersect(r);
-                if (clip.numRects() == 1) {
+                if (clip.rectCount() == 1) {
                     d->maskValid = false;
                     d->maskIsSet = false;
                     d->maskRect = clip.boundingRect();
@@ -1869,7 +1859,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 
         case Qt::IntersectClip:
         {
-            if (region.numRects() != 1) {
+            if (region.rectCount() != 1) {
                 // If there is more than one rectangle, then intersecting
                 // the rectangles one by one in modifyMask() will not give
                 // the desired result.  So fall back to path-based clipping.
@@ -2146,7 +2136,7 @@ QRegion QVGPaintEngine::defaultClipRegion()
 
 bool QVGPaintEngine::isDefaultClipRegion(const QRegion& region)
 {
-    if (region.numRects() != 1)
+    if (region.rectCount() != 1)
         return false;
 
     QPaintDevice *pdev = paintDevice();
@@ -2893,6 +2883,8 @@ void qt_vg_drawVGImageStencil
 void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
     QPixmapData *pd = pm.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         Q_D(QVGPaintEngine);
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
@@ -2910,6 +2902,8 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
 void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
 {
     QPixmapData *pd = pm.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         Q_D(QVGPaintEngine);
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
@@ -2985,6 +2979,8 @@ void QVGPaintEngine::drawPixmaps
     // If the pixmap is not VG, or the transformation is projective,
     // then fall back to the default implementation.
     QPixmapData *pd = pixmap.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() != QPixmapData::OpenVGClass || !d->simpleTransform) {
         QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
         return;
@@ -3399,6 +3395,34 @@ void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)
 #endif
 }
 
+void QVGPaintEngine::fillRegion
+    (const QRegion& region, const QColor& color, const QSize& surfaceSize)
+{
+    Q_D(QVGPaintEngine);
+    if (d->clearColor != color || d->clearOpacity != 1.0f) {
+        VGfloat values[4];
+        values[0] = color.redF();
+        values[1] = color.greenF();
+        values[2] = color.blueF();
+        values[3] = color.alphaF();
+        vgSetfv(VG_CLEAR_COLOR, 4, values);
+        d->clearColor = color;
+        d->clearOpacity = 1.0f;
+    }
+    if (region.rectCount() == 1) {
+        QRect r = region.boundingRect();
+        vgClear(r.x(), surfaceSize.height() - r.y() - r.height(),
+                r.width(), r.height());
+    } else {
+        const QVector<QRect> rects = region.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            QRect r = rects.at(i);
+            vgClear(r.x(), surfaceSize.height() - r.y() - r.height(),
+                    r.width(), r.height());
+        }
+    }
+}
+
 #if !defined(QVG_NO_SINGLE_CONTEXT) && !defined(QT_NO_EGL)
 
 QVGCompositionHelper::QVGCompositionHelper()
@@ -3423,14 +3447,11 @@ void QVGCompositionHelper::endCompositing()
 }
 
 void QVGCompositionHelper::blitWindow
-    (QVGEGLWindowSurfacePrivate *surface, const QRect& rect,
-     const QPoint& topLeft, int opacity)
+    (VGImage image, const QSize& imageSize,
+     const QRect& rect, const QPoint& topLeft, int opacity)
 {
-    // Get the VGImage that is acting as a back buffer for the window.
-    VGImage image = surface->surfaceImage();
     if (image == VG_INVALID_HANDLE)
         return;
-    QSize imageSize = surface->surfaceSize();
 
     // Determine which sub rectangle of the window to draw.
     QRect sr = rect.translated(-topLeft);
@@ -3455,28 +3476,24 @@ void QVGCompositionHelper::blitWindow
         // Set the image transform.
         QTransform transform;
         int y = screenSize.height() - (rect.bottom() + 1);
-        transform.translate(rect.x() + 0.5f, y + 0.5f);
+        transform.translate(rect.x() - 0.5f, y - 0.5f);
         d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
 
         // Enable opacity for image drawing if necessary.
-        if (opacity < 255) {
-            if (opacity != d->paintOpacity) {
-                VGfloat values[4];
-                values[0] = 1.0f;
-                values[1] = 1.0f;
-                values[2] = 1.0f;
-                values[3] = ((VGfloat)opacity) / 255.0f;
-                vgSetParameterfv(d->opacityPaint, VG_PAINT_COLOR, 4, values);
-                d->paintOpacity = values[3];
-            }
-            if (d->fillPaint != d->opacityPaint) {
-                vgSetPaint(d->opacityPaint, VG_FILL_PATH);
-                d->fillPaint = d->opacityPaint;
-            }
-            d->setImageMode(VG_DRAW_IMAGE_MULTIPLY);
-        } else {
-            d->setImageMode(VG_DRAW_IMAGE_NORMAL);
+        if (opacity != d->paintOpacity) {
+            VGfloat values[4];
+            values[0] = 1.0f;
+            values[1] = 1.0f;
+            values[2] = 1.0f;
+            values[3] = ((VGfloat)opacity) / 255.0f;
+            vgSetParameterfv(d->opacityPaint, VG_PAINT_COLOR, 4, values);
+            d->paintOpacity = values[3];
         }
+        if (d->fillPaint != d->opacityPaint) {
+            vgSetPaint(d->opacityPaint, VG_FILL_PATH);
+            d->fillPaint = d->opacityPaint;
+        }
+        d->setImageMode(VG_DRAW_IMAGE_MULTIPLY);
 
         // Draw the child image.
         vgDrawImage(child);
@@ -3527,74 +3544,101 @@ static void fillBackgroundRect(const QRect& rect, QVGPaintEnginePrivate *d)
 void QVGCompositionHelper::fillBackground
     (const QRegion& region, const QBrush& brush)
 {
-    // Set the path transform to the default viewport transformation.
-    VGfloat devh = screenSize.height() - 1;
-    QTransform viewport(1.0f, 0.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.5f, devh + 0.5f, 1.0f);
-    d->setTransform(VG_MATRIX_PATH_USER_TO_SURFACE, viewport);
+    if (brush.style() == Qt::SolidPattern) {
+        // Use vgClear() to quickly fill the background.
+        QColor color = brush.color();
+        if (d->clearColor != color || d->clearOpacity != 1.0f) {
+            VGfloat values[4];
+            values[0] = color.redF();
+            values[1] = color.greenF();
+            values[2] = color.blueF();
+            values[3] = color.alphaF();
+            vgSetfv(VG_CLEAR_COLOR, 4, values);
+            d->clearColor = color;
+            d->clearOpacity = 1.0f;
+        }
+        if (region.rectCount() == 1) {
+            QRect r = region.boundingRect();
+            vgClear(r.x(), screenSize.height() - r.y() - r.height(),
+                    r.width(), r.height());
+        } else {
+            const QVector<QRect> rects = region.rects();
+            for (int i = 0; i < rects.size(); ++i) {
+                QRect r = rects.at(i);
+                vgClear(r.x(), screenSize.height() - r.y() - r.height(),
+                        r.width(), r.height());
+            }
+        }
 
-    // Set the brush to use to fill the background.
-    d->ensureBrush(brush);
-    d->setFillRule(VG_EVEN_ODD);
-
-    if (region.numRects() == 1) {
-        fillBackgroundRect(region.boundingRect(), d);
     } else {
-        const QVector<QRect> rects = region.rects();
-        for (int i = 0; i < rects.size(); ++i)
-            fillBackgroundRect(rects.at(i), d);
+        // Set the path transform to the default viewport transformation.
+        VGfloat devh = screenSize.height() - 1;
+        QTransform viewport(1.0f, 0.0f, 0.0f,
+                            0.0f, -1.0f, 0.0f,
+                            -0.5f, devh + 0.5f, 1.0f);
+        d->setTransform(VG_MATRIX_PATH_USER_TO_SURFACE, viewport);
+
+        // Set the brush to use to fill the background.
+        d->ensureBrush(brush);
+        d->setFillRule(VG_EVEN_ODD);
+
+        if (region.rectCount() == 1) {
+            fillBackgroundRect(region.boundingRect(), d);
+        } else {
+            const QVector<QRect> rects = region.rects();
+            for (int i = 0; i < rects.size(); ++i)
+                fillBackgroundRect(rects.at(i), d);
+        }
+
+        // We will need to reset the path transform during the next paint.
+        d->pathTransformSet = false;
     }
-
-    // We will need to reset the path transform during the next paint.
-    d->pathTransformSet = false;
-}
-
-void QVGCompositionHelper::drawCursorImage
-    (const QImage& image, const QPoint& offset)
-{
-    QImage img = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-
-    VGImage vgImg = vgCreateImage
-        (VG_sARGB_8888_PRE, img.width(), img.height(),
-         VG_IMAGE_QUALITY_FASTER);
-    vgImageSubData
-        (vgImg, img.bits() + img.bytesPerLine() * (img.height() - 1),
-         -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
-         img.width(), img.height());
-
-    QTransform transform;
-    int y = screenSize.height() - (offset.y() + img.height());
-    transform.translate(offset.x() + 0.5f, y + 0.5f);
-    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
-
-    d->setImageMode(VG_DRAW_IMAGE_NORMAL);
-    vgDrawImage(vgImg);
-
-    vgDestroyImage(vgImg);
 }
 
 void QVGCompositionHelper::drawCursorPixmap
     (const QPixmap& pixmap, const QPoint& offset)
 {
+    VGImage vgImage = VG_INVALID_HANDLE;
+
+    // Fetch the VGImage from the pixmap if possible.
     QPixmapData *pd = pixmap.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
-        if (vgpd->isValid()) {
-            VGfloat devh = screenSize.height() - 1;
-            QTransform transform(1.0f, 0.0f, 0.0f,
-                                 0.0f, -1.0f, 0.0f,
-                                 0.5f, devh + 0.5f, 1.0f);
-            transform.translate(offset.x(), offset.y());
-            d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
-
-            d->setImageMode(VG_DRAW_IMAGE_NORMAL);
-            vgDrawImage(vgpd->toVGImage());
-            return;
-        }
+        if (vgpd->isValid())
+            vgImage = vgpd->toVGImage();
     }
 
-    drawCursorImage(pixmap.toImage(), offset);
+    // Set the image transformation and modes.
+    VGfloat devh = screenSize.height() - 1;
+    QTransform transform(1.0f, 0.0f, 0.0f,
+                         0.0f, -1.0f, 0.0f,
+                         -0.5f, devh + 0.5f, 1.0f);
+    transform.translate(offset.x(), offset.y());
+    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
+    d->setImageMode(VG_DRAW_IMAGE_NORMAL);
+
+    // Draw the VGImage.
+    if (vgImage != VG_INVALID_HANDLE) {
+        vgDrawImage(vgImage);
+    } else {
+        QImage img = pixmap.toImage().convertToFormat
+            (QImage::Format_ARGB32_Premultiplied);
+
+        vgImage = vgCreateImage
+            (VG_sARGB_8888_PRE, img.width(), img.height(),
+             VG_IMAGE_QUALITY_FASTER);
+        if (vgImage == VG_INVALID_HANDLE)
+            return;
+        vgImageSubData
+            (vgImage, img.bits() + img.bytesPerLine() * (img.height() - 1),
+             -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
+             img.width(), img.height());
+
+        vgDrawImage(vgImage);
+        vgDestroyImage(vgImage);
+    }
 }
 
 void QVGCompositionHelper::setScissor(const QRegion& region)

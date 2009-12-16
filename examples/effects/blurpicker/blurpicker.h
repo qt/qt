@@ -44,31 +44,31 @@
 
 #include <QGraphicsEffect>
 #include <QGraphicsView>
-#include <QTimeLine>
+#include <QPropertyAnimation>
 
 #include "blureffect.h"
 
 class BlurPicker: public QGraphicsView
 {
     Q_OBJECT
+    Q_PROPERTY(qreal index READ index WRITE setIndex)
 
 public:
     BlurPicker(QWidget *parent = 0);
 
+    qreal index() const;
+    void setIndex(qreal);
+
 protected:
     void keyPressEvent(QKeyEvent *event);
-
-private slots:
-    void updateIconPositions();
 
 private:
     void setupScene();
 
 private:
     qreal m_index;
-    QGraphicsScene m_scene;
     QList<QGraphicsItem*> m_icons;
-    QTimeLine m_timeLine;
+    QPropertyAnimation m_animation;
 };
 
 #endif // BLURPICKER_H

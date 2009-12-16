@@ -112,6 +112,8 @@ private slots:
     void testMoveWithinOwnRange_data();
     void testMoveWithinOwnRange();
 
+    void testMoveThroughProxy();
+
     void testReset();
 
 
@@ -865,15 +867,22 @@ void tst_QAbstractItemModel::testMoveSameParentDown_data()
     QTest::addColumn<int>("startRow");
     QTest::addColumn<int>("endRow");
     QTest::addColumn<int>("destRow");
+    // We can't put the actual parent index for the move in here because m_model is not defined until init() is run.
+    QTest::addColumn<bool>("topLevel");
 
     // Move from the start to the middle
-    QTest::newRow("move01") << 0 << 2 << 8;
+    QTest::newRow("move01") << 0 << 2 << 8 << true;
     // Move from the start to the end
-    QTest::newRow("move02") << 0 << 2 << 10;
+    QTest::newRow("move02") << 0 << 2 << 10 << true;
     // Move from the middle to the middle
-    QTest::newRow("move03") << 3 << 5 << 8;
+    QTest::newRow("move03") << 3 << 5 << 8 << true;
     // Move from the middle to the end
-    QTest::newRow("move04") << 3 << 5 << 10;
+    QTest::newRow("move04") << 3 << 5 << 10 << true;
+
+    QTest::newRow("move05") << 0 << 2 << 8 << false;
+    QTest::newRow("move06") << 0 << 2 << 10 << false;
+    QTest::newRow("move07") << 3 << 5 << 8 << false;
+    QTest::newRow("move08") << 3 << 5 << 10 << false;
 }
 
 void tst_QAbstractItemModel::testMoveSameParentDown()
@@ -881,6 +890,9 @@ void tst_QAbstractItemModel::testMoveSameParentDown()
     QFETCH( int, startRow);
     QFETCH( int, endRow);
     QFETCH( int, destRow);
+    QFETCH( bool, topLevel);
+
+    QModelIndex moveParent = topLevel ? QModelIndex() : m_model->index(5, 0);
 
     QList<QPersistentModelIndex> persistentList;
     QModelIndexList indexList;
@@ -913,33 +925,37 @@ void tst_QAbstractItemModel::testMoveSameParentDown()
 
     ModelMoveCommand *moveCommand = new ModelMoveCommand(m_model, this);
     moveCommand->setNumCols(4);
+    if (!topLevel)
+        moveCommand->setAncestorRowNumbers(QList<int>() << 5);
     moveCommand->setStartRow(startRow);
     moveCommand->setEndRow(endRow);
     moveCommand->setDestRow(destRow);
+    if (!topLevel)
+        moveCommand->setDestAncestors(QList<int>() << 5);
     moveCommand->doCommand();
 
     QVariantList beforeSignal = beforeSpy.takeAt(0);
     QVariantList afterSignal = afterSpy.takeAt(0);
 
     QCOMPARE(beforeSignal.size(), 5);
-    QCOMPARE(beforeSignal.at(0).value<QModelIndex>(), QModelIndex());
+    QCOMPARE(beforeSignal.at(0).value<QModelIndex>(), moveParent);
     QCOMPARE(beforeSignal.at(1).toInt(), startRow);
     QCOMPARE(beforeSignal.at(2).toInt(), endRow);
-    QCOMPARE(beforeSignal.at(3).value<QModelIndex>(), QModelIndex());
+    QCOMPARE(beforeSignal.at(3).value<QModelIndex>(), moveParent);
     QCOMPARE(beforeSignal.at(4).toInt(), destRow);
 
     QCOMPARE(afterSignal.size(), 5);
-    QCOMPARE(afterSignal.at(0).value<QModelIndex>(), QModelIndex());
+    QCOMPARE(afterSignal.at(0).value<QModelIndex>(), moveParent);
     QCOMPARE(afterSignal.at(1).toInt(), startRow);
     QCOMPARE(afterSignal.at(2).toInt(), endRow);
-    QCOMPARE(afterSignal.at(3).value<QModelIndex>(), QModelIndex());
+    QCOMPARE(afterSignal.at(3).value<QModelIndex>(), moveParent);
     QCOMPARE(afterSignal.at(4).toInt(), destRow);
 
     for (int i = 0; i < indexList.size(); i++)
     {
         QModelIndex idx = indexList.at(i);
         QModelIndex persistentIndex = persistentList.at(i);
-        if (idx.parent() == QModelIndex())
+        if (idx.parent() == moveParent)
         {
             int row = idx.row();
             if ( row >= startRow)
@@ -976,15 +992,21 @@ void tst_QAbstractItemModel::testMoveSameParentUp_data()
     QTest::addColumn<int>("startRow");
     QTest::addColumn<int>("endRow");
     QTest::addColumn<int>("destRow");
+    QTest::addColumn<bool>("topLevel");
 
     // Move from the middle to the start
-    QTest::newRow("move01") << 5 << 7 << 0;
+    QTest::newRow("move01") << 5 << 7 << 0 << true;
     // Move from the end to the start
-    QTest::newRow("move02") << 8 << 9 << 0;
+    QTest::newRow("move02") << 8 << 9 << 0 << true;
     // Move from the middle to the middle
-    QTest::newRow("move03") << 5 << 7 << 2;
+    QTest::newRow("move03") << 5 << 7 << 2 << true;
     // Move from the end to the middle
-    QTest::newRow("move04") << 8 << 9 << 5;
+    QTest::newRow("move04") << 8 << 9 << 5 << true;
+
+    QTest::newRow("move05") << 5 << 7 << 0 << false;
+    QTest::newRow("move06") << 8 << 9 << 0 << false;
+    QTest::newRow("move07") << 5 << 7 << 2 << false;
+    QTest::newRow("move08") << 8 << 9 << 5 << false;
 }
 
 void tst_QAbstractItemModel::testMoveSameParentUp()
@@ -993,6 +1015,9 @@ void tst_QAbstractItemModel::testMoveSameParentUp()
     QFETCH( int, startRow);
     QFETCH( int, endRow);
     QFETCH( int, destRow);
+    QFETCH( bool, topLevel);
+
+    QModelIndex moveParent = topLevel ? QModelIndex() : m_model->index(5, 0);
 
     QList<QPersistentModelIndex> persistentList;
     QModelIndexList indexList;
@@ -1026,26 +1051,30 @@ void tst_QAbstractItemModel::testMoveSameParentUp()
 
     ModelMoveCommand *moveCommand = new ModelMoveCommand(m_model, this);
     moveCommand->setNumCols(4);
+    if (!topLevel)
+        moveCommand->setAncestorRowNumbers(QList<int>() << 5);
     moveCommand->setStartRow(startRow);
     moveCommand->setEndRow(endRow);
     moveCommand->setDestRow(destRow);
+    if (!topLevel)
+        moveCommand->setDestAncestors(QList<int>() << 5);
     moveCommand->doCommand();
 
     QVariantList beforeSignal = beforeSpy.takeAt(0);
     QVariantList afterSignal = afterSpy.takeAt(0);
 
     QCOMPARE(beforeSignal.size(), 5);
-    QCOMPARE(beforeSignal.at(0).value<QModelIndex>(), QModelIndex());
+    QCOMPARE(beforeSignal.at(0).value<QModelIndex>(), moveParent);
     QCOMPARE(beforeSignal.at(1).toInt(), startRow);
     QCOMPARE(beforeSignal.at(2).toInt(), endRow);
-    QCOMPARE(beforeSignal.at(3).value<QModelIndex>(), QModelIndex());
+    QCOMPARE(beforeSignal.at(3).value<QModelIndex>(), moveParent);
     QCOMPARE(beforeSignal.at(4).toInt(), destRow);
 
     QCOMPARE(afterSignal.size(), 5);
-    QCOMPARE(afterSignal.at(0).value<QModelIndex>(), QModelIndex());
+    QCOMPARE(afterSignal.at(0).value<QModelIndex>(), moveParent);
     QCOMPARE(afterSignal.at(1).toInt(), startRow);
     QCOMPARE(afterSignal.at(2).toInt(), endRow);
-    QCOMPARE(afterSignal.at(3).value<QModelIndex>(), QModelIndex());
+    QCOMPARE(afterSignal.at(3).value<QModelIndex>(), moveParent);
     QCOMPARE(afterSignal.at(4).toInt(), destRow);
 
 
@@ -1053,7 +1082,7 @@ void tst_QAbstractItemModel::testMoveSameParentUp()
     {
         QModelIndex idx = indexList.at(i);
         QModelIndex persistentIndex = persistentList.at(i);
-        if (idx.parent() == QModelIndex())
+        if (idx.parent() == moveParent)
         {
             int row = idx.row();
             if ( row >= destRow)
@@ -1083,6 +1112,25 @@ void tst_QAbstractItemModel::testMoveSameParentUp()
             QCOMPARE(idx, persistentIndex);
         }
     }
+}
+
+void tst_QAbstractItemModel::testMoveThroughProxy()
+{
+    QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
+    proxy->setSourceModel(m_model);
+
+    QList<QPersistentModelIndex> persistentList;
+
+    persistentList.append(proxy->index(0, 0));
+    persistentList.append(proxy->index(0, 0, proxy->mapFromSource(m_model->index(5, 0))));
+
+    ModelMoveCommand *moveCommand = new ModelMoveCommand(m_model, this);
+    moveCommand->setNumCols(4);
+    moveCommand->setAncestorRowNumbers(QList<int>() << 5);
+    moveCommand->setStartRow(0);
+    moveCommand->setEndRow(0);
+    moveCommand->setDestRow(0);
+    moveCommand->doCommand();
 }
 
 void tst_QAbstractItemModel::testMoveToGrandParent_data()

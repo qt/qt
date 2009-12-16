@@ -85,7 +85,7 @@ public:
     decimal point with setSmallDecimalPoint().
 
     QLCDNumber emits the overflow() signal when it is asked to display
-    something beyond its range. The range is set by setNumDigits(),
+    something beyond its range. The range is set by setDigitCount(),
     but setSmallDecimalPoint() also influences it. If the display is
     set to hexadecimal, octal or binary, the integer equivalent of the
     value is displayed.
@@ -160,7 +160,7 @@ public:
     This signal is emitted whenever the QLCDNumber is asked to display
     a too-large number or a too-long string.
 
-    It is never emitted by setNumDigits().
+    It is never emitted by setDigitCount().
 */
 
 
@@ -345,7 +345,7 @@ static const char *getSegments(char ch)               // gets list of segments f
     The \a parent and \a name arguments are passed to the QFrame
     constructor.
 
-    \sa setNumDigits(), setSmallDecimalPoint()
+    \sa setDigitCount(), setSmallDecimalPoint()
 */
 
 QLCDNumber::QLCDNumber(QWidget *parent, const char *name)
@@ -367,7 +367,7 @@ QLCDNumber::QLCDNumber(QWidget *parent, const char *name)
     The \a parent and \a name arguments are passed to the QFrame
     constructor.
 
-    \sa setNumDigits(), setSmallDecimalPoint()
+    \sa setDigitCount(), setSmallDecimalPoint()
 */
 
 QLCDNumber::QLCDNumber(uint numDigits, QWidget *parent, const char *name)
@@ -387,7 +387,7 @@ QLCDNumber::QLCDNumber(uint numDigits, QWidget *parent, const char *name)
 
     The \a parent argument is passed to the QFrame constructor.
 
-    \sa setNumDigits(), setSmallDecimalPoint()
+    \sa setDigitCount(), setSmallDecimalPoint()
 */
 
 QLCDNumber::QLCDNumber(QWidget *parent)
@@ -407,7 +407,7 @@ QLCDNumber::QLCDNumber(QWidget *parent)
 
     The \a parent argument is passed to the QFrame constructor.
 
-    \sa setNumDigits(), setSmallDecimalPoint()
+    \sa setDigitCount(), setSmallDecimalPoint()
 */
 
 QLCDNumber::QLCDNumber(uint numDigits, QWidget *parent)
@@ -426,7 +426,7 @@ void QLCDNumberPrivate::init()
     val        = 0;
     base       = QLCDNumber::Dec;
     smallPoint = false;
-    q->setNumDigits(ndigits);
+    q->setDigitCount(ndigits);
     q->setSegmentStyle(QLCDNumber::Filled);
     q->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 }
@@ -441,7 +441,20 @@ QLCDNumber::~QLCDNumber()
 
 
 /*!
+    \deprecated
     \property QLCDNumber::numDigits
+    \brief the current number of digits displayed
+    \sa digitCount
+*/
+
+void QLCDNumber::setNumDigits(int numDigits)
+{
+    setDigitCount(numDigits);
+}
+
+/*!
+    \since 4.6
+    \property QLCDNumber::digitCount
     \brief the current number of digits displayed
 
     Corresponds to the current number of digits. If \l
@@ -453,7 +466,11 @@ QLCDNumber::~QLCDNumber()
     \sa smallDecimalPoint
 */
 
-void QLCDNumber::setNumDigits(int numDigits)
+/*!
+  Sets the current number of digits to \a numDigits. Must
+  be in the range 0..99.
+ */
+void QLCDNumber::setDigitCount(int numDigits)
 {
     Q_D(QLCDNumber);
     if (numDigits > 99) {
@@ -470,7 +487,7 @@ void QLCDNumber::setNumDigits(int numDigits)
         d->ndigits = numDigits;
         d->digitStr.fill(QLatin1Char(' '), d->ndigits);
         d->points.fill(0, d->ndigits);
-        d->digitStr[d->ndigits - 1] = QLatin1Char('0');            // "0" is the default number
+        d->digitStr[d->ndigits - 1] = QLatin1Char('0'); // "0" is the default number
     } else {
         bool doDisplay = d->ndigits == 0;
         if (numDigits == d->ndigits)             // no change
@@ -509,12 +526,21 @@ int QLCDNumber::numDigits() const
 }
 
 /*!
+  Returns the current number of digits.
+ */
+int QLCDNumber::digitCount() const
+{
+    Q_D(const QLCDNumber);
+    return d->ndigits;
+}
+
+/*!
     \overload
 
     Returns true if \a num is too big to be displayed in its entirety;
     otherwise returns false.
 
-    \sa display(), numDigits(), smallDecimalPoint()
+    \sa display(), digitCount(), smallDecimalPoint()
 */
 
 bool QLCDNumber::checkOverflow(int num) const
@@ -530,7 +556,7 @@ bool QLCDNumber::checkOverflow(int num) const
     Returns true if \a num is too big to be displayed in its entirety;
     otherwise returns false.
 
-    \sa display(), numDigits(), smallDecimalPoint()
+    \sa display(), digitCount(), smallDecimalPoint()
 */
 
 bool QLCDNumber::checkOverflow(double num) const
@@ -1256,7 +1282,7 @@ QLCDNumber::SegmentStyle QLCDNumber::segmentStyle() const
 */
 QSize QLCDNumber::sizeHint() const
 {
-    return QSize(10 + 9 * (numDigits() + (smallDecimalPoint() ? 0 : 1)), 23);
+    return QSize(10 + 9 * (digitCount() + (smallDecimalPoint() ? 0 : 1)), 23);
 }
 
 /*! \reimp */

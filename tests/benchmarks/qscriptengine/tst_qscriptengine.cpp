@@ -60,6 +60,8 @@ private slots:
     void constructor();
     void evaluate_data();
     void evaluate();
+    void evaluateProgram_data();
+    void evaluateProgram();
     void connectAndDisconnect();
     void newObject();
     void newQObject();
@@ -70,6 +72,8 @@ private slots:
     void toStringHandle();
     void castValueToQreal();
     void nativeCall();
+    void translation_data();
+    void translation();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -150,6 +154,22 @@ void tst_QScriptEngine::connectAndDisconnect()
     QBENCHMARK {
         qScriptConnect(&engine, SIGNAL(destroyed()), QScriptValue(), fun);
         qScriptDisconnect(&engine, SIGNAL(destroyed()), QScriptValue(), fun);
+    }
+}
+
+void tst_QScriptEngine::evaluateProgram_data()
+{
+    evaluate_data();
+}
+
+void tst_QScriptEngine::evaluateProgram()
+{
+    QFETCH(QString, code);
+    QScriptEngine engine;
+    QScriptProgram program(code);
+
+    QBENCHMARK {
+        (void)engine.evaluate(program);
     }
 }
 
@@ -241,6 +261,24 @@ void tst_QScriptEngine::nativeCall()
     }
 }
 
+void tst_QScriptEngine::translation_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::newRow("no translation") << "\"hello world\"";
+    QTest::newRow("qsTr") << "qsTr(\"hello world\")";
+    QTest::newRow("qsTranslate") << "qsTranslate(\"\", \"hello world\")";
+}
+
+void tst_QScriptEngine::translation()
+{
+    QFETCH(QString, text);
+    QScriptEngine engine;
+    engine.installTranslatorFunctions();
+
+    QBENCHMARK {
+        (void)engine.evaluate(text);
+    }
+}
 
 QTEST_MAIN(tst_QScriptEngine)
 #include "tst_qscriptengine.moc"

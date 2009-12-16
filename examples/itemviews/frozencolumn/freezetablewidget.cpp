@@ -52,10 +52,10 @@ FreezeTableWidget::FreezeTableWidget(QAbstractItemModel * model)
       init();
 
       //connect the headers and scrollbars of both tableviews together
-      connect(horizontalHeader(),SIGNAL(sectionResized ( int ,int,int )), this,
-              SLOT(updateSectionWidth(int, int, int)));
-      connect(verticalHeader(),SIGNAL(sectionResized ( int ,int,int )), this,
-              SLOT(updateSectionHeight(int, int, int)));
+      connect(horizontalHeader(),SIGNAL(sectionResized(int,int,int)), this,
+              SLOT(updateSectionWidth(int,int,int)));
+      connect(verticalHeader(),SIGNAL(sectionResized(int,int,int)), this,
+              SLOT(updateSectionHeight(int,int,int)));
 
       connect(frozenTableView->verticalScrollBar(), SIGNAL(valueChanged(int)),
               verticalScrollBar(), SLOT(setValue(int)));
@@ -84,7 +84,8 @@ void FreezeTableWidget::init()
 
 //! [init part2]
       frozenTableView->setStyleSheet("QTableView { border: none;"
-                                     "background-color: #8EDE21;}"); //for demo purposes
+                                     "background-color: #8EDE21;"
+                                     "selection-background-color: #999}"); //for demo purposes
       frozenTableView->setSelectionModel(selectionModel());
       for(int col=1; col<model()->columnCount(); col++)
             frozenTableView->setColumnHidden(col, true);
@@ -145,6 +146,12 @@ QModelIndex FreezeTableWidget::moveCursor(CursorAction cursorAction,
       return current;
 }
 //! [navigate]
+
+void FreezeTableWidget::scrollTo (const QModelIndex & index, ScrollHint hint){
+    if(index.column()>0)
+        QTableView::scrollTo(index, hint);
+}
+
 
 
 //! [geometry]

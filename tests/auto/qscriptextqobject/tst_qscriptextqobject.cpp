@@ -317,6 +317,11 @@ public:
     Q_INVOKABLE QObject* myInvokableReturningMyQObjectAsQObject()
         { m_qtFunctionInvoked = 57; return this; }
 
+    Q_INVOKABLE QObjectList findObjects() const
+    {  return findChildren<QObject *>();  }
+    Q_INVOKABLE QList<int> myInvokableNumbers() const
+    {  return QList<int>() << 1 << 2 << 3; }
+
     void emitMySignal()
         { emit mySignal(); }
     void emitMySignalWithIntArg(int arg)
@@ -493,6 +498,7 @@ protected slots:
     }
 
 private slots:
+    void registeredTypes();
     void getSetStaticProperty();
     void getSetDynamicProperty();
     void getSetChildren();
@@ -542,6 +548,24 @@ void tst_QScriptExtQObject::cleanup()
     delete m_engine;
     delete m_myObject;
 }
+
+// this test has to be first and test that some types are automatically registered
+void tst_QScriptExtQObject::registeredTypes()
+{
+    QScriptEngine e;
+    QObject *t = new MyQObject;
+    QObject *c = new QObject(t);
+    c->setObjectName ("child1");
+
+    e.globalObject().setProperty("MyTest", e.newQObject(t));
+
+    QScriptValue v1 = e.evaluate("MyTest.findObjects()[0].objectName;");
+    QCOMPARE(v1.toString(), c->objectName());
+
+    QScriptValue v2 = e.evaluate("MyTest.myInvokableNumbers()");
+    QCOMPARE(qscriptvalue_cast<QList<int> >(v2), (QList<int>() << 1 << 2 << 3));
+}
+
 
 static QScriptValue getSetProperty(QScriptContext *ctx, QScriptEngine *)
 {
@@ -1597,6 +1621,29 @@ void tst_QScriptExtQObject::connectAndDisconnect()
     QVERIFY(!m_engine->evaluate("gotSignal").toBoolean());
     m_myObject->emitMyOtherOverloadedSignal(123);
     QVERIFY(!m_engine->evaluate("gotSignal").toBoolean());
+
+    // signal with QVariant arg: argument conversion should work
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithVariantArg(QVariant)));
+    m_engine->evaluate("gotSignal = false");
+    m_myObject->emitMySignalWithVariantArg(123);
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QCOMPARE(m_engine->evaluate("signalArgs[0]").toNumber(), 123.0);
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithVariantArg.disconnect(myHandler)").isUndefined());
+
+    // signal with argument type that's unknown to the meta-type system
+    m_myObject->clearConnectedSignal();
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.connect(myHandler)").isUndefined());
+    QCOMPARE(m_myObject->connectedSignal().constData(), SIGNAL(mySignalWithScriptEngineArg(QScriptEngine*)));
+    m_engine->evaluate("gotSignal = false");
+    QTest::ignoreMessage(QtWarningMsg, "QScriptEngine: Unable to handle unregistered datatype 'QScriptEngine*' when invoking handler of signal MyQObject::mySignalWithScriptEngineArg(QScriptEngine*)");
+    m_myObject->emitMySignalWithScriptEngineArg(m_engine);
+    QCOMPARE(m_engine->evaluate("gotSignal").toBoolean(), true);
+    QCOMPARE(m_engine->evaluate("signalArgs.length").toNumber(), 1.0);
+    QVERIFY(m_engine->evaluate("signalArgs[0]").isUndefined());
+    QVERIFY(m_engine->evaluate("myObject.mySignalWithScriptEngineArg.disconnect(myHandler)").isUndefined());
 
     // signal with QVariant arg: argument conversion should work
     m_myObject->clearConnectedSignal();

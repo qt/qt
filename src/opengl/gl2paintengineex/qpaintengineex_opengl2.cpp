@@ -62,6 +62,8 @@
     and use the correct program when we really need it.
 */
 
+// #define QT_OPENGL_CACHE_AS_VBOS
+
 #include "qpaintengineex_opengl2_p.h"
 
 #include <string.h> //for memcpy
@@ -80,6 +82,8 @@
 #include "qglgradientcache_p.h"
 #include "qglengineshadermanager_p.h"
 #include "qgl2pexvertexarray_p.h"
+
+#include "qtriangulatingstroker_p.h"
 
 #include <QDebug>
 
@@ -156,8 +160,8 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
     , m_height(0)
 {
     glGenFramebuffers(1, &m_fbo);
-    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)),
-            SLOT(contextDestroyed(const QGLContext *)));
+    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext*)),
+            SLOT(contextDestroyed(const QGLContext*)));
 }
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
@@ -244,7 +248,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
     glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
 
-    pex->shaderManager->blitProgram()->enable();
+    pex->shaderManager->blitProgram()->bind();
     pex->shaderManager->blitProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
     pex->shaderManager->setDirty();
 
@@ -342,6 +346,13 @@ extern QImage qt_imageForBrush(int brushStyle, bool invert);
 QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
 {
     delete shaderManager;
+
+    while (pathCaches.size()) {
+        QVectorPath::CacheEntry *e = *(pathCaches.constBegin());
+        e->cleanup(e->engine, e->data);
+        e->data = 0;
+        e->engine = 0;
+    }
 }
 
 void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id)
@@ -393,7 +404,7 @@ void QGL2PaintEngineExPrivate::setBrush(const QBrush* brush)
 
 void QGL2PaintEngineExPrivate::useSimpleShader()
 {
-    shaderManager->simpleProgram()->enable();
+    shaderManager->simpleProgram()->bind();
     shaderManager->setDirty();
 
     if (matrixDirty)
@@ -533,7 +544,7 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
                 shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PatternColor), col);
             }
 
-            QSizeF invertedTextureSize(1.0 / texPixmap.width(), 1.0 * textureInvertedY / texPixmap.height());
+            QSizeF invertedTextureSize(1.0 / texPixmap.width(), 1.0 / texPixmap.height());
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::InvertedTextureSize), invertedTextureSize);
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
@@ -548,7 +559,11 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
 
         QTransform translate(1, 0, 0, 1, -translationPoint.x(), -translationPoint.y());
         QTransform gl_to_qt(1, 0, 0, -1, 0, height);
-        QTransform inv_matrix = gl_to_qt * (brushQTransform * matrix).inverted() * translate;
+        QTransform inv_matrix;
+        if (style == Qt::TexturePattern && textureInvertedY == -1)
+            inv_matrix = gl_to_qt * (QTransform(1, 0, 0, -1, 0, currentBrush->texture().height()) * brushQTransform * matrix).inverted() * translate;
+        else
+            inv_matrix = gl_to_qt * (brushQTransform * matrix).inverted() * translate;
 
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::BrushTransform), inv_matrix);
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::BrushTexture), QT_BRUSH_TEXTURE_UNIT);
@@ -572,62 +587,42 @@ void QGL2PaintEngineExPrivate::updateMatrix()
     //
     // We expand out the multiplication to save the cost of a full 4x4
     // matrix multiplication as most of the components are trivial.
-
     const QTransform& transform = q->state()->matrix;
 
-    if (mode == TextDrawingMode) {
-        // Text drawing mode is only used for non-scaling transforms
-        pmvMatrix[0][0] = 2.0 / width;
-        pmvMatrix[0][1] = 0.0;
-        pmvMatrix[0][2] = 0.0;
-        pmvMatrix[0][3] = 0.0;
-        pmvMatrix[1][0] = 0.0;
-        pmvMatrix[1][1] = -2.0 / height;
-        pmvMatrix[1][2] = 0.0;
-        pmvMatrix[1][3] = 0.0;
-        pmvMatrix[2][0] = 0.0;
-        pmvMatrix[2][1] = 0.0;
-        pmvMatrix[2][2] = -1.0;
-        pmvMatrix[2][3] = 0.0;
-        pmvMatrix[3][0] = pmvMatrix[0][0] * qRound(transform.dx()) - 1.0;
-        pmvMatrix[3][1] = pmvMatrix[1][1] * qRound(transform.dy()) + 1.0;
-        pmvMatrix[3][2] = 0.0;
-        pmvMatrix[3][3] = 1.0;
+    qreal wfactor = 2.0 / width;
+    qreal hfactor = -2.0 / height;
 
-        inverseScale = 1;
-    } else {
-        qreal wfactor = 2.0 / width;
-        qreal hfactor = -2.0 / height;
+    pmvMatrix[0][0] = wfactor * transform.m11() - transform.m13();
+    pmvMatrix[0][1] = hfactor * transform.m12() + transform.m13();
+    pmvMatrix[0][2] = 0.0;
+    pmvMatrix[0][3] = transform.m13();
+    pmvMatrix[1][0] = wfactor * transform.m21() - transform.m23();
+    pmvMatrix[1][1] = hfactor * transform.m22() + transform.m23();
+    pmvMatrix[1][2] = 0.0;
+    pmvMatrix[1][3] = transform.m23();
+    pmvMatrix[2][0] = 0.0;
+    pmvMatrix[2][1] = 0.0;
+    pmvMatrix[2][2] = -1.0;
+    pmvMatrix[2][3] = 0.0;
+    pmvMatrix[3][0] = wfactor * transform.dx() - transform.m33();
+    pmvMatrix[3][1] = hfactor * transform.dy() + transform.m33();
+    pmvMatrix[3][2] = 0.0;
+    pmvMatrix[3][3] = transform.m33();
 
-        pmvMatrix[0][0] = wfactor * transform.m11() - transform.m13();
-        pmvMatrix[0][1] = hfactor * transform.m12() + transform.m13();
-        pmvMatrix[0][2] = 0.0;
-        pmvMatrix[0][3] = transform.m13();
-        pmvMatrix[1][0] = wfactor * transform.m21() - transform.m23();
-        pmvMatrix[1][1] = hfactor * transform.m22() + transform.m23();
-        pmvMatrix[1][2] = 0.0;
-        pmvMatrix[1][3] = transform.m23();
-        pmvMatrix[2][0] = 0.0;
-        pmvMatrix[2][1] = 0.0;
-        pmvMatrix[2][2] = -1.0;
-        pmvMatrix[2][3] = 0.0;
-        pmvMatrix[3][0] = wfactor * transform.dx() - transform.m33();
-        pmvMatrix[3][1] = hfactor * transform.dy() + transform.m33();
-        pmvMatrix[3][2] = 0.0;
-        pmvMatrix[3][3] = transform.m33();
-
-        // 1/10000 == 0.0001, so we have good enough res to cover curves
-        // that span the entire widget...
-        inverseScale = qMax(1 / qMax( qMax(qAbs(transform.m11()), qAbs(transform.m22())),
-                    qMax(qAbs(transform.m12()), qAbs(transform.m21())) ),
-                qreal(0.0001));
-    }
+    // 1/10000 == 0.0001, so we have good enough res to cover curves
+    // that span the entire widget...
+    inverseScale = qMax(1 / qMax( qMax(qAbs(transform.m11()), qAbs(transform.m22())),
+                                  qMax(qAbs(transform.m12()), qAbs(transform.m21())) ),
+                        qreal(0.0001));
 
     matrixDirty = false;
 
     // The actual data has been updated so both shader program's uniforms need updating
     simpleShaderMatrixUniformDirty = true;
     shaderMatrixUniformDirty = true;
+
+    dasher.setInvScale(inverseScale);
+    stroker.setInvScale(inverseScale);
 }
 
 
@@ -800,17 +795,12 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
         lastTexture = GLuint(-1);
     }
 
-    if (mode == TextDrawingMode)
-        matrixDirty = true;
-
     if (newMode == TextDrawingMode) {
         glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
         glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
 
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
-
-        matrixDirty = true;
     }
 
     if (newMode == ImageDrawingMode) {
@@ -838,27 +828,29 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     mode = newMode;
 }
 
-void QGL2PaintEngineExPrivate::drawOutline(const QVectorPath& path)
+struct QGL2PEVectorPathCache
 {
-    transferMode(BrushDrawingMode);
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+    GLuint vbo;
+#else
+    float *vertices;
+#endif
+    int vertexCount;
+    GLenum primitiveType;
+    qreal iscale;
+};
 
-    // Might need to call updateMatrix to re-calculate inverseScale
-    if (matrixDirty)
-        updateMatrix();
-
-    vertexCoordinateArray.clear();
-    vertexCoordinateArray.addPath(path, inverseScale);
-
-    if (path.hasImplicitClose()) {
-        // Close the path's outline
-        vertexCoordinateArray.lineToArray(path.points()[0], path.points()[1]);
-        vertexCoordinateArray.stops().last() += 1;
-    }
-
-    prepareForDraw(currentBrush->isOpaque());
-    drawVertexArrays(vertexCoordinateArray, GL_LINE_STRIP);
+void qopengl2paintengine_cleanup_vectorpath(QPaintEngineEx *engine, void *data)
+{
+    QGL2PEVectorPathCache *c = (QGL2PEVectorPathCache *) data;
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+    QGL2PaintEngineExPrivate *d = QGL2PaintEngineExPrivate::getData((QGL2PaintEngineEx *) engine);
+    d->unusedVBOSToClean << c->vbo;
+#else
+    qFree(c->vertices);
+#endif
+    delete c;
 }
-
 
 // Assumes everything is configured for the brush you want to use
 void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
@@ -876,13 +868,75 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         QGLRect rect(points[0].x(), points[0].y(), points[2].x(), points[2].y());
         prepareForDraw(currentBrush->isOpaque());
         composite(rect);
-    } else if (path.shape() == QVectorPath::EllipseHint
-             || path.shape() == QVectorPath::ConvexPolygonHint)
-    {
-        vertexCoordinateArray.clear();
-        vertexCoordinateArray.addPath(path, inverseScale, false);
-        prepareForDraw(currentBrush->isOpaque());
-        drawVertexArrays(vertexCoordinateArray, GL_TRIANGLE_FAN);
+    } else if (path.isConvex()) {
+
+        if (path.isCacheable()) {
+            QVectorPath::CacheEntry *data = path.lookupCacheData(q);
+            QGL2PEVectorPathCache *cache;
+
+            if (data) {
+                cache = (QGL2PEVectorPathCache *) data->data;
+                // Check if scale factor is exceeded for curved paths and generate curves if so...
+                if (path.isCurved()) {
+                    qreal scaleFactor = cache->iscale / inverseScale;
+                    if (scaleFactor < 0.5 || scaleFactor > 2.0) {
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+                        glDeleteBuffers(1, &cache->vbo);
+                        cache->vbo = 0;
+#else
+                        qFree(cache->vertices);
+#endif
+                        cache->vertexCount = 0;
+                    }
+                }
+            } else {
+                cache = new QGL2PEVectorPathCache;
+                cache->vertexCount = 0;
+                data = const_cast<QVectorPath &>(path).addCacheData(q, cache, qopengl2paintengine_cleanup_vectorpath);
+            }
+
+            // Flatten the path at the current scale factor and fill it into the cache struct.
+            if (!cache->vertexCount) {
+                vertexCoordinateArray.clear();
+                vertexCoordinateArray.addPath(path, inverseScale, false);
+                int vertexCount = vertexCoordinateArray.vertexCount();
+                int floatSizeInBytes = vertexCount * 2 * sizeof(float);
+                cache->vertexCount = vertexCount;
+                cache->primitiveType = GL_TRIANGLE_FAN;
+                cache->iscale = inverseScale;
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+                glGenBuffers(1, &cache->vbo);
+                glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
+                glBufferData(GL_ARRAY_BUFFER, floatSizeInBytes, vertexCoordinateArray.data(), GL_STATIC_DRAW);
+#else
+                cache->vertices = (float *) qMalloc(floatSizeInBytes);
+                memcpy(cache->vertices, vertexCoordinateArray.data(), floatSizeInBytes);
+#endif
+            }
+
+            prepareForDraw(currentBrush->isOpaque());
+            glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+            glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
+            glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, 0);
+#else
+            glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, cache->vertices);
+#endif
+            glDrawArrays(cache->primitiveType, 0, cache->vertexCount);
+
+        } else {
+      //        printf(" - Marking path as cachable...\n");
+            // Tag it for later so that if the same path is drawn twice, it is assumed to be static and thus cachable
+            // ### Remove before release...
+            static bool do_vectorpath_cache = qgetenv("QT_OPENGL_NO_PATH_CACHE").isEmpty();
+            if (do_vectorpath_cache)
+                path.makeCacheable();
+            vertexCoordinateArray.clear();
+            vertexCoordinateArray.addPath(path, inverseScale, false);
+            prepareForDraw(currentBrush->isOpaque());
+            drawVertexArrays(vertexCoordinateArray, GL_TRIANGLE_FAN);
+        }
+
     } else {
         // The path is too complicated & needs the stencil technique
         vertexCoordinateArray.clear();
@@ -922,8 +976,15 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 }
 
 
-void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill)
+void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
+                                                          int count,
+                                                          int *stops,
+                                                          int stopCount,
+                                                          const QGLRect &bounds,
+                                                          StencilFillMode mode)
 {
+    Q_ASSERT(count || stops);
+
 //     qDebug("QGL2PaintEngineExPrivate::fillStencilWithVertexArray()");
     glStencilMask(0xff); // Enable stencil writes
 
@@ -955,19 +1016,20 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& ve
     }
 #endif
 
-    if (useWindingFill) {
+    if (mode == WindingFillMode) {
+        Q_ASSERT(stops && !count);
         if (q->state()->clipTestEnabled) {
             // Flatten clip values higher than current clip, and set high bit to match current clip
             glStencilFunc(GL_LEQUAL, GL_STENCIL_HIGH_BIT | q->state()->currentClip, ~GL_STENCIL_HIGH_BIT);
             glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
-            composite(vertexArray.boundingRect());
+            composite(bounds);
 
             glStencilFunc(GL_EQUAL, GL_STENCIL_HIGH_BIT, GL_STENCIL_HIGH_BIT);
         } else if (!stencilClean) {
             // Clear stencil buffer within bounding rect
             glStencilFunc(GL_ALWAYS, 0, 0xff);
             glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-            composite(vertexArray.boundingRect());
+            composite(bounds);
         }
 
         // Inc. for front-facing triangle
@@ -975,19 +1037,43 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& ve
         // Dec. for back-facing "holes"
         glStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_DECR_WRAP);
         glStencilMask(~GL_STENCIL_HIGH_BIT);
-        drawVertexArrays(vertexArray, GL_TRIANGLE_FAN);
+        drawVertexArrays(data, stops, stopCount, GL_TRIANGLE_FAN);
 
         if (q->state()->clipTestEnabled) {
             // Clear high bit of stencil outside of path
             glStencilFunc(GL_EQUAL, q->state()->currentClip, ~GL_STENCIL_HIGH_BIT);
             glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
             glStencilMask(GL_STENCIL_HIGH_BIT);
-            composite(vertexArray.boundingRect());
+            composite(bounds);
         }
-    } else {
+    } else if (mode == OddEvenFillMode) {
         glStencilMask(GL_STENCIL_HIGH_BIT);
         glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT); // Simply invert the stencil bit
-        drawVertexArrays(vertexArray, GL_TRIANGLE_FAN);
+        drawVertexArrays(data, stops, stopCount, GL_TRIANGLE_FAN);
+
+    } else { // TriStripStrokeFillMode
+        Q_ASSERT(count && !stops); // tristrips generated directly, so no vertexArray or stops
+        glStencilMask(GL_STENCIL_HIGH_BIT);
+#if 0
+        glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT); // Simply invert the stencil bit
+        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
+        glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+#else
+
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        if (q->state()->clipTestEnabled) {
+            glStencilFunc(GL_LEQUAL, q->state()->currentClip | GL_STENCIL_HIGH_BIT,
+                          ~GL_STENCIL_HIGH_BIT);
+        } else {
+            glStencilFunc(GL_ALWAYS, GL_STENCIL_HIGH_BIT, 0xff);
+        }
+        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
+        glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+#endif
     }
 
     // Enable color writes & disable stencil writes
@@ -1122,14 +1208,16 @@ void QGL2PaintEngineExPrivate::composite(const QGLRect& boundingRect)
 }
 
 // Draws the vertex array as a set of <vertexArrayStops.size()> triangle fans.
-void QGL2PaintEngineExPrivate::drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive)
+void QGL2PaintEngineExPrivate::drawVertexArrays(const float *data, int *stops, int stopCount,
+                                                GLenum primitive)
 {
     // Now setup the pointer to the vertex array:
     glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexArray.data());
+    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
 
     int previousStop = 0;
-    foreach(int stop, vertexArray.stops()) {
+    for (int i=0; i<stopCount; ++i) {
+        int stop = stops[i];
 /*
         qDebug("Drawing triangle fan for vertecies %d -> %d:", previousStop, stop-1);
         for (int i=previousStop; i<stop; ++i)
@@ -1180,13 +1268,35 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QGL2PaintEngineEx);
 
-    if (qbrush_style(brush) == Qt::NoBrush)
+    Qt::BrushStyle style = qbrush_style(brush);
+    if (style == Qt::NoBrush)
         return;
     if (!d->inRenderText)
         ensureActive();
+
+    QOpenGL2PaintEngineState *s = state();
+    bool doOffset = !(s->renderHints & QPainter::Antialiasing) &&
+                    (style == Qt::SolidPattern) &&
+                    !d->multisamplingAlwaysEnabled;
+
+    if (doOffset) {
+        d->temporaryTransform = s->matrix;
+        QTransform tx = QTransform::fromTranslate(.49, .49);
+        s->matrix = s->matrix * tx;
+        d->matrixDirty = true;
+    }
+
     d->setBrush(&brush);
     d->fill(path);
+
+    if (doOffset) {
+        s->matrix = d->temporaryTransform;
+        d->matrixDirty = true;
+    }
 }
+
+extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+
 
 void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
@@ -1197,23 +1307,95 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
     if (penStyle == Qt::NoPen || qbrush_style(penBrush) == Qt::NoBrush)
         return;
 
+    QOpenGL2PaintEngineState *s = state();
+    if (pen.isCosmetic() && !qt_scaleForTransform(s->transform(), 0)) {
+        // QTriangulatingStroker class is not meant to support cosmetically sheared strokes.
+        QPaintEngineEx::stroke(path, pen);
+        return;
+    }
+
     ensureActive();
 
-    qreal penWidth = qpen_widthf(pen);
-    if ( (pen.isCosmetic() && (penStyle == Qt::SolidLine)) && (penWidth < 2.5f) )
-    {
-        // We only handle solid, cosmetic pens with a width of 1 pixel
-        const QBrush& brush = pen.brush();
-        d->setBrush(&brush);
+    bool doOffset = !(s->renderHints & QPainter::Antialiasing) && !d->multisamplingAlwaysEnabled;
+    if (doOffset) {
+        d->temporaryTransform = s->matrix;
+        QTransform tx = QTransform::fromTranslate(0.49, .49);
+        s->matrix = s->matrix * tx;
+        d->matrixDirty = true;
+    }
 
-        if (penWidth < 0.01f)
-            glLineWidth(1.0);
-        else
-            glLineWidth(penWidth);
+    bool opaque = penBrush.isOpaque() && s->opacity > 0.99;
+    d->setBrush(&penBrush);
+    d->transferMode(BrushDrawingMode);
 
-        d->drawOutline(path);
-    } else
-        return QPaintEngineEx::stroke(path, pen);
+    // updateMatrix() is responsible for setting the inverse scale on
+    // the strokers, so we need to call it here and not wait for
+    // prepareForDraw() down below.
+    d->updateMatrix();
+
+    if (penStyle == Qt::SolidLine) {
+        d->stroker.process(path, pen);
+
+    } else { // Some sort of dash
+        d->dasher.process(path, pen);
+
+        QVectorPath dashStroke(d->dasher.points(),
+                               d->dasher.elementCount(),
+                               d->dasher.elementTypes());
+        d->stroker.process(dashStroke, pen);
+    }
+
+
+    QGLContext *ctx = d->ctx;
+    Q_UNUSED(ctx);
+
+    if (opaque) {
+        d->prepareForDraw(opaque);
+        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, d->stroker.vertices());
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, d->stroker.vertexCount() / 2);
+
+//         QBrush b(Qt::green);
+//         d->setBrush(&b);
+//         d->prepareForDraw(true);
+//         glDrawArrays(GL_LINE_STRIP, 0, d->stroker.vertexCount() / 2);
+
+        glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+
+    } else {
+        qreal width = qpen_widthf(pen) / 2;
+        if (width == 0)
+            width = 0.5;
+        qreal extra = pen.joinStyle() == Qt::MiterJoin
+                      ? qMax(pen.miterLimit() * width, width)
+                      : width;
+
+        if (pen.isCosmetic())
+            extra = extra * d->inverseScale;
+
+        QRectF bounds = path.controlPointRect().adjusted(-extra, -extra, extra, extra);
+
+        d->fillStencilWithVertexArray(d->stroker.vertices(), d->stroker.vertexCount() / 2,
+                                      0, 0, bounds, QGL2PaintEngineExPrivate::TriStripStrokeFillMode);
+
+        glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
+
+        // Pass when any bit is set, replace stencil value with 0
+        glStencilFunc(GL_NOTEQUAL, 0, GL_STENCIL_HIGH_BIT);
+        d->prepareForDraw(false);
+
+        // Stencil the brush onto the dest buffer
+        d->composite(bounds);
+
+        glStencilMask(0);
+
+        d->updateClipScissorTest();
+    }
+
+    if (doOffset) {
+        s->matrix = d->temporaryTransform;
+        d->matrixDirty = true;
+    }
 }
 
 void QGL2PaintEngineEx::penChanged() { }
@@ -1336,20 +1518,21 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
 
-    bool drawCached = true;
+    QTransform::TransformationType txtype = s->matrix.type();
 
-    if (s->matrix.type() > QTransform::TxTranslate)
-        drawCached = false;
+    float det = s->matrix.determinant();
+    bool drawCached = txtype < QTransform::TxProject;
 
-    // don't try to cache huge fonts
-    if (ti.fontEngine->fontDef.pixelSize * qSqrt(s->matrix.determinant()) >= 64)
+    // don't try to cache huge fonts or vastly transformed fonts
+    const qreal pixelSize = ti.fontEngine->fontDef.pixelSize;
+    if (pixelSize * pixelSize * qAbs(det) >= 64 * 64 || det < 0.25f || det > 4.f)
         drawCached = false;
 
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
                                             ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
                                             : d->glyphCacheType;
 
-    if (d->inRenderText)
+    if (d->inRenderText || txtype > QTransform::TxTranslate)
         glyphType = QFontEngineGlyphCache::Raster_A8;
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask
@@ -1371,7 +1554,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
                                                 const QTextItemInt &ti)
 {
     Q_Q(QGL2PaintEngineEx);
-    QOpenGL2PaintEngineState *s = q->state();
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -1379,10 +1561,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     QGLTextureGlyphCache *cache =
-        (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, s->matrix);
+            (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, glyphType, QTransform());
 
     if (!cache || cache->cacheType() != glyphType) {
-        cache = new QGLTextureGlyphCache(ctx, glyphType, s->matrix);
+        cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         ti.fontEngine->setGlyphCache(ctx, cache);
     }
 
@@ -1542,7 +1724,7 @@ void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int d
             s = qFastSin(drawingData[i].rotation * Q_PI / 180);
             c = qFastCos(drawingData[i].rotation * Q_PI / 180);
         }
-        
+
         qreal right = 0.5 * drawingData[i].scaleX * drawingData[i].source.width();
         qreal bottom = 0.5 * drawingData[i].scaleY * drawingData[i].source.height();
         QGLPoint bottomRight(right * c - bottom * s, right * s + bottom * c);
@@ -1643,7 +1825,8 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->device->beginPaint();
 
 #if !defined(QT_OPENGL_ES_2)
-    bool success = qt_resolve_version_2_0_functions(d->ctx);
+    bool success = qt_resolve_version_2_0_functions(d->ctx)
+                   && qt_resolve_buffer_extensions(d->ctx);
     Q_ASSERT(success);
     Q_UNUSED(success);
 #endif
@@ -1663,13 +1846,18 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
 
 #if !defined(QT_OPENGL_ES_2)
-    if (!d->device->format().alpha()
 #if defined(Q_WS_WIN)
-        && qt_cleartype_enabled
+    if (qt_cleartype_enabled)
 #endif
-       ) {
         d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
-    }
+#endif
+
+#if defined(QT_OPENGL_ES_2)
+    // OpenGL ES can't switch MSAA off, so if the gl paint device is
+    // multisampled, it's always multisampled.
+    d->multisamplingAlwaysEnabled = d->device->format().sampleBuffers();
+#else
+    d->multisamplingAlwaysEnabled = false;
 #endif
 
     return true;
@@ -1698,6 +1886,13 @@ bool QGL2PaintEngineEx::end()
 
     delete d->shaderManager;
     d->shaderManager = 0;
+
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+    if (!d->unusedVBOSToClean.isEmpty()) {
+        glDeleteBuffers(d->unusedVBOSToClean.size(), d->unusedVBOSToClean.constData());
+        d->unusedVBOSToClean.clear();
+    }
+#endif
 
     return false;
 }
@@ -1989,7 +2184,7 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
     q->state()->rectangleClip = use_system_clip ? systemClip.boundingRect() : QRect(0, 0, width, height);
     updateClipScissorTest();
 
-    if (systemClip.numRects() == 1) {
+    if (systemClip.rectCount() == 1) {
         if (systemClip.boundingRect() == QRect(0, 0, width, height))
             use_system_clip = false;
 #ifndef QT_GL_NO_SCISSOR_TEST

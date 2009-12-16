@@ -270,6 +270,10 @@ private slots:
     void task256984_setValue();
 
     void numericalConvert();
+    void moreCustomTypes();
+    void variantInVariant();
+
+    void colorInteger();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -318,6 +322,14 @@ void tst_QVariant::constructor()
     QVariant var6(qlonglong(0));
     QCOMPARE(var6.type(), QVariant::LongLong);
     QCOMPARE(var6.typeName(), "qlonglong");
+
+    QVariant var7 = 5;
+    QVERIFY(var7.isValid());
+    QVERIFY(!var7.isNull());
+    QVariant var8;
+    var8.setValue<int>(5);
+    QVERIFY(var8.isValid());
+    QVERIFY(!var8.isNull());
 }
 
 void tst_QVariant::copy_constructor()
@@ -1422,8 +1434,10 @@ void tst_QVariant::matrix4x4()
     QVariant variant;
     QMatrix4x4 matrix = qVariantValue<QMatrix4x4>(variant);
     QVERIFY(matrix.isIdentity());
-    qVariantSetValue(variant, QMatrix4x4().scale(2.0));
-    QCOMPARE(QMatrix4x4().scale(2.0), qVariantValue<QMatrix4x4>(variant));
+    QMatrix4x4 m;
+    m.scale(2.0f);
+    qVariantSetValue(variant, m);
+    QCOMPARE(m, qVariantValue<QMatrix4x4>(variant));
 
     void *mmatrix = QMetaType::construct(QVariant::Matrix4x4, 0);
     QVERIFY(mmatrix);
@@ -3127,7 +3141,269 @@ void tst_QVariant::numericalConvert()
 }
 
 
+template<class T> void playWithVariant(const T &orig, bool isNull, const QString &toString, double toDouble, bool toBool)
+{
+    QVariant v = QVariant::fromValue(orig);
+    QVERIFY(v.isValid());
+    QCOMPARE(v.isNull(), isNull);
+    QCOMPARE(v.toString(), toString);
+    QCOMPARE(v.toDouble(), toDouble);
+    QCOMPARE(v.toBool(), toBool);
+    QCOMPARE(qvariant_cast<T>(v), orig);
 
+    {
+        QVariant v2 = v;
+        QCOMPARE(v2, v);
+        QVERIFY(v2.isValid());
+        QCOMPARE(v2.isNull(), isNull);
+        QCOMPARE(v2.toString(), toString);
+        QCOMPARE(v2.toDouble(), toDouble);
+        QCOMPARE(v2.toBool(), toBool);
+        QCOMPARE(qvariant_cast<T>(v2), orig);
+
+        QVariant v3;
+        v = QVariant();
+        QCOMPARE(v3, v);
+        v = v2;
+        QCOMPARE(v, v2);
+        QCOMPARE(qvariant_cast<T>(v2), qvariant_cast<T>(v));
+        QCOMPARE(v2.toString(), toString);
+        v3 = qVariantFromValue(orig);
+
+        QVERIFY(v3.isValid());
+        QCOMPARE(v3.isNull(), isNull);
+        QCOMPARE(v3.toString(), toString);
+        QCOMPARE(v3.toDouble(), toDouble);
+        QCOMPARE(v3.toBool(), toBool);
+        QCOMPARE(qvariant_cast<T>(v3), qvariant_cast<T>(v));
+    }
+
+    QVERIFY(v.isValid());
+    QCOMPARE(v.isNull(), isNull);
+    QCOMPARE(v.toString(), toString);
+    QCOMPARE(v.toDouble(), toDouble);
+    QCOMPARE(v.toBool(), toBool);
+    QCOMPARE(qvariant_cast<T>(v), orig);
+
+    if (qMetaTypeId<T>() != qMetaTypeId<QVariant>()) {
+        QCOMPARE(v.userType(), qMetaTypeId<T>());
+        QCOMPARE(QVariant::typeToName(QVariant::Type(v.userType())), QMetaType::typeName(qMetaTypeId<T>()));
+    }
+}
+
+
+struct MyPrimitive
+{
+    char x, y;
+    bool operator==(const MyPrimitive &o) const
+    {
+        return x == o.x && y == o.y;
+    }
+};
+Q_DECLARE_TYPEINFO(MyPrimitive, Q_PRIMITIVE_TYPE);
+
+struct MyData
+{
+    void *ptr;
+    MyData() : ptr(this) {}
+    ~MyData() { Q_ASSERT(ptr == this); }
+    MyData(const MyData& o) : ptr(this) { Q_ASSERT(o.ptr == &o); }
+    MyData &operator=(const MyData &o)
+    {
+        Q_ASSERT(ptr == this);
+        Q_ASSERT(o.ptr == &o);
+        return *this;
+    }
+    bool operator==(const MyData &o) const
+    {
+        Q_ASSERT(ptr == this);
+        Q_ASSERT(o.ptr == &o);
+        return true;
+    }
+};
+
+struct MyMovable
+{
+    static int count;
+    int v;
+    MyMovable() { v = count++; }
+    ~MyMovable() { count--; }
+    MyMovable(const MyMovable &o) : v(o.v) { count++; }
+
+    bool operator==(const MyMovable &o) const
+    {
+        return v == o.v;
+    }
+};
+
+int MyMovable::count  = 0;
+
+
+Q_DECLARE_TYPEINFO(MyMovable, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(QList<QSize>)
+Q_DECLARE_METATYPE(MyPrimitive)
+Q_DECLARE_METATYPE(MyData)
+Q_DECLARE_METATYPE(MyMovable)
+Q_DECLARE_METATYPE(QList<MyPrimitive>)
+Q_DECLARE_METATYPE(QList<MyData>)
+Q_DECLARE_METATYPE(QList<MyMovable>)
+Q_DECLARE_METATYPE(MyPrimitive *)
+Q_DECLARE_METATYPE(MyData *)
+Q_DECLARE_METATYPE(MyMovable *)
+
+
+void tst_QVariant::moreCustomTypes()
+{
+    {
+        QList<QSize> listSize;
+        playWithVariant(listSize, false, QString(), 0, false);
+        listSize << QSize(4,5) << QSize(89,23) << QSize(5,6);
+        playWithVariant(listSize, false, QString(), 0, false);
+    }
+
+    {
+        QString str;
+        playWithVariant(str, true, QString(), 0, false);
+        str = QString::fromLatin1("123456789.123");
+        playWithVariant(str, false, str, 123456789.123, true);
+    }
+
+    {
+        QSize size;
+        playWithVariant(size, false, QString(), 0, false);
+        playWithVariant(QSize(45,78), false, QString(), 0, false);
+    }
+
+    {
+        MyData d;
+        playWithVariant(d, false, QString(), 0, false);
+        playWithVariant(&d, false, QString(), 0, false);
+        QList<MyData> l;
+        playWithVariant(l, false, QString(), 0, false);
+        l << MyData() << MyData();
+        playWithVariant(l, false, QString(), 0, false);
+    }
+
+    {
+        MyPrimitive d = { 4, 5 };
+        playWithVariant(d, false, QString(), 0, false);
+        playWithVariant(&d, false, QString(), 0, false);
+        QList<MyPrimitive> l;
+        playWithVariant(l, false, QString(), 0, false);
+        l << d;
+        playWithVariant(l, false, QString(), 0, false);
+    }
+
+    {
+        MyMovable d;
+        playWithVariant(d, false, QString(), 0, false);
+        playWithVariant(&d, false, QString(), 0, false);
+        QList<MyMovable> l;
+        playWithVariant(l, false, QString(), 0, false);
+        l << MyMovable() << d;
+        playWithVariant(l, false, QString(), 0, false);
+    }
+    QCOMPARE(MyMovable::count, 0);
+
+    {
+        playWithVariant(12.12, false, "12.12", 12.12, true);
+        playWithVariant(12.12f, false, "12.12", 12.12f, true);
+        playWithVariant('a', false, "a", 'a', true);
+        playWithVariant((unsigned char)('a'), false, "a", 'a', true);
+        playWithVariant( quint8(12), false, "\xc", 12, true);
+        playWithVariant(  qint8(13), false, "\xd", 13, true);
+        playWithVariant(quint16(14), false, "14", 14, true);
+        playWithVariant( qint16(15), false, "15", 15, true);
+        playWithVariant(quint32(16), false, "16", 16, true);
+        playWithVariant( qint32(17), false, "17", 17, true);
+        playWithVariant(quint64(18), false, "18", 18, true);
+        playWithVariant( qint64(19), false, "19", 19, true);
+        playWithVariant(  qint8(-12), false, "\xf4", -12, true);
+        playWithVariant( qint16(-13), false, "-13", -13, true);
+        playWithVariant( qint32(-14), false, "-14", -14, true);
+        playWithVariant( qint64(-15), false, "-15", -15, true);
+        playWithVariant(quint64(0), false, "0", 0, false);
+        playWithVariant( true, false, "true", 1, true);
+        playWithVariant( false, false, "false", 0, false);
+
+        playWithVariant(QString("hello\n"), false, "hello\n", 0, true);
+    }
+
+    {
+        int i = 5;
+        playWithVariant((void *)(&i), false, QString(), 0, false);
+        playWithVariant((void *)(0), false, QString(), 0, false);
+    }
+
+    {
+        QVariant v1 = QVariant::fromValue(5);
+        QVariant v2 = QVariant::fromValue(5.0);
+        QVariant v3 = QVariant::fromValue(quint16(5));
+        QVariant v4 = 5;
+        QVariant v5 = QVariant::fromValue(MyPrimitive());
+        QVariant v6 = QVariant::fromValue(MyMovable());
+        QVariant v7 = QVariant::fromValue(MyData());
+        playWithVariant(v1, false, "5", 5, true);
+        playWithVariant(v2, false, "5", 5, true);
+        playWithVariant(v3, false, "5", 5, true);
+        playWithVariant(v4, false, "5", 5, true);
+
+        playWithVariant(v5, false, QString(), 0, false);
+    }
+}
+
+
+void tst_QVariant::variantInVariant()
+{
+    QVariant var1 = 5;
+    QCOMPARE(var1.type(), QVariant::Int);
+    QVariant var2 = var1;
+    QCOMPARE(var2, var1);
+    QCOMPARE(var2.type(), QVariant::Int);
+    QVariant var3 = QVariant::fromValue(var1);
+    QCOMPARE(var3, var1);
+    QCOMPARE(var3.type(), QVariant::Int);
+    QVariant var4 = qvariant_cast<QVariant>(var1);
+    QCOMPARE(var4, var1);
+    QCOMPARE(var4.type(), QVariant::Int);
+    QVariant var5;
+    var5 = var1;
+    QCOMPARE(var5, var1);
+    QCOMPARE(var5.type(), QVariant::Int);
+    QVariant var6;
+    var6.setValue(var1);
+    QCOMPARE(var6, var1);
+    QCOMPARE(var6.type(), QVariant::Int);
+
+    QCOMPARE(QVariant::fromValue(var1), QVariant::fromValue(var2));
+    QCOMPARE(qvariant_cast<QVariant>(var3), QVariant::fromValue(var4));
+    QCOMPARE(qvariant_cast<QVariant>(var5), qvariant_cast<QVariant>(var6));
+
+    QString str("hello");
+    QVariant var8 = qvariant_cast<QVariant>(QVariant::fromValue(QVariant::fromValue(str)));
+    QCOMPARE((int)var8.type(), (int)QVariant::String);
+    QCOMPARE(qvariant_cast<QString>(QVariant(qvariant_cast<QVariant>(var8))), str);
+
+    QVariant var9(qMetaTypeId<QVariant>(), &var1);
+    QCOMPARE(var9.userType(), qMetaTypeId<QVariant>());
+    QCOMPARE(qvariant_cast<QVariant>(var9), var1);
+}
+
+void tst_QVariant::colorInteger()
+{
+    QVariant v = QColor(Qt::red);
+    QCOMPARE(v.type(), QVariant::Color);
+    QCOMPARE(v.value<QColor>(), QColor(Qt::red));
+
+    v.setValue(1000);
+    QCOMPARE(v.type(), QVariant::Int);
+    QCOMPARE(v.toInt(), 1000);
+
+    v.setValue(QColor(Qt::yellow));
+    QCOMPARE(v.type(), QVariant::Color);
+    QCOMPARE(v.value<QColor>(), QColor(Qt::yellow));
+}
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"

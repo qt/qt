@@ -194,6 +194,8 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
 	synopsis = "class " + name;
 	break;
     case Node::Function:
+    case Node::QmlSignal:
+    case Node::QmlMethod:
 	func = (const FunctionNode *) node;
 	if (style != SeparateList && !func->returnType().isEmpty())
 	    synopsis = typified(func->returnType()) + " ";
@@ -353,6 +355,10 @@ QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
     QString name = taggedQmlNode(node);
     if (summary) {
 	name = linkTag(node,name);
+    } else if (node->type() == Node::QmlProperty) {
+        const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(node);
+        if (pn->isAttached())
+            name.prepend(pn->element() + QLatin1Char('.'));
     }
     name = "<@name>" + name + "</@name>";
     QString synopsis = name;
@@ -1109,21 +1115,29 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
     if (qmlClassNode) {
         if (style == Summary) {
 	    FastSection qmlproperties(qmlClassNode,
-                                      "QML Properties",
+                                      "Properties",
                                       "property",
                                       "properties");
 	    FastSection qmlattachedproperties(qmlClassNode,
-                                              "QML Attached Properties",
+                                              "Attached Properties",
                                               "property",
                                               "properties");
 	    FastSection qmlsignals(qmlClassNode,
-                                "QML Signals",
+                                "Signals",
                                 "signal",
                                 "signals");
+	    FastSection qmlattachedsignals(qmlClassNode,
+                                           "QML Attached Signals",
+                                           "signal",
+                                           "signals");
 	    FastSection qmlmethods(qmlClassNode,
-                                   "QML Methods",
+                                   "Methods",
                                    "method",
                                    "methods");
+	    FastSection qmlattachedmethods(qmlClassNode,
+                                           "QML Attached Methods",
+                                           "method",
+                                           "methods");
 
             NodeList::ConstIterator c = qmlClassNode->childNodes().begin();
             while (c != qmlClassNode->childNodes().end()) {
@@ -1142,23 +1156,35 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                     }
                 }
                 else if ((*c)->type() == Node::QmlSignal) {
-                    insert(qmlsignals,*c,style,Okay);
+                    const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
+                    if (sn->isAttached())
+                        insert(qmlattachedsignals,*c,style,Okay);
+                    else
+                        insert(qmlsignals,*c,style,Okay);
                 }
                 else if ((*c)->type() == Node::QmlMethod) {
-                    insert(qmlmethods,*c,style,Okay);
+                    const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
+                    if (mn->isAttached())
+                        insert(qmlattachedmethods,*c,style,Okay);
+                    else
+                        insert(qmlmethods,*c,style,Okay);
                 }
                 ++c;
             }
 	    append(sections,qmlproperties);
 	    append(sections,qmlattachedproperties);
 	    append(sections,qmlsignals);
+	    append(sections,qmlattachedsignals);
 	    append(sections,qmlmethods);
+	    append(sections,qmlattachedmethods);
         }
         else if (style == Detailed) {
-	    FastSection qmlproperties(qmlClassNode,"QML Property Documentation");
-	    FastSection qmlattachedproperties(qmlClassNode,"QML Attached Property Documentation");
-	    FastSection qmlsignals(qmlClassNode,"QML Signal Documentation");
-	    FastSection qmlmethods(qmlClassNode,"QML Method Documentation");
+            FastSection qmlproperties(qmlClassNode, "Property Documentation");
+	    FastSection qmlattachedproperties(qmlClassNode,"Attached Property Documentation");
+            FastSection qmlsignals(qmlClassNode,"Signal Documentation");
+	    FastSection qmlattachedsignals(qmlClassNode,"Attached Signal Documentation");
+            FastSection qmlmethods(qmlClassNode,"Method Documentation");
+	    FastSection qmlattachedmethods(qmlClassNode,"Attached Method Documentation");
 	    NodeList::ConstIterator c = qmlClassNode->childNodes().begin();
 	    while (c != qmlClassNode->childNodes().end()) {
                 if ((*c)->subType() == Node::QmlPropertyGroup) {
@@ -1169,17 +1195,27 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                         insert(qmlproperties,*c,style,Okay);
 	        }
                 else if ((*c)->type() == Node::QmlSignal) {
-                    insert(qmlsignals,*c,style,Okay);
+                    const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
+                    if (sn->isAttached())
+                        insert(qmlattachedsignals,*c,style,Okay);
+                    else
+                        insert(qmlsignals,*c,style,Okay);
                 }
                 else if ((*c)->type() == Node::QmlMethod) {
-                    insert(qmlmethods,*c,style,Okay);
+                    const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
+                    if (mn->isAttached())
+                        insert(qmlattachedmethods,*c,style,Okay);
+                    else
+                        insert(qmlmethods,*c,style,Okay);
                 }
 	        ++c;
 	    }
 	    append(sections,qmlproperties);
 	    append(sections,qmlattachedproperties);
 	    append(sections,qmlsignals);
+	    append(sections,qmlattachedsignals);
 	    append(sections,qmlmethods);
+	    append(sections,qmlattachedmethods);
         }
     }
 

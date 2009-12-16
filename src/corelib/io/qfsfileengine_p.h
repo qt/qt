@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 #define Q_USE_DEPRECATED_MAP_API 1
 #endif
 
-class QFSFileEnginePrivate : public QAbstractFileEnginePrivate
+class Q_AUTOTEST_EXPORT QFSFileEnginePrivate : public QAbstractFileEnginePrivate
 {
     Q_DECLARE_PUBLIC(QFSFileEngine)
 
@@ -110,19 +110,15 @@ public:
     FILE *fh;
 #ifdef Q_WS_WIN
     HANDLE fileHandle;
-    QHash<uchar *, QPair<int /*offset*/, HANDLE /*handle*/> > maps;
+    HANDLE mapHandle;
+    QHash<uchar *, DWORD /* offset % AllocationGranularity */> maps;
     mutable int cachedFd;
     mutable DWORD fileAttrib;
 #else
-    QHash<uchar *, QPair<int /*offset*/, int /*handle|len*/> > maps;
+    QHash<uchar *, QPair<int /*offset % PageSize*/, size_t /*length + offset % PageSize*/> > maps;
     mutable QT_STATBUF st;
 #endif
     int fd;
-
-#ifdef Q_USE_DEPRECATED_MAP_API
-    void mapHandleClose();
-    HANDLE fileMapHandle;
-#endif
 
     enum LastIOCommand
     {

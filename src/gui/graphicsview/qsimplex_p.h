@@ -63,7 +63,7 @@ struct QSimplexVariable
     QSimplexVariable() : result(0), index(0) {}
 
     qreal result;
-    uint index;
+    int index;
 };
 
 
@@ -95,7 +95,8 @@ struct QSimplexConstraint
     QPair<QSimplexVariable *, qreal> helper;
     QSimplexVariable * artificial;
 
-#ifdef QT_DEBUG
+    void invert();
+
     bool isSatisfied() {
         qreal leftHandSide(0);
 
@@ -106,7 +107,7 @@ struct QSimplexConstraint
 
         Q_ASSERT(constant > 0 || qFuzzyCompare(1, 1 + constant));
 
-        if (qFuzzyCompare(1000 + leftHandSide, 1000 + constant))
+        if ((leftHandSide == constant) || qAbs(leftHandSide - constant) < 0.0000001)
             return true;
 
         switch (ratio) {
@@ -117,6 +118,30 @@ struct QSimplexConstraint
         default:
             return false;
         }
+    }
+
+#ifdef QT_DEBUG
+    QString toString() {
+        QString result;
+        result += QString::fromAscii("-- QSimplexConstraint %1 --").arg(quintptr(this), 0, 16);
+
+        QHash<QSimplexVariable *, qreal>::const_iterator iter;
+        for (iter = variables.constBegin(); iter != variables.constEnd(); ++iter) {
+            result += QString::fromAscii("  %1 x %2").arg(iter.value()).arg(quintptr(iter.key()), 0, 16);
+        }
+
+        switch (ratio) {
+        case LessOrEqual:
+            result += QString::fromAscii("  (less) <= %1").arg(constant);
+            break;
+        case MoreOrEqual:
+            result += QString::fromAscii("  (more) >= %1").arg(constant);
+            break;
+        default:
+            result += QString::fromAscii("  (eqal) == %1").arg(constant);
+        }
+
+        return result;
     }
 #endif
 };
@@ -129,7 +154,6 @@ public:
 
     qreal solveMin();
     qreal solveMax();
-    QList<QSimplexVariable *> constraintsVariables();
 
     bool setConstraints(const QList<QSimplexConstraint *> constraints);
     void setObjective(QSimplexConstraint *objective);
@@ -145,6 +169,7 @@ private:
     void combineRows(int toIndex, int fromIndex, qreal factor);
 
     // Simplex
+    bool simplifyConstraints(QList<QSimplexConstraint *> *constraints);
     int findPivotColumn();
     int pivotRowForColumn(int column);
     void reducedRowEchelon();
@@ -167,11 +192,6 @@ private:
 
     qreal *matrix;
 };
-
-inline QList<QSimplexVariable *> QSimplex::constraintsVariables()
-{
-    return variables;
-}
 
 inline qreal QSimplex::valueAt(int rowIndex, int columnIndex)
 {

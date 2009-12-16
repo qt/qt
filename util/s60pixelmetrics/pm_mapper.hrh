@@ -55,16 +55,9 @@ enum
     {
     ECmdStartCalculations = 8500,
     ECmdSwitchOrientation,
-    ECmdSwitchMirroring,
     ECmdStatus,
     ECmdSwitchOutput,
-    ECmdCreateHeaderFile,
-    ECmdSetAutoMode
-    };
-
-enum
-    {
-    EWaitNote = 9000
+    ECmdCreateHeaderFile
     };
 
 #endif    // PMMAPPER_HRH

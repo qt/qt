@@ -115,7 +115,7 @@ updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
     const uint userCollectionCreationTime = user.
         customValue(QLatin1String("CreationTime"), 1).toUInt();
 
-    if (callerCollectionCreationTime == userCollectionCreationTime)
+    if (callerCollectionCreationTime <= userCollectionCreationTime)
         return false;
 
     user.setCustomValue(QLatin1String("CreationTime"),
@@ -124,6 +124,12 @@ updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
         caller.customValue(QLatin1String("WindowTitle")));
     user.setCustomValue(QLatin1String("LastShownPages"),
         caller.customValue(QLatin1String("LastShownPages")));
+#if !defined(QT_NO_WEBKIT)
+    const QLatin1String zoomKey("LastPagesZoomWebView");
+#else
+    const QLatin1String zoomKey("LastPagesZoomTextBrowser");
+#endif
+    user.setCustomValue(zoomKey, caller.customValue(zoomKey));
     user.setCustomValue(QLatin1String("CurrentFilter"),
         caller.customValue(QLatin1String("CurrentFilter")));
     user.setCustomValue(QLatin1String("CacheDirectory"),
@@ -148,6 +154,8 @@ updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
         caller.customValue(QLatin1String("AboutTexts")));
     user.setCustomValue(QLatin1String("AboutImages"),
         caller.customValue(QLatin1String("AboutImages")));
+    user.setCustomValue(QLatin1String("defaultHomepage"),
+        caller.customValue(QLatin1String("defaultHomepage")));
 
     return true;
 }
@@ -181,6 +189,7 @@ QString indexFilesFolder(const QString &collectionFile)
 
 int main(int argc, char *argv[])
 {
+#ifndef Q_OS_WIN 
     // First do a quick search for arguments that imply command-line mode.
     const char * cmdModeArgs[] = {
         "-help", "-register", "-unregister", "-remove-search-index"
@@ -194,8 +203,10 @@ int main(int argc, char *argv[])
             }
         }
     }
-
     QApplication a(argc, argv, useGui);
+#else
+    QApplication a(argc, argv);
+#endif
     a.addLibraryPath(a.applicationDirPath() + QLatin1String("/plugins"));
 
     CmdLineParser cmd;

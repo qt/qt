@@ -345,7 +345,7 @@ RenderOptionsDialog::RenderOptionsDialog()
                         ColorEdit *colorEdit = new ColorEdit(it->toUInt(&ok, 16), m_parameterNames.size() - 1);
                         m_parameterEdits << colorEdit;
                         layout->addWidget(colorEdit);
-                        connect(colorEdit, SIGNAL(colorChanged(QRgb, int)), this, SLOT(setColorParameter(QRgb, int)));
+                        connect(colorEdit, SIGNAL(colorChanged(QRgb,int)), this, SLOT(setColorParameter(QRgb,int)));
                         ++row;
                     } else if (type == "float") {
                         layout->addWidget(new QLabel(m_parameterNames.back()));
@@ -353,7 +353,7 @@ RenderOptionsDialog::RenderOptionsDialog()
                         FloatEdit *floatEdit = new FloatEdit(it->toFloat(&ok), m_parameterNames.size() - 1);
                         m_parameterEdits << floatEdit;
                         layout->addWidget(floatEdit);
-                        connect(floatEdit, SIGNAL(valueChanged(float, int)), this, SLOT(setFloatParameter(float, int)));
+                        connect(floatEdit, SIGNAL(valueChanged(float,int)), this, SLOT(setFloatParameter(float,int)));
                         ++row;
                     }
                 }
@@ -496,8 +496,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
     connect(m_renderOptions, SIGNAL(dynamicCubemapToggled(int)), this, SLOT(toggleDynamicCubemap(int)));
-    connect(m_renderOptions, SIGNAL(colorParameterChanged(const QString &, QRgb)), this, SLOT(setColorParameter(const QString &, QRgb)));
-    connect(m_renderOptions, SIGNAL(floatParameterChanged(const QString &, float)), this, SLOT(setFloatParameter(const QString &, float)));
+    connect(m_renderOptions, SIGNAL(colorParameterChanged(QString,QRgb)), this, SLOT(setColorParameter(QString,QRgb)));
+    connect(m_renderOptions, SIGNAL(floatParameterChanged(QString,float)), this, SLOT(setFloatParameter(QString,float)));
     connect(m_renderOptions, SIGNAL(textureChanged(int)), this, SLOT(setTexture(int)));
     connect(m_renderOptions, SIGNAL(shaderChanged(int)), this, SLOT(setShader(int)));
 
@@ -552,14 +552,15 @@ void Scene::initGL()
 {
     m_box = new GLRoundedBox(0.25f, 1.0f, 10);
 
-    m_vertexShader = new QGLShader(":/res/boxes/basic.vsh", QGLShader::VertexShader);
+    m_vertexShader = new QGLShader(QGLShader::Vertex);
+    m_vertexShader->compileSourceFile(QLatin1String(":/res/boxes/basic.vsh"));
 
     QStringList list;
     list << ":/res/boxes/cubemap_posx.jpg" << ":/res/boxes/cubemap_negx.jpg" << ":/res/boxes/cubemap_posy.jpg"
          << ":/res/boxes/cubemap_negy.jpg" << ":/res/boxes/cubemap_posz.jpg" << ":/res/boxes/cubemap_negz.jpg";
     m_environment = new GLTextureCube(list, qMin(1024, m_maxTextureSize));
-    m_environmentShader = new QGLShader(QGLShader::FragmentShader);
-    m_environmentShader->compile(environmentShaderText);
+    m_environmentShader = new QGLShader(QGLShader::Fragment);
+    m_environmentShader->compileSourceCode(environmentShaderText);
     m_environmentProgram = new QGLShaderProgram;
     m_environmentProgram->addShader(m_vertexShader);
     m_environmentProgram->addShader(m_environmentShader);
@@ -616,7 +617,8 @@ void Scene::initGL()
     files = QDir(":/res/boxes/").entryInfoList(filter, QDir::Files | QDir::Readable);
     foreach (QFileInfo file, files) {
         QGLShaderProgram *program = new QGLShaderProgram;
-        QGLShader* shader = new QGLShader(file.absoluteFilePath(), QGLShader::FragmentShader);
+        QGLShader* shader = new QGLShader(QGLShader::Fragment);
+        shader->compileSourceFile(file.absoluteFilePath());
         // The program does not take ownership over the shaders, so store them in a vector so they can be deleted afterwards.
         program->addShader(m_vertexShader);
         program->addShader(shader);
@@ -638,9 +640,9 @@ void Scene::initGL()
         m_programs << program;
         m_renderOptions->addShader(file.baseName());
 
-        program->enable();
+        program->bind();
         m_cubemaps << ((program->uniformLocation("env") != -1) ? new GLRenderTargetCube(qMin(256, m_maxTextureSize)) : 0);
-        program->disable();
+        program->release();
     }
 
     if (m_programs.size() == 0)
@@ -697,12 +699,12 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
     // Don't render the environment if the environment texture can't be set for the correct sampler.
     if (glActiveTexture) {
         m_environment->bind();
-        m_environmentProgram->enable();
+        m_environmentProgram->bind();
         m_environmentProgram->setUniformValue("tex", GLint(0));
         m_environmentProgram->setUniformValue("env", GLint(1));
         m_environmentProgram->setUniformValue("noise", GLint(2));
         m_box->draw();
-        m_environmentProgram->disable();
+        m_environmentProgram->release();
         m_environment->unbind();
     }
 
@@ -730,14 +732,14 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
             else
                 m_environment->bind();
         }
-        m_programs[i]->enable();
+        m_programs[i]->bind();
         m_programs[i]->setUniformValue("tex", GLint(0));
         m_programs[i]->setUniformValue("env", GLint(1));
         m_programs[i]->setUniformValue("noise", GLint(2));
         m_programs[i]->setUniformValue("view", view);
         m_programs[i]->setUniformValue("invView", invView);
         m_box->draw();
-        m_programs[i]->disable();
+        m_programs[i]->release();
 
         if (glActiveTexture) {
             if (m_dynamicCubemap && m_cubemaps[i])
@@ -760,14 +762,14 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
                 m_environment->bind();
         }
 
-        m_programs[m_currentShader]->enable();
+        m_programs[m_currentShader]->bind();
         m_programs[m_currentShader]->setUniformValue("tex", GLint(0));
         m_programs[m_currentShader]->setUniformValue("env", GLint(1));
         m_programs[m_currentShader]->setUniformValue("noise", GLint(2));
         m_programs[m_currentShader]->setUniformValue("view", view);
         m_programs[m_currentShader]->setUniformValue("invView", invView);
         m_box->draw();
-        m_programs[m_currentShader]->disable();
+        m_programs[m_currentShader]->release();
 
         if (glActiveTexture) {
             if (m_dynamicCubemap)
@@ -870,7 +872,7 @@ void Scene::renderCubemaps()
 
         float angle = 2.0f * PI * i / m_cubemaps.size();
 
-        center = m_trackBalls[1].rotation().rotateVector(QVector3D(cos(angle), sin(angle), 0.0f));
+        center = m_trackBalls[1].rotation().rotatedVector(QVector3D(cos(angle), sin(angle), 0.0f));
 
         for (int face = 0; face < 6; ++face) {
             m_cubemaps[i]->begin(face);
@@ -1046,9 +1048,9 @@ void Scene::setColorParameter(const QString &name, QRgb color)
 {
     // set the color in all programs
     foreach (QGLShaderProgram *program, m_programs) {
-        program->enable();
+        program->bind();
         program->setUniformValue(program->uniformLocation(name), QColor(color));
-        program->disable();
+        program->release();
     }
 }
 
@@ -1056,9 +1058,9 @@ void Scene::setFloatParameter(const QString &name, float value)
 {
     // set the color in all programs
     foreach (QGLShaderProgram *program, m_programs) {
-        program->enable();
+        program->bind();
         program->setUniformValue(program->uniformLocation(name), value);
-        program->disable();
+        program->release();
     }
 }
 

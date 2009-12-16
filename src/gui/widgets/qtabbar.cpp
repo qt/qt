@@ -1694,6 +1694,9 @@ void QTabBar::mousePressEvent(QMouseEvent *event)
         d->moveTabFinished(d->pressedIndex);
 
     d->pressedIndex = d->indexAtPos(event->pos());
+#ifdef Q_WS_MAC
+    d->previousPressedIndex = d->pressedIndex;
+#endif
     if (d->validIndex(d->pressedIndex)) {
         QStyleOptionTabBarBaseV2 optTabBase;
         optTabBase.init(this);
@@ -1774,6 +1777,17 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
 
             update();
         }
+#ifdef Q_WS_MAC
+    } else if (!d->documentMode && event->buttons() == Qt::LeftButton && d->previousPressedIndex != -1) {
+        int newPressedIndex = d->indexAtPos(event->pos());
+        if (d->pressedIndex == -1 && d->previousPressedIndex == newPressedIndex) {
+            d->pressedIndex = d->previousPressedIndex;
+            update(tabRect(d->pressedIndex));
+        } else if(d->pressedIndex != newPressedIndex) {
+            d->pressedIndex = -1;
+            update(tabRect(d->previousPressedIndex));
+        }
+#endif
     }
 
     if (event->buttons() != Qt::LeftButton) {
@@ -1798,6 +1812,7 @@ void QTabBarPrivate::setupMovableTab()
     QPixmap grabImage(grabRect.size());
     grabImage.fill(Qt::transparent);
     QStylePainter p(&grabImage, q);
+    p.initFrom(q);
 
     QStyleOptionTabV3 tab;
     q->initStyleOption(&tab, pressedIndex);
@@ -1865,7 +1880,9 @@ void QTabBar::mouseReleaseEvent(QMouseEvent *event)
         event->ignore();
         return;
     }
-
+#ifdef Q_WS_MAC
+    d->previousPressedIndex = -1;
+#endif
     if (d->movable && d->dragInProgress && d->validIndex(d->pressedIndex)) {
         int length = d->tabList[d->pressedIndex].dragOffset;
         int width = verticalTabs(d->shape)
@@ -1931,7 +1948,8 @@ void QTabBar::changeEvent(QEvent *event)
     Q_D(QTabBar);
     if (event->type() == QEvent::StyleChange) {
         d->elideMode = Qt::TextElideMode(style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, this));
-        d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
+        if (!d->useScrollButtonsSetByUser)
+            d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
         d->refresh();
     } else if (event->type() == QEvent::FontChange) {
         d->refresh();
@@ -1986,6 +2004,7 @@ bool QTabBar::usesScrollButtons() const
 void QTabBar::setUsesScrollButtons(bool useButtons)
 {
     Q_D(QTabBar);
+    d->useScrollButtonsSetByUser = true;
     if (d->useScrollButtons == useButtons)
         return;
     d->useScrollButtons = useButtons;

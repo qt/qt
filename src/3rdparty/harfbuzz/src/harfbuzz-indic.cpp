@@ -419,7 +419,7 @@ static const unsigned char indicForms[0xe00-0x900] = {
     Matra, Halant, Invalid, Invalid,
 
     Invalid, Invalid, Invalid, Invalid,
-    Invalid, Invalid, Invalid, LengthMark,
+    Invalid, Invalid, Invalid, Matra,
     Invalid, Invalid, Invalid, Invalid,
     Invalid, Invalid, Invalid, Invalid,
 
@@ -566,7 +566,7 @@ static const unsigned char indicPosition[0xe00-0x900] = {
     None, None, None, None,
     None, None, None, None,
 
-    None, None, None, None,
+    Below, None, None, None,
     None, None, None, None,
     None, None, None, None,
     None, None, None, None,
@@ -1050,62 +1050,59 @@ static const IndicOrdering * const indic_order[] = {
 
 // vowel matras that have to be split into two parts.
 static const unsigned short split_matras[]  = {
-    //  matra, split1, split2
+    //  matra, split1, split2, split3
 
     // bengalis
-    0x9cb, 0x9c7, 0x9be,
-    0x9cc, 0x9c7, 0x9d7,
+    0x9cb, 0x9c7, 0x9be, 0x0,
+    0x9cc, 0x9c7, 0x9d7, 0x0,
     // oriya
-    0xb48, 0xb47, 0xb56,
-    0xb4b, 0xb47, 0xb3e,
-    0xb4c, 0xb47, 0xb57,
+    0xb48, 0xb47, 0xb56, 0x0,
+    0xb4b, 0xb47, 0xb3e, 0x0,
+    0xb4c, 0xb47, 0xb57, 0x0,
     // tamil
-    0xbca, 0xbc6, 0xbbe,
-    0xbcb, 0xbc7, 0xbbe,
-    0xbcc, 0xbc6, 0xbd7,
+    0xbca, 0xbc6, 0xbbe, 0x0,
+    0xbcb, 0xbc7, 0xbbe, 0x0,
+    0xbcc, 0xbc6, 0xbd7, 0x0,
     // telugu
-    0xc48, 0xc46, 0xc56,
+    0xc48, 0xc46, 0xc56, 0x0,
     // kannada
-    0xcc0, 0xcbf, 0xcd5,
-    0xcc7, 0xcc6, 0xcd5,
-    0xcc8, 0xcc6, 0xcd6,
-    0xcca, 0xcc6, 0xcc2,
-    0xccb, 0xcca, 0xcd5,
+    0xcc0, 0xcbf, 0xcd5, 0x0,
+    0xcc7, 0xcc6, 0xcd5, 0x0,
+    0xcc8, 0xcc6, 0xcd6, 0x0,
+    0xcca, 0xcc6, 0xcc2, 0x0,
+    0xccb, 0xcc6, 0xcc2, 0xcd5,
     // malayalam
-    0xd4a, 0xd46, 0xd3e,
-    0xd4b, 0xd47, 0xd3e,
-    0xd4c, 0xd46, 0xd57,
+    0xd4a, 0xd46, 0xd3e, 0x0,
+    0xd4b, 0xd47, 0xd3e, 0x0,
+    0xd4c, 0xd46, 0xd57, 0x0,
     // sinhala
-    0xdda, 0xdd9, 0xdca,
-    0xddc, 0xdd9, 0xdcf,
-    0xddd, 0xddc, 0xdca,
-    0xdde, 0xdd9, 0xddf,
+    0xdda, 0xdd9, 0xdca, 0x0,
+    0xddc, 0xdd9, 0xdcf, 0x0,
+    0xddd, 0xdd9, 0xdcf, 0xdca,
+    0xdde, 0xdd9, 0xddf, 0x0,
     0xffff
 };
 
-static inline void splitMatra(unsigned short *reordered, int matra, int &len, int &base)
+static inline void splitMatra(unsigned short *reordered, int matra, int &len)
 {
     unsigned short matra_uc = reordered[matra];
     //qDebug("matra=%d, reordered[matra]=%x", matra, reordered[matra]);
 
     const unsigned short *split = split_matras;
     while (split[0] < matra_uc)
-        split += 3;
+        split += 4;
 
     assert(*split == matra_uc);
     ++split;
 
-    if (indic_position(*split) == Pre) {
-        reordered[matra] = split[1];
-        memmove(reordered + 1, reordered, len*sizeof(unsigned short));
-        reordered[0] = split[0];
-        base++;
-    } else {
-        memmove(reordered + matra + 1, reordered + matra, (len-matra)*sizeof(unsigned short));
-        reordered[matra] = split[0];
-        reordered[matra+1] = split[1];
-    }
-    len++;
+    int added_chars = split[2] == 0x0 ? 1 : 2;
+
+    memmove(reordered + matra + added_chars, reordered + matra, (len-matra)*sizeof(unsigned short));
+    reordered[matra] = split[0];
+    reordered[matra+1] = split[1];
+    if(added_chars == 2)
+        reordered[matra+2] = split[2];
+    len += added_chars;
 }
 
 #ifndef NO_OPENTYPE
@@ -1130,12 +1127,23 @@ static const HB_OpenTypeFeature indic_features[] = {
 
 // #define INDIC_DEBUG
 #ifdef INDIC_DEBUG
-#define IDEBUG qDebug
+#define IDEBUG hb_debug
+#include <stdarg.h>
+
+static void hb_debug(const char *msg, ...)
+{
+    va_list ap;
+    va_start(ap, msg); // use variable arg list
+    vfprintf(stderr, msg, ap);
+    va_end(ap);
+    fprintf(stderr, "\n");
+}
+
 #else
 #define IDEBUG if(0) printf
 #endif
 
-#ifdef INDIC_DEBUG
+#if 0 //def INDIC_DEBUG
 static QString propertiesToString(int properties)
 {
     QString res;
@@ -1244,7 +1252,9 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
         //   farther than 3 consonants from the end of the syllable.
         // #### replace the HasReph property by testing if the feature exists in the font!
         if (form(*uc) == Consonant || (script == HB_Script_Bengali && form(*uc) == IndependentVowel)) {
-            beginsWithRa = (properties & HasReph) && ((len > 2) && *uc == ra && *(uc+1) == halant);
+            if ((properties & HasReph) && (len > 2) &&
+                (*uc == ra || *uc == 0x9f0) && *(uc+1) == halant)
+                beginsWithRa = true;
 
             if (beginsWithRa && form(*(uc+2)) == Control)
                 beginsWithRa = false;
@@ -1386,12 +1396,12 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
             //      to be at the beginning of the syllable, so we just move
             //      them there now.
             if (matra_position == Split) {
-                splitMatra(uc, matra, len, base);
+                splitMatra(uc, matra, len);
                 // Handle three-part matras (0xccb in Kannada)
                 matra_position = indic_position(uc[matra]);
-                if (matra_position == Split)
-                    splitMatra(uc, matra, len, base);
-            } else if (matra_position == Pre) {
+            }
+
+            if (matra_position == Pre) {
                 unsigned short m = uc[matra];
                 while (matra--)
                     uc[matra+1] = uc[matra];
@@ -1541,6 +1551,7 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
                               | PreSubstProperty
                               | BelowSubstProperty
                               | AboveSubstProperty
+                              | PostSubstProperty
                               | HalantProperty
                               | PositioningProperties);
 
@@ -1598,22 +1609,15 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
         // pres always applies
         // blws always applies
         // abvs always applies
-
-        // psts
-        // ### this looks slightly different from before, but I believe it's correct
-        if (reordered[len-1] != halant || base != len-2)
-            properties[base] &= ~PostSubstProperty;
-        for (i = base+1; i < len; ++i)
-            properties[i] &= ~PostSubstProperty;
-
+        // psts always applies
         // halant always applies
 
 #ifdef INDIC_DEBUG
-        {
-            IDEBUG("OT properties:");
-            for (int i = 0; i < len; ++i)
-                qDebug("    i: %s", ::propertiesToString(properties[i]).toLatin1().data());
-        }
+//        {
+//            IDEBUG("OT properties:");
+//            for (int i = 0; i < len; ++i)
+//                qDebug("    i: %s", ::propertiesToString(properties[i]).toLatin1().data());
+//        }
 #endif
 
         // initialize
@@ -1731,6 +1735,15 @@ static int indic_nextSyllableBoundary(HB_Script script, const HB_UChar16 *s, int
             if (script == HB_Script_Bengali && pos == 1 &&
                  (uc[0] == 0x0985 || uc[0] == 0x098f))
                 break;
+            // Sinhala uses the Halant as a component of certain matras. Allow these, but keep the state on Matra.
+            if (script == HB_Script_Sinhala && state == Matra) {
+                ++pos;
+                continue;
+            }
+            if (script == HB_Script_Malayalam && state == Matra && uc[pos-1] == 0x0d41) {
+                ++pos;
+                continue;
+            }
             goto finish;
         case Nukta:
             if (state == Consonant)
@@ -1741,12 +1754,16 @@ static int indic_nextSyllableBoundary(HB_Script script, const HB_UChar16 *s, int
                 break;
             // fall through
         case VowelMark:
-            if (state == Matra || state == IndependentVowel)
+            if (state == Matra || state == LengthMark || state == IndependentVowel)
                 break;
             // fall through
         case Matra:
             if (state == Consonant || state == Nukta)
                 break;
+            if (state == Matra) {
+                // ### needs proper testing for correct two/three part matras
+                break;
+            }
             // ### not sure if this is correct. If it is, does it apply only to Bengali or should
             // it work for all Indic languages?
             // the combination Independent_A + Vowel Sign AA is allowed.
@@ -1762,6 +1779,10 @@ static int indic_nextSyllableBoundary(HB_Script script, const HB_UChar16 *s, int
             goto finish;
 
         case LengthMark:
+            if (state == Matra) {
+                // ### needs proper testing for correct two/three part matras
+                break;
+            }
         case IndependentVowel:
         case Invalid:
         case Other:

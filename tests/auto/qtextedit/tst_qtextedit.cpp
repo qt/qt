@@ -200,6 +200,7 @@ private slots:
     void pasteFromQt3RichText();
     void noWrapBackgrounds();
     void preserveCharFormatAfterUnchangingSetPosition();
+    void twoSameInputMethodEvents();
 
 private:
     void createSelection();
@@ -1967,7 +1968,7 @@ void tst_QTextEdit::fullWidthSelection()
     qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
-    testFont.setPixelSize(12);
+    testFont.setPixelSize(11);
     testFont.setWeight(QFont::Normal);
     QTextCharFormat cf;
     cf.setFont(testFont);
@@ -2015,7 +2016,7 @@ void tst_QTextEdit::fullWidthSelection2()
     qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
-    testFont.setPixelSize(12);
+    testFont.setPixelSize(11);
     testFont.setWeight(QFont::Normal);
     QTextCharFormat cf;
     cf.setFont(testFont);
@@ -2181,6 +2182,24 @@ void tst_QTextEdit::preserveCharFormatAfterUnchangingSetPosition()
     edit.setTextCursor(c);
 
     QCOMPARE(edit.textColor(), color);
+}
+
+// Regression test for QTBUG-4696
+void tst_QTextEdit::twoSameInputMethodEvents()
+{
+    ed->setText("testLine");
+    ed->show();
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor,
+                                                   ed->textCursor().position(),
+                                                   0,
+                                                   QVariant()));
+
+    QInputMethodEvent event("PreEditText", attributes);
+    QApplication::sendEvent(ed, &event);
+    QCOMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
+    QApplication::sendEvent(ed, &event);
+    QCOMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
 }
 
 QTEST_MAIN(tst_QTextEdit)

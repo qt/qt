@@ -48,14 +48,15 @@
 #if !defined(QT_NO_EGL)
 
 #include <QtGui/private/qegl_p.h>
+#include <QtGui/private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
 
 QVGWindowSurface::QVGWindowSurface(QWidget *window)
     : QWindowSurface(window)
 {
-    d_ptr = QVGEGLWindowSurfacePrivate::create
-        (QVGEGLWindowSurfacePrivate::WindowSurface, this);
+    // Create the default type of EGL window surface for windows.
+    d_ptr = new QVGEGLWindowSurfaceDirect(this);
 }
 
 QVGWindowSurface::QVGWindowSurface
@@ -71,7 +72,6 @@ QVGWindowSurface::~QVGWindowSurface()
 
 QPaintDevice *QVGWindowSurface::paintDevice()
 {
-    d_ptr->beginPaint(window());
     return this;
 }
 
@@ -94,8 +94,16 @@ bool QVGWindowSurface::scroll(const QRegion &area, int dx, int dy)
 
 void QVGWindowSurface::beginPaint(const QRegion &region)
 {
-    // Nothing to do here.
-    Q_UNUSED(region);
+    d_ptr->beginPaint(window());
+
+    // If the window is not opaque, then fill the region we are about
+    // to paint with the transparent color.
+    if (!qt_widget_private(window())->isOpaque &&
+            window()->testAttribute(Qt::WA_TranslucentBackground)) {
+        QVGPaintEngine *engine = static_cast<QVGPaintEngine *>
+            (d_ptr->paintEngine());
+        engine->fillRegion(region, Qt::transparent, d_ptr->surfaceSize());
+    }
 }
 
 void QVGWindowSurface::endPaint(const QRegion &region)

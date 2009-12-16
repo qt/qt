@@ -4121,6 +4121,7 @@ void QWindowsMobileStylePrivate::setupWindowsMobileStyle65()
 
 void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOptionTab *tab)
 {
+#ifndef QT_NO_TABBAR
 #ifdef Q_WS_WINCE_WM
     if (wm65) {
         tintImagesButton(tab->palette.button().color());
@@ -4207,6 +4208,7 @@ void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOp
         }
     }
     painter->restore();
+#endif //QT_NO_TABBAR
 }
 
 void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect)
@@ -4412,7 +4414,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleUp(QPainter *p, QStyleOption
 
 void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOptionSlider *opt, bool completeFrame, bool secondScrollBar)
 {
-
+#ifndef QT_NO_SCROLLBAR
 #ifdef Q_WS_WINCE_WM
     if (wm65) {
         tintImagesHigh(opt->palette.highlight().color());
@@ -4469,10 +4471,12 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOpti
             arrowOpt.rect.adjust(1, 0, 1, 0);
         q_func()->proxy()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &arrowOpt, p, 0);
     }
+#endif //QT_NO_SCROLLBAR
 }
 
 void QWindowsMobileStylePrivate::drawScrollbarGroove(QPainter *p,const QStyleOptionSlider *opt)
 {
+#ifndef QT_NO_SCROLLBAR
 #ifdef Q_OS_WINCE_WM
     if (wm65) {
         p->fillRect(opt->rect, QColor(231, 231, 231));
@@ -4498,6 +4502,7 @@ void QWindowsMobileStylePrivate::drawScrollbarGroove(QPainter *p,const QStyleOpt
               fill = opt->palette.light();
             }
             p->fillRect(opt->rect, fill);
+#endif //QT_NO_SCROLLBAR
 }
 
 QWindowsMobileStyle::QWindowsMobileStyle(QWindowsMobileStylePrivate &dd) : QWindowsStyle(dd) {
@@ -5347,10 +5352,8 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
         painter->drawLines(a);
         break; }
     case PE_Frame:
-       if (d->doubleControls)
-            qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),2,&option->palette.light());
-        else
-            qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),1,&option->palette.light());
+        qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),
+                       d->doubleControls ? 2 : 1, &option->palette.background());
         break;
     case PE_FrameLineEdit:
     case PE_FrameMenu:
@@ -6327,16 +6330,20 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
     switch (type) {
     case CT_PushButton:
        if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            newSize = QWindowsStyle::sizeFromContents(type, option, size, widget);
+            newSize = QCommonStyle::sizeFromContents(type, option, size, widget);
             int w = newSize.width(),
                 h = newSize.height();
             int defwidth = 0;
             if (button->features & QStyleOptionButton::AutoDefaultButton)
                 defwidth = 2 * proxy()->pixelMetric(PM_ButtonDefaultIndicator, button, widget);
-            if (w < 75 + defwidth && button->icon.isNull())
-                w = 75 + defwidth;
-            if (h < 23 + defwidth)
-                h = 23 + defwidth;
+
+            int minwidth = int(QStyleHelper::dpiScaled(55.0f));
+            int minheight = int(QStyleHelper::dpiScaled(19.0f));
+
+            if (w < minwidth + defwidth && button->icon.isNull())
+                w = minwidth + defwidth;
+            if (h < minheight + defwidth)
+                h = minheight + defwidth;
             newSize = QSize(w + 4, h + 4);
         }
         break;
@@ -6840,34 +6847,11 @@ void QWindowsMobileStyle::polish(QWidget *widget) {
     else
 #endif //QT_NO_TOOLBAR
 
-#ifndef QT_NO_PROPERTIES
-        if (QAbstractButton *pushButton = qobject_cast<QAbstractButton*>(widget)) {
-            QVariant oldFont = widget->property("_q_styleWindowsMobileFont");
-            if (!oldFont.isValid()) {
-                QFont f = pushButton->font();
-                widget->setProperty("_q_styleWindowsMobileFont", f);
-                f.setBold(true);
-                int p = f.pointSize();
-                if (p > 2)
-                    f.setPointSize(p-1);
-                pushButton->setFont(f);
-            }
-        }
-#endif
-        QWindowsStyle::polish(widget);
+    QWindowsStyle::polish(widget);
 }
 
 void QWindowsMobileStyle::unpolish(QWidget *widget)
 {
-#ifndef QT_NO_PROPERTIES
-    if (QAbstractButton *pushButton = qobject_cast<QAbstractButton*>(widget)) {
-        QVariant oldFont = widget->property("_q_styleWindowsMobileFont");
-        if (oldFont.isValid()) {
-            widget->setFont(qVariantValue<QFont>(oldFont));
-        widget->setProperty("_q_styleWindowsMobileFont", QVariant());
-        }
-    }
-#endif
     QWindowsStyle::unpolish(widget);
 }
 

@@ -132,14 +132,20 @@ public:
 
     bool connect(const QString &service, const QString &path, const QString &interface,
                  const QString &name, QObject *receiver, const char *slot);
-    bool disconnect(const QString &service, const QString &path, const QString &interface,
-                    const QString &name, QObject *receiver, const char *slot);
-
     bool connect(const QString &service, const QString &path, const QString &interface,
                  const QString &name, const QString& signature,
                  QObject *receiver, const char *slot);
+    bool connect(const QString &service, const QString &path, const QString &interface,
+                 const QString &name, const QStringList &argumentMatch, const QString& signature,
+                 QObject *receiver, const char *slot);
+
+    bool disconnect(const QString &service, const QString &path, const QString &interface,
+                    const QString &name, QObject *receiver, const char *slot);
     bool disconnect(const QString &service, const QString &path, const QString &interface,
                     const QString &name, const QString& signature,
+                    QObject *receiver, const char *slot);
+    bool disconnect(const QString &service, const QString &path, const QString &interface,
+                    const QString &name, const QStringList &argumentMatch, const QString& signature,
                     QObject *receiver, const char *slot);
 
     bool registerObject(const QString &path, QObject *object,

@@ -62,7 +62,7 @@ MainWindow::MainWindow()
     view = new QWebView(this);
     view->load(QUrl("http://www.google.com/ncr"));
     connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
-    connect(view, SIGNAL(titleChanged(const QString&)), SLOT(adjustTitle()));
+    connect(view, SIGNAL(titleChanged(QString)), SLOT(adjustTitle()));
     connect(view, SIGNAL(loadProgress(int)), SLOT(setProgress(int)));
     connect(view, SIGNAL(loadFinished(bool)), SLOT(finishLoading(bool)));
 
@@ -82,7 +82,7 @@ MainWindow::MainWindow()
     QMenu *effectMenu = menuBar()->addMenu(tr("&Effect"));
     effectMenu->addAction("Highlight all links", this, SLOT(highlightAllLinks()));
 
-    QAction *rotateAction = new QAction(this);
+    rotateAction = new QAction(this);
     rotateAction->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
     rotateAction->setCheckable(true);
     rotateAction->setText(tr("Turn images upside down"));
@@ -136,6 +136,8 @@ void MainWindow::finishLoading(bool)
     progress = 100;
     adjustTitle();
     view->page()->mainFrame()->evaluateJavaScript(jQuery);
+
+    rotateImages(rotateAction->isChecked());
 }
 //! [6]
 
@@ -148,14 +150,13 @@ void MainWindow::highlightAllLinks()
 //! [7]
 
 //! [8]
-void MainWindow::rotateImages(bool toggle)
+void MainWindow::rotateImages(bool invert)
 {
-    QString code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s') } )";
-    view->page()->mainFrame()->evaluateJavaScript(code);
-    if (toggle)
-        code = "$('img').each( function () { $(this).css('-webkit-transform', 'rotate(180deg)') } )";
+    QString code;
+    if (invert)
+        code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s'); $(this).css('-webkit-transform', 'rotate(180deg)') } )";
     else
-        code = "$('img').each( function () { $(this).css('-webkit-transform', 'rotate(0deg)') } )";
+        code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s'); $(this).css('-webkit-transform', 'rotate(0deg)') } )";
     view->page()->mainFrame()->evaluateJavaScript(code);
 }
 //! [8]

@@ -55,6 +55,7 @@
 #include "private/qcore_unix_p.h"
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -75,7 +76,6 @@ QT_BEGIN_NAMESPACE
 #    define INVALID_FILE_ATTRIBUTES (DWORD (-1))
 #  endif
 #endif
-
 
 /*! \class QFSFileEngine
     \brief The QFSFileEngine class implements Qt's default file engine.
@@ -122,10 +122,8 @@ void QFSFileEnginePrivate::init()
 #ifdef Q_OS_WIN
     fileAttrib = INVALID_FILE_ATTRIBUTES;
     fileHandle = INVALID_HANDLE_VALUE;
+    mapHandle = INVALID_HANDLE_VALUE;
     cachedFd = -1;
-#endif
-#ifdef Q_USE_DEPRECATED_MAP_API
-    fileMapHandle = INVALID_HANDLE_VALUE;
 #endif
 }
 
@@ -139,6 +137,21 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
 {
     if (path.isEmpty())
         return path;
+
+    // FIXME let's see if this stuff works, then we might be able to remove some of the other code.
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    if (path.size() == 1 && path.at(0) == QLatin1Char('/'))
+        return path;
+#endif
+    // Mac OS X 10.5.x doesn't support the realpath(X,0) extenstion we use here.
+#if defined(Q_OS_LINIX) || defined(Q_OS_SYMBIAN)
+    char *ret = realpath(path.toLocal8Bit().constData(), (char*)0);
+    if (ret) {
+        QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
+        free(ret);
+        return canonicalPath;
+    }
+#endif
 
     QFileInfo fi;
     const QChar slash(QLatin1Char('/'));
@@ -160,11 +173,11 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
         if (
 #ifdef Q_OS_SYMBIAN
             // Symbian doesn't support directory symlinks, so do not check for link unless we
-            // are handling the last path element. This not only slightly improves performance, 
+            // are handling the last path element. This not only slightly improves performance,
             // but also saves us from lot of unnecessary platform security check failures
             // when dealing with files under *:/private directories.
             separatorPos == -1 &&
-#endif            
+#endif
             !nonSymlinks.contains(prefix)) {
             fi.setFile(prefix);
             if (fi.isSymLink()) {
@@ -319,9 +332,9 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
         int ret;
         do {
             ret = QT_FSEEK(fh, 0, SEEK_END);
-        } while (ret == -1 && errno == EINTR);
+        } while (ret != 0 && errno == EINTR);
 
-        if (ret == -1) {
+        if (ret != 0) {
             q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
                         qt_error_string(int(errno)));
 
@@ -566,20 +579,23 @@ bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
     if (lastIOCommand != QFSFileEnginePrivate::IOFlushCommand && !q->flush())
         return false;
 
+    if (pos < 0 || pos != qint64(QT_OFF_T(pos)))
+        return false;
+
     if (fh) {
         // Buffered stdlib mode.
         int ret;
         do {
             ret = QT_FSEEK(fh, QT_OFF_T(pos), SEEK_SET);
-        } while (ret == -1 && errno == EINTR);
+        } while (ret != 0 && errno == EINTR);
 
-        if (ret == -1) {
+        if (ret != 0) {
             q->setError(QFile::ReadError, qt_error_string(int(errno)));
             return false;
         }
     } else {
         // Unbuffered stdio mode.
-        if (QT_LSEEK(fd, pos, SEEK_SET) == -1) {
+        if (QT_LSEEK(fd, QT_OFF_T(pos), SEEK_SET) == -1) {
             qWarning() << "QFile::at: Cannot set file position" << pos;
             q->setError(QFile::PositionError, qt_error_string(errno));
             return false;
@@ -622,71 +638,55 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
 {
     Q_Q(QFSFileEngine);
 
-    // Buffered stdlib mode.
+    if (len < 0 || len != qint64(size_t(len))) {
+        q->setError(QFile::ReadError, qt_error_string(EINVAL));
+        return -1;
+    }
+
+    qint64 readBytes = 0;
+    bool eof = false;
+
     if (fh) {
-        qint64 readBytes = 0;
-        qint64 read = 0;
-        int retry = 0;
+        // Buffered stdlib mode.
 
-        // Read in blocks of 4k to avoid platform limitations (Windows
-        // commonly bails out if you read or write too large blocks at once).
-        qint64 bytesToRead;
+        size_t result;
+        bool retry = true;
         do {
-            if (retry == 1)
-                retry = 2;
-
-            bytesToRead = qMin<qint64>(4096, len - read);
-            do {
-                readBytes = fread(data + read, 1, size_t(bytesToRead), fh);
-            } while (readBytes == 0 && !feof(fh) && errno == EINTR);
-
-            if (readBytes > 0) {
-                read += readBytes;
-            } else if (!retry && feof(fh)) {
-                // Synchronize and try again (just once though).
-                if (++retry == 1)
-                    QT_FSEEK(fh, QT_FTELL(fh), SEEK_SET);
+            result = fread(data + readBytes, 1, size_t(len - readBytes), fh);
+            eof = feof(fh);
+            if (retry && eof && result == 0) {
+                // On Mac OS, this is needed, e.g., if a file was written to
+                // through another stream since our last read. See test
+                // tst_QFile::appendAndRead
+                QT_FSEEK(fh, QT_FTELL(fh), SEEK_SET); // re-sync stream.
+                retry = false;
+                continue;
             }
-        } while (retry == 1 || (readBytes == bytesToRead && read < len));
+            readBytes += result;
+        } while (!eof && (result == 0 ? errno == EINTR : readBytes < len));
 
-        // Return the number of bytes read, or if nothing was read, return -1
-        // if an error occurred, or 0 if we detected EOF.
-        if (read == 0) {
-            q->setError(QFile::ReadError, qt_error_string(int(errno)));
-            if (!feof(fh))
-                read = -1;
-        }
-        return read;
-    }
+    } else if (fd != -1) {
+        // Unbuffered stdio mode.
 
-    // Unbuffered stdio mode.
-    qint64 ret = 0;
-    if (len) {
+#ifdef Q_OS_WIN
         int result;
-        qint64 read = 0;
-        errno = 0;
-
-        // Read in blocks of 4k to avoid platform limitations (Windows
-        // commonly bails out if you read or write too large blocks at once).
+#else
+        ssize_t result;
+#endif
         do {
-            qint64 bytesToRead = qMin<qint64>(4096, len - read);
-            do {
-                result = QT_READ(fd, data + read, int(bytesToRead));
-            } while (result == -1 && errno == EINTR);
-            if (result > 0)
-                read += result;
-        } while (result > 0 && read < len);
+            result = QT_READ(fd, data + readBytes, size_t(len - readBytes));
+        } while ((result == -1 && errno == EINTR)
+                || (result > 0 && (readBytes += result) < len));
 
-        // Return the number of bytes read, or if nothing was read, return -1
-        // if an error occurred.
-        if (read > 0) {
-            ret += read;
-        } else if (read == 0 && result < 0) {
-            ret = -1;
-            q->setError(QFile::ReadError, qt_error_string(errno));
-        }
+        eof = !(result == -1);
     }
-    return ret;
+
+    if (!eof && readBytes == 0) {
+        readBytes = -1;
+        q->setError(QFile::ReadError, qt_error_string(errno));
+    }
+
+    return readBytes;
 }
 
 /*!
@@ -766,36 +766,43 @@ qint64 QFSFileEngine::write(const char *data, qint64 len)
 qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
 {
     Q_Q(QFSFileEngine);
-    qint64 result;
-    qint64 written = 0;
 
-    do {
-        // Write blocks of 4k to avoid platform limitations (Windows commonly
-        // bails out if you read or write too large blocks at once).
-        qint64 bytesToWrite = qMin<qint64>(4096, len - written);
-        if (fh) {
-            do {
-                // Buffered stdlib mode.
-                result = qint64(fwrite(data + written, 1, size_t(bytesToWrite), fh));
-            } while (result == 0 && errno == EINTR);
-            if (bytesToWrite > 0 && result == 0)
-                result = -1;
-        } else {
-            do {
-                // Unbuffered stdio mode.
-                result = QT_WRITE(fd, data + written, bytesToWrite);
-            } while (result == -1 && errno == EINTR);
-        }
-        if (result > 0)
-            written += qint64(result);
-    } while (written < len && result > 0);
+    if (len < 0 || len != qint64(size_t(len))) {
+        q->setError(QFile::WriteError, qt_error_string(EINVAL));
+        return -1;
+    }
 
-    // If we read anything, return that with success. Otherwise, set an error,
-    // and return the last return value.
-    if (result > 0)
-        return written;
-    q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError, qt_error_string(errno));
-    return result;
+    qint64 writtenBytes = 0;
+
+    if (fh) {
+        // Buffered stdlib mode.
+
+        size_t result;
+        do {
+            result = fwrite(data + writtenBytes, 1, size_t(len - writtenBytes), fh);
+            writtenBytes += result;
+        } while (result == 0 ? errno == EINTR : writtenBytes < len);
+
+    } else if (fd != -1) {
+        // Unbuffered stdio mode.
+
+#ifdef Q_OS_WIN
+        int result;
+#else
+        ssize_t result;
+#endif
+        do {
+            result = QT_WRITE(fd, data + writtenBytes, size_t(len - writtenBytes));
+        } while ((result == -1 && errno == EINTR)
+                || (result > 0 && (writtenBytes += result) < len));
+    }
+
+    if (len &&  writtenBytes == 0) {
+        writtenBytes = -1;
+        q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError, qt_error_string(errno));
+    }
+
+    return writtenBytes;
 }
 
 /*!
@@ -903,7 +910,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 /*! \fn QString QFSFileEngine::currentPath(const QString &fileName)
   For Unix, returns the current working directory for the file
   engine.
-  
+
   For Windows, returns the canonicalized form of the current path used
   by the file engine for the drive specified by \a fileName.  On
   Windows, each drive has its own current directory, so a different

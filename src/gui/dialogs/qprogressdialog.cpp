@@ -424,10 +424,6 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
 {
     Q_D(QProgressDialog);
     delete d->cancel;
-#ifdef QT_SOFTKEYS_ENABLED
-    delete d->cancelAction;
-    d->cancelAction = 0;
-#endif
     d->cancel = cancelButton;
     if (cancelButton) {
         if (cancelButton->parentWidget() == this) {

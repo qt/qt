@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -119,6 +119,9 @@ public:
         SP_QgnGrafTabPassiveL,
         SP_QgnGrafTabPassiveM,
         SP_QgnGrafTabPassiveR,
+        SP_QgnGrafNsliderEndLeft,
+        SP_QgnGrafNsliderEndRight,
+        SP_QgnGrafNsliderMiddle,
         SP_QgnIndiCheckboxOff,
         SP_QgnIndiCheckboxOn,
         SP_QgnIndiHlColSuper,     // Available in S60 release 3.2 and later.
@@ -131,7 +134,8 @@ public:
         SP_QgnIndiNaviArrowRight,
         SP_QgnIndiRadiobuttOff,
         SP_QgnIndiRadiobuttOn,
-        SP_QgnIndiSliderEdit,
+        SP_QgnGrafNsliderMarker,
+        SP_QgnGrafNsliderMarkerSelected,
         SP_QgnIndiSubMenu,
         SP_QgnNoteErased,
         SP_QgnNoteError,
@@ -271,15 +275,6 @@ public:
         SP_QsnFrButtonSideLInactive,
         SP_QsnFrButtonSideRInactive,
         SP_QsnFrButtonCenterInactive,
-        SP_QsnFrNotepadCornerTl,
-        SP_QsnFrNotepadCornerTr,
-        SP_QsnFrNotepadCornerBl,
-        SP_QsnFrNotepadCornerBr,
-        SP_QsnFrNotepadSideT,
-        SP_QsnFrNotepadSideB,
-        SP_QsnFrNotepadSideL,
-        SP_QsnFrNotepadSideR,
-        SP_QsnFrNotepadCenter
     };
 
     enum ColorLists {
@@ -322,6 +317,10 @@ public:
         SE_ScrollBarHandleVertical,
         SE_SliderHandleHorizontal,
         SE_SliderHandleVertical,
+        SE_SliderHandleSelectedHorizontal,
+        SE_SliderHandleSelectedVertical,
+        SE_SliderGrooveVertical,
+        SE_SliderGrooveHorizontal,
         SE_TabBarTabEastActive,
         SE_TabBarTabEastInactive,
         SE_TabBarTabNorthActive,
@@ -361,7 +360,6 @@ public:
         SF_ToolBarButtonPressed,
         SF_PanelBackground,
         SF_ButtonInactive,
-        SF_Editor,
     };
 
     enum SkinElementFlag {
@@ -372,7 +370,7 @@ public:
 
         SF_StateEnabled =     0x0010, // Enabled = the default
         SF_StateDisabled =    0x0020,
-        SF_ColorSkinned =     0x0040,
+        SF_ColorSkinned =     0x0040, // pixmap is colored with foreground pen color
     };
 
     enum CacheClearReason {
@@ -389,14 +387,6 @@ public:
     // draws a specific skin part
     static void drawSkinPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
-    // sets style property
-    void setStyleProperty(const char *name, const QVariant &value);
-    // sets specific style property
-    void setStyleProperty_specific(const char *name, const QVariant &value);
-    // gets style property
-    QVariant styleProperty(const char *name) const;
-    // gets specific style property
-    QVariant styleProperty_specific(const char *name) const;
     // gets pixel metrics value
     static short pixelMetric(int metric);
     // gets color. 'index' is NOT 0-based.
@@ -421,14 +411,13 @@ public:
 
     static bool isTouchSupported();
     static bool isToolBarBackground();
+    static bool hasSliderGrooveGraphic();
 
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(SkinFrameElements frame) const;
 
     //set theme palette for application
     void setThemePalette(QApplication *application) const;
-    //set theme palette for style option
-    void setThemePalette(QStyleOption *option) const;
     //access to theme palette
     static QPalette* themePalette();
 
@@ -462,6 +451,10 @@ public:
 
     static QSize naviPaneSize();
 
+    //Checks that the current brush is transparent or has BrushStyle NoBrush,
+    //so that theme graphic background can be drawn.
+    static bool canDrawThemeBackground(const QBrush &backgroundBrush);
+
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
@@ -472,7 +465,7 @@ private:
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
 
     static QPixmap cachedPart(QS60StyleEnums::SkinParts part, const QSize &size,
-        SkinElementFlags flags = KDefaultSkinElementFlags);
+        QPainter *painter, SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap cachedFrame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
 
@@ -489,7 +482,7 @@ private:
     static QSize partSize(QS60StyleEnums::SkinParts part,
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
-        SkinElementFlags flags = KDefaultSkinElementFlags);
+        QPainter *painter, SkinElementFlags flags = KDefaultSkinElementFlags);
 
     static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize);
 

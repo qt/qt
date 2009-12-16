@@ -229,7 +229,7 @@ void QNetworkAccessDebugPipeBackend::possiblyFinish()
 
 void QNetworkAccessDebugPipeBackend::closeDownstreamChannel()
 {
-    qWarning() << "QNetworkAccessDebugPipeBackend::closeDownstreamChannel()" << operation();
+    qWarning("QNetworkAccessDebugPipeBackend::closeDownstreamChannel() %d",operation());;
     //if (operation() == QNetworkAccessManager::GetOperation)
     //    socket.disconnectFromHost();
 }
@@ -237,7 +237,7 @@ void QNetworkAccessDebugPipeBackend::closeDownstreamChannel()
 
 void QNetworkAccessDebugPipeBackend::socketError()
 {
-    qWarning() << "QNetworkAccessDebugPipeBackend::socketError()" << socket.error();
+    qWarning("QNetworkAccessDebugPipeBackend::socketError() %d",socket.error());
     QNetworkReply::NetworkError code;
     switch (socket.error()) {
     case QAbstractSocket::RemoteHostClosedError:

@@ -80,10 +80,10 @@ IndexWindow::IndexWindow(QHelpEngine *helpEngine, QWidget *parent)
         SLOT(disableSearchLineEdit()));
     connect(m_helpEngine->indexModel(), SIGNAL(indexCreated()), this,
         SLOT(enableSearchLineEdit()));
-    connect(m_indexWidget, SIGNAL(linkActivated(QUrl, QString)), this,
+    connect(m_indexWidget, SIGNAL(linkActivated(QUrl,QString)), this,
         SIGNAL(linkActivated(QUrl)));
-    connect(m_indexWidget, SIGNAL(linksActivated(QMap<QString, QUrl>, QString)),
-        this, SIGNAL(linksActivated(QMap<QString, QUrl>, QString)));
+    connect(m_indexWidget, SIGNAL(linksActivated(QMap<QString,QUrl>,QString)),
+        this, SIGNAL(linksActivated(QMap<QString,QUrl>,QString)));
     connect(m_searchLineEdit, SIGNAL(returnPressed()), m_indexWidget,
         SLOT(activateCurrentItem()));
     layout->addWidget(m_indexWidget);
@@ -112,18 +112,22 @@ bool IndexWindow::eventFilter(QObject *obj, QEvent *e)
         case Qt::Key_Up:
             idx = m_indexWidget->model()->index(idx.row()-1,
                 idx.column(), idx.parent());
-            if (idx.isValid())
+            if (idx.isValid()) {
                 m_indexWidget->setCurrentIndex(idx);
+                return true;
+            }
             break;
         case Qt::Key_Down:
             idx = m_indexWidget->model()->index(idx.row()+1,
                 idx.column(), idx.parent());
-            if (idx.isValid())
+            if (idx.isValid()) {
                 m_indexWidget->setCurrentIndex(idx);
+                return true;
+            }
             break;
         case Qt::Key_Escape:
             emit escapePressed();
-            break;
+            return true;
         default: ; // stop complaining
         }
     } else if (obj == m_indexWidget && e->type() == QEvent::ContextMenu) {

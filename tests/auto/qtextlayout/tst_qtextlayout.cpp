@@ -118,6 +118,7 @@ private slots:
     void smallTextLengthWordWrap();
     void smallTextLengthWrapAtWordBoundaryOrAnywhere();
     void testLineBreakingAllSpaces();
+    void lineWidthFromBOM();
 
 
 private:
@@ -1114,14 +1115,14 @@ void tst_QTextLayout::testTabDPIScale()
     QTextOption option = layout.textOption();
     QList<QTextOption::Tab> tabs;
     QTextOption::Tab tab;
-    tab.position = 200;
-    tabs.append(tab);
-
-    tab.position = 400;
-    tab.type = QTextOption::RightTab;
+    tab.position = 300;
     tabs.append(tab);
 
     tab.position = 600;
+    tab.type = QTextOption::RightTab;
+    tabs.append(tab);
+
+    tab.position = 800;
     tab.type = QTextOption::CenterTab;
     tabs.append(tab);
     option.setTabs(tabs);
@@ -1305,6 +1306,18 @@ void tst_QTextLayout::columnWrapWithTabs()
     }
 
 }
+
+void tst_QTextLayout::lineWidthFromBOM()
+{
+    const QString string(QChar(0xfeff)); // BYTE ORDER MARK
+    QTextLayout layout(string);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(INT_MAX / 256);
+    layout.endLayout();
+
+    // Don't spin into an infinite loop
+ }
 
 
 QTEST_MAIN(tst_QTextLayout)

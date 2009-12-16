@@ -82,8 +82,8 @@
     horizontal and vertical resolution of the device in dots per
     inch. The physicalDpiX() and physicalDpiY() functions also return
     the resolution of the device in dots per inch, but note that if
-    the logical and vertical resolution differ, the corresponding
-    QPaintEngine must handle the mapping. Finally, the numColors()
+    the logical and physical resolution differ, the corresponding
+    QPaintEngine must handle the mapping. Finally, the colorCount()
     function returns the number of different colors available for the
     paint device.
 
@@ -111,7 +111,7 @@
     also heightMM().
 
     \value PdmNumColors The number of different colors available for
-    the paint device. See also numColors().
+    the paint device. See also colorCount().
 
     \value PdmDepth The bit depth (number of bit planes) of the paint
     device. See also depth().
@@ -221,11 +221,23 @@
 
 /*!
     \fn int QPaintDevice::numColors() const
+    \deprecated
+
+    Use colorCount() instead.
 
     Returns the number of different colors available for the paint
-    device. Since this value is an int, it will not be sufficient to represent
-    the number of colors on 32 bit displays, in this case INT_MAX is
-    returned instead.
+    device. Since this value is an int, it will not be sufficient to
+    represent the number of colors on 32 bit displays, in this case
+    INT_MAX is returned instead.
+ */
+
+/*!
+    \fn int QPaintDevice::colorCount() const
+
+    Returns the number of different colors available for the paint
+    device. Since this value is an int, it will not be sufficient to
+    represent the number of colors on 32 bit displays, in this case
+    INT_MAX is returned instead.
 */
 
 /*!

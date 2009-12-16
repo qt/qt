@@ -59,9 +59,9 @@ Window::Window(QWidget *parent)
     logViewer = new QTextBrowser;
     logViewer->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
 
-    connect(lineEdit, SIGNAL(textChanged(const QString &)),
-            model, SLOT(setDirPath(const QString &)));
-    connect(lineEdit, SIGNAL(textChanged(const QString &)),
+    connect(lineEdit, SIGNAL(textChanged(QString)),
+            model, SLOT(setDirPath(QString)));
+    connect(lineEdit, SIGNAL(textChanged(QString)),
             logViewer, SLOT(clear()));
     connect(model, SIGNAL(numberPopulated(int)),
             this, SLOT(updateLog(int)));

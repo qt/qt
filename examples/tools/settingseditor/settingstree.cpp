@@ -121,14 +121,14 @@ void SettingsTree::refresh()
     if (!settings)
         return;
 
-    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)),
-               this, SLOT(updateSetting(QTreeWidgetItem *)));
+    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
+               this, SLOT(updateSetting(QTreeWidgetItem*)));
 
     settings->sync();
     updateChildItems(0);
 
-    connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)),
-            this, SLOT(updateSetting(QTreeWidgetItem *)));
+    connect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
+            this, SLOT(updateSetting(QTreeWidgetItem*)));
 }
 
 bool SettingsTree::event(QEvent *event)

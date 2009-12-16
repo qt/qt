@@ -125,6 +125,7 @@ HDC shared_dc()
 }
 #endif
 
+#ifndef Q_WS_WINCE
 typedef BOOL (WINAPI *PtrGetCharWidthI)(HDC, UINT, UINT, LPWORD, LPINT);
 static PtrGetCharWidthI ptrGetCharWidthI = 0;
 static bool resolvedGetCharWidthI = false;
@@ -136,6 +137,7 @@ static void resolveGetCharWidthI()
     resolvedGetCharWidthI = true;
     ptrGetCharWidthI = (PtrGetCharWidthI)QLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
 }
+#endif // !defined(Q_WS_WINCE)
 
 // defined in qtextengine_win.cpp
 typedef void *SCRIPT_CACHE;
@@ -206,7 +208,7 @@ void QFontEngineWin::getCMap()
         unitsPerEm = otm->otmEMSquare;
         x_height = (int)otm->otmsXHeight;
         loadKerningPairs(designToDevice);
-        _faceId.filename = (char *)otm + (int)otm->otmpFullName;
+        _faceId.filename = QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpFullName)).toLatin1();
         lineWidth = otm->otmsUnderscoreSize;
         fsType = otm->otmfsType;
         free(otm);
@@ -340,8 +342,10 @@ QFontEngineWin::QFontEngineWin(const QString &name, HFONT _hfont, bool stockFont
     designAdvances = 0;
     designAdvancesSize = 0;
 
+#ifndef Q_WS_WINCE
     if (!resolvedGetCharWidthI)
         resolveGetCharWidthI();
+#endif
 }
 
 QFontEngineWin::~QFontEngineWin()
@@ -381,80 +385,18 @@ bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     if (flags & QTextEngine::GlyphIndicesOnly)
         return true;
 
-#if defined(Q_WS_WINCE)
-    HDC hdc = shared_dc();
-    if (flags & QTextEngine::DesignMetrics) {
-        HGDIOBJ oldFont = 0;
-        int glyph_pos = 0;
-        for(register int i = 0; i < len; i++) {
-            bool surrogate = (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00 && i < len-1
-                              && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
-            unsigned int glyph = glyphs->glyphs[glyph_pos];
-            if(int(glyph) >= designAdvancesSize) {
-                int newSize = (glyph + 256) >> 8 << 8;
-                designAdvances = q_check_ptr((QFixed *)realloc(designAdvances, newSize*sizeof(QFixed)));
-                for(int i = designAdvancesSize; i < newSize; ++i)
-                    designAdvances[i] = -1000000;
-                designAdvancesSize = newSize;
-            }
-            if(designAdvances[glyph] < -999999) {
-                if(!oldFont)
-                    oldFont = selectDesignFont();
-                SIZE size = {0, 0};
-                GetTextExtentPoint32(hdc, (wchar_t *)(str+i), surrogate ? 2 : 1, &size);
-                designAdvances[glyph] = QFixed((int)size.cx)/designToDevice;
-            }
-            glyphs->advances_x[glyph_pos] = designAdvances[glyph];
-            glyphs->advances_y[glyph_pos] = 0;
-            if (surrogate)
-                ++i;
-            ++glyph_pos;
-        }
-        if(oldFont)
-            DeleteObject(SelectObject(hdc, oldFont));
-    } else {
-        int glyph_pos = 0;
-        HGDIOBJ oldFont = 0;
-
-        for(register int i = 0; i < len; i++) {
-            bool surrogate = (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00 && i < len-1
-                              && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
-            unsigned int glyph = glyphs->glyphs[glyph_pos];
-
-            glyphs->advances_y[glyph_pos] = 0;
-
-            if (glyph >= widthCacheSize) {
-                int newSize = (glyph + 256) >> 8 << 8;
-                widthCache = q_check_ptr((unsigned char *)realloc(widthCache,
-                            newSize*sizeof(QFixed)));
-                memset(widthCache + widthCacheSize, 0, newSize - widthCacheSize);
-                widthCacheSize = newSize;
-            }
-            glyphs->advances_x[glyph_pos] = widthCache[glyph];
-            // font-width cache failed
-            if (glyphs->advances_x[glyph_pos] == 0) {
-                SIZE size = {0, 0};
-                if (!oldFont)
-                    oldFont = SelectObject(hdc, hfont);
-                GetTextExtentPoint32(hdc, (wchar_t *)str + i, surrogate ? 2 : 1, &size);
-                glyphs->advances_x[glyph_pos] = size.cx;
-                // if glyph's within cache range, store it for later
-                if (size.cx > 0 && size.cx < 0x100)
-                    widthCache[glyph] = size.cx;
-            }
-
-            if (surrogate)
-                ++i;
-            ++glyph_pos;
-        }
-
-        if (oldFont)
-            SelectObject(hdc, oldFont);
-    }
-#else
     recalcAdvances(glyphs, flags);
-#endif
     return true;
+}
+
+inline void calculateTTFGlyphWidth(HDC hdc, UINT glyph, int &width)
+{
+#if defined(Q_WS_WINCE)
+    GetCharWidth32(hdc, glyph, glyph, &width);
+#else
+    if (ptrGetCharWidthI)
+        ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
+#endif
 }
 
 void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
@@ -477,8 +419,7 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
                     oldFont = selectDesignFont();
 
                 int width = 0;
-                if (ptrGetCharWidthI)
-                    ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
+                calculateTTFGlyphWidth(hdc, glyph, width);
                 designAdvances[glyph] = QFixed(width) / designToDevice;
             }
             glyphs->advances_x[i] = designAdvances[glyph];
@@ -517,8 +458,8 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
                     SIZE size = {0, 0};
                     GetTextExtentPoint32(hdc, (wchar_t *)ch, chrLen, &size);
                     width = size.cx;
-                } else if (ptrGetCharWidthI) {
-                    ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
+                } else {
+                    calculateTTFGlyphWidth(hdc, glyph, width);
                 }
                 glyphs->advances_x[i] = width;
                 // if glyph's within cache range, store it for later
@@ -544,61 +485,80 @@ glyph_metrics_t QFontEngineWin::boundingBox(const QGlyphLayout &glyphs)
     return glyph_metrics_t(0, -tm.tmAscent, w, tm.tmHeight, w, 0);
 }
 
+#ifndef Q_WS_WINCE
+bool QFontEngineWin::getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph_metrics_t *metrics) const
+{
+    Q_ASSERT(metrics != 0);
+
+    HDC hdc = shared_dc();
+
+    GLYPHMETRICS gm;
+    DWORD res = 0;
+    MAT2 mat;
+    mat.eM11.value = mat.eM22.value = 1;
+    mat.eM11.fract = mat.eM22.fract = 0;
+    mat.eM21.value = mat.eM12.value = 0;
+    mat.eM21.fract = mat.eM12.fract = 0;
+
+    if (t.type() > QTransform::TxTranslate) {
+        // We need to set the transform using the HDC's world
+        // matrix rather than using the MAT2 above, because the
+        // results provided when transforming via MAT2 does not
+        // match the glyphs that are drawn using a WorldTransform
+        XFORM xform;
+        xform.eM11 = t.m11();
+        xform.eM12 = t.m12();
+        xform.eM21 = t.m21();
+        xform.eM22 = t.m22();
+        xform.eDx = 0;
+        xform.eDy = 0;
+        SetGraphicsMode(hdc, GM_ADVANCED);
+        SetWorldTransform(hdc, &xform);
+    }
+
+    uint format = GGO_METRICS;
+    if (ttf)
+        format |= GGO_GLYPH_INDEX;
+    res = GetGlyphOutline(hdc, glyph, format, &gm, 0, 0, &mat);
+
+    if (t.type() > QTransform::TxTranslate) {
+        XFORM xform;
+        xform.eM11 = xform.eM22 = 1;
+        xform.eM12 = xform.eM21 = xform.eDx = xform.eDy = 0;
+        SetWorldTransform(hdc, &xform);
+        SetGraphicsMode(hdc, GM_COMPATIBLE);
+    }
+
+    if (res != GDI_ERROR) {
+        *metrics = glyph_metrics_t(gm.gmptGlyphOrigin.x, -gm.gmptGlyphOrigin.y,
+                                  (int)gm.gmBlackBoxX, (int)gm.gmBlackBoxY, gm.gmCellIncX, gm.gmCellIncY);
+        return true;
+    } else {
+        return false;
+    }
+}
+#endif
 
 glyph_metrics_t QFontEngineWin::boundingBox(glyph_t glyph, const QTransform &t)
 {
 #ifndef Q_WS_WINCE
-    GLYPHMETRICS gm;
-
     HDC hdc = shared_dc();
     SelectObject(hdc, hfont);
-    if (!ttf) {
+
+    glyph_metrics_t glyphMetrics;
+    bool success = getOutlineMetrics(glyph, t, &glyphMetrics);
+
+    if (!ttf && !success) {
+        // Bitmap fonts
         wchar_t ch = glyph;
         ABCFLOAT abc;
         GetCharABCWidthsFloat(hdc, ch, ch, &abc);
         int width = qRound(abc.abcfB);
 
-        return glyph_metrics_t(0, -tm.tmAscent, width, tm.tmHeight, width, 0).transformed(t);
-    } else {
-        DWORD res = 0;
-        MAT2 mat;
-        mat.eM11.value = mat.eM22.value = 1;
-        mat.eM11.fract = mat.eM22.fract = 0;
-        mat.eM21.value = mat.eM12.value = 0;
-        mat.eM21.fract = mat.eM12.fract = 0;
-
-        if (t.type() > QTransform::TxTranslate) {
-            // We need to set the transform using the HDC's world
-            // matrix rather than using the MAT2 above, because the
-            // results provided when transforming via MAT2 does not
-            // match the glyphs that are drawn using a WorldTransform
-            XFORM xform;
-            xform.eM11 = t.m11();
-            xform.eM12 = t.m12();
-            xform.eM21 = t.m21();
-            xform.eM22 = t.m22();
-            xform.eDx = 0;
-            xform.eDy = 0;
-            SetGraphicsMode(hdc, GM_ADVANCED);
-            SetWorldTransform(hdc, &xform);
-        }
-
-        res = GetGlyphOutline(hdc, glyph, GGO_METRICS | GGO_GLYPH_INDEX, &gm, 0, 0, &mat);
-
-        if (t.type() > QTransform::TxTranslate) {
-            XFORM xform;
-            xform.eM11 = xform.eM22 = 1;
-            xform.eM12 = xform.eM21 = xform.eDx = xform.eDy = 0;
-            SetWorldTransform(hdc, &xform);
-            SetGraphicsMode(hdc, GM_COMPATIBLE);
-        }
-
-        if (res != GDI_ERROR) {
-            return glyph_metrics_t(gm.gmptGlyphOrigin.x, -gm.gmptGlyphOrigin.y,
-                                  (int)gm.gmBlackBoxX, (int)gm.gmBlackBoxY, gm.gmCellIncX, gm.gmCellIncY);
-        }
+        return glyph_metrics_t(QFixed::fromReal(abc.abcfA), -tm.tmAscent, width, tm.tmHeight, width, 0).transformed(t);
     }
-    return glyph_metrics_t();
+
+    return glyphMetrics;
 #else
     HDC hdc = shared_dc();
     HGDIOBJ oldFont = SelectObject(hdc, hfont);
@@ -636,7 +596,9 @@ QFixed QFontEngineWin::ascent() const
 
 QFixed QFontEngineWin::descent() const
 {
-    return tm.tmDescent;
+    // ### we substract 1 to even out the historical +1 in QFontMetrics's
+    // ### height=asc+desc+1 equation. Fix in Qt5.
+    return tm.tmDescent - 1;
 }
 
 QFixed QFontEngineWin::leading() const
@@ -1044,8 +1006,8 @@ QFontEngine::Properties QFontEngineWin::properties() const
     Properties p;
     p.emSquare = unitsPerEm;
     p.italicAngle = otm->otmItalicAngle;
-    p.postscriptName = (char *)otm + (int)otm->otmpFamilyName;
-    p.postscriptName += (char *)otm + (int)otm->otmpStyleName;
+    p.postscriptName = QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpFamilyName)).toLatin1();
+    p.postscriptName += QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpStyleName)).toLatin1();
 #ifndef QT_NO_PRINTER
     p.postscriptName = QPdf::stripSpecialCharacters(p.postscriptName);
 #endif
@@ -1167,7 +1129,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
                                         ih + 2 * margin + 4,
                                         QNativeImage::systemFormat(), !qt_cleartype_enabled);
 
-    /*If cleartype is enabled we use the standard system format even on Windows CE 
+    /*If cleartype is enabled we use the standard system format even on Windows CE
       and not the special textbuffer format we have to use if cleartype is disabled*/
 
     ni->image.fill(0xffffffff);
@@ -1192,7 +1154,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
     {
         ExtTextOut(hdc, -gx + margin, -gy + margin, options, 0, (LPCWSTR) &glyph, 1, 0);
     }
-
+    
     SelectObject(hdc, old_font);
     return ni;
 }

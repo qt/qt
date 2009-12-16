@@ -128,7 +128,6 @@ IDirectFBWindow *QDirectFBWindowSurface::directFBWindow() const
     return (dfbWindow ? dfbWindow : (sibling ? sibling->dfbWindow : 0));
 }
 
-
 void QDirectFBWindowSurface::createWindow(const QRect &rect)
 {
     IDirectFBDisplayLayer *layer = screen->dfbDisplayLayer();
@@ -138,7 +137,7 @@ void QDirectFBWindowSurface::createWindow(const QRect &rect)
     DFBWindowDescription description;
     memset(&description, 0, sizeof(DFBWindowDescription));
 
-    description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
+    description.caps = DWCAPS_NODECORATION;
     description.flags = DWDESC_CAPS|DWDESC_SURFACE_CAPS|DWDESC_PIXELFORMAT|DWDESC_HEIGHT|DWDESC_WIDTH|DWDESC_POSX|DWDESC_POSY;
 #if (Q_DIRECTFB_VERSION >= 0x010200)
     description.flags |= DWDESC_OPTIONS;
@@ -167,6 +166,19 @@ void QDirectFBWindowSurface::createWindow(const QRect &rect)
 
     if (result != DFB_OK)
         DirectFBErrorFatal("QDirectFBWindowSurface::createWindow", result);
+
+    if (window()) {
+        if (window()->windowFlags() & Qt::WindowStaysOnTopHint) {
+            dfbWindow->SetStackingClass(dfbWindow, DWSC_UPPER);
+        }
+        DFBWindowID winid;
+        result = dfbWindow->GetID(dfbWindow, &winid);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBWindowSurface::createWindow. Can't get ID", result);
+        } else {
+            window()->setProperty("_q_DirectFBWindowID", winid);
+        }
+    }
 
     Q_ASSERT(!dfbSurface);
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
@@ -220,6 +232,9 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
     if (rect.isNull()) {
 #ifndef QT_NO_DIRECTFB_WM
         if (dfbWindow) {
+            if (window())
+                window()->setProperty("_q_DirectFBWindowID", QVariant());
+
             dfbWindow->Release(dfbWindow);
             dfbWindow = 0;
         }
@@ -298,7 +313,7 @@ bool QDirectFBWindowSurface::scroll(const QRegion &region, int dx, int dy)
     if (!dfbSurface || !(flipFlags & DSFLIP_BLIT) || region.isEmpty())
         return false;
     dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         scrollSurface(dfbSurface, region.boundingRect(), dx, dy);
     } else {
         const QVector<QRect> rects = region.rects();

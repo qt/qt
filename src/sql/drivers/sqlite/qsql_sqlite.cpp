@@ -122,14 +122,14 @@ public:
 
     sqlite3_stmt *stmt;
 
-    uint skippedStatus: 1; // the status of the fetchNext() that's skipped
-    uint skipRow: 1; // skip the next fetchNext()?
-    uint utf8: 1;
+    bool skippedStatus; // the status of the fetchNext() that's skipped
+    bool skipRow; // skip the next fetchNext()?
     QSqlRecord rInf;
+    QVector<QVariant> firstRow;
 };
 
 QSQLiteResultPrivate::QSQLiteResultPrivate(QSQLiteResult* res) : q(res), access(0),
-    stmt(0), skippedStatus(false), skipRow(false), utf8(false)
+    stmt(0), skippedStatus(false), skipRow(false)
 {
 }
 
@@ -189,9 +189,16 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
         // already fetched
         Q_ASSERT(!initialFetch);
         skipRow = false;
+        for(int i=0;i<firstRow.count();i++)
+            values[i]=firstRow[i];
         return skippedStatus;
     }
     skipRow = initialFetch;
+
+    if(initialFetch) {
+        firstRow.clear();
+        firstRow.resize(sqlite3_column_count(stmt));
+    }
 
     if (!stmt) {
         q->setLastError(QSqlError(QCoreApplication::translate("QSQLiteResult", "Unable to fetch row"),
@@ -228,13 +235,9 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
                         values[i + idx] = sqlite3_column_int64(stmt, i);
                         break;
                     case QSql::LowPrecisionDouble:
-                        values[i + idx] = sqlite3_column_double(stmt, i);
-                        break;
                     case QSql::HighPrecision:
                     default:
-                        values[i + idx] = QString::fromUtf16(static_cast<const ushort *>(
-                                            sqlite3_column_text16(stmt, i)),
-                                            sqlite3_column_bytes16(stmt, i) / sizeof(ushort));
+                        values[i + idx] = sqlite3_column_double(stmt, i);
                         break;
                 };
                 break;
@@ -403,7 +406,7 @@ bool QSQLiteResult::exec()
                         "Parameter count mismatch"), QString(), QSqlError::StatementError));
         return false;
     }
-    d->skippedStatus = d->fetchNext(cache(), 0, true);
+    d->skippedStatus = d->fetchNext(d->firstRow, 0, true);
     if (lastError().isValid()) {
         setSelect(false);
         setActive(false);

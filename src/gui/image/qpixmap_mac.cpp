@@ -160,8 +160,8 @@ QSet<QMacPixmapData*> QMacPixmapData::validDataPointers;
 
 QMacPixmapData::QMacPixmapData(PixelType type)
     : QPixmapData(type, MacClass), has_alpha(0), has_mask(0),
-      uninit(true), pixels(0), pixelsToFree(0), bytesPerRow(0),
-      cg_data(0), cg_dataBeingReleased(0), cg_mask(0),
+      uninit(true), pixels(0), pixelsSize(0), pixelsToFree(0),
+      bytesPerRow(0), cg_data(0), cg_dataBeingReleased(0), cg_mask(0),
       pengine(0)
 {
 }
@@ -248,7 +248,7 @@ void QMacPixmapData::fromImage(const QImage &img,
         } else if ((flags & Qt::ColorMode_Mask) == Qt::ColorOnly) {
             conv8 = d == 1;                     // native depth wanted
         } else if (d == 1) {
-            if (image.numColors() == 2) {
+            if (image.colorCount() == 2) {
                 QRgb c0 = image.color(0);       // Auto: convert to best
                 QRgb c1 = image.color(1);
                 conv8 = qMin(c0,c1) != qRgb(0,0,0) || qMax(c0,c1) != qRgb(255,255,255);
@@ -305,11 +305,15 @@ void QMacPixmapData::fromImage(const QImage &img,
             }
             break;
         }
-        case QImage::Format_Indexed8:
-            for (int x = 0; x < w; ++x) {
-                *(drow+x) = PREMUL(image.color(*(srow + x)));
+        case QImage::Format_Indexed8: {
+            int numColors = image.numColors();
+            if (numColors > 0) {
+                for (int x = 0; x < w; ++x) {
+                    int index = *(srow + x);
+                    *(drow+x) = PREMUL(image.color(qMin(index, numColors)));
+                }
             }
-            break;
+        } break;
         case QImage::Format_RGB32:
             for (int x = 0; x < w; ++x)
                 *(drow+x) = *(((quint32*)srow) + x) | 0xFF000000;
@@ -335,7 +339,7 @@ void QMacPixmapData::fromImage(const QImage &img,
         bool alphamap = image.depth() == 32;
         if (sfmt == QImage::Format_Indexed8) {
             const QVector<QRgb> rgb = image.colorTable();
-            for (int i = 0, count = image.numColors(); i < count; ++i) {
+            for (int i = 0, count = image.colorCount(); i < count; ++i) {
                 const int alpha = qAlpha(rgb[i]);
                 if (alpha != 0xff) {
                     alphamap = true;
@@ -351,13 +355,13 @@ void QMacPixmapData::fromImage(const QImage &img,
 int get_index(QImage * qi,QRgb mycol)
 {
     int loopc;
-    for(loopc=0;loopc<qi->numColors();loopc++) {
+    for(loopc=0;loopc<qi->colorCount();loopc++) {
         if(qi->color(loopc)==mycol)
             return loopc;
     }
-    qi->setNumColors(qi->numColors()+1);
-    qi->setColor(qi->numColors(),mycol);
-    return qi->numColors();
+    qi->setColorCount(qi->colorCount()+1);
+    qi->setColor(qi->colorCount(),mycol);
+    return qi->colorCount();
 }
 
 QImage QMacPixmapData::toImage() const
@@ -372,7 +376,7 @@ QImage QMacPixmapData::toImage() const
     const uint sbpr = bytesPerRow;
     if (format == QImage::Format_MonoLSB) {
         image.fill(0);
-        image.setNumColors(2);
+        image.setColorCount(2);
         image.setColor(0, QColor(Qt::color0).rgba());
         image.setColor(1, QColor(Qt::color1).rgba());
         for (int y = 0; y < h; ++y) {
@@ -633,8 +637,9 @@ void QMacPixmapData::macCreatePixels()
     }
 
     if (pixels)
-        memcpy(base_pixels, pixels, numBytes);
+        memcpy(base_pixels, pixels, pixelsSize);
     pixels = base_pixels;
+    pixelsSize = numBytes;
 }
 
 #if 0
@@ -965,6 +970,9 @@ Qt::HANDLE QPixmap::macQDAlphaHandle() const
 
 Qt::HANDLE QPixmap::macCGHandle() const
 {
+    if (isNull())
+        return 0;
+
     if (data->classId() == QPixmapData::MacClass) {
         QMacPixmapData *d = static_cast<QMacPixmapData *>(data.data());
         if (!d->cg_data)

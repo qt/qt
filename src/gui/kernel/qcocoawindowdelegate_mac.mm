@@ -307,13 +307,30 @@ static void cleanupCocoaWindowDelegate()
     return m_windowHash->value(window);
 }
 
+- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
+{
+    Q_UNUSED(newFrame);
+    // saving the current window geometry before the window is maximized
+    QWidget *qwidget = m_windowHash->value(window);
+    if (qwidget->isWindow() && !(qwidget->windowState() & Qt::WindowMaximized)) {
+        QWidgetPrivate *widgetPrivate = qt_widget_private(qwidget);
+        widgetPrivate->topData()->normalGeometry = qwidget->geometry();
+    }
+    return YES;
+}
+
 - (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)defaultFrame
 {
     NSRect frameToReturn = defaultFrame;
     QWidget *qwidget = m_windowHash->value(window);
     QSizeF size = qwidget->maximumSize();
-    frameToReturn.size.width = qMin<CGFloat>(frameToReturn.size.width, size.width());
-    frameToReturn.size.height = qMin<CGFloat>(frameToReturn.size.height, size.height());
+    NSRect windowFrameRect = [window frame];
+    NSRect viewFrameRect = [[window contentView] frame];
+    // consider additional size required for titlebar & frame
+    frameToReturn.size.width = qMin<CGFloat>(frameToReturn.size.width,
+            size.width()+(windowFrameRect.size.width - viewFrameRect.size.width));
+    frameToReturn.size.height = qMin<CGFloat>(frameToReturn.size.height,
+            size.height()+(windowFrameRect.size.height - viewFrameRect.size.height));
     return frameToReturn;
 }
 
@@ -346,5 +363,28 @@ static void cleanupCocoaWindowDelegate()
     m_drawerHash->remove(drawer);
 }
 
+- (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu
+{
+    Q_UNUSED(menu);
+    QWidget *qwidget = m_windowHash->value(window);
+    if (qwidget && !qwidget->windowFilePath().isEmpty()) {
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)window:(NSWindow *)window shouldDragDocumentWithEvent:(NSEvent *)event
+                                                          from:(NSPoint)dragImageLocation
+                                                withPasteboard:(NSPasteboard *)pasteboard
+{
+    Q_UNUSED(event);
+    Q_UNUSED(dragImageLocation);
+    Q_UNUSED(pasteboard);
+    QWidget *qwidget = m_windowHash->value(window);
+    if (qwidget && !qwidget->windowFilePath().isEmpty()) {
+        return YES;
+    }
+    return NO;
+}
 @end
 #endif// QT_MAC_USE_COCOA

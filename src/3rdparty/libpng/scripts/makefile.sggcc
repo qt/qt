@@ -1,12 +1,15 @@
 # makefile for libpng.a and libpng12.so, SGI IRIX with 'cc'
 # Copyright (C) 2001-2002, 2006 Glenn Randers-Pehrson
 # Copyright (C) 1995 Guy Eric Schalnat, Group 42, Inc.
-# For conditions of distribution and use, see copyright notice in png.h
+
+# This code is released under the libpng license.
+# For conditions of distribution and use, see the disclaimer
+# and license in png.h
 
 # Library name:
 LIBNAME=libpng12
 PNGMAJ = 0
-PNGMIN = 1.2.29
+PNGMIN = 1.2.40
 PNGVER = $(PNGMAJ).$(PNGMIN)
 
 # Shared library names:
@@ -212,10 +215,8 @@ test-installed:
 	./pngtesti pngtest.png
 
 clean:
-	$(RM_F) libpng.a pngtest pngtesti pngout.png libpng.pc libpng-config \
-	$(LIBSO) $(LIBSOMAJ)* \
-	$(OLDSOVER) \
-	so_locations
+	$(RM_F) libpng.a pngtest pngtesti pngout.png libpng.pc \
+        so_locations libpng-config $(LIBSO) $(LIBSOMAJ)* $(OLDSOVER)
 
 DOCS = ANNOUNCE CHANGES INSTALL KNOWNBUG LICENSE README TODO Y2KINFO
 writelock:
@@ -233,10 +234,10 @@ pngget.o: png.h pngconf.h
 pngread.o: png.h pngconf.h
 pngrtran.o: png.h pngconf.h
 pngrutil.o: png.h pngconf.h
-pngtest.o: png.h pngconf.h
 pngtrans.o: png.h pngconf.h
 pngwrite.o: png.h pngconf.h
 pngwtran.o: png.h pngconf.h
 pngwutil.o: png.h pngconf.h
 pngpread.o: png.h pngconf.h
 
+pngtest.o: png.h pngconf.h

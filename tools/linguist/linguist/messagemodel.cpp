@@ -209,20 +209,29 @@ bool DataModel::load(const QString &fileName, bool *langGuessed, QWidget *parent
         return false;
     }
 
-    QSet<TranslatorMessagePtr> dupes = tor.resolveDuplicates();
-    if (!dupes.isEmpty()) {
+    Translator::Duplicates dupes = tor.resolveDuplicates();
+    if (!dupes.byId.isEmpty() || !dupes.byContents.isEmpty()) {
         QString err = tr("<qt>Duplicate messages found in '%1':").arg(Qt::escape(fileName));
         int numdups = 0;
-        foreach (const TranslatorMessagePtr &msg, dupes) {
+        foreach (int i, dupes.byId) {
+            if (++numdups >= 5) {
+                err += tr("<p>[more duplicates omitted]");
+                goto doWarn;
+            }
+            err += tr("<p>* ID: %1").arg(Qt::escape(tor.message(i).id()));
+        }
+        foreach (int j, dupes.byContents) {
+            const TranslatorMessage &msg = tor.message(j);
             if (++numdups >= 5) {
                 err += tr("<p>[more duplicates omitted]");
                 break;
             }
             err += tr("<p>* Context: %1<br>* Source: %2")
-                    .arg(Qt::escape(msg->context()), Qt::escape(msg->sourceText()));
-            if (!msg->comment().isEmpty())
-                err += tr("<br>* Comment: %3").arg(Qt::escape(msg->comment()));
+                    .arg(Qt::escape(msg.context()), Qt::escape(msg.sourceText()));
+            if (!msg.comment().isEmpty())
+                err += tr("<br>* Comment: %3").arg(Qt::escape(msg.comment()));
         }
+      doWarn:
         QMessageBox::warning(parent, QObject::tr("Qt Linguist"), err);
     }
 
@@ -777,16 +786,9 @@ void MultiDataModel::closeAll()
     m_numFinished = 0;
     m_numEditable = 0;
     m_numMessages = 0;
-    int delCol = m_dataModels.count();
-    m_msgModel->beginRemoveColumns(QModelIndex(), 1, delCol);
-    for (int i = m_multiContextList.size(); --i >= 0;) {
-        m_msgModel->beginRemoveColumns(m_msgModel->createIndex(i, 0, 0), 1, delCol);
-        m_msgModel->endRemoveColumns();
-    }
     qDeleteAll(m_dataModels);
     m_dataModels.clear();
     m_multiContextList.clear();
-    m_msgModel->endRemoveColumns();
     m_msgModel->reset();
     emit allModelsDeleted();
     onModifiedChanged();

@@ -183,6 +183,9 @@ void QToolBarPrivate::setWindowState(bool floating, bool unplug, const QRect &re
 
     if (visible)
         q->show();
+
+    if (floating != wasFloating)
+        emit q->topLevelChanged(floating);
 }
 
 void QToolBarPrivate::initDrag(const QPoint &pos)
@@ -393,10 +396,10 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
 void QToolBarPrivate::unplug(const QRect &_r)
 {
     Q_Q(QToolBar);
-    layout->setExpanded(false, false);
     QRect r = _r;
     r.moveTopLeft(q->mapToGlobal(QPoint(0, 0)));
     setWindowState(true, true, r);
+    layout->setExpanded(false);
 }
 
 void QToolBarPrivate::plug(const QRect &r)
@@ -516,6 +519,19 @@ void QToolBarPrivate::plug(const QRect &r)
 
     \sa toolButtonStyle QMainWindow::toolButtonStyle
 */
+
+/*!
+    \since 4.6
+
+    \fn void QToolBar::topLevelChanged(bool topLevel)
+
+    This signal is emitted when the \l floating property changes.
+    The \a topLevel parameter is true if the toolbar is now floating;
+    otherwise it is false.
+
+    \sa isWindow()
+*/
+
 
 /*!
     Constructs a QToolBar with the given \a parent.

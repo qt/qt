@@ -52,9 +52,9 @@ GeneralPage::GeneralPage(QWidget *parent)
         "folder for the documentation."));
 
     m_ui.setupUi(this);
-    connect(m_ui.namespaceLineEdit, SIGNAL(textChanged(const QString&)),
+    connect(m_ui.namespaceLineEdit, SIGNAL(textChanged(QString)),
         this, SIGNAL(completeChanged()));
-    connect(m_ui.folderLineEdit, SIGNAL(textChanged(const QString&)),
+    connect(m_ui.folderLineEdit, SIGNAL(textChanged(QString)),
         this, SIGNAL(completeChanged()));
 
     m_ui.namespaceLineEdit->setText(QLatin1String("mycompany.com"));

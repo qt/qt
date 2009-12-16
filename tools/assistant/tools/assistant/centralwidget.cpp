@@ -222,14 +222,15 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
     QVBoxLayout *vboxLayout = new QVBoxLayout(this);
     QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 
-#ifndef Q_OS_MAC
     vboxLayout->setMargin(0);
+    tabWidget = new QTabWidget(this);
+#ifndef Q_OS_MAC
     resourcePath.append(QLatin1String("win"));
 #else
     resourcePath.append(QLatin1String("mac"));
+    tabWidget->setDocumentMode(true);
 #endif
 
-    tabWidget = new QTabWidget(this);
     connect(tabWidget, SIGNAL(currentChanged(int)), this,
         SLOT(currentPageChanged(int)));
 
@@ -665,34 +666,16 @@ void CentralWidget::setSourceInNewTab(const QUrl &url, qreal zoom)
     tabWidget->setCurrentIndex(tabWidget->addTab(viewer,
         quoteTabTitle(viewer->documentTitle())));
 
-    QFont font = qApp->font();
-    bool userFont = helpEngine->customValue(QLatin1String("useBrowserFont")).toBool();
-    if (userFont) {
-        font = qVariantValue<QFont>(helpEngine->customValue(
-            QLatin1String("browserFont")));
-    }
+    QFont font;
+    getBrowserFontFor(viewer, &font);
 
-#if !defined(QT_NO_WEBKIT)
-    QWebSettings *settings = QWebSettings::globalSettings();
-    if (!userFont) {
-        int fontSize = settings->fontSize(QWebSettings::DefaultFontSize);
-        QString fontFamily = settings->fontFamily(QWebSettings::StandardFont);
-        font = QFont(fontFamily, fontSize);
-    }
-
-    QWebView *view = qobject_cast<QWebView*> (viewer);
-    if (view) {
-        settings = view->settings();
-        settings->setFontFamily(QWebSettings::StandardFont, font.family());
-        settings->setFontSize(QWebSettings::DefaultFontSize, font.pointSize());
-    } else if (viewer) {
-        viewer->setFont(font);
-    }
-    viewer->setTextSizeMultiplier(zoom == 0.0 ? 1.0 : zoom);
-#else
+#if defined(QT_NO_WEBKIT)
     font.setPointSize((int)(font.pointSize() + zoom));
-    viewer->setFont(font);
+    setBrowserFontFor(viewer, font);
     viewer->setZoom((int)zoom);
+#else
+    setBrowserFontFor(viewer, font);
+    viewer->setTextSizeMultiplier(zoom == 0.0 ? 1.0 : zoom);
 #endif
 
     connectSignals();
@@ -1010,41 +993,17 @@ bool CentralWidget::findInTextBrowser(QTextBrowser* browser, const QString &ttf,
 
 void CentralWidget::updateBrowserFont()
 {
-    QFont font = qApp->font();
-    bool userFont = helpEngine->customValue(QLatin1String("useBrowserFont")).toBool();
-    if (userFont) {
-        font = qVariantValue<QFont>(helpEngine->customValue(
-            QLatin1String("browserFont")));
+    QFont font;
+    bool searchAttached = searchWidgetAttached();
+    if (searchAttached) {
+        getBrowserFontFor(m_searchWidget, &font);
+        setBrowserFontFor(m_searchWidget, font);
     }
 
-#if !defined(QT_NO_WEBKIT)
-    QWebSettings *settings = QWebSettings::globalSettings();
-    if (!userFont) {
-        int fontSize = settings->fontSize(QWebSettings::DefaultFontSize);
-        QString fontFamily = settings->fontFamily(QWebSettings::StandardFont);
-        font = QFont(fontFamily, fontSize);
-    }
-#endif
-
-    QWidget *widget = 0;
-    for (int i = 0; i < tabWidget->count(); ++i) {
-        widget = tabWidget->widget(i);
-#if !defined(QT_NO_WEBKIT)
-        QWebView *view = qobject_cast<QWebView*> (widget);
-        if (view) {
-            settings = view->settings();
-            settings->setFontFamily(QWebSettings::StandardFont, font.family());
-            settings->setFontSize(QWebSettings::DefaultFontSize, font.pointSize());
-        } else if (widget) {
-            if (!userFont)
-                font = qApp->font();
-            widget->setFont(font);
-        }
-#else
-        if (widget && widget->font() != font)
-            widget->setFont(font);
-#endif
-    }
+    int i = searchAttached ? 1 : 0;
+    getBrowserFontFor(tabWidget->widget(i), &font);
+    for (i; i < tabWidget->count(); ++i)
+        setBrowserFontFor(tabWidget->widget(i), font);
 }
 
 void CentralWidget::createSearchWidget(QHelpSearchEngine *searchEngine)
@@ -1057,6 +1016,10 @@ void CentralWidget::createSearchWidget(QHelpSearchEngine *searchEngine)
         SLOT(setSourceFromSearch(QUrl)));
     connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(QUrl)), this,
         SLOT(setSourceFromSearchInNewTab(QUrl)));
+
+    QFont font;
+    getBrowserFontFor(m_searchWidget, &font);
+    setBrowserFontFor(m_searchWidget, font);
 }
 
 void CentralWidget::activateSearchWidget(bool updateLastTabPage)
@@ -1078,7 +1041,7 @@ void CentralWidget::activateSearchWidget(bool updateLastTabPage)
 
 void CentralWidget::removeSearchWidget()
 {
-    if (m_searchWidget && m_searchWidget->isAttached()) {
+    if (searchWidgetAttached()) {
         tabWidget->removeTab(0);
         m_searchWidget->setAttached(false);
     }
@@ -1087,7 +1050,7 @@ void CentralWidget::removeSearchWidget()
 int CentralWidget::availableHelpViewer() const
 {
     int count = tabWidget->count();
-    if (m_searchWidget && m_searchWidget->isAttached())
+    if (searchWidgetAttached())
         count--;
     return count;
 }
@@ -1095,7 +1058,7 @@ int CentralWidget::availableHelpViewer() const
 bool CentralWidget::enableTabCloseAction() const
 {
     int minTabCount = 1;
-    if (m_searchWidget && m_searchWidget->isAttached())
+    if (searchWidgetAttached())
         minTabCount = 2;
 
     return (tabWidget->count() > minTabCount);
@@ -1196,6 +1159,42 @@ QMap<int, QString> CentralWidget::currentSourceFileList() const
             sourceList.insert(i, viewer->source().host());
     }
     return sourceList;
+}
+
+void CentralWidget::getBrowserFontFor(QWidget *viewer, QFont *font)
+{
+    const QLatin1String key("useBrowserFont");
+    if (!helpEngine->customValue(key, false).toBool()) {
+        *font = qApp->font();   // case for QTextBrowser and SearchWidget
+#if !defined(QT_NO_WEBKIT)
+        QWebView *view = qobject_cast<QWebView*> (viewer);
+        if (view) {
+            QWebSettings *settings = QWebSettings::globalSettings();
+            *font = QFont(settings->fontFamily(QWebSettings::StandardFont),
+                settings->fontSize(QWebSettings::DefaultFontSize));
+        }
+#endif
+    } else {
+        *font = qVariantValue<QFont>(helpEngine->customValue(
+            QLatin1String("browserFont")));
+    }
+}
+
+void CentralWidget::setBrowserFontFor(QWidget *widget, const QFont &font)
+{
+#if !defined(QT_NO_WEBKIT)
+    QWebView *view = qobject_cast<QWebView*> (widget);
+    if (view) {
+        QWebSettings *settings = view->settings();
+        settings->setFontFamily(QWebSettings::StandardFont, font.family());
+        settings->setFontSize(QWebSettings::DefaultFontSize, font.pointSize());
+    } else if (widget && widget->font() != font) {
+        widget->setFont(font);
+    }
+#else
+    if (widget && widget->font() != font)
+        widget->setFont(font);
+#endif
 }
 
 QT_END_NAMESPACE

@@ -163,15 +163,18 @@ RenderBlock::~RenderBlock()
 
 void RenderBlock::destroy()
 {
-    // Detach our continuation first.
-    if (m_inlineContinuation)
-        m_inlineContinuation->destroy();
-    m_inlineContinuation = 0;
-    
     // Make sure to destroy anonymous children first while they are still connected to the rest of the tree, so that they will
-    // properly dirty line boxes that they are removed from.  Effects that do :before/:after only on hover could crash otherwise.
+    // properly dirty line boxes that they are removed from. Effects that do :before/:after only on hover could crash otherwise.
     children()->destroyLeftoverChildren();
 
+    // Destroy our continuation before anything other than anonymous children.
+    // The reason we don't destroy it before anonymous children is that they may
+    // have continuations of their own that are anonymous children of our continuation.
+    if (m_inlineContinuation) {
+        m_inlineContinuation->destroy();
+        m_inlineContinuation = 0;
+    }
+    
     if (!documentBeingDestroyed()) {
         if (firstLineBox()) {
             // We can't wait for RenderBox::destroy to clear the selection,
@@ -774,7 +777,9 @@ void RenderBlock::layoutBlock(bool relayoutChildren)
     // Repaint with our new bounds if they are different from our old bounds.
     bool didFullRepaint = repainter.repaintAfterLayout();
     if (!didFullRepaint && repaintTop != repaintBottom && (style()->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent())) {
-        IntRect repaintRect(leftVisibleOverflow(), repaintTop, rightVisibleOverflow() - leftVisibleOverflow(), repaintBottom - repaintTop);
+        int repaintLeft = min(leftVisualOverflow(), leftLayoutOverflow());
+        int repaintRight = max(rightVisualOverflow(), rightLayoutOverflow());
+        IntRect repaintRect(repaintLeft, repaintTop, repaintRight - repaintLeft, repaintBottom - repaintTop);
 
         // FIXME: Deal with multiple column repainting.  We have to split the repaint
         // rect up into multiple rects if it spans columns.

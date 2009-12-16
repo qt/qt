@@ -146,6 +146,8 @@ private slots:
 
     void sizeHint();
 
+    void taskQTBUG_5008_textFromValueAndValidate();
+
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(int);
@@ -756,7 +758,7 @@ void tst_QSpinBox::editingFinished()
     box->activateWindow();
     box->setFocus();
 
-    QTRY_COMPARE(qApp->focusWidget(), box);
+    QTRY_COMPARE(qApp->focusWidget(), (QWidget *)box);
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
     QSignalSpy editingFinishedSpy2(box2, SIGNAL(editingFinished()));
@@ -1003,6 +1005,46 @@ void tst_QSpinBox::sizeHint()
 
     delete widget;
 }
+
+void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
+{
+    class DecoratedSpinBox : public QSpinBox
+    {
+    public:
+        DecoratedSpinBox()
+        {
+            setLocale(QLocale::French);
+            setMaximum(100000000);
+            setValue(1000000);
+        }
+
+        QLineEdit *lineEdit() const
+        {
+            return QSpinBox::lineEdit();
+        }
+
+        //we use the French delimiters here
+        QString textFromValue (int value) const
+        {
+            return locale().toString(value);
+        }
+
+    } spinbox;
+    spinbox.show();
+    spinbox.activateWindow();
+    spinbox.setFocus();
+    QApplication::setActiveWindow(&spinbox);
+    QTest::qWaitForWindowShown(&spinbox);
+    QTRY_VERIFY(spinbox.hasFocus());
+    QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
+    QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
+    spinbox.lineEdit()->setCursorPosition(2); //just after the first thousand separator
+    QTest::keyClick(0, Qt::Key_0); // let's insert a 0
+    QCOMPARE(spinbox.value(), 10000000); //it's been multiplied by 10
+    spinbox.clearFocus(); //make sure the value is correctly formatted
+    QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
+}
+
 
 QTEST_MAIN(tst_QSpinBox)
 #include "tst_qspinbox.moc"

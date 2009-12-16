@@ -51,6 +51,19 @@ QT_BEGIN_NAMESPACE
 const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
                                      0x10, 0x20, 0x40, 0x80 };
 
+QPixmapData *QPixmapData::create(int w, int h, PixelType type)
+{
+    QPixmapData *data;
+    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
+    if (gs)
+        data = gs->createPixmapData(static_cast<QPixmapData::PixelType>(type));
+    else
+        data = QGraphicsSystem::createDefaultPixmapData(static_cast<QPixmapData::PixelType>(type));
+    data->resize(w, h);
+    return data;
+}
+
+
 QPixmapData::QPixmapData(PixelType pixelType, int objectId)
     : w(0),
       h(0),
@@ -188,7 +201,7 @@ QBitmap QPixmapData::mask() const
     if (mask.isNull()) // allocation failed
         return QBitmap();
 
-    mask.setNumColors(2);
+    mask.setColorCount(2);
     mask.setColor(0, QColor(Qt::color0).rgba());
     mask.setColor(1, QColor(Qt::color1).rgba());
 

@@ -334,6 +334,38 @@ static void diffTextDecorations(CSSMutableStyleDeclaration* style, int propertID
     setTextDecorationProperty(style, newTextDecoration.get(), propertID);
 }
 
+static bool fontWeightIsBold(CSSStyleDeclaration* style)
+{
+    ASSERT(style);
+    RefPtr<CSSValue> fontWeight = style->getPropertyCSSValue(CSSPropertyFontWeight);
+
+    if (!fontWeight)
+        return false;
+    if (!fontWeight->isPrimitiveValue())
+        return false;
+
+    // Because b tag can only bold text, there are only two states in plain html: bold and not bold.
+    // Collapse all other values to either one of these two states for editing purposes.
+    switch (static_cast<CSSPrimitiveValue*>(fontWeight.get())->getIdent()) {
+        case CSSValue100:
+        case CSSValue200:
+        case CSSValue300:
+        case CSSValue400:
+        case CSSValue500:
+        case CSSValueNormal:
+            return false;
+        case CSSValueBold:
+        case CSSValue600:
+        case CSSValue700:
+        case CSSValue800:
+        case CSSValue900:
+            return true;
+    }
+
+    ASSERT_NOT_REACHED(); // For CSSValueBolder and CSSValueLighter
+    return false; // Make compiler happy
+}
+
 RefPtr<CSSMutableStyleDeclaration> getPropertiesNotInComputedStyle(CSSStyleDeclaration* style, CSSComputedStyleDeclaration* computedStyle)
 {
     ASSERT(style);
@@ -345,6 +377,9 @@ RefPtr<CSSMutableStyleDeclaration> getPropertiesNotInComputedStyle(CSSStyleDecla
     diffTextDecorations(result.get(), CSSPropertyTextDecoration, computedTextDecorationsInEffect.get());
     diffTextDecorations(result.get(), CSSPropertyWebkitTextDecorationsInEffect, computedTextDecorationsInEffect.get());
 
+    if (fontWeightIsBold(result.get()) == fontWeightIsBold(computedStyle))
+        result->removeProperty(CSSPropertyFontWeight);
+
     return result;
 }
 
@@ -352,7 +387,6 @@ RefPtr<CSSMutableStyleDeclaration> getPropertiesNotInComputedStyle(CSSStyleDecla
 // e.g. when a user inserts a new paragraph, all properties listed here must be copied to the new paragraph.
 // FIXME: The current editingStyleProperties contains all inheritableProperties but we may not need to preserve all inheritable properties
 static const int editingStyleProperties[] = {
-    CSSPropertyBackgroundColor,
     // CSS inheritable properties
     CSSPropertyBorderCollapse,
     CSSPropertyColor,
@@ -383,7 +417,11 @@ size_t numEditingStyleProperties = sizeof(editingStyleProperties)/sizeof(editing
 PassRefPtr<CSSMutableStyleDeclaration> editingStyleAtPosition(Position pos, ShouldIncludeTypingStyle shouldIncludeTypingStyle)
 {
     RefPtr<CSSComputedStyleDeclaration> computedStyleAtPosition = pos.computedStyle();
-    RefPtr<CSSMutableStyleDeclaration> style = computedStyleAtPosition->copyPropertiesInSet(editingStyleProperties, numEditingStyleProperties);
+    RefPtr<CSSMutableStyleDeclaration> style;
+    if (!computedStyleAtPosition)
+        style = CSSMutableStyleDeclaration::create();
+    else
+        style = computedStyleAtPosition->copyPropertiesInSet(editingStyleProperties, numEditingStyleProperties);
 
     if (style && pos.node() && pos.node()->computedStyle()) {
         RenderStyle* renderStyle = pos.node()->computedStyle();
@@ -1075,6 +1113,23 @@ void ApplyStyleCommand::applyInlineStyleToRange(CSSMutableStyleDeclaration* styl
     }
 }
 
+bool ApplyStyleCommand::shouldRemoveTextDecorationTag(CSSStyleDeclaration* styleToApply, int textDecorationAddedByTag) const
+{
+    // Honor text-decorations-in-effect
+    RefPtr<CSSValue> textDecorationsToApply = styleToApply->getPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
+    if (!textDecorationsToApply || !textDecorationsToApply->isValueList())
+        textDecorationsToApply = styleToApply->getPropertyCSSValue(CSSPropertyTextDecoration);
+
+    // When there is no text decorations to apply, remove any one of u, s, & strike
+    if (!textDecorationsToApply || !textDecorationsToApply->isValueList())
+        return true;
+
+    // Remove node if it implicitly adds style not present in styleToApply
+    CSSValueList* valueList = static_cast<CSSValueList*>(textDecorationsToApply.get());
+    RefPtr<CSSPrimitiveValue> value = CSSPrimitiveValue::createIdentifier(textDecorationAddedByTag);
+    return !valueList->hasValue(value.get());
+}
+
 // This function maps from styling tags to CSS styles.  Used for knowing which
 // styling tags should be removed when toggling styles.
 bool ApplyStyleCommand::implicitlyStyledElementShouldBeRemovedWhenApplyingStyle(HTMLElement* elem, CSSMutableStyleDeclaration* style)
@@ -1088,36 +1143,25 @@ bool ApplyStyleCommand::implicitlyStyledElementShouldBeRemovedWhenApplyingStyle(
         case CSSPropertyFontWeight:
             // IE inserts "strong" tags for execCommand("bold"), so we remove them, even though they're not strictly presentational
             if (elem->hasLocalName(bTag) || elem->hasLocalName(strongTag))
-                return true;
+                return !equalIgnoringCase(property.value()->cssText(), "bold") || !elem->hasChildNodes();
             break;
         case CSSPropertyVerticalAlign:
-            if (elem->hasLocalName(subTag) || elem->hasLocalName(supTag))
-                return true;
+            if (elem->hasLocalName(subTag))
+                return !equalIgnoringCase(property.value()->cssText(), "sub") || !elem->hasChildNodes();
+            if (elem->hasLocalName(supTag))
+                return !equalIgnoringCase(property.value()->cssText(), "sup") || !elem->hasChildNodes();
             break;
         case CSSPropertyFontStyle:
             // IE inserts "em" tags for execCommand("italic"), so we remove them, even though they're not strictly presentational
             if (elem->hasLocalName(iTag) || elem->hasLocalName(emTag))
-                return true;
+                return !equalIgnoringCase(property.value()->cssText(), "italic") || !elem->hasChildNodes();
             break;
         case CSSPropertyTextDecoration:
         case CSSPropertyWebkitTextDecorationsInEffect:
-                ASSERT(property.value());
-                if (property.value()->isValueList()) {
-                    CSSValueList* valueList = static_cast<CSSValueList*>(property.value());
-                    DEFINE_STATIC_LOCAL(RefPtr<CSSPrimitiveValue>, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
-                    DEFINE_STATIC_LOCAL(RefPtr<CSSPrimitiveValue>, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
-                    // Because style is new style to be applied, we delete element only if the element is not used in style.
-                    if (!valueList->hasValue(underline.get()) && elem->hasLocalName(uTag))
-                        return true;
-                    if (!valueList->hasValue(lineThrough.get()) && (elem->hasLocalName(strikeTag) || elem->hasLocalName(sTag)))
-                        return true;
-                } else {
-                    // If the value is NOT a list, then it must be "none", in which case we should remove all text decorations.
-                    ASSERT(property.value()->cssText() == "none");
-                    if (elem->hasLocalName(uTag) || elem->hasLocalName(strikeTag) || elem->hasLocalName(sTag))
-                        return true;
-                }
-                break;
+                if (elem->hasLocalName(uTag))
+                    return shouldRemoveTextDecorationTag(style, CSSValueUnderline) || !elem->hasChildNodes();
+                else if (elem->hasLocalName(sTag) || elem->hasTagName(strikeTag))
+                    return shouldRemoveTextDecorationTag(style,CSSValueLineThrough) || !elem->hasChildNodes();
         }
     }
     return false;
@@ -1303,19 +1347,18 @@ void ApplyStyleCommand::applyTextDecorationStyle(Node *node, CSSMutableStyleDecl
     if (!style || style->cssText().isEmpty())
         return;
 
-    if (node->isTextNode()) {
-        RefPtr<HTMLElement> styleSpan = createStyleSpanElement(document());
-        surroundNodeRangeWithElement(node, node, styleSpan.get());
-        node = styleSpan.get();
-    }
-
-    if (!node->isElementNode())
-        return;
-
-    HTMLElement *element = static_cast<HTMLElement *>(node);
-
-    StyleChange styleChange(style, Position(element, 0));
+    StyleChange styleChange(style, Position(node, 0));
     if (styleChange.cssStyle().length()) {
+        if (node->isTextNode()) {
+            RefPtr<HTMLElement> styleSpan = createStyleSpanElement(document());
+            surroundNodeRangeWithElement(node, node, styleSpan.get());
+            node = styleSpan.get();
+        }
+
+        if (!node->isElementNode())
+            return;
+
+        HTMLElement *element = static_cast<HTMLElement *>(node);
         String cssText = styleChange.cssStyle();
         CSSMutableStyleDeclaration *decl = element->inlineStyleDecl();
         if (decl)
@@ -1675,6 +1718,20 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(Node* startNode, Node* endN
             break;
         node = next;
     }
+
+    Node* nextSibling = element->nextSibling();
+    Node* previousSibling = element->previousSibling();
+    if (nextSibling && nextSibling->isElementNode() && nextSibling->isContentEditable()
+        && areIdenticalElements(element.get(), static_cast<Element*>(nextSibling)))
+        mergeIdenticalElements(element, static_cast<Element*>(nextSibling));
+
+    if (previousSibling && previousSibling->isElementNode() && previousSibling->isContentEditable()) {
+        Node* mergedElement = previousSibling->nextSibling();
+        if (mergedElement->isElementNode() && mergedElement->isContentEditable()
+            && areIdenticalElements(static_cast<Element*>(previousSibling), static_cast<Element*>(mergedElement)))
+            mergeIdenticalElements(static_cast<Element*>(previousSibling), static_cast<Element*>(mergedElement));
+    }
+
     // FIXME: We should probably call updateStartEnd if the start or end was in the node
     // range so that the endingSelection() is canonicalized.  See the comments at the end of
     // VisibleSelection::validate().

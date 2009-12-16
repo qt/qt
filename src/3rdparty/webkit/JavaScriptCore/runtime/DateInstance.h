@@ -31,27 +31,27 @@ namespace JSC {
 
     class DateInstance : public JSWrapperObject {
     public:
-        explicit DateInstance(NonNullPassRefPtr<Structure>);
-        virtual ~DateInstance();
+        DateInstance(ExecState*, double);
+        explicit DateInstance(ExecState*, NonNullPassRefPtr<Structure>);
 
         double internalNumber() const { return internalValue().uncheckedGetNumber(); }
 
-        bool getTime(WTF::GregorianDateTime&, int& offset) const;
-        bool getUTCTime(WTF::GregorianDateTime&) const;
-        bool getTime(double& milliseconds, int& offset) const;
-        bool getUTCTime(double& milliseconds) const;
+        static JS_EXPORTDATA const ClassInfo info;
 
-        static const ClassInfo info;
+        bool getGregorianDateTime(ExecState*, bool outputIsUTC, WTF::GregorianDateTime&) const;
 
-        void msToGregorianDateTime(double, bool outputIsUTC, WTF::GregorianDateTime&) const;
+        static PassRefPtr<Structure> createStructure(JSValue prototype)
+        {
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
+        }
+
+    protected:
+        static const unsigned StructureFlags = OverridesMarkChildren | JSWrapperObject::StructureFlags;
 
     private:
         virtual const ClassInfo* classInfo() const { return &info; }
 
-        using JSWrapperObject::internalValue;
-
-        struct Cache;
-        mutable Cache* m_cache;
+        mutable RefPtr<DateInstanceData> m_data;
     };
 
     DateInstance* asDateInstance(JSValue);

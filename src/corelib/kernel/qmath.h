@@ -46,6 +46,10 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef Q_OS_SYMBIAN
+#    include <e32math.h>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -76,44 +80,142 @@ inline int qFloor(qreal v)
         return int(floor(v));
 }
 
-inline qreal qSin(qreal v)
+inline qreal qFabs(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return sinf(float(v));
+    if(sizeof(qreal) == sizeof(float))
+        return fabsf(float(v));
     else
 #endif
-        return sin(v);
+        return fabs(v);
+}
+
+inline qreal qSin(qreal v)
+{
+#ifdef Q_OS_SYMBIAN
+    TReal sin_v;
+    Math::Sin(sin_v, static_cast<TReal>(v));
+    return static_cast<qreal>(sin_v);
+#else
+#    ifdef QT_USE_MATH_H_FLOATS
+        if (sizeof(qreal) == sizeof(float))
+            return sinf(float(v));
+        else
+#    endif
+            return sin(v);
+#endif
 }
 
 inline qreal qCos(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return cosf(float(v));
-    else
+#ifdef Q_OS_SYMBIAN
+    TReal cos_v;
+    Math::Cos(cos_v, static_cast<TReal>(v));
+    return static_cast<qreal>(cos_v);
+#else
+#    ifdef QT_USE_MATH_H_FLOATS
+        if (sizeof(qreal) == sizeof(float))
+            return cosf(float(v));
+        else
+#    endif
+            return cos(v);
 #endif
-        return cos(v);
+}
+
+inline qreal qTan(qreal v)
+{
+#ifdef Q_OS_SYMBIAN
+    TReal tan_v;
+    Math::Tan(tan_v, static_cast<TReal>(v));
+    return static_cast<qreal>(tan_v);
+#else
+#    ifdef QT_USE_MATH_H_FLOATS
+        if (sizeof(qreal) == sizeof(float))
+            return tanf(float(v));
+        else
+#    endif
+            return tan(v);
+#endif
 }
 
 inline qreal qAcos(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return acosf(float(v));
-    else
+#ifdef Q_OS_SYMBIAN
+    TReal acos_v;
+    Math::ACos(acos_v, static_cast<TReal>(v));
+    return static_cast<qreal>(acos_v);
+#else
+#    ifdef QT_USE_MATH_H_FLOATS
+        if (sizeof(qreal) == sizeof(float))
+            return acosf(float(v));
+        else
+#    endif
+           return acos(v);
 #endif
-        return acos(v);
+}
+
+inline qreal qAsin(qreal v)
+{
+#ifdef Q_OS_SYMBIAN
+    TReal asin_v;
+    Math::ASin(asin_v, static_cast<TReal>(v));
+    return static_cast<qreal>(asin_v);
+#else
+#    ifdef QT_USE_MATH_H_FLOATS
+        if (sizeof(qreal) == sizeof(float))
+            return asinf(float(v));
+        else
+#    endif
+            return asin(v);
+#endif
+}
+
+inline qreal qAtan(qreal v)
+{
+#ifdef Q_OS_SYMBIAN
+    TReal atan_v;
+    Math::ATan(atan_v, static_cast<TReal>(v));
+    return static_cast<qreal>(atan_v);
+#else
+#    ifdef QT_USE_MATH_H_FLOATS
+        if(sizeof(qreal) == sizeof(float))
+            return atanf(float(v));
+        else
+#    endif
+            return atan(v);
+#endif
+}
+
+inline qreal qAtan2(qreal x, qreal y)
+{
+#ifdef Q_OS_SYMBIAN
+    TReal atan2_v;
+    Math::ATan(atan2_v, static_cast<TReal>(x), static_cast<TReal>(y));
+    return static_cast<qreal>(atan2_v);
+#else
+#    ifdef QT_USE_MATH_H_FLOATS
+        if(sizeof(qreal) == sizeof(float))
+            return atan2f(float(x), float(y));
+        else
+#    endif
+            return atan2(x, y);
+#endif
 }
 
 inline qreal qSqrt(qreal v)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return sqrtf(float(v));
-    else
+#ifdef Q_OS_SYMBIAN
+    TReal sqrt_v;
+    Math::Sqrt(sqrt_v, static_cast<TReal>(v));
+    return static_cast<qreal>(sqrt_v);
+#else
+#    ifdef QT_USE_MATH_H_FLOATS
+        if (sizeof(qreal) == sizeof(float))
+            return sqrtf(float(v));
+        else
+#    endif
+            return sqrt(v);
 #endif
-        return sqrt(v);
 }
 
 inline qreal qLn(qreal v)
@@ -126,14 +228,33 @@ inline qreal qLn(qreal v)
         return log(v);
 }
 
+inline qreal qExp(qreal v)
+{
+#ifdef Q_OS_SYMBIAN
+    TReal exp_v;
+    Math::Exp(exp_v, static_cast<TReal>(v));
+    return static_cast<qreal>(exp_v);
+#else
+    // only one signature
+    // exists, exp(double)
+    return exp(v);
+#endif
+}
+
 inline qreal qPow(qreal x, qreal y)
 {
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return powf(float(x), float(y));
-    else
+#ifdef Q_OS_SYMBIAN
+    TReal pow_v;
+    Math::Pow(pow_v, static_cast<TReal>(x), static_cast<TReal>(y));
+    return static_cast<qreal>(pow_v);
+#else
+#    ifdef QT_USE_MATH_H_FLOATS
+        if (sizeof(qreal) == sizeof(float))
+            return powf(float(x), float(y));
+        else
+#    endif
+            return pow(x, y);
 #endif
-        return pow(x, y);
 }
 
 #ifndef M_PI

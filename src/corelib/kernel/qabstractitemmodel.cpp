@@ -2475,10 +2475,8 @@ void QAbstractItemModel::endRemoveRows()
 bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int start, int end, const QModelIndex &destinationParent, int destinationStart, Qt::Orientation orientation)
 {
     // Don't move the range within itself.
-    if ( ( destinationParent == srcParent )
-            && ( destinationStart >= start )
-            && ( destinationStart <= end + 1) )
-        return false;
+    if (destinationParent == srcParent)
+        return !(destinationStart >= start && destinationStart <= end + 1);
 
     QModelIndex destinationAncestor = destinationParent;
     int pos = (Qt::Vertical == orientation) ? destinationAncestor.row() : destinationAncestor.column();
@@ -2548,9 +2546,9 @@ bool QAbstractItemModel::beginMoveRows(const QModelIndex &sourceParent, int sour
     int destinationLast = destinationChild + (sourceLast - sourceFirst);
     d->changes.push(QAbstractItemModelPrivate::Change(destinationParent, destinationChild, destinationLast));
 
-    d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Vertical);
     emit rowsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild);
     emit layoutAboutToBeChanged();
+    d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Vertical);
     return true;
 }
 

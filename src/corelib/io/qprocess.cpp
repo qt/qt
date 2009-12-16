@@ -275,7 +275,7 @@ QProcessEnvironment &QProcessEnvironment::operator=(const QProcessEnvironment &o
 */
 bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
 {
-    return d->hash == other.d->hash;
+    return d == other.d || (d && other.d && d->hash == other.d->hash);
 }
 
 /*!
@@ -334,6 +334,7 @@ bool QProcessEnvironment::contains(const QString &name) const
 */
 void QProcessEnvironment::insert(const QString &name, const QString &value)
 {
+    // d detaches from null
     d->hash.insert(prepareName(name), prepareValue(value));
 }
 

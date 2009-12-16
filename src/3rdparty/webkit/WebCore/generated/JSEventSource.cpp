@@ -120,7 +120,7 @@ JSEventSource::JSEventSource(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 JSEventSource::~JSEventSource()
 {
     impl()->invalidateEventListeners();
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 void JSEventSource::markChildren(MarkStack& markStack)
@@ -205,7 +205,7 @@ void setJSEventSourceOnopen(ExecState* exec, JSObject* thisObject, JSValue value
 {
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(static_cast<JSEventSource*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnopen(globalObject->createJSAttributeEventListener(value));
@@ -215,7 +215,7 @@ void setJSEventSourceOnmessage(ExecState* exec, JSObject* thisObject, JSValue va
 {
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(static_cast<JSEventSource*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
@@ -225,7 +225,7 @@ void setJSEventSourceOnerror(ExecState* exec, JSObject* thisObject, JSValue valu
 {
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(static_cast<JSEventSource*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnerror(globalObject->createJSAttributeEventListener(value));

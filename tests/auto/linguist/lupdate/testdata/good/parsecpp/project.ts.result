@@ -18,6 +18,12 @@ backslashed \ stuff.</source>
         </translation>
         <extra-some>thing</extra-some>
     </message>
+    <message id="yet_another_id">
+        <location filename="main.cpp" line="254"/>
+        <source></source>
+        <extracomment>This is a message without a source string</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Dialog2</name>
@@ -274,6 +280,14 @@ backslashed \ stuff.</source>
     <message id="another_id">
         <location filename="main.cpp" line="216"/>
         <source>even more cool</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>YetAnotherTest</name>
+    <message>
+        <location filename="main.cpp" line="247"/>
+        <source>nothing</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

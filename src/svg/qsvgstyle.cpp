@@ -363,7 +363,10 @@ void QSvgStrokeStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraSt
     if (m_strokeMiterLimitSet)
         pen.setMiterLimit(m_stroke.miterLimit());
 
-    if (setDashOffsetNeeded) {
+    // You can have dash offset on solid strokes in SVG files, but not in Qt.
+    // QPen::setDashOffset() will set the pen style to Qt::CustomDashLine,
+    // so don't call the method if the pen is solid.
+    if (setDashOffsetNeeded && pen.style() != Qt::SolidLine) {
         qreal currentWidth = pen.widthF();
         if (currentWidth == 0)
             currentWidth = 1;
@@ -768,7 +771,7 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
         qreal transXDiff = (to1-from1) * percentOfAnimation;
         qreal transX = from1 + transXDiff;
         m_transform = QTransform();
-        m_transform.shear(tan(transX * deg2rad), 0);
+        m_transform.shear(qTan(transX * deg2rad), 0);
         break;
     }
     case SkewY: {
@@ -783,7 +786,7 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
         qreal transYDiff = (to1 - from1) * percentOfAnimation;
         qreal transY = from1 + transYDiff;
         m_transform = QTransform();
-        m_transform.shear(0, tan(transY * deg2rad));
+        m_transform.shear(0, qTan(transY * deg2rad));
         break;
     }
     default:

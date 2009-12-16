@@ -342,12 +342,12 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBaseV2 *tbb, const QWidget
         borderHighlightTop = QColor(207, 207, 207);
     }
     p->setPen(borderHighlightTop);
-    p->drawLine(0, 0, width, 0);
+    p->drawLine(tabRect.x(), 0, width, 0);
     p->setPen(borderTop);
-    p->drawLine(0, 1, width, 1);
+    p->drawLine(tabRect.x(), 1, width, 1);
 
     // center block
-    QRect centralRect(0, 2, width, height - 2);
+    QRect centralRect(tabRect.x(), 2, width, height - 2);
     if (active) {
         QColor mainColor = QColor(120, 120, 120);
         p->fillRect(centralRect, mainColor);
@@ -370,9 +370,9 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBaseV2 *tbb, const QWidget
         borderBottom = QColor(127, 127, 127);
     }
     p->setPen(borderHighlightBottom);
-    p->drawLine(0, height - 2, width, height - 2);
+    p->drawLine(tabRect.x(), height - 2, width, height - 2);
     p->setPen(borderBottom);
-    p->drawLine(0, height - 1, width, height - 1);
+    p->drawLine(tabRect.x(), height - 1, width, height - 1);
 }
 
 /*
@@ -2155,9 +2155,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
             wdi.titleWidth = tb->rect.width();
             QCFType<HIShapeRef> region;
             HIRect hirect = qt_hirectForQRect(tb->rect);
-            if (hirect.size.width == -1)
+            if (hirect.size.width <= 0)
                 hirect.size.width = 100;
-            if (hirect.size.height == -1)
+            if (hirect.size.height <= 0)
                 hirect.size.height = 30;
 
             HIThemeGetWindowShape(&hirect, &wdi, kWindowTitleBarRgn, &region);
@@ -3637,17 +3637,19 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     break;
                 }
             }
+            bool stretchTabs = (!verticalTabs && tabRect.height() > 22 || verticalTabs && tabRect.width() > 22);
+
             switch (tp) {
             case QStyleOptionTab::Beginning:
                 tdi.position = kHIThemeTabPositionFirst;
-                if (sp != QStyleOptionTab::NextIsSelected)
+                if (sp != QStyleOptionTab::NextIsSelected || stretchTabs)
                     tdi.adornment |= kHIThemeTabAdornmentTrailingSeparator;
                 break;
             case QStyleOptionTab::Middle:
                 tdi.position = kHIThemeTabPositionMiddle;
                 if (selected)
                     tdi.adornment |= kHIThemeTabAdornmentLeadingSeparator;
-                if (sp != QStyleOptionTab::NextIsSelected)  // Also when we're selected.
+                if (sp != QStyleOptionTab::NextIsSelected || stretchTabs)  // Also when we're selected.
                     tdi.adornment |= kHIThemeTabAdornmentTrailingSeparator;
                 break;
             case QStyleOptionTab::End:
@@ -3659,9 +3661,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 tdi.position = kHIThemeTabPositionOnly;
                 break;
             }
-
             // HITheme doesn't stretch its tabs. Therefore we have to cheat and do the job ourselves.
-            if ((!verticalTabs && tabRect.height() > 21 || verticalTabs && tabRect.width() > 21)) {
+            if (stretchTabs) {
                 HIRect hirect = CGRectMake(0, 0, 23, 23);
                 QPixmap pm(23, 23);
                 pm.fill(Qt::transparent);
@@ -4842,9 +4843,11 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 uint sc = SC_TitleBarMinButton;
                 ThemeTitleBarWidget tbw = kThemeWidgetCollapseBox;
                 bool active = titlebar->state & State_Active;
-                int border = 2;
-                titleBarRect.origin.x += border;
-                titleBarRect.origin.y -= border;
+                if (qMacVersion() < QSysInfo::MV_10_6) {
+                    int border = 2;
+                    titleBarRect.origin.x += border;
+                    titleBarRect.origin.y -= border;
+                }
 
                 while (sc <= SC_TitleBarCloseButton) {
                     if (sc & titlebar->subControls) {

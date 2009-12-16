@@ -99,11 +99,11 @@ class CppCodeParser : public CodeParser
                              const QString& arg,
                              QString& type,
                              QString& element,
-                             QString& property);
-    bool splitQmlArg(const Doc& doc,
-                     const QString& arg,
-                     QString& element,
-                     QString& name);
+                             QString& name);
+    bool splitQmlMethodArg(const Doc& doc,
+                           const QString& arg,
+                           QString& type,
+                           QString& element);
 #endif
     virtual QSet<QString> otherMetaCommands();
     virtual void processOtherMetaCommand(const Doc& doc,
@@ -127,7 +127,9 @@ class CppCodeParser : public CodeParser
     bool matchFunctionDecl(InnerNode *parent, 
                            QStringList *parentPathPtr = 0,
                            FunctionNode **funcPtr = 0, 
-                           const QString &templateStuff = QString());
+                           const QString &templateStuff = QString(),
+                           Node::Type type = Node::Function,
+                           bool attached = false);
     bool matchBaseSpecifier(ClassNode *classe, bool isClass);
     bool matchBaseList(ClassNode *classe, bool isClass);
     bool matchClassDecl(InnerNode *parent, 
@@ -143,7 +145,15 @@ class CppCodeParser : public CodeParser
     bool makeFunctionNode(const QString &synopsis, 
                           QStringList *parentPathPtr,
 			  FunctionNode **funcPtr, 
-                          InnerNode *root = 0);
+                          InnerNode *root = 0,
+                          Node::Type type = Node::Function,
+                          bool attached = false);
+    FunctionNode* makeFunctionNode(const Doc& doc,
+                                   const QString& sig,
+                                   InnerNode* parent,
+                                   Node::Type type,
+                                   bool attached,
+                                   QString qdoctag);
     void parseQiteratorDotH(const Location &location, const QString &filePath);
     void instantiateIteratorMacro(const QString &container, 
                                   const QString &includeFile,
@@ -175,6 +185,7 @@ class CppCodeParser : public CodeParser
     static QStringList exampleFiles;
     static QStringList exampleDirs;
     QString exampleNameFilter;
+    QString exampleImageFilter;
 };
 
 QT_END_NAMESPACE

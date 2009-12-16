@@ -164,6 +164,7 @@ private slots:
     void qtimerList();
     void containerTypedefs();
     void forwardDeclared();
+    void alignment();
 };
 
 struct LargeStatic {
@@ -3480,6 +3481,114 @@ void tst_Collections::forwardDeclared()
     { typedef QQueue<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QSet<T1> C; C *x = 0; /* C::iterator i; */ C::const_iterator j; Q_UNUSED(x) }
 }
+
+#if defined(Q_ALIGNOF) && defined(Q_DECL_ALIGN)
+
+class Q_DECL_ALIGN(4) Aligned4
+{
+    char i;
+public:
+    Aligned4(int i = 0) : i(i) {}
+    bool checkAligned() const
+    {
+        return (quintptr(this) & 3) == 0;
+    }
+
+    inline bool operator==(const Aligned4 &other) const { return i == other.i; }
+    inline bool operator<(const Aligned4 &other) const { return i < other.i; }
+    friend inline int qHash(const Aligned4 &a) { return qHash(a.i); }
+};
+
+class Q_DECL_ALIGN(128) Aligned128
+{
+    char i;
+public:
+    Aligned128(int i = 0) : i(i) {}
+    bool checkAligned() const
+    {
+        return (quintptr(this) & 127) == 0;
+    }
+
+    inline bool operator==(const Aligned128 &other) const { return i == other.i; }
+    inline bool operator<(const Aligned128 &other) const { return i < other.i; }
+    friend inline int qHash(const Aligned128 &a) { return qHash(a.i); }
+};
+
+template<typename C>
+void testVectorAlignment()
+{
+    typedef typename C::value_type Aligned;
+    C container;
+    container.append(Aligned());
+    QVERIFY(container[0].checkAligned());
+
+    for (int i = 0; i < 200; ++i)
+        container.append(Aligned());
+    
+    for (int i = 0; i < container.size(); ++i)
+        QVERIFY(container.at(i).checkAligned());
+}
+
+template<typename C>
+void testContiguousCacheAlignment()
+{
+    typedef typename C::value_type Aligned;
+    C container(150);
+    container.append(Aligned());
+    QVERIFY(container[container.firstIndex()].checkAligned());
+
+    for (int i = 0; i < 200; ++i)
+        container.append(Aligned());
+
+    for (int i = container.firstIndex(); i < container.lastIndex(); ++i)
+        QVERIFY(container.at(i).checkAligned());
+}
+
+template<typename C>
+void testAssociativeContainerAlignment()
+{
+    typedef typename C::key_type Key;
+    typedef typename C::mapped_type Value;
+    C container;
+    container.insert(Key(), Value());
+
+    typename C::const_iterator it = container.constBegin();
+    QVERIFY(it.key().checkAligned());
+    QVERIFY(it.value().checkAligned());
+
+    // add some more elements
+    for (int i = 0; i < 200; ++i)
+        container.insert(Key(i), Value(i));
+
+    it = container.constBegin();
+    for ( ; it != container.constEnd(); ++it) {
+        QVERIFY(it.key().checkAligned());
+        QVERIFY(it.value().checkAligned());
+    }
+}
+
+void tst_Collections::alignment()
+{
+    testVectorAlignment<QVector<Aligned4> >();
+    testVectorAlignment<QVector<Aligned128> >();
+    testContiguousCacheAlignment<QContiguousCache<Aligned4> >();
+    testContiguousCacheAlignment<QContiguousCache<Aligned128> >();
+    testAssociativeContainerAlignment<QMap<Aligned4, Aligned4> >();
+    testAssociativeContainerAlignment<QMap<Aligned4, Aligned128> >();
+    testAssociativeContainerAlignment<QMap<Aligned128, Aligned4> >();
+    testAssociativeContainerAlignment<QMap<Aligned128, Aligned128> >();
+    testAssociativeContainerAlignment<QHash<Aligned4, Aligned4> >();
+    testAssociativeContainerAlignment<QHash<Aligned4, Aligned128> >();
+    testAssociativeContainerAlignment<QHash<Aligned128, Aligned4> >();
+    testAssociativeContainerAlignment<QHash<Aligned128, Aligned128> >();
+}
+
+#else
+void tst_Collections::alignment()
+{
+    QSKIP("Compiler doesn't support necessary extension keywords", SkipAll);
+}
+#endif
 
 QTEST_APPLESS_MAIN(tst_Collections)
 #include "tst_collections.moc"

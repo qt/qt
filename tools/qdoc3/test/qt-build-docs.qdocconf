@@ -8,7 +8,7 @@ project                 = Qt
 description             = Qt Reference Documentation
 url                     = http://qt.nokia.com/doc/4.6
 
-edition.Desktop.modules = QtCore QtDBus QtGui QtNetwork QtOpenGL QtScript QtSql QtSvg \
+edition.Desktop.modules = QtCore QtDBus QtGui QtNetwork QtOpenGL QtScript QtScriptTools QtSql QtSvg \
                           QtWebKit QtXml QtXmlPatterns Qt3Support QtHelp \
                           QtDesigner QtAssistant QAxContainer Phonon \
                           QAxServer QtUiTools QtTest QtDBus
@@ -32,9 +32,9 @@ qhp.Qt.extraFiles          = classic.css \
                              images/dynamiclayouts-example.png \
                              images/stylesheet-coffee-plastique.png
 
-qhp.Qt.filterAttributes    = qt 4.6.0 qtrefdoc
-qhp.Qt.customFilters.Qt.name = Qt 4.6.0
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.6.0
+qhp.Qt.filterAttributes    = qt 4.6.1 qtrefdoc
+qhp.Qt.customFilters.Qt.name = Qt 4.6.1
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.6.1
 qhp.Qt.subprojects         = classes overviews examples
 qhp.Qt.subprojects.classes.title = Classes
 qhp.Qt.subprojects.classes.indexTitle = Qt's Classes
@@ -97,6 +97,7 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"
 examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"
+examples.imageextensions = "*.png"
 
 exampledirs             = $QT_SOURCE_TREE/doc/src \
                           $QT_SOURCE_TREE/examples \

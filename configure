@@ -131,7 +131,7 @@ compilerSupportsFlag()
     cat >conftest.cpp <<EOF
 int main() { return 0; }
 EOF
-    "$TEST_COMPILER" "$@" -o /dev/null conftest.cpp
+    "$TEST_COMPILER" "$@" -o conftest.o conftest.cpp
     ret=$?
     rm -f conftest.cpp conftest.o
     return $ret
@@ -226,6 +226,7 @@ COMMERCIAL_USER=ask
 CFG_DEV=no
 CFG_NOKIA=no
 CFG_EMBEDDED=no
+CFG_RTOS_ENABLED=yes
 EditionString=Commercial
 
 earlyArgParse()
@@ -362,7 +363,7 @@ elif [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" 
 elif [ $COMMERCIAL_USER = "yes" ]; then
     # one of commercial editions
     [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
-    [ "$PLATFORM_QWS" = "maybe" ] && PLATFORM_QWS=yes
+    [ "$PLATFORM_QWS" = "maybe" ] && PLATFORM_QWS=no
 
     # read in the license file
     if [ -f "$LICENSE_FILE" ]; then
@@ -404,7 +405,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         exit 1
     fi
     ProductCode=`echo $LicenseKeyExt | cut -f 1 -d - | cut -b 1`
-    PlatformCode=`echo $LicenseKeyExt | cut -f 2 -d - | cut -b 1`
+    PlatformCode=`echo $LicenseKeyExt | cut -f 2 -d -`
     LicenseTypeCode=`echo $LicenseKeyExt | cut -f 3 -d -`
     LicenseFeatureCode=`echo $LicenseKeyExt | cut -f 4 -d - | cut -b 1`
 
@@ -431,6 +432,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         ;;
     Z4M|R4M|Q4M)
         LicenseType="Evaluation"
+        QMakeVar add DEFINES QT_EVAL
         case $ProductCode in
          B)
             Edition="Evaluation"
@@ -447,65 +449,46 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
 
     # verify that we are licensed to use Qt on this platform
     LICENSE_EXTENSION=
-    if [ "$PlatformCode" = "X" ]; then
-	# Qt All-OS
-	LICENSE_EXTENSION="-ALLOS"
-    elif [ "$PLATFORM_QWS" = "yes" ]; then
-        case $PlatformCode in
-        2|4|8|A|B|E|G|J|K|P|Q|S|U|V|W)
+    case "$PlatformCode" in
+	*L)
+	    CFG_RTOS_ENABLED=yes
+	    PlatformCode=`echo "$PlatformCode" | sed 'h;y/8NPQRTZ/UCWX9M7/;x;G;s/\(.\)....\(.\)./\1\2/'`
+	    ;;
+	*)
+	    CFG_RTOS_ENABLED=no
+	    PlatformCode=`echo "$PlatformCode" | sed 's/.$//'`
+	    ;;
+    esac
+    case "$PlatformCode,$PLATFORM_MAC,$PLATFORM_QWS" in
+        X9,* | XC,* | XU,* | XW,* | XM,*)
+            # Qt All-OS
+            LICENSE_EXTENSION="-ALLOS"
+            ;;
+        8M,* | KM,* | S9,* | SC,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
             # Qt for Embedded Linux
             LICENSE_EXTENSION="-EMBEDDED"
             ;;
-        *)
-            echo
-            echo "You are not licensed for Qt for Embedded Linux."
-            echo
-            echo "Please contact qt-info@nokia.com to upgrade your license"
-            echo "to include Qt for Embedded Linux, or install the"
-            echo "Qt Open Source Edition if you intend to develop free software."
-            exit 1
-            ;;
-        esac
-    elif [ "$PLATFORM_MAC" = "yes" ]; then
-        case $PlatformCode in
-        2|4|5|7|9|B|C|E|F|G|L|M|U|W|Y)
-            # Qt/Mac
-            LICENSE_EXTENSION="-DESKTOP"
-            ;;
-        3|6|8|A|D|H|J|K|P|Q|S|V)
+        6M,*,no | N7,*,no | N9,*,no | NX,*,no)
             # Embedded no-deploy
             LICENSE_EXTENSION="-EMBEDDED"
-	    ;;
+            ;;
+        FM,*,no | LM,yes,* | ZM,no,no)
+            # Desktop
+            LICENSE_EXTENSION="-DESKTOP"
+            ;;
         *)
+            Platform=Linux/X11
+            [ "$PLATFORM_MAC" = "yes" ] && Platform='Mac OS X'
+            [ "$PLATFORM_QWS" = "yes" ] && Platform='Embedded Linux'
             echo
-            echo "You are not licensed for the Qt/Mac platform."
+            echo "You are not licensed for the $Platform platform."
             echo
-            echo "Please contact qt-info@nokia.com to upgrade your license"
-            echo "to include the Qt/Mac platform."
+            echo "Please contact qt-info@nokia.com to upgrade your license to"
+            echo "include the $Platform platform, or install the Qt Open Source Edition"
+            echo "if you intend to develop free software."
             exit 1
             ;;
-        esac
-     else
-         case $PlatformCode in
-         2|3|4|5|7|D|E|F|J|M|Q|S|T|V|Z)
-             # Qt/X11
-             LICENSE_EXTENSION="-DESKTOP"
-             ;;
-         6|8|9|A|B|C|G|H|K|P|U|W)
-             # Embedded no-deploy
-             LICENSE_EXTENSION="-EMBEDDED"
-             ;;
-         *)
-             echo
-             echo "You are not licensed for the Qt/X11 platform."
-             echo
-             echo "Please contact qt-info@nokia.com to upgrade your license to"
-             echo "include the Qt/X11 platform, or install the Qt Open Source Edition"
-             echo "if you intend to develop free software."
-             exit 1
-             ;;
-        esac
-    fi
+    esac
 
     if test -r "$relpath/.LICENSE"; then
 	# Generic, non-final license
@@ -532,7 +515,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
     fi
 
     case "$LicenseFeatureCode" in
-    G|L)
+    B|G|L|Y)
         # US
         case "$LicenseType" in
         Commercial)
@@ -543,7 +526,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             ;;
         esac
         ;;
-    2|5)
+    2|4|5|F)
         # non-US
         case "$LicenseType" in
         Commercial)
@@ -559,6 +542,14 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         echo "Invalid license key. Please check the license key."
         exit 1
         ;;
+    esac
+    case "$LicenseFeatureCode" in
+	4|B|F|Y)
+	    CFG_RTOS_ENABLED=yes
+	    ;;
+	2|5|G|L)
+	    CFG_RTOS_ENABLED=no
+	    ;;
     esac
     if [ '!' -f "$outpath/LICENSE" ]; then
         echo "The LICENSE, LICENSE.GPL3 LICENSE.LGPL file shipped with"
@@ -671,7 +662,9 @@ CFG_RELEASE_QMAKE=no
 CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=yes
+CFG_AUDIO_BACKEND=yes
 CFG_SVG=yes
+CFG_DECLARATIVE=auto
 CFG_WEBKIT=auto # (yes|no|auto)
 CFG_JAVASCRIPTCORE_JIT=auto
 
@@ -912,7 +905,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1843,6 +1836,17 @@ while [ "$#" -gt 0 ]; do
                 UNKNOWN_OPT=yes
             fi
         fi
+        ;;
+    declarative)
+        if [ "$VAL" = "yes" ]; then
+            CFG_DECLARATIVE="yes"
+        else
+            if [ "$VAL" = "no" ]; then
+                CFG_DECLARATIVE="no"
+            else
+                UNKNOWN_OPT=yes
+            fi
+        fi
 	;;
     webkit)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
@@ -2065,6 +2069,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    audio-backend)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_AUDIO_BACKEND="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2140,7 +2151,7 @@ if [ "$OPT_SHADOW" = "maybe" ]; then
     fi
 fi
 if [ "$OPT_SHADOW" = "yes" ]; then
-    if [ -f "$relpath/.qmake.cache" -o -f "$relpath/src/corelib/global/qconfig.h" ]; then
+    if [ -f "$relpath/.qmake.cache" -o -f "$relpath/src/corelib/global/qconfig.h" -o -f "$relpath/src/corelib/global/qconfig.cpp" ]; then
         echo >&2 "You cannot make a shadow build from a source tree containing a previous build."
         echo >&2 "Cannot proceed."
         exit 1
@@ -2616,6 +2627,20 @@ if [ "$CFG_EMBEDDED" != "no" -a "$CFG_EMBEDDED" != "auto" ] && [ -n "$CFG_ARCH" 
     fi
 fi
 
+if [ "$CFG_RTOS_ENABLED" = "no" ]; then
+    case `basename "$XPLATFORM"` in
+	qnx-* | vxworks-*)
+            echo ""
+            echo "You are not licensed for Qt for `basename $XPLATFORM`."
+            echo ""
+            echo "Please contact qt-info@nokia.com to upgrade your license to"
+            echo "include this platform, or install the Qt Open Source Edition"
+            echo "if you intend to develop free software."
+            exit 1
+	    ;;
+    esac
+fi
+
 if [ -z "${CFG_HOST_ARCH}" ]; then
     case "$UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_MACHINE" in
     IRIX*:*:*)
@@ -2841,6 +2866,11 @@ if [ "$QT_CROSS_COMPILE" = "yes" ]; then
             echo >&2 ""
         fi
     else
+        echo >&2 ""
+        echo >&2 "You have not explicitly asked to use pkg-config and are cross-compiling."
+        echo >&2 "pkg-config will not be used to automatically query cflag/lib parameters for"
+        echo >&2 "dependencies"
+        echo >&2 ""
         PKG_CONFIG=""
     fi
 fi
@@ -3002,6 +3032,18 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$PLATFORM" != "macx-xlc" ]; then
     fi
 else
     CFG_FRAMEWORK=no
+fi
+
+# Print a warning if configure was called with the 10.4u SDK option on Snow Leopard
+# with the default mkspec. The 10.4u SDK does not support gcc 4.2.
+if [ "$PLATFORM_MAC" = "yes" ] && [ '!' -z "$CFG_SDK" ]; then
+    # get the darwin version. 10.0.0 and up means snow leopard.
+    VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
+    if [ "$VERSION" -gt 9 ] && [ "$CFG_SDK" == "/Developer/SDKs/MacOSX10.4u.sdk/" ] && [ "$PLATFORM" == "macx-g++" ]; then
+        echo
+        echo "WARNING: The 10.4u SDK does not support gcc 4.2. Configure with -platform macx-g++40. "
+        echo
+    fi
 fi
 
 # x11 tests are done after qmake is built
@@ -3218,16 +3260,16 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-qt-zlib] [-system-zlib] [-no-gif] [-qt-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
         [-system-libmng] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
-        [-no-make <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
+        [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked]
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
-        [-no-openssl] [-openssl] [-openssl-linked]
+        [-no-audio-backend] [-audio-backend] [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
-        [-no-script] [-script] [-no-scripttools] [-scripttools]
+        [-no-script] [-script] [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
 
         [additional platform specific options (see below)]
 
@@ -3363,6 +3405,9 @@ fi
     -no-multimedia ..... Do not build the QtMultimedia module.
  +  -multimedia ........ Build the QtMultimedia module.
 
+    -no-audio-backend .. Do not build the platform audio backend into QtMultimedia.
+ +  -audio-backend ..... Build the platform audio backend into QtMultimedia if available.
+
     -no-phonon ......... Do not build the Phonon module.
  +  -phonon ............ Build the Phonon module.
                          Phonon is built if a decent C++ compiler is used.
@@ -3384,6 +3429,9 @@ fi
 
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
+
+ +  -no-declarative .....Do not build the declarative module.
+    -declarative ....... Build the declarative module.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -3626,7 +3674,7 @@ Qt/X11 only:
     -no-opengl ......... Do not support OpenGL.
  +  -opengl <api> ...... Enable OpenGL support.
                          With no parameter, this will auto-detect the "best"
-                         OpenGL API to use. If desktop OpenGL is avaliable, it
+                         OpenGL API to use. If desktop OpenGL is available, it
                          will be used. Use desktop, es1, es1cl or es2 for <api>
                          to force the use of the Desktop (OpenGL 1.x or 2.x),
                          OpenGL ES 1.x Common profile, 1.x Common Lite profile
@@ -3850,10 +3898,10 @@ fi # Help
 if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
 elif [ "$PLATFORM_MAC" = "yes" ]; then
-    Platform="Qt/Mac"
+    Platform="Qt for Mac OS X"
 else
     PLATFORM_X11=yes
-    Platform="Qt/X11"
+    Platform="Qt for Linux/X11"
 fi
 
 echo
@@ -4063,11 +4111,16 @@ SETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_I
 EXAMPLES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_xmplpath=$QT_INSTALL_EXAMPLES"`
 DEMOS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_demopath=$QT_INSTALL_DEMOS"`
 
+TODAY=`date +%Y-%m-%d`
 cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* License Info */
 static const char qt_configure_licensee_str          [256 + 12] = "$LICENSE_USER_STR";
 static const char qt_configure_licensed_products_str [256 + 12] = "$LICENSE_PRODUCTS_STR";
+
+/* Installation date */
+static const char qt_configure_installation          [12+11]    = "qt_instdate=$TODAY";
 EOF
+
 
 if [ ! -z "$QT_HOST_PREFIX" ]; then
     HOSTPREFIX_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_prfxpath=$QT_HOST_PREFIX"`
@@ -4148,6 +4201,23 @@ else
     mv "$outpath/src/corelib/global/qconfig.cpp.new" "$outpath/src/corelib/global/qconfig.cpp"
     chmod -w "$outpath/src/corelib/global/qconfig.cpp"
 fi
+
+# -----------------------------------------------------------------------------
+if [ "$LicenseType" = "Evaluation" ]; then
+    EVALKEY=`"$relpath/config.tests/unix/padstring" 524 "qt_qevalkey=$LicenseKeyExt"`
+elif echo "$D_FLAGS" | grep QT_EVAL >/dev/null 2>&1; then
+    EVALKEY=`"$relpath/config.tests/unix/padstring" 524 "qt_qevalkey="`
+fi
+
+if [ -n "$EVALKEY" ]; then
+    rm -f "$outpath/src/corelib/global/qconfig_eval.cpp"
+    cat > "$outpath/src/corelib/global/qconfig_eval.cpp" <<EOF
+/* Evaluation license key */
+static const char qt_eval_key_data                   [512 + 12] = "$EVALKEY";
+EOF
+    chmod -w "$outpath/src/corelib/global/qconfig_eval.cpp"
+fi
+
 
 # -----------------------------------------------------------------------------
 # build qmake
@@ -5761,6 +5831,19 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
+if [ -f "$relpath/src/declarative/declarative.pro" ]; then
+    if [ "$CFG_DECLARATIVE" = "auto" ]; then
+        CFG_DECLARATIVE=yes
+    fi
+else
+    if [ "$CFG_DECLARATIVE" = "auto" ] || [ "$CFG_DECLARATIVE" = "no" ]; then
+        CFG_DECLARATIVE=no
+    else
+        echo "Error: Unable to locate the qt-declarative package. Refer to the documentation on how to build the package."
+        exit 1
+    fi
+fi
+
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then 
     if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/javascriptcore-jit "javascriptcore-jit" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -6372,10 +6455,20 @@ else
     QT_CONFIG="$QT_CONFIG multimedia"
 fi
 
+if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG audio-backend"
+fi
+
 if [ "$CFG_SVG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG svg"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
+fi
+
+if [ "$CFG_DECLARATIVE" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG declarative"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
 fi
 
 if [ "$CFG_WEBKIT" = "auto" ]; then
@@ -7294,6 +7387,7 @@ if [ "$CFG_WEBKIT" = "yes" ]; then
         echo "JavaScriptCore JIT .. $CFG_JAVASCRIPTCORE_JIT"
     fi
 fi
+echo "Declarative module .. $CFG_DECLARATIVE"
 echo "STL support ......... $CFG_STL"
 echo "PCH support ......... $CFG_PRECOMPILE"
 echo "MMX/3DNOW/SSE/SSE2..  ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
@@ -7502,6 +7596,9 @@ FNR == 1 {
     if ( \$3 == "moc" || \$3 ~ /^Qt/ ) {
         target_file = first
         matched_target = 1
+    } else if ( \$3 == "lrelease" || \$3 == "qm_phony_target" ) {
+        target_file = second
+        matched_target = 1
     }
 }
 
@@ -7586,6 +7683,7 @@ for part in $CFG_BUILD_PARTS; do
     case "$part" in
     tools) PART_ROOTS="$PART_ROOTS tools" ;;
     libs) PART_ROOTS="$PART_ROOTS src" ;;
+    translations) PART_ROOTS="$PART_ROOTS tools/linguist/lrelease translations" ;;
     examples) PART_ROOTS="$PART_ROOTS examples demos" ;;
     *) ;;
     esac
@@ -7613,7 +7711,7 @@ for file in .projects .projects.3; do
         *s60main/s60main.pro) continue ;;
         *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
-        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
+        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*linguist/lrelease*) SPEC=$QMAKESPEC ;;
         *) SPEC=$XQMAKESPEC ;;
         esac
         dir=`dirname "$a" | sed -e "s;$sepath;.;g"`

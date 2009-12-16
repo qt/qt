@@ -194,6 +194,8 @@ private slots:
     void acceptDrops();
     void optimizationFlags();
     void optimizationFlags_dontSavePainterState();
+    void optimizationFlags_dontSavePainterState2_data();
+    void optimizationFlags_dontSavePainterState2();
     void levelOfDetail_data();
     void levelOfDetail();
     void scrollBarRanges_data();
@@ -233,6 +235,7 @@ private slots:
     void task259503_scrollingArtifacts();
     void QTBUG_4151_clipAndIgnore_data();
     void QTBUG_4151_clipAndIgnore();
+    void QTBUG_5859_exposedRect();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -2455,6 +2458,57 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
     QTest::qWaitForWindowShown(&painter2);
 }
 
+void tst_QGraphicsView::optimizationFlags_dontSavePainterState2_data()
+{
+    QTest::addColumn<bool>("savePainter");
+    QTest::newRow("With painter state protection") << true;
+    QTest::newRow("Without painter state protection") << false;
+}
+
+void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
+{
+    QFETCH(bool, savePainter);
+
+    class MyScene : public QGraphicsScene
+    {
+    public:
+        void drawBackground(QPainter *p, const QRectF &)
+        { transformInDrawBackground = p->worldTransform(); }
+
+        void drawForeground(QPainter *p, const QRectF &)
+        { transformInDrawForeground = p->worldTransform(); }
+
+        QTransform transformInDrawBackground;
+        QTransform transformInDrawForeground;
+    };
+
+    MyScene scene;
+    // Add transformed dummy items to make sure the painter's worldTransform() is changed in drawItems.
+    scene.addRect(0, 0, 20, 20)->setTransform(QTransform::fromScale(2, 2));
+    scene.addRect(50, 50, 20, 20)->setTransform(QTransform::fromTranslate(200, 200));
+
+    CustomView view(&scene);
+    if (!savePainter)
+        view.setOptimizationFlag(QGraphicsView::DontSavePainterState);
+    view.rotate(45);
+    view.scale(1.5, 1.5);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+
+    // Make sure the view is repainted; otherwise the tests below will fail.
+    view.viewport()->repaint();
+    QTest::qWait(200);
+    QVERIFY(view.painted);
+
+    // Make sure the painter's world transform is preserved after drawItems.
+    const QTransform expectedTransform = view.viewportTransform();
+    QVERIFY(!expectedTransform.isIdentity());
+    QCOMPARE(scene.transformInDrawForeground, expectedTransform);
+    QCOMPARE(scene.transformInDrawBackground, expectedTransform);
+}
+
 class LodItem : public QGraphicsRectItem
 {
 public:
@@ -3547,6 +3601,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
     item->setFlag(QGraphicsItem::ItemIsFocusable);
     scene.addItem(item);
     scene.setFocusItem(item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
 
     item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
@@ -3561,27 +3616,35 @@ void tst_QGraphicsView::inputMethodSensitivity()
     scene.addItem(item2);
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     scene.setFocusItem(item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(0);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     view.setScene(0);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     scene.setFocusItem(item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 }
 
 class InputContextTester : public QInputContext
@@ -3735,7 +3798,7 @@ void tst_QGraphicsView::task259503_scrollingArtifacts()
             {
 //                qDebug() << event->region();
 //                qDebug() << updateRegion;
-                QEXPECT_FAIL("", "The event region doesn't include the original item position region. See task #259503.", Continue);
+                QEXPECT_FAIL("", "The event region doesn't include the original item position region. See QTBUG-4416", Continue);
                 QCOMPARE(event->region(), updateRegion);
             }
         }
@@ -3803,6 +3866,44 @@ void tst_QGraphicsView::QTBUG_4151_clipAndIgnore()
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
     QCOMPARE(view.items(view.rect()).size(), numItems);
+}
+
+void tst_QGraphicsView::QTBUG_5859_exposedRect()
+{
+    class CustomScene : public QGraphicsScene
+    {
+    public:
+        CustomScene(const QRectF &rect) : QGraphicsScene(rect) { }
+        void drawBackground(QPainter *painter, const QRectF &rect)
+        { lastBackgroundExposedRect = rect; }
+        QRectF lastBackgroundExposedRect;
+    };
+
+    class CustomRectItem : public QGraphicsRectItem
+    {
+    public:
+        CustomRectItem(const QRectF &rect) : QGraphicsRectItem(rect)
+        { setFlag(QGraphicsItem::ItemUsesExtendedStyleOption); }
+        void paint(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+        { lastExposedRect = option->exposedRect; }
+        QRectF lastExposedRect;
+    };
+
+    CustomScene scene(QRectF(0,0,50,50));
+
+    CustomRectItem item(scene.sceneRect());
+
+    scene.addItem(&item);
+
+    QGraphicsView view(&scene);
+    view.scale(4.15, 4.15);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    view.viewport()->repaint(10,10,20,20);
+    QApplication::processEvents();
+
+    QCOMPARE(item.lastExposedRect, scene.lastBackgroundExposedRect);
 }
 
 QTEST_MAIN(tst_QGraphicsView)

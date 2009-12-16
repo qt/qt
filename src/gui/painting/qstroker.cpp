@@ -452,6 +452,17 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
 #endif
 
     if (join == FlatJoin) {
+        QLineF prevLine(qt_fixed_to_real(m_back2X), qt_fixed_to_real(m_back2Y),
+                        qt_fixed_to_real(m_back1X), qt_fixed_to_real(m_back1Y));
+        QPointF isect;
+        QLineF::IntersectType type = prevLine.intersect(nextLine, &isect);
+        QLineF shortCut(prevLine.p2(), nextLine.p1());
+        qreal angle = shortCut.angleTo(prevLine);
+        if (type == QLineF::BoundedIntersection || (angle > 90 && !qFuzzyCompare(angle, (qreal)90))) {
+            emitLineTo(focal_x, focal_y);
+            emitLineTo(qt_real_to_fixed(nextLine.x1()), qt_real_to_fixed(nextLine.y1()));
+            return;
+        }
         emitLineTo(qt_real_to_fixed(nextLine.x1()),
                    qt_real_to_fixed(nextLine.y1()));
 
@@ -468,8 +479,8 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
             // If we are on the inside, do the short cut...
             QLineF shortCut(prevLine.p2(), nextLine.p1());
             qreal angle = shortCut.angleTo(prevLine);
-
             if (type == QLineF::BoundedIntersection || (angle > 90 && !qFuzzyCompare(angle, (qreal)90))) {
+                emitLineTo(focal_x, focal_y);
                 emitLineTo(qt_real_to_fixed(nextLine.x1()), qt_real_to_fixed(nextLine.y1()));
                 return;
             }
@@ -509,8 +520,9 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
             qfixed offset = m_strokeWidth / 2;
 
             QLineF shortCut(prevLine.p2(), nextLine.p1());
-            qreal angle = prevLine.angle(shortCut);
+            qreal angle = shortCut.angleTo(prevLine);
             if (type == QLineF::BoundedIntersection || (angle > 90 && !qFuzzyCompare(angle, (qreal)90))) {
+                emitLineTo(focal_x, focal_y);
                 emitLineTo(qt_real_to_fixed(nextLine.x1()), qt_real_to_fixed(nextLine.y1()));
                 return;
             }
@@ -581,6 +593,13 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
                         qt_real_to_fixed(l1.x1()),
                         qt_real_to_fixed(l1.y1()));
         } else if (join == SvgMiterJoin) {
+            QLineF shortCut(prevLine.p2(), nextLine.p1());
+            qreal angle = shortCut.angleTo(prevLine);
+            if (type == QLineF::BoundedIntersection || (angle > 90 && !qFuzzyCompare(angle, (qreal)90))) {
+                emitLineTo(focal_x, focal_y);
+                emitLineTo(qt_real_to_fixed(nextLine.x1()), qt_real_to_fixed(nextLine.y1()));
+                return;
+            }
             QLineF miterLine(QPointF(qt_fixed_to_real(focal_x),
                                      qt_fixed_to_real(focal_y)), isect);
             if (miterLine.length() > qt_fixed_to_real(m_strokeWidth * m_miterLimit) / 2) {
@@ -891,8 +910,8 @@ QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLengt
         }
     }
 
-    int startSegment = int(floor(startAngle / 90));
-    int endSegment = int(floor((startAngle + sweepLength) / 90));
+    int startSegment = int(qFloor(startAngle / 90));
+    int endSegment = int(qFloor((startAngle + sweepLength) / 90));
 
     qreal startT = (startAngle - startSegment * 90) / 90;
     qreal endT = (startAngle + sweepLength - endSegment * 90) / 90;

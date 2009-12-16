@@ -39,17 +39,22 @@
 **
 ****************************************************************************/
 
-#include <QtCore>
-#include <QtGui>
-#include <QtNetwork>
 
+//! [1]
 #include "googlesuggest.h"
 
 #define GSUGGEST_URL "http://google.com/complete/search?output=toolbar&q=%1"
+//! [1]
 
+//! [2]
 GSuggestCompletion::GSuggestCompletion(QLineEdit *parent): QObject(parent), editor(parent)
 {
     popup = new QTreeWidget;
+    popup->setWindowFlags(Qt::Popup);
+    popup->setFocusPolicy(Qt::NoFocus);
+    popup->setFocusProxy(parent);
+    popup->setMouseTracking(true);
+
     popup->setColumnCount(2);
     popup->setUniformRowHeights(true);
     popup->setRootIsDecorated(false);
@@ -57,17 +62,12 @@ GSuggestCompletion::GSuggestCompletion(QLineEdit *parent): QObject(parent), edit
     popup->setSelectionBehavior(QTreeWidget::SelectRows);
     popup->setFrameStyle(QFrame::Box | QFrame::Plain);
     popup->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
     popup->header()->hide();
+
     popup->installEventFilter(this);
-    popup->setMouseTracking(true);
 
-    connect(popup, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+    connect(popup, SIGNAL(itemClicked(QTreeWidgetItem*,int)),
             SLOT(doneCompletion()));
-
-    popup->setWindowFlags(Qt::Popup);
-    popup->setFocusPolicy(Qt::NoFocus);
-    popup->setFocusProxy(parent);
 
     timer = new QTimer(this);
     timer->setSingleShot(true);
@@ -79,12 +79,16 @@ GSuggestCompletion::GSuggestCompletion(QLineEdit *parent): QObject(parent), edit
             this, SLOT(handleNetworkData(QNetworkReply*)));
 
 }
+//! [2]
 
+//! [3]
 GSuggestCompletion::~GSuggestCompletion()
 {
     delete popup;
 }
+//! [3]
 
+//! [4]
 bool GSuggestCompletion::eventFilter(QObject *obj, QEvent *ev)
 {
     if (obj != popup)
@@ -131,9 +135,12 @@ bool GSuggestCompletion::eventFilter(QObject *obj, QEvent *ev)
 
     return false;
 }
+//! [4]
 
+//! [5]
 void GSuggestCompletion::showCompletion(const QStringList &choices, const QStringList &hits)
 {
+
     if (choices.isEmpty() || choices.count() != hits.count())
         return;
 
@@ -163,7 +170,9 @@ void GSuggestCompletion::showCompletion(const QStringList &choices, const QStrin
     popup->setFocus();
     popup->show();
 }
+//! [5]
 
+//! [6]
 void GSuggestCompletion::doneCompletion()
 {
     timer->stop();
@@ -172,26 +181,28 @@ void GSuggestCompletion::doneCompletion()
     QTreeWidgetItem *item = popup->currentItem();
     if (item) {
         editor->setText(item->text(0));
-        QKeyEvent *e;
-        e = new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
-        QApplication::postEvent(editor, e);
-        e = new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier);
-        QApplication::postEvent(editor, e);
+        QMetaObject::invokeMethod(editor, "returnPressed");
     }
 }
+//! [6]
 
-void GSuggestCompletion::preventSuggest()
-{
-    timer->stop();
-}
-
+//! [7]
 void GSuggestCompletion::autoSuggest()
 {
     QString str = editor->text();
     QString url = QString(GSUGGEST_URL).arg(str);
     networkManager.get(QNetworkRequest(QString(url)));
 }
+//! [7]
 
+//! [8]
+void GSuggestCompletion::preventSuggest()
+{
+    timer->stop();
+}
+//! [8]
+
+//! [9]
 void GSuggestCompletion::handleNetworkData(QNetworkReply *networkReply)
 {
     QUrl url = networkReply->url();
@@ -199,20 +210,20 @@ void GSuggestCompletion::handleNetworkData(QNetworkReply *networkReply)
         QStringList choices;
         QStringList hits;
 
-        QString response(networkReply->readAll());
+        QByteArray response(networkReply->readAll());
         QXmlStreamReader xml(response);
         while (!xml.atEnd()) {
             xml.readNext();
-            if (xml.isStartElement()) {
+            if (xml.tokenType() == QXmlStreamReader::StartElement)
                 if (xml.name() == "suggestion") {
                     QStringRef str = xml.attributes().value("data");
                     choices << str.toString();
                 }
-                else if (xml.name() == "num_queries") {
+            if (xml.tokenType() == QXmlStreamReader::StartElement)
+                if (xml.name() == "num_queries") {
                     QStringRef str = xml.attributes().value("int");
                     hits << str.toString();
                 }
-            }
         }
 
         showCompletion(choices, hits);
@@ -220,3 +231,4 @@ void GSuggestCompletion::handleNetworkData(QNetworkReply *networkReply)
 
     networkReply->deleteLater();
 }
+//! [9]

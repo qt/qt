@@ -71,10 +71,9 @@ public:
     void startCompositing(const QSize& screenSize);
     void endCompositing();
 
-    void blitWindow(QVGEGLWindowSurfacePrivate *surface, const QRect& rect,
-                    const QPoint& topLeft, int opacity);
+    void blitWindow(VGImage image, const QSize& imageSize,
+                    const QRect& rect, const QPoint& topLeft, int opacity);
     void fillBackground(const QRegion& region, const QBrush& brush);
-    void drawCursorImage(const QImage& image, const QPoint& offset);
     void drawCursorPixmap(const QPixmap& pixmap, const QPoint& offset);
     void setScissor(const QRegion& region);
     void clearScissor();

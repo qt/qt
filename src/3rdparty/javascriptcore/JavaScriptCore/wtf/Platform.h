@@ -98,6 +98,10 @@
 /* regardless of operating environment */
 #if defined(_AIX)
 #define WTF_PLATFORM_AIX 1
+/* 64-bit mode on AIX */
+#ifdef __64BIT__
+#define WTF_PLATFORM_AIX64 1
+#endif
 #endif
 
 /* PLATFORM(HPUX) */
@@ -324,6 +328,16 @@
 #define WTF_PLATFORM_BIG_ENDIAN 1
 #endif
 
+/* PLATFORM(SPARC32) */
+#if defined(__sparc) && !defined(__arch64__) || defined(__sparcv8)
+#define WTF_PLATFORM_SPARC32 1
+#define WTF_PLATFORM_BIG_ENDIAN 1
+#endif
+
+#if PLATFORM(SPARC32) || PLATFORM(SPARC64)
+#define WTF_PLATFORM_SPARC
+#endif
+
 /* PLATFORM(HPPA) */
 /* a.k.a. PA-RISC */
 #if defined(__hppa) || defined(__hppa__)
@@ -365,6 +379,10 @@
 #   if Q_BYTE_ORDER == Q_BIG_EDIAN
 #       define WTF_PLATFORM_BIG_ENDIAN 1
 #   endif
+#endif
+
+#if PLATFORM(WINCE) && PLATFORM(QT)
+#   include <ce_time.h>
 #endif
 
 /* Compiler */
@@ -561,7 +579,7 @@
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_TIMEB_H 1
 
-#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE)
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE) && !PLATFORM(QT)
 #define HAVE_MADV_FREE_REUSE 1
 #define HAVE_MADV_FREE 1
 #define HAVE_PTHREAD_SETNAME_NP 1
@@ -703,6 +721,8 @@
 #if PLATFORM(X86_64) && (PLATFORM(DARWIN) || PLATFORM(LINUX) || PLATFORM(SOLARIS) || PLATFORM(HPUX))
 #define WTF_USE_JSVALUE64 1
 #elif (PLATFORM(IA64) && !PLATFORM(IA64_32)) || PLATFORM(SPARC64)
+#define WTF_USE_JSVALUE64 1
+#elif PLATFORM(AIX64)
 #define WTF_USE_JSVALUE64 1
 #elif PLATFORM(ARM) || PLATFORM(PPC64)
 #define WTF_USE_JSVALUE32 1

@@ -45,9 +45,7 @@
 # include "private/qt_mac_p.h"
 # include "qmacstyle_mac.h"
 #endif
-#ifndef QT_NO_DEBUG
 #include <qdebug.h>
-#endif
 #include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -1254,7 +1252,7 @@ QStyleOptionViewItemV4::QStyleOptionViewItemV4(int version)
     \brief the features of the group box frame
 
     The frame is flat by default.
-    
+
     \sa QStyleOptionFrameV2::FrameFeature
 */
 
@@ -4656,6 +4654,127 @@ QStyleOptionTabWidgetFrame::QStyleOptionTabWidgetFrame(int version)
 
     The default value is QSize(-1, -1), i.e. an invalid size.
 */
+
+
+/*!
+
+    \class QStyleOptionTabWidgetFrameV2
+    \brief The QStyleOptionTabWidgetFrameV2 class is used to describe the
+    parameters for drawing the frame around a tab widget.
+
+    QStyleOptionTabWidgetFrameV2 contains all the information that
+    QStyle functions need to draw the frame around QTabWidget.
+
+    For performance reasons, the access to the member variables is
+    direct (i.e., using the \c . or \c -> operator). This low-level feel
+    makes the structures straightforward to use and emphasizes that
+    these are simply parameters used by the style functions.
+
+    For an example demonstrating how style options can be used, see
+    the \l {widgets/styles}{Styles} example.
+
+    \sa QStyleOption, QTabWidget
+*/
+
+
+/*!
+    \variable QStyleOptionTabWidgetFrameV2::tabBarRect
+    \brief the rectangle containing all the tabs
+
+    The default value is a null rectangle, i.e. a rectangle with both
+    the width and the height set to 0.
+*/
+
+/*!
+    \variable QStyleOptionTabWidgetFrameV2::selectedTabRect
+    \brief the rectangle containing the selected tab
+
+    This rectangle is contained within the tabBarRect. The default
+    value is a null rectangle, i.e. a rectangle with both the width
+    and the height set to 0.
+*/
+
+
+/*!
+    Constructs a QStyleOptionTabWidgetFrameV2, initializing the members
+    variables to their default values.
+*/
+
+QStyleOptionTabWidgetFrameV2::QStyleOptionTabWidgetFrameV2()
+    : QStyleOptionTabWidgetFrame(Version)
+{
+}
+
+
+/*! \internal */
+QStyleOptionTabWidgetFrameV2::QStyleOptionTabWidgetFrameV2(int version)
+    : QStyleOptionTabWidgetFrame(version)
+{
+}
+
+
+/*! \fn QStyleOptionTabWidgetFrameV2::QStyleOptionTabWidgetFrameV2(const QStyleOptionTabWidgetFrameV2 &other)
+    Constructs a QStyleOptionTabWidgetFrameV2 copy of the \a other style option.
+
+    If the \a other style option's version is 1, the new style option's \l
+    selectedTabRect and tabBarRect will contain null rects
+
+    \sa version
+*/
+
+/*!
+    Constructs a QStyleOptionTabWidgetFrameV2 copy of the \a other style option.
+
+    If the \a other style option's version is 1, the new style option's \l
+    selectedTabRect and tabBarRect will contain null rects
+
+    \sa version
+*/
+QStyleOptionTabWidgetFrameV2::QStyleOptionTabWidgetFrameV2(const QStyleOptionTabWidgetFrame &other)
+{
+    QStyleOptionTabWidgetFrameV2::operator=(other);
+
+}
+
+
+/*!
+    Assigns the \a other style option to this style option. The \a
+    other style option can be either of the QStyleOptionFrameV2 or
+    QStyleOptionFrame types.
+
+    If the \a{other} style option's version is 1, this style option's
+    QStyleOptionFrameV2::FrameFeature value is set to
+    QStyleOptionFrameV2::None. If its version is 2, its
+    \l{QStyleOptionFrameV2::}{FrameFeature} value is simply copied to
+    this style option.
+*/
+QStyleOptionTabWidgetFrameV2 &QStyleOptionTabWidgetFrameV2::operator=(const QStyleOptionTabWidgetFrame &other)
+{
+    QStyleOptionTabWidgetFrame::operator=(other);
+    if (const QStyleOptionTabWidgetFrameV2 *f2 = qstyleoption_cast<const QStyleOptionTabWidgetFrameV2 *>(&other)) {
+        selectedTabRect = f2->selectedTabRect;
+        tabBarRect = f2->tabBarRect;
+    }
+    return *this;
+}
+
+
+/*!
+    \enum QStyleOptionTabWidgetFrameV2::StyleOptionVersion
+
+    This enum is used to hold information about the version of the style option, and
+    is defined for each QStyleOption subclass.
+
+    \value Version 2
+
+    The version is used by QStyleOption subclasses to implement
+    extensions without breaking compatibility. If you use
+    qstyleoption_cast(), you normally do not need to check it.
+
+    \sa StyleOptionType
+*/
+
+
 #endif // QT_NO_TABWIDGET
 
 #ifndef QT_NO_TABBAR
@@ -5298,9 +5417,9 @@ QStyleHintReturnVariant::QStyleHintReturnVariant() : QStyleHintReturn(Version, T
     Returns a T or 0 depending on the type of \a hint.
 */
 
-#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType)
 {
+#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
     switch (optionType) {
     case QStyleOption::SO_Default:
         debug << "SO_Default"; break;
@@ -5361,19 +5480,21 @@ QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType)
     case QStyleOption::SO_GraphicsItem:
         debug << "SO_GraphicsItem"; break;
     }
+#endif
     return debug;
 }
 
 QDebug operator<<(QDebug debug, const QStyleOption &option)
 {
+#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
     debug << "QStyleOption(";
     debug << QStyleOption::OptionType(option.type);
     debug << ',' << (option.direction == Qt::RightToLeft ? "RightToLeft" : "LeftToRight");
     debug << ',' << option.state;
     debug << ',' << option.rect;
     debug << ')';
+#endif
     return debug;
 }
-#endif
 
 QT_END_NAMESPACE

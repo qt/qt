@@ -5556,79 +5556,6 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode parsingMode)
 }
 
 /*!
-    Returns a valid URL from a user supplied \a userInput string if one can be
-    deducted. In the case that is not possible, an invalid QUrl() is returned.
-
-    \since 4.6
-
-    Most applications that can browse the web, allow the user to input a URL
-    in the form of a plain string. This string can be manually typed into
-    a location bar, obtained from the clipboard, or passed in via command
-    line arguments.
-
-    When the string is not already a valid URL, a best guess is performed,
-    making various web related assumptions.
-
-    In the case the string corresponds to a valid file path on the system,
-    a file:// URL is constructed, using QUrl::fromLocalFile().
-
-    If that is not the case, an attempt is made to turn the string into a
-    http:// or ftp:// URL. The latter in the case the string starts with
-    'ftp'. The result is then passed through QUrl's tolerant parser, and
-    in the case or success, a valid QUrl is returned, or else a QUrl().
-
-    \section1 Examples:
-
-    \list
-    \o qt.nokia.com becomes http://qt.nokia.com
-    \o ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
-    \o localhost becomes http://localhost
-    \o /home/user/test.html becomes file:///home/user/test.html (if exists)
-    \endlist
-
-    \section2 Tips to avoid erroneous character conversion when dealing with
-    URLs and strings:
-
-    \list
-    \o When creating an URL QString from a QByteArray or a char*, always use
-       QString::fromUtf8().
-    \o Favor the use of QUrl::fromEncoded() and QUrl::toEncoded() instead of
-       QUrl(string) and QUrl::toString() when converting QUrl to/from string.
-    \endlist
-*/
-QUrl QUrl::fromUserInput(const QString &userInput)
-{
-    QString trimmedString = userInput.trimmed();
-
-    // Absolute files
-    if (QDir::isAbsolutePath(trimmedString))
-        return QUrl::fromLocalFile(trimmedString);
-
-    // Check the most common case of a valid url with scheme and host first
-    QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    if (url.isValid() && !url.scheme().isEmpty() && !url.host().isEmpty())
-        return url;
-
-    // If the string is missing the scheme or the scheme is not valid, prepend a scheme
-    QString scheme = url.scheme();
-    if (scheme.isEmpty() || scheme.contains(QLatin1Char('.')) || scheme == QLatin1String("localhost")) {
-        // Do not do anything for strings such as "foo", only "foo.com"
-        int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
-        if (dotIndex != -1 || trimmedString.startsWith(QLatin1String("localhost"))) {
-            const QString hostscheme = trimmedString.left(dotIndex).toLower();
-            QByteArray scheme = (hostscheme == QLatin1String("ftp")) ? "ftp" : "http";
-            trimmedString = QLatin1String(scheme) + QLatin1String("://") + trimmedString;
-        }
-        url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    }
-
-    if (url.isValid())
-        return url;
-
-    return QUrl();
-}
-
-/*!
     Returns a decoded copy of \a input. \a input is first decoded from
     percent encoding, then converted from UTF-8 to unicode.
 */
@@ -6226,5 +6153,109 @@ QString QUrl::errorString() const
     \fn DataPtr &QUrl::data_ptr()
     \internal
 */
+
+// The following code has the following copyright:
+/*
+   Copyright (C) Research In Motion Limited 2009. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of Research In Motion Limited nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY Research In Motion Limited ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL Research In Motion Limited BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+*/
+
+
+/*!
+    Returns a valid URL from a user supplied \a userInput string if one can be
+    deducted. In the case that is not possible, an invalid QUrl() is returned.
+
+    \since 4.6
+
+    Most applications that can browse the web, allow the user to input a URL
+    in the form of a plain string. This string can be manually typed into
+    a location bar, obtained from the clipboard, or passed in via command
+    line arguments.
+
+    When the string is not already a valid URL, a best guess is performed,
+    making various web related assumptions.
+
+    In the case the string corresponds to a valid file path on the system,
+    a file:// URL is constructed, using QUrl::fromLocalFile().
+
+    If that is not the case, an attempt is made to turn the string into a
+    http:// or ftp:// URL. The latter in the case the string starts with
+    'ftp'. The result is then passed through QUrl's tolerant parser, and
+    in the case or success, a valid QUrl is returned, or else a QUrl().
+
+    \section1 Examples:
+
+    \list
+    \o qt.nokia.com becomes http://qt.nokia.com
+    \o ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
+    \o hostname becomes http://hostname
+    \o /home/user/test.html becomes file:///home/user/test.html
+    \endlist
+
+    \section2 Tips to avoid erroneous character conversion when dealing with
+    URLs and strings:
+
+    \list
+    \o When creating an URL QString from a QByteArray or a char*, always use
+       QString::fromUtf8().
+    \o Favor the use of QUrl::fromEncoded() and QUrl::toEncoded() instead of
+       QUrl(string) and QUrl::toString() when converting QUrl to/from string.
+    \endlist
+*/
+QUrl QUrl::fromUserInput(const QString &userInput)
+{
+    QString trimmedString = userInput.trimmed();
+
+    // Check first for files, since on Windows drive letters can be interpretted as schemes
+    if (QDir::isAbsolutePath(trimmedString))
+        return QUrl::fromLocalFile(trimmedString);
+
+    QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
+    QUrl urlPrepended = QUrl::fromEncoded((QLatin1String("http://") + trimmedString).toUtf8(), QUrl::TolerantMode);
+
+    // Check the most common case of a valid url with scheme and host
+    // We check if the port would be valid by adding the scheme to handle the case host:port
+    // where the host would be interpretted as the scheme
+    if (url.isValid()
+        && !url.scheme().isEmpty()
+        && (!url.host().isEmpty() || !url.path().isEmpty())
+        && urlPrepended.port() == -1)
+        return url;
+
+    // Else, try the prepended one and adjust the scheme from the host name
+    if (urlPrepended.isValid() && (!urlPrepended.host().isEmpty() || !urlPrepended.path().isEmpty()))
+    {
+        int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
+        const QString hostscheme = trimmedString.left(dotIndex).toLower();
+        if (hostscheme == QLatin1String("ftp"))
+            urlPrepended.setScheme(QLatin1String("ftp"));
+        return urlPrepended;
+    }
+
+    return QUrl();
+}
+// end of BSD code
 
 QT_END_NAMESPACE

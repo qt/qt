@@ -1094,8 +1094,6 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     QColor borderColor = option->palette.background().color().darker(178);
     QColor gradientStartColor = option->palette.button().color().lighter(104);
     QColor gradientStopColor = option->palette.button().color().darker(105);
-    QColor baseGradientStartColor = option->palette.base().color().darker(101);
-    QColor baseGradientStopColor = option->palette.base().color().darker(106);
     QColor highlightedGradientStartColor = option->palette.button().color().lighter(101);
     QColor highlightedGradientStopColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 85);
     QColor highlightedBaseGradientStartColor = option->palette.base().color();
@@ -1978,7 +1976,13 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
             QRect gradientRect(adjustedRect.left() + 1, adjustedRect.top() + 1,
                                adjustedRect.right() - adjustedRect.left() - 1,
                                adjustedRect.bottom() - adjustedRect.top() - 1);
-            qt_plastique_draw_gradient(painter, gradientRect, baseGradientStartColor, baseGradientStopColor);
+            if (option->palette.base().style() == Qt::SolidPattern) {
+                QColor baseGradientStartColor = option->palette.base().color().darker(101);
+                QColor baseGradientStopColor = option->palette.base().color().darker(106);
+                qt_plastique_draw_gradient(painter, gradientRect, baseGradientStartColor, baseGradientStopColor);
+            } else {
+                painter->fillRect(gradientRect, option->palette.base());
+            }
             // draw "+" or "-"
             painter->setPen(alphaTextColor);
             painter->drawLine(center.x() - 2, center.y(), center.x() + 2, center.y());
@@ -5027,7 +5031,7 @@ QSize QPlastiqueStyle::sizeFromContents(ContentsType type, const QStyleOption *o
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator)
-                newSize.setHeight(menuItem->text.isEmpty() ? 2 : menuItem->fontMetrics.lineSpacing());
+                newSize.setHeight(menuItem->text.isEmpty() ? 2 : menuItem->fontMetrics.height());
         }
         break;
     case CT_MenuBarItem:
@@ -5514,9 +5518,6 @@ int QPlastiqueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_MenuHMargin:
         ret = 0;
         break;
-    case PM_ToolBarIconSize:
-        ret = 24;
-        break;
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:
         ret = 1;
@@ -5607,11 +5608,11 @@ int QPlastiqueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
 #ifdef QT3_SUPPORT
         if (widget && widget->inherits("Q3DockWindowTitleBar")) {
             // Q3DockWindow has smaller title bars than QDockWidget
-            ret = qMax(widget->fontMetrics().lineSpacing(), 20);
+            ret = qMax(widget->fontMetrics().height(), 20);
         } else
 #endif
-        ret = qMax(widget ? widget->fontMetrics().lineSpacing() :
-                   (option ? option->fontMetrics.lineSpacing() : 0), 30);
+        ret = qMax(widget ? widget->fontMetrics().height() :
+                   (option ? option->fontMetrics.height() : 0), 30);
         break;
     case PM_MaximumDragDistance:
         return -1;

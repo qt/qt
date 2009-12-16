@@ -255,7 +255,7 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     \row    \o \l Qt::BackgroundRole \o QBrush
     \row    \o \l Qt::BackgroundColorRole \o QColor (obsolete; use Qt::BackgroundRole instead)
     \row    \o \l Qt::CheckStateRole \o Qt::CheckState
-    \row    \o \l Qt::DecorationRole \o QIcon and QColor
+    \row    \o \l Qt::DecorationRole \o QIcon, QPixmap and QColor
     \row    \o \l Qt::DisplayRole \o QString and types with a string representation
     \row    \o \l Qt::EditRole \o See QItemEditorFactory for details
     \row    \o \l Qt::FontRole \o QFont
@@ -1059,7 +1059,7 @@ QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette,
         painter.end();
 
         QPixmap selected = QPixmap(QPixmap::fromImage(img));
-        int n = (img.numBytes() >> 10) + 1;
+        int n = (img.byteCount() >> 10) + 1;
         if (QPixmapCache::cacheLimit() < n)
             QPixmapCache::setCacheLimit(n);
 

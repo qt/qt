@@ -49,12 +49,12 @@
 #include <qglpixelbuffer.h>
 #include <qcolormap.h>
 #include <qdesktopwidget.h>
+#include <private/qwidget_p.h>
 #include "qdebug.h"
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #include <qx11info_x11.h>
-#include <private/qwidget_p.h>
 
 #ifndef QT_OPENGL_ES
 #include <GL/glx.h>
@@ -195,6 +195,9 @@ public:
         if (!initializing && !widget && !cleanedUp) {
             initializing = true;
             widget = new QGLWidget;
+            // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+            if (QWidgetPrivate::allWidgets)
+                QWidgetPrivate::allWidgets->remove(widget);
             initializing = false;
         }
         return widget;
@@ -364,13 +367,14 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
         qWarning() << "hijackWindow() could not create EGL surface";
     }
+    qDebug("QGLWindowSurface - using EGLConfig %d", reinterpret_cast<int>(ctxpriv->eglContext->config()));
 #endif
 
     widgetPrivate->extraData()->glContext = ctx;
 
     union { QGLContext **ctxPtr; void **voidPtr; };
 
-    connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(deleted(QObject *)));
+    connect(widget, SIGNAL(destroyed(QObject*)), this, SLOT(deleted(QObject*)));
 
     voidPtr = &widgetPrivate->extraData()->glContext;
     d_ptr->contexts << ctxPtr;
@@ -489,7 +493,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
             }
 #endif
             d_ptr->paintedRegion = QRegion();
-
             context()->swapBuffers();
         } else {
             glFlush();
@@ -621,7 +624,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
         QGLShaderProgram *blitProgram =
             QGLEngineSharedShaders::shadersForContext(ctx)->blitProgram();
-        blitProgram->enable();
+        blitProgram->bind();
         blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
 
         // The shader manager's blit program does not multiply the
@@ -684,11 +687,13 @@ void QGLWindowSurface::updateGeometry() {
     d_ptr->size = rect.size();
 
     if (d_ptr->ctx) {
+#ifndef QT_OPENGL_ES_2
         if (d_ptr->destructive_swap_buffers) {
             glBindTexture(target, d_ptr->tex_id);
             glTexImage2D(target, 0, GL_RGBA, rect.width(), rect.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
             glBindTexture(target, 0);
         }
+#endif
         return;
     }
 
@@ -752,11 +757,7 @@ void QGLWindowSurface::updateGeometry() {
 
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-#ifndef QT_OPENGL_ES
             glOrtho(0, d_ptr->pb->width(), d_ptr->pb->height(), 0, -999999, 999999);
-#else
-            glOrthof(0, d_ptr->pb->width(), d_ptr->pb->height(), 0, -999999, 999999);
-#endif
 
             d_ptr->pb->d_ptr->qctx->d_func()->internal_context = true;
             return;
@@ -770,6 +771,7 @@ void QGLWindowSurface::updateGeometry() {
 
     ctx->makeCurrent();
 
+#ifndef QT_OPENGL_ES_2
     if (d_ptr->destructive_swap_buffers) {
         glGenTextures(1, &d_ptr->tex_id);
         glBindTexture(target, d_ptr->tex_id);
@@ -779,6 +781,7 @@ void QGLWindowSurface::updateGeometry() {
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glBindTexture(target, 0);
     }
+#endif
 
     qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;;
     d_ptr->ctx = ctx;

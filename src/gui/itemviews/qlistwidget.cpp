@@ -169,6 +169,21 @@ QListWidgetItem *QListModel::take(int row)
     return item;
 }
 
+void QListModel::move(int srcRow, int dstRow)
+{
+    if (srcRow == dstRow
+        || srcRow < 0 || srcRow >= items.count()
+        || dstRow < 0 || dstRow > items.count())
+        return;
+
+    if (!beginMoveRows(QModelIndex(), srcRow, srcRow, QModelIndex(), dstRow))
+        return;
+    if (srcRow < dstRow)
+        --dstRow;
+    items.move(srcRow, dstRow);
+    endMoveRows();
+}
+
 int QListModel::rowCount(const QModelIndex &parent) const
 {
     return parent.isValid() ? 0 : items.count();
@@ -1804,22 +1819,15 @@ void QListWidget::dropEvent(QDropEvent *event) {
 
             if (persIndexes.contains(topIndex))
                 return;
+            qSort(persIndexes); // The dropped items will remain in the same visual order.
 
             QPersistentModelIndex dropRow = model()->index(row, col, topIndex);
 
-            QList<QListWidgetItem *> taken;
-            for (int i = 0; i < persIndexes.count(); ++i)
-                taken.append(takeItem(persIndexes.at(i).row()));
-
-            // insert them back in at their new positions
+            int r = row == -1 ? count() : (dropRow.row() >= 0 ? dropRow.row() : row);
             for (int i = 0; i < persIndexes.count(); ++i) {
-                // Either at a specific point or appended
-                if (row == -1) {
-                    insertItem(count(), taken.takeFirst());
-                } else {
-                    int r = dropRow.row() >= 0 ? dropRow.row() : row;
-                    insertItem(qMin(r, count()), taken.takeFirst());
-                }
+                const QPersistentModelIndex &pIndex = persIndexes.at(i);
+                d->listModel()->move(pIndex.row(), r);
+                r = pIndex.row() + 1;   // Dropped items are inserted contiguously and in the right order.
             }
 
             event->accept();

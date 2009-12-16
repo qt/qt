@@ -42,6 +42,7 @@
 #include "qglshaderprogram.h"
 #include "qglextensions_p.h"
 #include "qgl_p.h"
+#include <QtCore/private/qobject_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qvarlengtharray.h>
@@ -68,7 +69,7 @@ QT_BEGIN_NAMESPACE
     The following example creates a vertex shader program using the
     supplied source \c{code}.  Once compiled and linked, the shader
     program is activated in the current QGLContext by calling
-    QGLShaderProgram::enable():
+    QGLShaderProgram::bind():
 
     \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 0
 
@@ -105,30 +106,6 @@ QT_BEGIN_NAMESPACE
 
     \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 2
 
-    \section1 Partial shaders
-
-    Desktop GLSL can attach an arbitrary number of vertex and fragment
-    shaders to a shader program.  Embedded GLSL/ES on the other hand
-    supports only a single shader of each type on a shader program.
-
-    Multiple shaders of the same type can be useful when large libraries
-    of shaders are needed.  Common functions can be factored out into
-    library shaders that can be reused in multiple shader programs.
-
-    To support this use of shaders, the application programmer can
-    create shaders with the QGLShader::PartialVertexShader and
-    QGLShader::PartialFragmentShader types.  These types direct
-    QGLShader and QGLShaderProgram to delay shader compilation until
-    link time.
-
-    When link() is called, the sources for the partial shaders are
-    concatenated, and a single vertex or fragment shader is compiled
-    and linked into the shader program.
-
-    It is more efficient to use the QGLShader::VertexShader and
-    QGLShader::FragmentShader when there is only one shader of that
-    type in the program.
-
     \sa QGLShader
 */
 
@@ -148,16 +125,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QGLShader::ShaderTypeBits
+    \enum QGLShader::ShaderTypeBit
     This enum specifies the type of QGLShader that is being created.
 
-    \value VertexShader Vertex shader written in the OpenGL Shading Language (GLSL).
-    \value FragmentShader Fragment shader written in the OpenGL Shading Language (GLSL).
-
-    \value PartialVertexShader Partial vertex shader that will be concatenated with all other partial vertex shaders at link time.
-    \value PartialFragmentShader Partial fragment shader that will be concatenated with all other partial fragment shaders at link time.
-
-    \omitvalue PartialShader
+    \value Vertex Vertex shader written in the OpenGL Shading Language (GLSL).
+    \value Fragment Fragment shader written in the OpenGL Shading Language (GLSL).
 */
 
 #ifndef GL_FRAGMENT_SHADER
@@ -200,25 +172,22 @@ QT_BEGIN_NAMESPACE
 #define GL_NUM_SHADER_BINARY_FORMATS      0x8DF9
 #endif
 
-class QGLShaderPrivate
+class QGLShaderPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QGLShader)
 public:
     QGLShaderPrivate(const QGLContext *context, QGLShader::ShaderType type)
         : shaderGuard(context)
         , shaderType(type)
         , compiled(false)
-        , isPartial((type & QGLShader::PartialShader) != 0)
-        , hasPartialSource(false)
     {
     }
+    ~QGLShaderPrivate();
 
     QGLSharedResourceGuard shaderGuard;
     QGLShader::ShaderType shaderType;
     bool compiled;
-    bool isPartial;
-    bool hasPartialSource;
     QString log;
-    QByteArray partialSource;
 
     bool create();
     bool compile(QGLShader *q);
@@ -227,16 +196,22 @@ public:
 
 #define ctx shaderGuard.context()
 
+QGLShaderPrivate::~QGLShaderPrivate()
+{
+    if (shaderGuard.id()) {
+        QGLShareContextScope scope(shaderGuard.context());
+        glDeleteShader(shaderGuard.id());
+    }
+}
+
 bool QGLShaderPrivate::create()
 {
     const QGLContext *context = shaderGuard.context();
     if (!context)
         return false;
-    if (isPartial)
-        return true;
     if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
         GLuint shader;
-        if (shaderType == QGLShader::VertexShader)
+        if (shaderType == QGLShader::Vertex)
             shader = glCreateShader(GL_VERTEX_SHADER);
         else
             shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -253,11 +228,6 @@ bool QGLShaderPrivate::create()
 
 bool QGLShaderPrivate::compile(QGLShader *q)
 {
-    // Partial shaders are compiled during QGLShaderProgram::link().
-    if (isPartial && hasPartialSource) {
-        compiled = true;
-        return true;
-    }
     GLuint shader = shaderGuard.id();
     if (!shader)
         return false;
@@ -296,91 +266,45 @@ void QGLShaderPrivate::deleteShader()
 /*!
     Constructs a new QGLShader object of the specified \a type
     and attaches it to \a parent.  If shader programs are not supported,
-    QGLShaderProgram::hasShaderPrograms() will return false.
+    QGLShaderProgram::hasOpenGLShaderPrograms() will return false.
 
-    This constructor is normally followed by a call to compile()
-    or compileFile().
+    This constructor is normally followed by a call to compileSourceCode()
+    or compileSourceFile().
 
     The shader will be associated with the current QGLContext.
 
-    \sa compile(), compileFile()
+    \sa compileSourceCode(), compileSourceFile()
 */
 QGLShader::QGLShader(QGLShader::ShaderType type, QObject *parent)
-    : QObject(parent)
+    : QObject(*new QGLShaderPrivate(QGLContext::currentContext(), type), parent)
 {
-    d = new QGLShaderPrivate(QGLContext::currentContext(), type);
+    Q_D(QGLShader);
     d->create();
-}
-
-/*!
-    Constructs a new QGLShader object of the specified \a type from the
-    source code in \a fileName and attaches it to \a parent.
-    If the shader could not be loaded, then isCompiled() will return false.
-
-    The shader will be associated with the current QGLContext.
-
-    \sa isCompiled()
-*/
-QGLShader::QGLShader
-        (const QString& fileName, QGLShader::ShaderType type, QObject *parent)
-    : QObject(parent)
-{
-    d = new QGLShaderPrivate(QGLContext::currentContext(), type);
-    if (d->create() && !compileFile(fileName))
-        d->deleteShader();
 }
 
 /*!
     Constructs a new QGLShader object of the specified \a type
     and attaches it to \a parent.  If shader programs are not supported,
-    then QGLShaderProgram::hasShaderPrograms() will return false.
+    then QGLShaderProgram::hasOpenGLShaderPrograms() will return false.
 
-    This constructor is normally followed by a call to compile()
-    or compileFile().
+    This constructor is normally followed by a call to compileSourceCode()
+    or compileSourceFile().
 
     The shader will be associated with \a context.
 
-    \sa compile(), compileFile()
+    \sa compileSourceCode(), compileSourceFile()
 */
 QGLShader::QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObject *parent)
-    : QObject(parent)
+    : QObject(*new QGLShaderPrivate(context ? context : QGLContext::currentContext(), type), parent)
 {
-    if (!context)
-        context = QGLContext::currentContext();
-    d = new QGLShaderPrivate(context, type);
+    Q_D(QGLShader);
 #ifndef QT_NO_DEBUG
     if (context && !QGLContext::areSharing(context, QGLContext::currentContext())) {
-        qWarning("QGLShader::QGLShader: \'context\' must be the currect context or sharing with it.");
+        qWarning("QGLShader::QGLShader: \'context\' must be the current context or sharing with it.");
         return;
     }
 #endif
     d->create();
-}
-
-/*!
-    Constructs a new QGLShader object of the specified \a type from the
-    source code in \a fileName and attaches it to \a parent.
-    If the shader could not be loaded, then isCompiled() will return false.
-
-    The shader will be associated with \a context.
-
-    \sa isCompiled()
-*/
-QGLShader::QGLShader
-        (const QString& fileName, QGLShader::ShaderType type, const QGLContext *context, QObject *parent)
-    : QObject(parent)
-{
-    if (!context)
-        context = QGLContext::currentContext();
-    d = new QGLShaderPrivate(context, type);
-#ifndef QT_NO_DEBUG
-    if (context && !QGLContext::areSharing(context, QGLContext::currentContext())) {
-        qWarning("QGLShader::QGLShader: \'context\' must be currect context or sharing with it.");
-        return;
-    }
-#endif
-    if (d->create() && !compileFile(fileName))
-        d->deleteShader();
 }
 
 /*!
@@ -390,11 +314,6 @@ QGLShader::QGLShader
 */
 QGLShader::~QGLShader()
 {
-    if (d->shaderGuard.id()) {
-        QGLShareContextScope scope(d->shaderGuard.context());
-        glDeleteShader(d->shaderGuard.id());
-    }
-    delete d;
 }
 
 /*!
@@ -402,6 +321,7 @@ QGLShader::~QGLShader()
 */
 QGLShader::ShaderType QGLShader::shaderType() const
 {
+    Q_D(const QGLShader);
     return d->shaderType;
 }
 
@@ -430,21 +350,14 @@ static const char redefineHighp[] =
     Sets the \a source code for this shader and compiles it.
     Returns true if the source was successfully compiled, false otherwise.
 
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    then this function will always return true, even if the source code
-    is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
-    is called.
-
-    \sa compileFile()
+    \sa compileSourceFile()
 */
-bool QGLShader::compile(const char *source)
+bool QGLShader::compileSourceCode(const char *source)
 {
-    if (d->isPartial) {
-        d->partialSource = QByteArray(source);
-        d->hasPartialSource = true;
-        return d->compile(this);
-    } else if (d->shaderGuard.id()) {
-        QVarLengthArray<const char *> src;
+    Q_D(QGLShader);
+    if (d->shaderGuard.id()) {
+        QVarLengthArray<const char *, 4> src;
+        QVarLengthArray<GLint, 4> srclen;
         int headerLen = 0;
         while (source && source[headerLen] == '#') {
             // Skip #version and #extension directives at the start of
@@ -459,21 +372,23 @@ bool QGLShader::compile(const char *source)
             if (source[headerLen] == '\n')
                 ++headerLen;
         }
-        QByteArray header;
         if (headerLen > 0) {
-            header = QByteArray(source, headerLen);
-            src.append(header.constData());
+            src.append(source);
+            srclen.append(GLint(headerLen));
         }
 #ifdef QGL_DEFINE_QUALIFIERS
         src.append(qualifierDefines);
+        srclen.append(GLint(sizeof(qualifierDefines) - 1));
 #endif
 #ifdef QGL_REDEFINE_HIGHP
-        if (d->shaderType == FragmentShader ||
-                d->shaderType == PartialFragmentShader)
+        if (d->shaderType == Fragment) {
             src.append(redefineHighp);
+            srclen.append(GLint(sizeof(redefineHighp) - 1));
+        }
 #endif
         src.append(source + headerLen);
-        glShaderSource(d->shaderGuard.id(), src.size(), src.data(), 0);
+        srclen.append(GLint(qstrlen(source + headerLen)));
+        glShaderSource(d->shaderGuard.id(), src.size(), src.data(), srclen.data());
         return d->compile(this);
     } else {
         return false;
@@ -486,16 +401,11 @@ bool QGLShader::compile(const char *source)
     Sets the \a source code for this shader and compiles it.
     Returns true if the source was successfully compiled, false otherwise.
 
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    then this function will always return true, even if the source code
-    is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
-    is called.
-
-    \sa compileFile()
+    \sa compileSourceFile()
 */
-bool QGLShader::compile(const QByteArray& source)
+bool QGLShader::compileSourceCode(const QByteArray& source)
 {
-    return compile(source.constData());
+    return compileSourceCode(source.constData());
 }
 
 /*!
@@ -504,16 +414,11 @@ bool QGLShader::compile(const QByteArray& source)
     Sets the \a source code for this shader and compiles it.
     Returns true if the source was successfully compiled, false otherwise.
 
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    then this function will always return true, even if the source code
-    is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
-    is called.
-
-    \sa compileFile()
+    \sa compileSourceFile()
 */
-bool QGLShader::compile(const QString& source)
+bool QGLShader::compileSourceCode(const QString& source)
 {
-    return compile(source.toLatin1().constData());
+    return compileSourceCode(source.toLatin1().constData());
 }
 
 /*!
@@ -521,14 +426,9 @@ bool QGLShader::compile(const QString& source)
     and compiles it.  Returns true if the file could be opened and the
     source compiled, false otherwise.
 
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    then this function will always return true, even if the source code
-    is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
-    is called.
-
-    \sa compile()
+    \sa compileSourceCode()
 */
-bool QGLShader::compileFile(const QString& fileName)
+bool QGLShader::compileSourceFile(const QString& fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly)) {
@@ -537,105 +437,17 @@ bool QGLShader::compileFile(const QString& fileName)
     }
 
     QByteArray contents = file.readAll();
-    return compile(contents.constData());
-}
-
-/*!
-    Sets the binary code for this shader to the \a length bytes from
-    the array \a binary.  The \a format specifies how the binary data
-    should be interpreted by the OpenGL engine.  Returns true if the
-    binary was set on the shader; false otherwise.
-
-    This function cannot be used with PartialVertexShader or
-    PartialFragmentShader.
-
-    If this function succeeds, then the shader will be considered compiled.
-
-    \sa shaderBinaryFormats()
-*/
-bool QGLShader::setShaderBinary(GLenum format, const void *binary, int length)
-{
-#if !defined(QT_OPENGL_ES_2)
-    if (!glShaderBinary)
-        return false;
-#endif
-    GLuint shader = d->shaderGuard.id();
-    if (d->isPartial || !shader)
-        return false;
-    glGetError();   // Clear error state.
-    glShaderBinary(1, &shader, format, binary, length);
-    d->compiled = (glGetError() == GL_NO_ERROR);
-    return d->compiled;
-}
-
-/*!
-    Sets the binary code for this shader to the \a length bytes from
-    the array \a binary.  The \a format specifies how the binary data
-    should be interpreted by the OpenGL engine.  Returns true if the
-    binary was set on the shader; false otherwise.
-
-    The \a otherShader will also have binary code set on it.  This is
-    for the case where \a binary contains both vertex and fragment
-    shader code.
-
-    This function cannot be used with PartialVertexShader or
-    PartialFragmentShader.
-
-    If this function succeeds, then the shader will be considered compiled.
-
-    \sa shaderBinaryFormats()
-*/
-bool QGLShader::setShaderBinary
-    (QGLShader& otherShader, GLenum format, const void *binary, int length)
-{
-#if !defined(QT_OPENGL_ES_2)
-    if (!glShaderBinary)
-        return false;
-#endif
-    if (d->isPartial || !d->shaderGuard.id())
-        return false;
-    if (otherShader.d->isPartial || !otherShader.d->shaderGuard.id())
-        return false;
-    glGetError();   // Clear error state.
-    GLuint shaders[2];
-    shaders[0] = d->shaderGuard.id();
-    shaders[1] = otherShader.d->shaderGuard.id();
-    glShaderBinary(2, shaders, format, binary, length);
-    d->compiled = (glGetError() == GL_NO_ERROR);
-    otherShader.d->compiled = d->compiled;
-    return d->compiled;
-}
-
-/*!
-    Returns a list of all binary formats that are supported by
-    setShaderBinary() on this system.
-
-    \sa setShaderBinary()
-*/
-QList<GLenum> QGLShader::shaderBinaryFormats()
-{
-    GLint num;
-    QList<GLenum> list;
-    glGetError();   // Clear error state.
-    glGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &num);
-    if (glGetError() != GL_NO_ERROR || num <= 0)
-        return list;
-    QVarLengthArray<GLint> formats(num);
-    glGetIntegerv(GL_SHADER_BINARY_FORMATS, formats.data());
-    for (GLint i = 0; i < num; ++i)
-        list += (GLenum)(formats[i]);
-    return list;
+    return compileSourceCode(contents.constData());
 }
 
 /*!
     Returns the source code for this shader.
 
-    \sa compile()
+    \sa compileSourceCode()
 */
 QByteArray QGLShader::sourceCode() const
 {
-    if (d->isPartial)
-        return d->partialSource;
+    Q_D(const QGLShader);
     GLuint shader = d->shaderGuard.id();
     if (!shader)
         return QByteArray();
@@ -654,48 +466,47 @@ QByteArray QGLShader::sourceCode() const
 /*!
     Returns true if this shader has been compiled; false otherwise.
 
-    \sa compile()
+    \sa compileSourceCode(), compileSourceFile()
 */
 bool QGLShader::isCompiled() const
 {
+    Q_D(const QGLShader);
     return d->compiled;
 }
 
 /*!
     Returns the errors and warnings that occurred during the last compile.
 
-    \sa compile()
+    \sa compileSourceCode(), compileSourceFile()
 */
 QString QGLShader::log() const
 {
+    Q_D(const QGLShader);
     return d->log;
 }
 
 /*!
     Returns the OpenGL identifier associated with this shader.
 
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    this function will always return zero.  Partial shaders are
-    created and compiled when QGLShaderProgram::link() is called.
-
     \sa QGLShaderProgram::programId()
 */
 GLuint QGLShader::shaderId() const
 {
+    Q_D(const QGLShader);
     return d->shaderGuard.id();
 }
 
 #undef ctx
 #define ctx programGuard.context()
 
-class QGLShaderProgramPrivate
+class QGLShaderProgramPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QGLShaderProgram)
 public:
     QGLShaderProgramPrivate(const QGLContext *context)
         : programGuard(context)
         , linked(false)
         , inited(false)
-        , hasPartialShaders(false)
         , removingShaders(false)
         , vertexShader(0)
         , fragmentShader(0)
@@ -706,13 +517,14 @@ public:
     QGLSharedResourceGuard programGuard;
     bool linked;
     bool inited;
-    bool hasPartialShaders;
     bool removingShaders;
     QString log;
     QList<QGLShader *> shaders;
     QList<QGLShader *> anonShaders;
     QGLShader *vertexShader;
     QGLShader *fragmentShader;
+
+    bool hasShader(QGLShader::ShaderType type) const;
 };
 
 QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
@@ -721,6 +533,15 @@ QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
         QGLShareContextScope scope(programGuard.context());
         glDeleteProgram(programGuard.id());
     }
+}
+
+bool QGLShaderProgramPrivate::hasShader(QGLShader::ShaderType type) const
+{
+    foreach (QGLShader *shader, shaders) {
+        if (shader->shaderType() == type)
+            return true;
+    }
+    return false;
 }
 
 #undef ctx
@@ -735,9 +556,8 @@ QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
     \sa addShader()
 */
 QGLShaderProgram::QGLShaderProgram(QObject *parent)
-    : QObject(parent)
+    : QObject(*new QGLShaderProgramPrivate(QGLContext::currentContext()), parent)
 {
-    d = new QGLShaderProgramPrivate(QGLContext::currentContext());
 }
 
 /*!
@@ -749,9 +569,8 @@ QGLShaderProgram::QGLShaderProgram(QObject *parent)
     \sa addShader()
 */
 QGLShaderProgram::QGLShaderProgram(const QGLContext *context, QObject *parent)
-    : QObject(parent)
+    : QObject(*new QGLShaderProgramPrivate(context), parent)
 {
-    d = new QGLShaderProgramPrivate(context);
 }
 
 /*!
@@ -759,11 +578,11 @@ QGLShaderProgram::QGLShaderProgram(const QGLContext *context, QObject *parent)
 */
 QGLShaderProgram::~QGLShaderProgram()
 {
-    delete d;
 }
 
 bool QGLShaderProgram::init()
 {
+    Q_D(QGLShaderProgram);
     if (d->programGuard.id() || d->inited)
         return true;
     d->inited = true;
@@ -797,29 +616,27 @@ bool QGLShaderProgram::init()
     is deleted.  This allows the caller to add the same shader
     to multiple shader programs.
 
+    \sa addShaderFromSourceCode(), addShaderFromSourceFile()
     \sa removeShader(), link(), removeAllShaders()
 */
 bool QGLShaderProgram::addShader(QGLShader *shader)
 {
+    Q_D(QGLShaderProgram);
     if (!init())
         return false;
     if (d->shaders.contains(shader))
         return true;    // Already added to this shader program.
     if (d->programGuard.id() && shader) {
-        if (!QGLContext::areSharing(shader->d->shaderGuard.context(),
+        if (!QGLContext::areSharing(shader->d_func()->shaderGuard.context(),
                                     d->programGuard.context())) {
             qWarning("QGLShaderProgram::addShader: Program and shader are not associated with same context.");
             return false;
         }
-        if (!shader->d->compiled)
+        if (!shader->d_func()->compiled)
             return false;
-        if (!shader->d->isPartial) {
-            if (!shader->d->shaderGuard.id())
-                return false;
-            glAttachShader(d->programGuard.id(), shader->d->shaderGuard.id());
-        } else {
-            d->hasPartialShaders = true;
-        }
+        if (!shader->d_func()->shaderGuard.id())
+            return false;
+        glAttachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
         d->linked = false;  // Program needs to be relinked.
         d->shaders.append(shader);
         connect(shader, SIGNAL(destroyed()), this, SLOT(shaderDestroyed()));
@@ -839,14 +656,16 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
+    \sa addShader(), addShaderFromSourceFile()
     \sa removeShader(), link(), log(), removeAllShaders()
 */
-bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const char *source)
+bool QGLShaderProgram::addShaderFromSourceCode(QGLShader::ShaderType type, const char *source)
 {
+    Q_D(QGLShaderProgram);
     if (!init())
         return false;
     QGLShader *shader = new QGLShader(type, this);
-    if (!shader->compile(source)) {
+    if (!shader->compileSourceCode(source)) {
         d->log = shader->log();
         delete shader;
         return false;
@@ -867,11 +686,12 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const char *source)
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
+    \sa addShader(), addShaderFromSourceFile()
     \sa removeShader(), link(), log(), removeAllShaders()
 */
-bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QByteArray& source)
+bool QGLShaderProgram::addShaderFromSourceCode(QGLShader::ShaderType type, const QByteArray& source)
 {
-    return addShader(type, source.constData());
+    return addShaderFromSourceCode(type, source.constData());
 }
 
 /*!
@@ -886,11 +706,12 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QByteArray& s
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
+    \sa addShader(), addShaderFromSourceFile()
     \sa removeShader(), link(), log(), removeAllShaders()
 */
-bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QString& source)
+bool QGLShaderProgram::addShaderFromSourceCode(QGLShader::ShaderType type, const QString& source)
 {
-    return addShader(type, source.toLatin1().constData());
+    return addShaderFromSourceCode(type, source.toLatin1().constData());
 }
 
 /*!
@@ -903,15 +724,16 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QString& sour
     adding vertex and fragment shaders to a shader program without
     creating an instance of QGLShader first.
 
-    \sa addShader()
+    \sa addShader(), addShaderFromSourceCode()
 */
-bool QGLShaderProgram::addShaderFromFile
+bool QGLShaderProgram::addShaderFromSourceFile
     (QGLShader::ShaderType type, const QString& fileName)
 {
+    Q_D(QGLShaderProgram);
     if (!init())
         return false;
     QGLShader *shader = new QGLShader(type, this);
-    if (!shader->compileFile(fileName)) {
+    if (!shader->compileSourceFile(fileName)) {
         d->log = shader->log();
         delete shader;
         return false;
@@ -927,9 +749,10 @@ bool QGLShaderProgram::addShaderFromFile
 */
 void QGLShaderProgram::removeShader(QGLShader *shader)
 {
-    if (d->programGuard.id() && shader && shader->d->shaderGuard.id()) {
+    Q_D(QGLShaderProgram);
+    if (d->programGuard.id() && shader && shader->d_func()->shaderGuard.id()) {
         QGLShareContextScope scope(d->programGuard.context());
-        glDetachShader(d->programGuard.id(), shader->d->shaderGuard.id());
+        glDetachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
     }
     d->linked = false;  // Program needs to be relinked.
     if (shader) {
@@ -947,6 +770,7 @@ void QGLShaderProgram::removeShader(QGLShader *shader)
 */
 QList<QGLShader *> QGLShaderProgram::shaders() const
 {
+    Q_D(const QGLShaderProgram);
     return d->shaders;
 }
 
@@ -960,10 +784,11 @@ QList<QGLShader *> QGLShaderProgram::shaders() const
 */
 void QGLShaderProgram::removeAllShaders()
 {
+    Q_D(QGLShaderProgram);
     d->removingShaders = true;
     foreach (QGLShader *shader, d->shaders) {
-        if (d->programGuard.id() && shader && shader->d->shaderGuard.id())
-            glDetachShader(d->programGuard.id(), shader->d->shaderGuard.id());
+        if (d->programGuard.id() && shader && shader->d_func()->shaderGuard.id())
+            glDetachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
     }
     foreach (QGLShader *shader, d->anonShaders) {
         // Delete shader objects that were created anonymously.
@@ -973,128 +798,6 @@ void QGLShaderProgram::removeAllShaders()
     d->anonShaders.clear();
     d->linked = false;  // Program needs to be relinked.
     d->removingShaders = false;
-}
-
-#if defined(QT_OPENGL_ES_2)
-
-#ifndef GL_PROGRAM_BINARY_LENGTH_OES
-#define GL_PROGRAM_BINARY_LENGTH_OES        0x8741
-#endif
-#ifndef GL_NUM_PROGRAM_BINARY_FORMATS_OES
-#define GL_NUM_PROGRAM_BINARY_FORMATS_OES   0x87FE
-#endif
-#ifndef GL_PROGRAM_BINARY_FORMATS_OES
-#define GL_PROGRAM_BINARY_FORMATS_OES       0x87FF
-#endif
-
-#endif
-
-/*!
-    Returns the program binary associated with this shader program.
-    The numeric identifier of the program binary format is returned
-    in \a format.  The \c OES_get_program_binary extension will need
-    to be supported by the system for binary retrieval to succeed.
-
-    Returns an empty QByteArray if the program binary cannot be
-    retrieved on this system, or the shader program has not yet
-    been linked.
-
-    The returned binary can be supplied to setProgramBinary() on the
-    same machine at some future point to reload the program.  It contains
-    the compiled code of all of the shaders that were attached to the
-    program at the time programBinary() is called.
-
-    \sa setProgramBinary(), programBinaryFormats()
-*/
-QByteArray QGLShaderProgram::programBinary(int *format) const
-{
-#if defined(QT_OPENGL_ES_2)
-    if (!isLinked())
-        return QByteArray();
-
-    // Get the length of the binary data, bailing out if there is none.
-    GLint length = 0;
-    GLuint program = d->programGuard.id();
-    glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH_OES, &length);
-    if (length <= 0)
-        return QByteArray();
-
-    // Retrieve the binary data.
-    QByteArray binary(length, 0);
-    GLenum binaryFormat;
-    glGetProgramBinaryOES(program, length, 0, &binaryFormat, binary.data());
-    if (format)
-        *format = (int)binaryFormat;
-    return binary;
-#else
-    Q_UNUSED(format);
-    return QByteArray();
-#endif
-}
-
-/*!
-    Sets the \a binary for this shader program according to \a format.
-    Returns true if the binary was set, or false if the binary format
-    is not supported or this system does not support program binaries.
-    The program will be linked if the load succeeds.
-
-    \sa programBinary(), programBinaryFormats(), isLinked()
-*/
-bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
-{
-#if defined(QT_OPENGL_ES_2)
-    // Load the binary and check that it was linked correctly.
-    GLuint program = d->programGuard.id();
-    if (!program)
-        return false;
-    glProgramBinaryOES(program, (GLenum)format,
-                       binary.constData(), binary.size());
-    GLint value = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &value);
-    d->linked = (value != 0);
-    value = 0;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &value);
-    d->log = QString();
-    if (value > 1) {
-        char *logbuf = new char [value];
-        GLint len;
-        glGetProgramInfoLog(program, value, &len, logbuf);
-        d->log = QString::fromLatin1(logbuf);
-        QString name = objectName();
-        if (name.isEmpty())
-            qWarning() << "QGLShader::setProgramBinary:" << d->log;
-        else
-            qWarning() << "QGLShader::setProgramBinary[" << name << "]:" << d->log;
-        delete [] logbuf;
-    }
-    return d->linked;
-#else
-    Q_UNUSED(format);
-    Q_UNUSED(binary);
-    return false;
-#endif
-}
-
-/*!
-    Returns the list of program binary formats that are accepted by
-    this system for use with setProgramBinary().
-
-    \sa programBinary(), setProgramBinary()
-*/
-QList<int> QGLShaderProgram::programBinaryFormats()
-{
-#if defined(QT_OPENGL_ES_2)
-    GLint count = 0;
-    glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS_OES, &count);
-    if (count <= 0)
-        return QList<int>();
-    QVector<int> list;
-    list.resize(count);
-    glGetIntegerv(GL_PROGRAM_BINARY_FORMATS_OES, list.data());
-    return list.toList();
-#else
-    return QList<int>();
-#endif
 }
 
 /*!
@@ -1113,54 +816,10 @@ QList<int> QGLShaderProgram::programBinaryFormats()
 */
 bool QGLShaderProgram::link()
 {
+    Q_D(QGLShaderProgram);
     GLuint program = d->programGuard.id();
     if (!program)
         return false;
-    if (d->hasPartialShaders) {
-        // Compile the partial vertex and fragment shaders.
-        QByteArray vertexSource;
-        QByteArray fragmentSource;
-        foreach (QGLShader *shader, d->shaders) {
-            if (shader->shaderType() == QGLShader::PartialVertexShader)
-                vertexSource += shader->sourceCode();
-            else if (shader->shaderType() == QGLShader::PartialFragmentShader)
-                fragmentSource += shader->sourceCode();
-        }
-        if (vertexSource.isEmpty()) {
-            if (d->vertexShader) {
-                glDetachShader(program, d->vertexShader->d->shaderGuard.id());
-                delete d->vertexShader;
-                d->vertexShader = 0;
-            }
-        } else {
-            if (!d->vertexShader) {
-                d->vertexShader =
-                    new QGLShader(QGLShader::VertexShader, this);
-            }
-            if (!d->vertexShader->compile(vertexSource)) {
-                d->log = d->vertexShader->log();
-                return false;
-            }
-            glAttachShader(program, d->vertexShader->d->shaderGuard.id());
-        }
-        if (fragmentSource.isEmpty()) {
-            if (d->fragmentShader) {
-                glDetachShader(program, d->fragmentShader->d->shaderGuard.id());
-                delete d->fragmentShader;
-                d->fragmentShader = 0;
-            }
-        } else {
-            if (!d->fragmentShader) {
-                d->fragmentShader =
-                    new QGLShader(QGLShader::FragmentShader, this);
-            }
-            if (!d->fragmentShader->compile(fragmentSource)) {
-                d->log = d->fragmentShader->log();
-                return false;
-            }
-            glAttachShader(program, d->fragmentShader->d->shaderGuard.id());
-        }
-    }
     glLinkProgram(program);
     GLint value = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &value);
@@ -1190,6 +849,7 @@ bool QGLShaderProgram::link()
 */
 bool QGLShaderProgram::isLinked() const
 {
+    Q_D(const QGLShaderProgram);
     return d->linked;
 }
 
@@ -1201,24 +861,34 @@ bool QGLShaderProgram::isLinked() const
 */
 QString QGLShaderProgram::log() const
 {
+    Q_D(const QGLShaderProgram);
     return d->log;
 }
 
 /*!
-    Enable use of this shader program in the currently active QGLContext.
-    Returns true if the program was successfully enabled; false
-    otherwise.  If the shader program has not yet been linked,
+    Binds this shader program to the active QGLContext and makes
+    it the current shader program.  Any previously bound shader program
+    is released.  This is equivalent to calling \c{glUseProgram()} on
+    programId().  Returns true if the program was successfully bound;
+    false otherwise.  If the shader program has not yet been linked,
     or it needs to be re-linked, this function will call link().
 
-    \sa link(), disable()
+    \sa link(), release()
 */
-bool QGLShaderProgram::enable()
+bool QGLShaderProgram::bind()
 {
+    Q_D(QGLShaderProgram);
     GLuint program = d->programGuard.id();
     if (!program)
         return false;
     if (!d->linked && !link())
         return false;
+#ifndef QT_NO_DEBUG
+    if (!QGLContext::areSharing(d->programGuard.context(), QGLContext::currentContext())) {
+        qWarning("QGLShaderProgram::bind: program is not valid in the current context.");
+        return false;
+    }
+#endif
     glUseProgram(program);
     return true;
 }
@@ -1227,13 +897,18 @@ bool QGLShaderProgram::enable()
 #define ctx QGLContext::currentContext()
 
 /*!
-    Disables the active shader program in the current QGLContext.
+    Releases the active shader program from the current QGLContext.
     This is equivalent to calling \c{glUseProgram(0)}.
 
-    \sa enable()
+    \sa bind()
 */
-void QGLShaderProgram::disable()
+void QGLShaderProgram::release()
 {
+#ifndef QT_NO_DEBUG
+    Q_D(QGLShaderProgram);
+    if (!QGLContext::areSharing(d->programGuard.context(), QGLContext::currentContext()))
+        qWarning("QGLShaderProgram::release: program is not valid in the current context.");
+#endif
 #if defined(QT_OPENGL_ES_2)
     glUseProgram(0);
 #else
@@ -1252,6 +927,7 @@ void QGLShaderProgram::disable()
 */
 GLuint QGLShaderProgram::programId() const
 {
+    Q_D(const QGLShaderProgram);
     return d->programGuard.id();
 }
 
@@ -1265,7 +941,13 @@ GLuint QGLShaderProgram::programId() const
 */
 void QGLShaderProgram::bindAttributeLocation(const char *name, int location)
 {
-    glBindAttribLocation(d->programGuard.id(), location, name);
+    Q_D(QGLShaderProgram);
+    if (!d->linked) {
+        glBindAttribLocation(d->programGuard.id(), location, name);
+    } else {
+        qWarning() << "QGLShaderProgram::bindAttributeLocation(" << name
+                   << "): cannot bind after shader program is linked";
+    }
 }
 
 /*!
@@ -1280,7 +962,7 @@ void QGLShaderProgram::bindAttributeLocation(const char *name, int location)
 */
 void QGLShaderProgram::bindAttributeLocation(const QByteArray& name, int location)
 {
-    glBindAttribLocation(d->programGuard.id(), location, name.constData());
+    bindAttributeLocation(name.constData(), location);
 }
 
 /*!
@@ -1295,7 +977,7 @@ void QGLShaderProgram::bindAttributeLocation(const QByteArray& name, int locatio
 */
 void QGLShaderProgram::bindAttributeLocation(const QString& name, int location)
 {
-    glBindAttribLocation(d->programGuard.id(), location, name.toLatin1().constData());
+    bindAttributeLocation(name.toLatin1().constData(), location);
 }
 
 /*!
@@ -1307,6 +989,7 @@ void QGLShaderProgram::bindAttributeLocation(const QString& name, int location)
 */
 int QGLShaderProgram::attributeLocation(const char *name) const
 {
+    Q_D(const QGLShaderProgram);
     if (d->linked) {
         return glGetAttribLocation(d->programGuard.id(), name);
     } else {
@@ -1351,6 +1034,8 @@ int QGLShaderProgram::attributeLocation(const QString& name) const
 */
 void QGLShaderProgram::setAttributeValue(int location, GLfloat value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glVertexAttrib1fv(location, &value);
 }
@@ -1375,6 +1060,8 @@ void QGLShaderProgram::setAttributeValue(const char *name, GLfloat value)
 */
 void QGLShaderProgram::setAttributeValue(int location, GLfloat x, GLfloat y)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[2] = {x, y};
         glVertexAttrib2fv(location, values);
@@ -1403,6 +1090,8 @@ void QGLShaderProgram::setAttributeValue(const char *name, GLfloat x, GLfloat y)
 void QGLShaderProgram::setAttributeValue
         (int location, GLfloat x, GLfloat y, GLfloat z)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[3] = {x, y, z};
         glVertexAttrib3fv(location, values);
@@ -1432,6 +1121,8 @@ void QGLShaderProgram::setAttributeValue
 void QGLShaderProgram::setAttributeValue
         (int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {x, y, z, w};
         glVertexAttrib4fv(location, values);
@@ -1459,6 +1150,8 @@ void QGLShaderProgram::setAttributeValue
 */
 void QGLShaderProgram::setAttributeValue(int location, const QVector2D& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glVertexAttrib2fv(location, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -1482,6 +1175,8 @@ void QGLShaderProgram::setAttributeValue(const char *name, const QVector2D& valu
 */
 void QGLShaderProgram::setAttributeValue(int location, const QVector3D& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glVertexAttrib3fv(location, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -1505,6 +1200,8 @@ void QGLShaderProgram::setAttributeValue(const char *name, const QVector3D& valu
 */
 void QGLShaderProgram::setAttributeValue(int location, const QVector4D& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glVertexAttrib4fv(location, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -1528,6 +1225,8 @@ void QGLShaderProgram::setAttributeValue(const char *name, const QVector4D& valu
 */
 void QGLShaderProgram::setAttributeValue(int location, const QColor& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {value.redF(), value.greenF(), value.blueF(), value.alphaF()};
         glVertexAttrib4fv(location, values);
@@ -1558,6 +1257,8 @@ void QGLShaderProgram::setAttributeValue(const char *name, const QColor& value)
 void QGLShaderProgram::setAttributeValue
     (int location, const GLfloat *values, int columns, int rows)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (rows < 1 || rows > 4) {
         qWarning() << "QGLShaderProgram::setAttributeValue: rows" << rows << "not supported";
         return;
@@ -1597,20 +1298,26 @@ void QGLShaderProgram::setAttributeValue
 
 /*!
     Sets an array of vertex \a values on the attribute at \a location
-    in this shader program.  The \a size indicates the number of
+    in this shader program.  The \a tupleSize indicates the number of
     components per vertex (1, 2, 3, or 4), and the \a stride indicates
     the number of bytes between vertices.  A default \a stride value
     of zero indicates that the vertices are densely packed in \a values.
 
-    \sa setAttributeValue(), setUniformValue(), disableAttributeArray()
+    The array will become active when enableAttributeArray() is called
+    on the \a location.  Otherwise the value specified with
+    setAttributeValue() for \a location will be used.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray()
 */
 void QGLShaderProgram::setAttributeArray
-    (int location, const GLfloat *values, int size, int stride)
+    (int location, const GLfloat *values, int tupleSize, int stride)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
-        glVertexAttribPointer(location, size, GL_FLOAT, GL_FALSE,
+        glVertexAttribPointer(location, tupleSize, GL_FLOAT, GL_FALSE,
                               stride, values);
-        glEnableVertexAttribArray(location);
     }
 }
 
@@ -1620,15 +1327,21 @@ void QGLShaderProgram::setAttributeArray
     between vertices.  A default \a stride value of zero indicates that
     the vertices are densely packed in \a values.
 
-    \sa setAttributeValue(), setUniformValue(), disableAttributeArray()
+    The array will become active when enableAttributeArray() is called
+    on the \a location.  Otherwise the value specified with
+    setAttributeValue() for \a location will be used.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray()
 */
 void QGLShaderProgram::setAttributeArray
         (int location, const QVector2D *values, int stride)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE,
                               stride, values);
-        glEnableVertexAttribArray(location);
     }
 }
 
@@ -1638,15 +1351,21 @@ void QGLShaderProgram::setAttributeArray
     between vertices.  A default \a stride value of zero indicates that
     the vertices are densely packed in \a values.
 
-    \sa setAttributeValue(), setUniformValue(), disableAttributeArray()
+    The array will become active when enableAttributeArray() is called
+    on the \a location.  Otherwise the value specified with
+    setAttributeValue() for \a location will be used.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray()
 */
 void QGLShaderProgram::setAttributeArray
         (int location, const QVector3D *values, int stride)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         glVertexAttribPointer(location, 3, GL_FLOAT, GL_FALSE,
                               stride, values);
-        glEnableVertexAttribArray(location);
     }
 }
 
@@ -1656,15 +1375,21 @@ void QGLShaderProgram::setAttributeArray
     between vertices.  A default \a stride value of zero indicates that
     the vertices are densely packed in \a values.
 
-    \sa setAttributeValue(), setUniformValue(), disableAttributeArray()
+    The array will become active when enableAttributeArray() is called
+    on the \a location.  Otherwise the value specified with
+    setAttributeValue() for \a location will be used.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray()
 */
 void QGLShaderProgram::setAttributeArray
         (int location, const QVector4D *values, int stride)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE,
                               stride, values);
-        glEnableVertexAttribArray(location);
     }
 }
 
@@ -1672,17 +1397,22 @@ void QGLShaderProgram::setAttributeArray
     \overload
 
     Sets an array of vertex \a values on the attribute called \a name
-    in this shader program.  The \a size indicates the number of
+    in this shader program.  The \a tupleSize indicates the number of
     components per vertex (1, 2, 3, or 4), and the \a stride indicates
     the number of bytes between vertices.  A default \a stride value
     of zero indicates that the vertices are densely packed in \a values.
 
-    \sa setAttributeValue(), setUniformValue(), disableAttributeArray()
+    The array will become active when enableAttributeArray() is called
+    on \a name.  Otherwise the value specified with setAttributeValue()
+    for \a name will be used.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray()
 */
 void QGLShaderProgram::setAttributeArray
-    (const char *name, const GLfloat *values, int size, int stride)
+    (const char *name, const GLfloat *values, int tupleSize, int stride)
 {
-    setAttributeArray(attributeLocation(name), values, size, stride);
+    setAttributeArray(attributeLocation(name), values, tupleSize, stride);
 }
 
 /*!
@@ -1693,7 +1423,12 @@ void QGLShaderProgram::setAttributeArray
     between vertices.  A default \a stride value of zero indicates that
     the vertices are densely packed in \a values.
 
-    \sa setAttributeValue(), setUniformValue(), disableAttributeArray()
+    The array will become active when enableAttributeArray() is called
+    on \a name.  Otherwise the value specified with setAttributeValue()
+    for \a name will be used.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray()
 */
 void QGLShaderProgram::setAttributeArray
         (const char *name, const QVector2D *values, int stride)
@@ -1709,7 +1444,12 @@ void QGLShaderProgram::setAttributeArray
     between vertices.  A default \a stride value of zero indicates that
     the vertices are densely packed in \a values.
 
-    \sa setAttributeValue(), setUniformValue(), disableAttributeArray()
+    The array will become active when enableAttributeArray() is called
+    on \a name.  Otherwise the value specified with setAttributeValue()
+    for \a name will be used.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray()
 */
 void QGLShaderProgram::setAttributeArray
         (const char *name, const QVector3D *values, int stride)
@@ -1725,7 +1465,12 @@ void QGLShaderProgram::setAttributeArray
     between vertices.  A default \a stride value of zero indicates that
     the vertices are densely packed in \a values.
 
-    \sa setAttributeValue(), setUniformValue(), disableAttributeArray()
+    The array will become active when enableAttributeArray() is called
+    on \a name.  Otherwise the value specified with setAttributeValue()
+    for \a name will be used.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray()
 */
 void QGLShaderProgram::setAttributeArray
         (const char *name, const QVector4D *values, int stride)
@@ -1734,13 +1479,47 @@ void QGLShaderProgram::setAttributeArray
 }
 
 /*!
-    Disables the vertex array at \a location in this shader program
-    that was enabled by a previous call to setAttributeArray().
+    Enables the vertex array at \a location in this shader program
+    so that the value set by setAttributeArray() on \a location
+    will be used by the shader program.
 
-    \sa setAttributeArray(), setAttributeValue(), setUniformValue()
+    \sa disableAttributeArray(), setAttributeArray(), setAttributeValue()
+    \sa setUniformValue()
+*/
+void QGLShaderProgram::enableAttributeArray(int location)
+{
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
+    if (location != -1)
+        glEnableVertexAttribArray(location);
+}
+
+/*!
+    \overload
+
+    Enables the vertex array called \a name in this shader program
+    so that the value set by setAttributeArray() on \a name
+    will be used by the shader program.
+
+    \sa disableAttributeArray(), setAttributeArray(), setAttributeValue()
+    \sa setUniformValue()
+*/
+void QGLShaderProgram::enableAttributeArray(const char *name)
+{
+    enableAttributeArray(attributeLocation(name));
+}
+
+/*!
+    Disables the vertex array at \a location in this shader program
+    that was enabled by a previous call to enableAttributeArray().
+
+    \sa enableAttributeArray(), setAttributeArray(), setAttributeValue()
+    \sa setUniformValue()
 */
 void QGLShaderProgram::disableAttributeArray(int location)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glDisableVertexAttribArray(location);
 }
@@ -1749,9 +1528,10 @@ void QGLShaderProgram::disableAttributeArray(int location)
     \overload
 
     Disables the vertex array called \a name in this shader program
-    that was enabled by a previous call to setAttributeArray().
+    that was enabled by a previous call to enableAttributeArray().
 
-    \sa setAttributeArray(), setAttributeValue(), setUniformValue()
+    \sa enableAttributeArray(), setAttributeArray(), setAttributeValue()
+    \sa setUniformValue()
 */
 void QGLShaderProgram::disableAttributeArray(const char *name)
 {
@@ -1767,6 +1547,8 @@ void QGLShaderProgram::disableAttributeArray(const char *name)
 */
 int QGLShaderProgram::uniformLocation(const char *name) const
 {
+    Q_D(const QGLShaderProgram);
+    Q_UNUSED(d);
     if (d->linked) {
         return glGetUniformLocation(d->programGuard.id(), name);
     } else {
@@ -1811,6 +1593,8 @@ int QGLShaderProgram::uniformLocation(const QString& name) const
 */
 void QGLShaderProgram::setUniformValue(int location, GLfloat value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1fv(location, 1, &value);
 }
@@ -1835,6 +1619,8 @@ void QGLShaderProgram::setUniformValue(const char *name, GLfloat value)
 */
 void QGLShaderProgram::setUniformValue(int location, GLint value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1i(location, value);
 }
@@ -1860,6 +1646,8 @@ void QGLShaderProgram::setUniformValue(const char *name, GLint value)
 */
 void QGLShaderProgram::setUniformValue(int location, GLuint value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1i(location, value);
 }
@@ -1885,6 +1673,8 @@ void QGLShaderProgram::setUniformValue(const char *name, GLuint value)
 */
 void QGLShaderProgram::setUniformValue(int location, GLfloat x, GLfloat y)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[2] = {x, y};
         glUniform2fv(location, 1, values);
@@ -1913,6 +1703,8 @@ void QGLShaderProgram::setUniformValue(const char *name, GLfloat x, GLfloat y)
 void QGLShaderProgram::setUniformValue
         (int location, GLfloat x, GLfloat y, GLfloat z)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[3] = {x, y, z};
         glUniform3fv(location, 1, values);
@@ -1942,6 +1734,8 @@ void QGLShaderProgram::setUniformValue
 void QGLShaderProgram::setUniformValue
         (int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {x, y, z, w};
         glUniform4fv(location, 1, values);
@@ -1969,6 +1763,8 @@ void QGLShaderProgram::setUniformValue
 */
 void QGLShaderProgram::setUniformValue(int location, const QVector2D& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform2fv(location, 1, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -1993,6 +1789,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QVector2D& value)
 */
 void QGLShaderProgram::setUniformValue(int location, const QVector3D& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform3fv(location, 1, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -2017,6 +1815,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QVector3D& value)
 */
 void QGLShaderProgram::setUniformValue(int location, const QVector4D& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform4fv(location, 1, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -2042,6 +1842,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QVector4D& value)
 */
 void QGLShaderProgram::setUniformValue(int location, const QColor& color)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {color.redF(), color.greenF(), color.blueF(), color.alphaF()};
         glUniform4fv(location, 1, values);
@@ -2069,6 +1871,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QColor& color)
 */
 void QGLShaderProgram::setUniformValue(int location, const QPoint& point)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {point.x(), point.y()};
         glUniform2fv(location, 1, values);
@@ -2096,6 +1900,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QPoint& point)
 */
 void QGLShaderProgram::setUniformValue(int location, const QPointF& point)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {point.x(), point.y()};
         glUniform2fv(location, 1, values);
@@ -2123,6 +1929,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QPointF& point)
 */
 void QGLShaderProgram::setUniformValue(int location, const QSize& size)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {size.width(), size.width()};
         glUniform2fv(location, 1, values);
@@ -2150,6 +1958,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSize& size)
 */
 void QGLShaderProgram::setUniformValue(int location, const QSizeF& size)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {size.width(), size.height()};
         glUniform2fv(location, 1, values);
@@ -2229,6 +2039,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSizeF& size)
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x2& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrix(glUniformMatrix2fv, location, value, 2, 2);
 }
 
@@ -2253,6 +2065,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x2& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x3& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix2x3fv, glUniform3fv, location, value, 2, 3);
 }
@@ -2278,6 +2092,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x3& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x4& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix2x4fv, glUniform4fv, location, value, 2, 4);
 }
@@ -2303,6 +2119,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x4& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x2& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix3x2fv, glUniform2fv, location, value, 3, 2);
 }
@@ -2328,6 +2146,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x2& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x3& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrix(glUniformMatrix3fv, location, value, 3, 3);
 }
 
@@ -2352,6 +2172,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x3& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x4& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix3x4fv, glUniform4fv, location, value, 3, 4);
 }
@@ -2377,6 +2199,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x4& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x2& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix4x2fv, glUniform2fv, location, value, 4, 2);
 }
@@ -2402,6 +2226,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x2& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x3& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix4x3fv, glUniform3fv, location, value, 4, 3);
 }
@@ -2427,6 +2253,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x3& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x4& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrix(glUniformMatrix4fv, location, value, 4, 4);
 }
 
@@ -2454,6 +2282,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x4& value
 */
 void QGLShaderProgram::setUniformValue(int location, const GLfloat value[4][4])
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniformMatrix4fv(location, 1, GL_FALSE, value[0]);
 }
@@ -2481,6 +2311,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const GLfloat value[4][
 */
 void QGLShaderProgram::setUniformValue(int location, const QTransform& value)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat mat[3][3] = {
             {value.m11(), value.m12(), value.m13()},
@@ -2514,6 +2346,8 @@ void QGLShaderProgram::setUniformValue
 */
 void QGLShaderProgram::setUniformValueArray(int location, const GLint *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1iv(location, count, values);
 }
@@ -2541,6 +2375,8 @@ void QGLShaderProgram::setUniformValueArray
 */
 void QGLShaderProgram::setUniformValueArray(int location, const GLuint *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1iv(location, count, reinterpret_cast<const GLint *>(values));
 }
@@ -2563,23 +2399,25 @@ void QGLShaderProgram::setUniformValueArray
 /*!
     Sets the uniform variable array at \a location in the current
     context to the \a count elements of \a values.  Each element
-    has \a size components.  The \a size must be 1, 2, 3, or 4.
+    has \a tupleSize components.  The \a tupleSize must be 1, 2, 3, or 4.
 
     \sa setAttributeValue()
 */
-void QGLShaderProgram::setUniformValueArray(int location, const GLfloat *values, int count, int size)
+void QGLShaderProgram::setUniformValueArray(int location, const GLfloat *values, int count, int tupleSize)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
-        if (size == 1)
+        if (tupleSize == 1)
             glUniform1fv(location, count, values);
-        else if (size == 2)
+        else if (tupleSize == 2)
             glUniform2fv(location, count, values);
-        else if (size == 3)
+        else if (tupleSize == 3)
             glUniform3fv(location, count, values);
-        else if (size == 4)
+        else if (tupleSize == 4)
             glUniform4fv(location, count, values);
         else
-            qWarning() << "QGLShaderProgram::setUniformValue: size" << size << "not supported";
+            qWarning() << "QGLShaderProgram::setUniformValue: size" << tupleSize << "not supported";
     }
 }
 
@@ -2588,14 +2426,14 @@ void QGLShaderProgram::setUniformValueArray(int location, const GLfloat *values,
 
     Sets the uniform variable array called \a name in the current
     context to the \a count elements of \a values.  Each element
-    has \a size components.  The \a size must be 1, 2, 3, or 4.
+    has \a tupleSize components.  The \a tupleSize must be 1, 2, 3, or 4.
 
     \sa setAttributeValue()
 */
 void QGLShaderProgram::setUniformValueArray
-        (const char *name, const GLfloat *values, int count, int size)
+        (const char *name, const GLfloat *values, int count, int tupleSize)
 {
-    setUniformValueArray(uniformLocation(name), values, count, size);
+    setUniformValueArray(uniformLocation(name), values, count, tupleSize);
 }
 
 /*!
@@ -2606,6 +2444,8 @@ void QGLShaderProgram::setUniformValueArray
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QVector2D *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform2fv(location, count, reinterpret_cast<const GLfloat *>(values));
 }
@@ -2631,6 +2471,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector2D *v
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QVector3D *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform3fv(location, count, reinterpret_cast<const GLfloat *>(values));
 }
@@ -2656,6 +2498,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector3D *v
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QVector4D *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform4fv(location, count, reinterpret_cast<const GLfloat *>(values));
 }
@@ -2742,6 +2586,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector4D *v
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix2x2 *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrixArray
         (glUniformMatrix2fv, location, values, count, QMatrix2x2, 2, 2);
 }
@@ -2767,6 +2613,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix2x2 *
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix2x3 *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix2x3fv, glUniform3fv, location, values, count,
          QMatrix2x3, 2, 3);
@@ -2793,6 +2641,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix2x3 *
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix2x4 *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix2x4fv, glUniform4fv, location, values, count,
          QMatrix2x4, 2, 4);
@@ -2819,6 +2669,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix2x4 *
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix3x2 *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix3x2fv, glUniform2fv, location, values, count,
          QMatrix3x2, 3, 2);
@@ -2845,6 +2697,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix3x2 *
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix3x3 *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrixArray
         (glUniformMatrix3fv, location, values, count, QMatrix3x3, 3, 3);
 }
@@ -2870,6 +2724,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix3x3 *
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix3x4 *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix3x4fv, glUniform4fv, location, values, count,
          QMatrix3x4, 3, 4);
@@ -2896,6 +2752,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix3x4 *
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix4x2 *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix4x2fv, glUniform2fv, location, values, count,
          QMatrix4x2, 4, 2);
@@ -2922,6 +2780,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x2 *
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix4x3 *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix4x3fv, glUniform3fv, location, values, count,
          QMatrix4x3, 4, 3);
@@ -2948,6 +2808,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x3 *
 */
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix4x4 *values, int count)
 {
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrixArray
         (glUniformMatrix4fv, location, values, count, QMatrix4x4, 4, 4);
 }
@@ -2974,7 +2836,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x4 *
     The \a context is used to resolve the GLSL extensions.
     If \a context is null, then QGLContext::currentContext() is used.
 */
-bool QGLShaderProgram::hasShaderPrograms(const QGLContext *context)
+bool QGLShaderProgram::hasOpenGLShaderPrograms(const QGLContext *context)
 {
 #if !defined(QT_OPENGL_ES_2)
     if (!context)
@@ -2993,11 +2855,62 @@ bool QGLShaderProgram::hasShaderPrograms(const QGLContext *context)
 */
 void QGLShaderProgram::shaderDestroyed()
 {
+    Q_D(QGLShaderProgram);
     QGLShader *shader = qobject_cast<QGLShader *>(sender());
     if (shader && !d->removingShaders)
         removeShader(shader);
 }
 
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+/*! \internal */
+void QGLShaderProgram::setUniformValue(int location, QMacCompatGLint value)
+{
+    setUniformValue(location, GLint(value));
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValue(int location, QMacCompatGLuint value)
+{
+    setUniformValue(location, GLuint(value));
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValue(const char *name, QMacCompatGLint value)
+{
+    setUniformValue(name, GLint(value));
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValue(const char *name, QMacCompatGLuint value)
+{
+    setUniformValue(name, GLuint(value));
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValueArray(int location, const QMacCompatGLint *values, int count)
+{
+    setUniformValueArray(location, (const GLint *)values, count);
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValueArray(int location, const QMacCompatGLuint *values, int count)
+{
+    setUniformValueArray(location, (const GLuint *)values, count);
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValueArray(const char *name, const QMacCompatGLint *values, int count)
+{
+    setUniformValueArray(name, (const GLint *)values, count);
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValueArray(const char *name, const QMacCompatGLuint *values, int count)
+{
+    setUniformValueArray(name, (const GLuint *)values, count);
+}
 #endif
+
+#endif // !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
 
 QT_END_NAMESPACE

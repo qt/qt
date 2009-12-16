@@ -86,6 +86,7 @@ private slots:
     void escapedRelations();
     void escapedTableName();
     void whiteSpaceInIdentifiers();
+    void psqlSchemaTest();
 
 private:
     void dropTestTables( QSqlDatabase db );
@@ -150,10 +151,11 @@ void tst_QSqlRelationalTableModel::initTestCase()
         if (db.driverName().startsWith("QIBASE"))
             db.exec("SET DIALECT 3");
         else if (tst_Databases::isSqlServer(db)) {
-            QSqlQuery q(db);
-            QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
-            QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
+            db.exec("SET ANSI_DEFAULTS ON");
+            db.exec("SET IMPLICIT_TRANSACTIONS OFF");
         }
+        else if(tst_Databases::isPostgreSQL(db))
+            db.exec("set client_min_messages='warning'");
         recreateTestTables(db);
     }
 }
@@ -181,6 +183,9 @@ void tst_QSqlRelationalTableModel::dropTestTables( QSqlDatabase db )
             << qTableName("CASETEST1" )
             << qTableName("casetest1" );
     tst_Databases::safeDropTables( db, tableNames );
+
+    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373")+" CASCADE");
+    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373_s2")+" CASCADE");
 }
 
 void tst_QSqlRelationalTableModel::init()
@@ -1118,8 +1123,8 @@ void tst_QSqlRelationalTableModel::escapedTableName()
     }
 }
 
-void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers() {
-
+void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers()
+{
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
@@ -1191,6 +1196,28 @@ void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers() {
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 4);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("New York"));
     QCOMPARE(model.data(model.index(0, 2)).toInt(), 6);
+}
+
+void tst_QSqlRelationalTableModel::psqlSchemaTest()
+{
+    QFETCH_GLOBAL(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    if(!tst_Databases::isPostgreSQL(db)) {
+        QSKIP("Postgresql specific test", SkipSingle);
+        return;
+    }
+    QSqlRelationalTableModel model(0, db);
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("create schema "+qTableName("QTBUG_5373")));
+    QVERIFY_SQL(q, exec("create schema "+qTableName("QTBUG_5373_s2")));
+    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373")+"."+qTableName("document")+"(document_id int primary key, relatingid int, userid int)"));
+    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373_s2")+"."+qTableName("user")+"(userid int primary key, username char(40))"));
+    model.setTable(qTableName("QTBUG_5373")+"."+qTableName("document"));
+    model.setRelation(1, QSqlRelation(qTableName("QTBUG_5373_s2")+"."+qTableName("user"), "userid", "username"));
+    model.setRelation(2, QSqlRelation(qTableName("QTBUG_5373_s2")+"."+qTableName("user"), "userid", "username"));
+    QVERIFY_SQL(model, select());
 }
 
 QTEST_MAIN(tst_QSqlRelationalTableModel)

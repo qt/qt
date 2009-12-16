@@ -74,14 +74,14 @@ tst_QLCDNumber::~tst_QLCDNumber()
 void tst_QLCDNumber::getSetCheck()
 {
     QLCDNumber obj1;
-    // int QLCDNumber::numDigits()
-    // void QLCDNumber::setNumDigits(int)
-    obj1.setNumDigits(0);
-    QCOMPARE(0, obj1.numDigits());
-    obj1.setNumDigits(INT_MIN);
-    QCOMPARE(0, obj1.numDigits()); // Range<0, 99>
-    obj1.setNumDigits(INT_MAX);
-    QCOMPARE(99, obj1.numDigits()); // Range<0, 99>
+    // int QLCDNumber::digitCount()
+    // void QLCDNumber::setDigitCount(int)
+    obj1.setDigitCount(0);
+    QCOMPARE(0, obj1.digitCount());
+    obj1.setDigitCount(INT_MIN);
+    QCOMPARE(0, obj1.digitCount()); // Range<0, 99>
+    obj1.setDigitCount(INT_MAX);
+    QCOMPARE(99, obj1.digitCount()); // Range<0, 99>
 }
 
 QTEST_MAIN(tst_QLCDNumber)

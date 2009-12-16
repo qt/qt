@@ -133,28 +133,25 @@ HelpNetworkAccessManager::HelpNetworkAccessManager(QHelpEngine *engine,
 {
 }
 
-QNetworkReply *HelpNetworkAccessManager::createRequest(Operation op,
-    const QNetworkRequest &request, QIODevice *outgoingData)
+QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
+    const QNetworkRequest &request, QIODevice* /*outgoingData*/)
 {
-    const QString& scheme = request.url().scheme();
-    if (scheme == QLatin1String("qthelp") || scheme == QLatin1String("about")) {
-        const QUrl& url = request.url();
-        QString mimeType = url.toString();
-        if (mimeType.endsWith(QLatin1String(".svg"))
-            || mimeType.endsWith(QLatin1String(".svgz"))) {
-           mimeType = QLatin1String("image/svg+xml");
-        }
-        else if (mimeType.endsWith(QLatin1String(".css"))) {
-           mimeType = QLatin1String("text/css");
-        }
-        else if (mimeType.endsWith(QLatin1String(".js"))) {
-           mimeType = QLatin1String("text/javascript");
-        } else {
-            mimeType = QLatin1String("text/html");
-        }
-        return new HelpNetworkReply(request, helpEngine->fileData(url), mimeType);
+    const QUrl& url = request.url();
+    QString mimeType = url.toString();
+    if (mimeType.endsWith(QLatin1String(".svg"))
+        || mimeType.endsWith(QLatin1String(".svgz"))) {
+            mimeType = QLatin1String("image/svg+xml");
     }
-    return QNetworkAccessManager::createRequest(op, request, outgoingData);
+    else if (mimeType.endsWith(QLatin1String(".css"))) {
+        mimeType = QLatin1String("text/css");
+    }
+    else if (mimeType.endsWith(QLatin1String(".js"))) {
+        mimeType = QLatin1String("text/javascript");
+    } else {
+        mimeType = QLatin1String("text/html");
+    }
+
+    return new HelpNetworkReply(request, helpEngine->fileData(url), mimeType);
 }
 
 class HelpPage : public QWebPage
@@ -295,7 +292,7 @@ HelpViewer::HelpViewer(QHelpEngine *engine, CentralWidget *parent)
         SLOT(actionChanged()));
     connect(pageAction(QWebPage::Forward), SIGNAL(changed()), this,
         SLOT(actionChanged()));
-    connect(page(), SIGNAL(linkHovered(QString, QString, QString)), this,
+    connect(page(), SIGNAL(linkHovered(QString,QString,QString)), this,
         SIGNAL(highlighted(QString)));
     connect(this, SIGNAL(urlChanged(QUrl)), this, SIGNAL(sourceChanged(QUrl)));
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));

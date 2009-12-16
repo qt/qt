@@ -191,12 +191,16 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
             return false;
         }
 
-        QT_STATBUF statBuf;
-        if (QT_FSTAT(fd, &statBuf) != -1) {
-            if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
-                q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
-                QT_CLOSE(fd);
-                return false;
+        if (!(openMode & QIODevice::WriteOnly)) {
+            // we don't need this check if we tried to open for writing because then
+            // we had received EISDIR anyway.
+            QT_STATBUF statBuf;
+            if (QT_FSTAT(fd, &statBuf) != -1) {
+                if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
+                    q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
+                    QT_CLOSE(fd);
+                    return false;
+                }
             }
         }
 
@@ -230,12 +234,16 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
             return false;
         }
 
-        QT_STATBUF statBuf;
-        if (QT_FSTAT(fileno(fh), &statBuf) != -1) {
-            if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
-                q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
-                fclose(fh);
-                return false;
+        if (!(openMode & QIODevice::WriteOnly)) {
+            // we don't need this check if we tried to open for writing because then
+            // we had received EISDIR anyway.
+            QT_STATBUF statBuf;
+            if (QT_FSTAT(fileno(fh), &statBuf) != -1) {
+                if ((statBuf.st_mode & S_IFMT) == S_IFDIR) {
+                    q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
+                    fclose(fh);
+                    return false;
+                }
             }
         }
 
@@ -1243,34 +1251,51 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
         q->setError(QFile::PermissionsError, qt_error_string(int(EACCES)));
         return 0;
     }
-    if (offset < 0) {
+
+    if (offset < 0 || offset != qint64(QT_OFF_T(offset))
+            || size < 0 || quint64(size) > quint64(size_t(-1))) {
         q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
         return 0;
     }
+
+    // If we know the mapping will extend beyond EOF, fail early to avoid
+    // undefined behavior. Otherwise, let mmap have its say.
+    if (doStat()
+            && (QT_OFF_T(size) > st.st_size - QT_OFF_T(offset)))
+        qWarning("QFSFileEngine::map: Mapping a file beyond its size is not portable");
+
     int access = 0;
     if (openMode & QIODevice::ReadOnly) access |= PROT_READ;
     if (openMode & QIODevice::WriteOnly) access |= PROT_WRITE;
 
-    int pagesSize = getpagesize();
-    int realOffset = offset / pagesSize;
-    int extra = offset % pagesSize;
+    int pageSize = getpagesize();
+    int extra = offset % pageSize;
+
+    if (size + extra > (size_t)-1) {
+        q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
+        return 0;
+    }
+
+    size_t realSize = (size_t)size + extra;
+    QT_OFF_T realOffset = QT_OFF_T(offset);
+    realOffset &= ~(QT_OFF_T(pageSize - 1));
 
 #ifdef Q_OS_SYMBIAN
     void *mapAddress;
-    TRAPD(err,     mapAddress = mmap((void*)0, (size_t)size + extra,
-                   access, MAP_SHARED, nativeHandle(), realOffset * pagesSize));
+    TRAPD(err,     mapAddress = QT_MMAP((void*)0, realSize,
+                   access, MAP_SHARED, nativeHandle(), realOffset));
     if (err != KErrNone) {
         qWarning("OpenC bug: leave from mmap %d", err);
         mapAddress = MAP_FAILED;
         errno = EINVAL;
     }
 #else
-     void *mapAddress = mmap((void*)0, (size_t)size + extra,
-                    access, MAP_SHARED, nativeHandle(), realOffset * pagesSize);
+    void *mapAddress = QT_MMAP((void*)0, realSize,
+                   access, MAP_SHARED, nativeHandle(), realOffset);
 #endif
     if (MAP_FAILED != mapAddress) {
         uchar *address = extra + static_cast<uchar*>(mapAddress);
-        maps[address] = QPair<int,int>(extra, size);
+        maps[address] = QPair<int,size_t>(extra, realSize);
         return address;
     }
 
@@ -1300,7 +1325,7 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
     }
 
     uchar *start = ptr - maps[ptr].first;
-    int len = maps[ptr].second;
+    size_t len = maps[ptr].second;
     if (-1 == munmap(start, len)) {
         q->setError(QFile::UnspecifiedError, qt_error_string(errno));
         return false;

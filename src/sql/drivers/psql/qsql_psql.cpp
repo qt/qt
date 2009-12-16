@@ -357,7 +357,7 @@ QVariant QPSQLResult::data(int i)
             }
             return QString::fromAscii(val);
         }
-        return strtod(val, 0);
+        return QString::fromAscii(val).toDouble();
     case QVariant::Date:
         if (val[0] == '\0') {
             return QVariant(QDate());
@@ -1150,7 +1150,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QVariant::Time:
 #ifndef QT_NO_DATESTRING
             if (field.value().toTime().isValid()) {
-                r = QLatin1Char('\'') + field.value().toTime().toString(Qt::ISODate) + QLatin1Char('\'');
+                r = QLatin1Char('\'') + field.value().toTime().toString(QLatin1String("hh:mm:ss.zzz")) + QLatin1Char('\'');
             } else
 #endif
             {

@@ -457,7 +457,7 @@ void CompositionRenderer::paint(QPainter *painter)
 #ifdef Q_WS_QWS
         m_buffer = m_base_buffer;
 #else
-        memcpy(m_buffer.bits(), m_base_buffer.bits(), m_buffer.numBytes());
+        memcpy(m_buffer.bits(), m_base_buffer.bits(), m_buffer.byteCount());
 #endif
 
         {

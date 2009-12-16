@@ -86,6 +86,22 @@ static bool isValidProtocolString(const WebCore::String& protocol)
     return true;
 }
 
+#if USE(V8)
+
+static bool webSocketsAvailable = false;
+
+void WebSocket::setIsAvailable(bool available)
+{
+    webSocketsAvailable = available;
+}
+
+bool WebSocket::isAvailable()
+{
+    return webSocketsAvailable;
+}
+
+#endif
+
 WebSocket::WebSocket(ScriptExecutionContext* context)
     : ActiveDOMObject(context, this)
     , m_state(CONNECTING)
@@ -94,7 +110,8 @@ WebSocket::WebSocket(ScriptExecutionContext* context)
 
 WebSocket::~WebSocket()
 {
-    close();
+    if (m_channel.get())
+        m_channel->disconnect();
 }
 
 void WebSocket::connect(const KURL& url, ExceptionCode& ec)
@@ -174,7 +191,7 @@ ScriptExecutionContext* WebSocket::scriptExecutionContext() const
 void WebSocket::didConnect()
 {
     LOG(Network, "WebSocket %p didConnect", this);
-    if (m_state != CONNECTING) {
+    if (m_state != CONNECTING || !scriptExecutionContext()) {
         didClose();
         return;
     }
@@ -185,11 +202,11 @@ void WebSocket::didConnect()
 void WebSocket::didReceiveMessage(const String& msg)
 {
     LOG(Network, "WebSocket %p didReceiveMessage %s", this, msg.utf8().data());
-    if (m_state != OPEN)
+    if (m_state != OPEN || !scriptExecutionContext())
         return;
     RefPtr<MessageEvent> evt = MessageEvent::create();
     // FIXME: origin, lastEventId, source, messagePort.
-    evt->initMessageEvent(eventNames().messageEvent, false, false, msg, "", "", 0, 0);
+    evt->initMessageEvent(eventNames().messageEvent, false, false, SerializedScriptValue::create(msg), "", "", 0, 0);
     scriptExecutionContext()->postTask(ProcessWebSocketEventTask::create(this, evt));
 }
 
@@ -197,7 +214,8 @@ void WebSocket::didClose()
 {
     LOG(Network, "WebSocket %p didClose", this);
     m_state = CLOSED;
-    scriptExecutionContext()->postTask(ProcessWebSocketEventTask::create(this, Event::create(eventNames().closeEvent, false, false)));
+    if (scriptExecutionContext())
+        scriptExecutionContext()->postTask(ProcessWebSocketEventTask::create(this, Event::create(eventNames().closeEvent, false, false)));
 }
 
 EventTargetData* WebSocket::eventTargetData()

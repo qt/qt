@@ -219,6 +219,10 @@ QAbstractSliderPrivate::QAbstractSliderPrivate()
       blocktracking(false), pressed(false),
       invertedAppearance(false), invertedControls(false),
       orientation(Qt::Horizontal), repeatAction(QAbstractSlider::SliderNoAction)
+#ifdef QT_KEYPAD_NAVIGATION
+      , isAutoRepeating(false)
+      , repeatMultiplier(1)
+#endif
 {
 }
 
@@ -370,6 +374,9 @@ int QAbstractSlider::maximum() const
     The smaller of two natural steps that an
     abstract sliders provides and typically corresponds to the user
     pressing an arrow key.
+
+    If the property is modified during an auto repeating key event, behavior
+    is undefined.
 
     \sa pageStep
 */
@@ -598,10 +605,10 @@ void QAbstractSlider::triggerAction(SliderAction action)
     d->blocktracking = true;
     switch (action) {
     case SliderSingleStepAdd:
-        setSliderPosition(d->overflowSafeAdd(d->singleStep));
+        setSliderPosition(d->overflowSafeAdd(d->effectiveSingleStep()));
         break;
     case SliderSingleStepSub:
-        setSliderPosition(d->overflowSafeAdd(-d->singleStep));
+        setSliderPosition(d->overflowSafeAdd(-d->effectiveSingleStep()));
         break;
     case SliderPageStepAdd:
         setSliderPosition(d->overflowSafeAdd(d->pageStep));
@@ -690,32 +697,28 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
 {
     Q_D(QAbstractSlider);
     e->ignore();
-    if (e->orientation() != d->orientation && !rect().contains(e->pos()))
-        return;
 
-    qreal currentOffset = qreal(e->delta()) / 120;
-    d->offset_accumulated += currentOffset;
-    if (int(d->offset_accumulated) == 0) {
-        // QAbstractSlider works on integer values. So if the accumulated
-        // offset is less than +/- 1, we need to wait until we get more
-        // wheel events (this means that the wheel resolution is higher than 
-        // 15 degrees, e.g. when using mac mighty mouse/trackpad):
-        return;
-    }
+    int stepsToScroll = 0;
+    qreal offset = qreal(e->delta()) / 120;
 
-    int stepsToScroll;
     if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier)) {
-        stepsToScroll = currentOffset > 0 ? d->pageStep : -d->pageStep;
+        // Scroll one page regardless of delta:
+        stepsToScroll = qBound(-d->pageStep, int(offset * d->pageStep), d->pageStep);
+        d->offset_accumulated = 0;
     } else {
-        // Calculate the number of steps to scroll (per 15 degrees of rotate):
-#ifdef Q_OS_MAC
-        // On mac, since mouse wheel scrolling is accelerated and
-        // fine tuned by the OS, we skip applying acceleration:
-        stepsToScroll = int(d->offset_accumulated);
-#else
-        stepsToScroll = int(d->offset_accumulated) * QApplication::wheelScrollLines() * d->singleStep;
-#endif
-        stepsToScroll = qBound(-d->pageStep, stepsToScroll, d->pageStep);
+        // Calculate how many lines to scroll. Depending on what delta is (and 
+        // offset), we might end up with a fraction (e.g. scroll 1.3 lines). We can
+        // only scroll whole lines, so we keep the reminder until next event.
+        qreal stepsToScrollF = offset * QApplication::wheelScrollLines() * d->effectiveSingleStep();
+        // Check if wheel changed direction since last event:
+        if (d->offset_accumulated != 0 && (offset / d->offset_accumulated) < 0)
+            d->offset_accumulated = 0;
+
+        d->offset_accumulated += stepsToScrollF;
+        stepsToScroll = qBound(-d->pageStep, int(d->offset_accumulated), d->pageStep);
+        d->offset_accumulated -= int(d->offset_accumulated);
+        if (stepsToScroll == 0)
+            return;
     }
 
     if (d->invertedControls)
@@ -725,12 +728,10 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
     d->position = d->overflowSafeAdd(stepsToScroll); // value will be updated by triggerAction()
     triggerAction(SliderMove);
 
-    if (prevValue == d->value) {
+    if (prevValue == d->value)
         d->offset_accumulated = 0;
-    } else {
-        d->offset_accumulated -= int(d->offset_accumulated);
+    else
         e->accept();
-    }
 }
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
@@ -779,6 +780,38 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
 {
     Q_D(QAbstractSlider);
     SliderAction action = SliderNoAction;
+#ifdef QT_KEYPAD_NAVIGATION
+    if (ev->isAutoRepeat()) {
+        if (d->firstRepeat.isNull())
+            d->firstRepeat = QTime::currentTime();
+        else if (1 == d->repeatMultiplier) {
+            // This is the interval in milli seconds which one key repetition
+            // takes.
+            const int repeatMSecs = d->firstRepeat.msecsTo(QTime::currentTime());
+
+            /**
+             * The time it takes to currently navigate the whole slider.
+             */
+            const qreal currentTimeElapse = (qreal(maximum()) / singleStep()) * repeatMSecs;
+
+            /**
+             * This is an arbitrarily determined constant in msecs that
+             * specifies how long time it should take to navigate from the
+             * start to the end(excluding starting key auto repeat).
+             */
+            const int SliderRepeatElapse = 2500;
+
+            d->repeatMultiplier = currentTimeElapse / SliderRepeatElapse;
+        }
+
+    }
+    else if (!d->firstRepeat.isNull()) {
+        d->firstRepeat = QTime();
+        d->repeatMultiplier = 1;
+    }
+
+#endif
+
     switch (ev->key()) {
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Select:

@@ -96,10 +96,17 @@ protected:
     QString generateUID3();
 
     void initMmpVariables();
-    void checkOverridability(QStringList &overridableKeywords, QString &checkString);
+    void handleMmpRulesOverrides(QString &checkString,
+                                 bool &inResourceBlock,
+                                 QStringList &restrictedMmpKeywords,
+                                 const QStringList &restrictableMmpKeywords,
+                                 const QStringList &overridableMmpKeywords);
+    void appendKeywordIfMatchFound(QStringList &list,
+                                   const QStringList &keywordList,
+                                   QString &checkString);
 
     void writeHeader(QTextStream &t);
-    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension);
+    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension, const QString &iconFile);
 
     static bool removeDuplicatedStrings(QStringList& stringList);
 
@@ -143,10 +150,11 @@ protected:
     void generateDistcleanTargets(QTextStream& t);
 
     // Subclass implements
-    virtual void writeBldInfExtensionRulesPart(QTextStream& t) = 0;
+    virtual void writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile) = 0;
     virtual void writeBldInfMkFilePart(QTextStream& t, bool addDeploymentExtension) = 0;
     virtual void writeMkFile(const QString& wrapperFileName, bool deploymentOnly) = 0;
     virtual void writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile) = 0;
+    virtual void appendAbldTempDirs(QStringList& sysincspaths, QString includepath) = 0;
 
 public:
 

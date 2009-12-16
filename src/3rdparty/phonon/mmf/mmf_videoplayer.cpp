@@ -49,7 +49,9 @@ MMF::VideoPlayer::VideoPlayer()
         ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
         ,   m_window(0)
         ,   m_totalTime(0)
-        ,   m_mmfOutputChangePending(false)
+        ,   m_pendingChanges(false)
+        ,   m_dsaActive(false)
+        ,   m_dsaWasActive(false)
 {
     construct();
 }
@@ -60,7 +62,8 @@ MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
         ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
         ,   m_window(0)
         ,   m_totalTime(0)
-        ,   m_mmfOutputChangePending(false)
+        ,   m_pendingChanges(false)
+        ,   m_dsaActive(false)
 {
     construct();
 }
@@ -70,23 +73,10 @@ void MMF::VideoPlayer::construct()
     TRACE_CONTEXT(VideoPlayer::VideoPlayer, EVideoApi);
     TRACE_ENTRY_0();
 
-    if (m_videoOutput)
-        m_videoOutput->setObserver(this);
+    getVideoWindow();
 
     const TInt priority = 0;
     const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
-
-    // Ignore return value - first call must always return true
-    getNativeWindowSystemHandles();
-
-    // TODO: is this the correct way to handle errors which occur when
-    // creating a Symbian object in the constructor of a Qt object?
-
-    // TODO: check whether videoOutput is visible?  If not, then the
-    // corresponding window will not be active, meaning that the
-    // clipping region will be set to empty and the video will not be
-    // visible.  If this is the case, we should set m_mmfOutputChangePending
-    // and respond to future showEvents from the videoOutput widget.
 
     TRAPD(err,
         m_player.reset(CVideoPlayerUtility::NewL
@@ -95,9 +85,12 @@ void MMF::VideoPlayer::construct()
                  priority, preference,
                  m_wsSession, m_screenDevice,
                  *m_window,
-                 m_rect, m_rect
+                 m_videoRect, m_videoRect
             ))
         );
+
+    // CVideoPlayerUtility::NewL starts DSA
+    m_dsaActive = true;
 
     if (KErrNone != err)
         changeState(ErrorState);
@@ -110,6 +103,9 @@ MMF::VideoPlayer::~VideoPlayer()
     TRACE_CONTEXT(VideoPlayer::~VideoPlayer, EVideoApi);
     TRACE_ENTRY_0();
 
+    // QObject destructor removes all signal-slot connections involving this
+    // object, so we do not need to disconnect from m_videoOutput here.
+
     TRACE_EXIT_0();
 }
 
@@ -121,11 +117,7 @@ void MMF::VideoPlayer::doPlay()
 {
     TRACE_CONTEXT(VideoPlayer::doPlay, EVideoApi);
 
-    // See comment in updateMmfOutput
-    if (m_mmfOutputChangePending) {
-        TRACE_0("MMF output change pending - pushing now");
-        updateMmfOutput();
-    }
+    applyPendingChanges();
 
     m_player->Play();
 }
@@ -252,13 +244,10 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
         maxVolumeChanged(m_player->MaxVolume());
 
         if (m_videoOutput)
-            m_videoOutput->setFrameSize(m_frameSize);
+            m_videoOutput->setVideoSize(m_videoFrameSize);
 
-        // See comment in updateMmfOutput
-        if (m_mmfOutputChangePending) {
-            TRACE_0("MMF output change pending - pushing now");
-            updateMmfOutput();
-        }
+        updateVideoRect();
+        applyPendingChanges();
 
         emit totalTimeChanged(totalTime());
         changeState(StoppedState);
@@ -276,7 +265,7 @@ void MMF::VideoPlayer::doPrepareCompleteL(TInt aError)
     // Get frame size
     TSize size;
     m_player->VideoFrameSizeL(size);
-    m_frameSize = QSize(size.iWidth, size.iHeight);
+    m_videoFrameSize = QSize(size.iWidth, size.iHeight);
 
     // Get duration
     m_totalTime = toMilliSeconds(m_player->DurationL());
@@ -319,27 +308,236 @@ void MMF::VideoPlayer::MvpuoEvent(const TMMFEvent &aEvent)
 
 
 //-----------------------------------------------------------------------------
-// VideoOutputObserver
+// Video window updates
 //-----------------------------------------------------------------------------
 
-void MMF::VideoPlayer::videoOutputRegionChanged()
+void MMF::VideoPlayer::getVideoWindow()
 {
-    TRACE_CONTEXT(VideoPlayer::videoOutputRegionChanged, EVideoInternal);
-    TRACE_ENTRY("state %d", state());
+    TRACE_CONTEXT(VideoPlayer::getVideoWindow, EVideoInternal);
+    TRACE_ENTRY_0();
 
-    const bool changed = getNativeWindowSystemHandles();
+    if(m_videoOutput) {
+        // Dump information to log, only in debug builds
+        m_videoOutput->dump();
 
-    // See comment in updateMmfOutput
-    if (changed) {
-        if (state() == LoadingState)
-            m_mmfOutputChangePending = true;
-        else
-            updateMmfOutput();
+        initVideoOutput();
+        videoWindowChanged();
+    } else
+        // Top-level window
+        m_window = QApplication::activeWindow()->effectiveWinId()->DrawableWindow();
+
+    TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::videoOutputChanged()
+{
+    TRACE_CONTEXT(VideoPlayer::videoOutputChanged, EVideoInternal);
+    TRACE_ENTRY_0();
+
+    if (m_videoOutput) {
+        initVideoOutput();
+        videoWindowChanged();
     }
 
     TRACE_EXIT_0();
 }
 
+void MMF::VideoPlayer::initVideoOutput()
+{
+    m_videoOutput->winId();
+    m_videoOutput->setVideoSize(m_videoFrameSize);
+
+    bool connected = connect(
+        m_videoOutput, SIGNAL(videoWindowChanged()),
+        this, SLOT(videoWindowChanged())
+    );
+    Q_ASSERT(connected);
+
+    connected = connect(
+        m_videoOutput, SIGNAL(beginVideoWindowNativePaint()),
+        this, SLOT(suspendDirectScreenAccess())
+    );
+    Q_ASSERT(connected);
+
+    connected = connect(
+        m_videoOutput, SIGNAL(endVideoWindowNativePaint()),
+        this, SLOT(resumeDirectScreenAccess())
+    );
+    Q_ASSERT(connected);
+
+    connected = connect(
+        m_videoOutput, SIGNAL(aspectRatioChanged()),
+        this, SLOT(aspectRatioChanged())
+    );
+    Q_ASSERT(connected);
+
+    connected = connect(
+        m_videoOutput, SIGNAL(scaleModeChanged()),
+        this, SLOT(scaleModeChanged())
+    );
+    Q_ASSERT(connected);
+
+    // Suppress warnings in release builds
+    Q_UNUSED(connected);
+}
+
+void MMF::VideoPlayer::videoWindowChanged()
+{
+    TRACE_CONTEXT(VideoPlayer::videoOutputRegionChanged, EVideoInternal);
+    TRACE_ENTRY("state %d", state());
+
+    m_window = m_videoOutput->videoWindow();
+    updateVideoRect();
+
+    TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::suspendDirectScreenAccess()
+{
+    m_dsaWasActive = stopDirectScreenAccess();
+}
+
+void MMF::VideoPlayer::resumeDirectScreenAccess()
+{
+    if(m_dsaWasActive) {
+        startDirectScreenAccess();
+        m_dsaWasActive = false;
+    }
+}
+
+void MMF::VideoPlayer::startDirectScreenAccess()
+{
+    if(!m_dsaActive) {
+        TRAPD(err, m_player->StartDirectScreenAccessL());
+        if(KErrNone == err)
+            m_dsaActive = true;
+        else
+            setError(NormalError);
+    }
+}
+
+bool MMF::VideoPlayer::stopDirectScreenAccess()
+{
+    const bool dsaWasActive = m_dsaActive;
+    if(m_dsaActive) {
+        TRAPD(err, m_player->StopDirectScreenAccessL());
+        if(KErrNone == err)
+            m_dsaActive = false;
+        else
+            setError(NormalError);
+    }
+    return dsaWasActive;
+}
+
+// Helper function for aspect ratio / scale mode handling
+QSize scaleToAspect(const QSize& srcRect, int aspectWidth, int aspectHeight)
+{
+    const qreal aspectRatio = qreal(aspectWidth) / aspectHeight;
+
+    int width = srcRect.width();
+    int height = srcRect.width() / aspectRatio;
+    if (height > srcRect.height()){
+        height = srcRect.height();
+        width = srcRect.height() * aspectRatio;
+    }
+    return QSize(width, height);
+}
+
+void MMF::VideoPlayer::updateVideoRect()
+{
+    QRect videoRect;
+    QRect windowRect = m_videoOutput->videoWindowRect();
+
+    // Clip to physical window size
+    // This is due to a defect in the layout when running on S60 3.2, which
+    // results in the rectangle of the video widget extending outside the
+    // screen in certain circumstances.  These include the initial startup
+    // of the mediaplayer demo in portrait mode.  When this rectangle is
+    // passed to the CVideoPlayerUtility, no video is rendered.
+    const TSize screenSize = m_screenDevice.SizeInPixels();
+    const QRect screenRect(0, 0, screenSize.iWidth, screenSize.iHeight);
+    windowRect = windowRect.intersected(screenRect);
+
+    const QSize windowSize = windowRect.size();
+
+    // Calculate size of smallest rect which contains video frame size
+    // and conforms to aspect ratio
+    switch (m_videoOutput->aspectRatio()) {
+    case Phonon::VideoWidget::AspectRatioAuto:
+        videoRect.setSize(m_videoFrameSize);
+        break;
+
+    case Phonon::VideoWidget::AspectRatioWidget:
+        videoRect.setSize(windowSize);
+        break;
+
+    case Phonon::VideoWidget::AspectRatio4_3:
+        videoRect.setSize(scaleToAspect(m_videoFrameSize, 4, 3));
+        break;
+
+    case Phonon::VideoWidget::AspectRatio16_9:
+        videoRect.setSize(scaleToAspect(m_videoFrameSize, 16, 9));
+        break;
+    }
+
+    // Scale to fill the window width
+    const int windowWidth = windowSize.width();
+    const int windowHeight = windowSize.height();
+    const qreal windowScaleFactor = qreal(windowWidth) / videoRect.width();
+    int videoWidth = windowWidth;
+    int videoHeight = videoRect.height() * windowScaleFactor;
+
+    const qreal windowToVideoHeightRatio = qreal(windowHeight) / videoHeight;
+
+    switch(m_videoOutput->scaleMode()) {
+    case Phonon::VideoWidget::ScaleAndCrop:
+        if(videoHeight < windowHeight) {
+            videoWidth *= windowToVideoHeightRatio;
+            videoHeight = windowHeight;
+        }
+        break;
+    case Phonon::VideoWidget::FitInView:
+    default:
+        if(videoHeight > windowHeight) {
+            videoWidth *= windowToVideoHeightRatio;
+            videoHeight = windowHeight;
+        }
+        break;
+    }
+
+    // Calculate scale factors
+    m_scaleWidth = 100.0f * videoWidth / m_videoFrameSize.width();
+    m_scaleHeight = 100.0f * videoHeight / m_videoFrameSize.height();
+
+    m_videoRect = qt_QRect2TRect(windowRect);
+
+    if (state() == LoadingState)
+        m_pendingChanges = true;
+    else {
+        applyVideoWindowChange();
+        m_pendingChanges = false;
+    }
+}
+
+void MMF::VideoPlayer::aspectRatioChanged()
+{
+    TRACE_CONTEXT(VideoPlayer::aspectRatioChanged, EVideoInternal);
+    TRACE_ENTRY("state %d aspectRatio %d", state());
+
+    updateVideoRect();
+
+    TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::scaleModeChanged()
+{
+    TRACE_CONTEXT(VideoPlayer::scaleModeChanged, EVideoInternal);
+    TRACE_ENTRY("state %d", state());
+
+    updateVideoRect();
+
+    TRACE_EXIT_0();
+}
 
 #ifndef QT_NO_DEBUG
 
@@ -380,113 +578,75 @@ void getDsaRegion(RWsSession &session, const RWindowBase &window)
 
 #endif // _DEBUG
 
-void MMF::VideoPlayer::updateMmfOutput()
+void MMF::VideoPlayer::applyPendingChanges()
 {
-    TRACE_CONTEXT(VideoPlayer::updateMmfOutput, EVideoInternal);
-    TRACE_ENTRY_0();
+    if(m_pendingChanges)
+        applyVideoWindowChange();
 
-    // Calling SetDisplayWindowL is a no-op unless the MMF controller has
-    // been loaded, so we shouldn't do it.  Instead, the
-    // m_mmfOutputChangePending flag is used to record the fact that we
-    // need to call SetDisplayWindowL, and this is checked in
-    // MvpuoPrepareComplete, at which point the MMF controller has been
-    // loaded.
+    m_pendingChanges = false;
+}
+
+void MMF::VideoPlayer::applyVideoWindowChange()
+{
+    TRACE_CONTEXT(VideoPlayer::applyVideoWindowChange, EVideoInternal);
+    TRACE_ENTRY_0();
 
 #ifndef QT_NO_DEBUG
     getDsaRegion(m_wsSession, *m_window);
 #endif
 
-    TRAPD(err,
-        m_player->SetDisplayWindowL
-        (
-            m_wsSession, m_screenDevice,
-            *m_window,
-            m_rect, m_rect
-        )
-    );
+    static const TBool antialias = ETrue;
 
-    if (KErrNone != err) {
-        TRACE("SetDisplayWindowL error %d", err);
+    TRAPD(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight, antialias));
+    if(KErrNone != err) {
+        TRACE("SetScaleFactorL (1) err %d", err);
         setError(NormalError);
     }
 
-    m_mmfOutputChangePending = false;
+    if(KErrNone == err) {
+        TRAP(err,
+            m_player->SetDisplayWindowL
+                (
+                    m_wsSession, m_screenDevice,
+                    *m_window,
+                    m_videoRect, m_videoRect
+                )
+            );
+
+        if (KErrNone != err) {
+            TRACE("SetDisplayWindowL err %d", err);
+            setError(NormalError);
+        } else {
+            m_dsaActive = true;
+            TRAP(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight, antialias));
+            if(KErrNone != err) {
+                TRACE("SetScaleFactorL (2) err %d", err);
+                setError(NormalError);
+            }
+        }
+    }
 
     TRACE_EXIT_0();
 }
 
 
 //-----------------------------------------------------------------------------
-// Private functions
+// Metadata
 //-----------------------------------------------------------------------------
 
-void MMF::VideoPlayer::videoOutputChanged()
+int MMF::VideoPlayer::numberOfMetaDataEntries() const
 {
-    TRACE_CONTEXT(VideoPlayer::videoOutputChanged, EVideoInternal);
-    TRACE_ENTRY_0();
-
-    if (m_videoOutput) {
-        m_videoOutput->setObserver(this);
-        m_videoOutput->setFrameSize(m_frameSize);
-    }
-
-    videoOutputRegionChanged();
-
-    TRACE_EXIT_0();
+    int numberOfEntries = 0;
+    TRAP_IGNORE(numberOfEntries = m_player->NumberOfMetaDataEntriesL());
+    return numberOfEntries;
 }
 
-bool MMF::VideoPlayer::getNativeWindowSystemHandles()
+QPair<QString, QString> MMF::VideoPlayer::metaDataEntry(int index) const
 {
-    TRACE_CONTEXT(VideoPlayer::getNativeWindowSystemHandles, EVideoInternal);
-    TRACE_ENTRY_0();
-
-    CCoeControl *control = 0;
-
-    if (m_videoOutput)
-        // Create native window
-        control = m_videoOutput->winId();
-    else
-        // Get top-level window
-        control = QApplication::activeWindow()->effectiveWinId();
-
-#ifndef QT_NO_DEBUG
-    if (m_videoOutput) {
-        QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
-        dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
-        ObjectDump::addDefaultAnnotators(*dumper);
-        TRACE_0("Dumping VideoOutput:");
-        dumper->dumpObject(*m_videoOutput);
-    }
-    else {
-        TRACE_0("m_videoOutput is null - dumping top-level control info:");
-        TRACE("control %08x", control);
-        TRACE("control.parent %08x", control->Parent());
-        TRACE("control.isVisible %d", control->IsVisible());
-        TRACE("control.rect %d,%d %dx%d",
-            control->Position().iX, control->Position().iY,
-            control->Size().iWidth, control->Size().iHeight);
-        TRACE("control.ownsWindow %d", control->OwnsWindow());
-    }
-#endif
-
-    RWindowBase *const window = control->DrawableWindow();
-    const TRect rect(window->AbsPosition(), window->Size());
-
-    TRACE("rect                  %d %d - %d %d",
-        rect.iTl.iX, rect.iTl.iY,
-        rect.iBr.iX, rect.iBr.iY);
-
-    bool changed = false;
-
-    if (window != m_window || rect != m_rect) {
-        m_window = window;
-        m_rect = rect;
-        changed = true;
-    }
-
-    TRACE_RETURN("changed %d", changed);
+    CMMFMetaDataEntry *entry = 0;
+    QT_TRAP_THROWING(entry = m_player->MetaDataEntryL(index));
+    return QPair<QString, QString>(qt_TDesC2QString(entry->Name()), qt_TDesC2QString(entry->Value()));
 }
-
 
 QT_END_NAMESPACE
 

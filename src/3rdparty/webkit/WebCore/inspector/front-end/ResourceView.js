@@ -178,7 +178,7 @@ WebInspector.ResourceView.prototype = {
 
         var isFormEncoded = false;
         var requestContentType = this._getHeaderValue(this.resource.requestHeaders, "Content-Type");
-        if (requestContentType.match(/^application\/x-www-form-urlencoded\s*(;.*)?$/i))
+        if (requestContentType && requestContentType.match(/^application\/x-www-form-urlencoded\s*(;.*)?$/i))
             isFormEncoded = true;
 
         if (isFormEncoded) {
@@ -197,6 +197,7 @@ WebInspector.ResourceView.prototype = {
         var title = "<div class=\"header-name\">&nbsp;</div>";
         title += "<div class=\"raw-form-data header-value\">" + formData.escapeHTML() + "</div>";
         var parmTreeElement = new TreeElement(title, null, false);
+        parmTreeElement.selectable = false;
         this.requestPayloadTreeElement.appendChild(parmTreeElement);
     },
 

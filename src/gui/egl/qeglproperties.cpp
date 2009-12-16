@@ -88,8 +88,12 @@ int QEglProperties::value(int name) const
 #if defined(EGL_ALPHA_MASK_SIZE)
     case EGL_ALPHA_MASK_SIZE: return 0;
 #endif
+#if defined(EGL_BIND_TO_TEXTURE_RGB)
     case EGL_BIND_TO_TEXTURE_RGB: return EGL_DONT_CARE;
+#endif
+#if defined(EGL_BIND_TO_TEXTURE_RGBA)
     case EGL_BIND_TO_TEXTURE_RGBA: return EGL_DONT_CARE;
+#endif
 #if defined(EGL_COLOR_BUFFER_TYPE)
     case EGL_COLOR_BUFFER_TYPE: return EGL_RGB_BUFFER;
 #endif
@@ -225,6 +229,15 @@ void QEglProperties::setRenderableType(QEgl::API api)
 // reductions in complexity are possible.
 bool QEglProperties::reduceConfiguration()
 {
+    // EGL chooses configs with the highest color depth over
+    // those with smaller (but faster) lower color depths. One
+    // way around this is to set EGL_BUFFER_SIZE to 16, which
+    // trumps the others. Of course, there may not be a 16-bit
+    // config avaliable, so it's the first restraint we remove.
+    if (value(EGL_BUFFER_SIZE) == 16) {
+        removeValue(EGL_BUFFER_SIZE);
+        return true;
+    }
     if (removeValue(EGL_SAMPLE_BUFFERS)) {
         removeValue(EGL_SAMPLES);
         return true;

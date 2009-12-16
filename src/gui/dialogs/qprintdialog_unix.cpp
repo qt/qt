@@ -696,7 +696,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p)
 #ifndef QT_NO_FILESYSTEMMODEL
     QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
-#if !defined(QT_NO_COMPLETER) && !defined(QT_NO_FILEDIALOG)
+#if !defined(QT_NO_FSCOMPLETER) && !defined(QT_NO_FILEDIALOG)
     widget.filename->setCompleter(new QFSCompleter(fsm, widget.filename));
 #endif
 #endif
@@ -835,9 +835,6 @@ void QUnixPrintWidgetPrivate::setOptionsPane(QPrintDialogPrivate *pane)
 
 void QUnixPrintWidgetPrivate::_q_btnBrowseClicked()
 {
-    const int prevPrinter = widget.printers->currentIndex();
-    widget.printers->setCurrentIndex(widget.printers->count() - 2); // the pdf one
-
     QString filename = widget.filename->text();
 #ifndef QT_NO_FILEDIALOG
     filename = QFileDialog::getSaveFileName(parent, QPrintDialog::tr("Print To File ..."), filename,
@@ -849,9 +846,11 @@ void QUnixPrintWidgetPrivate::_q_btnBrowseClicked()
         widget.filename->setText(filename);
         if (filename.endsWith(QString::fromLatin1(".ps"), Qt::CaseInsensitive))
             widget.printers->setCurrentIndex(widget.printers->count() - 1); // the postscript one
+        else if (filename.endsWith(QString::fromLatin1(".pdf"), Qt::CaseInsensitive))
+            widget.printers->setCurrentIndex(widget.printers->count() - 2); // the pdf one
+        else if (widget.printers->currentIndex() != widget.printers->count() - 1) // if ps is not selected, pdf is default
+            widget.printers->setCurrentIndex(widget.printers->count() - 2); // the pdf one
     }
-    else
-        widget.printers->setCurrentIndex(prevPrinter);
 }
 
 void QUnixPrintWidgetPrivate::applyPrinterProperties(QPrinter *p)
