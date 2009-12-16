@@ -3,7 +3,7 @@
 
 #include <private/qpaintengine_blitter_p.h>
 
-#include <directfb/directfb.h>
+#include <directfb.h>
 
 class QDirectFbBlitter : public QBlittable
 {

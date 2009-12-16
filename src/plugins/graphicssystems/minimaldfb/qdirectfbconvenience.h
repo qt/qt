@@ -5,7 +5,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QEvent>
 
-#include <directfb/directfb.h>
+#include <directfb.h>
 
 class QDirectFbKeyMap: public QHash<DFBInputDeviceKeySymbol, Qt::Key>
 {

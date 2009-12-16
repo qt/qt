@@ -7,7 +7,7 @@
 #include <QPoint>
 #include <QEvent>
 
-#include <directfb/directfb.h>
+#include <directfb.h>
 
 class InputSocketWaiter : public QThread
 {
