@@ -49,9 +49,9 @@
 
 QT_BEGIN_NAMESPACE
 
-QDirectFbWindowSurface::QDirectFbWindowSurface
-        (QDirectFbGraphicsSystemScreen *screen, QWidget *window)
-    : QWindowSurface(window), m_screen(screen)
+QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *screen, QWidget *window)
+    : QWindowSurface(window), m_screen(screen), m_pixmap(0), pmdata(0),
+      m_dfbWindow(0), m_dfbSurface(0)
 {
     window->setWindowSurface(this);
     m_dfbWindow = m_screen->createWindow(window->rect(),window);
