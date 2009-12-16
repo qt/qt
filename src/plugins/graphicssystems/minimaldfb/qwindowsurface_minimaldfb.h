@@ -69,6 +69,8 @@ public:
     void setVisible(bool visible);
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
 
+    void raise();
+    void lower();
 private:
     void lockSurfaceToImage();
 

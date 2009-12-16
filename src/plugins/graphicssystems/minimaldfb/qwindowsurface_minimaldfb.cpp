@@ -154,16 +154,32 @@ void QDirectFbWindowSurface::setVisible(bool visible)
     }
 }
 
-Qt::WindowFlags QDirectFbWindowSurface::setWindowFlags(Qt::WindowFlags type)
+Qt::WindowFlags QDirectFbWindowSurface::setWindowFlags(Qt::WindowFlags flags)
 {
-    if (type == Qt::Popup || type == Qt::ToolTip)
-    {
+    switch (flags & Qt::WindowType_Mask) {
+    case Qt::Popup:
+    case Qt::ToolTip: {
         DFBWindowOptions options;
         m_dfbWindow->GetOptions(m_dfbWindow,&options);
         options = DFBWindowOptions(options | DWOP_GHOST);
         m_dfbWindow->SetOptions(m_dfbWindow,options);
+        break; }
+    default:
+        break;
     }
-    return type;
+
+    m_dfbWindow->SetStackingClass(m_dfbWindow, flags & Qt::WindowStaysOnTopHint ? DWSC_UPPER : DWSC_MIDDLE);
+    return flags;
+}
+
+void QDirectFbWindowSurface::raise()
+{
+    m_dfbWindow->RaiseToTop(m_dfbWindow);
+}
+
+void QDirectFbWindowSurface::lower()
+{
+    m_dfbWindow->LowerToBottom(m_dfbWindow);
 }
 
 QT_END_NAMESPACE
