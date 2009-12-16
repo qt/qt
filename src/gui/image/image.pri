@@ -23,7 +23,7 @@ HEADERS += \
         image/qpictureformatplugin.h \
         image/qpixmap.h \
         image/qpixmap_raster_p.h \
-        miage/qpixmap_blitter_p.h \
+        image/qpixmap_blitter_p.h \
         image/qpixmapcache.h \
         image/qpixmapcache_p.h \
         image/qpixmapdata_p.h \
