@@ -219,6 +219,10 @@ private:
     bool doesPropertyExist(QmlParser::Property *prop, QmlParser::Object *obj);
     bool testLiteralAssignment(const QMetaProperty &prop, 
                                QmlParser::Value *value);
+    bool testQualifiedEnumAssignment(const QMetaProperty &prop,
+                                     QmlParser::Object *obj,
+                                     QmlParser::Value *value,
+                                     bool *isAssignment);
     enum DynamicMetaMode { IgnoreAliases, ResolveAliases, ForceCreation };
     bool mergeDynamicMetaProperties(QmlParser::Object *obj);
     bool buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode);
