@@ -76,7 +76,11 @@ QImage *QDirectFbBlitter::doLock()
     int bpl;
     const DFBResult result = m_surface->Lock(m_surface, DFBSurfaceLockFlags(DSLF_WRITE|DSLF_READ), static_cast<void**>(&mem), &bpl);
     if (result == DFB_OK) {
-        QImage::Format format = QDirectFbConvenience::imageFormatFromSurface(m_surface);
+        DFBSurfacePixelFormat dfbFormat;
+        DFBSurfaceCapabilities dfbCaps;
+        m_surface->GetPixelFormat(m_surface,&dfbFormat);
+        m_surface->GetCapabilities(m_surface,&dfbCaps);
+        QImage::Format format = QDirectFbConvenience::imageFormatFromSurfaceFormat(dfbFormat, dfbCaps);
         int w, h;
         m_surface->GetSize(m_surface,&w,&h);
         m_image = QImage(static_cast<uchar *>(mem),w,h,bpl,format);

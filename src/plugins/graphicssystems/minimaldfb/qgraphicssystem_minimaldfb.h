@@ -70,7 +70,6 @@ public:
 
     QDirectFbInput m_input;
 
-    IDirectFBScreen *m_screen;
     IDirectFBDisplayLayer *m_layer;
 
 };

@@ -42,6 +42,7 @@
 #include "qwindowsurface_minimaldfb.h"
 #include "qgraphicssystem_minimaldfb.h"
 #include "qblitter_directfb.h"
+#include "qdirectfbconvenience.h"
 #include <private/qpixmap_blitter_p.h>
 
 #include <QtCore/qdebug.h>
@@ -50,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QDirectFbWindowSurface::QDirectFbWindowSurface
         (QDirectFbGraphicsSystemScreen *screen, QWidget *window)
-    : QWindowSurface(window), m_screen(screen), m_lock(false)
+    : QWindowSurface(window), m_screen(screen)
 {
     window->setWindowSurface(this);
     m_dfbWindow = m_screen->createWindow(window->rect(),window);
@@ -96,7 +97,6 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
 void QDirectFbWindowSurface::setGeometry(const QRect &rect)
 {
-    m_dfbSurface->Release(m_dfbSurface);
     QWindowSurface::setGeometry(rect);
     m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
                            rect.width(), rect.height());
@@ -122,6 +122,34 @@ void QDirectFbWindowSurface::beginPaint(const QRegion &region)
 void QDirectFbWindowSurface::endPaint(const QRegion &region)
 {
     Q_UNUSED(region);
+}
+
+void QDirectFbWindowSurface::setVisible(bool visible)
+{
+    if (visible) {
+        int x = this->geometry().x();
+        int y = this->geometry().y();
+        m_dfbWindow->MoveTo(m_dfbWindow,x,y);
+    } else {
+        IDirectFBDisplayLayer *displayLayer;
+        QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY,&displayLayer);
+
+        DFBDisplayLayerConfig config;
+        displayLayer->GetConfiguration(displayLayer,&config);
+        m_dfbWindow->MoveTo(m_dfbWindow,config.width+1,config.height + 1);
+    }
+}
+
+Qt::WindowFlags QDirectFbWindowSurface::setWindowFlags(Qt::WindowFlags type)
+{
+    if (type == Qt::Popup || type == Qt::ToolTip)
+    {
+        DFBWindowOptions options;
+        m_dfbWindow->GetOptions(m_dfbWindow,&options);
+        options = DFBWindowOptions(options | DWOP_GHOST);
+        m_dfbWindow->SetOptions(m_dfbWindow,options);
+    }
+    return type;
 }
 
 QT_END_NAMESPACE

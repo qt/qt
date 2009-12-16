@@ -68,27 +68,16 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int
 //    m_layer->SetConfiguration(m_layer, displayLayerConfig);
     m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
 
-    IDirectFBSurface *topLevelSurface;
-    //This line gives a warning
-    m_layer->GetSurface(m_layer, &topLevelSurface);
-    m_format = QDirectFbConvenience::imageFormatFromSurface(topLevelSurface);
 
-    result = m_layer->GetScreen(m_layer,&m_screen);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFbGraphicsSystemScreen: Failed to get screen", result);
-    }
+    DFBDisplayLayerConfig config;
+    m_layer->GetConfiguration(m_layer, &config);
 
-    int w(0),h(0);
-
-    //Asking the screen for its size gives the desktop geometry on X11
-    //Thats not something we want, so ask the topLevelSorface instead
-    topLevelSurface->GetSize(topLevelSurface,&w,&h);
-
-    m_geometry = QRect(0,0,w,h);
+    m_format = QDirectFbConvenience::imageFormatFromSurfaceFormat(config.pixelformat, config.surface_caps);
+    m_geometry = QRect(0,0,config.width,config.height);
     const int dpi = 72;
     const qreal inch = 25.4;
     m_depth = 32;
-    m_physicalSize = QSize(qRound(w * inch / dpi), qRound(h *inch / dpi));
+    m_physicalSize = QSize(qRound(config.width * inch / dpi), qRound(config.height *inch / dpi));
 }
 
 QDirectFbGraphicsSystemScreen::~QDirectFbGraphicsSystemScreen()

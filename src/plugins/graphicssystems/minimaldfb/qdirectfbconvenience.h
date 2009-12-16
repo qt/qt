@@ -17,7 +17,7 @@ public:
 class QDirectFbConvenience
 {
 public:
-    static QImage::Format imageFormatFromSurface(IDirectFBSurface *surface);
+    static QImage::Format imageFormatFromSurfaceFormat(const DFBSurfacePixelFormat format, const DFBSurfaceCapabilities caps);
 
     //This is set by the graphicssystem constructor
     static IDirectFB *dfbInterface() { return dfb; }

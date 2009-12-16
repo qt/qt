@@ -66,13 +66,15 @@ public:
     void beginPaint(const QRegion &region);
     void endPaint(const QRegion &region);
 
+    void setVisible(bool visible);
+    Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
+
 private:
     void lockSurfaceToImage();
 
     QDirectFbGraphicsSystemScreen *m_screen;
     QPixmap *m_pixmap;
     QBlittablePixmapData *pmdata;
-    bool m_lock;
 
     IDirectFBWindow *m_dfbWindow;
     IDirectFBSurface *m_dfbSurface;

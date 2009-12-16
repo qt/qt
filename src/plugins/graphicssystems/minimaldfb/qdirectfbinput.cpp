@@ -46,9 +46,6 @@ void QDirectFbInput::addWindow(DFBWindowID id, QWidget *tlw)
     IDirectFBWindow *window;
     dfbDisplayLayer->GetWindow(dfbDisplayLayer,id,&window);
 
-    window->DisableEvents(window,DWET_ALL);
-    window->EnableEvents(window,DFBWindowEventType(DWET_ALL));
-    window->SetKeySelection(window,DWKS_ALL,NULL,0);
     window->AttachEventBuffer(window,eventBuffer);
 }
 

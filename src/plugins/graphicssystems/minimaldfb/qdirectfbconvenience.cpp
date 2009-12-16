@@ -2,11 +2,8 @@
 
 IDirectFB *QDirectFbConvenience::dfb = 0;
 
-QImage::Format QDirectFbConvenience::imageFormatFromSurface(IDirectFBSurface *surface)
+QImage::Format QDirectFbConvenience::imageFormatFromSurfaceFormat(const DFBSurfacePixelFormat format, const DFBSurfaceCapabilities caps)
 {
-    DFBSurfacePixelFormat format;
-    surface->GetPixelFormat(surface, &format);
-
     switch (format) {
     case DSPF_LUT8:
         return QImage::Format_Indexed8;
@@ -28,10 +25,6 @@ QImage::Format QDirectFbConvenience::imageFormatFromSurface(IDirectFBSurface *su
     case DSPF_RGB32:
         return QImage::Format_RGB32;
     case DSPF_ARGB: {
-            DFBSurfaceCapabilities caps;
-            const DFBResult result = surface->GetCapabilities(surface, &caps);
-            Q_ASSERT(result == DFB_OK);
-            Q_UNUSED(result);
             return (caps & DSCAPS_PREMULTIPLIED
                     ? QImage::Format_ARGB32_Premultiplied
                         : QImage::Format_ARGB32); }
