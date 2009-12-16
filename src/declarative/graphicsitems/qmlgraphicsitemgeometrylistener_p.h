@@ -39,68 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef QMLCONTEXT_H
-#define QMLCONTEXT_H
+#ifndef QMLGRAPHICSITEMGEOMETRYLISTENER
+#define QMLGRAPHICSITEMGEOMETRYLISTENER
 
-#include <QtCore/qurl.h>
-#include <QtCore/qobject.h>
-#include <QtScript/qscriptvalue.h>
-
-QT_BEGIN_HEADER
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QString;
-class QmlEngine;
-class QmlRefCount;
-class QmlContextPrivate;
-class QmlCompositeTypeData;
-
-class Q_DECLARATIVE_EXPORT QmlContext : public QObject
+class QRectF;
+class QmlGraphicsItem;
+class QmlGraphicsAnchorsPrivate;
+class QmlGraphicsItemGeometryListener
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlContext)
-
 public:
-    QmlContext(QmlEngine *parent, QObject *objParent=0);
-    QmlContext(QmlContext *parent, QObject *objParent=0);
-    virtual ~QmlContext();
-
-    QmlEngine *engine() const;
-    QmlContext *parentContext() const;
-
-    void addDefaultObject(QObject *);
-    void setContextProperty(const QString &, QObject *);
-    void setContextProperty(const QString &, const QVariant &);
-
-    QVariant contextProperty(const QString &) const;
-
-    QUrl resolvedUrl(const QUrl &);
-
-    void setBaseUrl(const QUrl &);
-    QUrl baseUrl() const;
-
-private:
-    friend class QmlVME;
-    friend class QmlEngine;
-    friend class QmlEnginePrivate;
-    friend class QmlExpression;
-    friend class QmlExpressionPrivate;
-    friend class QmlBasicScript;
-    friend class QmlContextScriptClass;
-    friend class QmlObjectScriptClass;
-    friend class QmlComponent;
-    friend class QmlComponentPrivate;
-    friend class QmlScriptPrivate;
-    friend class QmlBoundSignalProxy;
-    QmlContext(QmlContext *parent, QObject *objParent, bool);
-    QmlContext(QmlEngine *, bool);
+    virtual void itemGeometryChanged(QmlGraphicsItem *, const QRectF &newGeometry, const QRectF &oldGeometry) = 0;
+    virtual QmlGraphicsAnchorsPrivate *anchorPrivate() { return 0; }
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLCONTEXT_H
+#endif // QMLGRAPHICSITEMGEOMETRYLISTENER

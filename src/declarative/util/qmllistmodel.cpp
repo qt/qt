@@ -421,6 +421,29 @@ QHash<int,QVariant> QmlListModel::data(int index, const QList<int> &roles) const
     return rv;
 }
 
+QVariant QmlListModel::data(int index, int role) const
+{
+    checkRoles();
+    QVariant rv;
+    if (index >= count())
+        return rv;
+
+    ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
+    if (!node)
+        return rv;
+
+    const QString &roleString = roleStrings.at(role);
+
+    QHash<QString, ModelNode *>::ConstIterator iter =
+        node->properties.find(roleString);
+    if (iter != node->properties.end()) {
+        ModelNode *row = *iter;
+        rv = valueForNode(row);
+    }
+
+    return rv;
+}
+
 /*!
     \qmlproperty int ListModel::count
     The number of data entries in the model.

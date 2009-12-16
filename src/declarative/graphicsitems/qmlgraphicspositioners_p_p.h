@@ -66,7 +66,7 @@
 #include <QtCore/QTimer>
 
 QT_BEGIN_NAMESPACE
-class QmlGraphicsBasePositionerPrivate : public QmlGraphicsItemPrivate
+class QmlGraphicsBasePositionerPrivate : public QmlGraphicsItemPrivate, public QmlGraphicsItemGeometryListener
 {
     Q_DECLARE_PUBLIC(QmlGraphicsBasePositioner)
 
@@ -124,6 +124,13 @@ public:
             QTimer::singleShot(0,q,SLOT(prePositioning()));
             queuedPositioning = true;
         }
+    }
+
+    void itemGeometryChanged(QmlGraphicsItem *, const QRectF &newGeometry, const QRectF &oldGeometry)
+    {
+        Q_Q(QmlGraphicsBasePositioner);
+        if (newGeometry.size() != oldGeometry.size())
+            q->prePositioning();
     }
 };
 

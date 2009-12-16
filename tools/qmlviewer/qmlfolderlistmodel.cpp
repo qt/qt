@@ -142,6 +142,20 @@ QHash<int,QVariant> QmlFolderListModel::data(int index, const QList<int> &roles)
     return folderData;
 }
 
+QVariant QmlFolderListModel::data(int index, int role) const
+{
+    QVariant rv;
+    QModelIndex modelIndex = d->model.index(index, 0, d->folderIndex);
+    if (modelIndex.isValid()) {
+        if (role == QDirModel::FileNameRole)
+            rv = d->model.data(modelIndex, QDirModel::FileNameRole);
+        else if (role == QDirModel::FilePathRole)
+            rv = QUrl::fromLocalFile(d->model.data(modelIndex, QDirModel::FilePathRole).toString());
+    }
+
+    return rv;
+}
+
 int QmlFolderListModel::count() const
 {
     return d->count;

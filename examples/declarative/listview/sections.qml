@@ -17,25 +17,11 @@ Rectangle {
             id: wrapper
             width: 200
             // My height is the combined height of the description and the section separator
-            height: separator.height + desc.height
-            Rectangle {
-                id: separator
-                color: "lightsteelblue"
-                width: parent.width
-                // Only show the section separator when we are the beginning of a new section
-                // Note that for this to work nicely, the list must be ordered by section.
-                height: wrapper.ListView.prevSection != wrapper.ListView.section ? 20 : 0
-                opacity: wrapper.ListView.prevSection != wrapper.ListView.section ? 1 : 0
-                Text {
-                    text: wrapper.ListView.section; font.bold: true
-                    x: 2; height: parent.height; verticalAlignment: 'AlignVCenter'
-                }
-            }
+            height: desc.height
             Item {
                 id: desc
                 x: 5
                 height: layout.height + 4
-                anchors.top: separator.bottom
                 Column {
                     id: layout
                     y: 2
@@ -64,7 +50,17 @@ Rectangle {
         highlight: petHighlight
         // The sectionExpression is simply the size of the pet.
         // We use this to determine which section we are in above.
-        sectionExpression: "size"
+        section.property: "size"
+        section.criteria: ViewSection.FullString
+        section.delegate: Rectangle {
+            color: "lightsteelblue"
+            width: 200
+            height: 20
+            Text {
+                text: section; font.bold: true
+                x: 2; height: parent.height; verticalAlignment: 'AlignVCenter'
+            }
+        }
         focus: true
     }
 }

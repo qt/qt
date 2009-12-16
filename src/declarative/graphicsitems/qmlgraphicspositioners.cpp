@@ -67,8 +67,7 @@ void QmlGraphicsBasePositionerPrivate::watchChanges(QmlGraphicsItem *other)
 
     QmlGraphicsItemPrivate *otherPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other));
 
-    otherPrivate->connectToHeightChanged(q, prePosIdx);
-    otherPrivate->connectToWidthChanged(q, prePosIdx);
+    otherPrivate->addGeometryListener(this);
 
     otherPrivate->registerSiblingOrderNotification(this);
     watched << other;
@@ -81,8 +80,8 @@ void QmlGraphicsBasePositionerPrivate::unwatchChanges(QmlGraphicsItem* other)
     bool stillAlive = false; //Use the returns from disconnect to see if it was deleted or just reparented
     stillAlive |= QMetaObject::disconnect(other, visibleIdx, q, prePosIdx);
     stillAlive |= QMetaObject::disconnect(other, opacityIdx, q, prePosIdx);
-    stillAlive |= otherPrivate->disconnectFromHeightChanged(q, prePosIdx);
-    stillAlive |= otherPrivate->disconnectFromWidthChanged(q, prePosIdx);
+
+    otherPrivate->removeGeometryListener(this);
 
     if(stillAlive)
         otherPrivate->unregisterSiblingOrderNotification(this);

@@ -155,7 +155,7 @@ QmlGraphicsFlickablePrivate::QmlGraphicsFlickablePrivate()
   : viewport(new QmlGraphicsItem), _moveX(viewport, &QmlGraphicsItem::setX), _moveY(viewport, &QmlGraphicsItem::setY)
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true)
-    , interactive(true), deceleration(500), maxVelocity(5000), reportedVelocitySmoothing(100)
+    , interactive(true), deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0)
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
     , flickDirection(QmlGraphicsFlickable::AutoFlickDirection)
@@ -1166,7 +1166,7 @@ bool QmlGraphicsFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
     \qmlproperty real Flickable::maximumFlickVelocity
     This property holds the maximum velocity that the user can flick the view in pixels/second.
 
-    The default is 5000 pixels/s
+    The default is 2000 pixels/s
 */
 qreal QmlGraphicsFlickable::maximumFlickVelocity() const
 {

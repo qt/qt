@@ -643,6 +643,10 @@ void QmlCompiler::compileTree(Object *tree)
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
     init.init.contextCache = genContextCache();
+    if (compileState.compiledBindingData.isEmpty())
+        init.init.compiledBinding = -1;
+    else
+        init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
     output->bytecode << init;
 
     genObject(tree);
@@ -1010,6 +1014,10 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
     init.init.contextCache = genContextCache();
+    if (compileState.compiledBindingData.isEmpty())
+        init.init.compiledBinding = -1;
+    else
+        init.init.compiledBinding = output->indexForByteArray(compileState.compiledBindingData);
     init.line = obj->location.start.line;
     output->bytecode << init;
 
@@ -2029,6 +2037,14 @@ bool QmlCompiler::buildPropertyLiteralAssignment(QmlParser::Property *prop,
 
     if (v->value.isScript()) {
 
+        //optimization for <Type>.<EnumValue> enum assignments
+        bool isEnumAssignment = false;
+        COMPILE_CHECK(testQualifiedEnumAssignment(obj->metaObject()->property(prop->index), obj, v, &isEnumAssignment));
+        if (isEnumAssignment) {
+            v->type = Value::Literal;
+            return true;
+        }
+
         COMPILE_CHECK(buildBinding(v, prop, ctxt));
 
         v->type = Value::PropertyBinding;
@@ -2039,6 +2055,50 @@ bool QmlCompiler::buildPropertyLiteralAssignment(QmlParser::Property *prop,
 
         v->type = Value::Literal;
     }
+
+    return true;
+}
+
+bool QmlCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop,
+                                              QmlParser::Object *obj,
+                                              QmlParser::Value *v,
+                                              bool *isAssignment)
+{
+    *isAssignment = false;
+    if (!prop.isEnumType())
+        return true;
+
+    if (!prop.isWritable())
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop.name())));
+
+    QString string = v->value.asString();
+    if (!string.at(0).isUpper())
+        return true;
+
+    QStringList parts = string.split(QLatin1Char('.'));
+    if (parts.count() != 2)
+        return true;
+
+    QString typeName = parts.at(0);
+    QmlType *type = 0;
+    QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName.toUtf8(),
+                                               &type, 0, 0, 0, 0);
+
+    if (!type || obj->typeName != type->qmlTypeName())
+        return true;
+
+    QString enumValue = parts.at(1);
+    int value;
+    if (prop.isFlagType()) {
+        value = prop.enumerator().keysToValue(enumValue.toUtf8().constData());
+    } else
+        value = prop.enumerator().keyToValue(enumValue.toUtf8().constData());
+    if (value == -1)
+        return true;
+
+    v->type = Value::Literal;
+    v->value = QmlParser::Variant(enumValue);
+    *isAssignment = true;
 
     return true;
 }
@@ -2130,6 +2190,14 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     newClassName.append("_QML_");
     int idx = classIndexCounter()->fetchAndAddRelaxed(1);
     newClassName.append(QByteArray::number(idx));
+    if (compileState.root == obj) {
+        QString path = output->url.path();
+        int lastSlash = path.lastIndexOf(QLatin1Char('/'));
+        if (lastSlash > -1) {
+            QString nameBase = path.mid(lastSlash + 1, path.length()-lastSlash-5);
+            newClassName = nameBase.toUtf8() + "_QMLTYPE_" + QByteArray::number(idx);
+        }
+    }
 
     QMetaObjectBuilder builder;
     builder.setClassName(newClassName);
@@ -2344,10 +2412,10 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
     QStringList alias = astNodeToStringList(node);
 
     if (alias.count() != 1 && alias.count() != 2)
-        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QmlCompiler","Invalid alias location"));
+        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QmlCompiler","Invalid alias reference. An alias reference must be specified as <id> or <id>.<property>"));
 
     if (!compileState.ids.contains(alias.at(0)))
-        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QmlCompiler","Invalid alias location"));
+        COMPILE_EXCEPTION(prop.defaultValue, QCoreApplication::translate("QmlCompiler","Invalid alias reference. Unable to find id \"%1\"").arg(alias.at(0)));
 
     Object *idObject = compileState.ids[alias.at(0)];
 
@@ -2423,7 +2491,7 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     if (ref.dataType == BindingReference::Experimental) {
         QmlInstruction store;
         store.type = QmlInstruction::StoreCompiledBinding;
-        store.assignBinding.value = output->indexForByteArray(ref.compiledData);
+        store.assignBinding.value = ref.compiledIndex;
         store.assignBinding.context = ref.bindingContext.stack;
         store.assignBinding.owner = ref.bindingContext.owner;
         if (valueTypeProperty) 
@@ -2529,6 +2597,8 @@ bool QmlCompiler::completeComponentBuild()
     expr.component = compileState.root;
     expr.ids = compileState.ids;
 
+    QmlBindingCompiler bindingCompiler;
+
     for (QHash<QmlParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); iter != compileState.bindings.end(); ++iter) {
         BindingReference &binding = *iter;
 
@@ -2541,15 +2611,15 @@ bool QmlCompiler::completeComponentBuild()
         bs.compile(expr);
 
         if (qmlExperimental() && (!bs.isValid() || (!bs.isSingleIdFetch() && !bs.isSingleContextProperty()))) {
-
-            QByteArray qmvdata = QmlBindingVME::compile(expr, QmlEnginePrivate::get(engine));
-            if (!qmvdata.isEmpty()) {
-                qWarning() << expr.expression.asScript();
-                QmlBindingVME::dump(qmvdata);
+            int index = bindingCompiler.compile(expr, QmlEnginePrivate::get(engine));
+            if (index != -1) {
+                qWarning() << "Accepted for optimization:" << qPrintable(expr.expression.asScript());
                 binding.dataType = BindingReference::Experimental;
-                binding.compiledData = qmvdata;
+                binding.compiledIndex = index;
                 componentStat.optimizedBindings++;
                 continue;
+            } else {
+                qWarning() << "Rejected for optimization:" << qPrintable(expr.expression.asScript());
             }
         }
 
@@ -2597,6 +2667,11 @@ bool QmlCompiler::completeComponentBuild()
         }
         binding.compiledData.prepend(QByteArray((const char *)&type, 
                                                 sizeof(quint32)));
+    }
+
+    if (bindingCompiler.isValid()) {
+        compileState.compiledBindingData = bindingCompiler.program();
+        QmlBindingVME::dump(compileState.compiledBindingData);
     }
 
     saveComponentState();

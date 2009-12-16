@@ -170,6 +170,7 @@ public:
             int bindingsSize;
             int parserStatusSize;
             int contextCache;
+            int compiledBinding;
         } init;
         struct {
             int type;

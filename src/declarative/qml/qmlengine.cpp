@@ -564,7 +564,7 @@ void QmlDeclarativeData::destroyed(QObject * /*object*/)
         QmlAbstractBinding *next = binding->m_nextBinding;
         binding->m_prevBinding = 0;
         binding->m_nextBinding = 0;
-        delete binding;
+        binding->destroy();
         binding = next;
     }
 

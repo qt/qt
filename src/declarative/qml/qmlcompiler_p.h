@@ -219,6 +219,10 @@ private:
     bool doesPropertyExist(QmlParser::Property *prop, QmlParser::Object *obj);
     bool testLiteralAssignment(const QMetaProperty &prop, 
                                QmlParser::Value *value);
+    bool testQualifiedEnumAssignment(const QMetaProperty &prop,
+                                     QmlParser::Object *obj,
+                                     QmlParser::Value *value,
+                                     bool *isAssignment);
     enum DynamicMetaMode { IgnoreAliases, ResolveAliases, ForceCreation };
     bool mergeDynamicMetaProperties(QmlParser::Object *obj);
     bool buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode);
@@ -273,6 +277,8 @@ private:
         enum DataType { QtScript, BasicScript, Experimental };
         DataType dataType;
 
+        int compiledIndex;
+
         QByteArray compiledData;
         BindingContext bindingContext;
     };
@@ -286,6 +292,8 @@ private:
         QHash<int, QmlParser::Object *> idIndexes;
         int parserStatusCount;
         int pushedProperties;
+
+        QByteArray compiledBindingData;
 
         QHash<QmlParser::Value *, BindingReference> bindings;
         QList<QmlParser::Object *> aliasingObjects;

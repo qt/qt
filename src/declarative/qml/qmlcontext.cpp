@@ -442,6 +442,38 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
     }
 }
 
+QVariant QmlContext::contextProperty(const QString &name) const
+{
+    Q_D(const QmlContext);
+    QVariant value;
+    int idx = -1;
+    if (d->propertyNames)
+        idx = d->propertyNames->value(name);
+
+    if (idx == -1) {
+        QByteArray utf8Name = name.toUtf8();
+        for (int ii = d->defaultObjects.count() - 1; ii >= 0; --ii) {
+            QObject *obj = d->defaultObjects.at(ii);
+            QmlDeclarativeData *data = QmlDeclarativeData::get(obj);
+            if (data && data->propertyCache) {
+                QmlPropertyCache::Data *property = data->propertyCache->property(name);
+                if (property)
+                    value = obj->metaObject()->property(property->coreIndex).read(obj);
+            } else {
+                value = obj->property(utf8Name);
+            }
+            if (value.isValid())
+                break;
+        }
+        if (!value.isValid() && parentContext())
+            value = parentContext()->contextProperty(name);
+    } else {
+        value = d->propertyValues[idx];
+    }
+
+    return value;
+}
+
 /*!
     Resolves the URL \a src relative to the URL of the
     containing component.

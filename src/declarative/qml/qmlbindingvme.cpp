@@ -67,6 +67,7 @@ struct Register {
 
     QVariant *getvariantptr() { return (QVariant *)typeDataPtr(); }
     QString *getstringptr() { return (QString *)typeDataPtr(); }
+    QUrl *geturlptr() { return (QUrl *)typeDataPtr(); }
 
     void *typeDataPtr() { return (void *)&data; }
     void *typeMemory() { return (void *)data; }
@@ -77,8 +78,6 @@ struct Register {
 struct Instr {
     enum {
         Noop,
-
-        Init,                    // init
 
         Subscribe,               // subscribe
         SubscribeId,             // subscribe
@@ -110,6 +109,9 @@ struct Instr {
         GreaterThanReal,         // binaryop
 
         NewString,               // construct
+        NewUrl,                  // construct
+
+        CleanupUrl,              // cleanup
         CleanupString,           // cleanup
 
         Copy,                    // copy
@@ -130,6 +132,7 @@ struct Instr {
         ConvertGenericToReal,    // genericunaryop
         ConvertGenericToBool,    // genericunaryop
         ConvertGenericToString,  // genericunaryop
+        ConvertGenericToUrl,     // genericunaryop
 
     } type;
 
@@ -219,13 +222,18 @@ struct Instr {
 };
 
 struct Program {
-    int dataLength;
+    quint32 bindings;
+    quint32 dataLength;
+    quint32 signalTableOffset;
+    quint16 subscriptions;
+    quint16 identifiers;
+
     const char *data() const { return ((const char *)this) + sizeof(Program); }
     const Instr *instructions() const { return (const Instr *)(data() + dataLength); }
 };
 }
 
-struct QmlBindingCompiler
+struct QmlBindingCompilerPrivate
 {
     struct Result {
         Result() : unknownType(false), metaObject(0), type(-1), reg(-1) {}
@@ -246,8 +254,12 @@ struct QmlBindingCompiler
         QSet<QString> subscriptionSet;
     };
 
-    QmlBindingCompiler() : registers(0), strings(0) {}
-    void reset();
+    QmlBindingCompilerPrivate() : registers(0), strings(0) {
+        committed.strings = 0;
+    }
+
+    void resetInstanceState();
+    int commitCompile();
 
     QmlParser::Object *context;
     QmlParser::Object *component;
@@ -255,6 +267,8 @@ struct QmlBindingCompiler
     QHash<QString, QmlParser::Object *> ids;
     QmlEnginePrivate::Imports imports;
     QmlEnginePrivate *engine;
+
+    QString contextName() const { return QLatin1String("$$$SCOPE_") + QString::number((intptr_t)context, 16); }
 
     bool compile(QmlJS::AST::Node *);
 
@@ -288,60 +302,44 @@ struct QmlBindingCompiler
     int strings;
     QByteArray data;
 
-    QSet<QString> subscriptionSet;
-    QHash<QString, int> subscriptionIds;
     bool subscription(const QStringList &, Result *);
     int subscriptionIndex(const QStringList &);
     bool subscriptionNeutral(const QSet<QString> &base, const QSet<QString> &lhs, const QSet<QString> &rhs);
+
+    QSet<int> usedSubscriptionIds;
+    QSet<QString> subscriptionSet;
+    QHash<QString, int> subscriptionIds;
     QVector<Instr> bytecode;
+
+    // Committed binding data
+    struct {
+        QList<int> offsets;
+        QList<QSet<int> > dependencies;
+
+        QVector<Instr> bytecode;
+        QByteArray data;
+        int strings;
+        QHash<QString, int> subscriptionIds;
+
+        int count() const { return offsets.count(); }
+    } committed;
+
+    QByteArray buildSignalTable() const;
 };
 
-QByteArray QmlBindingVME::compile(const QmlBasicScript::Expression &expression, QmlEnginePrivate *engine)
+inline void subscribe(QObject *o, int notifyIndex, 
+                      int subIndex, QmlBindingVME::Config *config)
 {
-    if (!expression.expression.asAST()) return false;
-
-    QmlBindingCompiler bsc;
-    bsc.context = expression.context;
-    bsc.component = expression.component;
-    bsc.destination = expression.property;
-    bsc.ids = expression.ids;
-    bsc.imports = expression.imports;
-    bsc.engine = engine;
-
-    bool ok = bsc.compile(expression.expression.asAST());
-
-    if (ok) {
-        Program prog;
-        prog.dataLength = 4 * ((bsc.data.size() + 3) / 4);
-        int size = sizeof(Program) + bsc.bytecode.count() * sizeof(Instr);
-        size += prog.dataLength;
-
-        QByteArray data;
-        data.resize(size);
-        memcpy(data.data(), &prog, sizeof(Program));
-        if (prog.dataLength)
-            memcpy((char *)((Program *)data.data())->data(), bsc.data.constData(),
-                   bsc.data.size());
-        memcpy((char *)((Program *)data.data())->instructions(), bsc.bytecode.constData(), 
-               bsc.bytecode.count() * sizeof(Instr));
-        return data;
-    } else {
-        return QByteArray();
-    }
-}
-
-inline void subscribe(QObject *o, int notifyIndex, QmlBindingVME::Config::Subscription *s, 
-                      QmlBindingVME::Config *config)
-{
+    QmlBindingVME::Config::Subscription *s = config->subscriptions + subIndex;
     if (o != s->source || notifyIndex != s->notifyIndex)  {
         if (s->source)
             QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    config->target, config->targetSlot);
+                                    config->target, config->targetSlot + subIndex);
         s->source = o;
         s->notifyIndex = notifyIndex;
-        if (s->source && s->notifyIndex != -1)
+        if (s->source && s->notifyIndex != -1) 
             QMetaObject::connect(s->source, s->notifyIndex, config->target, 
-                                 config->targetSlot, Qt::DirectConnection);
+                                 config->targetSlot + subIndex, Qt::DirectConnection);
     } 
 }
 
@@ -431,7 +429,7 @@ static bool findproperty(QObject *obj,
         }
 
         if (subIdx != -1)
-            subscribe(obj, property->notifyIndex, config->subscriptions + subIdx, config);
+            subscribe(obj, property->notifyIndex, subIdx, config);
 
         return true;
     } else {
@@ -572,16 +570,35 @@ inline static QUrl toUrl(Register *reg, int type, QmlContextPrivate *context, bo
             if (ok) *ok = false;
             return QUrl();
         }
-    } else { 
+    } else {
         if (ok) *ok = false;
         return QUrl();
     }
 
-    return QUrl();
+    if (base.isRelative())
+        return context->url.resolved(base);
+    else
+        return base;
 }
 
-void QmlBindingVME::run(const char *programData, Config *config, 
-                        QmlContextPrivate *context, 
+/*!
+Returns the signal/binding table.
+*/ 
+void QmlBindingVME::init(const char *programData, Config *config,
+                         quint32 **sigTable, quint32 *bindingCount)
+{
+    Program *program = (Program *)programData;
+    if (program->subscriptions)
+        config->subscriptions = new Config::Subscription[program->subscriptions];
+    if (program->identifiers)
+        config->identifiers = new QScriptDeclarativeClass::PersistentIdentifier[program->identifiers];
+
+    *sigTable = (quint32 *)(program->data() + program->signalTableOffset);
+    *bindingCount = program->bindings;
+}
+
+void QmlBindingVME::run(const char *programData, int instrIndex,
+                        Config *config, QmlContextPrivate *context, 
                         QObject **scopes, QObject **outputs)
 {
     Register registers[32];
@@ -590,6 +607,7 @@ void QmlBindingVME::run(const char *programData, Config *config,
     QmlEnginePrivate *engine = QmlEnginePrivate::get(context->engine);
     Program *program = (Program *)programData;
     const Instr *instr = program->instructions();
+    instr += instrIndex;
     const char *data = program->data();
 
     while (instr) {
@@ -597,18 +615,11 @@ void QmlBindingVME::run(const char *programData, Config *config,
     switch (instr->type) {
     case Instr::Noop:
         break;
-    case Instr::Init:
-        if (!config->subscriptions && instr->init.subscriptions)
-            config->subscriptions = new Config::Subscription[instr->init.subscriptions];
-        if (!config->identifiers && instr->init.identifiers)
-            config->identifiers = new QScriptDeclarativeClass::PersistentIdentifier[instr->init.identifiers];
-        break;
 
     case Instr::SubscribeId:
     case Instr::Subscribe:
         {
             QObject *o = registers[instr->subscribe.reg].getQObject();
-            Config::Subscription *s = config->subscriptions + instr->subscribe.offset;
             int notifyIndex = instr->subscribe.index;
 
             if (instr->type == Instr::SubscribeId) {
@@ -616,7 +627,7 @@ void QmlBindingVME::run(const char *programData, Config *config,
                 notifyIndex += context->notifyIndex;
             }
 
-            subscribe(o, instr->subscribe.index, s, config);
+            subscribe(o, instr->subscribe.index, instr->subscribe.offset, config);
         }
         break;
 
@@ -710,8 +721,16 @@ void QmlBindingVME::run(const char *programData, Config *config,
         new (registers[instr->construct.reg].typeMemory()) QString;
         break;
 
+    case Instr::NewUrl:
+        new (registers[instr->construct.reg].typeMemory()) QUrl;
+        break;
+
     case Instr::CleanupString:
-        ((QString *)(registers[instr->cleanup.reg].typeDataPtr()))->~QString();
+        registers[instr->cleanup.reg].getstringptr()->~QString();
+        break;
+
+    case Instr::CleanupUrl:
+        registers[instr->cleanup.reg].geturlptr()->~QUrl();
         break;
 
     case Instr::Fetch:
@@ -815,6 +834,14 @@ void QmlBindingVME::run(const char *programData, Config *config,
         }
         break;
 
+    case Instr::ConvertGenericToUrl:
+        {
+            int type = registers[instr->genericunaryop.srcType].getint();
+            void *regPtr = registers[instr->genericunaryop.output].typeDataPtr();
+            new (regPtr) QUrl(toUrl(registers + instr->genericunaryop.src, type, context));
+        }
+        break;
+
     default:
         qFatal("EEK");
         break;
@@ -828,6 +855,11 @@ void QmlBindingVME::dump(const QByteArray &programData)
 {
     const Program *program = (const Program *)programData.constData();
 
+    qWarning() << "Program.bindings:" << program->bindings;
+    qWarning() << "Program.dataLength:" << program->dataLength;
+    qWarning() << "Program.subscriptions:" << program->subscriptions;
+    qWarning() << "Program.indentifiers:" << program->identifiers;
+
     int count = (programData.size() - sizeof(Program) - program->dataLength) / sizeof(Instr);
     const Instr *instr = program->instructions();
 
@@ -836,9 +868,6 @@ void QmlBindingVME::dump(const QByteArray &programData)
         switch (instr->type) {
         case Instr::Noop:
             qWarning().nospace() << "Noop";
-            break;
-        case Instr::Init:
-            qWarning().nospace() << "Init" << "\t\t\t" << instr->init.subscriptions << "\t" << instr->init.identifiers;
             break;
         case Instr::Subscribe:
             qWarning().nospace() << "Subscribe" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
@@ -903,8 +932,14 @@ void QmlBindingVME::dump(const QByteArray &programData)
         case Instr::NewString:
             qWarning().nospace() << "NewString" << "\t\t" << instr->construct.reg;
             break;
+        case Instr::NewUrl:
+            qWarning().nospace() << "NewUrl" << "\t\t\t" << instr->construct.reg;
+            break;
         case Instr::CleanupString:
             qWarning().nospace() << "CleanupString" << "\t\t" << instr->cleanup.reg << "\t" << instr->cleanup.typeReg;
+            break;
+        case Instr::CleanupUrl:
+            qWarning().nospace() << "CleanupUrl" << "\t\t" << instr->cleanup.reg << "\t" << instr->cleanup.typeReg;
             break;
         case Instr::Fetch:
             qWarning().nospace() << "Fetch" << "\t\t\t" << instr->fetch.output << "\t" << instr->fetch.index << "\t" << instr->fetch.objectReg;
@@ -948,6 +983,9 @@ void QmlBindingVME::dump(const QByteArray &programData)
         case Instr::ConvertGenericToString:
             qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
             break;
+        case Instr::ConvertGenericToUrl:
+            qWarning().nospace() << "ConvertGenericToUrl" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
+            break;
         default:
             qWarning().nospace() << "Unknown";
             break;
@@ -957,18 +995,43 @@ void QmlBindingVME::dump(const QByteArray &programData)
     }
 }
 
-void QmlBindingCompiler::reset()
+/*!
+Clear the state associated with attempting to compile a specific binding.
+This does not clear the global "commited binding" states.
+*/
+void QmlBindingCompilerPrivate::resetInstanceState()
 {
     registers = 0;
-    strings = 0;
-    data.clear();
+    registerCleanups.clear();
+    strings = committed.strings;
+    data = committed.data;
+    usedSubscriptionIds.clear();
     subscriptionSet.clear();
+    subscriptionIds = committed.subscriptionIds;
     bytecode.clear();
 }
 
-bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
+/*!
+Mark the last compile as successful, and add it to the "committed data"
+section.
+
+Returns the index for the committed binding.
+*/
+int QmlBindingCompilerPrivate::commitCompile()
 {
-    reset();
+    int rv = committed.count();
+    committed.offsets << committed.bytecode.count();
+    committed.dependencies << usedSubscriptionIds;
+    committed.bytecode << bytecode;
+    committed.data = data;
+    committed.strings = strings;
+    committed.subscriptionIds = subscriptionIds;
+    return rv;
+}
+
+bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
+{
+    resetInstanceState();
 
     Result type;
 
@@ -979,18 +1042,13 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
         if (subscriptionSet.count() > 0xFFFF ||
             strings > 0xFFFF)
             return false;
-
-        Instr init;
-        init.type = Instr::Init;
-        init.init.subscriptions = subscriptionIds.count();
-        init.init.identifiers = strings;
-        bytecode.prepend(init);
     }
 
     if (type.unknownType) {
         if (destination->type != QMetaType::QReal &&
             destination->type != QVariant::String &&
-            destination->type != QMetaType::Bool)
+            destination->type != QMetaType::Bool &&
+            destination->type != QVariant::Url)
             return false;
 
         int convertReg = acquireReg();
@@ -1016,6 +1074,13 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
             convert.genericunaryop.src = type.reg;
             convert.genericunaryop.srcType = 2; // XXX
             bytecode << convert;
+        } else if (destination->type == QVariant::Url) {
+            Instr convert;
+            convert.type = Instr::ConvertGenericToUrl;
+            convert.genericunaryop.output = convertReg;
+            convert.genericunaryop.src = type.reg;
+            convert.genericunaryop.srcType = 2; // XXX
+            bytecode << convert;
         }
 
         Instr cleanup;
@@ -1034,6 +1099,12 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
         if (destination->type == QVariant::String) {
             Instr cleanup;
             cleanup.type = Instr::CleanupString;
+            cleanup.cleanup.reg = convertReg;
+            cleanup.cleanup.typeReg = -1;
+            bytecode << cleanup;
+        } else if (destination->type == QVariant::Url) {
+            Instr cleanup;
+            cleanup.type = Instr::CleanupUrl;
             cleanup.cleanup.reg = convertReg;
             cleanup.cleanup.typeReg = -1;
             bytecode << cleanup;
@@ -1094,7 +1165,7 @@ bool QmlBindingCompiler::compile(QmlJS::AST::Node *node)
     }
 }
 
-bool QmlBindingCompiler::parseExpression(QmlJS::AST::Node *node, Result &type)
+bool QmlBindingCompilerPrivate::parseExpression(QmlJS::AST::Node *node, Result &type)
 {
     while (node->kind == AST::Node::Kind_NestedExpression)
         node = static_cast<AST::NestedExpression *>(node)->expression;
@@ -1115,13 +1186,13 @@ bool QmlBindingCompiler::parseExpression(QmlJS::AST::Node *node, Result &type)
     return true;
 }
 
-bool QmlBindingCompiler::tryName(QmlJS::AST::Node *node)
+bool QmlBindingCompilerPrivate::tryName(QmlJS::AST::Node *node)
 {
     return node->kind == AST::Node::Kind_IdentifierExpression ||
            node->kind == AST::Node::Kind_FieldMemberExpression;
 }
 
-bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
+bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
 {
     QStringList nameParts;
     if (!buildName(nameParts, node))
@@ -1179,10 +1250,11 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
                 attach.attached.index = attachType->index();
                 bytecode << attach;
 
+                subscribeName << contextName();
+                subscribeName << QLatin1String("$$$ATTACH_") + name;
+
                 absType = 0;
                 type.metaObject = attachType->attachedPropertiesType();
-
-                subscribeName << QLatin1String("$$$ATTACH_") + name;
 
                 continue;
             } else if (ids.contains(name)) {
@@ -1240,7 +1312,7 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
                     instr.load.reg = reg;
                     bytecode << instr;
 
-                    subscribeName << QLatin1String("$$$Scope");
+                    subscribeName << contextName();
                     subscribeName << name;
 
                     fetch(type, context->metaObject(), reg, d0Idx, subscribeName);
@@ -1251,7 +1323,7 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
                     instr.load.reg = reg;
                     bytecode << instr;
 
-                    subscribeName << QLatin1String("$$$Root");
+                    subscribeName << QLatin1String("$$$ROOT");
                     subscribeName << name;
 
                     fetch(type, component->metaObject(), reg, d1Idx, subscribeName);
@@ -1348,7 +1420,7 @@ bool QmlBindingCompiler::parseName(AST::Node *node, Result &type)
     return true;
 }
 
-bool QmlBindingCompiler::tryArith(QmlJS::AST::Node *node)
+bool QmlBindingCompilerPrivate::tryArith(QmlJS::AST::Node *node)
 {
     if (node->kind != AST::Node::Kind_BinaryExpression)
         return false;
@@ -1361,7 +1433,7 @@ bool QmlBindingCompiler::tryArith(QmlJS::AST::Node *node)
         return false;
 }
 
-bool QmlBindingCompiler::parseArith(QmlJS::AST::Node *node, Result &type)
+bool QmlBindingCompilerPrivate::parseArith(QmlJS::AST::Node *node, Result &type)
 {
     AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
 
@@ -1426,7 +1498,7 @@ bool QmlBindingCompiler::parseArith(QmlJS::AST::Node *node, Result &type)
     return true;
 }
 
-bool QmlBindingCompiler::tryLogic(QmlJS::AST::Node *node)
+bool QmlBindingCompilerPrivate::tryLogic(QmlJS::AST::Node *node)
 {
     if (node->kind != AST::Node::Kind_BinaryExpression)
         return false;
@@ -1440,7 +1512,7 @@ bool QmlBindingCompiler::tryLogic(QmlJS::AST::Node *node)
         return false;
 }
 
-bool QmlBindingCompiler::parseLogic(QmlJS::AST::Node *node, Result &type)
+bool QmlBindingCompilerPrivate::parseLogic(QmlJS::AST::Node *node, Result &type)
 {
     AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
 
@@ -1495,12 +1567,12 @@ bool QmlBindingCompiler::parseLogic(QmlJS::AST::Node *node, Result &type)
     return true;
 }
 
-bool QmlBindingCompiler::tryConditional(QmlJS::AST::Node *node)
+bool QmlBindingCompilerPrivate::tryConditional(QmlJS::AST::Node *node)
 {
     return (node->kind == AST::Node::Kind_ConditionalExpression);
 }
 
-bool QmlBindingCompiler::parseConditional(QmlJS::AST::Node *node, Result &type)
+bool QmlBindingCompilerPrivate::parseConditional(QmlJS::AST::Node *node, Result &type)
 {
     AST::ConditionalExpression *expression = static_cast<AST::ConditionalExpression *>(node);
 
@@ -1563,14 +1635,14 @@ bool QmlBindingCompiler::parseConditional(QmlJS::AST::Node *node, Result &type)
     return true;
 }
 
-bool QmlBindingCompiler::tryConstant(QmlJS::AST::Node *node)
+bool QmlBindingCompilerPrivate::tryConstant(QmlJS::AST::Node *node)
 {
     return node->kind == AST::Node::Kind_TrueLiteral ||
            node->kind == AST::Node::Kind_FalseLiteral ||
            node->kind == AST::Node::Kind_NumericLiteral;
 }
 
-bool QmlBindingCompiler::parseConstant(QmlJS::AST::Node *node, Result &type)
+bool QmlBindingCompilerPrivate::parseConstant(QmlJS::AST::Node *node, Result &type)
 {
     type.metaObject = 0;
     type.type = -1;
@@ -1605,7 +1677,7 @@ bool QmlBindingCompiler::parseConstant(QmlJS::AST::Node *node, Result &type)
     }
 }
 
-bool QmlBindingCompiler::buildName(QStringList &name,
+bool QmlBindingCompilerPrivate::buildName(QStringList &name,
                                        QmlJS::AST::Node *node)
 {
     if (node->kind == AST::Node::Kind_IdentifierExpression) {
@@ -1626,7 +1698,7 @@ bool QmlBindingCompiler::buildName(QStringList &name,
 }
 
 
-bool QmlBindingCompiler::fetch(Result &rv, const QMetaObject *mo, int reg, int idx, const QStringList &subName)
+bool QmlBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo, int reg, int idx, const QStringList &subName)
 {
     QMetaProperty prop = mo->property(idx);
     rv.metaObject = 0;
@@ -1684,12 +1756,12 @@ bool QmlBindingCompiler::fetch(Result &rv, const QMetaObject *mo, int reg, int i
     return true;
 }
 
-void QmlBindingCompiler::registerCleanup(int reg, int cleanup, int cleanupType)
+void QmlBindingCompilerPrivate::registerCleanup(int reg, int cleanup, int cleanupType)
 {
     registerCleanups.insert(reg, qMakePair(cleanup, cleanupType));
 }
 
-int QmlBindingCompiler::acquireReg(int cleanup, int cleanupType)
+int QmlBindingCompilerPrivate::acquireReg(int cleanup, int cleanupType)
 {
     for (int ii = 0; ii < 32; ++ii) {
         if (!(registers & (1 << ii))) {
@@ -1704,7 +1776,7 @@ int QmlBindingCompiler::acquireReg(int cleanup, int cleanupType)
     return -1;
 }
 
-void QmlBindingCompiler::releaseReg(int reg)
+void QmlBindingCompilerPrivate::releaseReg(int reg)
 {
     Q_ASSERT(reg >= 0 && reg <= 31);
 
@@ -1722,7 +1794,7 @@ void QmlBindingCompiler::releaseReg(int reg)
     registers &= ~mask;
 }
 
-int QmlBindingCompiler::registerString(const QString &string)
+int QmlBindingCompilerPrivate::registerString(const QString &string)
 {
     Q_ASSERT(!string.isEmpty());
 
@@ -1741,7 +1813,7 @@ int QmlBindingCompiler::registerString(const QString &string)
     return strings - 1;
 }
 
-bool QmlBindingCompiler::subscription(const QStringList &sub, Result *result)
+bool QmlBindingCompilerPrivate::subscription(const QStringList &sub, Result *result)
 {
     QString str = sub.join(QLatin1String("."));
     result->subscriptionSet.insert(str);
@@ -1754,12 +1826,13 @@ bool QmlBindingCompiler::subscription(const QStringList &sub, Result *result)
     }
 }
 
-int QmlBindingCompiler::subscriptionIndex(const QStringList &sub)
+int QmlBindingCompilerPrivate::subscriptionIndex(const QStringList &sub)
 {
     QString str = sub.join(QLatin1String("."));
     QHash<QString, int>::ConstIterator iter = subscriptionIds.find(str);
     if (iter == subscriptionIds.end()) 
         iter = subscriptionIds.insert(str, subscriptionIds.count());
+    usedSubscriptionIds.insert(*iter);
     return *iter;
 }
 
@@ -1767,7 +1840,7 @@ int QmlBindingCompiler::subscriptionIndex(const QStringList &sub)
     Returns true if lhs contains no subscriptions that aren't also in base or rhs AND
     rhs contains no subscriptions that aren't also in base or lhs.
 */ 
-bool QmlBindingCompiler::subscriptionNeutral(const QSet<QString> &base, 
+bool QmlBindingCompilerPrivate::subscriptionNeutral(const QSet<QString> &base, 
                                              const QSet<QString> &lhs, 
                                              const QSet<QString> &rhs)
 {
@@ -1781,5 +1854,118 @@ bool QmlBindingCompiler::subscriptionNeutral(const QSet<QString> &base,
 
     return difflhs.isEmpty();
 }
+
+
+QmlBindingCompiler::QmlBindingCompiler()
+: d(new QmlBindingCompilerPrivate)
+{
+}
+
+QmlBindingCompiler::~QmlBindingCompiler()
+{
+    delete d; d = 0;
+}
+
+/* 
+Returns true if any bindings were compiled.
+*/
+bool QmlBindingCompiler::isValid() const
+{
+    return !d->committed.bytecode.isEmpty();
+}
+
+/* 
+-1 on failure, otherwise the binding index to use.
+*/
+int QmlBindingCompiler::compile(const QmlBasicScript::Expression &expression, 
+                                QmlEnginePrivate *engine)
+{
+    if (!expression.expression.asAST()) return false;
+
+    d->context = expression.context;
+    d->component = expression.component;
+    d->destination = expression.property;
+    d->ids = expression.ids;
+    d->imports = expression.imports;
+    d->engine = engine;
+
+    if (d->compile(expression.expression.asAST())) {
+        return d->commitCompile();
+    } else {
+        return -1;
+    }
+}
+
+
+QByteArray QmlBindingCompilerPrivate::buildSignalTable() const
+{
+    QHash<int, QList<int> > table;
+
+    for (int ii = 0; ii < committed.count(); ++ii) {
+        const QSet<int> &deps = committed.dependencies.at(ii);
+        for (QSet<int>::ConstIterator iter = deps.begin(); iter != deps.end(); ++iter) 
+            table[*iter].append(ii);
+    }
+
+    QVector<quint32> header;
+    QVector<quint32> data;
+    for (int ii = 0; ii < committed.subscriptionIds.count(); ++ii) {
+        header.append(committed.subscriptionIds.count() + data.count());
+        const QList<int> &bindings = table[ii];
+        data.append(bindings.count());
+        for (int jj = 0; jj < bindings.count(); ++jj)
+            data.append(bindings.at(jj));
+    }
+    header << data;
+
+    return QByteArray((const char *)header.constData(), header.count() * sizeof(quint32));
+}
+
+/* 
+Returns the compiled program.
+*/
+QByteArray QmlBindingCompiler::program() const
+{
+    QByteArray programData;
+
+    if (isValid()) {
+        Program prog;
+        prog.bindings = d->committed.count();
+
+        QVector<Instr> bytecode;
+        Instr skip;
+        skip.type = Instr::Skip;
+        skip.skip.reg = -1;
+        for (int ii = 0; ii < d->committed.count(); ++ii) {
+            skip.skip.count = d->committed.count() - ii - 1;
+            skip.skip.count+= d->committed.offsets.at(ii);
+            bytecode << skip;
+        }
+        bytecode << d->committed.bytecode;
+
+        QByteArray data = d->committed.data;
+        while (data.count() % 4) data.append('\0');
+        prog.signalTableOffset = data.count();
+        data += d->buildSignalTable();
+
+        prog.dataLength = 4 * ((data.size() + 3) / 4);
+        prog.subscriptions = d->committed.subscriptionIds.count();
+        prog.identifiers = d->committed.strings;
+        int size = sizeof(Program) + bytecode.count() * sizeof(Instr);
+        size += prog.dataLength;
+
+        programData.resize(size);
+        memcpy(programData.data(), &prog, sizeof(Program));
+        if (prog.dataLength)
+            memcpy((char *)((Program *)programData.data())->data(), data.constData(), 
+                   data.size());
+        memcpy((char *)((Program *)programData.data())->instructions(), bytecode.constData(), 
+               bytecode.count() * sizeof(Instr));
+    } 
+
+    return programData;
+}
+
+
 QT_END_NAMESPACE
 

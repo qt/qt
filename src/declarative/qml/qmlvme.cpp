@@ -161,6 +161,8 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
     int status = -1;    //for dbus
     QmlMetaProperty::WriteFlags flags = QmlMetaProperty::BypassInterceptor;
 
+    QmlOptimizedBindings *optimizedBindings = 0;
+
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         const QmlInstruction &instr = comp->bytecode.at(ii);
 
@@ -171,9 +173,10 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                     bindValues = QmlEnginePrivate::SimpleList<QmlAbstractBinding>(instr.init.bindingsSize);
                 if (instr.init.parserStatusSize)
                     parserStatus = QmlEnginePrivate::SimpleList<QmlParserStatus>(instr.init.parserStatusSize);
-
                 if (instr.init.contextCache != -1) 
                     cp->setIdPropertyData(comp->contextCaches.at(instr.init.contextCache));
+                if (instr.init.compiledBinding != -1) 
+                    optimizedBindings = new QmlOptimizedBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
             }
             break;
 
@@ -619,13 +622,11 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 if (stack.count() == 1 && bindingSkipList.testBit(property & 0xFFFF))  
                     break;
 
-                const char *data = datas.at(instr.assignBinding.value).constData();
-
-                QmlBinding_Basic *bind = 
-                    new QmlBinding_Basic(target, property, data, comp, scope, ctxt);
-                bindValues.append(bind);
-                bind->m_mePtr = &bindValues.values[bindValues.count - 1];
-                bind->addToObject(target);
+                QmlAbstractBinding *binding = 
+                    optimizedBindings->configBinding(instr.assignBinding.value, target, scope, property);
+                bindValues.append(binding);
+                binding->m_mePtr = &bindValues.values[bindValues.count - 1];
+                binding->addToObject(target);
             }
             break;
 
@@ -892,6 +893,11 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
             qFatal("QmlCompiledData: Internal error - unknown instruction %d", instr.type);
             break;
         }
+    }
+
+    if (optimizedBindings) {
+        optimizedBindings->release();
+        optimizedBindings = 0;
     }
 
     if (isError()) {
