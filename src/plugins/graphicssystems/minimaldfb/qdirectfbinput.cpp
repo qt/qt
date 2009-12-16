@@ -85,7 +85,7 @@ void QDirectFbInput::handleEvents()
 void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
 {
     QEvent::Type type = QDirectFbConvenience::eventType(event.window.type);
-    QPoint p(event.window.cx, event.window.cy);
+    QPoint p(event.window.x, event.window.y);
     QPoint globalPos = globalPoint(event);
     Qt::MouseButton button = QDirectFbConvenience::mouseButton(event.window.button);
     Qt::MouseButtons buttons = QDirectFbConvenience::mouseButtons(event.window.buttons);
