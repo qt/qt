@@ -2029,6 +2029,14 @@ bool QmlCompiler::buildPropertyLiteralAssignment(QmlParser::Property *prop,
 
     if (v->value.isScript()) {
 
+        //optimization for <Type>.<EnumValue> enum assignments
+        bool isEnumAssignment = false;
+        COMPILE_CHECK(testQualifiedEnumAssignment(obj->metaObject()->property(prop->index), obj, v, &isEnumAssignment));
+        if (isEnumAssignment) {
+            v->type = Value::Literal;
+            return true;
+        }
+
         COMPILE_CHECK(buildBinding(v, prop, ctxt));
 
         v->type = Value::PropertyBinding;
@@ -2039,6 +2047,50 @@ bool QmlCompiler::buildPropertyLiteralAssignment(QmlParser::Property *prop,
 
         v->type = Value::Literal;
     }
+
+    return true;
+}
+
+bool QmlCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop,
+                                              QmlParser::Object *obj,
+                                              QmlParser::Value *v,
+                                              bool *isAssignment)
+{
+    *isAssignment = false;
+    if (!prop.isEnumType())
+        return true;
+
+    if (!prop.isWritable())
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop.name())));
+
+    QString string = v->value.asString();
+    if (!string.at(0).isUpper())
+        return true;
+
+    QStringList parts = string.split(QLatin1Char('.'));
+    if (parts.count() != 2)
+        return true;
+
+    QString typeName = parts.at(0);
+    QmlType *type = 0;
+    QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName.toUtf8(),
+                                               &type, 0, 0, 0, 0);
+
+    if (!type || obj->typeName != type->qmlTypeName())
+        return true;
+
+    QString enumValue = parts.at(1);
+    int value;
+    if (prop.isFlagType()) {
+        value = prop.enumerator().keysToValue(enumValue.toUtf8().constData());
+    } else
+        value = prop.enumerator().keyToValue(enumValue.toUtf8().constData());
+    if (value == -1)
+        return true;
+
+    v->type = Value::Literal;
+    v->value = QmlParser::Variant(enumValue);
+    *isAssignment = true;
 
     return true;
 }
