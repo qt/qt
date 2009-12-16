@@ -1,12 +1,21 @@
 TARGET = qminimaldfb
 include(../../qpluginbase.pri)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems
-QMAKE_CXXFLAGS += -I/usr/local/include/directfb
-LIBS += -L/usr/local/lib \
-    -ldirectfb \
-    -lfusion \
-    -ldirect \
-    -lpthread
+
+system(pkg-config --exists directfb) {
+    DIRECTFB_CFLAGS = $$system(pkg-config --cflags directfb)
+    DIRECTFB_LIBS = $$system(pkg-config --libs directfb)
+} else {
+    directfb_config = $$SYSTEM(which directfb-config)
+    !isEmpty(directfb_config) {
+        DIRECTFB_CFLAGS = $$system(directfb-config --cflags)
+        DIRECTFB_LIBS = $$system(directfb-config --libs)
+    }
+}
+
+QMAKE_CXXFLAGS += $$DIRECTFB_CFLAGS
+LIBS += $$DIRECTFB_LIBS
+
 SOURCES = main.cpp \
     qgraphicssystem_minimaldfb.cpp \
     qwindowsurface_minimaldfb.cpp \
