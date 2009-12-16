@@ -50,7 +50,6 @@
 #include <private/qpixmap_blitter_p.h>
 #include <private/qpixmapdata_p.h>
 #include <QCoreApplication>
-#include <directfb.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -90,12 +89,18 @@ IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect, 
 
     DFBWindowDescription description;
     memset(&description,0,sizeof(DFBWindowDescription));
-    description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_POSX|DWDESC_POSY|DWDESC_SURFACE_CAPS|DWDESC_OPTIONS|DWDESC_CAPS);
+    description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_POSX|DWDESC_POSY|DWDESC_SURFACE_CAPS
+#if DIRECTFB_MINOR_VERSION >= 1
+                                                  |DWDESC_OPTIONS
+#endif
+                                                  |DWDESC_CAPS);
     description.width = rect.width();
     description.height = rect.height();
     description.posx = rect.x();
     description.posy = rect.y();
+#if DIRECTFB_MINOR_VERSION >= 1
     description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
+#endif
     description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER);
     description.surface_caps = DSCAPS_PREMULTIPLIED;
 

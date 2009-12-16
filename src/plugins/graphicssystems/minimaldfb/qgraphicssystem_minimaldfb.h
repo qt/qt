@@ -46,6 +46,7 @@
 
 #include <QtGui/private/qgraphicssystem_p.h>
 #include <directfb.h>
+#include <directfb_version.h>
 
 QT_BEGIN_NAMESPACE
 
