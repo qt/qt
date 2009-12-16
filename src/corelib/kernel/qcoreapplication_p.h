@@ -122,10 +122,6 @@ public:
 
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
-
-#if defined(Q_OS_SYMBIAN)
-    void _q_symbianRegisterLocaleNotifier();
-#endif
 };
 
 QT_END_NAMESPACE
