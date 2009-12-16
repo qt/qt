@@ -126,6 +126,21 @@ void QLineEditPrivate::_q_editFocusChange(bool e)
 }
 #endif
 
+void QLineEditPrivate::_q_selectionChanged()
+{
+    Q_Q(QLineEdit);
+    if (control->preeditAreaText().isEmpty()) {
+        QStyleOptionFrameV2 opt;
+        q->initStyleOption(&opt);
+        bool showCursor = control->hasSelectedText() ?
+                          q->style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, q):
+                          true;
+        setCursorVisible(showCursor);
+    }
+
+    emit q->selectionChanged();
+}
+
 void QLineEditPrivate::init(const QString& txt)
 {
     Q_Q(QLineEdit);
@@ -138,7 +153,7 @@ void QLineEditPrivate::init(const QString& txt)
     QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
             q, SLOT(_q_cursorPositionChanged(int,int)));
     QObject::connect(control, SIGNAL(selectionChanged()),
-            q, SIGNAL(selectionChanged()));
+            q, SLOT(_q_selectionChanged()));
     QObject::connect(control, SIGNAL(accepted()),
             q, SIGNAL(returnPressed()));
     QObject::connect(control, SIGNAL(editingFinished()),

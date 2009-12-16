@@ -139,8 +139,7 @@ enum S60PluginFuncOrdinals
     S60Plugin_GetLongDateFormatSpec  = 3,
     S60Plugin_GetShortDateFormatSpec = 4,
     S60Plugin_LocalizedDirectoryName = 5,
-    S60Plugin_GetSystemDrive         = 6,
-    S60Plugin_RefreshLocaleInfo      = 7
+    S60Plugin_GetSystemDrive         = 6
 };
 
 Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal);

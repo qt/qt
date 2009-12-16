@@ -777,7 +777,7 @@ extern "C" {
     NSPoint windowPoint = [theEvent locationInWindow];
     NSPoint globalPoint = [[theEvent window] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
-    QPoint qlocal = QPoint(localPoint.x, flipYCoordinate(localPoint.y));
+    QPoint qlocal = QPoint(localPoint.x, localPoint.y);
     QPoint qglobal = QPoint(globalPoint.x, flipYCoordinate(globalPoint.y));
     Qt::MouseButtons buttons = QApplication::mouseButtons();
     bool wheelOK = false;

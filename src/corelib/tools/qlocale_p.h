@@ -132,10 +132,7 @@ public:
                           CharBuff *result) const;
     inline char digitToCLocale(const QChar &c) const;
 
-    static void updateSystemPrivate(bool initialize = true);
-#if defined(Q_OS_SYMBIAN)
-    static void symbianRegisterLocaleNotifier();
-#endif
+    static void updateSystemPrivate();
 
     enum NumberMode { IntegerMode, DoubleStandardMode, DoubleScientificMode };
     bool validateChars(const QString &str, NumberMode numMode, QByteArray *buff, int decDigits = -1) const;
