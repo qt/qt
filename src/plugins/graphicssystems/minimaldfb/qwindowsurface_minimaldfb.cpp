@@ -100,6 +100,10 @@ void QDirectFbWindowSurface::setGeometry(const QRect &rect)
     QWindowSurface::setGeometry(rect);
     m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
                            rect.width(), rect.height());
+    if (m_dfbSurface) {
+        m_dfbSurface->Release(m_dfbSurface);
+        m_dfbSurface = 0;
+    }
     DFBResult result = m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
     if (result != DFB_OK)
         DirectFBError("QDirectFbWindowSurface::setGeometry() failed to retrieve new surface",result);
