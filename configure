@@ -713,6 +713,7 @@ CFG_PTMALLOC=no
 CFG_STL=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=auto
+CFG_SEPARATE_DEBUG_INFO_NOCOPY=no
 CFG_REDUCE_EXPORTS=auto
 CFG_MMX=auto
 CFG_3DNOW=auto
@@ -1544,6 +1545,9 @@ while [ "$#" -gt 0 ]; do
     separate-debug-info)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SEPARATE_DEBUG_INFO="$VAL"
+        elif [ "$VAL" = "nocopy" ] ; then
+            CFG_SEPARATE_DEBUG_INFO="yes"
+            CFG_SEPARATE_DEBUG_INFO_NOCOPY="yes"
         else
             UNKNOWN_OPT=yes
         fi
@@ -6093,6 +6097,9 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     QMakeVar add QMAKE_CFLAGS -g
     QMakeVar add QMAKE_CXXFLAGS -g
     QMAKE_CONFIG="$QMAKE_CONFIG separate_debug_info"
+fi
+if [ "$CFG_SEPARATE_DEBUG_INFO_NOCOPY" = "yes" ] ; then
+    QMAKE_CONFIG="$QMAKE_CONFIG separate_debug_info_nocopy"
 fi
 [ "$CFG_MMX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mmx"
 [ "$CFG_3DNOW" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG 3dnow"
