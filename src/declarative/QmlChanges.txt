@@ -1,3 +1,11 @@
+
+
+Listview: sectionExpression has been replaced by section.property, section.criteria
+
+
+=============================================================================
+The changes below are pre-4.6.0 release.
+
 QML API Review
 ==============
 
