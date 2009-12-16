@@ -57,6 +57,7 @@
 
 #include "qmlgraphicsanchors_p.h"
 #include "qmlgraphicsanchors_p_p.h"
+#include "qmlgraphicsitemgeometrylistener_p.h"
 
 #include "../util/qmlstate_p.h"
 #include "../util/qmlnullablevalue_p_p.h"
@@ -182,7 +183,6 @@ public:
         }
         return _anchors;
     }
-    QList<QmlGraphicsAnchors *> dependantAnchors;
     QmlGraphicsAnchors *_anchors;
     QmlGraphicsContents *_contents;
 
@@ -205,6 +205,10 @@ public:
             new AnchorLines(const_cast<QmlGraphicsItem *>(q));
         return _anchorLines;
     }
+
+    void addGeometryListener(QmlGraphicsItemGeometryListener *);
+    void removeGeometryListener(QmlGraphicsItemGeometryListener *);
+    QList<QmlGraphicsItemGeometryListener *> geometryListeners;
 
     QmlStateGroup *states();
     QmlStateGroup *_stateGroup;

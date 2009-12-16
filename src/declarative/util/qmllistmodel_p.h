@@ -72,6 +72,7 @@ public:
     virtual QString toString(int role) const;
     virtual int count() const;
     virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
+    virtual QVariant data(int index, int role) const;
 
     Q_INVOKABLE void clear();
     Q_INVOKABLE void remove(int index);

@@ -462,6 +462,13 @@ QHash<int,QVariant> QmlXmlListModel::data(int index, const QList<int> &roles) co
     return rv;
 }
 
+QVariant QmlXmlListModel::data(int index, int role) const
+{
+    Q_D(const QmlXmlListModel);
+    int roleIndex = d->roles.indexOf(role);
+    return (roleIndex == -1) ? QVariant() : d->data.at(roleIndex).at(index);
+}
+
 /*!
     \qmlproperty int XmlListModel::count
     The number of data entries in the model.

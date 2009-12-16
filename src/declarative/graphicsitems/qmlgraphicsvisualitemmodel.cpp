@@ -44,6 +44,7 @@
 #include "qmlgraphicsitem.h"
 
 #include <qmlcontext.h>
+#include <qmlengine.h>
 #include <qmlexpression.h>
 #include <qmlpackage_p.h>
 #include <qmlopenmetaobject_p.h>
@@ -208,9 +209,19 @@ void QmlGraphicsVisualItemModel::completeItem()
     // Nothing to do
 }
 
+QVariant QmlGraphicsVisualItemModel::value(int index, const QString &name)
+{
+    Q_D(QmlGraphicsVisualItemModel);
+    if (index < 0 || index >= d->children.count())
+        return QVariant();
+    return QmlEngine::contextForObject(d->children.at(index))->contextProperty(name);
+}
+
 QVariant QmlGraphicsVisualItemModel::evaluate(int index, const QString &expression, QObject *objectContext)
 {
     Q_D(QmlGraphicsVisualItemModel);
+    if (index < 0 || index >= d->children.count())
+        return QVariant();
     QmlContext *ccontext = qmlContext(this);
     QmlContext *ctxt = new QmlContext(ccontext);
     ctxt->addDefaultObject(d->children.at(index));
@@ -878,6 +889,33 @@ void QmlGraphicsVisualDataModel::completeItem()
     d->m_delegate->completeCreate();
 }
 
+QVariant QmlGraphicsVisualDataModel::value(int index, const QString &name)
+{
+    Q_D(QmlGraphicsVisualDataModel);
+    if (d->m_visualItemModel)
+        return d->m_visualItemModel->value(index, name);
+
+    if ((!d->m_listModelInterface && !d->m_abstractItemModel) || !d->m_delegate)
+        return QVariant();
+
+    QVariant val;
+    QObject *nobj = d->m_cache.item(index);
+    if (nobj) {
+        val = QmlEngine::contextForObject(nobj)->contextProperty(name);
+    } else {
+        QmlContext *ccontext = d->m_context;
+        if (!ccontext) ccontext = qmlContext(this);
+        QmlContext *ctxt = new QmlContext(ccontext);
+        QmlGraphicsVisualDataModelData *data = new QmlGraphicsVisualDataModelData(index, this);
+        ctxt->addDefaultObject(data);
+        val = ctxt->contextProperty(name);
+        delete data;
+        delete ctxt;
+    }
+
+    return val;
+}
+
 QVariant QmlGraphicsVisualDataModel::evaluate(int index, const QString &expression, QObject *objectContext)
 {
     Q_D(QmlGraphicsVisualDataModel);
@@ -914,11 +952,8 @@ QVariant QmlGraphicsVisualDataModel::evaluate(int index, const QString &expressi
 
 int QmlGraphicsVisualDataModel::indexOf(QmlGraphicsItem *item, QObject *objectContext) const
 {
-    QmlExpression e(qmlContext(item), QLatin1String("index"), objectContext);
-    e.setTrackChange(false);
-    QVariant value = e.value();
-    if (value.isValid())
-        return value.toInt();
+    QVariant val = QmlEngine::contextForObject(item)->contextProperty("index");
+        return val.toInt();
     return -1;
 }
 

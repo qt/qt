@@ -82,6 +82,7 @@ public:
     virtual ReleaseFlags release(QmlGraphicsItem *item) = 0;
     virtual void completeItem() = 0;
     virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext) = 0;
+    virtual QVariant value(int index, const QString &role) { return QVariant(); }
 
     virtual int indexOf(QmlGraphicsItem *item, QObject *objectContext) const = 0;
 
@@ -120,6 +121,7 @@ public:
     virtual QmlGraphicsItem *item(int index, bool complete=true);
     virtual ReleaseFlags release(QmlGraphicsItem *item);
     virtual void completeItem();
+    virtual QVariant value(int index, const QString &role);
     virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext);
 
     virtual int indexOf(QmlGraphicsItem *item, QObject *objectContext) const;
@@ -166,6 +168,7 @@ public:
     QmlGraphicsItem *item(int index, const QByteArray &, bool complete=true);
     ReleaseFlags release(QmlGraphicsItem *item);
     void completeItem();
+    virtual QVariant value(int index, const QString &role);
     QVariant evaluate(int index, const QString &expression, QObject *objectContext);
 
     int indexOf(QmlGraphicsItem *item, QObject *objectContext) const;

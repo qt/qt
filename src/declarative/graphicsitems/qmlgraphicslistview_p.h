@@ -50,6 +50,32 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class Q_DECLARATIVE_EXPORT QmlGraphicsViewSection : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY changed)
+    Q_PROPERTY(SectionCriteria criteria READ criteria WRITE setCriteria NOTIFY changed)
+    Q_ENUMS(SectionCriteria)
+public:
+    QmlGraphicsViewSection(QObject *parent=0) : QObject(parent), m_criteria(FullString) {}
+
+    QString property() const { return m_property; }
+    void setProperty(const QString &);
+
+    enum SectionCriteria { FullString, FirstCharacter };
+    SectionCriteria criteria() const { return m_criteria; }
+    void setCriteria(SectionCriteria);
+
+    QString sectionString(const QString &value);
+
+Q_SIGNALS:
+    void changed();
+
+private:
+    QString m_property;
+    SectionCriteria m_criteria;
+};
+
 
 class QmlGraphicsVisualModel;
 class QmlGraphicsListViewAttached;
@@ -79,7 +105,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsListView : public QmlGraphicsFlickable
     Q_PROPERTY(Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
     Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
-    Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
+    Q_PROPERTY(QmlGraphicsViewSection *section READ sectionCriteria CONSTANT)
     Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
 
     Q_PROPERTY(SnapMode snapMode READ snapMode WRITE setSnapMode)
@@ -138,8 +164,7 @@ public:
     int cacheBuffer() const;
     void setCacheBuffer(int);
 
-    QString sectionExpression() const;
-    void setSectionExpression(const QString &);
+    QmlGraphicsViewSection *sectionCriteria();
     QString currentSection() const;
 
     qreal highlightMoveSpeed() const;
@@ -188,7 +213,6 @@ protected:
 private Q_SLOTS:
     void refill();
     void trackedPositionChanged();
-    void itemResized();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
@@ -202,6 +226,7 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPEINFO(QmlGraphicsListView, QML_HAS_ATTACHED_PROPERTIES)
 QML_DECLARE_TYPE(QmlGraphicsListView)
+QML_DECLARE_TYPE(QmlGraphicsViewSection)
 
 QT_END_HEADER
 
