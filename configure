@@ -106,6 +106,28 @@ QMakeVar()
     echo "$2" "$eq" "$3" >> "$QMAKE_VARS_FILE"
 }
 
+# Helper function for getQMakeConf. It parses include statements in
+# qmake.conf and prints out the expanded file
+getQMakeConf1()
+{
+    while read line; do case "$line" in
+        include*)
+	    inc_file=`echo "$line" | sed -n -e "/^include.*(.*)/s/include.*(\(.*\)).*$/\1/p"`
+	    current_dir=`dirname "$1"`
+	    conf_file="$current_dir/$inc_file"
+	    if [ ! -e  "$conf_file" ]; then
+                echo "WARNING: Unable to find file $conf_file" >&2
+                continue
+            fi
+            getQMakeConf1 "$conf_file"
+        ;;
+        *)
+            echo "$line"
+        ;;
+    esac; done < "$1"
+}
+
+
 # relies on $QMAKESPEC being set correctly. parses include statements in
 # qmake.conf and prints out the expanded file
 getQMakeConf()
@@ -114,15 +136,7 @@ getQMakeConf()
     if [ -n "$1" ]; then
         tmpSPEC="$1"
     fi
-    $AWK -v "QMAKESPEC=$tmpSPEC" '
-/^include\(.+\)$/{
-    fname = QMAKESPEC "/" substr($0, 9, length($0) - 9)
-    while ((getline line < fname) > 0)
-        print line
-    close(fname)
-    next
-}
-{ print }' "$tmpSPEC/qmake.conf"
+    getQMakeConf1 "$tmpSPEC/qmake.conf"
 }
 
 # relies on $TEST_COMPILER being set correctly
