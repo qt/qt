@@ -39,11 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QBENCHMARK_H
-#define QBENCHMARK_H
+#ifndef QBENCHMARKMETRIC_H
+#define QBENCHMARKMETRIC_H
 
 #include <QtTest/qtest_global.h>
-#include <QtTest/private/qbenchmarkmetric_p.h>
 
 QT_BEGIN_HEADER
 
@@ -51,47 +50,19 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
-namespace QTest
-{
+namespace QTest {
 
-//
-//  W A R N I N G
-//  -------------
-//
-// The QBenchmarkIterationController class is not a part of the
-// QTestlib API. It exists purely as an implementation detail.
-//
-//
-class Q_TESTLIB_EXPORT QBenchmarkIterationController
-{
-public:
-    enum RunMode { RepeatUntilValidMeasurement, RunOnce };
-    QBenchmarkIterationController();
-    QBenchmarkIterationController(RunMode runMode);
-    ~QBenchmarkIterationController();
-    bool isDone();
-    void next();
-    int i;
+enum QBenchmarkMetric {
+    FramesPerSecond,
+    BitsPerSecond,
+    BytesPerSecond,
+    WalltimeMilliseconds,
+    CPUTicks,
+    InstructionReads,
+    Events
 };
 
 }
-
-// --- BEGIN public API ---
-
-#define QBENCHMARK \
-    for (QTest::QBenchmarkIterationController __iteration_controller; \
-            __iteration_controller.isDone() == false; __iteration_controller.next())
-
-#define QBENCHMARK_ONCE \
-    for (QTest::QBenchmarkIterationController __iteration_controller(QTest::QBenchmarkIterationController::RunOnce); \
-            __iteration_controller.isDone() == false; __iteration_controller.next())
-
-namespace QTest
-{
-    void Q_TESTLIB_EXPORT setBenchmarkResult(qreal result, QBenchmarkMetric metric);
-}
-
-// --- END public API ---
 
 QT_END_NAMESPACE
 
