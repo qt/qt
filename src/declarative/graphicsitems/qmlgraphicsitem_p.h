@@ -58,7 +58,7 @@
 #include "qmlgraphicsanchors_p.h"
 #include "qmlgraphicsanchors_p_p.h"
 #include "qmlgraphicsitemchangelistener_p.h"
-#include "qpodvector_p.h"
+#include <private/qpodvector_p.h>
 
 #include "../util/qmlstate_p.h"
 #include "../util/qmlnullablevalue_p_p.h"
