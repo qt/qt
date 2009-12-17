@@ -263,6 +263,7 @@ public:
     bool isQmlList(int) const;
     bool isObject(int);
     int qmlListType(int) const;
+    QmlMetaType::TypeCategory typeCategory(int) const;
     const QMetaObject *rawMetaObjectForType(int) const;
     const QMetaObject *metaObjectForType(int) const;
     QHash<int, int> m_qmlLists;
