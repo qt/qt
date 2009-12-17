@@ -406,6 +406,7 @@ void QGLEngineShaderManager::setDirty()
 
 void QGLEngineShaderManager::setSrcPixelType(Qt::BrushStyle style)
 {
+    Q_ASSERT(style != Qt::NoBrush);
     if (srcPixelType == PixelSrcType(style))
         return;
 
