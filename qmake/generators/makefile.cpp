@@ -2681,8 +2681,6 @@ MakefileGenerator::writeMakeQmake(QTextStream &t)
             if(!specdir().isEmpty()) {
                 if(exists(Option::fixPathToLocalOS(specdir()+QDir::separator()+"qmake.conf")))
                     t << escapeDependencyPath(specdir() + Option::dir_sep + "qmake.conf") << " ";
-                else if(exists(Option::fixPathToLocalOS(specdir()+QDir::separator()+"tmake.conf")))
-                    t << escapeDependencyPath(specdir() + Option::dir_sep + "tmake.conf") << " ";
             }
             const QStringList &included = project->values("QMAKE_INTERNAL_INCLUDED_FILES");
             t << escapeDependencyPaths(included).join(" \\\n\t\t") << "\n\t"

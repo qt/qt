@@ -183,9 +183,7 @@ static QString remove_quotes(const QString &arg)
 static QString varMap(const QString &x)
 {
     QString ret(x);
-    if(ret.startsWith("TMAKE")) //tmake no more!
-        ret = "QMAKE" + ret.mid(5);
-    else if(ret == "INTERFACES")
+    if(ret == "INTERFACES")
         ret = "FORMS";
     else if(ret == "QMAKE_POST_BUILD")
         ret = "QMAKE_POST_LINK";
@@ -1456,9 +1454,6 @@ QMakeProject::read(uchar cmd)
             while(qmakespec.endsWith(QString(QChar(QDir::separator()))))
                 qmakespec.truncate(qmakespec.length()-1);
             QString spec = qmakespec + QDir::separator() + "qmake.conf";
-            if(!QFile::exists(spec) &&
-               QFile::exists(qmakespec + QDir::separator() + "tmake.conf"))
-                spec = qmakespec + QDir::separator() + "tmake.conf";
             debug_msg(1, "QMAKESPEC conf: reading %s", spec.toLatin1().constData());
             if(!read(spec, base_vars)) {
                 fprintf(stderr, "Failure to read QMAKESPEC conf file %s.\n", spec.toLatin1().constData());
@@ -3080,8 +3075,6 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
             QString orig_template = place["TEMPLATE"].first(), real_template;
             if(!Option::user_template_prefix.isEmpty() && !orig_template.startsWith(Option::user_template_prefix))
                 real_template = Option::user_template_prefix + orig_template;
-            if(real_template.endsWith(".t"))
-                real_template = real_template.left(real_template.length()-2);
             if(!real_template.isEmpty()) {
                 var = ".BUILTIN." + var;
                 place[var] = QStringList(real_template);
