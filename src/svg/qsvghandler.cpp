@@ -1578,8 +1578,8 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                     count--;
                     break;
                 }
-                x = x0 = num[0] + offsetX;
-                y = y0 = num[1] + offsetY;
+                x = num[0] + offsetX;
+                y = num[1] + offsetY;
                 num += 2;
                 count -= 2;
                 path.lineTo(x, y);
@@ -1592,8 +1592,8 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                     count--;
                     break;
                 }
-                x = x0 = num[0];
-                y = y0 = num[1];
+                x = num[0];
+                y = num[1];
                 num += 2;
                 count -= 2;
                 path.lineTo(x, y);
