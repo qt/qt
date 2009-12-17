@@ -46,6 +46,7 @@
 
 #include <qmleasefollow_p.h>
 #include <qmlexpression.h>
+#include <qmlengine.h>
 
 #include <qlistmodelinterface_p.h>
 #include <QKeyEvent>
@@ -529,6 +530,8 @@ public:
     QmlEaseFollow *highlightSizeAnimator;
     QmlGraphicsViewSection *sectionCriteria;
     QString currentSection;
+    static const int sectionCacheSize = 3;
+    QmlGraphicsItem *sectionCache[sectionCacheSize];
     qreal spacing;
     qreal highlightMoveSpeed;
     qreal highlightResizeSpeed;
@@ -559,6 +562,7 @@ void QmlGraphicsListViewPrivate::init()
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
+    ::memset(sectionCache, 0, sizeof(QmlGraphicsItem*) * sectionCacheSize);
 }
 
 void QmlGraphicsListViewPrivate::clear()
@@ -566,6 +570,10 @@ void QmlGraphicsListViewPrivate::clear()
     for (int i = 0; i < visibleItems.count(); ++i)
         releaseItem(visibleItems.at(i));
     visibleItems.clear();
+    for (int i = 0; i < sectionCacheSize; ++i) {
+        delete sectionCache[i];
+        sectionCache[i] = 0;
+    }
     visiblePos = header ? header->size() : 0;
     visibleIndex = 0;
     releaseItem(currentItem);
@@ -628,8 +636,19 @@ void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
     }
-    if (item->section)
+    if (item->section) {
+        int i = 0;
+        do {
+            if (!sectionCache[i]) {
+                sectionCache[i] = item->section;
+                sectionCache[i]->setVisible(false);
+                item->section = 0;
+                break;
+            }
+            ++i;
+        } while (i < sectionCacheSize);
         delete item->section;
+    }
     delete item;
 }
 
@@ -883,23 +902,44 @@ void QmlGraphicsListViewPrivate::createSection(FxListItem *listItem)
         return;
     if (listItem->attached->m_prevSection != listItem->attached->m_section) {
         if (!listItem->section) {
-            QmlContext *context = new QmlContext(qmlContext(q));
-            context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
-            QObject *nobj = sectionCriteria->delegate()->create(context);
-            if (nobj) {
-                context->setParent(nobj);
-                listItem->section = qobject_cast<QmlGraphicsItem *>(nobj);
-                if (!listItem->section) {
-                    delete nobj;
-                } else {
-                    listItem->section->setZValue(1);
-                    listItem->section->setParent(q->viewport());
-                }
+            int i = sectionCacheSize-1;
+            while (i >= 0 && !sectionCache[i])
+                --i;
+            if (i >= 0) {
+                listItem->section = sectionCache[i];
+                sectionCache[i] = 0;
+                listItem->section->setVisible(true);
+                QmlContext *context = QmlEngine::contextForObject(listItem->section);
+                context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
             } else {
-                delete context;
+                QmlContext *context = new QmlContext(qmlContext(q));
+                context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
+                QObject *nobj = sectionCriteria->delegate()->create(context);
+                if (nobj) {
+                    context->setParent(nobj);
+                    listItem->section = qobject_cast<QmlGraphicsItem *>(nobj);
+                    if (!listItem->section) {
+                        delete nobj;
+                    } else {
+                        listItem->section->setZValue(1);
+                        listItem->section->setParent(q->viewport());
+                    }
+                } else {
+                    delete context;
+                }
             }
         }
-    } else {
+    } else if (listItem->section) {
+        int i = 0;
+        do {
+            if (!sectionCache[i]) {
+                sectionCache[i] = listItem->section;
+                sectionCache[i]->setVisible(false);
+                listItem->section = 0;
+                return;
+            }
+            ++i;
+        } while (i < sectionCacheSize);
         delete listItem->section;
         listItem->section = 0;
     }
