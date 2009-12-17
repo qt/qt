@@ -306,6 +306,11 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
     QmlMetaPropertyPrivate::write(obj, *lastData, v, evalContext);
 }
 
+bool QmlObjectScriptClass::isQObject() const
+{
+    return true;
+}
+
 QObject *QmlObjectScriptClass::toQObject(Object *object, bool *ok)
 {
     if (ok) *ok = true;
