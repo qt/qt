@@ -302,7 +302,9 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
 
     // ### Can well known types be optimized?
     QVariant v = QmlScriptClass::toVariant(engine, value);
-    delete QmlMetaPropertyPrivate::setBinding(obj, *lastData, 0);
+    QmlAbstractBinding *delBinding = QmlMetaPropertyPrivate::setBinding(obj, *lastData, 0);
+    if (delBinding)
+        delBinding->destroy();
     QmlMetaPropertyPrivate::write(obj, *lastData, v, evalContext);
 }
 
