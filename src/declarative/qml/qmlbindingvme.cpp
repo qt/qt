@@ -254,9 +254,7 @@ struct QmlBindingCompilerPrivate
         QSet<QString> subscriptionSet;
     };
 
-    QmlBindingCompilerPrivate() : registers(0), strings(0) {
-        committed.strings = 0;
-    }
+    QmlBindingCompilerPrivate() : registers(0) {}
 
     void resetInstanceState();
     int commitCompile();
@@ -299,7 +297,7 @@ struct QmlBindingCompilerPrivate
     void releaseReg(int);
 
     int registerString(const QString &);
-    int strings;
+    QHash<QString, QPair<int, int> > registeredStrings;
     QByteArray data;
 
     bool subscription(const QStringList &, Result *);
@@ -318,8 +316,9 @@ struct QmlBindingCompilerPrivate
 
         QVector<Instr> bytecode;
         QByteArray data;
-        int strings;
         QHash<QString, int> subscriptionIds;
+
+        QHash<QString, QPair<int, int> > registeredStrings;
 
         int count() const { return offsets.count(); }
     } committed;
@@ -1003,11 +1002,11 @@ void QmlBindingCompilerPrivate::resetInstanceState()
 {
     registers = 0;
     registerCleanups.clear();
-    strings = committed.strings;
     data = committed.data;
     usedSubscriptionIds.clear();
     subscriptionSet.clear();
     subscriptionIds = committed.subscriptionIds;
+    registeredStrings = committed.registeredStrings;
     bytecode.clear();
 }
 
@@ -1024,8 +1023,8 @@ int QmlBindingCompilerPrivate::commitCompile()
     committed.dependencies << usedSubscriptionIds;
     committed.bytecode << bytecode;
     committed.data = data;
-    committed.strings = strings;
     committed.subscriptionIds = subscriptionIds;
+    committed.registeredStrings = registeredStrings;
     return rv;
 }
 
@@ -1038,11 +1037,9 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
     if (!parseExpression(node, type)) 
         return false;
 
-    if (subscriptionSet.count() || strings) {
-        if (subscriptionSet.count() > 0xFFFF ||
-            strings > 0xFFFF)
-            return false;
-    }
+    if (subscriptionSet.count() > 0xFFFF ||
+            registeredStrings.count() > 0xFFFF)
+        return false;
 
     if (type.unknownType) {
         if (destination->type != QMetaType::QReal &&
@@ -1798,19 +1795,23 @@ int QmlBindingCompilerPrivate::registerString(const QString &string)
 {
     Q_ASSERT(!string.isEmpty());
 
-    // ### Padding?
-    QByteArray strdata((const char *)string.constData(), string.length() * sizeof(QChar));
-    int rv = data.count();
-    data += strdata;
+    QHash<QString, QPair<int, int> >::ConstIterator iter = registeredStrings.find(string);
+
+    if (iter == registeredStrings.end()) {
+        QByteArray strdata((const char *)string.constData(), string.length() * sizeof(QChar));
+        int rv = data.count();
+        data += strdata;
+
+        iter = registeredStrings.insert(string, qMakePair(registeredStrings.count(), rv));
+    }
 
     Instr reg;
     reg.type = Instr::InitString;
-    reg.initstring.offset = strings++;
-    reg.initstring.dataIdx = rv;
+    reg.initstring.offset = iter->first;
+    reg.initstring.dataIdx = iter->second;
     reg.initstring.length = string.length();
     bytecode << reg;
-
-    return strings - 1;
+    return reg.initstring.offset;
 }
 
 bool QmlBindingCompilerPrivate::subscription(const QStringList &sub, Result *result)
@@ -1950,7 +1951,7 @@ QByteArray QmlBindingCompiler::program() const
 
         prog.dataLength = 4 * ((data.size() + 3) / 4);
         prog.subscriptions = d->committed.subscriptionIds.count();
-        prog.identifiers = d->committed.strings;
+        prog.identifiers = d->committed.registeredStrings.count();
         int size = sizeof(Program) + bytecode.count() * sizeof(Instr);
         size += prog.dataLength;
 
