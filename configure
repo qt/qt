@@ -2922,6 +2922,10 @@ fi
 QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
 TEST_COMPILER="$CC"
 [ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER
+if [ -z "$TEST_COMPILER" ]; then
+    echo "ERROR: Cannot set the compiler for the configuration tests"
+    exit 1
+fi
 
 # auto-detect precompiled header support
 if [ "$CFG_PRECOMPILE" = "auto" ]; then
