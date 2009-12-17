@@ -196,7 +196,7 @@ void QmlGraphicsBasePositioner::prePositioning()
 
     d->queuedPositioning = false;
     //Need to order children by creation order modified by stacking order
-    QList<QGraphicsItem *> children = childItems();
+    QList<QGraphicsItem *> children = d->QGraphicsItemPrivate::children;
     qSort(children.begin(), children.end(), d->insertionOrder);
 
     for (int ii = 0; ii < children.count(); ++ii) {
