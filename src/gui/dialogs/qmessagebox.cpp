@@ -188,6 +188,9 @@ public:
     bool autoAddOkButton;
     QAbstractButton *detectedEscapeButton;
     QLabel *informativeLabel;
+#ifdef Q_OS_SYMBIAN
+    QTextEdit *textEdit;
+#endif
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
     QByteArray signalToDisconnectOnClose;
@@ -2459,10 +2462,24 @@ void QMessageBox::setInformativeText(const QString &text)
 #endif
         label->setWordWrap(true);
         QGridLayout *grid = static_cast<QGridLayout *>(layout());
+#ifdef Q_OS_SYMBIAN
+        label->hide();
+        QTextEdit *textEdit = new QTextEdit(this);
+        textEdit->setReadOnly(true);
+        grid->addWidget(textEdit, 1, 1, 1, 1);
+        d->textEdit = textEdit;
+#else
         grid->addWidget(label, 1, 1, 1, 1);
+#endif
         d->informativeLabel = label;
     }
     d->informativeLabel->setText(text);
+
+#ifdef Q_OS_SYMBIAN
+    //We need to put the informative label inside textEdit to enable scrolling of long texts.
+    d->textEdit->setText(d->informativeLabel->text());
+#endif
+
     d->updateSize();
 }
 

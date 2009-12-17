@@ -16,11 +16,13 @@ HEADERS += \
     qpaintengine_vg_p.h \
     qpixmapdata_vg_p.h \
     qpixmapfilter_vg_p.h \
-    qvgcompositionhelper_p.h
+    qvgcompositionhelper_p.h \
+    qvgimagepool_p.h
 SOURCES += \
     qpaintengine_vg.cpp \
     qpixmapdata_vg.cpp \
-    qpixmapfilter_vg.cpp
+    qpixmapfilter_vg.cpp \
+    qvgimagepool.cpp
 
 contains(QT_CONFIG, egl) {
     HEADERS += \

@@ -173,9 +173,15 @@ void QGLWidget::updateOverlayGL()
     //handle overlay
 }
 
+//#define QT_DEBUG_X11_VISUAL_SELECTION 1
+
 bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig config, const QX11Info &x11Info, bool useArgbVisual)
 {
     bool foundVisualIsArgb = useArgbVisual;
+
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+    qDebug("qt_egl_setup_x11_visual() - useArgbVisual=%d", useArgbVisual);
+#endif
 
     memset(&vi, 0, sizeof(XVisualInfo));
 
@@ -199,7 +205,9 @@ bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig conf
                 XRenderPictFormat *format;
                 format = XRenderFindVisualFormat(x11Info.display(), chosenVisualInfo->visual);
                 if (format->type == PictTypeDirect && format->direct.alphaMask) {
-//                    qDebug("Using ARGB X Visual ID (%d) provided by EGL", (int)vi.visualid);
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+                    qDebug("Using ARGB X Visual ID (%d) provided by EGL", (int)vi.visualid);
+#endif
                     foundVisualIsArgb = true;
                     vi = *chosenVisualInfo;
                 }
@@ -212,7 +220,9 @@ bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig conf
 #endif
             {
                 if (eglConfigColorSize == chosenVisualInfo->depth) {
-//                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+#endif
                     vi = *chosenVisualInfo;
                 } else
                     qWarning("Warning: EGL suggested using X visual ID %d (%d bpp) for config %d (%d bpp), but the depths do not match!",
@@ -248,7 +258,9 @@ bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig conf
             if (format->type == PictTypeDirect && format->direct.alphaMask) {
                 vi = matchingVisuals[i];
                 foundVisualIsArgb = true;
-//                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
+#endif
                 break;
             }
         }
@@ -272,24 +284,28 @@ bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig conf
             } else
                 qWarning("         - Falling back to X11 suggested depth (%d)", depth);
         }
-//        else
-//            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+        else
+            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
+#endif
 
         // Don't try to use ARGB now unless the visual is 32-bit - even then it might stil fail :-(
         if (useArgbVisual)
             foundVisualIsArgb = vi.depth == 32; //### We might at some point (soon) get ARGB4444
     }
 
-//    qDebug("Visual Info:");
-//    qDebug("   bits_per_rgb=%d", vi.bits_per_rgb);
-//    qDebug("   red_mask=0x%x", vi.red_mask);
-//    qDebug("   green_mask=0x%x", vi.green_mask);
-//    qDebug("   blue_mask=0x%x", vi.blue_mask);
-//    qDebug("   colormap_size=%d", vi.colormap_size);
-//    qDebug("   c_class=%d", vi.c_class);
-//    qDebug("   depth=%d", vi.depth);
-//    qDebug("   screen=%d", vi.screen);
-//    qDebug("   visualid=%d", vi.visualid);
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+    qDebug("Visual Info:");
+    qDebug("   bits_per_rgb=%d", vi.bits_per_rgb);
+    qDebug("   red_mask=0x%x", vi.red_mask);
+    qDebug("   green_mask=0x%x", vi.green_mask);
+    qDebug("   blue_mask=0x%x", vi.blue_mask);
+    qDebug("   colormap_size=%d", vi.colormap_size);
+    qDebug("   c_class=%d", vi.c_class);
+    qDebug("   depth=%d", vi.depth);
+    qDebug("   screen=%d", vi.screen);
+    qDebug("   visualid=%d", vi.visualid);
+#endif
     return foundVisualIsArgb;
 }
 
@@ -320,7 +336,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
     // If the application has set WA_TranslucentBackground and not explicitly set
     // the alpha buffer size to zero, modify the format so it have an alpha channel
     QGLFormat& fmt = d->glcx->d_func()->glFormat;
-    const bool tryArgbVisual = testAttribute(Qt::WA_TranslucentBackground);
+    const bool tryArgbVisual = testAttribute(Qt::WA_TranslucentBackground) || fmt.alpha();
     if (tryArgbVisual && fmt.alphaBufferSize() == -1)
         fmt.setAlphaBufferSize(1);
 

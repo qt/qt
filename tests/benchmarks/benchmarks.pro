@@ -21,13 +21,21 @@ SUBDIRS = containers-associative \
         qvariant \
 	qwidget	\
 	qtwidgets \
-        qmlxmlparser \
-        qfxview \
+	qapplication \
+	qdir \
+	qdiriterator \
+	qgraphicsanchorlayout \
+	qgraphicsitem \
+	qgraphicswidget \
+	qmetaobject \
+	qpixmapcache \
+	qquaternion \
+	qscriptclass \
+	qscriptengine \
+	qscriptvalue \
+	qstringbuilder \
+	qstylesheetstyle \
+	qsvgrenderer \
+	qtableview
 
 contains(QT_CONFIG, opengl): SUBDIRS += opengl
-
-# Tests which should run in Pulse
-PULSE_TESTS = \
-    qfxview \
-    qmlxmlparser \
-

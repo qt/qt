@@ -3629,12 +3629,46 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     // walk through parents and check for gestures
     if (qt_gestureManager) {
-        if (receiver->isWidgetType()) {
-            if (qt_gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
-                return true;
-        } else if (QGesture *gesture = qobject_cast<QGesture *>(receiver)) {
-            if (qt_gestureManager->filterEvent(gesture, e))
-                return true;
+        switch (e->type()) {
+        case QEvent::Paint:
+        case QEvent::MetaCall:
+        case QEvent::DeferredDelete:
+        case QEvent::DragEnter: case QEvent::DragMove: case QEvent::DragLeave:
+        case QEvent::Drop: case QEvent::DragResponse:
+        case QEvent::ChildAdded: case QEvent::ChildPolished:
+#ifdef QT3_SUPPORT
+        case QEvent::ChildInsertedRequest:
+        case QEvent::ChildInserted:
+        case QEvent::LayoutHint:
+#endif
+        case QEvent::ChildRemoved:
+        case QEvent::UpdateRequest:
+        case QEvent::UpdateLater:
+        case QEvent::AccessibilityPrepare:
+        case QEvent::LocaleChange:
+        case QEvent::Style:
+        case QEvent::IconDrag:
+        case QEvent::StyleChange:
+        case QEvent::AccessibilityHelp:
+        case QEvent::AccessibilityDescription:
+        case QEvent::GraphicsSceneDragEnter:
+        case QEvent::GraphicsSceneDragMove:
+        case QEvent::GraphicsSceneDragLeave:
+        case QEvent::GraphicsSceneDrop:
+        case QEvent::DynamicPropertyChange:
+        case QEvent::NetworkReplyUpdated:
+            break;
+        default:
+            if (receiver->isWidgetType()) {
+                if (qt_gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
+                    return true;
+            } else {
+                // a special case for events that go to QGesture objects.
+                // We pass the object to the gesture manager and it'll figure
+                // out if it's QGesture or not.
+                if (qt_gestureManager->filterEvent(receiver, e))
+                    return true;
+            }
         }
     }
 
@@ -4092,9 +4126,15 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
             touchEvent->setWidget(widget);
             touchEvent->setAccepted(acceptTouchEvents);
+            QWeakPointer<QWidget> p = widget;
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
             eventAccepted = touchEvent->isAccepted();
-            widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
+            if (p.isNull()) {
+                // widget was deleted
+                widget = 0;
+            } else {
+                widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
+            }
             touchEvent->spont = false;
             if (res && eventAccepted) {
                 // the first widget to accept the TouchBegin gets an implicit grab.
@@ -4103,7 +4143,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     d->widgetForTouchPointId[touchPoint.id()] = widget;
                 }
                 break;
-            } else if (widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
+            } else if (p.isNull() || widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
                 break;
             }
             QPoint offset = widget->pos();

@@ -424,6 +424,11 @@ QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)
 
 Q_GLOBAL_STATIC(QPMCache, pm_cache)
 
+int Q_AUTOTEST_EXPORT q_QPixmapCache_keyHashSize()
+{
+    return pm_cache()->size();
+}
+
 QPixmapCacheEntry::~QPixmapCacheEntry()
 {
     pm_cache()->releaseKey(key);

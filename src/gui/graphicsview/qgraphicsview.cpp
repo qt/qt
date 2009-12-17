@@ -545,6 +545,32 @@ qint64 QGraphicsViewPrivate::verticalScroll() const
 
 /*!
     \internal
+
+    Maps the given rectangle to the scene using QTransform::mapRect()
+*/
+QRectF QGraphicsViewPrivate::mapRectToScene(const QRect &rect) const
+{
+    if (dirtyScroll)
+        const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
+    QRectF scrolled = QRectF(rect.translated(scrollX, scrollY));
+    return identityMatrix ? scrolled : matrix.inverted().mapRect(scrolled);
+}
+
+
+/*!
+    \internal
+
+    Maps the given rectangle from the scene using QTransform::mapRect()
+*/
+QRectF QGraphicsViewPrivate::mapRectFromScene(const QRectF &rect) const
+{
+    if (dirtyScroll)
+        const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
+    return (identityMatrix ? rect : matrix.mapRect(rect)).translated(-scrollX, -scrollY);
+}
+
+/*!
+    \internal
 */
 void QGraphicsViewPrivate::updateScroll()
 {

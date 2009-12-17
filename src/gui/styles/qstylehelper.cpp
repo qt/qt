@@ -154,7 +154,7 @@ qreal angle(const QPointF &p1, const QPointF &p2)
         }
 
         qreal m = -(y2 - y1) / (x2 - x1);
-        _angle = atan(m) *  rad_factor;
+        _angle = qAtan(m) *  rad_factor;
 
         if (p1.x() < p2.x())
             _angle = 180 - _angle;

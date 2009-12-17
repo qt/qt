@@ -73,7 +73,11 @@ QT_BEGIN_NAMESPACE
     simple as:
 
     \code
-      QFile inputFile;
+      QFile inputFile;     // class member.
+      QAudioOutput* audio; // class member.
+    \endcode
+
+    \code
       inputFile.setFileName("/tmp/test.raw");
       inputFile.open(QIODevice::ReadOnly);
 
@@ -86,7 +90,13 @@ QT_BEGIN_NAMESPACE
       format.setByteOrder(QAudioFormat::LittleEndian);
       format.setSampleType(QAudioFormat::UnSignedInt);
 
-      QAudioOutput *audio = new QAudioOutput(format, this);
+      QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+      if (!info.isFormatSupported(format)) {
+          qWarning()<<"raw audio format not supported by backend, cannot play audio.";
+          return;
+      }
+
+      audio = new QAudioOutput(format, this);
       connect(audio,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlaying(QAudio::State)));
       audio->start(inputFile);
 
@@ -104,6 +114,7 @@ QT_BEGIN_NAMESPACE
         if(state == QAudio::IdleState) {
           audio->stop();
           inputFile.close();
+          delete audio;
         }
       }
     \endcode

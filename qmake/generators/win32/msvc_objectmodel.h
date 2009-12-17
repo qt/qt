@@ -298,7 +298,8 @@ enum linkProgressOption {
 };
 enum machineTypeOption {
     machineNotSet,
-    machineX86
+    machineX86,
+    machineX64 = 17
 };
 enum midlCharOption {
     midlCharUnsigned,

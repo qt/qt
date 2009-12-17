@@ -67,7 +67,7 @@ struct MessageEditorData {
     QList<FormMultiWidget *> transTexts;
     QString invariantForm;
     QString firstForm;
-    float fontSize;
+    qreal fontSize;
     bool pluralEditMode;
 };
 
