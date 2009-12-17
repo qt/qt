@@ -1527,6 +1527,16 @@ int QmlEnginePrivate::qmlListType(int t) const
         return QmlMetaType::qmlListType(t);
 }
 
+QmlMetaType::TypeCategory QmlEnginePrivate::typeCategory(int t) const
+{
+    if (m_compositeTypes.contains(t))
+        return QmlMetaType::Object;
+    else if (m_qmlLists.contains(t))
+        return QmlMetaType::QmlList;
+    else
+        return QmlMetaType::typeCategory(t);
+}
+
 const QMetaObject *QmlEnginePrivate::rawMetaObjectForType(int t) const
 {
     QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.find(t);

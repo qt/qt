@@ -97,7 +97,7 @@ public:
         int coreIndex;
         int notifyIndex;
 
-        void load(const QMetaProperty &);
+        void load(const QMetaProperty &, QmlEngine *engine = 0);
         void load(const QMetaMethod &);
         QString name(QObject *);
         QString name(const QMetaObject *);
