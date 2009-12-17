@@ -2195,7 +2195,8 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
         int lastSlash = path.lastIndexOf(QLatin1Char('/'));
         if (lastSlash > -1) {
             QString nameBase = path.mid(lastSlash + 1, path.length()-lastSlash-5);
-            newClassName = nameBase.toUtf8() + "_QMLTYPE_" + QByteArray::number(idx);
+            if (!nameBase.isEmpty() && nameBase.at(0).isUpper())
+                newClassName = nameBase.toUtf8() + "_QMLTYPE_" + QByteArray::number(idx);
         }
     }
 
