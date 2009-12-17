@@ -47,6 +47,7 @@ Timer::Timer()
         qWarning("Timer: Timer already registered");
     m_timer = this;
 
+    m_scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     m_scene.addItem(&m_item);
 }
 
