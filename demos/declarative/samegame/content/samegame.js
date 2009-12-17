@@ -56,7 +56,7 @@ function initBoard()
     }
     timer = new Date();
 
-    print(timer.valueOf() - a.valueOf());
+    //print(timer.valueOf() - a.valueOf());
 }
 
 var fillFound;//Set after a floodFill call to the number of tiles found

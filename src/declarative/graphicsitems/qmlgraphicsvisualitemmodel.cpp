@@ -496,19 +496,13 @@ QVariant QmlGraphicsVisualDataModelDataMetaObject::initialValue(int propId)
         QHash<QByteArray,int>::const_iterator it = model->m_roleNames.find(propName);
         if (it != model->m_roleNames.end()) {
             roleToProp.insert(*it, propId);
-            QHash<int,QVariant> values = model->m_listModelInterface->data(data->m_index, QList<int>() << *it);
-            if (values.isEmpty())
-                return QVariant();
-            else
-                return values.value(*it);
+            QVariant value = model->m_listModelInterface->data(data->m_index, *it);
+            return value;
         } else if (model->m_roles.count() == 1 && propName == "modelData") {
             //for compatability with other lists, assign modelData if there is only a single role
             roleToProp.insert(model->m_roles.first(), propId);
-            QHash<int,QVariant> values = model->m_listModelInterface->data(data->m_index, QList<int>() << model->m_roles.first());
-            if (values.isEmpty())
-                return QVariant();
-            else
-                return *values.begin();
+            QVariant value = model->m_listModelInterface->data(data->m_index, model->m_roles.first());
+            return value;
         }
     } else if (model->m_abstractItemModel) {
         model->ensureRoles();
