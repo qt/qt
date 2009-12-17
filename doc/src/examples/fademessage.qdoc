@@ -43,5 +43,13 @@
     \example effects/fademessage
     \title Fade Message Effect Example
 
-    \image fademessageeffect-example.png
+    \raw HTML
+    <div style="text-align: center">
+    \endraw
+    \inlineimage fademessageeffect-example.png
+    \inlineimage fademessageeffect-example-faded.png
+    \raw HTML
+    </div>
+    \endraw
+
 */
