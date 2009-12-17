@@ -254,7 +254,7 @@ void QmlTransitionManager::cancel()
         Action action = d->bindingsList[i];
         if (action.toBinding && action.deletableToBinding) {
             action.property.setBinding(0);
-            delete action.toBinding;
+            action.toBinding->destroy();
             action.toBinding = 0;
             action.deletableToBinding = false;
         } else if (action.event) {

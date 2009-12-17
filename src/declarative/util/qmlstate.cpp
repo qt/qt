@@ -320,7 +320,7 @@ void Action::deleteFromBinding()
 {
     if (fromBinding) {
         property.setBinding(0);
-        delete fromBinding;
+        fromBinding->destroy();
         fromBinding = 0;
     }
 }
@@ -419,7 +419,9 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         }
         if (!found) {
             QVariant cur = d->revertList.at(ii).property.read();
-            delete d->revertList.at(ii).property.setBinding(0);
+            QmlAbstractBinding *delBinding = d->revertList.at(ii).property.setBinding(0);
+            if (delBinding)
+                delBinding->destroy();
 
             Action a;
             a.property = d->revertList.at(ii).property;
