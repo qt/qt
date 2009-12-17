@@ -81,6 +81,12 @@ public:
     ~QmlGraphicsTextPrivate();
 
     void updateSize();
+    void markImgDirty() {
+        Q_Q(QmlGraphicsText);
+        imgDirty = true;
+        if (q->isComponentComplete())
+            q->update();
+    }
     void checkImgCache();
 
     void drawOutline();

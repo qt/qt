@@ -144,9 +144,8 @@ void QmlGraphicsText::setFont(const QFont &font)
     Q_D(QmlGraphicsText);
     d->font = font;
 
-    d->imgDirty = true;
     d->updateSize();
-    update();
+    d->markImgDirty();
 }
 
 void QmlGraphicsText::setText(const QString &n)
@@ -171,10 +170,9 @@ void QmlGraphicsText::setText(const QString &n)
     }
 
     d->text = n;
-    d->imgDirty = true;
     d->updateSize();
+    d->markImgDirty();
     emit textChanged(d->text);
-    update();
 }
 
 /*!
@@ -197,9 +195,8 @@ void QmlGraphicsText::setColor(const QColor &color)
     if (d->color == color)
         return;
 
-    d->imgDirty = true;
     d->color = color;
-    update();
+    d->markImgDirty();
 }
 
 /*!
@@ -252,9 +249,8 @@ void QmlGraphicsText::setStyle(QmlGraphicsText::TextStyle style)
     if (d->style == style)
         return;
 
-    d->imgDirty = true;
     d->style = style;
-    update();
+    d->markImgDirty();
 }
 
 void QmlGraphicsText::setStyleColor(const QColor &color)
@@ -263,9 +259,8 @@ void QmlGraphicsText::setStyleColor(const QColor &color)
     if (d->styleColor == color)
         return;
 
-    d->imgDirty = true;
     d->styleColor = color;
-    update();
+    d->markImgDirty();
 }
 
 /*!
@@ -345,8 +340,8 @@ void QmlGraphicsText::setWrap(bool w)
 
     d->wrap = w;
 
-    d->imgDirty = true;
     d->updateSize();
+    d->markImgDirty();
 }
 
 /*!
@@ -401,9 +396,8 @@ void QmlGraphicsText::setTextFormat(TextFormat format)
 
     if (wasRich && !d->richText) {
         //### delete control? (and vice-versa below)
-        d->imgDirty = true;
         d->updateSize();
-        update();
+        d->markImgDirty();
     } else if (!wasRich && d->richText) {
         if (!d->doc)
         {
@@ -413,9 +407,8 @@ void QmlGraphicsText::setTextFormat(TextFormat format)
             d->doc->setDocumentMargin(0);
         }
         d->doc->setHtml(d->text);
-        d->imgDirty = true;
         d->updateSize();
-        update();
+        d->markImgDirty();
     }
     d->format = format;
 }
@@ -450,8 +443,8 @@ void QmlGraphicsText::setElideMode(QmlGraphicsText::TextElideMode mode)
 
     d->elideMode = mode;
 
-    d->imgDirty = true;
     d->updateSize();
+    d->markImgDirty();
 }
 
 void QmlGraphicsText::geometryChanged(const QRectF &newGeometry,
