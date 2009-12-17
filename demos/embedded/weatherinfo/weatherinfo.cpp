@@ -105,9 +105,8 @@ private slots:
     void delayedInit() {
 #if defined(Q_OS_SYMBIAN)
         qt_SetDefaultIap();
-#else
-        request("Oslo");
 #endif
+        request("Oslo");
     }
 
 private slots:
