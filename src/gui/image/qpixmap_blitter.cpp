@@ -21,6 +21,7 @@ QBlittable *QBlittablePixmapData::blittable() const
     if (!m_blittable) {
         QBlittablePixmapData *that = const_cast<QBlittablePixmapData *>(this);
         that->m_blittable = QApplicationPrivate::graphicsSystem()->createBlittable(QRect(0,0,w,h));
+        that->setSerialNumber(m_blittable->lock()->serialNumber());
     }
 
     return m_blittable;
