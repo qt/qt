@@ -169,11 +169,17 @@ QVariant QmlGraphicsBasePositioner::itemChange(GraphicsItemChange change,
 {
     Q_D(QmlGraphicsBasePositioner);
     if (change == ItemChildAddedChange){
-        QmlGraphicsItem* child = value.value<QmlGraphicsItem*>();
+        QGraphicsItem* item = value.value<QGraphicsItem*>();
+        QmlGraphicsItem* child = 0;
+        if(item)
+            child = qobject_cast<QmlGraphicsItem*>(item->toGraphicsObject());
         if (child)
             prePositioning();
     } else if (change == ItemChildRemovedChange) {
-        QmlGraphicsItem* child = value.value<QmlGraphicsItem*>();
+        QGraphicsItem* item = value.value<QGraphicsItem*>();
+        QmlGraphicsItem* child = 0;
+        if(item)
+            child = qobject_cast<QmlGraphicsItem*>(item->toGraphicsObject());
         if (child) {
             QmlGraphicsBasePositioner::PositionedItem posItem(child);
             int idx = positionedItems.find(posItem);
