@@ -1121,11 +1121,12 @@ QmlMetaPropertyPrivate::restore(const QByteArray &data, QObject *object, QmlCont
     \internal
 
     Creates a QmlMetaProperty for the property \a name of \a obj. Unlike
-    the QmlMetaProperty(QObject*, QString) constructor, this static function
+    the QmlMetaProperty(QObject*, QString, QmlContext*) constructor, this static function
     will correctly handle dot properties.
 */
 QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj, 
-                                                const QString &name)
+                                                const QString &name,
+                                                QmlContext *context)
 {
     QStringList path = name.split(QLatin1Char('.'));
 
@@ -1133,7 +1134,7 @@ QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj,
 
     for (int jj = 0; jj < path.count() - 1; ++jj) {
         const QString &pathName = path.at(jj);
-        QmlMetaProperty prop(object, pathName);
+        QmlMetaProperty prop(object, pathName, context);
 
         if (jj == path.count() - 2 && 
             prop.propertyType() < (int)QVariant::UserType &&
@@ -1159,7 +1160,7 @@ QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj,
     }
 
     const QString &propName = path.last();
-    QmlMetaProperty prop(object, propName);
+    QmlMetaProperty prop(object, propName, context);
     if (!prop.isValid())
         return QmlMetaProperty();
     else
