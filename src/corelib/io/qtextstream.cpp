@@ -440,7 +440,7 @@ QTextStreamPrivate::QTextStreamPrivate(QTextStream *q_ptr)
     readConverterSavedState(0),
 #endif
     readConverterSavedStateOffset(0),
-    locale(QLocale::C)
+    locale(QLocale::c())
 {
     this->q_ptr = q_ptr;
     reset();
@@ -1806,8 +1806,7 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
             if (ch.isDigit()) {
                 val *= 10;
                 val += ch.digitValue();
-            } else if (locale.language() != QLocale::C
-                       && ch == locale.groupSeparator()) {
+            } else if (locale != QLocale::c() && ch == locale.groupSeparator()) {
                 continue;
             } else {
                 ungetChar(ch);
@@ -1958,7 +1957,7 @@ bool QTextStreamPrivate::getReal(double *f)
             else if (lc == locale.negativeSign().toLower()
                      || lc == locale.positiveSign().toLower())
                 input = InputSign;
-            else if (locale.language() != QLocale::C // backward-compatibility
+            else if (locale != QLocale::c() // backward-compatibility
                      && lc == locale.groupSeparator().toLower())
                 input = InputDigit; // well, it isn't a digit, but no one cares.
             else
@@ -2283,7 +2282,7 @@ bool QTextStreamPrivate::putNumber(qulonglong number, bool negative)
 
     // add thousands group separators. For backward compatibility we
     // don't add a group separator for C locale.
-    if (locale.language() != QLocale::C)
+    if (locale != QLocale::c())
         flags |= QLocalePrivate::ThousandsGroup;
 
     const QLocalePrivate *dd = locale.d();
