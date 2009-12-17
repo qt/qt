@@ -54,38 +54,23 @@
 
 QT_BEGIN_NAMESPACE
 
-int QmlGraphicsBasePositionerPrivate::prePosIdx = -1;
-int QmlGraphicsBasePositionerPrivate::visibleIdx = -1;
-int QmlGraphicsBasePositionerPrivate::opacityIdx = -1;
-
+static const QmlGraphicsItemPrivate::ChangeTypes watchedChanges
+    = QmlGraphicsItemPrivate::Geometry
+    | QmlGraphicsItemPrivate::SiblingOrder
+    | QmlGraphicsItemPrivate::Visibility
+    | QmlGraphicsItemPrivate::Opacity
+    | QmlGraphicsItemPrivate::Destroyed;
 
 void QmlGraphicsBasePositionerPrivate::watchChanges(QmlGraphicsItem *other)
 {
-    Q_Q(QmlGraphicsBasePositioner);
-    QMetaObject::connect(other, visibleIdx, q, prePosIdx);
-    QMetaObject::connect(other, opacityIdx, q, prePosIdx);
-
     QmlGraphicsItemPrivate *otherPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other));
-
-    otherPrivate->addGeometryListener(this);
-
-    otherPrivate->registerSiblingOrderNotification(this);
-    watched << other;
+    otherPrivate->addItemChangeListener(this, watchedChanges);
 }
 
 void QmlGraphicsBasePositionerPrivate::unwatchChanges(QmlGraphicsItem* other)
 {
-    Q_Q(QmlGraphicsBasePositioner);
     QmlGraphicsItemPrivate *otherPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other));
-    bool stillAlive = false; //Use the returns from disconnect to see if it was deleted or just reparented
-    stillAlive |= QMetaObject::disconnect(other, visibleIdx, q, prePosIdx);
-    stillAlive |= QMetaObject::disconnect(other, opacityIdx, q, prePosIdx);
-
-    otherPrivate->removeGeometryListener(this);
-
-    if(stillAlive)
-        otherPrivate->unregisterSiblingOrderNotification(this);
-    watched.removeAll(other);
+    otherPrivate->removeItemChangeListener(this, watchedChanges);
 }
 
 /*!
@@ -118,6 +103,14 @@ QmlGraphicsBasePositioner::QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPr
 {
     Q_D(QmlGraphicsBasePositioner);
     d->init(at);
+}
+
+QmlGraphicsBasePositioner::~QmlGraphicsBasePositioner()
+{
+    Q_D(QmlGraphicsBasePositioner);
+    for (int i = 0; i < positionedItems.count(); ++i)
+        d->unwatchChanges(positionedItems.at(i).item);
+    positionedItems.clear();
 }
 
 int QmlGraphicsBasePositioner::spacing() const
@@ -162,10 +155,12 @@ void QmlGraphicsBasePositioner::setAdd(QmlTransition *add)
 
 void QmlGraphicsBasePositioner::componentComplete()
 {
+    Q_D(QmlGraphicsBasePositioner);
     QmlGraphicsItem::componentComplete();
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QmlPerfTimer<QmlPerf::BasepositionerComponentComplete> cc;
 #endif
+    positionedItems.reserve(d->QGraphicsItemPrivate::children.count());
     prePositioning();
 }
 
@@ -175,18 +170,19 @@ QVariant QmlGraphicsBasePositioner::itemChange(GraphicsItemChange change,
     Q_D(QmlGraphicsBasePositioner);
     if (change == ItemChildAddedChange){
         QmlGraphicsItem* child = value.value<QmlGraphicsItem*>();
-        if(!child)
-            return QVariant();
-        if(!d->watched.contains(child))
-            d->watchChanges(child);
-        prePositioning();
-    }else if (change == ItemChildRemovedChange) {
+        if (child)
+            prePositioning();
+    } else if (change == ItemChildRemovedChange) {
         QmlGraphicsItem* child = value.value<QmlGraphicsItem*>();
-        if(!child)
-            return QVariant();
-        if(d->watched.contains(child))
-            d->unwatchChanges(child);
-        prePositioning();
+        if (child) {
+            QmlGraphicsBasePositioner::PositionedItem posItem(child);
+            int idx = positionedItems.find(posItem);
+            if (idx >= 0) {
+                d->unwatchChanges(child);
+                positionedItems.remove(idx);
+            }
+            prePositioning();
+        }
     }
 
     return QmlGraphicsItem::itemChange(change, value);
@@ -202,29 +198,31 @@ void QmlGraphicsBasePositioner::prePositioning()
     //Need to order children by creation order modified by stacking order
     QList<QGraphicsItem *> children = childItems();
     qSort(children.begin(), children.end(), d->insertionOrder);
-    positionedItems.clear();
-    d->newItems.clear();
 
     for (int ii = 0; ii < children.count(); ++ii) {
         QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
         if (!child)
             continue;
-        if(!d->watched.contains(child))
+        PositionedItem *item = 0;
+        PositionedItem posItem(child);
+        int wIdx = positionedItems.find(posItem);
+        if (wIdx < 0) {
             d->watchChanges(child);
-        if(child->opacity() <= 0.0 || !child->isVisible())
-            continue;
-        if (!d->items.contains(child)){
-            d->items += child;
-            d->newItems += child;
+            positionedItems.append(posItem);
+            item = &positionedItems[positionedItems.count()-1];
+        } else {
+            item = &positionedItems[wIdx];
         }
-        positionedItems << child;
-    }
-    if(d->items.count() > positionedItems.count()){
-        //Assumed that (aside from init) every add/remove triggers this check
-        //thus the above check will be triggered every time an item is removed
-        QSet<QmlGraphicsItem *> deletedItems = d->items - positionedItems.toSet();
-        foreach(QmlGraphicsItem *child, deletedItems)
-            d->items -= child;
+        if (child->opacity() <= 0.0 || !child->isVisible()) {
+            item->isVisible = false;
+            continue;
+        }
+        if (!item->isVisible) {
+            item->isVisible = true;
+            item->isNew = true;
+        } else {
+            item->isNew = false;
+        }
     }
     doPositioning();
     if(d->addTransition || d->moveTransition)
@@ -232,42 +230,43 @@ void QmlGraphicsBasePositioner::prePositioning()
     //Set implicit size to the size of its children
     qreal h = 0.0f;
     qreal w = 0.0f;
-    foreach(QmlGraphicsItem *child, d->items){
-        if(!child->isVisible() || child->opacity() <= 0)
-            continue;
-        h = qMax(h, child->y() + child->height());
-        w = qMax(w, child->x() + child->width());
+    for (int i = 0; i < positionedItems.count(); ++i) {
+        const PositionedItem &posItem = positionedItems.at(i);
+        if (posItem.isVisible) {
+            h = qMax(h, posItem.item->y() + posItem.item->height());
+            w = qMax(w, posItem.item->x() + posItem.item->width());
+        }
     }
     setImplicitHeight(h);
     setImplicitWidth(w);
 }
 
-void QmlGraphicsBasePositioner::positionX(int x, QmlGraphicsItem* target)
+void QmlGraphicsBasePositioner::positionX(int x, const PositionedItem &target)
 {
     Q_D(QmlGraphicsBasePositioner);
     if(d->type == Horizontal || d->type == Both){
         if(!d->addTransition && !d->moveTransition){
-            target->setX(x);
+            target.item->setX(x);
         }else{
-            if(d->newItems.contains(target))
-                d->addActions << Action(target, QLatin1String("x"), QVariant(x));
+            if(target.isNew)
+                d->addActions << Action(target.item, QLatin1String("x"), QVariant(x));
             else
-                d->moveActions << Action(target, QLatin1String("x"), QVariant(x));
+                d->moveActions << Action(target.item, QLatin1String("x"), QVariant(x));
         }
     }
 }
 
-void QmlGraphicsBasePositioner::positionY(int y, QmlGraphicsItem* target)
+void QmlGraphicsBasePositioner::positionY(int y, const PositionedItem &target)
 {
     Q_D(QmlGraphicsBasePositioner);
     if(d->type == Vertical || d->type == Both){
         if(!d->addTransition && !d->moveTransition){
-            target->setY(y);
+            target.item->setY(y);
         }else{
-            if(d->newItems.contains(target))
-                d->addActions << Action(target, QLatin1String("y"), QVariant(y));
+            if(target.isNew)
+                d->addActions << Action(target.item, QLatin1String("y"), QVariant(y));
             else
-                d->moveActions << Action(target, QLatin1String("y"), QVariant(y));
+                d->moveActions << Action(target.item, QLatin1String("y"), QVariant(y));
         }
     }
 }
@@ -401,14 +400,14 @@ void QmlGraphicsColumn::doPositioning()
     int voffset = 0;
 
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
-        QmlGraphicsItem *child = positionedItems.at(ii);
-        if (!child || isInvisible(child))
+        const PositionedItem &child = positionedItems.at(ii);
+        if (!child.item || isInvisible(child.item))
             continue;
 
-        if(child->y() != voffset)
+        if(child.item->y() != voffset)
             positionY(voffset, child);
 
-        voffset += child->height();
+        voffset += child.item->height();
         voffset += spacing();
     }
 }
@@ -506,14 +505,14 @@ void QmlGraphicsRow::doPositioning()
     int hoffset = 0;
 
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
-        QmlGraphicsItem *child = positionedItems.at(ii);
-        if (!child || isInvisible(child))
+        const PositionedItem &child = positionedItems.at(ii);
+        if (!child.item || isInvisible(child.item))
             continue;
 
-        if(child->x() != hoffset)
+        if(child.item->x() != hoffset)
             positionX(hoffset, child);
 
-        hoffset += child->width();
+        hoffset += child.item->width();
         hoffset += spacing();
     }
 }
@@ -670,13 +669,13 @@ void QmlGraphicsGrid::doPositioning()
 
             if (childIndex == positionedItems.count())
                 continue;
-            QmlGraphicsItem *child = positionedItems.at(childIndex++);
-            if (!child || isInvisible(child))
+            const PositionedItem &child = positionedItems.at(childIndex++);
+            if (!child.item || isInvisible(child.item))
                 continue;
-            if (child->width() > maxColWidth[j])
-                maxColWidth[j] = child->width();
-            if (child->height() > maxRowHeight[i])
-                maxRowHeight[i] = child->height();
+            if (child.item->width() > maxColWidth[j])
+                maxColWidth[j] = child.item->width();
+            if (child.item->height() > maxRowHeight[i])
+                maxRowHeight[i] = child.item->height();
         }
     }
 
@@ -684,10 +683,11 @@ void QmlGraphicsGrid::doPositioning()
     int yoffset=0;
     int curRow =0;
     int curCol =0;
-    foreach(QmlGraphicsItem* child, positionedItems){
-        if (!child || isInvisible(child))
+    for (int i = 0; i < positionedItems.count(); ++i) {
+        const PositionedItem &child = positionedItems.at(i);
+        if (!child.item || isInvisible(child.item))
             continue;
-        if((child->x()!=xoffset)||(child->y()!=yoffset)){
+        if((child.item->x()!=xoffset)||(child.item->y()!=yoffset)){
             positionX(xoffset, child);
             positionY(yoffset, child);
         }
@@ -805,37 +805,38 @@ void QmlGraphicsFlow::doPositioning()
     int voffset = 0;
     int linemax = 0;
 
-    foreach(QmlGraphicsItem* child, positionedItems){
-        if (!child || isInvisible(child))
+    for (int i = 0; i < positionedItems.count(); ++i) {
+        const PositionedItem &child = positionedItems.at(i);
+        if (!child.item || isInvisible(child.item))
             continue;
 
         if (d->flow == LeftToRight)  {
-            if (hoffset && hoffset + child->width() > width()) {
+            if (hoffset && hoffset + child.item->width() > width()) {
                 hoffset = 0;
                 voffset += linemax + spacing();
                 linemax = 0;
             }
         } else {
-            if (voffset && voffset + child->height() > height()) {
+            if (voffset && voffset + child.item->height() > height()) {
                 voffset = 0;
                 hoffset += linemax + spacing();
                 linemax = 0;
             }
         }
 
-        if(child->x() != hoffset || child->y() != voffset){
+        if(child.item->x() != hoffset || child.item->y() != voffset){
             positionX(hoffset, child);
             positionY(voffset, child);
         }
 
         if (d->flow == LeftToRight)  {
-            hoffset += child->width();
+            hoffset += child.item->width();
             hoffset += spacing();
-            linemax = qMax(linemax, qCeil(child->height()));
+            linemax = qMax(linemax, qCeil(child.item->height()));
         } else {
-            voffset += child->height();
+            voffset += child.item->height();
             voffset += spacing();
-            linemax = qMax(linemax, qCeil(child->width()));
+            linemax = qMax(linemax, qCeil(child.item->width()));
         }
     }
 }

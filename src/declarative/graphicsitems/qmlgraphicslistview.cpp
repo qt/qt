@@ -218,7 +218,7 @@ public:
 
 //----------------------------------------------------------------------------
 
-class QmlGraphicsListViewPrivate : public QmlGraphicsFlickablePrivate, private QmlGraphicsItemGeometryListener
+class QmlGraphicsListViewPrivate : public QmlGraphicsFlickablePrivate, private QmlGraphicsItemChangeListener
 {
     Q_DECLARE_PUBLIC(QmlGraphicsListView)
 
@@ -607,7 +607,7 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
         listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
         QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item));
-        itemPrivate->addGeometryListener(this);
+        itemPrivate->addItemChangeListener(this, QmlGraphicsItemPrivate::Geometry);
         if (sectionCriteria && sectionCriteria->delegate()) {
             if (listItem->attached->m_prevSection != listItem->attached->m_section)
                 createSection(listItem);
@@ -631,7 +631,7 @@ void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
         trackedItem = 0;
     }
     QmlGraphicsItemPrivate *itemPrivate = static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(item->item));
-    itemPrivate->removeGeometryListener(this);
+    itemPrivate->removeItemChangeListener(this, QmlGraphicsItemPrivate::Geometry);
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
