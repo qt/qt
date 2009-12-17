@@ -549,7 +549,8 @@ QmlAbstractBinding *
 QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding, QmlMetaProperty::WriteFlags flags) const
 {
     if (!isProperty() || (type() & Attached) || !d->object) {
-        delete newBinding;
+        if (newBinding)
+            newBinding->destroy();
         return 0;
     }
 

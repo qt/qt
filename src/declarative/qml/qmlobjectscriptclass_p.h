@@ -96,6 +96,7 @@ protected:
 
     virtual QScriptValue property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
+    virtual bool isQObject() const;
     virtual QObject *toQObject(Object *, bool *ok = 0);
 
 private:
