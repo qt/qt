@@ -168,6 +168,7 @@ private slots:
     void task236127_bspTreeIndexFails();
     void task243004_setStyleCrash();
     void task250119_shortcutContext();
+    void QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems();
 };
 
 
@@ -2853,6 +2854,37 @@ void tst_QGraphicsWidget::polishEvent2()
 
     // Make sure the item got polish event.
     QVERIFY(widget->events.contains(QEvent::Polish));
+}
+
+void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()
+{
+    QGraphicsScene scene;
+    QGraphicsWidget* parent1 = new QGraphicsWidget;
+    QGraphicsWidget* child1_0 = new QGraphicsWidget;
+    QGraphicsWidget* child1_1 = new QGraphicsWidget;
+
+    QGraphicsWidget* parent2 = new QGraphicsWidget;
+
+    // Add the parent and child to the scene.
+    scene.addItem(parent1);
+    child1_0->setParentItem(parent1);
+    child1_1->setParentItem(parent1);
+
+    // Hide and show the child.
+    child1_0->setParentItem(NULL);
+    scene.removeItem(child1_0);
+
+    // Remove parent from the scene.
+    scene.removeItem(parent1);
+
+    delete child1_0;
+    delete child1_1;
+    delete parent1;
+
+    // Add an item into the scene.
+    scene.addItem(parent2);
+
+    //This should not crash
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)

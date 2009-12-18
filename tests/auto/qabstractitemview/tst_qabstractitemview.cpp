@@ -48,6 +48,7 @@
 #include <qlistview.h>
 #include <qlistwidget.h>
 #include <qtableview.h>
+#include <qtablewidget.h>
 #include <qtreeview.h>
 #include <qtreewidget.h>
 #include <qheaderview.h>
@@ -226,6 +227,7 @@ private slots:
     void shiftSelectionAfterRubberbandSelection();
     void ctrlRubberbandSelection();
     void QTBUG6407_extendedSelection();
+    void QTBUG6753_selectOnSelection();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1473,6 +1475,27 @@ void tst_QAbstractItemView::QTBUG6407_extendedSelection()
     QCOMPARE(view.currentIndex(), index44);
     QCOMPARE(view.selectedItems().count(), 6); //49 .. 44;
 
+}
+
+void tst_QAbstractItemView::QTBUG6753_selectOnSelection()
+{
+    QTableWidget table(5, 5);
+    for (int i = 0; i < table.rowCount(); ++i)
+        for (int j = 0; j < table.columnCount(); ++j)
+            table.setItem(i, j, new QTableWidgetItem("choo-be-doo-wah"));
+
+    table.show();
+    table.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    table.selectAll();
+    QTest::qWaitForWindowShown(&table);
+    QModelIndex item = table.model()->index(1,1);
+    QRect itemRect = table.visualRect(item);
+    QTest::mouseMove(table.viewport(), itemRect.center());
+    QTest::mouseClick(table.viewport(), Qt::LeftButton, Qt::NoModifier, itemRect.center());
+    QTest::qWait(20);
+
+    QCOMPARE(table.selectedItems().count(), 1);
+    QCOMPARE(table.selectedItems().first(), table.item(item.row(), item.column()));
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

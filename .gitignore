@@ -93,7 +93,6 @@ tests/auto/qprocess/fileWriterProcess.txt
 .com.apple.timemachine.supported
 tests/auto/qlibrary/libmylib.so*
 tests/auto/qresourceengine/runtime_resource.rcc
-tools/qdoc3/qdoc3*
 tools/qtestlib/updater/updater*
 tools/activeqt/testcon/testcon.tlb
 translations/*.qm

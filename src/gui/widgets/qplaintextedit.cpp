@@ -684,8 +684,12 @@ void QPlainTextEditPrivate::ensureVisible(int position, bool center, bool forceC
 
         qreal h = center ? line.naturalTextRect().center().y() : line.naturalTextRect().bottom();
 
+        QTextBlock previousVisibleBlock = block;
         while (h < height && block.previous().isValid()) {
-            block = block.previous();
+            previousVisibleBlock = block;
+            do {
+                block = block.previous();
+            } while (!block.isVisible() && block.previous().isValid());
             h += q->blockBoundingRect(block).height();
         }
 
@@ -699,8 +703,8 @@ void QPlainTextEditPrivate::ensureVisible(int position, bool center, bool forceC
             ++l;
         }
 
-        if (block.next().isValid() && l >= lineCount) {
-            block = block.next();
+        if (l >= lineCount) {
+            block = previousVisibleBlock;
             l = 0;
         }
         setTopBlock(block.blockNumber(), l);
@@ -761,6 +765,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(_q_cursorPositionChanged()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
 
+    QObject::connect(control, SIGNAL(textChanged(const QString &)), q, SLOT(updateMicroFocus()));
 
     // set a null page size initially to avoid any relayouting until the textedit
     // is shown. relayoutDocument() will take care of setting the page size to the
