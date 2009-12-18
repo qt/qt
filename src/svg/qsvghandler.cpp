@@ -2722,14 +2722,8 @@ static QSvgNode *createPolygonNode(QSvgNode *parent,
     const QChar *s = pointsStr.constData();
     QVector<qreal> points = parseNumbersList(s);
     QPolygonF poly(points.count()/2);
-    int i = 0;
-    QVector<qreal>::const_iterator itr = points.constBegin();
-    while (itr != points.constEnd()) {
-        qreal one = *itr; ++itr;
-        qreal two = *itr; ++itr;
-        poly[i] = QPointF(one, two);
-        ++i;
-    }
+    for (int i = 0; i < poly.size(); ++i)
+        poly[i] = QPointF(points.at(2 * i), points.at(2 * i + 1));
     QSvgNode *polygon = new QSvgPolygon(parent, poly);
     return polygon;
 }
@@ -2744,14 +2738,8 @@ static QSvgNode *createPolylineNode(QSvgNode *parent,
     const QChar *s = pointsStr.constData();
     QVector<qreal> points = parseNumbersList(s);
     QPolygonF poly(points.count()/2);
-    int i = 0;
-    QVector<qreal>::const_iterator itr = points.constBegin();
-    while (itr != points.constEnd()) {
-        qreal one = *itr; ++itr;
-        qreal two = *itr; ++itr;
-        poly[i] = QPointF(one, two);
-        ++i;
-    }
+    for (int i = 0; i < poly.size(); ++i)
+        poly[i] = QPointF(points.at(2 * i), points.at(2 * i + 1));
 
     QSvgNode *line = new QSvgPolyline(parent, poly);
     return line;
