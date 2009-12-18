@@ -91,9 +91,7 @@ class QmlGraphicsListViewAttached : public QObject
 public:
     QmlGraphicsListViewAttached(QObject *parent)
         : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
-    ~QmlGraphicsListViewAttached() {
-        attachedProperties.remove(parent());
-    }
+    ~QmlGraphicsListViewAttached() {}
 
     Q_PROPERTY(QmlGraphicsListView *view READ view CONSTANT)
     QmlGraphicsListView *view() { return m_view; }
@@ -134,15 +132,6 @@ public:
         }
     }
 
-    static QmlGraphicsListViewAttached *properties(QObject *obj) {
-        QmlGraphicsListViewAttached *rv = attachedProperties.value(obj);
-        if (!rv) {
-            rv = new QmlGraphicsListViewAttached(obj);
-            attachedProperties.insert(obj, rv);
-        }
-        return rv;
-    }
-
     void emitAdd() { emit add(); }
     void emitRemove() { emit remove(); }
 
@@ -160,11 +149,7 @@ public:
     mutable QString m_section;
     QString m_prevSection;
     bool m_delayRemove;
-
-    static QHash<QObject*, QmlGraphicsListViewAttached*> attachedProperties;
 };
-
-QHash<QObject*, QmlGraphicsListViewAttached*> QmlGraphicsListViewAttached::attachedProperties;
 
 //----------------------------------------------------------------------------
 
@@ -172,8 +157,9 @@ class FxListItem
 {
 public:
     FxListItem(QmlGraphicsItem *i, QmlGraphicsListView *v) : item(i), section(0), view(v) {
-        attached = QmlGraphicsListViewAttached::properties(item);
-        attached->m_view = view;
+        attached = static_cast<QmlGraphicsListViewAttached*>(qmlAttachedPropertiesObject<QmlGraphicsListView>(item));
+        if (attached)
+            attached->m_view = view;
     }
     ~FxListItem() {}
     qreal position() const {
@@ -2684,7 +2670,7 @@ void QmlGraphicsListView::animStopped()
 
 QmlGraphicsListViewAttached *QmlGraphicsListView::qmlAttachedProperties(QObject *obj)
 {
-    return QmlGraphicsListViewAttached::properties(obj);
+    return new QmlGraphicsListViewAttached(obj);
 }
 
 QML_DEFINE_TYPE(Qt,4,6,ListView,QmlGraphicsListView)
