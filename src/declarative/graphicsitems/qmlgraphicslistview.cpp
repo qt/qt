@@ -1050,9 +1050,13 @@ void QmlGraphicsListViewPrivate::updateFooter()
     if (footer) {
         if (visibleItems.count()) {
             qreal endPos = endPosition();
-            qreal visiblePos = position() + q->height();
-            if (endPos <= visiblePos || footer->position() < endPos)
+            if (lastVisibleIndex() == model->count()-1) {
                 footer->setPosition(endPos);
+            } else {
+                qreal visiblePos = position() + q->height();
+                if (endPos <= visiblePos || footer->position() < endPos)
+                    footer->setPosition(endPos);
+            }
         } else {
             footer->setPosition(visiblePos);
         }
@@ -1085,8 +1089,12 @@ void QmlGraphicsListViewPrivate::updateHeader()
     if (header) {
         if (visibleItems.count()) {
             qreal startPos = startPosition();
-            if (position() <= startPos || header->position() > startPos - header->size())
+            if (visibleIndex == 0) {
                 header->setPosition(startPos - header->size());
+            } else {
+                if (position() <= startPos || header->position() > startPos - header->size())
+                    header->setPosition(startPos - header->size());
+            }
         } else {
             header->setPosition(0);
         }
