@@ -133,9 +133,6 @@ public:
         : ref(1)
     {
         opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering | QGL::StencilBuffer;
-#if defined(QT_OPENGL_ES_2)
-        opts |= QGL::SampleBuffers;
-#endif
         pln = 0;
         depthSize = accumSize = stencilSize = redSize = greenSize = blueSize = alphaSize = -1;
         numSamples = -1;
@@ -291,6 +288,7 @@ public:
 #if defined(QT_OPENGL_ES)
     QEglContext *eglContext;
     EGLSurface eglSurface;
+    void destroyEglSurfaceForDevice();
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif
@@ -397,7 +395,7 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
 
-class Q_AUTOTEST_EXPORT QGLShareRegister
+class Q_OPENGL_EXPORT QGLShareRegister
 {
 public:
     QGLShareRegister() {}
@@ -611,6 +609,49 @@ private:
     QGLSharedResourceGuard *m_prev;
 
     friend class QGLContextGroup;
+};
+
+
+// This class can be used to match GL extensions with doing any mallocs. The
+// class assumes that the GL extension string ends with a space character,
+// which it should do on all conformant platforms. Create the object and pass
+// in a pointer to the extension string, then call match() on each extension
+// that should be matched. The match() function takes the extension name
+// *without* the terminating space character as input.
+
+class QGLExtensionMatcher
+{
+public:
+    QGLExtensionMatcher(const char *str)
+        : gl_extensions(str), gl_extensions_length(qstrlen(str))
+    {}
+
+    bool match(const char *str) {
+        int str_length = qstrlen(str);
+        const char *extensions = gl_extensions;
+        int extensions_length = gl_extensions_length;
+
+        while (1) {
+            // the total length that needs to be matched is the str_length +
+            // the space character that terminates the extension name
+            if (extensions_length < str_length + 1)
+                return false;
+            if (qstrncmp(extensions, str, str_length) == 0 && extensions[str_length] == ' ')
+                return true;
+
+            int split_pos = 0;
+            while (split_pos < extensions_length && extensions[split_pos] != ' ')
+                ++split_pos;
+            ++split_pos; // added for the terminating space character
+            extensions += split_pos;
+            extensions_length -= split_pos;
+        }
+        return false;
+    }
+
+private:
+    const char *gl_extensions;
+    int gl_extensions_length;
 };
 
 QT_END_NAMESPACE

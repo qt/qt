@@ -226,7 +226,7 @@ void  ActionModel::setItems(QDesignerFormEditorInterface *core, QAction *action,
     item->setText(action->text());
     item->setToolTip(action->text());
     // shortcut
-    const QString shortcut = actionShortCut(core, action).value().toString();
+    const QString shortcut = actionShortCut(core, action).value().toString(QKeySequence::NativeText);
     item = sl[ShortCutColumn];
     item->setText(shortcut);
     item->setToolTip(shortcut);

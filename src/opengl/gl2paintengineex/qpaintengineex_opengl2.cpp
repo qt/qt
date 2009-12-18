@@ -589,53 +589,31 @@ void QGL2PaintEngineExPrivate::updateMatrix()
     // matrix multiplication as most of the components are trivial.
     const QTransform& transform = q->state()->matrix;
 
-    if (mode == TextDrawingMode) {
-        // Text drawing mode is only used for non-scaling transforms
-        pmvMatrix[0][0] = 2.0 / width;
-        pmvMatrix[0][1] = 0.0;
-        pmvMatrix[0][2] = 0.0;
-        pmvMatrix[0][3] = 0.0;
-        pmvMatrix[1][0] = 0.0;
-        pmvMatrix[1][1] = -2.0 / height;
-        pmvMatrix[1][2] = 0.0;
-        pmvMatrix[1][3] = 0.0;
-        pmvMatrix[2][0] = 0.0;
-        pmvMatrix[2][1] = 0.0;
-        pmvMatrix[2][2] = -1.0;
-        pmvMatrix[2][3] = 0.0;
-        pmvMatrix[3][0] = pmvMatrix[0][0] * qRound(transform.dx()) - 1.0;
-        pmvMatrix[3][1] = pmvMatrix[1][1] * qRound(transform.dy()) + 1.0;
-        pmvMatrix[3][2] = 0.0;
-        pmvMatrix[3][3] = 1.0;
+    qreal wfactor = 2.0 / width;
+    qreal hfactor = -2.0 / height;
 
-        inverseScale = 1;
-    } else {
-        qreal wfactor = 2.0 / width;
-        qreal hfactor = -2.0 / height;
+    pmvMatrix[0][0] = wfactor * transform.m11() - transform.m13();
+    pmvMatrix[0][1] = hfactor * transform.m12() + transform.m13();
+    pmvMatrix[0][2] = 0.0;
+    pmvMatrix[0][3] = transform.m13();
+    pmvMatrix[1][0] = wfactor * transform.m21() - transform.m23();
+    pmvMatrix[1][1] = hfactor * transform.m22() + transform.m23();
+    pmvMatrix[1][2] = 0.0;
+    pmvMatrix[1][3] = transform.m23();
+    pmvMatrix[2][0] = 0.0;
+    pmvMatrix[2][1] = 0.0;
+    pmvMatrix[2][2] = -1.0;
+    pmvMatrix[2][3] = 0.0;
+    pmvMatrix[3][0] = wfactor * transform.dx() - transform.m33();
+    pmvMatrix[3][1] = hfactor * transform.dy() + transform.m33();
+    pmvMatrix[3][2] = 0.0;
+    pmvMatrix[3][3] = transform.m33();
 
-        pmvMatrix[0][0] = wfactor * transform.m11() - transform.m13();
-        pmvMatrix[0][1] = hfactor * transform.m12() + transform.m13();
-        pmvMatrix[0][2] = 0.0;
-        pmvMatrix[0][3] = transform.m13();
-        pmvMatrix[1][0] = wfactor * transform.m21() - transform.m23();
-        pmvMatrix[1][1] = hfactor * transform.m22() + transform.m23();
-        pmvMatrix[1][2] = 0.0;
-        pmvMatrix[1][3] = transform.m23();
-        pmvMatrix[2][0] = 0.0;
-        pmvMatrix[2][1] = 0.0;
-        pmvMatrix[2][2] = -1.0;
-        pmvMatrix[2][3] = 0.0;
-        pmvMatrix[3][0] = wfactor * transform.dx() - transform.m33();
-        pmvMatrix[3][1] = hfactor * transform.dy() + transform.m33();
-        pmvMatrix[3][2] = 0.0;
-        pmvMatrix[3][3] = transform.m33();
-
-        // 1/10000 == 0.0001, so we have good enough res to cover curves
-        // that span the entire widget...
-        inverseScale = qMax(1 / qMax( qMax(qAbs(transform.m11()), qAbs(transform.m22())),
-                    qMax(qAbs(transform.m12()), qAbs(transform.m21())) ),
-                qreal(0.0001));
-    }
+    // 1/10000 == 0.0001, so we have good enough res to cover curves
+    // that span the entire widget...
+    inverseScale = qMax(1 / qMax( qMax(qAbs(transform.m11()), qAbs(transform.m22())),
+                                  qMax(qAbs(transform.m12()), qAbs(transform.m21())) ),
+                        qreal(0.0001));
 
     matrixDirty = false;
 
@@ -817,17 +795,12 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
         lastTexture = GLuint(-1);
     }
 
-    if (mode == TextDrawingMode)
-        matrixDirty = true;
-
     if (newMode == TextDrawingMode) {
         glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
         glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
 
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
-
-        matrixDirty = true;
     }
 
     if (newMode == ImageDrawingMode) {
@@ -930,7 +903,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 int floatSizeInBytes = vertexCount * 2 * sizeof(float);
                 cache->vertexCount = vertexCount;
                 cache->primitiveType = GL_TRIANGLE_FAN;
-                cache->iscale = inverseScale;               
+                cache->iscale = inverseScale;
 #ifdef QT_OPENGL_CACHE_AS_VBOS
                 glGenBuffers(1, &cache->vbo);
                 glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
@@ -1545,21 +1518,21 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
 
-    bool drawCached = true;
+    QTransform::TransformationType txtype = s->matrix.type();
 
-    if (s->matrix.type() > QTransform::TxTranslate)
-        drawCached = false;
+    float det = s->matrix.determinant();
+    bool drawCached = txtype < QTransform::TxProject;
 
-    // don't try to cache huge fonts
+    // don't try to cache huge fonts or vastly transformed fonts
     const qreal pixelSize = ti.fontEngine->fontDef.pixelSize;
-    if (pixelSize * pixelSize * qAbs(s->matrix.determinant()) >= 64 * 64)
+    if (pixelSize * pixelSize * qAbs(det) >= 64 * 64 || det < 0.25f || det > 4.f)
         drawCached = false;
 
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
                                             ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
                                             : d->glyphCacheType;
 
-    if (d->inRenderText)
+    if (d->inRenderText || txtype > QTransform::TxTranslate)
         glyphType = QFontEngineGlyphCache::Raster_A8;
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask
@@ -1581,7 +1554,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
                                                 const QTextItemInt &ti)
 {
     Q_Q(QGL2PaintEngineEx);
-    QOpenGL2PaintEngineState *s = q->state();
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -1589,10 +1561,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     QGLTextureGlyphCache *cache =
-        (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, s->matrix);
+            (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, glyphType, QTransform());
 
     if (!cache || cache->cacheType() != glyphType) {
-        cache = new QGLTextureGlyphCache(ctx, glyphType, s->matrix);
+        cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         ti.fontEngine->setGlyphCache(ctx, cache);
     }
 

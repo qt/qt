@@ -404,7 +404,9 @@ QFixed QCoreTextFontEngine::ascent() const
 }
 QFixed QCoreTextFontEngine::descent() const
 {
-    return QFixed::fromReal(CTFontGetDescent(ctfont)).ceil();
+    // subtract a pixel to even out the historical +1 in QFontMetrics::height().
+    // Fix in Qt 5.
+    return QFixed::fromReal(CTFontGetDescent(ctfont)).ceil() - 1;
 }
 QFixed QCoreTextFontEngine::leading() const
 {
@@ -1406,7 +1408,9 @@ QFixed QFontEngineMac::ascent() const
 
 QFixed QFontEngineMac::descent() const
 {
-    return m_descent;
+    // subtract a pixel to even out the historical +1 in QFontMetrics::height().
+    // Fix in Qt 5.
+    return m_descent - 1;
 }
 
 QFixed QFontEngineMac::leading() const

@@ -98,7 +98,7 @@ public:
     mutable qreal *margins;
     void ensureMargins() const;
 
-    void fixFocusChainBeforeReparenting(QGraphicsWidget *newParent, QGraphicsScene *newScene = 0);
+    void fixFocusChainBeforeReparenting(QGraphicsWidget *newParent, QGraphicsScene *oldScene, QGraphicsScene *newScene = 0);
     void setLayout_helper(QGraphicsLayout *l);
 
     // Layouts

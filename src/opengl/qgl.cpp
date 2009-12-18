@@ -397,8 +397,7 @@ static inline GLint qgluProject(GLdouble objx, GLdouble objy, GLdouble objz,
     \i \link setDirectRendering() Direct rendering:\endlink Enabled.
     \i \link setOverlay() Overlay:\endlink Disabled.
     \i \link setPlane() Plane:\endlink 0 (i.e., normal plane).
-    \i \link setSampleBuffers() Multisample buffers:\endlink Enabled on
-       OpenGL/ES 2.0, disabled on other platforms.
+    \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
     \endlist
 */
 
@@ -2064,6 +2063,29 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
 // #define QGL_BIND_TEXTURE_DEBUG
 
+// map from Qt's ARGB endianness-dependent format to GL's big-endian RGBA layout
+static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
+{
+    const int width = img.width();
+    const int height = img.height();
+
+    if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
+        || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian))
+    {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
+        }
+    } else {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
+        }
+    }
+}
+
 QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint internalFormat,
                                            const qint64 key, QGLContext::BindOptions options)
 {
@@ -2216,23 +2238,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         // 32 in the switch above is for the RGB16 case, where we set
         // the format to GL_RGB
         Q_ASSERT(img.depth() == 32);
-        const int width = img.width();
-        const int height = img.height();
-
-        if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
-            || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian)) {
-            for (int i=0; i < height; ++i) {
-                uint *p = (uint *) img.scanLine(i);
-                for (int x=0; x<width; ++x)
-                    p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
-            }
-        } else {
-            for (int i=0; i < height; ++i) {
-                uint *p = (uint *) img.scanLine(i);
-                for (int x=0; x<width; ++x)
-                    p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
-            }
-        }
+        qgl_byteSwapImage(img, pixel_type);
     }
 #ifdef QT_OPENGL_ES
     // OpenGL/ES requires that the internal and external formats be identical.
@@ -3804,6 +3810,11 @@ bool QGLWidget::event(QEvent *e)
     }
 
 #if defined(QT_OPENGL_ES)
+    // A re-parent is likely to destroy the X11 window and re-create it. It is important
+    // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
+    if (e->type() == QEvent::ParentAboutToChange)
+        d->glcx->d_func()->destroyEglSurfaceForDevice();
+
     if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
         // The window may have been re-created during re-parent or state change - if so, the EGL
         // surface will need to be re-created.
@@ -4291,6 +4302,7 @@ static void qt_save_gl_state()
     glDisable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
     glDisable(GL_STENCIL_TEST);
+    glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -4344,6 +4356,10 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
    \note This function clears the stencil buffer.
 
    \note This function is not supported on OpenGL/ES systems.
+
+   \note This function temporarily disables depth-testing when the
+   text is drawn.
+
    \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 
@@ -4434,6 +4450,13 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     have the labels move with the model as it is rotated etc.
 
     \note This function is not supported on OpenGL/ES systems.
+
+    \note If depth testing is enabled before this function is called,
+    then the drawn text will be depth-tested against the models that
+    have already been drawn in the scene.  Use \c{glDisable(GL_DEPTH_TEST)}
+    before calling this function to annotate the models without
+    depth-testing the text.
+
     \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 void QGLWidget::renderText(double x, double y, double z, const QString &str, const QFont &font, int)
@@ -4823,38 +4846,39 @@ QGLWidget::QGLWidget(QGLContext *context, QWidget *parent,
 
 void QGLExtensions::init_extensions()
 {
-    QList<QByteArray> extensions = QByteArray(reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS))).split(' ');
-    if (extensions.contains("GL_ARB_texture_rectangle"))
+    QGLExtensionMatcher extensions(reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS)));
+
+    if (extensions.match("GL_ARB_texture_rectangle"))
         glExtensions |= TextureRectangle;
-    if (extensions.contains("GL_ARB_multisample"))
+    if (extensions.match("GL_ARB_multisample"))
         glExtensions |= SampleBuffers;
-    if (extensions.contains("GL_SGIS_generate_mipmap"))
+    if (extensions.match("GL_SGIS_generate_mipmap"))
         glExtensions |= GenerateMipmap;
-    if (extensions.contains("GL_ARB_texture_compression"))
+    if (extensions.match("GL_ARB_texture_compression"))
         glExtensions |= TextureCompression;
-    if (extensions.contains("GL_EXT_texture_compression_s3tc"))
+    if (extensions.match("GL_EXT_texture_compression_s3tc"))
         glExtensions |= DDSTextureCompression;
-    if (extensions.contains("GL_OES_compressed_ETC1_RGB8_texture"))
+    if (extensions.match("GL_OES_compressed_ETC1_RGB8_texture"))
         glExtensions |= ETC1TextureCompression;
-    if (extensions.contains("GL_IMG_texture_compression_pvrtc"))
+    if (extensions.match("GL_IMG_texture_compression_pvrtc"))
         glExtensions |= PVRTCTextureCompression;
-    if (extensions.contains("GL_ARB_fragment_program"))
+    if (extensions.match("GL_ARB_fragment_program"))
         glExtensions |= FragmentProgram;
-    if (extensions.contains("GL_ARB_fragment_shader"))
+    if (extensions.match("GL_ARB_fragment_shader"))
         glExtensions |= FragmentShader;
-    if (extensions.contains("GL_ARB_texture_mirrored_repeat"))
+    if (extensions.match("GL_ARB_texture_mirrored_repeat"))
         glExtensions |= MirroredRepeat;
-    if (extensions.contains("GL_EXT_framebuffer_object"))
+    if (extensions.match("GL_EXT_framebuffer_object"))
         glExtensions |= FramebufferObject;
-    if (extensions.contains("GL_EXT_stencil_two_side"))
+    if (extensions.match("GL_EXT_stencil_two_side"))
         glExtensions |= StencilTwoSide;
-    if (extensions.contains("GL_EXT_stencil_wrap"))
+    if (extensions.match("GL_EXT_stencil_wrap"))
         glExtensions |= StencilWrap;
-    if (extensions.contains("GL_EXT_packed_depth_stencil"))
+    if (extensions.match("GL_EXT_packed_depth_stencil"))
         glExtensions |= PackedDepthStencil;
-    if (extensions.contains("GL_NV_float_buffer"))
+    if (extensions.match("GL_NV_float_buffer"))
         glExtensions |= NVFloatBuffer;
-    if (extensions.contains("GL_ARB_pixel_buffer_object"))
+    if (extensions.match("GL_ARB_pixel_buffer_object"))
         glExtensions |= PixelBufferObject;
 #if defined(QT_OPENGL_ES_2)
     glExtensions |= FramebufferObject;
@@ -4862,26 +4886,26 @@ void QGLExtensions::init_extensions()
     glExtensions |= FragmentShader;
 #endif
 #if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
-    if (extensions.contains("GL_OES_framebuffer_object"))
+    if (extensions.match("GL_OES_framebuffer_object"))
         glExtensions |= FramebufferObject;
 #endif
 #if defined(QT_OPENGL_ES)
-    if (extensions.contains("GL_OES_packed_depth_stencil"))
+    if (extensions.match("GL_OES_packed_depth_stencil"))
         glExtensions |= PackedDepthStencil;
 #endif
-    if (extensions.contains("GL_ARB_framebuffer_object")) {
+    if (extensions.match("GL_ARB_framebuffer_object")) {
         // ARB_framebuffer_object also includes EXT_framebuffer_blit.
         glExtensions |= FramebufferObject;
         glExtensions |= FramebufferBlit;
     }
 
-    if (extensions.contains("GL_EXT_framebuffer_blit"))
+    if (extensions.match("GL_EXT_framebuffer_blit"))
         glExtensions |= FramebufferBlit;
 
-    if (extensions.contains("GL_ARB_texture_non_power_of_two"))
+    if (extensions.match("GL_ARB_texture_non_power_of_two"))
         glExtensions |= NPOTTextures;
 
-    if (extensions.contains("GL_EXT_bgra"))
+    if (extensions.match("GL_EXT_bgra"))
         glExtensions |= BGRATextureFormat;
 }
 
@@ -5363,11 +5387,12 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
     // Restore the default pixel alignment for later texture uploads.
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-    // Set the invert flag for the texture.
+    // Set the invert flag for the texture.  The "vertical flip"
+    // flag in PVR is the opposite sense to our sense of inversion.
     if ((pvrHeader->flags & PVR_VERTICAL_FLIP) != 0)
-        options |= QGLContext::InvertedYBindOption;
-    else
         options &= ~QGLContext::InvertedYBindOption;
+    else
+        options |= QGLContext::InvertedYBindOption;
 
     return QSize(pvrHeader->width, pvrHeader->height);
 }

@@ -109,14 +109,12 @@ public:
 
 private:
     void release();
-    void fromSymbianBitmap(CFbsBitmap* bitmap);
-    bool initSymbianBitmapContext();
+    void fromSymbianBitmap(CFbsBitmap* bitmap, bool lockFormat=false);
+    QImage toImage(const QRect &r) const;
 
     QSymbianBitmapDataAccess *symbianBitmapDataAccess;
 
     CFbsBitmap *cfbsBitmap;
-    CFbsBitmapDevice *bitmapDevice;
-    CFbsBitGc *bitmapGc;
     QPaintEngine *pengine;
     uchar* bytes;
 

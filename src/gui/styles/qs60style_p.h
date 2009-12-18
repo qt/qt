@@ -119,6 +119,9 @@ public:
         SP_QgnGrafTabPassiveL,
         SP_QgnGrafTabPassiveM,
         SP_QgnGrafTabPassiveR,
+        SP_QgnGrafNsliderEndLeft,
+        SP_QgnGrafNsliderEndRight,
+        SP_QgnGrafNsliderMiddle,
         SP_QgnIndiCheckboxOff,
         SP_QgnIndiCheckboxOn,
         SP_QgnIndiHlColSuper,     // Available in S60 release 3.2 and later.
@@ -131,7 +134,8 @@ public:
         SP_QgnIndiNaviArrowRight,
         SP_QgnIndiRadiobuttOff,
         SP_QgnIndiRadiobuttOn,
-        SP_QgnIndiSliderEdit,
+        SP_QgnGrafNsliderMarker,
+        SP_QgnGrafNsliderMarkerSelected,
         SP_QgnIndiSubMenu,
         SP_QgnNoteErased,
         SP_QgnNoteError,
@@ -313,6 +317,10 @@ public:
         SE_ScrollBarHandleVertical,
         SE_SliderHandleHorizontal,
         SE_SliderHandleVertical,
+        SE_SliderHandleSelectedHorizontal,
+        SE_SliderHandleSelectedVertical,
+        SE_SliderGrooveVertical,
+        SE_SliderGrooveHorizontal,
         SE_TabBarTabEastActive,
         SE_TabBarTabEastInactive,
         SE_TabBarTabNorthActive,
@@ -403,6 +411,7 @@ public:
 
     static bool isTouchSupported();
     static bool isToolBarBackground();
+    static bool hasSliderGrooveGraphic();
 
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(SkinFrameElements frame) const;
@@ -443,7 +452,7 @@ public:
     static QSize naviPaneSize();
 
     //Checks that the current brush is transparent or has BrushStyle NoBrush,
-    //so that theme graphic background can be drawn. 
+    //so that theme graphic background can be drawn.
     static bool canDrawThemeBackground(const QBrush &backgroundBrush);
 
 private:

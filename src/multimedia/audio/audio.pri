@@ -17,6 +17,8 @@ SOURCES += $$PWD/qaudio.cpp \
            $$PWD/qaudioengine.cpp \
            $$PWD/qaudiodevicefactory.cpp
 
+contains(QT_CONFIG, audio-backend) {
+
 mac {
     HEADERS +=  $$PWD/qaudioinput_mac_p.h \
                 $$PWD/qaudiooutput_mac_p.h \
@@ -50,4 +52,7 @@ mac {
             LIBS_PRIVATE += -lasound
         }
     }
+}
+} else {
+    DEFINES += QT_NO_AUDIO_BACKEND
 }
