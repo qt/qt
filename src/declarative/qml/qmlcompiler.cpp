@@ -83,6 +83,7 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
 DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATISTICS_DUMP);
 DEFINE_BOOL_CONFIG_OPTION(qmlExperimental, QML_EXPERIMENTAL);
+DEFINE_BOOL_CONFIG_OPTION(qmlEnableDeferred, QML_ENABLE_DEFERRED);
 
 using namespace QmlParser;
 
@@ -2767,6 +2768,9 @@ QmlType *QmlCompiler::toQmlType(QmlParser::Object *from)
 
 QStringList QmlCompiler::deferredProperties(QmlParser::Object *obj)
 {
+    if (!qmlEnableDeferred())
+        return QStringList();
+
     const QMetaObject *mo = obj->metatype;
 
     int idx = mo->indexOfClassInfo("DeferredPropertyNames");
