@@ -103,12 +103,12 @@ void QLineEditPrivate::_q_handleWindowActivate()
 void QLineEditPrivate::_q_textEdited(const QString &text)
 {
     Q_Q(QLineEdit);
+    emit q->textEdited(text);
 #ifndef QT_NO_COMPLETER
-    if (control->completer() &&
-            control->completer()->completionMode() != QCompleter::InlineCompletion)
+    if (control->completer()
+        && control->completer()->completionMode() != QCompleter::InlineCompletion)
         control->complete(-1); // update the popup on cut/paste/del
 #endif
-    emit q->textEdited(text);
 }
 
 void QLineEditPrivate::_q_cursorPositionChanged(int from, int to)
@@ -126,19 +126,34 @@ void QLineEditPrivate::_q_editFocusChange(bool e)
 }
 #endif
 
+void QLineEditPrivate::_q_selectionChanged()
+{
+    Q_Q(QLineEdit);
+    if (control->preeditAreaText().isEmpty()) {
+        QStyleOptionFrameV2 opt;
+        q->initStyleOption(&opt);
+        bool showCursor = control->hasSelectedText() ?
+                          q->style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, q):
+                          true;
+        setCursorVisible(showCursor);
+    }
+
+    emit q->selectionChanged();
+}
+
 void QLineEditPrivate::init(const QString& txt)
 {
     Q_Q(QLineEdit);
     control = new QLineControl(txt);
     control->setFont(q->font());
-    QObject::connect(control, SIGNAL(textChanged(const QString &)),
-            q, SIGNAL(textChanged(const QString &)));
-    QObject::connect(control, SIGNAL(textEdited(const QString &)),
-            q, SLOT(_q_textEdited(const QString &)));
-    QObject::connect(control, SIGNAL(cursorPositionChanged(int, int)),
-            q, SLOT(_q_cursorPositionChanged(int, int)));
+    QObject::connect(control, SIGNAL(textChanged(QString)),
+            q, SIGNAL(textChanged(QString)));
+    QObject::connect(control, SIGNAL(textEdited(QString)),
+            q, SLOT(_q_textEdited(QString)));
+    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
+            q, SLOT(_q_cursorPositionChanged(int,int)));
     QObject::connect(control, SIGNAL(selectionChanged()),
-            q, SIGNAL(selectionChanged()));
+            q, SLOT(_q_selectionChanged()));
     QObject::connect(control, SIGNAL(accepted()),
             q, SIGNAL(returnPressed()));
     QObject::connect(control, SIGNAL(editingFinished()),
@@ -147,17 +162,20 @@ void QLineEditPrivate::init(const QString& txt)
     QObject::connect(control, SIGNAL(editFocusChange(bool)),
             q, SLOT(_q_editFocusChange(bool)));
 #endif
-    QObject::connect(control, SIGNAL(cursorPositionChanged(int, int)),
+    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
+            q, SLOT(updateMicroFocus()));
+    
+    QObject::connect(control, SIGNAL(textChanged(const QString &)),
             q, SLOT(updateMicroFocus()));
 
     // for now, going completely overboard with updates.
     QObject::connect(control, SIGNAL(selectionChanged()),
             q, SLOT(update()));
 
-    QObject::connect(control, SIGNAL(displayTextChanged(const QString &)),
+    QObject::connect(control, SIGNAL(displayTextChanged(QString)),
             q, SLOT(update()));
 
-    QObject::connect(control, SIGNAL(updateNeeded(const QRect &)),
+    QObject::connect(control, SIGNAL(updateNeeded(QRect)),
             q, SLOT(update()));
 
     QStyleOptionFrameV2 opt;

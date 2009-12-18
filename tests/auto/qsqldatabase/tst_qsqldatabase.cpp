@@ -86,6 +86,8 @@ private slots:
     void open();
     void tables_data() { generic_data(); }
     void tables();
+    void oci_tables_data() { generic_data("QOCI"); }
+    void oci_tables();
     void transaction_data() { generic_data(); }
     void transaction();
     void eventNotification_data() { generic_data(); }
@@ -380,6 +382,7 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
     if (db.driverName().startsWith("QOCI")) {
         q.exec("drop user "+qTableName("CREATOR")+" cascade");
         q.exec("drop user "+qTableName("APPUSER")+" cascade");
+        q.exec("DROP TABLE system."+qTableName("mypassword"));
 
     }
 }
@@ -939,9 +942,9 @@ void tst_QSqlDatabase::recordOCI()
         FieldDef("raw(2000)", QVariant::ByteArray,      QByteArray(Q3CString("blah6")), false),
         FieldDef("blob", QVariant::ByteArray,           QByteArray(Q3CString("blah7"))),
 #endif
-//FIXME FieldDef("clob", QVariant::CString,             Q3CString("blah8")),
-//FIXME FieldDef("nclob", QVariant::CString,            Q3CString("blah9")),
-//X     FieldDef("bfile", QVariant::ByteArray,          QByteArray(Q3CString("blah10"))),
+        FieldDef("clob", QVariant::String,             QString("blah8")),
+        FieldDef("nclob", QVariant::String,            QString("blah9")),
+        FieldDef("bfile", QVariant::ByteArray,         QByteArray("blah10")),
 
     intytm,
     intdts,
@@ -2479,6 +2482,18 @@ void tst_QSqlDatabase::mysql_savepointtest()
     QVERIFY_SQL(q, exec("begin"));
     QVERIFY_SQL(q, exec("insert into "+qTableName("qtest")+" VALUES (54, 'foo', 'foo', 54.54)"));
     QVERIFY_SQL(q, exec("savepoint foo"));
+}
+
+void tst_QSqlDatabase::oci_tables()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    QSqlQuery q(db);
+    QString systemTableName("system."+qTableName("mypassword"));
+    QVERIFY_SQL(q, exec("CREATE TABLE "+systemTableName+"(name VARCHAR(20))"));
+    QVERIFY(!db.tables().contains(systemTableName.toUpper()));
+    QVERIFY(db.tables(QSql::SystemTables).contains(systemTableName.toUpper()));
 }
 
 QTEST_MAIN(tst_QSqlDatabase)

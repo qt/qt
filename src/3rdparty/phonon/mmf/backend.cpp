@@ -38,10 +38,6 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
-/*! \class MMF::VolumeObserver
-  \internal
-*/
-
 /*! \class MMF::Backend
   \internal
 */

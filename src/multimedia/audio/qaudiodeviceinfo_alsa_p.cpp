@@ -152,12 +152,22 @@ bool QAudioDeviceInfoInternal::open()
 {
     int err = 0;
     QString dev = device;
-    if(!dev.contains(QLatin1String("default"))) {
+    QList<QByteArray> devices = availableDevices(mode);
+
+    if(dev.compare(QLatin1String("default")) == 0) {
 #if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
-         dev = QString(QLatin1String("default:CARD=%1")).arg(dev);
+        dev = QLatin1String(devices.first().constData());
+#else
+        dev = QLatin1String("hw:0,0");
+#endif
+    } else {
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
+        dev = device;
 #else
         int idx = 0;
         char *name;
+
+        QString shortName = device.mid(device.indexOf(QLatin1String("="),0)+1);
 
 	while(snd_card_get_name(idx,&name) == 0) {
             if(dev.contains(QLatin1String(name)))
@@ -195,16 +205,25 @@ bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
     snd_pcm_hw_params_t *params;
     QString dev = device;
 
-    // open()
-    if(!dev.contains(QLatin1String("default"))) {
+    QList<QByteArray> devices = QAudioDeviceInfoInternal::availableDevices(QAudio::AudioOutput);
+
+    if(dev.compare(QLatin1String("default")) == 0) {
 #if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
-         dev = QString(QLatin1String("default:CARD=%1")).arg(dev);
+        dev = QLatin1String(devices.first().constData());
+#else
+        dev = QLatin1String("hw:0,0");
+#endif
+    } else {
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
+        dev = device;
 #else
         int idx = 0;
         char *name;
-    
+
+        QString shortName = device.mid(device.indexOf(QLatin1String("="),0)+1);
+
         while(snd_card_get_name(idx,&name) == 0) {
-            if(dev.contains(QLatin1String(name)))
+            if(shortName.compare(QLatin1String(name)) == 0)
                 break;
             idx++;
         }
@@ -382,10 +401,11 @@ void QAudioDeviceInfoInternal::updateLists()
     close();
 }
 
-QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
+QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
 {
     QList<QByteArray> devices;
     QByteArray filter;
+
 #if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
     // Create a list of all current audio devices that support mode
     void **hints, **n;
@@ -408,12 +428,10 @@ QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
         descr = snd_device_name_get_hint(*n, "DESC");
         io = snd_device_name_get_hint(*n, "IOID");
         if((name != NULL) && (descr != NULL) && ((io == NULL) || (io == filter))) {
-            QString str = QLatin1String(name);
-
-            if(str.contains(QLatin1String("default"))) {
-                int pos = str.indexOf(QLatin1String("="),0);
-                devices.append(str.mid(pos+1).toLocal8Bit().constData());
-            }
+            QString deviceName = QLatin1String(name);
+            QString deviceDescription = QLatin1String(descr);
+            if(deviceDescription.contains(QLatin1String("Default Audio Device")))
+                devices.append(deviceName.toLocal8Bit().constData());
         }
         if(name != NULL)
             free(name);
@@ -444,20 +462,20 @@ QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
 
 QByteArray QAudioDeviceInfoInternal::defaultInputDevice()
 {
-    QList<QByteArray> devices = deviceList(QAudio::AudioInput);
+    QList<QByteArray> devices = availableDevices(QAudio::AudioInput);
     if(devices.size() == 0)
         return QByteArray();
 
-    return QByteArray("default");
+    return devices.first();
 }
 
 QByteArray QAudioDeviceInfoInternal::defaultOutputDevice()
 {
-    QList<QByteArray> devices = deviceList(QAudio::AudioOutput);
+    QList<QByteArray> devices = availableDevices(QAudio::AudioOutput);
     if(devices.size() == 0)
         return QByteArray();
 
-    return QByteArray("default");
+    return devices.first();
 }
 
 QT_END_NAMESPACE

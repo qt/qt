@@ -1,5 +1,5 @@
 QT          +=  webkit network
-TARGET       =  formExtractor
+TARGET       =  formextractor
 TEMPLATE     =  app
 SOURCES     +=  main.cpp \
                 formextractor.cpp \

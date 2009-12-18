@@ -65,7 +65,6 @@ QVariant x, y(QString()), z(QString(""));
 x.convert(QVariant::Int);
 // x.isNull() == true
 // y.isNull() == true, z.isNull() == false
-// y.isEmpty() == true, z.isEmpty() == true
 //! [1]
 
 

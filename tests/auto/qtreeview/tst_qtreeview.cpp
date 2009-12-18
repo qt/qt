@@ -3653,7 +3653,9 @@ void tst_QTreeView::doubleClickedWithSpans()
     view.setModel(&model);
     view.setFirstColumnSpanned(0, QModelIndex(), true);
     view.show();
+    QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.isActiveWindow());
 
     QPoint p(10, 10);
     QCOMPARE(view.indexAt(p), model.index(0, 0));
@@ -3669,11 +3671,11 @@ void tst_QTreeView::doubleClickedWithSpans()
 
     //end the previous edition
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
-    QTest::qWait(100);
+    QTest::qWait(150);
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, p);
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
-    QCOMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.count(), 2);
 }
 
 QTEST_MAIN(tst_QTreeView)

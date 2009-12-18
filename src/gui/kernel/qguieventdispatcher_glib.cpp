@@ -152,6 +152,8 @@ static gboolean x11EventSourceDispatch(GSource *s, GSourceFunc callback, gpointe
 
  out:
 
+    source->d->runTimersOnceWithNormalPriority();
+
     if (callback)
         callback(user_data);
     return true;

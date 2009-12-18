@@ -83,10 +83,8 @@
     \clearfloat
     \section1 Size Hints and Size Policies in an Anchor Layout
 
-    QGraphicsAnchorLayout respects each item's size hints and size policies. However it does
-    not currently respect their stretch factors. This might change in the future, so avoid
-    using stretch factors in anchor layouts if you want to avoid any future regressions in
-    behavior.
+    QGraphicsAnchorLayout respects each item's size hints and size policies.
+    Note that there are some properties of QSizePolicy that are \l{Known issues}{not respected}.
 
     \section1 Spacing within an Anchor Layout
 
@@ -100,6 +98,21 @@
     \l{QStyle::}{PM_LayoutVerticalSpacing} for vertical anchors.
 
     If the spacing is negative, the items will overlap to some extent.
+
+
+    \section1 Known issues
+    There are some features that QGraphicsAnchorLayout currently does not support.
+    This might change in the future, so avoid using these features if you want to
+    avoid any future regressions in behaviour:
+    \list
+
+    \o Stretch factors are not respected.
+
+    \o QSizePolicy::ExpandFlag is not respected.
+
+    \o Height for width is not respected.
+
+    \endlist
 
     \sa QGraphicsLinearLayout, QGraphicsGridLayout, QGraphicsLayout
 */
@@ -145,7 +158,7 @@ QGraphicsAnchor::~QGraphicsAnchor()
     \property QGraphicsAnchor::sizePolicy
     \brief the size policy for the QGraphicsAnchor.
 
-    By setting the size policy on an anchor you can configure how the item can resize itself
+    By setting the size policy on an anchor you can configure how the anchor can resize itself
     from its preferred spacing. For instance, if the anchor has the size policy
     QSizePolicy::Minimum, the spacing is the minimum size of the anchor. However, its size
     can grow up to the anchors maximum size. If the default size policy is QSizePolicy::Fixed,
@@ -234,7 +247,7 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
 
 /*!
     Creates an anchor between the edge \a firstEdge of item \a firstItem and the edge \a secondEdge
-    of item \a secondItem. The magnitude of the anchor is picked up from the style. Anchors
+    of item \a secondItem. The spacing of the anchor is picked up from the style. Anchors
     between a layout edge and an item edge will have a size of 0.
     If there is already an anchor between the edges, the the new anchor will replace the old one.
 
@@ -308,14 +321,14 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
     // Horizontal anchor
     Qt::AnchorPoint firstEdge = (firstCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
     Qt::AnchorPoint secondEdge = (secondCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
-    d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
+    if (d->addAnchor(firstItem, firstEdge, secondItem, secondEdge)) {
+        // Vertical anchor
+        firstEdge = (firstCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
+        secondEdge = (secondCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
+        d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
 
-    // Vertical anchor
-    firstEdge = (firstCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
-    secondEdge = (secondCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
-    d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
-
-    invalidate();
+        invalidate();
+    }
 }
 
 /*!
@@ -338,11 +351,14 @@ void QGraphicsAnchorLayout::addAnchors(QGraphicsLayoutItem *firstItem,
                                        QGraphicsLayoutItem *secondItem,
                                        Qt::Orientations orientations)
 {
+    bool ok = true;
     if (orientations & Qt::Horizontal) {
-        addAnchor(secondItem, Qt::AnchorLeft, firstItem, Qt::AnchorLeft);
-        addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
+        // Currently, if the first is ok, then the rest of the calls should be ok
+        ok = addAnchor(secondItem, Qt::AnchorLeft, firstItem, Qt::AnchorLeft) != 0;
+        if (ok)
+            addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
     }
-    if (orientations & Qt::Vertical) {
+    if (orientations & Qt::Vertical && ok) {
         addAnchor(secondItem, Qt::AnchorTop, firstItem, Qt::AnchorTop);
         addAnchor(firstItem, Qt::AnchorBottom, secondItem, Qt::AnchorBottom);
     }
@@ -357,12 +373,6 @@ void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
 
-    // ### We don't support negative spacing yet
-    if (spacing < 0) {
-        spacing = 0;
-        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
-    }
-
     d->spacings[0] = spacing;
     invalidate();
 }
@@ -376,12 +386,6 @@ void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
 
-    // ### We don't support negative spacing yet
-    if (spacing < 0) {
-        spacing = 0;
-        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
-    }
-
     d->spacings[1] = spacing;
     invalidate();
 }
@@ -392,21 +396,14 @@ void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
     If an item is anchored with no spacing associated with the anchor, it will use the default
     spacing.
 
-    Currently QGraphicsAnchorLayout does not support negative default spacings.
+    QGraphicsAnchorLayout does not support negative spacings. Setting a negative value will unset the
+    previous spacing and make the layout use the spacing provided by the current widget style.
 
     \sa setHorizontalSpacing(), setVerticalSpacing()
 */
 void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
-
-    // ### Currently we do not support negative anchors inside the graph.
-    // To avoid those being created by a negative spacing, we must
-    // make this test.
-    if (spacing < 0) {
-        spacing = 0;
-        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
-    }
 
     d->spacings[0] = d->spacings[1] = spacing;
     invalidate();
@@ -464,9 +461,6 @@ void QGraphicsAnchorLayout::removeAt(int index)
         return;
 
     // Removing an item affects both horizontal and vertical graphs
-    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Horizontal);
-    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Vertical);
-
     d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Horizontal);
     d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Vertical);
     d->removeAnchors(item);

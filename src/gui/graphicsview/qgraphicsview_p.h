@@ -86,6 +86,9 @@ public:
     qint64 horizontalScroll() const;
     qint64 verticalScroll() const;
 
+    QRectF mapRectToScene(const QRect &rect) const;
+    QRectF mapRectFromScene(const QRectF &rect) const;
+
     QPointF mousePressItemPoint;
     QPointF mousePressScenePoint;
     QPoint mousePressViewPoint;
@@ -172,10 +175,17 @@ public:
 
     inline void dispatchPendingUpdateRequests()
     {
+#ifndef Q_WS_MAC
+        // QWidget::update() works slightly different on the Mac; it's not part of
+        // our backing store so it needs special threatment.
         if (qt_widget_private(viewport)->paintOnScreen())
             QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);
         else
             QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
+#else
+        QCoreApplication::processEvents(QEventLoop::AllEvents | QEventLoop::ExcludeSocketNotifiers
+                                        | QEventLoop::ExcludeUserInputEvents);
+#endif
     }
 
     bool updateRect(const QRect &rect);

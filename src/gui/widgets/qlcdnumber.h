@@ -60,6 +60,7 @@ class Q_GUI_EXPORT QLCDNumber : public QFrame // LCD number widget
     Q_ENUMS(Mode SegmentStyle)
     Q_PROPERTY(bool smallDecimalPoint READ smallDecimalPoint WRITE setSmallDecimalPoint)
     Q_PROPERTY(int numDigits READ numDigits WRITE setNumDigits)
+    Q_PROPERTY(int digitCount READ digitCount WRITE setDigitCount)
     Q_PROPERTY(Mode mode READ mode WRITE setMode)
     Q_PROPERTY(SegmentStyle segmentStyle READ segmentStyle WRITE setSegmentStyle)
     Q_PROPERTY(double value READ value WRITE display)
@@ -81,9 +82,12 @@ public:
     };
 
     bool smallDecimalPoint() const;
-
-    int numDigits() const;
-    void setNumDigits(int nDigits);
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED int numDigits() const;
+    QT_DEPRECATED void setNumDigits(int nDigits);
+#endif
+    int digitCount() const;
+    void setDigitCount(int nDigits);
 
     bool checkOverflow(double num) const;
     bool checkOverflow(int num) const;

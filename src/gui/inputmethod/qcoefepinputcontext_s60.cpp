@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -65,13 +65,14 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_fepState(q_check_ptr(new CAknEdwinState)),		// CBase derived object needs check on new
       m_lastImHints(Qt::ImhNone),
       m_textCapabilities(TCoeInputCapabilities::EAllText),
-      m_isEditing(false),
       m_inDestruction(false),
       m_pendingInputCapabilitiesChanged(false),
       m_cursorVisibility(1),
       m_inlinePosition(0),
       m_formatRetriever(0),
-      m_pointerHandler(0)
+      m_pointerHandler(0),
+      m_longPress(0),
+      m_cursorPos(0)
 {
     m_fepState->SetObjectProvider(this);
     m_fepState->SetFlags(EAknEditorFlagDefault);
@@ -79,7 +80,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     m_fepState->SetPermittedInputModes( EAknEditorAllInputModes );
     m_fepState->SetDefaultCase( EAknEditorLowerCase );
     m_fepState->SetPermittedCases( EAknEditorLowerCase|EAknEditorUpperCase );
-    m_fepState->SetSpecialCharacterTableResourceId( 0 );
+    m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
     m_fepState->SetNumericKeymap( EAknEditorStandardNumberModeKeymap );
 }
 
@@ -138,8 +139,7 @@ void QCoeFepInputContext::widgetDestroyed(QWidget *w)
     // Make sure that the input capabilities of whatever new widget got focused are queried.
     CCoeControl *ctrl = w->effectiveWinId();
     if (ctrl->IsFocused()) {
-        ctrl->SetFocus(false);
-        ctrl->SetFocus(true);
+        queueInputCapabilitiesChanged();
     }
 }
 
@@ -202,14 +202,26 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 
     if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
         const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
-        Q_ASSERT(m_lastImHints == focusWidget()->inputMethodHints());
-        if (keyEvent->key() == Qt::Key_F20 && m_lastImHints & Qt::ImhHiddenText) {
-            // Special case in Symbian. On editors with secret text, F20 is for some reason
-            // considered to be a backspace.
-            QKeyEvent modifiedEvent(keyEvent->type(), Qt::Key_Backspace, keyEvent->modifiers(),
-                    keyEvent->text(), keyEvent->isAutoRepeat(), keyEvent->count());
-            QApplication::sendEvent(focusWidget(), &modifiedEvent);
-            return true;
+        switch (keyEvent->key()) {
+        case Qt::Key_F20:
+            Q_ASSERT(m_lastImHints == focusWidget()->inputMethodHints());
+            if (m_lastImHints & Qt::ImhHiddenText) {
+                // Special case in Symbian. On editors with secret text, F20 is for some reason
+                // considered to be a backspace.
+                QKeyEvent modifiedEvent(keyEvent->type(), Qt::Key_Backspace, keyEvent->modifiers(),
+                        keyEvent->text(), keyEvent->isAutoRepeat(), keyEvent->count());
+                QApplication::sendEvent(focusWidget(), &modifiedEvent);
+                return true;
+            }
+            break;
+        case Qt::Key_Select:
+            if (!m_preeditString.isEmpty()) {
+                commitCurrentString(false);
+                return true;
+            }
+            break;
+        default:
+            break;
         }
     }
 
@@ -243,7 +255,6 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
 {
-    Q_ASSERT(m_isEditing);
     Q_ASSERT(focusWidget());
 
     if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::LeftButton) {
@@ -407,6 +418,14 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     }
     m_fepState->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(flags));
 
+    if (hints & ImhEmailCharactersOnly) {
+        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else if (hints & ImhUrlCharactersOnly) {
+        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_URL_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else {
+        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
+    }
+
     if (hints & ImhHiddenText) {
         m_textCapabilities = TCoeInputCapabilities::EAllText | TCoeInputCapabilities::ESecretText;
     } else {
@@ -417,6 +436,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attributes)
 {
     TCharFormat cFormat;
+    QColor styleTextColor = QApplication::palette("QLineEdit").text().color();
+    TLogicalRgb tontColor(TRgb(styleTextColor.red(), styleTextColor.green(), styleTextColor.blue(), styleTextColor.alpha()));
+    cFormat.iFontPresentation.iTextColor = tontColor;
+
     TInt numChars = 0;
     TInt charPos = 0;
     int oldSize = attributes->size();
@@ -478,8 +501,8 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     if (!w)
         return;
 
-    m_isEditing = true;
-
+    m_cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+    
     QList<QInputMethodEvent::Attribute> attributes;
 
     m_cursorVisibility = aCursorVisibility ? 1 : 0;
@@ -543,8 +566,6 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     event.setCommitString(QLatin1String(""), 0, 0);
     m_preeditString.clear();
     sendEvent(event);
-
-    m_isEditing = false;
 }
 
 TInt QCoeFepInputContext::DocumentLengthForFep() const
@@ -683,16 +704,22 @@ void QCoeFepInputContext::DoCommitFepInlineEditL()
 void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
 {
     if (m_preeditString.size() == 0) {
+        QWidget *w = focusWidget();
+        if (triggeredBySymbian && w) {
+            // We must replace the last character only if the input box has already accepted one 
+            if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
+                m_longPress = 1;
+        }
         return;
     }
 
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
-    event.setCommitString(m_preeditString, 0, 0);//m_preeditString.size());
+    event.setCommitString(m_preeditString, 0-m_longPress, m_longPress);
     m_preeditString.clear();
     sendEvent(event);
 
-    m_isEditing = false;
+    m_longPress = 0;
 
     if (!triggeredBySymbian) {
         CCoeFep* fep = CCoeEnv::Static()->Fep();
@@ -731,6 +758,14 @@ MCoeFepAwareTextEditor_Extension1::CState* QCoeFepInputContext::State(TUid /*aTy
 TTypeUid::Ptr QCoeFepInputContext::MopSupplyObject(TTypeUid /*id*/)
 {
     return TTypeUid::Null();
+}
+
+MObjectProvider *QCoeFepInputContext::MopNext()
+{
+    QWidget *w = focusWidget();
+    if (w)
+        return w->effectiveWinId();
+    return 0;
 }
 
 QT_END_NAMESPACE

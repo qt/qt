@@ -6,7 +6,7 @@
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA 
+    successor approved by the membership of KDE e.V.), Nokia Corporation 
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -72,12 +72,12 @@ void SeekSlider::setMediaObject(MediaObject *media)
     d->media = media;
 
     if (media) {
-        connect(media, SIGNAL(stateChanged(Phonon::State, Phonon::State)),
+        connect(media, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
                 SLOT(_k_stateChanged(Phonon::State)));
         connect(media, SIGNAL(totalTimeChanged(qint64)), SLOT(_k_length(qint64)));
         connect(media, SIGNAL(tick(qint64)), SLOT(_k_tick(qint64)));
         connect(media, SIGNAL(seekableChanged(bool)), SLOT(_k_seekableChanged(bool)));
-        connect(media, SIGNAL(currentSourceChanged(const Phonon::MediaSource&)), SLOT(_k_currentSourceChanged()));
+        connect(media, SIGNAL(currentSourceChanged(Phonon::MediaSource)), SLOT(_k_currentSourceChanged()));
         d->_k_stateChanged(media->state());
         d->_k_seekableChanged(media->isSeekable());
         d->_k_length(media->totalTime());

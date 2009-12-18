@@ -148,14 +148,14 @@ void MessageEditor::setupEditorPage()
     m_source = new FormWidget(tr("Source text"), false);
     m_source->setHideWhenEmpty(true);
     m_source->setWhatsThis(tr("This area shows the source text."));
-    connect(m_source, SIGNAL(selectionChanged(QTextEdit *)),
-            SLOT(selectionChanged(QTextEdit *)));
+    connect(m_source, SIGNAL(selectionChanged(QTextEdit*)),
+            SLOT(selectionChanged(QTextEdit*)));
 
     m_pluralSource = new FormWidget(tr("Source text (Plural)"), false);
     m_pluralSource->setHideWhenEmpty(true);
     m_pluralSource->setWhatsThis(tr("This area shows the plural form of the source text."));
-    connect(m_pluralSource, SIGNAL(selectionChanged(QTextEdit *)),
-            SLOT(selectionChanged(QTextEdit *)));
+    connect(m_pluralSource, SIGNAL(selectionChanged(QTextEdit*)),
+            SLOT(selectionChanged(QTextEdit*)));
 
     m_commentText = new FormWidget(tr("Developer comments"), false);
     m_commentText->setHideWhenEmpty(true);
@@ -222,11 +222,11 @@ void MessageEditor::messageModelAppended()
     ed.transCommentText->setWhatsThis(tr("Here you can enter comments for your own use."
                         " They have no effect on the translated applications.") );
     ed.transCommentText->getEditor()->installEventFilter(this);
-    connect(ed.transCommentText, SIGNAL(selectionChanged(QTextEdit *)),
-            SLOT(selectionChanged(QTextEdit *)));
-    connect(ed.transCommentText, SIGNAL(textChanged(QTextEdit *)),
-            SLOT(emitTranslatorCommentChanged(QTextEdit *)));
-    connect(ed.transCommentText, SIGNAL(textChanged(QTextEdit *)), SLOT(resetHoverSelection()));
+    connect(ed.transCommentText, SIGNAL(selectionChanged(QTextEdit*)),
+            SLOT(selectionChanged(QTextEdit*)));
+    connect(ed.transCommentText, SIGNAL(textChanged(QTextEdit*)),
+            SLOT(emitTranslatorCommentChanged(QTextEdit*)));
+    connect(ed.transCommentText, SIGNAL(textChanged(QTextEdit*)), SLOT(resetHoverSelection()));
     connect(ed.transCommentText, SIGNAL(cursorPositionChanged()), SLOT(resetHoverSelection()));
     fixTabOrder();
     QBoxLayout *box = new QVBoxLayout(ed.container);
@@ -275,7 +275,7 @@ void MessageEditor::messageModelDeleted(int model)
 void MessageEditor::addPluralForm(int model, const QString &label, bool writable)
 {
     FormMultiWidget *transEditor = new FormMultiWidget(label);
-    connect(transEditor, SIGNAL(editorCreated(QTextEdit *)), SLOT(editorCreated(QTextEdit *)));
+    connect(transEditor, SIGNAL(editorCreated(QTextEdit*)), SLOT(editorCreated(QTextEdit*)));
     transEditor->setEditingEnabled(writable);
     transEditor->setHideWhenEmpty(!writable);
     if (!m_editors[model].transTexts.isEmpty())
@@ -284,11 +284,11 @@ void MessageEditor::addPluralForm(int model, const QString &label, bool writable
     static_cast<QBoxLayout *>(m_editors[model].container->layout())->insertWidget(
         m_editors[model].transTexts.count(), transEditor);
 
-    connect(transEditor, SIGNAL(selectionChanged(QTextEdit *)),
-            SLOT(selectionChanged(QTextEdit *)));
-    connect(transEditor, SIGNAL(textChanged(QTextEdit *)),
-            SLOT(emitTranslationChanged(QTextEdit *)));
-    connect(transEditor, SIGNAL(textChanged(QTextEdit *)), SLOT(resetHoverSelection()));
+    connect(transEditor, SIGNAL(selectionChanged(QTextEdit*)),
+            SLOT(selectionChanged(QTextEdit*)));
+    connect(transEditor, SIGNAL(textChanged(QTextEdit*)),
+            SLOT(emitTranslationChanged(QTextEdit*)));
+    connect(transEditor, SIGNAL(textChanged(QTextEdit*)), SLOT(resetHoverSelection()));
     connect(transEditor, SIGNAL(cursorPositionChanged()), SLOT(resetHoverSelection()));
 
     m_editors[model].transTexts << transEditor;
@@ -407,10 +407,12 @@ QTextEdit *MessageEditor::activeTranslation() const
 {
     if (m_currentNumerus < 0)
         return 0;
-    foreach (QTextEdit *te, m_editors[m_currentModel].transTexts[m_currentNumerus]->getEditors())
+    const QList<FormatTextEdit *> &editors =
+            m_editors[m_currentModel].transTexts[m_currentNumerus]->getEditors();
+    foreach (QTextEdit *te, editors)
         if (te->hasFocus())
             return te;
-    return 0; // This cannot happen
+    return editors.first();
 }
 
 QTextEdit *MessageEditor::activeOr1stTranslation() const

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -92,7 +92,7 @@ void QEventDispatcherS60::saveInputEvent(QSymbianControl *control, QWidget *widg
 {
     DeferredInputEvent inputEvent = {control, widget, event};
     m_deferredInputEvents.append(inputEvent);
-    connect(widget, SIGNAL(destroyed(QObject *)), SLOT(removeInputEventsForWidget(QObject *)));
+    connect(widget, SIGNAL(destroyed(QObject*)), SLOT(removeInputEventsForWidget(QObject*)));
 }
 
 bool QEventDispatcherS60::sendDeferredInputEvents()

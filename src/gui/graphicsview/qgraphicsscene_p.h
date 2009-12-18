@@ -78,7 +78,7 @@ class QGraphicsSceneIndex;
 class QGraphicsView;
 class QGraphicsWidget;
 
-class QGraphicsScenePrivate : public QObjectPrivate
+class Q_AUTOTEST_EXPORT QGraphicsScenePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsScene)
 public:
@@ -121,6 +121,13 @@ public:
     void _q_polishItems();
 
     void _q_processDirtyItems();
+
+    QSet<QGraphicsItem *> scenePosItems;
+    bool scenePosDescendantsUpdatePending;
+    void setScenePosItemEnabled(QGraphicsItem *item, bool enabled);
+    void registerScenePosItem(QGraphicsItem *item);
+    void unregisterScenePosItem(QGraphicsItem *item);
+    void _q_updateScenePosDescendants();
 
     void removeItemHelper(QGraphicsItem *item);
 
@@ -215,8 +222,7 @@ public:
               QRegion *, QWidget *, qreal, const QTransform *const, bool, bool);
 
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
-                   bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false,
-                   bool removingItemFromScene = false);
+                   bool force = false, bool ignoreOpacity = false, bool removingItemFromScene = false);
     void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false,
                                     qreal parentOpacity = qreal(1.0));
 
@@ -234,6 +240,7 @@ public:
         item->d_ptr->fullUpdatePending = 0;
         item->d_ptr->ignoreVisible = 0;
         item->d_ptr->ignoreOpacity = 0;
+#ifndef QT_NO_GRAPHICSEFFECT
         QGraphicsEffect::ChangeFlags flags;
         if (item->d_ptr->notifyBoundingRectChanged) {
             flags |= QGraphicsEffect::SourceBoundingRectChanged;
@@ -243,18 +250,22 @@ public:
             flags |= QGraphicsEffect::SourceInvalidated;
             item->d_ptr->notifyInvalidated = 0;
         }
+#endif //QT_NO_GRAPHICSEFFECT
         if (recursive) {
             for (int i = 0; i < item->d_ptr->children.size(); ++i)
                 resetDirtyItem(item->d_ptr->children.at(i), recursive);
         }
+#ifndef QT_NO_GRAPHICSEFFECT
         if (flags && item->d_ptr->graphicsEffect)
             item->d_ptr->graphicsEffect->sourceChanged(flags);
+#endif //QT_NO_GRAPHICSEFFECT
     }
 
     inline void ensureSortedTopLevelItems()
     {
         if (needSortTopLevelItems) {
             qSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
+            topLevelSequentialOrdering = false;
             needSortTopLevelItems = false;
         }
     }

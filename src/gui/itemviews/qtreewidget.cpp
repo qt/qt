@@ -1580,7 +1580,7 @@ void QTreeWidgetItem::setChildIndicatorPolicy(QTreeWidgetItem::ChildIndicatorPol
     if (!view)
         return;
 
-    view->viewport()->update( view->d_func()->itemDecorationRect(view->d_func()->index(this)));
+    view->scheduleDelayedItemsLayout();
 }
 
 /*!
@@ -2851,7 +2851,14 @@ QTreeWidgetItem *QTreeWidget::itemAt(const QPoint &p) const
 QRect QTreeWidget::visualItemRect(const QTreeWidgetItem *item) const
 {
     Q_D(const QTreeWidget);
-    return visualRect(d->index(item));
+    //the visual rect for an item is across all columns. So we need to determine
+	//what is the first and last column and get their visual index rects
+    QModelIndex base = d->index(item);
+    const int firstVisiblesection = header()->logicalIndexAt(- header()->offset());
+    const int lastVisibleSection = header()->logicalIndexAt(header()->length() - header()->offset() - 1);
+    QModelIndex first = base.sibling(base.row(), header()->logicalIndex(firstVisiblesection));
+    QModelIndex last = base.sibling(base.row(), header()->logicalIndex(lastVisibleSection));
+    return visualRect(first) | visualRect(last);
 }
 
 /*!

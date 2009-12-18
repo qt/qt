@@ -110,28 +110,21 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
 
     // Verify license info...
     QString licenseKey = licenseInfo["LICENSEKEYEXT"];
-    const char * clicenseKey = licenseKey.toLatin1();
+    QByteArray clicenseKey = licenseKey.toLatin1();
     //We check the licence
-#ifndef _WIN32_WCE
-        char *buffer = strdup(clicenseKey);
-#else
-        char *buffer = (char*) malloc(strlen(clicenseKey) + 1);
-        strcpy(buffer, clicenseKey);
-#endif
     static const char * const SEP = "-";
     char *licenseParts[NUMBER_OF_PARTS];
     int partNumber = 0;
-    for (char *part = strtok(buffer, SEP); part != 0; part = strtok(0, SEP))
+    for (char *part = strtok(clicenseKey.data(), SEP); part != 0; part = strtok(0, SEP))
         licenseParts[partNumber++] = part;
     if (partNumber < (NUMBER_OF_PARTS-1)) {
         dictionary["DONE"] = "error";
         cout << "License file does not contain proper license key." <<partNumber<< endl;
-        free(buffer);
         return;
     }
 
     char products = licenseParts[0][0];
-    char platforms = licenseParts[1][0];
+    char* platforms = licenseParts[1];
     char* licenseSchema = licenseParts[2];
     char licenseFeatures = licenseParts[3][0];
 
@@ -149,21 +142,78 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
             dictionary["EDITION"] = "GUIFramework";
             dictionary["QT_EDITION"] = "QT_EDITION_DESKTOPLIGHT";
         }
-
-        if (platforms == 'X') {
-            dictionary["LICENSE_EXTENSION"] = "-ALLOS";
-        } else if (strchr("2346789ABCDEGHJKMPQSTUVWX", platforms)) {
-            dictionary["LICENSE_EXTENSION"] = "-EMBEDDED";
-        } else if (strchr("4BFPQRTY", platforms)) {
-            dictionary["LICENSE_EXTENSION"] = "-DESKTOP";
-        }
     } else if (strcmp(licenseSchema,"Z4M") == 0 || strcmp(licenseSchema,"R4M") == 0 || strcmp(licenseSchema,"Q4M") == 0) {
         if (products == 'B') {
             dictionary["EDITION"] = "Evaluation";
             dictionary["QT_EDITION"] = "QT_EDITION_EVALUATION";
-            dictionary["LICENSE_EXTENSION"] = "-EVALUATION";
         }
     }
+
+    if (platforms[2] == 'L') {
+        static const char src[] = "8NPQRTZ";
+        static const char dst[] = "UCWX9M7";
+        const char *p = strchr(src, platforms[1]);
+        platforms[1] = dst[p - src];
+    }
+
+#define PL(a,b) (int(a)+int(b)*256)
+    int platformCode = PL(platforms[0],platforms[1]);
+    switch (platformCode) {
+    case PL('X','9'):
+    case PL('X','C'):
+    case PL('X','U'):
+    case PL('X','W'):
+	case PL('X','M'): // old license key
+        dictionary["LICENSE_EXTENSION"] = "-ALLOS";
+        break;
+
+    case PL('6', 'M'):
+    case PL('8', 'M'):
+	case PL('K', 'M'): // old license key
+    case PL('N', '7'):
+    case PL('N', '9'):
+    case PL('N', 'X'):
+    case PL('S', '9'):
+    case PL('S', 'C'):
+    case PL('S', 'U'):
+    case PL('S', 'W'):
+        dictionary["LICENSE_EXTENSION"] = "-EMBEDDED";
+        if (dictionary["PLATFORM NAME"].contains("Windows CE")
+            && platformCode != PL('6', 'M') && platformCode != PL('S', '9')
+            && platformCode != PL('S', 'C') && platformCode != PL('S', 'U')
+            && platformCode != PL('S', 'W') && platformCode != PL('K', 'M')) {
+            dictionary["DONE"] = "error";
+        } else if (dictionary["PLATFORM NAME"].contains("Symbian")
+                   && platformCode != PL('N', '9') && platformCode != PL('S', '9')
+                   && platformCode != PL('S', 'C') && platformCode != PL('S', 'U')
+                   && platformCode != PL('S', 'W')) {
+            dictionary["DONE"] = "error";
+        }
+        break;
+    case PL('R', 'M'):
+    case PL('F', 'M'):
+        dictionary["LICENSE_EXTENSION"] = "-DESKTOP";
+        if (!dictionary["PLATFORM NAME"].endsWith("Windows")) {
+            dictionary["DONE"] = "error";
+        }
+        break;
+    default:
+        dictionary["DONE"] = "error";
+        break;
+    }
+#undef PL
+
+    if (dictionary.value("DONE") == "error") {
+        cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
+        cout << "Please contact qt-info@nokia.com to upgrade your license" << endl;
+        cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;
+        cout << "Qt Open Source Edition if you intend to develop free software." << endl;
+        return;
+    }
+
+    // Override for evaluation licenses
+    if (dictionary["Edition"] == "Evaluation")
+        dictionary["LICENSE_EXTENSION"] = "-EVALUATION";
 
     if (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/.LICENSE")) {
         // Generic, no-suffix license
@@ -180,26 +230,12 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         return;
     }
 
-    if (dictionary["PLATFORM NAME"].contains("Windows CE")) {
-        // verify that we are licensed to use Qt for Windows CE
-        if (dictionary["LICENSE_EXTENSION"] != "-EMBEDDED" && dictionary["LICENSE_EXTENSION"] != "-ALLOS") {
-            cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
-            cout << "Please contact qt-info@nokia.com to upgrade your license" << endl;
-            cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;
-            cout << "Qt Open Source Edition if you intend to develop free software." << endl;
-            dictionary["DONE"] = "error";
-            return;
-        }
-    }
-
     // copy one of .LICENSE-*(-US) to LICENSE
     QString toLicenseFile   = dictionary["QT_SOURCE_TREE"] + "/LICENSE";
     QString fromLicenseFile = dictionary["QT_SOURCE_TREE"] + "/.LICENSE" + dictionary["LICENSE_EXTENSION"];
-    if (licenseFeatures == 'G') //US
+    if (licenseFeatures == 'B' || licenseFeatures == 'G'
+        || licenseFeatures == 'L' || licenseFeatures == 'Y')
         fromLicenseFile += "-US";
-
-    if (licenseFeatures == '5') //Floating
-        dictionary["METERED LICENSE"] = "true";
 
     if (!CopyFile((wchar_t*)QDir::toNativeSeparators(fromLicenseFile).utf16(),
         (wchar_t*)QDir::toNativeSeparators(toLicenseFile).utf16(), FALSE)) {
@@ -208,6 +244,5 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         return;
     }
     dictionary["LICENSE FILE"] = toLicenseFile;
-    free(buffer);
 }
 

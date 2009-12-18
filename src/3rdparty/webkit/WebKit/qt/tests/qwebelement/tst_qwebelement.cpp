@@ -68,9 +68,12 @@ private slots:
     void simpleCollection();
     void attributes();
     void attributesNS();
+    void listAttributes();
     void classes();
     void namespaceURI();
     void iteration();
+    void nonConstIterator();
+    void constIterator();
     void foreachManipulation();
     void emptyCollection();
     void appendCollection();
@@ -183,6 +186,29 @@ void tst_QWebElement::attributesNS()
     svg.setAttributeNS("http://www.w3.org/2000/svg", "svg:foobar", "true");
     QVERIFY(svg.hasAttributeNS("http://www.w3.org/2000/svg", "foobar"));
     QCOMPARE(svg.attributeNS("http://www.w3.org/2000/svg", "foobar", "defaultblah"), QString("true"));
+}
+
+void tst_QWebElement::listAttributes()
+{
+    QString content = "<html xmlns=\"http://www.w3.org/1999/xhtml\" "
+                      "xmlns:svg=\"http://www.w3.org/2000/svg\">"
+                      "<body><svg:svg foo=\"\" svg:bar=\"\">"
+                      "</svg:svg></body></html>";
+
+    m_mainFrame->setContent(content.toUtf8(), "application/xhtml+xml");
+
+    QWebElement svg = m_mainFrame->findFirstElement("svg");
+    QVERIFY(!svg.isNull());
+
+    QVERIFY(svg.attributeNames().contains("foo"));
+    QVERIFY(svg.attributeNames("http://www.w3.org/2000/svg").contains("bar"));
+
+    svg.setAttributeNS("http://www.w3.org/2000/svg", "svg:foobar", "true");
+    QVERIFY(svg.attributeNames().contains("foo"));
+    QStringList attributes = svg.attributeNames("http://www.w3.org/2000/svg");
+    QCOMPARE(attributes.size(), 2);
+    QVERIFY(attributes.contains("bar"));
+    QVERIFY(attributes.contains("foobar"));
 }
 
 void tst_QWebElement::classes()
@@ -303,6 +329,37 @@ void tst_QWebElement::iteration()
 
     QCOMPARE(paras.at(0), paras.first());
     QCOMPARE(paras.at(1), paras.last());
+}
+
+void tst_QWebElement::nonConstIterator()
+{
+    QString html = "<body><p>first para</p><p>second para</p></body>";
+    m_mainFrame->setHtml(html);
+    QWebElement body = m_mainFrame->documentElement();
+    QWebElementCollection paras = body.findAll("p");
+
+    QWebElementCollection::iterator it = paras.begin();
+    QCOMPARE(*it, paras.at(0));
+    ++it;
+    (*it).encloseWith("<div>");
+    QCOMPARE(*it, paras.at(1));
+    ++it;
+    QCOMPARE(it,  paras.end());
+}
+
+void tst_QWebElement::constIterator()
+{
+    QString html = "<body><p>first para</p><p>second para</p></body>";
+    m_mainFrame->setHtml(html);
+    QWebElement body = m_mainFrame->documentElement();
+    const QWebElementCollection paras = body.findAll("p");
+
+    QWebElementCollection::const_iterator it = paras.begin();
+    QCOMPARE(*it, paras.at(0));
+    ++it;
+    QCOMPARE(*it, paras.at(1));
+    ++it;
+    QCOMPARE(it,  paras.end());
 }
 
 void tst_QWebElement::foreachManipulation()
@@ -938,7 +995,10 @@ void tst_QWebElement::render()
     QImage testImage(resource.width(), resource.height(), QImage::Format_ARGB32);
     QPainter painter0(&testImage);
     painter0.fillRect(imageRect, Qt::white);
-    painter0.drawImage(0, 0, resource);
+    // render() uses pixmaps internally, and pixmaps might have bit depths
+    // other than 32, giving different pixel values due to rounding.
+    QPixmap pix = QPixmap::fromImage(resource);
+    painter0.drawPixmap(0, 0, pix);
     painter0.end();
 
     QImage image1(resource.width(), resource.height(), QImage::Format_ARGB32);

@@ -399,6 +399,40 @@ QMouseEventEx::~QMouseEventEx()
 
     The function pos() gives the current cursor position, while oldPos() gives
     the old mouse position.
+
+    There are a few similarities between the events QEvent::HoverEnter
+    and QEvent::HoverLeave, and the events QEvent::Enter and QEvent::Leave.
+    However, they are slightly different because we do an update() in the event
+    handler of HoverEnter and HoverLeave.
+
+    QEvent::HoverMove is also slightly different from QEvent::MouseMove. Let us
+    consider a top-level window A containing a child B which in turn contains a
+    child C (all with mouse tracking enabled):
+
+    \image hoverevents.png
+
+    Now, if you move the cursor from the top to the bottom in the middle of A,
+    you will get the following QEvent::MouseMove events:
+
+    \list 1
+        \o A::MouseMove
+        \o B::MouseMove
+        \o C::MouseMove
+    \endlist
+
+    You will get the same events for QEvent::HoverMove, except that the event
+    always propagates to the top-level regardless whether the event is accepted
+    or not. It will only stop propagating with the Qt::WA_NoMousePropagation
+    attribute.
+
+    In this case the events will occur in the following way:
+
+    \list 1
+        \o A::HoverMove
+        \o A::HoverMove, B::HoverMove
+        \o A::HoverMove, B::HoverMove, C::HoverMove
+    \endlist
+
 */
 
 /*!
@@ -2989,7 +3023,7 @@ QShowEvent::~QShowEvent()
     This event is only used to notify the application of a request.
     It may be safely ignored.
 
-    \note This class is currently supported for Mac Os X only.
+    \note This class is currently supported for Mac OS X only.
 */
 
 /*!
@@ -3032,6 +3066,8 @@ QFileOpenEvent::~QFileOpenEvent()
     \fn QUrl QFileOpenEvent::url() const
 
     Returns the url that is being opened.
+
+    \since 4.6
 */
 QUrl QFileOpenEvent::url() const
 {

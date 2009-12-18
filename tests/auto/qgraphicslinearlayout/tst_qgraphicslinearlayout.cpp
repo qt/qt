@@ -146,7 +146,7 @@ void tst_QGraphicsLinearLayout::initTestCase()
 {
     // since the style will influence the results, we have to ensure
     // that the tests are run using the same style on all platforms
-#ifdef Q_WS_S60
+#if defined( Q_WS_S60 )|| defined (Q_WS_WINCE)
     QApplication::setStyle(new QWindowsStyle);
 #else
     QApplication::setStyle(new QPlastiqueStyle);
@@ -664,16 +664,16 @@ void tst_QGraphicsLinearLayout::invalidate()
     widget->show();
 
     layout.setContentsMargins(1, 2, 3, 4);
-    qApp->processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(layout.layoutRequest, 1);
 
     layout.setOrientation(Qt::Vertical);
-    qApp->processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(layout.layoutRequest, 2);
 
     for (int i = 0; i < count; ++i)
         layout.invalidate();        // Event is compressed, should only get one layoutrequest
-    qApp->processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(layout.layoutRequest, count ? 3 : 2);
     delete widget;
 }

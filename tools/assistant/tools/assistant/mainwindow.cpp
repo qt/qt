@@ -227,16 +227,8 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
 
         if (!m_cmdLine->currentFilter().isEmpty()) {
             const QString &curFilter = m_cmdLine->currentFilter();
-            m_helpEngine->setCurrentFilter(curFilter);
-            if (m_filterCombo) {
-                int idx = m_filterCombo->findText(curFilter);
-                if (idx >= 0) {
-                    bool blocked = m_filterCombo->signalsBlocked();
-                    m_filterCombo->blockSignals(true);
-                    m_filterCombo->setCurrentIndex(idx);
-                    m_filterCombo->blockSignals(blocked);
-                }
-            }
+            if (m_helpEngine->customFilters().contains(curFilter))
+                m_helpEngine->setCurrentFilter(curFilter);
         }
 
         if (usesDefaultCollection())
@@ -459,7 +451,7 @@ void MainWindow::setupActions()
 
     m_findAction = menu->addAction(tr("&Find in Text..."), m_centralWidget,
         SLOT(showTextSearch()));
-    m_findAction->setIconText("&Find");
+    m_findAction->setIconText(tr("&Find"));
     m_findAction->setIcon(QIcon(resourcePath + QLatin1String("/find.png")));
     m_findAction->setShortcuts(QKeySequence::Find);
 
@@ -523,7 +515,7 @@ void MainWindow::setupActions()
 
     m_syncAction = menu->addAction(tr("Sync with Table of Contents"), this,
         SLOT(syncContents()));
-    m_syncAction->setIconText("Sync");
+    m_syncAction->setIconText(tr("Sync"));
     m_syncAction->setIcon(QIcon(resourcePath + QLatin1String("/synctoc.png")));
 
     menu->addSeparator();
@@ -600,8 +592,8 @@ void MainWindow::setupActions()
         SLOT(updateNavigationItems()));
     connect(m_centralWidget, SIGNAL(highlighted(QString)), statusBar(),
         SLOT(showMessage(QString)));
-    connect(m_centralWidget, SIGNAL(addNewBookmark(QString, QString)), this,
-        SLOT(addNewBookmark(QString, QString)));
+    connect(m_centralWidget, SIGNAL(addNewBookmark(QString,QString)), this,
+        SLOT(addNewBookmark(QString,QString)));
 
     // bookmarks
     connect(m_bookmarkWidget, SIGNAL(requestShowLink(QUrl)), m_centralWidget,
@@ -612,8 +604,8 @@ void MainWindow::setupActions()
     // index window
     connect(m_indexWindow, SIGNAL(linkActivated(QUrl)), m_centralWidget,
         SLOT(setSource(QUrl)));
-    connect(m_indexWindow, SIGNAL(linksActivated(QMap<QString, QUrl>, QString)),
-        this, SLOT(showTopicChooser(QMap<QString, QUrl>, QString)));
+    connect(m_indexWindow, SIGNAL(linksActivated(QMap<QString,QUrl>,QString)),
+        this, SLOT(showTopicChooser(QMap<QString,QUrl>,QString)));
     connect(m_indexWindow, SIGNAL(escapePressed()), this,
         SLOT(activateCurrentCentralWidgetTab()));
 
@@ -664,6 +656,8 @@ void MainWindow::setupFilterToolbar()
         SLOT(setupFilterCombo()));
     connect(m_filterCombo, SIGNAL(activated(QString)), this,
         SLOT(filterDocumentation(QString)));
+    connect(m_helpEngine, SIGNAL(currentFilterChanged(QString)), this,
+        SLOT(currentFilterChanged(QString)));
 
     setupFilterCombo();
 }
@@ -1039,6 +1033,13 @@ QString MainWindow::defaultHelpCollectionFileName()
     return collectionFileDirectory() + QDir::separator() +
         QString(QLatin1String("qthelpcollection_%1.qhc")).
         arg(QLatin1String(QT_VERSION_STR));
+}
+
+void MainWindow::currentFilterChanged(const QString &filter)
+{
+    const int index = m_filterCombo->findText(filter);
+    Q_ASSERT(index != -1);
+    m_filterCombo->setCurrentIndex(index);
 }
 
 QT_END_NAMESPACE

@@ -70,8 +70,8 @@ AddTorrentDialog::AddTorrentDialog(QWidget *parent)
             this, SLOT(selectTorrent()));
     connect(ui.browseDestination, SIGNAL(clicked()),
             this, SLOT(selectDestination()));
-    connect(ui.torrentFile, SIGNAL(textChanged(const QString &)),
-            this, SLOT(setTorrent(const QString &)));
+    connect(ui.torrentFile, SIGNAL(textChanged(QString)),
+            this, SLOT(setTorrent(QString)));
 
     ui.destinationFolder->setText(destinationDirectory = QDir::current().path());
     ui.torrentFile->setFocus();

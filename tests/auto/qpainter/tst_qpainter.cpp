@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-
+#include "../../shared/util.h"
 
 #include <qpainter.h>
 #include <qapplication.h>
@@ -66,6 +66,11 @@
 #include <qlabel.h>
 
 #include <qqueue.h>
+
+#include <qgraphicsview.h>
+#include <qgraphicsscene.h>
+#include <qgraphicsproxywidget.h>
+#include <qlayout.h>
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR "."
@@ -100,6 +105,8 @@ private slots:
     void drawPixmap_comp();
     void saveAndRestore_data();
     void saveAndRestore();
+
+    void drawBorderPixmap();
 
     void drawLine_data();
     void drawLine();
@@ -241,6 +248,8 @@ private slots:
     void painterBegin();
     void setPenColorOnImage();
     void setPenColorOnPixmap();
+
+    void QTBUG5939_attachPainterPrivate();
 
 private:
     void fillData();
@@ -971,6 +980,18 @@ void tst_QPainter::initFrom()
     QCOMPARE(p.background(), pal.background());
 
     delete widget;
+}
+
+void tst_QPainter::drawBorderPixmap()
+{
+    QPixmap src(79,79);
+    src.fill(Qt::transparent);
+
+    QImage pm(200,200,QImage::Format_RGB32);
+    QPainter p(&pm);
+    p.setTransform(QTransform(-1,0,0,-1,173.5,153.5));
+    qDrawBorderPixmap(&p, QRect(0,0,75,105), QMargins(39,39,39,39), src, QRect(0,0,79,79), QMargins(39,39,39,39),
+                       QTileRules(Qt::StretchTile,Qt::StretchTile), 0);
 }
 
 void tst_QPainter::drawLine_data()
@@ -2918,7 +2939,7 @@ void tst_QPainter::monoImages()
 
             QImage img(2, 2, format);
 
-            if (img.numColors() > 0) {
+            if (img.colorCount() > 0) {
                 img.setColor(0, QColor(colorPairs[j][0]).rgba());
                 img.setColor(1, QColor(colorPairs[j][1]).rgba());
             }
@@ -2940,7 +2961,7 @@ void tst_QPainter::monoImages()
             // should not change the image
             QCOMPARE(original, img);
 
-            if (img.numColors() == 0)
+            if (img.colorCount() == 0)
                 continue;
 
             for (int k = 0; k < 2; ++k) {
@@ -4388,6 +4409,55 @@ void tst_QPainter::setPenColorOnPixmap()
     QPixmap pix(10, 10);
     QPainter p(&pix);
     setPenColor(p);
+}
+
+class TestProxy : public QGraphicsProxyWidget
+{
+public:
+    TestProxy() : QGraphicsProxyWidget() {}
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QGraphicsProxyWidget::paint(painter, option, widget);
+        deviceTransform = painter->deviceTransform();
+    }
+    QTransform deviceTransform;
+};
+
+class TestWidget : public QWidget
+{
+Q_OBJECT
+public:
+    TestWidget() : QWidget(), painted(false) {}
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter p(this);
+        deviceTransform = p.deviceTransform();
+        worldTransform = p.worldTransform();
+        painted = true;
+    }
+    QTransform deviceTransform;
+    QTransform worldTransform;
+    bool painted;
+};
+
+void tst_QPainter::QTBUG5939_attachPainterPrivate()
+{
+    QWidget *w = new QWidget();
+    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsView *view = new QGraphicsView(scene, w);
+    view->move(50 ,50);
+    TestProxy *proxy = new TestProxy();
+    TestWidget *widget = new TestWidget();
+    proxy->setWidget(widget);
+    scene->addItem(proxy);
+    proxy->rotate(45);
+    w->resize(scene->sceneRect().size().toSize());
+
+    w->show();
+    QTRY_VERIFY(widget->painted);
+
+    QVERIFY(widget->worldTransform.isIdentity());
+    QCOMPARE(widget->deviceTransform, proxy->deviceTransform);
 }
 
 QTEST_MAIN(tst_QPainter)

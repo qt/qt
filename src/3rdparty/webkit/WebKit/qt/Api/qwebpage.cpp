@@ -153,6 +153,7 @@ public:
     virtual void scroll(int dx, int dy, const QRect&);
     virtual void update(const QRect& dirtyRect);
     virtual void setInputMethodEnabled(bool enable);
+    virtual bool inputMethodEnabled() const;
 #if QT_VERSION >= 0x040600
     virtual void setInputMethodHint(Qt::InputMethodHint hint, bool enable);
 #endif
@@ -185,6 +186,12 @@ void QWebPageWidgetClient::setInputMethodEnabled(bool enable)
 {
     view->setAttribute(Qt::WA_InputMethodEnabled, enable);
 }
+
+bool QWebPageWidgetClient::inputMethodEnabled() const
+{
+    return view->testAttribute(Qt::WA_InputMethodEnabled);
+}
+
 #if QT_VERSION >= 0x040600
 void QWebPageWidgetClient::setInputMethodHint(Qt::InputMethodHint hint, bool enable)
 {
@@ -857,13 +864,18 @@ void QWebPagePrivate::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 void QWebPagePrivate::handleSoftwareInputPanel(Qt::MouseButton button)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
-    if (q->view() && q->view()->testAttribute(Qt::WA_InputMethodEnabled)
+    Frame* frame = page->focusController()->focusedFrame();
+    if (!frame)
+        return;
+
+    if (client && client->inputMethodEnabled()
+        && frame->document()->focusedNode()
         && button == Qt::LeftButton && qApp->autoSipEnabled()) {
         QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
-            q->view()->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
+            client->ownerWidget()->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
         if (!clickCausedFocus || behavior == QStyle::RSIP_OnMouseClick) {
             QEvent event(QEvent::RequestSoftwareInputPanel);
-            QApplication::sendEvent(q->view(), &event);
+            QApplication::sendEvent(client->ownerWidget(), &event);
         }
     }
 
@@ -1055,11 +1067,9 @@ void QWebPagePrivate::keyReleaseEvent(QKeyEvent *ev)
 void QWebPagePrivate::focusInEvent(QFocusEvent*)
 {
     FocusController *focusController = page->focusController();
-    Frame *frame = focusController->focusedFrame();
     focusController->setActive(true);
-    if (frame)
-        focusController->setFocused(true);
-    else
+    focusController->setFocused(true);
+    if (!focusController->focusedFrame())
         focusController->setFocusedFrame(QWebFramePrivate::core(mainFrame));
 }
 
@@ -1471,8 +1481,6 @@ QWebInspector* QWebPagePrivate::getOrCreateInspector()
     if (!inspector) {
         QWebInspector* insp = new QWebInspector;
         insp->setPage(q);
-        insp->connect(q, SIGNAL(webInspectorTriggered(const QWebElement&)), SLOT(show()));
-        insp->show(); // The inspector is expected to be shown on inspection
         inspectorIsInternalOnly = true;
 
         Q_ASSERT(inspector); // Associated through QWebInspector::setPage(q)
@@ -1677,7 +1685,7 @@ InspectorController* QWebPagePrivate::inspectorController()
 */
 
 /*!
-    Constructs an empty QWebView with parent \a parent.
+    Constructs an empty QWebPage with parent \a parent.
 */
 QWebPage::QWebPage(QObject *parent)
     : QObject(parent)
@@ -2018,11 +2026,9 @@ void QWebPage::triggerAction(WebAction action, bool)
             editor->setBaseWritingDirection(RightToLeftWritingDirection);
             break;
         case InspectElement: {
-            QWebElement inspectedElement(QWebElement::enclosingElement(d->hitTestResult.d->innerNonSharedNode.get()));
-            emit webInspectorTriggered(inspectedElement);
-
             if (!d->hitTestResult.isNull()) {
                 d->getOrCreateInspector(); // Make sure the inspector is created
+                d->inspector->show(); // The inspector is expected to be shown on inspection
                 d->page->inspectorController()->inspect(d->hitTestResult.d->innerNonSharedNode.get());
             }
             break;
@@ -3401,9 +3407,9 @@ quint64 QWebPage::bytesReceived() const
 /*!
     \fn void QWebPage::unsupportedContent(QNetworkReply *reply)
 
-    This signals is emitted when webkit cannot handle a link the user navigated to.
+    This signal is emitted when WebKit cannot handle a link the user navigated to.
 
-    At signal emissions time the meta data of the QNetworkReply \a reply is available.
+    At signal emission time the meta-data of the QNetworkReply \a reply is available.
 
     \note This signal is only emitted if the forwardUnsupportedContent property is set to true.
 
@@ -3437,24 +3443,6 @@ quint64 QWebPage::bytesReceived() const
     By default no links are delegated and are handled by QWebPage instead.
 
     \sa linkHovered()
-*/
-
-/*!
-    \fn void QWebPage::webInspectorTriggered(const QWebElement& inspectedElement);
-    \since 4.6
-
-    This signal is emitted when the user triggered an inspection through the
-    context menu. If a QWebInspector is associated to this page, it should be
-    visible to the user after this signal has been emitted.
-
-    If still no QWebInspector is associated to this QWebPage after the emission
-    of this signal, a privately owned inspector will be shown to the user.
-
-    \note \a inspectedElement contains the QWebElement under the context menu.
-    It is not garanteed to be the same as the focused element in the web
-    inspector.
-
-    \sa QWebInspector
 */
 
 /*!

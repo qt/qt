@@ -51,6 +51,7 @@
 #include <qmovie.h>
 #include <qpicture.h>
 #include <qmessagebox.h>
+#include <private/qlabel_p.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -115,6 +116,9 @@ private slots:
 
     void unicodeText_data();
     void unicodeText();
+
+    void mnemonic_data();
+    void mnemonic();
 
 private:
     QLabel *testWidget;
@@ -224,6 +228,7 @@ void tst_QLabel::setBuddy()
     QVERIFY( !test_edit->hasFocus() );
     QTest::keyClick( test_box, 't', Qt::AltModifier );
     QVERIFY( test_edit->hasFocus() );
+    delete test_box;
 }
 
 void tst_QLabel::text()
@@ -245,6 +250,7 @@ void tst_QLabel::setText_data()
     QTest::newRow( QString(prefix + "data1").toLatin1() ) << QString("This is the first line\nThis is the second line") << QString("Courier");
     QTest::newRow( QString(prefix + "data2").toLatin1() ) << QString("This is the first line\nThis is the second line\nThis is the third line") << QString("Helvetica");
     QTest::newRow( QString(prefix + "data3").toLatin1() ) << QString("This is <b>bold</b> richtext") << QString("Courier");
+    QTest::newRow( QString(prefix + "data4").toLatin1() ) << QString("I Have a &shortcut") << QString("Helvetica");
 }
 
 void tst_QLabel::setText()
@@ -328,14 +334,14 @@ void tst_QLabel::eventPropagation_data()
     QTest::addColumn<bool>("propagation");
 
     QTest::newRow("plain text1") << QString("plain text") << int(Qt::LinksAccessibleByMouse) << int(Qt::NoFocus) << true;
-    QTest::newRow("plain text2") << QString("plain text") << (int)Qt::TextSelectableByKeyboard << (int)Qt::ClickFocus << false;
+    QTest::newRow("plain text2") << QString("plain text") << (int)Qt::TextSelectableByKeyboard << (int)Qt::ClickFocus << true;
     QTest::newRow("plain text3") << QString("plain text") << (int)Qt::TextSelectableByMouse << (int)Qt::ClickFocus << false;
     QTest::newRow("plain text4") << QString("plain text") << (int)Qt::NoTextInteraction << (int)Qt::NoFocus << true;
-    QTest::newRow("rich text1") << QString("<b>rich text</b>") << (int)Qt::LinksAccessibleByMouse << (int)Qt::NoFocus << false;
-    QTest::newRow("rich text2") << QString("<b>rich text</b>") << (int)Qt::TextSelectableByKeyboard << (int)Qt::ClickFocus << false;
+    QTest::newRow("rich text1") << QString("<b>rich text</b>") << (int)Qt::LinksAccessibleByMouse << (int)Qt::NoFocus << true;
+    QTest::newRow("rich text2") << QString("<b>rich text</b>") << (int)Qt::TextSelectableByKeyboard << (int)Qt::ClickFocus << true;
     QTest::newRow("rich text3") << QString("<b>rich text</b>") << (int)Qt::TextSelectableByMouse << (int)Qt::ClickFocus << false;
     QTest::newRow("rich text4") << QString("<b>rich text</b>") << (int)Qt::NoTextInteraction << (int)Qt::NoFocus << true;
-    QTest::newRow("rich text4") << QString("<b>rich text</b>") << (int)Qt::LinksAccessibleByKeyboard << (int)Qt::StrongFocus << false;
+    QTest::newRow("rich text4") << QString("<b>rich text</b>") << (int)Qt::LinksAccessibleByKeyboard << (int)Qt::StrongFocus << true;
 
     if (!test_box)
         test_box = new Widget;
@@ -508,6 +514,51 @@ void tst_QLabel::unicodeText()
     QVERIFY(frame.isVisible());  // was successfully sized and shown
     testWidget->show();
 }
+
+void tst_QLabel::mnemonic_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QString>("expectedDocText");
+    QTest::addColumn<QString>("expectedShortcutCursor");
+
+    QTest::newRow("1") << QString("Normal") << QString("Normal") << QString();
+    QTest::newRow("2") << QString("&Simple") << QString("Simple") << QString("S");
+    QTest::newRow("3") << QString("Also &simple") << QString("Also simple") << QString("s");
+    QTest::newRow("4") << QString("&&With &Double &&amp;") << QString("&With Double &amp;") << QString("D");
+    QTest::newRow("5") << QString("Hep&&Hop") << QString("Hep&Hop") << QString("");
+    QTest::newRow("6") << QString("Hep&&&Hop") << QString("Hep&Hop") << QString("H");
+}
+
+
+void tst_QLabel::mnemonic()
+{
+    // this test that the mnemonics appears correctly when the label has a text control.
+
+    QFETCH(QString, text);
+    QFETCH(QString, expectedDocText);
+    QFETCH(QString, expectedShortcutCursor);
+
+    QWidget w;
+    QHBoxLayout *hbox = new QHBoxLayout;
+    QLabel *lab = new QLabel(text);
+    //lab->setText("plop &plop");
+    QLineEdit *lineedit = new QLineEdit;
+    lab->setBuddy(lineedit);
+    lab->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    hbox->addWidget(lab);
+    hbox->addWidget(lineedit);
+    hbox->addWidget(new QLineEdit);
+    w.setLayout(hbox);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+
+    QLabelPrivate *d = static_cast<QLabelPrivate *>(QObjectPrivate::get(lab));
+    QVERIFY(d->control);
+    QCOMPARE(d->control->document()->toPlainText(), expectedDocText);
+    QCOMPARE(d->shortcutCursor.selectedText(), expectedShortcutCursor);
+}
+
 
 QTEST_MAIN(tst_QLabel)
 #include "tst_qlabel.moc"

@@ -121,6 +121,8 @@ private slots:
     void taskQTBUG_2233_scrollHiddenItems();
     void taskQTBUG_633_changeModelData();
     void taskQTBUG_435_deselectOnViewportClick();
+    void taskQTBUG_2678_spacingAndWrappedText();
+    void taskQTBUG_5877_skippingItemInPageDownUp();
 };
 
 // Testing get/set functions
@@ -508,9 +510,7 @@ void tst_QListView::moveCursor2()
     QModelIndex idx = vu.moveCursor(QMoveCursorListView::MoveHome, Qt::NoModifier);
     QCOMPARE(idx, model.index(0,0));
     idx = vu.moveCursor(QMoveCursorListView::MoveDown, Qt::NoModifier);
-    QModelIndex p = model.index(8,0);
     QCOMPARE(idx, model.index(8,0));
-
 }
 
 void tst_QListView::moveCursor3()
@@ -586,7 +586,15 @@ void tst_QListView::indexAt()
     index = view.indexAt(QPoint(20,2 * sz.height()));
     QVERIFY(!index.isValid());
 
-
+    // Check when peeking out of the viewport bounds
+    index = view.indexAt(QPoint(view.viewport()->rect().width(), 0));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(-1, 0));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(20, view.viewport()->rect().height()));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(20, -1));
+    QVERIFY(!index.isValid());
 
     model.rCount = 30;
     QListViewShowEventListener view2;
@@ -604,7 +612,6 @@ void tst_QListView::indexAt()
 
     QVERIFY(view2.m_index.isValid());
     QVERIFY(view2.m_index.row() != 0);
-
 }
 
 void tst_QListView::clicked()
@@ -702,7 +709,6 @@ void tst_QListView::modelColumn()
     view.setModel(&model);
 
 
-
     //
     // Set and get with a valid model
     //
@@ -741,7 +747,6 @@ void tst_QListView::modelColumn()
         QCOMPARE(startrow, 2);
     }
 }
-
 
 void tst_QListView::hideFirstRow()
 {
@@ -813,7 +818,6 @@ void tst_QListView::batchedMode()
         ba.setBit(idx.row(), true);
     }
     QCOMPARE(ba.size(), 3);
-
 }
 
 void tst_QListView::setCurrentIndex()
@@ -1145,7 +1149,6 @@ void tst_QListView::selection()
     for (int i = 0; i < selected.count(); ++i) {
         QVERIFY(expectedItems.contains(selected.at(i).row()));
     }
-
 }
 
 void tst_QListView::scrollTo()
@@ -1250,7 +1253,6 @@ void tst_QListView::scrollTo()
 
     QTest::keyClick(lv.viewport(), Qt::Key_Up, Qt::NoModifier);
     QCOMPARE(lv.visualRect(index).y(), 0);
-
 }
 
 
@@ -1771,7 +1773,6 @@ void tst_QListView::clickOnViewportClearsSelection()
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, point);
     //now the selection should be cleared
     QVERIFY(!view.selectionModel()->hasSelection());
-
 }
 
 void tst_QListView::task262152_setModelColumnNavigate()
@@ -1786,15 +1787,16 @@ void tst_QListView::task262152_setModelColumnNavigate()
     view.setModelColumn(1);
 
     view.show();
+    QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(100);
+    QTest::qWait(30);
+    QTRY_COMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(100);
-    QCOMPARE(view.currentIndex(), model.index(1,1));
+    QTest::qWait(30);
+    QTRY_COMPARE(view.currentIndex(), model.index(1,1));
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(100);
-    QCOMPARE(view.currentIndex(), model.index(2,1));
-
+    QTest::qWait(30);
+    QTRY_COMPARE(view.currentIndex(), model.index(2,1));
 }
 
 void tst_QListView::taskQTBUG_2233_scrollHiddenItems_data()
@@ -1861,7 +1863,7 @@ void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     view.selectAll();
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
-    
+
 
     QPoint p = view.visualRect(model.index(model.rowCount() - 1)).center() + QPoint(0, 20);
     //first the left button
@@ -1874,6 +1876,53 @@ void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
     //and now the right button
     QTest::mouseClick(view.viewport(), Qt::RightButton, 0, p);
     QVERIFY(!view.selectionModel()->hasSelection());
+}
+
+void tst_QListView::taskQTBUG_2678_spacingAndWrappedText()
+{
+    static const QString lorem("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+    QStringListModel model(QStringList() << lorem << lorem << "foo" << lorem << "bar" << lorem << lorem);
+    QListView w;
+    w.setModel(&model);
+    w.setViewMode(QListView::ListMode);
+    w.setWordWrap(true);
+    w.setSpacing(10);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QCOMPARE(w.horizontalScrollBar()->minimum(), w.horizontalScrollBar()->maximum());
+}
+
+void tst_QListView::taskQTBUG_5877_skippingItemInPageDownUp()
+{
+    QList<int> currentItemIndexes;
+    QtTestModel model(0);
+    model.colCount = 1;
+    model.rCount = 100;
+
+    currentItemIndexes << 0 << 6 << 16 << 25 << 34 << 42 << 57 << 68 << 77
+                       << 83 << 91 << 94;
+    QMoveCursorListView vu;
+    vu.setModel(&model);
+    vu.show();
+
+    QTest::qWaitForWindowShown(&vu);
+
+    int itemHeight = vu.visualRect(model.index(0, 0)).height();
+    int visibleRowCount = vu.viewport()->height() / itemHeight;
+    int scrolledRowCount = visibleRowCount - 1;
+
+    for (int i = 0; i < currentItemIndexes.size(); ++i) {
+        vu.selectionModel()->setCurrentIndex(model.index(currentItemIndexes[i], 0),
+                                             QItemSelectionModel::SelectCurrent);
+
+        QModelIndex idx = vu.moveCursor(QMoveCursorListView::MovePageDown, Qt::NoModifier);
+        int newCurrent = qMin(currentItemIndexes[i] + scrolledRowCount, 99);
+        QCOMPARE(idx, model.index(newCurrent, 0));
+
+        idx = vu.moveCursor(QMoveCursorListView::MovePageUp, Qt::NoModifier);
+        newCurrent = qMax(currentItemIndexes[i] - scrolledRowCount, 0);
+        QCOMPARE(idx, model.index(newCurrent, 0));
+    }
 }
 
 QTEST_MAIN(tst_QListView)

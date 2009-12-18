@@ -101,7 +101,10 @@ public:
     QMatrix &rotate(qreal a);
 
     bool isInvertible() const { return !qFuzzyIsNull(_m11*_m22 - _m12*_m21); }
-    qreal det() const { return _m11*_m22 - _m12*_m21; }
+    qreal determinant() const { return _m11*_m22 - _m12*_m21; }
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED qreal det() const { return _m11*_m22 - _m12*_m21; }
+#endif
 
     QMatrix inverted(bool *invertible = 0) const;
 

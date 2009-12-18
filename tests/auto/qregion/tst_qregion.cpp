@@ -88,8 +88,8 @@ private slots:
     void operator_xor_data();
     void operator_xor();
 
-    void numRects_data();
-    void numRects();
+    void rectCount_data();
+    void rectCount();
 
     void isEmpty_data();
     void isEmpty();
@@ -554,7 +554,7 @@ void tst_QRegion::operator_plus()
         qDebug() << "expected" << expected;
     }
     QCOMPARE(r1 + r2, expected);
-    if (r2.numRects() == 1) {
+    if (r2.rectCount() == 1) {
         if (r1 + r2.boundingRect() != expected) {
             qDebug() << "r1 + QRect(r2)" << (r1 + r2.boundingRect());
             qDebug() << "expected" << expected;
@@ -567,7 +567,7 @@ void tst_QRegion::operator_plus()
         qDebug() << "expected" << expected;
     }
     QCOMPARE(r2 + r1, expected);
-    if (r1.numRects() == 1) {
+    if (r1.rectCount() == 1) {
         if (r1 + r2.boundingRect() != expected) {
             qDebug() << "r2 + QRect(r1)" << (r2 + r1.boundingRect());
             qDebug() << "expected" << expected;
@@ -582,7 +582,7 @@ void tst_QRegion::operator_plus()
         qDebug() << "expected" << expected;
     }
     QCOMPARE(result1, expected);
-    if (r2.numRects() == 1) {
+    if (r2.rectCount() == 1) {
         result1 = r1;
         result1 += r2.boundingRect();
         if (result1 != expected) {
@@ -599,7 +599,7 @@ void tst_QRegion::operator_plus()
         qDebug() << "expected" << expected;
     }
     QCOMPARE(result2, expected);
-    if (r1.numRects() == 1) {
+    if (r1.rectCount() == 1) {
         result2 = r2;
         result2 += r1.boundingRect();
         if (result2 != expected) {
@@ -802,7 +802,7 @@ void tst_QRegion::operator_xor()
     QCOMPARE(dest, expected);
 }
 
-void tst_QRegion::numRects_data()
+void tst_QRegion::rectCount_data()
 {
     QTest::addColumn<QRegion>("region");
     QTest::addColumn<int>("expected");
@@ -818,12 +818,12 @@ void tst_QRegion::numRects_data()
     QTest::newRow("2 rects") << dest << rects.size();
 }
 
-void tst_QRegion::numRects()
+void tst_QRegion::rectCount()
 {
     QFETCH(QRegion, region);
     QFETCH(int, expected);
 
-    QCOMPARE(region.numRects(), expected);
+    QCOMPARE(region.rectCount(), expected);
 }
 
 void tst_QRegion::isEmpty_data()
@@ -850,7 +850,7 @@ void tst_QRegion::isEmpty()
 
     QVERIFY(region.isEmpty());
     QCOMPARE(region, QRegion());
-    QCOMPARE(region.numRects(), 0);
+    QCOMPARE(region.rectCount(), 0);
     QCOMPARE(region.boundingRect(), QRect());
     QVERIFY(region.rects().isEmpty());
 }

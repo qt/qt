@@ -87,8 +87,8 @@ ExLineEdit::ExLineEdit(QWidget *parent)
     m_clearButton = new ClearButton(this);
     connect(m_clearButton, SIGNAL(clicked()),
             m_lineEdit, SLOT(clear()));
-    connect(m_lineEdit, SIGNAL(textChanged(const QString&)),
-            m_clearButton, SLOT(textChanged(const QString&)));
+    connect(m_lineEdit, SIGNAL(textChanged(QString)),
+            m_clearButton, SLOT(textChanged(QString)));
 }
 
 void ExLineEdit::setLeftWidget(QWidget *widget)
@@ -270,8 +270,8 @@ void UrlLineEdit::setWebView(WebView *webView)
     Q_ASSERT(!m_webView);
     m_webView = webView;
     m_iconLabel->m_webView = webView;
-    connect(webView, SIGNAL(urlChanged(const QUrl &)),
-        this, SLOT(webViewUrlChanged(const QUrl &)));
+    connect(webView, SIGNAL(urlChanged(QUrl)),
+        this, SLOT(webViewUrlChanged(QUrl)));
     connect(webView, SIGNAL(loadFinished(bool)),
         this, SLOT(webViewIconChanged()));
     connect(webView, SIGNAL(iconChanged()),

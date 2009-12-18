@@ -60,6 +60,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_STYLE_WINDOWSMOBILE
 
+class QStyleOptionTab;
+class QStyleOptionSlider;
+class QStyleOptionViewItemV4;
+
 class QWindowsMobileStylePrivate : public QWindowsStylePrivate
 {
     Q_DECLARE_PUBLIC(QWindowsMobileStyle)

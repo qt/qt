@@ -120,7 +120,7 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
 
     cookie.setName("a");
     cookie.setPath("/");
-    cookie.setDomain("www.foo.tld");
+    cookie.setDomain(".foo.tld");
     result += cookie;
     QTest::newRow("just-add") << preset << cookie << "http://www.foo.tld" << result << true;
 
@@ -148,19 +148,36 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
     cookie.setPath("/");
     QTest::newRow("diff-path-order") << preset << cookie << "http://www.foo.tld" << result << true;
 
+    preset.clear();
+    result.clear();
+    QNetworkCookie finalCookie = cookie;
+    cookie.setDomain("foo.tld");
+    finalCookie.setDomain(".foo.tld");
+    result += finalCookie;
+    QTest::newRow("should-add-dot-prefix") << preset << cookie << "http://www.foo.tld" << result << true;
+
+    result.clear();
+    cookie.setDomain("");
+    finalCookie.setDomain("www.foo.tld");
+    result += finalCookie;
+    QTest::newRow("should-set-default-domain") << preset << cookie << "http://www.foo.tld" << result << true;
+
     // security test:
     result.clear();
     preset.clear();
     cookie.setDomain("something.completely.different");
     QTest::newRow("security-domain-1") << preset << cookie << "http://www.foo.tld" << result << false;
 
-    cookie.setDomain("www.foo.tld");
+    // we want the cookie to be accepted although the path does not match, see QTBUG-5815
+    cookie.setDomain(".foo.tld");
     cookie.setPath("/something");
-    QTest::newRow("security-path-1") << preset << cookie << "http://www.foo.tld" << result << false;
+    result += cookie;
+    QTest::newRow("security-path-1") << preset << cookie << "http://www.foo.tld" << result << true;
 
     // setting the defaults:
-    QNetworkCookie finalCookie = cookie;
+    finalCookie = cookie;
     finalCookie.setPath("/something/");
+    finalCookie.setDomain("www.foo.tld");
     cookie.setPath("");
     cookie.setDomain("");
     result.clear();
@@ -271,6 +288,22 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QTest::newRow("exp-match-4") << allCookies << "http://qt.nokia.com/web" << result;
     QTest::newRow("exp-match-4") << allCookies << "http://qt.nokia.com/web/" << result;
     QTest::newRow("exp-match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
+
+    // path matching
+    allCookies.clear();
+    QNetworkCookie anotherCookie;
+    anotherCookie.setName("a");
+    anotherCookie.setPath("/web");
+    anotherCookie.setDomain(".nokia.com");
+    allCookies += anotherCookie;
+    result.clear();
+    QTest::newRow("path-unmatch-1") << allCookies << "http://nokia.com/" << result;
+    QTest::newRow("path-unmatch-2") << allCookies << "http://nokia.com/something/else" << result;
+    result += anotherCookie;
+    QTest::newRow("path-match-1") << allCookies << "http://nokia.com/web" << result;
+    QTest::newRow("path-match-2") << allCookies << "http://nokia.com/web/" << result;
+    QTest::newRow("path-match-3") << allCookies << "http://nokia.com/web/content" << result;
+
 }
 
 void tst_QNetworkCookieJar::cookiesForUrl()

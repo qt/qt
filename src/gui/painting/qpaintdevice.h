@@ -96,7 +96,10 @@ public:
     int logicalDpiY() const { return metric(PdmDpiY); }
     int physicalDpiX() const { return metric(PdmPhysicalDpiX); }
     int physicalDpiY() const { return metric(PdmPhysicalDpiY); }
-    int numColors() const { return metric(PdmNumColors); }
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED int numColors() const { return metric(PdmNumColors); }
+#endif
+    int colorCount() const { return metric(PdmNumColors); }
     int depth() const { return metric(PdmDepth); }
 
 protected:

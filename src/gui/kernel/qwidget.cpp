@@ -366,7 +366,8 @@ bool QWidget::hasEditFocus() const
     normally; otherwise, Qt::Key_Up and Qt::Key_Down are used to
     change focus.
 
-    This feature is only available in Qt for Embedded Linux.
+    This feature is only available in Qt for Embedded Linux and Qt
+    for Symbian.
 
     \sa hasEditFocus(), QApplication::keypadNavigationEnabled()
 */
@@ -900,7 +901,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     passing a \c QAction with a softkey role set on it. When the widget
     containing the softkey actions has focus, its softkeys should appear in
     the user interface. Softkeys are discovered by traversing the widget
-    heirarchy so it is possible to define a single set of softkeys that are
+    hierarchy so it is possible to define a single set of softkeys that are
     present at all times by calling addAction() for a given top level widget.
 
     On some platforms, this concept overlaps with \c QMenuBar such that if no
@@ -3084,9 +3085,10 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #endif
 #ifndef QT_NO_IM
     if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
-        QInputContext *qic = inputContext();
+        QWidget *focusWidget = effectiveFocusWidget();
+        QInputContext *qic = focusWidget->d_func()->inputContext();
         if (enable) {
-            qic->setFocusWidget(q);
+            qic->setFocusWidget(focusWidget);
         } else {
             qic->reset();
             qic->setFocusWidget(0);
@@ -4604,7 +4606,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
     if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolve();
-    } else 
+    } else
 #endif //QT_NO_GRAPHICSVIEW
     if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedFontResolveMask = 0;
@@ -4676,8 +4678,10 @@ void QWidgetPrivate::resolveLayoutDirection()
     By default, this property is set to Qt::LeftToRight.
 
     When the layout direction is set on a widget, it will propagate to
-    the widget's children. Children added after the call to \c
-    setLayoutDirection() will not inherit the parent's layout
+    the widget's children, but not to a child that is a window and not
+    to a child for which setLayoutDirection() has been explicitly
+    called. Also, child widgets added \e after setLayoutDirection()
+    has been called for the parent do not inherit the parent's layout
     direction.
 
     \sa QApplication::layoutDirection
@@ -5042,6 +5046,8 @@ QGraphicsEffect *QWidget::graphicsEffect() const
     If \a effect is the installed on a different widget, setGraphicsEffect() will remove
     the effect from the widget and install it on this widget.
 
+    QWidget takes ownership of \a effect.
+
     \note This function will apply the effect on itself and all its children.
 
     \since 4.6
@@ -5055,28 +5061,22 @@ void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
     if (d->graphicsEffect == effect)
         return;
 
-    if (d->graphicsEffect && effect) {
+    if (d->graphicsEffect) {
+        d->invalidateBuffer(rect());
         delete d->graphicsEffect;
         d->graphicsEffect = 0;
     }
 
-    if (!effect) {
-        // Unset current effect.
-        QGraphicsEffectPrivate *oldEffectPrivate = d->graphicsEffect->d_func();
-        d->graphicsEffect = 0;
-        if (oldEffectPrivate) {
-            oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
-        }
-    } else {
+    if (effect) {
         // Set new effect.
         QGraphicsEffectSourcePrivate *sourced = new QWidgetEffectSourcePrivate(this);
         QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
         d->graphicsEffect = effect;
         effect->d_func()->setGraphicsEffectSource(source);
+        update();
     }
 
     d->updateIsOpaque();
-    update();
 }
 #endif //QT_NO_GRAPHICSEFFECT
 
@@ -5238,7 +5238,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 QPainter p(pdev);
                 p.translate(offset);
                 context.painter = &p;
-                graphicsEffect->draw(&p, source);
+                graphicsEffect->draw(&p);
                 paintEngine->d_func()->systemClip = QRegion();
             } else {
                 context.painter = sharedPainter;
@@ -5248,7 +5248,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 }
                 sharedPainter->save();
                 sharedPainter->translate(offset);
-                graphicsEffect->draw(sharedPainter, source);
+                graphicsEffect->draw(sharedPainter);
                 sharedPainter->restore();
             }
             sourced->context = 0;
@@ -5470,7 +5470,7 @@ void QWidgetEffectSourcePrivate::draw(QPainter *painter)
 }
 
 QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
-                                           QGraphicsEffectSource::PixmapPadMode mode) const
+                                           QGraphicsEffect::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     if (!context && deviceCoordinates) {
@@ -5491,10 +5491,10 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 
     QRect effectRect;
 
-    if (mode == QGraphicsEffectSource::ExpandToEffectRectPadMode) {
+    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
         effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
 
-    } else if (mode == QGraphicsEffectSource::ExpandToTransparentBorderPadMode) {
+    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
         effectRect = sourceRect.adjusted(-1, -1, 1, 1).toAlignedRect();
 
     } else {
@@ -6042,6 +6042,11 @@ bool QWidget::hasFocus() const
     (Nothing happens if the focus in and focus out widgets are the
     same.)
 
+    \note On embedded platforms, setFocus() will not cause an input panel
+    to be opened by the input method. If you want this to happen, you
+    have to send a QEvent::RequestSoftwareInputPanel event to the
+    widget yourself.
+
     setFocus() gives focus to a widget regardless of its focus policy,
     but does not clear any keyboard grab (see grabKeyboard()).
 
@@ -6054,7 +6059,7 @@ bool QWidget::hasFocus() const
 
     \sa hasFocus(), clearFocus(), focusInEvent(), focusOutEvent(),
     setFocusPolicy(), focusWidget(), QApplication::focusWidget(), grabKeyboard(),
-    grabMouse(), {Keyboard Focus}
+    grabMouse(), {Keyboard Focus}, QEvent::RequestSoftwareInputPanel
 */
 
 void QWidget::setFocus(Qt::FocusReason reason)
@@ -8245,7 +8250,8 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                QApplication::sendEvent(o, event);
+                if (o)
+                    QApplication::sendEvent(o, event);
             }
         }
         update();
@@ -8274,7 +8280,7 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                if (o != QApplication::activeModalWidget()) {
+                if (o && o != QApplication::activeModalWidget()) {
                     if (qobject_cast<QWidget *>(o) && static_cast<QWidget *>(o)->isWindow()) {
                         // do not forward the event to child windows,
                         // QApplication does this for us
@@ -8370,9 +8376,10 @@ bool QWidget::event(QEvent *event)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
     {
+#ifndef Q_WS_MAC
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
         const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().first();
-        if (touchPoint.isPrimary())
+        if (touchPoint.isPrimary() || touchEvent->deviceType() == QTouchEvent::TouchPad)
             break;
 
         // fake a mouse event!
@@ -8401,6 +8408,7 @@ bool QWidget::event(QEvent *event)
                                Qt::LeftButton,
                                touchEvent->modifiers());
         (void) QApplication::sendEvent(this, &mouseEvent);
+#endif // Q_WS_MAC
         break;
     }
     case QEvent::Gesture:
@@ -9893,13 +9901,13 @@ void QWidget::scroll(int dx, int dy)
     Q_D(QWidget);
 #ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
-	// Graphics View maintains its own dirty region as a list of rects;
-	// until we can connect item updates directly to the view, we must
-	// separately add a translated dirty region.
-	if (!d->dirty.isEmpty()) {
-	    foreach (const QRect &rect, (d->dirty.translated(dx, dy)).rects())
-		proxy->update(rect);
-	}
+        // Graphics View maintains its own dirty region as a list of rects;
+        // until we can connect item updates directly to the view, we must
+        // separately add a translated dirty region.
+        if (!d->dirty.isEmpty()) {
+            foreach (const QRect &rect, (d->dirty.translated(dx, dy)).rects())
+                proxy->update(rect);
+        }
         proxy->scroll(dx, dy, proxy->subWidgetRect(this));
         return;
     }
@@ -9928,13 +9936,13 @@ void QWidget::scroll(int dx, int dy, const QRect &r)
     Q_D(QWidget);
 #ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
-	// Graphics View maintains its own dirty region as a list of rects;
-	// until we can connect item updates directly to the view, we must
-	// separately add a translated dirty region.
-	if (!d->dirty.isEmpty()) {
-	    foreach (const QRect &rect, (d->dirty.translated(dx, dy) & r).rects())
-		proxy->update(rect);
-	}
+        // Graphics View maintains its own dirty region as a list of rects;
+        // until we can connect item updates directly to the view, we must
+        // separately add a translated dirty region.
+        if (!d->dirty.isEmpty()) {
+            foreach (const QRect &rect, (d->dirty.translated(dx, dy) & r).rects())
+                proxy->update(rect);
+        }
         proxy->scroll(dx, dy, r.translated(proxy->subWidgetRect(this).topLeft().toPoint()));
         return;
     }
@@ -10348,9 +10356,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break; }
     case Qt::WA_NativeWindow: {
 #ifndef QT_NO_IM
+        QWidget *focusWidget = d->effectiveFocusWidget();
         QInputContext *ic = 0;
         if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
-            ic = d->inputContext();
+            ic = focusWidget->d_func()->inputContext();
             ic->reset();
             ic->setFocusWidget(0);
         }
@@ -10359,7 +10368,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
         if (ic && isEnabled())
-            ic->setFocusWidget(this);
+            ic->setFocusWidget(focusWidget);
 #endif //QT_NO_IM
         break;
     }
@@ -10391,13 +10400,14 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
-        QInputContext *ic = d->ic;
+        QWidget *focusWidget = d->effectiveFocusWidget();
+        QInputContext *ic = focusWidget->d_func()->ic;
         if (!ic && (!on || hasFocus()))
-            ic = d->inputContext();
+            ic = focusWidget->d_func()->inputContext();
         if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
-                ic->setFocusWidget(this);
-            } else if (!on && ic->focusWidget() == this) {
+            if (on && hasFocus() && ic->focusWidget() != focusWidget && isEnabled()) {
+                ic->setFocusWidget(focusWidget);
+            } else if (!on && ic->focusWidget() == focusWidget) {
                 ic->reset();
                 ic->setFocusWidget(0);
             }
@@ -11462,6 +11472,17 @@ void QWidget::languageChange() { }  // compat
      \sa QWidget::setMaximumSize()
 */
 
+/*!
+    \fn QWidget::setupUi(QWidget *widget)
+
+    Sets up the user interface for the specified \a widget.
+
+    \note This function is available with widgets that derive from user
+    interface descriptions created using \l{uic}.
+
+    \sa {Using a Designer UI File in Your Application}
+*/
+
 QRect QWidgetPrivate::frameStrut() const
 {
     Q_Q(const QWidget);
@@ -11781,10 +11802,6 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
 }
 
 
-QT_END_NAMESPACE
-
-#include "moc_qwidget.cpp"
-
 /*!
     \typedef WId
     \relates QWidget
@@ -11859,8 +11876,7 @@ QT_END_NAMESPACE
     isVisible() returns false for a widget, that widget cannot call
     grabMouse().
 
-    \sa releaseMouse() grabKeyboard() releaseKeyboard() grabKeyboard()
-    focusWidget()
+    \sa releaseMouse() grabKeyboard() releaseKeyboard()
 */
 
 /*!
@@ -12101,3 +12117,8 @@ void QWidgetPrivate::_q_delayedDestroy(WId winId)
     delete winId;
 }
 #endif
+
+QT_END_NAMESPACE
+
+#include "moc_qwidget.cpp"
+

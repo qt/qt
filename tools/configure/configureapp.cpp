@@ -247,6 +247,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "PHONON" ]          = "auto";
     dictionary[ "PHONON_BACKEND" ]  = "yes";
     dictionary[ "MULTIMEDIA" ]      = "yes";
+    dictionary[ "AUDIO_BACKEND" ]   = "yes";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
     dictionary[ "DECLARATIVE" ]     = "auto";
@@ -351,6 +352,7 @@ Configure::Configure( int& argc, char** argv )
 
     dictionary[ "INCREDIBUILD_XGE" ] = "auto";
     dictionary[ "LTCG" ]            = "no";
+    dictionary[ "NATIVE_GESTURES" ] = "yes";
 }
 
 Configure::~Configure()
@@ -796,6 +798,10 @@ void Configure::parseCmdLine()
             dictionary[ "INCREDIBUILD_XGE" ] = "no";
         else if( configCmdLine.at(i) == "-incredibuild-xge" )
             dictionary[ "INCREDIBUILD_XGE" ] = "yes";
+        else if( configCmdLine.at(i) == "-native-gestures" )
+            dictionary[ "NATIVE_GESTURES" ] = "yes";
+        else if( configCmdLine.at(i) == "-no-native-gestures" )
+            dictionary[ "NATIVE_GESTURES" ] = "no";
 #if !defined(EVAL)
         // Others ---------------------------------------------------
         else if (configCmdLine.at(i) == "-fpu" )
@@ -892,6 +898,10 @@ void Configure::parseCmdLine()
             dictionary[ "MULTIMEDIA" ] = "no";
         } else if( configCmdLine.at(i) == "-multimedia" ) {
             dictionary[ "MULTIMEDIA" ] = "yes";
+        } else if( configCmdLine.at(i) == "-audio-backend" ) {
+            dictionary[ "AUDIO_BACKEND" ] = "yes";
+        } else if( configCmdLine.at(i) == "-no-audio-backend" ) {
+            dictionary[ "AUDIO_BACKEND" ] = "no";
         } else if( configCmdLine.at(i) == "-no-phonon" ) {
             dictionary[ "PHONON" ] = "no";
         } else if( configCmdLine.at(i) == "-phonon" ) {
@@ -1562,9 +1572,9 @@ bool Configure::displayHelp()
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
                     "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
-                    "[-no-multimedia] [-multimedia] [-no-webkit] [-webkit]\n"
+                    "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
-                    "[-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
+                    "[-no-webkit] [-webkit] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1744,6 +1754,8 @@ bool Configure::displayHelp()
         desc("PHONON_BACKEND","yes","-phonon-backend",  "Compile in the platform-specific Phonon backend-plugin");
         desc("MULTIMEDIA", "no", "-no-multimedia",      "Do not compile the multimedia module");
         desc("MULTIMEDIA", "yes","-multimedia",         "Compile in multimedia module");
+        desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into QtMultimedia");
+        desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia");
         desc("WEBKIT", "no",    "-no-webkit",           "Do not compile in the WebKit module");
         desc("WEBKIT", "yes",   "-webkit",              "Compile in the WebKit module (WebKit is built if a decent C++ compiler is used.)");
         desc("SCRIPT", "no",    "-no-script",           "Do not build the QtScript module.");
@@ -1774,6 +1786,8 @@ bool Configure::displayHelp()
         desc("STYLE_WINDOWSCE", "yes", "",              "  windowsce", ' ');
         desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile", ' ');
         desc("STYLE_S60" , "yes", "",                   "  s60\n", ' ');
+        desc("NATIVE_GESTURES", "no", "-no-native-gestures", "Do not use native gestures on Windows 7.");
+        desc("NATIVE_GESTURES", "yes", "-native-gestures", "Use native gestures on Windows 7.");
 
 /*      We do not support -qconfig on Windows yet
 
@@ -2521,6 +2535,9 @@ void Configure::generateOutputVars()
     if (dictionary["DECLARATIVE"] == "yes")
         qtConfig += "declarative";
 
+    if( dictionary[ "NATIVE_GESTURES" ] == "yes" )
+        qtConfig += "native-gestures";
+
     // We currently have no switch for QtSvg, so add it unconditionally.
     qtConfig += "svg";
 
@@ -2585,7 +2602,7 @@ void Configure::generateOutputVars()
     if (!opensslLibs.isEmpty())
         qmakeVars += opensslLibs;
     else if (dictionary[ "OPENSSL" ] == "linked") {
-    	if(dictionary[ "XQMAKESPEC" ].startsWith("symbian") )
+    	if(dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("symbian") )
             qmakeVars += QString("OPENSSL_LIBS    = -llibssl -llibcrypto");
         else
             qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
@@ -2897,6 +2914,7 @@ void Configure::generateConfigfiles()
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
         if(dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
         if(dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
+        if(dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_CL"] == "yes" ||
@@ -3391,10 +3409,8 @@ void Configure::buildHostTools()
     QString pwd = QDir::currentPath();
     QStringList hostToolsDirs;
     hostToolsDirs
-        << "src/tools/bootstrap"
-        << "src/tools/moc"
-        << "src/tools/rcc"
-        << "src/tools/uic";
+        << "src/tools"
+        << "tools/linguist/lrelease";
 
     if(dictionary["XQMAKESPEC"].startsWith("wince"))
         hostToolsDirs << "tools/checksdk";

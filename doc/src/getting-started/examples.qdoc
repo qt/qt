@@ -206,7 +206,7 @@
     \o
 
     \row
-    \o{2,1} \l{OpenGL Examples}{\bold OpenGL}
+    \o{2,1} \l{OpenGL Examples}{\bold{OpenGL}}\bold{ and }\l{OpenVG Examples}{\bold{OpenVG}}\bold{ Examples}
     \o{2,1} \l{Multimedia Examples}{\bold{Multimedia Framework}}
     \row
     \o \image opengl-examples.png OpenGL
@@ -214,6 +214,9 @@
     Qt provides support for integration with OpenGL implementations on all
     platforms, giving developers the opportunity to display hardware accelerated
     3D graphics alongside a more conventional user interface.
+
+    Qt provides support for integration with OpenVG implementations on
+    platforms with suitable drivers.
 
     \o \image phonon-examples.png
     \o
@@ -299,50 +302,53 @@
     to build highly animated, high-performance GUIs.
 
     \row
+    \o{2,1} \l{Multi-Touch Examples}{\bold{Multi-Touch Framework}}
     \o{2,1} \l{Gestures Examples}{\bold{Gestures}}
-    \o{2,1} \l{D-Bus Examples}{\bold{D-Bus}}
+
     \row
+    \o \image multitouch-examples.png
+    \o
+    Support for multi-touch input makes it possible for developers to create
+    extensible and intuitive user interfaces.
+
     \o \image gestures-examples.png
     \o
     Applications can be written to respond to gestures as a natural input method.
     These examples show how to enable support for standard and custom gestures in
     applications.
 
-    \o \image dbus-examples.png D-Bus
-    \o
-    D-Bus is an inter-process communication protocol for Unix/Linux systems.
-    These examples demonstrate how to write application that communicate with
-    each other.
     \row
+    \o{2,1} \l{D-Bus Examples}{\bold{D-Bus}}
     \o{2,1} \l{Qt for Embedded Linux Examples}{\bold{Qt for Embedded Linux}}
-    \o{2,1} \l{ActiveQt Examples}{\bold ActiveQt}
+
     \row
     \o \image qt-embedded-examples.png
     \o
     Systems with limited resources, specialized hardware, and small
     screens require special attention.
 
+    \o \image dbus-examples.png D-Bus
+    \o
+    D-Bus is an inter-process communication protocol for Unix/Linux systems.
+    These examples demonstrate how to write application that communicate with
+    each other.
+
+    \row
+    \o{2,1} \l{ActiveQt Examples}{\bold ActiveQt}
+    \o{2,1} \l{Qt Quarterly}{\bold{Qt Quarterly}}
+
+    \row
     \o \image activeqt-examples.png ActiveQt
     \o
     These examples demonstrate how to write ActiveX controls and control servers
     with Qt, and how to use ActiveX controls and COM objects in a Qt application.
 
-    \row
-    \o{2,1} \l{Qt Quarterly}{\bold{Qt Quarterly}}
-    \row
     \o \image qq-thumbnail.png QtQuarterly
     \o
     One more valuable source for examples and explanations of Qt
     features is the archive of the \l {Qt Quarterly}.
 
     \endtable
-
-    \omit
-    In the list below, examples marked with an asterisk (*) are fully
-    documented. Eventually, all the examples will be fully documented,
-    but sometimes we include an example before we have time to write
-    about it.
-    \endomit
 */
 
 /*!
@@ -388,6 +394,8 @@
     \o \l{widgets/wiggly}{Wiggly}\raisedaster
     \o \l{widgets/windowflags}{Window Flags}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -416,6 +424,8 @@
     \o \l{dialogs/tabdialog}{Tab Dialog}\raisedaster
     \o \l{dialogs/trivialwizard}{Trivial Wizard}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -442,12 +452,14 @@
     \o \l{mainwindows/recentfiles}{Recent Files}
     \o \l{mainwindows/sdi}{SDI}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
     \page examples-layouts.html
     \title Layout Examples
-    
+
     \previouspage Main Window Examples
     \contentspage Qt Examples
     \nextpage Item Views Examples
@@ -467,6 +479,8 @@
     \o \l{layouts/dynamiclayouts}{Dynamic Layouts}
     \o \l{layouts/flowlayout}{Flow Layout}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -503,6 +517,8 @@
     \o \l{itemviews/spinboxdelegate}{Spin Box Delegate}\raisedaster
     \o \l{itemviews/stardelegate}{Star Delegate}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -529,6 +545,16 @@
     \o \l{graphicsview/portedasteroids}{Ported Asteroids}
     \o \l{graphicsview/portedcanvas}{Ported Canvas}
     \endlist
+
+    Some examples demonstrate the use of graphics effects with canvas items.
+
+    \list
+    \o \l{effects/blurpicker}{Blur Picker Effect}
+    \o \l{effects/fademessage}{Fade Message Effect}
+    \o \l{effects/lighting}{Lighting Effect}
+    \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -559,6 +585,8 @@
     \o \l{painting/svgviewer}{SVG Viewer}
     \o \l{painting/transformations}{Transformations}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -631,16 +659,18 @@
     \o \l{draganddrop/fridgemagnets}{Fridge Magnets}\raisedaster
     \o \l{draganddrop/puzzle}{Drag and Drop Puzzle}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
     \page examples-threadandconcurrent.html
     \title Threading and Concurrent Programming Examples
-    
+
     \previouspage Drag and Drop Examples
     \contentspage Qt Examples
     \nextpage Tools Examples
-    
+
     \image thread-examples.png
 
     Qt 4 makes it easier than ever to write multithreaded applications. More
@@ -669,6 +699,8 @@
     \o \l{qtconcurrent/runfunction}{QtConcurrent Run Function}
     \o \l{qtconcurrent/wordcount}{QtConcurrent Word Count}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -695,6 +727,7 @@
     \o \l{tools/customtypesending}{Custom Type Sending}\raisedaster
     \o \l{tools/echoplugin}{Echo Plugin}\raisedaster
     \o \l{tools/i18n}{I18N}
+    \o \l{tools/inputpanel}{Input Panel}\raisedaster
     \o \l{tools/plugandpaint}{Plug & Paint}\raisedaster
     \o Plug & Paint Plugins: \l{tools/plugandpaintplugins/basictools}{Basic Tools}\raisedaster
        and \l{tools/plugandpaintplugins/extrafilters}{Extra Filters}\raisedaster
@@ -704,6 +737,8 @@
     \o \l{tools/treemodelcompleter}{Tree Model Completer}\raisedaster
     \o \l{tools/undoframework}{Undo Framework}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -736,6 +771,8 @@
     \o  \l{network/torrent}{Torrent}
     \o  \l{network/googlesuggest}{Google Suggest}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -745,7 +782,7 @@
     \previouspage Network Examples
     \contentspage Qt Examples
     \nextpage OpenGL Examples
-    
+
     \image ipc-examples.png
 
     \list
@@ -761,7 +798,7 @@
 
     \previouspage Inter-Process Communication Examples
     \contentspage Qt Examples
-    \nextpage Multimedia Examples
+    \nextpage OpenVG Examples
 
     \image opengl-examples.png
 
@@ -778,11 +815,35 @@
     \o \l{opengl/framebufferobject2}{Framebuffer Object 2}
     \o \l{opengl/grabber}{Grabber}
     \o \l{opengl/hellogl}{Hello GL}\raisedaster
+    \o \l{opengl/hellogl_es}{Hello GL - ported to Windows CE}\raisedaster
     \o \l{opengl/overpainting}{Overpainting}\raisedaster
     \o \l{opengl/pbuffers}{Pixel Buffers}
     \o \l{opengl/pbuffers2}{Pixel Buffers 2}
     \o \l{opengl/samplebuffers}{Sample Buffers}
     \o \l{opengl/textures}{Textures}
+    \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
+*/
+
+/*!
+    \page examples-openvg.html
+    \title OpenVG Examples
+
+    \previouspage OpenGL Examples
+    \contentspage Qt Examples
+    \nextpage Multimedia Examples
+
+    \image openvg-examples.png
+
+    Qt provides support for integration with OpenVG implementations on
+    platforms with suitable drivers.
+
+    These examples demonstrate the basic techniques used to take advantage of
+    OpenVG in Qt applications.
+
+    \list
+    \o \l{openvg/star}{OpenVG Star}
     \endlist
 */
 
@@ -798,11 +859,13 @@
 
     \section1 Multimedia
 
-    Qt provides low-level audio support on linux,windows and mac platforms by default and
-    an audio plugin API to allow developers to implement there own audio support for
+    Qt provides low-level audio support on Linux, Windows and Mac OS X by default and
+    an audio plugin API to allow developers to implement their own audio support for
     custom devices and platforms.
 
-    These examples demonstrate the basic techniques used to take advantage of
+    \section1 Audio Handling
+
+    These examples demonstrate the basic techniques used to take advantage of the
     Audio API in Qt applications.
 
     \list
@@ -829,6 +892,8 @@
     \o \l{phonon/capabilities}{Capabilities}\raisedaster
     \o \l{phonon/qmusicplayer}{Music Player}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -855,6 +920,8 @@
     \o \l{sql/tablemodel}{Table Model}
     \o \l{sql/sqlwidgetmapper}{SQL Widget Mapper}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 
@@ -890,6 +957,8 @@
     \o \l{xmlpatterns/trafficinfo}{Traffic Info}\raisedaster
     \o \l{xmlpatterns/schema}{XML Schema Validation}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -996,12 +1065,26 @@
     from displaying Web pages within a Qt user interface to an implementation of
     a basic function Web browser.
 
-    \list
-    \o \l{webkit/previewer}{Previewer}\raisedaster
-    \o \l{webkit/formextractor}{Form Extractor}
-    \o \l{webkit/googlechat}{Google Chat}
-    \o \l{webkit/fancybrowser}{Fancy Browser}
-    \endlist
+    \table
+    \header \o Example \o Description
+    \row \o \l{webkit/domtraversal}{DOM Traversal}\raisedaster
+    \o Shows how to use QWebElement to inspect the document structure of a Web page.
+    \row \o \l{webkit/fancybrowser}{Fancy Browser}
+    \o A more advanced browser example, showing the use of jQuery to perform effects.
+    \row \o \l{webkit/formextractor}{Form Extractor}
+    \o How to use JavaScript and C++ together to read page content.
+    \row \o \l{webkit/googlechat}{Google Chat}
+    \o A real-world example that shows how an existing Web-based service can be accessed
+    using QtWebKit.
+    \row \o \l{webkit/previewer}{Previewer}\raisedaster
+    \o Shows how to make a simple Web page previewer by using Qt's text input widgets
+    together with a QWebView widget.
+    \row \o \l{webkit/simpleselector}{Simple Selector}\raisedaster
+    \o A basic demonstration, showing how to use QWebElement to select elements in a
+    Web page.
+    \endtable
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -1021,6 +1104,8 @@
     \list
     \o \l{help/simpletextviewer}{Simple Text Viewer}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -1055,17 +1140,38 @@
 
     \previouspage State Machine Examples
     \contentspage Qt Examples
-    \nextpage Gestures Examples
+    \nextpage Multi-Touch Examples
 
     \image animation-examples.png Animation
 
     \list
-	\o \l{animation/animatedtiles}{Animated Tiles}
-	\o \l{animation/appchooser}{Application Chooser}
-	\o \l{animation/easing}{Easing Curves}
+        \o \l{animation/animatedtiles}{Animated Tiles}
+        \o \l{animation/appchooser}{Application Chooser}
+        \o \l{animation/easing}{Easing Curves}
     \o \l{animation/moveblocks}{Move Blocks}\raisedaster
-	\o \l{animation/states}{States}
+        \o \l{animation/states}{States}
     \o \l{animation/stickman}{Stick man}\raisedaster
+    \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
+*/
+
+/*!
+    \page examples-multitouch.html
+    \title Multi-Touch Examples
+
+    \previouspage Animation Framework Examples
+    \contentspage Qt Examples
+    \nextpage Gestures Examples
+
+    Support for multi-touch input makes it possible for developers to create
+    extensible and intuitive user interfaces.
+
+    \list
+    \o \l{multitouch/dials}{Multi-Touch Dials}
+    \o \l{multitouch/fingerpaint}{Finger Paint}
+    \o \l{multitouch/knobs}{Multi-Touch Knobs}
+    \o \l{multitouch/pinchzoom}{Pinch Zoom}
     \endlist
 */
 
@@ -1073,7 +1179,7 @@
     \page examples-gestures.html
     \title Gestures Examples
 
-    \previouspage Animation Framework Examples
+    \previouspage Multi-Touch Examples
     \contentspage Qt Examples
     \nextpage D-Bus Examples
 
@@ -1100,6 +1206,8 @@
     \o \l{dbus/pingpong}{Ping Pong}
     \o \l{dbus/remotecontrolledcar}{Remote Controlled Car} 
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -1131,7 +1239,7 @@
     \previouspage Qt for Embedded Linux Examples
     \contentspage Qt Examples
     \nextpage Qt Quarterly
-    
+
     \image activeqt-examples.png ActiveQt
 
     \list

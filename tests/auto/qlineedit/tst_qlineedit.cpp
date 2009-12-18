@@ -51,6 +51,10 @@
 #include "qcompleter.h"
 #include "qstandarditemmodel.h"
 
+#ifndef QT_NO_CLIPBOARD
+#include "qclipboard.h"
+#endif
+
 #ifdef Q_WS_MAC
 #include <Carbon/Carbon.h> // For the random function.
 #include <cstdlib> // For the random function.
@@ -157,6 +161,10 @@ private slots:
     void undo_keypressevents_data();
     void undo_keypressevents();
 
+#ifndef QT_NO_CLIPBOARD
+    void QTBUG5786_undoPaste();
+#endif
+
     void clear();
 
     void text_data();
@@ -260,6 +268,9 @@ private slots:
     void task233101_cursorPosAfterInputMethod();
     void task241436_passwordEchoOnEditRestoreEchoMode();
     void task248948_redoRemovedSelection();
+    void taskQTBUG_4401_enterKeyClearsPassword();
+    void taskQTBUG_4679_moveToStartEndOfBlock();
+    void taskQTBUG_4679_selectToStartEndOfBlock();
 
 protected slots:
 #ifdef QT3_SUPPORT
@@ -1404,6 +1415,50 @@ void tst_QLineEdit::undo_keypressevents()
     }
     QVERIFY(testWidget->text().isEmpty());
 }
+
+#ifndef QT_NO_CLIPBOARD
+static bool nativeClipboardWorking()
+{
+#ifdef Q_WS_MAC
+    PasteboardRef pasteboard;
+    OSStatus status = PasteboardCreate(0, &pasteboard);
+    if (status == noErr)
+        CFRelease(pasteboard);
+    return status == noErr;
+#endif
+    return true;
+}
+
+void tst_QLineEdit::QTBUG5786_undoPaste()
+{
+    if (!nativeClipboardWorking())
+	   QSKIP("this machine doesn't support the clipboard", SkipAll);
+    QString initial("initial");
+    QString string("test");
+    QString additional("add");
+    QApplication::clipboard()->setText(string);
+    QLineEdit edit(initial);
+    QCOMPARE(edit.text(), initial);
+    edit.paste();
+    QCOMPARE(edit.text(), initial + string);
+    edit.paste();
+    QCOMPARE(edit.text(), initial + string + string);
+    edit.insert(additional);
+    QCOMPARE(edit.text(), initial + string + string + additional);
+    edit.undo();
+    QCOMPARE(edit.text(), initial + string + string);
+    edit.undo();
+    QCOMPARE(edit.text(), initial + string);
+    edit.undo();
+    QCOMPARE(edit.text(), initial);
+    edit.selectAll();
+    QApplication::clipboard()->setText(QString());
+    edit.paste();
+    QVERIFY(edit.text().isEmpty());
+
+}
+#endif
+
 
 void tst_QLineEdit::clear()
 {
@@ -3307,6 +3362,7 @@ void tst_QLineEdit::task174640_editingFinished()
     QApplication::setActiveWindow(&mw);
     mw.activateWindow();
     QTest::qWaitForWindowShown(&mw);
+    QTRY_COMPARE(&mw, QApplication::activeWindow());
 
     QSignalSpy editingFinishedSpy(le1, SIGNAL(editingFinished()));
 
@@ -3530,6 +3586,56 @@ void tst_QLineEdit::task248948_redoRemovedSelection()
     QTest::keyPress(testWidget, 'a');
     QTest::keyPress(testWidget, 'b');
     QCOMPARE(testWidget->text(), QLatin1String("ab"));
+}
+
+void tst_QLineEdit::taskQTBUG_4401_enterKeyClearsPassword()
+{
+    QString password("Wanna guess?");
+
+    testWidget->setText(password);
+    testWidget->setEchoMode(QLineEdit::PasswordEchoOnEdit);
+    testWidget->setFocus();
+    testWidget->selectAll();
+    QApplication::setActiveWindow(testWidget);
+    QTRY_VERIFY(testWidget->hasFocus());
+
+    QTest::keyPress(testWidget, Qt::Key_Enter);
+    QTRY_COMPARE(testWidget->text(), password);
+}
+
+void tst_QLineEdit::taskQTBUG_4679_moveToStartEndOfBlock()
+{
+#ifdef Q_OS_MAC
+    const QString text("there are no blocks for lineEdit");
+    testWidget->setText(text);
+    testWidget->setCursorPosition(5);
+    QCOMPARE(testWidget->cursorPosition(), 5);
+    testWidget->setFocus();
+    QTest::keyPress(testWidget, Qt::Key_A, Qt::MetaModifier);
+    QCOMPARE(testWidget->cursorPosition(), 0);
+    QTest::keyPress(testWidget, Qt::Key_E, Qt::MetaModifier);
+    QCOMPARE(testWidget->cursorPosition(), text.size());
+#endif // Q_OS_MAC
+}
+
+void tst_QLineEdit::taskQTBUG_4679_selectToStartEndOfBlock()
+{
+#ifdef Q_OS_MAC
+    const QString text("there are no blocks for lineEdit, select all");
+    testWidget->setText(text);
+    testWidget->setCursorPosition(5);
+    QCOMPARE(testWidget->cursorPosition(), 5);
+    testWidget->setFocus();
+    QTest::keyPress(testWidget, Qt::Key_A, Qt::MetaModifier | Qt::ShiftModifier);
+    QCOMPARE(testWidget->cursorPosition(), 0);
+    QVERIFY(testWidget->hasSelectedText());
+    QCOMPARE(testWidget->selectedText(), text.mid(0, 5));
+
+    QTest::keyPress(testWidget, Qt::Key_E, Qt::MetaModifier | Qt::ShiftModifier);
+    QCOMPARE(testWidget->cursorPosition(), text.size());
+    QVERIFY(testWidget->hasSelectedText());
+    QCOMPARE(testWidget->selectedText(), text.mid(5));
+#endif // Q_OS_MAC
 }
 
 QTEST_MAIN(tst_QLineEdit)

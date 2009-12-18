@@ -30,6 +30,12 @@ qt_install_headers {
     targ_headers.files = $$INSTALL_HEADERS
     targ_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
     INSTALLS += targ_headers
+
+    contains(QT_CONFIG,private_tests) {
+        private_headers.files = $$SYNCQT.PRIVATE_HEADER_FILES
+        private_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET/private
+        INSTALLS += private_headers
+    }
 }
 
 embedded:equals(TARGET, QtGui) {

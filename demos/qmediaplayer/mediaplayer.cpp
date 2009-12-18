@@ -47,109 +47,114 @@
 #include "ui_settings.h"
 
 
-class MediaVideoWidget : public Phonon::VideoWidget
+MediaVideoWidget::MediaVideoWidget(MediaPlayer *player, QWidget *parent) :
+    Phonon::VideoWidget(parent), m_player(player), m_action(this)
 {
-public:
-    MediaVideoWidget(MediaPlayer *player, QWidget *parent = 0) : 
-        Phonon::VideoWidget(parent), m_player(player), m_action(this)
-    {
-        m_action.setCheckable(true);
-        m_action.setChecked(false);
-        m_action.setShortcut(QKeySequence( Qt::AltModifier + Qt::Key_Return));
-        m_action.setShortcutContext(Qt::WindowShortcut);
-        connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
-        addAction(&m_action);
-        setAcceptDrops(true);
-    }
+    m_action.setCheckable(true);
+    m_action.setChecked(false);
+    m_action.setShortcut(QKeySequence( Qt::AltModifier + Qt::Key_Return));
+    m_action.setShortcutContext(Qt::WindowShortcut);
+    connect(&m_action, SIGNAL(toggled(bool)), SLOT(setFullScreen(bool)));
+    addAction(&m_action);
+    setAcceptDrops(true);
+}
 
-protected:
-    void mouseDoubleClickEvent(QMouseEvent *e)
-    {
-        Phonon::VideoWidget::mouseDoubleClickEvent(e);
-        setFullScreen(!isFullScreen());
-    }
+void MediaVideoWidget::setFullScreen(bool enabled)
+{
+    Phonon::VideoWidget::setFullScreen(enabled);
+    emit fullScreenChanged(enabled);
+}
 
-    void keyPressEvent(QKeyEvent *e)
-    {
-        if (e->key() == Qt::Key_Space && !e->modifiers()) {
+void MediaVideoWidget::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    Phonon::VideoWidget::mouseDoubleClickEvent(e);
+    setFullScreen(!isFullScreen());
+}
+
+void MediaVideoWidget::keyPressEvent(QKeyEvent *e)
+{
+    if(!e->modifiers()) {
+        // On non-QWERTY Symbian key-based devices, there is no space key.
+        // The zero key typically is marked with a space character.
+        if (e->key() == Qt::Key_Space || e->key() == Qt::Key_0) {
             m_player->playPause();
             e->accept();
             return;
-        } else if (e->key() == Qt::Key_Escape && !e->modifiers()) {
+        }
+
+        // On Symbian devices, there is no key which maps to Qt::Key_Escape
+        // On devices which lack a backspace key (i.e. non-QWERTY devices),
+        // the 'C' key maps to Qt::Key_Backspace
+        else if (e->key() == Qt::Key_Escape || e->key() == Qt::Key_Backspace) {
             setFullScreen(false);
             e->accept();
             return;
         }
-        Phonon::VideoWidget::keyPressEvent(e);        
     }
+    Phonon::VideoWidget::keyPressEvent(e);
+}
 
-    bool event(QEvent *e)
+bool MediaVideoWidget::event(QEvent *e)
+{
+    switch(e->type())
     {
-        switch(e->type())
+    case QEvent::Close:
+        //we just ignore the cose events on the video widget
+        //this prevents ALT+F4 from having an effect in fullscreen mode
+        e->ignore();
+        return true;
+    case QEvent::MouseMove:
+#ifndef QT_NO_CURSOR
+        unsetCursor();
+#endif
+        //fall through
+    case QEvent::WindowStateChange:
         {
-        case QEvent::Close:
-            //we just ignore the cose events on the video widget
-            //this prevents ALT+F4 from having an effect in fullscreen mode
-            e->ignore(); 
-            return true;
-        case QEvent::MouseMove:
+            //we just update the state of the checkbox, in case it wasn't already
+            m_action.setChecked(windowState() & Qt::WindowFullScreen);
+            const Qt::WindowFlags flags = m_player->windowFlags();
+            if (windowState() & Qt::WindowFullScreen) {
+                m_timer.start(1000, this);
+            } else {
+                m_timer.stop();
 #ifndef QT_NO_CURSOR
-            unsetCursor();
+                unsetCursor();
 #endif
-            //fall through
-        case QEvent::WindowStateChange:
-            {
-                //we just update the state of the checkbox, in case it wasn't already
-                m_action.setChecked(windowState() & Qt::WindowFullScreen);
-                const Qt::WindowFlags flags = m_player->windowFlags();
-                if (windowState() & Qt::WindowFullScreen) {
-                    m_timer.start(1000, this);
-                } else {
-                    m_timer.stop();
-#ifndef QT_NO_CURSOR
-                    unsetCursor();
-#endif
-                }
             }
-            break;
-        default:
-            break;
         }
-
-        return Phonon::VideoWidget::event(e);
+        break;
+    default:
+        break;
     }
 
-    void timerEvent(QTimerEvent *e)
-    {
-        if (e->timerId() == m_timer.timerId()) {
-            //let's store the cursor shape
+    return Phonon::VideoWidget::event(e);
+}
+
+void MediaVideoWidget::timerEvent(QTimerEvent *e)
+{
+    if (e->timerId() == m_timer.timerId()) {
+        //let's store the cursor shape
 #ifndef QT_NO_CURSOR
-            setCursor(Qt::BlankCursor);
+        setCursor(Qt::BlankCursor);
 #endif
-        }
-        Phonon::VideoWidget::timerEvent(e);
     }
+    Phonon::VideoWidget::timerEvent(e);
+}
 
-    void dropEvent(QDropEvent *e)
-    {
-        m_player->handleDrop(e);
-    }
+void MediaVideoWidget::dropEvent(QDropEvent *e)
+{
+    m_player->handleDrop(e);
+}
 
-    void dragEnterEvent(QDragEnterEvent *e) {
-        if (e->mimeData()->hasUrls())
-            e->acceptProposedAction();
-    }
-
-private:
-    MediaPlayer *m_player;
-    QBasicTimer m_timer;
-    QAction m_action;
-};
+void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
+    if (e->mimeData()->hasUrls())
+        e->acceptProposedAction();
+}
 
 
 MediaPlayer::MediaPlayer(const QString &filePath,
                          const bool hasSmallScreen) :
-        playButton(0), nextEffect(0), settingsDialog(0), ui(0), 
+        playButton(0), nextEffect(0), settingsDialog(0), ui(0),
             m_AudioOutput(Phonon::VideoCategory),
             m_videoWidget(new MediaVideoWidget(this)),
             m_hasSmallScreen(hasSmallScreen)
@@ -266,11 +271,14 @@ MediaPlayer::MediaPlayer(const QString &filePath,
     fileMenu = new QMenu(this);
     QAction *openFileAction = fileMenu->addAction(tr("Open &File..."));
     QAction *openUrlAction = fileMenu->addAction(tr("Open &Location..."));
+    QAction *const openLinkAction = fileMenu->addAction(tr("Open &RAM File..."));
+
+    connect(openLinkAction, SIGNAL(triggered(bool)), this, SLOT(openRamFile()));
 
     fileMenu->addSeparator();  
     QMenu *aspectMenu = fileMenu->addMenu(tr("&Aspect ratio"));
     QActionGroup *aspectGroup = new QActionGroup(aspectMenu);
-    connect(aspectGroup, SIGNAL(triggered(QAction *)), this, SLOT(aspectChanged(QAction *)));
+    connect(aspectGroup, SIGNAL(triggered(QAction*)), this, SLOT(aspectChanged(QAction*)));
     aspectGroup->setExclusive(true);
     QAction *aspectActionAuto = aspectMenu->addAction(tr("Auto"));
     aspectActionAuto->setCheckable(true);
@@ -288,7 +296,7 @@ MediaPlayer::MediaPlayer(const QString &filePath,
 
     QMenu *scaleMenu = fileMenu->addMenu(tr("&Scale mode"));
     QActionGroup *scaleGroup = new QActionGroup(scaleMenu);
-    connect(scaleGroup, SIGNAL(triggered(QAction *)), this, SLOT(scaleChanged(QAction *)));
+    connect(scaleGroup, SIGNAL(triggered(QAction*)), this, SLOT(scaleChanged(QAction*)));
     scaleGroup->setExclusive(true);
     QAction *scaleActionFit = scaleMenu->addAction(tr("Fit in view"));
     scaleActionFit->setCheckable(true);
@@ -297,29 +305,37 @@ MediaPlayer::MediaPlayer(const QString &filePath,
     QAction *scaleActionCrop = scaleMenu->addAction(tr("Scale and crop"));
     scaleActionCrop->setCheckable(true);
     scaleGroup->addAction(scaleActionCrop);
-    
-    fileMenu->addSeparator();    
+
+    m_fullScreenAction = fileMenu->addAction(tr("Full screen video"));
+    m_fullScreenAction->setCheckable(true);
+    m_fullScreenAction->setEnabled(false); // enabled by hasVideoChanged
+    bool b = connect(m_fullScreenAction, SIGNAL(toggled(bool)), m_videoWidget, SLOT(setFullScreen(bool)));
+    Q_ASSERT(b);
+    b = connect(m_videoWidget, SIGNAL(fullScreenChanged(bool)), m_fullScreenAction, SLOT(setChecked(bool)));
+    Q_ASSERT(b);
+
+    fileMenu->addSeparator();
     QAction *settingsAction = fileMenu->addAction(tr("&Settings..."));
-    
+
     // Setup signal connections:
     connect(rewindButton, SIGNAL(clicked()), this, SLOT(rewind()));
     //connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
     openButton->setMenu(fileMenu);
-    
+
     connect(playButton, SIGNAL(clicked()), this, SLOT(playPause()));
     connect(forwardButton, SIGNAL(clicked()), this, SLOT(forward()));
     //connect(openButton, SIGNAL(clicked()), this, SLOT(openFile()));
     connect(settingsAction, SIGNAL(triggered(bool)), this, SLOT(showSettingsDialog()));
     connect(openUrlAction, SIGNAL(triggered(bool)), this, SLOT(openUrl()));
     connect(openFileAction, SIGNAL(triggered(bool)), this, SLOT(openFile()));
-    
+
     connect(m_videoWidget, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
     connect(&m_MediaObject, SIGNAL(metaDataChanged()), this, SLOT(updateInfo()));
     connect(&m_MediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(updateTime()));
     connect(&m_MediaObject, SIGNAL(tick(qint64)), this, SLOT(updateTime()));
     connect(&m_MediaObject, SIGNAL(finished()), this, SLOT(finished()));
-    connect(&m_MediaObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State)));
+    connect(&m_MediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(stateChanged(Phonon::State,Phonon::State)));
     connect(&m_MediaObject, SIGNAL(bufferStatus(int)), this, SLOT(bufferStatus(int)));
     connect(&m_MediaObject, SIGNAL(hasVideoChanged(bool)), this, SLOT(hasVideoChanged(bool)));
 
@@ -355,20 +371,20 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 
     switch (newstate) {
         case Phonon::ErrorState:
-            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             if (m_MediaObject.errorType() == Phonon::FatalError) {
                 playButton->setEnabled(false);
                 rewindButton->setEnabled(false);
             } else {
                 m_MediaObject.pause();
             }
+            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             break;
-        case Phonon::PausedState:
+
         case Phonon::StoppedState:
-            playButton->setIcon(playIcon);
-
             m_videoWidget->setFullScreen(false);
-
+            // Fall through
+        case Phonon::PausedState:
+            playButton->setIcon(playIcon);
             if (m_MediaObject.currentSource().type() != Phonon::MediaSource::Invalid){
                 playButton->setEnabled(true);
                 rewindButton->setEnabled(true);
@@ -471,6 +487,8 @@ void MediaPlayer::effectChanged()
 
 void MediaPlayer::showSettingsDialog()
 {
+    const bool hasPausedForDialog = playPauseForDialog();
+
     if (!settingsDialog)
         initSettingsDialog();
 
@@ -516,6 +534,9 @@ void MediaPlayer::showSettingsDialog()
         m_videoWidget->setScaleMode(oldScale);
         ui->audioEffectsCombo->setCurrentIndex(currentEffect);
     }
+
+    if (hasPausedForDialog)
+        m_MediaObject.play();
 }
 
 void MediaPlayer::initVideoWindow()
@@ -652,10 +673,30 @@ void MediaPlayer::setFile(const QString &fileName)
     m_MediaObject.play();
 }
 
+bool MediaPlayer::playPauseForDialog()
+{
+    // If we're running on a small screen, we want to pause the video when
+    // popping up dialogs. We neither want to tamper with the state if the
+    // user has paused.
+    if (m_hasSmallScreen && m_MediaObject.hasVideo()) {
+        if (Phonon::PlayingState == m_MediaObject.state()) {
+            m_MediaObject.pause();
+            return true;
+        }
+    }
+    return false;
+}
+
 void MediaPlayer::openFile()
 {
+    const bool hasPausedForDialog = playPauseForDialog();
+
     QStringList fileNames = QFileDialog::getOpenFileNames(this, QString(),
                                                           QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+
+    if (hasPausedForDialog)
+        m_MediaObject.play();
+
     m_MediaObject.clearQueue();
     if (fileNames.size() > 0) {
         QString fileName = fileNames[0];
@@ -816,6 +857,51 @@ void MediaPlayer::openUrl()
     }
 }
 
+/*!
+ \since 4.6
+ */
+void MediaPlayer::openRamFile()
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("BrowserMainWindow"));
+
+    const QStringList fileNameList(QFileDialog::getOpenFileNames(this,
+                                                                  QString(),
+                                                                  settings.value("openRamFile").toString(),
+                                                                  QLatin1String("RAM files (*.ram)")));
+
+    if (fileNameList.isEmpty())
+        return;
+
+    QFile linkFile;
+    QList<QUrl> list;
+    QByteArray sourceURL;
+    for (int i = 0; i < fileNameList.count(); i++ ) {
+        linkFile.setFileName(fileNameList[i]);
+        if (linkFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            while (!linkFile.atEnd()) {
+                sourceURL = linkFile.readLine().trimmed();
+                if (!sourceURL.isEmpty()) {
+                    const QUrl url(QUrl::fromEncoded(sourceURL));
+                    if (url.isValid())
+                        list.append(url);
+                }
+            }
+            linkFile.close();
+        }
+    }
+
+    if (!list.isEmpty()) {
+        m_MediaObject.setCurrentSource(Phonon::MediaSource(list[0]));
+        m_MediaObject.play();
+        for (int i = 1; i < list.count(); i++)
+            m_MediaObject.enqueue(Phonon::MediaSource(list[i]));
+    }
+
+    forwardButton->setEnabled(!m_MediaObject.queue().isEmpty());
+    settings.setValue("openRamFile", fileNameList[0]);
+}
+
 void MediaPlayer::finished()
 {
 }
@@ -849,4 +935,5 @@ void MediaPlayer::hasVideoChanged(bool bHasVideo)
 {
     info->setVisible(!bHasVideo);
     m_videoWindow.setVisible(bHasVideo);
+    m_fullScreenAction->setEnabled(bHasVideo);
 }

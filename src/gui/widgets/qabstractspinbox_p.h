@@ -98,7 +98,7 @@ public:
 
     void init();
     void reset();
-    void updateState(bool up);
+    void updateState(bool up, bool fromKeyboard = false);
     QString stripped(const QString &text, int *pos = 0) const;
     bool specialValue() const;
     virtual QVariant getZeroVariant() const;
@@ -129,6 +129,7 @@ public:
     QVariant value, minimum, maximum, singleStep;
     QVariant::Type type;
     int spinClickTimerId, spinClickTimerInterval, spinClickThresholdTimerId, spinClickThresholdTimerInterval;
+    int effectiveSpinRepeatRate;
     uint buttonState;
     mutable QString cachedText;
     mutable QVariant cachedValue;

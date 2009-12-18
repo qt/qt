@@ -71,6 +71,8 @@ private slots:
     void viewportCrash();
     void task214488_layoutDirection_data();
     void task214488_layoutDirection();
+    void wheelEvent_data();
+    void wheelEvent();
 };
 
 tst_QAbstractScrollArea::tst_QAbstractScrollArea()
@@ -296,10 +298,10 @@ public:
 
         setAttribute(Qt::WA_DropSiteRegistered, true);
 
-        startTimer(2000);
+        startTimer(200);
     }
 
-    void timerEvent(QTimerEvent *event)
+    void timerEvent(QTimerEvent *)
     {
         // should not crash.
         (void)new QScrollArea(this);
@@ -384,6 +386,97 @@ void tst_QAbstractScrollArea::patternBackground()
     scrollArea.render(&image);
     QCOMPARE(image.pixel(QPoint(20,20)) , QColor(Qt::red).rgb());
 }
+
+Q_DECLARE_METATYPE(QWheelEvent *);
+
+void tst_QAbstractScrollArea::wheelEvent_data()
+{
+    QTest::addColumn<QSize>("widgetSize");
+    QTest::addColumn<QPoint>("initialOffset");
+    QTest::addColumn<QWheelEvent *>("event");
+    QTest::addColumn<int>("movedX");  // -1 , 0 , or 1
+    QTest::addColumn<int>("movedY");
+
+    QPoint pos(100,100);
+    int delta =-120;
+
+    QTest::newRow("1")  << QSize(600,600) << QPoint(50,50)
+                        << new QWheelEvent(pos, delta, 0, 0, Qt::Horizontal) << 1 << 0;
+
+    QTest::newRow("2")  << QSize(600,600) << QPoint(50,50)
+                        << new QWheelEvent(pos, delta, 0, 0, Qt::Vertical) << 0 << 1;
+
+    QTest::newRow("3")  << QSize(600,600) << QPoint(50,50)
+                        << new QWheelEvent(pos, -delta, 0, 0, Qt::Horizontal) << -1 << 0;
+
+    QTest::newRow("4")  << QSize(600,600) << QPoint(50,50)
+                        << new QWheelEvent(pos, -delta, 0, 0, Qt::Vertical) << 0 << -1;
+
+    QTest::newRow("5")  << QSize(20,600) << QPoint(0,50)
+                        << new QWheelEvent(pos, delta, 0, 0, Qt::Horizontal) << 0 << 1;
+
+    QTest::newRow("6")  << QSize(20,600) << QPoint(0,50)
+                        << new QWheelEvent(pos, delta, 0, 0, Qt::Vertical) << 0 << 1;
+
+    QTest::newRow("7")  << QSize(20,600) << QPoint(0,50)
+                        << new QWheelEvent(pos, -delta, 0, 0, Qt::Horizontal) << 0 << -1;
+
+    QTest::newRow("8")  << QSize(20,600) << QPoint(0,50)
+                        << new QWheelEvent(pos, -delta, 0, 0, Qt::Vertical) << 0 << -1;
+
+    QTest::newRow("9")  << QSize(600,20) << QPoint(50,0)
+                        << new QWheelEvent(pos, delta, 0, 0, Qt::Horizontal) << 1 << 0;
+
+    QTest::newRow("a")  << QSize(600,20) << QPoint(50,0)
+                        << new QWheelEvent(pos, delta, 0, 0, Qt::Vertical) << 1 << 0;
+
+    QTest::newRow("b")  << QSize(600,20) << QPoint(50,0)
+                        << new QWheelEvent(pos, -delta, 0, 0, Qt::Horizontal) << -1 << 0;
+
+    QTest::newRow("c")  << QSize(600,20) << QPoint(50,0)
+                        << new QWheelEvent(pos, -delta, 0, 0, Qt::Vertical) << -1 << 0;
+}
+
+
+
+
+void tst_QAbstractScrollArea::wheelEvent()
+{
+    QFETCH(QSize, widgetSize);
+    QFETCH(QPoint, initialOffset);
+    QFETCH(QWheelEvent *, event);
+    QFETCH(int, movedX);
+    QFETCH(int, movedY);
+
+    QScrollArea scrollArea;
+    scrollArea.resize(200, 200);
+    QLabel widget("H e l l o");
+    widget.resize(widgetSize);
+    scrollArea.setWidget(&widget);
+    scrollArea.show();
+    QTest::qWait(20);
+
+    scrollArea.verticalScrollBar()->setValue(initialOffset.y());
+    scrollArea.horizontalScrollBar()->setValue(initialOffset.x());
+
+    QCOMPARE(scrollArea.verticalScrollBar()->value(), initialOffset.y());
+    QCOMPARE(scrollArea.horizontalScrollBar()->value(), initialOffset.x());
+
+    QApplication::sendEvent(scrollArea.viewport(), event);
+
+    if(movedX == 0)
+        QCOMPARE(scrollArea.horizontalScrollBar()->value(), initialOffset.x());
+    else
+        QVERIFY(movedX * scrollArea.horizontalScrollBar()->value() > movedX * initialOffset.x());
+
+    if(movedY == 0)
+        QCOMPARE(scrollArea.verticalScrollBar()->value(), initialOffset.y());
+    else
+        QVERIFY(movedY * scrollArea.verticalScrollBar()->value() > movedY * initialOffset.y());
+
+    delete event;
+}
+
 
 QTEST_MAIN(tst_QAbstractScrollArea)
 #include "tst_qabstractscrollarea.moc"

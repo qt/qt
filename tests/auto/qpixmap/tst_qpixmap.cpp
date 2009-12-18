@@ -47,6 +47,7 @@
 #include <qmatrix.h>
 #include <qdesktopwidget.h>
 #include <qpaintengine.h>
+#include <qsplashscreen.h>
 
 #include <private/qpixmapdata_p.h>
 
@@ -169,6 +170,7 @@ private slots:
     void loadFromDataNullValues();
 
     void preserveDepth();
+    void splash_crash();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -293,7 +295,7 @@ void tst_QPixmap::setAlphaChannel()
     QRgb expected = alpha == 0 ? 0 : qRgba(red, green, blue, alpha);
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            if (result.numColors() > 0) {
+            if (result.colorCount() > 0) {
                 ok &= result.pixelIndex(x, y) == expected;
             } else {
                 ok &= result.pixel(x, y) == expected;
@@ -330,7 +332,7 @@ void tst_QPixmap::fromImage()
 
     QImage image(37, 16, format);
 
-    if (image.numColors() == 2) {
+    if (image.colorCount() == 2) {
         image.setColor(0, QColor(Qt::color0).rgba());
         image.setColor(1, QColor(Qt::color1).rgba());
     }
@@ -731,7 +733,7 @@ void tst_QPixmap::testMetrics()
 void tst_QPixmap::createMaskFromColor()
 {
     QImage image(3, 3, QImage::Format_Indexed8);
-    image.setNumColors(10);
+    image.setColorCount(10);
     image.setColor(0, 0xffffffff);
     image.setColor(1, 0xff000000);
     image.setColor(2, 0xffff0000);
@@ -1287,6 +1289,12 @@ void tst_QPixmap::copy()
     QPixmap expected(10, 10);
     expected.fill(Qt::blue);
     QVERIFY(lenientCompare(dest, expected));
+
+    QPixmap trans;
+    trans.fill(Qt::transparent);
+
+    QPixmap transCopy = trans.copy();
+    QVERIFY(pixmapsAreEqual(&trans, &transCopy));
 }
 
 #ifdef QT3_SUPPORT
@@ -1419,6 +1427,17 @@ void tst_QPixmap::fromImage_crash()
     QPainter painter(&pm);
 
     delete img;
+}
+
+//This is testing QPixmapData::createCompatiblePixmapData - see QTBUG-5977
+void tst_QPixmap::splash_crash()
+{
+    QPixmap pix;
+    pix = QPixmap(":/images/designer.png");
+    QSplashScreen splash(pix);
+    splash.show();
+    QCoreApplication::processEvents();
+    splash.close();
 }
 
 void tst_QPixmap::fromData()

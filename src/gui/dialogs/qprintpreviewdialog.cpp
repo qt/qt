@@ -224,7 +224,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
         printer = new QPrinter;
         preview = new QPrintPreviewWidget(printer, q);
     }
-    QObject::connect(preview, SIGNAL(paintRequested(QPrinter *)), q, SIGNAL(paintRequested(QPrinter *)));
+    QObject::connect(preview, SIGNAL(paintRequested(QPrinter*)), q, SIGNAL(paintRequested(QPrinter*)));
     QObject::connect(preview, SIGNAL(previewChanged()), q, SLOT(_q_previewChanged()));
     setupActions();
 
@@ -446,7 +446,7 @@ void QPrintPreviewDialogPrivate::setFitting(bool on)
 void QPrintPreviewDialogPrivate::updateNavActions()
 {
     int curPage = preview->currentPage();
-    int numPages = preview->numPages();
+    int numPages = preview->pageCount();
     nextPageAction->setEnabled(curPage < numPages);
     prevPageAction->setEnabled(curPage > 1);
     firstPageAction->setEnabled(curPage > 1);
@@ -458,7 +458,7 @@ void QPrintPreviewDialogPrivate::updatePageNumLabel()
 {
     Q_Q(QPrintPreviewDialog);
 
-    int numPages = preview->numPages();
+    int numPages = preview->pageCount();
     int maxChars = QString::number(numPages).length();
     pageNumLabel->setText(QString::fromLatin1("/ %1").arg(numPages));
     int cyphersWidth = q->fontMetrics().width(QString().fill(QLatin1Char('8'), maxChars));
@@ -515,7 +515,7 @@ void QPrintPreviewDialogPrivate::_q_navigate(QAction* action)
     else if (action == firstPageAction)
         preview->setCurrentPage(1);
     else if (action == lastPageAction)
-        preview->setCurrentPage(preview->numPages());
+        preview->setCurrentPage(preview->pageCount());
     updateNavActions();
 }
 

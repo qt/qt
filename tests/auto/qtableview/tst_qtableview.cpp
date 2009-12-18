@@ -197,6 +197,8 @@ private slots:
     void task259308_scrollVerticalHeaderSwappedSections();
     void task191545_dragSelectRows();
     void taskQTBUG_5062_spansInconsistency();
+    void taskQTBUG_4516_clickOnRichTextLabel();
+    void taskQTBUG_5237_wheelEventOnHeader();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3014,6 +3016,14 @@ void tst_QTableView::spans_data()
       << QPoint(2, 0)
       << 1
       << 2;
+
+    QTest::newRow("QTBUG-6004: No failing Q_ASSERT, then it passes.")
+      << 5 << 5
+      << (SpanList() << QRect(0, 0, 2, 2) << QRect(0, 0, 1, 1))
+      << false
+      << QPoint(0, 0)
+      << 1
+      << 1;
 }
 
 void tst_QTableView::spans()
@@ -3612,17 +3622,9 @@ void tst_QTableView::mouseWheel_data()
     QTest::newRow("scroll down per item")
             << int(QAbstractItemView::ScrollPerItem) << -120
             << 10 + qApp->wheelScrollLines() << 10 + qApp->wheelScrollLines();
-#ifdef Q_WS_MAC
-    // On Mac, we always scroll one pixel per 120 delta (rather than multiplying with
-    // singleStep) since wheel events are accelerated by the OS.
-    QTest::newRow("scroll down per pixel")
-            << int(QAbstractItemView::ScrollPerPixel) << -120
-            << 10 + qApp->wheelScrollLines() << 10 + qApp->wheelScrollLines();
-#else
     QTest::newRow("scroll down per pixel")
             << int(QAbstractItemView::ScrollPerPixel) << -120
             << 10 + qApp->wheelScrollLines() * 89 << 10 + qApp->wheelScrollLines() * 28;
-#endif
 }
 
 void tst_QTableView::mouseWheel()
@@ -3885,6 +3887,24 @@ void tst_QTableView::taskQTBUG_5062_spansInconsistency()
     VERIFY_SPANS_CONSISTENCY(&view);
 }
 
+void tst_QTableView::taskQTBUG_4516_clickOnRichTextLabel()
+{
+    QTableView view;
+    QStandardItemModel model(5,5);
+    view.setModel(&model);
+    QLabel label("rich text");
+    label.setTextFormat(Qt::RichText);
+    view.setIndexWidget(model.index(1,1), &label);
+    view.setCurrentIndex(model.index(0,0));
+    QCOMPARE(view.currentIndex(), model.index(0,0));
+
+    QTest::mouseClick(&label, Qt::LeftButton);
+    QCOMPARE(view.currentIndex(), model.index(1,1));
+
+
+}
+
+
 void tst_QTableView::changeHeaderData()
 {
     QTableView view;
@@ -3894,7 +3914,7 @@ void tst_QTableView::changeHeaderData()
     QTest::qWaitForWindowShown(&view);
 
     QString text = "long long long text";
-    const int textWidth = view.fontMetrics().width(text);
+    const int textWidth = view.verticalHeader()->fontMetrics().width(text);
     QVERIFY(view.verticalHeader()->width() < textWidth);
 
     model.setHeaderData(2, Qt::Vertical, text);
@@ -3903,6 +3923,22 @@ void tst_QTableView::changeHeaderData()
     QVERIFY(view.verticalHeader()->width() > textWidth);
 }
 
+void tst_QTableView::taskQTBUG_5237_wheelEventOnHeader()
+{
+    QTableView view;
+    QStandardItemModel model(500,5);
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    int sbValueBefore = view.verticalScrollBar()->value();
+    QHeaderView *header = view.verticalHeader();
+    QTest::mouseMove(header);
+    QWheelEvent wheelEvent(header->geometry().center(), -720, 0, 0);
+    QApplication::sendEvent(header->viewport(), &wheelEvent);
+    int sbValueAfter = view.verticalScrollBar()->value();
+    QVERIFY(sbValueBefore != sbValueAfter);
+}
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"

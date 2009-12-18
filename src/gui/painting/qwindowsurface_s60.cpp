@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -68,12 +68,14 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
         mode = EColor16MA; // Try for transparency anyway
 
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
-	CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
+    CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
     qt_symbian_throwIfError( bitmap->Create( TSize(0, 0), mode ) );
 	
     QS60PixmapData *data = new QS60PixmapData(QPixmapData::PixmapType);
-    data->fromSymbianBitmap(bitmap);
-    d_ptr->device = QPixmap(data);
+    if (data) {
+        data->fromSymbianBitmap(bitmap, true);
+        d_ptr->device = QPixmap(data);
+    }
         
     setStaticContentsSupport(true);
 }

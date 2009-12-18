@@ -1613,7 +1613,8 @@ bool QFont::operator==(const QFont &f) const
                 && f.d->underline == d->underline
                 && f.d->overline  == d->overline
                 && f.d->strikeOut == d->strikeOut
-                && f.d->kerning == d->kerning));
+                && f.d->kerning == d->kerning
+                && f.d->capital == d->capital));
 }
 
 
@@ -1645,6 +1646,7 @@ bool QFont::operator<(const QFont &f) const
 #ifdef Q_WS_X11
     if (r1.addStyle != r2.addStyle) return r1.addStyle < r2.addStyle;
 #endif // Q_WS_X11
+    if (f.d->capital != d->capital) return f.d->capital < d->capital;
 
     int f1attrs = (f.d->underline << 3) + (f.d->overline << 2) + (f.d->strikeOut<<1) + f.d->kerning;
     int f2attrs = (d->underline << 3) + (d->overline << 2) + (d->strikeOut<<1) + d->kerning;

@@ -41,7 +41,9 @@
 
 #include "translator.h"
 
+#ifndef QT_BOOTSTRAPPED
 #include <QtCore/QCoreApplication>
+#endif
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
@@ -172,8 +174,8 @@ public:
 
     bool save(QIODevice *iod);
 
-    void insert(const TranslatorMessage &msg, bool forceComment);
-    void insertIdBased(const TranslatorMessage &message);
+    void insert(const TranslatorMessage &msg, const QStringList &tlns, bool forceComment);
+    void insertIdBased(const TranslatorMessage &message, const QStringList &tlns);
 
     void squeeze(TranslatorSaveMode mode);
 
@@ -186,7 +188,8 @@ private:
     // on turn should be the same as passed to the actual tr(...) calls
     QByteArray originalBytes(const QString &str, bool isUtf8) const;
 
-    void insertInternal(const TranslatorMessage &message, bool forceComment, bool isUtf8);
+    void insertInternal(const TranslatorMessage &message, const QStringList &tlns,
+                        bool forceComment, bool isUtf8);
 
     static Prefix commonPrefix(const ByteTranslatorMessage &m1, const ByteTranslatorMessage &m2);
 
@@ -413,12 +416,13 @@ void Releaser::squeeze(TranslatorSaveMode mode)
     }
 }
 
-void Releaser::insertInternal(const TranslatorMessage &message, bool forceComment, bool isUtf8)
+void Releaser::insertInternal(const TranslatorMessage &message, const QStringList &tlns,
+                              bool forceComment, bool isUtf8)
 {
     ByteTranslatorMessage bmsg(originalBytes(message.context(), isUtf8),
                                originalBytes(message.sourceText(), isUtf8),
                                originalBytes(message.comment(), isUtf8),
-                               message.translations());
+                               tlns);
     if (!forceComment) {
         ByteTranslatorMessage bmsg2(
                 bmsg.context(), bmsg.sourceText(), QByteArray(""), bmsg.translations());
@@ -430,20 +434,15 @@ void Releaser::insertInternal(const TranslatorMessage &message, bool forceCommen
     m_messages.insert(bmsg, 0);
 }
 
-void Releaser::insert(const TranslatorMessage &message, bool forceComment)
+void Releaser::insert(const TranslatorMessage &message, const QStringList &tlns, bool forceComment)
 {
-    insertInternal(message, forceComment, message.isUtf8());
+    insertInternal(message, tlns, forceComment, message.isUtf8());
     if (message.isUtf8() && message.isNonUtf8())
-        insertInternal(message, forceComment, false);
+        insertInternal(message, tlns, forceComment, false);
 }
 
-void Releaser::insertIdBased(const TranslatorMessage &message)
+void Releaser::insertIdBased(const TranslatorMessage &message, const QStringList &tlns)
 {
-    QStringList tlns = message.translations();
-    if (message.type() == TranslatorMessage::Unfinished)
-        for (int i = 0; i < tlns.size(); ++i)
-            if (tlns.at(i).isEmpty())
-                tlns[i] = message.sourceText();
     ByteTranslatorMessage bmsg("", originalBytes(message.id(), false), "", tlns);
     m_messages.insert(bmsg, 0);
 }
@@ -688,6 +687,16 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
 
 
 
+static bool containsStripped(const Translator &translator, const TranslatorMessage &msg)
+{
+    foreach (const TranslatorMessage &tmsg, translator.messages())
+        if (tmsg.sourceText() == msg.sourceText()
+            && tmsg.context() == msg.context()
+            && tmsg.comment().isEmpty())
+        return true;
+    return false;
+}
+
 static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     Releaser releaser;
@@ -725,10 +734,16 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
             } else {
                 ++finished;
             }
+            QStringList tlns = msg.translations();
+            if (msg.type() == TranslatorMessage::Unfinished
+                && (cd.m_idBased || !cd.m_unTrPrefix.isEmpty()))
+                for (int j = 0; j < tlns.size(); ++j)
+                    if (tlns.at(j).isEmpty())
+                        tlns[j] = cd.m_unTrPrefix + msg.sourceText();
             if (cd.m_idBased) {
                 if (!msg.context().isEmpty() || !msg.comment().isEmpty())
                     ++droppedData;
-                releaser.insertIdBased(msg);
+                releaser.insertIdBased(msg, tlns);
             } else {
                 // Drop the comment in (context, sourceText, comment),
                 // unless the context is empty,
@@ -738,8 +753,8 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
                 bool forceComment =
                         msg.comment().isEmpty()
                         || msg.context().isEmpty()
-                        || translator.contains(msg.context(), msg.sourceText(), QString());
-                releaser.insert(msg, forceComment);
+                        || containsStripped(translator, msg);
+                releaser.insert(msg, tlns, forceComment);
             }
         }
     }

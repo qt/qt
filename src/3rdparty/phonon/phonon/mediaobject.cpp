@@ -6,7 +6,7 @@
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA 
+    successor approved by the membership of KDE e.V.), Nokia Corporation 
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -453,9 +453,9 @@ void MediaObjectPrivate::setupBackendObject()
     //pDebug() << Q_FUNC_INFO;
 
 #ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
-    QObject::connect(m_backendObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)), q, SLOT(_k_stateChanged(Phonon::State, Phonon::State)));
+    QObject::connect(m_backendObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), q, SLOT(_k_stateChanged(Phonon::State,Phonon::State)));
 #else
-    QObject::connect(m_backendObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)), q, SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+    QObject::connect(m_backendObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), q, SIGNAL(stateChanged(Phonon::State,Phonon::State)));
 #endif // QT_NO_PHONON_ABSTRACTMEDIASTREAM
     QObject::connect(m_backendObject, SIGNAL(tick(qint64)),             q, SIGNAL(tick(qint64)));
     QObject::connect(m_backendObject, SIGNAL(seekableChanged(bool)),    q, SIGNAL(seekableChanged(bool)));
@@ -467,10 +467,10 @@ void MediaObjectPrivate::setupBackendObject()
     QObject::connect(m_backendObject, SIGNAL(aboutToFinish()),          q, SLOT(_k_aboutToFinish()));
     QObject::connect(m_backendObject, SIGNAL(prefinishMarkReached(qint32)), q, SIGNAL(prefinishMarkReached(qint32)));
     QObject::connect(m_backendObject, SIGNAL(totalTimeChanged(qint64)), q, SIGNAL(totalTimeChanged(qint64)));
-    QObject::connect(m_backendObject, SIGNAL(metaDataChanged(const QMultiMap<QString, QString> &)),
-            q, SLOT(_k_metaDataChanged(const QMultiMap<QString, QString> &)));
-    QObject::connect(m_backendObject, SIGNAL(currentSourceChanged(const MediaSource&)), 
-        q, SLOT(_k_currentSourceChanged(const MediaSource&)));
+    QObject::connect(m_backendObject, SIGNAL(metaDataChanged(QMultiMap<QString,QString>)),
+            q, SLOT(_k_metaDataChanged(QMultiMap<QString,QString>)));
+    QObject::connect(m_backendObject, SIGNAL(currentSourceChanged(MediaSource)), 
+        q, SLOT(_k_currentSourceChanged(MediaSource)));
 
     // set up attributes
     pINTERFACE_CALL(setTickInterval(tickInterval));

@@ -288,6 +288,10 @@ public:
     void setMaximumWidth(int maxw);
     void setMaximumHeight(int maxh);
 
+#ifdef Q_QDOC
+    void setupUi(QWidget *widget);
+#endif
+
     QSize sizeIncrement() const;
     void setSizeIncrement(const QSize &);
     void setSizeIncrement(int w, int h);
@@ -740,6 +744,7 @@ private:
     friend struct QWidgetExceptionCleaner;
     friend class QGestureManager;
     friend class QWinNativePanGestureRecognizer;
+    friend class QWidgetEffectSourcePrivate;
 
 #ifdef Q_WS_MAC
     friend class QCoreGraphicsPaintEnginePrivate;

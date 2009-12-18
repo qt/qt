@@ -243,7 +243,10 @@ public:
     int totalSize() const { return mapsize; }
 
     QRgb * clut() { return screenclut; }
-    int numCols() { return screencols; }
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED int numCols() { return screencols; }
+#endif
+    int colorCount() { return screencols; }
 
     virtual QSize mapToDevice(const QSize &) const;
     virtual QSize mapFromDevice(const QSize &) const;

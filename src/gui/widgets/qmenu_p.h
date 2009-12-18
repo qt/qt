@@ -182,6 +182,7 @@ public:
     }
     void init();
 
+    static QMenuPrivate *get(QMenu *m) { return m->d_func(); }
     int scrollerHeight() const;
 
     //item calculations
@@ -190,7 +191,7 @@ public:
     QRect actionRect(QAction *) const;
 
     mutable QVector<QRect> actionRects;
-    mutable QWidgetList widgetItems;
+    mutable QHash<QAction *, QWidget *> widgetItems;
     void updateActionRects() const;
     QRect popupGeometry(const QWidget *widget) const;
     QRect popupGeometry(int screen = -1) const;
@@ -215,6 +216,7 @@ public:
         SelectedFromKeyboard,
         SelectedFromElsewhere
     };
+    QWidget *topCausedWidget() const;
     QAction *actionAt(QPoint p) const;
     void setFirstActionActive();
     void setCurrentAction(QAction *, int popup = -1, SelectionReason reason = SelectedFromElsewhere, bool activateFirst = false);
@@ -290,6 +292,9 @@ public:
     void _q_actionHovered();
 
     bool hasMouseMoved(const QPoint &globalPos);
+
+    void updateLayoutDirection();
+
 
     //menu fading/scrolling effects
     bool doChildEffects;

@@ -98,9 +98,9 @@ bool TestLUpdate::runChild( bool showOutput, const QString &program, const QStri
     connect(childProc, SIGNAL(finished(int)), this, SLOT(childReady(int)));
     childProc->setProcessChannelMode(QProcess::MergedChannels);
     if (argList.isEmpty()) {
-        childProc->start( program );
+        childProc->start( program, QIODevice::ReadWrite | QIODevice::Text );
     } else {
-        childProc->start( program, argList );
+        childProc->start( program, argList, QIODevice::ReadWrite | QIODevice::Text );
     }
     bool ok;
 

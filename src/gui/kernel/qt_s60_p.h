@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -103,6 +103,14 @@ public:
     int defaultDpiY;
     WId curWin;
     int virtualMouseLastKey;
+    enum PressedKeys {
+        Select = 0x1,
+        Right = 0x2,
+        Down = 0x4,
+        Left = 0x8,
+        Up = 0x10
+    };
+    int virtualMousePressedKeys; // of the above type, but avoids casting problems
     int virtualMouseAccel;
     int virtualMouseMaxAccel;
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
@@ -175,7 +183,7 @@ public:
 
 protected: // from MAknFadedComponent
     TInt CountFadedComponents() {return 1;}
-    CCoeControl* FadedComponent(TInt aIndex) {return this;}
+    CCoeControl* FadedComponent(TInt /*aIndex*/) {return this;}
 #else
     #warning No fallback implementation for QSymbianControl::FadeBehindPopup
     void FadeBehindPopup(bool /*fade*/){ }
@@ -192,6 +200,12 @@ private:
     TKeyResponse OfferKeyEvent(const TKeyEvent& aKeyEvent,TEventCode aType);
     TKeyResponse sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent);
     bool sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
+    void sendMouseEvent(
+            QWidget *receiver,
+            QEvent::Type type,
+            const QPoint &globalPos,
+            Qt::MouseButton button,
+            Qt::KeyboardModifiers modifiers);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
@@ -202,9 +216,9 @@ private:
 
 private:
     QWidget *qwidget;
-    bool m_ignoreFocusChanged;
     QLongTapTimer* m_longTapDetector;
-    bool m_previousEventLongTap;
+    bool m_ignoreFocusChanged : 1;
+    bool m_symbianPopupIsOpen : 1;
 
 #ifdef Q_WS_S60
     // Fader object used to fade everything except this menu and the CBA.

@@ -332,7 +332,9 @@ void QMenuBarPrivate::popupAction(QAction *action, bool activateFirst)
         QPoint pos(q->mapToGlobal(QPoint(adjustedActionRect.left(), adjustedActionRect.bottom() + 1)));
         QSize popup_size = activeMenu->sizeHint();
 
-        QRect screenRect = QApplication::desktop()->screenGeometry(pos);
+        //we put the popup menu on the screen containing the bottom-center of the action rect
+        QRect screenRect = QApplication::desktop()->screenGeometry(pos + QPoint(adjustedActionRect.width() / 2, 0));
+        pos = QPoint(qMax(pos.x(), screenRect.x()), qMax(pos.y(), screenRect.y()));
 
         const bool fitUp = (q->mapToGlobal(adjustedActionRect.topLeft()).y() >= popup_size.height());
         const bool fitDown = (pos.y() + popup_size.height() <= screenRect.bottom());
@@ -733,6 +735,9 @@ void QMenuBarPrivate::init()
         wceCreateMenuBar(q->parentWidget());
         if(wce_menubar)
             q->hide();
+    }
+    else {
+        QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
     }
 #endif
 #ifdef Q_WS_S60
@@ -1484,7 +1489,8 @@ bool QMenuBar::event(QEvent *e)
     break;
     case QEvent::ShortcutOverride: {
         QKeyEvent *kev = static_cast<QKeyEvent*>(e);
-        if (kev->key() == Qt::Key_Escape) {
+        //we only filter out escape if there is a current action
+        if (kev->key() == Qt::Key_Escape && d->currentAction) {
             e->accept();
             return true;
         }
@@ -1932,7 +1938,7 @@ void QMenuBar::setDefaultAction(QAction *act)
     if (qt_wince_is_mobile())
         if (d->defaultAction) {
             disconnect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));
-            disconnect(d->defaultAction, SIGNAL(destroyed ()), this, SLOT(_q_updateDefaultAction()));
+            disconnect(d->defaultAction, SIGNAL(destroyed()), this, SLOT(_q_updateDefaultAction()));
         }
 #endif
     d->defaultAction = act;

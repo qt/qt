@@ -45,6 +45,7 @@
 #include <private/qfactoryloader_p.h>
 #include "qaudiodevicefactory_p.h"
 
+#ifndef QT_NO_AUDIO_BACKEND
 #if defined(Q_OS_WIN)
 #include "qaudiodeviceinfo_win32_p.h"
 #include "qaudiooutput_win32_p.h"
@@ -57,6 +58,7 @@
 #include "qaudiodeviceinfo_alsa_p.h"
 #include "qaudiooutput_alsa_p.h"
 #include "qaudioinput_alsa_p.h"
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -94,10 +96,10 @@ public:
     int bufferSize() const  { return 0; }
     void setNotifyInterval(int ) {}
     int notifyInterval() const { return 0; }
-    qint64 totalTime() const { return 0; }
-    qint64 clock() const { return 0; }
+    qint64 processedUSecs() const { return 0; }
+    qint64 elapsedUSecs() const { return 0; }
     QAudio::Error error() const { return QAudio::OpenError; }
-    QAudio::State state() const { return QAudio::StopState; }
+    QAudio::State state() const { return QAudio::StoppedState; }
     QAudioFormat format() const { return QAudioFormat(); }
 };
 
@@ -115,26 +117,28 @@ public:
     int bufferSize() const  { return 0; }
     void setNotifyInterval(int ) {}
     int notifyInterval() const { return 0; }
-    qint64 totalTime() const { return 0; }
-    qint64 clock() const { return 0; }
+    qint64 processedUSecs() const { return 0; }
+    qint64 elapsedUSecs() const { return 0; }
     QAudio::Error error() const { return QAudio::OpenError; }
-    QAudio::State state() const { return QAudio::StopState; }
+    QAudio::State state() const { return QAudio::StoppedState; }
     QAudioFormat format() const { return QAudioFormat(); }
 };
 
-QList<QAudioDeviceInfo> QAudioDeviceFactory::deviceList(QAudio::Mode mode)
+QList<QAudioDeviceInfo> QAudioDeviceFactory::availableDevices(QAudio::Mode mode)
 {
     QList<QAudioDeviceInfo> devices;
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
-    foreach (const QByteArray &handle, QAudioDeviceInfoInternal::deviceList(mode))
+    foreach (const QByteArray &handle, QAudioDeviceInfoInternal::availableDevices(mode))
         devices << QAudioDeviceInfo(QLatin1String("builtin"), handle, mode);
+#endif
 #endif
     QFactoryLoader* l = loader();
 
     foreach (QString const& key, l->keys()) {
         QAudioEngineFactoryInterface* plugin = qobject_cast<QAudioEngineFactoryInterface*>(l->instance(key));
         if (plugin) {
-            foreach (QByteArray const& handle, plugin->deviceList(mode))
+            foreach (QByteArray const& handle, plugin->availableDevices(mode))
                 devices << QAudioDeviceInfo(key, handle, mode);
         }
 
@@ -149,12 +153,14 @@ QAudioDeviceInfo QAudioDeviceFactory::defaultInputDevice()
     QAudioEngineFactoryInterface* plugin = qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(QLatin1String("default")));
 
     if (plugin) {
-        QList<QByteArray> list = plugin->deviceList(QAudio::AudioInput);
+        QList<QByteArray> list = plugin->availableDevices(QAudio::AudioInput);
         if (list.size() > 0)
             return QAudioDeviceInfo(QLatin1String("default"), list.at(0), QAudio::AudioInput);
     }
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     return QAudioDeviceInfo(QLatin1String("builtin"), QAudioDeviceInfoInternal::defaultInputDevice(), QAudio::AudioInput);
+#endif
 #endif
     return QAudioDeviceInfo();
 }
@@ -164,12 +170,14 @@ QAudioDeviceInfo QAudioDeviceFactory::defaultOutputDevice()
     QAudioEngineFactoryInterface* plugin = qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(QLatin1String("default")));
 
     if (plugin) {
-        QList<QByteArray> list = plugin->deviceList(QAudio::AudioOutput);
+        QList<QByteArray> list = plugin->availableDevices(QAudio::AudioOutput);
         if (list.size() > 0)
             return QAudioDeviceInfo(QLatin1String("default"), list.at(0), QAudio::AudioOutput);
     }
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     return QAudioDeviceInfo(QLatin1String("builtin"), QAudioDeviceInfoInternal::defaultOutputDevice(), QAudio::AudioOutput);
+#endif
 #endif
     return QAudioDeviceInfo();
 }
@@ -178,9 +186,11 @@ QAbstractAudioDeviceInfo* QAudioDeviceFactory::audioDeviceInfo(const QString &re
 {
     QAbstractAudioDeviceInfo *rc = 0;
 
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     if (realm == QLatin1String("builtin"))
         return new QAudioDeviceInfoInternal(handle, mode);
+#endif
 #endif
     QAudioEngineFactoryInterface* plugin =
         qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(realm));
@@ -205,9 +215,11 @@ QAbstractAudioInput* QAudioDeviceFactory::createInputDevice(QAudioDeviceInfo con
 {
     if (deviceInfo.isNull())
         return new QNullInputDevice();
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     if (deviceInfo.realm() == QLatin1String("builtin"))
         return new QAudioInputPrivate(deviceInfo.handle(), format);
+#endif
 #endif
     QAudioEngineFactoryInterface* plugin =
         qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(deviceInfo.realm()));
@@ -222,9 +234,11 @@ QAbstractAudioOutput* QAudioDeviceFactory::createOutputDevice(QAudioDeviceInfo c
 {
     if (deviceInfo.isNull())
         return new QNullOutputDevice();
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     if (deviceInfo.realm() == QLatin1String("builtin"))
         return new QAudioOutputPrivate(deviceInfo.handle(), format);
+#endif
 #endif
     QAudioEngineFactoryInterface* plugin =
         qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(deviceInfo.realm()));

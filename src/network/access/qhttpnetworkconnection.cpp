@@ -194,11 +194,20 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 
     // some websites mandate an accept-language header and fail
     // if it is not sent. This is a problem with the website and
-    // not with us, but we work around this by setting a
-    // universal one always.
+    // not with us, but we work around this by setting
+    // one always.
     value = request.headerField("accept-language");
-    if (value.isEmpty())
-        request.setHeaderField("accept-language", "en,*");
+    if (value.isEmpty()) {
+        QString systemLocale = QLocale::system().name().replace(QChar::fromAscii('_'),QChar::fromAscii('-'));
+        QString acceptLanguage;
+        if (systemLocale == QLatin1String("C"))
+            acceptLanguage = QString::fromAscii("en,*");
+        else if (systemLocale.startsWith(QLatin1String("en-")))
+            acceptLanguage = QString::fromAscii("%1,*").arg(systemLocale);
+        else
+            acceptLanguage = QString::fromAscii("%1,en,*").arg(systemLocale);
+        request.setHeaderField("Accept-Language", acceptLanguage.toAscii());
+    }
 
     // set the User Agent
     value = request.headerField("user-agent");
@@ -372,7 +381,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].authenticator);
             if (priv && priv->method != QAuthenticatorPrivate::None) {
                 QByteArray response = priv->calculateResponse(request.d->methodName(), request.d->uri(false));
-                request.setHeaderField("authorization", response);
+                request.setHeaderField("Authorization", response);
             }
         }
     }
@@ -381,7 +390,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].proxyAuthenticator);
             if (priv && priv->method != QAuthenticatorPrivate::None) {
                 QByteArray response = priv->calculateResponse(request.d->methodName(), request.d->uri(false));
-                request.setHeaderField("proxy-authorization", response);
+                request.setHeaderField("Proxy-Authorization", response);
             }
         }
     }

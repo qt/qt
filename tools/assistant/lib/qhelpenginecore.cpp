@@ -66,8 +66,8 @@ void QHelpEngineCorePrivate::init(const QString &collectionFile,
 {
     q = helpEngineCore;
     collectionHandler = new QHelpCollectionHandler(collectionFile, helpEngineCore);
-    connect(collectionHandler, SIGNAL(error(const QString&)),
-        this, SLOT(errorReceived(const QString&)));
+    connect(collectionHandler, SIGNAL(error(QString)),
+        this, SLOT(errorReceived(QString)));
     needsSetup = true;
 }
 
@@ -177,12 +177,11 @@ void QHelpEngineCorePrivate::errorReceived(const QString &msg)
     instead.
 
     When creating a custom help viewer the viewer can be
-configured by writing a custom collection file which could contain various
-keywords to be used to configure the help engine. These keywords and values
-and their meaning can be found in the help information for
-\l{assistant-custom-help-viewer.html#creating-a-custom-help-collection-file
-}{creating a custom help collection file} for
-Assistant.
+    configured by writing a custom collection file which could contain various
+    keywords to be used to configure the help engine. These keywords and values
+    and their meaning can be found in the help information for
+    \l{assistant-custom-help-viewer.html#creating-a-custom-help-collection-file}
+    {creating a custom help collection file} for Assistant.
 */
 
 /*!
@@ -360,19 +359,21 @@ bool QHelpEngineCore::unregisterDocumentation(const QString &namespaceName)
 */
 QString QHelpEngineCore::documentationFileName(const QString &namespaceName)
 {
-    QString res;
-    if (!d->setup())
-        return res;
-    const QHelpCollectionHandler::DocInfoList docList = d->collectionHandler->registeredDocumentations();
-    foreach(const QHelpCollectionHandler::DocInfo info, docList) {
-        if (info.namespaceName == namespaceName) {
-            QFileInfo fi(d->collectionHandler->collectionFile());
-            fi.setFile(fi.absolutePath() + QDir::separator() + info.fileName);
-            res = QDir::cleanPath(fi.absoluteFilePath());
-            break;
+    if (d->setup()) {
+        const QHelpCollectionHandler::DocInfoList docList =
+            d->collectionHandler->registeredDocumentations();
+        foreach(const QHelpCollectionHandler::DocInfo info, docList) {
+            if (info.namespaceName == namespaceName) {
+                if (QDir::isAbsolutePath(info.fileName))
+                    return QDir::cleanPath(info.fileName);
+
+                QFileInfo fi(d->collectionHandler->collectionFile());
+                fi.setFile(fi.absolutePath() + QDir::separator() + info.fileName);
+                return QDir::cleanPath(fi.absoluteFilePath());
+            }
         }
     }
-    return res;
+    return QString();
 }
 
 /*!

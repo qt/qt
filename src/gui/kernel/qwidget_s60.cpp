@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -213,6 +213,15 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     if ((q->windowType() == Qt::Desktop))
         return;
+
+    QPoint oldPos(q->pos());
+    QSize oldSize(q->size());
+    QRect oldGeom(data.crect);
+
+    // Lose maximized status if deliberate resize
+    if (w != oldSize.width() || h != oldSize.height())
+        data.window_state &= ~Qt::WindowMaximized;
+
     if (extra) {                                // any size restrictions?
         w = qMin(w,extra->maxw);
         h = qMin(h,extra->maxh);
@@ -228,16 +237,9 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         data.window_state = s;
     }
 
-    QPoint oldPos(q->pos());
-    QSize oldSize(q->size());
-    QRect oldGeom(data.crect);
-
     bool isResize = w != oldSize.width() || h != oldSize.height();
     if (!isMove && !isResize)
         return;
-
-    if (isResize)
-        data.window_state &= ~Qt::WindowMaximized;
 
     if (q->isWindow()) {
         if (w == 0 || h == 0) {
@@ -359,6 +361,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         QScopedPointer<QSymbianControl> control( q_check_ptr(new QSymbianControl(q)) );
         QT_TRAP_THROWING(control->ConstructL(true, desktop));
+        control->SetMopParent(static_cast<CEikAppUi*>(S60->appUi()));
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
@@ -485,12 +488,6 @@ void QWidgetPrivate::show_sys()
 
         if(q->isWindow())
             id->setFocusSafely(true);
-
-        // Force setting of the icon after window is made visible,
-        // this is needed even WA_SetWindowIcon is not set, as in that case we need
-        // to reset to the application level window icon
-        if(q->isWindow())
-            setWindowIcon_sys(true);
     }
 
     invalidateBuffer(q->rect());
@@ -884,7 +881,8 @@ void QWidgetPrivate::deleteTLSysExtra()
 void QWidgetPrivate::createSysExtra()
 {
     extra->activated = 0;
-    extra->disableBlit = 0;
+    extra->nativePaintMode = QWExtra::Default;
+    extra->receiveNativePaintEvents = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -1177,18 +1175,6 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             if (id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
                 id->setFocusSafely(false);
             id->ControlEnv()->AppUi()->RemoveFromStack(id);
-
-            // Hack to activate window under destroyed one. With this activation
-            // the next visible window will get keyboard focus
-            WId wid = CEikonEnv::Static()->AppUi()->TopFocusedControl();
-            if (wid) {
-                QWidget *widget = QWidget::find(wid);
-                QApplication::setActiveWindow(widget);
-                if (widget) {
-                    // Reset global window title for focusing window
-                    widget->d_func()->setWindowTitle_sys(widget->windowTitle());
-                }
-            }
         }
     }
 
@@ -1235,7 +1221,7 @@ void QWidget::releaseKeyboard()
 
 void QWidget::grabMouse()
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
@@ -1252,7 +1238,7 @@ void QWidget::grabMouse()
 #ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));

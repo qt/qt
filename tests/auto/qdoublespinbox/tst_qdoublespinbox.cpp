@@ -147,6 +147,9 @@ private slots:
     void task221221();
     void task255471_decimalsValidation();
 
+    void taskQTBUG_5008_textFromValueAndValidate();
+    void taskQTBUG_6670_selectAllWithPrefix();
+
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(double);
@@ -682,7 +685,7 @@ void tst_QDoubleSpinBox::valueFromTextAndValidate_data()
     QTest::newRow("data10") << QString(" 1") << Acceptable << 0.0 << 100.0 << (int)QLocale::Norwegian << QString("1");
     QTest::newRow("data11") << QString(" 1") << Acceptable << 0.0 << 100.0 << (int)QLocale::C << QString("1");
     QTest::newRow("data12") << QString("1,") << Acceptable << 0.0 << 100.0 << (int)QLocale::Norwegian << QString();
-    QTest::newRow("data13") << QString("1,") << Intermediate << 0.0 << 1000.0 << (int)QLocale::C << QString();
+    QTest::newRow("data13") << QString("1,") << Acceptable << 0.0 << 1000.0 << (int)QLocale::C << QString();
     QTest::newRow("data14") << QString("1, ") << Acceptable << 0.0 << 100.0 << (int)QLocale::Norwegian << QString("1,");
     QTest::newRow("data15") << QString("1, ") << Invalid << 0.0 << 100.0 << (int)QLocale::C << QString();
     QTest::newRow("data16") << QString("2") << Intermediate << 100.0 << 102.0 << (int)QLocale::C << QString();
@@ -717,8 +720,8 @@ void tst_QDoubleSpinBox::valueFromTextAndValidate_data()
     QTest::newRow("data45") << QString("200,2") << Invalid << 0.0 << 1000.0 << (int)QLocale::C << QString();
     QTest::newRow("data46") << QString("200,2") << Acceptable << 0.0 << 1000.0 << (int)QLocale::German << QString();
     QTest::newRow("data47") << QString("2.2") << Acceptable << 0.0 << 1000.0 << (int)QLocale::C << QString();
-    QTest::newRow("data48") << QString("2.2") << Intermediate << 0.0 << 1000.0 << (int)QLocale::German << QString();
-    QTest::newRow("data49") << QString("2.2,00") << Intermediate << 0.0 << 1000.0 << (int)QLocale::German << QString();
+    QTest::newRow("data48") << QString("2.2") << Acceptable << 0.0 << 1000.0 << (int)QLocale::German << QString();
+    QTest::newRow("data49") << QString("2.2,00") << Acceptable << 0.0 << 1000.0 << (int)QLocale::German << QString();
     QTest::newRow("data50") << QString("2.2") << Acceptable << 0.0 << 1000.0 << (int)QLocale::C << QString();
     QTest::newRow("data51") << QString("2.2,00") << Invalid << 0.0 << 1000.0 << (int)QLocale::C << QString();
     QTest::newRow("data52") << QString("2..2,00") << Invalid << 0.0 << 1000.0 << (int)QLocale::German << QString();
@@ -1044,6 +1047,54 @@ void tst_QDoubleSpinBox::task255471_decimalsValidation()
     }
 }
 
+void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
+{
+    class DecoratedSpinBox : public QDoubleSpinBox
+    {
+    public:
+        DecoratedSpinBox()
+        {
+            setLocale(QLocale::French);
+            setMaximum(100000000);
+            setValue(1000);
+        }
+
+        QLineEdit *lineEdit() const
+        {
+            return QDoubleSpinBox::lineEdit();
+        }
+
+        //we use the French delimiters here
+        QString textFromValue (double value) const
+        {
+            return locale().toString(value);
+        }
+    } spinbox;
+    spinbox.show();
+    spinbox.activateWindow();
+    spinbox.setFocus();
+    QApplication::setActiveWindow(&spinbox);
+    QTest::qWaitForWindowShown(&spinbox);
+    QTRY_VERIFY(spinbox.hasFocus());
+    QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
+    QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
+    spinbox.lineEdit()->setCursorPosition(2); //just after the first thousand separator
+    QTest::keyClick(0, Qt::Key_0); // let's insert a 0
+    QCOMPARE(spinbox.value(), 10000.);
+    spinbox.clearFocus(); //make sure the value is correctly formatted
+    QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
+}
+
+void tst_QDoubleSpinBox::taskQTBUG_6670_selectAllWithPrefix()
+{
+    DoubleSpinBox spin;
+    spin.setPrefix("$ ");
+    spin.lineEdit()->selectAll();
+    QTest::keyClick(spin.lineEdit(), Qt::Key_1);
+    QCOMPARE(spin.value(), 1.);
+    QTest::keyClick(spin.lineEdit(), Qt::Key_2);
+    QCOMPARE(spin.value(), 12.);
+}
 
 QTEST_MAIN(tst_QDoubleSpinBox)
 #include "tst_qdoublespinbox.moc"

@@ -56,8 +56,18 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef QT_BOOTSTRAPPED
+QString QObject::tr(const char *sourceText, const char *, int n)
+{
+    QString ret = QString::fromLatin1(sourceText);
+    if (n >= 0)
+        ret.replace(QLatin1String("%n"), QString::number(n));
+    return ret;
+}
+#endif
+
 Translator::Translator() :
-    m_codecName("ISO-8859-1"),
+    m_codec(QTextCodec::codecForName("ISO-8859-1")),
     m_locationsType(AbsoluteLocations)
 {
 }
@@ -80,18 +90,9 @@ QList<Translator::FileFormat> &Translator::registeredFileFormats()
     return theFormats;
 }
 
-void Translator::replace(const TranslatorMessage &msg)
-{
-    int index = m_messages.indexOf(msg);
-    if (index == -1)
-        m_messages.append(msg);
-    else
-        m_messages[index] = msg;
-}
-
 void Translator::replaceSorted(const TranslatorMessage &msg)
 {
-    int index = m_messages.indexOf(msg);
+    int index = find(msg);
     if (index == -1)
         appendSorted(msg);
     else
@@ -100,7 +101,7 @@ void Translator::replaceSorted(const TranslatorMessage &msg)
 
 void Translator::extend(const TranslatorMessage &msg)
 {
-    int index = m_messages.indexOf(msg);
+    int index = find(msg);
     if (index == -1) {
         m_messages.append(msg);
     } else {
@@ -145,7 +146,7 @@ void Translator::appendSorted(const TranslatorMessage &msg)
     int prevLine = 0;
     int curIdx = 0;
     foreach (const TranslatorMessage &mit, m_messages) {
-        bool sameFile = mit.fileName() == msg.fileName();
+        bool sameFile = mit.fileName() == msg.fileName() && mit.context() == msg.context();
         int curLine;
         if (sameFile && (curLine = mit.lineNumber()) >= prevLine) {
             if (msgLine >= prevLine && msgLine < curLine) {
@@ -311,19 +312,21 @@ bool Translator::release(QFile *iod, ConversionData &cd) const
     return false;
 }
 
-bool Translator::contains(const QString &context,
-    const QString &sourceText, const QString &comment) const
+int Translator::find(const TranslatorMessage &msg) const
 {
-    return m_messages.contains(TranslatorMessage(context, sourceText, comment,
-        QString(), QString(), 0));
-}
-
-TranslatorMessage Translator::find(const QString &context,
-    const QString &sourceText, const QString &comment) const
-{
-    TranslatorMessage needle(context, sourceText, comment, QString(), QString(), 0);
-    int index = m_messages.indexOf(needle);
-    return index == -1 ? TranslatorMessage() : m_messages.at(index);
+    for (int i = 0; i < m_messages.count(); ++i) {
+        const TranslatorMessage &tmsg = m_messages.at(i);
+        if (msg.id().isEmpty() || tmsg.id().isEmpty()) {
+            if (msg.context() == tmsg.context()
+                && msg.sourceText() == tmsg.sourceText()
+                && msg.comment() == tmsg.comment())
+                return i;
+        } else {
+            if (msg.id() == tmsg.id())
+                return i;
+        }
+    }
+    return -1;
 }
 
 TranslatorMessage Translator::find(const QString &context,
@@ -344,7 +347,7 @@ TranslatorMessage Translator::find(const QString &context,
 bool Translator::contains(const QString &context) const
 {
     foreach (const TranslatorMessage &msg, m_messages)
-        if (msg.context() == context && msg.sourceText().isEmpty())
+        if (msg.context() == context && msg.sourceText().isEmpty() && msg.id().isEmpty())
             return true;
     return false;
 }
@@ -352,7 +355,7 @@ bool Translator::contains(const QString &context) const
 TranslatorMessage Translator::find(const QString &context) const
 {
     foreach (const TranslatorMessage &msg, m_messages)
-        if (msg.context() == context && msg.sourceText().isEmpty())
+        if (msg.context() == context && msg.sourceText().isEmpty() && msg.id().isEmpty())
             return msg;
     return TranslatorMessage();
 }
@@ -435,49 +438,143 @@ void Translator::dropUiLines()
     }
 }
 
-QSet<TranslatorMessagePtr> Translator::resolveDuplicates()
+struct TranslatorMessageIdPtr {
+    explicit TranslatorMessageIdPtr(const TranslatorMessage &tm)
+    {
+        ptr = &tm;
+    }
+
+    inline const TranslatorMessage *operator->() const
+    {
+        return ptr;
+    }
+
+    const TranslatorMessage *ptr;
+};
+
+Q_DECLARE_TYPEINFO(TranslatorMessageIdPtr, Q_MOVABLE_TYPE);
+
+inline int qHash(TranslatorMessageIdPtr tmp)
 {
-    QSet<TranslatorMessagePtr> dups;
-    QHash<TranslatorMessagePtr, int> refs;
+    return qHash(tmp->id());
+}
+
+inline bool operator==(TranslatorMessageIdPtr tmp1, TranslatorMessageIdPtr tmp2)
+{
+    return tmp1->id() == tmp2->id();
+}
+
+struct TranslatorMessageContentPtr {
+    explicit TranslatorMessageContentPtr(const TranslatorMessage &tm)
+    {
+        ptr = &tm;
+    }
+
+    inline const TranslatorMessage *operator->() const
+    {
+        return ptr;
+    }
+
+    const TranslatorMessage *ptr;
+};
+
+Q_DECLARE_TYPEINFO(TranslatorMessageContentPtr, Q_MOVABLE_TYPE);
+
+inline int qHash(TranslatorMessageContentPtr tmp)
+{
+    int hash = qHash(tmp->context()) ^ qHash(tmp->sourceText());
+    if (!tmp->sourceText().isEmpty())
+        // Special treatment for context comments (empty source).
+        hash ^= qHash(tmp->comment());
+    return hash;
+}
+
+inline bool operator==(TranslatorMessageContentPtr tmp1, TranslatorMessageContentPtr tmp2)
+{
+    if (tmp1->context() != tmp2->context() || tmp1->sourceText() != tmp2->sourceText())
+        return false;
+    // Special treatment for context comments (empty source).
+    if (tmp1->sourceText().isEmpty())
+        return true;
+    return tmp1->comment() == tmp2->comment();
+}
+
+Translator::Duplicates Translator::resolveDuplicates()
+{
+    Duplicates dups;
+    QHash<TranslatorMessageIdPtr, int> idRefs;
+    QHash<TranslatorMessageContentPtr, int> contentRefs;
     for (int i = 0; i < m_messages.count();) {
         const TranslatorMessage &msg = m_messages.at(i);
-        QHash<TranslatorMessagePtr, int>::ConstIterator it = refs.constFind(msg);
-        if (it != refs.constEnd()) {
-            TranslatorMessage &omsg = m_messages[*it];
-            if (omsg.isUtf8() != msg.isUtf8() && !omsg.isNonUtf8()) {
-                // Dual-encoded message
-                omsg.setUtf8(true);
-                omsg.setNonUtf8(true);
-            } else {
-                // Duplicate
-                dups.insert(omsg);
+        TranslatorMessage *omsg;
+        int oi;
+        QSet<int> *pDup;
+        if (!msg.id().isEmpty()) {
+            QHash<TranslatorMessageIdPtr, int>::ConstIterator it =
+                    idRefs.constFind(TranslatorMessageIdPtr(msg));
+            if (it != idRefs.constEnd()) {
+                oi = *it;
+                omsg = &m_messages[oi];
+                pDup = &dups.byId;
+                goto gotDupe;
             }
-            if (!omsg.isTranslated() && msg.isTranslated())
-                omsg.setTranslations(msg.translations());
-            m_messages.removeAt(i);
-        } else {
-            refs[msg] = i;
-            ++i;
         }
+        {
+            QHash<TranslatorMessageContentPtr, int>::ConstIterator it =
+                    contentRefs.constFind(TranslatorMessageContentPtr(msg));
+            if (it != contentRefs.constEnd()) {
+                oi = *it;
+                omsg = &m_messages[oi];
+                if (msg.id().isEmpty() || omsg->id().isEmpty()) {
+                    if (!msg.id().isEmpty() && omsg->id().isEmpty()) {
+                        omsg->setId(msg.id());
+                        idRefs[TranslatorMessageIdPtr(*omsg)] = oi;
+                    }
+                    pDup = &dups.byContents;
+                    goto gotDupe;
+                }
+                // This is really a content dupe, but with two distinct IDs.
+            }
+        }
+        if (!msg.id().isEmpty())
+            idRefs[TranslatorMessageIdPtr(msg)] = i;
+        contentRefs[TranslatorMessageContentPtr(msg)] = i;
+        ++i;
+        continue;
+      gotDupe:
+        if (omsg->isUtf8() != msg.isUtf8() && !omsg->isNonUtf8()) {
+            // Dual-encoded message
+            omsg->setUtf8(true);
+            omsg->setNonUtf8(true);
+        } else {
+            // Duplicate
+            pDup->insert(oi);
+        }
+        if (!omsg->isTranslated() && msg.isTranslated())
+            omsg->setTranslations(msg.translations());
+        m_messages.removeAt(i);
     }
     return dups;
 }
 
-void Translator::reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
+void Translator::reportDuplicates(const Duplicates &dupes,
                                   const QString &fileName, bool verbose)
 {
-    if (!dupes.isEmpty()) {
+    if (!dupes.byId.isEmpty() || !dupes.byContents.isEmpty()) {
         if (!verbose) {
             qWarning("Warning: dropping duplicate messages in '%s'\n(try -verbose for more info).",
                      qPrintable(fileName));
         } else {
             qWarning("Warning: dropping duplicate messages in '%s':", qPrintable(fileName));
-            foreach (const TranslatorMessagePtr &msg, dupes) {
+            foreach (int i, dupes.byId)
+                qWarning("\n* ID: %s", qPrintable(message(i).id()));
+            foreach (int j, dupes.byContents) {
+                const TranslatorMessage &msg = message(j);
                 qWarning("\n* Context: %s\n* Source: %s",
-                        qPrintable(msg->context()),
-                        qPrintable(msg->sourceText()));
-                if (!msg->comment().isEmpty())
-                    qWarning("* Comment: %s", qPrintable(msg->comment()));
+                        qPrintable(msg.context()),
+                        qPrintable(msg.sourceText()));
+                if (!msg.comment().isEmpty())
+                    qWarning("* Comment: %s", qPrintable(msg.comment()));
             }
             qWarning();
         }
@@ -616,10 +713,15 @@ void Translator::setCodecName(const QByteArray &name)
     if (!codec) {
         if (!name.isEmpty())
             qWarning("No QTextCodec for %s available. Using Latin1\n", name.constData());
-        m_codecName = "ISO-8859-1";
+        m_codec = QTextCodec::codecForName("ISO-8859-1");
     } else {
-        m_codecName = codec->name();
+        m_codec = codec;
     }
+}
+
+QByteArray Translator::codecName() const
+{
+    return m_codec->name();
 }
 
 void Translator::dump() const

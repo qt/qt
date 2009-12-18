@@ -6210,8 +6210,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     \list
     \o qt.nokia.com becomes http://qt.nokia.com
     \o ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
-    \o localhost becomes http://localhost
-    \o /home/user/test.html becomes file:///home/user/test.html (if exists)
+    \o hostname becomes http://hostname
+    \o /home/user/test.html becomes file:///home/user/test.html
     \endlist
 
     \section2 Tips to avoid erroneous character conversion when dealing with
@@ -6228,30 +6228,31 @@ QUrl QUrl::fromUserInput(const QString &userInput)
 {
     QString trimmedString = userInput.trimmed();
 
-    // Check the most common case of a valid url with scheme and host first
-    QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    if (url.isValid() && !url.scheme().isEmpty() && !url.host().isEmpty())
-        return url;
-
-    // Absolute files that exists
-    if (QDir::isAbsolutePath(trimmedString) && QFile::exists(trimmedString))
+    // Check first for files, since on Windows drive letters can be interpretted as schemes
+    if (QDir::isAbsolutePath(trimmedString))
         return QUrl::fromLocalFile(trimmedString);
 
-    // If the string is missing the scheme or the scheme is not valid prepend a scheme
-    QString scheme = url.scheme();
-    if (scheme.isEmpty() || scheme.contains(QLatin1Char('.')) || scheme == QLatin1String("localhost")) {
-        // Do not do anything for strings such as "foo", only "foo.com"
-        int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
-        if (dotIndex != -1 || trimmedString.startsWith(QLatin1String("localhost"))) {
-            const QString hostscheme = trimmedString.left(dotIndex).toLower();
-            QByteArray scheme = (hostscheme == QLatin1String("ftp")) ? "ftp" : "http";
-            trimmedString = QLatin1String(scheme) + QLatin1String("://") + trimmedString;
-        }
-        url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    }
+    QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
+    QUrl urlPrepended = QUrl::fromEncoded((QLatin1String("http://") + trimmedString).toUtf8(), QUrl::TolerantMode);
 
-    if (url.isValid())
+    // Check the most common case of a valid url with scheme and host
+    // We check if the port would be valid by adding the scheme to handle the case host:port
+    // where the host would be interpretted as the scheme
+    if (url.isValid()
+        && !url.scheme().isEmpty()
+        && (!url.host().isEmpty() || !url.path().isEmpty())
+        && urlPrepended.port() == -1)
         return url;
+
+    // Else, try the prepended one and adjust the scheme from the host name
+    if (urlPrepended.isValid() && (!urlPrepended.host().isEmpty() || !urlPrepended.path().isEmpty()))
+    {
+        int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
+        const QString hostscheme = trimmedString.left(dotIndex).toLower();
+        if (hostscheme == QLatin1String("ftp"))
+            urlPrepended.setScheme(QLatin1String("ftp"));
+        return urlPrepended;
+    }
 
     return QUrl();
 }

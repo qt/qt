@@ -42,7 +42,10 @@
 #include "translator.h"
 #include "proreader.h"
 
+#ifndef QT_BOOTSTRAPPED
 #include <QtCore/QCoreApplication>
+#include <QtCore/QTranslator>
+#endif
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
@@ -51,7 +54,16 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QTextStream>
-#include <QtCore/QTranslator>
+
+QT_USE_NAMESPACE
+
+#ifdef QT_BOOTSTRAPPED
+static void initBinaryDir(
+#ifndef Q_OS_WIN
+        const char *argv0
+#endif
+        );
+#endif
 
 static void printOut(const QString & out)
 {
@@ -79,6 +91,9 @@ static void printUsage()
         "    -removeidentical\n"
         "           If the translated text is the same as\n"
         "           the source text, do not include the message\n"
+        "    -markuntranslated <prefix>\n"
+        "           If a message has no real translation, use the source text\n"
+        "           prefixed with the given string instead\n"
         "    -silent\n"
         "           Do not explain what is being done\n"
         "    -version\n"
@@ -100,15 +115,14 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
 }
 
 static bool releaseTranslator(Translator &tor, const QString &qmFileName,
-    bool verbose, bool ignoreUnfinished,
-    bool removeIdentical, bool idBased, TranslatorSaveMode mode)
+    ConversionData &cd, bool removeIdentical)
 {
-    Translator::reportDuplicates(tor.resolveDuplicates(), qmFileName, verbose);
+    tor.reportDuplicates(tor.resolveDuplicates(), qmFileName, cd.isVerbose());
 
-    if (verbose)
+    if (cd.isVerbose())
         printOut(QCoreApplication::tr( "Updating '%1'...\n").arg(qmFileName));
     if (removeIdentical) {
-        if ( verbose )
+        if (cd.isVerbose())
             printOut(QCoreApplication::tr( "Removing translations equal to source text in '%1'...\n").arg(qmFileName));
         tor.stripIdenticalSourceTranslations();
     }
@@ -120,12 +134,7 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
         return false;
     }
 
-    ConversionData cd;
     tor.normalizeTranslations(cd);
-    cd.m_verbose = verbose;
-    cd.m_ignoreUnfinished = ignoreUnfinished;
-    cd.m_idBased = idBased;
-    cd.m_saveMode = mode;
     bool ok = tor.release(&file, cd);
     file.close();
 
@@ -139,11 +148,11 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     return true;
 }
 
-static bool releaseTsFile(const QString& tsFileName, bool verbose,
-    bool ignoreUnfinished, bool removeIdentical, bool idBased, TranslatorSaveMode mode)
+static bool releaseTsFile(const QString& tsFileName,
+    ConversionData &cd, bool removeIdentical)
 {
     Translator tor;
-    if (!loadTsFile(tor, tsFileName, verbose))
+    if (!loadTsFile(tor, tsFileName, cd.isVerbose()))
         return false;
 
     QString qmFileName = tsFileName;
@@ -155,92 +164,98 @@ static bool releaseTsFile(const QString& tsFileName, bool verbose,
     }
     qmFileName += QLatin1String(".qm");
 
-    return releaseTranslator(tor, qmFileName, verbose, ignoreUnfinished, removeIdentical, idBased, mode);
+    return releaseTranslator(tor, qmFileName, cd, removeIdentical);
 }
 
 int main(int argc, char **argv)
 {
+#ifdef QT_BOOTSTRAPPED
+    initBinaryDir(
+#ifndef Q_OS_WIN
+            argv[0]
+#endif
+            );
+#else
     QCoreApplication app(argc, argv);
-    QStringList args = app.arguments();
     QTranslator translator;
     if (translator.load(QLatin1String("lrelease_") + QLocale::system().name()))
         app.installTranslator(&translator);
+#endif
 
-    bool verbose = true; // the default is true starting with Qt 4.2
-    bool ignoreUnfinished = false;
-    bool idBased = false;
-    // the default mode is SaveEverything starting with Qt 4.2
-    TranslatorSaveMode mode = SaveEverything;
+    ConversionData cd;
+    cd.m_verbose = true; // the default is true starting with Qt 4.2
     bool removeIdentical = false;
     Translator tor;
+    QStringList inputFiles;
     QString outputFile;
-    int numFiles = 0;
 
     for (int i = 1; i < argc; ++i) {
-        if (args[i] == QLatin1String("-compress")) {
-            mode = SaveStripped;
+        if (!strcmp(argv[i], "-compress")) {
+            cd.m_saveMode = SaveStripped;
             continue;
-        } else if (args[i] == QLatin1String("-idbased")) {
-            idBased = true;
+        } else if (!strcmp(argv[i], "-idbased")) {
+            cd.m_idBased = true;
             continue;
-        } else if (args[i] == QLatin1String("-nocompress")) {
-            mode = SaveEverything;
+        } else if (!strcmp(argv[i], "-nocompress")) {
+            cd.m_saveMode = SaveEverything;
             continue;
-        } else if (args[i] == QLatin1String("-removeidentical")) {
+        } else if (!strcmp(argv[i], "-removeidentical")) {
             removeIdentical = true;
             continue;
-        } else if (args[i] == QLatin1String("-nounfinished")) {
-            ignoreUnfinished = true;
+        } else if (!strcmp(argv[i], "-nounfinished")) {
+            cd.m_ignoreUnfinished = true;
             continue;
-        } else if (args[i] == QLatin1String("-silent")) {
-            verbose = false;
-            continue;
-        } else if (args[i] == QLatin1String("-verbose")) {
-            verbose = true;
-            continue;
-        } else if (args[i] == QLatin1String("-version")) {
-            printOut(QCoreApplication::tr( "lrelease version %1\n").arg(QLatin1String(QT_VERSION_STR)) );
-            return 0;
-        } else if (args[i] == QLatin1String("-qm")) {
+        } else if (!strcmp(argv[i], "-markuntranslated")) {
             if (i == argc - 1) {
                 printUsage();
                 return 1;
             }
-            i++;
-            outputFile = args[i];
-        } else if (args[i] == QLatin1String("-help")) {
+            cd.m_unTrPrefix = QString::fromLocal8Bit(argv[++i]);
+        } else if (!strcmp(argv[i], "-silent")) {
+            cd.m_verbose = false;
+            continue;
+        } else if (!strcmp(argv[i], "-verbose")) {
+            cd.m_verbose = true;
+            continue;
+        } else if (!strcmp(argv[i], "-version")) {
+            printOut(QCoreApplication::tr( "lrelease version %1\n").arg(QLatin1String(QT_VERSION_STR)) );
+            return 0;
+        } else if (!strcmp(argv[i], "-qm")) {
+            if (i == argc - 1) {
+                printUsage();
+                return 1;
+            }
+            outputFile = QString::fromLocal8Bit(argv[++i]);
+        } else if (!strcmp(argv[i], "-help")) {
             printUsage();
             return 0;
-        } else if (args[i][0] == QLatin1Char('-')) {
+        } else if (argv[i][0] == '-') {
             printUsage();
             return 1;
         } else {
-            numFiles++;
+            inputFiles << QString::fromLocal8Bit(argv[i]);
         }
     }
 
-    if (numFiles == 0) {
+    if (inputFiles.isEmpty()) {
         printUsage();
         return 1;
     }
 
-    for (int i = 1; i < argc; ++i) {
-        if (args[i][0] == QLatin1Char('-') || args[i] == outputFile)
-            continue;
-
-        if (args[i].endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
-            || args[i].endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
+    foreach (const QString &inputFile, inputFiles) {
+        if (inputFile.endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
+            || inputFile.endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
             QHash<QByteArray, QStringList> varMap;
-            bool ok = evaluateProFile(args[i], verbose, &varMap );
+            bool ok = evaluateProFile(inputFile, cd.isVerbose(), &varMap);
             if (ok) {
                 QStringList translations = varMap.value("TRANSLATIONS");
                 if (translations.isEmpty()) {
                     qWarning("lrelease warning: Met no 'TRANSLATIONS' entry in"
                              " project file '%s'\n",
-                             qPrintable(args[i]));
+                             qPrintable(inputFile));
                 } else {
                     foreach (const QString &trans, translations)
-                        if (!releaseTsFile(trans, verbose, ignoreUnfinished, removeIdentical, idBased, mode))
+                        if (!releaseTsFile(trans, cd, removeIdentical))
                             return 1;
                 }
             } else {
@@ -251,18 +266,93 @@ int main(int argc, char **argv)
             }
         } else {
             if (outputFile.isEmpty()) {
-                if (!releaseTsFile(args[i], verbose, ignoreUnfinished, removeIdentical, idBased, mode))
+                if (!releaseTsFile(inputFile, cd, removeIdentical))
                     return 1;
             } else {
-                if (!loadTsFile(tor, args[i], verbose))
+                if (!loadTsFile(tor, inputFile, cd.isVerbose()))
                     return 1;
             }
         }
     }
 
     if (!outputFile.isEmpty())
-        return releaseTranslator(tor, outputFile, verbose, ignoreUnfinished,
-                                 removeIdentical, idBased, mode) ? 0 : 1;
+        return releaseTranslator(tor, outputFile, cd, removeIdentical) ? 0 : 1;
 
     return 0;
 }
+
+#ifdef QT_BOOTSTRAPPED
+
+#ifdef Q_OS_WIN
+# include <windows.h>
+#endif
+
+static QString binDir;
+
+static void initBinaryDir(
+#ifndef Q_OS_WIN
+        const char *_argv0
+#endif
+        )
+{
+#ifdef Q_OS_WIN
+    wchar_t module_name[MAX_PATH];
+    GetModuleFileName(0, module_name, MAX_PATH);
+    QFileInfo filePath = QString::fromWCharArray(module_name);
+    binDir = filePath.filePath();
+#else
+    QString argv0 = QFile::decodeName(QByteArray(_argv0));
+    QString absPath;
+
+    if (!argv0.isEmpty() && argv0.at(0) == QLatin1Char('/')) {
+        /*
+          If argv0 starts with a slash, it is already an absolute
+          file path.
+        */
+        absPath = argv0;
+    } else if (argv0.contains(QLatin1Char('/'))) {
+        /*
+          If argv0 contains one or more slashes, it is a file path
+          relative to the current directory.
+        */
+        absPath = QDir::current().absoluteFilePath(argv0);
+    } else {
+        /*
+          Otherwise, the file path has to be determined using the
+          PATH environment variable.
+        */
+        QByteArray pEnv = qgetenv("PATH");
+        QDir currentDir = QDir::current();
+        QStringList paths = QString::fromLocal8Bit(pEnv.constData()).split(QLatin1String(":"));
+        for (QStringList::const_iterator p = paths.constBegin(); p != paths.constEnd(); ++p) {
+            if ((*p).isEmpty())
+                continue;
+            QString candidate = currentDir.absoluteFilePath(*p + QLatin1Char('/') + argv0);
+            QFileInfo candidate_fi(candidate);
+            if (candidate_fi.exists() && !candidate_fi.isDir()) {
+                binDir = candidate_fi.canonicalPath();
+                return;
+            }
+        }
+        return;
+    }
+
+    QFileInfo fi(absPath);
+    if (fi.exists())
+        binDir = fi.canonicalPath();
+#endif
+}
+
+QT_BEGIN_NAMESPACE
+
+// The name is hard-coded in QLibraryInfo
+QString qmake_libraryInfoFile()
+{
+    if (binDir.isEmpty())
+        return QString();
+    return QDir(binDir).filePath(QString::fromLatin1("qt.conf"));
+}
+
+QT_END_NAMESPACE
+
+#endif // QT_BOOTSTRAPPED

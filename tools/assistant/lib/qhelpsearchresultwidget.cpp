@@ -67,8 +67,8 @@ public:
         : QTreeWidget(parent)
     {
         header()->hide();
-        connect(this, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
-            this, SLOT(itemActivated(QTreeWidgetItem*, int)));
+        connect(this, SIGNAL(itemActivated(QTreeWidgetItem*,int)),
+            this, SLOT(itemActivated(QTreeWidgetItem*,int)));
     }
 
     void showResultPage(const QList<QHelpSearchEngine::SearchHit> hits)
@@ -99,8 +99,8 @@ public:
     QCLuceneResultWidget(QWidget *parent = 0)
         : QTextBrowser(parent)
     {
-        connect(this, SIGNAL(anchorClicked(const QUrl&)),
-            this, SIGNAL(requestShowLink(const QUrl&)));
+        connect(this, SIGNAL(anchorClicked(QUrl)),
+            this, SIGNAL(requestShowLink(QUrl)));
         setContextMenuPolicy(Qt::NoContextMenu);
     }
 
@@ -169,13 +169,13 @@ private slots:
     void showNextResultPage()
     {
         if (!searchEngine.isNull()
-            && resultLastToShow < searchEngine->hitsCount()) {
+            && resultLastToShow < searchEngine->hitCount()) {
             resultLastToShow += 20;
             resultFirstToShow += 20;
 
             resultTextBrowser->showResultPage(searchEngine->hits(resultFirstToShow,
                 resultLastToShow), isIndexing);
-            if (resultLastToShow >= searchEngine->hitsCount())
+            if (resultLastToShow >= searchEngine->hitCount())
                 updateNextButtonState(false);
         }
         updateHitRange();
@@ -184,7 +184,7 @@ private slots:
     void showLastResultPage()
     {
         if (!searchEngine.isNull()) {
-            resultLastToShow = searchEngine->hitsCount();
+            resultLastToShow = searchEngine->hitCount();
             resultFirstToShow = resultLastToShow - (resultLastToShow % 20);
 
             if (resultFirstToShow == resultLastToShow)
@@ -214,7 +214,7 @@ private slots:
     {
         if (!searchEngine.isNull()) {
             int count = resultLastToShow % 20;
-            if (count == 0 || resultLastToShow != searchEngine->hitsCount())
+            if (count == 0 || resultLastToShow != searchEngine->hitCount())
                 count = 20;
 
             resultLastToShow -= count;
@@ -298,7 +298,7 @@ private:
         int count = 0;
 
         if (!searchEngine.isNull()) {
-            count = searchEngine->hitsCount();
+            count = searchEngine->hitCount();
             if (count > 0) {
                 first = resultFirstToShow +1;
                 last = resultLastToShow > count ? count : resultLastToShow;
@@ -385,8 +385,8 @@ QHelpSearchResultWidget::QHelpSearchResultWidget(QHelpSearchEngine *engine)
     d->resultTextBrowser = new QCLuceneResultWidget(this);
     vLayout->addWidget(d->resultTextBrowser);
 
-    connect(d->resultTextBrowser, SIGNAL(requestShowLink(const QUrl&)), this,
-        SIGNAL(requestShowLink(const QUrl&)));
+    connect(d->resultTextBrowser, SIGNAL(requestShowLink(QUrl)), this,
+        SIGNAL(requestShowLink(QUrl)));
 
     connect(d->nextResultPage, SIGNAL(clicked()), d, SLOT(showNextResultPage()));
     connect(d->lastResultPage, SIGNAL(clicked()), d, SLOT(showLastResultPage()));
@@ -401,8 +401,8 @@ QHelpSearchResultWidget::QHelpSearchResultWidget(QHelpSearchEngine *engine)
 #else
     d->resultTreeWidget = new QDefaultResultWidget(this);
     vLayout->addWidget(d->resultTreeWidget);
-    connect(d->resultTreeWidget, SIGNAL(requestShowLink(const QUrl&)), this,
-        SIGNAL(requestShowLink(const QUrl&)));
+    connect(d->resultTreeWidget, SIGNAL(requestShowLink(QUrl)), this,
+        SIGNAL(requestShowLink(QUrl)));
 #endif
 
     connect(engine, SIGNAL(searchingFinished(int)), d, SLOT(setResults(int)));

@@ -185,7 +185,10 @@ public:
     const uchar *qwsBits() const;
     int qwsBytesPerLine() const;
     QRgb *clut() const;
-    int numCols() const;
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED int numCols() const;
+#endif
+    int colorCount() const;
 #elif defined(Q_WS_MAC)
     Qt::HANDLE macQDHandle() const;
     Qt::HANDLE macQDAlphaHandle() const;

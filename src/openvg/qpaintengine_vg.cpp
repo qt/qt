@@ -43,6 +43,7 @@
 #include "qpixmapdata_vg_p.h"
 #include "qpixmapfilter_vg_p.h"
 #include "qvgcompositionhelper_p.h"
+#include "qvgimagepool_p.h"
 #if !defined(QT_NO_EGL)
 #include <QtGui/private/qegl_p.h>
 #include "qwindowsurface_vgegl_p.h"
@@ -1018,7 +1019,7 @@ static VGImage toVGImage
 
     const uchar *pixels = img.bits();
 
-    VGImage vgImg = vgCreateImage
+    VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (format, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
     vgImageSubData
         (vgImg, pixels, img.bytesPerLine(), format, 0, 0,
@@ -1063,7 +1064,7 @@ static VGImage toVGImageSubRect
     const uchar *pixels = img.bits() + bpp * sr.x() +
                           img.bytesPerLine() * sr.y();
 
-    VGImage vgImg = vgCreateImage
+    VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (format, sr.width(), sr.height(), VG_IMAGE_QUALITY_FASTER);
     vgImageSubData
         (vgImg, pixels, img.bytesPerLine(), format, 0, 0,
@@ -1084,7 +1085,7 @@ static VGImage toVGImageWithOpacity(const QImage & image, qreal opacity)
 
     const uchar *pixels = img.bits();
 
-    VGImage vgImg = vgCreateImage
+    VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
     vgImageSubData
         (vgImg, pixels, img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0,
@@ -1106,7 +1107,7 @@ static VGImage toVGImageWithOpacitySubRect
 
     const uchar *pixels = img.bits();
 
-    VGImage vgImg = vgCreateImage
+    VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
     vgImageSubData
         (vgImg, pixels, img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0,
@@ -1194,6 +1195,12 @@ VGPaintType QVGPaintEnginePrivate::setBrush
             if (pd->classId() == QPixmapData::OpenVGClass) {
                 QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
                 vgImg = vgpd->toVGImage();
+
+                // We don't want the pool to reclaim this image
+                // because we cannot predict when the paint object
+                // will stop using it.  Replacing the image with
+                // new data will make the paint object invalid.
+                vgpd->detachImageFromPool();
             } else {
                 vgImg = toVGImage(*(pd->buffer()));
                 deref = true;
@@ -1201,6 +1208,7 @@ VGPaintType QVGPaintEnginePrivate::setBrush
         } else if (pd->classId() == QPixmapData::OpenVGClass) {
             QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
             vgImg = vgpd->toVGImage(opacity);
+            vgpd->detachImageFromPool();
         } else {
             vgImg = toVGImageWithOpacity(*(pd->buffer()), opacity);
             deref = true;
@@ -1570,12 +1578,6 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
 
-    // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
-        QPaintEngineEx::clip(rect, op);
-        return;
-    }
-
     switch (op) {
         case Qt::NoClip:
         {
@@ -1611,12 +1613,6 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     QVGPainterState *s = state();
 
     d->dirty |= QPaintEngine::DirtyClipRegion;
-
-    // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
-        QPaintEngineEx::clip(region, op);
-        return;
-    }
 
     switch (op) {
         case Qt::NoClip:
@@ -1753,13 +1749,13 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                 // QRegion copy on the heap for the test if we can.
                 QRegion clip = d->systemClip; // Reference-counted, no alloc.
                 QRect clipRect;
-                if (clip.numRects() == 1) {
+                if (clip.rectCount() == 1) {
                     clipRect = clip.boundingRect().intersected(r);
                 } else if (clip.isEmpty()) {
                     clipRect = r;
                 } else {
                     clip = clip.intersect(r);
-                    if (clip.numRects() != 1) {
+                    if (clip.rectCount() != 1) {
                         d->maskValid = false;
                         d->maskIsSet = false;
                         d->maskRect = QRect();
@@ -1810,7 +1806,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     Q_D(QVGPaintEngine);
 
     // Use the QRect case if the region consists of a single rectangle.
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         clip(region.boundingRect(), op);
         return;
     }
@@ -1853,7 +1849,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                     clip = r;
                 else
                     clip = clip.intersect(r);
-                if (clip.numRects() == 1) {
+                if (clip.rectCount() == 1) {
                     d->maskValid = false;
                     d->maskIsSet = false;
                     d->maskRect = clip.boundingRect();
@@ -1871,7 +1867,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 
         case Qt::IntersectClip:
         {
-            if (region.numRects() != 1) {
+            if (region.rectCount() != 1) {
                 // If there is more than one rectangle, then intersecting
                 // the rectangles one by one in modifyMask() will not give
                 // the desired result.  So fall back to path-based clipping.
@@ -2148,7 +2144,7 @@ QRegion QVGPaintEngine::defaultClipRegion()
 
 bool QVGPaintEngine::isDefaultClipRegion(const QRegion& region)
 {
-    if (region.numRects() != 1)
+    if (region.rectCount() != 1)
         return false;
 
     QPaintDevice *pdev = paintDevice();
@@ -3407,6 +3403,34 @@ void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)
 #endif
 }
 
+void QVGPaintEngine::fillRegion
+    (const QRegion& region, const QColor& color, const QSize& surfaceSize)
+{
+    Q_D(QVGPaintEngine);
+    if (d->clearColor != color || d->clearOpacity != 1.0f) {
+        VGfloat values[4];
+        values[0] = color.redF();
+        values[1] = color.greenF();
+        values[2] = color.blueF();
+        values[3] = color.alphaF();
+        vgSetfv(VG_CLEAR_COLOR, 4, values);
+        d->clearColor = color;
+        d->clearOpacity = 1.0f;
+    }
+    if (region.rectCount() == 1) {
+        QRect r = region.boundingRect();
+        vgClear(r.x(), surfaceSize.height() - r.y() - r.height(),
+                r.width(), r.height());
+    } else {
+        const QVector<QRect> rects = region.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            QRect r = rects.at(i);
+            vgClear(r.x(), surfaceSize.height() - r.y() - r.height(),
+                    r.width(), r.height());
+        }
+    }
+}
+
 #if !defined(QVG_NO_SINGLE_CONTEXT) && !defined(QT_NO_EGL)
 
 QVGCompositionHelper::QVGCompositionHelper()
@@ -3431,14 +3455,11 @@ void QVGCompositionHelper::endCompositing()
 }
 
 void QVGCompositionHelper::blitWindow
-    (QVGEGLWindowSurfacePrivate *surface, const QRect& rect,
-     const QPoint& topLeft, int opacity)
+    (VGImage image, const QSize& imageSize,
+     const QRect& rect, const QPoint& topLeft, int opacity)
 {
-    // Get the VGImage that is acting as a back buffer for the window.
-    VGImage image = surface->surfaceImage();
     if (image == VG_INVALID_HANDLE)
         return;
-    QSize imageSize = surface->surfaceSize();
 
     // Determine which sub rectangle of the window to draw.
     QRect sr = rect.translated(-topLeft);
@@ -3544,7 +3565,7 @@ void QVGCompositionHelper::fillBackground
             d->clearColor = color;
             d->clearOpacity = 1.0f;
         }
-        if (region.numRects() == 1) {
+        if (region.rectCount() == 1) {
             QRect r = region.boundingRect();
             vgClear(r.x(), screenSize.height() - r.y() - r.height(),
                     r.width(), r.height());
@@ -3569,7 +3590,7 @@ void QVGCompositionHelper::fillBackground
         d->ensureBrush(brush);
         d->setFillRule(VG_EVEN_ODD);
 
-        if (region.numRects() == 1) {
+        if (region.rectCount() == 1) {
             fillBackgroundRect(region.boundingRect(), d);
         } else {
             const QVector<QRect> rects = region.rects();

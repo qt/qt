@@ -545,6 +545,32 @@ qint64 QGraphicsViewPrivate::verticalScroll() const
 
 /*!
     \internal
+
+    Maps the given rectangle to the scene using QTransform::mapRect()
+*/
+QRectF QGraphicsViewPrivate::mapRectToScene(const QRect &rect) const
+{
+    if (dirtyScroll)
+        const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
+    QRectF scrolled = QRectF(rect.translated(scrollX, scrollY));
+    return identityMatrix ? scrolled : matrix.inverted().mapRect(scrolled);
+}
+
+
+/*!
+    \internal
+
+    Maps the given rectangle from the scene using QTransform::mapRect()
+*/
+QRectF QGraphicsViewPrivate::mapRectFromScene(const QRectF &rect) const
+{
+    if (dirtyScroll)
+        const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
+    return (identityMatrix ? rect : matrix.mapRect(rect)).translated(-scrollX, -scrollY);
+}
+
+/*!
+    \internal
 */
 void QGraphicsViewPrivate::updateScroll()
 {
@@ -978,7 +1004,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     // Step 2) If the expose region is a simple rect and the view is only
     // translated or scaled, search for items using
     // QGraphicsScene::items(QRectF).
-    bool simpleRectLookup =  exposedRegion.numRects() == 1 && matrix.type() <= QTransform::TxScale;
+    bool simpleRectLookup =  exposedRegion.rectCount() == 1 && matrix.type() <= QTransform::TxScale;
     if (simpleRectLookup) {
         return scene->items(exposedRegionSceneBounds,
                             Qt::IntersectsItemBoundingRect,
@@ -1512,6 +1538,13 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
                    this, SLOT(updateSceneRect(QRectF)));
         d->scene->d_func()->removeView(this);
         d->connectedToScene = false;
+
+        if (isActiveWindow() && isVisible()) {
+            QEvent windowDeactivate(QEvent::WindowDeactivate);
+            QApplication::sendEvent(d->scene, &windowDeactivate);
+        }
+        if(hasFocus())
+            d->scene->clearFocus();
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).
@@ -1533,6 +1566,11 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         // enable touch events if any items is interested in them
         if (!d->scene->d_func()->allItemsIgnoreTouchEvents)
             d->viewport->setAttribute(Qt::WA_AcceptTouchEvents);
+
+        if (isActiveWindow() && isVisible()) {
+            QEvent windowActivate(QEvent::WindowActivate);
+            QApplication::sendEvent(d->scene, &windowActivate);
+        }
     } else {
         d->recalculateContentSize();
     }
@@ -2637,6 +2675,19 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         if (!d->scene->d_func()->popupWidgets.isEmpty())
             d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.first());
         QApplication::sendEvent(d->scene, event);
+        break;
+    case QEvent::Show:
+        if (d->scene && isActiveWindow()) {
+            QEvent windowActivate(QEvent::WindowActivate);
+            QApplication::sendEvent(d->scene, &windowActivate);
+        }
+        break;
+    case QEvent::Hide:
+        // spontaneous event will generate a WindowDeactivate.
+        if (!event->spontaneous() && d->scene && isActiveWindow()) {
+            QEvent windowDeactivate(QEvent::WindowDeactivate);
+            QApplication::sendEvent(d->scene, &windowDeactivate);
+        }
         break;
     case QEvent::Leave:
         // ### This is a temporary fix for until we get proper mouse grab

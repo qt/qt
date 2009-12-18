@@ -292,7 +292,8 @@ void Generator::generateCode()
     QList<QByteArray> extraList;
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
-        if (!isVariantType(p.type) && !metaTypes.contains(p.type)) {
+        if (!isVariantType(p.type) && !metaTypes.contains(p.type) && !p.type.contains('*') &&
+                !p.type.contains('<') && !p.type.contains('>')) {
             int s = p.type.lastIndexOf("::");
             if (s > 0) {
                 QByteArray scope = p.type.left(s);
@@ -724,16 +725,6 @@ void Generator::generateMetacall()
             needEditable |= p.editable.endsWith(')');
             needUser |= p.user.endsWith(')');
         }
-        bool needAnything = needGet
-                            | needSet
-                            | needReset
-                            | needDesignable
-                            | needScriptable
-                            | needStored
-                            | needEditable
-                            | needUser;
-        if (!needAnything)
-            goto skip_properties;
         fprintf(out, "\n#ifndef QT_NO_PROPERTIES\n     ");
 
         if (needElse)
@@ -903,7 +894,6 @@ void Generator::generateMetacall()
 
         fprintf(out, "\n#endif // QT_NO_PROPERTIES");
     }
- skip_properties:
     if (methodList.size() || cdef->signalList.size() || cdef->propertyList.size())
         fprintf(out, "\n    ");
     fprintf(out,"return _id;\n}\n");

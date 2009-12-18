@@ -62,6 +62,7 @@ QEglContext::QEglContext()
     , currentSurface(EGL_NO_SURFACE)
     , current(false)
     , ownsContext(true)
+    , sharing(false)
 {
 }
 
@@ -174,6 +175,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     if (apiType == QEgl::OpenGL)
         contextProps.setValue(EGL_CONTEXT_CLIENT_VERSION, 2);
 #endif
+    sharing = false;
     if (shareContext && shareContext->ctx == EGL_NO_CONTEXT)
         shareContext = 0;
     if (shareContext) {
@@ -181,6 +183,8 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
         if (ctx == EGL_NO_CONTEXT) {
             qWarning() << "QEglContext::createContext(): Could not share context:" << errorString(eglGetError());
             shareContext = 0;
+        } else {
+            sharing = true;
         }
     }
     if (ctx == EGL_NO_CONTEXT) {
@@ -231,6 +235,18 @@ bool QEglContext::makeCurrent(EGLSurface surface)
     current = true;
     currentSurface = surface;
     setCurrentContext(apiType, this);
+
+    // Force the right API to be bound before making the context current.
+    // The EGL implementation should be able to figure this out from ctx,
+    // but some systems require the API to be explicitly set anyway.
+#ifdef EGL_OPENGL_ES_API
+    if (apiType == QEgl::OpenGL)
+        eglBindAPI(EGL_OPENGL_ES_API);
+#endif
+#ifdef EGL_OPENVG_API
+    if (apiType == QEgl::OpenVG)
+        eglBindAPI(EGL_OPENVG_API);
+#endif
 
     bool ok = eglMakeCurrent(dpy, surface, surface, ctx);
     if (!ok)
@@ -413,7 +429,10 @@ QString QEglContext::extensions()
 
 bool QEglContext::hasExtension(const char* extensionName)
 {
-    return extensions().contains(QLatin1String(extensionName));
+    QList<QByteArray> extensions =
+        QByteArray(reinterpret_cast<const char *>
+            (eglQueryString(QEglContext::defaultDisplay(0), EGL_EXTENSIONS))).split(' ');
+    return extensions.contains(extensionName);
 }
 
 QEglContext *QEglContext::currentContext(QEgl::API api)

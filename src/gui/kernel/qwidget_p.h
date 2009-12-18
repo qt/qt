@@ -230,12 +230,42 @@ struct QWExtra {
 #elif defined(Q_OS_SYMBIAN) // <----------------------------------------------------- Symbian
     uint activated : 1; // RWindowBase::Activated has been called
 
-    // If set, QSymbianControl::Draw does not blit this widget
-    // This is to allow, for use cases such as video, widgets which, from the Qt point
-    // of view, are just placeholders in the scene.  For these widgets, any necessary
-    // drawing to the UI framebuffer is done by the relevant Symbian subsystem.  For
-    // video rendering, this would be an MMF controller, or MDF post-processor.
-    uint disableBlit : 1;
+    /**
+     * Defines the behaviour of QSymbianControl::Draw.
+     */
+    enum NativePaintMode {
+        /**
+         * Normal drawing mode: blits the required region of the backing store
+         * via WSERV.
+         */
+        Blit,
+
+        /**
+         * Disable drawing for this widget.
+         */
+        Disable,
+
+        /**
+         * Paint zeros into the WSERV framebuffer, using BitGDI APIs.  For windows
+         * with an EColor16MU display mode, zero is written only into the R, G and B
+         * channels of the pixel.
+         */
+        ZeroFill,
+
+        Default = Blit
+    };
+
+    NativePaintMode nativePaintMode : 2;
+
+    /**
+     * If this bit is set, each native widget receives the signals from the
+     * Symbian control immediately before and immediately after draw ops are
+     * sent to the window server for this control:
+     *      void beginNativePaintEvent(const QRect &paintRect);
+     *      void endNativePaintEvent(const QRect &paintRect);
+     */
+    uint receiveNativePaintEvents : 1;
+
 #endif
 };
 
@@ -465,6 +495,12 @@ public:
     void setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt = 0);
 
     QInputContext *inputContext() const;
+    inline QWidget *effectiveFocusWidget() {
+        QWidget *w = q_func();
+        while (w->focusProxy())
+            w = w->focusProxy();
+        return w;
+    }
 
     void setModal_sys();
 
@@ -479,7 +515,7 @@ public:
         QGraphicsProxyWidget *ancestorProxy = widget->d_func()->nearestGraphicsProxyWidget(widget);
         //It's embedded if it has an ancestor
         if (ancestorProxy) {
-            if (!bypassGraphicsProxyWidget(widget)) {
+            if (!bypassGraphicsProxyWidget(widget) && ancestorProxy->scene() != 0) {
                 // One view, let be smart and return the viewport rect then the popup is aligned
                 if (ancestorProxy->scene()->views().size() == 1) {
                     QGraphicsView *view = ancestorProxy->scene()->views().at(0);
@@ -787,7 +823,7 @@ public:
     {}
 
     inline void detach()
-    { m_widget->setGraphicsEffect(0); }
+    { m_widget->d_func()->graphicsEffect = 0; }
 
     inline const QGraphicsItem *graphicsItem() const
     { return 0; }
@@ -824,7 +860,7 @@ public:
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *p);
     QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset,
-                   QGraphicsEffectSource::PixmapPadMode mode) const;
+                   QGraphicsEffect::PixmapPadMode mode) const;
 
     QWidget *m_widget;
     QWidgetPaintContext *context;

@@ -239,7 +239,7 @@ qint64 QHttpNetworkReplyPrivate::bytesAvailable() const
 bool QHttpNetworkReplyPrivate::isGzipped()
 {
     QByteArray encoding = headerField("content-encoding");
-    return encoding.toLower() == "gzip";
+    return qstricmp(encoding.constData(), "gzip") == 0;
 }
 
 void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
@@ -247,11 +247,10 @@ void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
     // The header "Content-Encoding  = gzip" is retained.
     // Content-Length is removed since the actual one send by the server is for compressed data
     QByteArray name("content-length");
-    QByteArray lowerName = name.toLower();
     QList<QPair<QByteArray, QByteArray> >::Iterator it = fields.begin(),
                                                    end = fields.end();
     while (it != end) {
-        if (name == it->first.toLower()) {
+        if (qstricmp(name.constData(), it->first.constData()) == 0) {
             fields.erase(it);
             break;
         }
@@ -269,6 +268,7 @@ bool QHttpNetworkReplyPrivate::findChallenge(bool forProxy, QByteArray &challeng
     QList<QByteArray> challenges = headerFieldValues(header);
     for (int i = 0; i<challenges.size(); i++) {
         QByteArray line = challenges.at(i);
+        // todo use qstrincmp
         if (!line.toLower().startsWith("negotiate"))
             challenge = line;
     }

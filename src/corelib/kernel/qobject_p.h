@@ -172,7 +172,7 @@ public:
     }
 
     int signalIndex(const char *signalName) const;
-    bool isSignalConnected(int signalIdx) const;
+    inline bool isSignalConnected(uint signalIdx) const;
 
 public:
     QString objectName;
@@ -183,7 +183,7 @@ public:
 
     Connection *senders;     // linked list of connections connected to this object
     Sender *currentSender;   // object currently activating the object
-    mutable quint32 connectedSignals[2];   // 64-bit, so doesn't cause padding on 64-bit platforms
+    mutable quint32 connectedSignals[2];
 
 #ifdef QT3_SUPPORT
     QList<QObject *> pendingChildInsertedEvents;
@@ -204,6 +204,24 @@ public:
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
     int *deleteWatch;
 };
+
+
+/*! \internal
+
+  Returns true if the signal with index \a signal_index from object \a sender is connected.
+  Signals with indices above a certain range are always considered connected (see connectedSignals
+  in QObjectPrivate). If a signal spy is installed, all signals are considered connected.
+
+  \a signal_index must be the index returned by QObjectPrivate::signalIndex;
+*/
+inline bool QObjectPrivate::isSignalConnected(uint signal_index) const
+{
+    return signal_index >= sizeof(connectedSignals) * 8
+        || qt_signal_spy_callback_set.signal_begin_callback
+        || qt_signal_spy_callback_set.signal_end_callback
+        || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f)));
+}
+
 
 inline void q_guard_addGuard(QGuard<QObject> *g)
 {

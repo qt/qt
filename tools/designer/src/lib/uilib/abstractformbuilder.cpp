@@ -285,23 +285,8 @@ void QAbstractFormBuilder::initialize(const DomUI *ui)
         if (!customWidgets.empty()) {
             QFormBuilderExtra *formBuilderPrivate = QFormBuilderExtra::instance(this);
             const DomCustomWidgetList::const_iterator cend = customWidgets.constEnd();
-            for (DomCustomWidgetList::const_iterator it = customWidgets.constBegin(); it != cend; ++it) {
-                const DomCustomWidget *cw = *it;
-#ifndef QT_FORMBUILDER_NO_SCRIPT
-                if (const DomScript *domScript = cw->elementScript()) {
-                    const QString script = domScript->text();
-                    if (!script.isEmpty())
-                        formBuilderPrivate->storeCustomWidgetScript(cw->elementClass(), script);
-                }
-#endif
-                const QString addPageMethod = cw->elementAddPageMethod();
-                if (!addPageMethod.isEmpty())
-                    formBuilderPrivate->storeCustomWidgetAddPageMethod(cw->elementClass(), addPageMethod);
-
-                const QString extends = cw->elementExtends();
-                if (!extends.isEmpty())
-                    formBuilderPrivate->storeCustomWidgetBaseClass(cw->elementClass(), extends);
-            }
+            for (DomCustomWidgetList::const_iterator it = customWidgets.constBegin(); it != cend; ++it)
+                formBuilderPrivate->storeCustomWidgetData((*it)->elementClass(), *it);
         }
     }
 }

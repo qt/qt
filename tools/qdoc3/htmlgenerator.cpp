@@ -2300,7 +2300,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                           << "&nbsp;</b>";
                 }
                 out() << "</td>\n";
-                    
+
+                out() << "<td>";
                 if ((currentParagraphNo[i] < NumParagraphs) &&
                     !paragraphName[currentParagraphNo[i]].isEmpty()) {
                     NodeMap::Iterator it;
@@ -2308,7 +2309,6 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     for (j = 0; j < currentOffsetInParagraph[i]; j++)
                         ++it;
 
-                    out() << "<td>";
                     // Previously, we used generateFullName() for this, but we
                     // require some special formatting.
                     out() << "<a href=\""
@@ -2322,8 +2322,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                         generateFullName(it.value()->parent(), relative, marker);
                         out() << ")";
                     }
-                    out() << "</td>\n";
-                 }
+                }
+                out() << "</td>\n";
 
                 currentOffset[i]++;
                 currentOffsetInParagraph[i]++;
@@ -3429,6 +3429,8 @@ QString HtmlGenerator::fileName(const Node *node)
     if (node->type() == Node::Fake) {
         if (static_cast<const FakeNode *>(node)->subType() == Node::ExternalPage)
             return node->name();
+        if (static_cast<const FakeNode *>(node)->subType() == Node::Image)
+            return node->name();
     }
     return PageGenerator::fileName(node);
 }
@@ -4000,6 +4002,8 @@ QString HtmlGenerator::getLink(const Atom *atom,
 
         if (path.isEmpty()) {
             link = linkForNode(*node, relative);
+            if (*node && (*node)->subType() == Node::Image)
+                link = "images/used-in-examples/" + link;
             if (targetAtom)
                 link += "#" + refForAtom(targetAtom, *node);
         }
@@ -4080,7 +4084,7 @@ void HtmlGenerator::generateMacRef(const Node *node, CodeMarker *marker)
 
     QStringList macRefs = marker->macRefsForNode(node);
     foreach (const QString &macRef, macRefs)
-        out() << "<a name=\"" << "//apple_ref/" << macRef << "\" />\n";
+        out() << "<a name=\"" << "//apple_ref/" << macRef << "\"></a>\n";
 }
 
 void HtmlGenerator::beginLink(const QString &link,
@@ -4219,23 +4223,24 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "</div>";
     }
     else if (node->type() == Node::QmlSignal) {
-        const QmlSignalNode* qsn = static_cast<const QmlSignalNode*>(node);
+        const FunctionNode* qsn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
         out() << "<tr><td>";
         out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
-        generateQmlItem(qsn,relative,marker,false);
+        generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
+        //generateQmlItem(qsn,relative,marker,false);
         out() << "</td></tr>";
         out() << "</table>";
         out() << "</div>";
     }
     else if (node->type() == Node::QmlMethod) {
-        const QmlMethodNode* qmn = static_cast<const QmlMethodNode*>(node);
+        const FunctionNode* qmn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
         out() << "<tr><td>";
         out() << "<a name=\"" + refForNode(qmn) + "\"></a>";
-        generateQmlItem(qmn,relative,marker,false);
+        generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);
         out() << "</td></tr>";
         out() << "</table>";
         out() << "</div>";

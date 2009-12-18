@@ -50,7 +50,7 @@
     another has finished playing. The animations are played in the
     order they are added to the group (using
     \l{QAnimationGroup::}{addAnimation()} or
-    \l{QAnimationGroup::}{insertAnimationAt()}). The animation group
+    \l{QAnimationGroup::}{insertAnimation()}). The animation group
     finishes when its last animation has finished.
 
     At each moment there is at most one animation that is active in
@@ -59,16 +59,16 @@
 
     A sequential animation group can be treated as any other
     animation, i.e., it can be started, stopped, and added to other
-    groups. You can also call addPause() or insertPauseAt() to add a
+    groups. You can also call addPause() or insertPause() to add a
     pause to a sequential animation group.
 
     \code
-        QSequentialAnimationGroup group;
+        QSequentialAnimationGroup *group = new QSequentialAnimationGroup;
 
-        group.addAnimation(anim1);
-        group.addAnimation(anim2);
+        group->addAnimation(anim1);
+        group->addAnimation(anim2);
 
-        group.start();
+        group->start();
     \endcode
 
     In this example, \c anim1 and \c anim2 are two already set up
@@ -269,7 +269,7 @@ QSequentialAnimationGroup::~QSequentialAnimationGroup()
     \l{QAnimationGroup::animationCount()}{animationCount} will be 
     increased by one.
 
-    \sa insertPauseAt(), QAnimationGroup::addAnimation()
+    \sa insertPause(), QAnimationGroup::addAnimation()
 */
 QPauseAnimation *QSequentialAnimationGroup::addPause(int msecs)
 {
@@ -282,19 +282,19 @@ QPauseAnimation *QSequentialAnimationGroup::addPause(int msecs)
     Inserts a pause of \a msecs milliseconds at \a index in this animation
     group.
 
-    \sa addPause(), QAnimationGroup::insertAnimationAt()
+    \sa addPause(), QAnimationGroup::insertAnimation()
 */
-QPauseAnimation *QSequentialAnimationGroup::insertPauseAt(int index, int msecs)
+QPauseAnimation *QSequentialAnimationGroup::insertPause(int index, int msecs)
 {
     Q_D(const QSequentialAnimationGroup);
 
     if (index < 0 || index > d->animations.size()) {
-        qWarning("QSequentialAnimationGroup::insertPauseAt: index is out of bounds");
+        qWarning("QSequentialAnimationGroup::insertPause: index is out of bounds");
         return 0;
     }
 
     QPauseAnimation *pause = new QPauseAnimation(msecs);
-    insertAnimationAt(index, pause);
+    insertAnimation(index, pause);
     return pause;
 }
 
@@ -382,11 +382,11 @@ void QSequentialAnimationGroup::updateCurrentTime(int currentTime)
 /*!
     \reimp
 */
-void QSequentialAnimationGroup::updateState(QAbstractAnimation::State oldState,
-                                            QAbstractAnimation::State newState)
+void QSequentialAnimationGroup::updateState(QAbstractAnimation::State newState,
+                                            QAbstractAnimation::State oldState)
 {
     Q_D(QSequentialAnimationGroup);
-    QAnimationGroup::updateState(oldState, newState);
+    QAnimationGroup::updateState(newState, oldState);
 
     if (!d->currentAnimation)
         return;
@@ -532,7 +532,7 @@ void QSequentialAnimationGroupPrivate::animationInsertedAt(int index)
     currentAnimationIndex = animations.indexOf(currentAnimation);
 
     if (index < currentAnimationIndex || currentLoop != 0) {
-        qWarning("QSequentialGroup::insertAnimationAt only supports to add animations after the current one.");
+        qWarning("QSequentialGroup::insertAnimation only supports to add animations after the current one.");
         return; //we're not affected because it is added after the current one
     }
 }

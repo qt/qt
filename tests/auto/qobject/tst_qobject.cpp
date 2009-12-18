@@ -60,6 +60,10 @@
 #include <QProcess>
 
 #include "qobject.h"
+#ifdef QT_BUILD_INTERNAL
+#include <private/qobject_p.h>
+#endif
+
 
 #include <math.h>
 
@@ -121,6 +125,8 @@ private slots:
     void interfaceIid();
     void deleteQObjectWhenDeletingEvent();
     void overloads();
+    void isSignalConnected();
+    void qMetaObjectConnect();
 protected:
 };
 
@@ -3014,6 +3020,253 @@ void tst_QObject::overloads()
     QCOMPARE(obj2.o2_obj, &obj3);
     QCOMPARE(obj2.o3_obj, (QObject *)0); //default arg of the signal
     QCOMPARE(obj2.o4_obj, qApp); //default arg of the slot
+}
+
+class ManySignals : public QObject
+{   Q_OBJECT
+    friend class tst_QObject;
+signals:
+    void sig00(); void sig01(); void sig02(); void sig03(); void sig04();
+    void sig05(); void sig06(); void sig07(); void sig08(); void sig09();
+    void sig10(); void sig11(); void sig12(); void sig13(); void sig14();
+    void sig15(); void sig16(); void sig17(); void sig18(); void sig19();
+    void sig20(); void sig21(); void sig22(); void sig23(); void sig24();
+    void sig25(); void sig26(); void sig27(); void sig28(); void sig29();
+    void sig30(); void sig31(); void sig32(); void sig33(); void sig34();
+    void sig35(); void sig36(); void sig37(); void sig38(); void sig39();
+    void sig40(); void sig41(); void sig42(); void sig43(); void sig44();
+    void sig45(); void sig46(); void sig47(); void sig48(); void sig49();
+    void sig50(); void sig51(); void sig52(); void sig53(); void sig54();
+    void sig55(); void sig56(); void sig57(); void sig58(); void sig59();
+    void sig60(); void sig61(); void sig62(); void sig63(); void sig64();
+    void sig65(); void sig66(); void sig67(); void sig68(); void sig69();
+
+public slots:
+    void received() { rec++; }
+public:
+    int rec;
+};
+
+
+void tst_QObject::isSignalConnected()
+{
+    ManySignals o;
+    o.rec = 0;
+#ifdef QT_BUILD_INTERNAL
+    QObjectPrivate *priv = QObjectPrivate::get(&o);
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("destroyed()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig00()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig05()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig15()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig29()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig60()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig61()")));
+#endif
+
+    QObject::connect(&o, SIGNAL(sig00()), &o, SIGNAL(sig69()));
+    QObject::connect(&o, SIGNAL(sig34()), &o, SIGNAL(sig03()));
+    QObject::connect(&o, SIGNAL(sig69()), &o, SIGNAL(sig34()));
+    QObject::connect(&o, SIGNAL(sig03()), &o, SIGNAL(sig18()));
+
+#ifdef QT_BUILD_INTERNAL
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("destroyed()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig05()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig15()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig29()")));
+
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig00()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig03()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig34()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig69()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig18()")));
+#endif
+
+    QObject::connect(&o, SIGNAL(sig18()), &o, SIGNAL(sig29()));
+    QObject::connect(&o, SIGNAL(sig29()), &o, SIGNAL(sig62()));
+    QObject::connect(&o, SIGNAL(sig62()), &o, SIGNAL(sig28()));
+    QObject::connect(&o, SIGNAL(sig28()), &o, SIGNAL(sig27()));
+
+#ifdef QT_BUILD_INTERNAL
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig18()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig62()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig28()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig69()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig27()")));
+#endif
+
+    QCOMPARE(o.rec, 0);
+    emit o.sig01();
+    emit o.sig34();
+    QCOMPARE(o.rec, 0);
+
+    QObject::connect(&o, SIGNAL(sig27()), &o, SLOT(received()));
+
+#ifdef QT_BUILD_INTERNAL
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig00()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig03()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig34()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig18()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig62()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig28()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig69()")));
+    QVERIFY(priv->isSignalConnected(priv->signalIndex("sig27()")));
+
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig04()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig21()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig25()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig55()")));
+    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig61()")));
+#endif
+
+    emit o.sig00();
+    QCOMPARE(o.rec, 1);
+    emit o.sig69();
+    QCOMPARE(o.rec, 2);
+    emit o.sig36();
+    QCOMPARE(o.rec, 2);
+}
+
+void tst_QObject::qMetaObjectConnect()
+{
+    SenderObject *s = new SenderObject;
+    ReceiverObject *r1 = new ReceiverObject;
+    ReceiverObject *r2 = new ReceiverObject;
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    int signal1Index = s->metaObject()->indexOfSignal("signal1()");
+    int signal3Index = s->metaObject()->indexOfSignal("signal3()");
+    int slot1Index = r1->metaObject()->indexOfSlot("slot1()");
+    int slot2Index = r1->metaObject()->indexOfSlot("slot2()");
+    int slot3Index = r1->metaObject()->indexOfSlot("slot3()");
+
+    QVERIFY(slot1Index > 0);
+    QVERIFY(slot2Index > 0);
+    QVERIFY(slot3Index > 0);
+
+    QVERIFY( QMetaObject::connect( s, signal1Index, r1, slot1Index) );
+    QVERIFY( QMetaObject::connect( s, signal3Index, r2, slot3Index) );
+    QVERIFY( QMetaObject::connect( s, -1, r2, slot2Index) );
+
+    QCOMPARE( r1->count_slot1, 0 );
+    QCOMPARE( r1->count_slot2, 0 );
+    QCOMPARE( r1->count_slot3, 0 );
+    QCOMPARE( r2->count_slot1, 0 );
+    QCOMPARE( r2->count_slot2, 0 );
+    QCOMPARE( r2->count_slot3, 0 );
+
+    s->emitSignal1();
+
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 0 );
+    QCOMPARE( r1->count_slot3, 0 );
+    QCOMPARE( r2->count_slot1, 0 );
+    QCOMPARE( r2->count_slot2, 1 );
+    QCOMPARE( r2->count_slot3, 0 );
+
+    s->emitSignal2();
+    s->emitSignal3();
+    s->emitSignal4();
+
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 0 );
+    QCOMPARE( r1->count_slot3, 0 );
+    QCOMPARE( r2->count_slot1, 0 );
+    QCOMPARE( r2->count_slot2, 4 );
+    QCOMPARE( r2->count_slot3, 1 );
+
+    QVERIFY( QMetaObject::disconnect( s, signal1Index, r1, slot1Index) );
+    QVERIFY( QMetaObject::disconnect( s, signal3Index, r2, slot3Index) );
+    QVERIFY( QMetaObject::disconnect( s, -1, r2, slot2Index) );
+
+    s->emitSignal1();
+    s->emitSignal2();
+    s->emitSignal3();
+    s->emitSignal4();
+
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 0 );
+    QCOMPARE( r1->count_slot3, 0 );
+    QCOMPARE( r2->count_slot1, 0 );
+    QCOMPARE( r2->count_slot2, 4 );
+    QCOMPARE( r2->count_slot3, 1 );
+
+    //some "dynamic" signal
+    QVERIFY( QMetaObject::connect( s, s->metaObject()->methodOffset() + 20, r1, slot3Index) );
+    QVERIFY( QMetaObject::connect( s, s->metaObject()->methodOffset() + 35, r2, slot1Index) );
+    QVERIFY( QMetaObject::connect( s, -1, r1, slot2Index) );
+
+    r1->reset();
+    r2->reset();
+
+    void *args[] = { 0 , 0 };
+    QMetaObject::activate(s, s->metaObject()->methodOffset() + 20, args);
+    QMetaObject::activate(s, s->metaObject()->methodOffset() + 48, args);
+    QCOMPARE( r1->count_slot1, 0 );
+    QCOMPARE( r1->count_slot2, 2 );
+    QCOMPARE( r1->count_slot3, 1 );
+    QCOMPARE( r2->count_slot1, 0 );
+    QCOMPARE( r2->count_slot2, 0 );
+    QCOMPARE( r2->count_slot3, 0 );
+
+    QMetaObject::activate(s, s->metaObject()->methodOffset() + 35, args);
+    s->emitSignal1();
+    s->emitSignal2();
+
+    QCOMPARE( r1->count_slot1, 0 );
+    QCOMPARE( r1->count_slot2, 5 );
+    QCOMPARE( r1->count_slot3, 1 );
+    QCOMPARE( r2->count_slot1, 1 );
+    QCOMPARE( r2->count_slot2, 0 );
+    QCOMPARE( r2->count_slot3, 0 );
+
+    delete s;
+    r1->reset();
+    r2->reset();
+
+#define SIGNAL_INDEX(S)  obj1.metaObject()->indexOfSignal(QMetaObject::normalizedSignature(#S))
+    OverloadObject obj1;
+    QObject obj2, obj3;
+
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(int)) , r1, slot1Index);
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(QObject *, QObject *, QObject *)) , r2, slot1Index);
+
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(QObject *, QObject *, QObject *, QObject *)) , r1, slot2Index);
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(QObject *)) , r2, slot2Index);
+    QMetaObject::connect(&obj1, SIGNAL_INDEX(sig(int, int)) , r1, slot3Index);
+
+    emit obj1.sig(0.5); //connected to nothing
+    emit obj1.sig(1, 'a'); //connected to nothing
+    QCOMPARE( r1->count_slot1, 0 );
+    QCOMPARE( r1->count_slot2, 0 );
+    QCOMPARE( r1->count_slot3, 0 );
+    QCOMPARE( r2->count_slot1, 0 );
+    QCOMPARE( r2->count_slot2, 0 );
+    QCOMPARE( r2->count_slot3, 0 );
+
+    emit obj1.sig(1); //this signal is connected
+    emit obj1.sig(&obj2);
+
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 0 );
+    QCOMPARE( r1->count_slot3, 1 );
+    QCOMPARE( r2->count_slot1, 0 );
+    QCOMPARE( r2->count_slot2, 1 );
+    QCOMPARE( r2->count_slot3, 0 );
+
+    emit obj1.sig(&obj2, &obj3); //this signal is connected
+
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 1 );
+    QCOMPARE( r1->count_slot3, 1 );
+    QCOMPARE( r2->count_slot1, 1 );
+    QCOMPARE( r2->count_slot2, 1 );
+    QCOMPARE( r2->count_slot3, 0 );
+
+    delete r1;
+    delete r2;
+
 }
 
 QTEST_MAIN(tst_QObject)

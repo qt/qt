@@ -3,6 +3,7 @@ SUBDIRS = containers-associative \
 	containers-sequential \
         qanimation \
 	qbytearray \
+        qfileinfo \
         qfile_vs_qnetworkaccessmanager \
 	qpainter \
 	qtestlib-simple	events \
@@ -19,6 +20,24 @@ SUBDIRS = containers-associative \
         qregion \
         qvariant \
 	qwidget	\
-	qtwidgets
+	qtwidgets \
+	qapplication \
+	qdir \
+	qdiriterator \
+	qgraphicsanchorlayout \
+	qgraphicsitem \
+	qgraphicswidget \
+	qmetaobject \
+	qpixmapcache \
+	qquaternion \
+	qscriptclass \
+	qscriptengine \
+	qscriptvalue \
+	qstringbuilder \
+	qstylesheetstyle \
+	qsvgrenderer \
+	qtableview
+
+
 
 contains(QT_CONFIG, opengl): SUBDIRS += opengl

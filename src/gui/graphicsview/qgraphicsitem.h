@@ -105,7 +105,8 @@ public:
         ItemAcceptsInputMethod = 0x1000,
         ItemNegativeZStacksBehindParent = 0x2000,
         ItemIsPanel = 0x4000,
-        ItemIsFocusScope = 0x8000 // internal
+        ItemIsFocusScope = 0x8000, // internal
+        ItemSendsScenePositionChanges = 0x10000
         // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)
@@ -137,7 +138,8 @@ public:
         ItemZValueChange,
         ItemZValueHasChanged,
         ItemOpacityChange,
-        ItemOpacityHasChanged
+        ItemOpacityHasChanged,
+        ItemScenePositionHasChanged
     };
 
     enum CacheMode {
@@ -225,9 +227,11 @@ public:
     qreal effectiveOpacity() const;
     void setOpacity(qreal opacity);
 
+#ifndef QT_NO_GRAPHICSEFFECT
     // Effect
     QGraphicsEffect *graphicsEffect() const;
     void setGraphicsEffect(QGraphicsEffect *effect);
+#endif //QT_NO_GRAPHICSEFFECT
 
     Qt::MouseButtons acceptedMouseButtons() const;
     void setAcceptedMouseButtons(Qt::MouseButtons buttons);
@@ -533,7 +537,6 @@ class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
 {
     Q_OBJECT
     Q_PROPERTY(QGraphicsObject * parent READ parentObject WRITE setParentItem NOTIFY parentChanged DESIGNABLE false)
-    Q_PROPERTY(QString id READ objectName WRITE setObjectName)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged FINAL)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged FINAL)

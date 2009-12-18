@@ -99,6 +99,14 @@ public:
     It is possible to replace the contents of child elements using
     setPlainText() and setInnerXml(). To replace the element itself and its
     contents, use setOuterXml().
+
+    \section1 Examples
+
+    The \l{DOM Traversal Example} shows one way to traverse documents in a running
+    example.
+
+    The \l{Simple Selector Example} can be used to experiment with the searching
+    features of this class and provides sample code you can start working with.
 */
 
 /*!
@@ -195,8 +203,7 @@ bool QWebElement::isNull() const
     \a selectorQuery. If there are no matching elements, an empty list is
     returned.
 
-    \l{http://www.w3.org/TR/REC-CSS2/selector.html#q1}{Standard CSS2 selector}
-    syntax is used for the query.
+    \l{Standard CSS2 selector} syntax is used for the query.
 
     \note This search is performed recursively.
 
@@ -211,8 +218,7 @@ QWebElementCollection QWebElement::findAll(const QString &selectorQuery) const
     Returns the first child element that matches the given CSS selector
     \a selectorQuery.
 
-    \l{http://www.w3.org/TR/REC-CSS2/selector.html#q1}{Standard CSS2 selector}
-    syntax is used for the query.
+    \l{Standard CSS2 selector} syntax is used for the query.
 
     \note This search is performed recursively.
 
@@ -450,6 +456,30 @@ bool QWebElement::hasAttributes() const
     if (!m_element)
         return false;
     return m_element->hasAttributes();
+}
+
+/*!
+    Return the list of attributes for the namespace given as \a namespaceUri.
+
+    \sa attribute(), setAttribute()
+*/
+QStringList QWebElement::attributeNames(const QString& namespaceUri) const
+{
+    if (!m_element)
+        return QStringList();
+
+    QStringList attributeNameList;
+    const NamedNodeMap* const attrs = m_element->attributes(/* read only = */ true);
+    if (attrs) {
+        const String namespaceUriString(namespaceUri); // convert QString -> String once
+        const unsigned attrsCount = attrs->length();
+        for (unsigned i = 0; i < attrsCount; ++i) {
+            const Attribute* const attribute = attrs->attributeItem(i);
+            if (namespaceUriString == attribute->namespaceURI())
+                attributeNameList.append(attribute->localName());
+        }
+    }
+    return attributeNameList;
 }
 
 /*!
@@ -1661,22 +1691,6 @@ QList<QWebElement> QWebElementCollection::toList() const
     QWebElementCollection provides STL style const iterators for fast low-level access to the elements.
 
     QWebElementCollection::const_iterator allows you to iterate over a QWebElementCollection.
-
-    The default QWebElementCollection::const_iterator constructors creates an uninitialized iterator. You must initialize
-    it using a QWebElementCollection function like QWebElementCollection::begin() or QWebElementCollection::end() before you
-    can start iterating.
-*/
-
-/*!
-    \fn QWebElementCollection::const_iterator::const_iterator()
-
-    Constructs an uninitialized iterator.
-
-    Functions like operator*() and operator++() should not be called on
-    an uninitialized iterator. Use operator=() to assign a value
-    to it before using it.
-
-    \sa QWebElementCollection::begin()
 */
 
 /*!
@@ -1820,6 +1834,196 @@ QList<QWebElement> QWebElementCollection::toList() const
 
 /*!
     \fn bool QWebElementCollection::const_iterator::operator>=(const const_iterator &other) const
+
+    Returns true if the element pointed to by this iterator is greater than or equal to the
+    element pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn QWebElementCollection::iterator QWebElementCollection::begin()
+
+    Returns an STL-style iterator pointing to the first element in the collection.
+
+    \sa end()
+*/
+
+/*!
+    \fn QWebElementCollection::iterator QWebElementCollection::end()
+
+    Returns an STL-style iterator pointing to the imaginary element after the
+    last element in the list.
+
+    \sa begin()
+*/
+
+/*!
+    \fn QWebElementCollection::const_iterator QWebElementCollection::constBegin() const
+
+    Returns an STL-style iterator pointing to the first element in the collection.
+
+    \sa end()
+*/
+
+/*!
+    \fn QWebElementCollection::const_iterator QWebElementCollection::constEnd() const
+
+    Returns an STL-style iterator pointing to the imaginary element after the
+    last element in the list.
+
+    \sa begin()
+*/
+
+/*!
+    \class QWebElementCollection::iterator
+    \since 4.6
+    \brief The QWebElementCollection::iterator class provides an STL-style iterator for QWebElementCollection.
+
+    QWebElementCollection provides STL style iterators for fast low-level access to the elements.
+
+    QWebElementCollection::iterator allows you to iterate over a QWebElementCollection.
+*/
+
+/*!
+    \fn QWebElementCollection::iterator::iterator(const iterator &other)
+
+    Constructs a copy of \a other.
+*/
+
+/*!
+    \fn QWebElementCollection::iterator::iterator(const QWebElementCollection *collection, int index)
+    \internal
+*/
+
+/*!
+    \fn const QWebElement QWebElementCollection::iterator::operator*() const
+
+    Returns the current element.
+*/
+
+/*!
+    \fn bool QWebElementCollection::iterator::operator==(const iterator &other) const
+
+    Returns true if \a other points to the same item as this iterator;
+    otherwise returns false.
+
+    \sa operator!=()
+*/
+
+/*!
+    \fn bool QWebElementCollection::iterator::operator!=(const iterator &other) const
+
+    Returns true if \a other points to a different element than this;
+    iterator; otherwise returns false.
+
+    \sa operator==()
+*/
+
+/*!
+    \fn QWebElementCollection::iterator &QWebElementCollection::iterator::operator++()
+
+    The prefix ++ operator (\c{++it}) advances the iterator to the next element in the collection
+    and returns an iterator to the new current element.
+
+    Calling this function on QWebElementCollection::end() leads to undefined results.
+
+    \sa operator--()
+*/
+
+/*!
+    \fn QWebElementCollection::iterator QWebElementCollection::iterator::operator++(int)
+
+    \overload
+
+    The postfix ++ operator (\c{it++}) advances the iterator to the next element in the collection
+    and returns an iterator to the previously current element.
+
+    Calling this function on QWebElementCollection::end() leads to undefined results.
+*/
+
+/*!
+    \fn QWebElementCollection::iterator &QWebElementCollection::iterator::operator--()
+
+    The prefix -- operator (\c{--it}) makes the preceding element current and returns an
+    iterator to the new current element.
+
+    Calling this function on QWebElementCollection::begin() leads to undefined results.
+
+    \sa operator++()
+*/
+
+/*!
+    \fn QWebElementCollection::iterator QWebElementCollection::iterator::operator--(int)
+
+    \overload
+
+    The postfix -- operator (\c{it--}) makes the preceding element current and returns
+    an iterator to the previously current element.
+*/
+
+/*!
+    \fn QWebElementCollection::iterator &QWebElementCollection::iterator::operator+=(int j)
+
+    Advances the iterator by \a j elements. If \a j is negative, the iterator goes backward.
+
+    \sa operator-=(), operator+()
+*/
+
+/*!
+    \fn QWebElementCollection::iterator &QWebElementCollection::iterator::operator-=(int j)
+
+    Makes the iterator go back by \a j elements. If \a j is negative, the iterator goes forward.
+
+    \sa operator+=(), operator-()
+*/
+
+/*!
+    \fn QWebElementCollection::iterator QWebElementCollection::iterator::operator+(int j) const
+
+    Returns an iterator to the element at \a j positions forward from this iterator. If \a j
+    is negative, the iterator goes backward.
+
+    \sa operator-(), operator+=()
+*/
+
+/*!
+    \fn QWebElementCollection::iterator QWebElementCollection::iterator::operator-(int j) const
+
+    Returns an iterator to the element at \a j positiosn backward from this iterator.
+    If \a j is negative, the iterator goes forward.
+
+    \sa operator+(), operator-=()
+*/
+
+/*!
+    \fn int QWebElementCollection::iterator::operator-(iterator other) const
+
+    Returns the number of elements between the item point to by \a other
+    and the element pointed to by this iterator.
+*/
+
+/*!
+    \fn bool QWebElementCollection::iterator::operator<(const iterator &other) const
+
+    Returns true if the element pointed to by this iterator is less than the element pointed to
+    by the \a other iterator.
+*/
+
+/*!
+    \fn bool QWebElementCollection::iterator::operator<=(const iterator &other) const
+
+    Returns true if the element pointed to by this iterator is less than or equal to the
+    element pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QWebElementCollection::iterator::operator>(const iterator &other) const
+
+    Returns true if the element pointed to by this iterator is greater than the element pointed to
+    by the \a other iterator.
+*/
+
+/*!
+    \fn bool QWebElementCollection::iterator::operator>=(const iterator &other) const
 
     Returns true if the element pointed to by this iterator is greater than or equal to the
     element pointed to by the \a other iterator.

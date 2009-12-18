@@ -201,11 +201,6 @@ public:
         return l;
     }
 
-    void setRootVertex(Vertex *vertex)
-    {
-        userVertex = vertex;
-    }
-
     QSet<Vertex*> vertices() const {
         QSet<Vertex *> setOfVertices;
         for (const_iterator it = constBegin(); it != constEnd(); ++it) {
@@ -241,25 +236,22 @@ public:
                 EdgeData *data = edgeData(v, v1);
                 bool forward = data->from == v;
                 if (forward) {
-                    edges += QString::fromAscii("%1->%2 [label=\"[%3,%4,%5]\" dir=both color=\"#000000:#a0a0a0\"] \n")
+                    edges += QString::fromAscii("\"%1\"->\"%2\" [label=\"[%3,%4,%5,%6,%7]\" color=\"#000000\"] \n")
                         .arg(v->toString())
                         .arg(v1->toString())
                         .arg(data->minSize)
+                        .arg(data->minPrefSize)
                         .arg(data->prefSize)
+                        .arg(data->maxPrefSize)
                         .arg(data->maxSize)
                         ;
                 }
             }
-            strVertices += QString::fromAscii("%1 [label=\"%2\"]\n").arg(v->toString()).arg(v->toString());
+            strVertices += QString::fromAscii("\"%1\" [label=\"%2\"]\n").arg(v->toString()).arg(v->toString());
         }
         return QString::fromAscii("%1\n%2\n").arg(strVertices).arg(edges);
     }
 #endif
-
-    Vertex *rootVertex() const
-    {
-        return userVertex;
-    }
 
 protected:
     void createDirectedEdge(Vertex *from, Vertex *to, EdgeData *data)
@@ -286,8 +278,6 @@ protected:
     }
 
 private:
-    Vertex *userVertex;
-
     QHash<Vertex *, QHash<Vertex *, EdgeData *> *> m_graph;
 };
 

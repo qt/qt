@@ -223,21 +223,22 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
+
     quint32 basex;
     quint32 srcy;
 
     if (sx < 0) {
-        int dstx = qFloor((tx1 + 0.5 - targetRect.right()) * ix) + 1;
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
         basex = quint32(srcRect.right() * 65536) + dstx;
     } else {
-        int dstx = qCeil((tx1 + 0.5 - targetRect.left()) * ix) - 1;
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
         basex = quint32(srcRect.left() * 65536) + dstx;
     }
     if (sy < 0) {
-        int dsty = qFloor((ty1 + 0.5 - targetRect.bottom()) * iy) + 1;
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
         srcy = quint32(srcRect.bottom() * 65536) + dsty;
     } else {
-        int dsty = qCeil((ty1 + 0.5 - targetRect.top()) * iy) - 1;
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
         srcy = quint32(srcRect.top() * 65536) + dsty;
     }
 
@@ -739,17 +740,17 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     quint32 srcy;
 
     if (sx < 0) {
-        int dstx = qFloor((tx1 + 0.5 - targetRect.right()) * ix) + 1;
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
         basex = quint32(srcRect.right() * 65536) + dstx;
     } else {
-        int dstx = qCeil((tx1 + 0.5 - targetRect.left()) * ix) - 1;
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
         basex = quint32(srcRect.left() * 65536) + dstx;
     }
     if (sy < 0) {
-        int dsty = qFloor((ty1 + 0.5 - targetRect.bottom()) * iy) + 1;
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
         srcy = quint32(srcRect.bottom() * 65536) + dsty;
     } else {
-        int dsty = qCeil((ty1 + 0.5 - targetRect.top()) * iy) - 1;
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
         srcy = quint32(srcRect.top() * 65536) + dsty;
     }
 

@@ -1362,7 +1362,7 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 
     Q_D(QRasterPaintEngine);
 
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         clip(region.boundingRect(), op);
         return;
     }
@@ -3018,10 +3018,10 @@ void QRasterPaintEngine::drawCachedGlyphs(const QPointF &p, const QTextItemInt &
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat) : d->glyphCacheType;
 
     QImageTextureGlyphCache *cache =
-        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(glyphType, s->matrix);
+        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(0, glyphType, s->matrix);
     if (!cache) {
         cache = new QImageTextureGlyphCache(glyphType, s->matrix);
-        ti.fontEngine->setGlyphCache(glyphType, cache);
+        ti.fontEngine->setGlyphCache(0, cache);
     }
 
     cache->populate(ti, glyphs, positions);
@@ -3240,7 +3240,8 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         drawCached = false;
 
     // don't try to cache huge fonts
-    if (ti.fontEngine->fontDef.pixelSize * qSqrt(s->matrix.determinant()) >= 64)
+    const qreal pixelSize = ti.fontEngine->fontDef.pixelSize;
+    if (pixelSize * pixelSize * qAbs(s->matrix.determinant()) >= 64 * 64)
         drawCached = false;
 
     // ### Remove the TestFontEngine and Box engine crap, in these
@@ -4536,7 +4537,7 @@ void QClipData::setClipRect(const QRect &rect)
  */
 void QClipData::setClipRegion(const QRegion &region)
 {
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         setClipRect(region.rects().at(0));
         return;
     }

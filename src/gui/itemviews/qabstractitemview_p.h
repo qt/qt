@@ -152,6 +152,8 @@ public:
                                                                    const QEvent *event) const;
     virtual void selectAll(QItemSelectionModel::SelectionFlags command);
 
+    void setHoverIndex(const QPersistentModelIndex &index);
+
     void checkMouseMove(const QPersistentModelIndex &index);
     inline void checkMouseMove(const QPoint &pos) { checkMouseMove(q_func()->indexAt(pos)); }
 
@@ -345,6 +347,7 @@ public:
     QMap<int, QPointer<QAbstractItemDelegate> > columnDelegates;
     QPointer<QItemSelectionModel> selectionModel;
     QItemSelectionModel::SelectionFlag ctrlDragSelectionFlag;
+    bool noSelectionOnMousePress;
 
     QAbstractItemView::SelectionMode selectionMode;
     QAbstractItemView::SelectionBehavior selectionBehavior;
@@ -394,6 +397,7 @@ public:
     int autoScrollMargin;
     int autoScrollCount;
     bool shouldScrollToCurrentOnShow; //used to know if we should scroll to current on show event
+    bool shouldClearStatusTip; //if there is a statustip currently shown that need to be cleared when leaving.
 
     bool alternatingColors;
 

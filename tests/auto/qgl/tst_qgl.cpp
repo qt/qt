@@ -75,7 +75,9 @@ private slots:
     void graphicsViewClipping();
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
+    void glWidgetWithAlpha();
     void glWidgetRendering();
+    void glFBOSimpleRendering();
     void glFBORendering();
     void multipleFBOInterleavedRendering();
     void glFBOUseInGLWidget();
@@ -250,15 +252,10 @@ void tst_QGL::getSetCheck()
 
     // bool QGLFormat::sampleBuffers()
     // void QGLFormat::setSampleBuffers(bool)
-#if !defined(QT_OPENGL_ES_2)
     QCOMPARE(false, obj1.sampleBuffers());
     QVERIFY(!obj1.testOption(QGL::SampleBuffers));
     QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
-#else
-    QCOMPARE(true, obj1.sampleBuffers());
-    QVERIFY(obj1.testOption(QGL::SampleBuffers));
-    QVERIFY(!obj1.testOption(QGL::NoSampleBuffers));
-#endif
+
     obj1.setSampleBuffers(false);
     QCOMPARE(false, obj1.sampleBuffers());
     QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
@@ -711,6 +708,79 @@ void tst_QGL::openGLVersionCheck()
 #endif //QT_BUILD_INTERNAL
 }
 
+static bool fuzzyComparePixels(const QRgb testPixel, const QRgb refPixel, const char* file, int line, int x = -1, int y = -1)
+{
+    static int maxFuzz = 1;
+    static bool maxFuzzSet = false;
+
+    // On 16 bpp systems, we need to allow for more fuzz:
+    if (!maxFuzzSet) {
+        maxFuzzSet = true;
+        if (appDefaultDepth() < 24)
+            maxFuzz = 32;
+    }
+
+    int redFuzz = qAbs(qRed(testPixel) - qRed(refPixel));
+    int greenFuzz = qAbs(qGreen(testPixel) - qGreen(refPixel));
+    int blueFuzz = qAbs(qBlue(testPixel) - qBlue(refPixel));
+    int alphaFuzz = qAbs(qAlpha(testPixel) - qAlpha(refPixel));
+
+    if (refPixel != 0 && testPixel == 0) {
+        QString msg;
+        if (x >= 0) {
+            msg = QString("Test pixel [%1, %2] is null (black) when it should be (%3,%4,%5,%6)")
+                            .arg(x).arg(y)
+                            .arg(qRed(refPixel)).arg(qGreen(refPixel)).arg(qBlue(refPixel)).arg(qAlpha(refPixel));
+        } else {
+            msg = QString("Test pixel is null (black) when it should be (%2,%3,%4,%5)")
+                            .arg(qRed(refPixel)).arg(qGreen(refPixel)).arg(qBlue(refPixel)).arg(qAlpha(refPixel));
+        }
+
+        QTest::qFail(msg.toLatin1(), file, line);
+        return false;
+    }
+
+    if (redFuzz > maxFuzz || greenFuzz > maxFuzz || blueFuzz > maxFuzz || alphaFuzz > maxFuzz) {
+        QString msg;
+
+        if (x >= 0)
+            msg = QString("Pixel [%1,%2]: ").arg(x).arg(y);
+        else
+            msg = QString("Pixel ");
+
+        msg += QString("Max fuzz (%1) exceeded: (%2,%3,%4,%5) vs (%6,%7,%8,%9)")
+                      .arg(maxFuzz)
+                      .arg(qRed(testPixel)).arg(qGreen(testPixel)).arg(qBlue(testPixel)).arg(qAlpha(testPixel))
+                      .arg(qRed(refPixel)).arg(qGreen(refPixel)).arg(qBlue(refPixel)).arg(qAlpha(refPixel));
+        QTest::qFail(msg.toLatin1(), file, line);
+        return false;
+    }
+    return true;
+}
+
+static void fuzzyCompareImages(const QImage &testImage, const QImage &referenceImage, const char* file, int line)
+{
+    QCOMPARE(testImage.width(), referenceImage.width());
+    QCOMPARE(testImage.height(), referenceImage.height());
+
+    for (int y = 0; y < testImage.height(); y++) {
+        for (int x = 0; x < testImage.width(); x++) {
+            if (!fuzzyComparePixels(testImage.pixel(x, y), referenceImage.pixel(x, y), file, line, x, y)) {
+                // Might as well save the images for easier debugging:
+                referenceImage.save("referenceImage.png");
+                testImage.save("testImage.png");
+                return;
+            }
+        }
+    }
+}
+
+#define QFUZZY_COMPARE_IMAGES(A,B) \
+            fuzzyCompareImages(A, B, __FILE__, __LINE__)
+
+#define QFUZZY_COMPARE_PIXELS(A,B) \
+            fuzzyComparePixels(A, B, __FILE__, __LINE__)
+
 class UnclippedWidget : public QWidget
 {
 public:
@@ -723,8 +793,6 @@ public:
 
 void tst_QGL::graphicsViewClipping()
 {
-    if (appDefaultDepth() < 24)
-        QSKIP("This test won't work for bit depths < 24", SkipAll);
     const int size = 64;
     UnclippedWidget *widget = new UnclippedWidget;
     widget->setFixedSize(size, size);
@@ -734,6 +802,9 @@ void tst_QGL::graphicsViewClipping()
     scene.addWidget(widget)->setPos(0, 0);
 
     QGraphicsView view(&scene);
+#ifdef Q_WS_QWS
+    view.setWindowFlags(Qt::FramelessWindowHint);
+#endif
     view.resize(2*size, 2*size);
 
     QGLWidget *viewport = new QGLWidget;
@@ -758,7 +829,7 @@ void tst_QGL::graphicsViewClipping()
     p.fillRect(QRect(0, 0, size, size), Qt::black);
     p.end();
 
-    QCOMPARE(image, expected);
+    QFUZZY_COMPARE_IMAGES(image, expected);
 }
 
 void tst_QGL::partialGLWidgetUpdates_data()
@@ -849,7 +920,18 @@ void tst_QGL::glPBufferRendering()
     p.fillRect(32, 32, 64, 64, Qt::blue);
     p.end();
 
-    QCOMPARE(fb, reference);
+    QFUZZY_COMPARE_IMAGES(fb, reference);
+}
+
+void tst_QGL::glWidgetWithAlpha()
+{
+    QGLWidget* w = new QGLWidget(QGLFormat(QGL::AlphaChannel));
+    w->show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(w);
+#endif
+
+    delete w;
 }
 
 class GLWidget : public QGLWidget
@@ -868,8 +950,8 @@ public:
 
         // This test only ensures it's possible to paint onto a QGLWidget. Full
         // paint engine feature testing is way out of scope!
+        p.fillRect(-1, -1, width()+2, height()+2, Qt::red);
 
-        p.fillRect(0, 0, width(), height(), Qt::red);
         // No p.end() or swap buffers, should be done automatically
     }
 
@@ -877,9 +959,11 @@ public:
 
 void tst_QGL::glWidgetRendering()
 {
-    if (appDefaultDepth() < 24)
-        QSKIP("This test won't work for bit depths < 24", SkipAll);
     GLWidget w;
+#ifdef Q_WS_QWS
+    w.setWindowFlags(Qt::FramelessWindowHint);
+#endif
+    w.setGeometry(100, 100, 200, 200);
     w.show();
 
 #ifdef Q_WS_X11
@@ -894,7 +978,37 @@ void tst_QGL::glWidgetRendering()
     QImage reference(fb.size(), QImage::Format_RGB32);
     reference.fill(0xffff0000);
 
-    QCOMPARE(fb, reference);
+    QFUZZY_COMPARE_IMAGES(fb, reference);
+}
+
+void tst_QGL::glFBOSimpleRendering()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    // No multisample with combined depth/stencil attachment:
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::NoAttachment);
+
+    // Don't complicate things by using NPOT:
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
+
+    fbo->bind();
+
+    glClearColor(1.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glFinish();
+
+    QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
+    QImage reference(fb.size(), QImage::Format_RGB32);
+    reference.fill(0xffff0000);
+
+    QFUZZY_COMPARE_IMAGES(fb, reference);
+
+    delete fbo;
 }
 
 // NOTE: This tests that CombinedDepthStencil attachment works by assuming the
@@ -949,14 +1063,14 @@ void tst_QGL::glFBORendering()
     // As we're doing more than trivial painting, we can't just compare to
     // an image rendered with raster. Instead, we sample at well-defined
     // test-points:
-    QCOMPARE(fb.pixel(39, 64), QColor(Qt::red).rgb());
-    QCOMPARE(fb.pixel(89, 64), QColor(Qt::red).rgb());
-    QCOMPARE(fb.pixel(64, 39), QColor(Qt::blue).rgb());
-    QCOMPARE(fb.pixel(64, 89), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(fb.pixel(39, 64), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb.pixel(89, 64), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb.pixel(64, 39), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(fb.pixel(64, 89), QColor(Qt::blue).rgb());
 
-    QCOMPARE(fb.pixel(167, 39), QColor(Qt::red).rgb());
-    QCOMPARE(fb.pixel(217, 39), QColor(Qt::red).rgb());
-    QCOMPARE(fb.pixel(192, 64), QColor(Qt::green).rgb());
+    QFUZZY_COMPARE_PIXELS(fb.pixel(167, 39), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb.pixel(217, 39), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb.pixel(192, 64), QColor(Qt::green).rgb());
 }
 
 
@@ -1047,29 +1161,29 @@ void tst_QGL::multipleFBOInterleavedRendering()
     // As we're doing more than trivial painting, we can't just compare to
     // an image rendered with raster. Instead, we sample at well-defined
     // test-points:
-    QCOMPARE(fb1.pixel(39, 64), QColor(Qt::red).rgb());
-    QCOMPARE(fb1.pixel(89, 64), QColor(Qt::red).rgb());
-    QCOMPARE(fb1.pixel(64, 39), QColor(Qt::blue).rgb());
-    QCOMPARE(fb1.pixel(64, 89), QColor(Qt::blue).rgb());
-    QCOMPARE(fb1.pixel(167, 39), QColor(Qt::red).rgb());
-    QCOMPARE(fb1.pixel(217, 39), QColor(Qt::red).rgb());
-    QCOMPARE(fb1.pixel(192, 64), QColor(Qt::green).rgb());
+    QFUZZY_COMPARE_PIXELS(fb1.pixel(39, 64), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb1.pixel(89, 64), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb1.pixel(64, 39), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(fb1.pixel(64, 89), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(fb1.pixel(167, 39), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb1.pixel(217, 39), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb1.pixel(192, 64), QColor(Qt::green).rgb());
 
-    QCOMPARE(fb2.pixel(39, 64), QColor(Qt::green).rgb());
-    QCOMPARE(fb2.pixel(89, 64), QColor(Qt::green).rgb());
-    QCOMPARE(fb2.pixel(64, 39), QColor(Qt::red).rgb());
-    QCOMPARE(fb2.pixel(64, 89), QColor(Qt::red).rgb());
-    QCOMPARE(fb2.pixel(167, 39), QColor(Qt::green).rgb());
-    QCOMPARE(fb2.pixel(217, 39), QColor(Qt::green).rgb());
-    QCOMPARE(fb2.pixel(192, 64), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(fb2.pixel(39, 64), QColor(Qt::green).rgb());
+    QFUZZY_COMPARE_PIXELS(fb2.pixel(89, 64), QColor(Qt::green).rgb());
+    QFUZZY_COMPARE_PIXELS(fb2.pixel(64, 39), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb2.pixel(64, 89), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb2.pixel(167, 39), QColor(Qt::green).rgb());
+    QFUZZY_COMPARE_PIXELS(fb2.pixel(217, 39), QColor(Qt::green).rgb());
+    QFUZZY_COMPARE_PIXELS(fb2.pixel(192, 64), QColor(Qt::blue).rgb());
 
-    QCOMPARE(fb3.pixel(39, 64), QColor(Qt::blue).rgb());
-    QCOMPARE(fb3.pixel(89, 64), QColor(Qt::blue).rgb());
-    QCOMPARE(fb3.pixel(64, 39), QColor(Qt::green).rgb());
-    QCOMPARE(fb3.pixel(64, 89), QColor(Qt::green).rgb());
-    QCOMPARE(fb3.pixel(167, 39), QColor(Qt::blue).rgb());
-    QCOMPARE(fb3.pixel(217, 39), QColor(Qt::blue).rgb());
-    QCOMPARE(fb3.pixel(192, 64), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(fb3.pixel(39, 64), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(fb3.pixel(89, 64), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(fb3.pixel(64, 39), QColor(Qt::green).rgb());
+    QFUZZY_COMPARE_PIXELS(fb3.pixel(64, 89), QColor(Qt::green).rgb());
+    QFUZZY_COMPARE_PIXELS(fb3.pixel(167, 39), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(fb3.pixel(217, 39), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(fb3.pixel(192, 64), QColor(Qt::red).rgb());
 }
 
 class FBOUseInGLWidget : public QGLWidget
@@ -1089,11 +1203,11 @@ protected:
 
         QPainter fboPainter;
         fboPainterBeginOk = fboPainter.begin(fbo);
-        fboPainter.fillRect(0, 0, 128, 128, Qt::red);
+        fboPainter.fillRect(-1, -1, 130, 130, Qt::red);
         fboPainter.end();
         fboImage = fbo->toImage();
 
-        widgetPainter.fillRect(rect(), Qt::blue);
+        widgetPainter.fillRect(-1, -1, width()+2, width()+2, Qt::blue);
 
         delete fbo;
     }
@@ -1102,12 +1216,13 @@ protected:
 
 void tst_QGL::glFBOUseInGLWidget()
 {
-    if (appDefaultDepth() < 24)
-        QSKIP("This test won't work for bit depths < 24", SkipAll);
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
 
     FBOUseInGLWidget w;
+#ifdef Q_WS_QWS
+    w.setWindowFlags(Qt::FramelessWindowHint);
+#endif
     w.resize(128, 128);
     w.show();
 
@@ -1122,17 +1237,15 @@ void tst_QGL::glFBOUseInGLWidget()
     QImage widgetFB = w.grabFrameBuffer(false);
     QImage widgetReference(widgetFB.size(), widgetFB.format());
     widgetReference.fill(0xff0000ff);
-    QCOMPARE(widgetFB, widgetReference);
+    QFUZZY_COMPARE_IMAGES(widgetFB, widgetReference);
 
     QImage fboReference(w.fboImage.size(), w.fboImage.format());
     fboReference.fill(0xffff0000);
-    QCOMPARE(w.fboImage, fboReference);
+    QFUZZY_COMPARE_IMAGES(w.fboImage, fboReference);
 }
 
 void tst_QGL::glWidgetReparent()
 {
-    if (appDefaultDepth() < 24)
-        QSKIP("This test won't work for bit depths < 24", SkipAll);
     // Try it as a top-level first:
     GLWidget *widget = new GLWidget;
     widget->setGeometry(0, 0, 200, 30);
@@ -1222,7 +1335,7 @@ void tst_QGL::glWidgetRenderPixmap()
     QImage reference(fb.size(), QImage::Format_RGB32);
     reference.fill(0xffff0000);
 
-    QCOMPARE(fb, reference);
+    QFUZZY_COMPARE_IMAGES(fb, reference);
 }
 
 class ColormapExtended : public QGLColormap
@@ -1495,9 +1608,10 @@ protected:
 
 void tst_QGL::replaceClipping()
 {
-    if (appDefaultDepth() < 24)
-        QSKIP("This test won't work for bit depths < 24", SkipAll);
     ReplaceClippingGLWidget glw;
+#ifdef Q_WS_QWS
+    glw.setWindowFlags(Qt::FramelessWindowHint);
+#endif
     glw.resize(300, 300);
     glw.show();
 
@@ -1513,7 +1627,13 @@ void tst_QGL::replaceClipping()
 
     const QImage widgetFB = glw.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
 
-    QCOMPARE(widgetFB, reference);
+    // Sample pixels in a grid pattern which avoids false failures due to
+    // off-by-one pixel errors on some buggy GL implementations
+    for (int x = 25; x < reference.width(); x += 50) {
+        for (int y = 25; y < reference.width(); y += 50) {
+            QFUZZY_COMPARE_PIXELS(widgetFB.pixel(x, y), reference.pixel(x, y));
+        }
+    }
 }
 
 class ClipTestGLWidget : public QGLWidget
@@ -1521,7 +1641,7 @@ class ClipTestGLWidget : public QGLWidget
 public:
     void paint(QPainter *painter)
     {
-        painter->fillRect(rect(), Qt::white);
+        painter->fillRect(-1, -1, width()+2, height()+2, Qt::white);
         painter->setClipRect(10, 10, width()-20, height()-20);
         painter->fillRect(rect(), Qt::cyan);
 
@@ -1622,9 +1742,10 @@ protected:
 
 void tst_QGL::clipTest()
 {
-    if (appDefaultDepth() < 24)
-        QSKIP("This test won't work for bit depths < 24", SkipAll);
     ClipTestGLWidget glw;
+#ifdef Q_WS_QWS
+    glw.setWindowFlags(Qt::FramelessWindowHint);
+#endif
     glw.resize(220, 220);
     glw.show();
 
@@ -1640,7 +1761,13 @@ void tst_QGL::clipTest()
 
     const QImage widgetFB = glw.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
 
-    QCOMPARE(widgetFB, reference);
+    // Sample pixels in a grid pattern which avoids false failures due to
+    // off-by-one pixel errors on some buggy GL implementations
+    for (int x = 2; x < reference.width(); x += 5) {
+        for (int y = 2; y < reference.width(); y += 5) {
+            QFUZZY_COMPARE_PIXELS(widgetFB.pixel(x, y), reference.pixel(x, y));
+        }
+    }
 }
 
 void tst_QGL::destroyFBOAfterContext()
@@ -1722,12 +1849,14 @@ void tst_QGL::shareRegister()
     QVERIFY(qt_shared_test()->value(glw1->context()) == res1);
 
     // Create another context that shares with the first.
+    QVERIFY(!glw1->isSharing());
     QGLWidget *glw2 = new QGLWidget(0, glw1);
     if (!glw2->isSharing()) {
         delete glw2;
         delete glw1;
         QSKIP("Context sharing is not supported", SkipSingle);
     }
+    QVERIFY(glw1->isSharing());
     QVERIFY(glw1->context() != glw2->context());
 
     // Check that the first context's resource is also on the second.
@@ -1759,6 +1888,7 @@ void tst_QGL::shareRegister()
 
     // Create a third context, not sharing with the others.
     QGLWidget *glw3 = new QGLWidget();
+    QVERIFY(!glw3->isSharing());
 
     // Create a guard on the standalone context.
     QGLSharedResourceGuard guard3(glw3->context());
@@ -1806,6 +1936,9 @@ void tst_QGL::shareRegister()
 
     // Delete the first context.
     delete glw1;
+
+    // The second context should no longer register as sharing.
+    QVERIFY(!glw2->isSharing());
 
     // The first context's resource should transfer to the second context.
     QCOMPARE(tst_QGLResource::deletions, 0);

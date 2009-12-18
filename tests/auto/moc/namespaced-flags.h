@@ -62,13 +62,18 @@ namespace Foo {
         Q_OBJECT
         //Q_PROPERTY( Bar::Flags flags READ flags WRITE setFlags ) // triggers assertion
         Q_PROPERTY( Foo::Bar::Flags flags READ flags WRITE setFlags ) // fails to compile, or with the same assertion if moc fix is applied
+        Q_PROPERTY( QList<Foo::Bar::Flags> flagsList READ flagsList WRITE setFlagsList )
     public:
         explicit Baz( QObject * parent=0 ) : QObject( parent ), mFlags() {}
 
         void setFlags( Bar::Flags f ) { mFlags = f; }
         Bar::Flags flags() const { return mFlags; }
+
+        void setFlagsList( const QList<Bar::Flags> &f ) { mList = f; }
+        QList<Bar::Flags> flagsList() const { return mList; }
     private:
         Bar::Flags mFlags;
+        QList<Bar::Flags> mList;
     };
 }
 

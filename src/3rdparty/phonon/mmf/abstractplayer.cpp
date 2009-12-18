@@ -92,11 +92,6 @@ void MMF::AbstractPlayer::setTransitionTime(qint32 time)
     m_transitionTime = time;
 }
 
-
-//-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
-
 void MMF::AbstractPlayer::volumeChanged(qreal volume)
 {
     m_volume = volume;
@@ -134,7 +129,7 @@ void MMF::AbstractPlayer::setError(Phonon::ErrorType error,
 Phonon::ErrorType MMF::AbstractPlayer::errorType() const
 {
     const Phonon::ErrorType result = (ErrorState == m_state)
-                                     ? errorType() : NoError;
+                                     ? m_error : NoError;
     return result;
 }
 

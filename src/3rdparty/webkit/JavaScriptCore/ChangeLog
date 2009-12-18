@@ -1,3 +1,141 @@
+2009-11-30  Jan-Arve Sæther  <jan-arve.saether@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation with win32-icc
+
+        The Intel compiler does not support the __has_trivial_constructor type
+        trait.  The Intel Compiler can report itself as _MSC_VER >= 1400. The
+        reason for that is that the Intel Compiler depends on the Microsoft
+        Platform SDK, and in order to try to be "fully" MS compatible it will
+        "pretend" to be the same MS compiler as was shipped with the MS PSDK.
+        (Thus, compiling with win32-icc with VC8 SDK will make the source code
+        "think" the compiler at hand supports this type trait).
+
+        * wtf/TypeTraits.h:
+
+2009-11-28  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        Apply workaround for the limitation of VirtualFree with MEM_RELEASE to all ports running on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=31943
+
+        * runtime/MarkStack.h:
+        (JSC::MarkStack::MarkStackArray::shrinkAllocation):
+
+2009-11-18  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Fix the clobber list of cacheFlush for ARM and Thumb2 on Linux
+        https://bugs.webkit.org/show_bug.cgi?id=31631
+
+        * jit/ExecutableAllocator.h:
+        (JSC::ExecutableAllocator::cacheFlush):
+
+2009-11-23  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Symbian] Fix lastIndexOf() for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=31773
+
+        Symbian soft floating point library has problems with operators
+        comparing NaN to numbers. Without a workaround lastIndexOf() 
+        function does not work.
+
+        Patch developed by David Leong.
+
+        * runtime/StringPrototype.cpp:
+        (JSC::stringProtoFuncLastIndexOf):Add an extra test 
+        to check for NaN for Symbian.
+
+2009-11-18  Harald Fernengel  <harald.fernengel@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix detection of linux-g++
+
+        Never use "linux-g++*" to check for linux-g++, since this will break embedded
+        builds which use linux-arm-g++ and friends. Use 'linux*-g++*' to check for any
+        g++ on linux mkspec.
+
+        * JavaScriptCore.pri:
+
+2009-11-16  Joerg Bornemann  <joerg.bornemann@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix Qt build on Windows CE 6.
+
+        * JavaScriptCore.pri: Add missing include path.
+        * wtf/Platform.h: Include ce_time.h for Windows CE 6.
+
+2009-11-12  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Fix linking on Linux 32-bit.
+
+        It was missing the ".text" directive at the top of the file,
+        indicating that code would follow. Without it, the assembler created
+        "NOTYPE" symbols, which would result in linker errors.
+        https://bugs.webkit.org/show_bug.cgi?id=30863
+
+        * jit/JITStubs.cpp:
+
+2009-11-13  İsmail Dönmez  <ismail@namtrac.org>
+
+        Reviewed by Antti Koivisto.
+
+        Fix typo, ce_time.cpp should be ce_time.c
+
+        * JavaScriptCore.pri:
+
+2009-11-12  Richard Moe Gustavsen  <richard.gustavsen@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Disable pthread_setname_np.
+
+        This allows Qt builds on Mac from 10.6 to run on earlier version
+        where this symbol is not present.
+        https://bugs.webkit.org/show_bug.cgi?id=31403
+
+        * wtf/Platform.h:
+
+2009-11-02  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        REGRESSION (r48573): JSC may incorrectly cache chain lookups with a dictionary at the head of the chain
+        https://bugs.webkit.org/show_bug.cgi?id=31045
+
+        Add guards to prevent caching of prototype chain lookups with dictionaries at the
+        head of the chain.  Also add a few tighter assertions to cached prototype lookups
+        to catch this in future.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::tryCacheGetByID):
+        (JSC::Interpreter::privateExecute):
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::tryCacheGetByID):
+
+2009-10-30  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Qt] Use the default timeout interval for JS as the HTML tokenizer delay for setHtml()
+
+        This ensures that long-running JavaScript (for example due to a modal alert() dialog),
+        will not trigger a deferred load after only 500ms (the default tokenizer delay) while
+        still giving a reasonable timeout (10 seconds) to prevent deadlock.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29381
+
+        * runtime/TimeoutChecker.h: Add getter for the timeout interval
+
 2009-10-29  Gabor Loki  <loki@inf.u-szeged.hu>
 
         Reviewed by Gavin Barraclough.

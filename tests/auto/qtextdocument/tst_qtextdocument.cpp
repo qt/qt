@@ -1721,21 +1721,21 @@ void tst_QTextDocument::capitalizationHtmlInExport()
 
     const QString smallcaps = doc->toHtml();
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("font-variant:small-caps;"));
 
     cf.setFontCapitalization(QFont::AllUppercase);
     cursor.mergeCharFormat(cf);
     const QString uppercase = doc->toHtml();
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("text-transform:uppercase;"));
 
     cf.setFontCapitalization(QFont::AllLowercase);
     cursor.mergeCharFormat(cf);
     const QString lowercase = doc->toHtml();
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("text-transform:lowercase;"));
 
     doc->setHtml(smallcaps);
@@ -1761,14 +1761,14 @@ void tst_QTextDocument::wordspacingHtmlExport()
     cursor.mergeCharFormat(cf);
 
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("word-spacing:4px;"));
 
     cf.setFontWordSpacing(-8.5);
     cursor.mergeCharFormat(cf);
 
     QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.numCaptures(), 1);
+    QCOMPARE(re.captureCount(), 1);
     QCOMPARE(re.cap(1).trimmed(), QString("word-spacing:-8.5px;"));
 }
 
@@ -2615,6 +2615,17 @@ void tst_QTextDocument::testUndoCommandAdded()
     cf.setFontItalic(true);
     cursor.mergeCharFormat(cf);
     QCOMPARE(spy.count(), 1);
+
+    spy.clear();
+    doc->undo();
+    QCOMPARE(spy.count(), 0);
+    doc->undo();
+    QCOMPARE(spy.count(), 0);
+    spy.clear();
+    doc->redo();
+    QCOMPARE(spy.count(), 0);
+    doc->redo();
+    QCOMPARE(spy.count(), 0);
 }
 
 void tst_QTextDocument::testUndoBlocks()

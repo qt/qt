@@ -1167,7 +1167,8 @@ bool QDockAreaLayoutInfo::insertGap(const QList<int> &path, QLayoutItem *dockWid
 
             QDockAreaLayoutInfo *subinfo = item.subinfo;
             QLayoutItem *widgetItem = item.widgetItem;
-            QRect r = subinfo == 0 ? dockedGeometry(widgetItem->widget()) : subinfo->rect;
+            QPlaceHolderItem *placeHolderItem = item.placeHolderItem;
+            QRect r = subinfo == 0 ? widgetItem ? dockedGeometry(widgetItem->widget()) : placeHolderItem->topLevelRect : subinfo->rect;
 
             Qt::Orientation opposite = o == Qt::Horizontal ? Qt::Vertical : Qt::Horizontal;
 #ifdef QT_NO_TABBAR
@@ -1176,13 +1177,15 @@ bool QDockAreaLayoutInfo::insertGap(const QList<int> &path, QLayoutItem *dockWid
             QDockAreaLayoutInfo *new_info
                 = new QDockAreaLayoutInfo(sep, dockPos, opposite, tabBarShape, mainWindow);
 
+            //item become a new top-level
             item.subinfo = new_info;
             item.widgetItem = 0;
+            item.placeHolderItem = 0;
 
             QDockAreaLayoutItem new_item
                 = widgetItem == 0
                     ? QDockAreaLayoutItem(subinfo)
-                    : QDockAreaLayoutItem(widgetItem);
+                    : widgetItem ? QDockAreaLayoutItem(widgetItem) : QDockAreaLayoutItem(placeHolderItem);
             new_item.size = pick(opposite, r.size());
             new_item.pos = pick(opposite, r.topLeft());
             new_info->item_list.append(new_item);
@@ -1300,9 +1303,9 @@ QDockAreaLayoutInfo *QDockAreaLayoutInfo::info(const QList<int> &path)
         index = -index - 1;
     if (index >= item_list.count())
         return this;
-    if (path.count() == 1 || item_list.at(index).subinfo == 0)
+    if (path.count() == 1 || item_list[index].subinfo == 0)
         return this;
-    return item_list.at(index).subinfo->info(path.mid(1));
+    return item_list[index].subinfo->info(path.mid(1));
 }
 
 QRect QDockAreaLayoutInfo::itemRect(int index) const
@@ -1841,7 +1844,6 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
     }
 }
 
-#ifdef Q_WS_MAC
 static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos)
 {
     switch (pos) {
@@ -1853,7 +1855,6 @@ static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos)
     }
     return Qt::NoDockWidgetArea;
 }
-#endif
 
 static QRect constrainedRect(QRect rect, const QRect &desktop)
 {
@@ -1970,19 +1971,19 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
 
                     if (!testing) {
                         widget->setVisible(flags & StateFlagVisible);
+                        item_list.append(item);
                     }
                 } else {
                     int dummy;
                     stream >> item.pos >> item.size >> dummy >> dummy;
                     if (!testing) {
+                        item_list.append(item);
                         widget->setFloating(false);
                         widget->setVisible(flags & StateFlagVisible);
+                        emit widget->dockLocationChanged(toDockWidgetArea(dockPos));
                     }
                 }
 
-                if (!testing) {
-                    item_list.append(item);
-                }
             }
         } else if (nextMarker == SequenceMarker) {
             int dummy;

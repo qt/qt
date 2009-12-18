@@ -19,7 +19,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "ancestormovemonitor.h"
 #include "utils.h"
 #include "videooutput.h"
-#include "videooutputobserver.h"
 
 #ifndef QT_NO_DEBUG
 #include "objectdump.h"
@@ -30,7 +29,12 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMoveEvent>
 #include <QResizeEvent>
 
+#include <QtCore/private/qcore_symbian_p.h> // for qt_TRect2QRect
 #include <QtGui/private/qwidget_p.h> // to access QWExtra
+
+#include <coecntrl.h>
+
+#include <coemain.h>    // for CCoeEnv
 
 QT_BEGIN_NAMESPACE
 
@@ -42,6 +46,16 @@ using namespace Phonon::MMF;
 */
 
 //-----------------------------------------------------------------------------
+// Constants
+//-----------------------------------------------------------------------------
+
+static const Phonon::VideoWidget::AspectRatio DefaultAspectRatio =
+    Phonon::VideoWidget::AspectRatioAuto;
+static const Phonon::VideoWidget::ScaleMode DefaultScaleMode =
+    Phonon::VideoWidget::FitInView;
+
+
+//-----------------------------------------------------------------------------
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
@@ -49,7 +63,8 @@ MMF::VideoOutput::VideoOutput
     (AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent)
         :   QWidget(parent)
         ,   m_ancestorMoveMonitor(ancestorMoveMonitor)
-        ,   m_observer(0)
+        ,   m_aspectRatio(DefaultAspectRatio)
+        ,   m_scaleMode(DefaultScaleMode)
 {
     TRACE_CONTEXT(VideoOutput::VideoOutput, EVideoInternal);
     TRACE_ENTRY("parent 0x%08x", parent);
@@ -59,13 +74,10 @@ MMF::VideoOutput::VideoOutput
     setAttribute(Qt::WA_NoSystemBackground, true);
     setAutoFillBackground(false);
 
-    // Causes QSymbianControl::Draw not to BitBlt this widget's region of the
-    // backing store.  Since the backing store is (by default) a 16MU bitmap,
-    // blitting it results in this widget's screen region in the final
-    // framebuffer having opaque alpha values.  This in turn causes the video
-    // to be invisible when running on the target device.
-    qt_widget_private(this)->extraData()->disableBlit = true;
+    qt_widget_private(this)->extraData()->nativePaintMode = QWExtra::ZeroFill;
+    qt_widget_private(this)->extraData()->receiveNativePaintEvents = true;
 
+    getVideoWindowRect();
     registerForAncestorMoved();
 
     dump();
@@ -83,25 +95,17 @@ MMF::VideoOutput::~VideoOutput()
     TRACE_EXIT_0();
 }
 
-void MMF::VideoOutput::setFrameSize(const QSize& frameSize)
+void MMF::VideoOutput::setVideoSize(const QSize& frameSize)
 {
-    TRACE_CONTEXT(VideoOutput::setFrameSize, EVideoInternal);
+    TRACE_CONTEXT(VideoOutput::setVideoSize, EVideoInternal);
     TRACE("oldSize %d %d newSize %d %d",
-          m_frameSize.width(), m_frameSize.height(),
+          m_videoFrameSize.width(), m_videoFrameSize.height(),
           frameSize.width(), frameSize.height());
 
-    if (frameSize != m_frameSize) {
-        m_frameSize = frameSize;
+    if (frameSize != m_videoFrameSize) {
+        m_videoFrameSize = frameSize;
         updateGeometry();
     }
-}
-
-void MMF::VideoOutput::setObserver(VideoOutputObserver* observer)
-{
-    TRACE_CONTEXT(VideoOutput::setObserver, EVideoInternal);
-    TRACE("observer 0x%08x", observer);
-
-    m_observer = observer;
 }
 
 void MMF::VideoOutput::ancestorMoved()
@@ -109,7 +113,17 @@ void MMF::VideoOutput::ancestorMoved()
     TRACE_CONTEXT(VideoOutput::ancestorMoved, EVideoInternal);
     TRACE_ENTRY_0();
 
-    videoOutputRegionChanged();
+    RWindowBase *const window = videoWindow();
+
+    if(window) {
+        const TPoint newWindowPosSymbian = window->AbsPosition();
+        const QPoint newWindowPos(newWindowPosSymbian.iX, newWindowPosSymbian.iY);
+
+        if(newWindowPos != m_videoWindowRect.topLeft()) {
+            m_videoWindowRect.moveTo(newWindowPos);
+            emit videoWindowChanged();
+        }
+    }
 
     TRACE_EXIT_0();
 }
@@ -123,9 +137,8 @@ QSize MMF::VideoOutput::sizeHint() const
     // TODO: replace this with a more sensible default
     QSize result(320, 240);
 
-    if (!m_frameSize.isNull()) {
-        result = m_frameSize;
-    }
+    if (!m_videoFrameSize.isNull())
+        result = m_videoFrameSize;
 
     return result;
 }
@@ -136,7 +149,7 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
     TRACE("rect %d %d - %d %d",
           event->rect().left(), event->rect().top(),
           event->rect().right(), event->rect().bottom());
-    TRACE("regions %d", event->region().numRects());
+    TRACE("regions %d", event->region().rectCount());
     TRACE("type %d", event->type());
 
     // Do nothing
@@ -149,7 +162,10 @@ void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
           event->oldSize().width(), event->oldSize().height(),
           event->size().width(), event->size().height());
 
-    videoOutputRegionChanged();
+    if(event->size() != event->oldSize()) {
+        m_videoWindowRect.setSize(event->size());
+        emit videoWindowChanged();
+    }
 }
 
 void MMF::VideoOutput::moveEvent(QMoveEvent* event)
@@ -159,7 +175,10 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
           event->oldPos().x(), event->oldPos().y(),
           event->pos().x(), event->pos().y());
 
-    videoOutputRegionChanged();
+    if(event->pos() != event->oldPos()) {
+        m_videoWindowRect.moveTo(event->pos());
+        emit videoWindowChanged();
+    }
 }
 
 bool MMF::VideoOutput::event(QEvent* event)
@@ -168,7 +187,8 @@ bool MMF::VideoOutput::event(QEvent* event)
 
     if (event->type() == QEvent::WinIdChange) {
         TRACE_0("WinIdChange");
-        videoOutputRegionChanged();
+        getVideoWindowRect();
+        emit videoWindowChanged();
         return true;
     } else if (event->type() == QEvent::ParentChange) {
         // Tell ancestor move monitor to update ancestor list for this widget
@@ -180,14 +200,66 @@ bool MMF::VideoOutput::event(QEvent* event)
 
 
 //-----------------------------------------------------------------------------
+// Public functions
+//-----------------------------------------------------------------------------
+
+RWindowBase* MMF::VideoOutput::videoWindow()
+{
+    CCoeControl *control = internalWinId();
+    if(!control)
+        control = effectiveWinId();
+
+    RWindowBase *window = 0;
+    if(control)
+        window = control->DrawableWindow();
+
+    return window;
+}
+
+const QRect& MMF::VideoOutput::videoWindowRect() const
+{
+    return m_videoWindowRect;
+}
+
+Phonon::VideoWidget::AspectRatio MMF::VideoOutput::aspectRatio() const
+{
+    return m_aspectRatio;
+}
+
+void MMF::VideoOutput::setAspectRatio
+    (Phonon::VideoWidget::AspectRatio aspectRatio)
+{
+    if(m_aspectRatio != aspectRatio) {
+        m_aspectRatio = aspectRatio;
+        emit aspectRatioChanged();
+    }
+}
+
+Phonon::VideoWidget::ScaleMode MMF::VideoOutput::scaleMode() const
+{
+    return m_scaleMode;
+}
+
+void MMF::VideoOutput::setScaleMode
+    (Phonon::VideoWidget::ScaleMode scaleMode)
+{
+    if(m_scaleMode != scaleMode) {
+        m_scaleMode = scaleMode;
+        emit scaleModeChanged();
+    }
+}
+
+
+//-----------------------------------------------------------------------------
 // Private functions
 //-----------------------------------------------------------------------------
 
-void MMF::VideoOutput::videoOutputRegionChanged()
+void MMF::VideoOutput::getVideoWindowRect()
 {
-    dump();
-    if (m_observer)
-        m_observer->videoOutputRegionChanged();
+    RWindowBase *const window = videoWindow();
+    if(window)
+        m_videoWindowRect =
+            qt_TRect2QRect(TRect(window->AbsPosition(), window->Size()));
 }
 
 void MMF::VideoOutput::registerForAncestorMoved()
@@ -199,15 +271,33 @@ void MMF::VideoOutput::dump() const
 {
 #ifndef QT_NO_DEBUG
     TRACE_CONTEXT(VideoOutput::dump, EVideoInternal);
+
     QScopedPointer<ObjectDump::QVisitor> visitor(new ObjectDump::QVisitor);
     visitor->setPrefix("Phonon::MMF"); // to aid searchability of logs
     ObjectDump::addDefaultAnnotators(*visitor);
     TRACE("Dumping tree from leaf 0x%08x:", this);
-    //ObjectDump::dumpAncestors(*this, *visitor);
     ObjectDump::dumpTreeFromLeaf(*this, *visitor);
+
+    QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
+    dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
+    ObjectDump::addDefaultAnnotators(*dumper);
+    TRACE_0("Dumping VideoOutput:");
+    dumper->dumpObject(*this);
 #endif
 }
 
+void MMF::VideoOutput::beginNativePaintEvent(const QRect& /*controlRect*/)
+{
+    emit beginVideoWindowNativePaint();
+}
+
+void MMF::VideoOutput::endNativePaintEvent(const QRect& /*controlRect*/)
+{
+    // Ensure that draw ops are executed into the WSERV output framebuffer
+    CCoeEnv::Static()->WsSession().Flush();
+
+    emit endVideoWindowNativePaint();
+}
 
 QT_END_NAMESPACE
 

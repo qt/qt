@@ -158,6 +158,8 @@ void QTextEditPrivate::init(const QString &html)
     QObject::connect(control, SIGNAL(selectionChanged()), q, SIGNAL(selectionChanged()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
 
+    QObject::connect(control, SIGNAL(textChanged(const QString &)), q, SLOT(updateMicroFocus()));
+
     QTextDocument *doc = control->document();
     // set a null page size initially to avoid any relayouting until the textedit
     // is shown. relayoutDocument() will take care of setting the page size to the
@@ -530,7 +532,9 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     when the property is set.
 
     If the text edit has another content type, it will not be replaced
-    by plain text if you call toPlainText().
+    by plain text if you call toPlainText(). The only exception to this
+    is the non-break space, \e{nbsp;}, that will be converted into
+    standard space.
 
     By default, for an editor with no contents, this property contains
     an empty string.
@@ -1210,7 +1214,9 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
                 if (!hasEditFocus() && !(e->modifiers() & Qt::ControlModifier)) {
                     if (e->text()[0].isPrint()) {
                         setEditFocus(true);
+#ifndef Q_OS_SYMBIAN
                         clear();
+#endif
                     } else {
                         e->ignore();
                         return;
@@ -1574,7 +1580,8 @@ void QTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->autoScrollTimer.stop();
         ensureCursorVisible();
     }
-    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    if (!isReadOnly() && rect().contains(e->pos()))
+        d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
 
@@ -1672,7 +1679,9 @@ void QTextEdit::inputMethodEvent(QInputMethodEvent *e)
         && QApplication::keypadNavigationEnabled()
         && !hasEditFocus()) {
         setEditFocus(true);
+#ifndef Q_OS_SYMBIAN
         selectAll();    // so text is replaced rather than appended to
+#endif
     }
 #endif
     d->sendControlEvent(e);
@@ -1899,7 +1908,7 @@ void QTextEdit::setOverwriteMode(bool overwrite)
     \brief the tab stop width in pixels
     \since 4.1
 
-    By default, this property contains a value of 80.
+    By default, this property contains a value of 80 pixels.
 */
 
 int QTextEdit::tabStopWidth() const

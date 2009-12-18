@@ -110,11 +110,7 @@ static bool DEBUG_TEMP_FLAG;
 
 static inline void qt_glColor4ubv(unsigned char *col)
 {
-#ifdef QT_OPENGL_ES
-        glColor4f(col[0]/255.0, col[1]/255.0, col[2]/255.0, col[3]/255.0);
-#else
-        glColor4ubv(col);
-#endif
+    glColor4f(col[0]/255.0f, col[1]/255.0f, col[2]/255.0f, col[3]/255.0f);
 }
 
 struct QT_PointF {
@@ -248,8 +244,8 @@ public:
           bound(false)
     {
         connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
     }
 
     inline void setDevice(QPaintDevice *pdev);
@@ -525,8 +521,8 @@ public:
     QGLProgramCache() {
         // we have to know when a context is deleted so we can free
         // any program handles it holds
-        connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupPrograms(const QGLContext *)));
+        connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupPrograms(const QGLContext*)));
 
     }
     ~QGLProgramCache() {
@@ -639,8 +635,8 @@ public:
         : p(priv)
     {
         connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
     }
 
 public Q_SLOTS:
@@ -1010,8 +1006,8 @@ public:
     QGLGradientCache() : QObject(), buffer_ctx(0)
     {
         connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
     }
 
     inline GLuint getBuffer(const QGradient &gradient, qreal opacity, QGLContext *ctx) {
@@ -4712,8 +4708,8 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
             QWidget *widget = static_cast<QWidget *>(context->device());
             connect(widget, SIGNAL(destroyed(QObject*)), SLOT(widgetDestroyed(QObject*)));
             connect(QGLSignalProxy::instance(),
-                    SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                    SLOT(cleanupContext(const QGLContext *)));
+                    SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                    SLOT(cleanupContext(const QGLContext*)));
         }
     } else {
         font_cache = dev_it.value();
