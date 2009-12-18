@@ -148,6 +148,7 @@ protected:
 
     void writeSisTargets(QTextStream &t);
     void generateDistcleanTargets(QTextStream& t);
+    void generateExecutionTargets(QTextStream& t, const QStringList& platforms);
 
     // Subclass implements
     virtual void writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile) = 0;
