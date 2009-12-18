@@ -44,6 +44,7 @@
 #include <QtGui/QtGui>
 
 #include "modeltest.h"
+#include "dynamictreemodel.h"
 
 
 class tst_ModelTest : public QObject
@@ -64,6 +65,7 @@ private slots:
     void stringListModel();
     void treeWidgetModel();
     void standardItemModel();
+    void testInsertThroughProxy();
 };
 
 
@@ -143,7 +145,38 @@ void tst_ModelTest::standardItemModel()
     
     model.insertRows(0,5, model.index(1,1));
     model.insertColumns(0,5, model.index(1,3));
-    
+}
+
+void tst_ModelTest::testInsertThroughProxy()
+{
+    DynamicTreeModel *model = new DynamicTreeModel(this);
+
+    QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
+    proxy->setSourceModel(model);
+
+    new ModelTest(proxy, this);
+
+    ModelInsertCommand *insertCommand = new ModelInsertCommand(model, this);
+    insertCommand->setNumCols(4);
+    insertCommand->setStartRow(0);
+    insertCommand->setEndRow(9);
+    // Parent is QModelIndex()
+    insertCommand->doCommand();
+
+    insertCommand = new ModelInsertCommand(model, this);
+    insertCommand->setNumCols(4);
+    insertCommand->setAncestorRowNumbers(QList<int>() << 5);
+    insertCommand->setStartRow(0);
+    insertCommand->setEndRow(9);
+    insertCommand->doCommand();
+
+    ModelMoveCommand *moveCommand = new ModelMoveCommand(model, this);
+    moveCommand->setNumCols(4);
+    moveCommand->setStartRow(0);
+    moveCommand->setEndRow(0);
+    moveCommand->setDestRow(9);
+    moveCommand->setDestAncestors(QList<int>() << 5);
+    moveCommand->doCommand();
 }
 
 QTEST_MAIN(tst_ModelTest)
