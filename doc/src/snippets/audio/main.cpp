@@ -112,7 +112,7 @@ public slots:
         switch (newState) {
             case QAudio::StopState:
                 if (output->error() != QAudio::NoError) {
-                    // Do your error handlin
+                    // Perform error handling
                 } else {
                     // Normal stop
                 }
