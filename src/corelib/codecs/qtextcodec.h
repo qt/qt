@@ -167,6 +167,9 @@ public:
 private:
     const QTextCodec *c;
     QTextCodec::ConverterState state;
+
+    friend class QXmlStreamWriter;
+    friend class QXmlStreamWriterPrivate;
 };
 
 class Q_CORE_EXPORT QTextDecoder {
