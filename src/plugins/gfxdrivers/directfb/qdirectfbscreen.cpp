@@ -1063,7 +1063,7 @@ static inline bool setIntOption(const QStringList &arguments, const QString &var
 
 static inline QColor colorFromName(const QString &name)
 {
-    QRegExp rx("#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])");
+    QRegExp rx(QLatin1String("#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])"));
     rx.setCaseSensitivity(Qt::CaseInsensitive);
     if (rx.exactMatch(name)) {
         Q_ASSERT(rx.captureCount() == 4);
