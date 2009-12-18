@@ -82,7 +82,7 @@ public:
     virtual ReleaseFlags release(QmlGraphicsItem *item) = 0;
     virtual void completeItem() = 0;
     virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext) = 0;
-    virtual QVariant value(int index, const QString &role) { return QVariant(); }
+    virtual QVariant value(int, const QString &) { return QVariant(); }
 
     virtual int indexOf(QmlGraphicsItem *item, QObject *objectContext) const = 0;
 

@@ -895,16 +895,11 @@ QVariant QmlGraphicsVisualDataModel::value(int index, const QString &name)
     QVariant val;
     QObject *nobj = d->m_cache.item(index);
     if (nobj) {
-        val = QmlEngine::contextForObject(nobj)->contextProperty(name);
+        val = d->data(nobj)->property(name.toUtf8());
     } else {
-        QmlContext *ccontext = d->m_context;
-        if (!ccontext) ccontext = qmlContext(this);
-        QmlContext *ctxt = new QmlContext(ccontext);
         QmlGraphicsVisualDataModelData *data = new QmlGraphicsVisualDataModelData(index, this);
-        ctxt->addDefaultObject(data);
-        val = ctxt->contextProperty(name);
+        val = data->property(name.toUtf8());
         delete data;
-        delete ctxt;
     }
 
     return val;

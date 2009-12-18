@@ -1478,18 +1478,24 @@ QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItemPrivate &dd, QmlGraphicsItem *pa
 QmlGraphicsItem::~QmlGraphicsItem()
 {
     Q_D(QmlGraphicsItem);
-    for (int ii = 0; ii < d->geometryListeners.count(); ++ii) {
-        QmlGraphicsAnchorsPrivate *anchor = d->geometryListeners.at(ii)->anchorPrivate();
+    for (int ii = 0; ii < d->changeListeners.count(); ++ii) {
+        QmlGraphicsAnchorsPrivate *anchor = d->changeListeners.at(ii).listener->anchorPrivate();
         if (anchor)
             anchor->clearItem(this);
     }
-    if (!d->parent || (parentItem() && !parentItem()->QGraphicsItem::d_ptr->inDestructor))
-        for (int ii = 0; ii < d->geometryListeners.count(); ++ii) {
-            QmlGraphicsAnchorsPrivate *anchor = d->geometryListeners.at(ii)->anchorPrivate();
+    if (!d->parent || (parentItem() && !parentItem()->QGraphicsItem::d_ptr->inDestructor)) {
+        for (int ii = 0; ii < d->changeListeners.count(); ++ii) {
+            QmlGraphicsAnchorsPrivate *anchor = d->changeListeners.at(ii).listener->anchorPrivate();
             if (anchor && anchor->item && anchor->item->parentItem() != this) //child will be deleted anyway
                 anchor->updateOnComplete();
         }
-    d->geometryListeners.clear();
+    }
+    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
+        const QmlGraphicsItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
+        if (change.types & QmlGraphicsItemPrivate::Destroyed)
+            change.listener->itemDestroyed(this);
+    }
+    d->changeListeners.clear();
     delete d->_anchorLines; d->_anchorLines = 0;
     delete d->_anchors; d->_anchors = 0;
     delete d->_stateGroup; d->_stateGroup = 0;
@@ -1975,20 +1981,17 @@ void QmlGraphicsItem::geometryChanged(const QRectF &newGeometry,
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
 
-    for(int ii = 0; ii < d->geometryListeners.count(); ++ii) {
-        QmlGraphicsItemGeometryListener *listener = d->geometryListeners.at(ii);
-        listener->itemGeometryChanged(this, newGeometry, oldGeometry);
+    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
+        const QmlGraphicsItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
+        if (change.types & QmlGraphicsItemPrivate::Geometry)
+            change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
     }
 }
 
-void QmlGraphicsItemPrivate::addGeometryListener(QmlGraphicsItemGeometryListener *listener)
+void QmlGraphicsItemPrivate::removeItemChangeListener(QmlGraphicsItemChangeListener *listener, ChangeTypes types)
 {
-    geometryListeners.append(listener);
-}
-
-void QmlGraphicsItemPrivate::removeGeometryListener(QmlGraphicsItemGeometryListener *listener)
-{
-    geometryListeners.removeOne(listener);
+    ChangeListener change(listener, types);
+    changeListeners.removeOne(change);
 }
 
 /*! \internal */
@@ -2238,10 +2241,13 @@ void QmlGraphicsItem::setBaselineOffset(qreal offset)
     d->_baselineOffset = offset;
     emit baselineOffsetChanged();
 
-    for(int ii = 0; ii < d->geometryListeners.count(); ++ii) {
-        QmlGraphicsAnchorsPrivate *anchor = d->geometryListeners.at(ii)->anchorPrivate();
-        if (anchor)
-            anchor->updateVerticalAnchors();
+    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
+        const QmlGraphicsItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
+        if (change.types & QmlGraphicsItemPrivate::Geometry) {
+            QmlGraphicsAnchorsPrivate *anchor = change.listener->anchorPrivate();
+            if (anchor)
+                anchor->updateVerticalAnchors();
+        }
     }
 }
 
@@ -2707,10 +2713,35 @@ bool QmlGraphicsItem::sceneEvent(QEvent *event)
 QVariant QmlGraphicsItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
-    if (change == ItemParentHasChanged) {
+    Q_D(const QmlGraphicsItem);
+    switch (change) {
+    case ItemParentHasChanged:
         emit parentChanged();
-    } else if (change == ItemChildAddedChange || change == ItemChildRemovedChange) {
+        break;
+    case ItemChildAddedChange:
+    case ItemChildRemovedChange:
         emit childrenChanged();
+        break;
+    case ItemVisibleHasChanged: {
+            for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
+                const QmlGraphicsItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
+                if (change.types & QmlGraphicsItemPrivate::Visibility) {
+                    change.listener->itemVisibilityChanged(this);
+                }
+            }
+        }
+        break;
+    case ItemOpacityHasChanged: {
+            for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
+                const QmlGraphicsItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
+                if (change.types & QmlGraphicsItemPrivate::Opacity) {
+                    change.listener->itemOpacityChanged(this);
+                }
+            }
+        }
+        break;
+    default:
+        break;
     }
 
     return QGraphicsItem::itemChange(change, value);
@@ -3005,9 +3036,6 @@ QDebug operator<<(QDebug debug, QmlGraphicsItem *item)
           << ", z =" << item->zValue() << ')';
     return debug;
 }
-
-int QmlGraphicsItemPrivate::heightIdx = -1;
-int QmlGraphicsItemPrivate::widthIdx = -1;
 
 int QmlGraphicsItemPrivate::consistentTime = -1;
 void QmlGraphicsItemPrivate::setConsistentTime(int t) 

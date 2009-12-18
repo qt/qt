@@ -54,10 +54,11 @@
 //
 
 #include <QtCore/qglobal.h>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
-template<class T>
+template<class T, int Increment=1024>
 class QPODVector 
 {
 public:
@@ -87,23 +88,28 @@ public:
 
     void insert(int idx, const T &v) {
         if (m_count == m_capacity) {
-            m_capacity += 1024;
+            m_capacity += Increment;
             m_data = (T *)realloc(m_data, m_capacity * sizeof(T));
         }
         int moveCount = m_count - idx;
-        if (moveCount)
+        if (moveCount) {
+            qDebug() << "insert" << m_count << idx;
             ::memmove(m_data + idx + 1, m_data + idx, moveCount * sizeof(T));
+        }
         m_count++;
         m_data[idx] = v;
     }
 
-    void insertBlank(int idx, int count) {
-        int newSize = m_count + count;
-        if (newSize >= m_capacity) {
-            m_capacity = (newSize + 1023) & 0xFFFFFC00;
+    void reserve(int count) {
+        if (count >= m_capacity) {
+            m_capacity = (count + (Increment-1)) & (0xFFFFFFFF - Increment + 1);
             m_data = (T *)realloc(m_data, m_capacity * sizeof(T));
         }
+    }
 
+    void insertBlank(int idx, int count) {
+        int newSize = m_count + count;
+        reserve(newSize);
         int moveCount = m_count - idx;
         if (moveCount) 
             ::memmove(m_data + idx + count,  m_data + idx, 
@@ -118,12 +124,34 @@ public:
                       moveCount * sizeof(T));
         m_count -= count;
     }
-    
+
+    void removeOne(const T &v) {
+        int idx = 0;
+        while (idx < m_count) {
+            if (m_data[idx] == v) {
+                remove(idx);
+                return;
+            }
+            ++idx;
+        }
+    }
+
+    int find(const T &v) {
+        for (int idx = 0; idx < m_count; ++idx)
+            if (m_data[idx] == v)
+                return idx;
+        return -1;
+    }
+
+    bool contains(const T &v) {
+        return find(v) != -1;
+    }
+
     int count() const {
         return m_count;
     }
 
-    void copyAndClear(QPODVector<T> &other) {
+    void copyAndClear(QPODVector<T,Increment> &other) {
         if (other.m_data) ::free(other.m_data);
         other.m_count = m_count;
         other.m_capacity = m_capacity;
@@ -133,7 +161,7 @@ public:
         m_data = 0;
     }
 
-    QPODVector<T> &operator<<(const T &v) { append(v); return *this; }
+    QPODVector<T,Increment> &operator<<(const T &v) { append(v); return *this; }
 private:
     QPODVector(const QPODVector &);
     QPODVector &operator=(const QPODVector &);

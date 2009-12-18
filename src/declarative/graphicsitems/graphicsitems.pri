@@ -48,7 +48,7 @@ HEADERS += \
     $$PWD/qmlgraphicsgraphicsobjectcontainer_p.h \
     $$PWD/qmlgraphicsparticles_p.h \
     $$PWD/qmlgraphicslayoutitem_p.h \
-    $$PWD/qmlgraphicsitemgeometrylistener_p.h \
+    $$PWD/qmlgraphicsitemchangelistener_p.h \
     $$PWD/qmlgraphicseffects.cpp
 
 SOURCES += \

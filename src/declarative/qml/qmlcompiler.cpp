@@ -2440,6 +2440,21 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
             typeName = aliasProperty.typeName();
     } else {
         typeName = idObject->metaObject()->className();
+
+        //use the base type since it has been registered with metatype system
+        int index = typeName.indexOf("_QML_");
+        if (index != -1) {
+            typeName = typeName.left(index);
+        } else {
+            index = typeName.indexOf("_QMLTYPE_");
+            const QMetaObject *mo = idObject->metaObject();
+            while (index != -1 && mo) {
+                typeName = mo->superClass()->className();
+                index = typeName.indexOf("_QMLTYPE_");
+                mo = mo->superClass();
+            }
+        }
+
         typeName += '*';
     }
 

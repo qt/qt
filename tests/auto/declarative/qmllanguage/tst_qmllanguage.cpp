@@ -889,6 +889,30 @@ void tst_qmllanguage::aliasProperties()
                               object->metaObject()->indexOfProperty("aliasedObject"), a);
         QVERIFY(alias2 == 0);
     }
+
+    // Simple composite type
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.8.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("value").toInt(), 10);
+
+        delete object;
+    }
+
+    // Complex composite type
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.9.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("value").toInt(), 10);
+
+        delete object;
+    }
 }
 
 // Test that the root element in a composite type can be a Component

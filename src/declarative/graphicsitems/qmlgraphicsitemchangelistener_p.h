@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSITEMGEOMETRYLISTENER
-#define QMLGRAPHICSITEMGEOMETRYLISTENER
+#ifndef QMLGRAPHICSITEMCHANGELISTENER
+#define QMLGRAPHICSITEMCHANGELISTENER
 
 //
 //  W A R N I N G
@@ -53,18 +53,24 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
 QT_BEGIN_NAMESPACE
 
 class QRectF;
 class QmlGraphicsItem;
 class QmlGraphicsAnchorsPrivate;
-class QmlGraphicsItemGeometryListener
+class QmlGraphicsItemChangeListener
 {
 public:
-    virtual void itemGeometryChanged(QmlGraphicsItem *, const QRectF &newGeometry, const QRectF &oldGeometry) = 0;
+    virtual void itemGeometryChanged(QmlGraphicsItem *, const QRectF &, const QRectF &) {}
+    virtual void itemSiblingOrderChanged(QmlGraphicsItem *) {}
+    virtual void itemVisibilityChanged(QmlGraphicsItem *) {}
+    virtual void itemOpacityChanged(QmlGraphicsItem *) {}
+    virtual void itemDestroyed(QmlGraphicsItem *) {}
     virtual QmlGraphicsAnchorsPrivate *anchorPrivate() { return 0; }
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLGRAPHICSITEMGEOMETRYLISTENER
+#endif // QMLGRAPHICSITEMCHANGELISTENER

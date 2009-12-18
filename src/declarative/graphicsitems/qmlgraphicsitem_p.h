@@ -57,7 +57,8 @@
 
 #include "qmlgraphicsanchors_p.h"
 #include "qmlgraphicsanchors_p_p.h"
-#include "qmlgraphicsitemgeometrylistener_p.h"
+#include "qmlgraphicsitemchangelistener_p.h"
+#include <private/qpodvector_p.h>
 
 #include "../util/qmlstate_p.h"
 #include "../util/qmlnullablevalue_p_p.h"
@@ -115,10 +116,6 @@ public:
       smooth(false), keyHandler(0),
       width(0), height(0), implicitWidth(0), implicitHeight(0)
     {
-        if (widthIdx == -1) {
-            widthIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("widthChanged()");
-            heightIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("heightChanged()");
-        }
     }
 
     void init(QmlGraphicsItem *parent)
@@ -206,9 +203,28 @@ public:
         return _anchorLines;
     }
 
-    void addGeometryListener(QmlGraphicsItemGeometryListener *);
-    void removeGeometryListener(QmlGraphicsItemGeometryListener *);
-    QList<QmlGraphicsItemGeometryListener *> geometryListeners;
+    enum ChangeType {
+        Geometry = 0x01,
+        SiblingOrder = 0x02,
+        Visibility = 0x04,
+        Opacity = 0x08,
+        Destroyed = 0x10
+    };
+
+    Q_DECLARE_FLAGS(ChangeTypes, ChangeType)
+
+    struct ChangeListener {
+        ChangeListener(QmlGraphicsItemChangeListener *l, QmlGraphicsItemPrivate::ChangeTypes t) : listener(l), types(t) {}
+        QmlGraphicsItemChangeListener *listener;
+        QmlGraphicsItemPrivate::ChangeTypes types;
+        bool operator==(const ChangeListener &other) const { return listener == other.listener && types == other.types; }
+    };
+
+    void addItemChangeListener(QmlGraphicsItemChangeListener *listener, ChangeTypes types) {
+        changeListeners.append(ChangeListener(listener, types));
+    }
+    void removeItemChangeListener(QmlGraphicsItemChangeListener *, ChangeTypes types);
+    QPODVector<ChangeListener,4> changeListeners;
 
     QmlStateGroup *states();
     QmlStateGroup *_stateGroup;
@@ -246,32 +262,13 @@ public:
     // Reimplemented from QGraphicsItemPrivate
     virtual void siblingOrderChange()
     {
-        foreach(QmlGraphicsItemPrivate* other, siblingOrderNotifiees)
-            other->otherSiblingOrderChange(this);
-    }
-    QList<QmlGraphicsItemPrivate*> siblingOrderNotifiees;
-    void registerSiblingOrderNotification(QmlGraphicsItemPrivate* other)
-    {
-        siblingOrderNotifiees << other;
-    }
-    void unregisterSiblingOrderNotification(QmlGraphicsItemPrivate* other)
-    {
-        siblingOrderNotifiees.removeAll(other);
-    }
-    virtual void otherSiblingOrderChange(QmlGraphicsItemPrivate* other) {Q_UNUSED(other)}
-
-    bool connectToWidthChanged(QObject *object, int index) {
-        return QMetaObject::connect(q_func(), widthIdx, object, index);
-    }
-    bool disconnectFromWidthChanged(QObject *object, int index) {
-        return QMetaObject::disconnect(q_func(), widthIdx, object, index);
-    }
-
-    bool connectToHeightChanged(QObject *object, int index) {
-        return QMetaObject::connect(q_func(), heightIdx, object, index);
-    }
-    bool disconnectFromHeightChanged(QObject *object, int index) {
-        return QMetaObject::disconnect(q_func(), heightIdx, object, index);
+        Q_Q(QmlGraphicsItem);
+        for(int ii = 0; ii < changeListeners.count(); ++ii) {
+            const QmlGraphicsItemPrivate::ChangeListener &change = changeListeners.at(ii);
+            if (change.types & QmlGraphicsItemPrivate::SiblingOrder) {
+                change.listener->itemSiblingOrderChanged(q);
+            }
+        }
     }
 
     static int consistentTime;
@@ -280,9 +277,9 @@ public:
     static void start(QTime &);
     static int elapsed(QTime &);
     static int restart(QTime &);
-    static int widthIdx;
-    static int heightIdx;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QmlGraphicsItemPrivate::ChangeTypes);
 
 QT_END_NAMESPACE
 

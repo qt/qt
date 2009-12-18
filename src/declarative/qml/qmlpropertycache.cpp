@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_METATYPE(QScriptValue);
 
-void QmlPropertyCache::Data::load(const QMetaProperty &p)
+void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
 {
     propType = p.userType();
     if (QVariant::Type(propType) == QVariant::LastType)
@@ -69,7 +69,8 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p)
     } else if (p.isEnumType()) {
         flags |= Data::IsEnumType;
     } else {
-        QmlMetaType::TypeCategory cat = QmlMetaType::typeCategory(propType);
+        QmlMetaType::TypeCategory cat = engine ? QmlEnginePrivate::get(engine)->typeCategory(propType)
+                                               : QmlMetaType::typeCategory(propType);
         if (cat == QmlMetaType::Object)
             flags |= Data::IsQObjectDerived;
         else if (cat == QmlMetaType::List)
@@ -174,7 +175,7 @@ void QmlPropertyCache::update(QmlEngine *engine, const QMetaObject *metaObject)
         RData *data = new RData;
         data->identifier = enginePriv->objectClass->createPersistentIdentifier(propName);
 
-        data->load(p);
+        data->load(p, engine);
 
         indexCache[ii] = data;
 

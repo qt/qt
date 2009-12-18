@@ -245,7 +245,7 @@ void QmlGraphicsAnchorsPrivate::addDepend(QmlGraphicsItem *item)
         return;
     QmlGraphicsItemPrivate *p =
         static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(item));
-    p->addGeometryListener(this);
+    p->addItemChangeListener(this, QmlGraphicsItemPrivate::Geometry);
 }
 
 void QmlGraphicsAnchorsPrivate::remDepend(QmlGraphicsItem *item)
@@ -254,7 +254,7 @@ void QmlGraphicsAnchorsPrivate::remDepend(QmlGraphicsItem *item)
         return;
     QmlGraphicsItemPrivate *p =
         static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(item));
-    p->removeGeometryListener(this);
+    p->removeItemChangeListener(this, QmlGraphicsItemPrivate::Geometry);
 }
 
 bool QmlGraphicsAnchorsPrivate::isItemComplete() const

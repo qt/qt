@@ -45,6 +45,7 @@
 #include "qmlgraphicsitem.h"
 
 #include "../util/qmlstate_p.h"
+#include "qpodvector_p.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -66,6 +67,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsBasePositioner : public QmlGraphicsItem
 public:
     enum PositionerType { None = 0x0, Horizontal = 0x1, Vertical = 0x2, Both = 0x3 };
     QmlGraphicsBasePositioner(PositionerType, QmlGraphicsItem *parent);
+    ~QmlGraphicsBasePositioner();
 
     int spacing() const;
     void setSpacing(int);
@@ -90,9 +92,17 @@ protected Q_SLOTS:
     void prePositioning();
 
 protected:
-    QList<QmlGraphicsItem *> positionedItems;
-    void positionX(int,QmlGraphicsItem* target);
-    void positionY(int,QmlGraphicsItem* target);
+    struct PositionedItem {
+        PositionedItem(QmlGraphicsItem *i) : item(i), isNew(false), isVisible(true) {}
+        bool operator==(const PositionedItem &other) const { return other.item == item; }
+        QmlGraphicsItem *item;
+        bool isNew;
+        bool isVisible;
+    };
+
+    QPODVector<PositionedItem,8> positionedItems;
+    void positionX(int,const PositionedItem &target);
+    void positionY(int,const PositionedItem &target);
 
 private:
     Q_DISABLE_COPY(QmlGraphicsBasePositioner)

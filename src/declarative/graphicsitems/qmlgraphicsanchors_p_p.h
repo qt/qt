@@ -54,7 +54,7 @@
 //
 
 #include "qmlgraphicsanchors_p.h"
-#include "qmlgraphicsitemgeometrylistener_p.h"
+#include "qmlgraphicsitemchangelistener_p.h"
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -91,7 +91,7 @@ Q_DECLARE_METATYPE(QmlGraphicsAnchorLine)
 
 
 
-class QmlGraphicsAnchorsPrivate : public QObjectPrivate, public QmlGraphicsItemGeometryListener
+class QmlGraphicsAnchorsPrivate : public QObjectPrivate, public QmlGraphicsItemChangeListener
 {
     Q_DECLARE_PUBLIC(QmlGraphicsAnchors)
 public:
