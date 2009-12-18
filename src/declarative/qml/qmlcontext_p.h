@@ -76,6 +76,7 @@ class QmlExpression;
 class QmlExpressionPrivate;
 class QmlAbstractExpression;
 class QmlBinding_Id;
+class QmlOptimizedBindings;
 
 class Q_DECLARATIVE_EXPORT QmlContextPrivate : public QObjectPrivate
 {
@@ -133,6 +134,9 @@ public:
     static QmlContext *get(QmlContextPrivate *context) {
         return static_cast<QmlContext *>(context->q_func());
     }
+
+    QmlOptimizedBindings *optimizedBindings;
+
     // Only used for debugging
     QList<QPointer<QObject> > instances;
 };
