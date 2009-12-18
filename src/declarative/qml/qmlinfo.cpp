@@ -43,6 +43,7 @@
 
 #include "qmldeclarativedata_p.h"
 #include "qmlcontext.h"
+#include "qmlmetatype.h"
 
 #include <QCoreApplication>
 
@@ -53,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
     \brief Prints warnings messages that include the file and line number for QML types.
 
-    When QML types display warning messages, it improves tracibility
+    When QML types display warning messages, it improves traceability
     if they include the QML file and line number on which the
     particular instance was instantiated.
     
@@ -71,7 +72,7 @@ QT_BEGIN_NAMESPACE
     prints
 
     \code
-    QML ComponentInstance (unknown location): component property is a write-once property
+    QML MyCustomType (unknown location): component property is a write-once property
     \endcode
 */
 
@@ -81,7 +82,22 @@ QmlInfo::QmlInfo(const QObject *object)
     QString pos = QLatin1String("QML");
     if (object) {
         pos += QLatin1Char(' ');
-        pos += QLatin1String(object->metaObject()->className());
+
+        QString typeName;
+        QmlType *type = QmlMetaType::qmlType(object->metaObject());
+        if (type) {
+            typeName = QLatin1String(type->qmlTypeName());
+            int lastSlash = typeName.lastIndexOf(QLatin1Char('/'));
+            if (lastSlash != -1)
+                typeName = typeName.mid(lastSlash+1);
+        } else {
+            typeName = QString::fromUtf8(object->metaObject()->className());
+            int marker = typeName.indexOf(QLatin1String("_QMLTYPE_"));
+            if (marker != -1)
+                typeName = typeName.left(marker);
+        }
+
+        pos += typeName;
     }
     QmlDeclarativeData *ddata = object?QmlDeclarativeData::get(object):0;
     pos += QLatin1String(" (");
