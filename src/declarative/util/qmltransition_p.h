@@ -67,6 +67,7 @@ class Q_DECLARATIVE_EXPORT QmlTransition : public QObject
     Q_PROPERTY(bool reversible READ reversible WRITE setReversible)
     Q_PROPERTY(QmlList<QmlAbstractAnimation *>* animations READ animations)
     Q_CLASSINFO("DefaultProperty", "animations")
+    Q_CLASSINFO("DeferredPropertyNames", "animations");
 
 public:
     QmlTransition(QObject *parent=0);

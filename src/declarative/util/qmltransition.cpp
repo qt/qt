@@ -165,6 +165,8 @@ void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
 {
     Q_D(QmlTransition);
 
+    qmlExecuteDeferred(this);
+
     if (d->reversed) {
         for (int ii = d->animations.count() - 1; ii >= 0; --ii) {
             d->animations.at(ii)->transition(actions, after, QmlAbstractAnimation::Backward);
