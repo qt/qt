@@ -120,7 +120,7 @@ public:
         \row
             \o Sample size
             \o How much data is stored in each sample (typically 8
-               or 16)
+               or 16 bits)
         \row
             \o Sample type
             \o Numerical representation of sample (typically signed integer,
@@ -224,7 +224,7 @@ bool QAudioFormat::isValid() const
 }
 
 /*!
-   Sets the frequency to \a frequency.
+   Sets the frequency (sample rate) to \a frequency.
 */
 
 void QAudioFormat::setFrequency(int frequency)
@@ -233,7 +233,7 @@ void QAudioFormat::setFrequency(int frequency)
 }
 
 /*!
-    Returns the current frequency value.
+    Returns the current frequency (sample rate) value.
 */
 
 int QAudioFormat::frequency() const
@@ -242,7 +242,7 @@ int QAudioFormat::frequency() const
 }
 
 /*!
-   Sets the channels to \a channels.
+   Sets the number of channels to the \a channels value specified.
 */
 
 void QAudioFormat::setChannels(int channels)
@@ -251,7 +251,7 @@ void QAudioFormat::setChannels(int channels)
 }
 
 /*!
-    Returns the current channel value.
+    Returns the current number of channels.
 */
 
 int QAudioFormat::channels() const
@@ -260,7 +260,7 @@ int QAudioFormat::channels() const
 }
 
 /*!
-   Sets the sampleSize to \a sampleSize.
+   Sets the sample size to the \a sampleSize specified.
 */
 
 void QAudioFormat::setSampleSize(int sampleSize)
@@ -269,7 +269,7 @@ void QAudioFormat::setSampleSize(int sampleSize)
 }
 
 /*!
-    Returns the current sampleSize value.
+    Returns the current sample size value.
 */
 
 int QAudioFormat::sampleSize() const
