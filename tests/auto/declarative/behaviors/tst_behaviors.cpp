@@ -236,7 +236,7 @@ void tst_behaviors::reassignedAnimation()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/reassignedAnimation.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlBehavior (file://" SRCDIR "/data/reassignedAnimation.qml:9:12) Can't change the animation assigned to a Behavior.");
+    QTest::ignoreMessage(QtWarningMsg, "QML Behavior (file://" SRCDIR "/data/reassignedAnimation.qml:9:12) Can't change the animation assigned to a Behavior.");
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
     QCOMPARE(qobject_cast<QmlNumberAnimation*>(

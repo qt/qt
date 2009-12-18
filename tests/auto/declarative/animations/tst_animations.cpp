@@ -297,12 +297,12 @@ void tst_animations::badProperties()
         QmlEngine engine;
 
         QmlComponent c1(&engine, QUrl("file://" SRCDIR "/data/badproperty1.qml"));
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"border.colr\"");
+        QTest::ignoreMessage(QtWarningMsg, "QML ColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"border.colr\"");
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c1.create());
         QVERIFY(rect);
 
         QmlComponent c2(&engine, QUrl("file://" SRCDIR "/data/badproperty2.qml"));
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty2.qml:22:9) Cannot animate read-only property \"border\"");
+        QTest::ignoreMessage(QtWarningMsg, "QML ColorAnimation (file://" SRCDIR "/data/badproperty2.qml:22:9) Cannot animate read-only property \"border\"");
         rect = qobject_cast<QmlGraphicsRectangle*>(c2.create());
         QVERIFY(rect);
 
@@ -454,7 +454,7 @@ void tst_animations::propertiesTransition()
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file://" SRCDIR "/data/propertiesTransition4.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
+        QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (file://" SRCDIR "/data/propertiesTransition4.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }
@@ -467,7 +467,7 @@ void tst_animations::propertiesTransition()
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file://" SRCDIR "/data/propertiesTransition5.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
+        QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (file://" SRCDIR "/data/propertiesTransition5.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }
@@ -509,28 +509,28 @@ void tst_animations::easingStringConversion()
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutBack);
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().overshoot(), qreal(2));
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Unmatched parenthesis in easing function \"easeInOutBack(overshoot: 2\"");
+    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Unmatched parenthesis in easing function \"easeInOutBack(overshoot: 2\"");
     animation->setEasing("easeInOutBack(overshoot: 2");
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::Linear);
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Easing function \"InOutBack(overshoot: 2)\" must start with \"ease\"");
+    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Easing function \"InOutBack(overshoot: 2)\" must start with \"ease\"");
     animation->setEasing("InOutBack(overshoot: 2)");
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::Linear);
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Unknown easing curve \"NonExistantEase\"");
+    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Unknown easing curve \"NonExistantEase\"");
     animation->setEasing("NonExistantEase");
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::Linear);
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Improperly specified parameter in easing function \"easeInOutElastic(amplitude 5)\"");
+    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Improperly specified parameter in easing function \"easeInOutElastic(amplitude 5)\"");
     animation->setEasing("easeInOutElastic(amplitude 5)");
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutElastic);
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Improperly specified parameter in easing function \"easeInOutElastic(amplitude: yes)\"");
+    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Improperly specified parameter in easing function \"easeInOutElastic(amplitude: yes)\"");
     animation->setEasing("easeInOutElastic(amplitude: yes)");
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutElastic);
     QVERIFY(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude() != qreal(5));
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Unknown easing parameter \"nonexistantproperty\"");
+    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Unknown easing parameter \"nonexistantproperty\"");
     animation->setEasing("easeOutQuad(nonexistantproperty: 12)");
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutQuad);
 
@@ -540,12 +540,12 @@ void tst_animations::easingStringConversion()
 void tst_animations::invalidDuration()
 {
     QmlPropertyAnimation *animation = new QmlPropertyAnimation;
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlPropertyAnimation (unknown location) Cannot set a duration of < 0");
+    QTest::ignoreMessage(QtWarningMsg, "QML PropertyAnimation (unknown location) Cannot set a duration of < 0");
     animation->setDuration(-1);
     QCOMPARE(animation->duration(), 250);
 
     QmlPauseAnimation *pauseAnimation = new QmlPauseAnimation;
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlPauseAnimation (unknown location) Cannot set a duration of < 0");
+    QTest::ignoreMessage(QtWarningMsg, "QML PauseAnimation (unknown location) Cannot set a duration of < 0");
     pauseAnimation->setDuration(-1);
     QCOMPARE(pauseAnimation->duration(), 250);
 }

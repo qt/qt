@@ -460,7 +460,7 @@ void tst_states::parentChangeErrors()
         QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlParentChange (file://" SRCDIR "/data/parentChange4.qml:25:9) Unable to preserve appearance under non-uniform scale");
+        QTest::ignoreMessage(QtWarningMsg, "QML ParentChange (file://" SRCDIR "/data/parentChange4.qml:25:9) Unable to preserve appearance under non-uniform scale");
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
@@ -476,7 +476,7 @@ void tst_states::parentChangeErrors()
         QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlParentChange (file://" SRCDIR "/data/parentChange5.qml:25:9) Unable to preserve appearance under complex transform");
+        QTest::ignoreMessage(QtWarningMsg, "QML ParentChange (file://" SRCDIR "/data/parentChange5.qml:25:9) Unable to preserve appearance under complex transform");
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
@@ -712,8 +712,8 @@ void tst_states::propertyErrors()
 
     QCOMPARE(rect->color(),QColor("red"));
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlPropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to non-existant property \"colr\"");
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlPropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to read-only property \"wantsFocus\"");
+    QTest::ignoreMessage(QtWarningMsg, "QML PropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to non-existant property \"colr\"");
+    QTest::ignoreMessage(QtWarningMsg, "QML PropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to read-only property \"wantsFocus\"");
     rect->setState("blue");
 }
 

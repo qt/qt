@@ -175,7 +175,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop1.qml"));
 
-        QString expect = "QML QmlGraphicsText (" + view->url().toString() + ":6:5" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = "QML Text (" + view->url().toString() + ":6:5" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
@@ -190,7 +190,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop2.qml"));
 
-        QString expect = "QML QmlGraphicsImage (" + view->url().toString() + ":8:3" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = "QML Image (" + view->url().toString() + ":8:3" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         qApp->processEvents();
@@ -222,55 +222,55 @@ void tst_anchors::illegalSets_data()
 
     QTest::newRow("H - too many anchors")
         << "Rectangle { id: rect; Rectangle { anchors.left: rect.left; anchors.right: rect.right; anchors.horizontalCenter: rect.horizontalCenter } }"
-        << "QML QmlGraphicsRectangle (file::2:23) Can't specify left, right, and hcenter anchors.";
+        << "QML Rectangle (file::2:23) Can't specify left, right, and hcenter anchors.";
 
     foreach (const QString &side, QStringList() << "left" << "right") {
         QTest::newRow("H - anchor to V")
             << QString("Rectangle { Rectangle { anchors.%1: parent.top } }").arg(side)
-            << "QML QmlGraphicsRectangle (file::2:13) Can't anchor a horizontal edge to a vertical edge.";
+            << "QML Rectangle (file::2:13) Can't anchor a horizontal edge to a vertical edge.";
 
         QTest::newRow("H - anchor to non parent/sibling")
             << QString("Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.%1: rect.%1 } }").arg(side)
-            << "QML QmlGraphicsRectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
+            << "QML Rectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
 
         QTest::newRow("H - anchor to self")
             << QString("Rectangle { id: rect; anchors.%1: rect.%1 }").arg(side)
-            << "QML QmlGraphicsRectangle (file::2:1) Can't anchor item to self.";
+            << "QML Rectangle (file::2:1) Can't anchor item to self.";
     }
 
 
     QTest::newRow("V - too many anchors")
         << "Rectangle { id: rect; Rectangle { anchors.top: rect.top; anchors.bottom: rect.bottom; anchors.verticalCenter: rect.verticalCenter } }"
-        << "QML QmlGraphicsRectangle (file::2:23) Can't specify top, bottom, and vcenter anchors.";
+        << "QML Rectangle (file::2:23) Can't specify top, bottom, and vcenter anchors.";
 
     QTest::newRow("V - too many anchors with baseline")
         << "Rectangle { Text { id: text1; text: \"Hello\" } Text { anchors.baseline: text1.baseline; anchors.top: text1.top; } }"
-        << "QML QmlGraphicsText (file::2:47) Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
+        << "QML Text (file::2:47) Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
 
     foreach (const QString &side, QStringList() << "top" << "bottom" << "baseline") {
 
         QTest::newRow("V - anchor to H")
             << QString("Rectangle { Rectangle { anchors.%1: parent.left } }").arg(side)
-            << "QML QmlGraphicsRectangle (file::2:13) Can't anchor a vertical edge to a horizontal edge.";
+            << "QML Rectangle (file::2:13) Can't anchor a vertical edge to a horizontal edge.";
 
         QTest::newRow("V - anchor to non parent/sibling")
             << QString("Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.%1: rect.%1 } }").arg(side)
-            << "QML QmlGraphicsRectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
+            << "QML Rectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
 
         QTest::newRow("V - anchor to self")
             << QString("Rectangle { id: rect; anchors.%1: rect.%1 }").arg(side)
-            << "QML QmlGraphicsRectangle (file::2:1) Can't anchor item to self.";
+            << "QML Rectangle (file::2:1) Can't anchor item to self.";
     }
 
 
     QTest::newRow("centerIn - anchor to non parent/sibling")
         << "Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.centerIn: rect} }"
-        << "QML QmlGraphicsRectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
+        << "QML Rectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
 
 
     QTest::newRow("fill - anchor to non parent/sibling")
         << "Rectangle { Item { Rectangle { id: rect } } Rectangle { anchors.fill: rect} }"
-        << "QML QmlGraphicsRectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
+        << "QML Rectangle (file::2:45) Can't anchor to an item that isn't a parent or sibling.";
 }
 
 void tst_anchors::reset()
@@ -347,7 +347,7 @@ void tst_anchors::nullItem()
     const QMetaObject *meta = item->anchors()->metaObject();
     QMetaProperty p = meta->property(meta->indexOfProperty(side.toUtf8().constData()));
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlGraphicsItem (unknown location) Can't anchor to a null item.");
+    QTest::ignoreMessage(QtWarningMsg, "QML Item (unknown location) Can't anchor to a null item.");
     QVERIFY(p.write(item->anchors(), qVariantFromValue(anchor)));
 
     delete item;
@@ -373,7 +373,7 @@ void tst_anchors::crash1()
 
     view->setUrl(QUrl("file://" SRCDIR "/data/crash1.qml"));
 
-    QString expect = "QML QmlGraphicsText (" + view->url().toString() + ":4:5" + ") Possible anchor loop detected on fill.";
+    QString expect = "QML Text (" + view->url().toString() + ":4:5" + ") Possible anchor loop detected on fill.";
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
     view->execute();
     qApp->processEvents();
