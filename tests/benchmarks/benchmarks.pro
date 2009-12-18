@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 SUBDIRS = containers-associative \
 	containers-sequential \
 	qbytearray \
+        qhostinfo \
 	qpainter \
 	qtestlib-simple	events \
 	qiodevice \
