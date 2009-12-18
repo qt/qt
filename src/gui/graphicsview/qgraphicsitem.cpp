@@ -2181,7 +2181,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     }
 
     // Enable subfocus
-    if (newVisible) {
+    if (scene && newVisible) {
         QGraphicsItem *p = parent;
         bool done = false;
         while (p) {
