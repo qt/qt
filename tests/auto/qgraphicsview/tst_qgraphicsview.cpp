@@ -211,6 +211,7 @@ private slots:
     void centerOnDirtyItem();
     void mouseTracking();
     void mouseTracking2();
+    void mouseTracking3();
     void render();
     void exposeRegion();
     void update_data();
@@ -3401,6 +3402,102 @@ void tst_QGraphicsView::mouseTracking2()
                       Qt::MouseButtons(Qt::NoButton), 0);
     QApplication::sendEvent(view.viewport(), &event);
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QGraphicsView::mouseTracking3()
+{
+    // Mouse tracking should be automatically enabled if AnchorUnderMouse is used for
+    // view transform or resize. We never disable mouse tracking if it is already enabled.
+
+    { // Make sure we enable mouse tracking when using AnchorUnderMouse for view transformation.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        QVERIFY(!view.viewport()->hasMouseTracking());
+
+        view.setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    { // Make sure we enable mouse tracking when using AnchorUnderMouse for view resizing.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        QVERIFY(!view.viewport()->hasMouseTracking());
+
+        view.setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    { // Make sure we don't disable mouse tracking in setViewport/setScene (transformation anchor).
+        QGraphicsView view;
+        view.setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        QVERIFY(view.viewport()->hasMouseTracking());
+
+        QWidget *viewport = new QWidget;
+        view.setViewport(viewport);
+        QVERIFY(viewport->hasMouseTracking());
+
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        view.setScene(&scene);
+        QVERIFY(viewport->hasMouseTracking());
+    }
+
+    { // Make sure we don't disable mouse tracking in setViewport/setScene (resize anchor).
+        QGraphicsView view;
+        view.setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+        QVERIFY(view.viewport()->hasMouseTracking());
+
+        QWidget *viewport = new QWidget;
+        view.setViewport(viewport);
+        QVERIFY(viewport->hasMouseTracking());
+
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        view.setScene(&scene);
+        QVERIFY(viewport->hasMouseTracking());
+    }
+
+    // Make sure we don't disable mouse tracking when adding an item (transformation anchor).
+    { // Adding an item to the scene before the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        scene.addItem(item);
+
+        QGraphicsView view;
+        view.setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        view.setScene(&scene);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    { // Adding an item to the scene after the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        view.setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        scene.addItem(item);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    // Make sure we don't disable mouse tracking when adding an item (resize anchor).
+    { // Adding an item to the scene before the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        scene.addItem(item);
+
+        QGraphicsView view;
+        view.setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+        view.setScene(&scene);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    { // Adding an item to the scene after the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        view.setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        scene.addItem(item);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
 }
 
 class RenderTester : public QGraphicsRectItem
