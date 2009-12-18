@@ -1278,7 +1278,14 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 #ifdef QT_NO_DIRECTFB_WM
         result = d_ptr->primarySurface->GetSize(d_ptr->primarySurface, &w, &h);
 #elif (Q_DIRECTFB_VERSION >= 0x010000)
-        result = d_ptr->dfbScreen->GetSize(d_ptr->dfbScreen, &w, &h);
+        IDirectFBSurface *layerSurface;
+        if (d_ptr->dfbLayer->GetSurface(d_ptr->dfbLayer, &layerSurface) != DFB_OK) {
+            result = layerSurface->GetSize(layerSurface, &w, &h);
+            layerSurface->Release(layerSurface);
+        }
+        if (w <= 0 || h <= 0) {
+            result = d_ptr->dfbScreen->GetSize(d_ptr->dfbScreen, &w, &h);
+        }
 #else
         qWarning("QDirectFBScreen::connect: DirectFB versions prior to 1.0 do not offer a way\n"
                  "query the size of the primary surface in windowed mode. You have to specify\n"
