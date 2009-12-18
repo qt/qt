@@ -201,6 +201,8 @@ private slots:
     void QTBUG_5251();
     void QTBUG_6421_data() { generic_data("QOCI"); }
     void QTBUG_6421();
+    void QTBUG_6618_data() { generic_data("QODBC"); }
+    void QTBUG_6618();
 
 private:
     // returns all database connections
@@ -2959,6 +2961,28 @@ void tst_QSqlQuery::QTBUG_6421()
     QCOMPARE(q.value(0).toString(), QLatin1String("\"COL2\""));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toString(), QLatin1String("\"COL3\""));
+}
+
+void tst_QSqlQuery::QTBUG_6618()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    if (!tst_Databases::isSqlServer( db ))
+        QSKIP("SQL Server specific test", SkipSingle);
+
+    QSqlQuery q(db);
+    q.exec( "drop procedure " + qTableName( "tst_raiseError" ) );  //non-fatal
+    QString errorString;
+    for (int i=0;i<110;i++)
+        errorString+="reallylong";
+    errorString+=" error";
+    QVERIFY_SQL( q, exec("create procedure " + qTableName( "tst_raiseError" ) + " as\n"
+                         "begin\n"
+                         "    raiserror('" + errorString + "', 16, 1)\n"
+                         "end\n" ));
+    q.exec( "{call " + qTableName( "tst_raiseError" ) + "}" );
+    QVERIFY(q.lastError().text().contains(errorString));
 }
 
 QTEST_MAIN( tst_QSqlQuery )

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,53 +38,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QMLINSPECTORPLUGIN_H
-#define QMLINSPECTORPLUGIN_H
 
-#include <extensionsystem/iplugin.h>
+#include <QtGui/QApplication>
+#include "widget.h"
 
-#include <QtCore/QObject>
-#include <QtCore/QPointer>
-
-QT_BEGIN_NAMESPACE
-
-class QStringList;
-
-
-class QmlInspectorRunControlFactory;
-class QmlInspectorMode;
-class InspectorOutputPane;
-
-namespace ProjectExplorer
+int main(int argc, char *argv[])
 {
-    class RunControl;
+    QApplication a(argc, argv);
+    Widget w;
+    w.show();
+    return a.exec();
 }
-
-class QmlInspectorPlugin : public ExtensionSystem::IPlugin
-{
-    Q_OBJECT
-
-public:
-    QmlInspectorPlugin();
-    ~QmlInspectorPlugin();
-
-    virtual bool initialize(const QStringList &arguments, QString *errorString);
-    virtual void extensionsInitialized();
-    virtual void shutdown();
-
-private slots:
-    void startViewer();
-    void stopViewer();
-
-private:
-    QmlInspectorMode *m_inspectMode;
-    InspectorOutputPane *m_outputPane;
-    
-    QmlInspectorRunControlFactory *m_runControlFactory;
-    QPointer<ProjectExplorer::RunControl> m_runControl;
-};
-
-
-QT_END_NAMESPACE
-
-#endif // QMLINSPECTORPLUGIN_H

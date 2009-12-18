@@ -942,9 +942,9 @@ void tst_QSqlDatabase::recordOCI()
         FieldDef("raw(2000)", QVariant::ByteArray,      QByteArray(Q3CString("blah6")), false),
         FieldDef("blob", QVariant::ByteArray,           QByteArray(Q3CString("blah7"))),
 #endif
-//FIXME FieldDef("clob", QVariant::CString,             Q3CString("blah8")),
-//FIXME FieldDef("nclob", QVariant::CString,            Q3CString("blah9")),
-//X     FieldDef("bfile", QVariant::ByteArray,          QByteArray(Q3CString("blah10"))),
+        FieldDef("clob", QVariant::String,             QString("blah8")),
+        FieldDef("nclob", QVariant::String,            QString("blah9")),
+        FieldDef("bfile", QVariant::ByteArray,         QByteArray("blah10")),
 
     intytm,
     intdts,

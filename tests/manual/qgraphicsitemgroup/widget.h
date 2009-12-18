@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,28 +38,56 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QMLINSPECTOR_H
-#define QMLINSPECTOR_H
 
-#include <QString>
+#ifndef WIDGET_H
+#define WIDGET_H
 
-namespace QmlInspector {
-    namespace Constants {
-        const char * const RUN = "QmlInspector.Run";
-        const char * const STOP = "QmlInspector.Stop";
+#include "customitem.h"
 
-        const char * const C_INSPECTOR = "QmlInspector";
-    };
-    
-    class StartParameters
-    {
-    public:
-        StartParameters() : port(0) {}
-        ~StartParameters() {}
-        
-        QString address;
-        quint16 port;
-    };
+#include <QWidget>
+#include <QGraphicsItemGroup>
+#include <QPainter>
+
+namespace Ui {
+    class Widget;
+}
+
+class QGraphicsOpacityEffect;
+class QPropertyAnimation;
+
+class Widget : public QWidget
+{
+    Q_OBJECT
+public:
+    Widget(QWidget *parent = 0);
+    ~Widget();
+
+protected Q_SLOTS:
+    void on_rotate_valueChanged(int value);
+    void on_scale_valueChanged(int value);
+    void on_rotateItem_valueChanged(int value);
+    void on_scaleItem_valueChanged(int value);
+    void on_group_clicked();
+    void on_dismantle_clicked();
+    void on_merge_clicked();
+    void onSceneSelectionChanged();
+    void on_ungroup_clicked();
+    void on_buttonGroup_buttonClicked();
+
+private:
+    void updateUngroupButton();
+    CustomItem * checkedItem() const;
+
+    Ui::Widget *ui;
+    CustomScene *scene;
+    CustomItem *rectBlue;
+    CustomItem *rectRed;
+    CustomItem *rectGreen;
+    CustomItem *rectYellow;
+    QGraphicsOpacityEffect* effect;
+    QPropertyAnimation *fadeIn;
+    QPropertyAnimation *fadeOut;
+    int previousSelectionCount;
 };
 
-#endif
+#endif // WIDGET_H

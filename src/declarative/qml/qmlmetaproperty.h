@@ -127,7 +127,7 @@ public:
     QmlExpression *signalExpression() const;
     QmlExpression *setSignalExpression(QmlExpression *) const;
 
-    static QmlMetaProperty createProperty(QObject *, const QString &);
+    static QmlMetaProperty createProperty(QObject *, const QString &, QmlContext *context=0);
 
     int coreIndex() const;
     int valueTypeCoreIndex() const;

@@ -86,6 +86,9 @@ public:
     qint64 horizontalScroll() const;
     qint64 verticalScroll() const;
 
+    QRectF mapRectToScene(const QRect &rect) const;
+    QRectF mapRectFromScene(const QRectF &rect) const;
+
     QPointF mousePressItemPoint;
     QPointF mousePressScenePoint;
     QPoint mousePressViewPoint;

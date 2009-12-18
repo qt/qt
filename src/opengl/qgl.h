@@ -546,6 +546,7 @@ private:
     friend class QGLPixelBuffer;
     friend class QGLPixelBufferPrivate;
     friend class QGLContext;
+    friend class QGLContextPrivate;
     friend class QGLOverlayWidget;
     friend class QOpenGLPaintEngine;
     friend class QGLPaintDevice;

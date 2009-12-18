@@ -45,7 +45,7 @@
 int main(int argc, char * argv[])
 {
     QApplication app(argc, argv);
-    MainWindow *browser = new MainWindow;
-    browser->show();
+    MainWindow browser;
+    browser.show();
     return app.exec();
 }

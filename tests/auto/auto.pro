@@ -256,6 +256,7 @@ SUBDIRS += \
            qprinter \
            qprinterinfo \
            qprocess \
+	   qprocessenvironment \
            qprogressbar \
            qprogressdialog \
            qpropertyanimation \

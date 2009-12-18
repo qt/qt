@@ -84,23 +84,15 @@ extern Q_GUI_EXPORT int qt_defaultDpiY();
 const QS60StylePrivate::SkinElementFlags QS60StylePrivate::KDefaultSkinElementFlags =
     SkinElementFlags(SF_PointNorth | SF_StateEnabled);
 
-static const QByteArray propertyKeyLayouts = "layouts";
-static const QByteArray propertyKeyCurrentlayout = "currentlayout";
-
 static const qreal goldenRatio = 1.618;
 
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
-{240,320,1,15,true,"QVGA Landscape Mirrored"},
-{240,320,1,15,false,"QVGA Landscape"},
-{320,240,1,15,true,"QVGA Portrait Mirrored"},
-{320,240,1,15,false,"QVGA Portrait"},
-{360,640,1,15,true,"NHD Landscape Mirrored"},
-{360,640,1,15,false,"NHD Landscape"},
-{640,360,1,15,true,"NHD Portrait Mirrored"},
-{640,360,1,15,false,"NHD Portrait"},
-{352,800,1,12,true,"E90 Landscape Mirrored"},
-{352,800,1,12,false,"E90 Landscape"}
+{240,320,1,15,"QVGA Landscape"},
+{320,240,1,15,"QVGA Portrait"},
+{360,640,1,15,"NHD Landscape"},
+{640,360,1,15,"NHD Portrait"},
+{352,800,1,12,"E90 Landscape"}
 // *** End of generated data ***
 };
 const int QS60StylePrivate::m_numberOfLayouts =
@@ -108,15 +100,10 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{5,0,-909,0,0,2,0,0,-1,7,12,19,13,13,6,200,-909,-909,-909,20,13,2,0,0,21,7,18,-909,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,3,3,4,9,13,-909,5,51,11,5,0,6,3,3,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1},
 {5,0,-909,0,0,2,0,0,-1,7,12,19,13,13,6,200,-909,-909,-909,20,13,2,0,0,21,7,18,-909,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,3,3,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,4,4,5,10,15,-909,5,58,13,5,0,7,4,4,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1},
 {5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,4,4,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1},
-{7,0,-909,0,0,2,0,0,-1,25,69,28,19,19,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,5,5,6,8,19,-909,7,74,19,7,0,8,5,5,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
 {7,0,-909,0,0,2,0,0,-1,25,69,28,19,19,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,5,5,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,25,68,28,19,19,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,5,5,6,8,19,-909,7,74,22,7,0,8,5,5,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
 {7,0,-909,0,0,2,0,0,-1,25,68,28,19,19,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,5,5,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,5,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,8,6,5,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1},
 {7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1}
 // *** End of generated data ***
 };
@@ -203,10 +190,24 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
             QS60StyleEnums::SP_QsnCpScrollHandleBottom, Qt::Vertical, painter, rect, flags | SF_PointNorth);
         break;
     case SE_SliderHandleHorizontal:
-        drawPart(QS60StyleEnums::SP_QgnIndiSliderEdit, painter, rect, flags | SF_PointNorth);
+        drawPart(QS60StyleEnums::SP_QgnGrafNsliderMarker, painter, rect, flags | SF_PointNorth);
         break;
     case SE_SliderHandleVertical:
-        drawPart(QS60StyleEnums::SP_QgnIndiSliderEdit, painter, rect, flags | SF_PointEast);
+        drawPart(QS60StyleEnums::SP_QgnGrafNsliderMarker, painter, rect, flags | SF_PointEast);
+        break;
+    case SE_SliderHandleSelectedHorizontal:
+        drawPart(QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected, painter, rect, flags | SF_PointNorth);
+        break;
+    case SE_SliderHandleSelectedVertical:
+        drawPart(QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected, painter, rect, flags | SF_PointEast);
+        break;
+    case SE_SliderGrooveVertical:
+        drawRow(QS60StyleEnums::SP_QgnGrafNsliderEndLeft, QS60StyleEnums::SP_QgnGrafNsliderMiddle,
+                QS60StyleEnums::SP_QgnGrafNsliderEndRight, Qt::Vertical, painter, rect, flags | SF_PointEast);
+        break;
+    case SE_SliderGrooveHorizontal:
+        drawRow(QS60StyleEnums::SP_QgnGrafNsliderEndLeft, QS60StyleEnums::SP_QgnGrafNsliderMiddle,
+                QS60StyleEnums::SP_QgnGrafNsliderEndRight, Qt::Horizontal, painter, rect, flags | SF_PointNorth);
         break;
     case SE_TabBarTabEastActive:
         drawRow(QS60StyleEnums::SP_QgnGrafTabActiveL, QS60StyleEnums::SP_QgnGrafTabActiveM,
@@ -810,7 +811,15 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
             //ratio of 1:2 for horizontal tab bars (and 2:1 for vertical ones).
             result.setWidth(result.height()>>1);
             break;
-        case QS60StyleEnums::SP_QgnIndiSliderEdit:
+            
+        case QS60StyleEnums::SP_QgnGrafNsliderEndLeft:
+        case QS60StyleEnums::SP_QgnGrafNsliderEndRight:
+        case QS60StyleEnums::SP_QgnGrafNsliderMiddle:
+            result.setWidth(result.height()>>1);
+            break;
+            
+        case QS60StyleEnums::SP_QgnGrafNsliderMarker:
+        case QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected:
             result.scale(pixelMetric(QStyle::PM_SliderLength),
                 pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
             break;
@@ -931,22 +940,42 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
     case CC_Slider:
         if (const QStyleOptionSlider *optionSlider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
 
-            // The groove is just a centered line. Maybe a qgn_graf_line_* at some point
             const QRect sliderGroove = subControlRect(control, optionSlider, SC_SliderGroove, widget);
-            const QPoint sliderGrooveCenter = sliderGroove.center();
             const bool horizontal = optionSlider->orientation == Qt::Horizontal;
-            painter->save();
-            if (widget)
-                painter->setPen(widget->palette().windowText().color());
-            if (horizontal)
-                painter->drawLine(0, sliderGrooveCenter.y(), sliderGroove.right(), sliderGrooveCenter.y());
-            else
-                painter->drawLine(sliderGrooveCenter.x(), 0, sliderGrooveCenter.x(), sliderGroove.bottom());
-            painter->restore();
 
+            //Highlight
+/*            if (optionSlider->state & QStyle::State_HasFocus)
+                drawPrimitive(PE_FrameFocusRect, optionSlider, painter, widget);*/
+            
+            //Groove graphics
+            if (QS60StylePrivate::hasSliderGrooveGraphic()) {
+                const QS60StylePrivate::SkinElements grooveElement = horizontal ? 
+                    QS60StylePrivate::SE_SliderGrooveHorizontal : 
+                    QS60StylePrivate::SE_SliderGrooveVertical;
+                QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
+            } else {
+                const QRect sliderGroove = subControlRect(control, optionSlider, SC_SliderGroove, widget);
+                const QPoint sliderGrooveCenter = sliderGroove.center();
+                const bool horizontal = optionSlider->orientation == Qt::Horizontal;
+                painter->save();
+                if (widget)
+                    painter->setPen(widget->palette().windowText().color());
+                if (horizontal)
+                    painter->drawLine(0, sliderGrooveCenter.y(), sliderGroove.right(), sliderGrooveCenter.y());
+                else
+                    painter->drawLine(sliderGrooveCenter.x(), 0, sliderGrooveCenter.x(), sliderGroove.bottom());
+                painter->restore();
+            }
+
+            //Handle graphics
             const QRect sliderHandle = subControlRect(control, optionSlider, SC_SliderHandle, widget);
-            const QS60StylePrivate::SkinElements handleElement =
-                horizontal ? QS60StylePrivate::SE_SliderHandleHorizontal : QS60StylePrivate::SE_SliderHandleVertical;
+            QS60StylePrivate::SkinElements handleElement;
+            if (optionSlider->state & QStyle::State_Sunken)
+                handleElement =
+                        horizontal ? QS60StylePrivate::SE_SliderHandleSelectedHorizontal : QS60StylePrivate::SE_SliderHandleSelectedVertical;
+            else    
+                handleElement =
+                    horizontal ? QS60StylePrivate::SE_SliderHandleHorizontal : QS60StylePrivate::SE_SliderHandleVertical;
             QS60StylePrivate::drawSkinElement(handleElement, painter, sliderHandle, flags);
         }
         break;
@@ -1320,6 +1349,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             painter->setClipRect(voptAdj.rect);
             const bool isSelected = (vopt->state & QStyle::State_Selected);
+            const bool hasFocus = (vopt->state & QStyle::State_HasFocus);
 
             bool isScrollBarVisible = false;
             int scrollBarWidth = 0;
@@ -1362,7 +1392,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);}
 
             // draw the focus rect
-            if (isSelected) {
+            if (isSelected | hasFocus) {
                 QRect highlightRect = option->rect.adjusted(1,1,-1,-1);
                 QAbstractItemView::SelectionBehavior selectionBehavior =
                     itemView ? itemView->selectionBehavior() : QAbstractItemView::SelectItems;
@@ -2241,11 +2271,13 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         }
         break;
 
+    case PE_PanelScrollAreaCorner:
+        break;
+
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
     case PE_IndicatorDockWidgetResizeHandle:
     case PE_PanelTipLabel:
-    case PE_PanelScrollAreaCorner:
 
 #ifndef QT_NO_TABBAR
     case PE_IndicatorTabTear: // No tab tear in S60
@@ -2286,6 +2318,13 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
             const int menuWidth = menu->activeAction()->menu()->sizeHint().width();
             metricValue = -menuWidth;
         }
+    }
+    //if layout direction is mirrored, switch left and right border margins
+    if (option && option->direction == Qt::RightToLeft) {
+        if (metric == PM_LayoutLeftMargin)
+            metricValue = QS60StylePrivate::pixelMetric(PM_LayoutRightMargin);
+        else if (metric == PM_LayoutRightMargin)
+            metricValue = QS60StylePrivate::pixelMetric(PM_LayoutLeftMargin);
     }
     return metricValue;
 }

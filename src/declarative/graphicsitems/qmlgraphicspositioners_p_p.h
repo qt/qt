@@ -64,9 +64,10 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
-class QmlGraphicsBasePositionerPrivate : public QmlGraphicsItemPrivate, public QmlGraphicsItemGeometryListener
+class QmlGraphicsBasePositionerPrivate : public QmlGraphicsItemPrivate, public QmlGraphicsItemChangeListener
 {
     Q_DECLARE_PUBLIC(QmlGraphicsBasePositioner)
 
@@ -77,29 +78,15 @@ public:
     {
     }
 
-    ~QmlGraphicsBasePositionerPrivate()
-    {
-        watched.removeAll(0);
-        foreach(QmlGraphicsItem* other, watched)
-            unwatchChanges(other);//Need to deregister from a list in QmlGI Private
-    }
-
     void init(QmlGraphicsBasePositioner::PositionerType at)
     {
         type = at;
-        if (prePosIdx == -1) {
-            prePosIdx = QmlGraphicsBasePositioner::staticMetaObject.indexOfSlot("prePositioning()");
-            visibleIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("visibleChanged()");
-            opacityIdx = QmlGraphicsItem::staticMetaObject.indexOfSignal("opacityChanged()");
-        }
     }
 
     int spacing;
     QmlGraphicsBasePositioner::PositionerType type;
     QmlTransition *moveTransition;
     QmlTransition *addTransition;
-    QSet<QmlGraphicsItem *> items;
-    QSet<QmlGraphicsItem *> newItems;
     QmlStateOperation::ActionList addActions;
     QmlStateOperation::ActionList moveActions;
     QmlTransitionManager addTransitionManager;
@@ -107,14 +94,9 @@ public:
 
     void watchChanges(QmlGraphicsItem *other);
     void unwatchChanges(QmlGraphicsItem* other);
-    QList<QGuard<QmlGraphicsItem> > watched;//Can't have QSet and QGuard at the same time?
     bool queuedPositioning;
 
-    static int prePosIdx;
-    static int visibleIdx;
-    static int opacityIdx;
-
-    virtual void otherSiblingOrderChange(QmlGraphicsItemPrivate* other)
+    virtual void itemSiblingOrderChanged(QmlGraphicsItem* other)
     {
         Q_Q(QmlGraphicsBasePositioner);
         Q_UNUSED(other);
@@ -131,6 +113,22 @@ public:
         Q_Q(QmlGraphicsBasePositioner);
         if (newGeometry.size() != oldGeometry.size())
             q->prePositioning();
+    }
+    virtual void itemVisibilityChanged(QmlGraphicsItem *)
+    {
+        Q_Q(QmlGraphicsBasePositioner);
+        q->prePositioning();
+    }
+    virtual void itemOpacityChanged(QmlGraphicsItem *)
+    {
+        Q_Q(QmlGraphicsBasePositioner);
+        q->prePositioning();
+    }
+
+    void itemDestroyed(QmlGraphicsItem *item)
+    {
+        Q_Q(QmlGraphicsBasePositioner);
+        q->positionedItems.removeOne(QmlGraphicsBasePositioner::PositionedItem(item));
     }
 };
 

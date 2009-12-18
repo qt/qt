@@ -110,6 +110,7 @@ private slots:
     void transientErrors();
     void shutdownErrors();
     void externalScript();
+    void compositePropertyType();
 
     void bug1();
 
@@ -1018,6 +1019,14 @@ void tst_qmlecmascript::externalScript()
 
         delete object;
     }
+}
+
+void tst_qmlecmascript::compositePropertyType()
+{
+    QmlComponent component(&engine, TEST_FILE("compositePropertyType.qml"));
+    QTest::ignoreMessage(QtDebugMsg, "hello world");
+    QObject *object = qobject_cast<QObject *>(component.create());
+    delete object;
 }
 
 void tst_qmlecmascript::bug1()

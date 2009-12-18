@@ -182,12 +182,12 @@ void tst_Selftests::runSubTest_data()
 #endif
     QTest::newRow("benchlibeventcounter") << "benchlibeventcounter" << QStringList("-eventcounter");
     QTest::newRow("benchliboptions") << "benchliboptions" << QStringList("-eventcounter");
-    QTest::newRow("benchlibwalltime") << "benchlibwalltime" << QStringList();
 
-    //### This test is affected by the speed of the CPU and whether the tick counter is
-    //### monotonically increasing. It won't work on some machines so leave it off by default.
+    //### These tests are affected by timing and whether the CPU tick counter is
+    //### monotonically increasing. They won't work on some machines so leave them off by default.
     //### Feel free to uncomment for your own testing.
 #if 0
+    QTest::newRow("benchlibwalltime") << "benchlibwalltime" << QStringList();
     QTest::newRow("benchlibtickcounter") << "benchlibtickcounter" << QStringList("-tickcounter");
 #endif
 

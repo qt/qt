@@ -1182,7 +1182,7 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
         rx -= data->gradient.conical.center.x;
         ry -= data->gradient.conical.center.y;
         while (buffer < end) {
-            qreal angle = atan2(ry, rx) + data->gradient.conical.angle;
+            qreal angle = qAtan2(ry, rx) + data->gradient.conical.angle;
 
             *buffer = qt_gradient_pixel(&data->gradient, 1 - angle / (2*Q_PI));
 
@@ -1196,7 +1196,7 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
         if (!rw)
             rw = 1;
         while (buffer < end) {
-            qreal angle = atan2(ry/rw - data->gradient.conical.center.x,
+            qreal angle = qAtan2(ry/rw - data->gradient.conical.center.x,
                                 rx/rw - data->gradient.conical.center.y)
                           + data->gradient.conical.angle;
 
@@ -7140,17 +7140,17 @@ void qt_build_pow_tables() {
     }
 #else
     for (int i=0; i<256; ++i) {
-        qt_pow_rgb_gamma[i] = uchar(qRound(pow(i / qreal(255.0), smoothing) * 255));
-        qt_pow_rgb_invgamma[i] = uchar(qRound(pow(i / qreal(255.), 1 / smoothing) * 255));
+        qt_pow_rgb_gamma[i] = uchar(qRound(qPow(i / qreal(255.0), smoothing) * 255));
+        qt_pow_rgb_invgamma[i] = uchar(qRound(qPow(i / qreal(255.), 1 / smoothing) * 255));
     }
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     const qreal gray_gamma = 2.31;
     for (int i=0; i<256; ++i)
-        qt_pow_gamma[i] = uint(qRound(pow(i / qreal(255.), gray_gamma) * 2047));
+        qt_pow_gamma[i] = uint(qRound(qPow(i / qreal(255.), gray_gamma) * 2047));
     for (int i=0; i<2048; ++i)
-        qt_pow_invgamma[i] = uchar(qRound(pow(i / 2047.0, 1 / gray_gamma) * 255));
+        qt_pow_invgamma[i] = uchar(qRound(qPow(i / 2047.0, 1 / gray_gamma) * 255));
 #endif
 }
 

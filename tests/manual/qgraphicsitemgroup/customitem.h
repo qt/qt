@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,58 +38,40 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef INSPECTOROUTPUTPANE_H
-#define INSPECTOROUTPUTPANE_H 
 
-#include <QtCore/QObject>
+#ifndef CUSTOMITEM_H
+#define CUSTOMITEM_H
 
-#include <coreplugin/ioutputpane.h>
+#include <QGraphicsItem>
+#include <QBrush>
+#include <QGraphicsScene>
 
+class CustomGroup : public QGraphicsItemGroup
+{
+public:
+    CustomGroup();
+    virtual ~CustomGroup() { }
 
-QT_BEGIN_NAMESPACE
+protected:
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    virtual QRectF boundingRect() const;
+};
 
-class QTextEdit;
+class CustomItem : public QGraphicsRectItem
+{
+public:
+    CustomItem(qreal x, qreal y, qreal width, qreal height, const QBrush & brush = QBrush());
+    virtual ~CustomItem() { }
+};
 
-class RunControl;
-
-class InspectorOutputPane : public Core::IOutputPane
+class CustomScene : public QGraphicsScene
 {
     Q_OBJECT
 public:
-    InspectorOutputPane(QObject *parent = 0);
-    virtual ~InspectorOutputPane();
+    CustomScene() : QGraphicsScene() { }
 
-    virtual QWidget *outputWidget(QWidget *parent);
-    virtual QList<QWidget*> toolBarWidgets() const;
-    virtual QString name() const;
-
-    virtual int priorityInStatusBar() const;
-
-    virtual void clearContents();
-    virtual void visibilityChanged(bool visible);
-
-    virtual void setFocus();
-    virtual bool hasFocus();
-    virtual bool canFocus();
-
-    virtual bool canNavigate();
-    virtual bool canNext();
-    virtual bool canPrevious();
-    virtual void goToNext();
-    virtual void goToPrev();
-
-public slots:
-    void addOutput(RunControl *, const QString &text);
-    void addOutputInline(RunControl *, const QString &text);
-
-    void addErrorOutput(RunControl *, const QString &text);
-    void addInspectorStatus(const QString &text);
-
-private:
-    QTextEdit *m_textEdit;
+    QList<CustomItem*> selectedCustomItems() const;
+    QList<CustomGroup*> selectedCustomGroups() const;
 };
 
-QT_END_NAMESPACE
-
-#endif
-
+#endif // CUSTOMITEM_H

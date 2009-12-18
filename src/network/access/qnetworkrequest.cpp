@@ -49,6 +49,9 @@
 #include "QtCore/qdatetime.h"
 
 #include <ctype.h>
+#ifndef QT_NO_DATESTRING
+# include <stdio.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

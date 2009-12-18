@@ -145,7 +145,7 @@
 #define QT_SIGNAL_ARGS		int
 #define QT_SIGNAL_IGNORE	SIG_IGN
 
-#define QT_SOCKLEN_T		int
+#define QT_SOCKLEN_T		socklen_t
 
 
 #endif // QPLATFORMDEFS_H

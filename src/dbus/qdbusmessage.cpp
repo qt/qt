@@ -44,7 +44,7 @@
 #include <qdebug.h>
 #include <qstringlist.h>
 
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 
 #include "qdbusargument_p.h"
 #include "qdbuserror.h"
