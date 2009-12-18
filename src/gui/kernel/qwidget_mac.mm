@@ -3671,6 +3671,7 @@ void QWidgetPrivate::raise_sys()
         return;
 
 #if QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
     if (isRealWindow()) {
         // Calling orderFront shows the window on Cocoa too.
         if (!q->testAttribute(Qt::WA_DontShowOnScreen) && q->isVisible()) {
