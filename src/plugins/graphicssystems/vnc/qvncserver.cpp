@@ -389,10 +389,6 @@ void QVNCServer::init(uint port)
     qvnc_cursor = 0;
 #endif
     encoder = 0;
-
-    eventTimer.setInterval(0);
-    eventTimer.setSingleShot(true);
-    connect(&eventTimer, SIGNAL(timeout()), this, SLOT(sendInputEvents()));
 }
 
 QVNCServer::~QVNCServer()
@@ -823,30 +819,6 @@ static bool buttonChange(Qt::MouseButtons before, Qt::MouseButtons after, Qt::Mo
     return false;
 }
 
-void QVNCServer::sendInputEvents()
-{
-    EventPair pair;
-    for (int i = 0 ; i < eventList.count(); i++) {
-        pair = eventList[i];
-        switch(pair.first) {
-        case MouseEvent: {
-            QMouseEvent *me = static_cast<QMouseEvent *>(pair.second);
-            QApplicationPrivate::handleMouseEvent(0, *me);
-            delete me;
-            break;
-        }
-        case KeyboardEvent: {
-            QKeyEvent *ke = static_cast<QKeyEvent *>(pair.second);
-            QApplicationPrivate::handleKeyEvent(0, ke);
-            delete ke;
-            break;
-        }
-        }
-    }
-    eventList.clear();
-    Q_ASSERT(eventList.count() == 0);
-}
-
 void QVNCServer::pointerEvent()
 {
     QRfbPointerEvent ev;
@@ -862,13 +834,8 @@ void QVNCServer::pointerEvent()
         bool isPress;
         if (buttonChange(buttons, ev.buttons, &button, &isPress))
             type = isPress ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
-        QMouseEvent * me = new QMouseEvent(type, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), button, ev.buttons, keymod);
-        EventPair pair;
-        pair.first = MouseEvent;
-        pair.second = me;
-        eventList.append(pair);
-        if (!eventTimer.isActive())
-            eventTimer.start();
+        QMouseEvent me(type, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), button, ev.buttons, keymod);
+        QApplicationPrivate::handleMouseEvent(0, me);
         buttons = ev.buttons;
         handleMsg = false;
     }
@@ -894,13 +861,8 @@ void QVNCServer::keyEvent()
             QString str;
             if (ev.unicode && ev.unicode != 0xffff)
                 str = QString(ev.unicode);
-            QKeyEvent *keyEvent = new QKeyEvent(type, ev.keycode, keymod, str);
-            EventPair pair;
-            pair.first = KeyboardEvent;
-            pair.second = keyEvent;
-            eventList.append(pair);
-            if (!eventTimer.isActive())
-                eventTimer.start();
+            QKeyEvent keyEvent(type, ev.keycode, keymod, str);
+            QApplicationPrivate::handleKeyEvent(0, &keyEvent);
         }
         handleMsg = false;
     }
