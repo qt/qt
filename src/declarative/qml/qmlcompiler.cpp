@@ -902,6 +902,14 @@ void QmlCompiler::genObjectBody(QmlParser::Object *obj)
         int deferIdx = output->bytecode.count();
         output->bytecode << defer;
 
+        QmlInstruction init;
+        init.type = QmlInstruction::Init;
+        init.init.bindingsSize = compileState.bindings.count(); // XXX - bigger than necessary
+        init.init.parserStatusSize = compileState.parserStatusCount; // XXX - bigger than necessary
+        init.init.contextCache = -1;
+        init.init.compiledBinding = -1;
+        output->bytecode << init;
+
         foreach(Property *prop, obj->valueProperties) {
             if (!prop->isDeferred)
                 continue;
@@ -2759,6 +2767,9 @@ QmlType *QmlCompiler::toQmlType(QmlParser::Object *from)
 
 QStringList QmlCompiler::deferredProperties(QmlParser::Object *obj)
 {
+    if (!qmlExperimental())
+        return QStringList();
+
     const QMetaObject *mo = obj->metatype;
 
     int idx = mo->indexOfClassInfo("DeferredPropertyNames");

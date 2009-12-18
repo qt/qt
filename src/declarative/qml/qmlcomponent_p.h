@@ -79,8 +79,7 @@ class QmlComponentPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlComponent)
         
 public:
-    QmlComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), componentAttacheds(0), completePending(false), engine(0), creationContext(0) {}
-
+    QmlComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), engine(0), creationContext(0) {}
 
     QObject *create(QmlContext *context, const QBitField &);
     QObject *beginCreate(QmlContext *, const QBitField &);
@@ -92,7 +91,6 @@ public:
     
     void fromTypeData(QmlCompositeTypeData *data);
 
-    QList<QmlError> errors;
     QUrl url;
     qreal progress;
 
@@ -100,11 +98,22 @@ public:
     int count;
     QmlCompiledData *cc;
 
-    QList<QmlEnginePrivate::SimpleList<QmlAbstractBinding> > bindValues;
-    QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
-    QmlComponentAttached *componentAttacheds;
+    struct ConstructionState {
+        ConstructionState() : componentAttacheds(0), completePending(false) {}
+        QList<QmlEnginePrivate::SimpleList<QmlAbstractBinding> > bindValues;
+        QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
+        QmlComponentAttached *componentAttacheds;
+        QList<QmlError> errors;
+        bool completePending;
+    };
+    ConstructionState state;
 
-    bool completePending;
+    static QObject *begin(QmlContext *ctxt, QmlEnginePrivate *enginePriv,
+                          QmlCompiledData *component, int start, int count,
+                          ConstructionState *state, const QBitField &bindings = QBitField());
+    static void beginDeferred(QmlContext *ctxt, QmlEnginePrivate *enginePriv,
+                              QObject *object, ConstructionState *state);
+    static void complete(QmlEnginePrivate *enginePriv, ConstructionState *state);
 
     QmlEngine *engine;
     QmlContext *creationContext;

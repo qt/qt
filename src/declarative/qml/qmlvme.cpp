@@ -131,7 +131,6 @@ void QmlVME::runDeferred(QObject *object)
     run(stack, ctxt, comp, start, count, QBitField());
 }
 
-QBitField bindingSkipList;
 QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt, 
                      QmlCompiledData *comp, 
                      int start, int count, 
@@ -161,8 +160,6 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
     int status = -1;    //for dbus
     QmlMetaProperty::WriteFlags flags = QmlMetaProperty::BypassInterceptor;
 
-    QmlOptimizedBindings *optimizedBindings = 0;
-
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         const QmlInstruction &instr = comp->bytecode.at(ii);
 
@@ -176,7 +173,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 if (instr.init.contextCache != -1) 
                     cp->setIdPropertyData(comp->contextCaches.at(instr.init.contextCache));
                 if (instr.init.compiledBinding != -1) 
-                    optimizedBindings = new QmlOptimizedBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
+                    cp->optimizedBindings = new QmlOptimizedBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
             }
             break;
 
@@ -623,7 +620,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                     break;
 
                 QmlAbstractBinding *binding = 
-                    optimizedBindings->configBinding(instr.assignBinding.value, target, scope, property);
+                    cp->optimizedBindings->configBinding(instr.assignBinding.value, target, scope, property);
                 bindValues.append(binding);
                 binding->m_mePtr = &bindValues.values[bindValues.count - 1];
                 binding->addToObject(target);
@@ -893,11 +890,6 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
             qFatal("QmlCompiledData: Internal error - unknown instruction %d", instr.type);
             break;
         }
-    }
-
-    if (optimizedBindings) {
-        optimizedBindings->release();
-        optimizedBindings = 0;
     }
 
     if (isError()) {

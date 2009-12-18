@@ -106,7 +106,7 @@ QmlComponent *QmlCompositeTypeData::toComponent(QmlEngine *engine)
         } else {
             component = new QmlComponent(engine, 0);
             component->d_func()->url = imports.baseUrl();
-            component->d_func()->errors = errors;
+            component->d_func()->state.errors = errors;
         }
 
     }

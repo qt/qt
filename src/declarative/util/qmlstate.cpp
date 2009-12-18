@@ -329,6 +329,8 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
 {
     Q_D(QmlState);
 
+    qmlExecuteDeferred(this);
+
     cancel();
     if (revert)
         revert->cancel();

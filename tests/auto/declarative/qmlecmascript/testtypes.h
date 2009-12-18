@@ -67,13 +67,14 @@ class MyQmlObject : public QObject
     Q_PROPERTY(int deleteOnSet READ deleteOnSet WRITE setDeleteOnSet)
     Q_PROPERTY(bool trueProperty READ trueProperty CONSTANT)
     Q_PROPERTY(bool falseProperty READ falseProperty CONSTANT)
+    Q_PROPERTY(int value READ value WRITE setValue)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged)
     Q_PROPERTY(QmlList<QObject *> *objectQmlListProperty READ objectQmlListProperty CONSTANT)
     Q_PROPERTY(QList<QObject *> *objectListProperty READ objectListProperty CONSTANT)
 
 public:
-    MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0) {}
+    MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0) {}
 
     enum MyEnum { EnumValue1 = 0, EnumValue2 = 1 };
     enum MyEnum2 { EnumValue3 = 2, EnumValue4 = 3 };
@@ -112,6 +113,9 @@ public:
 
     int deleteOnSet() const { return 1; }
     void setDeleteOnSet(int v) { if(v) delete this; }
+
+    int value() const { return m_value; }
+    void setValue(int v) { m_value = v; }
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -135,6 +139,7 @@ private:
     QString m_string;
     QmlConcreteList<QObject *> m_objectQmlList;
     QList<QObject *> m_objectQList;
+    int m_value;
 };
 
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
@@ -204,7 +209,7 @@ public:
 class MyDeferredObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int value READ value WRITE setValue)
+    Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty);
     Q_PROPERTY(QObject *objectProperty2 READ objectProperty2 WRITE setObjectProperty2);
     Q_CLASSINFO("DeferredPropertyNames", "value,objectProperty,objectProperty2");
@@ -213,13 +218,17 @@ public:
     MyDeferredObject() : m_value(0), m_object(0), m_object2(0) {}
 
     int value() const { return m_value; }
-    void setValue(int v) { m_value = v; }
+    void setValue(int v) { m_value = v; emit valueChanged(); }
 
     QObject *objectProperty() const { return m_object; }
     void setObjectProperty(QObject *obj) { m_object = obj; }
 
     QObject *objectProperty2() const { return m_object2; }
     void setObjectProperty2(QObject *obj) { m_object2 = obj; }
+
+signals:
+    void valueChanged();
+
 private:
     int m_value;
     QObject *m_object;

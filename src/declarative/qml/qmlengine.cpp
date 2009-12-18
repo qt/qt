@@ -62,6 +62,7 @@
 #include "qmlscriptstring.h"
 #include "qmlglobal_p.h"
 #include "qmlworkerscript_p.h"
+#include "qmlcomponent_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -117,7 +118,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
   isDebugging(false), contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), globalClass(0),
   cleanup(0), erroredBindings(0), 
   inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttacheds(0), 
-  rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
+  inBeginCreate(false), networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
 }
@@ -495,11 +496,20 @@ void qmlExecuteDeferred(QObject *object)
     QmlDeclarativeData *data = QmlDeclarativeData::get(object);
 
     if (data && data->deferredComponent) {
-        QmlVME vme;
-        vme.runDeferred(object);
+
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(data->context->engine());
+
+        QmlComponentPrivate::ConstructionState state;
+        QmlComponentPrivate::beginDeferred(data->context, ep, object, &state);
 
         data->deferredComponent->release();
         data->deferredComponent = 0;
+
+        QmlComponentPrivate::complete(ep, &state);
+
+        if (!state.errors.isEmpty())
+            qWarning() << state.errors;
+
     }
 }
 

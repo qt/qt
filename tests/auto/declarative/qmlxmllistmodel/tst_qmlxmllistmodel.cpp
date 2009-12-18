@@ -156,7 +156,7 @@ void tst_qmlxmllistmodel::roles()
 void tst_qmlxmllistmodel::roleErrors()
 {
     QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/roleErrors.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlXmlListModelRole (file://" SRCDIR "/data/roleErrors.qml:6:5) An XmlRole query must not start with '/'");
+    QTest::ignoreMessage(QtWarningMsg, "QML XmlRole (file://" SRCDIR "/data/roleErrors.qml:6:5) An XmlRole query must not start with '/'");
     //### make sure we receive all expected warning messages.
     QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
     QVERIFY(listModel != 0);
@@ -179,7 +179,7 @@ void tst_qmlxmllistmodel::roleErrors()
 void tst_qmlxmllistmodel::uniqueRoleNames()
 {
     QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/unique.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "QML QmlXmlListModelRole (file://" SRCDIR "/data/unique.qml:7:5) \"name\" duplicates a previous role name and will be disabled.");
+    QTest::ignoreMessage(QtWarningMsg, "QML XmlRole (file://" SRCDIR "/data/unique.qml:7:5) \"name\" duplicates a previous role name and will be disabled.");
     QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
     QVERIFY(listModel != 0);
     QTRY_COMPARE(listModel->count(), 9);
