@@ -107,6 +107,8 @@ struct Instr {
         NotCompareString,        // binaryop
         
         GreaterThanReal,         // binaryop
+        MaxReal,                 // binaryop 
+        MinReal,                 // binaryop
 
         NewString,               // construct
         NewUrl,                  // construct
@@ -286,6 +288,9 @@ struct QmlBindingCompilerPrivate
 
     bool tryConstant(QmlJS::AST::Node *);
     bool parseConstant(QmlJS::AST::Node *, Result &);
+
+    bool tryMethod(QmlJS::AST::Node *);
+    bool parseMethod(QmlJS::AST::Node *, Result &);
 
     bool buildName(QStringList &, QmlJS::AST::Node *);
     bool fetch(Result &type, const QMetaObject *, int reg, int idx, const QStringList &);
@@ -715,7 +720,14 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         registers[instr->binaryop.output].setbool(registers[instr->binaryop.src1].getqreal() > 
                                                   registers[instr->binaryop.src2].getqreal());
         break;
-
+    case Instr::MaxReal:
+        registers[instr->binaryop.output].setqreal(qMax(registers[instr->binaryop.src1].getqreal(),
+                                                        registers[instr->binaryop.src2].getqreal()));
+        break;
+    case Instr::MinReal:
+        registers[instr->binaryop.output].setqreal(qMin(registers[instr->binaryop.src1].getqreal(),
+                                                        registers[instr->binaryop.src2].getqreal()));
+        break;
     case Instr::NewString:
         new (registers[instr->construct.reg].typeMemory()) QString;
         break;
@@ -927,6 +939,12 @@ void QmlBindingVME::dump(const QByteArray &programData)
             break;
         case Instr::GreaterThanReal:
             qWarning().nospace() << "GreaterThanReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+            break;
+        case Instr::MaxReal:
+            qWarning().nospace() << "MaxReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+            break;
+        case Instr::MinReal:
+            qWarning().nospace() << "MinReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
             break;
         case Instr::NewString:
             qWarning().nospace() << "NewString" << "\t\t" << instr->construct.reg;
@@ -1177,6 +1195,8 @@ bool QmlBindingCompilerPrivate::parseExpression(QmlJS::AST::Node *node, Result &
         if (!parseName(node, type)) return false;
     } else if (tryConstant(node)) {
         if (!parseConstant(node, type)) return false;
+    } else if (tryMethod(node)) {
+        if (!parseMethod(node, type)) return false;
     } else {
         return false;
     }
@@ -1672,6 +1692,64 @@ bool QmlBindingCompilerPrivate::parseConstant(QmlJS::AST::Node *node, Result &ty
     } else {
         return false;
     }
+}
+
+bool QmlBindingCompilerPrivate::tryMethod(QmlJS::AST::Node *node)
+{
+    return node->kind == AST::Node::Kind_CallExpression; 
+}
+
+bool QmlBindingCompilerPrivate::parseMethod(QmlJS::AST::Node *node, Result &result)
+{
+    AST::CallExpression *expr = static_cast<AST::CallExpression *>(node);
+
+    QStringList name;
+    if (!buildName(name, expr->base))
+        return false;
+
+    if (name.count() != 2 || name.at(0) != QLatin1String("Math"))
+        return false;
+
+    QString method = name.at(1);
+
+    AST::ArgumentList *args = expr->arguments;
+    if (!args) return false;
+    AST::ExpressionNode *arg0 = args->expression;
+    args = args->next;
+    if (!args) return false;
+    AST::ExpressionNode *arg1 = args->expression;
+    if (args->next != 0) return false;
+    if (!arg0 || !arg1) return false;
+
+    Result r0;
+    if (!parseExpression(arg0, r0)) return false;
+    Result r1;
+    if (!parseExpression(arg1, r1)) return false;
+
+    if (r0.type != QMetaType::QReal || r1.type != QMetaType::QReal)
+        return false;
+
+    Instr op;
+    if (method == QLatin1String("max")) {
+        op.type = Instr::MaxReal;
+    } else if (method == QLatin1String("min")) {
+        op.type = Instr::MinReal;
+    } else {
+        return false;
+    }
+    // We release early to reuse registers
+    releaseReg(r0.reg);
+    releaseReg(r1.reg);
+
+    op.binaryop.output = acquireReg();
+    op.binaryop.src1 = r0.reg;
+    op.binaryop.src2 = r1.reg;
+    bytecode << op;
+
+    result.type = QMetaType::QReal;
+    result.reg = op.binaryop.output;
+
+    return true;
 }
 
 bool QmlBindingCompilerPrivate::buildName(QStringList &name,
