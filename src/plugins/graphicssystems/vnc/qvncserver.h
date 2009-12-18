@@ -482,6 +482,7 @@ private slots:
     void readClient();
     void checkUpdate();
     void discardClient();
+    void sendInputEvents();
 
 private:
     void init(uint port);
@@ -519,6 +520,11 @@ private:
 
     QRfbEncoder *encoder;
     QVNCCursor *cursor;
+
+    enum EventType { MouseEvent, KeyboardEvent };
+    QTimer eventTimer;
+    typedef QPair<EventType, QInputEvent *> EventPair;
+    QList<EventPair> eventList;
 };
 
 
