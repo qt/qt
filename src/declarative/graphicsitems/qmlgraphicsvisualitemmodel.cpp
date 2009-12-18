@@ -50,6 +50,8 @@
 #include <qmlopenmetaobject_p.h>
 #include <qmllistaccessor_p.h>
 #include <qmlinfo.h>
+#include <qmldeclarativedata_p.h>
+#include <qmlpropertycache_p.h>
 
 #include <qlistmodelinterface_p.h>
 #include <qhash.h>
@@ -209,12 +211,12 @@ void QmlGraphicsVisualItemModel::completeItem()
     // Nothing to do
 }
 
-QVariant QmlGraphicsVisualItemModel::value(int index, const QString &name)
+QString QmlGraphicsVisualItemModel::stringValue(int index, const QString &name)
 {
     Q_D(QmlGraphicsVisualItemModel);
     if (index < 0 || index >= d->children.count())
-        return QVariant();
-    return QmlEngine::contextForObject(d->children.at(index))->contextProperty(name);
+        return QString();
+    return QmlEngine::contextForObject(d->children.at(index))->contextProperty(name).toString();
 }
 
 QVariant QmlGraphicsVisualItemModel::evaluate(int index, const QString &expression, QObject *objectContext)
@@ -883,24 +885,44 @@ void QmlGraphicsVisualDataModel::completeItem()
     d->m_delegate->completeCreate();
 }
 
-QVariant QmlGraphicsVisualDataModel::value(int index, const QString &name)
+QString QmlGraphicsVisualDataModel::stringValue(int index, const QString &name)
 {
     Q_D(QmlGraphicsVisualDataModel);
     if (d->m_visualItemModel)
-        return d->m_visualItemModel->value(index, name);
+        return d->m_visualItemModel->stringValue(index, name);
 
     if ((!d->m_listModelInterface && !d->m_abstractItemModel) || !d->m_delegate)
-        return QVariant();
+        return QString();
 
-    QVariant val;
-    QObject *nobj = d->m_cache.item(index);
-    if (nobj) {
-        val = d->data(nobj)->property(name.toUtf8());
-    } else {
-        QmlGraphicsVisualDataModelData *data = new QmlGraphicsVisualDataModelData(index, this);
-        val = data->property(name.toUtf8());
-        delete data;
+    QString val;
+    QObject *data = 0;
+    bool tempData = false;
+
+    if (QObject *nobj = d->m_cache.item(index))
+        data = d->data(nobj);
+    if (!data) {
+        data = new QmlGraphicsVisualDataModelData(index, this);
+        tempData = true;
     }
+
+    QmlDeclarativeData *ddata = QmlDeclarativeData::get(data);
+    if (ddata && ddata->propertyCache) {
+        QmlPropertyCache::Data *prop = ddata->propertyCache->property(name);
+        if (prop->propType == QVariant::String) {
+            void *args[] = { &val, 0 };
+            QMetaObject::metacall(data, QMetaObject::ReadProperty, prop->coreIndex, args);
+        } else if (prop->propType == qMetaTypeId<QVariant>()) {
+            QVariant v;
+            void *args[] = { &v, 0 };
+            QMetaObject::metacall(data, QMetaObject::ReadProperty, prop->coreIndex, args);
+            val = v.toString();
+        }
+    } else {
+        val = data->property(name.toUtf8()).toString();
+    }
+
+    if (tempData)
+        delete data;
 
     return val;
 }

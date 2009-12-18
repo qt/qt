@@ -80,7 +80,7 @@ void QmlGraphicsViewSection::setDelegate(QmlComponent *delegate)
 QString QmlGraphicsViewSection::sectionString(const QString &value)
 {
     if (m_criteria == FirstCharacter)
-        return value.at(0);
+        return value.isEmpty() ? QString() : value.at(0);
     else
         return value;
 }
@@ -349,7 +349,7 @@ public:
 
         QString section;
         if (sectionCriteria) {
-            QString propValue = model->value(modelIndex, sectionCriteria->property()).toString();
+            QString propValue = model->stringValue(modelIndex, sectionCriteria->property());
             section = sectionCriteria->sectionString(propValue);
         }
 
@@ -593,7 +593,7 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
         listItem->index = modelIndex;
         // initialise attached properties
         if (sectionCriteria) {
-            QString propValue = model->value(modelIndex, sectionCriteria->property()).toString();
+            QString propValue = model->stringValue(modelIndex, sectionCriteria->property());
             listItem->attached->m_section = sectionCriteria->sectionString(propValue);
             if (modelIndex > 0) {
                 if (FxListItem *item = visibleItem(modelIndex-1))
