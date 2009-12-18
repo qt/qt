@@ -865,7 +865,7 @@ void QmlGraphicsFlickable::viewportMoved()
 {
     Q_D(QmlGraphicsFlickable);
 
-    int elapsed = QmlGraphicsItemPrivate::elapsed(d->velocityTime);
+    int elapsed = QmlGraphicsItemPrivate::restart(d->velocityTime);
     if (!elapsed)
         return;
 
@@ -888,7 +888,6 @@ void QmlGraphicsFlickable::viewportMoved()
         }
     }
 
-    QmlGraphicsItemPrivate::restart(d->velocityTime);
     d->lastFlickablePosition = QPointF(d->_moveY.value(), d->_moveX.value());
 
     d->vTime = d->timeline.time();
