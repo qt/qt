@@ -1198,9 +1198,10 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged()
 {
     Q_Q(QSortFilterProxyModel);
     saved_persistent_indexes.clear();
+    emit q->layoutAboutToBeChanged();
     if (persistent.indexes.isEmpty())
         return;
-    emit q->layoutAboutToBeChanged();
+
     saved_persistent_indexes = store_persistent_indexes();
 }
 
@@ -1208,7 +1209,8 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged()
 {
     Q_Q(QSortFilterProxyModel);
     if (saved_persistent_indexes.isEmpty()) {
-        q->invalidate();
+        clear_mapping();
+        emit q->layoutChanged();
         return;
     }
 
