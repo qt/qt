@@ -273,7 +273,7 @@ QResourcePrivate::load(const QString &file)
     QString cleaned = cleanPath(file);
     for(int i = 0; i < list->size(); ++i) {
         QResourceRoot *res = list->at(i);
-        const int node = res->findNode(cleaned);
+        const int node = res->findNode(cleaned, locale);
         if(node != -1) {
             if(related.isEmpty()) {
                 container = res->isContainer(node);
