@@ -2536,6 +2536,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             QString ofile = Option::fixPathToTargetOS(fileFixify(Option::output.fileName()));
             if(!ofile.isEmpty())
                 t << "\t-$(DEL_FILE) " << ofile << endl;
+            t << varGlue("QMAKE_DISTCLEAN","\t-$(DEL_FILE) "," ","\n");
         } else if(project->isActiveConfig("no_empty_targets")) {
             t << "\t" << "@cd ." << endl;
         }
