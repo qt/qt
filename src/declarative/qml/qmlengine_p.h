@@ -205,7 +205,7 @@ public:
     QList<SimpleList<QmlParserStatus> > parserStatus;
     QmlComponentAttached *componentAttacheds;
 
-    QmlComponent *rootComponent;
+    bool inBeginCreate;
     mutable QNetworkAccessManager *networkAccessManager;
 
     QmlCompositeTypeManager typeManager;

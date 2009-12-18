@@ -432,6 +432,9 @@ void tst_qmlecmascript::deferredProperties()
     MyQmlObject *qmlObject = 
         qobject_cast<MyQmlObject *>(object->objectProperty());
     QVERIFY(qmlObject != 0);
+    QCOMPARE(qmlObject->value(), 10);
+    object->setValue(19);
+    QCOMPARE(qmlObject->value(), 19);
 }
 
 void tst_qmlecmascript::extensionObjects()

@@ -131,7 +131,6 @@ void QmlVME::runDeferred(QObject *object)
     run(stack, ctxt, comp, start, count, QBitField());
 }
 
-QBitField bindingSkipList;
 QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt, 
                      QmlCompiledData *comp, 
                      int start, int count, 

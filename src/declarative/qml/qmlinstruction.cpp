@@ -56,7 +56,7 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
 
     switch(instr->type) {
     case QmlInstruction::Init:
-        qWarning().nospace() << idx << "\t\t" << line << "\t" << "INIT";
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "INIT\t\t\t" << instr->init.bindingsSize << "\t" << instr->init.parserStatusSize << "\t" << instr->init.contextCache << "\t" << instr->init.compiledBinding;
         break;
     case QmlInstruction::CreateObject:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE\t\t\t" << instr->create.type << "\t\t\t" << types.at(instr->create.type).className;
