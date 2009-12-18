@@ -88,6 +88,7 @@
 #endif
 
 #include "../network-settings.h"
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -124,6 +125,9 @@ private slots:
     void raceCondition();
     void threadSafety();
 
+    void multipleSameLookups();
+    void multipleDifferentLookups();
+
 protected slots:
     void resultsReady(const QHostInfo &);
 
@@ -131,6 +135,7 @@ private:
     bool ipv6LookupsAvailable;
     bool ipv6Available;
     bool lookupDone;
+    int lookupsDoneCounter;
     QHostInfo lookupResults;
 };
 
@@ -411,11 +416,53 @@ void tst_QHostInfo::threadSafety()
     }
 }
 
+// this test is for the multi-threaded QHostInfo rewrite. It is about getting results at all,
+// not about getting correct IPs
+void tst_QHostInfo::multipleSameLookups()
+{
+    const int COUNT = 10;
+    lookupsDoneCounter = 0;
+
+    for (int i = 0; i < COUNT; i++)
+        QHostInfo::lookupHost("localhost", this, SLOT(resultsReady(const QHostInfo)));
+
+    QTRY_VERIFY(lookupsDoneCounter == COUNT);
+
+    // spin two seconds more to see if it is not more :)
+    QTestEventLoop::instance().enterLoop(2);
+    QTRY_VERIFY(lookupsDoneCounter == COUNT);
+}
+
+// this test is for the multi-threaded QHostInfo rewrite. It is about getting results at all,
+// not about getting correct IPs
+void tst_QHostInfo::multipleDifferentLookups()
+{
+    QStringList hostnameList;
+    hostnameList << "www.ovi.com" << "www.nokia.com" << "qt.nokia.com" << "www.trolltech.com" << "troll.no"
+            << "www.qtcentre.org" << "forum.nokia.com" << "www.forum.nokia.com" << "wiki.forum.nokia.com"
+            << "www.nokia.no" << "nokia.de" << "127.0.0.1" << "----";
+
+    const int COUNT = hostnameList.size();
+    lookupsDoneCounter = 0;
+
+    for (int i = 0; i < hostnameList.size(); i++)
+        QHostInfo::lookupHost(hostnameList.at(i), this, SLOT(resultsReady(const QHostInfo)));
+
+    // give some time
+    QTestEventLoop::instance().enterLoop(5);
+    // try_verify gives some more time
+    QTRY_VERIFY(lookupsDoneCounter == COUNT);
+
+    // spin two seconds more to see if it is not more than expected
+    QTestEventLoop::instance().enterLoop(2);
+    QTRY_VERIFY(lookupsDoneCounter == COUNT);
+}
+
 void tst_QHostInfo::resultsReady(const QHostInfo &hi)
 {
     lookupDone = true;
     lookupResults = hi;
-
+    lookupsDoneCounter++;
     QTestEventLoop::instance().exitLoop();
 }
 
