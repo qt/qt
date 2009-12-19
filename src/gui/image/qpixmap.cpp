@@ -831,14 +831,13 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     if (QPixmapCache::find(key, *this))
         return true;
 
-    if (!data)
-        data = QPixmapData::create(0, 0, QPixmapData::PixmapType);
-
-    if (data->fromFile(fileName, format, flags)) {
+    QPixmapData *tmp = QPixmapData::create(0, 0, QPixmapData::PixmapType);
+    if (tmp->fromFile(fileName, format, flags)) {
+        data = tmp;
         QPixmapCache::insert(key, *this);
         return true;
     }
-
+    delete tmp;
     return false;
 }
 
