@@ -105,11 +105,7 @@ static void resolveLibrary()
 #include <qmutex.h>
 QMutex qPrivCEMutex;
 #endif
-/*
-    Performs a blocking call to gethostbyname or getaddrinfo, stores
-    the results in a QHostInfo structure and emits the
-    resultsReady() signal.
-*/
+
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 {
 #if defined(Q_OS_WINCE)
