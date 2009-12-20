@@ -72,7 +72,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsFlickable : public QmlGraphicsItem
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
     Q_PROPERTY(FlickDirection flickDirection READ flickDirection WRITE setFlickDirection NOTIFY flickDirectionChanged)
 
-    Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive)
+    Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive NOTIFY interactiveChanged)
     Q_PROPERTY(int pressDelay READ pressDelay WRITE setPressDelay)
 
     Q_PROPERTY(bool atXEnd READ isAtXEnd NOTIFY isAtBoundaryChanged)
@@ -159,6 +159,7 @@ Q_SIGNALS:
     void isAtBoundaryChanged();
     void pageChanged();
     void flickDirectionChanged();
+    void interactiveChanged();
 
 protected:
     virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
