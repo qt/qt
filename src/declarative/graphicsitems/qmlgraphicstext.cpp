@@ -50,9 +50,8 @@
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
+#include <QAbstractTextDocumentLayout>
 #include <qmath.h>
-
-#include <private/qtextcontrol_p.h>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,Text,QmlGraphicsText)
@@ -159,11 +158,8 @@ void QmlGraphicsText::setText(const QString &n)
 
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(n));
     if (d->richText) {
-        if (!d->doc)
-        {
-            d->control = new QTextControl(this);
-            d->control->setTextInteractionFlags(Qt::TextBrowserInteraction);
-            d->doc = d->control->document();
+        if (!d->doc) {
+            d->doc = new QTextDocument(this);
             d->doc->setDocumentMargin(0);
         }
         d->doc->setHtml(n);
@@ -399,11 +395,8 @@ void QmlGraphicsText::setTextFormat(TextFormat format)
         d->updateSize();
         d->markImgDirty();
     } else if (!wasRich && d->richText) {
-        if (!d->doc)
-        {
-            d->control = new QTextControl(this);
-            d->control->setTextInteractionFlags(Qt::TextBrowserInteraction);
-            d->doc = d->control->document();
+        if (!d->doc) {
+            d->doc = new QTextDocument(this);
             d->doc->setDocumentMargin(0);
         }
         d->doc->setHtml(d->text);
@@ -643,19 +636,18 @@ QPixmap QmlGraphicsTextPrivate::richTextImage(bool drawStyle)
     img.fill(Qt::transparent);
     QPainter p(&img);
 
+    QAbstractTextDocumentLayout::PaintContext context;
+
     if (drawStyle) {
-        QPalette pal = control->palette();
-        pal.setColor(QPalette::Text, styleColor);
-        control->setPalette(pal);
+        context.palette.setColor(QPalette::Text, styleColor);
+        // ### Do we really want this?
         QTextOption colorOption;
         colorOption.setFlags(QTextOption::SuppressColors);
         doc->setDefaultTextOption(colorOption);
     } else {
-        QPalette pal = control->palette();
-        pal.setColor(QPalette::Text, color);
-        control->setPalette(pal);
+        context.palette.setColor(QPalette::Text, color);
     }
-    control->drawContents(&p, QRectF(QPointF(0, 0), QSizeF(size)));
+    doc->documentLayout()->draw(&p, context);
     if (drawStyle)
         doc->setDefaultTextOption(QTextOption());
     return img;
@@ -790,11 +782,11 @@ void QmlGraphicsText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsText);
 
-    if (!d->richText || !d->doc || d->control->anchorAt(event->pos()).isEmpty()) {
+    if (!d->richText || !d->doc || d->doc->documentLayout()->anchorAt(event->pos()).isEmpty()) {
         event->setAccepted(false);
         d->activeLink = QString();
     } else {
-        d->activeLink = d->control->anchorAt(event->pos());
+        d->activeLink = d->doc->documentLayout()->anchorAt(event->pos());
     }
 
     // ### may malfunction if two of the same links are clicked & dragged onto each other)
@@ -819,7 +811,7 @@ void QmlGraphicsText::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QmlGraphicsText);
 
         // ### confirm the link, and send a signal out
-    if (d->richText && d->doc && d->activeLink == d->control->anchorAt(event->pos()))
+    if (d->richText && d->doc && d->activeLink == d->doc->documentLayout()->anchorAt(event->pos()))
         emit linkActivated(d->activeLink);
     else
         event->setAccepted(false);

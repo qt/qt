@@ -58,8 +58,10 @@ public:
 private slots:
     void layout();
     void paintLayoutToPixmap();
+    void paintLayoutToPixmap_painterFill();
     void document();
     void paintDocToPixmap();
+    void paintDocToPixmap_painterFill();
 
 private:
     QString m_text;
@@ -125,6 +127,21 @@ void tst_text::paintLayoutToPixmap()
     }
 }
 
+void tst_text::paintLayoutToPixmap_painterFill()
+{
+    QTextLayout layout(m_text);
+    QSize size = setupTextLayout(&layout);
+
+    QBENCHMARK {
+        QPixmap img(size);
+        QPainter p(&img);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
+        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        layout.draw(&p, QPointF(0, 0));
+    }
+}
+
 void tst_text::document()
 {
     QTextControl *control = new QTextControl(m_text);
@@ -147,6 +164,23 @@ void tst_text::paintDocToPixmap()
         QPixmap img(size);
         img.fill(Qt::transparent);
         QPainter p(&img);
+        control->drawContents(&p, QRectF(QPointF(0, 0), QSizeF(size)));
+    }
+}
+
+void tst_text::paintDocToPixmap_painterFill()
+{
+    QTextControl *control = new QTextControl;
+    QTextDocument *doc = control->document();
+    doc->setHtml(m_text);
+    QSize size = doc->size().toSize();
+
+    QBENCHMARK {
+        QPixmap img(size);
+        QPainter p(&img);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
+        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
         control->drawContents(&p, QRectF(QPointF(0, 0), QSizeF(size)));
     }
 }

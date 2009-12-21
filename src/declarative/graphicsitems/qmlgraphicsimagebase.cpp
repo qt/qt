@@ -116,9 +116,26 @@ void QmlGraphicsImageBase::setSource(const QUrl &url)
         if (status != QmlPixmapReply::Ready && status != QmlPixmapReply::Error) {
             QmlPixmapReply *reply = QmlPixmapCache::request(qmlEngine(this), d->url);
             d->pendingPixmapCache = true;
-            connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
-            connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
-                    this, SLOT(requestProgress(qint64,qint64)));
+
+            static int replyDownloadProgress = -1;
+            static int replyFinished = -1;
+            static int thisRequestProgress = -1;
+            static int thisRequestFinished = -1;
+            if (replyDownloadProgress == -1) {
+                replyDownloadProgress = 
+                    QmlPixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
+                replyFinished = 
+                    QmlPixmapReply::staticMetaObject.indexOfSignal("finished()");
+                thisRequestProgress = 
+                    QmlGraphicsImageBase::staticMetaObject.indexOfSlot("requestProgress(qint64,qint64)");
+                thisRequestFinished =
+                    QmlGraphicsImageBase::staticMetaObject.indexOfSlot("requestFinished()");
+            }
+
+            QMetaObject::connect(reply, replyFinished, this, 
+                                 thisRequestFinished, Qt::DirectConnection);
+            QMetaObject::connect(reply, replyDownloadProgress, this, 
+                                 thisRequestProgress, Qt::DirectConnection);
         } else {
             //### should be unified with requestFinished
             if (status == QmlPixmapReply::Ready) {

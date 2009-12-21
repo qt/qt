@@ -64,7 +64,6 @@ QT_BEGIN_NAMESPACE
 
 class QTextLayout;
 class QTextDocument;
-class QTextControl;
 
 class QmlGraphicsTextPrivate : public QmlGraphicsItemPrivate
 {
@@ -73,7 +72,7 @@ public:
     QmlGraphicsTextPrivate()
       : color((QRgb)0), style(QmlGraphicsText::Normal), imgDirty(true),
         hAlign(QmlGraphicsText::AlignLeft), vAlign(QmlGraphicsText::AlignTop), elideMode(QmlGraphicsText::ElideNone),
-        dirty(true), wrap(false), richText(false), singleline(false), control(0), doc(0),
+        dirty(true), wrap(false), richText(false), singleline(false), doc(0),
         format(QmlGraphicsText::AutoText)
     {
     }
@@ -112,7 +111,6 @@ public:
     bool wrap:1;
     bool richText:1;
     bool singleline:1;
-    QTextControl *control;
     QTextDocument *doc;
     QTextLayout layout;
     QSize cachedLayoutSize;

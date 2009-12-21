@@ -552,8 +552,7 @@ void QmlGraphicsListViewPrivate::init()
 {
     Q_Q(QmlGraphicsListView);
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
-    QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(refill()));
-    QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
+    addItemChangeListener(this, Geometry);
     QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
     q->setFlickDirection(QmlGraphicsFlickable::VerticalFlick);
     ::memset(sectionCache, 0, sizeof(QmlGraphicsItem*) * sectionCacheSize);

@@ -84,7 +84,6 @@ private:
     void loadImage(Job &job);
 
     QList<Job> jobs;
-    Job runningJob;
     QMutex mutex;
     QWaitCondition haveJob;
     bool quit;
@@ -119,22 +118,21 @@ void QmlImageReader::read(QmlPixmapReply *reply)
     Job job;
     job.reply = reply;
     jobs.append(job);
-    haveJob.wakeOne();
+    if (jobs.count() == 1)
+        haveJob.wakeOne();
     mutex.unlock();
 }
 
 void QmlImageReader::cancel(QmlPixmapReply *reply)
 {
     mutex.lock();
-    if (runningJob.reply != reply) {
-        QList<Job>::iterator it = jobs.begin();
-        while (it != jobs.end()) {
-            if ((*it).reply == reply) {
-                jobs.erase(it);
-                break;
-            }
-            ++it;
+    QList<Job>::iterator it = jobs.begin();
+    while (it != jobs.end()) {
+        if ((*it).reply == reply) {
+            jobs.erase(it);
+            break;
         }
+        ++it;
     }
     mutex.unlock();
 }
@@ -158,14 +156,12 @@ void QmlImageReader::run()
             haveJob.wait(&mutex);
         if (quit)
             break;
-        runningJob = jobs.takeFirst();
+        Job runningJob = jobs.takeFirst();
         runningJob.reply->addRef();
         mutex.unlock();
+
         loadImage(runningJob);
-        mutex.lock();
         QCoreApplication::postEvent(runningJob.reply, new QmlImageDecodeEvent(runningJob.error, runningJob.img));
-        runningJob.reply = 0;
-        mutex.unlock();
     }
 }
 
@@ -244,8 +240,21 @@ QmlPixmapReply::QmlPixmapReply(const QString &key, QNetworkReply *reply)
   : QObject(*new QmlPixmapReplyPrivate(key, reply), 0)
 {
     Q_D(QmlPixmapReply);
-    connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)), this, SIGNAL(downloadProgress(qint64,qint64)));
-    connect(d->reply, SIGNAL(finished()), this, SLOT(networkRequestDone()));
+
+    static int replyDownloadProgress = -1;
+    static int replyFinished = -1;
+    static int thisDownloadProgress = -1;
+    static int thisNetworkRequestDone = -1;
+
+    if (replyDownloadProgress == -1) {
+        replyDownloadProgress = QNetworkReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
+        replyFinished = QNetworkReply::staticMetaObject.indexOfSignal("finished()");
+        thisDownloadProgress = QmlPixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
+        thisNetworkRequestDone = QmlPixmapReply::staticMetaObject.indexOfSlot("networkRequestDone()");
+    }
+
+    QMetaObject::connect(d->reply, replyDownloadProgress, this, thisDownloadProgress, Qt::DirectConnection);
+    QMetaObject::connect(d->reply, replyFinished, this, thisNetworkRequestDone);
 }
 
 QmlPixmapReply::~QmlPixmapReply()

@@ -72,6 +72,10 @@ struct Register {
     void *typeDataPtr() { return (void *)&data; }
     void *typeMemory() { return (void *)data; }
 
+    int gettype() { return type; }
+    void settype(int t) { type = t; }
+
+    int type;          // Optional type
     void *data[2];     // Object stored here
 };
 
@@ -93,9 +97,11 @@ struct Instr {
         Real,                    // real_value
         Int,                     // int_value
         Bool,                    // bool_value
+        String,                  // string_value
 
         AddReal,                 // binaryop
         AddInt,                  // binaryop
+        AddString,               // binaryop
 
         MinusReal,               // binaryop
         MinusInt,                // binaryop
@@ -187,6 +193,11 @@ struct Instr {
             bool value;
         } bool_value;
         struct {
+            int reg;
+            int offset;
+            int length;
+        } string_value;
+        struct {
             int output;
             int src1;
             int src2;
@@ -198,7 +209,6 @@ struct Instr {
         struct {
             int output;
             int src;
-            int srcType;
         } genericunaryop;
         struct {
             int reg;
@@ -207,13 +217,11 @@ struct Instr {
         struct {
             int reg;
             int src;
-            int typeReg;
             int name; 
             int subscribeIndex;
         } find;
         struct {
             int reg;
-            int typeReg;
         } cleanup;
         struct {
             int offset;
@@ -229,6 +237,8 @@ struct Program {
     quint32 signalTableOffset;
     quint16 subscriptions;
     quint16 identifiers;
+    quint16 instructionCount;
+    quint16 dummy;
 
     const char *data() const { return ((const char *)this) + sizeof(Program); }
     const Instr *instructions() const { return (const Instr *)(data() + dataLength); }
@@ -279,6 +289,8 @@ struct QmlBindingCompilerPrivate
 
     bool tryArith(QmlJS::AST::Node *);
     bool parseArith(QmlJS::AST::Node *, Result &);
+    bool numberArith(Result &, const Result &, const Result &, QSOperator::Op op);
+    bool stringArith(Result &, const Result &, const Result &, QSOperator::Op op);
 
     bool tryLogic(QmlJS::AST::Node *);
     bool parseLogic(QmlJS::AST::Node *, Result &);
@@ -301,6 +313,7 @@ struct QmlBindingCompilerPrivate
     void registerCleanup(int reg, int cleanup, int cleanupType = 0);
     void releaseReg(int);
 
+    int registerLiteralString(const QString &);
     int registerString(const QString &);
     QHash<QString, QPair<int, int> > registeredStrings;
     QByteArray data;
@@ -383,8 +396,7 @@ static QmlPropertyCache::Data *findproperty(QObject *obj,
     return property;
 }
 
-static bool findproperty(QObject *obj, 
-                         Register *output, Register *type, 
+static bool findproperty(QObject *obj, Register *output, 
                          QmlEnginePrivate *enginePriv,
                          QmlBindingVME::Config *config, int subIdx,
                          const QScriptDeclarativeClass::Identifier &name,
@@ -397,10 +409,13 @@ static bool findproperty(QObject *obj,
     QmlPropertyCache::Data *property = findproperty(obj, name, enginePriv, local);
 
     if (property) {
+        if (subIdx != -1)
+            subscribe(obj, property->notifyIndex, subIdx, config);
+
         if (property->flags & QmlPropertyCache::Data::IsQObjectDerived) {
             void *args[] = { output->typeDataPtr(), 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, property->coreIndex, args);
-            type->setint(QMetaType::QObjectStar);
+            output->settype(QMetaType::QObjectStar);
         } else if (property->propType == qMetaTypeId<QVariant>()) {
             QVariant v;
             void *args[] = { &v, 0 };
@@ -408,12 +423,12 @@ static bool findproperty(QObject *obj,
 
             if (isTerminal) {
                 new (output->typeDataPtr()) QVariant(v);
-                type->setint(qMetaTypeId<QVariant>());
+                output->settype(qMetaTypeId<QVariant>());
             } else {
                 bool ok;
                 output->setQObject(variantToQObject(v, &ok));
                 if (!ok) return false;
-                type->setint(QMetaType::QObjectStar);
+                output->settype(QMetaType::QObjectStar);
             }
 
         } else {
@@ -423,17 +438,14 @@ static bool findproperty(QObject *obj,
             if (property->propType == QMetaType::QReal) {
                 void *args[] = { output->typeDataPtr(), 0 };
                 QMetaObject::metacall(obj, QMetaObject::ReadProperty, property->coreIndex, args);
-                type->setint(QMetaType::QReal);
+                output->settype(QMetaType::QReal);
             } else {
                 new (output->typeDataPtr()) 
                     QVariant(obj->metaObject()->property(property->coreIndex).read(obj));
-                type->setint(qMetaTypeId<QVariant>());
+                output->settype(qMetaTypeId<QVariant>());
             }
 
         }
-
-        if (subIdx != -1)
-            subscribe(obj, property->notifyIndex, subIdx, config);
 
         return true;
     } else {
@@ -442,18 +454,17 @@ static bool findproperty(QObject *obj,
 }
 
 static bool findproperty(Register *input, 
-                         Register *output, Register *type, 
+                         Register *output, 
                          QmlEnginePrivate *enginePriv,
                          QmlBindingVME::Config *config, int subIdx,
                          const QScriptDeclarativeClass::Identifier &name,
                          bool isTerminal)
 {
-    return findproperty(input->getQObject(), output, type, enginePriv, 
+    return findproperty(input->getQObject(), output, enginePriv, 
                         config, subIdx, name, isTerminal);
 }
 
 static bool findgeneric(Register *output,                                 // value output
-                        Register *type,                                   // value type output
                         QmlBindingVME::Config *config,           
                         int subIdx,                                       // Subscription index in config
                         QmlContextPrivate *context,                       // Context to search in
@@ -465,21 +476,26 @@ static bool findgeneric(Register *output,                                 // val
     while (context) {
 
         int contextPropertyIndex = context->propertyNames?context->propertyNames->value(name):-1;
+
+
         if (contextPropertyIndex != -1) {
+
+            subscribe(QmlContextPrivate::get(context), contextPropertyIndex + context->notifyIndex,
+                      subIdx, config);
 
             if (contextPropertyIndex < context->idValueCount) {
                 output->setQObject(context->idValues[contextPropertyIndex]);
-                type->setint(QMetaType::QObjectStar);
+                output->settype(QMetaType::QObjectStar);
             } else {
                 const QVariant &value = context->propertyValues.at(contextPropertyIndex);
                 if (isTerminal) {
                     new (output->typeDataPtr()) QVariant(value);
-                    type->setint(qMetaTypeId<QVariant>());
+                    output->settype(qMetaTypeId<QVariant>());
                 } else {
                     bool ok;
                     output->setQObject(variantToQObject(value, &ok));
                     if (!ok) return false;
-                    type->setint(QMetaType::QObjectStar);
+                    output->settype(QMetaType::QObjectStar);
                 }
             }
 
@@ -496,7 +512,7 @@ static bool findgeneric(Register *output,                                 // val
 
         if (QObject *root = context->defaultObjects.isEmpty()?0:context->defaultObjects.first()) {
 
-            if (findproperty(root, output, type, enginePriv, config, subIdx, name, isTerminal))
+            if (findproperty(root, output, enginePriv, config, subIdx, name, isTerminal))
                 return true;
 
         }
@@ -579,7 +595,7 @@ inline static QUrl toUrl(Register *reg, int type, QmlContextPrivate *context, bo
         return QUrl();
     }
 
-    if (base.isRelative())
+    if (!base.isEmpty() && base.isRelative())
         return context->url.resolved(base);
     else
         return base;
@@ -676,6 +692,11 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         registers[instr->bool_value.reg].setbool(instr->bool_value.value);
         break;
 
+    case Instr::String:
+        new (registers[instr->bool_value.reg].getstringptr()) 
+            QString((QChar *)(data + instr->string_value.offset), instr->string_value.length);
+        break;
+
     case Instr::AddReal:
         registers[instr->binaryop.output].setqreal(registers[instr->binaryop.src1].getqreal() + 
                                                    registers[instr->binaryop.src2].getqreal());
@@ -684,6 +705,12 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
     case Instr::AddInt:
         registers[instr->binaryop.output].setint(registers[instr->binaryop.src1].getint() + 
                                                  registers[instr->binaryop.src2].getint());
+        break;
+        
+    case Instr::AddString:
+        new (registers[instr->binaryop.output].getstringptr()) 
+            QString(*registers[instr->binaryop.src1].getstringptr() + 
+                    *registers[instr->binaryop.src2].getstringptr());
         break;
 
     case Instr::MinusReal:
@@ -792,8 +819,8 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         // We start the search in the parent context, as we know that the 
         // name is not present in the current context or it would have been
         // found during the static compile
-        if (!findgeneric(registers + instr->find.reg, registers + instr->find.typeReg,
-                         config, instr->find.subscribeIndex, QmlContextPrivate::get(context->parent),
+        if (!findgeneric(registers + instr->find.reg, config, instr->find.subscribeIndex, 
+                         QmlContextPrivate::get(context->parent),
                          config->identifiers[instr->find.name].identifier, 
                          instr->type == Instr::FindGenericTerminal)) {
             qWarning() << "ERROR - FindGeneric*";
@@ -803,8 +830,7 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
 
     case Instr::FindPropertyTerminal:
     case Instr::FindProperty:
-        if (!findproperty(registers + instr->find.src,
-                          registers + instr->find.reg, registers + instr->find.typeReg,
+        if (!findproperty(registers + instr->find.src, registers + instr->find.reg, 
                           QmlEnginePrivate::get(context->engine),
                           config, instr->find.subscribeIndex, 
                           config->identifiers[instr->find.name].identifier, 
@@ -816,7 +842,7 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
 
     case Instr::CleanupGeneric:
         {
-            int type = registers[instr->cleanup.typeReg].getint();
+            int type = registers[instr->cleanup.reg].gettype();
             if (type == qMetaTypeId<QVariant>()) {
                 ((QVariant *)registers[instr->cleanup.reg].typeDataPtr())->~QVariant();
             }
@@ -825,21 +851,21 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
 
     case Instr::ConvertGenericToReal:
         {
-            int type = registers[instr->genericunaryop.srcType].getint();
+            int type = registers[instr->genericunaryop.src].gettype();
             registers[instr->genericunaryop.output].setqreal(toReal(registers + instr->genericunaryop.src, type));
         }
         break;
 
     case Instr::ConvertGenericToBool:
         {
-            int type = registers[instr->genericunaryop.srcType].getint();
+            int type = registers[instr->genericunaryop.src].gettype();
             registers[instr->genericunaryop.output].setbool(toBool(registers + instr->genericunaryop.src, type));
         }
         break;
 
     case Instr::ConvertGenericToString:
         {
-            int type = registers[instr->genericunaryop.srcType].getint();
+            int type = registers[instr->genericunaryop.src].gettype();
             void *regPtr = registers[instr->genericunaryop.output].typeDataPtr();
             new (regPtr) QString(toString(registers + instr->genericunaryop.src, type));
         }
@@ -847,7 +873,7 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
 
     case Instr::ConvertGenericToUrl:
         {
-            int type = registers[instr->genericunaryop.srcType].getint();
+            int type = registers[instr->genericunaryop.src].gettype();
             void *regPtr = registers[instr->genericunaryop.output].typeDataPtr();
             new (regPtr) QUrl(toUrl(registers + instr->genericunaryop.src, type, context));
         }
@@ -862,16 +888,16 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
     }
 }
 
-void QmlBindingVME::dump(const QByteArray &programData)
+void QmlBindingVME::dump(const char *programData)
 {
-    const Program *program = (const Program *)programData.constData();
+    const Program *program = (const Program *)programData;
 
     qWarning() << "Program.bindings:" << program->bindings;
     qWarning() << "Program.dataLength:" << program->dataLength;
     qWarning() << "Program.subscriptions:" << program->subscriptions;
     qWarning() << "Program.indentifiers:" << program->identifiers;
 
-    int count = (programData.size() - sizeof(Program) - program->dataLength) / sizeof(Instr);
+    int count = program->instructionCount;
     const Instr *instr = program->instructions();
 
     while (count--) {
@@ -913,11 +939,17 @@ void QmlBindingVME::dump(const QByteArray &programData)
         case Instr::Bool:
             qWarning().nospace() << "Bool" << "\t\t\t" << instr->bool_value.reg << "\t" << instr->bool_value.value;
             break;
+        case Instr::String:
+            qWarning().nospace() << "String" << "\t\t\t" << instr->string_value.reg << "\t" << instr->string_value.offset << "\t" << instr->string_value.length;
+            break;
         case Instr::AddReal:
             qWarning().nospace() << "AddReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
             break;
         case Instr::AddInt:
             qWarning().nospace() << "AddInt" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+            break;
+        case Instr::AddString:
+            qWarning().nospace() << "AddString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
             break;
         case Instr::MinusReal:
             qWarning().nospace() << "MinusReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
@@ -953,10 +985,10 @@ void QmlBindingVME::dump(const QByteArray &programData)
             qWarning().nospace() << "NewUrl" << "\t\t\t" << instr->construct.reg;
             break;
         case Instr::CleanupString:
-            qWarning().nospace() << "CleanupString" << "\t\t" << instr->cleanup.reg << "\t" << instr->cleanup.typeReg;
+            qWarning().nospace() << "CleanupString" << "\t\t" << instr->cleanup.reg;
             break;
         case Instr::CleanupUrl:
-            qWarning().nospace() << "CleanupUrl" << "\t\t" << instr->cleanup.reg << "\t" << instr->cleanup.typeReg;
+            qWarning().nospace() << "CleanupUrl" << "\t\t" << instr->cleanup.reg;
             break;
         case Instr::Fetch:
             qWarning().nospace() << "Fetch" << "\t\t\t" << instr->fetch.output << "\t" << instr->fetch.index << "\t" << instr->fetch.objectReg;
@@ -977,31 +1009,31 @@ void QmlBindingVME::dump(const QByteArray &programData)
             qWarning().nospace() << "InitString" << "\t\t" << instr->initstring.offset << "\t" << instr->initstring.dataIdx << "\t" << instr->initstring.length;
             break;
         case Instr::FindGeneric:
-            qWarning().nospace() << "FindGeneric" << "\t\t" << instr->find.reg << "\t" << instr->find.typeReg << "\t" << instr->find.name;
+            qWarning().nospace() << "FindGeneric" << "\t\t" << instr->find.reg << "\t" << instr->find.name;
             break;
         case Instr::FindGenericTerminal:
-            qWarning().nospace() << "FindGenericTerminal" << "\t" << instr->find.reg << "\t" << instr->find.typeReg << "\t" << instr->find.name;
+            qWarning().nospace() << "FindGenericTerminal" << "\t" << instr->find.reg << "\t" <<  instr->find.name;
             break;
         case Instr::FindProperty:
-            qWarning().nospace() << "FindProperty" << "\t\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.typeReg << "\t" << instr->find.name;
+            qWarning().nospace() << "FindProperty" << "\t\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
             break;
         case Instr::FindPropertyTerminal:
-            qWarning().nospace() << "FindPropertyTerminal" << "\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.typeReg << "\t" << instr->find.name;
+            qWarning().nospace() << "FindPropertyTerminal" << "\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
             break;
         case Instr::CleanupGeneric:
-            qWarning().nospace() << "CleanupGeneric" << "\t\t" << instr->cleanup.reg << "\t" << instr->cleanup.typeReg;
+            qWarning().nospace() << "CleanupGeneric" << "\t\t" << instr->cleanup.reg;
             break;
         case Instr::ConvertGenericToReal:
-            qWarning().nospace() << "ConvertGenericToReal" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
+            qWarning().nospace() << "ConvertGenericToReal" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src;
             break;
         case Instr::ConvertGenericToBool:
-            qWarning().nospace() << "ConvertGenericToBool" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
+            qWarning().nospace() << "ConvertGenericToBool" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src;
             break;
         case Instr::ConvertGenericToString:
-            qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
+            qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src;
             break;
         case Instr::ConvertGenericToUrl:
-            qWarning().nospace() << "ConvertGenericToUrl" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src << "\t" << instr->genericunaryop.srcType;
+            qWarning().nospace() << "ConvertGenericToUrl" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src;
             break;
         default:
             qWarning().nospace() << "Unknown";
@@ -1073,35 +1105,30 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
             convert.type = Instr::ConvertGenericToReal;
             convert.genericunaryop.output = convertReg;
             convert.genericunaryop.src = type.reg;
-            convert.genericunaryop.srcType = 2; // XXX
             bytecode << convert;
         } else if (destination->type == QVariant::String) {
             Instr convert;
             convert.type = Instr::ConvertGenericToString;
             convert.genericunaryop.output = convertReg;
             convert.genericunaryop.src = type.reg;
-            convert.genericunaryop.srcType = 2; // XXX
             bytecode << convert;
         } else if (destination->type == QMetaType::Bool) {
             Instr convert;
             convert.type = Instr::ConvertGenericToBool;
             convert.genericunaryop.output = convertReg;
             convert.genericunaryop.src = type.reg;
-            convert.genericunaryop.srcType = 2; // XXX
             bytecode << convert;
         } else if (destination->type == QVariant::Url) {
             Instr convert;
             convert.type = Instr::ConvertGenericToUrl;
             convert.genericunaryop.output = convertReg;
             convert.genericunaryop.src = type.reg;
-            convert.genericunaryop.srcType = 2; // XXX
             bytecode << convert;
         }
 
         Instr cleanup;
         cleanup.type = Instr::CleanupGeneric;
         cleanup.cleanup.reg = type.reg;
-        cleanup.cleanup.typeReg = 2; // XXX
         bytecode << cleanup;
 
         Instr instr;
@@ -1115,13 +1142,11 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
             Instr cleanup;
             cleanup.type = Instr::CleanupString;
             cleanup.cleanup.reg = convertReg;
-            cleanup.cleanup.typeReg = -1;
             bytecode << cleanup;
         } else if (destination->type == QVariant::Url) {
             Instr cleanup;
             cleanup.type = Instr::CleanupUrl;
             cleanup.cleanup.reg = convertReg;
-            cleanup.cleanup.typeReg = -1;
             bytecode << cleanup;
         }
 
@@ -1353,7 +1378,6 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
 
                     find.find.reg = reg;
                     find.find.src = -1;
-                    find.find.typeReg = 2; // XXX
                     find.find.name = registerString(name);
 
                     subscribeName << QString(QLatin1String("$$$Generic_") + name);
@@ -1416,7 +1440,6 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
 
                 prop.find.reg = reg;
                 prop.find.src = reg;
-                prop.find.typeReg = 2; // XXX 
                 prop.find.name = registerString(name);
                 if (subscription(subscribeName, &type))
                     prop.find.subscribeIndex = subscriptionIndex(subscribeName);
@@ -1462,17 +1485,25 @@ bool QmlBindingCompilerPrivate::parseArith(QmlJS::AST::Node *node, Result &type)
     if (!parseExpression(expression->left, lhs)) return false;
     if (!parseExpression(expression->right, rhs)) return false;
 
-    if (lhs.type != QVariant::Int &
-        lhs.type != QMetaType::QReal)
+    if ((lhs.type == QVariant::Int || lhs.type == QMetaType::QReal) &&
+        (rhs.type == QVariant::Int || rhs.type == QMetaType::QReal))
+        return numberArith(type, lhs, rhs, (QSOperator::Op)expression->op);
+    else if(expression->op == QSOperator::Sub)
+        return numberArith(type, lhs, rhs, (QSOperator::Op)expression->op);
+    else if ((lhs.type == QMetaType::QString || lhs.unknownType) && 
+             (rhs.type == QMetaType::QString || rhs.unknownType) && 
+             (lhs.type == QMetaType::QString || rhs.type == QMetaType::QString))
+        return stringArith(type, lhs, rhs, (QSOperator::Op)expression->op);
+    else
         return false;
+}
 
-    if (rhs.type != QVariant::Int &
-        rhs.type != QMetaType::QReal)
-        return false;
-
+bool QmlBindingCompilerPrivate::numberArith(Result &type, const Result &lhs, const Result &rhs, QSOperator::Op op)
+{
     bool nativeReal = rhs.type == QMetaType::QReal ||
-                      lhs.type == QMetaType::QReal;
-
+                      lhs.type == QMetaType::QReal ||
+                      lhs.unknownType ||
+                      rhs.unknownType;
 
     if (nativeReal && lhs.type == QMetaType::Int) {
         Instr convert;
@@ -1490,18 +1521,40 @@ bool QmlBindingCompilerPrivate::parseArith(QmlJS::AST::Node *node, Result &type)
         bytecode << convert;
     }
 
+    int lhsTmp = -1;
+    int rhsTmp = -1;
+    if (lhs.unknownType) {
+        lhsTmp = acquireReg();
+
+        Instr conv;
+        conv.type = Instr::ConvertGenericToReal;
+        conv.genericunaryop.output = lhsTmp;
+        conv.genericunaryop.src = lhs.reg;
+        bytecode << conv;
+    }
+
+    if (rhs.unknownType) {
+        rhsTmp = acquireReg();
+
+        Instr conv;
+        conv.type = Instr::ConvertGenericToReal;
+        conv.genericunaryop.output = rhsTmp;
+        conv.genericunaryop.src = rhs.reg;
+        bytecode << conv;
+    }
+
     Instr arith;
-    if (expression->op == QSOperator::Add) {
+    if (op == QSOperator::Add) {
         arith.type = nativeReal?Instr::AddReal:Instr::AddInt;
-    } else if (expression->op == QSOperator::Sub) {
+    } else if (op == QSOperator::Sub) {
         arith.type = nativeReal?Instr::MinusReal:Instr::MinusInt;
     } else {
         qFatal("Unsupported arithmetic operator");
     }
 
     arith.binaryop.output = type.reg;
-    arith.binaryop.src1 = lhs.reg;
-    arith.binaryop.src2 = rhs.reg;
+    arith.binaryop.src1 = (lhsTmp == -1)?lhs.reg:lhsTmp;
+    arith.binaryop.src2 = (rhsTmp == -1)?rhs.reg:rhsTmp;
     bytecode << arith;
 
     type.metaObject = 0;
@@ -1509,8 +1562,54 @@ bool QmlBindingCompilerPrivate::parseArith(QmlJS::AST::Node *node, Result &type)
     type.subscriptionSet.unite(lhs.subscriptionSet);
     type.subscriptionSet.unite(rhs.subscriptionSet);
 
+    if (lhsTmp != -1) releaseReg(lhsTmp);
+    if (rhsTmp != -1) releaseReg(rhsTmp);
     releaseReg(lhs.reg);
     releaseReg(rhs.reg);
+
+    return true;
+}
+
+bool QmlBindingCompilerPrivate::stringArith(Result &type, const Result &lhs, const Result &rhs, QSOperator::Op op)
+{
+    if (op != QSOperator::Add)
+        return false;
+
+    int lhsTmp = -1;
+    int rhsTmp = -1;
+
+    if (lhs.unknownType) {
+        lhsTmp = acquireReg(Instr::CleanupString);
+
+        Instr convert;
+        convert.type = Instr::ConvertGenericToString;
+        convert.genericunaryop.output = lhsTmp;
+        convert.genericunaryop.src = lhs.reg;
+        bytecode << convert;
+    }
+
+    if (rhs.unknownType) {
+        rhsTmp = acquireReg(Instr::CleanupString);
+
+        Instr convert;
+        convert.type = Instr::ConvertGenericToString;
+        convert.genericunaryop.output = rhsTmp;
+        convert.genericunaryop.src = rhs.reg;
+        bytecode << convert;
+    }
+
+    type.reg = acquireReg(Instr::CleanupString);
+    type.type = QMetaType::QString;
+
+    Instr add;
+    add.type = Instr::AddString;
+    add.binaryop.output = type.reg;
+    add.binaryop.src1 = (lhsTmp == -1)?lhs.reg:lhsTmp;
+    add.binaryop.src2 = (rhsTmp == -1)?rhs.reg:rhsTmp;
+    bytecode << add;
+
+    if (lhsTmp != -1) releaseReg(lhsTmp);
+    if (rhsTmp != -1) releaseReg(rhsTmp);
 
     return true;
 }
@@ -1656,7 +1755,8 @@ bool QmlBindingCompilerPrivate::tryConstant(QmlJS::AST::Node *node)
 {
     return node->kind == AST::Node::Kind_TrueLiteral ||
            node->kind == AST::Node::Kind_FalseLiteral ||
-           node->kind == AST::Node::Kind_NumericLiteral;
+           node->kind == AST::Node::Kind_NumericLiteral ||
+           node->kind == AST::Node::Kind_StringLiteral;
 }
 
 bool QmlBindingCompilerPrivate::parseConstant(QmlJS::AST::Node *node, Result &type)
@@ -1688,6 +1788,11 @@ bool QmlBindingCompilerPrivate::parseConstant(QmlJS::AST::Node *node, Result &ty
         instr.real_value.reg = type.reg;
         instr.real_value.value = qreal(static_cast<AST::NumericLiteral *>(node)->value);
         bytecode << instr;
+        return true;
+    } else if (node->kind == AST::Node::Kind_StringLiteral) {
+        QString str = static_cast<AST::StringLiteral *>(node)->value->asString();
+        type.type = QMetaType::QString;
+        type.reg = registerLiteralString(str);
         return true;
     } else {
         return false;
@@ -1861,7 +1966,6 @@ void QmlBindingCompilerPrivate::releaseReg(int reg)
         Instr cleanup;
         (int &)cleanup.type = c.first;
         cleanup.cleanup.reg = reg;
-        cleanup.cleanup.typeReg = c.second;
         bytecode << cleanup;
     }
 
@@ -1869,6 +1973,26 @@ void QmlBindingCompilerPrivate::releaseReg(int reg)
     registers &= ~mask;
 }
 
+// Returns a reg
+int QmlBindingCompilerPrivate::registerLiteralString(const QString &str)
+{
+    QByteArray strdata((const char *)str.constData(), str.length() * sizeof(QChar));
+    int offset = data.count();
+    data += strdata;
+
+    int reg = acquireReg(Instr::CleanupString);
+
+    Instr string;
+    string.type = Instr::String;
+    string.string_value.reg = reg;
+    string.string_value.offset = offset;
+    string.string_value.length = str.length();
+    bytecode << string;
+
+    return reg;
+}
+
+// Returns an identifier offset
 int QmlBindingCompilerPrivate::registerString(const QString &string)
 {
     Q_ASSERT(!string.isEmpty());
@@ -1881,7 +2005,7 @@ int QmlBindingCompilerPrivate::registerString(const QString &string)
         data += strdata;
 
         iter = registeredStrings.insert(string, qMakePair(registeredStrings.count(), rv));
-    }
+    } 
 
     Instr reg;
     reg.type = Instr::InitString;
@@ -2030,6 +2154,7 @@ QByteArray QmlBindingCompiler::program() const
         prog.dataLength = 4 * ((data.size() + 3) / 4);
         prog.subscriptions = d->committed.subscriptionIds.count();
         prog.identifiers = d->committed.registeredStrings.count();
+        prog.instructionCount = bytecode.count();
         int size = sizeof(Program) + bytecode.count() * sizeof(Instr);
         size += prog.dataLength;
 
