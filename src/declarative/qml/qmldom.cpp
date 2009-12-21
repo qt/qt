@@ -462,6 +462,11 @@ QByteArray QmlDomDynamicProperty::propertyName() const
         return QByteArray();
 }
 
+/*!
+   Returns the type of the dynamic property. Note that when the property is an
+   alias property, this will return -1. Use QmlDomProperty::isAlias() to check
+   if the property is an alias.
+*/
 int QmlDomDynamicProperty::propertyType() const
 {
     if (isValid()) {
@@ -543,6 +548,18 @@ QmlDomProperty QmlDomDynamicProperty::defaultValue() const
     }
 
     return rp;
+}
+
+/*!
+    Returns true if this dynamic property is an alias for another property,
+    false otherwise.
+*/
+bool QmlDomDynamicProperty::isAlias() const
+{
+    if (isValid())
+        return d->property.type == QmlParser::Object::DynamicProperty::Alias;
+    else
+        return false;
 }
 
 /*!

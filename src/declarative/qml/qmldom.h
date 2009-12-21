@@ -127,8 +127,9 @@ public:
     QByteArray propertyTypeName() const;
 
     bool isDefaultProperty() const;
-
     QmlDomProperty defaultValue() const;
+
+    bool isAlias() const;
 
     int position() const;
     int length() const;
