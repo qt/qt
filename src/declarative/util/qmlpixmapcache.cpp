@@ -84,7 +84,6 @@ private:
     void loadImage(Job &job);
 
     QList<Job> jobs;
-    Job runningJob;
     QMutex mutex;
     QWaitCondition haveJob;
     bool quit;
@@ -119,22 +118,21 @@ void QmlImageReader::read(QmlPixmapReply *reply)
     Job job;
     job.reply = reply;
     jobs.append(job);
-    haveJob.wakeOne();
+    if (jobs.count() == 1)
+        haveJob.wakeOne();
     mutex.unlock();
 }
 
 void QmlImageReader::cancel(QmlPixmapReply *reply)
 {
     mutex.lock();
-    if (runningJob.reply != reply) {
-        QList<Job>::iterator it = jobs.begin();
-        while (it != jobs.end()) {
-            if ((*it).reply == reply) {
-                jobs.erase(it);
-                break;
-            }
-            ++it;
+    QList<Job>::iterator it = jobs.begin();
+    while (it != jobs.end()) {
+        if ((*it).reply == reply) {
+            jobs.erase(it);
+            break;
         }
+        ++it;
     }
     mutex.unlock();
 }
@@ -158,14 +156,12 @@ void QmlImageReader::run()
             haveJob.wait(&mutex);
         if (quit)
             break;
-        runningJob = jobs.takeFirst();
+        Job runningJob = jobs.takeFirst();
         runningJob.reply->addRef();
         mutex.unlock();
+
         loadImage(runningJob);
-        mutex.lock();
         QCoreApplication::postEvent(runningJob.reply, new QmlImageDecodeEvent(runningJob.error, runningJob.img));
-        runningJob.reply = 0;
-        mutex.unlock();
     }
 }
 
