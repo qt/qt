@@ -2096,7 +2096,11 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
             if (prev) {
 #ifdef QT_KEYPAD_NAVIGATION
                 if (QApplication::keypadNavigationEnabled()) {
-                    if (prev->hasEditFocus() && reason != Qt::PopupFocusReason)
+                    if (prev->hasEditFocus() && reason != Qt::PopupFocusReason
+#ifdef Q_OS_SYMBIAN
+                            && reason != Qt::ActiveWindowFocusReason
+#endif
+                            )
                         prev->setEditFocus(false);
                 }
 #endif
