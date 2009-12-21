@@ -498,13 +498,16 @@ bool QmlGraphicsFlickable::isInteractive() const
 void QmlGraphicsFlickable::setInteractive(bool interactive)
 {
     Q_D(QmlGraphicsFlickable);
-    d->interactive = interactive;
-    if (!interactive && d->flicked) {
-        d->timeline.clear();
-        d->vTime = d->timeline.time();
-        d->flicked = false;
-        emit flickingChanged();
-        emit flickEnded();
+    if (interactive != d->interactive) {
+        d->interactive = interactive;
+        if (!interactive && d->flicked) {
+            d->timeline.clear();
+            d->vTime = d->timeline.time();
+            d->flicked = false;
+            emit flickingChanged();
+            emit flickEnded();
+        }
+        emit interactiveChanged();
     }
 }
 
@@ -865,7 +868,7 @@ void QmlGraphicsFlickable::viewportMoved()
 {
     Q_D(QmlGraphicsFlickable);
 
-    int elapsed = QmlGraphicsItemPrivate::elapsed(d->velocityTime);
+    int elapsed = QmlGraphicsItemPrivate::restart(d->velocityTime);
     if (!elapsed)
         return;
 
@@ -888,7 +891,6 @@ void QmlGraphicsFlickable::viewportMoved()
         }
     }
 
-    QmlGraphicsItemPrivate::restart(d->velocityTime);
     d->lastFlickablePosition = QPointF(d->_moveY.value(), d->_moveX.value());
 
     d->vTime = d->timeline.time();
@@ -1148,7 +1150,8 @@ bool QmlGraphicsFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 
 bool QmlGraphicsFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 {
-    if (!isVisible())
+    Q_D(QmlGraphicsFlickable);
+    if (!isVisible() || !d->interactive)
         return QmlGraphicsItem::sceneEventFilter(i, e);
     switch (e->type()) {
     case QEvent::GraphicsSceneMousePress:

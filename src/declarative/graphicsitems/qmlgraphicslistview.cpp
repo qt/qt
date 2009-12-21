@@ -223,6 +223,7 @@ public:
         , bufferMode(NoBuffer)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
         , correctFlick(true), inFlickCorrection(false), lazyRelease(false)
+        , minExtentDirty(true), maxExtentDirty(true)
     {}
 
     void init();
@@ -285,7 +286,7 @@ public:
     qreal startPosition() const {
         qreal pos = 0;
         if (!visibleItems.isEmpty()) {
-            pos = visibleItems.first()->position();
+            pos = (*visibleItems.constBegin())->position();
             if (visibleIndex > 0)
                 pos -= visibleIndex * (averageSize + spacing) - spacing;
         }
@@ -302,7 +303,7 @@ public:
                     break;
                 }
             }
-            pos = visibleItems.last()->endPosition() + invisibleCount * (averageSize + spacing);
+            pos = (*(--visibleItems.constEnd()))->endPosition() + invisibleCount * (averageSize + spacing);
         }
         return pos;
     }
@@ -313,7 +314,7 @@ public:
         if (!visibleItems.isEmpty()) {
             if (modelIndex < visibleIndex) {
                 int count = visibleIndex - modelIndex;
-                return visibleItems.first()->position() - count * (averageSize + spacing);
+                return (*visibleItems.constBegin())->position() - count * (averageSize + spacing);
             } else {
                 int idx = visibleItems.count() - 1;
                 while (idx >= 0 && visibleItems.at(idx)->index == -1)
@@ -323,7 +324,7 @@ public:
                 else
                     idx = visibleItems.at(idx)->index;
                 int count = modelIndex - idx - 1;
-                return visibleItems.last()->endPosition() + spacing + count * (averageSize + spacing) + 1;
+                return (*(--visibleItems.constEnd()))->endPosition() + spacing + count * (averageSize + spacing) + 1;
             }
         }
         return 0;
@@ -446,10 +447,13 @@ public:
 
     void updateViewport() {
         Q_Q(QmlGraphicsListView);
-        if (orient == QmlGraphicsListView::Vertical)
+        minExtentDirty = true;
+        maxExtentDirty = true;
+        if (orient == QmlGraphicsListView::Vertical) {
             q->setViewportHeight(q->minYExtent() - q->maxYExtent());
-        else
+        } else {
             q->setViewportWidth(q->minXExtent() - q->maxXExtent());
+        }
     }
 
     void itemGeometryChanged(QmlGraphicsItem *, const QRectF &newGeometry, const QRectF &oldGeometry) {
@@ -530,6 +534,8 @@ public:
     FxListItem *header;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
     BufferMode bufferMode;
+    mutable qreal minExtent;
+    mutable qreal maxExtent;
 
     bool ownModel : 1;
     bool wrap : 1;
@@ -538,6 +544,8 @@ public:
     bool correctFlick : 1;
     bool inFlickCorrection : 1;
     bool lazyRelease : 1;
+    mutable bool minExtentDirty : 1;
+    mutable bool maxExtentDirty : 1;
 };
 
 void QmlGraphicsListViewPrivate::init()
@@ -566,6 +574,8 @@ void QmlGraphicsListViewPrivate::clear()
     currentItem = 0;
     createHighlight();
     trackedItem = 0;
+    minExtentDirty = true;
+    maxExtentDirty = true;
 }
 
 FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
@@ -655,8 +665,8 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     int modelIndex = visibleIndex;
     qreal itemEnd = visiblePos-1;
     if (!visibleItems.isEmpty()) {
-        visiblePos = visibleItems.first()->position();
-        itemEnd = visibleItems.last()->endPosition() + spacing;
+        visiblePos = (*visibleItems.constBegin())->position();
+        itemEnd = (*(--visibleItems.constEnd()))->endPosition() + spacing;
         int i = visibleItems.count() - 1;
         while (i > 0 && visibleItems.at(i)->index == -1)
             --i;
@@ -713,7 +723,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     }
     if (changed) {
         if (visibleItems.count())
-            visiblePos = visibleItems.first()->position();
+            visiblePos = (*visibleItems.constBegin())->position();
         updateAverage();
         if (sectionCriteria)
             updateCurrentSection();
@@ -895,7 +905,7 @@ void QmlGraphicsListViewPrivate::createSection(FxListItem *listItem)
                 listItem->section = sectionCache[i];
                 sectionCache[i] = 0;
                 listItem->section->setVisible(true);
-                QmlContext *context = QmlEngine::contextForObject(listItem->section);
+                QmlContext *context = QmlEngine::contextForObject(listItem->section)->parentContext();
                 context->setContextProperty(QLatin1String("section"), listItem->attached->m_section);
             } else {
                 QmlContext *context = new QmlContext(qmlContext(q));
@@ -1038,10 +1048,18 @@ void QmlGraphicsListViewPrivate::updateFooter()
         }
     }
     if (footer) {
-        if (visibleItems.count())
-            footer->setPosition(endPosition());
-        else
+        if (visibleItems.count()) {
+            qreal endPos = endPosition();
+            if (lastVisibleIndex() == model->count()-1) {
+                footer->setPosition(endPos);
+            } else {
+                qreal visiblePos = position() + q->height();
+                if (endPos <= visiblePos || footer->position() < endPos)
+                    footer->setPosition(endPos);
+            }
+        } else {
             footer->setPosition(visiblePos);
+        }
     }
 }
 
@@ -1069,10 +1087,17 @@ void QmlGraphicsListViewPrivate::updateHeader()
         }
     }
     if (header) {
-        if (visibleItems.count())
-            header->setPosition(startPosition() - header->size());
-        else
+        if (visibleItems.count()) {
+            qreal startPos = startPosition();
+            if (visibleIndex == 0) {
+                header->setPosition(startPos - header->size());
+            } else {
+                if (position() <= startPos || header->position() > startPos - header->size())
+                    header->setPosition(startPos - header->size());
+            }
+        } else {
             header->setPosition(0);
+        }
     }
 }
 
@@ -2088,31 +2113,36 @@ qreal QmlGraphicsListView::minYExtent() const
     Q_D(const QmlGraphicsListView);
     if (d->orient == QmlGraphicsListView::Horizontal)
         return QmlGraphicsFlickable::minYExtent();
-    qreal extent = -d->startPosition();
-    if (d->header && d->visibleItems.count())
-        extent += d->header->size();
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
-        extent += d->highlightRangeStart;
+    if (d->minExtentDirty) {
+        d->minExtent = -d->startPosition();
+        if (d->header && d->visibleItems.count())
+            d->minExtent += d->header->size();
+        if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+            d->minExtent += d->highlightRangeStart;
+        d->minExtentDirty = false;
+    }
 
-    return extent;
+    return d->minExtent;
 }
 
 qreal QmlGraphicsListView::maxYExtent() const
 {
     Q_D(const QmlGraphicsListView);
     if (d->orient == QmlGraphicsListView::Horizontal)
-        return QmlGraphicsFlickable::maxYExtent();
-    qreal extent;
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
-        extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
-    else
-        extent = -(d->endPosition() - height() + 1);
-    if (d->footer)
-        extent -= d->footer->size();
-    qreal minY = minYExtent();
-    if (extent > minY)
-        extent = minY;
-    return extent;
+        return height();
+    if (d->maxExtentDirty) {
+        if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+            d->maxExtent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
+        else
+            d->maxExtent = -(d->endPosition() - height() + 1);
+        if (d->footer)
+            d->maxExtent -= d->footer->size();
+        qreal minY = minYExtent();
+        if (d->maxExtent > minY)
+            d->maxExtent = minY;
+        d->maxExtentDirty = false;
+    }
+    return d->maxExtent;
 }
 
 qreal QmlGraphicsListView::minXExtent() const
@@ -2120,31 +2150,37 @@ qreal QmlGraphicsListView::minXExtent() const
     Q_D(const QmlGraphicsListView);
     if (d->orient == QmlGraphicsListView::Vertical)
         return QmlGraphicsFlickable::minXExtent();
-    qreal extent = -d->startPosition();
-    if (d->header)
-        extent += d->header->size();
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
-        extent += d->highlightRangeStart;
+    if (d->minExtentDirty) {
+        d->minExtent = -d->startPosition();
+        if (d->header)
+            d->minExtent += d->header->size();
+        if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+            d->minExtent += d->highlightRangeStart;
+        d->minExtentDirty = false;
+    }
 
-    return extent;
+    return d->minExtent;
 }
 
 qreal QmlGraphicsListView::maxXExtent() const
 {
     Q_D(const QmlGraphicsListView);
     if (d->orient == QmlGraphicsListView::Vertical)
-        return QmlGraphicsFlickable::maxXExtent();
-    qreal extent;
-    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
-        extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
-    else
-        extent = -(d->endPosition() - width() + 1);
-    if (d->footer)
-        extent -= d->footer->size();
-    qreal minX = minXExtent();
-    if (extent > minX)
-        extent = minX;
-    return extent;
+        return width();
+    if (d->maxExtentDirty) {
+        if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+            d->maxExtent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
+        else
+            d->maxExtent = -(d->endPosition() - width() + 1);
+        if (d->footer)
+            d->maxExtent -= d->footer->size();
+        qreal minX = minXExtent();
+        if (d->maxExtent > minX)
+            d->maxExtent = minX;
+        d->maxExtentDirty = false;
+    }
+
+    return d->maxExtent;
 }
 
 void QmlGraphicsListView::keyPressEvent(QKeyEvent *event)
