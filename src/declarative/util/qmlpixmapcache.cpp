@@ -240,8 +240,21 @@ QmlPixmapReply::QmlPixmapReply(const QString &key, QNetworkReply *reply)
   : QObject(*new QmlPixmapReplyPrivate(key, reply), 0)
 {
     Q_D(QmlPixmapReply);
-    connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)), this, SIGNAL(downloadProgress(qint64,qint64)));
-    connect(d->reply, SIGNAL(finished()), this, SLOT(networkRequestDone()));
+
+    static int replyDownloadProgress = -1;
+    static int replyFinished = -1;
+    static int thisDownloadProgress = -1;
+    static int thisNetworkRequestDone = -1;
+
+    if (replyDownloadProgress == -1) {
+        replyDownloadProgress = QNetworkReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
+        replyFinished = QNetworkReply::staticMetaObject.indexOfSignal("finished()");
+        thisDownloadProgress = QmlPixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
+        thisNetworkRequestDone = QmlPixmapReply::staticMetaObject.indexOfSlot("networkRequestDone()");
+    }
+
+    QMetaObject::connect(d->reply, replyDownloadProgress, this, thisDownloadProgress, Qt::DirectConnection);
+    QMetaObject::connect(d->reply, replyFinished, this, thisNetworkRequestDone);
 }
 
 QmlPixmapReply::~QmlPixmapReply()
