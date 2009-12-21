@@ -97,9 +97,11 @@ struct Instr {
         Real,                    // real_value
         Int,                     // int_value
         Bool,                    // bool_value
+        String,                  // string_value
 
         AddReal,                 // binaryop
         AddInt,                  // binaryop
+        AddString,               // binaryop
 
         MinusReal,               // binaryop
         MinusInt,                // binaryop
@@ -191,6 +193,11 @@ struct Instr {
             bool value;
         } bool_value;
         struct {
+            int reg;
+            int offset;
+            int length;
+        } string_value;
+        struct {
             int output;
             int src1;
             int src2;
@@ -280,6 +287,8 @@ struct QmlBindingCompilerPrivate
 
     bool tryArith(QmlJS::AST::Node *);
     bool parseArith(QmlJS::AST::Node *, Result &);
+    bool numberArith(Result &, const Result &, const Result &, QSOperator::Op op);
+    bool stringArith(Result &, const Result &, const Result &, QSOperator::Op op);
 
     bool tryLogic(QmlJS::AST::Node *);
     bool parseLogic(QmlJS::AST::Node *, Result &);
@@ -302,6 +311,7 @@ struct QmlBindingCompilerPrivate
     void registerCleanup(int reg, int cleanup, int cleanupType = 0);
     void releaseReg(int);
 
+    int registerLiteralString(const QString &);
     int registerString(const QString &);
     QHash<QString, QPair<int, int> > registeredStrings;
     QByteArray data;
@@ -675,6 +685,11 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         registers[instr->bool_value.reg].setbool(instr->bool_value.value);
         break;
 
+    case Instr::String:
+        new (registers[instr->bool_value.reg].getstringptr()) 
+            QString((QChar *)(data + instr->string_value.offset), instr->string_value.length);
+        break;
+
     case Instr::AddReal:
         registers[instr->binaryop.output].setqreal(registers[instr->binaryop.src1].getqreal() + 
                                                    registers[instr->binaryop.src2].getqreal());
@@ -683,6 +698,12 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
     case Instr::AddInt:
         registers[instr->binaryop.output].setint(registers[instr->binaryop.src1].getint() + 
                                                  registers[instr->binaryop.src2].getint());
+        break;
+        
+    case Instr::AddString:
+        new (registers[instr->binaryop.output].getstringptr()) 
+            QString(*registers[instr->binaryop.src1].getstringptr() + 
+                    *registers[instr->binaryop.src2].getstringptr());
         break;
 
     case Instr::MinusReal:
@@ -911,11 +932,17 @@ void QmlBindingVME::dump(const QByteArray &programData)
         case Instr::Bool:
             qWarning().nospace() << "Bool" << "\t\t\t" << instr->bool_value.reg << "\t" << instr->bool_value.value;
             break;
+        case Instr::String:
+            qWarning().nospace() << "String" << "\t\t\t" << instr->string_value.reg << "\t" << instr->string_value.offset << "\t" << instr->string_value.length;
+            break;
         case Instr::AddReal:
             qWarning().nospace() << "AddReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
             break;
         case Instr::AddInt:
             qWarning().nospace() << "AddInt" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+            break;
+        case Instr::AddString:
+            qWarning().nospace() << "AddString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
             break;
         case Instr::MinusReal:
             qWarning().nospace() << "MinusReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
@@ -1451,17 +1478,25 @@ bool QmlBindingCompilerPrivate::parseArith(QmlJS::AST::Node *node, Result &type)
     if (!parseExpression(expression->left, lhs)) return false;
     if (!parseExpression(expression->right, rhs)) return false;
 
-    if (lhs.type != QVariant::Int &
-        lhs.type != QMetaType::QReal)
+    if ((lhs.type == QVariant::Int || lhs.type == QMetaType::QReal) &&
+        (rhs.type == QVariant::Int || rhs.type == QMetaType::QReal))
+        return numberArith(type, lhs, rhs, (QSOperator::Op)expression->op);
+    else if(expression->op == QSOperator::Sub)
+        return numberArith(type, lhs, rhs, (QSOperator::Op)expression->op);
+    else if ((lhs.type == QMetaType::QString || lhs.unknownType) && 
+             (rhs.type == QMetaType::QString || rhs.unknownType) && 
+             (lhs.type == QMetaType::QString || rhs.type == QMetaType::QString))
+        return stringArith(type, lhs, rhs, (QSOperator::Op)expression->op);
+    else
         return false;
+}
 
-    if (rhs.type != QVariant::Int &
-        rhs.type != QMetaType::QReal)
-        return false;
-
+bool QmlBindingCompilerPrivate::numberArith(Result &type, const Result &lhs, const Result &rhs, QSOperator::Op op)
+{
     bool nativeReal = rhs.type == QMetaType::QReal ||
-                      lhs.type == QMetaType::QReal;
-
+                      lhs.type == QMetaType::QReal ||
+                      lhs.unknownType ||
+                      rhs.unknownType;
 
     if (nativeReal && lhs.type == QMetaType::Int) {
         Instr convert;
@@ -1479,18 +1514,40 @@ bool QmlBindingCompilerPrivate::parseArith(QmlJS::AST::Node *node, Result &type)
         bytecode << convert;
     }
 
+    int lhsTmp = -1;
+    int rhsTmp = -1;
+    if (lhs.unknownType) {
+        lhsTmp = acquireReg();
+
+        Instr conv;
+        conv.type = Instr::ConvertGenericToReal;
+        conv.genericunaryop.output = lhsTmp;
+        conv.genericunaryop.src = lhs.reg;
+        bytecode << conv;
+    }
+
+    if (rhs.unknownType) {
+        rhsTmp = acquireReg();
+
+        Instr conv;
+        conv.type = Instr::ConvertGenericToReal;
+        conv.genericunaryop.output = rhsTmp;
+        conv.genericunaryop.src = rhs.reg;
+        bytecode << conv;
+    }
+
     Instr arith;
-    if (expression->op == QSOperator::Add) {
+    if (op == QSOperator::Add) {
         arith.type = nativeReal?Instr::AddReal:Instr::AddInt;
-    } else if (expression->op == QSOperator::Sub) {
+    } else if (op == QSOperator::Sub) {
         arith.type = nativeReal?Instr::MinusReal:Instr::MinusInt;
     } else {
         qFatal("Unsupported arithmetic operator");
     }
 
     arith.binaryop.output = type.reg;
-    arith.binaryop.src1 = lhs.reg;
-    arith.binaryop.src2 = rhs.reg;
+    arith.binaryop.src1 = (lhsTmp == -1)?lhs.reg:lhsTmp;
+    arith.binaryop.src2 = (rhsTmp == -1)?rhs.reg:rhsTmp;
     bytecode << arith;
 
     type.metaObject = 0;
@@ -1498,8 +1555,54 @@ bool QmlBindingCompilerPrivate::parseArith(QmlJS::AST::Node *node, Result &type)
     type.subscriptionSet.unite(lhs.subscriptionSet);
     type.subscriptionSet.unite(rhs.subscriptionSet);
 
+    if (lhsTmp != -1) releaseReg(lhsTmp);
+    if (rhsTmp != -1) releaseReg(rhsTmp);
     releaseReg(lhs.reg);
     releaseReg(rhs.reg);
+
+    return true;
+}
+
+bool QmlBindingCompilerPrivate::stringArith(Result &type, const Result &lhs, const Result &rhs, QSOperator::Op op)
+{
+    if (op != QSOperator::Add)
+        return false;
+
+    int lhsTmp = -1;
+    int rhsTmp = -1;
+
+    if (lhs.unknownType) {
+        lhsTmp = acquireReg(Instr::CleanupString);
+
+        Instr convert;
+        convert.type = Instr::ConvertGenericToString;
+        convert.genericunaryop.output = lhsTmp;
+        convert.genericunaryop.src = lhs.reg;
+        bytecode << convert;
+    }
+
+    if (rhs.unknownType) {
+        rhsTmp = acquireReg(Instr::CleanupString);
+
+        Instr convert;
+        convert.type = Instr::ConvertGenericToString;
+        convert.genericunaryop.output = rhsTmp;
+        convert.genericunaryop.src = rhs.reg;
+        bytecode << convert;
+    }
+
+    type.reg = acquireReg(Instr::CleanupString);
+    type.type = QMetaType::QString;
+
+    Instr add;
+    add.type = Instr::AddString;
+    add.binaryop.output = type.reg;
+    add.binaryop.src1 = (lhsTmp == -1)?lhs.reg:lhsTmp;
+    add.binaryop.src2 = (rhsTmp == -1)?rhs.reg:rhsTmp;
+    bytecode << add;
+
+    if (lhsTmp != -1) releaseReg(lhsTmp);
+    if (rhsTmp != -1) releaseReg(rhsTmp);
 
     return true;
 }
@@ -1645,7 +1748,8 @@ bool QmlBindingCompilerPrivate::tryConstant(QmlJS::AST::Node *node)
 {
     return node->kind == AST::Node::Kind_TrueLiteral ||
            node->kind == AST::Node::Kind_FalseLiteral ||
-           node->kind == AST::Node::Kind_NumericLiteral;
+           node->kind == AST::Node::Kind_NumericLiteral ||
+           node->kind == AST::Node::Kind_StringLiteral;
 }
 
 bool QmlBindingCompilerPrivate::parseConstant(QmlJS::AST::Node *node, Result &type)
@@ -1677,6 +1781,11 @@ bool QmlBindingCompilerPrivate::parseConstant(QmlJS::AST::Node *node, Result &ty
         instr.real_value.reg = type.reg;
         instr.real_value.value = qreal(static_cast<AST::NumericLiteral *>(node)->value);
         bytecode << instr;
+        return true;
+    } else if (node->kind == AST::Node::Kind_StringLiteral) {
+        QString str = static_cast<AST::StringLiteral *>(node)->value->asString();
+        type.type = QMetaType::QString;
+        type.reg = registerLiteralString(str);
         return true;
     } else {
         return false;
@@ -1857,6 +1966,26 @@ void QmlBindingCompilerPrivate::releaseReg(int reg)
     registers &= ~mask;
 }
 
+// Returns a reg
+int QmlBindingCompilerPrivate::registerLiteralString(const QString &str)
+{
+    QByteArray strdata((const char *)str.constData(), str.length() * sizeof(QChar));
+    int offset = data.count();
+    data += strdata;
+
+    int reg = acquireReg(Instr::CleanupString);
+
+    Instr string;
+    string.type = Instr::String;
+    string.string_value.reg = reg;
+    string.string_value.offset = offset;
+    string.string_value.length = str.length();
+    bytecode << string;
+
+    return reg;
+}
+
+// Returns an identifier offset
 int QmlBindingCompilerPrivate::registerString(const QString &string)
 {
     Q_ASSERT(!string.isEmpty());
@@ -1869,7 +1998,7 @@ int QmlBindingCompilerPrivate::registerString(const QString &string)
         data += strdata;
 
         iter = registeredStrings.insert(string, qMakePair(registeredStrings.count(), rv));
-    }
+    } 
 
     Instr reg;
     reg.type = Instr::InitString;
