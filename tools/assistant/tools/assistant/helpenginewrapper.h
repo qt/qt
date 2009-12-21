@@ -42,11 +42,8 @@
 #ifndef HELPENGINEWRAPPER_H
 #define HELPENGINEWRAPPER_H
 
-#include <QtCore/QDateTime>
 #include <QtCore/QMap>
 #include <QtCore/QObject>
-#include <QtCore/QPair>
-#include <QtCore/QSharedPointer>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QUrl>
@@ -58,8 +55,6 @@ QT_BEGIN_NAMESPACE
 class QFileSystemWatcher;
 class QHelpContentModel;
 class QHelpContentWidget;
-class QHelpEngine;
-class QHelpEngineCore;
 class QHelpIndexModel;
 class QHelpIndexWidget;
 class QHelpSearchEngine;
@@ -70,24 +65,14 @@ enum {
     ShowLastPages = 2
 };
 
-
-class TimeoutForwarder : public QObject
-{
-    Q_OBJECT
-public:
-    TimeoutForwarder(const QString &fileName);
-private slots:
-    void forward();
-private:
-    friend class HelpEngineWrapper;
-
-    const QString m_fileName;
-};
+class HelpEngineWrapperPrivate;
+class TimeoutForwarder;
 
 class HelpEngineWrapper : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(HelpEngineWrapper)
+    friend class TimeoutForwarder;
 public:
     static HelpEngineWrapper &instance(const QString &collectionFile = QString());
     static void removeInstance();
@@ -210,23 +195,13 @@ signals:
     void currentFilterChanged(const QString &currentFilter);
     void setupFinished();
 
-private slots:
-    void qchFileChanged(const QString &fileName);
-
 private:
-    friend class TimeoutForwarder;
-
     HelpEngineWrapper(const QString &collectionFile);
-    void initFileSystemWatchers();
-    void assertDocFilesWatched();
-    void qchFileChanged(const QString &fileName, bool fromTimeout);
+    ~HelpEngineWrapper();
 
-    static const int UpdateGracePeriod = 2000;
     static HelpEngineWrapper *helpEngineWrapper;
-    QHelpEngine * const m_helpEngine;
-    QFileSystemWatcher * const m_qchWatcher;
-    typedef QPair<QDateTime, QSharedPointer<TimeoutForwarder> > RecentSignal;
-    QMap<QString, RecentSignal> m_recentQchUpdates;
+
+    HelpEngineWrapperPrivate *d;
 };
 
 QT_END_NAMESPACE
