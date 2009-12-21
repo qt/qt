@@ -1938,7 +1938,11 @@ void QTextControlPrivate::focusEvent(QFocusEvent *e)
     emit q->updateRequest(q->selectionRect());
     if (e->gotFocus()) {
 #ifdef QT_KEYPAD_NAVIGATION
-        if (!QApplication::keypadNavigationEnabled() || (hasEditFocus && e->reason() == Qt::PopupFocusReason)) {
+        if (!QApplication::keypadNavigationEnabled() || (hasEditFocus && (e->reason() == Qt::PopupFocusReason
+#ifdef Q_OS_SYMBIAN
+            || e->reason() == Qt::ActiveWindowFocusReason
+#endif
+            ))) {
 #endif
         cursorOn = (interactionFlags & Qt::TextSelectableByKeyboard);
         if (interactionFlags & Qt::TextEditable) {
