@@ -602,7 +602,7 @@ QRectF QPixmapBlurFilter::boundingRectFor(const QRectF &rect) const
 }
 
 template <int shift>
-static inline int static_shift(int value)
+inline int static_shift(int value)
 {
     if (shift == 0)
         return value;
@@ -613,7 +613,7 @@ static inline int static_shift(int value)
 }
 
 template<int aprec, int zprec>
-static inline void blurinner(uchar *bptr, int &zR, int &zG, int &zB, int &zA, int alpha)
+inline void blurinner(uchar *bptr, int &zR, int &zG, int &zB, int &zA, int alpha)
 {
     QRgb *pixel = (QRgb *)bptr;
 
@@ -646,7 +646,7 @@ static inline void blurinner(uchar *bptr, int &zR, int &zG, int &zB, int &zA, in
 const int alphaIndex = (QSysInfo::ByteOrder == QSysInfo::BigEndian ? 0 : 3);
 
 template<int aprec, int zprec>
-static inline void blurinner_alphaOnly(uchar *bptr, int &z, int alpha)
+inline void blurinner_alphaOnly(uchar *bptr, int &z, int alpha)
 {
     const int A_zprec = int(*(bptr)) << zprec;
     const int z_zprec = z >> aprec;
@@ -655,7 +655,7 @@ static inline void blurinner_alphaOnly(uchar *bptr, int &z, int alpha)
 }
 
 template<int aprec, int zprec, bool alphaOnly>
-static inline void blurrow(QImage & im, int line, int alpha)
+inline void blurrow(QImage & im, int line, int alpha)
 {
     uchar *bptr = im.scanLine(line);
 
