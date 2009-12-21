@@ -85,7 +85,7 @@ public:
     static void run(const char *program, int instr,
                     Config *config, QmlContextPrivate *context, 
                     QObject **scopes, QObject **outputs);
-    static void dump(const QByteArray &);
+    static void dump(const char *);
 };
 
 class QmlBindingCompilerPrivate;

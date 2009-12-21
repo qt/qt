@@ -237,6 +237,8 @@ struct Program {
     quint32 signalTableOffset;
     quint16 subscriptions;
     quint16 identifiers;
+    quint16 instructionCount;
+    quint16 dummy;
 
     const char *data() const { return ((const char *)this) + sizeof(Program); }
     const Instr *instructions() const { return (const Instr *)(data() + dataLength); }
@@ -588,7 +590,7 @@ inline static QUrl toUrl(Register *reg, int type, QmlContextPrivate *context, bo
         return QUrl();
     }
 
-    if (base.isRelative())
+    if (!base.isEmpty() && base.isRelative())
         return context->url.resolved(base);
     else
         return base;
@@ -881,16 +883,16 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
     }
 }
 
-void QmlBindingVME::dump(const QByteArray &programData)
+void QmlBindingVME::dump(const char *programData)
 {
-    const Program *program = (const Program *)programData.constData();
+    const Program *program = (const Program *)programData;
 
     qWarning() << "Program.bindings:" << program->bindings;
     qWarning() << "Program.dataLength:" << program->dataLength;
     qWarning() << "Program.subscriptions:" << program->subscriptions;
     qWarning() << "Program.indentifiers:" << program->identifiers;
 
-    int count = (programData.size() - sizeof(Program) - program->dataLength) / sizeof(Instr);
+    int count = program->instructionCount;
     const Instr *instr = program->instructions();
 
     while (count--) {
@@ -2147,6 +2149,7 @@ QByteArray QmlBindingCompiler::program() const
         prog.dataLength = 4 * ((data.size() + 3) / 4);
         prog.subscriptions = d->committed.subscriptionIds.count();
         prog.identifiers = d->committed.registeredStrings.count();
+        prog.instructionCount = bytecode.count();
         int size = sizeof(Program) + bytecode.count() * sizeof(Instr);
         size += prog.dataLength;
 
