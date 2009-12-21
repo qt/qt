@@ -409,6 +409,9 @@ static bool findproperty(QObject *obj, Register *output,
     QmlPropertyCache::Data *property = findproperty(obj, name, enginePriv, local);
 
     if (property) {
+        if (subIdx != -1)
+            subscribe(obj, property->notifyIndex, subIdx, config);
+
         if (property->flags & QmlPropertyCache::Data::IsQObjectDerived) {
             void *args[] = { output->typeDataPtr(), 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, property->coreIndex, args);
@@ -444,9 +447,6 @@ static bool findproperty(QObject *obj, Register *output,
 
         }
 
-        if (subIdx != -1)
-            subscribe(obj, property->notifyIndex, subIdx, config);
-
         return true;
     } else {
         return false;
@@ -476,7 +476,12 @@ static bool findgeneric(Register *output,                                 // val
     while (context) {
 
         int contextPropertyIndex = context->propertyNames?context->propertyNames->value(name):-1;
+
+
         if (contextPropertyIndex != -1) {
+
+            subscribe(QmlContextPrivate::get(context), contextPropertyIndex + context->notifyIndex,
+                      subIdx, config);
 
             if (contextPropertyIndex < context->idValueCount) {
                 output->setQObject(context->idValues[contextPropertyIndex]);
