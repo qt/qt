@@ -52,7 +52,7 @@ GLDEF_C TInt E32Main()
 {
     CTrapCleanup *cleanupStack = q_check_ptr(CTrapCleanup::New());
     TInt err = 0;
-    TRAP(err, QtMainWrapper());
+    TRAP(err, err = QtMainWrapper());
     delete cleanupStack;
 
     return err;
