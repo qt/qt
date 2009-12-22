@@ -156,6 +156,7 @@ public:
     , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1)
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
+    , bufferMode(NoBuffer)
     , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false), lazyRelease(false) {}
 
@@ -163,7 +164,7 @@ public:
     void clear();
     FxGridItem *createItem(int modelIndex);
     void releaseItem(FxGridItem *item);
-    void refill(qreal from, qreal to);
+    void refill(qreal from, qreal to, bool doBuffer=false);
 
     void updateGrid();
     void layout(bool removed=false);
@@ -326,6 +327,8 @@ public:
     int buffer;
     QmlEaseFollow *highlightXAnimator;
     QmlEaseFollow *highlightYAnimator;
+    enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
+    BufferMode bufferMode;
 
     bool ownModel : 1;
     bool wrap : 1;
@@ -392,14 +395,21 @@ void QmlGraphicsGridViewPrivate::releaseItem(FxGridItem *item)
     delete item;
 }
 
-void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
+void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
 {
     Q_Q(QmlGraphicsGridView);
     if (!isValid() || !q->isComponentComplete())
         return;
 
-    from -= buffer;
-    to += buffer;
+    qreal bufferFrom = from - buffer;
+    qreal bufferTo = to + buffer;
+    qreal fillFrom = from;
+    qreal fillTo = to;
+    if (doBuffer && (bufferMode & BufferAfter))
+        fillTo = bufferTo;
+    if (doBuffer && (bufferMode & BufferBefore))
+        fillFrom = bufferFrom;
+
     bool changed = false;
 
     int colPos = colPosAt(visibleIndex);
@@ -424,7 +434,7 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
     // Item creation and release is staggered in order to avoid
     // creating/releasing multiple items in one frame
     // while flicking (as much as possible).
-    while (modelIndex < model->count() && rowPos <= to + rowSize()*(columns - colNum)/(columns+1)) {
+    while (modelIndex < model->count() && rowPos <= fillTo + rowSize()*(columns - colNum)/(columns+1)) {
         //qDebug() << "refill: append item" << modelIndex;
         if (!(item = createItem(modelIndex)))
             break;
@@ -439,6 +449,8 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
         }
         ++modelIndex;
         changed = true;
+        if (doBuffer) // never buffer more than one item per frame
+            break;
     }
 
     if (visibleItems.count()) {
@@ -450,7 +462,7 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
         }
     }
     colNum = colPos / colSize();
-    while (visibleIndex > 0 && rowPos + rowSize() - 1 >= from - rowSize()*(colNum+1)/(columns+1)){
+    while (visibleIndex > 0 && rowPos + rowSize() - 1 >= fillFrom - rowSize()*(colNum+1)/(columns+1)){
         //qDebug() << "refill: prepend item" << visibleIndex-1 << "top pos" << rowPos << colPos;
         if (!(item = createItem(visibleIndex-1)))
             break;
@@ -465,12 +477,14 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
             rowPos -= rowSize();
         }
         changed = true;
+        if (doBuffer) // never buffer more than one item per frame
+            break;
     }
 
     if (!lazyRelease || !changed) { // avoid destroying items in the same frame that we create
         while (visibleItems.count() > 1
                && (item = visibleItems.first())
-                    && item->endRowPos() < from - rowSize()*(item->colPos()/colSize()+1)/(columns+1)) {
+                    && item->endRowPos() < bufferFrom - rowSize()*(item->colPos()/colSize()+1)/(columns+1)) {
             if (item->attached->delayRemove())
                 break;
             //qDebug() << "refill: remove first" << visibleIndex << "top end pos" << item->endRowPos();
@@ -482,7 +496,7 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
         }
         while (visibleItems.count() > 1
                && (item = visibleItems.last())
-                    && item->rowPos() > to + rowSize()*(columns - item->colPos()/colSize())/(columns+1)) {
+                    && item->rowPos() > bufferTo + rowSize()*(columns - item->colPos()/colSize())/(columns+1)) {
             if (item->attached->delayRemove())
                 break;
             //qDebug() << "refill: remove last" << visibleIndex+visibleItems.count()-1;
@@ -496,6 +510,8 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
             q->setViewportHeight(endPosition() - startPosition());
         else
             q->setViewportWidth(endPosition() - startPosition());
+    } else if (!doBuffer && buffer && bufferMode != NoBuffer) {
+        refill(from, to, true);
     }
     lazyRelease = false;
 }
@@ -1157,6 +1173,21 @@ void QmlGraphicsGridView::viewportMoved()
     Q_D(QmlGraphicsGridView);
     QmlGraphicsFlickable::viewportMoved();
     d->lazyRelease = true;
+    if (d->flicked) {
+        if (yflick()) {
+            if (d->velocityY > 0)
+                d->bufferMode = QmlGraphicsGridViewPrivate::BufferBefore;
+            else if (d->velocityY < 0)
+                d->bufferMode = QmlGraphicsGridViewPrivate::BufferAfter;
+        }
+
+        if (xflick()) {
+            if (d->velocityX > 0)
+                d->bufferMode = QmlGraphicsGridViewPrivate::BufferBefore;
+            else if (d->velocityX < 0)
+                d->bufferMode = QmlGraphicsGridViewPrivate::BufferAfter;
+        }
+    }
     refill();
 }
 
