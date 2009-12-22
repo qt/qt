@@ -1,4 +1,4 @@
-load(qttest_p4)
 SOURCES += main.cpp
+TARGET = qnetworksessionlackey
 
 QT = core network
