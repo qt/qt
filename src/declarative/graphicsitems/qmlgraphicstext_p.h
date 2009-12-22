@@ -86,7 +86,8 @@ public:
                       Sunken };
     enum TextFormat { PlainText = Qt::PlainText,
                        RichText = Qt::RichText,
-                       AutoText = Qt::AutoText };
+                       AutoText = Qt::AutoText,
+                       StyledText = 4 };
     enum TextElideMode { ElideLeft = Qt::ElideLeft,
                           ElideRight = Qt::ElideRight,
                           ElideMiddle = Qt::ElideMiddle,

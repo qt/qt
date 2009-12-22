@@ -28,7 +28,8 @@ SOURCES += \
     $$PWD/qmlnumberformatter.cpp \
     $$PWD/qmldatetimeformatter.cpp \
     $$PWD/qmlbehavior.cpp \
-    $$PWD/qmlfontloader.cpp
+    $$PWD/qmlfontloader.cpp \
+    $$PWD/qmlstyledtext.cpp
 
 HEADERS += \
     $$PWD/qmlview.h \
@@ -61,7 +62,8 @@ HEADERS += \
     $$PWD/qmlnumberformatter_p.h \
     $$PWD/qmldatetimeformatter_p.h \
     $$PWD/qmlbehavior_p.h \
-    $$PWD/qmlfontloader_p.h
+    $$PWD/qmlfontloader_p.h \
+    $$PWD/qmlstyledtext_p.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns
