@@ -758,10 +758,9 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
             quality = 75;
 
 #ifndef QT_NO_IMAGE_SMOOTHSCALE
-        // If high quality not required, shrink image during decompression
-        if (scaledSize.isValid() && !scaledSize.isEmpty() && quality < HIGH_QUALITY_THRESHOLD) {
+        if (!scaledSize.isEmpty()) {
             cinfo.scale_denom = qMin(cinfo.image_width / scaledSize.width(),
-                                     cinfo.image_width / scaledSize.height());
+                                     cinfo.image_height / scaledSize.height());
             if (cinfo.scale_denom < 2) {
                 cinfo.scale_denom = 1;
             } else if (cinfo.scale_denom < 4) {
