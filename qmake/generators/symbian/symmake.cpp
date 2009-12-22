@@ -1764,7 +1764,9 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 {
     t << SIS_TARGET ": " RESTORE_BUILD_TARGET << endl;
     QString siscommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
-                                  "$(MAKE) -s -f $(MAKEFILE) %4,$(MAKE) -s -f $(MAKEFILE) %5)," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %4," \
+                                  "$(if $(QT_SIS_TARGET),$(MAKE) -s -f $(MAKEFILE) %4," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %5))," \
                                   "$(MAKE) -s -f $(MAKEFILE) %6)")
                           .arg(fixedTarget)
                           .arg("pkg")
@@ -1789,7 +1791,7 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
     t << endl;
 
     t << FAIL_SIS_NOCACHE_TARGET ":" << endl;
-    t << "\t$(error Project has to be build before calling 'SIS' target)" << endl;
+    t << "\t$(error Project has to be built or QT_SIS_TARGET environment variable has to be set before calling 'SIS' target)" << endl;
     t << endl;
 
 
