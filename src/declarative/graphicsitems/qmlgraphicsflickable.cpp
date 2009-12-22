@@ -152,7 +152,9 @@ void QmlGraphicsFlickableVisibleArea::updateVisible()
 
 
 QmlGraphicsFlickablePrivate::QmlGraphicsFlickablePrivate()
-  : viewport(new QmlGraphicsItem), _moveX(viewport, &QmlGraphicsItem::setX), _moveY(viewport, &QmlGraphicsItem::setY)
+  : viewport(new QmlGraphicsItem)
+    , _moveX(this, &QmlGraphicsFlickablePrivate::setRoundedViewportX)
+    , _moveY(this, &QmlGraphicsFlickablePrivate::setRoundedViewportY)
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true)
     , interactive(true), deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
@@ -826,6 +828,16 @@ void QmlGraphicsFlickablePrivate::clearDelayedPress()
         delete delayedPressEvent;
         delayedPressEvent = 0;
     }
+}
+
+void QmlGraphicsFlickablePrivate::setRoundedViewportX(qreal x)
+{
+    viewport->setX(qRound(x));
+}
+
+void QmlGraphicsFlickablePrivate::setRoundedViewportY(qreal y)
+{
+    viewport->setY(qRound(y));
 }
 
 void QmlGraphicsFlickable::timerEvent(QTimerEvent *event)

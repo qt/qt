@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlAbstractBinding 
+class Q_DECLARATIVE_EXPORT QmlAbstractBinding
 {
 public:
     QmlAbstractBinding();

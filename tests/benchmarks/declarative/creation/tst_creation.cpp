@@ -65,7 +65,9 @@ private slots:
     void objects_qmltype();
 
     void qgraphicsitem();
-    void qgraphicsitem_tree();
+    void qgraphicsobject();
+    void qgraphicsitem14();
+    void qgraphicsitem_tree14();
 
     void itemtree_notree_cpp();
     void itemtree_objtree_cpp();
@@ -169,7 +171,30 @@ public:
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) {}
 };
 
+class QGraphicsObjectDummy : public QGraphicsObject
+{
+public:
+    virtual QRectF boundingRect() const { return QRectF(); }
+    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) {}
+};
+
 void tst_creation::qgraphicsitem()
+{
+    QBENCHMARK {
+        QGraphicsItemDummy *i = new QGraphicsItemDummy();
+        delete i;
+    }
+}
+
+void tst_creation::qgraphicsobject()
+{
+    QBENCHMARK {
+        QGraphicsObjectDummy *i = new QGraphicsObjectDummy();
+        delete i;
+    }
+}
+
+void tst_creation::qgraphicsitem14()
 {
     QBENCHMARK {
         QGraphicsItemDummy *i1 = new QGraphicsItemDummy();
@@ -204,7 +229,7 @@ void tst_creation::qgraphicsitem()
     }
 }
 
-void tst_creation::qgraphicsitem_tree()
+void tst_creation::qgraphicsitem_tree14()
 {
     QBENCHMARK {
         // i1

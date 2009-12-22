@@ -39,79 +39,25 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBASICSCRIPT_P_H
-#define QMLBASICSCRIPT_P_H
+#ifndef QMLSTYLEDTEXT_H
+#define QMLSTYLEDTEXT_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QSizeF>
 
-#include "qmlparser_p.h"
-#include "qmlengine_p.h"
-
-#include <QtCore/QList>
-#include <QtCore/QByteArray>
-#include <QtCore/QVariant>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-class QmlRefCount;
-class QmlContext;
-class QmlBasicScriptPrivate;
-class QmlBasicScriptNodeCache;
-class QmlBasicScript
+class QPainter;
+class QPointF;
+class QString;
+class QmlStyledTextPrivate;
+class Q_DECLARATIVE_EXPORT QmlStyledText
 {
 public:
-    QmlBasicScript();
-    ~QmlBasicScript();
-
-    void load(const char *, QmlRefCount * = 0);
-
-    // Always 4-byte aligned
-    const char *compileData() const;
-    unsigned int compileDataSize() const;
-
-    QByteArray expression() const;
-
-    struct Expression
-    {
-        QmlParser::Object *component;
-        QmlParser::Object *context;
-        QmlParser::Property *property;
-        QmlParser::Variant expression;
-        QHash<QString, QmlParser::Object *> ids;
-        QmlEnginePrivate::Imports imports;
-    };
-
-    bool compile(const Expression &);
-    bool isValid() const;
-
-    void clear();
-
-    void dump();
-
-    QVariant run(QmlContext *, QObject *);
-
-    bool isSingleIdFetch() const;
-    int singleIdFetchIndex() const;
+    static void parse(const QString &string, QTextLayout &layout);
 
 private:
-    int flags;
-    QmlBasicScriptPrivate *d;
-    QmlRefCount *rc;
+    QmlStyledText(const QString &string, QTextLayout &layout);
+    ~QmlStyledText();
+
+    QmlStyledTextPrivate *d;
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QMLBASICSCRIPT_P_H
+#endif

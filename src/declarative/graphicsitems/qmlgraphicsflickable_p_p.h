@@ -82,10 +82,13 @@ public:
     void captureDelayedPress(QGraphicsSceneMouseEvent *event);
     void clearDelayedPress();
 
+    void setRoundedViewportX(qreal x);
+    void setRoundedViewportY(qreal y);
+
 public:
     QmlGraphicsItem *viewport;
-    QmlTimeLineValueProxy<QmlGraphicsItem> _moveX;
-    QmlTimeLineValueProxy<QmlGraphicsItem> _moveY;
+    QmlTimeLineValueProxy<QmlGraphicsFlickablePrivate> _moveX;
+    QmlTimeLineValueProxy<QmlGraphicsFlickablePrivate> _moveY;
     QmlTimeLine timeline;
     qreal vWidth;
     qreal vHeight;
