@@ -45,6 +45,7 @@
 
 #include <QtGui/QAbstractItemView>
 #include <QtGui/QHeaderView>
+#include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,41 +55,27 @@ struct Property {
     Property() : m_sheet(0),m_id(-1) {}
     Property(QDesignerPropertySheetExtension *sheet, int id)
         : m_sheet(sheet), m_id(id) {}
-    bool operator==(const Property &p) { return m_sheet == p.m_sheet && m_id == p.m_id; }
-    uint qHash() {
-        return ((int)(m_sheet-(QDesignerPropertySheetExtension*)(0))) & m_id;
-    }
 
     QDesignerPropertySheetExtension *m_sheet;
     int m_id;
 };
 
-class ItemViewPropertySheetPrivate {
+typedef QMap<int, Property> FakePropertyMap;
 
-public:
-    ItemViewPropertySheetPrivate(QHeaderView *horizontalHeader,
-                                 QHeaderView *verticalHeader,
-                                 QObject *parent);
+struct ItemViewPropertySheetPrivate {
+    ItemViewPropertySheetPrivate(QDesignerFormEditorInterface *core,
+                                 QHeaderView *horizontalHeader,
+                                 QHeaderView *verticalHeader);
 
-    inline void createMapping(int fakeId, QHeaderView *header, const QString &headerName);
     inline QStringList realPropertyNames();
     inline QString fakePropertyName(const QString &prefix, const QString &realName);
 
-    QDesignerFormEditorInterface *m_core;
+    // Maps index of fake property to index of real property in respective sheet
+    FakePropertyMap m_propertyIdMap;
 
-    // Maps index of fake property
-    // to index of real property in respective sheet
-    QHash<int, Property> m_propertyIdMap;
-
-    // Maps name of fake property
-    // to name of real property
+    // Maps name of fake property to name of real property
     QHash<QString, QString> m_propertyNameMap;
 
-private:
-    static QDesignerFormEditorInterface *formEditorForObject(QObject *o);
-
-    QHeaderView *m_hHeader;
-    QHeaderView *m_vHeader;
     QHash<QHeaderView *, QDesignerPropertySheetExtension *> m_propertySheet;
     QStringList m_realPropertyNames;
 };
@@ -111,43 +98,18 @@ using namespace qdesigner_internal;
 
 /***************** ItemViewPropertySheetPrivate *********************/
 
-ItemViewPropertySheetPrivate::ItemViewPropertySheetPrivate(QHeaderView *horizontalHeader,
-                                                           QHeaderView *verticalHeader,
-                                                           QObject *parent)
-        : m_core(formEditorForObject(parent)),
-          m_hHeader(horizontalHeader),
-          m_vHeader(verticalHeader)
+ItemViewPropertySheetPrivate::ItemViewPropertySheetPrivate(QDesignerFormEditorInterface *core,
+                                                           QHeaderView *horizontalHeader,
+                                                           QHeaderView *verticalHeader)
 {
     if (horizontalHeader)
         m_propertySheet.insert(horizontalHeader,
                                qt_extension<QDesignerPropertySheetExtension*>
-                               (m_core->extensionManager(), horizontalHeader));
+                               (core->extensionManager(), horizontalHeader));
     if (verticalHeader)
         m_propertySheet.insert(verticalHeader,
                                qt_extension<QDesignerPropertySheetExtension*>
-                               (m_core->extensionManager(), verticalHeader));
-}
-
-// Find the form editor in the hierarchy.
-// We know that the parent of the sheet is the extension manager
-// whose parent is the core.
-QDesignerFormEditorInterface *ItemViewPropertySheetPrivate::formEditorForObject(QObject *o)
-{
-    do {
-        if (QDesignerFormEditorInterface* core = qobject_cast<QDesignerFormEditorInterface*>(o))
-            return core;
-        o = o->parent();
-    } while(o);
-    Q_ASSERT(o);
-    return 0;
-}
-
-void ItemViewPropertySheetPrivate::createMapping(int fakeId, QHeaderView *header,
-                                                 const QString &headerName)
-{
-    const int realPropertyId = m_propertySheet.value(header)->indexOf(headerName);
-    QDesignerPropertySheetExtension *propertySheet = m_propertySheet.value(header);
-    m_propertyIdMap.insert(fakeId, Property(propertySheet, realPropertyId));
+                               (core->extensionManager(), verticalHeader));
 }
 
 QStringList ItemViewPropertySheetPrivate::realPropertyNames()
@@ -194,51 +156,42 @@ QString ItemViewPropertySheetPrivate::fakePropertyName(const QString &prefix,
 
 ItemViewPropertySheet::ItemViewPropertySheet(QTreeView *treeViewObject, QObject *parent)
         : QDesignerPropertySheet(treeViewObject, parent),
-        d(new ItemViewPropertySheetPrivate(treeViewObject->header(), 0, parent))
+        d(new ItemViewPropertySheetPrivate(core(), treeViewObject->header(), 0))
 {
-    QHeaderView *hHeader = treeViewObject->header();
-
-    foreach (const QString &realPropertyName, d->realPropertyNames()) {
-        const QString fakePropertyName
-                = d->fakePropertyName(QLatin1String("header"), realPropertyName);
-        d->createMapping(createFakeProperty(fakePropertyName, 0), hHeader, realPropertyName);
-    }
-
-    foreach (int id, d->m_propertyIdMap.keys()) {
-        setAttribute(id, true);
-        setPropertyGroup(id, QLatin1String(headerGroup));
-    }
+    initHeaderProperties(treeViewObject->header(), QLatin1String("header"));
 }
-
 
 ItemViewPropertySheet::ItemViewPropertySheet(QTableView *tableViewObject, QObject *parent)
         : QDesignerPropertySheet(tableViewObject, parent),
-        d(new ItemViewPropertySheetPrivate(tableViewObject->horizontalHeader(),
-                                           tableViewObject->verticalHeader(), parent))
+        d(new ItemViewPropertySheetPrivate(core(),
+                                           tableViewObject->horizontalHeader(),
+                                           tableViewObject->verticalHeader()))
 {
-    QHeaderView *hHeader = tableViewObject->horizontalHeader();
-    QHeaderView *vHeader = tableViewObject->verticalHeader();
-
-    foreach (const QString &realPropertyName, d->realPropertyNames()) {
-        const QString fakePropertyName
-                = d->fakePropertyName(QLatin1String("horizontalHeader"), realPropertyName);
-        d->createMapping(createFakeProperty(fakePropertyName, 0), hHeader, realPropertyName);
-    }
-    foreach (const QString &realPropertyName, d->realPropertyNames()) {
-        const QString fakePropertyName
-                = d->fakePropertyName(QLatin1String("verticalHeader"), realPropertyName);
-        d->createMapping(createFakeProperty(fakePropertyName, 0), vHeader, realPropertyName);
-    }
-
-    foreach (int id, d->m_propertyIdMap.keys()) {
-        setAttribute(id, true);
-        setPropertyGroup(id, QLatin1String(headerGroup));
-    }
+    initHeaderProperties(tableViewObject->horizontalHeader(), QLatin1String("horizontalHeader"));
+    initHeaderProperties(tableViewObject->verticalHeader(), QLatin1String("verticalHeader"));
 }
 
 ItemViewPropertySheet::~ItemViewPropertySheet()
 {
     delete d;
+}
+
+void ItemViewPropertySheet::initHeaderProperties(QHeaderView *hv, const QString &prefix)
+{
+    QDesignerPropertySheetExtension *headerSheet = d->m_propertySheet.value(hv);
+    Q_ASSERT(headerSheet);
+    const QString headerGroupS = QLatin1String(headerGroup);
+    foreach (const QString &realPropertyName, d->realPropertyNames()) {
+        const int headerIndex = headerSheet->indexOf(realPropertyName);
+        Q_ASSERT(headerIndex != -1);
+        const QVariant defaultValue = realPropertyName == QLatin1String(visibleProperty) ?
+                                      QVariant(true) : headerSheet->property(headerIndex);
+        const QString fakePropertyName = d->fakePropertyName(prefix, realPropertyName);
+        const int fakeIndex = createFakeProperty(fakePropertyName, defaultValue);
+        d->m_propertyIdMap.insert(fakeIndex, Property(headerSheet, headerIndex));
+        setAttribute(fakeIndex, true);
+        setPropertyGroup(fakeIndex, headerGroupS);
+    }
 }
 
 /*!
@@ -251,19 +204,17 @@ QHash<QString,QString> ItemViewPropertySheet::propertyNameMap() const
 
 QVariant ItemViewPropertySheet::property(int index) const
 {
-    if (d->m_propertyIdMap.contains(index)) {
-        Property realProperty = d->m_propertyIdMap.value(index);
-        return realProperty.m_sheet->property(realProperty.m_id);
-    } else {
-        return QDesignerPropertySheet::property(index);
-    }
+    const FakePropertyMap::const_iterator it = d->m_propertyIdMap.constFind(index);
+    if (it != d->m_propertyIdMap.constEnd())
+        return it.value().m_sheet->property(it.value().m_id);
+    return QDesignerPropertySheet::property(index);
 }
 
 void ItemViewPropertySheet::setProperty(int index, const QVariant &value)
 {
-    if (d->m_propertyIdMap.contains(index)) {
-        Property realProperty = d->m_propertyIdMap.value(index);
-        realProperty.m_sheet->setProperty(realProperty.m_id, value);
+    const FakePropertyMap::iterator it = d->m_propertyIdMap.find(index);
+    if (it != d->m_propertyIdMap.end()) {
+        it.value().m_sheet->setProperty(it.value().m_id, value);
     } else {
         QDesignerPropertySheet::setProperty(index, value);
     }
@@ -271,18 +222,46 @@ void ItemViewPropertySheet::setProperty(int index, const QVariant &value)
 
 void ItemViewPropertySheet::setChanged(int index, bool changed)
 {
-    if (d->m_propertyIdMap.contains(index)) {
-        Property realProperty = d->m_propertyIdMap.value(index);
-        realProperty.m_sheet->setChanged(realProperty.m_id, changed);
+    const FakePropertyMap::iterator it = d->m_propertyIdMap.find(index);
+    if (it != d->m_propertyIdMap.end()) {
+        it.value().m_sheet->setChanged(it.value().m_id, changed);
+    } else {
+        QDesignerPropertySheet::setChanged(index, changed);
     }
-    QDesignerPropertySheet::setChanged(index, changed);
+}
+
+bool ItemViewPropertySheet::isChanged(int index) const
+{
+    const FakePropertyMap::const_iterator it = d->m_propertyIdMap.constFind(index);
+    if (it != d->m_propertyIdMap.constEnd())
+        return it.value().m_sheet->isChanged(it.value().m_id);
+    return QDesignerPropertySheet::isChanged(index);
+}
+
+bool ItemViewPropertySheet::hasReset(int index) const
+{
+    const FakePropertyMap::const_iterator it = d->m_propertyIdMap.constFind(index);
+    if (it != d->m_propertyIdMap.constEnd())
+        return it.value().m_sheet->hasReset(it.value().m_id);
+    return QDesignerPropertySheet::hasReset(index);
 }
 
 bool ItemViewPropertySheet::reset(int index)
 {
-    if (d->m_propertyIdMap.contains(index)) {
-        Property realProperty = d->m_propertyIdMap.value(index);
-        return realProperty.m_sheet->reset(realProperty.m_id);
+    const FakePropertyMap::iterator it = d->m_propertyIdMap.find(index);
+    if (it != d->m_propertyIdMap.end()) {
+       QDesignerPropertySheetExtension *headerSheet = it.value().m_sheet;
+       const int headerIndex = it.value().m_id;
+       const bool resetRC = headerSheet->reset(headerIndex);
+       // Resetting for "visible" might fail and the stored default
+       // of the Widget database is "false" due to the widget not being
+       // visible at the time it was determined. Reset to "true" manually.
+       if (!resetRC && headerSheet->propertyName(headerIndex) == QLatin1String(visibleProperty)) {
+           headerSheet->setProperty(headerIndex, QVariant(true));
+           headerSheet->setChanged(headerIndex, false);
+           return true;
+       }
+       return resetRC;
     } else {
         return QDesignerPropertySheet::reset(index);
     }

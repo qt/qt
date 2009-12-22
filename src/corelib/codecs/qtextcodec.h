@@ -161,7 +161,7 @@ public:
     QByteArray fromUnicode(const QString& str);
     QByteArray fromUnicode(const QChar *uc, int len);
 #ifdef QT3_SUPPORT
-    QByteArray fromUnicode(const QString& uc, int& lenInOut);
+    QT3_SUPPORT QByteArray fromUnicode(const QString& uc, int& lenInOut);
 #endif
     bool hasFailure() const;
 private:

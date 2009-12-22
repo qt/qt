@@ -372,11 +372,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "\t-bldmake clean" << endl;
     t << endl;
 
-    // Create execution target
-    if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
-        t << "run:" << endl;
-        t << "\t-call " << epocRoot() << "epoc32\\release\\winscw\\udeb\\" << fixedTarget << ".exe" << endl << endl;
-    }
+    generateExecutionTargets(t, debugPlatforms);
 }
 
 void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)

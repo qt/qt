@@ -545,6 +545,32 @@ qint64 QGraphicsViewPrivate::verticalScroll() const
 
 /*!
     \internal
+
+    Maps the given rectangle to the scene using QTransform::mapRect()
+*/
+QRectF QGraphicsViewPrivate::mapRectToScene(const QRect &rect) const
+{
+    if (dirtyScroll)
+        const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
+    QRectF scrolled = QRectF(rect.translated(scrollX, scrollY));
+    return identityMatrix ? scrolled : matrix.inverted().mapRect(scrolled);
+}
+
+
+/*!
+    \internal
+
+    Maps the given rectangle from the scene using QTransform::mapRect()
+*/
+QRectF QGraphicsViewPrivate::mapRectFromScene(const QRectF &rect) const
+{
+    if (dirtyScroll)
+        const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
+    return (identityMatrix ? rect : matrix.mapRect(rect)).translated(-scrollX, -scrollY);
+}
+
+/*!
+    \internal
 */
 void QGraphicsViewPrivate::updateScroll()
 {
@@ -1182,6 +1208,11 @@ void QGraphicsView::setTransformationAnchor(ViewportAnchor anchor)
 {
     Q_D(QGraphicsView);
     d->transformationAnchor = anchor;
+
+    // Ensure mouse tracking is enabled in the case we are using AnchorUnderMouse
+    // in order to have up-to-date information for centering the view.
+    if (d->transformationAnchor == AnchorUnderMouse)
+        d->viewport->setMouseTracking(true);
 }
 
 /*!
@@ -1209,6 +1240,11 @@ void QGraphicsView::setResizeAnchor(ViewportAnchor anchor)
 {
     Q_D(QGraphicsView);
     d->resizeAnchor = anchor;
+
+    // Ensure mouse tracking is enabled in the case we are using AnchorUnderMouse
+    // in order to have up-to-date information for centering the view.
+    if (d->resizeAnchor == AnchorUnderMouse)
+        d->viewport->setMouseTracking(true);
 }
 
 /*!
@@ -2571,9 +2607,12 @@ void QGraphicsView::setupViewport(QWidget *widget)
     }
 
     // We are only interested in mouse tracking if items
-    // accept hover events or use non-default cursors.
-    if (d->scene && (!d->scene->d_func()->allItemsIgnoreHoverEvents
-                     || !d->scene->d_func()->allItemsUseDefaultCursor)) {
+    // accept hover events or use non-default cursors or if
+    // AnchorUnderMouse is used as transformation or resize anchor.
+    if ((d->scene && (!d->scene->d_func()->allItemsIgnoreHoverEvents
+                     || !d->scene->d_func()->allItemsUseDefaultCursor))
+        || d->transformationAnchor == AnchorUnderMouse
+        || d->resizeAnchor == AnchorUnderMouse) {
         widget->setMouseTracking(true);
     }
 

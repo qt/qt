@@ -111,7 +111,7 @@ class CPixelMetricsMapperAppUi : public CAknViewAppUi
         /**
         * Constructor.
         */
-    	CPixelMetricsMapperAppUi();
+        CPixelMetricsMapperAppUi();
 
         /**
         * Symbian 2nd phase constructor.
@@ -122,12 +122,6 @@ class CPixelMetricsMapperAppUi : public CAknViewAppUi
         * Destructor.
         */
         ~CPixelMetricsMapperAppUi();
-
-    public:
-    	void DoAutoOperationL();
-
-    	TBool ReadyForAutoOp() const;
-
 
     private: // Functions from base classes
 
@@ -158,17 +152,15 @@ class CPixelMetricsMapperAppUi : public CAknViewAppUi
     private:    // Data
 
         // Test view.
-    	CPixelMetricsMapperView* iView;
+        CPixelMetricsMapperView* iView;
 
         CEikDialog* iDialog;
 
         TBool iFileOutputOn;
+        TBool iMode;
 
         CFbsBitmap* icon;
         CFbsBitmap* iconMask;
-
-        TBool iAutoMode;
-        TBool iMode;
 
     };
 

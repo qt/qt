@@ -54,7 +54,7 @@
 #ifndef QDBUSINTEGRATOR_P_H
 #define QDBUSINTEGRATOR_P_H
 
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 
 #include "qcoreevent.h"
 #include "qeventloop.h"

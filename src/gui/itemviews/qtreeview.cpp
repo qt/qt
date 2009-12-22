@@ -2774,6 +2774,7 @@ int QTreeView::sizeHintForColumn(int column) const
     d->executePostedLayout();
     if (d->viewItems.isEmpty())
         return -1;
+    ensurePolished();
     int w = 0;
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
     const QVector<QTreeViewItem> viewItems = d->viewItems;

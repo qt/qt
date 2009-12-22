@@ -54,7 +54,7 @@
 //
 
 #include <qdbusargument.h>
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -288,6 +288,7 @@ private:
 #ifdef QT_KEYPAD_NAVIGATION
     Q_PRIVATE_SLOT(d_func(), void _q_editFocusChange(bool))
 #endif
+    Q_PRIVATE_SLOT(d_func(), void _q_selectionChanged())
 };
 
 #endif // QT_NO_LINEEDIT

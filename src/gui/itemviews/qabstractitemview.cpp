@@ -70,6 +70,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         itemDelegate(0),
         selectionModel(0),
         ctrlDragSelectionFlag(QItemSelectionModel::NoUpdate),
+        noSelectionOnMousePress(false),
         selectionMode(QAbstractItemView::ExtendedSelection),
         selectionBehavior(QAbstractItemView::SelectItems),
         currentlyCommittingEditor(0),
@@ -1622,6 +1623,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     d->pressedIndex = index;
     d->pressedModifiers = event->modifiers();
     QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
+    d->noSelectionOnMousePress = command == QItemSelectionModel::NoUpdate || !index.isValid();
     QPoint offset = d->offset();
     if ((command & QItemSelectionModel::Current) == 0)
         d->pressedPosition = pos + offset;
@@ -1760,9 +1762,10 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
 
     d->ctrlDragSelectionFlag = QItemSelectionModel::NoUpdate;
 
-    //in the case the user presses on no item we might decide to clear the selection
-    if (d->selectionModel && !index.isValid())
-        d->selectionModel->select(QModelIndex(), selectionCommand(index, event));
+    if (d->selectionModel && d->noSelectionOnMousePress) {
+        d->noSelectionOnMousePress = false;
+        d->selectionModel->select(index, selectionCommand(index, event));
+    }
 
     setState(NoState);
 
@@ -2882,6 +2885,8 @@ int QAbstractItemView::sizeHintForRow(int row) const
     if (row < 0 || row >= d->model->rowCount() || !model())
         return -1;
 
+    ensurePolished();
+
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
     int height = 0;
     int colCount = d->model->columnCount(d->root);
@@ -2910,6 +2915,8 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 
     if (column < 0 || column >= d->model->columnCount() || !model())
         return -1;
+
+    ensurePolished();
 
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
     int width = 0;

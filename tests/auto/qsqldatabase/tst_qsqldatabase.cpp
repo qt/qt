@@ -768,9 +768,7 @@ void tst_QSqlDatabase::checkValues(const FieldDef fieldDefs[], QSqlDatabase db)
         rec->setValue(fieldDefs[ i ].fieldName(), fieldDefs[ i ].val);
 //     qDebug(QString("inserting %1 into %2").arg(fieldDefs[ i ].val.toString()).arg(fieldDefs[ i ].fieldName()));
     }
-    if (!cur.insert()) {
-        QFAIL(QString("Couldn't insert record: %1 %2").arg(cur.lastError().databaseText()).arg(cur.lastError().driverText()));
-    }
+    QVERIFY_SQL(cur, insert());
     cur.setForwardOnly(true);
     QVERIFY_SQL(cur, select("id = " + QString::number(pkey - 1)));
     QVERIFY_SQL(cur, next());
@@ -833,9 +831,7 @@ void tst_QSqlDatabase::checkNullValues(const FieldDef fieldDefs[], QSqlDatabase 
         else
             rec->setValue(fieldDefs[ i ].fieldName(), fieldDefs[ i ].val);
     }
-    if (!cur.insert()) {
-        QFAIL(QString("Couldn't insert record: %1 %2").arg(cur.lastError().databaseText()).arg(cur.lastError().driverText()));
-    }
+    QVERIFY_SQL(cur, insert());
     cur.setForwardOnly(true);
     QVERIFY_SQL(cur, select("id = " + QString::number(pkey - 1)));
     QVERIFY_SQL(cur, next());
@@ -937,20 +933,18 @@ void tst_QSqlDatabase::recordOCI()
         FieldDef("nvarchar2(20)", QVariant::String,     QString("blah4")),
         FieldDef("number(10,5)", QVariant::Double,      1.1234567),
         FieldDef("date", QVariant::DateTime,            dt),
-#ifdef QT3_SUPPORT
-//X?    FieldDef("long raw", QVariant::ByteArray,       QByteArray(Q3CString("blah5"))),
-        FieldDef("raw(2000)", QVariant::ByteArray,      QByteArray(Q3CString("blah6")), false),
-        FieldDef("blob", QVariant::ByteArray,           QByteArray(Q3CString("blah7"))),
-#endif
-//FIXME FieldDef("clob", QVariant::CString,             Q3CString("blah8")),
-//FIXME FieldDef("nclob", QVariant::CString,            Q3CString("blah9")),
-//X     FieldDef("bfile", QVariant::ByteArray,          QByteArray(Q3CString("blah10"))),
+        FieldDef("long raw", QVariant::ByteArray,       QByteArray("blah5")),
+        FieldDef("raw(2000)", QVariant::ByteArray,      QByteArray("blah6"), false),
+        FieldDef("blob", QVariant::ByteArray,           QByteArray("blah7")),
+        FieldDef("clob", QVariant::String,             QString("blah8")),
+        FieldDef("nclob", QVariant::String,            QString("blah9")),
+        FieldDef("bfile", QVariant::ByteArray,         QByteArray("blah10")),
 
     intytm,
-    intdts,
-    tsdef,
-    tstzdef,
-    tsltzdef,
+//    intdts,
+//    tsdef,
+//    tstzdef,
+//    tsltzdef,
     FieldDef()
     };
 

@@ -20,6 +20,25 @@ SUBDIRS = containers-associative \
         qregion \
         qvariant \
 	qwidget	\
-	qtwidgets
+	qtwidgets \
+	qapplication \
+	qdir \
+	qdiriterator \
+	qgraphicsanchorlayout \
+	qgraphicsitem \
+	qgraphicswidget \
+	qmetaobject \
+	qpixmapcache \
+	qquaternion \
+	qscriptclass \
+	qscriptengine \
+	qscriptvalue \
+	qstringbuilder \
+	qstylesheetstyle \
+	qsvgrenderer \
+	qtableview \
+	qthreadstorage
+
+
 
 contains(QT_CONFIG, opengl): SUBDIRS += opengl

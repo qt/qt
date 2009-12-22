@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
 
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
-    GoogleChat *chat = new GoogleChat;
-    chat->show();
+    GoogleChat chat;
+    chat.show();
     return app.exec();
 }
