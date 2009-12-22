@@ -528,7 +528,8 @@ QmlComponent::QmlComponent(QmlComponentPrivate &dd, QObject *parent)
 QScriptValue QmlComponent::createObject()
 {
     Q_D(QmlComponent);
-    QmlContext* ctxt = creationContext();
+    //QmlContext* ctxt = creationContext();
+    QmlContext* ctxt = d->engine->rootContext();//Fixes QTBUG-5690, but is it the right fix?
     if(!ctxt){
         qWarning() << QLatin1String("createObject can only be used in QML");
         return QScriptValue();
