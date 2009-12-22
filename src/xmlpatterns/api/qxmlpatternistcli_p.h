@@ -49,10 +49,14 @@
 //
 // We mean it.
 
-#ifndef Patternist_main_h
-#define Patternist_main_h
+#ifndef Patternist_Cli_h
+#define Patternist_Cli_h
 
 #include <QCoreApplication>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 class QXmlPatternistCLI
 {
@@ -62,5 +66,9 @@ private:
     inline QXmlPatternistCLI();
     Q_DISABLE_COPY(QXmlPatternistCLI)
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif
