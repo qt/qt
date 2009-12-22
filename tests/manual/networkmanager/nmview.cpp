@@ -68,7 +68,7 @@
 #include <qnetworkconfiguration.h>
 #include <qnetworkconfigmanager.h>
 #include <qnetworksession.h>
-#include <qnetworkmanagerservice_p.h>
+#include <QtNetwork/private/qnetworkmanagerservice_p.h>
 
 //static QDBusConnection dbc = QDBusConnection::systemBus();
 //typedef QMap< QString, QMap<QString,QVariant> > SettingsMap;

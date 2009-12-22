@@ -54,7 +54,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 static QHash<QString, QVariant> properties;
 
@@ -1178,4 +1178,4 @@ QNetworkSession::SessionError QNetworkSessionPrivate::error() const
 #include "qnetworksession_maemo.moc"
 #include "moc_qnetworksession_maemo_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

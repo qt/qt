@@ -42,18 +42,17 @@
 #ifndef QNETWORKCONFIGURATION_H
 #define QNETWORKCONFIGURATION_H
 
-#include "qmobilityglobal.h"
-
+#include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
 
 QT_BEGIN_HEADER
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
-class Q_BEARER_EXPORT QNetworkConfiguration
+class Q_NETWORK_EXPORT QNetworkConfiguration
 {
 public:
     QNetworkConfiguration();
@@ -106,7 +105,7 @@ private:
     QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> d;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

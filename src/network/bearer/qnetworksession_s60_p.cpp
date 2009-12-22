@@ -49,7 +49,7 @@
 #include <stdapis/sys/socket.h>
 #include <stdapis/net/if.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 QNetworkSessionPrivate::QNetworkSessionPrivate()
     : CActive(CActive::EPriorityStandard), state(QNetworkSession::Invalid),
@@ -1165,4 +1165,4 @@ void ConnectionProgressNotifier::RunL()
 
 #include "moc_qnetworksession_s60_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

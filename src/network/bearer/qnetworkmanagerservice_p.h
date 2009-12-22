@@ -64,19 +64,16 @@
 
 
 #include <QDBusPendingCallWatcher>
-#include <qnmdbushelper_p.h>
+#include "qnmdbushelper_p.h"
 
+QT_BEGIN_NAMESPACE
 
-QTM_BEGIN_NAMESPACE
 typedef QMap< QString, QMap<QString,QVariant> > QNmSettingsMap;
 typedef QList<quint32> ServerThing;
-QTM_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QTM_PREPEND_NAMESPACE(QNmSettingsMap))
-Q_DECLARE_METATYPE(QTM_PREPEND_NAMESPACE(ServerThing))
+Q_DECLARE_METATYPE(QNmSettingsMap)
+Q_DECLARE_METATYPE(ServerThing)
 
-
-QTM_BEGIN_NAMESPACE
 class QNetworkManagerInterfacePrivate;
 class QNetworkManagerInterface : public QObject
 {
@@ -395,6 +392,6 @@ public:
 };
 ////
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //QNETWORKMANAGERSERVICE_H

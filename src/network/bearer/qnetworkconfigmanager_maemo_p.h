@@ -60,7 +60,7 @@
 #include <QHash>
 #include <QStringList>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 
 class QNetworkConfigurationManagerPrivate : public QObject
@@ -136,6 +136,6 @@ Q_SIGNALS:
     void onlineStateChanged(bool isOnline);
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //QNETWORKCONFIGURATIONMANAGERPRIVATE_H

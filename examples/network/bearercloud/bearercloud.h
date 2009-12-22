@@ -45,7 +45,7 @@
 #include <QMap>
 #include <QHash>
 
-QTM_USE_NAMESPACE
+QT_USE_NAMESPACE
 
 class Cloud;
 

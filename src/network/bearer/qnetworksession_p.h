@@ -63,7 +63,8 @@
 #include <QNetworkInterface>
 #include <QDateTime>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
+
 #ifdef BEARER_ENGINE
 class QNetworkSessionEngine;
 #endif
@@ -161,7 +162,7 @@ private:
 #endif
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //QNETWORKSESSIONPRIVATE_H
 

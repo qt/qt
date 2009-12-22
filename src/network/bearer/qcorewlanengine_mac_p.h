@@ -56,7 +56,8 @@
 #include "qnetworksessionengine_p.h"
 #include <QMap>
 #include <QTimer>
-QTM_BEGIN_NAMESPACE
+
+QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
 
@@ -94,7 +95,7 @@ private:
     bool isKnownSsid(const QString &interfaceName, const QString &ssid);
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif
 

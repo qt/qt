@@ -59,7 +59,7 @@
 #include <QHash>
 #include <QStringList>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #ifdef BEARER_ENGINE
 class QNetworkSessionEngine;
@@ -173,6 +173,6 @@ private Q_SLOTS:
 #endif
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //QNETWORKCONFIGURATIONMANAGERPRIVATE_H

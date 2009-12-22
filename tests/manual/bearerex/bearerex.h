@@ -54,7 +54,7 @@
 class QHttp;
 class SessionTab;
 
-QTM_USE_NAMESPACE
+QT_USE_NAMESPACE
 
 class BearerEx : public QMainWindow, public Ui::BearerExMainWindow
 {

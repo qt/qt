@@ -47,7 +47,7 @@
 #include "qnetworkconfiguration_p.h"
 #endif
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 /*!
     \class QNetworkConfiguration
@@ -345,5 +345,5 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 }
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 

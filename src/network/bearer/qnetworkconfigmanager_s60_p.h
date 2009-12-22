@@ -65,7 +65,7 @@
 class CCommsDatabase;
 class QTimer;
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QNetworkSessionPrivate;
 class AccessPointsAvailabilityScanner;
@@ -177,6 +177,6 @@ private: // Data
     TConnMonIapInfoBuf iIapBuf;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //QNETWORKCONFIGURATIONMANAGERPRIVATE_H

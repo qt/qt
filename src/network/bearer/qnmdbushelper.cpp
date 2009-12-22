@@ -54,7 +54,7 @@
 
 #include <QDebug>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 void QNmDBusHelper::deviceStateChanged(quint32 state)
  {
@@ -114,4 +114,4 @@ void QNmDBusHelper::slotSettingsRemoved()
 }
 
 #include "moc_qnmdbushelper_p.cpp"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

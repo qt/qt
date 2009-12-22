@@ -63,7 +63,7 @@
 #include "qnmwifiengine_unix_p.h"
 #endif
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #if defined(BACKEND_NM)
 static bool NetworkManagerAvailable()
@@ -538,5 +538,5 @@ if(serviceName.isEmpty())
 #endif
 
 #include "moc_qnetworksession_p.cpp"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 

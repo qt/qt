@@ -47,7 +47,7 @@
 #include "qnetworkconfigmanager_p.h"
 #endif
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNetworkConfigurationManagerPrivate, connManager);
 
@@ -329,5 +329,5 @@ void QNetworkConfigurationManager::updateConfigurations()
 
 #include "moc_qnetworkconfigmanager.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 

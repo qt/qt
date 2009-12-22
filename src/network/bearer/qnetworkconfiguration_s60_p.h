@@ -56,7 +56,7 @@
 #include <qnetworkconfiguration.h>
 #include <QtCore/qshareddata.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate : public QSharedData
 {
@@ -102,7 +102,7 @@ private:
     QNetworkConfigurationPrivate(const QNetworkConfigurationPrivate &other);
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //QNETWORKCONFIGURATIONPRIVATE_H
 

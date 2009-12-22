@@ -47,7 +47,7 @@
 
 #include "ui_dialog.h"
 
-QTM_USE_NAMESPACE
+QT_USE_NAMESPACE
 
 class QListWidget;
 class QTreeWidget;

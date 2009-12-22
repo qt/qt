@@ -42,8 +42,6 @@
 #ifndef QNETWORKSESSION_H
 #define QNETWORKSESSION_H
 
-#include "qmobilityglobal.h"
-
 #include <QtCore/qobject.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
@@ -54,10 +52,10 @@
 
 QT_BEGIN_HEADER
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QNetworkSessionPrivate;
-class Q_BEARER_EXPORT QNetworkSession : public QObject
+class Q_NETWORK_EXPORT QNetworkSession : public QObject
 {
     Q_OBJECT
 public:
@@ -128,7 +126,7 @@ private:
     friend class QNetworkSessionPrivate;
     };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

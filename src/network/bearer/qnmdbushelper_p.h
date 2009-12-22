@@ -53,14 +53,13 @@
 // We mean it.
 //
 
-#include <qmobilityglobal.h>
 #if !defined(QT_NO_DBUS) && !defined(Q_OS_MAC)
 #include <QDBusObjectPath>
 #include <QDBusContext>
 #include <QMap>
 #endif
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_DBUS) && !defined(Q_OS_MAC)
 
@@ -85,6 +84,6 @@ Q_SIGNALS:
 };
 #endif
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif// QNMDBUSHELPERPRIVATE_H

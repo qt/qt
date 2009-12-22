@@ -53,13 +53,12 @@
 // We mean it.
 //
 
-#include <qmobilityglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
 class QNetworkSessionEngine : public QObject
@@ -93,6 +92,6 @@ Q_SIGNALS:
     void connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error);
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif

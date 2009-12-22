@@ -50,7 +50,7 @@
 #include "ui_bearermonitor_640_480.h"
 #endif
 
-QTM_USE_NAMESPACE
+QT_USE_NAMESPACE
 
 class SessionWidget;
 
