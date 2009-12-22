@@ -578,9 +578,6 @@ while ( @ARGV ) {
     } elsif("$arg" eq "-show") {
 	$var = "showonly";
 	$val = "yes";
-    } elsif("$arg" eq '*') {
-        # workaround for windows 9x where "%*" expands to "*"
-        $var = 1;
     }
 
     #do something
