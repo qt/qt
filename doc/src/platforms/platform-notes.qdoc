@@ -263,14 +263,6 @@
 
     Install Qt into a subdirectory without spaces to avoid this problem.
 
-    \section2 AccelGALAXY graphic card
-
-    When you use a NT 4.0 machine with the driver number
-    4,00,1381,1000,021,4.0.0 there is a problem with drag an drop and icons.
-    The computer freezes, and you have to reset. The problem disappears with
-    the newest version of the driver, available at
-    \l{http://www.es.com/}{www.es.com}.
-
     \section2 Possible GL conflict
 
     There is a known issue with running Microsoft NetMeeting, Lotus SameTime
