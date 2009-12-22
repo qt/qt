@@ -372,6 +372,28 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "\t-bldmake clean" << endl;
     t << endl;
 
+    t << "clean-debug: $(ABLD)" << endl;
+    foreach(QString item, debugPlatforms) {
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " udeb" << endl;
+    }
+    t << endl;
+    t << "clean-release: $(ABLD)" << endl;
+    foreach(QString item, releasePlatforms) {
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
+    }
+    t << endl;
+
+    // For more specific builds, targets are in this form: clean-build-platform, e.g. clean-release-armv5
+    foreach(QString item, debugPlatforms) {
+        t << "clean-debug-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " udeb" << endl;
+    }
+    foreach(QString item, releasePlatforms) {
+        t << "clean-release-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
+    }
+    t << endl;
+
     generateExecutionTargets(t, debugPlatforms);
 }
 
