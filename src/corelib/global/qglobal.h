@@ -1540,9 +1540,6 @@ inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
-#define QT_WA(unicode, ansi) unicode
-#define QT_WA_INLINE(unicode, ansi) (unicode)
-
 #endif /* Q_WS_WIN */
 
 #ifndef Q_OUTOFLINE_TEMPLATE
