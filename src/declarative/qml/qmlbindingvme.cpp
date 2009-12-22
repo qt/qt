@@ -480,8 +480,9 @@ static bool findgeneric(Register *output,                                 // val
 
         if (contextPropertyIndex != -1) {
 
-            subscribe(QmlContextPrivate::get(context), contextPropertyIndex + context->notifyIndex,
-                      subIdx, config);
+            if (subIdx != -1) 
+                subscribe(QmlContextPrivate::get(context), contextPropertyIndex + context->notifyIndex,
+                          subIdx, config);
 
             if (contextPropertyIndex < context->idValueCount) {
                 output->setQObject(context->idValues[contextPropertyIndex]);
