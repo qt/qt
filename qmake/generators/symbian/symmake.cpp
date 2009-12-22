@@ -1866,7 +1866,7 @@ void SymbianMakefileGenerator::generateExecutionTargets(QTextStream& t, const QS
             t << "else" << endl;
         }
         t << "run: sis" << endl;
-        t << "\trunonphone --sis " << fixedTarget << "_$(QT_SIS_TARGET).sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
+        t << "\trunonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis " << fixedTarget << "_$(QT_SIS_TARGET).sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
         if (platforms.contains("winscw")) {
             t << "endif" << endl;
         }
