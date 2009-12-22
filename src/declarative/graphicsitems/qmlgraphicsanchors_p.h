@@ -79,7 +79,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsAnchors : public QObject
     Q_PROPERTY(QmlGraphicsItem *centerIn READ centerIn WRITE setCenterIn RESET resetCenterIn NOTIFY centerInChanged)
 
 public:
-    QmlGraphicsAnchors(QObject *parent=0);
+    QmlGraphicsAnchors(QmlGraphicsItem *item, QObject *parent=0);
     virtual ~QmlGraphicsAnchors();
 
     enum UsedAnchor { 
@@ -156,8 +156,6 @@ public:
     void resetCenterIn();
 
     UsedAnchors usedAnchors() const;
-
-    void setItem(QmlGraphicsItem *item);
 
     void classBegin();
     void componentComplete();

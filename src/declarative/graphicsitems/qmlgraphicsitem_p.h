@@ -173,8 +173,7 @@ public:
     QmlGraphicsAnchors *anchors() {
         if (!_anchors) {
             Q_Q(QmlGraphicsItem);
-            _anchors = new QmlGraphicsAnchors;
-            _anchors->setItem(q);
+            _anchors = new QmlGraphicsAnchors(q);
             if (!_componentComplete)
                 _anchors->classBegin();
         }

@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,Anchors,QmlGraphicsAnchors)
+QML_DEFINE_NOCREATE_TYPE(QmlGraphicsAnchors)
 
 //TODO: should we cache relationships, so we don't have to check each time (parent-child or sibling)?
 //TODO: support non-parent, non-sibling (need to find lowest common ancestor)
@@ -131,8 +131,8 @@ static qreal adjustedPosition(QmlGraphicsItem *item, QmlGraphicsAnchorLine::Anch
     \warning Currently, only anchoring to siblings or parent is supported.
 */
 
-QmlGraphicsAnchors::QmlGraphicsAnchors(QObject *parent)
-  : QObject(*new QmlGraphicsAnchorsPrivate(), parent)
+QmlGraphicsAnchors::QmlGraphicsAnchors(QmlGraphicsItem *item, QObject *parent)
+  : QObject(*new QmlGraphicsAnchorsPrivate(item), parent)
 {
 }
 
@@ -978,12 +978,6 @@ QmlGraphicsAnchors::UsedAnchors QmlGraphicsAnchors::usedAnchors() const
 {
     Q_D(const QmlGraphicsAnchors);
     return d->usedAnchors;
-}
-
-void QmlGraphicsAnchors::setItem(QmlGraphicsItem *item)
-{
-    Q_D(QmlGraphicsAnchors);
-    d->item = item;
 }
 
 bool QmlGraphicsAnchorsPrivate::checkHValid() const
