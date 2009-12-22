@@ -80,6 +80,7 @@ public:
     ~QmlGraphicsTextPrivate();
 
     void updateSize();
+    void updateLayout();
     void markImgDirty() {
         Q_Q(QmlGraphicsText);
         imgDirty = true;

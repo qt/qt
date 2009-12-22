@@ -92,10 +92,8 @@ public:
             m_data = (T *)realloc(m_data, m_capacity * sizeof(T));
         }
         int moveCount = m_count - idx;
-        if (moveCount) {
-            qDebug() << "insert" << m_count << idx;
+        if (moveCount)
             ::memmove(m_data + idx + 1, m_data + idx, moveCount * sizeof(T));
-        }
         m_count++;
         m_data[idx] = v;
     }
