@@ -66,7 +66,6 @@ public:
 
 private:
     int quality;
-    QByteArray parameters;
     QSize scaledSize;
 };
 

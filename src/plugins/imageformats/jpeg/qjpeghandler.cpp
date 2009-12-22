@@ -84,7 +84,7 @@ class QImageSmoothScaler
 public:
     QImageSmoothScaler(const int w, const int h, const QImage &src);
     QImageSmoothScaler(const int srcWidth, const int srcHeight,
-                       const char *parameters);
+                       const int dstWidth, const int dstHeight);
 
     virtual ~QImageSmoothScaler(void);
 
@@ -123,33 +123,9 @@ QImageSmoothScaler::QImageSmoothScaler(const int w, const int h,
 }
 
 QImageSmoothScaler::QImageSmoothScaler(const int srcWidth, const int srcHeight,
-                                       const char *parameters)
+                                       const int dstWidth, const int dstHeight)
 {
-    char    sModeStr[1024];
-    int	    t1;
-    int	    t2;
-    int	    dstWidth;
-    int	    dstHeight;
-
-    sModeStr[0] = '\0';
-
     d = new QImageSmoothScalerPrivate;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && defined(_MSC_VER) && _MSC_VER >= 1400
-    sscanf_s(parameters, "Scale( %i, %i, %1023s )", &dstWidth, &dstHeight, sModeStr, sizeof(sModeStr));
-#else
-    sscanf(parameters, "Scale( %i, %i, %s )", &dstWidth, &dstHeight, sModeStr);
-#endif
-    QString sModeQStr = QString::fromLatin1(sModeStr);
-
-    t1 = srcWidth * dstHeight;
-    t2 = srcHeight * dstWidth;
-
-    if (((sModeQStr == QLatin1String("ScaleMin")) && (t1 > t2)) || ((sModeQStr == QLatin1String("ScaleMax")) && (t2 < t2))) {
-	dstHeight = t2 / srcWidth;
-    } else if (sModeQStr != QLatin1String("ScaleFree")) {
-	dstWidth = t1 / srcHeight;
-    }
-
     d->setup(srcWidth, srcHeight, dstWidth, dstHeight, 0);
 }
 
@@ -467,8 +443,8 @@ QImage QImageSmoothScaler::scale()
 class jpegSmoothScaler : public QImageSmoothScaler
 {
 public:
-    jpegSmoothScaler(struct jpeg_decompress_struct *info, const char *params):
-	QImageSmoothScaler(info->output_width, info->output_height, params)
+    jpegSmoothScaler(struct jpeg_decompress_struct *info, int dstWidth, int dstHeight)
+	: QImageSmoothScaler(info->output_width, info->output_height, dstWidth, dstHeight)
     {
 	cinfo = info;
 	cols24Bit = scaledWidth() * 3;
@@ -637,18 +613,6 @@ inline my_jpeg_source_mgr::my_jpeg_source_mgr(QIODevice *device)
 }
 
 
-static void scaleSize(int &reqW, int &reqH, int imgW, int imgH, Qt::AspectRatioMode mode)
-{
-    if (mode == Qt::IgnoreAspectRatio)
-        return;
-    int t1 = imgW * reqH;
-    int t2 = reqW * imgH;
-    if ((mode == Qt::KeepAspectRatio && (t1 > t2)) || (mode == Qt::KeepAspectRatioByExpanding && (t1 < t2)))
-        reqH = t2 / imgW;
-    else
-        reqW = t1 / imgH;
-}
-
 static bool read_jpeg_size(QIODevice *device, int &w, int &h)
 {
     bool rt = false;
@@ -763,8 +727,7 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
 }
 
 static bool read_jpeg_image(QIODevice *device, QImage *outImage,
-                            const QByteArray &parameters, QSize scaledSize,
-                            int inQuality )
+                            QSize scaledSize, int inQuality )
 {
 #ifdef QT_NO_IMAGE_SMOOTHSCALE
     Q_UNUSED( scaledSize );
@@ -794,16 +757,9 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
         if (quality < 0)
             quality = 75;
 
-        QString params = QString::fromLatin1(parameters);
-        params.simplified();
-        int sWidth = 0, sHeight = 0;
-        char sModeStr[1024] = "";
-        Qt::AspectRatioMode sMode;
-
 #ifndef QT_NO_IMAGE_SMOOTHSCALE
         // If high quality not required, shrink image during decompression
-        if (scaledSize.isValid() && !scaledSize.isEmpty() && quality < HIGH_QUALITY_THRESHOLD
-            && !params.contains(QLatin1String("GetHeaderInformation")) ) {
+        if (scaledSize.isValid() && !scaledSize.isEmpty() && quality < HIGH_QUALITY_THRESHOLD) {
             cinfo.scale_denom = qMin(cinfo.image_width / scaledSize.width(),
                                      cinfo.image_width / scaledSize.height());
             if (cinfo.scale_denom < 2) {
@@ -829,93 +785,15 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
 
         (void) jpeg_start_decompress(&cinfo);
 
-        if (params.contains(QLatin1String("GetHeaderInformation"))) {
-            if (!ensureValidImage(outImage, &cinfo, true))
-                longjmp(jerr.setjmp_buffer, 1);
-        } else if (params.contains(QLatin1String("Scale"))) {
-#if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
-            sscanf_s(params.toLatin1().data(), "Scale(%i, %i, %1023s)",
-                     &sWidth, &sHeight, sModeStr, sizeof(sModeStr));
-#else
-            sscanf(params.toLatin1().data(), "Scale(%i, %i, %1023s)",
-                   &sWidth, &sHeight, sModeStr);
-#endif
-
-            QString sModeQStr(QString::fromLatin1(sModeStr));
-            if (sModeQStr == QLatin1String("IgnoreAspectRatio")) {
-                sMode = Qt::IgnoreAspectRatio;
-            } else if (sModeQStr == QLatin1String("KeepAspectRatio")) {
-                sMode = Qt::KeepAspectRatio;
-            } else if (sModeQStr == QLatin1String("KeepAspectRatioByExpanding")) {
-                sMode = Qt::KeepAspectRatioByExpanding;
-            } else {
-                qDebug("read_jpeg_image: invalid aspect ratio mode \"%s\", see QImage::AspectRatioMode documentation", sModeStr);
-                sMode = Qt::KeepAspectRatio;
-            }
-
-//            qDebug("Parameters ask to scale the image to %i x %i AspectRatioMode: %s", sWidth, sHeight, sModeStr);
-            scaleSize(sWidth, sHeight, cinfo.output_width, cinfo.output_height, sMode);
-//            qDebug("Scaling the jpeg to %i x %i", sWidth, sHeight, sModeStr);
-
-            if (cinfo.output_components == 3 || cinfo.output_components == 4) {
-                if (outImage->size() != QSize(sWidth, sHeight) || outImage->format() != QImage::Format_RGB32)
-                    *outImage = QImage(sWidth, sHeight, QImage::Format_RGB32);
-            } else if (cinfo.output_components == 1) {
-                if (outImage->size() != QSize(sWidth, sHeight) || outImage->format() != QImage::Format_Indexed8)
-                    *outImage = QImage(sWidth, sHeight, QImage::Format_Indexed8);
-                outImage->setColorCount(256);
-                for (int i = 0; i < 256; ++i)
-                    outImage->setColor(i, qRgb(i,i,i));
-            } else {
-                // Unsupported format
-            }
-            if (outImage->isNull())
-                longjmp(jerr.setjmp_buffer, 1);
-
-            if (!outImage->isNull()) {
-                QImage tmpImage(cinfo.output_width, 1, QImage::Format_RGB32);
-                uchar* inData = tmpImage.bits();
-                uchar* outData = outImage->bits();
-                int out_bpl = outImage->bytesPerLine();
-                while (cinfo.output_scanline < cinfo.output_height) {
-                    int outputLine = sHeight * cinfo.output_scanline / cinfo.output_height;
-                    (void) jpeg_read_scanlines(&cinfo, &inData, 1);
-                    if (cinfo.output_components == 3) {
-                        uchar *in = inData;
-                        QRgb *out = (QRgb*)outData + outputLine * out_bpl;
-                        for (uint i=0; i<cinfo.output_width; i++) {
-// ### Only scaling down an image works, I don't think scaling up will work at the moment
-// ### An idea I have to make this a smooth scale is to progressively add the pixel values up
-// When scaling down, multiple values are being over drawn in to the output buffer.
-// Instead, a weighting based on the distance the line or pixel is from the output pixel determines
-// the weight of it when added to the output buffer. At present it is a non-smooth scale which is
-// inefficently implemented, it still uncompresses all the jpeg, an optimization for progressive
-// jpegs could be made if scaling by say 50% or some other special cases
-                            out[sWidth * i / cinfo.output_width] = qRgb(in[0], in[1], in[2]);
-                            in += 3;
-                        }
-                    } else {
-// ### Need to test the case where the jpeg is grayscale, need some black and white jpegs to test
-// this code. (also only scales down and probably won't scale to a larger size)
-                        uchar *in = inData;
-                        uchar *out = outData + outputLine*out_bpl;
-                        for (uint i=0; i<cinfo.output_width; i++) {
-                            out[sWidth * i / cinfo.output_width] = in[i];
-                        }
-                    }
-                }
-                (void) jpeg_finish_decompress(&cinfo);
-            }
 #ifndef QT_NO_IMAGE_SMOOTHSCALE
-        } else if (scaledSize.isValid() && scaledSize != QSize(cinfo.output_width, cinfo.output_height)
+        if (scaledSize.isValid() && scaledSize != QSize(cinfo.output_width, cinfo.output_height)
             && quality >= HIGH_QUALITY_THRESHOLD) {
 
-            jpegSmoothScaler scaler(&cinfo, QString().sprintf("Scale( %d, %d, ScaleFree )",
-                                                              scaledSize.width(),
-                                                              scaledSize.height()).toLatin1().data());
+            jpegSmoothScaler scaler(&cinfo, scaledSize.width(), scaledSize.height());
             *outImage = scaler.scale();
+        } else
 #endif
-        } else {
+        {
             if (!ensureValidImage(outImage, &cinfo))
                 longjmp(jerr.setjmp_buffer, 1);
 
@@ -1224,7 +1102,7 @@ bool QJpegHandler::read(QImage *image)
 {
     if (!canRead())
         return false;
-    return read_jpeg_image(device(), image, parameters, scaledSize, quality);
+    return read_jpeg_image(device(), image, scaledSize, quality);
 }
 
 bool QJpegHandler::write(const QImage &image)
