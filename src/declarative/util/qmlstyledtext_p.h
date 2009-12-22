@@ -48,7 +48,7 @@ class QPainter;
 class QPointF;
 class QString;
 class QmlStyledTextPrivate;
-class QmlStyledText
+class Q_DECLARATIVE_EXPORT QmlStyledText
 {
 public:
     static void parse(const QString &string, QTextLayout &layout);
