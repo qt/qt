@@ -2545,24 +2545,7 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
             output->bytecode << store;
             return;
         }
-    } else if (bs.isSingleContextProperty()) {
-        int propIndex = bs.singleContextPropertyIndex();
-
-        QMetaProperty p = 
-            ref.bindingContext.object->metaObject()->property(propIndex);
-        if ((p.notifySignalIndex() != -1 || p.isConstant()) && 
-            canCoerce(prop->type, p.userType())) {
-
-            store.type = QmlInstruction::StoreObjPropBinding;
-            store.assignObjPropBinding.property = prop->index;
-            store.assignObjPropBinding.contextIdx = propIndex;
-            store.assignObjPropBinding.context = ref.bindingContext.stack;
-            store.assignObjPropBinding.notifyIdx = p.notifySignalIndex();
-
-            output->bytecode << store;
-            return;
-        }
-    }
+    } 
         
     store.type = QmlInstruction::StoreBinding;
     store.assignBinding.value = output->indexForByteArray(ref.compiledData);
@@ -2634,7 +2617,7 @@ bool QmlCompiler::completeComponentBuild()
 
         bs.compile(expr);
 
-        if (qmlExperimental() && (!bs.isValid() || (!bs.isSingleIdFetch() && !bs.isSingleContextProperty()))) {
+        if (qmlExperimental() && (!bs.isValid() || !bs.isSingleIdFetch())) {
             int index = bindingCompiler.compile(expr, QmlEnginePrivate::get(engine));
             if (index != -1) {
                 qWarning() << "Accepted for optimization:" << qPrintable(expr.expression.asScript());

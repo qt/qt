@@ -128,32 +128,6 @@ private:
     int m_id;
 };
 
-class QmlBinding_ObjProperty : public QObject,
-                               public QmlAbstractExpression,
-                               public QmlAbstractBinding
-{
-    Q_OBJECT
-public:
-    QmlBinding_ObjProperty(QObject *object, int propertyIdx,
-                           QObject *context, int contextIdx, int notifyIdx);
-
-    // Inherited from QmlAbstractBinding
-    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
-    virtual int propertyIndex();
-    virtual void update(QmlMetaProperty::WriteFlags flags);
-
-private Q_SLOTS:
-    void update() { update(QmlMetaProperty::DontRemoveBinding); }
-
-private:
-    bool m_enabled;
-    QObject *m_object;
-    int m_propertyIdx;
-    QObject *m_context;
-    int m_contextIdx;
-    int m_notifyIdx;
-};
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

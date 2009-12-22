@@ -164,9 +164,6 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreIdOptBinding:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_ID_OPT_BINDING\t" << instr->assignIdOptBinding.property << "\t" << instr->assignIdOptBinding.id;
         break;
-    case QmlInstruction::StoreObjPropBinding:
-        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_OBJ_PROP_BINDING\t" << instr->assignObjPropBinding.property << "\t" << instr->assignObjPropBinding.contextIdx << "\t" << instr->assignObjPropBinding.context << "\t" << instr->assignObjPropBinding.notifyIdx;
-        break;
     case QmlInstruction::StoreValueSource:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VALUE_SOURCE\t" << instr->assignValueSource.property << "\t" << instr->assignValueSource.castValue;
         break;
