@@ -80,22 +80,7 @@ symbian {
                bearer/qnetworksession_p.cpp \
                bearer/qnetworksessionengine.cpp
 
-    unix:!mac:contains(networkmanager_enabled, yes) {
-        contains(QT_CONFIG,dbus) {
-            DEFINES += BACKEND_NM
-            QT += dbus
-
-            HEADERS += bearer/qnmdbushelper_p.h \
-                       bearer/qnetworkmanagerservice_p.h \
-                       bearer/qnmwifiengine_unix_p.h
-
-            SOURCES += bearer/qnmdbushelper.cpp \
-                       bearer/qnetworkmanagerservice_p.cpp \
-                       bearer/qnmwifiengine_unix.cpp
-        } else {
-            message("NetworkManager backend requires Qt DBus support")
-        }
-    }
+    contains(QT_CONFIG, networkmanager):DEFINES += BACKEND_NM
 
     win32 {
         HEADERS += bearer/qnlaengine_win_p.h \

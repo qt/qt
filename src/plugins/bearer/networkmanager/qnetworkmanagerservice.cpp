@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -53,8 +53,8 @@
 
 #include <NetworkManager/NetworkManager.h>
 
-#include <qnmdbushelper_p.h>
-#include "qnetworkmanagerservice_p.h"
+#include "qnmdbushelper.h"
+#include "qnetworkmanagerservice.h"
 
 //Q_DECLARE_METATYPE(QList<uint>)
 QT_BEGIN_NAMESPACE
@@ -1005,7 +1005,5 @@ QStringList QNetworkManagerIp4Config::domains() const
 {
     return d->connectionInterface->property("Domains").toStringList();
 }
-
-#include "moc_qnetworkmanagerservice_p.cpp"
 
 QT_END_NAMESPACE

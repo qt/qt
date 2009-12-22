@@ -143,7 +143,7 @@ private:
 #endif
 #endif
 #ifdef BACKEND_NM
-    QNmWifiEngine *nmWifi;
+    QNetworkSessionEngine *nmWifi;
 #endif
 #ifdef Q_OS_DARWIN
     QCoreWlanEngine *coreWifi;

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -58,12 +58,13 @@
 #include <QHash>
 #include <QDBusPendingCallWatcher>
 #include <QExplicitlySharedDataPointer>
-#include <qnetworkmanagerservice_p.h>
 
-#include "qnetworksessionengine_p.h"
+#include "qnetworkmanagerservice.h"
+
+#include <QtNetwork/private/qnetworksessionengine_p.h>
 #include <qnetworksession.h>
 #include <qnetworkconfiguration.h>
-#include <qnetworkconfigmanager_p.h>
+#include <QtNetwork/private/qnetworkconfigmanager_p.h>
 
 
 

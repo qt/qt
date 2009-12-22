@@ -59,25 +59,7 @@
 
 #include <QtNetwork/qnetworkinterface.h>
 
-#if defined(BACKEND_NM)
-#include "qnmwifiengine_unix_p.h"
-#endif
-
 QT_BEGIN_NAMESPACE
-
-#if defined(BACKEND_NM)
-static bool NetworkManagerAvailable()
-{
-    QDBusConnection dbusConnection = QDBusConnection::systemBus();
-    if (dbusConnection.isConnected()) {
-        QDBusConnectionInterface *dbiface = dbusConnection.interface();
-        QDBusReply<bool> reply = dbiface->isServiceRegistered("org.freedesktop.NetworkManager");
-        if (reply.isValid())
-            return reply.value();
-    }
-    return false;
-}
-#endif
 
 static QNetworkSessionEngine *getEngineFromId(const QString &id)
 {
@@ -95,13 +77,6 @@ static QNetworkSessionEngine *getEngineFromId(const QString &id)
         return nativeWifi;
 #endif
 
-#if defined(BACKEND_NM)
-    if(NetworkManagerAvailable()) {
-        QNmWifiEngine *nmwiifi = QNmWifiEngine::instance();
-        if (nmwiifi && nmwiifi->hasIdentifier(id))
-            return nmwiifi;
-    }
-#endif
 #ifdef Q_OS_DARWIN
     QCoreWlanEngine *coreWifi = QCoreWlanEngine::instance();
     if (coreWifi && coreWifi->hasIdentifier(id))
@@ -322,7 +297,7 @@ QNetworkSession::SessionError QNetworkSessionPrivate::error() const
 
 quint64 QNetworkSessionPrivate::bytesWritten() const
 {
-#if defined(BACKEND_NM)
+#if defined(BACKEND_NM) && 0
     if( state == QNetworkSession::Connected ) {
         if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
             foreach (const QNetworkConfiguration &config, publicConfig.children()) {
@@ -340,7 +315,7 @@ quint64 QNetworkSessionPrivate::bytesWritten() const
 
 quint64 QNetworkSessionPrivate::bytesReceived() const
 {
-#if defined(BACKEND_NM)
+#if defined(BACKEND_NM) && 0
     if( state == QNetworkSession::Connected ) {
         if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
             foreach (const QNetworkConfiguration &config, publicConfig.children()) {
@@ -445,7 +420,7 @@ void QNetworkSessionPrivate::networkConfigurationsChanged()
         updateStateFromServiceNetwork();
     else
         updateStateFromActiveConfig();
-#if defined(BACKEND_NM)
+#if defined(BACKEND_NM) && 0
         setActiveTimeStamp();
 #endif
 }
@@ -492,7 +467,7 @@ void QNetworkSessionPrivate::connectionError(const QString &id, QNetworkSessionE
     }
 }
 
-#if defined(BACKEND_NM)
+#if defined(BACKEND_NM) && 0
 void QNetworkSessionPrivate::setActiveTimeStamp()
 {
     if(NetworkManagerAvailable()) {

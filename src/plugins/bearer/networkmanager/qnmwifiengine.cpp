@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,15 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qnmwifiengine_unix_p.h"
-#include "qnetworkconfiguration_p.h"
+#include "qnmwifiengine.h"
+
+#include <QtNetwork/private/qnetworkconfiguration_p.h>
 #include <qnetworkconfiguration.h>
 
 #include <QtCore/qstringlist.h>
 
 #include <QtNetwork/qnetworkinterface.h>
 #include <NetworkManager/NetworkManager.h>
-#include <qnetworkmanagerservice_p.h>
+#include "qnetworkmanagerservice.h"
 
 #include <QNetworkInterface>
 
@@ -1122,8 +1123,6 @@ QStringList QNmWifiEngine::getConnectionPathForId(const QString &uuid)
     }
     return QStringList();
 }
-
-#include "moc_qnmwifiengine_unix_p.cpp"
 
 QT_END_NAMESPACE
 

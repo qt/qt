@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -41,16 +41,14 @@
 
 // this class is for helping qdbus get stuff
 
-#include "qnmdbushelper_p.h"
+#include "qnmdbushelper.h"
 
-#if !defined(QT_NO_DBUS) && !defined(Q_OS_MAC)
 #include <NetworkManager/NetworkManager.h>
 
 #include <QDBusError>
 #include <QDBusInterface>
 #include <QDBusMessage>
 #include <QDBusReply>
-#endif
 
 #include <QDebug>
 
@@ -113,5 +111,4 @@ void QNmDBusHelper::slotSettingsRemoved()
     emit pathForSettingsRemoved(msg.path());
 }
 
-#include "moc_qnmdbushelper_p.cpp"
 QT_END_NAMESPACE
