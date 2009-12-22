@@ -509,14 +509,14 @@ QVariant QNetworkSession::sessionProperty(const QString& key) const
     if (!d->publicConfig.isValid())
         return QVariant();
 
-    if (key == "ActiveConfigurationIdentifier") {
+    if (key == QLatin1String("ActiveConfigurationIdentifier")) {
         if (!d->isActive)
             return QString();
         else
             return d->activeConfig.identifier();
     }
 
-    if (key == "UserChoiceConfigurationIdentifier") {
+    if (key == QLatin1String("UserChoiceConfigurationIdentifier")) {
         if (!d->isActive || d->publicConfig.type() != QNetworkConfiguration::UserChoice)
             return QString();
 
@@ -539,9 +539,10 @@ QVariant QNetworkSession::sessionProperty(const QString& key) const
 */
 void QNetworkSession::setSessionProperty(const QString& key, const QVariant& value)
 {
-    if (key == "ActiveConfigurationIdentifier" 
-            || key == "UserChoiceConfigurationIdentifier") 
+    if (key == QLatin1String("ActiveConfigurationIdentifier") ||
+        key == QLatin1String("UserChoiceConfigurationIdentifier")) {
         return;
+    }
 
     d->setSessionProperty(key, value);
 }

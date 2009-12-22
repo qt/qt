@@ -159,7 +159,7 @@ QList<QNetworkConfigurationPrivate *> QGenericEngine::getConfigurations(bool *ok
             continue;
 
         // ignore WLAN interface handled in seperate engine
-        if (qGetInterfaceType(interface.name()) == "WLAN")
+        if (qGetInterfaceType(interface.name()) == QLatin1String("WLAN"))
             continue;
 
         QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate;
