@@ -1852,3 +1852,22 @@ void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
     t << "distclean: clean dodistclean" << endl;
     t << endl;
 }
+
+void SymbianMakefileGenerator::generateExecutionTargets(QTextStream& t, const QStringList& platforms)
+{
+    // create execution targets
+    if (targetType == TypeExe) {
+        if (platforms.contains("winscw")) {
+            t << "ifeq (\"DEBUG-winscw\", \"$(QT_SIS_TARGET)\")" << endl;
+            t << "run:" << endl;
+            t << "\t-call " << epocRoot() << "epoc32/release/winscw/udeb/" << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
+            t << "else" << endl;
+        }
+        t << "run: sis" << endl;
+        t << "\trunonphone --sis " << fixedTarget << "_$(QT_SIS_TARGET).sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
+        if (platforms.contains("winscw")) {
+            t << "endif" << endl;
+        }
+        t << endl;
+    }
+}
