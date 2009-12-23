@@ -47,16 +47,15 @@
 #include "qmltypenamescriptclass_p.h"
 #include "qmllistscriptclass_p.h"
 #include "qmlbinding.h"
+#include "qmlguard_p.h"
 
 #include <QtCore/qtimer.h>
-
-#include <private/qguard_p.h>
 
 QT_BEGIN_NAMESPACE
 
 struct ObjectData : public QScriptDeclarativeClass::Object {
     ObjectData(QObject *o, int t) : object(o), type(t) {}
-    QGuard<QObject> object;
+    QmlGuard<QObject> object;
     int type;
 };
 

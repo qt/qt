@@ -57,10 +57,9 @@
 
 #include "qmlbasicscript_p.h"
 #include "qmlengine_p.h"
+#include "qmlguard_p.h"
 
 #include <QtScript/qscriptvalue.h>
-
-#include <private/qguard_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -109,15 +108,15 @@ public:
     QString url; // This is a QString for a reason.  QUrls are slooooooow...
     int line;
 
-    struct SignalGuard : public QGuard<QObject> {
+    struct SignalGuard : public QmlGuard<QObject> {
         SignalGuard() : isDuplicate(false), notifyIndex(-1) {}
 
         SignalGuard &operator=(QObject *obj) {
-            QGuard<QObject>::operator=(obj);
+            QmlGuard<QObject>::operator=(obj);
             return *this;
         }
         SignalGuard &operator=(const SignalGuard &o) {
-            QGuard<QObject>::operator=(o);
+            QmlGuard<QObject>::operator=(o);
             isDuplicate = o.isDuplicate;
             notifyIndex = o.notifyIndex;
             return *this;

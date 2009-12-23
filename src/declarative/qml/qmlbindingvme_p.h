@@ -56,6 +56,7 @@
 #include <QtCore/qglobal.h>
 #include <private/qmlbasicscript_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
+#include "qmlguard_p.h"
 
 QT_BEGIN_HEADER
 
@@ -73,7 +74,7 @@ public:
         int targetSlot;
 
         struct Subscription {
-            QGuard<QObject> source;
+            QmlGuard<QObject> source;
             int notifyIndex;
         };
         Subscription *subscriptions;

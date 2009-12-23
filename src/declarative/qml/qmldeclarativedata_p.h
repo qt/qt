@@ -54,8 +54,8 @@
 //
 
 #include <QtScript/qscriptvalue.h>
-
 #include <private/qobject_p.h>
+#include "qmlguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +66,11 @@ class QmlPropertyCache;
 class QmlDeclarativeData : public QDeclarativeData
 {
 public:
-    QmlDeclarativeData(QmlContext *context = 0);
+    QmlDeclarativeData(QmlContext *ctxt = 0)
+        : context(ctxt), bindings(0), nextContextObject(0), prevContextObject(0),
+          bindingBitsSize(0), bindingBits(0), outerContext(0), lineNumber(0), 
+          columnNumber(0), deferredComponent(0), deferredIdx(0), attachedProperties(0), 
+          propertyCache(0), guards(0) {}
 
     virtual void destroyed(QObject *);
 
@@ -95,12 +99,13 @@ public:
     QScriptValue scriptValue;
     QmlPropertyCache *propertyCache;
 
+    QmlGuard<QObject> *guards;
+
     static QmlDeclarativeData *get(const QObject *object, bool create = false) {
-        QObjectPrivate *priv = 
-            QObjectPrivate::get(const_cast<QObject *>(object));
-        if (priv && priv->declarativeData) {
+        QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
+        if (priv->declarativeData) {
             return static_cast<QmlDeclarativeData *>(priv->declarativeData);
-        } else if (create && priv) {
+        } else if (create) {
             priv->declarativeData = new QmlDeclarativeData;
             return static_cast<QmlDeclarativeData *>(priv->declarativeData);
         } else {
@@ -108,6 +113,25 @@ public:
         }
     }
 };
+
+template<class T>
+void QmlGuard<T>::addGuard()
+{
+    QmlDeclarativeData *data = QmlDeclarativeData::get(o, true);
+    next = data->guards;
+    if (next) reinterpret_cast<QmlGuard<T> *>(next)->prev = &next;
+    data->guards = reinterpret_cast<QmlGuard<QObject> *>(this);
+    prev = &data->guards;
+}
+
+template<class T>
+void QmlGuard<T>::remGuard()
+{
+    if (next) reinterpret_cast<QmlGuard<T> *>(next)->prev = prev;
+    *prev = next;
+    next = 0;
+    prev = 0;
+}
 
 QT_END_NAMESPACE
 

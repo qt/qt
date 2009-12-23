@@ -44,14 +44,15 @@
 #include "qmlengine_p.h"
 #include "qmlcontext_p.h"
 #include "qmltypenamescriptclass_p.h"
+#include "qmlguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
 struct ContextData : public QScriptDeclarativeClass::Object {
     ContextData() : isSharedContext(true) {}
     ContextData(QmlContext *c, QObject *o) : context(c), scopeObject(o), isSharedContext(false) {}
-    QGuard<QmlContext> context;
-    QGuard<QObject> scopeObject;
+    QmlGuard<QmlContext> context;
+    QmlGuard<QObject> scopeObject;
     bool isSharedContext;
 
     QmlContext *getContext(QmlEngine *engine) {

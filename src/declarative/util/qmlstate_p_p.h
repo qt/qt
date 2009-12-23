@@ -58,6 +58,8 @@
 #include "qmlanimation_p_p.h"
 #include "qmltransitionmanager_p_p.h"
 
+#include <qmlguard_p.h>
+
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -106,9 +108,9 @@ public:
     QmlBinding *when;
 
     class OperationList;
-    struct OperationGuard : public QGuard<QmlStateOperation>
+    struct OperationGuard : public QmlGuard<QmlStateOperation>
     {
-        OperationGuard(QObject *obj, OperationList *l) : list(l) { (QGuard<QObject>&)*this = obj; }
+        OperationGuard(QObject *obj, OperationList *l) : list(l) { (QmlGuard<QObject>&)*this = obj; }
         OperationList *list;
         void objectDestroyed(QmlStateOperation *) {
             // we assume priv will always be destroyed after objectDestroyed calls
