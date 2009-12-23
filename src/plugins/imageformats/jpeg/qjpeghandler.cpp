@@ -721,8 +721,8 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
 }
 
 static bool read_jpeg_image(QIODevice *device, QImage *outImage,
-                            QSize scaledSize, const QRect& clipRect,
-                            int inQuality )
+                            QSize scaledSize, QRect scaledClipRect,
+                            QRect clipRect, int inQuality )
 {
     struct jpeg_decompress_struct cinfo;
 
@@ -747,6 +747,42 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
         int quality = inQuality;
         if (quality < 0)
             quality = 75;
+
+        // If possible, merge the scaledClipRect into either scaledSize
+        // or clipRect to avoid doing a separate scaled clipping pass.
+        // Best results are achieved by clipping before scaling, not after.
+        if (!scaledClipRect.isEmpty()) {
+            if (scaledSize.isEmpty() && clipRect.isEmpty()) {
+                // No clipping or scaling before final clip.
+                clipRect = scaledClipRect;
+                scaledClipRect = QRect();
+            } else if (scaledSize.isEmpty()) {
+                // Clipping, but no scaling: combine the clip regions.
+                scaledClipRect.translate(clipRect.topLeft());
+                clipRect = scaledClipRect.intersected(clipRect);
+                scaledClipRect = QRect();
+            } else if (clipRect.isEmpty()) {
+                // No clipping, but scaling: if we can map back to an
+                // integer pixel boundary, then clip before scaling.
+                if ((cinfo.image_width % scaledSize.width()) == 0 &&
+                        (cinfo.image_height % scaledSize.height()) == 0) {
+                    int x = scaledClipRect.x() * cinfo.image_width /
+                            scaledSize.width();
+                    int y = scaledClipRect.y() * cinfo.image_height /
+                            scaledSize.height();
+                    int width = (scaledClipRect.right() + 1) *
+                                cinfo.image_width / scaledSize.width() - x;
+                    int height = (scaledClipRect.bottom() + 1) *
+                                 cinfo.image_height / scaledSize.height() - y;
+                    clipRect = QRect(x, y, width, height);
+                    scaledSize = scaledClipRect.size();
+                    scaledClipRect = QRect();
+                }
+            } else {
+                // Clipping and scaling: too difficult to figure out,
+                // and not a likely use case, so do it the long way.
+            }
+        }
 
         // Determine the scale factor to pass to libjpeg for quick downscaling.
         if (!scaledSize.isEmpty()) {
@@ -900,6 +936,8 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
 
     jpeg_destroy_decompress(&cinfo);
     delete iod_src;
+    if (!scaledClipRect.isEmpty())
+        *outImage = outImage->copy(scaledClipRect);
     return !outImage->isNull();
 }
 
@@ -1157,7 +1195,7 @@ bool QJpegHandler::read(QImage *image)
 {
     if (!canRead())
         return false;
-    return read_jpeg_image(device(), image, scaledSize, clipRect, quality);
+    return read_jpeg_image(device(), image, scaledSize, scaledClipRect, clipRect, quality);
 }
 
 bool QJpegHandler::write(const QImage &image)
@@ -1168,9 +1206,8 @@ bool QJpegHandler::write(const QImage &image)
 bool QJpegHandler::supportsOption(ImageOption option) const
 {
     return option == Quality
-#ifndef QT_NO_IMAGE_SMOOTHSCALE
         || option == ScaledSize
-#endif
+        || option == ScaledClipRect
         || option == ClipRect
         || option == Size
         || option == ImageFormat;
@@ -1180,10 +1217,10 @@ QVariant QJpegHandler::option(ImageOption option) const
 {
     if (option == Quality) {
         return quality;
-#ifndef QT_NO_IMAGE_SMOOTHSCALE
     } else if  (option == ScaledSize) {
         return scaledSize;
-#endif
+    } else if  (option == ScaledClipRect) {
+        return scaledClipRect;
     } else if  (option == ClipRect) {
         return clipRect;
     } else if (option == Size) {
@@ -1212,10 +1249,10 @@ void QJpegHandler::setOption(ImageOption option, const QVariant &value)
 {
     if (option == Quality)
         quality = value.toInt();
-#ifndef QT_NO_IMAGE_SMOOTHSCALE
     else if ( option == ScaledSize )
         scaledSize = value.toSize();
-#endif
+    else if ( option == ScaledClipRect )
+        scaledClipRect = value.toRect();
     else if ( option == ClipRect )
         clipRect = value.toRect();
 }

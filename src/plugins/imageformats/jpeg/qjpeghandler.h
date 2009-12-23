@@ -68,6 +68,7 @@ public:
 private:
     int quality;
     QSize scaledSize;
+    QRect scaledClipRect;
     QRect clipRect;
 };
 
