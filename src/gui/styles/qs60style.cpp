@@ -339,7 +339,7 @@ QColor QS60StylePrivate::lighterColor(const QColor &baseColor)
 
 bool QS60StylePrivate::drawsOwnThemeBackground(const QWidget *widget)
 {
-    return qobject_cast<const QDialog *> (widget);
+    return (widget ? (widget->windowType() == Qt::Dialog) : false);
 }
 
 QFont QS60StylePrivate::s60Font(
@@ -372,7 +372,6 @@ void QS60StylePrivate::clearCaches(CacheClearReason reason)
     case CC_LayoutChange:
         // when layout changes, the colors remain in cache, but graphics and fonts can change
         m_mappedFontsCache.clear();
-        deleteBackground();
         QPixmapCache::clear();
         break;
     case CC_ThemeChange:
@@ -2161,7 +2160,10 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             || qobject_cast<const QMenu *> (widget)
 #endif //QT_NO_MENU
             ) {
-            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base()))
+            //Need extra check since dialogs have their own theme background
+            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base()) &&
+                option->palette.window().texture().cacheKey() ==
+                    QS60StylePrivate::m_themePalette->window().texture().cacheKey())
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_OptionsMenu, painter, option->rect, flags);
             else
                 commonStyleDraws = true;
