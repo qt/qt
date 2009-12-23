@@ -42,11 +42,12 @@
 #include "qmllistscriptclass_p.h"
 
 #include "qmlengine_p.h"
+#include "qmlguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
 struct ListData : public QScriptDeclarativeClass::Object {
-    QGuard<QObject> object;
+    QmlGuard<QObject> object;
     int propertyIdx;
     QmlListScriptClass::ListType type;
 };

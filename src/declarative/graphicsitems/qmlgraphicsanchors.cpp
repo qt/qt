@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsAnchors)
+QML_DEFINE_TYPE(Qt,4,6,Anchors,QmlGraphicsAnchors)
 
 //TODO: should we cache relationships, so we don't have to check each time (parent-child or sibling)?
 //TODO: support non-parent, non-sibling (need to find lowest common ancestor)
@@ -130,6 +130,12 @@ static qreal adjustedPosition(QmlGraphicsItem *item, QmlGraphicsAnchorLine::Anch
 
     \warning Currently, only anchoring to siblings or parent is supported.
 */
+
+QmlGraphicsAnchors::QmlGraphicsAnchors(QObject *parent)
+  : QObject(*new QmlGraphicsAnchorsPrivate(0), parent)
+{
+    qFatal("QmlGraphicsAnchors::QmlGraphicsAnchors(QObject*) called");
+}
 
 QmlGraphicsAnchors::QmlGraphicsAnchors(QmlGraphicsItem *item, QObject *parent)
   : QObject(*new QmlGraphicsAnchorsPrivate(item), parent)

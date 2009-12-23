@@ -65,7 +65,7 @@
 #include <QtCore/qset.h>
 
 #include <private/qobject_p.h>
-#include <private/qguard_p.h>
+#include "qmlguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -112,13 +112,13 @@ public:
 
     QmlDeclarativeData *contextObjects;
 
-    struct ContextGuard : public QGuard<QObject>
+    struct ContextGuard : public QmlGuard<QObject>
     {
         ContextGuard() : priv(0), bindings(0) {}
         QmlContextPrivate *priv;
         QmlBinding_Id *bindings;
         ContextGuard &operator=(QObject *obj) {
-            (QGuard<QObject>&)*this = obj; return *this;
+            (QmlGuard<QObject>&)*this = obj; return *this;
         }
         void objectDestroyed(QObject *) { priv->destroyed(this); }
     };

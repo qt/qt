@@ -79,6 +79,7 @@ struct Register {
     void *data[2];     // Object stored here
 };
 
+// This structure is exactly 8-bytes in size
 struct Instr {
     enum {
         Noop,
@@ -137,96 +138,128 @@ struct Instr {
         FindProperty,            // find 
         FindPropertyTerminal,    // find 
         CleanupGeneric,          // cleanup
-        ConvertGenericToReal,    // genericunaryop
-        ConvertGenericToBool,    // genericunaryop
-        ConvertGenericToString,  // genericunaryop
-        ConvertGenericToUrl,     // genericunaryop
-
-    } type;
+        ConvertGenericToReal,    // unaryop
+        ConvertGenericToBool,    // unaryop
+        ConvertGenericToString,  // unaryop
+        ConvertGenericToUrl,     // unaryop
+    };
 
     union {
         struct {
-            int subscriptions;
-            int identifiers;
+            quint8 type;
+            quint8 packing[7];
+        } common;
+        struct {
+            quint8 type;
+            quint8 packing[3];
+            quint16 subscriptions;
+            quint16 identifiers;
         } init;
         struct {
-            int offset;
-            int reg;
-            int index;
+            quint8 type;
+            qint8 reg;
+            quint16 offset;
+            quint32 index;
         } subscribe;
         struct {
-            int index;
-            int reg;
+            quint8 type;
+            qint8 reg;
+            quint8 packing[2];
+            quint32 index;
         } load;
         struct {
-            int output;
-            int reg;
-            int index;
+            quint8 type;
+            qint8 output;
+            qint8 reg;
+            quint8 packing[1];
+            quint32 index;
         } attached;
         struct {
-            int output;
-            int reg;
-            int index;
+            quint8 type;
+            qint8 output;
+            qint8 reg;
+            quint8 packing[1];
+            quint32 index;
         } store;
         struct {
-            int output;
-            int objectReg;
-            int index;
+            quint8 type;
+            qint8 output;
+            qint8 objectReg;
+            quint8 packing[1];
+            quint32 index;
         } fetch;
         struct {
-            int reg;
-            int src;
+            quint8 type;
+            qint8 reg;
+            qint8 src;
+            quint8 packing[5];
         } copy;
         struct {
-            int reg;
+            quint8 type;
+            qint8 reg;
+            quint8 packing[6];
         } construct;
         struct {
-            int reg;
-            qreal value;
+            quint8 type;
+            qint8 reg;
+            quint8 packing[2];
+            float value;
         } real_value;
         struct {
-            int reg;
+            quint8 type;
+            qint8 reg;
+            quint8 packing[2];
             int value;
         } int_value;
         struct {
-            int reg;
+            quint8 type;
+            qint8 reg;
             bool value;
+            quint8 packing[5];
         } bool_value;
         struct {
-            int reg;
-            int offset;
-            int length;
+            quint8 type;
+            qint8 reg;
+            quint16 length;
+            quint32 offset;
         } string_value;
         struct {
-            int output;
-            int src1;
-            int src2;
+            quint8 type;
+            qint8 output;
+            qint8 src1;
+            qint8 src2;
+            quint8 packing[4];
         } binaryop;
         struct {
-            int output;
-            int src;
+            quint8 type;
+            qint8 output;
+            qint8 src;
+            quint8 packing[5];
         } unaryop;
         struct {
-            int output;
-            int src;
-        } genericunaryop;
-        struct {
-            int reg;
-            int count;
+            quint8 type;
+            qint8 reg;
+            quint8 packing[2];
+            quint32 count;
         } skip;
         struct {
-            int reg;
-            int src;
-            int name; 
-            int subscribeIndex;
+            quint8 type;
+            qint8 reg;
+            qint8 src;
+            quint8 packing[1];
+            quint16 name; 
+            quint16 subscribeIndex;
         } find;
         struct {
-            int reg;
+            quint8 type;
+            qint8 reg;
+            quint8 packing[6];
         } cleanup;
         struct {
-            int offset;
-            int dataIdx;
-            int length;
+            quint8 type;
+            quint8 packing[1];
+            quint16 offset;
+            quint32 dataIdx;
         } initstring;
     };
 };
@@ -633,7 +666,7 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
 
     while (instr) {
 
-    switch (instr->type) {
+    switch (instr->common.type) {
     case Instr::Noop:
         break;
 
@@ -643,7 +676,7 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
             QObject *o = registers[instr->subscribe.reg].getQObject();
             int notifyIndex = instr->subscribe.index;
 
-            if (instr->type == Instr::SubscribeId) {
+            if (instr->common.type == Instr::SubscribeId) {
                 o = QmlContextPrivate::get(context);
                 notifyIndex += context->notifyIndex;
             }
@@ -808,8 +841,11 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
 
     case Instr::InitString:
         if (!config->identifiers[instr->initstring.offset].identifier) {
-            QString str = QString::fromRawData((QChar *)(data + instr->initstring.dataIdx), 
-                                               instr->initstring.length);
+            quint32 len = *(quint32 *)(data + instr->initstring.dataIdx);
+            QChar *strdata = (QChar *)(data + instr->initstring.dataIdx + sizeof(quint32)); 
+
+            QString str = QString::fromRawData(strdata, len);
+
             config->identifiers[instr->initstring.offset] = 
                 engine->objectClass->createPersistentIdentifier(str);
         }
@@ -823,7 +859,7 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         if (!findgeneric(registers + instr->find.reg, config, instr->find.subscribeIndex, 
                          QmlContextPrivate::get(context->parent),
                          config->identifiers[instr->find.name].identifier, 
-                         instr->type == Instr::FindGenericTerminal)) {
+                         instr->common.type == Instr::FindGenericTerminal)) {
             qWarning() << "ERROR - FindGeneric*";
             return;
         }
@@ -835,7 +871,7 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
                           QmlEnginePrivate::get(context->engine),
                           config, instr->find.subscribeIndex, 
                           config->identifiers[instr->find.name].identifier, 
-                          instr->type == Instr::FindPropertyTerminal)) {
+                          instr->common.type == Instr::FindPropertyTerminal)) {
             qWarning() << "ERROR - FindProperty*";
             return;
         }
@@ -852,31 +888,31 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
 
     case Instr::ConvertGenericToReal:
         {
-            int type = registers[instr->genericunaryop.src].gettype();
-            registers[instr->genericunaryop.output].setqreal(toReal(registers + instr->genericunaryop.src, type));
+            int type = registers[instr->unaryop.src].gettype();
+            registers[instr->unaryop.output].setqreal(toReal(registers + instr->unaryop.src, type));
         }
         break;
 
     case Instr::ConvertGenericToBool:
         {
-            int type = registers[instr->genericunaryop.src].gettype();
-            registers[instr->genericunaryop.output].setbool(toBool(registers + instr->genericunaryop.src, type));
+            int type = registers[instr->unaryop.src].gettype();
+            registers[instr->unaryop.output].setbool(toBool(registers + instr->unaryop.src, type));
         }
         break;
 
     case Instr::ConvertGenericToString:
         {
-            int type = registers[instr->genericunaryop.src].gettype();
-            void *regPtr = registers[instr->genericunaryop.output].typeDataPtr();
-            new (regPtr) QString(toString(registers + instr->genericunaryop.src, type));
+            int type = registers[instr->unaryop.src].gettype();
+            void *regPtr = registers[instr->unaryop.output].typeDataPtr();
+            new (regPtr) QString(toString(registers + instr->unaryop.src, type));
         }
         break;
 
     case Instr::ConvertGenericToUrl:
         {
-            int type = registers[instr->genericunaryop.src].gettype();
-            void *regPtr = registers[instr->genericunaryop.output].typeDataPtr();
-            new (regPtr) QUrl(toUrl(registers + instr->genericunaryop.src, type, context));
+            int type = registers[instr->unaryop.src].gettype();
+            void *regPtr = registers[instr->unaryop.output].typeDataPtr();
+            new (regPtr) QUrl(toUrl(registers + instr->unaryop.src, type, context));
         }
         break;
 
@@ -903,7 +939,7 @@ void QmlBindingVME::dump(const char *programData)
 
     while (count--) {
 
-        switch (instr->type) {
+        switch (instr->common.type) {
         case Instr::Noop:
             qWarning().nospace() << "Noop";
             break;
@@ -1007,7 +1043,7 @@ void QmlBindingVME::dump(const char *programData)
             qWarning().nospace() << "Done";
             break;
         case Instr::InitString:
-            qWarning().nospace() << "InitString" << "\t\t" << instr->initstring.offset << "\t" << instr->initstring.dataIdx << "\t" << instr->initstring.length;
+            qWarning().nospace() << "InitString" << "\t\t" << instr->initstring.offset << "\t" << instr->initstring.dataIdx;
             break;
         case Instr::FindGeneric:
             qWarning().nospace() << "FindGeneric" << "\t\t" << instr->find.reg << "\t" << instr->find.name;
@@ -1025,16 +1061,16 @@ void QmlBindingVME::dump(const char *programData)
             qWarning().nospace() << "CleanupGeneric" << "\t\t" << instr->cleanup.reg;
             break;
         case Instr::ConvertGenericToReal:
-            qWarning().nospace() << "ConvertGenericToReal" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src;
+            qWarning().nospace() << "ConvertGenericToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
             break;
         case Instr::ConvertGenericToBool:
-            qWarning().nospace() << "ConvertGenericToBool" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src;
+            qWarning().nospace() << "ConvertGenericToBool" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
             break;
         case Instr::ConvertGenericToString:
-            qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src;
+            qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
             break;
         case Instr::ConvertGenericToUrl:
-            qWarning().nospace() << "ConvertGenericToUrl" << "\t" << instr->genericunaryop.output << "\t" << instr->genericunaryop.src;
+            qWarning().nospace() << "ConvertGenericToUrl" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
             break;
         default:
             qWarning().nospace() << "Unknown";
@@ -1103,37 +1139,37 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
 
         if (destination->type == QMetaType::QReal) {
             Instr convert;
-            convert.type = Instr::ConvertGenericToReal;
-            convert.genericunaryop.output = convertReg;
-            convert.genericunaryop.src = type.reg;
+            convert.common.type = Instr::ConvertGenericToReal;
+            convert.unaryop.output = convertReg;
+            convert.unaryop.src = type.reg;
             bytecode << convert;
         } else if (destination->type == QVariant::String) {
             Instr convert;
-            convert.type = Instr::ConvertGenericToString;
-            convert.genericunaryop.output = convertReg;
-            convert.genericunaryop.src = type.reg;
+            convert.common.type = Instr::ConvertGenericToString;
+            convert.unaryop.output = convertReg;
+            convert.unaryop.src = type.reg;
             bytecode << convert;
         } else if (destination->type == QMetaType::Bool) {
             Instr convert;
-            convert.type = Instr::ConvertGenericToBool;
-            convert.genericunaryop.output = convertReg;
-            convert.genericunaryop.src = type.reg;
+            convert.common.type = Instr::ConvertGenericToBool;
+            convert.unaryop.output = convertReg;
+            convert.unaryop.src = type.reg;
             bytecode << convert;
         } else if (destination->type == QVariant::Url) {
             Instr convert;
-            convert.type = Instr::ConvertGenericToUrl;
-            convert.genericunaryop.output = convertReg;
-            convert.genericunaryop.src = type.reg;
+            convert.common.type = Instr::ConvertGenericToUrl;
+            convert.unaryop.output = convertReg;
+            convert.unaryop.src = type.reg;
             bytecode << convert;
         }
 
         Instr cleanup;
-        cleanup.type = Instr::CleanupGeneric;
+        cleanup.common.type = Instr::CleanupGeneric;
         cleanup.cleanup.reg = type.reg;
         bytecode << cleanup;
 
         Instr instr;
-        instr.type = Instr::Store;
+        instr.common.type = Instr::Store;
         instr.store.output = 0;
         instr.store.index = destination->index;
         instr.store.reg = convertReg;
@@ -1141,12 +1177,12 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
 
         if (destination->type == QVariant::String) {
             Instr cleanup;
-            cleanup.type = Instr::CleanupString;
+            cleanup.common.type = Instr::CleanupString;
             cleanup.cleanup.reg = convertReg;
             bytecode << cleanup;
         } else if (destination->type == QVariant::Url) {
             Instr cleanup;
-            cleanup.type = Instr::CleanupUrl;
+            cleanup.common.type = Instr::CleanupUrl;
             cleanup.cleanup.reg = convertReg;
             bytecode << cleanup;
         }
@@ -1154,7 +1190,7 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
         releaseReg(convertReg);
 
         Instr done;
-        done.type = Instr::Done;
+        done.common.type = Instr::Done;
         bytecode << done;
 
         return true;
@@ -1163,7 +1199,7 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
         if (type.type == QVariant::Int &&
             destination->type == QMetaType::QReal) {
             Instr instr;
-            instr.type = Instr::ConvertIntToReal;
+            instr.common.type = Instr::ConvertIntToReal;
             instr.unaryop.output = type.reg;
             instr.unaryop.src = type.reg;
             bytecode << instr;
@@ -1171,7 +1207,7 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
         } else if (type.type == QMetaType::QReal &&
                    destination->type == QVariant::Int) {
             Instr instr;
-            instr.type = Instr::ConvertRealToInt;
+            instr.common.type = Instr::ConvertRealToInt;
             instr.unaryop.output = type.reg;
             instr.unaryop.src = type.reg;
             bytecode << instr;
@@ -1187,7 +1223,7 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
 
         if (type.type == destination->type) {
             Instr instr;
-            instr.type = Instr::Store;
+            instr.common.type = Instr::Store;
             instr.store.output = 0;
             instr.store.index = destination->index;
             instr.store.reg = type.reg;
@@ -1196,7 +1232,7 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
             releaseReg(type.reg);
 
             Instr done;
-            done.type = Instr::Done;
+            done.common.type = Instr::Done;
             bytecode << done;
 
             return true;
@@ -1281,13 +1317,13 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
 
             if (attachType) {
                 Instr instr;
-                instr.type = Instr::LoadScope;
+                instr.common.type = Instr::LoadScope;
                 instr.load.index = 0;
                 instr.load.reg = reg;
                 bytecode << instr;
 
                 Instr attach;
-                attach.type = Instr::LoadAttached;
+                attach.common.type = Instr::LoadAttached;
                 attach.attached.output = reg;
                 attach.attached.reg = reg;
                 attach.attached.index = attachType->index();
@@ -1309,19 +1345,19 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
                 // scope object to avoid a subscription
                 if (idObject == component) {
                     Instr instr;
-                    instr.type = Instr::LoadRoot;
+                    instr.common.type = Instr::LoadRoot;
                     instr.load.index = 0;
                     instr.load.reg = reg;
                     bytecode << instr;
                 } else if (idObject == context) {
                     Instr instr;
-                    instr.type = Instr::LoadScope;
+                    instr.common.type = Instr::LoadScope;
                     instr.load.index = 0;
                     instr.load.reg = reg;
                     bytecode << instr;
                 } else {
                     Instr instr;
-                    instr.type = Instr::LoadId;
+                    instr.common.type = Instr::LoadId;
                     instr.load.index = idObject->idIndex;
                     instr.load.reg = reg;
                     bytecode << instr;
@@ -1330,7 +1366,7 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
 
                     if (subscription(subscribeName, &type)) {
                         Instr sub;
-                        sub.type = Instr::SubscribeId;
+                        sub.common.type = Instr::SubscribeId;
                         sub.subscribe.offset = subscriptionIndex(subscribeName);
                         sub.subscribe.reg = reg;
                         sub.subscribe.index = instr.load.index;
@@ -1350,7 +1386,7 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
 
                 if (d0Idx != -1) {
                     Instr instr;
-                    instr.type = Instr::LoadScope;
+                    instr.common.type = Instr::LoadScope;
                     instr.load.index = 0;
                     instr.load.reg = reg;
                     bytecode << instr;
@@ -1361,7 +1397,7 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
                     fetch(type, context->metaObject(), reg, d0Idx, subscribeName);
                 } else if(d1Idx != -1) {
                     Instr instr;
-                    instr.type = Instr::LoadRoot;
+                    instr.common.type = Instr::LoadRoot;
                     instr.load.index = 0;
                     instr.load.reg = reg;
                     bytecode << instr;
@@ -1373,9 +1409,9 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
                 } else {
                     Instr find;
                     if (nameParts.count() == 1)
-                        find.type = Instr::FindGenericTerminal;
+                        find.common.type = Instr::FindGenericTerminal;
                     else
-                        find.type = Instr::FindGeneric;
+                        find.common.type = Instr::FindGeneric;
 
                     find.find.reg = reg;
                     find.find.src = -1;
@@ -1399,7 +1435,7 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
 
             if (attachType) {
                 Instr attach;
-                attach.type = Instr::LoadAttached;
+                attach.common.type = Instr::LoadAttached;
                 attach.attached.output = reg;
                 attach.attached.reg = reg;
                 attach.attached.index = attachType->index();
@@ -1435,9 +1471,9 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
 
                 Instr prop;
                 if (ii == nameParts.count() -1 ) 
-                    prop.type = Instr::FindPropertyTerminal;
+                    prop.common.type = Instr::FindPropertyTerminal;
                 else
-                    prop.type = Instr::FindProperty;
+                    prop.common.type = Instr::FindProperty;
 
                 prop.find.reg = reg;
                 prop.find.src = reg;
@@ -1508,7 +1544,7 @@ bool QmlBindingCompilerPrivate::numberArith(Result &type, const Result &lhs, con
 
     if (nativeReal && lhs.type == QMetaType::Int) {
         Instr convert;
-        convert.type = Instr::ConvertIntToReal;
+        convert.common.type = Instr::ConvertIntToReal;
         convert.unaryop.output = lhs.reg;
         convert.unaryop.src = lhs.reg;
         bytecode << convert;
@@ -1516,7 +1552,7 @@ bool QmlBindingCompilerPrivate::numberArith(Result &type, const Result &lhs, con
 
     if (nativeReal && rhs.type == QMetaType::Int) {
         Instr convert;
-        convert.type = Instr::ConvertIntToReal;
+        convert.common.type = Instr::ConvertIntToReal;
         convert.unaryop.output = rhs.reg;
         convert.unaryop.src = rhs.reg;
         bytecode << convert;
@@ -1528,9 +1564,9 @@ bool QmlBindingCompilerPrivate::numberArith(Result &type, const Result &lhs, con
         lhsTmp = acquireReg();
 
         Instr conv;
-        conv.type = Instr::ConvertGenericToReal;
-        conv.genericunaryop.output = lhsTmp;
-        conv.genericunaryop.src = lhs.reg;
+        conv.common.type = Instr::ConvertGenericToReal;
+        conv.unaryop.output = lhsTmp;
+        conv.unaryop.src = lhs.reg;
         bytecode << conv;
     }
 
@@ -1538,17 +1574,17 @@ bool QmlBindingCompilerPrivate::numberArith(Result &type, const Result &lhs, con
         rhsTmp = acquireReg();
 
         Instr conv;
-        conv.type = Instr::ConvertGenericToReal;
-        conv.genericunaryop.output = rhsTmp;
-        conv.genericunaryop.src = rhs.reg;
+        conv.common.type = Instr::ConvertGenericToReal;
+        conv.unaryop.output = rhsTmp;
+        conv.unaryop.src = rhs.reg;
         bytecode << conv;
     }
 
     Instr arith;
     if (op == QSOperator::Add) {
-        arith.type = nativeReal?Instr::AddReal:Instr::AddInt;
+        arith.common.type = nativeReal?Instr::AddReal:Instr::AddInt;
     } else if (op == QSOperator::Sub) {
-        arith.type = nativeReal?Instr::MinusReal:Instr::MinusInt;
+        arith.common.type = nativeReal?Instr::MinusReal:Instr::MinusInt;
     } else {
         qFatal("Unsupported arithmetic operator");
     }
@@ -1583,9 +1619,9 @@ bool QmlBindingCompilerPrivate::stringArith(Result &type, const Result &lhs, con
         lhsTmp = acquireReg(Instr::CleanupString);
 
         Instr convert;
-        convert.type = Instr::ConvertGenericToString;
-        convert.genericunaryop.output = lhsTmp;
-        convert.genericunaryop.src = lhs.reg;
+        convert.common.type = Instr::ConvertGenericToString;
+        convert.unaryop.output = lhsTmp;
+        convert.unaryop.src = lhs.reg;
         bytecode << convert;
     }
 
@@ -1593,9 +1629,9 @@ bool QmlBindingCompilerPrivate::stringArith(Result &type, const Result &lhs, con
         rhsTmp = acquireReg(Instr::CleanupString);
 
         Instr convert;
-        convert.type = Instr::ConvertGenericToString;
-        convert.genericunaryop.output = rhsTmp;
-        convert.genericunaryop.src = rhs.reg;
+        convert.common.type = Instr::ConvertGenericToString;
+        convert.unaryop.output = rhsTmp;
+        convert.unaryop.src = rhs.reg;
         bytecode << convert;
     }
 
@@ -1603,7 +1639,7 @@ bool QmlBindingCompilerPrivate::stringArith(Result &type, const Result &lhs, con
     type.type = QMetaType::QString;
 
     Instr add;
-    add.type = Instr::AddString;
+    add.common.type = Instr::AddString;
     add.binaryop.output = type.reg;
     add.binaryop.src1 = (lhsTmp == -1)?lhs.reg:lhsTmp;
     add.binaryop.src2 = (rhsTmp == -1)?rhs.reg:rhsTmp;
@@ -1647,11 +1683,11 @@ bool QmlBindingCompilerPrivate::parseLogic(QmlJS::AST::Node *node, Result &type)
 
         Instr op;
         if (expression->op == QSOperator::Gt)
-            op.type = Instr::GreaterThanReal;
+            op.common.type = Instr::GreaterThanReal;
         else if (expression->op == QSOperator::Equal)
-            op.type = Instr::CompareReal;
+            op.common.type = Instr::CompareReal;
         else if (expression->op == QSOperator::NotEqual)
-            op.type = Instr::NotCompareReal;
+            op.common.type = Instr::NotCompareReal;
         else
             return false;
         op.binaryop.output = type.reg;
@@ -1664,9 +1700,9 @@ bool QmlBindingCompilerPrivate::parseLogic(QmlJS::AST::Node *node, Result &type)
 
         Instr op;
         if (expression->op == QSOperator::Equal)
-            op.type = Instr::CompareString;
+            op.common.type = Instr::CompareString;
         else if (expression->op == QSOperator::NotEqual)
-            op.type = Instr::NotCompareString;
+            op.common.type = Instr::NotCompareString;
         else
             return false;
         op.binaryop.output = type.reg;
@@ -1704,7 +1740,7 @@ bool QmlBindingCompilerPrivate::parseConditional(QmlJS::AST::Node *node, Result 
         return false;
 
     Instr skip;
-    skip.type = Instr::Skip;
+    skip.common.type = Instr::Skip;
     skip.skip.reg = etype.reg;
     skip.skip.count = 0;
     int skipIdx = bytecode.count();
@@ -1769,7 +1805,7 @@ bool QmlBindingCompilerPrivate::parseConstant(QmlJS::AST::Node *node, Result &ty
     if (node->kind == AST::Node::Kind_TrueLiteral) {
         type.type = QVariant::Bool;
         Instr instr;
-        instr.type = Instr::Bool;
+        instr.common.type = Instr::Bool;
         instr.bool_value.reg = type.reg;
         instr.bool_value.value = true;
         bytecode << instr;
@@ -1777,17 +1813,22 @@ bool QmlBindingCompilerPrivate::parseConstant(QmlJS::AST::Node *node, Result &ty
     } else if (node->kind == AST::Node::Kind_FalseLiteral) {
         type.type = QVariant::Bool;
         Instr instr;
-        instr.type = Instr::Bool;
+        instr.common.type = Instr::Bool;
         instr.bool_value.reg = type.reg;
         instr.bool_value.value = false;
         bytecode << instr;
         return true;
     } else if (node->kind == AST::Node::Kind_NumericLiteral) {
+        qreal value = qreal(static_cast<AST::NumericLiteral *>(node)->value);
+
+        if (qreal(float(value)) != value)
+            return false;
+
         type.type = QMetaType::QReal;
         Instr instr;
-        instr.type = Instr::Real;
+        instr.common.type = Instr::Real;
         instr.real_value.reg = type.reg;
-        instr.real_value.value = qreal(static_cast<AST::NumericLiteral *>(node)->value);
+        instr.real_value.value = float(value);
         bytecode << instr;
         return true;
     } else if (node->kind == AST::Node::Kind_StringLiteral) {
@@ -1837,9 +1878,9 @@ bool QmlBindingCompilerPrivate::parseMethod(QmlJS::AST::Node *node, Result &resu
 
     Instr op;
     if (method == QLatin1String("max")) {
-        op.type = Instr::MaxReal;
+        op.common.type = Instr::MaxReal;
     } else if (method == QLatin1String("min")) {
-        op.type = Instr::MinReal;
+        op.common.type = Instr::MinReal;
     } else {
         return false;
     }
@@ -1887,7 +1928,7 @@ bool QmlBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo, int reg
 
     if (subscription(subName, &rv) && prop.hasNotifySignal() && prop.notifySignalIndex() != -1) {
         Instr sub;
-        sub.type = Instr::Subscribe;
+        sub.common.type = Instr::Subscribe;
         sub.subscribe.offset = subscriptionIndex(subName);
         sub.subscribe.reg = reg;
         sub.subscribe.index = prop.notifySignalIndex();
@@ -1895,7 +1936,7 @@ bool QmlBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo, int reg
     }
 
     Instr fetch;
-    fetch.type = Instr::Fetch;
+    fetch.common.type = Instr::Fetch;
     fetch.fetch.objectReg = reg;
     fetch.fetch.index = idx;
     fetch.fetch.output = reg;
@@ -1907,7 +1948,7 @@ bool QmlBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo, int reg
     if (rv.type == QMetaType::QString) {
         int tmp = acquireReg();
         Instr copy;
-        copy.type = Instr::Copy;
+        copy.common.type = Instr::Copy;
         copy.copy.reg = tmp;
         copy.copy.src = reg;
         bytecode << copy;
@@ -1915,7 +1956,7 @@ bool QmlBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo, int reg
         fetch.fetch.objectReg = tmp;
 
         Instr setup;
-        setup.type = Instr::NewString;
+        setup.common.type = Instr::NewString;
         setup.construct.reg = reg;
         bytecode << setup;
         registerCleanup(reg, Instr::CleanupString);
@@ -1965,7 +2006,7 @@ void QmlBindingCompilerPrivate::releaseReg(int reg)
         QPair<int, int> c = registerCleanups[reg];
         registerCleanups.remove(reg);
         Instr cleanup;
-        (int &)cleanup.type = c.first;
+        cleanup.common.type = (quint8)c.first;
         cleanup.cleanup.reg = reg;
         bytecode << cleanup;
     }
@@ -1984,7 +2025,7 @@ int QmlBindingCompilerPrivate::registerLiteralString(const QString &str)
     int reg = acquireReg(Instr::CleanupString);
 
     Instr string;
-    string.type = Instr::String;
+    string.common.type = Instr::String;
     string.string_value.reg = reg;
     string.string_value.offset = offset;
     string.string_value.length = str.length();
@@ -2001,7 +2042,10 @@ int QmlBindingCompilerPrivate::registerString(const QString &string)
     QHash<QString, QPair<int, int> >::ConstIterator iter = registeredStrings.find(string);
 
     if (iter == registeredStrings.end()) {
+        quint32 len = string.length();
+        QByteArray lendata((const char *)&len, sizeof(quint32));
         QByteArray strdata((const char *)string.constData(), string.length() * sizeof(QChar));
+        strdata.prepend(lendata);
         int rv = data.count();
         data += strdata;
 
@@ -2009,10 +2053,9 @@ int QmlBindingCompilerPrivate::registerString(const QString &string)
     } 
 
     Instr reg;
-    reg.type = Instr::InitString;
+    reg.common.type = Instr::InitString;
     reg.initstring.offset = iter->first;
     reg.initstring.dataIdx = iter->second;
-    reg.initstring.length = string.length();
     bytecode << reg;
     return reg.initstring.offset;
 }
@@ -2138,7 +2181,7 @@ QByteArray QmlBindingCompiler::program() const
 
         QVector<Instr> bytecode;
         Instr skip;
-        skip.type = Instr::Skip;
+        skip.common.type = Instr::Skip;
         skip.skip.reg = -1;
         for (int ii = 0; ii < d->committed.count(); ++ii) {
             skip.skip.count = d->committed.count() - ii - 1;

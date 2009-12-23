@@ -52,6 +52,7 @@
 #include <qmlinfo.h>
 #include <qmldeclarativedata_p.h>
 #include <qmlpropertycache_p.h>
+#include <qmlguard_p.h>
 
 #include <qlistmodelinterface_p.h>
 #include <qhash.h>
@@ -60,7 +61,6 @@
 #include <QtCore/qdebug.h>
 
 #include <private/qobject_p.h>
-#include <private/qguard_p.h>
 
 QML_DECLARE_TYPE(QListModelInterface)
 
@@ -277,9 +277,9 @@ public:
         return static_cast<QmlGraphicsVisualDataModelPrivate *>(QObjectPrivate::get(m));
     }
 
-    QGuard<QListModelInterface> m_listModelInterface;
-    QGuard<QAbstractItemModel> m_abstractItemModel;
-    QGuard<QmlGraphicsVisualDataModel> m_visualItemModel;
+    QmlGuard<QListModelInterface> m_listModelInterface;
+    QmlGuard<QAbstractItemModel> m_abstractItemModel;
+    QmlGuard<QmlGraphicsVisualDataModel> m_visualItemModel;
     QString m_part;
 
     QmlComponent *m_delegate;
@@ -434,7 +434,7 @@ Q_SIGNALS:
 private:
     friend class QmlGraphicsVisualDataModelDataMetaObject;
     int m_index;
-    QGuard<QmlGraphicsVisualDataModel> m_model;
+    QmlGuard<QmlGraphicsVisualDataModel> m_model;
     QmlGraphicsVisualDataModelDataMetaObject *m_meta;
 };
 

@@ -61,6 +61,8 @@
 
 #include <private/qobject_p.h>
 
+#include "qmlguard_p.h"
+
 QT_BEGIN_NAMESPACE
 
 #define QML_ALIAS_FLAG_PTR 0x00000001
@@ -118,7 +120,7 @@ protected:
 private:
     QObject *object;
     QmlRefCount *ref;
-    QGuard<QmlContext> ctxt;
+    QmlGuard<QmlContext> ctxt;
 
     const QmlVMEMetaData *metaData;
     int propOffset;

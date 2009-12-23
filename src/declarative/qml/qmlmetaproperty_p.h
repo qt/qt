@@ -56,6 +56,7 @@
 #include "qmlmetaproperty.h"
 
 #include "qmlpropertycache_p.h"
+#include "qmlguard_p.h"
 
 #include <private/qobject_p.h>
 
@@ -77,7 +78,7 @@ public:
 
     QmlMetaProperty *q;
     QmlContext *context;
-    QGuard<QObject> object;
+    QmlGuard<QObject> object;
 
     bool isDefaultProperty:1;
     bool isNameCached:1;

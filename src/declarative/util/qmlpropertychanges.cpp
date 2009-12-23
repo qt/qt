@@ -49,6 +49,7 @@
 #include <qmlexpression.h>
 #include <qmlbinding.h>
 #include <qmlcontext.h>
+#include <qmlguard_p.h>
 
 #include <QtCore/qdebug.h>
 
@@ -127,7 +128,7 @@ public:
     QmlExpression *expression;
     QmlExpression *reverseExpression;
     QmlExpression *rewindExpression;
-    QGuard<QmlExpression> ownedExpression;
+    QmlGuard<QmlExpression> ownedExpression;
 
     virtual void execute() {
         ownedExpression = property.setSignalExpression(expression);

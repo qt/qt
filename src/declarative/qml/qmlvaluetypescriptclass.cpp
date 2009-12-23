@@ -42,12 +42,13 @@
 #include "qmlvaluetypescriptclass_p.h"
 
 #include "qmlengine_p.h"
+#include "qmlguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
 struct QmlValueTypeReference : public QScriptDeclarativeClass::Object {
     QmlValueType *type;
-    QGuard<QObject> object;
+    QmlGuard<QObject> object;
     int property;
 };
 

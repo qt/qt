@@ -47,6 +47,7 @@
 #include <qmlinfo.h>
 #include <qmlgraphicsanchors_p_p.h>
 #include <qmlgraphicsitem_p.h>
+#include <qmlguard_p.h>
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qgraphicsitem.h>
@@ -65,8 +66,8 @@ public:
 
     QmlGraphicsItem *target;
     QmlGraphicsItem *parent;
-    QGuard<QmlGraphicsItem> origParent;
-    QGuard<QmlGraphicsItem> origStackBefore;
+    QmlGuard<QmlGraphicsItem> origParent;
+    QmlGuard<QmlGraphicsItem> origStackBefore;
     QmlGraphicsItem *rewindParent;
     QmlGraphicsItem *rewindStackBefore;
 
