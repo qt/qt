@@ -372,7 +372,6 @@ void QS60StylePrivate::clearCaches(CacheClearReason reason)
     case CC_LayoutChange:
         // when layout changes, the colors remain in cache, but graphics and fonts can change
         m_mappedFontsCache.clear();
-        deleteBackground();
         QPixmapCache::clear();
         break;
     case CC_ThemeChange:
