@@ -184,7 +184,7 @@ public:
     static void endModalSession(QWidget *widget);
     static void cancelWaitForMoreEvents();
     static void cleanupModalSessions();
-    static void flushCocoaEvents();
+    static void ensureNSAppInitialized();
 #endif
 
     MacSocketHash macSockets;
@@ -194,7 +194,7 @@ public:
     CFRunLoopObserverRef firstTimeObserver;
     QAtomicInt serialNumber;
     int lastSerial;
-    bool interrupt;
+    static bool interrupt;
 private:
     static Boolean postedEventSourceEqualCallback(const void *info1, const void *info2);
     static void postedEventsSourcePerformCallback(void *info);
