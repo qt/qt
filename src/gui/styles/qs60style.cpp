@@ -339,7 +339,7 @@ QColor QS60StylePrivate::lighterColor(const QColor &baseColor)
 
 bool QS60StylePrivate::drawsOwnThemeBackground(const QWidget *widget)
 {
-    return qobject_cast<const QDialog *> (widget);
+    return (widget ? (widget->windowType() == Qt::Dialog) : false);
 }
 
 QFont QS60StylePrivate::s60Font(
