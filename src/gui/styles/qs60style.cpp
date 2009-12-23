@@ -1571,16 +1571,16 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             f.setPointSizeF(f.pointSizeF() * KTabFontMul);
             painter->setFont(f);
 
-            if (option->state & QStyle::State_Selected){
+            const bool selected = optionTab.state & State_Selected;
+            if (selected)
                 optionTab.palette.setColor(QPalette::Active, QPalette::WindowText,
                     QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 3, option));
-            }
 
             const bool verticalTabs = optionTab.shape == QTabBar::RoundedEast
                                 || optionTab.shape == QTabBar::RoundedWest
                                 || optionTab.shape == QTabBar::TriangularEast
                                 || optionTab.shape == QTabBar::TriangularWest;
-            const bool selected = optionTab.state & State_Selected;
+
             if (verticalTabs) {
                 painter->save();
                 int newX, newY, newRotation;
