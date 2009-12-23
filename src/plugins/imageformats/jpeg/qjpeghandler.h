@@ -44,6 +44,7 @@
 
 #include <QtGui/qimageiohandler.h>
 #include <QtCore/QSize>
+#include <QtCore/QRect>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +68,7 @@ public:
 private:
     int quality;
     QSize scaledSize;
+    QRect clipRect;
 };
 
 QT_END_NAMESPACE
