@@ -991,10 +991,11 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             buttonOption.QStyleOption::operator=(*cmb);
             const int maxHeight = cmbxFrame.height();
             const int maxWidth = cmbxFrame.width() - cmbxEditField.width();
-            const int topLeftPoint = direction ? cmbxEditField.right()+1 : cmbxEditField.left()+1-maxWidth;
+            const int topLeftPoint = direction ? 
+                (cmbxEditField.right() + 1) : (cmbxEditField.left() + 1 - maxWidth);
             const QRect buttonRect(topLeftPoint, cmbxEditField.top(), maxWidth, maxHeight);
             buttonOption.rect = buttonRect;
-            buttonOption.state = cmb->state & (State_Enabled | State_MouseOver);
+            buttonOption.state = cmb->state;
             drawPrimitive(PE_PanelButtonCommand, &buttonOption, painter, widget);
 
             // draw label background - label itself is drawn separately
@@ -2107,27 +2108,28 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorSpinDown:
     case PE_IndicatorSpinUp:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            QStyleOptionSpinBox optionSpinBox = *spinBox;
-            if (QS60StylePrivate::canDrawThemeBackground(optionSpinBox.palette.base())) {
+            if (QS60StylePrivate::canDrawThemeBackground(spinBox->palette.base())) {
+                QStyleOptionSpinBox optionSpinBox = *spinBox;
                 const QS60StyleEnums::SkinParts part = (element == PE_IndicatorSpinUp) ?
                     QS60StyleEnums::SP_QgnGrafScrollArrowUp :
                     QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-                const int adjustment = qMin(optionSpinBox.rect.width(), optionSpinBox.rect.height())/6;
-                optionSpinBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );
-                QS60StylePrivate::drawSkinPart(part, painter, optionSpinBox.rect,flags);
+                const int iconMargin = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                optionSpinBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? iconMargin : -iconMargin );
+                QS60StylePrivate::drawSkinPart(part, painter, optionSpinBox.rect, flags);
             } else {
                 commonStyleDraws = true;
             }
         }
+#endif //QT_NO_SPINBOX
 #ifndef QT_NO_COMBOBOX
-        else if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+        if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             if (QS60StylePrivate::canDrawThemeBackground( option->palette.base())) {
                 // We want to draw down arrow here for comboboxes as well.
+                QStyleOptionFrame optionsComboBox = *cmb;
                 const QS60StyleEnums::SkinParts part = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-                QStyleOptionFrame comboBox = *cmb;
-                const int adjustment = qMin(comboBox.rect.width(), comboBox.rect.height())/6;
-                comboBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );
-                QS60StylePrivate::drawSkinPart(part, painter, comboBox.rect,flags);
+                const int iconMargin = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth) >> 1;
+                optionsComboBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? iconMargin : -iconMargin );
+                QS60StylePrivate::drawSkinPart(part, painter, optionsComboBox.rect, flags);
             } else {
                 commonStyleDraws = true;
             }
@@ -2150,7 +2152,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         }
 #endif //QT_NO_COMBOBOX
         break;
-#endif //QT_NO_SPINBOX
     case PE_Widget:
         if (QS60StylePrivate::drawsOwnThemeBackground(widget)
 #ifndef QT_NO_COMBOBOX
@@ -2525,7 +2526,8 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             const int buttonWidth = QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize) + 2*buttonMargin;
             QSize buttonSize;
             buttonSize.setHeight(qMax(8, spinbox->rect.height() - frameThickness));
-            buttonSize.setWidth(buttonWidth);
+            //width should at least be equal to height
+            buttonSize.setWidth(qMax(buttonSize.height(), buttonWidth));
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
 
             const int y = frameThickness + spinbox->rect.y();
@@ -2535,12 +2537,12 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 case SC_SpinBoxUp:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
                         return QRect();
-                    ret = QRect(x, y, buttonWidth, buttonSize.height());
+                    ret = QRect(x, y, buttonSize.width(), buttonSize.height());
                     break;
                 case SC_SpinBoxDown:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
                         return QRect();
-                    ret = QRect(x+buttonSize.width(), y, buttonWidth, buttonSize.height());
+                    ret = QRect(x + buttonSize.width(), y, buttonSize.width(), buttonSize.height());
                     break;
                 case SC_SpinBoxEditField:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
@@ -2570,29 +2572,29 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             ret = cmb->rect;
             const int width = cmb->rect.width();
             const int height = cmb->rect.height();
+            const int buttonIconSize = QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize);
             const int buttonMargin = cmb->frame ? 2 : 0;
             // lets use spinbox frame here as well, as no combobox specific value available.
             const int frameThickness = cmb->frame ? pixelMetric(PM_SpinBoxFrameWidth, cmb, widget) : 0;
-            const int buttonWidth = QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize);
+            const int buttonWidth = qMax(cmb->rect.height(), buttonIconSize);
+            const int xposMod = (cmb->rect.x()) + width - buttonMargin - buttonWidth;
+            const int ypos = cmb->rect.y();
 
             QSize buttonSize;
-            buttonSize.setHeight(qMax(8, (cmb->rect.height()>>1) - frameThickness)); //minimum of 8 pixels
-            buttonSize.setWidth(buttonWidth+2*buttonMargin);
+            buttonSize.setWidth(buttonWidth + 2 * buttonMargin);
+            buttonSize.setHeight(qMax(8, (cmb->rect.height() >> 1) - frameThickness)); //buttons should be squares
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
             switch (scontrol) {
                 case SC_ComboBoxArrow:
-                    ret.setRect(
-                        ret.x() + ret.width() - buttonMargin - buttonWidth,
-                        ret.y() + buttonMargin,
-                        buttonWidth,
-                        height - 2*buttonMargin);
+                    ret.setRect(xposMod, ypos + buttonMargin, buttonWidth, height - 2 * buttonMargin);
                     break;
                 case SC_ComboBoxEditField: {
-                    ret.setRect(
-                        ret.x() + frameThickness,
-                        ret.y() + frameThickness,
-                        ret.width() - 2*frameThickness - buttonSize.width(),
-                        ret.height() - 2*frameThickness);
+                    const int withFrameX = cmb->rect.x() + cmb->rect.width() - frameThickness - buttonSize.width();
+                    ret = QRect(
+                        frameThickness,
+                        frameThickness,
+                        withFrameX - frameThickness,
+                        cmb->rect.height() - 2 * frameThickness);
                     }
                 break;
             default:
