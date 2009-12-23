@@ -583,37 +583,37 @@ void QGL2PaintEngineExPrivate::updateMatrix()
 {
 //     qDebug("QGL2PaintEngineExPrivate::updateMatrix()");
 
-    // We set up the 4x4 transformation matrix on the vertex shaders to
-    // be the equivalent of glOrtho(0, w, h, 0, -1, 1) * transform:
-    //
-    // | 2/width     0     0 -1 |   | m11  m21  0   dx |
-    // |   0    -2/height  0  1 |   | m12  m22  0   dy |
-    // |   0         0    -1  0 | * |  0    0   1   0  |
-    // |   0         0     0  1 |   | m13  m23  0  m33 |
-    //
-    // We expand out the multiplication to save the cost of a full 4x4
-    // matrix multiplication as most of the components are trivial.
     const QTransform& transform = q->state()->matrix;
 
-    qreal wfactor = 2.0 / width;
-    qreal hfactor = -2.0 / height;
+    // The projection matrix converts from Qt's coordinate system to GL's coordinate system
+    //    * GL's viewport is 2x2, Qt's is width x height
+    //    * GL has +y -> -y going from bottom -> top, Qt is the other way round
+    //    * GL has [0,0] in the center, Qt has it in the top-left
+    //
+    // This results in the Projection matrix below, which is multiplied by the painter's
+    // transformation matrix, as shown below:
+    //
+    //                Projection Matrix                      Painter Transform
+    // ------------------------------------------------   ------------------------
+    // | 2.0 / width  |      0.0      |     -1.0      |   |  m11  |  m21  |  dx  |
+    // |     0.0      | -2.0 / height |      1.0      | * |  m12  |  m22  |  dy  |
+    // |     0.0      |      0.0      |      1.0      |   |  m13  |  m23  |  m33 |
+    // ------------------------------------------------   ------------------------
+    //
+    // NOTE: The resultant matrix is also transposed, as GL expects column-major matracies
 
-    pmvMatrix[0][0] = wfactor * transform.m11() - transform.m13();
-    pmvMatrix[0][1] = hfactor * transform.m12() + transform.m13();
-    pmvMatrix[0][2] = 0.0;
-    pmvMatrix[0][3] = transform.m13();
-    pmvMatrix[1][0] = wfactor * transform.m21() - transform.m23();
-    pmvMatrix[1][1] = hfactor * transform.m22() + transform.m23();
-    pmvMatrix[1][2] = 0.0;
-    pmvMatrix[1][3] = transform.m23();
-    pmvMatrix[2][0] = 0.0;
-    pmvMatrix[2][1] = 0.0;
-    pmvMatrix[2][2] = -1.0;
-    pmvMatrix[2][3] = 0.0;
-    pmvMatrix[3][0] = wfactor * transform.dx() - transform.m33();
-    pmvMatrix[3][1] = hfactor * transform.dy() + transform.m33();
-    pmvMatrix[3][2] = 0.0;
-    pmvMatrix[3][3] = transform.m33();
+    const GLfloat wfactor = 2.0f / width;
+    const GLfloat hfactor = -2.0f / height;
+
+    pmvMatrix[0][0] = (wfactor * transform.m11())  - transform.m13();
+    pmvMatrix[1][0] = (wfactor * transform.m21())  - transform.m23();
+    pmvMatrix[2][0] = (wfactor * transform.dx() )  - transform.m33();
+    pmvMatrix[0][1] = (hfactor * transform.m12())  + transform.m13();
+    pmvMatrix[1][1] = (hfactor * transform.m22())  + transform.m23();
+    pmvMatrix[2][1] = (hfactor * transform.dy() )  + transform.m33();
+    pmvMatrix[0][2] = transform.m13();
+    pmvMatrix[1][2] = transform.m23();
+    pmvMatrix[2][2] = transform.m33();
 
     // 1/10000 == 0.0001, so we have good enough res to cover curves
     // that span the entire widget...

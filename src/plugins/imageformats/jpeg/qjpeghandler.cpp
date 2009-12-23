@@ -90,9 +90,6 @@ public:
 
     QImage  scale();
 
-protected:
-    int scaledWidth(void) const;
-
 private:
     QImageSmoothScalerPrivate	*d;
     virtual QRgb *scanLine(const int line = 0, const QImage *src = 0);
@@ -138,11 +135,6 @@ void QImageSmoothScalerPrivate::setup(const int srcWidth, const int srcHeight,
     newcols = dstWidth;
     newrows = dstHeight;
     hasAlpha = hasAlphaChannel;
-}
-
-int QImageSmoothScaler::scaledWidth() const
-{
-    return d->cols;
 }
 
 QImageSmoothScaler::~QImageSmoothScaler()
@@ -443,20 +435,18 @@ QImage QImageSmoothScaler::scale()
 class jpegSmoothScaler : public QImageSmoothScaler
 {
 public:
-    jpegSmoothScaler(struct jpeg_decompress_struct *info, int dstWidth, int dstHeight)
-	: QImageSmoothScaler(info->output_width, info->output_height, dstWidth, dstHeight)
+    jpegSmoothScaler(struct jpeg_decompress_struct *info, const QSize& dstSize, const QRect& clipRect)
+        : QImageSmoothScaler(clipRect.width(), clipRect.height(),
+                             dstSize.width(), dstSize.height())
     {
-	cinfo = info;
-	cols24Bit = scaledWidth() * 3;
-
-	cacheHeight = 1;
-	imageCache = QImage( info->output_width, cacheHeight, QImage::Format_RGB32 );
+        cinfo = info;
+        clip = clipRect;
+        imageCache = QImage(info->output_width, 1, QImage::Format_RGB32);
     }
 
 private:
-    int	    cols24Bit;
+    QRect   clip;
     QImage  imageCache;
-    int	    cacheHeight;
     struct jpeg_decompress_struct *cinfo;
 
     QRgb *scanLine(const int line = 0, const QImage *src = 0)
@@ -468,33 +458,42 @@ private:
 	Q_UNUSED(src);
 
         uchar* data = imageCache.bits();
+
+        // Read ahead if we haven't reached the first clipped scanline yet.
+        while (int(cinfo->output_scanline) < clip.y() &&
+               cinfo->output_scanline < cinfo->output_height)
+	    jpeg_read_scanlines(cinfo, &data, 1);
+
+        // Read the next scanline.  We assume that "line"
+        // will never be >= clip.height().
 	jpeg_read_scanlines(cinfo, &data, 1);
-	out = (QRgb*)imageCache.scanLine(0);
+        if (cinfo->output_scanline == cinfo->output_height)
+            jpeg_finish_decompress(cinfo);
+
+	out = ((QRgb*)data) + clip.x();
 
 	//
 	// The smooth scale algorithm only works on 32-bit images;
 	// convert from (8|24) bits to 32.
 	//
 	if (cinfo->output_components == 1) {
-	    in = (uchar*)out + scaledWidth();
-	    for (uint i = scaledWidth(); i--; ) {
-		in--;
+	    in = data + clip.right();
+	    for (int i = clip.width(); i--; ) {
 		out[i] = qRgb(*in, *in, *in);
+		in--;
 	    }
-       } else if (cinfo->out_color_space == JCS_CMYK) {
-           int cols32Bit = scaledWidth() * 4;
-           in = (uchar*)out + cols32Bit;
-           for (uint i = scaledWidth(); i--; ) {
-               in -= 4;
-               int k = in[3];
-               out[i] = qRgb(k * in[0] / 255, k * in[1] / 255, k * in[2] / 255);
-               //out[i] = qRgb(in[0], in[1], in[2]);
-           }
-       } else {
-	    in = (uchar*)out + cols24Bit;
-	    for (uint i = scaledWidth(); i--; ) {
-		in -= 3;
+        } else if (cinfo->out_color_space == JCS_CMYK) {
+            in = data + clip.right() * 4;
+            for (int i = clip.width(); i--; ) {
+                int k = in[3];
+                out[i] = qRgb(k * in[0] / 255, k * in[1] / 255, k * in[2] / 255);
+                in -= 4;
+            }
+        } else {
+	    in = data + clip.right() * 3;
+	    for (int i = clip.width(); i--; ) {
 		out[i] = qRgb(in[0], in[1], in[2]);
+		in -= 3;
 	    }
 	}
 
@@ -693,7 +692,7 @@ static bool read_jpeg_format(QIODevice *device, QImage::Format &format)
 }
 
 static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
-                             bool dummy = false)
+                             const QSize& size)
 {
     QImage::Format format;
     switch (info->output_components) {
@@ -708,13 +707,8 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
         return false; // unsupported format
     }
 
-    const QSize size(info->output_width, info->output_height);
     if (dest->size() != size || dest->format() != format) {
-        static uchar dummyImage[1];
-        if (dummy) // Create QImage but don't read the pixels
-            *dest = QImage(dummyImage, size.width(), size.height(), format);
-        else
-            *dest = QImage(size, format);
+        *dest = QImage(size, format);
 
         if (format == QImage::Format_Indexed8) {
             dest->setColorCount(256);
@@ -727,12 +721,9 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
 }
 
 static bool read_jpeg_image(QIODevice *device, QImage *outImage,
-                            QSize scaledSize, int inQuality )
+                            QSize scaledSize, QRect scaledClipRect,
+                            QRect clipRect, int inQuality )
 {
-#ifdef QT_NO_IMAGE_SMOOTHSCALE
-    Q_UNUSED( scaledSize );
-#endif
-
     struct jpeg_decompress_struct cinfo;
 
     struct my_jpeg_source_mgr *iod_src = new my_jpeg_source_mgr(device);
@@ -757,11 +748,53 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
         if (quality < 0)
             quality = 75;
 
-#ifndef QT_NO_IMAGE_SMOOTHSCALE
-        // If high quality not required, shrink image during decompression
-        if (scaledSize.isValid() && !scaledSize.isEmpty() && quality < HIGH_QUALITY_THRESHOLD) {
-            cinfo.scale_denom = qMin(cinfo.image_width / scaledSize.width(),
-                                     cinfo.image_width / scaledSize.height());
+        // If possible, merge the scaledClipRect into either scaledSize
+        // or clipRect to avoid doing a separate scaled clipping pass.
+        // Best results are achieved by clipping before scaling, not after.
+        if (!scaledClipRect.isEmpty()) {
+            if (scaledSize.isEmpty() && clipRect.isEmpty()) {
+                // No clipping or scaling before final clip.
+                clipRect = scaledClipRect;
+                scaledClipRect = QRect();
+            } else if (scaledSize.isEmpty()) {
+                // Clipping, but no scaling: combine the clip regions.
+                scaledClipRect.translate(clipRect.topLeft());
+                clipRect = scaledClipRect.intersected(clipRect);
+                scaledClipRect = QRect();
+            } else if (clipRect.isEmpty()) {
+                // No clipping, but scaling: if we can map back to an
+                // integer pixel boundary, then clip before scaling.
+                if ((cinfo.image_width % scaledSize.width()) == 0 &&
+                        (cinfo.image_height % scaledSize.height()) == 0) {
+                    int x = scaledClipRect.x() * cinfo.image_width /
+                            scaledSize.width();
+                    int y = scaledClipRect.y() * cinfo.image_height /
+                            scaledSize.height();
+                    int width = (scaledClipRect.right() + 1) *
+                                cinfo.image_width / scaledSize.width() - x;
+                    int height = (scaledClipRect.bottom() + 1) *
+                                 cinfo.image_height / scaledSize.height() - y;
+                    clipRect = QRect(x, y, width, height);
+                    scaledSize = scaledClipRect.size();
+                    scaledClipRect = QRect();
+                }
+            } else {
+                // Clipping and scaling: too difficult to figure out,
+                // and not a likely use case, so do it the long way.
+            }
+        }
+
+        // Determine the scale factor to pass to libjpeg for quick downscaling.
+        if (!scaledSize.isEmpty()) {
+            if (clipRect.isEmpty()) {
+                cinfo.scale_denom =
+                    qMin(cinfo.image_width / scaledSize.width(),
+                         cinfo.image_height / scaledSize.height());
+            } else {
+                cinfo.scale_denom =
+                    qMin(clipRect.width() / scaledSize.width(),
+                         clipRect.height() / scaledSize.height());
+            }
             if (cinfo.scale_denom < 2) {
                 cinfo.scale_denom = 1;
             } else if (cinfo.scale_denom < 4) {
@@ -772,9 +805,19 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
                 cinfo.scale_denom = 8;
             }
             cinfo.scale_num = 1;
+            if (!clipRect.isEmpty()) {
+                // Correct the scale factor so that we clip accurately.
+                // It is recommended that the clip rectangle be aligned
+                // on an 8-pixel boundary for best performance.
+                while (cinfo.scale_denom > 1 &&
+                       ((clipRect.x() % cinfo.scale_denom) != 0 ||
+                        (clipRect.y() % cinfo.scale_denom) != 0 ||
+                        (clipRect.width() % cinfo.scale_denom) != 0 ||
+                        (clipRect.height() % cinfo.scale_denom) != 0)) {
+                    cinfo.scale_denom /= 2;
+                }
+            }
         }
-#endif
-
 
         // If high quality not required, use fast decompression
         if( quality < HIGH_QUALITY_THRESHOLD ) {
@@ -782,54 +825,102 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
             cinfo.do_fancy_upsampling = FALSE;
         }
 
+        (void) jpeg_calc_output_dimensions(&cinfo);
 
-        (void) jpeg_start_decompress(&cinfo);
+        // Determine the clip region to extract.
+        QRect imageRect(0, 0, cinfo.output_width, cinfo.output_height);
+        QRect clip;
+        if (clipRect.isEmpty()) {
+            clip = imageRect;
+        } else if (cinfo.scale_denom == 1) {
+            clip = clipRect.intersected(imageRect);
+        } else {
+            // The scale factor was corrected above to ensure that
+            // we don't miss pixels when we scale the clip rectangle.
+            clip = QRect(clipRect.x() / int(cinfo.scale_denom),
+                         clipRect.y() / int(cinfo.scale_denom),
+                         clipRect.width() / int(cinfo.scale_denom),
+                         clipRect.height() / int(cinfo.scale_denom));
+            clip = clip.intersected(imageRect);
+        }
 
 #ifndef QT_NO_IMAGE_SMOOTHSCALE
-        if (scaledSize.isValid() && scaledSize != QSize(cinfo.output_width, cinfo.output_height)
+        if (scaledSize.isValid() && scaledSize != clip.size()
             && quality >= HIGH_QUALITY_THRESHOLD) {
 
-            jpegSmoothScaler scaler(&cinfo, scaledSize.width(), scaledSize.height());
+            (void) jpeg_start_decompress(&cinfo);
+
+            jpegSmoothScaler scaler(&cinfo, scaledSize, clip);
             *outImage = scaler.scale();
         } else
 #endif
         {
-            if (!ensureValidImage(outImage, &cinfo))
+            // Allocate memory for the clipped QImage.
+            if (!ensureValidImage(outImage, &cinfo, clip.size()))
                 longjmp(jerr.setjmp_buffer, 1);
 
-            uchar* data = outImage->bits();
-            int bpl = outImage->bytesPerLine();
-            while (cinfo.output_scanline < cinfo.output_height) {
-                uchar *d = data + cinfo.output_scanline * bpl;
-                (void) jpeg_read_scanlines(&cinfo,
-                                           &d,
-                                           1);
-            }
-            (void) jpeg_finish_decompress(&cinfo);
+            // Avoid memcpy() overhead if grayscale with no clipping.
+            bool quickGray = (cinfo.output_components == 1 &&
+                              clip == imageRect);
+            if (!quickGray) {
+                // Ask the jpeg library to allocate a temporary row.
+                // The library will automatically delete it for us later.
+                // The libjpeg docs say we should do this before calling
+                // jpeg_start_decompress().  We can't use "new" here
+                // because we are inside the setjmp() block and an error
+                // in the jpeg input stream would cause a memory leak.
+                JSAMPARRAY rows = (cinfo.mem->alloc_sarray)
+                    ((j_common_ptr)&cinfo, JPOOL_IMAGE,
+                     cinfo.output_width * cinfo.output_components, 1);
 
-            if (cinfo.output_components == 3) {
-                // Expand 24->32 bpp.
-                for (uint j=0; j<cinfo.output_height; j++) {
-                    uchar *in = outImage->scanLine(j) + cinfo.output_width * 3;
-                    QRgb *out = (QRgb*)outImage->scanLine(j);
+                (void) jpeg_start_decompress(&cinfo);
 
-                    for (uint i=cinfo.output_width; i--;) {
-                        in-=3;
-                        out[i] = qRgb(in[0], in[1], in[2]);
+                while (cinfo.output_scanline < cinfo.output_height) {
+                    int y = int(cinfo.output_scanline) - clip.y();
+                    if (y >= clip.height())
+                        break;      // We've read the entire clip region, so abort.
+
+                    (void) jpeg_read_scanlines(&cinfo, rows, 1);
+
+                    if (y < 0)
+                        continue;   // Haven't reached the starting line yet.
+
+                    if (cinfo.output_components == 3) {
+                        // Expand 24->32 bpp.
+                        uchar *in = rows[0] + clip.x() * 3;
+                        QRgb *out = (QRgb*)outImage->scanLine(y);
+                        for (int i = 0; i < clip.width(); ++i) {
+                            *out++ = qRgb(in[0], in[1], in[2]);
+                            in += 3;
+                        }
+                    } else if (cinfo.out_color_space == JCS_CMYK) {
+                        // Convert CMYK->RGB.
+                        uchar *in = rows[0] + clip.x() * 4;
+                        QRgb *out = (QRgb*)outImage->scanLine(y);
+                        for (int i = 0; i < clip.width(); ++i) {
+                            int k = in[3];
+                            *out++ = qRgb(k * in[0] / 255, k * in[1] / 255,
+                                          k * in[2] / 255);
+                            in += 4;
+                        }
+                    } else if (cinfo.output_components == 1) {
+                        // Grayscale.
+                        memcpy(outImage->scanLine(y),
+                               rows[0] + clip.x(), clip.width());
                     }
                 }
-            } else if (cinfo.out_color_space == JCS_CMYK) {
-                for (uint j = 0; j < cinfo.output_height; ++j) {
-                    uchar *in = outImage->scanLine(j) + cinfo.output_width * 4;
-                    QRgb *out = (QRgb*)outImage->scanLine(j);
-
-                    for (uint i = cinfo.output_width; i--; ) {
-                        in-=4;
-                        int k = in[3];
-                        out[i] = qRgb(k * in[0] / 255, k * in[1] / 255, k * in[2] / 255);
-                    }
+            } else {
+                // Load unclipped grayscale data directly into the QImage.
+                (void) jpeg_start_decompress(&cinfo);
+                while (cinfo.output_scanline < cinfo.output_height) {
+                    uchar *row = outImage->scanLine(cinfo.output_scanline);
+                    (void) jpeg_read_scanlines(&cinfo, &row, 1);
                 }
             }
+
+            if (cinfo.output_scanline == cinfo.output_height)
+                (void) jpeg_finish_decompress(&cinfo);
+
             if (cinfo.density_unit == 1) {
                 outImage->setDotsPerMeterX(int(100. * cinfo.X_density / 2.54));
                 outImage->setDotsPerMeterY(int(100. * cinfo.Y_density / 2.54));
@@ -838,13 +929,15 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
                 outImage->setDotsPerMeterY(int(100. * cinfo.Y_density));
             }
 
-            if (scaledSize.isValid() && scaledSize != QSize(cinfo.output_width, cinfo.output_height))
+            if (scaledSize.isValid() && scaledSize != clip.size())
                 *outImage = outImage->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::FastTransformation);
         }
     }
 
     jpeg_destroy_decompress(&cinfo);
     delete iod_src;
+    if (!scaledClipRect.isEmpty())
+        *outImage = outImage->copy(scaledClipRect);
     return !outImage->isNull();
 }
 
@@ -1102,7 +1195,7 @@ bool QJpegHandler::read(QImage *image)
 {
     if (!canRead())
         return false;
-    return read_jpeg_image(device(), image, scaledSize, quality);
+    return read_jpeg_image(device(), image, scaledSize, scaledClipRect, clipRect, quality);
 }
 
 bool QJpegHandler::write(const QImage &image)
@@ -1113,9 +1206,9 @@ bool QJpegHandler::write(const QImage &image)
 bool QJpegHandler::supportsOption(ImageOption option) const
 {
     return option == Quality
-#ifndef QT_NO_IMAGE_SMOOTHSCALE
         || option == ScaledSize
-#endif
+        || option == ScaledClipRect
+        || option == ClipRect
         || option == Size
         || option == ImageFormat;
 }
@@ -1124,10 +1217,12 @@ QVariant QJpegHandler::option(ImageOption option) const
 {
     if (option == Quality) {
         return quality;
-#ifndef QT_NO_IMAGE_SMOOTHSCALE
     } else if  (option == ScaledSize) {
         return scaledSize;
-#endif
+    } else if  (option == ScaledClipRect) {
+        return scaledClipRect;
+    } else if  (option == ClipRect) {
+        return clipRect;
     } else if (option == Size) {
         if (canRead() && !device()->isSequential()) {
             qint64 pos = device()->pos();
@@ -1154,10 +1249,12 @@ void QJpegHandler::setOption(ImageOption option, const QVariant &value)
 {
     if (option == Quality)
         quality = value.toInt();
-#ifndef QT_NO_IMAGE_SMOOTHSCALE
     else if ( option == ScaledSize )
         scaledSize = value.toSize();
-#endif
+    else if ( option == ScaledClipRect )
+        scaledClipRect = value.toRect();
+    else if ( option == ClipRect )
+        clipRect = value.toRect();
 }
 
 QByteArray QJpegHandler::name() const

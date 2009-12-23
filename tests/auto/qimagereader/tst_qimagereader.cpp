@@ -322,7 +322,15 @@ void tst_QImageReader::setScaledSize_data()
     QTest::newRow("PPM: test") << "test.ppm" << QSize(10, 10) << QByteArray("ppm");
     QTest::newRow("XBM: gnus") << "gnus" << QSize(200, 200) << QByteArray("xbm");
 #ifdef QTEST_HAVE_JPEG
-    QTest::newRow("JPEG: beavis") << "beavis" << QSize(200, 200) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis A") << "beavis" << QSize(200, 200) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis B") << "beavis" << QSize(175, 175) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis C") << "beavis" << QSize(100, 100) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis D") << "beavis" << QSize(100, 200) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis E") << "beavis" << QSize(200, 100) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis F") << "beavis" << QSize(87, 87) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis G") << "beavis" << QSize(50, 45) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis H") << "beavis" << QSize(43, 43) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis I") << "beavis" << QSize(25, 25) << QByteArray("jpeg");
 #endif // QTEST_HAVE_JPEG
 #ifdef QTEST_HAVE_GIF
     QTest::newRow("GIF: earth") << "earth" << QSize(200, 200) << QByteArray("gif");

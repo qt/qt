@@ -383,7 +383,7 @@ neon {
     DEFINES += QT_HAVE_NEON
     HEADERS += painting/qdrawhelper_neon_p.h
     SOURCES += painting/qdrawhelper_neon.cpp
-    QMAKE.CXXFLAGS *= -mfpu=neon
+    QMAKE_CXXFLAGS *= -mfpu=neon
 }
 
 contains(QT_CONFIG, zlib) {
