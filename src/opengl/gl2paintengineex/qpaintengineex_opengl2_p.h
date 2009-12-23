@@ -254,7 +254,7 @@ public:
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
 
-    GLfloat pmvMatrix[4][4];
+    GLfloat pmvMatrix[3][3];
 
     QGLEngineShaderManager* shaderManager;
 

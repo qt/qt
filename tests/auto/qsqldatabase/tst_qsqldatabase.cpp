@@ -903,12 +903,8 @@ void tst_QSqlDatabase::recordOCI()
     CHECK_DATABASE(db);
 
     // runtime check for Oracle version since V8 doesn't support TIMESTAMPs
-    if (tst_Databases::getOraVersion(db) >= 9) {
-    qDebug("Detected Oracle >= 9, TIMESTAMP test enabled");
-    hasTimeStamp = true;
-    } else {
-    qDebug("Detected Oracle < 9, TIMESTAMP test disabled");
-    }
+    if (tst_Databases::getOraVersion(db) >= 9)
+        hasTimeStamp = true;
 
     FieldDef tsdef;
     FieldDef tstzdef;
@@ -919,11 +915,11 @@ void tst_QSqlDatabase::recordOCI()
     static const QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
 
     if (hasTimeStamp) {
-    tsdef = FieldDef("timestamp", QVariant::DateTime,  dt);
-    tstzdef = FieldDef("timestamp with time zone", QVariant::DateTime, dt);
-    tsltzdef = FieldDef("timestamp with local time zone", QVariant::DateTime, dt);
-    intytm = FieldDef("interval year to month", QVariant::String, QString("+01-01"));
-    intdts = FieldDef("interval day to second", QVariant::String, QString("+01 00:00:01.000000"));
+        tsdef = FieldDef("timestamp", QVariant::DateTime,  dt);
+        tstzdef = FieldDef("timestamp with time zone", QVariant::DateTime, dt);
+        tsltzdef = FieldDef("timestamp with local time zone", QVariant::DateTime, dt);
+        intytm = FieldDef("interval year to month", QVariant::String, QString("+01-01"));
+        intdts = FieldDef("interval day to second", QVariant::String, QString("+01 00:00:01.000000"));
     }
 
     const FieldDef fieldDefs[] = {
@@ -938,14 +934,14 @@ void tst_QSqlDatabase::recordOCI()
         FieldDef("blob", QVariant::ByteArray,           QByteArray("blah7")),
         FieldDef("clob", QVariant::String,             QString("blah8")),
         FieldDef("nclob", QVariant::String,            QString("blah9")),
-        FieldDef("bfile", QVariant::ByteArray,         QByteArray("blah10")),
+//        FieldDef("bfile", QVariant::ByteArray,         QByteArray("blah10")),
 
-    intytm,
-//    intdts,
-//    tsdef,
-//    tstzdef,
-//    tsltzdef,
-    FieldDef()
+        intytm,
+        intdts,
+        tsdef,
+        tstzdef,
+        tsltzdef,
+        FieldDef()
     };
 
     const int fieldCount = createFieldTable(fieldDefs, db);
@@ -953,9 +949,8 @@ void tst_QSqlDatabase::recordOCI()
 
     commonFieldTest(fieldDefs, db, fieldCount);
     checkNullValues(fieldDefs, db);
-    for (int i = 0; i < ITERATION_COUNT; ++i) {
-    checkValues(fieldDefs, db);
-    }
+    for (int i = 0; i < ITERATION_COUNT; ++i)
+        checkValues(fieldDefs, db);
 
     // some additional tests
     QSqlRecord rec = db.record(qTableName("qtestfields"));

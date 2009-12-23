@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the XMLPatterns module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,30 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef TRKSIGNALHANDLER_H
-#define TRKSIGNALHANDLER_H
-#include <QObject>
-#include <QString>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
 
-class TrkSignalHandler : public QObject
+#ifndef Patternist_Cli_h
+#define Patternist_Cli_h
+
+#include <QCoreApplication>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+class QXmlPatternistCLI
 {
-    Q_OBJECT
-public slots:
-    void copyingStarted();
-    void canNotConnect(const QString &errorMessage);
-    void canNotCreateFile(const QString &filename, const QString &errorMessage);
-    void canNotWriteFile(const QString &filename, const QString &errorMessage);
-    void canNotCloseFile(const QString &filename, const QString &errorMessage);
-    void installingStarted();
-    void canNotInstall(const QString &packageFilename, const QString &errorMessage);
-    void installingFinished();
-    void startingApplication();
-    void applicationRunning(uint pid);
-    void canNotRun(const QString &errorMessage);
-    void finished();
-    void applicationOutputReceived(const QString &output);
-    void copyProgress(int percent);
-    void stateChanged(int);
+public:
+    Q_DECLARE_TR_FUNCTIONS(QXmlPatternistCLI)
+private:
+    inline QXmlPatternistCLI();
+    Q_DISABLE_COPY(QXmlPatternistCLI)
 };
 
-#endif // TRKSIGNALHANDLER_H
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif

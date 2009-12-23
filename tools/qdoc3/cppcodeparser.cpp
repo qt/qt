@@ -2318,9 +2318,9 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
                             exampleFile.mid(sizeOfBoringPartOfName),
                             Node::File);
     foreach (const QString &imageFile, imageFiles) {
-        FakeNode* newFake = new FakeNode(fake,
-                                         imageFile.mid(sizeOfBoringPartOfName),
-                                         Node::Image);
+        new FakeNode(fake,
+                     imageFile.mid(sizeOfBoringPartOfName),
+                     Node::Image);
     }
 }
 

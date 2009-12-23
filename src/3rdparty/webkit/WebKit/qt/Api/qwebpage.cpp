@@ -3080,7 +3080,7 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
     Q_UNUSED(url)
     QString ua = QLatin1String("Mozilla/5.0 ("
 
-    // Plastform
+    // Platform
 #ifdef Q_WS_MAC
     "Macintosh"
 #elif defined Q_WS_QWS
@@ -3089,19 +3089,22 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
     "Windows"
 #elif defined Q_WS_X11
     "X11"
+#elif defined Q_OS_SYMBIAN
+    "SymbianOS"
 #else
     "Unknown"
 #endif
-    "; "
+    // Placeholder for Platform Version
+    "%1; "
 
     // Placeholder for security strength (N or U)
-    "%1; "
+    "%2; "
 
     // Subplatform"
 #ifdef Q_OS_AIX
     "AIX"
 #elif defined Q_OS_WIN32
-    "%2"
+    "%3"
 #elif defined Q_OS_DARWIN
 #ifdef __i386__ || __x86_64__
     "Intel Mac OS X"
@@ -3153,6 +3156,8 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
     "Sun Solaris"
 #elif defined Q_OS_ULTRIX
     "DEC Ultrix"
+#elif defined Q_WS_S60
+    "Series60"
 #elif defined Q_OS_UNIX
     "UNIX BSD/SYSV system"
 #elif defined Q_OS_UNIXWARE
@@ -3160,7 +3165,28 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 #else
     "Unknown"
 #endif
-    "; ");
+    // Placeholder for SubPlatform Version
+    "%4; ");
+
+    // Platform Version
+    QString osVer;
+#ifdef Q_OS_SYMBIAN
+    QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
+    switch (symbianVersion) {
+    case QSysInfo::SV_9_2:
+        osVer = "/9.2";
+        break;
+    case QSysInfo::SV_9_3:
+        osVer = "/9.3";
+        break;
+    case QSysInfo::SV_9_4:
+        osVer = "/9.4";
+        break;
+    default: 
+        osVer = "Unknown";
+    }
+#endif
+    ua = ua.arg(osVer);
 
     QChar securityStrength(QLatin1Char('N'));
 #if !defined(QT_NO_OPENSSL)
@@ -3223,6 +3249,26 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
     }
     ua = QString(ua).arg(ver);
 #endif
+
+    // SubPlatform Version
+    QString subPlatformVer;
+#ifdef Q_OS_SYMBIAN
+    QSysInfo::S60Version s60Version = QSysInfo::s60Version();
+    switch (s60Version) {
+    case QSysInfo::SV_S60_3_1:
+        subPlatformVer = "/3.1";
+        break;
+    case QSysInfo::SV_S60_3_2:
+        subPlatformVer = "/3.2";
+        break;
+    case QSysInfo::SV_S60_5_0:
+        subPlatformVer = "/5.0";
+        break;
+    default: 
+        subPlatformVer = " Unknown";
+    }
+#endif
+    ua = ua.arg(subPlatformVer);
 
     // Language
     QLocale locale;

@@ -1180,7 +1180,7 @@ static int getKeyboardAutoRepeatRate() {
     TTimeIntervalMicroSeconds32 time;
     S60->wsSession().GetKeyboardRepeatRate(initialTime, time);
     ret = time.Int() / 1000; // msecs
-#elif defined(Q_OS_WIN) and !defined(Q_OS_WINCE)
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     DWORD time;
     if (SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &time, 0) != FALSE)
         ret = static_cast<int>(1000 / static_cast<int>(time)); // msecs
