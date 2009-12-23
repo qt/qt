@@ -216,10 +216,11 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
         OS_LAYER_SSL_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/openssl)
 
         # stlportv5 is preferred over stlport as it has the throwing version of operator new
-        exists($${EPOCROOT}epoc32/include/stdapis/stlportv5) {
-            OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlportv5)
-        } else {
+        exists($${EPOCROOT}epoc32/include/stdapis/stlport) \
+        :!exists($${EPOCROOT}epoc32/include/stdapis/stlportv5) {
             OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlport)
+        } else {
+            OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlportv5)
         }
         
         OS_LAYER_BOOST_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/boost)
@@ -427,12 +428,15 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
                                      /epoc32/include/stdapis/openssl
 
         # stlportv5 is preferred over stlport as it has the throwing version of operator new
-        exists($${EPOCROOT}epoc32/include/osextensions/stdapis/stlportv5)|exists($${EPOCROOT}epoc32/include/stdapis/stlportv5) {
-            OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlportv5) \
-                                            /epoc32/include/stdapis/stlportv5
-        } else {
-            OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlport) \
-                                            /epoc32/include/stdapis/stlport
+        OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlportv5) \
+                                        /epoc32/include/stdapis/stlportv5
+        exists($${EPOCROOT}epoc32/include/osextensions/stdapis/stlport) \
+        |exists($${EPOCROOT}epoc32/include/stdapis/stlport) {
+            !exists($${EPOCROOT}epoc32/include/osextensions/stdapis/stlportv5) \
+            :!exists($${EPOCROOT}epoc32/include/stdapis/stlportv5) {
+                OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlport) \
+                                                /epoc32/include/stdapis/stlport
+            }
         }
         
         OS_LAYER_BOOST_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/boost) \
