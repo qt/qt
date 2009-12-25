@@ -147,16 +147,9 @@ Q_DECLARE_METATYPE(QTime)
 
 tst_QDateTime::tst_QDateTime()
 {
-#ifdef Q_OS_SYMBIAN
-    // Symbian's timezone server cannot handle DST correctly for dates before year 1997
-    uint x1 = QDateTime(QDate(2000, 1, 1), QTime()).toTime_t();
-    uint x2 = QDateTime(QDate(2000, 6, 1), QTime()).toTime_t();
-    europeanTimeZone = (x1 == 946681200 && x2 == 959810400);
-#else
     uint x1 = QDateTime(QDate(1990, 1, 1), QTime()).toTime_t();
     uint x2 = QDateTime(QDate(1990, 6, 1), QTime()).toTime_t();
     europeanTimeZone = (x1 == 631148400 && x2 == 644191200);
-#endif
 }
 
 tst_QDateTime::~tst_QDateTime()
