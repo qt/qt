@@ -388,21 +388,24 @@ inline QColor qt_premultiplyColor(QColor c, GLfloat opacity)
 
 void QGL2PaintEngineExPrivate::setBrush(const QBrush& brush)
 {
-    Q_ASSERT(brush.style() != Qt::NoBrush);
-
     if (qbrush_fast_equals(currentBrush, brush))
         return;
 
-    currentBrush = brush;
+    const Qt::BrushStyle newStyle = qbrush_style(brush);
+    Q_ASSERT(newStyle != Qt::NoBrush);
 
-    brushTextureDirty = true;
-    brushUniformsDirty = true;
+    currentBrush = brush;
+    brushUniformsDirty = true; // All brushes have at least one uniform
+
+    if (newStyle > Qt::SolidPattern)
+        brushTextureDirty = true;
+
     if (currentBrush.style() == Qt::TexturePattern
         && qHasPixmapTexture(brush) && brush.texture().isQBitmap())
     {
         shaderManager->setSrcPixelType(QGLEngineShaderManager::TextureSrcWithPattern);
     } else {
-        shaderManager->setSrcPixelType(currentBrush.style());
+        shaderManager->setSrcPixelType(newStyle);
     }
     shaderManager->optimiseForBrushTransform(currentBrush.transform());
 }
@@ -700,6 +703,7 @@ static inline void setCoords(GLfloat *coords, const QGLRect &rect)
 void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern)
 {
     // Setup for texture drawing
+    currentBrush = noBrush;
     shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
     if (prepareForDraw(opaque))
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
@@ -1782,6 +1786,7 @@ void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int d
                            state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
 
     // Setup for texture drawing
+    d->currentBrush = d->noBrush;
     d->shaderManager->setSrcPixelType(isBitmap ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
     if (d->prepareForDraw(isOpaque))
         d->shaderManager->currentProgram()->setUniformValue(d->location(QGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);

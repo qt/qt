@@ -244,6 +244,7 @@ public:
     uint maxClip;
 
     QBrush currentBrush; // May not be the state's brush!
+    const QBrush noBrush;
 
     GLfloat     inverseScale;
 
