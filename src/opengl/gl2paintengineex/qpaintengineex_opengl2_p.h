@@ -171,7 +171,6 @@ public:
             q(q_ptr),
             width(0), height(0),
             ctx(0),
-            currentBrush(0),
             inverseScale(1),
             shaderManager(0),
             inRenderText(false)
@@ -185,7 +184,7 @@ public:
     void updateCompositionMode();
     void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id = -1);
 
-    void setBrush(const QBrush* brush);
+    void setBrush(const QBrush& brush);
 
     void transferMode(EngineMode newMode);
     void resetGLState();
@@ -244,7 +243,7 @@ public:
     QRect currentScissorBounds;
     uint maxClip;
 
-    const QBrush*    currentBrush; // May not be the state's brush!
+    QBrush currentBrush; // May not be the state's brush!
 
     GLfloat     inverseScale;
 
@@ -255,7 +254,7 @@ public:
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
 
-    GLfloat pmvMatrix[4][4];
+    GLfloat pmvMatrix[3][3];
 
     QGLEngineShaderManager* shaderManager;
 
@@ -291,10 +290,7 @@ public:
     QScopedPointer<QPixmapFilter> convolutionFilter;
     QScopedPointer<QPixmapFilter> colorizeFilter;
     QScopedPointer<QPixmapFilter> blurFilter;
-    QScopedPointer<QPixmapFilter> animationBlurFilter;
-    QScopedPointer<QPixmapFilter> fastBlurFilter;
     QScopedPointer<QPixmapFilter> dropShadowFilter;
-    QScopedPointer<QPixmapFilter> fastDropShadowFilter;
 
     QSet<QVectorPath::CacheEntry *> pathCaches;
     QVector<GLuint> unusedVBOSToClean;

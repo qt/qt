@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 namespace qdesigner_internal {
 
-class ItemViewPropertySheetPrivate;
+struct ItemViewPropertySheetPrivate;
 
 class ItemViewPropertySheet: public QDesignerPropertySheet
 {
@@ -69,11 +69,15 @@ public:
     QVariant property(int index) const;
     void setProperty(int index, const QVariant &value);
 
-    void setChanged(int index, bool changed);
+    virtual void setChanged(int index, bool changed);
+    virtual bool isChanged(int index) const;
 
-    bool reset(int index);
+    virtual bool hasReset(int index) const;
+    virtual bool reset(int index);
 
 private:
+    void initHeaderProperties(QHeaderView *hv, const QString &prefix);
+
     ItemViewPropertySheetPrivate *d;
 };
 

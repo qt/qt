@@ -2063,6 +2063,29 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
 // #define QGL_BIND_TEXTURE_DEBUG
 
+// map from Qt's ARGB endianness-dependent format to GL's big-endian RGBA layout
+static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
+{
+    const int width = img.width();
+    const int height = img.height();
+
+    if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
+        || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian))
+    {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
+        }
+    } else {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
+        }
+    }
+}
+
 QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint internalFormat,
                                            const qint64 key, QGLContext::BindOptions options)
 {
@@ -2215,23 +2238,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         // 32 in the switch above is for the RGB16 case, where we set
         // the format to GL_RGB
         Q_ASSERT(img.depth() == 32);
-        const int width = img.width();
-        const int height = img.height();
-
-        if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
-            || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian)) {
-            for (int i=0; i < height; ++i) {
-                uint *p = (uint *) img.scanLine(i);
-                for (int x=0; x<width; ++x)
-                    p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
-            }
-        } else {
-            for (int i=0; i < height; ++i) {
-                uint *p = (uint *) img.scanLine(i);
-                for (int x=0; x<width; ++x)
-                    p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
-            }
-        }
+        qgl_byteSwapImage(img, pixel_type);
     }
 #ifdef QT_OPENGL_ES
     // OpenGL/ES requires that the internal and external formats be identical.
@@ -3803,6 +3810,11 @@ bool QGLWidget::event(QEvent *e)
     }
 
 #if defined(QT_OPENGL_ES)
+    // A re-parent is likely to destroy the X11 window and re-create it. It is important
+    // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
+    if (e->type() == QEvent::ParentAboutToChange)
+        d->glcx->d_func()->destroyEglSurfaceForDevice();
+
     if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
         // The window may have been re-created during re-parent or state change - if so, the EGL
         // surface will need to be re-created.
@@ -4290,6 +4302,7 @@ static void qt_save_gl_state()
     glDisable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
     glDisable(GL_STENCIL_TEST);
+    glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -4343,6 +4356,10 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
    \note This function clears the stencil buffer.
 
    \note This function is not supported on OpenGL/ES systems.
+
+   \note This function temporarily disables depth-testing when the
+   text is drawn.
+
    \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 
@@ -4433,6 +4450,13 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     have the labels move with the model as it is rotated etc.
 
     \note This function is not supported on OpenGL/ES systems.
+
+    \note If depth testing is enabled before this function is called,
+    then the drawn text will be depth-tested against the models that
+    have already been drawn in the scene.  Use \c{glDisable(GL_DEPTH_TEST)}
+    before calling this function to annotate the models without
+    depth-testing the text.
+
     \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 void QGLWidget::renderText(double x, double y, double z, const QString &str, const QFont &font, int)

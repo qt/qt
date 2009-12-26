@@ -489,6 +489,7 @@ private slots:
     void constructors();
     void typenameWithUnsigned();
     void warnOnVirtualSignal();
+    void QTBUG5590_dummyProperty();
 signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
@@ -1214,6 +1215,40 @@ void tst_Moc::warnOnVirtualSignal()
 #else
     QSKIP("Only tested on linux/gcc", SkipAll);
 #endif
+}
+
+
+class QTBUG5590_DummyObject: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool dummy)
+};
+
+class QTBUG5590_PropertyObject: public QTBUG5590_DummyObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int value READ value WRITE setValue)
+    Q_PROPERTY(int value2 READ value2 WRITE setValue2)
+
+    public:
+        QTBUG5590_PropertyObject() :  m_value(85), m_value2(40) { }
+        int value() const { return m_value; }
+        void setValue(int value) { m_value = value; }
+        int value2() const { return m_value2; }
+        void setValue2(int value) { m_value2 = value; }
+    private:
+        int m_value, m_value2;
+};
+
+void tst_Moc::QTBUG5590_dummyProperty()
+{
+    QTBUG5590_PropertyObject o;
+    QCOMPARE(o.property("value").toInt(), 85);
+    QCOMPARE(o.property("value2").toInt(), 40);
+    o.setProperty("value", 32);
+    QCOMPARE(o.value(), 32);
+    o.setProperty("value2", 82);
+    QCOMPARE(o.value2(), 82);
 }
 
 QTEST_APPLESS_MAIN(tst_Moc)

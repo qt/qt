@@ -129,8 +129,6 @@ void CPixelMetricsMapperViewContainer::ShowL( const TDesC& aString, TBool& aLast
             fileName.Append('_');
             fileName.AppendNum(width);
 
-            if (AknLayoutUtils::LayoutMirrored())
-                fileName.Append(_L("_mirrored"));
             fileName.Append(_L(".txt"));
 
             TInt err=file.Open(fs,fileName,EFileStreamText|EFileWrite|EFileShareAny);
@@ -263,11 +261,9 @@ void CPixelMetricsMapperViewContainer::HandleResourceChange(TInt aType)
              mainPaneRect );
          SetRect( mainPaneRect );
 
-         CPixelMetricsMapperAppUi* myApp = static_cast<CPixelMetricsMapperAppUi*> (ControlEnv()->AppUi());
-         if (myApp->ReadyForAutoOp())
-        	 myApp->DoAutoOperationL();
          }
-    if (iListbox) iListbox->HandleResourceChange(aType);
+    if (iListbox)
+        iListbox->HandleResourceChange(aType);
     }
 
 
@@ -329,6 +325,7 @@ void CPixelMetricsMapperView::HandleCommandL( TInt aCommand )
     AppUi()->HandleCommandL( aCommand );
     }
 
+
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
@@ -341,6 +338,7 @@ void CPixelMetricsMapperView::HandleStatusPaneSizeChange()
         iView->SetRect( cr );
         }
     }
+
 
 // -----------------------------------------------------------------------------
 //
@@ -358,6 +356,7 @@ void CPixelMetricsMapperView::DoActivateL(
     AppUi()->AddToViewStackL( *this, iView );
     }
 
+
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
@@ -371,5 +370,6 @@ void CPixelMetricsMapperView::DoDeactivate()
     delete iView;
     iView = NULL;
     }
+
 
 // End of File

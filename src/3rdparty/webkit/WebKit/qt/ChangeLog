@@ -1,3 +1,53 @@
+2009-12-21  David Boddie  <dboddie@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Doc: Minor fixes to language.
+
+        * Api/qwebpage.cpp:
+
+2009-12-15  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Qt] Do not disable the inspector on show and hide
+        https://bugs.webkit.org/show_bug.cgi?id=31851
+
+        On Qt/X11 with some window managers the window will be
+        hidden when switching windows. In this case all the results
+        are gone when coming back to the window.
+
+        Attempt to use the CloseEvent to figure out if the window
+        was closed and withdrawn as this is more friendly to the
+        user of the inspector client.
+
+        * Api/qwebinspector.cpp:
+        (QWebInspector::event):
+        (QWebInspector::hideEvent):
+
+2009-12-13  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] Re-enable QWebView::renderHints property for Qt for Symbian
+
+        https://bugs.webkit.org/show_bug.cgi?id=28273
+
+        The bug in Qt's moc that triggered a linking error when declaring this
+        property has been fixed and we can remove the workaround.
+
+        * Api/qwebview.h:
+
+2009-11-30  Abhinav Mithal  <abhinav.mithal@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt][Symbian] Report SymbianOS in user agent string for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=31961
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl):
+
 2009-11-28  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.

@@ -55,6 +55,8 @@
 #include <QtCore/QStringList>
 #include <QtCore/QTextStream>
 
+QT_USE_NAMESPACE
+
 #ifdef QT_BOOTSTRAPPED
 static void initBinaryDir(
 #ifndef Q_OS_WIN

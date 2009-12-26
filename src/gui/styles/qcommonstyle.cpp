@@ -2775,7 +2775,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             QSize size = (sr == SE_TabBarTabLeftButton) ? tab->leftButtonSize : tab->rightButtonSize;
             int w = size.width();
             int h = size.height();
-            int midHeight = static_cast<int>(ceil(float(tr.height() - h) / 2));
+            int midHeight = static_cast<int>(qCeil(float(tr.height() - h) / 2));
             int midWidth = ((tr.width() - w) / 2);
 
             bool atTheTop = true;

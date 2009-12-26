@@ -216,6 +216,8 @@ public:
     void setUniformValue(int location, const QMatrix4x2& value);
     void setUniformValue(int location, const QMatrix4x3& value);
     void setUniformValue(int location, const QMatrix4x4& value);
+    void setUniformValue(int location, const GLfloat value[2][2]);
+    void setUniformValue(int location, const GLfloat value[3][3]);
     void setUniformValue(int location, const GLfloat value[4][4]);
     void setUniformValue(int location, const QTransform& value);
 
@@ -242,6 +244,8 @@ public:
     void setUniformValue(const char *name, const QMatrix4x2& value);
     void setUniformValue(const char *name, const QMatrix4x3& value);
     void setUniformValue(const char *name, const QMatrix4x4& value);
+    void setUniformValue(const char *name, const GLfloat value[2][2]);
+    void setUniformValue(const char *name, const GLfloat value[3][3]);
     void setUniformValue(const char *name, const GLfloat value[4][4]);
     void setUniformValue(const char *name, const QTransform& value);
 

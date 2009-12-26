@@ -110,6 +110,8 @@ public:
     GSocketNotifierSource *socketNotifierSource;
     GTimerSource *timerSource;
     GIdleTimerSource *idleTimerSource;
+
+    void runTimersOnceWithNormalPriority();
 };
 
 QT_END_NAMESPACE
