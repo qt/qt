@@ -378,7 +378,6 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     switch (*signature) {
 #ifdef __OPTIMIZE__
     case DBUS_TYPE_BYTE:
-    case DBUS_TYPE_BOOLEAN:
     case DBUS_TYPE_INT16:
     case DBUS_TYPE_UINT16:
     case DBUS_TYPE_INT32:
@@ -387,6 +386,9 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     case DBUS_TYPE_UINT64:
     case DBUS_TYPE_DOUBLE:
         qIterAppend(&iterator, ba, *signature, arg.constData());
+        return true;
+    case DBUS_TYPE_BOOLEAN:
+        append( arg.toBool() );
         return true;
 #else
     case DBUS_TYPE_BYTE:
