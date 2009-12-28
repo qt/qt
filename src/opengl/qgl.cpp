@@ -1117,25 +1117,21 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                     if (parts[2].startsWith(QLatin1String("1.1")))
                         versionFlags |= QGLFormat::OpenGL_ES_Common_Version_1_1 |
                                         QGLFormat::OpenGL_ES_CommonLite_Version_1_1;
-                }
-                else {
+                } else {
                     // Not -CM, must be CL, CommonLite
                     versionFlags |= QGLFormat::OpenGL_ES_CommonLite_Version_1_0;
                     if (parts[2].startsWith(QLatin1String("1.1")))
                         versionFlags |= QGLFormat::OpenGL_ES_CommonLite_Version_1_1;
                 }
-            }
-            else {
+            } else {
                 // OpenGL ES version 2.0 or higher
                 versionFlags |= QGLFormat::OpenGL_ES_Version_2_0;
             }
-        }
-        else {
+        } else {
             // if < 3 parts to the name, it is an unrecognised OpenGL ES
             qWarning("Unrecognised OpenGL ES version");
         }
-    }
-    else {
+    } else {
         // not ES, regular OpenGL, the version numbers are first in the string
         if (versionString.startsWith(QLatin1String("1."))) {
             switch (versionString[2].toAscii()) {
@@ -1152,8 +1148,7 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             default:
                 break;
             }
-        }
-        else if (versionString.startsWith(QLatin1String("2."))) {
+        } else if (versionString.startsWith(QLatin1String("2."))) {
             versionFlags |= QGLFormat::OpenGL_Version_1_1 |
                             QGLFormat::OpenGL_Version_1_2 |
                             QGLFormat::OpenGL_Version_1_3 |
@@ -1163,19 +1158,18 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             QString minorVersion = versionString.section(QLatin1Char(' '), 0, 0).section(QLatin1Char('.'), 1, 1);
             if (minorVersion == QChar(QLatin1Char('1')))
                 versionFlags |= QGLFormat::OpenGL_Version_2_1;
-        }
-        else if (versionString.startsWith(QLatin1String("3."))) {
-         versionFlags |= QGLFormat::OpenGL_Version_1_1 |
-                         QGLFormat::OpenGL_Version_1_2 |
-                         QGLFormat::OpenGL_Version_1_3 |
-                         QGLFormat::OpenGL_Version_1_4 |
-                         QGLFormat::OpenGL_Version_1_5 |
-                         QGLFormat::OpenGL_Version_2_0 |
-                         QGLFormat::OpenGL_Version_2_1 |
-                         QGLFormat::OpenGL_Version_3_0;
-        }
-        else
+        } else if (versionString.startsWith(QLatin1String("3."))) {
+            versionFlags |= QGLFormat::OpenGL_Version_1_1 |
+                            QGLFormat::OpenGL_Version_1_2 |
+                            QGLFormat::OpenGL_Version_1_3 |
+                            QGLFormat::OpenGL_Version_1_4 |
+                            QGLFormat::OpenGL_Version_1_5 |
+                            QGLFormat::OpenGL_Version_2_0 |
+                            QGLFormat::OpenGL_Version_2_1 |
+                            QGLFormat::OpenGL_Version_3_0;
+        } else {
             qWarning("Unrecognised OpenGL version");
+        }
     }
     return versionFlags;
 }
