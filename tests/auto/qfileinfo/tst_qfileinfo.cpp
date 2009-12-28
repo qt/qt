@@ -1074,8 +1074,8 @@ void tst_QFileInfo::isHidden_data()
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("C:/RECYCLER") << QString::fromLatin1("C:/RECYCLER") << true;
-    QTest::newRow("C:/RECYCLER/.") << QString::fromLatin1("C:/RECYCLER/.") << false;
-    QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << false;
+    QTest::newRow("C:/RECYCLER/.") << QString::fromLatin1("C:/RECYCLER/.") << true;
+    QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << true;
 #endif
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
 
