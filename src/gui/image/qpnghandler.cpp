@@ -67,6 +67,9 @@ QT_BEGIN_NAMESPACE
 #  define Q_INTERNAL_WIN_NO_THROW
 #endif
 
+// avoid going through QImage::scanLine() which calls detach
+#define FAST_SCAN_LINE(data, bpl, y) (data + (y) * bpl)
+
 /*
   All PNG files load to the minimal QImage equivalent.
 
@@ -510,7 +513,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
         && outImage->format() == QImage::Format_Indexed8) {
         int color_table_size = outImage->colorCount();
         for (int y=0; y<(int)height; ++y) {
-            uchar *p = outImage->scanLine(y);
+            uchar *p = FAST_SCAN_LINE(data, bpl, y);
             uchar *end = p + width;
             while (p < end) {
                 if (*p >= color_table_size)

@@ -1083,13 +1083,9 @@ void tst_QFileInfo::isHidden_data()
             && !QDir().mkdir("./.hidden-directory"))
         qWarning("Unable to create directory './.hidden-directory'. Some tests will fail.");
 
-    QTest::newRow("./.hidden-directory") << QString("./.hidden-directory") << true;
-    QTest::newRow("./.hidden-directory/.") << QString("./.hidden-directory/.") << false;
-    QTest::newRow("./.hidden-directory/..") << QString("./.hidden-directory/..") << false;
-
     QTest::newRow("/path/to/.hidden-directory") << QDir::currentPath() + QString("/.hidden-directory") << true;
-    QTest::newRow("/path/to/.hidden-directory/.") << QDir::currentPath() + QString("/.hidden-directory/.") << false;
-    QTest::newRow("/path/to/.hidden-directory/..") << QDir::currentPath() + QString("/.hidden-directory/..") << false;
+    QTest::newRow("/path/to/.hidden-directory/.") << QDir::currentPath() + QString("/.hidden-directory/.") << true;
+    QTest::newRow("/path/to/.hidden-directory/..") << QDir::currentPath() + QString("/.hidden-directory/..") << true;
 #endif
 
 #if defined(Q_OS_MAC)
