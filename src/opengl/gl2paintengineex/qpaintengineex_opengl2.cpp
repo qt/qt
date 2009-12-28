@@ -608,12 +608,18 @@ void QGL2PaintEngineExPrivate::updateMatrix()
     const GLfloat wfactor = 2.0f / width;
     const GLfloat hfactor = -2.0f / height;
 
+    if (addOffset) {
+        pmvMatrix[2][0] = (wfactor * (transform.dx() + 0.49f)) - transform.m33();
+        pmvMatrix[2][1] = (hfactor * (transform.dy() + 0.49f)) + transform.m33();
+    } else {
+        pmvMatrix[2][0] = (wfactor * transform.dx()) - transform.m33();
+        pmvMatrix[2][1] = (hfactor * transform.dy()) + transform.m33();
+    }
+
     pmvMatrix[0][0] = (wfactor * transform.m11())  - transform.m13();
     pmvMatrix[1][0] = (wfactor * transform.m21())  - transform.m23();
-    pmvMatrix[2][0] = (wfactor * transform.dx() )  - transform.m33();
     pmvMatrix[0][1] = (hfactor * transform.m12())  + transform.m13();
     pmvMatrix[1][1] = (hfactor * transform.m22())  + transform.m23();
-    pmvMatrix[2][1] = (hfactor * transform.dy() )  + transform.m33();
     pmvMatrix[0][2] = transform.m13();
     pmvMatrix[1][2] = transform.m23();
     pmvMatrix[2][2] = transform.m33();
@@ -705,6 +711,12 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     // Setup for texture drawing
     currentBrush = noBrush;
     shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
+
+    if (addOffset) {
+        addOffset = false;
+        matrixDirty = true;
+    }
+
     if (prepareForDraw(opaque))
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
 
@@ -866,6 +878,16 @@ void qopengl2paintengine_cleanup_vectorpath(QPaintEngineEx *engine, void *data)
 void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 {
     transferMode(BrushDrawingMode);
+
+    const QOpenGL2PaintEngineState *s = q->state();
+    const bool newAddOffset = !(s->renderHints & QPainter::Antialiasing) &&
+                              (qbrush_style(currentBrush) == Qt::SolidPattern) &&
+                              !multisamplingAlwaysEnabled;
+
+    if (addOffset != newAddOffset) {
+        addOffset = newAddOffset;
+        matrixDirty = true;
+    }
 
     // Might need to call updateMatrix to re-calculate inverseScale
     if (matrixDirty)
@@ -1278,31 +1300,14 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QGL2PaintEngineEx);
 
-    Qt::BrushStyle style = qbrush_style(brush);
-    if (style == Qt::NoBrush)
+    if (qbrush_style(brush) == Qt::NoBrush)
         return;
+
     if (!d->inRenderText)
         ensureActive();
 
-    QOpenGL2PaintEngineState *s = state();
-    bool doOffset = !(s->renderHints & QPainter::Antialiasing) &&
-                    (style == Qt::SolidPattern) &&
-                    !d->multisamplingAlwaysEnabled;
-
-    if (doOffset) {
-        d->temporaryTransform = s->matrix;
-        QTransform tx = QTransform::fromTranslate(.49, .49);
-        s->matrix = s->matrix * tx;
-        d->matrixDirty = true;
-    }
-
     d->setBrush(brush);
     d->fill(path);
-
-    if (doOffset) {
-        s->matrix = d->temporaryTransform;
-        d->matrixDirty = true;
-    }
 }
 
 extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
@@ -1326,11 +1331,9 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
     ensureActive();
 
-    bool doOffset = !(s->renderHints & QPainter::Antialiasing) && !d->multisamplingAlwaysEnabled;
-    if (doOffset) {
-        d->temporaryTransform = s->matrix;
-        QTransform tx = QTransform::fromTranslate(0.49, .49);
-        s->matrix = s->matrix * tx;
+    const bool newAddOffset = !(s->renderHints & QPainter::Antialiasing) && !d->multisamplingAlwaysEnabled;
+    if (d->addOffset != newAddOffset) {
+        d->addOffset = newAddOffset;
         d->matrixDirty = true;
     }
 
@@ -1400,11 +1403,6 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         glStencilMask(0);
 
         d->updateClipScissorTest();
-    }
-
-    if (doOffset) {
-        s->matrix = d->temporaryTransform;
-        d->matrixDirty = true;
     }
 }
 
@@ -1613,6 +1611,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     if (textureCoordinateArray.data() != oldTextureCoordinateDataPtr)
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
 
+    if (addOffset) {
+        addOffset = false;
+        matrixDirty = true;
+    }
+
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(pensBrush);
 
@@ -1724,6 +1727,11 @@ void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int d
     d->vertexCoordinateArray.clear();
     d->textureCoordinateArray.clear();
     d->opacityArray.reset();
+
+    if (d->addOffset) {
+        d->addOffset = false;
+        d->matrixDirty = true;
+    }
 
     bool allOpaque = true;
 
@@ -2005,6 +2013,11 @@ void QGL2PaintEngineExPrivate::clearClip(uint value)
 void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
 {
     transferMode(BrushDrawingMode);
+
+    if (addOffset) {
+        addOffset = false;
+        matrixDirty = true;
+    }
 
     if (matrixDirty)
         updateMatrix();

@@ -171,6 +171,7 @@ public:
             q(q_ptr),
             width(0), height(0),
             ctx(0),
+            addOffset(false),
             inverseScale(1),
             shaderManager(0),
             inRenderText(false)
@@ -246,8 +247,6 @@ public:
     QBrush currentBrush; // May not be the state's brush!
     const QBrush noBrush;
 
-    GLfloat     inverseScale;
-
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
     QDataBuffer<GLfloat> opacityArray;
@@ -255,7 +254,9 @@ public:
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
 
+    bool addOffset; // When enabled, adds a 0.49,0.49 offset to matrix in updateMatrix
     GLfloat pmvMatrix[3][3];
+    GLfloat inverseScale;
 
     QGLEngineShaderManager* shaderManager;
 
