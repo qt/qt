@@ -454,7 +454,7 @@ public:
     // There are optimisations we can do, depending on the brush transform:
     //    1) May not have to apply perspective-correction
     //    2) Can use lower precision for matrix
-    void optimiseForBrushTransform(const QTransform::TransformationType transformType);
+    void optimiseForBrushTransform(QTransform::TransformationType transformType);
     void setSrcPixelType(Qt::BrushStyle);
     void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
     void setOpacityMode(OpacityMode);
@@ -463,7 +463,7 @@ public:
     void setCustomStage(QGLCustomShaderStage* stage);
     void removeCustomStage();
 
-    GLuint getUniformLocation(const Uniform id);
+    GLuint getUniformLocation(Uniform id);
 
     void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
