@@ -105,10 +105,6 @@ symbian: {
         qtlibraries.sources += QtDeclarative.dll
     }
 
-    contains(QT_CONFIG, webkit): {
-        qtlibraries.sources += QtWebKit.dll
-    }
-
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems
     contains(QT_CONFIG, openvg) {
         qtlibraries.sources += QtOpenVG.dll
