@@ -393,7 +393,7 @@ QGLEngineShaderManager::~QGLEngineShaderManager()
     removeCustomStage();
 }
 
-GLuint QGLEngineShaderManager::getUniformLocation(const Uniform id)
+GLuint QGLEngineShaderManager::getUniformLocation(Uniform id)
 {
     if (!currentShaderProg)
         return 0;
@@ -428,7 +428,7 @@ GLuint QGLEngineShaderManager::getUniformLocation(const Uniform id)
 }
 
 
-void QGLEngineShaderManager::optimiseForBrushTransform(const QTransform::TransformationType transformType)
+void QGLEngineShaderManager::optimiseForBrushTransform(QTransform::TransformationType transformType)
 {
     Q_UNUSED(transformType); // Currently ignored
 }
