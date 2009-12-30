@@ -180,7 +180,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
     else:DEFINES += ENABLE_XSLT=0
 }
 
-!contains(DEFINES, ENABLE_QT_BEARER=.) {
+!CONFIG(QTDIR_build):!contains(DEFINES, ENABLE_QT_BEARER=.) {
     symbian: {
         exists($${EPOCROOT}epoc32/release/winscw/udeb/QtBearer.lib)| \
         exists($${EPOCROOT}epoc32/release/armv5/lib/QtBearer.lib) {
