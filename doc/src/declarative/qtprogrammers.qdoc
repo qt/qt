@@ -65,7 +65,7 @@ QML provides direct access to the following concepts from Qt:
  \o Qt models - used directly in data binding (QAbstractItemModel and next generation QListModelInterface)
 \endlist
 
-Qt knowledge is \e required for \l {Extending QML}.
+Qt knowledge is \e required for \l {Extending QML}, and also for \l{Integrating QML with existing Qt UI code}.
 
 \section1 QML Items compared with QWidgets
 
@@ -159,4 +159,5 @@ users of the compound item might wish to employ. For example, a spinbox might ne
 transition from an arbitrary Text item, or characters within a Text item, so your spinbox
 item would need to be sufficiently flexible to allow such animation.
 
+\section1 QML Items Compared With QGraphicsWidgets
 */

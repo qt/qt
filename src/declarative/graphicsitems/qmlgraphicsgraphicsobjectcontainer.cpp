@@ -84,6 +84,16 @@ public:
 /*!
     \qmlclass GraphicsObjectContainer QmlGraphicsGraphicsObjectContainer
     \brief The GraphicsObjectContainer element allows you to add QGraphicsObjects into Fluid UI elements.
+
+    While any QObject based class can be exposed to QML, QmlGraphicsItem
+    provides a lot of important functionality, including anchors and proper
+    management of child items. GraphicsObjectContainer helps provide these
+    functions to other QGraphicsObjects, so that they can be used unaltered in
+    a QML scene.
+
+    A GraphicsObjectContainer can have one element inside it, and it must be a
+    QGraphicsObject or subclass. The graphics object inside the
+    GraphicsObjectContainer can then be used normally.
 */
 
 /*!
