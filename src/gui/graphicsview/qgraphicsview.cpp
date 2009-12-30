@@ -3365,7 +3365,8 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 #define X11 qt_x11Data
 #endif
                 backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
-            drawBackground(&backgroundPainter, exposedSceneRect);
+            QRectF backgroundExposedSceneRect = mapToScene(d->backgroundPixmapExposed.boundingRect()).boundingRect();
+            drawBackground(&backgroundPainter, backgroundExposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
 
