@@ -505,7 +505,27 @@ QGLShaderProgram* QGLEngineShaderManager::currentProgram()
     if (currentShaderProg)
         return currentShaderProg->program;
     else
-        return simpleProgram();
+        return sharedShaders->simpleProgram();
+}
+
+void QGLEngineShaderManager::useSimpleProgram()
+{
+    sharedShaders->simpleProgram()->bind();
+    QGLContextPrivate* ctx_d = ctx->d_func();
+    ctx_d->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
+    ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, false);
+    ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
+    shaderProgNeedsChanging = true;
+}
+
+void QGLEngineShaderManager::useBlitProgram()
+{
+    sharedShaders->blitProgram()->bind();
+    QGLContextPrivate* ctx_d = ctx->d_func();
+    ctx_d->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
+    ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, true);
+    ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
+    shaderProgNeedsChanging = true;
 }
 
 QGLShaderProgram* QGLEngineShaderManager::simpleProgram()
@@ -715,6 +735,13 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
         if (useCustomSrc)
             customSrcStage->setUniforms(currentShaderProg->program);
     }
+
+    // Make sure all the vertex attribute arrays the program uses are enabled (and the ones it
+    // doesn't use are disabled)
+    QGLContextPrivate* ctx_d = ctx->d_func();
+    ctx_d->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
+    ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, currentShaderProg->useTextureCoords);
+    ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, currentShaderProg->useOpacityAttribute);
 
     shaderProgNeedsChanging = false;
     return true;

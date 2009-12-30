@@ -1484,6 +1484,8 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     current_fbo = 0;
     default_fbo = 0;
     active_engine = 0;
+    for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
+        vertexAttributeArraysEnabledState[i] = false;
 }
 
 QGLContext* QGLContext::currentCtx = 0;
@@ -1873,6 +1875,35 @@ QGLContext::~QGLContext()
 void QGLContextPrivate::cleanup()
 {
 }
+
+#define ctx q_ptr
+void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled)
+{
+    Q_ASSERT(arrayIndex < QT_GL_VERTEX_ARRAY_TRACKED_COUNT);
+    Q_ASSERT(glEnableVertexAttribArray);
+
+    if (vertexAttributeArraysEnabledState[arrayIndex] && !enabled)
+        glDisableVertexAttribArray(arrayIndex);
+
+    if (!vertexAttributeArraysEnabledState[arrayIndex] && enabled)
+        glEnableVertexAttribArray(arrayIndex);
+
+    vertexAttributeArraysEnabledState[arrayIndex] = enabled;
+}
+
+void QGLContextPrivate::syncGlState()
+{
+    Q_ASSERT(glEnableVertexAttribArray);
+    for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i) {
+        if (vertexAttributeArraysEnabledState[i])
+            glEnableVertexAttribArray(i);
+        else
+            glDisableVertexAttribArray(i);
+    }
+
+}
+#undef ctx
+
 
 /*!
     \overload

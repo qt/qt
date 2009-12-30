@@ -468,6 +468,9 @@ public:
     void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
 
+    void useSimpleProgram();
+    void useBlitProgram();
+
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
     QGLShaderProgram* blitProgram(); // Used to blit a texture into the framebuffer

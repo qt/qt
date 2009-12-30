@@ -248,9 +248,8 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
     glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
 
-    pex->shaderManager->blitProgram()->bind();
+    pex->shaderManager->useBlitProgram();
     pex->shaderManager->blitProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
-    pex->shaderManager->setDirty();
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -413,8 +412,7 @@ void QGL2PaintEngineExPrivate::setBrush(const QBrush& brush)
 
 void QGL2PaintEngineExPrivate::useSimpleShader()
 {
-    shaderManager->simpleProgram()->bind();
-    shaderManager->setDirty();
+    shaderManager->useSimpleProgram();
 
     if (matrixDirty)
         updateMatrix();
@@ -744,6 +742,10 @@ void QGL2PaintEngineEx::beginNativePainting()
 
     QGLContext *ctx = d->ctx;
     glUseProgram(0);
+
+    // Disable all the vertex attribute arrays:
+    for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
+        glDisableVertexAttribArray(i);
 
 #ifndef QT_OPENGL_ES_2
     // be nice to people who mix OpenGL 1.x code with QPainter commands
@@ -1935,6 +1937,7 @@ void QGL2PaintEngineEx::ensureActive()
         glViewport(0, 0, d->width, d->height);
         d->needsSync = false;
         d->shaderManager->setDirty();
+        d->ctx->d_func()->syncGlState();
         setState(state());
     }
 }
