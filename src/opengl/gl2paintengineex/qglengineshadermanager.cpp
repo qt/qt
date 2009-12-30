@@ -223,6 +223,16 @@ QGLEngineSharedShaders::~QGLEngineSharedShaders()
     QList<QGLEngineShaderProg*>::iterator itr;
     for (itr = cachedPrograms.begin(); itr != cachedPrograms.end(); ++itr)
         delete *itr;
+
+    if (blitShaderProg) {
+        delete blitShaderProg;
+        blitShaderProg = 0;
+    }
+
+    if (simpleShaderProg) {
+        delete simpleShaderProg;
+        simpleShaderProg = 0;
+    }
 }
 
 #if defined (QT_DEBUG)
