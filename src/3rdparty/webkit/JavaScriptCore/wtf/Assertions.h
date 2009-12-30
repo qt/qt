@@ -219,11 +219,11 @@ while (0)
 
 /* FATAL */
 
-#if FATAL_DISABLED && !COMPILER(MSVC7) && !PLATFORM(SYMBIAN)
+#if FATAL_DISABLED && !COMPILER(MSVC7) && !COMPILER(WINSCW)
 #define FATAL(...) ((void)0)
 #elif COMPILER(MSVC7)
 #define FATAL() ((void)0)
-#elif PLATFORM(SYMBIAN)
+#elif COMPILER(WINSCW)
 #define FATAL(args...) ((void)0)
 #else
 #define FATAL(...) do { \
@@ -234,7 +234,7 @@ while (0)
 
 /* LOG_ERROR */
 
-#if ERROR_DISABLED && !COMPILER(MSVC7) && !PLATFORM(SYMBIAN)
+#if ERROR_DISABLED && !COMPILER(MSVC7) && !COMPILER(WINSCW)
 #define LOG_ERROR(...) ((void)0)
 #elif COMPILER(MSVC7)
 #define LOG_ERROR() ((void)0)
@@ -246,7 +246,7 @@ while (0)
 
 /* LOG */
 
-#if LOG_DISABLED && !COMPILER(MSVC7) && !PLATFORM(SYMBIAN)
+#if LOG_DISABLED && !COMPILER(MSVC7) && !COMPILER(WINSCW)
 #define LOG(channel, ...) ((void)0)
 #elif COMPILER(MSVC7)
 #define LOG() ((void)0)
@@ -260,7 +260,7 @@ while (0)
 
 /* LOG_VERBOSE */
 
-#if LOG_DISABLED && !COMPILER(MSVC7) && !PLATFORM(SYMBIAN)
+#if LOG_DISABLED && !COMPILER(MSVC7) && !COMPILER(WINSCW)
 #define LOG_VERBOSE(channel, ...) ((void)0)
 #elif COMPILER(MSVC7)
 #define LOG_VERBOSE(channel) ((void)0)
