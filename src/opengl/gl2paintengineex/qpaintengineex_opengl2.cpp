@@ -242,9 +242,6 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     float vertexCoordinateArray[] = { -1, -1, 1, -1, 1, 1, -1, 1 };
     float textureCoordinateArray[] = { 0, 0, 1, 0, 1, 1, 0, 1 };
 
-    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-
     glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
     glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
 
@@ -252,9 +249,6 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     pex->shaderManager->blitProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
@@ -806,34 +800,20 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
         return;
 
     if (mode == TextDrawingMode || mode == ImageDrawingMode || mode == ImageArrayDrawingMode) {
-        glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-        glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-        glDisableVertexAttribArray(QT_OPACITY_ATTR);
-
         lastTextureUsed = GLuint(-1);
     }
 
     if (newMode == TextDrawingMode) {
-        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-        glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
     }
 
     if (newMode == ImageDrawingMode) {
-        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-        glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticVertexCoordinateArray);
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticTextureCoordinateArray);
     }
 
     if (newMode == ImageArrayDrawingMode) {
-        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-        glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-        glEnableVertexAttribArray(QT_OPACITY_ATTR);
-
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
         glVertexAttribPointer(QT_OPACITY_ATTR, 1, GL_FLOAT, GL_FALSE, 0, opacityArray.data());
@@ -944,7 +924,6 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             }
 
             prepareForDraw(currentBrush.isOpaque());
-            glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 #ifdef QT_OPENGL_CACHE_AS_VBOS
             glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
             glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, 0);
@@ -1085,10 +1064,8 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
         glStencilMask(GL_STENCIL_HIGH_BIT);
 #if 0
         glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT); // Simply invert the stencil bit
-        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
-        glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 #else
 
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
@@ -1098,10 +1075,8 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
         } else {
             glStencilFunc(GL_ALWAYS, GL_STENCIL_HIGH_BIT, 0xff);
         }
-        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
-        glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 #endif
     }
 
@@ -1228,12 +1203,8 @@ void QGL2PaintEngineExPrivate::composite(const QGLRect& boundingRect)
         boundingRect.right, boundingRect.top
     };
 
-    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
     glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, rectVerts);
-
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 }
 
 // Draws the vertex array as a set of <vertexArrayStops.size()> triangle fans.
@@ -1241,7 +1212,6 @@ void QGL2PaintEngineExPrivate::drawVertexArrays(const float *data, int *stops, i
                                                 GLenum primitive)
 {
     // Now setup the pointer to the vertex array:
-    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
     glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
 
     int previousStop = 0;
@@ -1255,7 +1225,6 @@ void QGL2PaintEngineExPrivate::drawVertexArrays(const float *data, int *stops, i
         glDrawArrays(primitive, previousStop, stop - previousStop);
         previousStop = stop;
     }
-    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 }
 
 void QGL2PaintEngineExPrivate::prepareDepthRangeForRenderText()
@@ -1364,7 +1333,6 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
 
     if (opaque) {
         prepareForDraw(opaque);
-        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, stroker.vertices());
         glDrawArrays(GL_TRIANGLE_STRIP, 0, stroker.vertexCount() / 2);
 
@@ -1372,8 +1340,6 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
 //         d->setBrush(&b);
 //         d->prepareForDraw(true);
 //         glDrawArrays(GL_LINE_STRIP, 0, d->stroker.vertexCount() / 2);
-
-        glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 
     } else {
         qreal width = qpen_widthf(pen) / 2;
