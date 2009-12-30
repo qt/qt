@@ -168,8 +168,7 @@ public:
             ctx(0),
             useSystemClip(true),
             addOffset(false),
-            inverseScale(1),
-            inRenderText(false)
+            inverseScale(1)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -215,10 +214,6 @@ public:
         return shaderManager->getUniformLocation(uniform);
     }
 
-
-    void prepareDepthRangeForRenderText();
-    void restoreDepthRangeForRenderText();
-
     void clearClip(uint value);
     void writeClip(const QVectorPath &path, uint value);
     void resetClipIfNeeded();
@@ -227,7 +222,6 @@ public:
     void setScissor(const QRect &rect);
     void regenerateClip();
     void systemStateChanged();
-
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
     static QGL2PaintEngineExPrivate *getData(QGL2PaintEngineEx *engine) { return engine->d_func(); }
@@ -273,7 +267,6 @@ public:
     GLuint lastTextureUsed;
 
     bool needsSync;
-    bool inRenderText;
     bool multisamplingAlwaysEnabled;
 
     GLfloat depthRange[2];
