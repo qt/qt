@@ -4409,9 +4409,9 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     int height = d->glcx->device()->height();
     bool auto_swap = autoBufferSwap();
 
+    QPaintEngine::Type oldEngineType = qgl_engine_selector()->preferredPaintEngine();
+    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
     QPaintEngine *engine = paintEngine();
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
     QPainter *p;
     bool reuse_painter = false;
     if (engine->isActive()) {
@@ -4431,11 +4431,6 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->disable_clear_on_painter_begin = true;
-        if (engine->type() == QPaintEngine::OpenGL2) {
-            qt_save_gl_state();
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-        }
         p = new QPainter(this);
     }
 
@@ -4459,11 +4454,8 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         delete p;
         setAutoBufferSwap(auto_swap);
         d->disable_clear_on_painter_begin = false;
-        if (engine->type() == QPaintEngine::OpenGL2)
-            qt_restore_gl_state();
     }
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+    qgl_engine_selector()->setPreferredPaintEngine(oldEngineType);
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
@@ -4511,9 +4503,9 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
                 &win_x, &win_y, &win_z);
     win_y = height - win_y; // y is inverted
 
+    QPaintEngine::Type oldEngineType = qgl_engine_selector()->preferredPaintEngine();
+    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
     QPaintEngine *engine = paintEngine();
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
     QPainter *p;
     bool reuse_painter = false;
     bool use_depth_testing = glIsEnabled(GL_DEPTH_TEST);
@@ -4527,8 +4519,6 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->disable_clear_on_painter_begin = true;
-        if (engine->type() == QPaintEngine::OpenGL2)
-            qt_save_gl_state();
         p = new QPainter(this);
     }
 
@@ -4557,13 +4547,10 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     } else {
         p->end();
         delete p;
-        if (engine->type() == QPaintEngine::OpenGL2)
-            qt_restore_gl_state();
         setAutoBufferSwap(auto_swap);
         d->disable_clear_on_painter_begin = false;
     }
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+    qgl_engine_selector()->setPreferredPaintEngine(oldEngineType);
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
