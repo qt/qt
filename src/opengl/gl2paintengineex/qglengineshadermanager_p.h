@@ -344,6 +344,7 @@ public:
 */
 
     QGLEngineSharedShaders(const QGLContext *context);
+    ~QGLEngineSharedShaders();
 
     QGLShaderProgram *simpleProgram() { return simpleShaderProg; }
     QGLShaderProgram *blitProgram() { return blitShaderProg; }

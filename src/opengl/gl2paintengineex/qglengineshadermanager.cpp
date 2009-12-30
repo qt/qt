@@ -218,6 +218,13 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
 }
 
+QGLEngineSharedShaders::~QGLEngineSharedShaders()
+{
+    QList<QGLEngineShaderProg*>::iterator itr;
+    for (itr = cachedPrograms.begin(); itr != cachedPrograms.end(); ++itr)
+        delete *itr;
+}
+
 #if defined (QT_DEBUG)
 QByteArray QGLEngineSharedShaders::snippetNameStr(SnippetName name)
 {
