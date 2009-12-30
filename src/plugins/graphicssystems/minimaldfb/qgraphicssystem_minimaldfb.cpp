@@ -43,6 +43,7 @@
 #include "qwindowsurface_minimaldfb.h"
 #include "qblitter_directfb.h"
 #include "qdirectfbconvenience.h"
+#include "qdirectfbcursor.h"
 
 #include <private/qwindowsurface_raster_p.h>
 #include <private/qpixmap_raster_p.h>
@@ -107,6 +108,9 @@ IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect, 
     DFBWindowID id;
     window->GetID(window, &id);
     m_input.addWindow(id,tlw);
+
+    cursor = new QDirectFBCursor(this);
+
     return window;
 }
 

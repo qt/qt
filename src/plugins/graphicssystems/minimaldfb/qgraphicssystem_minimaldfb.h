@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDirectFBCursor;
+
 class QDirectFbGraphicsSystemScreen : public QGraphicsSystemScreen
 {
 public:
@@ -72,6 +74,9 @@ public:
     QDirectFbInput m_input;
 
     IDirectFBDisplayLayer *m_layer;
+
+private:
+    QDirectFBCursor * cursor;
 
 };
 
