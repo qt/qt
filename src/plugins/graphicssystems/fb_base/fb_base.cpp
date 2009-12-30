@@ -283,3 +283,14 @@ void QGraphicsSystemFbWindowSurface::setVisible(bool visible)
     visibleFlag = visible;
     mScreen->setDirty(geometry());
 }
+
+Qt::WindowFlags QGraphicsSystemFbWindowSurface::setWindowFlags(Qt::WindowFlags type)
+{
+    flags = type;
+    return flags;
+}
+
+Qt::WindowFlags QGraphicsSystemFbWindowSurface::windowFlags() const
+{
+    return flags;
+}

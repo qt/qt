@@ -61,11 +61,15 @@ public:
     virtual void raise();
     virtual void lower();
 
+    virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
+    virtual Qt::WindowFlags windowFlags() const;
+
 protected:
     QGraphicsSystemFbScreen *mScreen;
     QRect oldGeometry;
     QImage mImage;
     bool visibleFlag;
+    Qt::WindowFlags flags;
 };
 
 class QGraphicsSystemFbScreen : public QGraphicsSystemScreen
