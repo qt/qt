@@ -155,7 +155,13 @@ public:
     typedef QMultiHash<QString, SignalHook> SignalHookHash;
     typedef QHash<QString, QDBusMetaObject* > MetaObjectHash;
     typedef QHash<QByteArray, int> MatchRefCountHash;
-    typedef QHash<QString, int> WatchedServicesHash;
+
+    struct WatchedServiceData {
+        WatchedServiceData() : refcount(0) {}
+        QString owner;
+        int refcount;
+    };
+    typedef QHash<QString, WatchedServiceData> WatchedServicesHash;
 
 public:
     // public methods are entry points from other objects
@@ -223,6 +229,8 @@ private:
 
     bool isServiceRegisteredByThread(const QString &serviceName) const;
 
+    QString getNameOwnerNoCache(const QString &service);
+
 protected:
     void customEvent(QEvent *e);
     void timerEvent(QTimerEvent *e);
@@ -271,7 +279,7 @@ public:
     QDBusError lastError;
 
     QStringList serviceNames;
-    WatchedServicesHash watchedServiceNames;
+    WatchedServicesHash watchedServices;
     SignalHookHash signalHooks;
     MatchRefCountHash matchRefCounts;
     ObjectTreeNode rootNode;
