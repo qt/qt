@@ -1932,6 +1932,8 @@ QPixmap QX11PixmapData::transformed(const QTransform &transform,
         x11Data->hd = (Qt::HANDLE)XCreatePixmap(X11->display,
                                                 RootWindow(X11->display, xinfo.screen()),
                                                 w, h, d);
+        x11Data->setSerialNumber(++qt_pixmap_serial);
+
 #ifndef QT_NO_XRENDER
         if (X11->use_xrender) {
             XRenderPictFormat *format = x11Data->d == 32
