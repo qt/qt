@@ -119,7 +119,7 @@ public:
     struct SignalHook
     {
         inline SignalHook() : obj(0), midx(-1) { }
-        QString owner, service, path, signature;
+        QString service, path, signature;
         QObject* obj;
         int midx;
         QList<int> params;
@@ -183,7 +183,7 @@ public:
     QDBusPendingCallPrivate *sendWithReplyAsync(const QDBusMessage &message, int timeout = -1);
     int sendWithReplyAsync(const QDBusMessage &message, QObject *receiver,
                            const char *returnMethod, const char *errorMethod, int timeout = -1);
-    bool connectSignal(const QString &service, const QString &owner, const QString &path, const QString& interface,
+    bool connectSignal(const QString &service, const QString &path, const QString& interface,
                        const QString &name, const QStringList &argumentMatch, const QString &signature,
                        QObject *receiver, const char *slot);
     void connectSignal(const QString &key, const SignalHook &hook);
@@ -192,10 +192,10 @@ public:
                           const QString &name, const QStringList &argumentMatch, const QString &signature,
                           QObject *receiver, const char *slot);
     void registerObject(const ObjectTreeNode *node);
-    void connectRelay(const QString &service, const QString &currentOwner,
+    void connectRelay(const QString &service,
                       const QString &path, const QString &interface,
                       QDBusAbstractInterface *receiver, const char *signal);
-    void disconnectRelay(const QString &service, const QString &currentOwner,
+    void disconnectRelay(const QString &service,
                          const QString &path, const QString &interface,
                          QDBusAbstractInterface *receiver, const char *signal);
 
@@ -292,7 +292,7 @@ public:
     // static methods
     static int findSlot(QObject *obj, const QByteArray &normalizedName, QList<int>& params);
     static bool prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
-                            const QString &service, const QString &owner,
+                            const QString &service,
                             const QString &path, const QString &interface, const QString &name,
                             const QStringList &argMatch,
                             QObject *receiver, const char *signal, int minMIdx,
