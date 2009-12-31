@@ -523,7 +523,7 @@ qDBusSignalFilter(DBusConnection *connection, DBusMessage *message, void *data)
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
     QDBusMessage amsg = QDBusMessagePrivate::fromDBusMessage(message);
-    qDBusDebug() << QThread::currentThread() << "got message:" << amsg;
+    qDBusDebug() << d << "got message:" << amsg;
 
     return d->handleMessage(amsg) ?
         DBUS_HANDLER_RESULT_HANDLED :
@@ -913,7 +913,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     if (msg.isReplyRequired() && !msg.isDelayedReply()) {
         if (!fail) {
             // normal reply
-            qDBusDebug() << QThread::currentThread() << "Automatically sending reply:" << outputArgs;
+            qDBusDebug() << this << "Automatically sending reply:" << outputArgs;
             send(msg.createReply(outputArgs));
         } else {
             // generate internal error
@@ -1660,7 +1660,7 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
 
     q_dbus_connection_add_filter(connection, qDBusSignalFilter, this, 0);
 
-    //qDebug("base service: %s", service);
+    qDBusDebug() << this << ": connected successfully";
 
     // schedule a dispatch:
     QMetaObject::invokeMethod(this, "doDispatch", Qt::QueuedConnection);
@@ -1695,7 +1695,7 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
         msg = QDBusMessagePrivate::fromDBusMessage(reply);
         q_dbus_message_unref(reply);
     }
-    qDBusDebug() << QThread::currentThread() << "got message reply (async):" << msg;
+    qDBusDebug() << connection << "got message reply (async):" << msg;
 
     // Check if the reply has the expected signature
     call->checkReceivedSignature();
@@ -1763,7 +1763,7 @@ int QDBusConnectionPrivate::send(const QDBusMessage& message)
 
     q_dbus_message_set_no_reply(msg, true); // the reply would not be delivered to anything
 
-    qDBusDebug() << QThread::currentThread() << "sending message (no reply):" << message;
+    qDBusDebug() << this << "sending message (no reply):" << message;
     checkThread();
     bool isOk = q_dbus_connection_send(connection, msg, 0);
     int serial = 0;
@@ -1795,7 +1795,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
             return QDBusMessage::createError(err);
         }
 
-        qDBusDebug() << QThread::currentThread() << "sending message (blocking):" << message;
+        qDBusDebug() << this << "sending message (blocking):" << message;
         QDBusErrorInternal error;
         DBusMessage *reply = q_dbus_connection_send_with_reply_and_block(connection, msg, timeout, error);
 
@@ -1808,7 +1808,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
 
         QDBusMessage amsg = QDBusMessagePrivate::fromDBusMessage(reply);
         q_dbus_message_unref(reply);
-        qDBusDebug() << QThread::currentThread() << "got message reply (blocking):" << amsg;
+        qDBusDebug() << this << "got message reply (blocking):" << amsg;
 
         return amsg;
     } else { // use the event loop
@@ -1835,7 +1835,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
 
 QDBusMessage QDBusConnectionPrivate::sendWithReplyLocal(const QDBusMessage &message)
 {
-    qDBusDebug() << QThread::currentThread() << "sending message via local-loop:" << message;
+    qDBusDebug() << this << "sending message via local-loop:" << message;
 
     QDBusMessage localCallMsg = QDBusMessagePrivate::makeLocal(*this, message);
     bool handled = handleMessage(localCallMsg);
@@ -1862,7 +1862,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReplyLocal(const QDBusMessage &mess
     }
 
     // there is a reply
-    qDBusDebug() << QThread::currentThread() << "got message via local-loop:" << localReplyMsg;
+    qDBusDebug() << this << "got message via local-loop:" << localReplyMsg;
     return localReplyMsg;
 }
 
@@ -1896,7 +1896,7 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
         return pcall;
     }
 
-    qDBusDebug() << QThread::currentThread() << "sending message (async):" << message;
+    qDBusDebug() << this << "sending message (async):" << message;
     DBusPendingCall *pending = 0;
 
     QDBusDispatchLocker locker(SendWithReplyAsyncAction, this);
