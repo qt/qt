@@ -470,6 +470,7 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
         return QPixmap();
 
     QDirectFBPixmapData *data = new QDirectFBPixmapData(screen, QPixmapData::PixmapType);
+    data->setSerialNumber(++global_ser_no);
     DFBSurfaceBlittingFlags flags = DSBLIT_NOFX;
     data->alpha = alpha;
     if (alpha) {
