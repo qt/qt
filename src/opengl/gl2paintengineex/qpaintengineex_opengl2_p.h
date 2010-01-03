@@ -167,6 +167,7 @@ public:
             width(0), height(0),
             ctx(0),
             useSystemClip(true),
+            snapToPixelGrid(false),
             addOffset(false),
             inverseScale(1)
     { }
@@ -260,6 +261,7 @@ public:
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
 
+    bool snapToPixelGrid;
     bool addOffset; // When enabled, adds a 0.49,0.49 offset to matrix in updateMatrix
     GLfloat pmvMatrix[3][3];
     GLfloat inverseScale;
