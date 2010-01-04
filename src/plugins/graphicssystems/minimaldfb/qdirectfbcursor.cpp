@@ -62,7 +62,13 @@ void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
     //
     //windowSurface->Blit(windowSurface, surface, NULL, 0, 0);
 
-    DFBResult res = m_layer->SetCursorShape( m_layer, surface, cursor->hotSpot().x(), cursor->hotSpot().y());
+    int xSpot = cursor->hotSpot().x();
+    int ySpot = cursor->hotSpot().y();
+    // The SetCursorShape() call fails if the cooperative level is DLSCL_SHARED
+    // Question is, how can we determine the level, to reset is properly after?
+    m_layer->SetCooperativeLevel(m_layer, DLSCL_ADMINISTRATIVE);
+    DFBResult res = m_layer->SetCursorShape( m_layer, surface, xSpot, ySpot);
+    m_layer->SetCooperativeLevel(m_layer, DLSCL_SHARED);    // This may be wrong. could be DFSCL_FULLSCREEN or DLSCL_ADMINISTRATIVE
     qDebug() << "setCursorShape result:";
     switch(res) {
     case DFB_OK: qDebug() << "OK"; break;
