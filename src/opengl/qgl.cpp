@@ -1097,6 +1097,10 @@ int QGLFormat::stencilBufferSize() const
 */
 void QGLFormat::setVersion(int major, int minor)
 {
+    if (major < 1 || minor < 0) {
+        qWarning("QGLFormat::setVersion: Cannot set zero or negative version number %d.%d", major, minor);
+        return;
+    }
     detach();
     d->majorVersion = major;
     d->minorVersion = minor;
@@ -1470,14 +1474,20 @@ void QGLFormat::setDefaultOverlayFormat(const QGLFormat &f)
 
 bool operator==(const QGLFormat& a, const QGLFormat& b)
 {
-    return (int) a.d->opts == (int) b.d->opts && a.d->pln == b.d->pln && a.d->alphaSize == b.d->alphaSize
-        && a.d->accumSize == b.d->accumSize && a.d->stencilSize == b.d->stencilSize
+    return (a.d == b.d) || ((int) a.d->opts == (int) b.d->opts
+        && a.d->pln == b.d->pln
+        && a.d->alphaSize == b.d->alphaSize
+        && a.d->accumSize == b.d->accumSize
+        && a.d->stencilSize == b.d->stencilSize
         && a.d->depthSize == b.d->depthSize
         && a.d->redSize == b.d->redSize
         && a.d->greenSize == b.d->greenSize
         && a.d->blueSize == b.d->blueSize
         && a.d->numSamples == b.d->numSamples
-        && a.d->swapInterval == b.d->swapInterval;
+        && a.d->swapInterval == b.d->swapInterval
+        && a.d->majorVersion == b.d->majorVersion
+        && a.d->minorVersion == b.d->minorVersion
+        && a.d->profile == b.d->profile);
 }
 
 
