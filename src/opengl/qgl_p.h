@@ -257,6 +257,10 @@ private:
 
 class QGLTexture;
 
+// This probably needs to grow to GL_MAX_VERTEX_ATTRIBS, but 3 is ok for now as that's
+// all the GL2 engine uses:
+#define QT_GL_VERTEX_ARRAY_TRACKED_COUNT 3
+
 class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
@@ -275,6 +279,9 @@ public:
     int maxTextureSize();
 
     void cleanup();
+
+    void setVertexAttribArrayEnabled(int arrayIndex, bool enabled = true);
+    void syncGlState(); // Makes sure the GL context's state is what we think it is
 
 #if defined(Q_WS_WIN)
     HGLRC rc;
@@ -331,6 +338,8 @@ public:
     GLuint current_fbo;
     GLuint default_fbo;
     QPaintEngine *active_engine;
+
+    bool vertexAttributeArraysEnabledState[QT_GL_VERTEX_ARRAY_TRACKED_COUNT];
 
     static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }
 

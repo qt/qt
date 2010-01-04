@@ -393,6 +393,7 @@ private:
     friend class QOpenGLPaintEnginePrivate;
     friend class QGL2PaintEngineEx;
     friend class QGL2PaintEngineExPrivate;
+    friend class QGLEngineShaderManager;
     friend class QGLWindowSurface;
     friend class QGLPixmapData;
     friend class QGLPixmapFilterBase;
