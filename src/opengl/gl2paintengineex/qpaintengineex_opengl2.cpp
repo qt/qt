@@ -589,19 +589,28 @@ void QGL2PaintEngineExPrivate::updateMatrix()
 
     const GLfloat wfactor = 2.0f / width;
     const GLfloat hfactor = -2.0f / height;
+    GLfloat dx = transform.dx();
+    GLfloat dy = transform.dy();
+
+    // Non-integer translates can have strange effects for some rendering operations such as
+    // anti-aliased text rendering. In such cases, we snap the translate to the pixel grid.
+    if (snapToPixelGrid && transform.type() == QTransform::TxTranslate) {
+        // 0.50 needs to rounded down to 0.0 for consistency with raster engine:
+        dx = ceilf(dx - 0.5f);
+        dy = ceilf(dy - 0.5f);
+    }
 
     if (addOffset) {
-        pmvMatrix[2][0] = (wfactor * (transform.dx() + 0.49f)) - transform.m33();
-        pmvMatrix[2][1] = (hfactor * (transform.dy() + 0.49f)) + transform.m33();
-    } else {
-        pmvMatrix[2][0] = (wfactor * transform.dx()) - transform.m33();
-        pmvMatrix[2][1] = (hfactor * transform.dy()) + transform.m33();
+        dx += 0.49f;
+        dy += 0.49f;
     }
 
     pmvMatrix[0][0] = (wfactor * transform.m11())  - transform.m13();
     pmvMatrix[1][0] = (wfactor * transform.m21())  - transform.m23();
+    pmvMatrix[2][0] = (wfactor * dx) - transform.m33();
     pmvMatrix[0][1] = (hfactor * transform.m12())  + transform.m13();
     pmvMatrix[1][1] = (hfactor * transform.m22())  + transform.m23();
+    pmvMatrix[2][1] = (hfactor * dy) + transform.m33();
     pmvMatrix[0][2] = transform.m13();
     pmvMatrix[1][2] = transform.m23();
     pmvMatrix[2][2] = transform.m33();
@@ -696,6 +705,11 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
 
     if (addOffset) {
         addOffset = false;
+        matrixDirty = true;
+    }
+
+    if (snapToPixelGrid) {
+        snapToPixelGrid = false;
         matrixDirty = true;
     }
 
@@ -853,6 +867,11 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
     if (addOffset != newAddOffset) {
         addOffset = newAddOffset;
+        matrixDirty = true;
+    }
+
+    if (snapToPixelGrid) {
+        snapToPixelGrid = false;
         matrixDirty = true;
     }
 
@@ -1249,6 +1268,11 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
         matrixDirty = true;
     }
 
+    if (snapToPixelGrid) {
+        snapToPixelGrid = false;
+        matrixDirty = true;
+    }
+
     const Qt::PenStyle penStyle = qpen_style(pen);
     const QBrush &penBrush = qpen_brush(pen);
     const bool opaque = penBrush.isOpaque() && s->opacity > 0.99;
@@ -1519,6 +1543,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
         addOffset = false;
         matrixDirty = true;
     }
+    if (!snapToPixelGrid) {
+        snapToPixelGrid = true;
+        matrixDirty = true;
+    }
 
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(pensBrush);
@@ -1634,6 +1662,11 @@ void QGL2PaintEngineExPrivate::drawPixmaps(const QDrawPixmaps::Data *drawingData
 
     if (addOffset) {
         addOffset = false;
+        matrixDirty = true;
+    }
+
+    if (snapToPixelGrid) {
+        snapToPixelGrid = false;
         matrixDirty = true;
     }
 
@@ -1916,6 +1949,10 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
 
     if (addOffset) {
         addOffset = false;
+        matrixDirty = true;
+    }
+    if (snapToPixelGrid) {
+        snapToPixelGrid = false;
         matrixDirty = true;
     }
 
