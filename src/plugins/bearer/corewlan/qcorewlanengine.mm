@@ -116,95 +116,6 @@ QCoreWlanEngine::~QCoreWlanEngine()
 {
 }
 
-QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::getWifiConfigurations()
-{
-    QMapIterator<QString, QString> i(networkInterfaces);
-    while (i.hasNext()) {
-        i.next();
-        QString interfaceName = i.key();
-        if (i.value() == "WLAN") {
-            if(!isWifiReady(interfaceName)) {
-                qWarning() << "wifi not powered on";
-                return QList<QNetworkConfigurationPrivate *>();
-            } else {
-           //     QList<QNetworkConfigurationPrivate *> profs = getWlanProfiles(interfaceName);
-                scanForSsids(interfaceName);
-            }
-        } else {
-
-        }
-    }
-    return QList<QNetworkConfigurationPrivate *> ();
-}
-
-#if 0
-QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::getConfigurations(bool *ok)
-{
-    if (ok)
-        *ok = true;
-    NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
-
-    QList<QNetworkConfigurationPrivate *> foundConfigurations;
-    QList<QNetworkConfigurationPrivate *> wificonfigs = getWifiConfigurations();
-
-    uint identifier;
-    QMapIterator<QString, QString> i(networkInterfaces);
-    while (i.hasNext()) {
-        i.next();
-        if (i.value() == "WLAN") {
-            QList<QNetworkConfigurationPrivate *> fetchedConfigurations = scanForSsids(i.key());
-            for (int i = 0; i < fetchedConfigurations.count(); ++i) {
-
-                QNetworkConfigurationPrivate *config = new QNetworkConfigurationPrivate;
-                config->name = fetchedConfigurations.at(i)->name;
-                config->isValid = fetchedConfigurations.at(i)->isValid;
-                config->id = fetchedConfigurations.at(i)->id;
-
-                config->state = fetchedConfigurations.at(i)->state;
-                config->type = fetchedConfigurations.at(i)->type;
-                config->roamingSupported = fetchedConfigurations.at(i)->roamingSupported;
-                config->purpose = fetchedConfigurations.at(i)->purpose;
-                config->internet = fetchedConfigurations.at(i)->internet;
-                config->serviceInterface = fetchedConfigurations.at(i)->serviceInterface;
-
-                identifier = config->name.toUInt();
-                configurationInterface[identifier] =  config->serviceInterface.name();
-                foundConfigurations.append(config);
-            }
-        }
-
-        QNetworkInterface interface = QNetworkInterface::interfaceFromName(i.key());
-        QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate;
-        const QString humanReadableName = interface.humanReadableName();
-        cpPriv->name = humanReadableName.isEmpty() ? interface.name() : humanReadableName;
-        cpPriv->isValid = true;
-
-        if (interface.index())
-            identifier = interface.index();
-        else
-            identifier = qHash(interface.hardwareAddress());
-
-        cpPriv->id = QString::number(identifier);
-        cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
-        cpPriv->state = QNetworkConfiguration::Undefined;
-
-        if (interface.flags() & QNetworkInterface::IsRunning) {
-            cpPriv->state = QNetworkConfiguration::Defined;
-            cpPriv->internet = true;
-        }
-        if ( !interface.addressEntries().isEmpty())  {
-            cpPriv->state |= QNetworkConfiguration::Active;
-            cpPriv->internet = true;
-        }
-        configurationInterface[identifier] = interface.name();
-        foundConfigurations.append(cpPriv);
-    }
-    [autoreleasepool release];
-    pollTimer.start();
-    return foundConfigurations;
-}
-#endif
-
 QString QCoreWlanEngine::getInterfaceFromId(const QString &id)
 {
     return configurationInterface.value(id);
@@ -326,7 +237,6 @@ void QCoreWlanEngine::doRequestUpdate()
             }
         }
 
-        qDebug() << "Found configuration" << i.key();
         QNetworkInterface interface = QNetworkInterface::interfaceFromName(i.key());
 
         if (!interface.isValid())
@@ -347,8 +257,6 @@ void QCoreWlanEngine::doRequestUpdate()
             name = interface.name();
 
         QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Undefined;
-
-        qDebug() << "interface flags:" << interface.flags();
 
         if (interface.flags() && QNetworkInterface::IsRunning)
             state = QNetworkConfiguration::Defined;
@@ -381,10 +289,8 @@ void QCoreWlanEngine::doRequestUpdate()
                 changed = true;
             }
 
-            if (changed) {
-                qDebug() << "Configuration changed" << ptr->name << ptr->id;
+            if (changed)
                 emit configurationChanged(ptr);
-            }
         } else {
             QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
 
@@ -397,7 +303,6 @@ void QCoreWlanEngine::doRequestUpdate()
             accessPointConfigurations.insert(id, ptr);
             configurationInterface.insert(id, interface.name());
 
-            qDebug() << "Configuration Added" << ptr->name << ptr->id;
             emit configurationAdded(ptr);
         }
     }
@@ -405,7 +310,6 @@ void QCoreWlanEngine::doRequestUpdate()
     while (!previous.isEmpty()) {
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(previous.takeFirst());
 
-        qDebug() << "Configuration Removed" << ptr->name << ptr->id;
         configurationInterface.remove(ptr->id);
         emit configurationRemoved(ptr);
     }
@@ -439,8 +343,6 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
             QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Undefined;
 
             if ([currentInterface.interfaceState intValue] == kCWInterfaceStateRunning) {
-                QString interfaceSsidString = nsstringToQString([currentInterface ssid]);
-                qDebug() << "interfaceSsidString:" << interfaceSsidString;
                 if (networkSsid == nsstringToQString([currentInterface ssid]))
                     state = QNetworkConfiguration::Active;
             } else {
@@ -449,7 +351,6 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
                 else
                     state = QNetworkConfiguration::Defined;
             }
-            qDebug() << "state is:" << state;
 
             CWWirelessProfile *networkProfile = apNetwork.wirelessProfile;
             CW8021XProfile *userNetworkProfile = networkProfile.user8021XProfile;
@@ -482,10 +383,8 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
                     changed = true;
                 }
 
-                if (changed) {
-                    qDebug() << "WLAN Configuration Changed" << interfaceName << ptr->name << ptr->id;
+                if (changed)
                     emit configurationChanged(ptr);
-                }
             } else {
                 QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
 
@@ -498,7 +397,6 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
                 accessPointConfigurations.insert(id, ptr);
                 configurationInterface.insert(id, interfaceName);
 
-                qDebug() << "WLAN Configuration Added" << interfaceName << ptr->name << ptr->id;
                 emit configurationAdded(ptr);
             }
         }

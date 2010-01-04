@@ -84,7 +84,6 @@ private:
 
     QList<QNetworkConfigurationPrivate *> getWlanProfiles(const QString &interfaceName);
 
-    QList<QNetworkConfigurationPrivate *> getWifiConfigurations();
     bool isKnownSsid(const QString &interfaceName, const QString &ssid);
 };
 
