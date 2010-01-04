@@ -116,6 +116,7 @@ QNetworkManagerEngine::~QNetworkManagerEngine()
 
 void QNetworkManagerEngine::doRequestUpdate()
 {
+    emit updateCompleted();
 }
 
 QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
@@ -317,6 +318,13 @@ void QNetworkManagerEngine::activeConnectionPropertiesChanged(const QString &pat
             emit configurationChanged(ptr);
         }
     }
+}
+
+void QNetworkManagerEngine::devicePropertiesChanged(const QString &path,
+                                                    const QMap<QString, QVariant> &properties)
+{
+    qDebug() << Q_FUNC_INFO << path;
+    qDebug() << properties;
 }
 
 void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)

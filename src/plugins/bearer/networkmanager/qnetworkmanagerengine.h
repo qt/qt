@@ -87,6 +87,8 @@ private Q_SLOTS:
                                     const QMap<QString, QVariant> &properties);
     void activeConnectionPropertiesChanged(const QString &path,
                                            const QMap<QString, QVariant> &properties);
+    void devicePropertiesChanged(const QString &path,
+                                 const QMap<QString, QVariant> &properties);
 
     void deviceAdded(const QDBusObjectPath &path);
     void deviceRemoved(const QDBusObjectPath &path);
