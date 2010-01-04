@@ -200,6 +200,7 @@ public:
 
     QRegion scissorRegion;  // Currently active scissor region.
     bool scissorActive;     // True if scissor region is active.
+    bool scissorDirty;      // True if scissor is dirty after native painting.
 
     QPaintEngine::DirtyFlags dirty;
 
@@ -357,6 +358,7 @@ void QVGPaintEnginePrivate::init()
     rawVG = false;
 
     scissorActive = false;
+    scissorDirty = false;
 
     dirty = 0;
 
@@ -2083,6 +2085,7 @@ void QVGPaintEngine::updateScissor()
             // so there is no point doing any scissoring.
             vgSeti(VG_SCISSORING, VG_FALSE);
             d->scissorActive = false;
+            d->scissorDirty = false;
             return;
         }
     } else
@@ -2100,6 +2103,7 @@ void QVGPaintEngine::updateScissor()
                 // so there is no point doing any scissoring.
                 vgSeti(VG_SCISSORING, VG_FALSE);
                 d->scissorActive = false;
+                d->scissorDirty = false;
                 return;
             }
         } else
@@ -2109,11 +2113,12 @@ void QVGPaintEngine::updateScissor()
         if (region.isEmpty()) {
             vgSeti(VG_SCISSORING, VG_FALSE);
             d->scissorActive = false;
+            d->scissorDirty = false;
             return;
         }
     }
 
-    if (d->scissorActive && region == d->scissorRegion)
+    if (d->scissorActive && region == d->scissorRegion && !d->scissorDirty)
         return;
 
     QVector<QRect> rects = region.rects();
@@ -2131,6 +2136,7 @@ void QVGPaintEngine::updateScissor()
 
     vgSetiv(VG_SCISSOR_RECTS, count * 4, params.data());
     vgSeti(VG_SCISSORING, VG_TRUE);
+    d->scissorDirty = false;
     d->scissorActive = true;
     d->scissorRegion = region;
 }
@@ -3333,6 +3339,7 @@ void QVGPaintEngine::endNativePainting()
     d->brushType = (VGPaintType)0;
     d->clearColor = QColor();
     d->fillPaint = d->brushPaint;
+    d->scissorDirty = true;
     restoreState(QPaintEngine::AllDirty);
     d->dirty = dirty;
     d->rawVG = false;
@@ -3666,15 +3673,17 @@ void QVGCompositionHelper::setScissor(const QRegion& region)
 
     vgSetiv(VG_SCISSOR_RECTS, count * 4, params.data());
     vgSeti(VG_SCISSORING, VG_TRUE);
+    d->scissorDirty = false;
     d->scissorActive = true;
     d->scissorRegion = region;
 }
 
 void QVGCompositionHelper::clearScissor()
 {
-    if (d->scissorActive) {
+    if (d->scissorActive || d->scissorDirty) {
         vgSeti(VG_SCISSORING, VG_FALSE);
         d->scissorActive = false;
+        d->scissorDirty = false;
     }
 }
 
