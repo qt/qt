@@ -66,11 +66,9 @@
 #include <qplatformdefs.h>
 #include <qhostinfo.h>
 
-#ifdef TEST_QNETWORK_PROXY
-# include <QNetworkProxy>
+#include <QNetworkProxy>
 Q_DECLARE_METATYPE(QNetworkProxy)
 Q_DECLARE_METATYPE(QList<QNetworkProxy>)
-#endif
 
 #include "../network-settings.h"
 
@@ -106,12 +104,10 @@ private slots:
     void listenWhileListening();
     void addressReusable();
     void setNewSocketDescriptorBlocking();
-#ifdef TEST_QNETWORK_PROXY
     void invalidProxy_data();
     void invalidProxy();
     void proxyFactory_data();
     void proxyFactory();
-#endif
 };
 
 // Testing get/set functions
@@ -143,29 +139,23 @@ void tst_QTcpServer::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
-#endif
 }
 
 void tst_QTcpServer::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
         }
-#endif
     }
 }
 
 void tst_QTcpServer::cleanup()
 {
-#ifdef TEST_QNETWORK_PROXY
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
-#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -423,12 +413,10 @@ void tst_QTcpServer::maxPendingConnections()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 only 1 connection is allowed ever", SkipAll);
         }
-#endif
     }
     //### sees to fail sometimes ... a timing issue with the test on windows
     QTcpServer server;
@@ -464,12 +452,10 @@ void tst_QTcpServer::listenError()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 we can not make hard requirements on the address or port", SkipAll);
         }
-#endif
     }
     QTcpServer server;
     QVERIFY(!server.listen(QHostAddress("1.2.3.4"), 0));
@@ -513,12 +499,10 @@ void tst_QTcpServer::waitForConnectionTest()
 
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("Localhost servers don't work well with SOCKS5", SkipAll);
         }
-#endif
     }
 
     QTcpSocket findLocalIpSocket;
@@ -624,12 +608,10 @@ void tst_QTcpServer::addressReusable()
 
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 this test does not make senans at the momment", SkipAll);
         }
-#endif
     }
 #if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QString signalName = QString::fromLatin1("/test_signal.txt");
@@ -667,12 +649,10 @@ void tst_QTcpServer::setNewSocketDescriptorBlocking()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 we can not make the socket descripter blocking", SkipAll);
         }
-#endif
     }
     SeverWithBlockingSockets server;
     QVERIFY(server.listen());
@@ -683,7 +663,6 @@ void tst_QTcpServer::setNewSocketDescriptorBlocking()
     QVERIFY(server.ok);
 }
 
-#ifdef TEST_QNETWORK_PROXY
 void tst_QTcpServer::invalidProxy_data()
 {
     QTest::addColumn<int>("type");
@@ -838,7 +817,6 @@ void tst_QTcpServer::proxyFactory()
     // Sometimes, error codes change for the better
     QTEST(int(server.serverError()), "expectedError");
 }
-#endif
 
 QTEST_MAIN(tst_QTcpServer)
 #include "tst_qtcpserver.moc"
