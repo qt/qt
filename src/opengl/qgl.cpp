@@ -1436,6 +1436,18 @@ void QGLContextGroup::removeGuard(QGLSharedResourceGuard *guard)
         m_guards = guard->m_next;
 }
 
+const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
+{
+    if (!ctx)
+        return 0;
+    QList<const QGLContext *> shares
+        (QGLContextPrivate::contextGroup(ctx)->shares());
+    if (shares.size() >= 2)
+        return (ctx == shares.at(0)) ? shares.at(1) : shares.at(0);
+    else
+        return 0;
+}
+
 QGLContextPrivate::~QGLContextPrivate()
 {
     if (!group->m_refs.deref()) {
@@ -1730,12 +1742,6 @@ struct DDSFormat {
 #define GL_GENERATE_MIPMAP_SGIS       0x8191
 #define GL_GENERATE_MIPMAP_HINT_SGIS  0x8192
 #endif
-
-Q_GLOBAL_STATIC(QGLShareRegister, _qgl_share_reg)
-Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
-{
-    return _qgl_share_reg();
-}
 
 /*!
     \class QGLContext
@@ -2985,7 +2991,7 @@ bool QGLContext::create(const QGLContext* shareContext)
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
     if (d->sharing)  // ok, we managed to share
-        qgl_share_reg()->addShare(this, shareContext);
+        QGLContextGroup::addShare(this, shareContext);
     return d->valid;
 }
 
@@ -4971,7 +4977,7 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
 }
 #endif
 
-void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *share) {
+void QGLContextGroup::addShare(const QGLContext *context, const QGLContext *share) {
     Q_ASSERT(context && share);
     if (context->d_ptr->group == share->d_ptr->group)
         return;
@@ -4992,11 +4998,7 @@ void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *sha
     group->m_shares.append(context);
 }
 
-QList<const QGLContext *> QGLShareRegister::shares(const QGLContext *context) {
-    return context->d_ptr->group->m_shares;
-}
-
-void QGLShareRegister::removeShare(const QGLContext *context) {
+void QGLContextGroup::removeShare(const QGLContext *context) {
     // Remove the context from the group.
     QGLContextGroup *group = context->d_ptr->group;
     if (group->m_shares.isEmpty())

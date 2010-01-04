@@ -124,17 +124,20 @@ public:
 public Q_SLOTS:
     void contextDestroyed(const QGLContext *context) {
         if (context == ctx) {
-            QList<const QGLContext *> shares = qgl_share_reg()->shares(ctx);
-            if (shares.isEmpty()) {
-                glDeleteFramebuffers(1, &m_fbo);
-                if (m_width || m_height)
-                    glDeleteTextures(1, &m_texture);
+            const QGLContext *nextCtx = qt_gl_transfer_context(ctx);
+            if (!nextCtx) {
+                // the context may not be current, so we cannot directly
+                // destroy the fbo and texture here, but since the context
+                // is about to be destroyed, the GL server will do the
+                // clean up for us anyway
+                m_fbo = 0;
+                m_texture = 0;
                 ctx = 0;
             } else {
                 // since the context holding the texture is shared, and
                 // about to be destroyed, we have to transfer ownership
                 // of the texture to one of the share contexts
-                ctx = const_cast<QGLContext *>((ctx == shares.at(0)) ? shares.at(1) : shares.at(0));
+                ctx = const_cast<QGLContext *>(nextCtx);
             }
         }
     }

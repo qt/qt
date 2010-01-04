@@ -398,7 +398,7 @@ private:
     friend class QGLPixmapData;
     friend class QGLPixmapFilterBase;
     friend class QGLTextureGlyphCache;
-    friend class QGLShareRegister;
+    friend class QGLContextGroup;
     friend class QGLSharedResourceGuard;
     friend class QGLPixmapBlurFilter;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
