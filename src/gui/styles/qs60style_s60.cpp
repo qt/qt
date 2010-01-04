@@ -1133,9 +1133,21 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
 
 QPixmap QS60StylePrivate::backgroundTexture()
 {
+    bool createNewBackground = false;
     if (!m_background) {
+        createNewBackground = true;
+    } else {
+        //if background brush does not match screensize, re-create it
+        if (m_background->width() != S60->screenWidthInPixels ||
+            m_background->height() != S60->screenHeightInPixels) {
+            delete m_background;
+            createNewBackground = true;
+        }
+    }
+
+    if (createNewBackground) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
-                QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), 0, SkinElementFlags());
+            QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), 0, SkinElementFlags());
         m_background = new QPixmap(background);
     }
     return *m_background;
@@ -1143,8 +1155,7 @@ QPixmap QS60StylePrivate::backgroundTexture()
 
 QSize QS60StylePrivate::screenSize()
 {
-    const TSize screenSize = QS60Data::screenDevice()->SizeInPixels();
-    return QSize(screenSize.iWidth, screenSize.iHeight);
+    return QSize(S60->screenWidthInPixels, S60->screenHeightInPixels);
 }
 
 QS60Style::QS60Style()

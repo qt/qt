@@ -28,6 +28,13 @@ contains(CONFIG, qt):!contains(TARGET.UID3, 0x2001E61C):!contains(TARGET.UID3, 0
     default_deployment.pkg_prerules += \
         "; Default dependency to Qt libraries" \
         "(0x2001E61C), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"Qt\"}"
+
+    # Projects linking to webkit need dependency to webkit
+    contains(QT, webkit): {
+        default_deployment.pkg_prerules += \
+            "; Dependency to Qt Webkit" \
+            "(0x200267C2), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"QtWebKit\"}"
+    }
 }
 
 isEmpty(TARGET.EPOCSTACKSIZE):TARGET.EPOCSTACKSIZE = 0x14000

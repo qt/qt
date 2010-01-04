@@ -475,8 +475,8 @@ void ModelTest::data()
 void ModelTest::rowsAboutToBeInserted ( const QModelIndex &parent, int start, int end )
 {
 //     Q_UNUSED(end);
-    qDebug() << "rowsAboutToBeInserted" << "start=" << start << "end=" << end << "parent=" << model->data ( parent ).toString()
-    << "current count of parent=" << model->rowCount ( parent ); // << "display of last=" << model->data( model->index(start-1, 0, parent) );
+//    qDebug() << "rowsAboutToBeInserted" << "start=" << start << "end=" << end << "parent=" << model->data ( parent ).toString()
+//    << "current count of parent=" << model->rowCount ( parent ); // << "display of last=" << model->data( model->index(start-1, 0, parent) );
 //     qDebug() << model->index(start-1, 0, parent) << model->data( model->index(start-1, 0, parent) );
     Changing c;
     c.parent = parent;
@@ -495,14 +495,14 @@ void ModelTest::rowsInserted ( const QModelIndex & parent, int start, int end )
 {
     Changing c = insert.pop();
     Q_ASSERT ( c.parent == parent );
-    qDebug() << "rowsInserted"  << "start=" << start << "end=" << end << "oldsize=" << c.oldSize
-    << "parent=" << model->data ( parent ).toString() << "current rowcount of parent=" << model->rowCount ( parent );
+//    qDebug() << "rowsInserted"  << "start=" << start << "end=" << end << "oldsize=" << c.oldSize
+//    << "parent=" << model->data ( parent ).toString() << "current rowcount of parent=" << model->rowCount ( parent );
 
-    for (int ii=start; ii <= end; ii++)
-    {
-      qDebug() << "itemWasInserted:" << ii << model->data ( model->index ( ii, 0, parent ));
-    }
-    qDebug();
+//    for (int ii=start; ii <= end; ii++)
+//    {
+//      qDebug() << "itemWasInserted:" << ii << model->data ( model->index ( ii, 0, parent ));
+//    }
+//    qDebug();
 
     Q_ASSERT ( c.oldSize + ( end - start + 1 ) == model->rowCount ( parent ) );
     Q_ASSERT ( c.last == model->data ( model->index ( start - 1, 0, c.parent ) ) );

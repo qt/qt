@@ -3150,6 +3150,7 @@ int QScreen::subScreenIndexAt(const QPoint &p) const
 
 #if 0
 #ifdef QT_LOADABLE_MODULES
+#include <dlfcn.h>
 
 // ### needs update after driver init changes
 

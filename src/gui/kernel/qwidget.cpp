@@ -9774,13 +9774,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     }
 #endif
 
-    if (newParent) {
-        if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
+    if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
+        if (newParent)
             oldBs->removeDirtyWidget(this);
-            // Move the widget and all its static children from
-            // the old backing store to the new one.
-            oldBs->moveStaticWidgets(this);
-        }
+        // Move the widget and all its static children from
+        // the old backing store to the new one.
+        oldBs->moveStaticWidgets(this);
     }
 
     if ((QApplicationPrivate::app_compile_version < 0x040200
