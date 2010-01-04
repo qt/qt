@@ -35,6 +35,4 @@ symbian: {
     # Workaroud for problems with paging this dll
     MMP_RULES -= PAGED
     MMP_RULES *= UNPAGED
-    # Timezone server
-    LIBS += -ltzclient
 }

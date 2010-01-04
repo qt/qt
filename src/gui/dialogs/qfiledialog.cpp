@@ -669,6 +669,9 @@ void QFileDialog::setOptions(Options options)
     }
     if (changed & HideNameFilterDetails)
         setNameFilters(d->nameFilters);
+
+    if (changed & ShowDirsOnly)
+        setFilter((options & ShowDirsOnly) ? filter() & ~QDir::Files : filter() | QDir::Files);
 }
 
 QFileDialog::Options QFileDialog::options() const

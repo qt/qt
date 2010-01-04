@@ -105,10 +105,6 @@ symbian: {
         qtlibraries.sources += QtDeclarative.dll
     }
 
-    contains(QT_CONFIG, webkit): {
-        qtlibraries.sources += QtWebKit.dll
-    }
-
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems
     contains(QT_CONFIG, openvg) {
         qtlibraries.sources += QtOpenVG.dll
@@ -117,4 +113,9 @@ symbian: {
 
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
     BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CORE_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"
+    PLUGIN_STUBS = $$files(qmakepluginstubs/*)
+    for(STUB, PLUGIN_STUBS) {
+        STUB_FILENAME = $$basename(STUB)
+        BLD_INF_RULES.prj_exports += "qmakepluginstubs/$${STUB_FILENAME} /epoc32/data/qt/qtlibspluginstubs/$${STUB_FILENAME}"
+    }
 }
