@@ -73,6 +73,12 @@ enum EngineMode {
 
 QT_BEGIN_NAMESPACE
 
+#define GL_STENCIL_HIGH_BIT         GLuint(0x80)
+#define QT_BRUSH_TEXTURE_UNIT       GLuint(0)
+#define QT_IMAGE_TEXTURE_UNIT       GLuint(0) //Can be the same as brush texture unit
+#define QT_MASK_TEXTURE_UNIT        GLuint(1)
+#define QT_BACKGROUND_TEXTURE_UNIT  GLuint(2)
+
 class QGL2PaintEngineExPrivate;
 
 
