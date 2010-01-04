@@ -1888,13 +1888,15 @@ void QWidgetPrivate::determineWindowClass()
         wclass = kDocumentWindowClass;
     else if(popup || (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5 && type == Qt::SplashScreen))
         wclass = kModalWindowClass;
-    else if(q->testAttribute(Qt::WA_ShowModal) || type == Qt::Dialog)
+    else if(type == Qt::Dialog)
         wclass = kMovableModalWindowClass;
     else if(type == Qt::ToolTip)
         wclass = kHelpWindowClass;
     else if(type == Qt::Tool || (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5
                                  && type == Qt::SplashScreen))
         wclass = kFloatingWindowClass;
+    else if(q->testAttribute(Qt::WA_ShowModal))
+        wclass = kMovableModalWindowClass;
     else
         wclass = kDocumentWindowClass;
 
@@ -1998,8 +2000,6 @@ void QWidgetPrivate::determineWindowClass()
         for(int i = 0; tmp_wattr && known_attribs[i].name; i++) {
             if((tmp_wattr & known_attribs[i].tag) == known_attribs[i].tag) {
                 tmp_wattr ^= known_attribs[i].tag;
-                qDebug("Qt: internal: * %s %s", known_attribs[i].name,
-                        (GetAvailableWindowAttributes(wclass) & known_attribs[i].tag) ? "" : "(*)");
             }
         }
         if(tmp_wattr)
