@@ -57,4 +57,20 @@ QNetworkConfigurationPrivate::~QNetworkConfigurationPrivate()
     serviceNetworkMembers.clear(); 
 }
 
+QString QNetworkConfigurationPrivate::bearerName() const
+{
+    switch (bearer) {
+        case QNetworkConfigurationPrivate::BearerEthernet:  return QLatin1String("Ethernet");
+        case QNetworkConfigurationPrivate::BearerWLAN:      return QLatin1String("WLAN");
+        case QNetworkConfigurationPrivate::Bearer2G:        return QLatin1String("2G");
+        case QNetworkConfigurationPrivate::BearerCDMA2000:  return QLatin1String("CDMA2000");
+        case QNetworkConfigurationPrivate::BearerWCDMA:     return QLatin1String("WCDMA");
+        case QNetworkConfigurationPrivate::BearerHSPA:      return QLatin1String("HSPA");
+        case QNetworkConfigurationPrivate::BearerBluetooth: return QLatin1String("Bluetooth");
+        case QNetworkConfigurationPrivate::BearerWiMAX:     return QLatin1String("WiMAX");
+        default: return QLatin1String("Unknown");
+    }
+}
+
+
 QTM_END_NAMESPACE

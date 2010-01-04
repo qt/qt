@@ -69,7 +69,7 @@ class QNetworkSessionPrivate : public QObject
     Q_OBJECT
 public:
     QNetworkSessionPrivate() : 
-	    tx_data(0), rx_data(0), m_activeTime(0), isActive(false),
+	    tx_data(0), rx_data(0), m_activeTime(0), isOpen(false),
 	    connectFlags(ICD_CONNECTION_FLAG_USER_EVENT)
     {
     }
@@ -88,7 +88,6 @@ public:
     QNetworkInterface currentInterface() const;
     QVariant sessionProperty(const QString& key) const;
     void setSessionProperty(const QString& key, const QVariant& value);
-    QString bearerName() const;
 
     void open();
     void close();
@@ -142,7 +141,7 @@ private:
     void cleanupAnyConfiguration();
 
     QNetworkSession::State state;
-    bool isActive;
+    bool isOpen;
     bool opened;
     icd_connection_flags connectFlags;
 
@@ -152,7 +151,6 @@ private:
     friend class QNetworkSession;
 
     QDateTime startTime;
-    QString currentBearerName;
     QString currentNetworkInterface;
     friend class IcdListener;
     void updateState(QNetworkSession::State);

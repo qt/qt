@@ -49,9 +49,11 @@
 
 QTM_USE_NAMESPACE
 
+QT_BEGIN_NAMESPACE
 class QListWidget;
 class QTreeWidget;
 class QTreeWidgetItem;
+QT_END_NAMESPACE
 
 class NMView : public QDialog, private Ui::Dialog
 {

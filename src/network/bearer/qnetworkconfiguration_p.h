@@ -78,6 +78,12 @@ public:
     }
 
     QString name;
+    QString bearer;
+    inline QString bearerName() const
+    {
+        return bearer;
+    }
+
     bool isValid;
     QString id;
     QNetworkConfiguration::StateFlags state;

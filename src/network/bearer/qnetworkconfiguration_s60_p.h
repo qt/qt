@@ -87,6 +87,7 @@ public:
     QList<QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > serviceNetworkMembers;
 
     QNetworkConfigurationPrivate::Bearer bearer;
+    QString bearerName() const;
     TUint32 numericId;
     TUint connectionId;
     

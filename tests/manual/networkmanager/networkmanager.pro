@@ -12,7 +12,8 @@ requires(contains(QT_CONFIG,dbus))
 INCLUDEPATH += ../../src/bearer
 include(../../common.pri)
 
-qtAddLibrary(QtBearer)
+CONFIG += mobility
+MOBILITY = bearer
 
 #MOC_DIR = .moc
 #OBJECTS_DIR = .obj

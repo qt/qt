@@ -92,7 +92,6 @@ public:
     QNetworkInterface currentInterface() const;
     QVariant sessionProperty(const QString& key) const;
     void setSessionProperty(const QString& key, const QVariant& value);
-    QString bearerName() const;
     
     void setALREnabled(bool enabled);
 
@@ -158,7 +157,7 @@ private: // data
     mutable QNetworkInterface activeInterface;
 
     QNetworkSession::State state;
-    bool isActive;
+    bool isOpen;
 
     QNetworkSession* q;
     QDateTime startTime;

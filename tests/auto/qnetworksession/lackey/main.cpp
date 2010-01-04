@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 
         session->open();
         session->waitForOpened();
-    } while (!(session && session->isActive()));
+    } while (!(session && session->isOpen()));
 
     qDebug() << "loop done";
 

@@ -45,8 +45,10 @@
 #include <QGraphicsItem>
 QTM_USE_NAMESPACE
 
+QT_BEGIN_NAMESPACE
 class QGraphicsTextItem;
 class QGraphicsSvgItem;
+QT_END_NAMESPACE
 
 class Cloud : public QObject, public QGraphicsItem
 {

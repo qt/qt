@@ -19,8 +19,7 @@ SOURCES += qnetworksession.cpp \
            qnetworkconfiguration.cpp
 
 symbian: {
-    exists($${EPOCROOT}epoc32/release/winscw/udeb/cmmanager.lib)| \
-    exists($${EPOCROOT}epoc32/release/armv5/lib/cmmanager.lib) {
+    contains(snap_enabled, yes) {
         message("Building with SNAP support")
         DEFINES += SNAP_FUNCTIONALITY_AVAILABLE=1
         LIBS += -lcmmanager
@@ -48,21 +47,21 @@ symbian: {
             -lefsrv \
             -lnetmeta
 
+    TARGET.CAPABILITY = ALL -TCB
+    TARGET.UID3 = 0x2002AC81
+            
     deploy.path = $${EPOCROOT}
     exportheaders.sources = $$PUBLIC_HEADERS
     exportheaders.path = epoc32/include
-    
     for(header, exportheaders.sources) {
         BLD_INF_RULES.prj_exports += "$$header $$deploy.path$$exportheaders.path/$$basename(header)"
     }
-
-    bearer_deployment.sources = QtBearer.dll
-    bearer_deployment.path = /sys/bin
-    DEPLOYMENT += bearer_deployment
-
-    TARGET.CAPABILITY = All -TCB
+            
+    QtBearerManagement.sources = QtBearer.dll
+    QtBearerManagement.path = /sys/bin
+    DEPLOYMENT += QtBearerManagement
 } else {
-    maemo {
+    maemo6 {
         QT += dbus
 	CONFIG += link_pkgconfig
 

@@ -53,6 +53,13 @@
 #include "qnetworksessionengine_win_p.h"
 #endif
 
+#ifdef Q_OS_LINUX
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <net/if_arp.h>
+#endif
+
 QTM_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QGenericEngine, genericEngine)
@@ -69,7 +76,7 @@ static QString qGetInterfaceType(const QString &interface)
     HANDLE handle = CreateFile((TCHAR *)QString("\\\\.\\%1").arg(interface).utf16(), 0,
                                FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if (handle == INVALID_HANDLE_VALUE)
-        return QString();
+        return QLatin1String("Unknown");
 
     oid = OID_GEN_MEDIA_SUPPORTED;
     bytesWritten = 0;
@@ -77,7 +84,7 @@ static QString qGetInterfaceType(const QString &interface)
                                   &medium, sizeof(medium), &bytesWritten, 0);
     if (!result) {
         CloseHandle(handle);
-        return QString();
+        return QLatin1String("Unknown");
     }
 
     oid = OID_GEN_PHYSICAL_MEDIUM;
@@ -90,7 +97,7 @@ static QString qGetInterfaceType(const QString &interface)
         if (medium == NdisMedium802_3)
             return QLatin1String("Ethernet");
         else
-            return QString();
+            return QLatin1String("Unknown");
     }
 
     CloseHandle(handle);
@@ -114,11 +121,24 @@ static QString qGetInterfaceType(const QString &interface)
 #ifdef BEARER_MANAGEMENT_DEBUG
     qDebug() << medium << physicalMedium;
 #endif
+#elif defined(Q_OS_LINUX)
+    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+    ifreq request;
+    strncpy(request.ifr_name, interface.toLocal8Bit().data(), sizeof(request.ifr_name));
+    if (ioctl(sock, SIOCGIFHWADDR, &request) >= 0) {
+        switch (request.ifr_hwaddr.sa_family) {
+        case ARPHRD_ETHER:
+            return QLatin1String("Ethernet");
+        }
+    }
+
+    close(sock);
 #else
     Q_UNUSED(interface);
 #endif
 
-    return QString();
+    return QLatin1String("Unknown");
 }
 
 QGenericEngine::QGenericEngine(QObject *parent)
@@ -176,6 +196,11 @@ QList<QNetworkConfigurationPrivate *> QGenericEngine::getConfigurations(bool *ok
         cpPriv->id = QString::number(identifier);
         cpPriv->state = QNetworkConfiguration::Discovered;
         cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
+        if (interface.name().isEmpty())
+            cpPriv->bearer = QLatin1String("Unknown");
+        else
+            cpPriv->bearer = qGetInterfaceType(interface.name());
+
         if (interface.flags() & QNetworkInterface::IsUp)
             cpPriv->state |= QNetworkConfiguration::Active;
 
@@ -199,15 +224,15 @@ bool QGenericEngine::hasIdentifier(const QString &id)
     return configurationInterface.contains(id.toUInt());
 }
 
-QString QGenericEngine::bearerName(const QString &id)
+/*QString QGenericEngine::bearerName(const QString &id)
 {
     QString interface = getInterfaceFromId(id);
 
     if (interface.isEmpty())
-        return QString();
+        return QLatin1String("Unknown");
 
     return qGetInterfaceType(interface);
-}
+}*/
 
 void QGenericEngine::connectToId(const QString &id)
 {

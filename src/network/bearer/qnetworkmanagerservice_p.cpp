@@ -70,7 +70,7 @@ public:
 };
 
 QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
-        : QObject(parent)
+        : QObject(parent), nmDBusHelper(0)
 {
     d = new QNetworkManagerInterfacePrivate();
     d->connectionInterface = new QDBusInterface(NM_DBUS_SERVICE,
@@ -93,6 +93,8 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
 
 QNetworkManagerInterface::~QNetworkManagerInterface()
 {
+    if (nmDBusHelper)
+        delete nmDBusHelper;
     delete d->connectionInterface;
     delete d;
 }
@@ -195,7 +197,7 @@ public:
 };
 
 QNetworkManagerInterfaceAccessPoint::QNetworkManagerInterfaceAccessPoint(const QString &dbusPathName, QObject *parent)
-        : QObject(parent)
+        : QObject(parent), nmDBusHelper(0)
 {
     d = new QNetworkManagerInterfaceAccessPointPrivate();
     d->path = dbusPathName;
@@ -214,6 +216,8 @@ QNetworkManagerInterfaceAccessPoint::QNetworkManagerInterfaceAccessPoint(const Q
 
 QNetworkManagerInterfaceAccessPoint::~QNetworkManagerInterfaceAccessPoint()
 {
+    if (nmDBusHelper)
+        delete nmDBusHelper;
     delete d->connectionInterface;
     delete d;
 }
@@ -229,6 +233,9 @@ bool QNetworkManagerInterfaceAccessPoint::setConnections()
         return false;
 
     bool allOk = false;
+    if (nmDBusHelper)
+        delete nmDBusHelper;
+    nmDBusHelper = 0;
     nmDBusHelper = new QNmDBusHelper;
     connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(const QString &,QMap<QString,QVariant>)),
             this,SIGNAL(propertiesChanged( const QString &, QMap<QString,QVariant>)));
@@ -304,7 +311,7 @@ public:
 };
 
 QNetworkManagerInterfaceDevice::QNetworkManagerInterfaceDevice(const QString &deviceObjectPath, QObject *parent)
-        : QObject(parent)
+        : QObject(parent), nmDBusHelper(0)
 {
     d = new QNetworkManagerInterfaceDevicePrivate();
     d->path = deviceObjectPath;
@@ -322,6 +329,8 @@ QNetworkManagerInterfaceDevice::QNetworkManagerInterfaceDevice(const QString &de
 
 QNetworkManagerInterfaceDevice::~QNetworkManagerInterfaceDevice()
 {
+    if (nmDBusHelper)
+        delete nmDBusHelper;
     delete d->connectionInterface;
     delete d;
 }
@@ -337,6 +346,9 @@ bool QNetworkManagerInterfaceDevice::setConnections()
         return false;
 
     bool allOk = false;
+    if (nmDBusHelper)
+        delete nmDBusHelper;
+    nmDBusHelper = 0;
     nmDBusHelper = new QNmDBusHelper;
     connect(nmDBusHelper,SIGNAL(pathForStateChanged(const QString &, quint32)),
             this, SIGNAL(stateChanged(const QString&, quint32)));
@@ -396,6 +408,7 @@ public:
 };
 
 QNetworkManagerInterfaceDeviceWired::QNetworkManagerInterfaceDeviceWired(const QString &ifaceDevicePath, QObject *parent)
+    : QObject(parent), nmDBusHelper(0)
 {
     d = new QNetworkManagerInterfaceDeviceWiredPrivate();
     d->path = ifaceDevicePath;
@@ -413,6 +426,8 @@ QNetworkManagerInterfaceDeviceWired::QNetworkManagerInterfaceDeviceWired(const Q
 
 QNetworkManagerInterfaceDeviceWired::~QNetworkManagerInterfaceDeviceWired()
 {
+    if (nmDBusHelper)
+        delete nmDBusHelper;
     delete d->connectionInterface;
     delete d;
 }
@@ -430,6 +445,9 @@ bool QNetworkManagerInterfaceDeviceWired::setConnections()
 
     bool allOk = false;
 
+    if (nmDBusHelper)
+        delete nmDBusHelper;
+    nmDBusHelper = 0;
     nmDBusHelper = new QNmDBusHelper;
     connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(const QString &,QMap<QString,QVariant>)),
             this,SIGNAL(propertiesChanged( const QString &, QMap<QString,QVariant>)));
@@ -473,6 +491,7 @@ public:
 };
 
 QNetworkManagerInterfaceDeviceWireless::QNetworkManagerInterfaceDeviceWireless(const QString &ifaceDevicePath, QObject *parent)
+    : QObject(parent), nmDBusHelper(0)
 {
     d = new QNetworkManagerInterfaceDeviceWirelessPrivate();
     d->path = ifaceDevicePath;
@@ -490,6 +509,8 @@ QNetworkManagerInterfaceDeviceWireless::QNetworkManagerInterfaceDeviceWireless(c
 
 QNetworkManagerInterfaceDeviceWireless::~QNetworkManagerInterfaceDeviceWireless()
 {
+    if (nmDBusHelper)
+        delete nmDBusHelper;
     delete d->connectionInterface;
     delete d;
 }
@@ -505,6 +526,9 @@ bool QNetworkManagerInterfaceDeviceWireless::setConnections()
         return false;
 
     bool allOk = false;
+    if (nmDBusHelper)
+        delete nmDBusHelper;
+    nmDBusHelper = 0;
     nmDBusHelper = new QNmDBusHelper;
     connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(const QString &,QMap<QString,QVariant>)),
             this,SIGNAL(propertiesChanged( const QString &, QMap<QString,QVariant>)));
@@ -592,7 +616,6 @@ public:
 QNetworkManagerSettings::QNetworkManagerSettings(const QString &settingsService, QObject *parent)
         : QObject(parent)
 {
-//    qWarning() << __PRETTY_FUNCTION__;
     d = new QNetworkManagerSettingsPrivate();
     d->path = settingsService;
     d->connectionInterface = new QDBusInterface(settingsService,
@@ -655,6 +678,7 @@ public:
 };
 
 QNetworkManagerSettingsConnection::QNetworkManagerSettingsConnection(const QString &settingsService, const QString &connectionObjectPath, QObject *parent)
+    : QObject(parent), nmDBusHelper(0)
 {
     qDBusRegisterMetaType<QNmSettingsMap>();
     d = new QNetworkManagerSettingsConnectionPrivate();
@@ -676,6 +700,8 @@ QNetworkManagerSettingsConnection::QNetworkManagerSettingsConnection(const QStri
 
 QNetworkManagerSettingsConnection::~QNetworkManagerSettingsConnection()
 {
+    if (nmDBusHelper)
+        delete nmDBusHelper;
     delete d->connectionInterface;
     delete d;
 }
@@ -697,6 +723,9 @@ bool QNetworkManagerSettingsConnection::setConnections()
         allOk = true;
     }
 
+    if (nmDBusHelper)
+        delete nmDBusHelper;
+    nmDBusHelper = 0;
     nmDBusHelper = new QNmDBusHelper;
     connect(nmDBusHelper, SIGNAL(pathForSettingsRemoved(const QString &)),
             this,SIGNAL(removed( const QString &)));
@@ -880,6 +909,7 @@ public:
 };
 
 QNetworkManagerConnectionActive::QNetworkManagerConnectionActive( const QString &activeConnectionObjectPath, QObject *parent)
+    : QObject(parent), nmDBusHelper(0)
 {
     d = new QNetworkManagerConnectionActivePrivate();
     d->path = activeConnectionObjectPath;
@@ -897,6 +927,8 @@ QNetworkManagerConnectionActive::QNetworkManagerConnectionActive( const QString 
 
 QNetworkManagerConnectionActive::~QNetworkManagerConnectionActive()
 {
+    if (nmDBusHelper)
+        delete nmDBusHelper;
     delete d->connectionInterface;
     delete d;
 }
@@ -912,6 +944,9 @@ bool QNetworkManagerConnectionActive::setConnections()
         return false;
 
     bool allOk = false;
+    if (nmDBusHelper)
+        delete nmDBusHelper;
+    nmDBusHelper = 0;
     nmDBusHelper = new QNmDBusHelper;
     connect(nmDBusHelper, SIGNAL(pathForPropertiesChanged(const QString &,QMap<QString,QVariant>)),
             this,SIGNAL(propertiesChanged( const QString &, QMap<QString,QVariant>)));
@@ -975,6 +1010,7 @@ public:
 };
 
 QNetworkManagerIp4Config::QNetworkManagerIp4Config( const QString &deviceObjectPath, QObject *parent)
+    : QObject(parent)
 {
     d = new QNetworkManagerIp4ConfigPrivate();
     d->path = deviceObjectPath;

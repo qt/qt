@@ -9,4 +9,5 @@ CONFIG+= testcase
 
 include(../../../../common.pri)
 
-qtAddLibrary(QtBearer)
+CONFIG += mobility
+MOBILITY = bearer

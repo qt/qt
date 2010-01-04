@@ -81,7 +81,7 @@ public:
     virtual QString getInterfaceFromId(const QString &id) = 0;
     virtual bool hasIdentifier(const QString &id) = 0;
 
-    virtual QString bearerName(const QString &id) = 0;
+    //virtual QString bearerName(const QString &id) = 0;
 
     virtual void connectToId(const QString &id) = 0;
     virtual void disconnectFromId(const QString &id) = 0;

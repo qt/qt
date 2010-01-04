@@ -8,7 +8,8 @@ QT = core network
 INCLUDEPATH += ../../../src/bearer
 
 include(../../../common.pri)
-qtAddLibrary(QtBearer)
+CONFIG += mobility
+MOBILITY = bearer
 
 symbian {
     TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData 

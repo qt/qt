@@ -78,6 +78,7 @@ void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurati
     ptr.data()->roamingSupported = cpPriv->roamingSupported;
     ptr.data()->purpose = cpPriv->purpose;
     ptr.data()->internet = cpPriv->internet;
+    ptr.data()->bearer = cpPriv->bearer;
 
     accessPointConfigurations.insert(cpPriv->id, ptr);
     configurationEngine.insert(cpPriv->id, engine);
@@ -135,6 +136,7 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
         ptr.data()->type != cpPriv->type ||
         ptr.data()->roamingSupported != cpPriv->roamingSupported ||
         ptr.data()->purpose != cpPriv->purpose ||
+        ptr.data()->bearer != cpPriv->bearer ||
         ptr.data()->internet != cpPriv->internet) {
 
         const QNetworkConfiguration::StateFlags oldState = ptr.data()->state;
@@ -147,6 +149,7 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
         ptr.data()->roamingSupported = cpPriv->roamingSupported;
         ptr.data()->purpose = cpPriv->purpose;
         ptr.data()->internet = cpPriv->internet;
+        ptr.data()->bearer = cpPriv->bearer;
 
         if (!firstUpdate) {
             QNetworkConfiguration item;

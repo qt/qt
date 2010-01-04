@@ -51,7 +51,10 @@
 #include "qnetworksession.h"
 #include "xqlistwidget.h"
 
+QT_BEGIN_NAMESPACE
 class QHttp;
+QT_END_NAMESPACE
+
 class SessionTab;
 
 QTM_USE_NAMESPACE

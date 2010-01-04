@@ -133,7 +133,7 @@ static QString qGetInterfaceType(const QString &interface)
     HANDLE handle = CreateFile((TCHAR *)QString("\\\\.\\%1").arg(interface).utf16(), 0,
                                FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if (handle == INVALID_HANDLE_VALUE)
-        return QString();
+        return QLatin1String("Unknown");
 
     oid = OID_GEN_MEDIA_SUPPORTED;
     bytesWritten = 0;
@@ -141,7 +141,7 @@ static QString qGetInterfaceType(const QString &interface)
                                   &medium, sizeof(medium), &bytesWritten, 0);
     if (!result) {
         CloseHandle(handle);
-        return QString();
+        return QLatin1String("Unknown");
     }
 
     oid = OID_GEN_PHYSICAL_MEDIUM;
@@ -154,7 +154,7 @@ static QString qGetInterfaceType(const QString &interface)
         if (medium == NdisMedium802_3)
             return QLatin1String("Ethernet");
         else
-            return QString();
+            return QLatin1String("Unknown");
     }
 
     CloseHandle(handle);
@@ -181,7 +181,7 @@ static QString qGetInterfaceType(const QString &interface)
 
 #endif
 
-    return QString();
+    return QLatin1String("Unknown");
 }
 
 class QNlaThread : public QThread
@@ -252,6 +252,9 @@ QList<QNetworkConfigurationPrivate *> QNlaThread::getConfigurations()
         config->roamingSupported = fetchedConfigurations.at(i)->roamingSupported;
         config->purpose = fetchedConfigurations.at(i)->purpose;
         config->internet = fetchedConfigurations.at(i)->internet;
+        if (QNlaEngine *engine = qobject_cast<QNlaEngine *>(parent())) {
+            config->bearer = engine->bearerName(config->id);
+        }
 
         foundConfigurations.append(config);
     }
@@ -546,12 +549,17 @@ bool QNlaEngine::hasIdentifier(const QString &id)
     if (configurationInterface.contains(id.toUInt()))
         return true;
 
-    foreach (QNetworkConfigurationPrivate *cpPriv, nlaThread->getConfigurations()) {
-        if (cpPriv->id == id)
-            return true;
+    bool result = false;
+    QList<QNetworkConfigurationPrivate *> l = nlaThread->getConfigurations();
+    while (!l.isEmpty()) {
+        QNetworkConfigurationPrivate* cpPriv = l.takeFirst();
+        if (!result && cpPriv->id == id) {
+            result = true;
+        }
+        delete cpPriv;
     }
-
-    return false;
+   
+    return result; 
 }
 
 QString QNlaEngine::bearerName(const QString &id)

@@ -305,14 +305,14 @@ void QNetworkSessionPrivate::updateState(QNetworkSession::State newState)
         state = newState;
 
 	if (state == QNetworkSession::Disconnected) {
-	    isActive = false;
+            isOpen = false;
 	    currentNetworkInterface.clear();
 	    if (publicConfig.type() == QNetworkConfiguration::UserChoice)
 		activeConfig.d->state = QNetworkConfiguration::Defined;
 	    publicConfig.d->state = QNetworkConfiguration::Defined;
 
 	} else if (state == QNetworkSession::Connected) {
-	    isActive = true;
+            isOpen = true;
 	    if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
 		activeConfig.d->state = QNetworkConfiguration::Active;
 		activeConfig.d->type = QNetworkConfiguration::InternetAccessPoint;
@@ -436,7 +436,7 @@ void QNetworkSessionPrivate::syncStateWithInterface()
     /* Initially we are not active although the configuration might be in
      * connected state.
      */
-    isActive = false;
+    isOpen = false;
     opened = false;
 
     QObject::connect(&manager, SIGNAL(updateCompleted()), this, SLOT(networkConfigurationsChanged()));
@@ -684,13 +684,13 @@ void QNetworkSessionPrivate::updateStateFromActiveConfig()
 	clearConfiguration(activeConfig);
     }
 
-    bool oldActive = isActive;
-    isActive = newActive;
+    bool oldActive = isOpen;
+    isOpen = newActive;
 
-    if (!oldActive && isActive)
+    if (!oldActive && isOpen)
         emit quitPendingWaitsForOpened();
 
-    if (oldActive && !isActive)
+    if (oldActive && !isOpen)
         emit q->closed();
 
     if (oldState != state) {
@@ -776,7 +776,7 @@ void QNetworkSessionPrivate::open()
     if (serviceConfig.isValid()) {
         lastError = QNetworkSession::OperationNotSupportedError;
         emit q->error(lastError);
-    } else if (!isActive) {
+    } else if (!isOpen) {
 
 	if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
 	    /* Caller is trying to connect to default IAP.
@@ -810,8 +810,8 @@ void QNetworkSessionPrivate::open()
 	    return;
         }
 
-        isActive = (activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active;
-        if (isActive)
+        isOpen = (activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active;
+        if (isOpen)
             emit quitPendingWaitsForOpened();
     } else {
 	/* We seem to be active so inform caller */
@@ -826,7 +826,6 @@ void QNetworkSessionPrivate::do_open()
     bool st;
     QString result;
     QString iap = publicConfig.identifier();
-    QString bearer_name;
 
     if (state == QNetworkSession::Connected) {
 #ifdef BEARER_MANAGEMENT_DEBUG
@@ -922,14 +921,7 @@ void QNetworkSessionPrivate::do_open()
 	if (!name.isEmpty())
 	    config.d->name = name;
 
-	bearer_name = connect_result.connect.network_type;
-	if (bearer_name == "WLAN_INFRA" ||
-	    bearer_name == "WLAN_ADHOC")
-	    currentBearerName = "WLAN";
-	else if (bearer_name == "GPRS")
-	    currentBearerName = "HSPA";
-	else
-	    currentBearerName = bearer_name;
+        config.d->iap_type = connect_result.connect.network_type;
 
 	config.d->isValid = true;
 	config.d->state = QNetworkConfiguration::Active;
@@ -1032,9 +1024,9 @@ void QNetworkSessionPrivate::close()
     if (serviceConfig.isValid()) {
         lastError = QNetworkSession::OperationNotSupportedError;
         emit q->error(lastError);
-    } else if (isActive) {
+    } else if (isOpen) {
         opened = false;
-        isActive = false;
+        isOpen = false;
         emit q->closed();
     }
 }
@@ -1067,11 +1059,11 @@ void QNetworkSessionPrivate::stop()
 	    mgr->configurationChanged((QNetworkConfigurationPrivate*)activeConfig.d.data());
 
 	    opened = false;
-	    isActive = false;
+	    isOpen = false;
 
         } else {
 	    opened = false;
-	    isActive = false;
+	    isOpen = false;
 	    emit q->closed();
 	}
     }
@@ -1139,15 +1131,6 @@ void QNetworkSessionPrivate::setSessionProperty(const QString& key, const QVaria
 QVariant QNetworkSessionPrivate::sessionProperty(const QString& key) const
 {
     return properties.value(key);
-}
-
-
-QString QNetworkSessionPrivate::bearerName() const
-{
-    if (!publicConfig.isValid())
-        return QString();
-
-    return currentBearerName;
 }
 
 

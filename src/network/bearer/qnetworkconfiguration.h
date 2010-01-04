@@ -91,6 +91,7 @@ public:
     StateFlags state() const;
     Type type() const;
     Purpose purpose() const;
+    QString bearerName() const;
     QString identifier() const;
     bool isRoamingAvailable() const;
     QList<QNetworkConfiguration> children() const;

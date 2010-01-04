@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "sessionwidget.h"
+#include "qnetworkconfigmanager.h"
 
 SessionWidget::SessionWidget(const QNetworkConfiguration &config, QWidget *parent)
 :   QWidget(parent)
@@ -79,7 +80,13 @@ void SessionWidget::updateSession()
     updateSessionState(session->state());
     updateSessionError(session->error());
 
-    bearer->setText(session->bearerName());
+    if (session->configuration().type() == QNetworkConfiguration::InternetAccessPoint)
+        bearer->setText(session->configuration().bearerName());
+    else {
+        QNetworkConfigurationManager mgr;
+        QNetworkConfiguration c = mgr.configurationFromIdentifier(session->sessionProperty("ActiveConfiguration").toString());
+        bearer->setText(c.bearerName());
+    }
 
     interfaceName->setText(session->interface().humanReadableName());
     interfaceGuid->setText(session->interface().name());
@@ -140,10 +147,10 @@ void SessionWidget::updateSessionState(QNetworkSession::State state)
         s = s.arg(tr("Unknown"));
     }
 
-    if (session->isActive())
-        s = s.arg(tr("Active"));
+    if (session->isOpen())
+        s = s.arg(tr("Open"));
     else
-        s = s.arg(tr("Inactive"));
+        s = s.arg(tr("Closed"));
 
     sessionState->setText(s);
 }

@@ -17,16 +17,12 @@ INCLUDEPATH += ../../src/bearer
 
 include(../examples.pri)
 
-qtAddLibrary(QtBearer)
+CONFIG += mobility
+MOBILITY = bearer
+
 win32:!wince*:LIBS += -lWs2_32
 wince*:LIBS += -lWs2
 
 CONFIG += console
 
-include(../examples.pri)
-
-macx: {
-    contains(QT_CONFIG,qt_framework):LIBS += -framework QtBearer
-    contains(CONFIG, debug) {
-     }
-}
+symbian:TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData

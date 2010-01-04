@@ -102,7 +102,7 @@ inline QStringList nsarrayToQStringList(void *nsarray)
 
 static QString qGetInterfaceType(const QString &interfaceString)
 {
-    return networkInterfaces.value(interfaceString);
+    return networkInterfaces.value(interfaceString, QLatin1String("Unknown"));
 }
 
 QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
@@ -115,66 +115,52 @@ QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
 
 QCoreWlanEngine::~QCoreWlanEngine()
 {
-}
-
-QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::getWifiConfigurations()
-{
-    QMapIterator<QString, QString> i(networkInterfaces);
-    while (i.hasNext()) {
-        i.next();
-        QString interfaceName = i.key();
-        if (i.value() == "WLAN") {
-            if(!isWifiReady(interfaceName)) {
-                qWarning() << "wifi not powered on";
-                return QList<QNetworkConfigurationPrivate *>();
-            } else {
-           //     QList<QNetworkConfigurationPrivate *> profs = getWlanProfiles(interfaceName);
-                scanForSsids(interfaceName);
-            }
-        } else {
-
-        }
+    QNetworkConfigurationPrivate* cpPriv = 0;
+    foundConfigurations.clear();
+    while(!foundConfigurations.isEmpty()) {
+        cpPriv = foundConfigurations.takeFirst();
+        delete cpPriv;
     }
-    return QList<QNetworkConfigurationPrivate *> ();
 }
 
 QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::getConfigurations(bool *ok)
 {
     if (ok)
         *ok = true;
-    NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
-
-    QList<QNetworkConfigurationPrivate *> foundConfigurations;
-    QList<QNetworkConfigurationPrivate *> wificonfigs = getWifiConfigurations();
+    foundConfigurations.clear();
 
     uint identifier;
     QMapIterator<QString, QString> i(networkInterfaces);
+    QNetworkConfigurationPrivate* cpPriv = 0;
     while (i.hasNext()) {
         i.next();
         if (i.value() == "WLAN") {
             QList<QNetworkConfigurationPrivate *> fetchedConfigurations = scanForSsids(i.key());
             for (int i = 0; i < fetchedConfigurations.count(); ++i) {
 
-                QNetworkConfigurationPrivate *config = new QNetworkConfigurationPrivate;
-                config->name = fetchedConfigurations.at(i)->name;
-                config->isValid = fetchedConfigurations.at(i)->isValid;
-                config->id = fetchedConfigurations.at(i)->id;
+                QNetworkConfigurationPrivate *config = new QNetworkConfigurationPrivate();
+                cpPriv = fetchedConfigurations.at(i);
+                config->name = cpPriv->name;
+                config->isValid = cpPriv->isValid;
+                config->id = cpPriv->id;
 
-                config->state = fetchedConfigurations.at(i)->state;
-                config->type = fetchedConfigurations.at(i)->type;
-                config->roamingSupported = fetchedConfigurations.at(i)->roamingSupported;
-                config->purpose = fetchedConfigurations.at(i)->purpose;
-                config->internet = fetchedConfigurations.at(i)->internet;
-                config->serviceInterface = fetchedConfigurations.at(i)->serviceInterface;
+                config->state = cpPriv->state;
+                config->type = cpPriv->type;
+                config->roamingSupported = cpPriv->roamingSupported;
+                config->purpose = cpPriv->purpose;
+                config->internet = cpPriv->internet;
+                config->serviceInterface = cpPriv->serviceInterface;
+                config->bearer = cpPriv->bearer;
 
                 identifier = config->name.toUInt();
                 configurationInterface[identifier] =  config->serviceInterface.name();
                 foundConfigurations.append(config);
+                delete cpPriv;
             }
         }
 
         QNetworkInterface interface = QNetworkInterface::interfaceFromName(i.key());
-        QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate;
+        QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate();
         const QString humanReadableName = interface.humanReadableName();
         cpPriv->name = humanReadableName.isEmpty() ? interface.name() : humanReadableName;
         cpPriv->isValid = true;
@@ -197,9 +183,10 @@ QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::getConfigurations(bool *o
             cpPriv->internet = true;
         }
         configurationInterface[identifier] = interface.name();
+        cpPriv->bearer = interface.name().isEmpty()? QLatin1String("Unknown") : qGetInterfaceType(interface.name());
         foundConfigurations.append(cpPriv);
     }
-    [autoreleasepool release];
+
     pollTimer.start();
     return foundConfigurations;
 }
@@ -212,16 +199,6 @@ QString QCoreWlanEngine::getInterfaceFromId(const QString &id)
 bool QCoreWlanEngine::hasIdentifier(const QString &id)
 {
     return configurationInterface.contains(id.toUInt());
-}
-
-QString QCoreWlanEngine::bearerName(const QString &id)
-{
-    QString interface = getInterfaceFromId(id);
-
-    if (interface.isEmpty())
-        return QString();
-
-    return qGetInterfaceType(interface);
 }
 
 void QCoreWlanEngine::connectToId(const QString &id)
@@ -239,14 +216,22 @@ void QCoreWlanEngine::connectToId(const QString &id)
         NSEnumerator *enumerator = [remNets objectEnumerator];
         CWWirelessProfile *wProfile;
         NSUInteger index=0;
+        CWNetwork *apNetwork;
+        NSDictionary *parametersDict;
+        NSArray* apArray;
+
+ CW8021XProfile *user8021XProfile;
+ NSError *err;
+ NSMutableDictionary *params;
+
         while ((wProfile = [enumerator nextObject])) { //CWWirelessProfile
 
             if(id == nsstringToQString([wProfile ssid])) {
-                CW8021XProfile *user8021XProfile = nil;
+                user8021XProfile = nil;
                 user8021XProfile = [ wProfile user8021XProfile];
 
-                NSError *err = nil;
-                NSMutableDictionary *params = [NSMutableDictionary dictionaryWithCapacity:0];
+                err = nil;
+                params = [NSMutableDictionary dictionaryWithCapacity:0];
 
                 if(user8021XProfile) {
                     [params setValue: user8021XProfile forKey:kCWAssocKey8021XProfile];
@@ -254,17 +239,22 @@ void QCoreWlanEngine::connectToId(const QString &id)
                     [params setValue: [wProfile passphrase] forKey: kCWAssocKeyPassphrase];
                 }
 
-               NSDictionary *parametersDict = nil;
-                NSArray* apArray = [NSMutableArray arrayWithArray:[wifiInterface scanForNetworksWithParameters:parametersDict error:&err]];
+               parametersDict = nil;
+               apArray = [NSMutableArray arrayWithArray:[wifiInterface scanForNetworksWithParameters:parametersDict error:&err]];
+
                 if(!err) {
+
                     for(uint row=0; row < [apArray count]; row++ ) {
-                        CWNetwork *apNetwork = [apArray objectAtIndex:row];
+                        apNetwork = [apArray objectAtIndex:row];
                         if([[apNetwork ssid] compare:[wProfile ssid]] == NSOrderedSame) {
+
                             bool result = [wifiInterface associateToNetwork: apNetwork parameters:[NSDictionary dictionaryWithDictionary:params] error:&err];
+
                             if(!result) {
                                 qWarning() <<"ERROR"<< nsstringToQString([err localizedDescription ]);
                                 emit connectionError(id, ConnectError);
                             } else {
+                                [apNetwork release];
                                 [autoreleasepool release];
                                 return;
                             }
@@ -274,6 +264,8 @@ void QCoreWlanEngine::connectToId(const QString &id)
             }
             index++;
         }
+        [apNetwork release];
+
         emit connectionError(id, InterfaceLookupError);
 #endif
     } else {
@@ -325,24 +317,21 @@ QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::scanForSsids(const QStrin
     NSDictionary *parametersDict = nil;
     NSArray* apArray = [NSMutableArray arrayWithArray:[currentInterface scanForNetworksWithParameters:parametersDict error:&err]];
 
+    CWNetwork *apNetwork;
     if(!err) {
         for(uint row=0; row < [apArray count]; row++ ) {
-            CWNetwork *apNetwork = [apArray objectAtIndex:row];
+            NSAutoreleasePool *looppool = [[NSAutoreleasePool alloc] init];
+
+            apNetwork = [apArray objectAtIndex:row];
             QNetworkConfigurationPrivate* cpPriv = new QNetworkConfigurationPrivate();
             QString networkSsid = nsstringToQString([apNetwork ssid]);
             cpPriv->name = networkSsid;
             cpPriv->isValid = true;
             cpPriv->id = networkSsid;
             cpPriv->internet = true;
+            cpPriv->bearer = QLatin1String("WLAN");
             cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
-            cpPriv->serviceInterface = QNetworkInterface::interfaceFromName(nsstringToQString([[CWInterface interface]  name]));
-
-            CWWirelessProfile *networkProfile = apNetwork.wirelessProfile;
-            CW8021XProfile *userNetworkProfile = networkProfile.user8021XProfile;
-            if(!userNetworkProfile) {
-            } else {
-                qWarning() <<"Has profile!" ;
-            }
+            cpPriv->serviceInterface = QNetworkInterface::interfaceFromName(interfaceName);
 
             if( [currentInterface.interfaceState intValue] == kCWInterfaceStateRunning) {
                 QString interfaceSsidString = nsstringToQString( [currentInterface ssid]);
@@ -364,12 +353,14 @@ QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::scanForSsids(const QStrin
             else
                 cpPriv->purpose = QNetworkConfiguration::PrivatePurpose;
             foundConfigs.append(cpPriv);
+            [looppool release];
         }
     } else {
         qWarning() << "ERROR scanning for ssids" << nsstringToQString([err localizedDescription])
                 <<nsstringToQString([err domain]);
     }
-    [autoreleasepool release];
+
+    [autoreleasepool drain];
 #else
     Q_UNUSED(interfaceName);
 #endif
@@ -428,6 +419,7 @@ bool QCoreWlanEngine::getAllScInterfaces()
         CFIndex interfaceIndex;
         interfaceCount = CFArrayGetCount(interfaces);
         for (interfaceIndex = 0; interfaceIndex < interfaceCount; interfaceIndex++) {
+            NSAutoreleasePool *looppool = [[NSAutoreleasePool alloc] init];
 
             CFStringRef bsdName;
             CFTypeRef thisInterface = CFArrayGetValueAtIndex(interfaces, interfaceIndex);
@@ -447,11 +439,12 @@ bool QCoreWlanEngine::getAllScInterfaces()
             if(!networkInterfaces.contains(interfaceName) && !typeStr.isEmpty()) {
                 networkInterfaces.insert(interfaceName,typeStr);
             }
+            [looppool release];
         }
     }
     CFRelease(interfaces);
 
-    [autoreleasepool release];
+    [autoreleasepool drain];
     return true;
 }
 

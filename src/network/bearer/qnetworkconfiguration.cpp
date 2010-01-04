@@ -164,9 +164,9 @@ QTM_BEGIN_NAMESPACE
                         QNetworkConfiguration::Defined. If the configuration is a service network
                         this flag is set if at least one of the underlying access points
                         configurations has the Discovered state.
-    \value Active       The configuration is currently used by an open/active network session
-                        (see \l QNetworkSession::isActive()). However this does not mean that the
-                        current process is the entity that created the active session. It merely
+    \value Active       The configuration is currently used by an open network session
+                        (see \l QNetworkSession::isOpen()). However this does not mean that the
+                        current process is the entity that created the open session. It merely
                         indicates that if a new QNetworkSession were to be constructed based on
                         this configuration \l QNetworkSession::state() would return
                         \l QNetworkSession::Connected. This state implies the
@@ -342,6 +342,56 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
     }
 
     return results;
+}
+
+/*!
+    Returns the type of bearer. The string is not translated and
+    therefore can not be shown to the user. The subsequent table presents the currently known
+    bearer types:
+
+    \table
+        \header 
+            \o Value
+            \o Description
+        \row
+            \o Unknown
+            \o The session is based on an unknown or unspecified bearer type.
+        \row
+            \o Ethernet
+            \o The session is based on Ethernet.
+        \row
+            \o WLAN
+            \o The session is based on Wireless LAN.
+        \row
+            \o 2G
+            \o The session uses CSD, GPRS, HSCSD, EDGE or cdmaOne.
+        \row 
+            \o CDMA2000
+            \o The session uses CDMA.
+        \row
+            \o WCDMA
+            \o The session uses W-CDMA/UMTS.
+        \row
+            \o HSPA
+            \o The session uses High Speed Packet Access.
+        \row
+            \o Bluetooth
+            \o The session uses Bluetooth.
+        \row
+            \o WiMAX
+            \o The session uses WiMAX.
+    \endtable
+
+    This function returns an empty string if this is an invalid configuration,
+    a network configuration of type \l QNetworkConfiguration::ServiceNetwork or
+    \l QNetworkConfiguration::UserChoice.
+*/
+QString QNetworkConfiguration::bearerName() const
+{
+    if (!isValid())
+        return QString();
+
+    return d->bearerName();
 }
 
 

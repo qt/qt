@@ -69,10 +69,6 @@ void BearerEx::createMenus()
     menuBar()->addAction(act1);
     connect(act1, SIGNAL(triggered()), this, SLOT(on_showDetailsButton_clicked()));
 
-    m_openAction = new QAction(tr("Open Session"), this);
-    menuBar()->addAction(m_openAction);
-    connect(m_openAction, SIGNAL(triggered()), this, SLOT(on_openSessionButton_clicked()));
-    
     QAction* exitAct = new QAction(tr("Exit"), this);
     menuBar()->addAction(exitAct);
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
@@ -290,7 +286,7 @@ SessionTab::SessionTab(QNetworkConfiguration* apNetworkConfiguration,
     } else if (apNetworkConfiguration->type() == QNetworkConfiguration::ServiceNetwork) {
         snapLineEdit->setText(apNetworkConfiguration->name()+" ("+apNetworkConfiguration->identifier()+")");
     }
-    bearerLineEdit->setText(m_NetworkSession->bearerName());
+    bearerLineEdit->setText(apNetworkConfiguration->bearerName());
     sentRecDataLineEdit->setText(QString::number(m_NetworkSession->bytesWritten())+
                                  QString(" / ")+
                                  QString::number(m_NetworkSession->bytesReceived()));
@@ -341,7 +337,7 @@ void SessionTab::on_sendRequestButton_clicked()
 void SessionTab::on_openSessionButton_clicked()
 {
     m_NetworkSession->open();
-    if (m_NetworkSession->isActive()) {
+    if (m_NetworkSession->isOpen()) {
         newState(m_NetworkSession->state()); 
     }
 }
@@ -349,7 +345,7 @@ void SessionTab::on_openSessionButton_clicked()
 void SessionTab::on_closeSessionButton_clicked()
 {
     m_NetworkSession->close();
-    if (!m_NetworkSession->isActive()) {
+    if (!m_NetworkSession->isOpen()) {
         newState(m_NetworkSession->state()); 
     }
 }
@@ -418,7 +414,7 @@ void SessionTab::opened()
     listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+QString("Opened"));
     m_eventListWidget->addItem(listItem);
     
-    QVariant identifier = m_NetworkSession->property("ActiveConfigurationIdentifier");
+    QVariant identifier = m_NetworkSession->property("ActiveConfiguration");
     if (!identifier.isNull()) {
         QString configId = identifier.toString();
         QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
@@ -428,7 +424,7 @@ void SessionTab::opened()
     }
 
     if (m_NetworkSession->configuration().type() == QNetworkConfiguration::UserChoice) {
-        QVariant identifier = m_NetworkSession->property("UserChoiceConfigurationIdentifier");
+        QVariant identifier = m_NetworkSession->property("UserChoiceConfiguration");
         if (!identifier.isNull()) {
             QString configId = identifier.toString();
             QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
@@ -490,22 +486,21 @@ void SessionTab::stateChanged(QNetworkSession::State state)
 
 void SessionTab::newState(QNetworkSession::State state)
 {
-    if (state == QNetworkSession::Connected) {
-        QVariant identifier = m_NetworkSession->property("ActiveConfigurationIdentifier");
-        if (!identifier.isNull()) {
-            QString configId = identifier.toString();
-            QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
-            if (config.isValid()) {
-                iapLineEdit->setText(config.name()+" ("+config.identifier()+")");
-            }
+    QVariant identifier = m_NetworkSession->property("ActiveConfiguration");
+    if (state == QNetworkSession::Connected && !identifier.isNull()) {
+        QString configId = identifier.toString();
+        QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
+        if (config.isValid()) {
+            iapLineEdit->setText(config.name()+" ("+config.identifier()+")");
+            bearerLineEdit->setText(config.bearerName());
         }
+    } else {
+        bearerLineEdit->setText(m_NetworkSession->configuration().bearerName());
     }
 
-    bearerLineEdit->setText(m_NetworkSession->bearerName());
-
     QString active;
-    if (m_NetworkSession->isActive()) {
-        active = " (A)";
+    if (m_NetworkSession->isOpen()) {
+        active = " (O)";
     }
     stateLineEdit->setText(stateString(state)+active);
 }

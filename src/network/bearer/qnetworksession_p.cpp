@@ -189,7 +189,7 @@ void QNetworkSessionPrivate::open()
     if (serviceConfig.isValid()) {
         lastError = QNetworkSession::OperationNotSupportedError;
         emit q->error(lastError);
-    } else if (!isActive) {
+    } else if (!isOpen) {
         if ((activeConfig.state() & QNetworkConfiguration::Discovered) !=
             QNetworkConfiguration::Discovered) {
             lastError =QNetworkSession::InvalidConfigurationError;
@@ -206,8 +206,8 @@ void QNetworkSessionPrivate::open()
             engine->connectToId(activeConfig.identifier());
         }
 
-        isActive = (activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active;
-        if (isActive)
+        isOpen = (activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active;
+        if (isOpen)
             emit quitPendingWaitsForOpened();
     }
 }
@@ -217,9 +217,9 @@ void QNetworkSessionPrivate::close()
     if (serviceConfig.isValid()) {
         lastError = QNetworkSession::OperationNotSupportedError;
         emit q->error(lastError);
-    } else if (isActive) {
+    } else if (isOpen) {
         opened = false;
-        isActive = false;
+        isOpen = false;
         emit q->closed();
     }
 }
@@ -240,7 +240,7 @@ void QNetworkSessionPrivate::stop()
         }
 
         opened = false;
-        isActive = false;
+        isOpen = false;
         emit q->closed();
     }
 }
@@ -286,13 +286,13 @@ void QNetworkSessionPrivate::setSessionProperty(const QString& /*key*/, const QV
 {
 }
 
-QString QNetworkSessionPrivate::bearerName() const
+/*QString QNetworkSessionPrivate::bearerName() const
 {
     if (!publicConfig.isValid() || !engine)
         return QString();
 
     return engine->bearerName(activeConfig.identifier());
-}
+}*/
 
 QString QNetworkSessionPrivate::errorString() const
 {
@@ -321,7 +321,7 @@ QNetworkSession::SessionError QNetworkSessionPrivate::error() const
 quint64 QNetworkSessionPrivate::bytesWritten() const
 {
 #if defined(BACKEND_NM)
-    if( state == QNetworkSession::Connected ) {
+    if( NetworkManagerAvailable() && state == QNetworkSession::Connected ) {
         if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
             foreach (const QNetworkConfiguration &config, publicConfig.children()) {
                 if ((config.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
@@ -339,7 +339,7 @@ quint64 QNetworkSessionPrivate::bytesWritten() const
 quint64 QNetworkSessionPrivate::bytesReceived() const
 {
 #if defined(BACKEND_NM)
-    if( state == QNetworkSession::Connected ) {
+    if( NetworkManagerAvailable() && state == QNetworkSession::Connected ) {
         if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
             foreach (const QNetworkConfiguration &config, publicConfig.children()) {
                 if ((config.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
@@ -425,12 +425,12 @@ void QNetworkSessionPrivate::updateStateFromActiveConfig()
         state = QNetworkSession::NotAvailable;
     }
 
-    bool oldActive = isActive;
-    isActive = newActive;
+    bool oldActive = isOpen;
+    isOpen = newActive;
 
-    if (!oldActive && isActive)
+    if (!oldActive && isOpen)
         emit quitPendingWaitsForOpened();
-    if (oldActive && !isActive)
+    if (oldActive && !isOpen)
         emit q->closed();
 
     if (oldState != state)
@@ -460,7 +460,7 @@ void QNetworkSessionPrivate::forcedSessionClose(const QNetworkConfiguration &con
 {
     if (activeConfig == config) {
         opened = false;
-        isActive = false;
+        isOpen = false;
 
         emit q->closed();
 
@@ -530,7 +530,7 @@ if(serviceName.isEmpty())
         QNetworkManagerSettingsConnection *sysIface;
         sysIface = new QNetworkManagerSettingsConnection(serviceName, path.path());
         startTime = QDateTime::fromTime_t(sysIface->getTimestamp());
-        //                    isActive = (publicConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active;
+        //                    isOpen = (publicConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active;
     }
     if(startTime.isNull())
         startTime = QDateTime::currentDateTime();

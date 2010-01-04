@@ -8,7 +8,8 @@ QT = core network
 INCLUDEPATH += ../../../../src/bearer
 
 include(../../../../common.pri)
-qtAddLibrary(QtBearer)
+CONFIG += mobility
+MOBILITY = bearer
 
 wince* {
     LACKEY.sources = $$OUTPUT_DIR/build/tests/bin/qnetworksessionlackey.exe

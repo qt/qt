@@ -53,7 +53,7 @@ QTM_BEGIN_NAMESPACE
 
 QNetworkSessionPrivate::QNetworkSessionPrivate()
     : CActive(CActive::EPriorityStandard), state(QNetworkSession::Invalid),
-      isActive(false), ipConnectionNotifier(0), iError(QNetworkSession::UnknownSessionError),
+      isOpen(false), ipConnectionNotifier(0), iError(QNetworkSession::UnknownSessionError),
       iALREnabled(0)
 {
     CActiveScheduler::Add(this);
@@ -69,7 +69,7 @@ QNetworkSessionPrivate::QNetworkSessionPrivate()
 
 QNetworkSessionPrivate::~QNetworkSessionPrivate()
 {
-    isActive = false;
+    isOpen = false;
 
     // Cancel Connection Progress Notifications first.
     // Note: ConnectionNotifier must be destroyed before Canceling RConnection::Start()
@@ -233,7 +233,7 @@ QNetworkSession::SessionError QNetworkSessionPrivate::error() const
 
 void QNetworkSessionPrivate::open()
 {
-    if (isActive || !publicConfig.d || (state == QNetworkSession::Connecting)) {
+    if (isOpen || !publicConfig.d || (state == QNetworkSession::Connecting)) {
         return;
     }
 
@@ -296,7 +296,7 @@ void QNetworkSessionPrivate::open()
 
                                 error = iDynamicSetdefaultif(&ifr);
                             }
-                            isActive = true;
+                            isOpen = true;
                             // Make sure that state will be Connected
                             newState(QNetworkSession::Connected);
                             emit quitPendingWaitsForOpened();
@@ -333,7 +333,7 @@ void QNetworkSessionPrivate::open()
     }
  
     if (error != KErrNone) {
-        isActive = false;
+        isOpen = false;
         iError = QNetworkSession::UnknownSessionError;
         emit q->error(iError);
         if (ipConnectionNotifier) {
@@ -372,12 +372,12 @@ TUint QNetworkSessionPrivate::iapClientCount(TUint aIAPId) const
 
 void QNetworkSessionPrivate::close(bool allowSignals)
 {
-    if (!isActive) {
+    if (!isOpen) {
         return;
     }
 
     TUint activeIap = activeConfig.d.data()->numericId;
-    isActive = false;
+    isOpen = false;
     activeConfig = QNetworkConfiguration();
     serviceConfig = QNetworkConfiguration();
     
@@ -419,13 +419,13 @@ void QNetworkSessionPrivate::close(bool allowSignals)
 
 void QNetworkSessionPrivate::stop()
 {
-    if (!isActive) {
+    if (!isOpen) {
         return;
     }
-    isActive = false;
+    isOpen = false;
     newState(QNetworkSession::Closing);
     iConnection.Stop(RConnection::EStopAuthoritative);
-    isActive = true;
+    isOpen = true;
     close(false);
     emit q->closed();
 }
@@ -510,8 +510,8 @@ void QNetworkSessionPrivate::NewCarrierActive(TAccessPointInfo /*aNewAPInfo*/, T
 
 void QNetworkSessionPrivate::Error(TInt /*aError*/)
 {
-    if (isActive) {
-        isActive = false;
+    if (isOpen) {
+        isOpen = false;
         activeConfig = QNetworkConfiguration();
         serviceConfig = QNetworkConfiguration();
         iError = QNetworkSession::RoamingError;
@@ -556,40 +556,6 @@ QNetworkConfiguration QNetworkSessionPrivate::bestConfigFromSNAP(const QNetworkC
         config = subConfigurations[0];
     }
     return config;
-}
-
-QString QNetworkSessionPrivate::bearerName() const
-{
-    QNetworkConfiguration config;
-    if (publicConfig.type() == QNetworkConfiguration::InternetAccessPoint) {
-        config = publicConfig;
-    } else if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
-        if (activeConfig.isValid()) {
-            config = activeConfig;
-        } else {
-            config = bestConfigFromSNAP(publicConfig);
-        }
-    } else if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
-        if (activeConfig.isValid()) {
-            config = activeConfig;
-        }
-    }
-
-    if (!config.isValid()) {
-        return QString();
-    }
-
-    switch (config.d.data()->bearer) {
-        case QNetworkConfigurationPrivate::BearerEthernet:  return QString("Ethernet");
-        case QNetworkConfigurationPrivate::BearerWLAN:      return QString("WLAN");
-        case QNetworkConfigurationPrivate::Bearer2G:        return QString("2G");
-        case QNetworkConfigurationPrivate::BearerCDMA2000:  return QString("CDMA2000");
-        case QNetworkConfigurationPrivate::BearerWCDMA:     return QString("WCDMA");
-        case QNetworkConfigurationPrivate::BearerHSPA:      return QString("HSPA");
-        case QNetworkConfigurationPrivate::BearerBluetooth: return QString("Bluetooth");
-        case QNetworkConfigurationPrivate::BearerWiMAX:     return QString("WiMAX");
-        default: return QString();
-    }
 }
 
 quint64 QNetworkSessionPrivate::bytesWritten() const
@@ -673,7 +639,7 @@ quint64 QNetworkSessionPrivate::transferredData(TUint dataType) const
 
 quint64 QNetworkSessionPrivate::activeTime() const
 {
-    if (!isActive || startTime.isNull()) {
+    if (!isOpen || startTime.isNull()) {
         return 0;
     }
     return startTime.secsTo(QDateTime::currentDateTime());
@@ -785,7 +751,7 @@ void QNetworkSessionPrivate::RunL()
             }
             
             if (error != KErrNone) {
-                isActive = false;
+                isOpen = false;
                 iError = QNetworkSession::UnknownSessionError;
                 emit q->error(iError);
                 Cancel();
@@ -802,7 +768,7 @@ void QNetworkSessionPrivate::RunL()
                 iMobility = CActiveCommsMobilityApiExt::NewL(iConnection, *this);
             }
 #endif
-            isActive = true;
+            isOpen = true;
             activeConfig = newActiveConfig;
             activeInterface = interface(activeConfig.d.data()->numericId);
             if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
@@ -818,7 +784,7 @@ void QNetworkSessionPrivate::RunL()
             }
             break;
         case KErrNotFound: // Connection failed
-            isActive = false;
+            isOpen = false;
             activeConfig = QNetworkConfiguration();
             serviceConfig = QNetworkConfiguration();
             iError = QNetworkSession::InvalidConfigurationError;
@@ -832,7 +798,7 @@ void QNetworkSessionPrivate::RunL()
         case KErrCancel: // Connection attempt cancelled
         case KErrAlreadyExists: // Connection already exists
         default:
-            isActive = false;
+            isOpen = false;
             activeConfig = QNetworkConfiguration();
             serviceConfig = QNetworkConfiguration();
             iError = QNetworkSession::UnknownSessionError;
@@ -855,7 +821,7 @@ bool QNetworkSessionPrivate::newState(QNetworkSession::State newState, TUint acc
 {
     // Make sure that activeConfig is always updated when SNAP is signaled to be
     // connected.
-    if (isActive && publicConfig.type() == QNetworkConfiguration::ServiceNetwork &&
+    if (isOpen && publicConfig.type() == QNetworkConfiguration::ServiceNetwork &&
         newState == QNetworkSession::Connected) {
         activeConfig = activeConfiguration(accessPointId);
         activeInterface = interface(activeConfig.d.data()->numericId);
@@ -872,12 +838,12 @@ bool QNetworkSessionPrivate::newState(QNetworkSession::State newState, TUint acc
     }
 
     bool emitSessionClosed = false;
-    if (isActive && state == QNetworkSession::Connected && newState == QNetworkSession::Disconnected) {
+    if (isOpen && state == QNetworkSession::Connected && newState == QNetworkSession::Disconnected) {
         // Active & Connected state should change directly to Disconnected state
         // only when something forces connection to close (eg. when another
         // application or session stops connection or when network drops
         // unexpectedly).
-        isActive = false;
+        isOpen = false;
         activeConfig = QNetworkConfiguration();
         serviceConfig = QNetworkConfiguration();
         iError = QNetworkSession::SessionAbortedError;
@@ -903,7 +869,7 @@ bool QNetworkSessionPrivate::newState(QNetworkSession::State newState, TUint acc
                 emit q->stateChanged(state);
                 retVal = true;
             }
-        } else if (publicConfig.type() == QNetworkConfiguration::UserChoice && isActive) {
+        } else if (publicConfig.type() == QNetworkConfiguration::UserChoice && isOpen) {
             if (activeConfig.d.data()->numericId == accessPointId) {
                 state = newState;
                 emit q->stateChanged(state);

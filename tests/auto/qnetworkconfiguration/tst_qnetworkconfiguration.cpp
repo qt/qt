@@ -44,7 +44,7 @@
 #include "qnetworkconfiguration.h"
 #include "qnetworkconfigmanager.h"
 
-#ifdef MAEMO
+#ifdef Q_WS_MAEMO_6
 #include <stdio.h>
 #include <iapconf.h>
 #endif
@@ -65,7 +65,7 @@ private slots:
     void isRoamingAvailable();
 
 private:
-#ifdef MAEMO
+#ifdef Q_WS_MAEMO_6
     Maemo::IAPConf *iapconf;
     Maemo::IAPConf *iapconf2;
     Maemo::IAPConf *gprsiap;
@@ -77,7 +77,7 @@ private:
 
 void tst_QNetworkConfiguration::initTestCase()
 {
-#ifdef MAEMO
+#ifdef Q_WS_MAEMO_6
     iapconf = new Maemo::IAPConf("007");
     iapconf->setValue("ipv4_type", "AUTO");
     iapconf->setValue("wlan_wepkey1", "connt");
@@ -150,7 +150,7 @@ void tst_QNetworkConfiguration::initTestCase()
 
 void tst_QNetworkConfiguration::cleanupTestCase()
 {
-#ifdef MAEMO
+#ifdef Q_WS_MAEMO_6
     iapconf->clear();
     delete iapconf;
     iapconf2->clear();

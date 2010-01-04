@@ -479,6 +479,8 @@ QList<QNetworkConfigurationPrivate *> QNativeWifiEngine::getConfigurations(bool 
             }
 
             cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
+            cpPriv->bearer = QLatin1String("WLAN");
+
 
             foundConfigurations.append(cpPriv);
         }
@@ -537,6 +539,7 @@ QString QNativeWifiEngine::getInterfaceFromId(const QString &id)
         }
 
         local_WlanFreeMemory(connectionAttributes);
+        local_WlanFreeMemory(interfaceList);
     }
 
     return QString();
@@ -591,10 +594,10 @@ bool QNativeWifiEngine::hasIdentifier(const QString &id)
     return false;
 }
 
-QString QNativeWifiEngine::bearerName(const QString &)
+/*QString QNativeWifiEngine::bearerName(const QString &)
 {
     return QLatin1String("WLAN");
-}
+}*/
 
 void QNativeWifiEngine::connectToId(const QString &id)
 {
