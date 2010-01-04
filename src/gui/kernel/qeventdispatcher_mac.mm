@@ -744,10 +744,10 @@ void QEventDispatcherMac::flush()
  *****************************************************************************/
 MacTimerHash QEventDispatcherMacPrivate::macTimerHash;
 bool QEventDispatcherMacPrivate::blockSendPostedEvents = false;
+bool QEventDispatcherMacPrivate::interrupt = false;
 
 #ifdef QT_MAC_USE_COCOA
 QStack<QCocoaModalSessionInfo> QEventDispatcherMacPrivate::cocoaModalSessionStack;
-bool QEventDispatcherMacPrivate::interrupt = false;
 bool QEventDispatcherMacPrivate::currentExecIsNSAppRun = false;
 bool QEventDispatcherMacPrivate::modalSessionsTemporarilyStopped = false;
 bool QEventDispatcherMacPrivate::nsAppRunCalledByQt = false;
