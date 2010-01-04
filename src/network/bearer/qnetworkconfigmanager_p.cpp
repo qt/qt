@@ -186,6 +186,14 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 QNetworkSessionEngine *coreWifi = coreWlanPlugin->create(QLatin1String("corewlan"));
                 if (coreWifi) {
                     sessionEngines.append(coreWifi);
+                    connect(coreWifi, SIGNAL(updateCompleted()),
+                            this, SLOT(updateConfigurations()));
+                    connect(coreWifi, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
+                    connect(coreWifi, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
+                    connect(coreWifi, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
+                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
                 }
             }
         }

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QCOREWLANENGINE_P_H
-#define QCOREWLANENGINE_P_H
+#ifndef QCOREWLANENGINE_H
+#define QCOREWLANENGINE_H
 
 #include <QtNetwork/private/qnetworksessionengine_p.h>
 
@@ -59,7 +59,6 @@ public:
     QCoreWlanEngine(QObject *parent = 0);
     ~QCoreWlanEngine();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 
@@ -70,13 +69,18 @@ public:
 
     void requestUpdate();
 
+    QNetworkSession::State sessionStateForId(const QString &id);
+
     static bool getAllScInterfaces();
+
+private Q_SLOTS:
+    void doRequestUpdate();
 
 private:
     bool isWifiReady(const QString &dev);
-    QMap<uint, QString> configurationInterface;
+    QMap<QString, QString> configurationInterface;
     QTimer pollTimer;
-    QList<QNetworkConfigurationPrivate *> scanForSsids(const QString &interfaceName);
+    QStringList scanForSsids(const QString &interfaceName);
 
     QList<QNetworkConfigurationPrivate *> getWlanProfiles(const QString &interfaceName);
 
