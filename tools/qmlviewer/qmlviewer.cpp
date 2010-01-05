@@ -766,7 +766,8 @@ void QmlViewer::reload()
 void QmlViewer::open(const QString& doc)
 {
     if (doc.endsWith(".wgt",Qt::CaseInsensitive)
-     || doc.endsWith(".wgz",Qt::CaseInsensitive))
+     || doc.endsWith(".wgz",Qt::CaseInsensitive)
+     || doc.endsWith(".zip",Qt::CaseInsensitive))
         openWgt(doc);
     else
         openQml(doc);
