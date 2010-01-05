@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,61 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QCOREWLANENGINE_P_H
-#define QCOREWLANENGINE_P_H
+#ifndef QNMDBUSHELPERPRIVATE_H
+#define QNMDBUSHELPERPRIVATE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qnetworksessionengine_p.h"
+#include <QDBusObjectPath>
+#include <QDBusContext>
 #include <QMap>
-#include <QTimer>
-QTM_BEGIN_NAMESPACE
 
-class QNetworkConfigurationPrivate;
+QT_BEGIN_NAMESPACE
 
-class QCoreWlanEngine : public QNetworkSessionEngine
-{
-    Q_OBJECT
+class QNmDBusHelper: public QObject, protected QDBusContext
+ {
+     Q_OBJECT
+ public:
 
-public:
-    QCoreWlanEngine(QObject *parent = 0);
-    ~QCoreWlanEngine();
+ public slots:
+    void deviceStateChanged(quint32);
+    void slotAccessPointAdded( QDBusObjectPath );
+    void slotAccessPointRemoved( QDBusObjectPath );
+    void slotPropertiesChanged( QMap<QString,QVariant>);
+    void slotSettingsRemoved();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
-    QString getInterfaceFromId(const QString &id);
-    bool hasIdentifier(const QString &id);
-
-    QString bearerName(const QString &id);
-
-    void connectToId(const QString &id);
-    void disconnectFromId(const QString &id);
-
-    void requestUpdate();
-
-    static QCoreWlanEngine *instance();
-    static bool getAllScInterfaces();
-
-private:
-    bool isWifiReady(const QString &dev);
-    QMap<uint, QString> configurationInterface;
-    QTimer pollTimer;
-    QList<QNetworkConfigurationPrivate *> scanForSsids(const QString &interfaceName);
-
-    bool isKnownSsid(const QString &interfaceName, const QString &ssid);
-    QList<QNetworkConfigurationPrivate *> foundConfigurations;
-
+Q_SIGNALS:
+    void pathForStateChanged(const QString &, quint32);
+    void pathForAccessPointAdded(const QString &,  QDBusObjectPath );
+    void pathForAccessPointRemoved(const QString &,  QDBusObjectPath );
+    void pathForPropertiesChanged(const QString &, QMap<QString,QVariant>);
+    void pathForSettingsRemoved(const QString &);
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
-#endif
-
+#endif// QNMDBUSHELPERPRIVATE_H

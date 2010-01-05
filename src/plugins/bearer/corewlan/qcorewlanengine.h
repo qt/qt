@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,56 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QGENERICENGINE_P_H
-#define QGENERICENGINE_P_H
+#ifndef QCOREWLANENGINE_H
+#define QCOREWLANENGINE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qnetworksessionengine_p.h"
+#include <QtNetwork/private/qnetworksessionengine_p.h>
 
 #include <QMap>
 #include <QTimer>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
 
-class QGenericEngine : public QNetworkSessionEngine
+class QCoreWlanEngine : public QNetworkSessionEngine
 {
     Q_OBJECT
 
 public:
-    QGenericEngine(QObject *parent = 0);
-    ~QGenericEngine();
+    QCoreWlanEngine(QObject *parent = 0);
+    ~QCoreWlanEngine();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 
-    //QString bearerName(const QString &id);
+    QString bearerName(const QString &id);
 
     void connectToId(const QString &id);
     void disconnectFromId(const QString &id);
 
     void requestUpdate();
 
-    static QGenericEngine *instance();
+    QNetworkSession::State sessionStateForId(const QString &id);
+
+    static bool getAllScInterfaces();
+
+private Q_SLOTS:
+    void doRequestUpdate();
 
 private:
-    QMap<uint, QString> configurationInterface;
+    bool isWifiReady(const QString &dev);
+    QMap<QString, QString> configurationInterface;
     QTimer pollTimer;
+    QStringList scanForSsids(const QString &interfaceName);
+
+    bool isKnownSsid(const QString &interfaceName, const QString &ssid);
+    QList<QNetworkConfigurationPrivate *> foundConfigurations;
+
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif
 

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,66 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QNLAENGINE_P_H
-#define QNLAENGINE_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QBEARERPLUGIN_H
+#define QBEARERPLUGIN_H
 
 #include "qnetworksessionengine_p.h"
 
-#include <QMap>
+#include <QtCore/qplugin.h>
+#include <QtCore/qfactoryinterface.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_HEADER
 
-class QNetworkConfigurationPrivate;
-class QNlaThread;
+QT_BEGIN_NAMESPACE
 
-class QWindowsSockInit
+QT_MODULE(Network)
+
+struct Q_NETWORK_EXPORT QBearerEngineFactoryInterface : public QFactoryInterface
 {
-public:
-    QWindowsSockInit();
-    ~QWindowsSockInit();
-    int version;
+    virtual QBearerEngine *create(const QString &key = QString()) const = 0;
 };
 
-class QNlaEngine : public QNetworkSessionEngine
+#define QBearerEngineFactoryInterface_iid "com.trolltech.Qt.QBearerEngineFactoryInterface"
+Q_DECLARE_INTERFACE(QBearerEngineFactoryInterface, QBearerEngineFactoryInterface_iid)
+
+class Q_NETWORK_EXPORT QBearerEnginePlugin : public QObject, public QBearerEngineFactoryInterface
 {
     Q_OBJECT
-
-    friend class QNlaThread;
+    Q_INTERFACES(QBearerEngineFactoryInterface:QFactoryInterface)
 
 public:
-    QNlaEngine(QObject *parent = 0);
-    ~QNlaEngine();
+    explicit QBearerEnginePlugin(QObject *parent = 0);
+    virtual ~QBearerEnginePlugin();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
-    QString getInterfaceFromId(const QString &id);
-    bool hasIdentifier(const QString &id);
-
-    QString bearerName(const QString &id);
-
-    void connectToId(const QString &id);
-    void disconnectFromId(const QString &id);
-
-    void requestUpdate();
-
-    static QNlaEngine *instance();
-
-private:
-    QWindowsSockInit winSock;
-    QNlaThread *nlaThread;
-    QMap<uint, QString> configurationInterface;
+    virtual QStringList keys() const = 0;
+    virtual QBearerEngine *create(const QString &key = QString()) const = 0;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif
+

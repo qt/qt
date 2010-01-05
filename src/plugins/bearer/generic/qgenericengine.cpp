@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qgenericengine_p.h"
-#include "qnetworkconfiguration_p.h"
+#include "qgenericengine.h"
+
+#include <QtNetwork/private/qnetworkconfiguration_p.h>
 
 #include <QtCore/qthread.h>
 #include <QtCore/qmutex.h>
@@ -50,7 +51,7 @@
 #include <QtCore/qdebug.h>
 
 #ifdef Q_OS_WIN
-#include "qnetworksessionengine_win_p.h"
+#include "../platformdefs_win.h"
 #endif
 
 #ifdef Q_OS_LINUX
@@ -60,9 +61,6 @@
 #include <net/if_arp.h>
 #endif
 
-QTM_BEGIN_NAMESPACE
-
-Q_GLOBAL_STATIC(QGenericEngine, genericEngine)
 
 static QString qGetInterfaceType(const QString &interface)
 {
@@ -144,84 +142,23 @@ static QString qGetInterfaceType(const QString &interface)
 QGenericEngine::QGenericEngine(QObject *parent)
 :   QNetworkSessionEngine(parent)
 {
-    connect(&pollTimer, SIGNAL(timeout()), this, SIGNAL(configurationsChanged()));
+    connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
     pollTimer.setInterval(10000);
+    doRequestUpdate();
 }
 
 QGenericEngine::~QGenericEngine()
 {
 }
 
-QList<QNetworkConfigurationPrivate *> QGenericEngine::getConfigurations(bool *ok)
-{
-    if (ok)
-        *ok = true;
-
-    QList<QNetworkConfigurationPrivate *> foundConfigurations;
-
-    // Immediately after connecting with a wireless access point
-    // QNetworkInterface::allInterfaces() will sometimes return an empty list. Calling it again a
-    // second time results in a non-empty list. If we loose interfaces we will end up removing
-    // network configurations which will break current sessions.
-    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
-    if (interfaces.isEmpty())
-        interfaces = QNetworkInterface::allInterfaces();
-
-    // create configuration for each interface
-    while (!interfaces.isEmpty()) {
-        QNetworkInterface interface = interfaces.takeFirst();
-
-        if (!interface.isValid())
-            continue;
-
-        // ignore loopback interface
-        if (interface.flags() & QNetworkInterface::IsLoopBack)
-            continue;
-
-        // ignore WLAN interface handled in seperate engine
-        if (qGetInterfaceType(interface.name()) == "WLAN")
-            continue;
-
-        QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate;
-        const QString humanReadableName = interface.humanReadableName();
-        cpPriv->name = humanReadableName.isEmpty() ? interface.name() : humanReadableName;
-        cpPriv->isValid = true;
-
-        uint identifier;
-        if (interface.index())
-            identifier = qHash(QLatin1String("NLA:") + QString::number(interface.index()));
-        else
-            identifier = qHash(QLatin1String("NLA:") + interface.hardwareAddress());
-
-        cpPriv->id = QString::number(identifier);
-        cpPriv->state = QNetworkConfiguration::Discovered;
-        cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
-        if (interface.name().isEmpty())
-            cpPriv->bearer = QLatin1String("Unknown");
-        else
-            cpPriv->bearer = qGetInterfaceType(interface.name());
-
-        if (interface.flags() & QNetworkInterface::IsUp)
-            cpPriv->state |= QNetworkConfiguration::Active;
-
-        configurationInterface[identifier] = interface.name();
-
-        foundConfigurations.append(cpPriv);
-    }
-
-    pollTimer.start();
-
-    return foundConfigurations;
-}
-
 QString QGenericEngine::getInterfaceFromId(const QString &id)
 {
-    return configurationInterface.value(id.toUInt());
+    return configurationInterface.value(id);
 }
 
 bool QGenericEngine::hasIdentifier(const QString &id)
 {
-    return configurationInterface.contains(id.toUInt());
+    return configurationInterface.contains(id);
 }
 
 /*QString QGenericEngine::bearerName(const QString &id)
@@ -246,14 +183,136 @@ void QGenericEngine::disconnectFromId(const QString &id)
 
 void QGenericEngine::requestUpdate()
 {
-    emit configurationsChanged();
+    pollTimer.stop();
+    QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
 }
 
-QGenericEngine *QGenericEngine::instance()
+void QGenericEngine::doRequestUpdate()
 {
-    return genericEngine();
+    // Immediately after connecting with a wireless access point
+    // QNetworkInterface::allInterfaces() will sometimes return an empty list. Calling it again a
+    // second time results in a non-empty list. If we loose interfaces we will end up removing
+    // network configurations which will break current sessions.
+    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+    if (interfaces.isEmpty())
+        interfaces = QNetworkInterface::allInterfaces();
+
+    QStringList previous = accessPointConfigurations.keys();
+
+    // create configuration for each interface
+    while (!interfaces.isEmpty()) {
+        QNetworkInterface interface = interfaces.takeFirst();
+
+        if (!interface.isValid())
+            continue;
+
+        // ignore loopback interface
+        if (interface.flags() & QNetworkInterface::IsLoopBack)
+            continue;
+
+        // ignore WLAN interface handled in seperate engine
+        if (qGetInterfaceType(interface.name()) == QLatin1String("WLAN"))
+            continue;
+
+        uint identifier;
+        if (interface.index())
+            identifier = qHash(QLatin1String("generic:") + QString::number(interface.index()));
+        else
+            identifier = qHash(QLatin1String("generic:") + interface.hardwareAddress());
+
+        const QString id = QString::number(identifier);
+
+        previous.removeAll(id);
+
+        QString name = interface.humanReadableName();
+        if (name.isEmpty())
+            name = interface.name();
+
+        QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Discovered;
+        if (interface.flags() & QNetworkInterface::IsUp)
+            state |= QNetworkConfiguration::Active;
+
+        if (accessPointConfigurations.contains(id)) {
+            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr =
+                accessPointConfigurations.value(id);
+
+            bool changed = false;
+
+            if (!ptr->isValid) {
+                ptr->isValid = true;
+                changed = true;
+            }
+
+            if (ptr->name != name) {
+                ptr->name = name;
+                changed = true;
+            }
+
+            if (ptr->id != id) {
+                ptr->id = id;
+                changed = true;
+            }
+
+            if (ptr->state != state) {
+                ptr->state = state;
+                changed = true;
+            }
+
+            if (changed)
+                emit configurationChanged(ptr);
+        } else {
+            QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
+
+            ptr->name = name;
+            ptr->isValid = true;
+            ptr->id = id;
+            ptr->state = state;
+            ptr->type = QNetworkConfiguration::InternetAccessPoint;
+            ptr->bearer = qGetInterfaceType(interface.name());
+
+            accessPointConfigurations.insert(id, ptr);
+            configurationInterface.insert(id, interface.name());
+
+            emit configurationAdded(ptr);
+        }
+    }
+
+    while (!previous.isEmpty()) {
+        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr =
+            accessPointConfigurations.take(previous.takeFirst());
+
+        configurationInterface.remove(ptr->id);
+        emit configurationRemoved(ptr);
+    }
+
+    pollTimer.start();
+
+    emit updateCompleted();
 }
 
-#include "moc_qgenericengine_p.cpp"
-QTM_END_NAMESPACE
+QNetworkSession::State QGenericEngine::sessionStateForId(const QString &id)
+{
+    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+
+    if (!ptr)
+        return QNetworkSession::Invalid;
+
+    if (!ptr->isValid) {
+        return QNetworkSession::Invalid;
+    } else if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+        return QNetworkSession::Connected;
+    } else if ((ptr->state & QNetworkConfiguration::Discovered) ==
+                QNetworkConfiguration::Discovered) {
+        return QNetworkSession::Disconnected;
+    } else if ((ptr->state & QNetworkConfiguration::Defined) == QNetworkConfiguration::Defined) {
+        return QNetworkSession::NotAvailable;
+    } else if ((ptr->state & QNetworkConfiguration::Undefined) ==
+                QNetworkConfiguration::Undefined) {
+        return QNetworkSession::NotAvailable;
+    }
+
+    return QNetworkSession::Invalid;
+}
+
+QT_END_NAMESPACE
 

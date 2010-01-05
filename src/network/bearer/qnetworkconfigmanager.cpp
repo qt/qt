@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -45,11 +45,21 @@
 #include "qnetworkconfigmanager_s60_p.h"
 #else
 #include "qnetworkconfigmanager_p.h"
+#include "qnetworksessionengine_p.h"
 #endif
 
-QTM_BEGIN_NAMESPACE
+#include <QtCore/qstringlist.h>
+
+QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNetworkConfigurationManagerPrivate, connManager);
+
+#ifndef Q_OS_SYMBIAN
+QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
+{
+    return connManager();
+}
+#endif
 
 /*!
     \class QNetworkConfigurationManager
@@ -227,28 +237,31 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
 {
     QList<QNetworkConfiguration> result;
     QNetworkConfigurationManagerPrivate* conPriv = connManager();
-    QList<QString> cpsIdents = conPriv->accessPointConfigurations.keys();
 
-    //find all InternetAccessPoints
-    foreach( QString ii, cpsIdents) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p = 
-            conPriv->accessPointConfigurations.value(ii);
-        if ( (p->state & filter) == filter ) {
-            QNetworkConfiguration pt;
-            pt.d = conPriv->accessPointConfigurations.value(ii);
-            result << pt;
+    foreach (QNetworkSessionEngine *engine, conPriv->sessionEngines) {
+        QStringList cpsIdents = engine->accessPointConfigurations.keys();
+
+        //find all InternetAccessPoints
+        foreach (const QString &ii, cpsIdents) {
+            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p =
+                    engine->accessPointConfigurations.value(ii);
+            if ((p->state & filter) == filter) {
+                QNetworkConfiguration pt;
+                pt.d = engine->accessPointConfigurations.value(ii);
+                result << pt;
+            }
         }
-    }
 
-    //find all service networks
-    cpsIdents = conPriv->snapConfigurations.keys();
-    foreach( QString ii, cpsIdents) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p = 
-            conPriv->snapConfigurations.value(ii);
-        if ( (p->state & filter) == filter ) {
-            QNetworkConfiguration pt;
-            pt.d = conPriv->snapConfigurations.value(ii);
-            result << pt;
+        //find all service networks
+        cpsIdents = engine->snapConfigurations.keys();
+        foreach (const QString &ii, cpsIdents) {
+            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p =
+                    engine->snapConfigurations.value(ii);
+            if ((p->state & filter) == filter) {
+                QNetworkConfiguration pt;
+                pt.d = engine->snapConfigurations.value(ii);
+                result << pt;
+            }
         }
     }
 
@@ -264,15 +277,23 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
 QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(const QString& identifier) const
 {
     QNetworkConfigurationManagerPrivate* conPriv = connManager();
-    QNetworkConfiguration item;
-    if (conPriv->accessPointConfigurations.contains(identifier))
-        item.d = conPriv->accessPointConfigurations.value(identifier);
-    else if (conPriv->snapConfigurations.contains(identifier))
-        item.d = conPriv->snapConfigurations.value(identifier);
-    else if (conPriv->userChoiceConfigurations.contains(identifier))
-        item.d = conPriv->userChoiceConfigurations.value(identifier);
-    return item;
 
+    QNetworkConfiguration item;
+
+    foreach (QNetworkSessionEngine *engine, conPriv->sessionEngines) {
+        if (engine->accessPointConfigurations.contains(identifier))
+            item.d = engine->accessPointConfigurations.value(identifier);
+        else if (engine->snapConfigurations.contains(identifier))
+            item.d = engine->snapConfigurations.value(identifier);
+        else if (engine->userChoiceConfigurations.contains(identifier))
+            item.d = engine->userChoiceConfigurations.value(identifier);
+        else
+            continue;
+
+        return item;
+    }
+
+    return item;
 }
 
 /*!
@@ -329,5 +350,5 @@ void QNetworkConfigurationManager::updateConfigurations()
 
 #include "moc_qnetworkconfigmanager.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 

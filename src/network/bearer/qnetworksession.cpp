@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -52,7 +52,7 @@
 #include "qnetworksession_p.h"
 #endif
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 /*!
     \class QNetworkSession
@@ -525,14 +525,14 @@ QVariant QNetworkSession::sessionProperty(const QString& key) const
     if (!d->publicConfig.isValid())
         return QVariant();
 
-    if (key == "ActiveConfiguration") {
+    if (key == QLatin1String("ActiveConfiguration")) {
         if (!d->isOpen)
             return QString();
         else
             return d->activeConfig.identifier();
     }
 
-    if (key == "UserChoiceConfiguration") {
+    if (key == QLatin1String("UserChoiceConfiguration")) {
         if (!d->isOpen || d->publicConfig.type() != QNetworkConfiguration::UserChoice)
             return QString();
 
@@ -555,9 +555,10 @@ QVariant QNetworkSession::sessionProperty(const QString& key) const
 */
 void QNetworkSession::setSessionProperty(const QString& key, const QVariant& value)
 {
-    if (key == "ActiveConfiguration" 
-            || key == "UserChoiceConfiguration") 
+    if (key == QLatin1String("ActiveConfiguration") ||
+        key == QLatin1String("UserChoiceConfiguration")) {
         return;
+    }
 
     d->setSessionProperty(key, value);
 }
@@ -700,4 +701,4 @@ void QNetworkSession::disconnectNotify(const char *signal)
 
 #include "moc_qnetworksession.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

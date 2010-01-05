@@ -434,7 +434,10 @@ SUBDIRS += \
            qmargins \
            qnetworkaddressentry \
            qnetworkcachemetadata \
+           qnetworkconfigmanager \
+           qnetworkconfiguration \
            qnetworkdiskcache \
+           qnetworksession \
            qobjectperformance \
            qpainterpathstroker \
            qplugin \

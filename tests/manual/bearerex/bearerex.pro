@@ -8,13 +8,6 @@ QT += core \
 FORMS += sessiondialog.ui \
          bearerex.ui \
          detailedinfodialog.ui
-include(../../common.pri)
-#not really a test case but deployment happens same way
-CONFIG += testcase
-
-DEPENDPATH += .
-INCLUDEPATH += . \
-               ../../src/bearer
 
 # Example headers and sources
 HEADERS += bearerex.h \
@@ -24,6 +17,4 @@ SOURCES += bearerex.cpp \
            main.cpp \
            xqlistwidget.cpp
 
-CONFIG += mobility
-MOBILITY = bearer
 symbian:TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData

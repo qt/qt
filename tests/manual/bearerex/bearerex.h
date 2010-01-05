@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #ifndef ACCESSPOINTMANAGEREX_H
 #define ACCESSPOINTMANAGEREX_H
 
@@ -57,7 +58,7 @@ QT_END_NAMESPACE
 
 class SessionTab;
 
-QTM_USE_NAMESPACE
+QT_USE_NAMESPACE
 
 class BearerEx : public QMainWindow, public Ui::BearerExMainWindow
 {

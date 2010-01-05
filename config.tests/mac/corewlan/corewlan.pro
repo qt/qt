@@ -1,4 +1,3 @@
-SOURCES=corewlantest.mm
-TARGET=corewlan
+SOURCES = corewlantest.mm
 LIBS += -framework CoreWLAN -framework Foundation
-CONFIG-=app_bundle
+CONFIG -= app_bundle qt

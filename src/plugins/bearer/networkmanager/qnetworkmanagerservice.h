@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -64,19 +64,16 @@
 
 
 #include <QDBusPendingCallWatcher>
-#include <qnmdbushelper_p.h>
+#include "qnmdbushelper.h"
 
+QT_BEGIN_NAMESPACE
 
-QTM_BEGIN_NAMESPACE
 typedef QMap< QString, QMap<QString,QVariant> > QNmSettingsMap;
 typedef QList<quint32> ServerThing;
-QTM_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QTM_PREPEND_NAMESPACE(QNmSettingsMap))
-Q_DECLARE_METATYPE(QTM_PREPEND_NAMESPACE(ServerThing))
+Q_DECLARE_METATYPE(QNmSettingsMap)
+Q_DECLARE_METATYPE(ServerThing)
 
-
-QTM_BEGIN_NAMESPACE
 class QNetworkManagerInterfacePrivate;
 class QNetworkManagerInterface : public QObject
 {
@@ -332,8 +329,8 @@ public:
 
 Q_SIGNALS:
     
-    void updated(QMap< QString, QMap<QString,QVariant> > s);
-    void removed(const QString &);
+    void updated(const QNmSettingsMap &settings);
+    void removed(const QString &path);
 
 private:
     QNmDBusHelper *nmDBusHelper;
@@ -395,6 +392,6 @@ public:
 };
 ////
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //QNETWORKMANAGERSERVICE_H

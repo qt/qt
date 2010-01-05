@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -53,13 +53,14 @@
 // We mean it.
 //
 
-#include "qnetworksessionengine_p.h"
+#include <QtNetwork/private/qnetworksessionengine_p.h>
 
 #include <QtCore/qtimer.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
+struct WLAN_NOTIFICATION_DATA;
 
 class QNativeWifiEngine : public QNetworkSessionEngine
 {
@@ -69,7 +70,6 @@ public:
     QNativeWifiEngine(QObject *parent = 0);
     ~QNativeWifiEngine();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 
@@ -80,9 +80,12 @@ public:
 
     void requestUpdate();
 
-    inline void emitConfigurationsChanged() { emit configurationsChanged(); }
+    QNetworkSession::State sessionStateForId(const QString &id);
 
-    static QNativeWifiEngine *instance();
+    inline bool available() const { return handle != 0; }
+
+public Q_SLOTS:
+    void scanComplete();
 
 private:
     QTimer pollTimer;
@@ -90,6 +93,6 @@ private:
     Qt::HANDLE handle;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif

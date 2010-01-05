@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -42,17 +42,15 @@
 #ifndef QNETWORKCONFIGURATIONMANAGER_H
 #define QNETWORKCONFIGURATIONMANAGER_H
 
-#include "qmobilityglobal.h"
-
 #include <QtCore/qobject.h>
 #include "qnetworkconfiguration.h"
 
 QT_BEGIN_HEADER
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationManagerPrivate;
-class Q_BEARER_EXPORT QNetworkConfigurationManager : public QObject
+class Q_NETWORK_EXPORT QNetworkConfigurationManager : public QObject
 {
     Q_OBJECT
 
@@ -93,7 +91,7 @@ Q_SIGNALS:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkConfigurationManager::Capabilities)
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

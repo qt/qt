@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -41,7 +41,7 @@
 
 #include "qnetworkconfiguration_s60_p.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 QNetworkConfigurationPrivate::QNetworkConfigurationPrivate()
     : isValid(false), type(QNetworkConfiguration::Invalid),
@@ -73,4 +73,4 @@ QString QNetworkConfigurationPrivate::bearerName() const
 }
 
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

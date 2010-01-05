@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -49,7 +49,7 @@
 #include <iapconf.h>
 #endif
 
-QTM_USE_NAMESPACE
+QT_USE_NAMESPACE
 class tst_QNetworkConfigurationManager : public QObject
 {
     Q_OBJECT

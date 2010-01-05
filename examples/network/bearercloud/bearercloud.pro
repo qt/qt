@@ -11,13 +11,6 @@ TARGET = bearercloud
 
 QT = core gui network svg
 
-INCLUDEPATH += ../../src/bearer
-
-include(../examples.pri)
-
-CONFIG += mobility
-MOBILITY = bearer
-
 CONFIG += console
 
 symbian:TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData
