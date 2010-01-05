@@ -273,6 +273,7 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                     rv = expr.value();
                 } else {
                     QmlContext newCtxt(ctxt);
+                    QmlContextPrivate::get(&newCtxt)->isTemporary = true;
                     QMetaMethod m = method(_id);
                     QList<QByteArray> names = m.parameterNames(); 
                     for (int ii = 0; ii < names.count(); ++ii) 

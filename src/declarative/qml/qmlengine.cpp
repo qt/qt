@@ -648,7 +648,10 @@ QmlContext *QmlEnginePrivate::getContext(QScriptContext *ctxt)
     QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
     Q_ASSERT(scopeNode.isValid());
     Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == contextClass);
-    return contextClass->contextFromValue(scopeNode);
+    QmlContext *context = contextClass->contextFromValue(scopeNode);
+    while (context && QmlContextPrivate::get(context)->isTemporary)
+        context = context->parentContext();
+    return context;
 }
 
 QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,

@@ -145,8 +145,10 @@ void QmlOptimizedBindings::run(Binding *binding)
         qWarning("ERROR: Circular binding");
 
     QmlContext *context = QmlAbstractExpression::context();
-    if (!context)
+    if (!context) {
+        qWarning("QmlOptimizedBindings: Attempted to evaluate an expression in an invalid context");
         return;
+    }
     QmlContextPrivate *cp = QmlContextPrivate::get(context);
 
     if (binding->property & 0xFFFF0000) {
