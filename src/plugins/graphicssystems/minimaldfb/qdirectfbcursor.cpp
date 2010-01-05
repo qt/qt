@@ -39,8 +39,8 @@ void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
     blitter = new QDirectFbBlitter(imageRect, surface);
     blitter->drawPixmap(imageRect, map, imageRect);
 
-    int xSpot = cursor->hotSpot().x();
-    int ySpot = cursor->hotSpot().y();
+    int xSpot = image->hotspot().x();
+    int ySpot = image->hotspot().y();
 
     if (m_layer->SetCooperativeLevel(m_layer, DLSCL_ADMINISTRATIVE) != DFB_OK) {
         return;
