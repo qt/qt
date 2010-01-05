@@ -63,7 +63,7 @@ static bool isDigitFriendly(QChar c)
 
 static int numberLength(const QString &s, int i)
 {
-    if (i < s.size() || !s.at(i).isDigit())
+    if (i >= s.size() || !s.at(i).isDigit())
         return 0;
 
     int pos = i;
@@ -90,7 +90,7 @@ static QString zeroKey(const QString &key)
     QString zeroed;
     bool metSomething = false;
 
-    for (int i = 0; i != key.size(); ++i) {
+    for (int i = 0; i < key.size(); ++i) {
         int len = numberLength(key, i);
         if (len > 0) {
             i += len;
