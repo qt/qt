@@ -76,7 +76,7 @@ private:
 
     QDirectFbGraphicsSystemScreen *m_screen;
     QPixmap *m_pixmap;
-    QBlittablePixmapData *pmdata;
+    QBlittablePixmapData *m_pmdata;
 
     IDirectFBWindow *m_dfbWindow;
     IDirectFBSurface *m_dfbSurface;

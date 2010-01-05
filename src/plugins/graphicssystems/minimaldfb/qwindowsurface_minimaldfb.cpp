@@ -47,30 +47,25 @@
 
 #include <QtCore/qdebug.h>
 
+#include <wait.h>
+
 QT_BEGIN_NAMESPACE
 
 QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *screen, QWidget *window)
-    : QWindowSurface(window), m_screen(screen), m_pixmap(0), pmdata(0),
+    : QWindowSurface(window), m_screen(screen), m_pixmap(0), m_pmdata(0),
       m_dfbWindow(0), m_dfbSurface(0)
 {
     window->setWindowSurface(this);
     m_dfbWindow = m_screen->createWindow(window->rect(),window);
-    DFBResult result = m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFbWindowSurface::QDirectFbWindowSurface: unable to get windows surface",result);
-    }
-    if (m_dfbSurface) {
-        m_dfbSurface->Clear(m_dfbSurface, 0, 0, 0, 0);
-        m_dfbSurface->Flip(m_dfbSurface, 0, DSFLIP_ONSYNC);
-    }
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
-    pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
-    int width,height;
-    m_dfbSurface->GetSize(m_dfbSurface, &width, &height);
-    pmdata->resize(width,height);
-    pmdata->setBlittable(blitter);
+    m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
+    qDebug () << "initial surface: " << m_dfbSurface;
 
-    m_pixmap = new QPixmap(pmdata);
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
+    m_pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
+    m_pmdata->setBlittable(blitter);
+    m_pixmap = new QPixmap(m_pmdata);
+
+
 }
 
 QDirectFbWindowSurface::~QDirectFbWindowSurface()
@@ -104,23 +99,12 @@ void QDirectFbWindowSurface::setGeometry(const QRect &rect)
     QWindowSurface::setGeometry(rect);
     m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
                            rect.width(), rect.height());
-    if (m_dfbSurface) {
-        m_dfbSurface->Release(m_dfbSurface);
-        m_dfbSurface = 0;
-    }
-    DFBResult result = m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
 
-    if (result != DFB_OK)
-        DirectFBError("QDirectFbWindowSurface::setGeometry() failed to retrieve new surface",result);
+    //Have to add 1 ref ass it will be removed by deleting the old blitter in setBlittable
+    m_dfbSurface->AddRef(m_dfbSurface);
+    QBlittable *blittabler = new QDirectFbBlitter(rect,m_dfbSurface);
+    m_pmdata->setBlittable(blittabler);
 
-    if (m_dfbSurface) {
-        m_dfbSurface->Clear(m_dfbSurface, 0, 0, 0, 0);
-        m_dfbSurface->Flip(m_dfbSurface, 0, DSFLIP_ONSYNC);
-    }
-
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(rect, m_dfbSurface);
-    pmdata->resize(rect.width(),rect.height());
-    pmdata->setBlittable(blitter);
 }
 
 bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)

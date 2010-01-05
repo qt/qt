@@ -25,9 +25,9 @@ QImage::Format QDirectFbConvenience::imageFormatFromSurfaceFormat(const DFBSurfa
     case DSPF_RGB32:
         return QImage::Format_RGB32;
     case DSPF_ARGB: {
-            return (caps & DSCAPS_PREMULTIPLIED
-                    ? QImage::Format_ARGB32_Premultiplied
-                        : QImage::Format_ARGB32); }
+            if (caps & DSCAPS_PREMULTIPLIED)
+                    return QImage::Format_ARGB32_Premultiplied;
+            else return QImage::Format_ARGB32; }
     default:
         break;
     }

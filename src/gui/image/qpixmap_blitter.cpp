@@ -29,15 +29,13 @@ QBlittable *QBlittablePixmapData::blittable() const
 
 void QBlittablePixmapData::setBlittable(QBlittable *blittable)
 {
-    if (m_blittable)
-        delete m_blittable;
+    delete m_blittable;
+    resize(blittable->rect().width(),blittable->rect().height());
     m_blittable = blittable;
 }
 
 void QBlittablePixmapData::resize(int width, int height)
 {
-    delete m_blittable;
-    m_blittable = 0;
     delete m_engine;
     m_engine = 0;
     d = QApplicationPrivate::graphicsSystem()->screens().at(0)->depth();
@@ -78,7 +76,7 @@ int QBlittablePixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 void QBlittablePixmapData::fill(const QColor &color)
 {
     if (blittable()->capabilities() & QBlittable::SolidRectCapability)
-        blittable()->fillRect(m_blittable->rect(),color);
+        blittable()->fillRect(QRectF(0,0,w,h),color);
     else
         blittable()->lock()->fill(color.rgb());
 }

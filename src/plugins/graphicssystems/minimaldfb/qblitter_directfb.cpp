@@ -20,7 +20,8 @@ QDirectFbBlitter::QDirectFbBlitter(const QRect &rect, IDirectFBSurface *surface)
         DFBSurfaceDescription surfaceDesc;
         surfaceDesc.width = rect.width();
         surfaceDesc.height = rect.height();
-        surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT);
+        surfaceDesc.caps = DSCAPS_PREMULTIPLIED;
+        surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_CAPS);
 
         IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
         dfb->CreateSurface(dfb,&surfaceDesc, &m_surface);

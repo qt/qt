@@ -8,7 +8,6 @@ class QBlittablePrivate;
 class QBlitterPaintEnginePrivate;
 class QBlittablePixmapData;
 
-// ### find name
 class Q_GUI_EXPORT QBlittable
 {
     Q_DECLARE_PRIVATE(QBlittable);

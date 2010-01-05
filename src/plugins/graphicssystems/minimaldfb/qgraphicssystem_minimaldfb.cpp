@@ -61,12 +61,7 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int
         DirectFBError("QDirectFbGraphicsSystemScreen "
                       "Unable to get primary display layer!", result);
     }
-    DFBDisplayLayerConfig *displayLayerConfig;
-//    m_layer->GetConfiguration(m_layer,displayLayerConfig);
-//    displayLayerConfig->surface_caps = DFBSurfaceCapabilities(displayLayerConfig->surface_caps | DSCAPS_PREMULTIPLIED);
-//    m_layer->SetConfiguration(m_layer, displayLayerConfig);
     m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
-
 
     DFBDisplayLayerConfig config;
     m_layer->GetConfiguration(m_layer, &config);
@@ -101,7 +96,7 @@ IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect, 
 #if DIRECTFB_MINOR_VERSION >= 1
     description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
 #endif
-    description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER);
+    description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
     description.surface_caps = DSCAPS_PREMULTIPLIED;
 
     DFBResult result = m_layer->CreateWindow(m_layer,&description,&window);
