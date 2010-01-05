@@ -123,9 +123,11 @@ void tst_QFontComboBox::currentFont_data()
     QTest::addColumn<QFont>("currentFont");
     // Normalize the names
     QFont defaultFont;
+    QFontInfo fi(defaultFont);
+    defaultFont = QFont(fi.family()); // make sure we have a real font name and not something like 'Sans Serif'.
     QTest::newRow("default") << defaultFont;
     defaultFont.setPointSize(defaultFont.pointSize() + 10);
-    QTest::newRow("default") << defaultFont;
+    QTest::newRow("default2") << defaultFont;
     QFontDatabase db;
     QStringList list = db.families();
     for (int i = 0; i < list.count(); ++i) {
