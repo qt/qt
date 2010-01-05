@@ -63,7 +63,7 @@
 #include "private/qsoftkeymanager_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
-#include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
+#include <mdaaudiotoneplayer.h>     // For CMdaAudioToneUtility
 
 #if defined(Q_WS_S60)
 # if !defined(QT_NO_IM)

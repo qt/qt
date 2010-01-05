@@ -58,8 +58,8 @@
 #include <aknsskininstance.h>
 #include <aknsbasicbackgroundcontrolcontext.h>
 #include <avkon.mbg>
-#include <AknFontAccess.h>
-#include <AknLayoutFont.h>
+#include <aknfontaccess.h>
+#include <aknlayoutfont.h>
 #include <aknutils.h>
 #include <aknnavi.h>
 #include <gulicon.h>

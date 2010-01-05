@@ -56,7 +56,7 @@
 #include "qconfig.h"
 #include "qfontengine_p.h"
 #include "qsize.h"
-#include <OPENFONT.H>
+#include <openfont.h>
 
 class CFbsBitmap;
 class CFbsBitmapDevice;

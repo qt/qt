@@ -51,7 +51,7 @@
 #include <private/qcore_symbian_p.h>
 
 #include <e32std.h>
-#include <MdaAudioSamplePlayer.h>
+#include <mdaaudiosampleplayer.h>
 
 QT_BEGIN_NAMESPACE
 
