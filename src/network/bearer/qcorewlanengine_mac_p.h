@@ -88,8 +88,6 @@ private:
     QTimer pollTimer;
     QList<QNetworkConfigurationPrivate *> scanForSsids(const QString &interfaceName);
 
-    QList<QNetworkConfigurationPrivate *> getWlanProfiles(const QString &interfaceName);
-
     bool isKnownSsid(const QString &interfaceName, const QString &ssid);
     QList<QNetworkConfigurationPrivate *> foundConfigurations;
 

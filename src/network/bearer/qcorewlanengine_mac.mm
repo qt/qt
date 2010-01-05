@@ -75,7 +75,7 @@ inline QString cfstringRefToQstring(CFStringRef cfStringRef) {
     if (CFStringGetCString(CFStringRef(cfStringRef), cstring, maxLength, kCFStringEncodingUTF8)) {
         retVal = QString::fromUtf8(cstring);
     }
-    delete cstring;
+    delete[] cstring;
     return retVal;
 }
 
@@ -315,7 +315,7 @@ QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::scanForSsids(const QStrin
     CWInterface *currentInterface = [CWInterface interfaceWithName:qstringToNSString(interfaceName)];
     NSError *err = nil;
     NSDictionary *parametersDict = nil;
-    NSArray* apArray = [NSMutableArray arrayWithArray:[currentInterface scanForNetworksWithParameters:parametersDict error:&err]];
+    NSArray* apArray = [currentInterface scanForNetworksWithParameters:parametersDict error:&err];
 
     CWNetwork *apNetwork;
     if(!err) {
@@ -394,18 +394,6 @@ bool QCoreWlanEngine::isKnownSsid(const QString &interfaceName, const QString &s
     Q_UNUSED(ssid);
 #endif
     return false;
-}
-
-QList<QNetworkConfigurationPrivate *> QCoreWlanEngine::getWlanProfiles(const QString &interfaceName)
-{
-    Q_UNUSED(interfaceName)
-#if defined(MAC_SDK_10_6)
-//    for( CW8021XProfile *each8021XProfile in [CW8021XProfile allUser8021XProfiles] ) {
-//        qWarning() << "Profile name" << nsstringToQString([each8021XProfile ssid]);
-//    }
-
-#endif
-    return QList<QNetworkConfigurationPrivate *> ();
 }
 
 bool QCoreWlanEngine::getAllScInterfaces()
