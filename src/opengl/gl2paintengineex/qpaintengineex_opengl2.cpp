@@ -1567,6 +1567,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
 #if !defined(QT_OPENGL_ES_2)
 #if defined(Q_WS_WIN)
+    extern Q_GUI_EXPORT bool qt_cleartype_enabled;
     if (qt_cleartype_enabled)
 #endif
         d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
