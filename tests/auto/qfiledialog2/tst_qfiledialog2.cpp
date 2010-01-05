@@ -1105,7 +1105,6 @@ void tst_QFiledialog::QTBUG6558_showDirsOnly()
 
     dirTemp.cdUp();
     dirTemp.rmdir(tempName);
-    QTRY_VERIFY(!dir.exists());
 }
 
 QTEST_MAIN(tst_QFiledialog)
