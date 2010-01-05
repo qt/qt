@@ -352,11 +352,11 @@
 
         QStateMachine *machine = new QStateMachine;
 
-        QState *state1 = new QState(machine->rootState());
+        QState *state1 = new QState(machine);
         state1->assignProperty(button, "geometry", QRect(0, 0, 100, 30));
         machine->setInitialState(state1);
 
-        QState *state2 = new QState(machine->rootState());
+        QState *state2 = new QState(machine);
         state2->assignProperty(button, "geometry", QRect(250, 250, 100, 30));
 
         QSignalTransition *transition1 = state1->addTransition(button,
