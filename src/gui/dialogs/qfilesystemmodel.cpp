@@ -1779,7 +1779,7 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QL
             node->fileName = fileName;
         }
 
-        if (info.size() == -1) {
+        if (info.size() == -1 && !info.isSymLink()) {
             removeNode(parentNode, fileName);
             continue;
         }
