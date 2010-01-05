@@ -406,8 +406,6 @@ QNetworkConfigurationPrivate *QNlaThread::parseQuerySet(const WSAQUERYSET *query
     cpPriv->id = QString::number(qHash(QLatin1String("NLA:") + cpPriv->name));
     cpPriv->state = QNetworkConfiguration::Defined;
     cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
-    if (QNlaEngine *engine = qobject_cast<QNlaEngine *>(parent()))
-        config->bearer = engine->bearerName(config->id);
 
 #ifdef BEARER_MANAGEMENT_DEBUG
     qDebug() << "size:" << querySet->dwSize;
@@ -442,6 +440,9 @@ QNetworkConfigurationPrivate *QNlaThread::parseQuerySet(const WSAQUERYSET *query
                 offset = nextOffset;
         } while (offset != 0 && offset < querySet->lpBlob->cbSize);
     }
+
+    if (QNlaEngine *engine = qobject_cast<QNlaEngine *>(parent()))
+        cpPriv->bearer = engine->bearerName(cpPriv->id);
 
     return cpPriv;
 }
