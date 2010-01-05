@@ -1,4 +1,7 @@
 #include "qdirectfbconvenience.h"
+#include "qblitter_directfb.h"
+
+#include <private/qpixmap_blitter_p.h>
 
 IDirectFB *QDirectFbConvenience::dfb = 0;
 
@@ -33,6 +36,17 @@ QImage::Format QDirectFbConvenience::imageFormatFromSurfaceFormat(const DFBSurfa
     }
     return QImage::Format_Invalid;
 
+}
+
+IDirectFBSurface *QDirectFbConvenience::dfbSurfaceForPixmapData(QPixmapData *pixmapData)
+{
+    QBlittablePixmapData *blittablePmData = static_cast<QBlittablePixmapData *>(pixmapData);
+    if (blittablePmData) {
+        QBlittable *blittable = blittablePmData->blittable();
+        QDirectFbBlitter *dfbBlitter = static_cast<QDirectFbBlitter *>(blittable);
+        return dfbBlitter->m_surface;
+    }
+    return 0;
 }
 
 Qt::MouseButton QDirectFbConvenience::mouseButton(DFBInputDeviceButtonIdentifier identifier)

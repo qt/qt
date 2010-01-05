@@ -4,6 +4,7 @@
 #include <QtGui/qimage.h>
 #include <QtCore/QHash>
 #include <QtCore/QEvent>
+#include <QtGui/QPixmap>
 
 #include <directfb.h>
 
@@ -21,6 +22,9 @@ public:
 
     //This is set by the graphicssystem constructor
     static IDirectFB *dfbInterface() { return dfb; }
+
+    static IDirectFBSurface *dfbSurfaceForPixmapData(QPixmapData *);
+
     static Qt::MouseButton mouseButton(DFBInputDeviceButtonIdentifier identifier);
     static Qt::MouseButtons mouseButtons(DFBInputDeviceButtonMask mask);
     static Qt::KeyboardModifiers keyboardModifiers(DFBInputDeviceModifierMask mask);

@@ -1,6 +1,8 @@
 #ifndef QDIRECTFBBLITTER_H
 #define QDIRECTFBBLITTER_H
 
+#include "qdirectfbconvenience.h"
+
 #include <private/qpaintengine_blitter_p.h>
 
 #include <directfb.h>
@@ -20,6 +22,8 @@ protected:
 
     IDirectFBSurface *m_surface;
     QImage m_image;
+
+    friend class QDirectFbConvenience;
 };
 
 #endif // QDIRECTFBBLITTER_H

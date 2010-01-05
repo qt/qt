@@ -3,12 +3,12 @@
 #include "qgraphicssystem_minimaldfb.h"
 #include "qdirectfbconvenience.h"
 
+#include <private/qpixmap_blitter_p.h>
+
 QDirectFBCursor::QDirectFBCursor(QGraphicsSystemScreen * screen) :
         QGraphicsSystemCursor(screen), surface(0)
 {
-    QDirectFbGraphicsSystemScreen * s;
-    s = static_cast<QDirectFbGraphicsSystemScreen *>(screen);
-    m_layer = s->m_layer;
+    QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY, &m_layer);
     image = new QGraphicsSystemCursorImage(0, 0, 0, 0, 0, 0);
 }
 
@@ -26,17 +26,7 @@ void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
     QRect imageRect = i->rect();
     QPixmap map = QPixmap::fromImage(*i);
 
-    if (surface)
-        surface->Release(surface);
-    DFBSurfaceDescription surfaceDesc;
-    surfaceDesc.width = map.width();
-    surfaceDesc.height = map.height();
-    surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT);
-
-    QDirectFbConvenience::dfbInterface()->CreateSurface(QDirectFbConvenience::dfbInterface(), &surfaceDesc, &surface);
-
-    blitter = new QDirectFbBlitter(imageRect, surface);
-    blitter->drawPixmap(imageRect, map, imageRect);
+    IDirectFBSurface *surface = QDirectFbConvenience::dfbSurfaceForPixmapData(map.pixmapData());
 
     int xSpot = image->hotspot().x();
     int ySpot = image->hotspot().y();
