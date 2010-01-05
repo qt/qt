@@ -375,7 +375,7 @@ int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmWidthMM:
         return qRound(d->width * 25.4 / qt_defaultDpiX());
     case QPaintDevice::PdmHeightMM:
-        return qRound(d->width * 25.4 / qt_defaultDpiY());
+        return qRound(d->height * 25.4 / qt_defaultDpiY());
     case QPaintDevice::PdmNumColors:
         return d->colortable.size();
     case QPaintDevice::PdmDepth:
