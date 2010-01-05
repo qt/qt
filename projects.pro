@@ -112,7 +112,7 @@ win32 {
 }
 symbian {
   confclean.depends += distclean
-  win32 {
+  contains(QMAKE_HOST.os, "Windows") {
     confclean.commands += \
             (cd src\tools\moc && $(MAKE) distclean) $$escape_expand(\n\t) \
             (cd src\tools\rcc && $(MAKE) distclean) $$escape_expand(\n\t) \
