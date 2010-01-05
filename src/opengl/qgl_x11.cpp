@@ -1132,6 +1132,72 @@ void *QGLContext::getProcAddress(const QString &proc) const
     return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(proc.toLatin1().data()));
 }
 
+//
+// This class is used to create a temporary, minimal GL context, which is used
+// to retrive GL version and extension info. It's significantly faster to
+// construct than a QGLWidget, and it doesn't have the recursive creation
+// problem that QGLWidget would have. E.g. creating a temporary QGLWidget to
+// retrieve GL info as part of the QGLWidget initialization.
+//
+class QGLTempContext
+{
+public:
+    QGLTempContext(int screen = 0) :
+            initialized(false),
+            old_drawable(0),
+            old_context(0)
+    {
+        int attribs[] = {GLX_RGBA, XNone};
+        XVisualInfo *vi = glXChooseVisual(X11->display, screen, attribs);
+        if (!vi) {
+            qWarning("QGLTempContext: No GL capable X visuals available.");
+            return;
+        }
+
+        int useGL;
+        glXGetConfig(X11->display, vi, GLX_USE_GL, &useGL);
+        if (!useGL) {
+            XFree(vi);
+            return;
+        }
+
+        old_drawable = glXGetCurrentDrawable();
+        old_context = glXGetCurrentContext();
+
+        XSetWindowAttributes a;
+        a.colormap = qt_gl_choose_cmap(X11->display, vi);
+        drawable = XCreateWindow(X11->display, RootWindow(X11->display, screen),
+                                 0, 0, 1, 1, 0,
+                                 vi->depth, InputOutput, vi->visual,
+                                 CWColormap, &a);
+        context = glXCreateContext(X11->display, vi, 0, True);
+        if (context && glXMakeCurrent(X11->display, drawable, context)) {
+            initialized = true;
+        } else {
+            qWarning("QGLTempContext: Unable to create GL context.");
+            XDestroyWindow(X11->display, drawable);
+        }
+        XFree(vi);
+    }
+
+    ~QGLTempContext() {
+        if (initialized) {
+            glXMakeCurrent(X11->display, 0, 0);
+            glXDestroyContext(X11->display, context);
+            XDestroyWindow(X11->display, drawable);
+        }
+        if (old_drawable && old_context)
+            glXMakeCurrent(X11->display, old_drawable, old_context);
+    }
+
+private:
+    bool initialized;
+    Window drawable;
+    GLXContext context;
+    GLXDrawable old_drawable;
+    GLXContext old_context;
+};
+
 /*****************************************************************************
   QGLOverlayWidget (Internal overlay class for X11)
  *****************************************************************************/
@@ -1574,8 +1640,7 @@ void QGLExtensions::init()
         return;
     init_done = true;
 
-    QGLWidget dmy;
-    dmy.makeCurrent();
+    QGLTempContext context;
     init_extensions();
 
     // nvidia 9x.xx unix drivers contain a bug which requires us to call glFinish before releasing an fbo
