@@ -1,3 +1,89 @@
+2009-12-30  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add support for Symbian def files
+
+        * WebCore.pro:
+
+2009-12-30  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed Qt/Symbian build fix.
+
+        Don't build network state notifier support when building inside of Qt.
+        Otherwise the Qt build depends on an external module that itself depends
+        on Qt again.
+
+        * WebCore.pro:
+
+2009-12-30  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Turn off DataGrid support by default.
+
+        No new tests, as there is no new functionality.
+
+        * WebCore.pro:
+
+2009-12-17  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] support navigator.onLine and ononline/onoffline events.
+        https://bugs.webkit.org/show_bug.cgi?id=32555
+
+        Hooked up Bearer Management to NetworkStateNotifier. This solution is available 
+        only if QtMobility's Bearer Management is installed.
+
+        * WebCore.pro:
+        * platform/network/NetworkStateNotifier.h:
+        * platform/network/qt/NetworkStateNotifierPrivate.h: Added.
+        * platform/network/qt/NetworkStateNotifierQt.cpp: Added.
+        (WebCore::NetworkStateNotifierPrivate::NetworkStateNotifierPrivate):
+        (WebCore::NetworkStateNotifierPrivate::onlineStateChanged):
+        (WebCore::NetworkStateNotifierPrivate::~NetworkStateNotifierPrivate):
+        (WebCore::NetworkStateNotifier::updateState):
+        (WebCore::NetworkStateNotifier::NetworkStateNotifier):
+
+2009-12-17  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Symbian build fix: Don't include QtXml/qxmlstream.h but omit the prefix, to
+        make sure we pick up the header file from QtCore. That is where the implementation
+        is compiled.
+
+        * dom/XMLTokenizer.h:
+
+2009-12-14  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Add manual test for JavaScript prompt corner case
+        https://bugs.webkit.org/show_bug.cgi?id=30914
+
+        The patch is based on the work done by Gupta Manish.
+
+        Verify behavior of the JavaScript prompt function. Currently
+        Qt is not behaving like other WebKit ports and Firefox in
+        regards to accepting the prompt but not entering a text.
+
+        * manual-tests/qt/java-script-prompt.html: Added.
+
+2009-12-21  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Fix assertion failure when dragging an SVG image.
+        https://bugs.webkit.org/show_bug.cgi?id=32511
+
+        Test: fast/images/drag-svg-as-image.html
+
+        * svg/graphics/SVGImage.cpp:
+        (WebCore::SVGImage::filenameExtension): Return "svg"
+        * svg/graphics/SVGImage.h:
+
 2009-11-23  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.
