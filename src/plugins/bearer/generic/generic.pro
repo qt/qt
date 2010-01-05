@@ -1,0 +1,12 @@
+TARGET = qgenericbearer
+include(../../qpluginbase.pri)
+
+QT += network
+
+HEADERS += qgenericengine.h \
+           ../platformdefs_win.h
+SOURCES += qgenericengine.cpp main.cpp
+
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
+target.path += $$[QT_INSTALL_PLUGINS]/bearer
+INSTALLS += target

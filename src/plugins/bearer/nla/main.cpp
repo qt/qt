@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,57 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QNATIVEWIFIENGINE_P_H
-#define QNATIVEWIFIENGINE_P_H
+#include "qnlaengine.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtNetwork/qbearerplugin.h>
 
-#include "qnetworksessionengine_p.h"
+#include <QtCore/qdebug.h>
 
-#include <QtCore/qtimer.h>
+QT_BEGIN_NAMESPACE
 
-QTM_BEGIN_NAMESPACE
-
-class QNetworkConfigurationPrivate;
-
-class QNativeWifiEngine : public QNetworkSessionEngine
+class QNlaEnginePlugin : public QBearerEnginePlugin
 {
-    Q_OBJECT
-
 public:
-    QNativeWifiEngine(QObject *parent = 0);
-    ~QNativeWifiEngine();
+    QNlaEnginePlugin();
+    ~QNlaEnginePlugin();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
-    QString getInterfaceFromId(const QString &id);
-    bool hasIdentifier(const QString &id);
-
-    //QString bearerName(const QString &id);
-
-    void connectToId(const QString &id);
-    void disconnectFromId(const QString &id);
-
-    void requestUpdate();
-
-    inline void emitConfigurationsChanged() { emit configurationsChanged(); }
-
-    static QNativeWifiEngine *instance();
-
-private:
-    QTimer pollTimer;
-
-    Qt::HANDLE handle;
+    QStringList keys() const;
+    QBearerEngine *create(const QString &key) const;
 };
 
-QTM_END_NAMESPACE
+QNlaEnginePlugin::QNlaEnginePlugin()
+{
+}
 
-#endif
+QNlaEnginePlugin::~QNlaEnginePlugin()
+{
+}
+
+QStringList QNlaEnginePlugin::keys() const
+{
+    return QStringList() << QLatin1String("nla");
+}
+
+QBearerEngine *QNlaEnginePlugin::create(const QString &key) const
+{
+    if (key == QLatin1String("nla"))
+        return new QNlaEngine;
+    else
+        return 0;
+}
+
+Q_EXPORT_STATIC_PLUGIN(QNlaEnginePlugin)
+Q_EXPORT_PLUGIN2(qnlabearer, QNlaEnginePlugin)
+
+QT_END_NAMESPACE

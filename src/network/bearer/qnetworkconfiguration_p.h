@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -55,20 +55,18 @@
 
 #include "qnetworkconfiguration.h"
 #include <QtCore/qshareddata.h>
-#include <QNetworkInterface>
+#include <QtNetwork/QNetworkInterface>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
+typedef QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> QNetworkConfigurationPrivatePointer;
 class QNetworkConfigurationPrivate : public QSharedData
 {
 public:
     QNetworkConfigurationPrivate ()
-        : isValid(false), type(QNetworkConfiguration::Invalid), 
-          roamingSupported(false), purpose(QNetworkConfiguration::UnknownPurpose)
+    :   isValid(false), type(QNetworkConfiguration::Invalid),
+        roamingSupported(false), purpose(QNetworkConfiguration::UnknownPurpose), internet(false)
     {
-#ifdef BEARER_ENGINE
-        internet = false;
-#endif
     }
 
     ~QNetworkConfigurationPrivate()
@@ -91,11 +89,9 @@ public:
     bool roamingSupported;
     QNetworkConfiguration::Purpose purpose;
 
-#ifdef BEARER_ENGINE
     bool internet;
-#endif
 
-    QList<QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > serviceNetworkMembers;
+    QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
     QNetworkInterface serviceInterface;
 
 private:
@@ -105,6 +101,6 @@ private:
     QNetworkConfigurationPrivate(const QNetworkConfigurationPrivate &other);
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif //QNETWORKCONFIGURATIONPRIVATE_H

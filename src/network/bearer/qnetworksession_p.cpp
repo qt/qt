@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -42,73 +42,24 @@
 #include "qnetworksession_p.h"
 #include "qnetworksession.h"
 #include "qnetworksessionengine_p.h"
-#include "qgenericengine_p.h"
+#include "qnetworkconfigmanager_p.h"
 
-#ifdef Q_OS_WIN
-#include "qnlaengine_win_p.h"
-#endif
-#ifdef Q_OS_WIN32
-#include "qnativewifiengine_win_p.h"
-#endif
-#ifdef Q_OS_DARWIN
-#include "qcorewlanengine_mac_p.h"
-#endif
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qmutex.h>
 
 #include <QtNetwork/qnetworkinterface.h>
 
-#if defined(BACKEND_NM)
-#include "qnmwifiengine_unix_p.h"
-#endif
-
-QTM_BEGIN_NAMESPACE
-
-#if defined(BACKEND_NM)
-static bool NetworkManagerAvailable()
-{
-    QDBusConnection dbusConnection = QDBusConnection::systemBus();
-    if (dbusConnection.isConnected()) {
-        QDBusConnectionInterface *dbiface = dbusConnection.interface();
-        QDBusReply<bool> reply = dbiface->isServiceRegistered("org.freedesktop.NetworkManager");
-        if (reply.isValid())
-            return reply.value();
-    }
-    return false;
-}
-#endif
+QT_BEGIN_NAMESPACE
 
 static QNetworkSessionEngine *getEngineFromId(const QString &id)
 {
-#ifdef Q_OS_WIN
-    QNlaEngine *nla = QNlaEngine::instance();
-    if (nla && nla->hasIdentifier(id))
-        return nla;
-#endif
+    QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
 
-#ifdef Q_OS_WIN32
-    QNativeWifiEngine *nativeWifi = QNativeWifiEngine::instance();
-    if (nativeWifi && nativeWifi->hasIdentifier(id))
-        return nativeWifi;
-#endif
-
-#if defined(BACKEND_NM)
-    if(NetworkManagerAvailable()) {
-        QNmWifiEngine *nmwiifi = QNmWifiEngine::instance();
-        if (nmwiifi && nmwiifi->hasIdentifier(id))
-            return nmwiifi;
+    foreach (QNetworkSessionEngine *engine, priv->sessionEngines) {
+        if (engine->hasIdentifier(id))
+            return engine;
     }
-#endif
-#ifdef Q_OS_DARWIN
-    QCoreWlanEngine *coreWifi = QCoreWlanEngine::instance();
-    if (coreWifi && coreWifi->hasIdentifier(id))
-        return coreWifi;
-
-#endif
-    QGenericEngine *generic = QGenericEngine::instance();
-    if (generic && generic->hasIdentifier(id))
-        return generic;
 
     return 0;
 }
@@ -154,6 +105,7 @@ void QNetworkSessionPrivate::syncStateWithInterface()
             this, SLOT(forcedSessionClose(QNetworkConfiguration)));
 
     opened = false;
+    isOpen = false;
     state = QNetworkSession::Invalid;
     lastError = QNetworkSession::UnknownSessionError;
 
@@ -320,7 +272,7 @@ QNetworkSession::SessionError QNetworkSessionPrivate::error() const
 
 quint64 QNetworkSessionPrivate::bytesWritten() const
 {
-#if defined(BACKEND_NM)
+#if defined(BACKEND_NM) && 0
     if( NetworkManagerAvailable() && state == QNetworkSession::Connected ) {
         if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
             foreach (const QNetworkConfiguration &config, publicConfig.children()) {
@@ -338,7 +290,7 @@ quint64 QNetworkSessionPrivate::bytesWritten() const
 
 quint64 QNetworkSessionPrivate::bytesReceived() const
 {
-#if defined(BACKEND_NM)
+#if defined(BACKEND_NM) && 0
     if( NetworkManagerAvailable() && state == QNetworkSession::Connected ) {
         if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
             foreach (const QNetworkConfiguration &config, publicConfig.children()) {
@@ -391,6 +343,7 @@ void QNetworkSessionPrivate::updateStateFromServiceNetwork()
         }
 
         state = QNetworkSession::Connected;
+        qDebug() << oldState << "->" << state;
         if (state != oldState)
             emit q->stateChanged(state);
 
@@ -402,31 +355,22 @@ void QNetworkSessionPrivate::updateStateFromServiceNetwork()
     else
         state = QNetworkSession::Disconnected;
 
+    qDebug() << oldState << "->" << state;
     if (state != oldState)
         emit q->stateChanged(state);
 }
 
 void QNetworkSessionPrivate::updateStateFromActiveConfig()
 {
+    if (!engine)
+        return;
+
     QNetworkSession::State oldState = state;
 
-    bool newActive = false;
-
-    if (!activeConfig.isValid()) {
-        state = QNetworkSession::Invalid;
-    } else if ((activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
-        state = QNetworkSession::Connected;
-        newActive = opened;
-    } else if ((activeConfig.state() & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered) {
-        state = QNetworkSession::Disconnected;
-    } else if ((activeConfig.state() & QNetworkConfiguration::Defined) == QNetworkConfiguration::Defined) {
-        state = QNetworkSession::NotAvailable;
-    } else if ((activeConfig.state() & QNetworkConfiguration::Undefined) == QNetworkConfiguration::Undefined) {
-        state = QNetworkSession::NotAvailable;
-    }
+    state = engine->sessionStateForId(activeConfig.identifier());
 
     bool oldActive = isOpen;
-    isOpen = newActive;
+    isOpen = (state == QNetworkSession::Connected) ? opened : false;
 
     if (!oldActive && isOpen)
         emit quitPendingWaitsForOpened();
@@ -443,7 +387,7 @@ void QNetworkSessionPrivate::networkConfigurationsChanged()
         updateStateFromServiceNetwork();
     else
         updateStateFromActiveConfig();
-#if defined(BACKEND_NM)
+#if defined(BACKEND_NM) && 0
         setActiveTimeStamp();
 #endif
 }
@@ -490,7 +434,7 @@ void QNetworkSessionPrivate::connectionError(const QString &id, QNetworkSessionE
     }
 }
 
-#if defined(BACKEND_NM)
+#if defined(BACKEND_NM) && 0
 void QNetworkSessionPrivate::setActiveTimeStamp()
 {
     if(NetworkManagerAvailable()) {
@@ -537,6 +481,4 @@ if(serviceName.isEmpty())
 }
 #endif
 
-#include "moc_qnetworksession_p.cpp"
-QTM_END_NAMESPACE
-
+QT_END_NAMESPACE

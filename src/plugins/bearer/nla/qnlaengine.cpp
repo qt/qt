@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qnlaengine_win_p.h"
-#include "qnetworkconfiguration_p.h"
+#include "qnlaengine.h"
+#include <QtNetwork/private/qnetworkconfiguration_p.h>
 
 #include <QtCore/qthread.h>
 #include <QtCore/qmutex.h>
@@ -49,13 +49,11 @@
 
 #include <QtCore/qdebug.h>
 
-#include "qnetworksessionengine_win_p.h"
+#include "../platformdefs_win.h"
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QNlaEngine, nlaEngine)
-
-QWindowsSockInit::QWindowsSockInit()
+QWindowsSockInit2::QWindowsSockInit2()
 :   version(0)
 {
     //### should we try for 2.2 on all platforms ??
@@ -69,7 +67,7 @@ QWindowsSockInit::QWindowsSockInit()
     }
 }
 
-QWindowsSockInit::~QWindowsSockInit()
+QWindowsSockInit2::~QWindowsSockInit2()
 {
     WSACleanup();
 }
@@ -130,8 +128,8 @@ static QString qGetInterfaceType(const QString &interface)
     NDIS_MEDIUM medium;
     NDIS_PHYSICAL_MEDIUM physicalMedium;
 
-    HANDLE handle = CreateFile((TCHAR *)QString("\\\\.\\%1").arg(interface).utf16(), 0,
-                               FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+    HANDLE handle = CreateFile((TCHAR *)QString(QLatin1String("\\\\.\\%1")).arg(interface).utf16(),
+                               0, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if (handle == INVALID_HANDLE_VALUE)
         return QLatin1String("Unknown");
 
@@ -240,24 +238,8 @@ QList<QNetworkConfigurationPrivate *> QNlaThread::getConfigurations()
 {
     QMutexLocker locker(&mutex);
 
-    QList<QNetworkConfigurationPrivate *> foundConfigurations;
-
-    for (int i = 0; i < fetchedConfigurations.count(); ++i) {
-        QNetworkConfigurationPrivate *config = new QNetworkConfigurationPrivate;
-        config->name = fetchedConfigurations.at(i)->name;
-        config->isValid = fetchedConfigurations.at(i)->isValid;
-        config->id = fetchedConfigurations.at(i)->id;
-        config->state = fetchedConfigurations.at(i)->state;
-        config->type = fetchedConfigurations.at(i)->type;
-        config->roamingSupported = fetchedConfigurations.at(i)->roamingSupported;
-        config->purpose = fetchedConfigurations.at(i)->purpose;
-        config->internet = fetchedConfigurations.at(i)->internet;
-        if (QNlaEngine *engine = qobject_cast<QNlaEngine *>(parent())) {
-            config->bearer = engine->bearerName(config->id);
-        }
-
-        foundConfigurations.append(config);
-    }
+    QList<QNetworkConfigurationPrivate *> foundConfigurations = fetchedConfigurations;
+    fetchedConfigurations.clear();
 
     return foundConfigurations;
 }
@@ -329,7 +311,10 @@ void QNlaThread::run()
 #ifndef Q_OS_WINCE
         // Not interested in unrelated IO completion events
         // although we also don't want to block them
-        while (WaitForSingleObjectEx(changeEvent, WSA_INFINITE, true) != WAIT_IO_COMPLETION) {}
+        while (WaitForSingleObjectEx(changeEvent, WSA_INFINITE, true) != WAIT_IO_COMPLETION &&
+               handle)
+        {
+        }
 #else
         WaitForSingleObject(changeEvent, WSA_INFINITE);
 #endif
@@ -380,7 +365,7 @@ DWORD QNlaThread::parseBlob(NLA_BLOB *blob, QNetworkConfigurationPrivate *cpPriv
         cpPriv->state = QNetworkConfiguration::Active;
         if (QNlaEngine *engine = qobject_cast<QNlaEngine *>(parent())) {
             engine->configurationInterface[cpPriv->id.toUInt()] =
-                QString(blob->data.interfaceData.adapterName);
+                QString::fromLatin1(blob->data.interfaceData.adapterName);
         }
         break;
     case NLA_802_1X_LOCATION:
@@ -421,6 +406,8 @@ QNetworkConfigurationPrivate *QNlaThread::parseQuerySet(const WSAQUERYSET *query
     cpPriv->id = QString::number(qHash(QLatin1String("NLA:") + cpPriv->name));
     cpPriv->state = QNetworkConfiguration::Defined;
     cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
+    if (QNlaEngine *engine = qobject_cast<QNlaEngine *>(parent()))
+        config->bearer = engine->bearerName(config->id);
 
 #ifdef BEARER_MANAGEMENT_DEBUG
     qDebug() << "size:" << querySet->dwSize;
@@ -520,7 +507,7 @@ QNlaEngine::QNlaEngine(QObject *parent)
 {
     nlaThread = new QNlaThread(this);
     connect(nlaThread, SIGNAL(networksChanged()),
-            this, SIGNAL(configurationsChanged()));
+            this, SLOT(networksChanged()));
     nlaThread->start();
 
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -531,12 +518,57 @@ QNlaEngine::~QNlaEngine()
     delete nlaThread;
 }
 
-QList<QNetworkConfigurationPrivate *> QNlaEngine::getConfigurations(bool *ok)
+void QNlaEngine::networksChanged()
 {
-    if (ok)
-        *ok = true;
+    QStringList previous = accessPointConfigurations.keys();
 
-    return nlaThread->getConfigurations();
+    QList<QNetworkConfigurationPrivate *> foundConfigurations = nlaThread->getConfigurations();
+    while (!foundConfigurations.isEmpty()) {
+        QNetworkConfigurationPrivate *cpPriv = foundConfigurations.takeFirst();
+
+        previous.removeAll(cpPriv->id);
+
+        if (accessPointConfigurations.contains(cpPriv->id)) {
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(cpPriv->id);
+
+            bool changed = false;
+
+            if (ptr->isValid != cpPriv->isValid) {
+                ptr->isValid = cpPriv->isValid;
+                changed = true;
+            }
+
+            if (ptr->name != cpPriv->name) {
+                ptr->name = cpPriv->name;
+                changed = true;
+            }
+
+            if (ptr->state != cpPriv->state) {
+                ptr->state = cpPriv->state;
+                changed = true;
+            }
+
+            if (changed)
+                emit configurationChanged(ptr);
+
+            delete cpPriv;
+        } else {
+            QNetworkConfigurationPrivatePointer ptr(cpPriv);
+
+            accessPointConfigurations.insert(ptr->id, ptr);
+
+            emit configurationAdded(ptr);
+        }
+    }
+
+    while (!previous.isEmpty()) {
+        QNetworkConfigurationPrivatePointer ptr =
+            accessPointConfigurations.take(previous.takeFirst());
+
+        emit configurationRemoved(ptr);
+    }
+
+    emit updateCompleted();
 }
 
 QString QNlaEngine::getInterfaceFromId(const QString &id)
@@ -546,20 +578,7 @@ QString QNlaEngine::getInterfaceFromId(const QString &id)
 
 bool QNlaEngine::hasIdentifier(const QString &id)
 {
-    if (configurationInterface.contains(id.toUInt()))
-        return true;
-
-    bool result = false;
-    QList<QNetworkConfigurationPrivate *> l = nlaThread->getConfigurations();
-    while (!l.isEmpty()) {
-        QNetworkConfigurationPrivate* cpPriv = l.takeFirst();
-        if (!result && cpPriv->id == id) {
-            result = true;
-        }
-        delete cpPriv;
-    }
-   
-    return result; 
+    return configurationInterface.contains(id.toUInt());
 }
 
 QString QNlaEngine::bearerName(const QString &id)
@@ -587,14 +606,30 @@ void QNlaEngine::requestUpdate()
     nlaThread->forceUpdate();
 }
 
-QNlaEngine *QNlaEngine::instance()
+QNetworkSession::State QNlaEngine::sessionStateForId(const QString &id)
 {
-    return nlaEngine();
+    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+
+    if (!ptr)
+        return QNetworkSession::Invalid;
+
+    if (!ptr->isValid) {
+        return QNetworkSession::Invalid;
+    } else if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+        return QNetworkSession::Connected;
+    } else if ((ptr->state & QNetworkConfiguration::Discovered) ==
+                QNetworkConfiguration::Discovered) {
+        return QNetworkSession::Disconnected;
+    } else if ((ptr->state & QNetworkConfiguration::Defined) == QNetworkConfiguration::Defined) {
+        return QNetworkSession::NotAvailable;
+    } else if ((ptr->state & QNetworkConfiguration::Undefined) ==
+                QNetworkConfiguration::Undefined) {
+        return QNetworkSession::NotAvailable;
+    }
+
+    return QNetworkSession::Invalid;
 }
 
-#include "qnlaengine_win.moc"
-#include "moc_qnlaengine_win_p.cpp"
-QTM_END_NAMESPACE
-
-
+#include "qnlaengine.moc"
+QT_END_NAMESPACE
 

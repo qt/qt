@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -58,7 +58,7 @@
     #include <aputils.h> 
 #endif
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 static const int KValueThatWillBeAddedToSNAPId = 1000;
 static const int KUserChoiceIAPId = 0;
@@ -971,4 +971,4 @@ void AccessPointsAvailabilityScanner::RunL()
     }
 }
 #include "moc_qnetworkconfigmanager_s60_p.cpp"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

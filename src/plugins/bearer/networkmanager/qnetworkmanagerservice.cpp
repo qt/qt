@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -53,11 +53,11 @@
 
 #include <NetworkManager/NetworkManager.h>
 
-#include <qnmdbushelper_p.h>
-#include "qnetworkmanagerservice_p.h"
+#include "qnmdbushelper.h"
+#include "qnetworkmanagerservice.h"
 
 //Q_DECLARE_METATYPE(QList<uint>)
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 static QDBusConnection dbusConnection = QDBusConnection::systemBus();
 //static QDBusInterface iface(NM_DBUS_SERVICE, NM_DBUS_PATH, NM_DBUS_INTERFACE, dbusConnection);
@@ -718,9 +718,12 @@ bool QNetworkManagerSettingsConnection::setConnections()
 
     bool allOk = false;
     if(!dbusConnection.connect(d->service, d->path,
-                           NM_DBUS_IFACE_SETTINGS_CONNECTION, "NewConnection",
+                           NM_DBUS_IFACE_SETTINGS_CONNECTION, "Updated",
                            this, SIGNAL(updated(QNmSettingsMap)))) {
         allOk = true;
+    } else {
+        QDBusError error = dbusConnection.lastError();
+        qDebug() << error.name() << error.message() << error.type();
     }
 
     if (nmDBusHelper)
@@ -1042,6 +1045,4 @@ QStringList QNetworkManagerIp4Config::domains() const
     return d->connectionInterface->property("Domains").toStringList();
 }
 
-#include "moc_qnetworkmanagerservice_p.cpp"
-
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

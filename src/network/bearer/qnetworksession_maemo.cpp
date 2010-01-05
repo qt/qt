@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -54,7 +54,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 static QHash<QString, QVariant> properties;
 
@@ -1161,4 +1161,4 @@ QNetworkSession::SessionError QNetworkSessionPrivate::error() const
 #include "qnetworksession_maemo.moc"
 #include "moc_qnetworksession_maemo_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

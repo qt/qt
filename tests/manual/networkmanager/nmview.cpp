@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -68,7 +68,7 @@
 #include <qnetworkconfiguration.h>
 #include <qnetworkconfigmanager.h>
 #include <qnetworksession.h>
-#include <qnetworkmanagerservice_p.h>
+#include <QtNetwork/private/qnetworkmanagerservice_p.h>
 
 //static QDBusConnection dbc = QDBusConnection::systemBus();
 //typedef QMap< QString, QMap<QString,QVariant> > SettingsMap;

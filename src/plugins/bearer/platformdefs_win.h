@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,19 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKSESSIONENGINE_WIN_P_H
-#define QNETWORKSESSIONENGINE_WIN_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QPLATFORMDEFS_WIN_H
+#define QPLATFORMDEFS_WIN_H
 
 #include <winsock2.h>
 #include <mswsock.h>
@@ -142,4 +131,4 @@ enum NDIS_PHYSICAL_MEDIUM {
 #define IOCTL_NDIS_QUERY_GLOBAL_STATS \
     CTL_CODE(FILE_DEVICE_PHYSICAL_NETCARD, 0, METHOD_OUT_DIRECT, FILE_ANY_ACCESS)
 
-#endif // QNETWORKSESSIONENGINE_WIN_P_H
+#endif

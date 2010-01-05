@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -53,7 +53,7 @@
 #include <iapconf.h>
 #include <iapmonitor.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 #define IAP "/system/osso/connectivity/IAP"
 static int iap_prefix_len;
@@ -757,4 +757,4 @@ void QNetworkConfigurationManagerPrivate::configChanged(QNetworkConfigurationPri
 #include "qnetworkconfigmanager_maemo.moc"
 #include "moc_qnetworkconfigmanager_maemo_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

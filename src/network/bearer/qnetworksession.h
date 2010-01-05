@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -42,8 +42,6 @@
 #ifndef QNETWORKSESSION_H
 #define QNETWORKSESSION_H
 
-#include "qmobilityglobal.h"
-
 #include <QtCore/qobject.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
@@ -54,10 +52,10 @@
 
 QT_BEGIN_HEADER
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QNetworkSessionPrivate;
-class Q_BEARER_EXPORT QNetworkSession : public QObject
+class Q_NETWORK_EXPORT QNetworkSession : public QObject
 {
     Q_OBJECT
 public:
@@ -127,7 +125,7 @@ private:
     friend class QNetworkSessionPrivate;
     };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

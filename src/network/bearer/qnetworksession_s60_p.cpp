@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -49,7 +49,7 @@
 #include <stdapis/sys/socket.h>
 #include <stdapis/net/if.h>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 QNetworkSessionPrivate::QNetworkSessionPrivate()
     : CActive(CActive::EPriorityStandard), state(QNetworkSession::Invalid),
@@ -1131,4 +1131,4 @@ void ConnectionProgressNotifier::RunL()
 
 #include "moc_qnetworksession_s60_p.cpp"
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

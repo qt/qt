@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QCOREWLANENGINE_P_H
-#define QCOREWLANENGINE_P_H
+#ifndef QNATIVEWIFIENGINE_P_H
+#define QNATIVEWIFIENGINE_P_H
 
 //
 //  W A R N I N G
@@ -53,49 +53,46 @@
 // We mean it.
 //
 
-#include "qnetworksessionengine_p.h"
-#include <QMap>
-#include <QTimer>
-QTM_BEGIN_NAMESPACE
+#include <QtNetwork/private/qnetworksessionengine_p.h>
+
+#include <QtCore/qtimer.h>
+
+QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
+struct WLAN_NOTIFICATION_DATA;
 
-class QCoreWlanEngine : public QNetworkSessionEngine
+class QNativeWifiEngine : public QNetworkSessionEngine
 {
     Q_OBJECT
 
 public:
-    QCoreWlanEngine(QObject *parent = 0);
-    ~QCoreWlanEngine();
+    QNativeWifiEngine(QObject *parent = 0);
+    ~QNativeWifiEngine();
 
-    QList<QNetworkConfigurationPrivate *> getConfigurations(bool *ok = 0);
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 
-    QString bearerName(const QString &id);
+    //QString bearerName(const QString &id);
 
     void connectToId(const QString &id);
     void disconnectFromId(const QString &id);
 
     void requestUpdate();
 
-    static QCoreWlanEngine *instance();
-    static bool getAllScInterfaces();
+    QNetworkSession::State sessionStateForId(const QString &id);
+
+    inline bool available() const { return handle != 0; }
+
+public Q_SLOTS:
+    void scanComplete();
 
 private:
-    bool isWifiReady(const QString &dev);
-    QMap<uint, QString> configurationInterface;
     QTimer pollTimer;
-    QList<QNetworkConfigurationPrivate *> scanForSsids(const QString &interfaceName);
 
-    QList<QNetworkConfigurationPrivate *> getWlanProfiles(const QString &interfaceName);
-
-    bool isKnownSsid(const QString &interfaceName, const QString &ssid);
-    QList<QNetworkConfigurationPrivate *> foundConfigurations;
-
+    Qt::HANDLE handle;
 };
 
-QTM_END_NAMESPACE
+QT_END_NAMESPACE
 
 #endif
-

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -41,20 +41,18 @@
 
 // this class is for helping qdbus get stuff
 
-#include "qnmdbushelper_p.h"
+#include "qnmdbushelper.h"
 
-#if !defined(QT_NO_DBUS) && !defined(Q_OS_MAC)
 #include <NetworkManager/NetworkManager.h>
 
 #include <QDBusError>
 #include <QDBusInterface>
 #include <QDBusMessage>
 #include <QDBusReply>
-#endif
 
 #include <QDebug>
 
-QTM_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 void QNmDBusHelper::deviceStateChanged(quint32 state)
  {
@@ -98,11 +96,14 @@ void QNmDBusHelper::slotPropertiesChanged(QMap<QString,QVariant> map)
                 emit  pathForPropertiesChanged( msg.path(), map);
             }
         } else if( i.key() == "ActiveAccessPoint") {
+            emit pathForPropertiesChanged(msg.path(), map);
             //            qWarning()  << __PRETTY_FUNCTION__ << i.key() << ": " << i.value().value<QDBusObjectPath>().path();
             //      } else if( i.key() == "Strength")
             //            qWarning()  << __PRETTY_FUNCTION__ << i.key() << ": " << i.value().toUInt();
             //   else
             //            qWarning()  << __PRETTY_FUNCTION__ << i.key() << ": " << i.value();
+        } else if (i.key() == "ActiveConnections") {
+            emit pathForPropertiesChanged(msg.path(), map);
         }
     }
 }
@@ -113,5 +114,4 @@ void QNmDBusHelper::slotSettingsRemoved()
     emit pathForSettingsRemoved(msg.path());
 }
 
-#include "moc_qnmdbushelper_p.cpp"
-QTM_END_NAMESPACE
+QT_END_NAMESPACE

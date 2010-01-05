@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -51,7 +51,7 @@
 #include <iapconf.h>
 #endif
 
-QTM_USE_NAMESPACE
+QT_USE_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkConfiguration)
 Q_DECLARE_METATYPE(QNetworkSession::State);
@@ -170,7 +170,7 @@ void tst_QNetworkSession::initTestCase()
     dbus_send.waitForFinished();
 #endif
 
-    inProcessSessionManagementCount = 0;
+    inProcessSessionManagementCount = -1;
 
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations();
@@ -426,6 +426,8 @@ void tst_QNetworkSession::sessionOpenCloseStop_data()
         QTest::newRow((name + QLatin1String(" stop")).toLocal8Bit().constData())
             << config << true;
     }
+
+    inProcessSessionManagementCount = 0;
 }
 
 void tst_QNetworkSession::sessionOpenCloseStop()
@@ -817,7 +819,7 @@ void tst_QNetworkSession::outOfProcessSession()
             output = oopSocket->readLine().trimmed();
 
         if (output.startsWith("Started session ")) {
-            QString identifier = QString::fromLocal8Bit(output.mid(16).constData());
+            QString identifier = QString::fromLocal8Bit(output.mid(20).constData());
 
             QNetworkConfiguration changed;
 
