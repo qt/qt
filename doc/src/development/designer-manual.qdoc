@@ -371,7 +371,7 @@
     {setValue()} slot.
 
     To do this, you have to switch to \gui{Edit Signals/Slots} mode, either by
-    pressing \key{F4} or something \gui{Edit Signals/Slots} from the \gui{Edit}
+    pressing \key{F4} or selecting \gui{Edit Signals/Slots} from the \gui{Edit}
     menu.
 
     \table
