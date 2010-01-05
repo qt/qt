@@ -7827,10 +7827,7 @@ if [ "$PLATFORM_X11" = "yes" ] && [ "$CFG_XSHAPE" = "no" ]; then
     cat <<EOF
 
 	NOTICE: Qt will not be built with XShape support.
-
-	As a result, drag-and-drop in the Qt Designer will NOT
-	work. We recommend that you enable XShape support by passing
-	the -xshape switch to $0.
+    
 EOF
 fi
 
