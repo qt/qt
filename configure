@@ -7821,17 +7821,6 @@ done
 rm -f .projects .projects.3
 
 #-------------------------------------------------------------------------------
-# XShape is important, DnD in the Designer doens't work without it
-#-------------------------------------------------------------------------------
-if [ "$PLATFORM_X11" = "yes" ] && [ "$CFG_XSHAPE" = "no" ]; then
-    cat <<EOF
-
-	NOTICE: Qt will not be built with XShape support.
-    
-EOF
-fi
-
-#-------------------------------------------------------------------------------
 # check for platforms that we don't yet know about
 #-------------------------------------------------------------------------------
 if [ "$CFG_ARCH" = "generic" ]; then
