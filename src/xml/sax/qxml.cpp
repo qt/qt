@@ -3063,11 +3063,11 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     Aspects of the parsing behavior can be adapted using setFeature()
     and setProperty().
     
+    \snippet doc/src/snippets/code/src_xml_sax_qxml.cpp 0
+
     QXmlSimpleReader is not reentrant. If you want to use the class
     in threaded code, lock the code using QXmlSimpleReader with a
     locking mechanism, such as a QMutex.
-
-    \snippet doc/src/snippets/code/src_xml_sax_qxml.cpp 0
 */
 
 static inline bool is_S(QChar ch)

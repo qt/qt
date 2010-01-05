@@ -421,7 +421,12 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
     Q_Q(QmlExpression);
 
     QVariant rv;
-    if (!q->engine() || (!data->sse.isValid() && data->expression.isEmpty()))
+    if (!q->engine()) {
+        qWarning("QmlExpression: Attempted to evaluate an expression in an invalid context");
+        return rv;
+    }
+
+    if (!data->sse.isValid() && data->expression.isEmpty())
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG

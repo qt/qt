@@ -561,13 +561,7 @@ void QDBusAbstractInterface::connectNotify(const char *signal)
 
     QDBusConnectionPrivate *conn = d->connectionPrivate();
     if (conn) {
-        // do we know what our owner is?
-        QString owner;
-        if (!d->service.isEmpty() && d->currentOwner.isNull())
-            owner = QLatin1String("");
-        else
-            owner = d->currentOwner;
-        conn->connectRelay(d->service, owner, d->path, d->interface,
+        conn->connectRelay(d->service, d->path, d->interface,
                            this, signal);
     }
 }
@@ -585,7 +579,7 @@ void QDBusAbstractInterface::disconnectNotify(const char *signal)
 
     QDBusConnectionPrivate *conn = d->connectionPrivate();
     if (conn)
-        conn->disconnectRelay(d->service, d->currentOwner, d->path, d->interface,
+        conn->disconnectRelay(d->service, d->path, d->interface,
                               this, signal);
 }
 

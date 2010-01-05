@@ -825,10 +825,9 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
             ret |= RootFlag;
         } else {
             QString baseName = fileName(BaseName);
-            if ((baseName.size() > 1
-                 && baseName.at(0) == QLatin1Char('.') && baseName.at(1) != QLatin1Char('.'))
+            if ((baseName.size() > 0 && baseName.at(0) == QLatin1Char('.'))
 #  if !defined(QWS) && defined(Q_OS_MAC)
-                    || _q_isMacHidden(d->filePath)
+                || _q_isMacHidden(d->filePath)
 #  endif
             ) {
                 ret |= HiddenFlag;
