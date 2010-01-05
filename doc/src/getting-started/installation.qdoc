@@ -1031,6 +1031,15 @@ If you are using pre-built binaries, follow the instructions given in the
         \o \c{nokia_plugin\opencpp\s60opencppsis\stdcpp_s60_<version>.sis}
     \endlist
 
+    If you wish to do hardware debugging with Carbide or run applications in real devices using "make run" command,
+    TRK must be installed to the device. \bold{Note:} TRK is not required if you just want to install and run
+    applications manually on the device.
+    \list
+        \o \l{http://tools.ext.nokia.com/trk/}{Application TRK}. Choose the correct
+           installation package based on the S60 version of your device (S60_<S60-version>_app_trk_<TRK-version>.sisx).
+    \endlist
+
+
     We recommend you to take a look at \l{http://developer.symbian.org/wiki/index.php/Qt_Quick_Start}{Symbian Foundation - Qt Quick Start}
     to get more information about how to setup the development environment.
 
