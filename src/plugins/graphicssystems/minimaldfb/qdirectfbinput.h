@@ -2,6 +2,7 @@
 #define QDIRECTFBINPUT_H
 
 #include <QThread>
+#include <QMutex>
 #include <QObject>
 #include <QHash>
 #include <QPoint>
@@ -14,12 +15,15 @@ class InputSocketWaiter : public QThread
     Q_OBJECT
 public:
     InputSocketWaiter(IDirectFBEventBuffer *eventBuffer, QObject *parent);
+    virtual ~InputSocketWaiter();
 protected:
     void run();
 signals:
     void newEvent();
 private:
-     IDirectFBEventBuffer *eventBuffer;
+     IDirectFBEventBuffer *m_eventBuffer;
+     bool m_shouldStop;
+     QMutex m_mutex;
 };
 
 class QDirectFbInput : public QObject
@@ -32,6 +36,7 @@ public:
 
 public slots:
     void handleEvents();
+    void applicationEnd();
 
 private:
 
@@ -45,6 +50,8 @@ private:
     QHash<DFBWindowID,QWidget *>tlwMap;
 
     inline QPoint globalPoint(const DFBEvent &event) const;
+
+    InputSocketWaiter *m_inputHandler;
 
 };
 

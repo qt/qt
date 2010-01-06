@@ -10,34 +10,46 @@
 #include <directfb/directfb.h>
 
 InputSocketWaiter::InputSocketWaiter(IDirectFBEventBuffer *eventBuffer, QObject *parent)
-        : QThread(parent), eventBuffer(eventBuffer)
-    {
-        this->start();
-    }
+    : QThread(parent), m_eventBuffer(eventBuffer),m_shouldStop(false)
+{
+    connect(qApp,SIGNAL(aboutToQuit()),SLOT(stop()));
+    this->start();
+}
+
+InputSocketWaiter::~InputSocketWaiter()
+{
+    m_shouldStop = true;
+    m_eventBuffer->WakeUp(m_eventBuffer);
+    m_mutex.lock();
+}
 
 void InputSocketWaiter::run()
 {
+    m_mutex.lock();
     while (1) {
-        eventBuffer->WaitForEvent(eventBuffer);
+        m_eventBuffer->WaitForEvent(m_eventBuffer);
+        if (m_shouldStop)
+            break;
         emit newEvent();
     }
+    m_mutex.unlock();
 }
 
 QDirectFbInput::QDirectFbInput(QObject *parent)
     : QObject(parent)
 {
-    DFBResult ok = DirectFBCreate(&dfbInterface);
-    if (ok != DFB_OK)
-        DirectFBError("Failed to initialise QDirectFBInput", ok);
+    dfbInterface = QDirectFbConvenience::dfbInterface();
 
-    ok = dfbInterface->CreateEventBuffer(dfbInterface,&eventBuffer);
+    DFBResult ok = dfbInterface->CreateEventBuffer(dfbInterface,&eventBuffer);
     if (ok != DFB_OK)
         DirectFBError("Failed to initialise eventbuffer", ok);
 
     dfbInterface->GetDisplayLayer(dfbInterface,DLID_PRIMARY, &dfbDisplayLayer);
 
-    InputSocketWaiter *inputHandler = new InputSocketWaiter(eventBuffer,this);
-    connect(inputHandler,SIGNAL(newEvent()),this,SLOT(handleEvents()));
+    m_inputHandler = new InputSocketWaiter(eventBuffer,this);
+    connect(m_inputHandler,SIGNAL(newEvent()),this,SLOT(handleEvents()));
+
+    connect(qApp,SIGNAL(aboutToQuit()),SLOT(applicationEnd()));
 }
 
 void QDirectFbInput::addWindow(DFBWindowID id, QWidget *tlw)
@@ -75,8 +87,7 @@ void QDirectFbInput::handleEvents()
                 break;
             }
 
-        } else
-            qDebug() << "WHAT!";
+        }
 
         hasEvent = eventBuffer->HasEvent(eventBuffer);
     }
@@ -114,6 +125,12 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
     //DFB doesn't give keyboardmodifiers on mouseevents
     QMouseEvent mouseEvent(type,p,globalPos,button, buttons,(Qt::KeyboardModifiers)0);
     QApplicationPrivate::handleMouseEvent(tlw,mouseEvent);
+}
+
+void QDirectFbInput::applicationEnd()
+{
+    delete m_inputHandler;
+    m_inputHandler = 0;
 }
 
 void QDirectFbInput::handleWheelEvent(const DFBEvent &event)
