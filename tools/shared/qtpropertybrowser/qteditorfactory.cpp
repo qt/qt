@@ -1158,6 +1158,7 @@ QWidget *QtDateEditFactory::createEditor(QtDatePropertyManager *manager, QtPrope
         QWidget *parent)
 {
     QDateEdit *editor = d_ptr->createEditor(property, parent);
+    editor->setDisplayFormat(QtPropertyBrowserUtils::dateFormat());
     editor->setCalendarPopup(true);
     editor->setDateRange(manager->minimum(property), manager->maximum(property));
     editor->setDate(manager->value(property));
@@ -1272,6 +1273,7 @@ QWidget *QtTimeEditFactory::createEditor(QtTimePropertyManager *manager, QtPrope
         QWidget *parent)
 {
     QTimeEdit *editor = d_ptr->createEditor(property, parent);
+    editor->setDisplayFormat(QtPropertyBrowserUtils::timeFormat());
     editor->setTime(manager->value(property));
 
     connect(editor, SIGNAL(timeChanged(QTime)),
@@ -1385,6 +1387,7 @@ QWidget *QtDateTimeEditFactory::createEditor(QtDateTimePropertyManager *manager,
         QtProperty *property, QWidget *parent)
 {
     QDateTimeEdit *editor =  d_ptr->createEditor(property, parent);
+    editor->setDisplayFormat(QtPropertyBrowserUtils::dateTimeFormat());
     editor->setDateTime(manager->value(property));
 
     connect(editor, SIGNAL(dateTimeChanged(QDateTime)),
