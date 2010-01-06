@@ -1,13 +1,7 @@
-TEMPLATE = app
-TARGET +=
-DEPENDPATH += .
-INCLUDEPATH += .
-
-# Input
 SOURCES += main.cpp
+CONFIG+= console
 
 TRANSLATIONS = project.ts
-CONFIG+= console
 
 CODECFORTR = CP1251
 

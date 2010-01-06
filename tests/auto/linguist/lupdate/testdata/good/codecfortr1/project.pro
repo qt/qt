@@ -1,9 +1,7 @@
-TEMPLATE = app
-
 SOURCES += main.cpp
+CONFIG += console
 
 TRANSLATIONS = project.ts
-CONFIG += console
 
 CODECFORTR = CP1252
 

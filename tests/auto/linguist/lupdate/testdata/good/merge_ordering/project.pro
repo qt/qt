@@ -1,9 +1,6 @@
-TEMPLATE = app
-LANGUAGE = C++
-
 SOURCES += foo.cpp
 
-TRANSLATIONS        = project.ts
+TRANSLATIONS = project.ts
 
 # Copy the ts to a temp file because:
 # 1. The depot file is usually read-only

@@ -1,5 +1,1 @@
-TEMPLATE = app
-LANGUAGE = C++
-
-SOURCES +=  main_win.cpp
-
+SOURCES += main_win.cpp
