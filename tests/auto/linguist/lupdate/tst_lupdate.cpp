@@ -197,9 +197,8 @@ void tst_lupdate::good()
         file.close();
     }
 
-    if (lupdatecmd.isEmpty()) {
-        lupdatecmd = QLatin1String("project.pro -ts project.ts");
-    }
+    if (lupdatecmd.isEmpty())
+        lupdatecmd = QLatin1String("project.pro");
     lupdatecmd.prepend("-silent ");
     m_lupdate.updateProFile(lupdatecmd);
 
