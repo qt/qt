@@ -76,6 +76,7 @@ public:
     void setFrequency(int frequency);
     int frequency() const;
 
+    void setChannelCount(int channels);
     void setChannels(int channels);
     int channels() const;
 

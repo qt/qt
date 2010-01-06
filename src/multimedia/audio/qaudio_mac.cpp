@@ -65,7 +65,7 @@ QAudioFormat toQAudioFormat(AudioStreamBasicDescription const& sf)
     QAudioFormat    audioFormat;
 
     audioFormat.setFrequency(sf.mSampleRate);
-    audioFormat.setChannels(sf.mChannelsPerFrame);
+    audioFormat.setChannelCount(sf.mChannelsPerFrame);
     audioFormat.setSampleSize(sf.mBitsPerChannel);
     audioFormat.setCodec(QString::fromLatin1("audio/pcm"));
     audioFormat.setByteOrder(sf.mFormatFlags & kLinearPCMFormatFlagIsBigEndian != 0 ? QAudioFormat::BigEndian : QAudioFormat::LittleEndian);

@@ -91,7 +91,7 @@ private:
         QAudioFormat format;
         format.setFrequency(44100);
 //![1]
-        format.setChannels(2);
+        format.setChannelCount(2);
         format.setSampleSize(16);
         format.setCodec("audio/pcm");
         format.setByteOrder(QAudioFormat::LittleEndian);

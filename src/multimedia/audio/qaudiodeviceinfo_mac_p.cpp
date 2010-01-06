@@ -147,7 +147,7 @@ QAudioFormat QAudioDeviceInfoInternal::nearestFormat(const QAudioFormat& format)
     if (rc.frequency() != target.frequency())
         rc.setFrequency(target.frequency());
     if (rc.channels() != target.channels())
-        rc.setChannels(target.channels());
+        rc.setChannelCount(target.channels());
     if (rc.sampleSize() != target.sampleSize())
         rc.setSampleSize(target.sampleSize());
     if (rc.byteOrder() != target.byteOrder())

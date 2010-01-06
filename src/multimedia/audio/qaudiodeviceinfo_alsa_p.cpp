@@ -79,19 +79,19 @@ QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
     QAudioFormat nearest;
     if(mode == QAudio::AudioOutput) {
         nearest.setFrequency(44100);
-        nearest.setChannels(2);
+        nearest.setChannelCount(2);
         nearest.setByteOrder(QAudioFormat::LittleEndian);
         nearest.setSampleType(QAudioFormat::SignedInt);
         nearest.setSampleSize(16);
         nearest.setCodec(QLatin1String("audio/pcm"));
     } else {
         nearest.setFrequency(8000);
-        nearest.setChannels(1);
+        nearest.setChannelCount(1);
         nearest.setSampleType(QAudioFormat::UnSignedInt);
         nearest.setSampleSize(8);
         nearest.setCodec(QLatin1String("audio/pcm"));
         if(!testSettings(nearest)) {
-            nearest.setChannels(2);
+            nearest.setChannelCount(2);
             nearest.setSampleSize(16);
             nearest.setSampleType(QAudioFormat::SignedInt);
         }
