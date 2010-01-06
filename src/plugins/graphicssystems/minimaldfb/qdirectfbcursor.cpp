@@ -33,7 +33,6 @@ void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
     surfaceDesc.height = map.height();
     surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT);
 
-    IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
     QDirectFbConvenience::dfbInterface()->CreateSurface(QDirectFbConvenience::dfbInterface(), &surfaceDesc, &surface);
 
     blitter = new QDirectFbBlitter(imageRect, surface);
