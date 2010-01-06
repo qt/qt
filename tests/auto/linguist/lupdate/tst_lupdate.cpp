@@ -60,7 +60,6 @@ public:
 private slots:
     void good_data();
     void good();
-    void output_ts();
     void commandline_data();
     void commandline();
 #if CHECK_SIMTEXTH
@@ -214,54 +213,6 @@ void tst_lupdate::good()
 
     QString expectedFile = generatedtsfile + QLatin1String(".result");
     doCompare(generatedtsfile, expectedFile, false);
-}
-
-void tst_lupdate::output_ts()
-{
-    QString dir = m_basePath + "output_ts";
-    m_lupdate.setWorkingDirectory(dir);
-
-    // look for a command
-    QString lupdatecmd;
-    QFile file(dir + "/lupdatecmd");
-    if (file.exists()) {
-        QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
-        while (!file.atEnd()) {
-        QByteArray cmdstring = file.readLine().simplified();
-            if (cmdstring.startsWith('#'))
-                continue;
-            if (cmdstring.startsWith("lupdate")) {
-                cmdstring.remove(0, 8);
-                lupdatecmd.append(cmdstring);
-                break;
-            }
-        }
-        file.close();
-    }
-
-    QDir parsingDir(m_basePath + "output_ts");
-
-    QString generatedtsfile =
-        dir + QLatin1String("/toplevel/library/tools/translations/project.ts");
-
-    QFile::remove(generatedtsfile);
-
-    lupdatecmd.prepend("-silent ");
-    m_lupdate.qmake();
-    m_lupdate.updateProFile(lupdatecmd);
-
-    // If the file expectedoutput.txt exists, compare the
-    // console output with the content of that file
-    QFile outfile(dir + "/expectedoutput.txt");
-    if (outfile.exists()) {
-        QString errs = m_lupdate.getErrorMessages().at(1).trimmed();
-        QStringList errslist = errs.split(QLatin1Char('\n'));
-        doCompare(errslist, outfile.fileName(), true);
-        if (QTest::currentTestFailed())
-            return;
-    }
-
-    doCompare(generatedtsfile, dir + QLatin1String("/project.ts.result"), false);
 }
 
 void tst_lupdate::commandline_data()
