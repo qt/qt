@@ -131,6 +131,7 @@ private slots:
 
     void QTBUG4419_lineEditSelectAll();
     void QTBUG6558_showDirsOnly();
+    void QTBUG4842_selectFilterWithHideNameFilterDetails();
 
 private:
     QByteArray userSettings;
@@ -1105,6 +1106,46 @@ void tst_QFiledialog::QTBUG6558_showDirsOnly()
 
     dirTemp.cdUp();
     dirTemp.rmdir(tempName);
+}
+
+void tst_QFiledialog::QTBUG4842_selectFilterWithHideNameFilterDetails()
+{
+    QStringList filtersStr;
+    filtersStr << "Images (*.png *.xpm *.jpg)" << "Text files (*.txt)" << "XML files (*.xml)";
+    QString chosenFilterString("Text files (*.txt)");
+
+    QNonNativeFileDialog fd(0, "TestFileDialog");
+    fd.setAcceptMode(QFileDialog::AcceptSave);
+    fd.setOption(QFileDialog::HideNameFilterDetails, true);
+    fd.setNameFilters(filtersStr);
+    fd.selectNameFilter(chosenFilterString);
+    fd.show();
+
+    QApplication::setActiveWindow(&fd);
+    QTest::qWaitForWindowShown(&fd);
+    QTRY_COMPARE(fd.isVisible(), true);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
+
+    QComboBox *filters = qFindChild<QComboBox*>(&fd, "fileTypeCombo");
+    //We compare the current combobox text with the stripped version
+    QCOMPARE(filters->currentText(), QString("Text files"));
+
+    QNonNativeFileDialog fd2(0, "TestFileDialog");
+    fd2.setAcceptMode(QFileDialog::AcceptSave);
+    fd2.setOption(QFileDialog::HideNameFilterDetails, false);
+    fd2.setNameFilters(filtersStr);
+    fd2.selectNameFilter(chosenFilterString);
+    fd2.show();
+
+    QApplication::setActiveWindow(&fd2);
+    QTest::qWaitForWindowShown(&fd2);
+    QTRY_COMPARE(fd2.isVisible(), true);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd2));
+
+    QComboBox *filters2 = qFindChild<QComboBox*>(&fd2, "fileTypeCombo");
+    //We compare the current combobox text with the non stripped version
+    QCOMPARE(filters2->currentText(), chosenFilterString);
+
 }
 
 QTEST_MAIN(tst_QFiledialog)
