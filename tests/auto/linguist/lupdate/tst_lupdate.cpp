@@ -167,7 +167,6 @@ void tst_lupdate::good()
     QFETCH(QString, directory);
 
     QString dir = m_basePath + "good/" + directory;
-    QString expectedFile = dir + QLatin1String("/project.ts.result");
 
     qDebug() << "Checking...";
 
@@ -213,6 +212,7 @@ void tst_lupdate::good()
             return;
     }
 
+    QString expectedFile = generatedtsfile + QLatin1String(".result");
     doCompare(generatedtsfile, expectedFile, false);
 }
 
