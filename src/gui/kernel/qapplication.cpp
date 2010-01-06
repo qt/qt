@@ -5230,6 +5230,8 @@ QInputContext *QApplication::inputContext() const
 {
     Q_D(const QApplication);
     Q_UNUSED(d);// only static members being used.
+    if (QApplicationPrivate::is_app_closing)
+        return d->inputContext;
 #ifdef Q_WS_X11
     if (!X11)
         return 0;
