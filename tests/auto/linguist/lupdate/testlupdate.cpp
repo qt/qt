@@ -58,7 +58,6 @@ TestLUpdate::TestLUpdate()
     childProc = 0;
     QString binPath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
     m_cmdLupdate = binPath + QLatin1String("/lupdate");
-    m_cmdQMake = binPath + QLatin1String("/qmake");
 }
 
 TestLUpdate::~TestLUpdate()
@@ -148,11 +147,4 @@ bool TestLUpdate::updateProFile(const QString &arguments)
 {
     QStringList args = arguments.split(QChar(' '));
     return runChild( true, m_cmdLupdate, args );
-}
-
-bool TestLUpdate::qmake()
-{
-    QStringList args;
-    args << "-r";
-    return runChild(true, m_cmdQMake, args);
 }

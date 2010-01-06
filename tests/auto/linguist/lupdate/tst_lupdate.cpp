@@ -169,11 +169,9 @@ void tst_lupdate::good()
 
     qDebug() << "Checking...";
 
-    // qmake will delete the previous one, to ensure that we don't do any merging....
     QString generatedtsfile(QLatin1String("project.ts"));
 
     m_lupdate.setWorkingDirectory(dir);
-    m_lupdate.qmake();
     // look for a command
     QString lupdatecmd;
     QFile file(dir + "/lupdatecmd");
@@ -194,6 +192,11 @@ void tst_lupdate::good()
         }
         file.close();
     }
+
+    QFile::remove(generatedtsfile);
+    QString beforetsfile = generatedtsfile + QLatin1String(".before");
+    if (QFile::exists(beforetsfile))
+        QVERIFY2(QFile::copy(beforetsfile, generatedtsfile), qPrintable(beforetsfile));
 
     if (lupdatecmd.isEmpty())
         lupdatecmd = QLatin1String("project.pro");

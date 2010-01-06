@@ -29,9 +29,3 @@ if (exists($$member($$(PATH), 0))) {
 }
 
 TRANSLATIONS = project.ts
-
-exists( $$TRANSLATIONS ) {
-    win32: system(del $$TRANSLATIONS)
-    unix:  system(rm -f $$TRANSLATIONS)
-}
-

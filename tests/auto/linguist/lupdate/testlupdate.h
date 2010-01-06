@@ -57,7 +57,6 @@ public:
     void setWorkingDirectory( const QString &workDir);
     bool run( const QString &commandline);
     bool updateProFile( const QString &arguments);
-    bool qmake();
     QStringList getErrorMessages() {
         return make_result;
     }
@@ -66,7 +65,6 @@ public:
     }
 private:
     QString     m_cmdLupdate;
-    QString     m_cmdQMake;
     QString     m_workDir;
     QProcess	*childProc;
     QStringList env_list;

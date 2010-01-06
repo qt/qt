@@ -31,9 +31,3 @@ win32: SOURCES += $$system(type files-cc.txt)
 unix: SOURCES += $$system(cat files-cc.txt)
 
 TRANSLATIONS = project.ts
-
-exists( $$TRANSLATIONS ) {
-    win32: system(del $$TRANSLATIONS)
-    unix:  system(rm $$TRANSLATIONS)
-}
-
