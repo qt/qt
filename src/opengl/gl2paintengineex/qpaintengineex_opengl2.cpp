@@ -1014,7 +1014,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 }
             } else {
                 cache = new QGL2PEVectorPathCache;
-                data = const_cast<QVectorPath &>(path).addCacheData(q, cache, qopengl2paintengine_cleanup_vectorpath);
+                data = const_cast<QVectorPath &>(path).addCacheData(q, cache, cleanupVectorPath);
                 updateCache = true;
             }
 
