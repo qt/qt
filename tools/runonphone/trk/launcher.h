@@ -125,9 +125,11 @@ signals:
     void applicationOutputReceived(const QString &output);
     void copyProgress(int percent);
     void stateChanged(int);
+    void stopped(uint pc, uint pid, uint tid, const QString& reason);
 
 public slots:
     void terminate();
+    void resume(uint pid, uint tid);
 
 private slots:
     void handleResult(const trk::TrkResult &data);

@@ -198,6 +198,8 @@ make release-armv5
 //! [29]
 cd src\s60installs
 make sis QT_SIS_OPTIONS=-i QT_SIS_CERTIFICATE=<certificate file> QT_SIS_KEY=<certificate key file>
+cd ..\3rdparty\webkit\WebCore
+make sis QT_SIS_OPTIONS=-i QT_SIS_CERTIFICATE=<certificate file> QT_SIS_KEY=<certificate key file>
 //! [29]
 
 //! [30]

@@ -1002,7 +1002,7 @@ void CentralWidget::updateBrowserFont()
 
     int i = searchAttached ? 1 : 0;
     getBrowserFontFor(tabWidget->widget(i), &font);
-    for (i; i < tabWidget->count(); ++i)
+    for ( ; i < tabWidget->count(); ++i)
         setBrowserFontFor(tabWidget->widget(i), font);
 }
 
