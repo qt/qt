@@ -1223,8 +1223,7 @@ bool QFileSystemModel::dropMimeData(const QMimeData *data, Qt::DropAction action
     case Qt::MoveAction:
         for (; it != urls.constEnd(); ++it) {
             QString path = (*it).toLocalFile();
-            success = QFile::copy(path, to + QFileInfo(path).fileName())
-                      && QFile::remove(path) && success;
+            success = QFile::rename(path, to + QFileInfo(path).fileName()) && success;
         }
         break;
     default:
