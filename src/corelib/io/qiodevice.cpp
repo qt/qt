@@ -970,6 +970,7 @@ QByteArray QIODevice::readAll()
     if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
         result = d->buffer.readAll();
         readBytes = result.size();
+        d->pos += readBytes;
     }
 
     qint64 theSize;
@@ -985,8 +986,8 @@ QByteArray QIODevice::readAll()
     } else {
         // Read it all in one go.
         // If resize fails, don't read anything.
-        result.resize(int(theSize - d->pos));
-        readBytes = read(result.data(), result.size());
+        result.resize(int(readBytes + theSize - d->pos));
+        readBytes += read(result.data() + readBytes, result.size() - readBytes);
     }
 
     if (readBytes <= 0)
