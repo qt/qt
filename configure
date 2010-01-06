@@ -6911,9 +6911,9 @@ if [ "$CFG_LARGEFILE" = "yes" ]; then
 fi
 
 # if both carbon and cocoa are specified, enable the autodetection code.
-if [ "$CFG_MAC_COCOA" = "yes" -a "$CFG_MAC_CARBON" = "yes" ]; then
+if [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" -a "$CFG_MAC_CARBON" = "yes" ]; then
     echo "#define AUTODETECT_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
-elif [ "$CFG_MAC_COCOA" = "yes" ]; then
+elif [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" ]; then
     echo "#define QT_MAC_USE_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
