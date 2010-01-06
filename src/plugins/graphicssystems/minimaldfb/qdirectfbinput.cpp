@@ -102,8 +102,9 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
     Qt::MouseButtons buttons = QDirectFbConvenience::mouseButtons(event.window.buttons);
     QWidget *tlw = tlwMap.value(event.window.window_id);
 
+    IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
     IDirectFBWindow *window;
-    QDirectFbConvenience::dfbDisplayLayer()->GetWindow(layer,event.window.window_id,&window);
+    layer->GetWindow(layer,event.window.window_id,&window);
 
     if (event.window.type == DWET_BUTTONDOWN) {
         static long prevTime = 0;

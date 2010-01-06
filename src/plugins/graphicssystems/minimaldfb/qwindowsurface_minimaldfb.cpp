@@ -107,9 +107,29 @@ void QDirectFbWindowSurface::setGeometry(const QRect &rect)
 
 }
 
+static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int dx, int dy)
+{
+    const DFBRectangle rect = { r.x(), r.y(), r.width(), r.height() };
+    surface->Blit(surface, surface, &rect, r.x() + dx, r.y() + dy);
+    const DFBRegion region = { rect.x + dx, rect.y + dy, r.right() + dx, r.bottom() + dy };
+    surface->Flip(surface, &region, DFBSurfaceFlipFlags(DSFLIP_BLIT));
+}
+
 bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
-    return QWindowSurface::scroll(area, dx, dy);
+    if (!m_dfbSurface || area.isEmpty())
+        return false;
+    m_dfbSurface->SetBlittingFlags(m_dfbSurface, DSBLIT_NOFX);
+    if (area.rectCount() == 1) {
+        scrollSurface(m_dfbSurface, area.boundingRect(), dx, dy);
+    } else {
+        const QVector<QRect> rects = area.rects();
+        const int n = rects.size();
+        for (int i=0; i<n; ++i) {
+            scrollSurface(m_dfbSurface, rects.at(i), dx, dy);
+        }
+    }
+    return true;
 }
 
 void QDirectFbWindowSurface::beginPaint(const QRegion &region)

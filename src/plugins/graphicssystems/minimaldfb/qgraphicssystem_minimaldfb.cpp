@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(int display)
     :QGraphicsSystemScreen() , m_input(this)
 {
-    IDirectFBDisplayLayer *m_layer = QDirectFbConvenience::dfbDisplayLayer(display);
+    m_layer = QDirectFbConvenience::dfbDisplayLayer(display);
     m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
 
     DFBDisplayLayerConfig config;
