@@ -830,9 +830,11 @@ void QBoxLayout::setGeometry(const QRect &r)
         if (d->hasHfw && !horz(d->dir)) {
             for (int i = 0; i < n; i++) {
                 QBoxLayoutItem *box = d->list.at(i);
-                if (box->item->hasHeightForWidth())
+                if (box->item->hasHeightForWidth()) {
+                    int width = qBound(box->item->minimumSize().width(), s.width(), box->item->maximumSize().width());
                     a[i].sizeHint = a[i].minimumSize =
-                                    box->item->heightForWidth(s.width());
+                                    box->item->heightForWidth(width);
+                }
             }
         }
 
