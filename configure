@@ -5968,24 +5968,33 @@ if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     [ "$OPT_VERBOSE" = "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
 fi
 
-# enable cocoa and/or carbon on Mac
+# enable Cocoa and/or Carbon on Mac
+#  -carbon on the command line disables Cocoa, except for 64-bit archs
 if [ "$CFG_MAC_CARBON" = "yes" ]; then
-#   -carbon on the command line disables Cocoa, except for 64b-bit archs
     CFG_MAC_CARBON="YES"
     CFG_MAC_COCOA="NO"
-fi
-#   check which archs are in use, enable cocoa if we find a 64-bit one
-if echo "$CFG_MAC_ARCHS" | grep 64 > /dev/null 2>&1; then
-    CFG_MAC_COCOA="yes";
-    CFG_MAC_CARBON="no";
-    if echo "$CFG_MAC_ARCHS" | grep -w ppc > /dev/null 2>&1; then
-        CFG_MAC_CARBON="yes";
-    fi
-    if echo "$CFG_MAC_ARCHS" | grep -w x86 > /dev/null 2>&1; then
-        CFG_MAC_CARBON="yes";
+
+#    check which archs are in use, enable cocoa if we find a 64-bit one
+    if echo "$CFG_MAC_ARCHS" | grep 64 > /dev/null 2>&1; then
+        CFG_MAC_COCOA="yes";
+        CFG_MAC_CARBON="no";
+        if echo "$CFG_MAC_ARCHS" | grep -w ppc > /dev/null 2>&1; then
+            CFG_MAC_CARBON="yes";
+        fi
+        if echo "$CFG_MAC_ARCHS" | grep -w x86 > /dev/null 2>&1; then
+            CFG_MAC_CARBON="yes";
+        fi
     fi
 fi
 
+# select Carbon on 10.4 Tiger.
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
+    if [ "$VERSION" == 8 ]; then
+        CFG_MAC_COCOA="no";
+        CFG_MAC_CARBON="yes";
+    fi
+fi
 
 # set the global Mac deployment target. This is overridden on an arch-by-arch basis
 # in some cases, see code further down
