@@ -134,6 +134,16 @@ void QLinuxInputMouseHandler::readMouseData()
                 m_x += data->value;
             } else if (data->code == REL_Y) {
                 m_y += data->value;
+            } else if (data->code == ABS_WHEEL) { // vertical scroll
+                // data->value: 1 == up, -1 == down
+                int delta = 120 * data->value;
+                QWheelEvent we(QPoint(m_x, m_y), QPoint(m_x, m_y), delta, m_buttons, Qt::NoModifier, Qt::Vertical);
+                QApplicationPrivate::handleWheelEvent(0, we);
+            } else if (data->code == ABS_THROTTLE) { // horizontal scroll
+                // data->value: 1 == right, -1 == left
+                int delta = 120 * -data->value;
+                QWheelEvent we(QPoint(m_x, m_y), QPoint(m_x, m_y), delta, m_buttons, Qt::NoModifier, Qt::Horizontal);
+                QApplicationPrivate::handleWheelEvent(0, we);
             } else {
                 unknown = true;
             }
