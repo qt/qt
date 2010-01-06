@@ -1561,7 +1561,10 @@ QGraphicsScene::QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObj
 }
 
 /*!
-    Destroys the QGraphicsScene object.
+  Removes and deletes all items from the scene object
+  before destroying the scene object. The scene object
+  is removed from the application's global scene list,
+  and it is removed from all associated views.
 */
 QGraphicsScene::~QGraphicsScene()
 {
@@ -2443,23 +2446,26 @@ void QGraphicsScene::destroyItemGroup(QGraphicsItemGroup *group)
 }
 
 /*!
-    Adds or moves the item \a item and all its childen to the scene.
+    Adds or moves the \a item and all its childen to this scene.
+    This scene takes ownership of the \a item.
 
     If the item is visible (i.e., QGraphicsItem::isVisible() returns
     true), QGraphicsScene will emit changed() once control goes back
     to the event loop.
 
-    If the item is already in a different scene, it will first be removed from
-    its old scene, and then added to this scene as a top-level.
+    If the item is already in a different scene, it will first be
+    removed from its old scene, and then added to this scene as a
+    top-level.
 
-    QGraphicsScene will send ItemSceneChange notifications to \a item while
-    it is added to the scene. If item does not currently belong to a scene, only one
-    notification is sent. If it does belong to scene already (i.e., it is
-    moved to this scene), QGraphicsScene will send an addition notification as
-    the item is removed from its previous scene.
+    QGraphicsScene will send ItemSceneChange notifications to \a item
+    while it is added to the scene. If item does not currently belong
+    to a scene, only one notification is sent. If it does belong to
+    scene already (i.e., it is moved to this scene), QGraphicsScene
+    will send an addition notification as the item is removed from its
+    previous scene.
 
-    If the item is a panel, the scene is active, and there is no active panel
-    in the scene, then the item will be activated.
+    If the item is a panel, the scene is active, and there is no
+    active panel in the scene, then the item will be activated.
 
     \sa removeItem(), addEllipse(), addLine(), addPath(), addPixmap(),
     addRect(), addText(), addWidget(), {QGraphicsItem#Sorting}{Sorting}
