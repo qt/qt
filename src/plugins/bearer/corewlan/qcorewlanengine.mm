@@ -306,6 +306,7 @@ void QCoreWlanEngine::doRequestUpdate()
             ptr->id = id;
             ptr->state = state;
             ptr->type = QNetworkConfiguration::InternetAccessPoint;
+            ptr->bearer = qGetInterfaceType(interface.name());
 
             accessPointConfigurations.insert(id, ptr);
             configurationInterface.insert(id, interface.name());
@@ -344,6 +345,8 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
             NSAutoreleasePool *looppool = [[NSAutoreleasePool alloc] init];
 
             apNetwork = [apArray objectAtIndex:row];
+
+            const QString networkSsid = nsstringToQString([apNetwork ssid]);
 
             const QString id = QString::number(qHash(QLatin1String("corewlan:") + networkSsid));
             found.append(id);
