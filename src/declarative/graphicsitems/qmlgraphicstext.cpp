@@ -142,10 +142,14 @@ QFont QmlGraphicsText::font() const
 void QmlGraphicsText::setFont(const QFont &font)
 {
     Q_D(QmlGraphicsText);
+    if (d->font == font)
+        return;
+
     d->font = font;
 
     d->updateLayout();
     d->markImgDirty();
+    emit fontChanged(d->font);
 }
 
 void QmlGraphicsText::setText(const QString &n)
@@ -194,6 +198,7 @@ void QmlGraphicsText::setColor(const QColor &color)
 
     d->color = color;
     d->markImgDirty();
+    emit colorChanged(d->color);
 }
 
 /*!
@@ -248,6 +253,7 @@ void QmlGraphicsText::setStyle(QmlGraphicsText::TextStyle style)
 
     d->style = style;
     d->markImgDirty();
+    emit styleChanged(d->style);
 }
 
 void QmlGraphicsText::setStyleColor(const QColor &color)
@@ -258,6 +264,7 @@ void QmlGraphicsText::setStyleColor(const QColor &color)
 
     d->styleColor = color;
     d->markImgDirty();
+    emit styleColorChanged(d->styleColor);
 }
 
 /*!
@@ -295,7 +302,11 @@ QmlGraphicsText::HAlignment QmlGraphicsText::hAlign() const
 void QmlGraphicsText::setHAlign(HAlignment align)
 {
     Q_D(QmlGraphicsText);
+    if (d->hAlign == align)
+        return;
+
     d->hAlign = align;
+    emit horizontalAlignmentChanged(align);
 }
 
 QmlGraphicsText::VAlignment QmlGraphicsText::vAlign() const
@@ -307,7 +318,11 @@ QmlGraphicsText::VAlignment QmlGraphicsText::vAlign() const
 void QmlGraphicsText::setVAlign(VAlignment align)
 {
     Q_D(QmlGraphicsText);
+    if (d->vAlign == align)
+        return;
+
     d->vAlign = align;
+    emit verticalAlignmentChanged(align);
 }
 
 /*!
@@ -339,6 +354,7 @@ void QmlGraphicsText::setWrap(bool w)
 
     d->updateLayout();
     d->markImgDirty();
+    emit wrapChanged(d->wrap);
 }
 
 /*!
@@ -405,6 +421,8 @@ void QmlGraphicsText::setTextFormat(TextFormat format)
         d->updateLayout();
         d->markImgDirty();
     }
+
+    emit textFormatChanged(d->format);
 }
 
 /*!
@@ -439,6 +457,7 @@ void QmlGraphicsText::setElideMode(QmlGraphicsText::TextElideMode mode)
 
     d->updateLayout();
     d->markImgDirty();
+    emit elideModeChanged(d->elideMode);
 }
 
 void QmlGraphicsText::geometryChanged(const QRectF &newGeometry,
