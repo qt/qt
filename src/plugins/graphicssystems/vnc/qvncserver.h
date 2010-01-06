@@ -228,6 +228,12 @@ public:
     bool read(QTcpSocket *s);
 
     Qt::MouseButtons buttons;
+    enum { WheelNone,
+           WheelUp,
+           WheelDown,
+           WheelLeft,
+           WheelRight
+       } wheelDirection;
     quint16 x;
     quint16 y;
 };
@@ -521,7 +527,7 @@ private:
     QRfbEncoder *encoder;
     QVNCCursor *cursor;
 
-    enum EventType { MouseEvent, KeyboardEvent };
+    enum EventType { MouseEvent, KeyboardEvent, WheelEvent };
     QTimer eventTimer;
     typedef QPair<EventType, QInputEvent *> EventPair;
     QList<EventPair> eventList;
