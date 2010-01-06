@@ -650,53 +650,53 @@ inline void QRBTree<T>::clear()
 template <class T>
 void QRBTree<T>::rotateLeft(Node *node)
 {
-    //   |            |
-    //   N            B
-    //  / \          / \
-    // A   B  --->  N   D
-    //    / \      / \
-    //   C   D    A   C
+    //   |            |      //
+    //   N            B      //
+    //  / \          / \     //
+    // A   B  --->  N   D    //
+    //    / \      / \       //
+    //   C   D    A   C      //
 
     Node *&ref = (node->parent ? (node == node->parent->left ? node->parent->left : node->parent->right) : root);
     ref = node->right;
     node->right->parent = node->parent;
 
-    //   :
-    //   N
-    //  / :|
-    // A   B
-    //    / \
-    //   C   D
+    //   :        //
+    //   N        //
+    //  / :|      //
+    // A   B      //
+    //    / \     //
+    //   C   D    //
 
     node->right = ref->left;
     if (ref->left)
         ref->left->parent = node;
 
-    //   :   |
-    //   N   B
-    //  / \ : \
-    // A   C   D
+    //   :   |     //
+    //   N   B     //
+    //  / \ : \    //
+    // A   C   D   //
 
     ref->left = node;
     node->parent = ref;
 
-    //     |
-    //     B
-    //    / \
-    //   N   D
-    //  / \
-    // A   C
+    //     |       //
+    //     B       //
+    //    / \      //
+    //   N   D     //
+    //  / \        //
+    // A   C       //
 }
 
 template <class T>
 void QRBTree<T>::rotateRight(Node *node)
 {
-    //     |            |
-    //     N            A
-    //    / \          / \
-    //   A   B  --->  C   N
-    //  / \              / \
-    // C   D            D   B
+    //     |            |        //
+    //     N            A        //
+    //    / \          / \       //
+    //   A   B  --->  C   N      //
+    //  / \              / \     //
+    // C   D            D   B    //
 
     Node *&ref = (node->parent ? (node == node->parent->left ? node->parent->left : node->parent->right) : root);
     ref = node->left;
