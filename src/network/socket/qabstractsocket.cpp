@@ -873,6 +873,10 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
     if (state != QAbstractSocket::HostLookupState)
         return;
 
+    if (hostLookupId != -1 && hostLookupId != hostInfo.lookupId()) {
+        qWarning("QAbstractSocketPrivate::_q_startConnecting() received hostInfo for wrong lookup ID %d expected %d", hostInfo.lookupId(), hostLookupId);
+    }
+
     addresses = hostInfo.addresses();
 
 #if defined(QABSTRACTSOCKET_DEBUG)
