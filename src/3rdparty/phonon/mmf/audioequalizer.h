@@ -19,7 +19,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_AUDIOEQUALIZER_H
 #define PHONON_MMF_AUDIOEQUALIZER_H
 
-#include <AudioEqualizerBase.h>
 #include "abstractaudioeffect.h"
 
 QT_BEGIN_NAMESPACE
@@ -43,14 +42,18 @@ public:
     AudioEqualizer(QObject *parent);
 
 protected:
-    virtual void parameterChanged(const int id,
-                                  const QVariant &value);
+    // AbstractAudioEffect
+    virtual void connectAudioPlayer(AudioPlayer::NativePlayer *player);
+    virtual void connectVideoPlayer(VideoPlayer::NativePlayer *player);
+    virtual void applyParameters();
+    virtual void parameterChanged(const int id, const QVariant &value);
 
-    virtual bool activateOn(CPlayerType *player);
+private:
+    void setBandLevel(int band, int level);
 
 private:
     static QList<EffectParameter> createParams();
-    QScopedPointer<CAudioEqualizer> m_bassBoost;
+
 };
 }
 }

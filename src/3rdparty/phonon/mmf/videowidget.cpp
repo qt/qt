@@ -157,10 +157,18 @@ QWidget* MMF::VideoWidget::widget()
     return m_videoOutput.data();
 }
 
-bool MMF::VideoWidget::activateOnMediaObject(MediaObject *mo)
+//-----------------------------------------------------------------------------
+// MediaNode
+//-----------------------------------------------------------------------------
+
+void MMF::VideoWidget::connectMediaObject(MediaObject *mediaObject)
 {
-    mo->setVideoOutput(m_videoOutput.data());
-    return true;
+    mediaObject->setVideoOutput(m_videoOutput.data());
+}
+
+void MMF::VideoWidget::disconnectMediaObject(MediaObject *mediaObject)
+{
+    mediaObject->setVideoOutput(0);
 }
 
 QT_END_NAMESPACE
