@@ -129,6 +129,8 @@ private slots:
     void readLine();
     void readLine2();
     void readLineNullInLine();
+    void readAll_data();
+    void readAll();
     void readAllStdin();
     void readLineStdin();
     void readLineStdin_lineByLine();
@@ -750,6 +752,45 @@ void tst_QFile::readLineNullInLine()
     QCOMPARE(file.readLine(), QByteArray("\0\n", 2));
     QCOMPARE(file.readLine(), QByteArray("null\0", 5));
     QCOMPARE(file.readLine(), QByteArray());
+}
+
+void tst_QFile::readAll_data()
+{
+    QTest::addColumn<bool>("textMode");
+    QTest::addColumn<QString>("fileName");
+    QTest::newRow( "TextMode unixfile" ) <<  true << SRCDIR "testfile.txt";
+    QTest::newRow( "BinaryMode unixfile" ) <<  false << SRCDIR "testfile.txt";
+    QTest::newRow( "TextMode dosfile" ) <<  true << SRCDIR "dosfile.txt";
+    QTest::newRow( "BinaryMode dosfile" ) <<  false << SRCDIR "dosfile.txt";
+    QTest::newRow( "TextMode bigfile" ) <<  true << SRCDIR "tst_qfile.cpp";
+    QTest::newRow( "BinaryMode  bigfile" ) <<  false << SRCDIR "tst_qfile.cpp";
+    QVERIFY(QFile(SRCDIR "tst_qfile.cpp").size() > 64*1024);
+}
+
+void tst_QFile::readAll()
+{
+    QFETCH( bool, textMode );
+    QFETCH( QString, fileName );
+
+    QFile file(fileName);
+    if (textMode)
+        QVERIFY(file.open(QFile::Text | QFile::ReadOnly));
+    else
+        QVERIFY(file.open(QFile::ReadOnly));
+
+    QByteArray a = file.readAll();
+    file.reset();
+    QVERIFY(file.pos() == 0);
+
+    QVERIFY(file.bytesAvailable() > 7);
+    QByteArray b = file.read(1);
+    char x;
+    file.getChar(&x);
+    b.append(x);
+    b.append(file.read(5));
+    b.append(file.readAll());
+
+    QCOMPARE(a, b);
 }
 
 void tst_QFile::readAllStdin()
