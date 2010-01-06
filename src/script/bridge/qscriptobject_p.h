@@ -63,6 +63,7 @@ public:
     virtual bool getOwnPropertySlot(JSC::ExecState*,
                                     const JSC::Identifier& propertyName,
                                     JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(JSC::ExecState*,
@@ -121,6 +122,9 @@ public:
     virtual bool getOwnPropertySlot(QScriptObject*, JSC::ExecState*,
                                     const JSC::Identifier& propertyName,
                                     JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(QScriptObject*, JSC::ExecState*,
+                                    const JSC::Identifier& propertyName,
+                                    JSC::PropertyDescriptor&);
     virtual void put(QScriptObject*, JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
     virtual bool deleteProperty(QScriptObject*, JSC::ExecState*,

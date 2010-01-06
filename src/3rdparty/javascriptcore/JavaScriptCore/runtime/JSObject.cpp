@@ -115,9 +115,17 @@ void JSObject::put(ExecState* exec, const Identifier& propertyName, JSValue valu
         return;
 
     for (JSObject* obj = this; ; obj = asObject(prototype)) {
+#ifdef QT_BUILD_SCRIPT_LIB
+        PropertyDescriptor descriptor;
+        if (obj->getPropertyDescriptor(exec, propertyName, descriptor)) {
+            JSObject* setterFunc;
+            if ((descriptor.isAccessorDescriptor() && ((setterFunc = asObject(descriptor.setter())), true))
+                || (descriptor.value().isGetterSetter() && ((setterFunc = asGetterSetter(descriptor.value())->setter()), true))) {
+#else
         if (JSValue gs = obj->getDirect(propertyName)) {
             if (gs.isGetterSetter()) {
-                JSObject* setterFunc = asGetterSetter(gs)->setter();        
+                JSObject* setterFunc = asGetterSetter(gs)->setter();
+#endif
                 if (!setterFunc) {
                     throwSetterError(exec);
                     return;

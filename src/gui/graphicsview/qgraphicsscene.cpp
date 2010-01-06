@@ -5095,6 +5095,10 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     \snippet doc/src/snippets/graphicssceneadditemsnippet.cpp 0
 
+    \obsolete Since Qt 4.6, this function is not called anymore unless
+    the QGraphicsView::IndirectPainting flag is given as an Optimization
+    flag.
+
     \sa drawBackground(), drawForeground()
 */
 void QGraphicsScene::drawItems(QPainter *painter,
