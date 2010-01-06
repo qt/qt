@@ -12,11 +12,13 @@ Item {
         id: photoDelegate
         Item {
             id: wrapper; width: 85; height: 85
-            scale: wrapper.PathView.scale; z: wrapper.PathView.z
+            scale: wrapper.PathView.scale ? wrapper.PathView.scale : 1
+            z: wrapper.PathView.z ? wrapper.PathView.z : 0
 
             transform: Rotation {
                 id: itemRotation; origin.x: wrapper.width/2; origin.y: wrapper.height/2
-                axis.y: 1; axis.z: 0; angle: wrapper.PathView.angle
+                axis.y: 1; axis.z: 0
+                angle: wrapper.PathView.angle ? wrapper.PathView.angle : 0
             }
 
             Connection {
