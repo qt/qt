@@ -170,7 +170,8 @@ void QGL2PaintEngineExPrivate::useSimpleShader()
         updateMatrix();
 
     if (simpleShaderMatrixUniformDirty) {
-        shaderManager->simpleProgram()->setUniformValue("pmvMatrix", pmvMatrix);
+        const GLuint location = shaderManager->simpleProgram()->uniformLocation("pmvMatrix");
+        glUniformMatrix3fv(location, 1, GL_FALSE, (GLfloat*)pmvMatrix);
         simpleShaderMatrixUniformDirty = false;
     }
 }
@@ -936,7 +937,7 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         updateBrushUniforms();
 
     if (shaderMatrixUniformDirty) {
-        shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PmvMatrix), pmvMatrix);
+        glUniformMatrix3fv(location(QGLEngineShaderManager::PmvMatrix), 1, GL_FALSE, (GLfloat*)pmvMatrix);
         shaderMatrixUniformDirty = false;
     }
 
