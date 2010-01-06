@@ -621,7 +621,7 @@ void QApplicationPrivate::handleWheelEvent(QWidget *tlw, QWheelEvent &ev)
 //    QPoint localPoint = ev.pos();
     QPoint globalPoint = ev.globalPos();
 //    bool trustLocalPoint = !!tlw; //is there something the local point can be local to?
-    QWidget *mouseWidget = tlw;
+    QWidget *mouseWidget;
 
     qt_last_x = globalPoint.x();
     qt_last_y = globalPoint.y();
@@ -635,6 +635,8 @@ void QApplicationPrivate::handleWheelEvent(QWidget *tlw, QWheelEvent &ev)
 
      if (!mouseWindow)
          return;
+
+     mouseWidget = mouseWindow;
 
      if (app_do_modal && !qt_try_modal(mouseWindow, &ev) ) {
          qDebug() << "modal blocked wheel event" << mouseWindow;
