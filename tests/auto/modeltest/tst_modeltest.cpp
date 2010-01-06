@@ -67,6 +67,7 @@ private slots:
     void standardItemModel();
     void testInsertThroughProxy();
     void moveSourceItems();
+    void testResetThroughProxy();
 };
 
 
@@ -225,8 +226,9 @@ public slots:
 
     void storePersistent()
     {
-        m_persistentSourceIndexes.clear();
-        m_persistentProxyIndexes.clear();
+      foreach(const QModelIndex &idx, m_persistentProxyIndexes)
+        Q_ASSERT(idx.isValid()); // This is called from layoutAboutToBeChanged. Persistent indexes should be valid
+
         Q_ASSERT(m_proxy->persistent().isEmpty());
         storePersistent(QModelIndex());
         Q_ASSERT(!m_proxy->persistent().isEmpty());
@@ -243,6 +245,8 @@ public slots:
             QModelIndex updatedSource = m_persistentSourceIndexes.at(row);
             QCOMPARE(m_proxy->mapToSource(updatedProxy), updatedSource);
         }
+        m_persistentSourceIndexes.clear();
+        m_persistentProxyIndexes.clear();
     }
 
 private:
@@ -276,6 +280,28 @@ void tst_ModelTest::moveSourceItems()
     moveCommand->setDestAncestors(QList<int>() << 1);
     moveCommand->setDestRow(0);
     moveCommand->doCommand();
+}
+
+void tst_ModelTest::testResetThroughProxy()
+{
+    DynamicTreeModel *model = new DynamicTreeModel(this);
+
+    ModelInsertCommand *insertCommand = new ModelInsertCommand(model, this);
+    insertCommand->setStartRow(0);
+    insertCommand->setEndRow(2);
+    insertCommand->doCommand();
+
+    QPersistentModelIndex persistent = model->index(0, 0);
+
+    AccessibleProxyModel *proxy = new AccessibleProxyModel(this);
+    proxy->setSourceModel(model);
+
+    ObservingObject observer(proxy);
+    observer.storePersistent();
+
+    ModelResetCommand *resetCommand = new ModelResetCommand(model, this);
+    resetCommand->setNumCols(0);
+    resetCommand->doCommand();
 }
 
 
