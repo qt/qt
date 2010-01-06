@@ -2836,8 +2836,8 @@ QStyleOptionComplex::QStyleOptionComplex(int version, int type)
 
 /*!
     \variable QStyleOptionComplex::activeSubControls
-    \brief a bitwise OR of the various sub-controls that are active
-    (pressed) for the complex control
+    \brief a bitwise OR of the \l{QStyle::SubControl} {sub-controls}
+    that are active for the complex control
 
     The default value is QStyle::SC_None.
 
