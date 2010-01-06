@@ -102,6 +102,9 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
     Qt::MouseButtons buttons = QDirectFbConvenience::mouseButtons(event.window.buttons);
     QWidget *tlw = tlwMap.value(event.window.window_id);
 
+    IDirectFBWindow *window;
+    QDirectFbConvenience::dfbDisplayLayer()->GetWindow(layer,event.window.window_id,&window);
+
     if (event.window.type == DWET_BUTTONDOWN) {
         static long prevTime = 0;
         static QWidget *prevWindow;
@@ -120,6 +123,10 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
         prevWindow = tlw;
         prevX = event.window.cx;
         prevY = event.window.cy;
+
+        window->GrabPointer(window);
+    } else if (event.window.type == DWET_BUTTONUP) {
+        window->UngrabPointer(window);
     }
 
     //DFB doesn't give keyboardmodifiers on mouseevents

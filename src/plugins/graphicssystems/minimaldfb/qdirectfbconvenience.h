@@ -21,7 +21,8 @@ public:
     static QImage::Format imageFormatFromSurfaceFormat(const DFBSurfacePixelFormat format, const DFBSurfaceCapabilities caps);
 
     //This is set by the graphicssystem constructor
-    static IDirectFB *dfbInterface() { return dfb; }
+    static IDirectFB *dfbInterface();
+    static IDirectFBDisplayLayer *dfbDisplayLayer(int display = DLID_PRIMARY);
 
     static IDirectFBSurface *dfbSurfaceForPixmapData(QPixmapData *);
 
@@ -33,8 +34,6 @@ public:
     static QDirectFbKeyMap *keyMap();
 
 private:
-    static void setDfbInterface(IDirectFB *dfbInterface) {dfb = dfbInterface;}
-    static IDirectFB *dfb;
     static QDirectFbKeyMap *dfbKeymap;
     friend class QDirectFbGraphicsSystem;
 };

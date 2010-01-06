@@ -55,7 +55,7 @@ class QDirectFBCursor;
 class QDirectFbGraphicsSystemScreen : public QGraphicsSystemScreen
 {
 public:
-    QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int display);
+    QDirectFbGraphicsSystemScreen(int display);
     ~QDirectFbGraphicsSystemScreen();
 
     QRect geometry() const { return m_geometry; }

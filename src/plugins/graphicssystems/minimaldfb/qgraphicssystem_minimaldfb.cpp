@@ -54,14 +54,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int display)
+QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(int display)
     :QGraphicsSystemScreen() , m_input(this)
 {
-    DFBResult result  = dfb->GetDisplayLayer(dfb, DLID_PRIMARY, &m_layer);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFbGraphicsSystemScreen "
-                      "Unable to get primary display layer!", result);
-    }
+    IDirectFBDisplayLayer *m_layer = QDirectFbConvenience::dfbDisplayLayer(display);
     m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
 
     DFBDisplayLayerConfig config;
@@ -134,14 +130,8 @@ QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
     }
     delete[] argv;
 
-    result = DirectFBCreate(&dfb);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreen: error creating DirectFB interface",
-                      result);
-    }
-    QDirectFbConvenience::setDfbInterface(dfb);
 
-    mPrimaryScreen = new QDirectFbGraphicsSystemScreen(dfb,0);
+    mPrimaryScreen = new QDirectFbGraphicsSystemScreen(0);
     mScreens.append(mPrimaryScreen);
 }
 

@@ -3,7 +3,27 @@
 
 #include <private/qpixmap_blitter_p.h>
 
-IDirectFB *QDirectFbConvenience::dfb = 0;
+IDirectFB *QDirectFbConvenience::dfbInterface()
+{
+    IDirectFB *dfb;
+    DFBResult result = DirectFBCreate(&dfb);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBConvenience: error creating DirectFB interface",result);
+        return 0;
+    }
+    return dfb;
+}
+
+IDirectFBDisplayLayer *QDirectFbConvenience::dfbDisplayLayer(int display)
+{
+    IDirectFBDisplayLayer *layer;
+    DFBResult result = QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),display,&layer);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFbConvenience: "
+                      "Unable to get primary display layer!", result);
+    }
+    return layer;
+}
 
 QImage::Format QDirectFbConvenience::imageFormatFromSurfaceFormat(const DFBSurfacePixelFormat format, const DFBSurfaceCapabilities caps)
 {
