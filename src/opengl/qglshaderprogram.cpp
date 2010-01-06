@@ -2275,6 +2275,42 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x4& value
     \overload
 
     Sets the uniform variable at \a location in the current context
+    to a 2x2 matrix \a value.  The matrix elements must be specified
+    in column-major order.
+
+    \sa setAttributeValue()
+    \since 4.6.2
+*/
+void QGLShaderProgram::setUniformValue(int location, const GLfloat value[2][2])
+{
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
+    if (location != -1)
+        glUniformMatrix2fv(location, 1, GL_FALSE, value[0]);
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable at \a location in the current context
+    to a 3x3 matrix \a value.  The matrix elements must be specified
+    in column-major order.
+
+    \sa setAttributeValue()
+    \since 4.6.2
+*/
+void QGLShaderProgram::setUniformValue(int location, const GLfloat value[3][3])
+{
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
+    if (location != -1)
+        glUniformMatrix3fv(location, 1, GL_FALSE, value[0]);
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable at \a location in the current context
     to a 4x4 matrix \a value.  The matrix elements must be specified
     in column-major order.
 
@@ -2286,6 +2322,37 @@ void QGLShaderProgram::setUniformValue(int location, const GLfloat value[4][4])
     Q_UNUSED(d);
     if (location != -1)
         glUniformMatrix4fv(location, 1, GL_FALSE, value[0]);
+}
+
+
+/*!
+    \overload
+
+    Sets the uniform variable called \a name in the current context
+    to a 2x2 matrix \a value.  The matrix elements must be specified
+    in column-major order.
+
+    \sa setAttributeValue()
+    \since 4.6.2
+*/
+void QGLShaderProgram::setUniformValue(const char *name, const GLfloat value[2][2])
+{
+    setUniformValue(uniformLocation(name), value);
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable called \a name in the current context
+    to a 3x3 matrix \a value.  The matrix elements must be specified
+    in column-major order.
+
+    \sa setAttributeValue()
+    \since 4.6.2
+*/
+void QGLShaderProgram::setUniformValue(const char *name, const GLfloat value[3][3])
+{
+    setUniformValue(uniformLocation(name), value);
 }
 
 /*!

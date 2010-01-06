@@ -106,6 +106,28 @@ QMakeVar()
     echo "$2" "$eq" "$3" >> "$QMAKE_VARS_FILE"
 }
 
+# Helper function for getQMakeConf. It parses include statements in
+# qmake.conf and prints out the expanded file
+getQMakeConf1()
+{
+    while read line; do case "$line" in
+        include*)
+	    inc_file=`echo "$line" | sed -n -e "/^include.*(.*)/s/include.*(\(.*\)).*$/\1/p"`
+	    current_dir=`dirname "$1"`
+	    conf_file="$current_dir/$inc_file"
+	    if [ ! -e  "$conf_file" ]; then
+                echo "WARNING: Unable to find file $conf_file" >&2
+                continue
+            fi
+            getQMakeConf1 "$conf_file"
+        ;;
+        *)
+            echo "$line"
+        ;;
+    esac; done < "$1"
+}
+
+
 # relies on $QMAKESPEC being set correctly. parses include statements in
 # qmake.conf and prints out the expanded file
 getQMakeConf()
@@ -114,15 +136,7 @@ getQMakeConf()
     if [ -n "$1" ]; then
         tmpSPEC="$1"
     fi
-    $AWK -v "QMAKESPEC=$tmpSPEC" '
-/^include\(.+\)$/{
-    fname = QMAKESPEC "/" substr($0, 9, length($0) - 9)
-    while ((getline line < fname) > 0)
-        print line
-    close(fname)
-    next
-}
-{ print }' "$tmpSPEC/qmake.conf"
+    getQMakeConf1 "$tmpSPEC/qmake.conf"
 }
 
 # relies on $TEST_COMPILER being set correctly
@@ -731,6 +745,7 @@ CFG_HOST_ENDIAN=auto
 CFG_DOUBLEFORMAT=auto
 CFG_ARMFPA=auto
 CFG_IWMMXT=no
+CFG_NEON=auto
 CFG_CLOCK_GETTIME=auto
 CFG_CLOCK_MONOTONIC=auto
 CFG_MREMAP=auto
@@ -1590,6 +1605,13 @@ while [ "$#" -gt 0 ]; do
     iwmmxt)
 	CFG_IWMMXT="yes"
 	;;
+    neon)
+        if [ "$VAL" = "no" ]; then
+            CFG_NEON="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     reduce-relocations)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_REDUCE_RELOCATIONS="$VAL"
@@ -2926,6 +2948,10 @@ fi
 QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
 TEST_COMPILER="$CC"
 [ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER
+if [ -z "$TEST_COMPILER" ]; then
+    echo "ERROR: Cannot set the compiler for the configuration tests"
+    exit 1
+fi
 
 # auto-detect precompiled header support
 if [ "$CFG_PRECOMPILE" = "auto" ]; then
@@ -3871,6 +3897,7 @@ Qt for Embedded Linux only:
     -iwmmxt ............ Compile using the iWMMXt instruction set
                          (available on some XScale CPUs).
 
+    -no-neon ........... Do not compile with use of NEON instructions.
 EOF
 fi
 
@@ -4488,6 +4515,15 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
         echo "The iWMMXt functionality test failed!"
 	echo " Please make sure your compiler supports iWMMXt intrinsics!"
 	exit 1
+    fi
+fi
+
+# detect neon support
+if ([ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]) && [ "${CFG_NEON}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/neon "neon" $L_FLAGS $I_FLAGS $l_FLAGS "-mfpu=neon"; then
+	CFG_NEON=yes
+    else
+	CFG_NEON=no
     fi
 fi
 
@@ -6106,6 +6142,7 @@ fi
 [ "$CFG_SSE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse"
 [ "$CFG_SSE2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse2"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
+[ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 [ "$PLATFORM_MAC" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
 if [ "$CFG_IPV6" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG ipv6"
@@ -7398,8 +7435,9 @@ echo "Declarative module .. $CFG_DECLARATIVE"
 echo "STL support ......... $CFG_STL"
 echo "PCH support ......... $CFG_PRECOMPILE"
 echo "MMX/3DNOW/SSE/SSE2..  ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
-if [ "${CFG_ARCH}" = "arm" ]; then
+if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
     echo "iWMMXt support ...... ${CFG_IWMMXT}"
+    echo "NEON support ........ ${CFG_NEON}"
 fi
 [ "${PLATFORM_QWS}" != "yes" ] && echo "Graphics System ..... $CFG_GRAPHICS_SYSTEM"
 echo "IPv6 support ........ $CFG_IPV6"

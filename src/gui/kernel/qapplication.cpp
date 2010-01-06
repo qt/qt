@@ -2096,7 +2096,11 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
             if (prev) {
 #ifdef QT_KEYPAD_NAVIGATION
                 if (QApplication::keypadNavigationEnabled()) {
-                    if (prev->hasEditFocus() && reason != Qt::PopupFocusReason)
+                    if (prev->hasEditFocus() && reason != Qt::PopupFocusReason
+#ifdef Q_OS_SYMBIAN
+                            && reason != Qt::ActiveWindowFocusReason
+#endif
+                            )
                         prev->setEditFocus(false);
                 }
 #endif
@@ -5226,6 +5230,8 @@ QInputContext *QApplication::inputContext() const
 {
     Q_D(const QApplication);
     Q_UNUSED(d);// only static members being used.
+    if (QApplicationPrivate::is_app_closing)
+        return d->inputContext;
 #ifdef Q_WS_X11
     if (!X11)
         return 0;
