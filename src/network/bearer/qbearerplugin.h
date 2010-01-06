@@ -42,7 +42,7 @@
 #ifndef QBEARERPLUGIN_H
 #define QBEARERPLUGIN_H
 
-#include "qnetworksessionengine_p.h"
+#include <QtNetwork/private/qnetworksessionengine_p.h>
 
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
