@@ -2707,7 +2707,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
         return;
 
     Q_ASSERT(!m_edgeList.root);
-    QDataBuffer<std::pair<int, int> > diagonals;
+    QDataBuffer<QPair<int, int> > diagonals;
 
     int i = 0;
     for (int index = 1; index < m_edges.size(); ++index) {
@@ -2743,7 +2743,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
                 if (m_edges.at(i).node) {
                     Q_ASSERT(!m_edges.at(j).node);
                     if (m_edges.at(m_edges.at(i).helper).type == MergeVertex)
-                        diagonals.add(std::pair<int, int>(i, m_edges.at(i).helper));
+                        diagonals.add(QPair<int, int>(i, m_edges.at(i).helper));
                     m_edges.at(j).node = m_edges.at(i).node;
                     m_edges.at(i).node = 0;
                     m_edges.at(j).node->data = j;
@@ -2751,7 +2751,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
                 } else if (m_edges.at(j).node) {
                     Q_ASSERT(!m_edges.at(i).node);
                     if (m_edges.at(m_edges.at(j).helper).type == MergeVertex)
-                        diagonals.add(std::pair<int, int>(i, m_edges.at(j).helper));
+                        diagonals.add(QPair<int, int>(i, m_edges.at(j).helper));
                     m_edges.at(i).node = m_edges.at(j).node;
                     m_edges.at(j).node = 0;
                     m_edges.at(i).node->data = i;
@@ -2763,7 +2763,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
                 leftEdgeNode = searchEdgeLeftOfPoint(m_edges.at(i).from);
                 if (leftEdgeNode) {
                     if (m_edges.at(m_edges.at(leftEdgeNode->data).helper).type == MergeVertex)
-                        diagonals.add(std::pair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
+                        diagonals.add(QPair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
                     m_edges.at(leftEdgeNode->data).helper = i;
                 } else {
                     qWarning("Inconsistent polygon. (#2)");
@@ -2773,7 +2773,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
         case SplitVertex:
             leftEdgeNode = searchEdgeLeftOfPoint(m_edges.at(i).from);
             if (leftEdgeNode) {
-                diagonals.add(std::pair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
+                diagonals.add(QPair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
                 m_edges.at(leftEdgeNode->data).helper = i;
             } else {
                 qWarning("Inconsistent polygon. (#3)");
@@ -2802,7 +2802,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
             leftEdgeNode = searchEdgeLeftOfPoint(m_edges.at(i).from);
             if (leftEdgeNode) {
                 if (m_edges.at(m_edges.at(leftEdgeNode->data).helper).type == MergeVertex)
-                    diagonals.add(std::pair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
+                    diagonals.add(QPair<int, int>(i, m_edges.at(leftEdgeNode->data).helper));
                 m_edges.at(leftEdgeNode->data).helper = i;
             } else {
                 qWarning("Inconsistent polygon. (#4)");
@@ -2811,7 +2811,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
         case EndVertex:
             if (m_clockwiseOrder) {
                 if (m_edges.at(m_edges.at(i).helper).type == MergeVertex)
-                    diagonals.add(std::pair<int, int>(i, m_edges.at(i).helper));
+                    diagonals.add(QPair<int, int>(i, m_edges.at(i).helper));
                 if (m_edges.at(i).node) {
                     m_edgeList.deleteNode(m_edges.at(i).node);
                     Q_ASSERT(m_edgeList.verify());
@@ -2820,7 +2820,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
                 }
             } else {
                 if (m_edges.at(m_edges.at(j).helper).type == MergeVertex)
-                    diagonals.add(std::pair<int, int>(i, m_edges.at(j).helper));
+                    diagonals.add(QPair<int, int>(i, m_edges.at(j).helper));
                 if (m_edges.at(j).node) {
                     m_edgeList.deleteNode(m_edges.at(j).node);
                     Q_ASSERT(m_edgeList.verify());
