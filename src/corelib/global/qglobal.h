@@ -1540,6 +1540,7 @@ inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
+// ### Qt 5: remove Win9x support macros QT_WA and QT_WA_INLINE.
 #define QT_WA(unicode, ansi) unicode
 #define QT_WA_INLINE(unicode, ansi) (unicode)
 
