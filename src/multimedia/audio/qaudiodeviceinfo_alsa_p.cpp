@@ -78,14 +78,14 @@ QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
 {
     QAudioFormat nearest;
     if(mode == QAudio::AudioOutput) {
-        nearest.setFrequency(44100);
+        nearest.setSampleRate(44100);
         nearest.setChannelCount(2);
         nearest.setByteOrder(QAudioFormat::LittleEndian);
         nearest.setSampleType(QAudioFormat::SignedInt);
         nearest.setSampleSize(16);
         nearest.setCodec(QLatin1String("audio/pcm"));
     } else {
-        nearest.setFrequency(8000);
+        nearest.setSampleRate(8000);
         nearest.setChannelCount(1);
         nearest.setSampleType(QAudioFormat::UnSignedInt);
         nearest.setSampleSize(8);
@@ -253,8 +253,8 @@ bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
     snd_pcm_hw_params_any( handle, params );
 
     // set the values!
-    snd_pcm_hw_params_set_channels(handle,params,format.channels());
-    snd_pcm_hw_params_set_rate(handle,params,format.frequency(),dir);
+    snd_pcm_hw_params_set_channels(handle,params,format.channelCount());
+    snd_pcm_hw_params_set_rate(handle,params,format.sampleRate(),dir);
     switch(format.sampleSize()) {
         case 8:
             if(format.sampleType() == QAudioFormat::SignedInt)
@@ -295,18 +295,18 @@ bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
     } else
         testCodec = true;
 
-    if(err>=0 && format.channels() != -1) {
-        err = snd_pcm_hw_params_test_channels(handle,params,format.channels());
+    if(err>=0 && format.channelCount() != -1) {
+        err = snd_pcm_hw_params_test_channels(handle,params,format.channelCount());
         if(err>=0)
-            err = snd_pcm_hw_params_set_channels(handle,params,format.channels());
+            err = snd_pcm_hw_params_set_channels(handle,params,format.channelCount());
         if(err>=0)
             testChannel = true;
     }
 
-    if(err>=0 && format.frequency() != -1) {
-        err = snd_pcm_hw_params_test_rate(handle,params,format.frequency(),0);
+    if(err>=0 && format.sampleRate() != -1) {
+        err = snd_pcm_hw_params_test_rate(handle,params,format.sampleRate(),0);
         if(err>=0)
-            err = snd_pcm_hw_params_set_rate(handle,params,format.frequency(),dir);
+            err = snd_pcm_hw_params_set_rate(handle,params,format.sampleRate(),dir);
         if(err>=0)
             testFreq = true;
     }

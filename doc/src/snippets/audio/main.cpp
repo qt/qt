@@ -89,7 +89,7 @@ private:
     {
 //![1]
         QAudioFormat format;
-        format.setFrequency(44100);
+        format.setSampleRate(44100);
 //![1]
         format.setChannelCount(2);
         format.setSampleSize(16);

@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 
       QAudioFormat format;
       // Set up the format, eg.
-      format.setFrequency(8000);
+      format.setSampleRate(8000);
       format.setChannelCount(1);
       format.setSampleSize(8);
       format.setCodec("audio/pcm");

@@ -48,8 +48,8 @@ QT_BEGIN_NAMESPACE
 QDebug operator<<(QDebug dbg, const QAudioFormat& audioFormat)
 {
     dbg.nospace() << "QAudioFormat(" <<
-            audioFormat.frequency() << "," <<
-            audioFormat.channels() << "," <<
+            audioFormat.sampleRate() << "," <<
+            audioFormat.channelCount() << "," <<
             audioFormat.sampleSize()<< "," <<
             audioFormat.codec() << "," <<
             audioFormat.byteOrder() << "," <<
@@ -64,7 +64,7 @@ QAudioFormat toQAudioFormat(AudioStreamBasicDescription const& sf)
 {
     QAudioFormat    audioFormat;
 
-    audioFormat.setFrequency(sf.mSampleRate);
+    audioFormat.setSampleRate(sf.mSampleRate);
     audioFormat.setChannelCount(sf.mChannelsPerFrame);
     audioFormat.setSampleSize(sf.mBitsPerChannel);
     audioFormat.setCodec(QString::fromLatin1("audio/pcm"));
@@ -84,9 +84,9 @@ AudioStreamBasicDescription toAudioStreamBasicDescription(QAudioFormat const& au
     AudioStreamBasicDescription sf;
 
     sf.mFormatFlags         = kAudioFormatFlagIsPacked;
-    sf.mSampleRate          = audioFormat.frequency();
+    sf.mSampleRate          = audioFormat.sampleRate();
     sf.mFramesPerPacket     = 1;
-    sf.mChannelsPerFrame    = audioFormat.channels();
+    sf.mChannelsPerFrame    = audioFormat.channelCount();
     sf.mBitsPerChannel      = audioFormat.sampleSize();
     sf.mBytesPerFrame       = sf.mChannelsPerFrame * (sf.mBitsPerChannel / 8);
     sf.mBytesPerPacket      = sf.mFramesPerPacket * sf.mBytesPerFrame;

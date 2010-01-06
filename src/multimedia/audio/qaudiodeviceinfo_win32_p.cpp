@@ -94,14 +94,14 @@ QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
 {
     QAudioFormat nearest;
     if(mode == QAudio::AudioOutput) {
-        nearest.setFrequency(44100);
+        nearest.setSampleRate(44100);
         nearest.setChannelCount(2);
         nearest.setByteOrder(QAudioFormat::LittleEndian);
         nearest.setSampleType(QAudioFormat::SignedInt);
         nearest.setSampleSize(16);
         nearest.setCodec(QLatin1String("audio/pcm"));
     } else {
-        nearest.setFrequency(11025);
+        nearest.setSampleRate(11025);
         nearest.setChannelCount(1);
         nearest.setByteOrder(QAudioFormat::LittleEndian);
         nearest.setSampleType(QAudioFormat::SignedInt);
@@ -181,12 +181,12 @@ bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
     if(!format.codec().startsWith(QLatin1String("audio/pcm")))
         failed = true;
 
-    if(!failed && !(format.channels() == 1 || format.channels() == 2))
+    if(!failed && !(format.channelCount() == 1 || format.channelCount() == 2))
         failed = true;
 
     if(!failed) {
-        if(!(format.frequency() == 8000 || format.frequency() == 11025 || format.frequency() == 22050 ||
-	   format.frequency() == 44100 || format.frequency() == 48000 || format.frequency() == 96000))
+        if(!(format.sampleRate() == 8000 || format.sampleRate() == 11025 || format.sampleRate() == 22050 ||
+	   format.sampleRate() == 44100 || format.sampleRate() == 48000 || format.sampleRate() == 96000))
 	    failed = true;
     }
 

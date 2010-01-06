@@ -164,7 +164,7 @@ AudioTest::AudioTest()
 
     gen->start();
 
-    settings.setFrequency(SYSTEM_FREQ);
+    settings.setSampleRate(SYSTEM_FREQ);
     settings.setChannelCount(1);
     settings.setSampleSize(16);
     settings.setCodec("audio/pcm");
