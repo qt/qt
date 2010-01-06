@@ -84,6 +84,7 @@ class QInputContext;
 class QObject;
 class QWidget;
 class QSocketNotifier;
+class QGestureManager;
 
 extern bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
@@ -509,6 +510,7 @@ public:
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
+    QGestureManager *gestureManager;
     QWidget *gestureWidget;
 
     QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
