@@ -385,6 +385,15 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
     cacheHeaders.setAllRawHeaders(metaData.rawHeaders());
 
+    if (CacheLoadControlAttribute == QNetworkRequest::PreferNetwork) {
+        it = cacheHeaders.findRawHeader("Cache-Control");
+        if (it != cacheHeaders.rawHeaders.constEnd()) {
+            QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
+            if (cacheControl.contains("must-revalidate"))
+                return;
+        }
+    }
+
     it = cacheHeaders.findRawHeader("etag");
     if (it != cacheHeaders.rawHeaders.constEnd())
         httpRequest.setHeaderField("If-None-Match", it->second);
@@ -393,12 +402,6 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     if (lastModified.isValid())
         httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
 
-    it = cacheHeaders.findRawHeader("Cache-Control");
-    if (it != cacheHeaders.rawHeaders.constEnd()) {
-        QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
-        if (cacheControl.contains("must-revalidate"))
-            return;
-    }
 
     /*
      * age_value
@@ -462,7 +465,7 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     int freshness_lifetime = dateHeader.secsTo(expirationDate);
     bool response_is_fresh = (freshness_lifetime > current_age);
 
-    if (!response_is_fresh && CacheLoadControlAttribute == QNetworkRequest::PreferNetwork)
+    if (!response_is_fresh)
         return;
 
     loadedFromCache = true;
