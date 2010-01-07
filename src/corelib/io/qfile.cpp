@@ -1389,6 +1389,9 @@ QFile::close()
     bool flushed = flush();
     QIODevice::close();
 
+    // reset write buffer
+    d->lastWasWrite = false;
+    d->writeBuffer.clear();
 
     // keep earlier error from flush
     if (fileEngine()->close() && flushed)
