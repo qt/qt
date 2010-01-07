@@ -18,7 +18,7 @@ BEGIN
             VALUE "CompanyName", "Nokia Corporation and/or its subsidiary(-ies)"
             VALUE "FileDescription", "Qt Examples and Demos"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "LegalCopyright", "Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
+            VALUE "LegalCopyright", "Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)."
             VALUE "InternalName", "qtdemo"
             VALUE "OriginalFilename", "qtdemo.exe"
             VALUE "ProductName", "Qt Examples and Demos"
