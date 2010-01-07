@@ -43,10 +43,10 @@
 \page qml-integration.html
 \title Integrating QML with existing Qt UI code
 
-If you have existing Qt UI code which does not use QML, you can still
-use QML in some ways without having to rewrite your UI.
+If you have existing Qt UI code which does not use QML you can still
+add QML to your UI, without having to rewrite it.
 
-\section1 Adding QML to a QWidget based UI
+\section1 Adding QML to a \l{QWidget} based UI
 If you have an existing QWidget based UI you can simply write new custom
 widgets in QML. To integrate them into your application you can create a
 QmlView widget, and load the QML file into that. You'll then have a new widget
@@ -68,10 +68,21 @@ elements, and QML is a better choice if your UI is comprised of a large number
 of simple and dynamic elements.
 
 \section1 Adding QML to a QGraphicsView based UI
-If you have an existing QGraphicsView based UI you can create new items in QML,
-and use QmlComponent to create QGraphicsObjects from the QML primitives. These
-QGraphicsObjects can then be manually placed into your QGraphicsScene just like
-any other.
+If you have an existing Graphics View based UI you can create new items in QML,
+and use \l{QmlComponent} to create \l{QGraphicsObject}s from the QML files. These
+\l{QGraphicsObject}s can then be placed into your \l{QGraphicsScene} using \l{QGraphicsScene::addItem}
+or by reparenting them to an item already in the \l{QGraphicsScene}.
+
+Example, for local QML files:
+
+\code
+QGraphicsScene* scene = new QGraphicsScene;
+QmlEngine *engine = new QmlEngine;
+QmlComponent component(engine, QUrl::fromLocalFile(filename));
+QGraphicsObject *object =
+    qobject_cast<QGraphicsObject *>(component.create());
+scene->addItem(object);
+\endcode
 
 \section1 Using existing QGraphicsWidgets in QML
 Another way of integrating with a QGraphicsView based UI is to expose your
@@ -80,11 +91,14 @@ this approach will not work with QGraphicsItems which are not QGraphicsWidgets,
 and that this approach allows you to integrate new items written in QML
 without using the above method.
 
-As per the instructions in \l{Extending QML}, you can make custom C++ types 
-available in QML using a pair of macros. While this is normally only useful for
+You can make custom C++ types 
+available in QML using the pair of macros listed in \l{Extending QML}.
+While this is normally only useful for
 types that were designed for QML use, in conjunction with the
-\l{GraphicsObjectContainer} element it works for QGraphicsWidgets which can be
-controlled through properties. See the \l{GraphicsObjectContainer}
-documentation for details about its use. This way you can write your UI using
-QML, without having to rewrite any of your complex existing items.
+\l{GraphicsObjectContainer} element QGraphicsWidget subclasses can also be
+used effectively (if they were designed, like QGraphicsWidget, to be controllable through Qt's property system).
+This way you can write your UI using QML, without having to rewrite your existing items.
+
+For details on implementing this approach see \l{Extending QML} page for details on exposing your C++ types,
+and the \l{GraphicsObjectContainer} documentation for details about using it to wrap QGraphicsWidgets. 
 */

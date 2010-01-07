@@ -130,10 +130,8 @@ This function returns a hex string of the md5 hash of \c data.
 
 \section1 Dynamic Object Creation
 The following functions on the global object allow you to dynamically create QML
-items from files or strings. 
-
-You can also dynamically create objects in a declarative manner, using items
-such as ListView, \l Repeater and \l Loader.
+items from files or strings. See \l{Dynamic Object Management} for an overview
+of their use.
 
 \section2 createComponent(url file)
     This function takes the URL of a QML file as its only argument. It returns

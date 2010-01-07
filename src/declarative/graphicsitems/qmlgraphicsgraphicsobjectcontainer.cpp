@@ -89,11 +89,40 @@ public:
     provides a lot of important functionality, including anchors and proper
     management of child items. GraphicsObjectContainer helps provide these
     functions to other QGraphicsObjects, so that they can be used unaltered in
-    a QML scene.
+    a QML scene. QGraphicsObjects, which are not QmlGraphicsItems, and which are
+    placed in a QML scene outside of a GraphicsObjectContainer, will not appear
+    on screen at all.
 
     A GraphicsObjectContainer can have one element inside it, and it must be a
-    QGraphicsObject or subclass. The graphics object inside the
-    GraphicsObjectContainer can then be used normally.
+    QGraphicsObject or subclass which has been exposed to the QML engine.
+    The graphics object inside the GraphicsObjectContainer can then be used
+    like any other item in QML with the exception of not being reparentable
+    and not having the standard properties of QML items (such as anchors).
+
+    As the contained object is positioned relative to the container, anchors
+    affecting the container item will affect the onscreen position of the
+    contained item. If synchronizedResizing is set to true, then anchors
+    affecting the container item's size will also affect the contained item's
+    size.
+
+    Example:
+    \code
+    import Qt 4.6
+    import MyApp 2.1 as Widgets
+    Rectangle{
+        id: rect
+        property alias widgetPropertyThree: widget.myThirdProperty;
+        GraphicsObjectContainer{
+            synchronizedResizing: true
+            anchors.margins: 10
+            anchors.fill: parent
+            Widgets.MyWidget{
+                myProperty: "A Value"
+                myOtherProperty: rect.color
+            }
+        }
+    }
+    \endcode
 */
 
 /*!

@@ -54,6 +54,8 @@ QML also includes a convenience API, QmlView, for applications that simply want 
 components into a new QGraphicsView.  QmlView covers up many of the details discussed below.  
 While QmlView is mainly intended for rapid prototyping it can have uses in production applications.
 
+If you are looking at retrofitting an existing Qt application with QML,
+read \l{Integrating QML with existing Qt UI code}.
 \section1 Basic Usage
 
 Every application requires at least one QmlEngine.  A QmlEngine allows the configuration of
