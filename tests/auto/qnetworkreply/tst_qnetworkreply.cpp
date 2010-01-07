@@ -223,7 +223,7 @@ private Q_SLOTS:
     void ioPostToHttpFromMiddleOfQBufferFiveBytes();
     void ioPostToHttpNoBufferFlag();
     void ioPostToHttpUploadProgress();
-    void ioPostToHttpEmtpyUploadProgress();
+    void ioPostToHttpEmptyUploadProgress();
 
     void lastModifiedHeaderForFile();
     void lastModifiedHeaderForHttp();
@@ -2921,7 +2921,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     server.close();
 }
 
-void tst_QNetworkReply::ioPostToHttpEmtpyUploadProgress()
+void tst_QNetworkReply::ioPostToHttpEmptyUploadProgress()
 {
     QByteArray ba;
     ba.resize(0);
