@@ -63,27 +63,27 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsTextInput : public QmlGraphicsPaintedItem
     Q_ENUMS(EchoMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor)
-    Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
-    Q_PROPERTY(QFont font READ font WRITE setFont)
-    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor NOTIFY selectionColorChanged)
+    Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor NOTIFY selectedTextColorChanged)
+    Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
 
-    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
-    Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
+    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
+    Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
     Q_PROPERTY(QRect cursorRect READ cursorRect NOTIFY cursorPositionChanged)
-    Q_PROPERTY(QmlComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate)
+    Q_PROPERTY(QmlComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate NOTIFY cursorDelegateChanged)
     Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
     Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
 
-    Q_PROPERTY(int maximumLength READ maxLength WRITE setMaxLength)
-    Q_PROPERTY(QValidator* validator READ validator WRITE setValidator)
-    Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask)
+    Q_PROPERTY(int maximumLength READ maxLength WRITE setMaxLength NOTIFY maximumLengthChanged)
+    Q_PROPERTY(QValidator* validator READ validator WRITE setValidator NOTIFY validatorChanged)
+    Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask NOTIFY inputMaskChanged)
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
-    Q_PROPERTY(EchoMode echoMode READ echoMode WRITE setEchoMode)
-    Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
+    Q_PROPERTY(EchoMode echoMode READ echoMode WRITE setEchoMode NOTIFY echoModeChanged)
+    Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
 
 public:
     QmlGraphicsTextInput(QmlGraphicsItem* parent=0);
@@ -172,6 +172,19 @@ Q_SIGNALS:
     void selectedTextChanged();
     void accepted();
     void acceptableInputChanged();
+    void colorChanged(const QColor &color);
+    void selectionColorChanged(const QColor &color);
+    void selectedTextColorChanged(const QColor &color);
+    void fontChanged(const QFont &font);
+    void horizontalAlignmentChanged(HAlignment alignment);
+    void readOnlyChanged(bool isReadOnly);
+    void cursorVisibleChanged(bool isCursorVisible);
+    void cursorDelegateChanged();
+    void maximumLengthChanged(int maximumLength);
+    void validatorChanged();
+    void inputMaskChanged(const QString &inputMask);
+    void echoModeChanged(EchoMode echoMode);
+    void focusOnPressChanged(bool focusOnPress);
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,

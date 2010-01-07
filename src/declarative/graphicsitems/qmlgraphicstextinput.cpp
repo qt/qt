@@ -116,6 +116,9 @@ QFont QmlGraphicsTextInput::font() const
 void QmlGraphicsTextInput::setFont(const QFont &font)
 {
     Q_D(QmlGraphicsTextInput);
+    if (d->font == font)
+        return;
+
     d->font = font;
 
     d->control->setFont(d->font);
@@ -124,6 +127,7 @@ void QmlGraphicsTextInput::setFont(const QFont &font)
         moveCursor();
     }
     updateSize();
+    emit fontChanged(d->font);
 }
 
 /*!
@@ -165,6 +169,7 @@ void QmlGraphicsTextInput::setSelectionColor(const QColor &color)
     QPalette p = d->control->palette();
     p.setColor(QPalette::Highlight, d->selectionColor);
     d->control->setPalette(p);
+    emit selectionColorChanged(color);
 }
 
 /*!
@@ -188,6 +193,7 @@ void QmlGraphicsTextInput::setSelectedTextColor(const QColor &color)
     QPalette p = d->control->palette();
     p.setColor(QPalette::HighlightedText, d->selectedTextColor);
     d->control->setPalette(p);
+    emit selectedTextColorChanged(color);
 }
 
 /*!
@@ -217,6 +223,7 @@ void QmlGraphicsTextInput::setHAlign(HAlignment align)
     if(align == d->hAlign)
         return;
     d->hAlign = align;
+    emit horizontalAlignmentChanged(d->hAlign);
 }
 
 bool QmlGraphicsTextInput::isReadOnly() const
@@ -228,7 +235,12 @@ bool QmlGraphicsTextInput::isReadOnly() const
 void QmlGraphicsTextInput::setReadOnly(bool ro)
 {
     Q_D(QmlGraphicsTextInput);
+    if (d->control->isReadOnly() == ro)
+        return;
+
     d->control->setReadOnly(ro);
+
+    emit readOnlyChanged(ro);
 }
 
 int QmlGraphicsTextInput::maxLength() const
@@ -240,7 +252,12 @@ int QmlGraphicsTextInput::maxLength() const
 void QmlGraphicsTextInput::setMaxLength(int ml)
 {
     Q_D(QmlGraphicsTextInput);
+    if (d->control->maxLength() == ml)
+        return;
+
     d->control->setMaxLength(ml);
+
+    emit maximumLengthChanged(ml);
 }
 
 /*!
@@ -283,6 +300,7 @@ void QmlGraphicsTextInput::setCursorVisible(bool on)
     d->cursorVisible = on;
     d->control->setCursorBlinkPeriod(on?QApplication::cursorFlashTime():0);
     //d->control should emit the cursor update regions
+    emit cursorVisibleChanged(d->cursorVisible);
 }
 
 /*!
@@ -403,7 +421,12 @@ bool QmlGraphicsTextInput::focusOnPress() const
 void QmlGraphicsTextInput::setFocusOnPress(bool b)
 {
     Q_D(QmlGraphicsTextInput);
+    if (d->focusOnPress == b)
+        return;
+
     d->focusOnPress = b;
+
+    emit focusOnPressChanged(d->focusOnPress);
 }
 
 /*!
@@ -426,11 +449,16 @@ QValidator* QmlGraphicsTextInput::validator() const
 void QmlGraphicsTextInput::setValidator(QValidator* v)
 {
     Q_D(QmlGraphicsTextInput);
+    if (d->control->validator() == v)
+        return;
+
     d->control->setValidator(v);
     if(!d->control->hasAcceptableInput()){
         d->oldValidity = false;
         emit acceptableInputChanged();
     }
+
+    emit validatorChanged();
 }
 
 /*!
@@ -451,7 +479,11 @@ QString QmlGraphicsTextInput::inputMask() const
 void QmlGraphicsTextInput::setInputMask(const QString &im)
 {
     Q_D(QmlGraphicsTextInput);
+    if (d->control->inputMask() == im)
+        return;
+
     d->control->setInputMask(im);
+    emit inputMaskChanged(d->control->inputMask());
 }
 
 /*!
@@ -487,7 +519,11 @@ QmlGraphicsTextInput::EchoMode QmlGraphicsTextInput::echoMode() const
 void QmlGraphicsTextInput::setEchoMode(QmlGraphicsTextInput::EchoMode echo)
 {
     Q_D(QmlGraphicsTextInput);
+    if (echoMode() == echo)
+        return;
+
     d->control->setEchoMode((uint)echo);
+    emit echoModeChanged(echoMode());
 }
 
 /*!
@@ -512,6 +548,9 @@ QmlComponent* QmlGraphicsTextInput::cursorDelegate() const
 void QmlGraphicsTextInput::setCursorDelegate(QmlComponent* c)
 {
     Q_D(QmlGraphicsTextInput);
+    if (d->cursorComponent == c)
+        return;
+
     d->cursorComponent = c;
     if(!c){
         //note that the components are owned by something else
@@ -521,6 +560,8 @@ void QmlGraphicsTextInput::setCursorDelegate(QmlComponent* c)
     }else{
         d->startCreatingCursor();
     }
+
+    emit cursorDelegateChanged();
 }
 
 void QmlGraphicsTextInputPrivate::startCreatingCursor()
