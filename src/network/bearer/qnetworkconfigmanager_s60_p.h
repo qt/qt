@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include <qnetworkconfigmanager.h>
-#include <qnetworkconfiguration_s60_p.h>
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include "qnetworkconfiguration_s60_p.h"
 
 #include <QHash>
 #include <rconnmon.h>

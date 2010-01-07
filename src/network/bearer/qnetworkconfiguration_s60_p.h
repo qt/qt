@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <qnetworkconfiguration.h>
+#include <QtNetwork/qnetworkconfiguration.h>
 #include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
