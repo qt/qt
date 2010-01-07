@@ -66,24 +66,24 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsTextEdit : public QmlGraphicsPaintedItem
     Q_ENUMS(TextFormat)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor)
-    Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
-    Q_PROPERTY(QFont font READ font WRITE setFont)
-    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
-    Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign)
-    Q_PROPERTY(bool wrap READ wrap WRITE setWrap) //### other wrap modes
-    Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
-    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
-    Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor NOTIFY selectionColorChanged)
+    Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor NOTIFY selectedTextColorChanged)
+    Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
+    Q_PROPERTY(bool wrap READ wrap WRITE setWrap NOTIFY wrapChanged) //### other wrap modes
+    Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
+    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly NOTIFY readOnlyChanged)
+    Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible NOTIFY cursorVisibleChanged)
     Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
-    Q_PROPERTY(QmlComponent* cursorDelegate READ cursorDelegate WRITE setCursorDelegate)
+    Q_PROPERTY(QmlComponent* cursorDelegate READ cursorDelegate WRITE setCursorDelegate NOTIFY cursorDelegateChanged)
     Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
     Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectionChanged)
-    Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
-    Q_PROPERTY(bool persistentSelection READ persistentSelection WRITE setPersistentSelection)
-    Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
+    Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
+    Q_PROPERTY(bool persistentSelection READ persistentSelection WRITE setPersistentSelection NOTIFY persistentSelectionChanged)
+    Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin NOTIFY textMarginChanged)
 
 public:
     QmlGraphicsTextEdit(QmlGraphicsItem *parent=0);
@@ -178,6 +178,20 @@ Q_SIGNALS:
     void selectionStartChanged();
     void selectionEndChanged();
     void selectionChanged();
+    void colorChanged(const QColor &color);
+    void selectionColorChanged(const QColor &color);
+    void selectedTextColorChanged(const QColor &color);
+    void fontChanged(const QFont &font);
+    void horizontalAlignmentChanged(HAlignment alignment);
+    void verticalAlignmentChanged(VAlignment alignment);
+    void wrapChanged(bool isWrapped);
+    void textFormatChanged(TextFormat textFormat);
+    void readOnlyChanged(bool isReadOnly);
+    void cursorVisibleChanged(bool isCursorVisible);
+    void cursorDelegateChanged();
+    void focusOnPressChanged(bool focusIsPressed);
+    void persistentSelectionChanged(bool isPersistentSelection);
+    void textMarginChanged(qreal textMargin);
 
 public Q_SLOTS:
     void selectAll();

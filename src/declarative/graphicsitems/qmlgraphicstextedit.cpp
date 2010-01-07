@@ -206,6 +206,7 @@ void QmlGraphicsTextEdit::setTextFormat(TextFormat format)
         updateSize();
     }
     d->format = format;
+    emit textFormatChanged(d->format);
 }
 
 QFont QmlGraphicsTextEdit::font() const
@@ -260,6 +261,7 @@ void QmlGraphicsTextEdit::setColor(const QColor &color)
     pal.setColor(QPalette::Text, color);
     d->control->setPalette(pal);
     update();
+    emit colorChanged(d->color);
 }
 
 /*!
@@ -285,6 +287,7 @@ void QmlGraphicsTextEdit::setSelectionColor(const QColor &color)
     pal.setColor(QPalette::Highlight, color);
     d->control->setPalette(pal);
     update();
+    emit selectionColorChanged(d->selectionColor);
 }
 
 /*!
@@ -310,6 +313,7 @@ void QmlGraphicsTextEdit::setSelectedTextColor(const QColor &color)
     pal.setColor(QPalette::HighlightedText, color);
     d->control->setPalette(pal);
     update();
+    emit selectedTextColorChanged(d->selectedTextColor);
 }
 
 /*!
@@ -337,6 +341,7 @@ void QmlGraphicsTextEdit::setHAlign(QmlGraphicsTextEdit::HAlignment alignment)
     d->hAlign = alignment;
     d->updateDefaultTextOption();
     updateSize();
+    emit horizontalAlignmentChanged(d->hAlign);
 }
 
 QmlGraphicsTextEdit::VAlignment QmlGraphicsTextEdit::vAlign() const
@@ -353,6 +358,7 @@ void QmlGraphicsTextEdit::setVAlign(QmlGraphicsTextEdit::VAlignment alignment)
     d->vAlign = alignment;
     d->updateDefaultTextOption();
     updateSize();
+    emit verticalAlignmentChanged(d->vAlign);
 }
 
 bool QmlGraphicsTextEdit::wrap() const
@@ -377,6 +383,7 @@ void QmlGraphicsTextEdit::setWrap(bool w)
     d->wrap = w;
     d->updateDefaultTextOption();
     updateSize();
+    emit wrapChanged(d->wrap);
 }
 
 /*!
@@ -402,6 +409,7 @@ void QmlGraphicsTextEdit::setCursorVisible(bool on)
     if (!on && !d->persistentSelection)
         d->control->setCursorIsFocusIndicator(true);
     d->control->processEvent(&focusEvent, QPointF(0, 0));
+    emit cursorVisibleChanged(d->cursorVisible);
 }
 
 /*!
@@ -464,6 +472,8 @@ void QmlGraphicsTextEdit::setCursorDelegate(QmlComponent* c)
             connect(c, SIGNAL(statusChanged()),
                     this, SLOT(loadCursorDelegate()));
     }
+
+    emit cursorDelegateChanged();
 }
 
 void QmlGraphicsTextEdit::loadCursorDelegate()
@@ -579,6 +589,7 @@ void QmlGraphicsTextEdit::setFocusOnPress(bool on)
     if (d->focusOnPress == on)
         return;
     d->focusOnPress = on;
+    emit focusOnPressChanged(d->focusOnPress);
 }
 
 /*!
@@ -599,6 +610,7 @@ void QmlGraphicsTextEdit::setPersistentSelection(bool on)
     if (d->persistentSelection == on)
         return;
     d->persistentSelection = on;
+    emit persistentSelectionChanged(d->persistentSelection);
 }
 
 qreal QmlGraphicsTextEdit::textMargin() const
@@ -614,6 +626,7 @@ void QmlGraphicsTextEdit::setTextMargin(qreal margin)
         return;
     d->textMargin = margin;
     d->document->setDocumentMargin(d->textMargin);
+    emit textMarginChanged(d->textMargin);
 }
 
 void QmlGraphicsTextEdit::geometryChanged(const QRectF &newGeometry,
@@ -648,7 +661,10 @@ void QmlGraphicsTextEdit::componentComplete()
 */
 void QmlGraphicsTextEdit::setReadOnly(bool r)
 {
-    Q_D(QmlGraphicsTextEdit);
+    Q_D(QmlGraphicsTextEdit);    
+    if (r == isReadOnly())
+        return;
+
 
     Qt::TextInteractionFlags flags = Qt::NoTextInteraction;
     if (r) {
@@ -659,6 +675,8 @@ void QmlGraphicsTextEdit::setReadOnly(bool r)
     d->control->setTextInteractionFlags(flags);
     if (!r)
         d->control->moveCursor(QTextCursor::End);
+
+    emit readOnlyChanged(r);
 }
 
 bool QmlGraphicsTextEdit::isReadOnly() const
