@@ -170,6 +170,8 @@ private:
 
     friend class QXmlStreamWriter;
     friend class QXmlStreamWriterPrivate;
+    friend class QCoreXmlStreamWriter;
+    friend class QCoreXmlStreamWriterPrivate;
 };
 
 class Q_CORE_EXPORT QTextDecoder {
