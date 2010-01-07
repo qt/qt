@@ -459,9 +459,9 @@ int QmlCompositeTypeManager::resolveTypes(QmlCompositeTypeData *unit)
         if (dot < 0) dot = imp.version.length();
         QString qmldir;
         if (imp.type == QmlScriptParser::Import::File && imp.qualifier.isEmpty()) {
-            QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir")));
+            QString importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir"))).toString();
             for (int ii = 0; ii < unit->resources.count(); ++ii) {
-                if (unit->resources.at(ii)->url == importUrl.toString()) {
+                if (unit->resources.at(ii)->url == importUrl) {
                     qmldir = QString::fromUtf8(unit->resources.at(ii)->data);
                     break;
                 }
