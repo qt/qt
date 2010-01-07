@@ -1419,22 +1419,20 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
 
 #if !defined(QT_NO_LIBRARY)
     if((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
-        PSID pOwner = 0;
-        PSID pGroup = 0;
-        PACL pDacl;
-        PSECURITY_DESCRIPTOR pSD;
-        ACCESS_MASK access_mask;
-
-        enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
         resolveLibs();
         if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
+            enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
 
             QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+            PSID pOwner = 0;
+            PSID pGroup = 0;
+            PACL pDacl;
+            PSECURITY_DESCRIPTOR pSD;
             DWORD res = ptrGetNamedSecurityInfoW((wchar_t*)fname.utf16(), SE_FILE_OBJECT,
                                                  OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
                                                  &pOwner, &pGroup, &pDacl, 0, &pSD);
-
             if(res == ERROR_SUCCESS) {
+                ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
                 { //user
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
@@ -1722,34 +1720,33 @@ QString QFSFileEngine::owner(FileOwner own) const
 {
 #if !defined(QT_NO_LIBRARY)
     Q_D(const QFSFileEngine);
-    if((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
-	PSID pOwner = 0;
-	PSECURITY_DESCRIPTOR pSD;
-	QString name;
-	QFSFileEnginePrivate::resolveLibs();
-
-	if(ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
-	    if(ptrGetNamedSecurityInfoW((wchar_t*)d->filePath.utf16(), SE_FILE_OBJECT,
-					 own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
-					 own == OwnerUser ? &pOwner : 0, own == OwnerGroup ? &pOwner : 0,
-					 0, 0, &pSD) == ERROR_SUCCESS) {
-		DWORD lowner = 0, ldomain = 0;
-		SID_NAME_USE use;
-		// First call, to determine size of the strings (with '\0').
-		ptrLookupAccountSidW(NULL, pOwner, NULL, &lowner, NULL, &ldomain, (SID_NAME_USE*)&use);
-		wchar_t *owner = new wchar_t[lowner];
-		wchar_t *domain = new wchar_t[ldomain];
-		// Second call, size is without '\0'
-		if(ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner, &lowner,
-					 (LPWSTR)domain, &ldomain, (SID_NAME_USE*)&use)) {
-		    name = QString::fromUtf16((ushort*)owner);
-		}
-		LocalFree(pSD);
-		delete [] owner;
-		delete [] domain;
-	    }
-	}
-	return name;
+    if ((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
+        QString name;
+        QFSFileEnginePrivate::resolveLibs();
+        if (ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
+            PSID pOwner = 0;
+            PSECURITY_DESCRIPTOR pSD;
+            if (ptrGetNamedSecurityInfoW((wchar_t*)d->filePath.utf16(), SE_FILE_OBJECT,
+                                        own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
+                                        own == OwnerUser ? &pOwner : 0, own == OwnerGroup ? &pOwner : 0,
+                                        0, 0, &pSD) == ERROR_SUCCESS) {
+                DWORD lowner = 0, ldomain = 0;
+                SID_NAME_USE use;
+                // First call, to determine size of the strings (with '\0').
+                ptrLookupAccountSidW(NULL, pOwner, NULL, &lowner, NULL, &ldomain, (SID_NAME_USE*)&use);
+                wchar_t *owner = new wchar_t[lowner];
+                wchar_t *domain = new wchar_t[ldomain];
+                // Second call, size is without '\0'
+                if (ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner, &lowner,
+                                       (LPWSTR)domain, &ldomain, (SID_NAME_USE*)&use)) {
+                    name = QString::fromUtf16((ushort*)owner);
+                }
+                LocalFree(pSD);
+                delete [] owner;
+                delete [] domain;
+            }
+        }
+        return name;
     }
 #else
     Q_UNUSED(own);
