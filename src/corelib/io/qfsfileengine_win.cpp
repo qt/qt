@@ -1731,7 +1731,8 @@ QString QFSFileEngine::owner(FileOwner own) const
 	if(ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
 	    if(ptrGetNamedSecurityInfoW((wchar_t*)d->filePath.utf16(), SE_FILE_OBJECT,
 					 own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
-					 NULL, &pOwner, NULL, NULL, &pSD) == ERROR_SUCCESS) {
+					 own == OwnerUser ? &pOwner : 0, own == OwnerGroup ? &pOwner : 0,
+					 0, 0, &pSD) == ERROR_SUCCESS) {
 		DWORD lowner = 0, ldomain = 0;
 		SID_NAME_USE use;
 		// First call, to determine size of the strings (with '\0').
