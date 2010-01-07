@@ -163,6 +163,12 @@
            Command+C on the keyboard regardless of the value set, though what is output for
            QKeySequence::toString(QKeySequence::PortableText) will be different).
 
+    \value AA_S60DontConstructApplicationPanes Stops Qt from initializing the S60 status
+           pane and softkey pane on Symbian. This is useful to save memory and reduce
+           startup time for applications that will run in fullscreen mode during their
+           whole lifetime. This attribute must be set before QApplication is
+           constructed.
+
     \omitvalue AA_AttributeCount
 */
 
