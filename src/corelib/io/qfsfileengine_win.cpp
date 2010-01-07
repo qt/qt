@@ -1718,27 +1718,28 @@ uint QFSFileEngine::ownerId(FileOwner /*own*/) const
 
 QString QFSFileEngine::owner(FileOwner own) const
 {
+    QString name;
 #if !defined(QT_NO_LIBRARY)
     Q_D(const QFSFileEngine);
+
     if ((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
-        QString name;
         QFSFileEnginePrivate::resolveLibs();
         if (ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
             PSID pOwner = 0;
             PSECURITY_DESCRIPTOR pSD;
             if (ptrGetNamedSecurityInfoW((wchar_t*)d->filePath.utf16(), SE_FILE_OBJECT,
-                                        own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
-                                        own == OwnerUser ? &pOwner : 0, own == OwnerGroup ? &pOwner : 0,
-                                        0, 0, &pSD) == ERROR_SUCCESS) {
+                                         own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
+                                         own == OwnerUser ? &pOwner : 0, own == OwnerGroup ? &pOwner : 0,
+                                         0, 0, &pSD) == ERROR_SUCCESS) {
                 DWORD lowner = 0, ldomain = 0;
-                SID_NAME_USE use;
+                SID_NAME_USE use = SidTypeUnknown;
                 // First call, to determine size of the strings (with '\0').
                 ptrLookupAccountSidW(NULL, pOwner, NULL, &lowner, NULL, &ldomain, (SID_NAME_USE*)&use);
                 wchar_t *owner = new wchar_t[lowner];
                 wchar_t *domain = new wchar_t[ldomain];
                 // Second call, size is without '\0'
                 if (ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner, &lowner,
-                                       (LPWSTR)domain, &ldomain, (SID_NAME_USE*)&use)) {
+                                         (LPWSTR)domain, &ldomain, (SID_NAME_USE*)&use)) {
                     name = QString::fromUtf16((ushort*)owner);
                 }
                 LocalFree(pSD);
@@ -1746,12 +1747,11 @@ QString QFSFileEngine::owner(FileOwner own) const
                 delete [] domain;
             }
         }
-        return name;
     }
 #else
     Q_UNUSED(own);
 #endif
-    return QString();
+    return name;
 }
 
 bool QFSFileEngine::setPermissions(uint perms)
