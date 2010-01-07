@@ -122,6 +122,10 @@ int main(int argc, char *argv[])
                         serialPortName = id.portName;
             }
         }
+        if(serialPortName.isEmpty()) {
+            errstream << "No phone found, ensure USB cable is connected or specify manually with -p" << endl;
+            return 1;
+        }
     }
 
     QScopedPointer<trk::Launcher> launcher;
