@@ -1731,20 +1731,31 @@ QString QFSFileEngine::owner(FileOwner own) const
                                          own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
                                          own == OwnerUser ? &pOwner : 0, own == OwnerGroup ? &pOwner : 0,
                                          0, 0, &pSD) == ERROR_SUCCESS) {
-                DWORD lowner = 0, ldomain = 0;
+                DWORD lowner = 64;
+                DWORD ldomain = 64;
+                QVarLengthArray<wchar_t, 64> owner(lowner);
+                QVarLengthArray<wchar_t, 64> domain(ldomain);
                 SID_NAME_USE use = SidTypeUnknown;
                 // First call, to determine size of the strings (with '\0').
-                ptrLookupAccountSidW(NULL, pOwner, NULL, &lowner, NULL, &ldomain, (SID_NAME_USE*)&use);
-                wchar_t *owner = new wchar_t[lowner];
-                wchar_t *domain = new wchar_t[ldomain];
-                // Second call, size is without '\0'
-                if (ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner, &lowner,
-                                         (LPWSTR)domain, &ldomain, (SID_NAME_USE*)&use)) {
-                    name = QString::fromUtf16((ushort*)owner);
+                if (!ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
+                                          (LPWSTR)domain.data(), &ldomain, (SID_NAME_USE*)&use)) {
+                    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+                        if (lowner > (DWORD)owner.size())
+                            owner.resize(lowner);
+                        if (ldomain > (DWORD)domain.size())
+                            domain.resize(ldomain);
+                        // Second call, try on resized buf-s
+                        if (!ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
+                                                  (LPWSTR)domain.data(), &ldomain, (SID_NAME_USE*)&use)) {
+                            lowner = 0;
+                        }
+                    } else {
+                        lowner = 0;
+                    }
                 }
+                if (lowner != 0)
+                    name = QString::fromWCharArray(owner.data());
                 LocalFree(pSD);
-                delete [] owner;
-                delete [] domain;
             }
         }
     }
