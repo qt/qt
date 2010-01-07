@@ -1386,11 +1386,14 @@ QFile::close()
     Q_D(QFile);
     if(!isOpen())
         return;
-    flush();
+    bool flushed = flush();
     QIODevice::close();
 
-    unsetError();
-    if(!fileEngine()->close())
+
+    // keep earlier error from flush
+    if (fileEngine()->close() && flushed)
+        unsetError();
+    else if (flushed)
         d->setError(fileEngine()->error(), fileEngine()->errorString());
 }
 
