@@ -1,0 +1,7 @@
+This example show a C++ plugin that provides additional modules of QML types
+(in this case, a single module with a single extra type).
+to run:
+
+  make install
+  qmlviewer plugins.qml
+
