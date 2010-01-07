@@ -968,9 +968,6 @@ bool QFile::isSequential() const
     mode, if the relevant file does not already exist, this function
     will try to create a new file before opening it.
 
-    \note Because of limitations in the native API, QFile ignores the
-    Unbuffered flag on Windows.
-
     \sa QIODevice::OpenMode, setFileName()
 */
 bool QFile::open(OpenMode mode)
@@ -988,7 +985,9 @@ bool QFile::open(OpenMode mode)
         qWarning("QIODevice::open: File access not specified");
         return false;
     }
-    if (fileEngine()->open(mode)) {
+
+    // QIODevice provides the buffering, so there's no need to request it from the file engine.
+    if (fileEngine()->open(mode | QIODevice::Unbuffered)) {
         QIODevice::open(mode);
         if (mode & Append)
             seek(size());
