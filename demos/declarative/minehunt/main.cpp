@@ -226,7 +226,7 @@ void MyWidget::reset()
     nMines = 12;
     nFlags = 0;
     setPlaying(false);
-    QTimer::singleShot(900,this, SLOT(setBoard()));
+    QTimer::singleShot(600,this, SLOT(setBoard()));
 }
 
 int MyWidget::getHint(int row, int col)
