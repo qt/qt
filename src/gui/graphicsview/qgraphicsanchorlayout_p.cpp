@@ -1666,6 +1666,13 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
         return 0;
     }
 
+    const QGraphicsLayoutItem *parentWidget = q->parentLayoutItem();
+    if (firstItem == parentWidget || secondItem == parentWidget) {
+        qWarning("QGraphicsAnchorLayout::addAnchor(): "
+                 "You cannot add the parent of the layout to the layout.");
+        return 0;
+    }
+
     // In QGraphicsAnchorLayout, items are represented in its internal
     // graph as four anchors that connect:
     //  - Left -> HCenter

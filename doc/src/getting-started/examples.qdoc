@@ -546,6 +546,14 @@
     \o \l{graphicsview/portedcanvas}{Ported Canvas}
     \endlist
 
+    Some examples demonstrate the use of graphics effects with canvas items.
+
+    \list
+    \o \l{effects/blurpicker}{Blur Picker Effect}
+    \o \l{effects/fademessage}{Fade Message Effect}
+    \o \l{effects/lighting}{Lighting Effect}
+    \endlist
+
     Examples marked with an asterisk (*) are fully documented.
 */
 
@@ -851,11 +859,13 @@
 
     \section1 Multimedia
 
-    Qt provides low-level audio support on linux,windows and mac platforms by default and
-    an audio plugin API to allow developers to implement there own audio support for
+    Qt provides low-level audio support on Linux, Windows and Mac OS X by default and
+    an audio plugin API to allow developers to implement their own audio support for
     custom devices and platforms.
 
-    These examples demonstrate the basic techniques used to take advantage of
+    \section1 Audio Handling
+
+    These examples demonstrate the basic techniques used to take advantage of the
     Audio API in Qt applications.
 
     \list

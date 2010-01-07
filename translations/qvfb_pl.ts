@@ -4,7 +4,7 @@
 <context>
     <name>AnimationSaveWidget</name>
     <message>
-        <location filename="../tools/qvfb/qvfb.cpp" line="+865"/>
+        <location filename="../tools/qvfb/qvfb.cpp" line="+868"/>
         <location line="+204"/>
         <source>Record</source>
         <translation>Nagraj</translation>
@@ -260,6 +260,11 @@
         <source>BGR format</source>
         <translation>format BGR</translation>
     </message>
+    <message>
+        <location/>
+        <source>800x480</source>
+        <translation>800x480</translation>
+    </message>
 </context>
 <context>
     <name>DeviceSkin</name>
@@ -322,12 +327,12 @@
 <context>
     <name>QVFb</name>
     <message>
-        <location filename="../tools/qvfb/qvfb.cpp" line="-501"/>
+        <location filename="../tools/qvfb/qvfb.cpp" line="-504"/>
         <source>Browse...</source>
         <translation>Przeglądaj...</translation>
     </message>
     <message>
-        <location line="+140"/>
+        <location line="+143"/>
         <source>Load Custom Skin...</source>
         <translation>Załaduj skórki użytkownika...</translation>
     </message>

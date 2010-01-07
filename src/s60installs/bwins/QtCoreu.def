@@ -2264,7 +2264,7 @@ EXPORTS
 	?isSequential@QIODevice@@UBE_NXZ @ 2263 NONAME ; bool QIODevice::isSequential(void) const
 	?isSequential@QIODevicePrivate@@QBE_NXZ @ 2264 NONAME ; bool QIODevicePrivate::isSequential(void) const
 	?isSequential@QProcess@@UBE_NXZ @ 2265 NONAME ; bool QProcess::isSequential(void) const
-	?isSignalConnected@QObjectPrivate@@QBE_NH@Z @ 2266 NONAME ; bool QObjectPrivate::isSignalConnected(int) const
+	?isSignalConnected@QObjectPrivate@@QBE_NI@Z @ 2266 NONAME ; bool QObjectPrivate::isSignalConnected(unsigned int) const
 	?isSimpleText@QString@@QBE_NXZ @ 2267 NONAME ; bool QString::isSimpleText(void) const
 	?isSingleShot@QTimer@@QBE_NXZ @ 2268 NONAME ; bool QTimer::isSingleShot(void) const
 	?isSpace@QChar@@QBE_NXZ @ 2269 NONAME ; bool QChar::isSpace(void) const

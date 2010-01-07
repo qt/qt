@@ -1147,12 +1147,12 @@ static QMatrix parseTransformationMatrix(const QStringRef &value)
             if (points.count() != 1)
                 goto error;
             const qreal deg2rad = qreal(0.017453292519943295769);
-            matrix.shear(tan(points[0]*deg2rad), 0);
+            matrix.shear(qTan(points[0]*deg2rad), 0);
         } else if (state == SkewY) {
             if (points.count() != 1)
                 goto error;
             const qreal deg2rad = qreal(0.017453292519943295769);
-            matrix.shear(0, tan(points[0]*deg2rad));
+            matrix.shear(0, qTan(points[0]*deg2rad));
         }
     }
   error:
@@ -1481,8 +1481,8 @@ static void pathArc(QPainterPath &path,
     yc = 0.5 * (y0 + y1) + sfactor * (x1 - x0);
     /* (xc, yc) is center of the circle. */
 
-    th0 = atan2(y0 - yc, x0 - xc);
-    th1 = atan2(y1 - yc, x1 - xc);
+    th0 = qAtan2(y0 - yc, x0 - xc);
+    th1 = qAtan2(y1 - yc, x1 - xc);
 
     th_arc = th1 - th0;
     if (th_arc < 0 && sweep_flag)
@@ -1578,8 +1578,8 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                     count--;
                     break;
                 }
-                x = x0 = num[0] + offsetX;
-                y = y0 = num[1] + offsetY;
+                x = num[0] + offsetX;
+                y = num[1] + offsetY;
                 num += 2;
                 count -= 2;
                 path.lineTo(x, y);
@@ -1592,8 +1592,8 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                     count--;
                     break;
                 }
-                x = x0 = num[0];
-                y = y0 = num[1];
+                x = num[0];
+                y = num[1];
                 num += 2;
                 count -= 2;
                 path.lineTo(x, y);
@@ -2864,14 +2864,8 @@ static QSvgNode *createPolygonNode(QSvgNode *parent,
     const QChar *s = pointsStr.constData();
     QVector<qreal> points = parseNumbersList(s);
     QPolygonF poly(points.count()/2);
-    int i = 0;
-    QVector<qreal>::const_iterator itr = points.constBegin();
-    while (itr != points.constEnd()) {
-        qreal one = *itr; ++itr;
-        qreal two = *itr; ++itr;
-        poly[i] = QPointF(one, two);
-        ++i;
-    }
+    for (int i = 0; i < poly.size(); ++i)
+        poly[i] = QPointF(points.at(2 * i), points.at(2 * i + 1));
     QSvgNode *polygon = new QSvgPolygon(parent, poly);
     return polygon;
 }
@@ -2886,14 +2880,8 @@ static QSvgNode *createPolylineNode(QSvgNode *parent,
     const QChar *s = pointsStr.constData();
     QVector<qreal> points = parseNumbersList(s);
     QPolygonF poly(points.count()/2);
-    int i = 0;
-    QVector<qreal>::const_iterator itr = points.constBegin();
-    while (itr != points.constEnd()) {
-        qreal one = *itr; ++itr;
-        qreal two = *itr; ++itr;
-        poly[i] = QPointF(one, two);
-        ++i;
-    }
+    for (int i = 0; i < poly.size(); ++i)
+        poly[i] = QPointF(points.at(2 * i), points.at(2 * i + 1));
 
     QSvgNode *line = new QSvgPolyline(parent, poly);
     return line;

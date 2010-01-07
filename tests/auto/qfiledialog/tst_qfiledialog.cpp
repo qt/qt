@@ -949,6 +949,7 @@ void tst_QFiledialog::selectFiles()
     QLineEdit *lineEdit = qFindChild<QLineEdit*>(dialog, "fileNameEdit");
     QVERIFY(lineEdit);
     QCOMPARE(lineEdit->text(),QLatin1String("blah"));
+    delete dialog;
 }
 
 void tst_QFiledialog::viewMode()

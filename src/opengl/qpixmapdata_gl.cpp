@@ -341,22 +341,11 @@ void QGLPixmapData::ensureCreated() const
 
     if (!m_source.isNull()) {
         if (external_format == GL_RGB) {
-            QImage tx = m_source.convertToFormat(QImage::Format_RGB32);
-
-            QVector<uchar> pixelData(w * h * 3);
-            uchar *p = &pixelData[0];
-            QRgb *src = (QRgb *)tx.bits();
-
-            for (int i = 0; i < w * h; ++i) {
-                *p++ = qRed(*src);
-                *p++ = qGreen(*src);
-                *p++ = qBlue(*src);
-                ++src;
-            }
+            const QImage tx = m_source.convertToFormat(QImage::Format_RGB888);
 
             glBindTexture(target, m_texture.id);
             glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
-                            GL_UNSIGNED_BYTE, &pixelData[0]);
+                            GL_UNSIGNED_BYTE, tx.bits());
         } else {
             const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, external_format);
 
@@ -424,6 +413,7 @@ bool QGLPixmapData::fromFile(const QString &filename, const char *format,
         resize(0, 0);
         data = file.readAll();
         file.close();
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
         QSize size = m_texture.bindCompressedTexture
             (data.constData(), data.size(), format);
         if (!size.isEmpty()) {
@@ -449,6 +439,7 @@ bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
     const char *buf = reinterpret_cast<const char *>(buffer);
     if (m_texture.canBindCompressedTexture(buf, int(len), format, &alpha)) {
         resize(0, 0);
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
         QSize size = m_texture.bindCompressedTexture(buf, int(len), format);
         if (!size.isEmpty()) {
             w = size.width();

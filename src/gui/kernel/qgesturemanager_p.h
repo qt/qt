@@ -73,7 +73,7 @@ public:
     void unregisterGestureRecognizer(Qt::GestureType type);
 
     bool filterEvent(QWidget *receiver, QEvent *event);
-    bool filterEvent(QGesture *receiver, QEvent *event);
+    bool filterEvent(QObject *receiver, QEvent *event);
 #ifndef QT_NO_GRAPHICSVIEW
     bool filterEvent(QGraphicsObject *receiver, QEvent *event);
 #endif //QT_NO_GRAPHICSVIEW
@@ -86,7 +86,7 @@ public:
 
 protected:
     void timerEvent(QTimerEvent *event);
-    bool filterEventThroughContexts(const QMultiHash<QObject *, Qt::GestureType> &contexts,
+    bool filterEventThroughContexts(const QMultiMap<QObject *, Qt::GestureType> &contexts,
                                     QEvent *event);
 
 private:

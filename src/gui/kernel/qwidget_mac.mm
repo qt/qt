@@ -3671,6 +3671,7 @@ void QWidgetPrivate::raise_sys()
         return;
 
 #if QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
     if (isRealWindow()) {
         // Calling orderFront shows the window on Cocoa too.
         if (!q->testAttribute(Qt::WA_DontShowOnScreen) && q->isVisible()) {
@@ -4493,9 +4494,13 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
 #ifndef QT_MAC_USE_COCOA
-    if(extra->topextra->group) {
+    if (extra->topextra->group) {
         qt_mac_release_window_group(extra->topextra->group);
         extra->topextra->group = 0;
+    }
+    if (extra->topextra->windowIcon) {
+        ReleaseIconRef(extra->topextra->windowIcon);
+        extra->topextra->windowIcon = 0;
     }
 #endif
 }

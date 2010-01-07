@@ -128,12 +128,18 @@ private:
     QString tmpDirName;
 };
 
+Q_DECLARE_METATYPE(tst_qfile::BenchmarkType)
+Q_DECLARE_METATYPE(QIODevice::OpenMode)
+Q_DECLARE_METATYPE(QIODevice::OpenModeFlag)
+
 void tst_qfile::createFile()
 {
+    removeFile();  // Cleanup in case previous test case aborted before cleaning up
+
     QTemporaryFile tmpFile;
     tmpFile.setAutoRemove(false);
     if (!tmpFile.open())
-        ::_exit(1);
+        ::exit(1);
     filename = tmpFile.fileName();
     tmpFile.close();
 }
@@ -217,7 +223,6 @@ void tst_qfile::readBigFile_data(BenchmarkType type, QIODevice::OpenModeFlag t, 
 
     for (int i=0; i<bs_entries; ++i)
         QTest::newRow((QString("BS: %1, Flags: %2" )).arg(bs[i]).arg(flagstring).toLatin1().constData()) << type << bs[i] << t << b;
-  
 }
 
 void tst_qfile::readBigFile()
@@ -227,8 +232,12 @@ void tst_qfile::readBigFile()
     QFETCH(QFile::OpenModeFlag, textMode);
     QFETCH(QFile::OpenModeFlag, bufferedMode);
 
-    char buffer[BUFSIZE]; // we can't allocate buffers nice and dynamically in c++
-    removeFile();
+#ifndef Q_OS_WIN
+    if (testType == Win32Benchmark)
+        QSKIP("This is Windows only benchmark.", SkipSingle);
+#endif
+
+    char *buffer = new char[BUFSIZE];
     createFile();
     fillFile();
 
@@ -297,6 +306,9 @@ void tst_qfile::readBigFile()
         }
         break;
     }
+
+    removeFile();
+    delete[] buffer;
 }
 
 void tst_qfile::seek_data()
@@ -374,6 +386,8 @@ void tst_qfile::seek()
         }
         break;
     }
+
+    removeFile();
 }
 
 void tst_qfile::open_data()
@@ -392,7 +406,6 @@ void tst_qfile::open()
 {
     QFETCH(tst_qfile::BenchmarkType, testType);
 
-    removeFile();
     createFile();
 
     switch (testType) {
@@ -435,6 +448,7 @@ void tst_qfile::open()
                 file.open(cfile, QIODevice::ReadOnly);
                 file.close();
             }
+            ::fclose(cfile);
         }
         break;
         case(Win32Benchmark): {
@@ -456,6 +470,7 @@ void tst_qfile::open()
         break;
     }
 
+    removeFile();
 }
 
 
@@ -515,15 +530,20 @@ void tst_qfile::readSmallFiles_data(BenchmarkType type, QIODevice::OpenModeFlag 
 void tst_qfile::createSmallFiles()
 {
     QDir dir = QDir::temp();
-    Q_ASSERT(dir.mkdir("tst"));
+    dir.mkdir("tst");
     dir.cd("tst");
     tmpDirName = dir.absolutePath();
 
+#ifdef Q_OS_SYMBIAN
+    for (int i = 0; i < 100; ++i)
+#else
     for (int i = 0; i < 1000; ++i)
+#endif
     {
         QFile f(tmpDirName+"/"+QString::number(i));
         f.open(QIODevice::WriteOnly);
-        f.seek(512);
+        f.seek(511);
+        f.putChar('\n');
         f.close();
     }
 }
@@ -544,17 +564,22 @@ void tst_qfile::readSmallFiles()
     QFETCH(QFile::OpenModeFlag, textMode);
     QFETCH(QFile::OpenModeFlag, bufferedMode);
 
-    removeSmallFiles();
+#ifndef Q_OS_WIN
+    if (testType == Win32Benchmark)
+        QSKIP("This is Windows only benchmark.", SkipSingle);
+#endif
+
     createSmallFiles();
+
     QDir dir(tmpDirName);
-    const QStringList files = dir.entryList(QDir::NoDotAndDotDot|QDir::NoSymLinks);
-    char buffer[BUFSIZE]; // we can't allocate buffers nice and dynamically in c++
+    const QStringList files = dir.entryList(QDir::NoDotAndDotDot|QDir::NoSymLinks|QDir::Files);
+    char *buffer = new char[BUFSIZE];
 
     switch (testType) {
         case(QFileBenchmark): {
             QList<QFile*> fileList;
             Q_FOREACH(QString file, files) {
-                QFile *f = new QFile(file);
+                QFile *f = new QFile(tmpDirName+ "/" + file);
                 f->open(QIODevice::ReadOnly|textMode|bufferedMode);
                 fileList.append(f);
             }
@@ -576,7 +601,7 @@ void tst_qfile::readSmallFiles()
         case(QFSFileEngineBenchmark): {
             QList<QFSFileEngine*> fileList;
             Q_FOREACH(QString file, files) {
-                QFSFileEngine *fse = new QFSFileEngine(file);
+                QFSFileEngine *fse = new QFSFileEngine(tmpDirName+ "/" + file);
                 fse->open(QIODevice::ReadOnly|textMode|bufferedMode);
                 fileList.append(fse);
             }
@@ -596,7 +621,7 @@ void tst_qfile::readSmallFiles()
         case(PosixBenchmark): {
             QList<FILE*> fileList;
             Q_FOREACH(QString file, files) {
-                fileList.append(::fopen(QFile::encodeName(file).constData(), "rb"));
+                fileList.append(::fopen(QFile::encodeName(tmpDirName+ "/" + file).constData(), "rb"));
             }
 
             QBENCHMARK {
@@ -640,11 +665,10 @@ void tst_qfile::readSmallFiles()
         }
         break;
     }
-}
 
-Q_DECLARE_METATYPE(tst_qfile::BenchmarkType)
-Q_DECLARE_METATYPE(QIODevice::OpenMode)
-Q_DECLARE_METATYPE(QIODevice::OpenModeFlag)
+    removeSmallFiles();
+    delete[] buffer;
+}
 
 QTEST_MAIN(tst_qfile)
 

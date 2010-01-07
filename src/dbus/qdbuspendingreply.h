@@ -188,6 +188,7 @@ public:
 private:
     inline void calculateMetaTypes()
     {
+        if (!d) return;
         int typeIds[Count > 0 ? Count : 1]; // use at least one since zero-sized arrays aren't valid
         ForEach::fillMetaTypes(typeIds);
         setMetaTypes(Count, typeIds);

@@ -102,8 +102,10 @@ public:
     Qt::ToolButtonStyle toolButtonStyle() const;
     void setToolButtonStyle(Qt::ToolButtonStyle toolButtonStyle);
 
+#ifndef QT_NO_DOCKWIDGET
     bool isAnimated() const;
     bool isDockNestingEnabled() const;
+#endif
 
 #ifndef QT_NO_TABBAR
     bool documentMode() const;
