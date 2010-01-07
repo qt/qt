@@ -326,14 +326,14 @@ int main(int argc, char ** argv)
     if (fullScreen && maximized)
         qWarning() << "Both -fullscreen and -maximized specified. Using -fullscreen.";
     if (!fileName.isEmpty()) {
-        viewer.openQml(fileName);
+        viewer.open(fileName);
         fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
     } else {
         if (!useNativeFileBrowser)
-            viewer.open();
+            viewer.openFile();
         fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
         if (useNativeFileBrowser)
-            viewer.open();
+            viewer.openFile();
     }
     viewer.raise();
 

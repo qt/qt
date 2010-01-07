@@ -765,7 +765,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(_q_cursorPositionChanged()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
 
-    QObject::connect(control, SIGNAL(textChanged(const QString &)), q, SLOT(updateMicroFocus()));
+    QObject::connect(control, SIGNAL(textChanged()), q, SLOT(updateMicroFocus()));
 
     // set a null page size initially to avoid any relayouting until the textedit
     // is shown. relayoutDocument() will take care of setting the page size to the

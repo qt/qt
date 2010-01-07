@@ -908,14 +908,18 @@ QString QmlGraphicsVisualDataModel::stringValue(int index, const QString &name)
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(data);
     if (ddata && ddata->propertyCache) {
         QmlPropertyCache::Data *prop = ddata->propertyCache->property(name);
-        if (prop->propType == QVariant::String) {
-            void *args[] = { &val, 0 };
-            QMetaObject::metacall(data, QMetaObject::ReadProperty, prop->coreIndex, args);
-        } else if (prop->propType == qMetaTypeId<QVariant>()) {
-            QVariant v;
-            void *args[] = { &v, 0 };
-            QMetaObject::metacall(data, QMetaObject::ReadProperty, prop->coreIndex, args);
-            val = v.toString();
+        if (prop) {
+            if (prop->propType == QVariant::String) {
+                void *args[] = { &val, 0 };
+                QMetaObject::metacall(data, QMetaObject::ReadProperty, prop->coreIndex, args);
+            } else if (prop->propType == qMetaTypeId<QVariant>()) {
+                QVariant v;
+                void *args[] = { &v, 0 };
+                QMetaObject::metacall(data, QMetaObject::ReadProperty, prop->coreIndex, args);
+                val = v.toString();
+            }
+        } else {
+            val = data->property(name.toUtf8()).toString();
         }
     } else {
         val = data->property(name.toUtf8()).toString();

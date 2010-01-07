@@ -583,7 +583,9 @@ void QmlFontValueType::setPointSize(qreal size)
         qWarning() << "Both point size and pixel size set. Using pixel size.";
         return;
     }
-    font.setPointSizeF(size);
+
+    if (size >= 0.0)
+        font.setPointSizeF(size);
 }
 
 int QmlFontValueType::pixelSize() const
@@ -593,8 +595,12 @@ int QmlFontValueType::pixelSize() const
 
 void QmlFontValueType::setPixelSize(int size)
 {
-    font.setPixelSize(size);
-    hasPixelSize = true;
+    if (size >=0) {
+        font.setPixelSize(size);
+        hasPixelSize = true;
+    } else {
+        hasPixelSize = false;
+    }
 }
 
 QmlFontValueType::Capitalization QmlFontValueType::capitalization() const

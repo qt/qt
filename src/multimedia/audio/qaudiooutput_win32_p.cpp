@@ -147,6 +147,14 @@ WAVEHDR* QAudioOutputPrivate::allocateBlocks(int size, int count)
 
 void QAudioOutputPrivate::freeBlocks(WAVEHDR* blockArray)
 {
+    WAVEHDR* blocks = blockArray;
+
+    int count = buffer_size/period_size;
+
+    for(int i = 0; i < count; i++) {
+        waveOutUnprepareHeader(hWaveOut,&blocks[i], sizeof(WAVEHDR));
+        blocks+=sizeof(WAVEHDR);
+    }
     HeapFree(GetProcessHeap(), 0, blockArray);
 }
 

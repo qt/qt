@@ -41,9 +41,8 @@
 
 #include <QXmlStreamReader>
 
-#include "main.h"
-
 #include "qcoloringmessagehandler_p.h"
+#include "qxmlpatternistcli_p.h"
 
 QT_BEGIN_NAMESPACE
 

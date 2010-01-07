@@ -51,6 +51,7 @@
 #include "qmlexpression.h"
 #include "qmlcomponent.h"
 #include "qmlmetaproperty_p.h"
+#include "qmlmoduleplugin.h"
 #include "qmlbinding_p.h"
 #include "qmlvme_p.h"
 #include "qmlenginedebug_p.h"
@@ -88,6 +89,7 @@
 #include <QGraphicsObject>
 #include <QtCore/qcryptographichash.h>
 
+#include <private/qfactoryloader_p.h>
 #include <private/qobject_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
 
@@ -648,7 +650,10 @@ QmlContext *QmlEnginePrivate::getContext(QScriptContext *ctxt)
     QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
     Q_ASSERT(scopeNode.isValid());
     Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == contextClass);
-    return contextClass->contextFromValue(scopeNode);
+    QmlContext *context = contextClass->contextFromValue(scopeNode);
+    while (context && QmlContextPrivate::get(context)->isTemporary)
+        context = context->parentContext();
+    return context;
 }
 
 QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
@@ -1150,6 +1155,9 @@ struct QmlEnginePrivate::ImportedNamespace {
     }
 };
 
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+    (QmlModuleFactoryInterface_iid, QLatin1String("/qmlmodules")))
+
 class QmlImportsPrivate {
 public:
     QmlImportsPrivate() : ref(1)
@@ -1187,6 +1195,13 @@ public:
                 }
             }
             if (!found) {
+                if (uri != QLatin1String("Qt")) { // skip well-known, it's not in a plugin
+                    QFactoryLoader *l = loader();
+                    QmlModuleFactoryInterface *factory =
+                        qobject_cast<QmlModuleFactoryInterface*>(l->instance(uri));
+                    // return value not used currently
+                }
+
                 // XXX assume it is a built-in type qualifier
                 isbuiltin = true;
             }

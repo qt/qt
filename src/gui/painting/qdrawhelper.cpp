@@ -44,6 +44,7 @@
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
 #include <private/qdrawhelper_armv6_p.h>
+#include <private/qdrawhelper_neon_p.h>
 #include <private/qmath_p.h>
 #include <qmath.h>
 
@@ -7725,7 +7726,8 @@ enum CPUFeatures {
     SSE         = 0x10,
     SSE2        = 0x20,
     CMOV        = 0x40,
-    IWMMXT      = 0x80
+    IWMMXT      = 0x80,
+    NEON        = 0x100
 };
 
 static uint detectCPUFeatures()
@@ -7751,6 +7753,9 @@ static uint detectCPUFeatures()
     // runtime detection only available when running as a previlegied process
     static const bool doIWMMXT = !qgetenv("QT_NO_IWMMXT").toInt();
     return doIWMMXT ? IWMMXT : 0;
+#elif defined(QT_HAVE_NEON)
+    static const bool doNEON = !qgetenv("QT_NO_NEON").toInt();
+    return doNEON ? NEON : 0;
 #else
     uint features = 0;
 #if defined(__x86_64__) || defined(Q_OS_WIN64)
@@ -8122,7 +8127,14 @@ void qInitDrawhelperAsm()
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_armv6;
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
-#endif // Q_CC_RVCT && QT_HAVE_ARMV6
+#elif defined(QT_HAVE_NEON)
+        if (features & NEON) {
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
+        }
+#endif
 
     if (functionForModeSolidAsm) {
         const int destinationMode = QPainter::CompositionMode_Destination;

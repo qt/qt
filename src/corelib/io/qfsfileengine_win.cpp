@@ -1595,13 +1595,10 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
         ret |= LocalDiskFlag;
         if (d->doStat()) {
             ret |= ExistsFlag;
-            if (d->filePath == QLatin1String("/") || isDriveRoot(d->filePath) || isUncRoot(d->filePath)) {
+            if (d->filePath == QLatin1String("/") || isDriveRoot(d->filePath) || isUncRoot(d->filePath))
                 ret |= RootFlag;
-            } else if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN) {
-                QString baseName = fileName(BaseName);
-                if (baseName != QLatin1String(".") && baseName != QLatin1String(".."))
-                    ret |= HiddenFlag;
-            }
+            else if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN)
+                ret |= HiddenFlag;
         }
     }
     return ret;

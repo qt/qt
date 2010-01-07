@@ -60,15 +60,15 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsText : public QmlGraphicsItem
     Q_ENUMS(TextElideMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QFont font READ font WRITE setFont)
-    Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(TextStyle style READ style WRITE setStyle)
-    Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor)
-    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
-    Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign)
-    Q_PROPERTY(bool wrap READ wrap WRITE setWrap) //### there are several wrap modes in Qt
-    Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
-    Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode) //### elideMode?
+    Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(TextStyle style READ style WRITE setStyle NOTIFY styleChanged)
+    Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor NOTIFY styleColorChanged)
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
+    Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
+    Q_PROPERTY(bool wrap READ wrap WRITE setWrap NOTIFY wrapChanged) //### there are several wrap modes in Qt
+    Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
+    Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode NOTIFY elideModeChanged) //### elideMode?
 
 public:
     QmlGraphicsText(QmlGraphicsItem *parent=0);
@@ -130,6 +130,15 @@ public:
 Q_SIGNALS:
     void textChanged(const QString &text);
     void linkActivated(const QString &link);
+    void fontChanged(const QFont &font);
+    void colorChanged(const QColor &color);
+    void styleChanged(TextStyle style);
+    void styleColorChanged(const QColor &color);
+    void horizontalAlignmentChanged(HAlignment alignment);
+    void verticalAlignmentChanged(VAlignment alignment);
+    void wrapChanged(bool wrap);
+    void textFormatChanged(TextFormat textFormat);
+    void elideModeChanged(TextElideMode mode);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

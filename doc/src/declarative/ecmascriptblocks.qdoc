@@ -54,6 +54,14 @@ assigned to an object property or given an id.  The included ECMAScript is evalu
 in a scope chain.  The \l {QML Scope} documentation covers the specifics of scoping 
 in QML.  
 
+A restriction on the ECMAScript used in QML is that you cannot add new members to the
+global object. This happens transparently when you try to use a variable without
+declaring it, and so declaring local variables is required when using ECMA script in
+QML.
+
+The global object in QML has a variety of helper functions added to it, to aid UI
+implementation. See \l{QML Global Object} for further details.
+
 Note that if you are adding a function that should be called by external elements,
 you do not need the \l Script element. See \l {Extending types from QML#Adding new methods}
 {Adding new methods} for information about adding slots that can be called externally.
@@ -123,7 +131,7 @@ until the script has been retrieved.
 
 It is occasionally necessary to run a block of ECMAScript code at application (or
 component instance) "startup".  While it is tempting to just include the startup
-script as \e {global code} in an external script file, this can have sever limitations
+script as \e {global code} in an external script file, this can have severe limitations
 as the QML environment may not have been fully established.  For example, some objects 
 might not have been created or some \l {Property Binding}s may not have been run.
 \l {QML Script Restrictions} covers the exact limitations of global script code.

@@ -56,6 +56,7 @@ class QmlGraphicsTestEngine;
 class QProcess;
 class RecordingDialog;
 class QmlGraphicsTester;
+class QNetworkReply;
 
 class QmlViewer
 #if defined(Q_OS_SYMBIAN)
@@ -99,8 +100,10 @@ public:
 
 public slots:
     void sceneResized(QSize size);
+    void open(const QString&);
+    void openWgt(const QString&);
     void openQml(const QString&);
-    void open();
+    void openFile();
     void reload();
     void takeSnapShot();
     void toggleRecording();
@@ -131,6 +134,7 @@ private slots:
     void setLandscape();
     void startNetwork();
     void toggleFullScreen();
+    void unpackWgt();
 
 private:
     void setupProxy();
@@ -172,6 +176,9 @@ private:
     QString m_script;
     ScriptOptions m_scriptOptions;
     QmlGraphicsTester *tester;
+
+    QNetworkReply *wgtreply;
+    QString wgtdir;
 
     bool useQmlFileBrowser;
 };
