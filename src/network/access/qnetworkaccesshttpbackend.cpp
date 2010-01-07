@@ -402,7 +402,10 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     if (lastModified.isValid())
         httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
 
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QDateTime expirationDate = metaData.expirationDate();
 
+#if 0
     /*
      * age_value
      *      is the value of Age: header received by the cache with
@@ -418,7 +421,6 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
      * now
      *      is the current (local) time
      */
-    QDateTime currentDateTime = QDateTime::currentDateTime();
     int age_value = 0;
     it = cacheHeaders.findRawHeader("age");
     if (it != cacheHeaders.rawHeaders.constEnd())
@@ -445,7 +447,6 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     int current_age   = corrected_initial_age + resident_time;
 
     // RFC 2616 13.2.4 Expiration Calculations
-    QDateTime expirationDate = metaData.expirationDate();
     if (!expirationDate.isValid()) {
         if (lastModified.isValid()) {
             int diff = currentDateTime.secsTo(lastModified);
@@ -464,6 +465,9 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     // if "max-age" is present, or to Expires otherwise
     int freshness_lifetime = dateHeader.secsTo(expirationDate);
     bool response_is_fresh = (freshness_lifetime > current_age);
+#else
+    bool response_is_fresh = currentDateTime.secsTo(expirationDate) >= 0;
+#endif
 
     if (!response_is_fresh)
         return;
