@@ -349,7 +349,9 @@ extern "C" {
             // since we accepted the drag enter event, the widget expects
             // future drage move events.
             // ### check if we need to treat this like the drag enter event.
-            nsActions = QT_PREPEND_NAMESPACE(qt_mac_mapDropAction)(qDEEvent.dropAction());
+            nsActions = NSDragOperationNone;
+            // Save as ignored in the answer rect.
+            qDMEvent.setDropAction(Qt::IgnoreAction);
         } else {
             nsActions = QT_PREPEND_NAMESPACE(qt_mac_mapDropAction)(qDMEvent.dropAction());
         }
@@ -357,7 +359,6 @@ extern "C" {
         return nsActions;
     }
  }
-
 - (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender
 {
     NSPoint windowPoint = [sender draggingLocation];
@@ -402,13 +403,15 @@ extern "C" {
     qDMEvent.setDropAction(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction);
     qDMEvent.accept();
     QApplication::sendEvent(qwidget, &qDMEvent);
-    qt_mac_copy_answer_rect(qDMEvent);
 
     NSDragOperation operation = qt_mac_mapDropAction(qDMEvent.dropAction());
     if (!qDMEvent.isAccepted() || qDMEvent.dropAction() == Qt::IgnoreAction) {
         // ignore this event (we will still receive further notifications)
         operation = NSDragOperationNone;
+        // Save as ignored in the answer rect.
+        qDMEvent.setDropAction(Qt::IgnoreAction);
     }
+    qt_mac_copy_answer_rect(qDMEvent);
     return operation;
 }
 
@@ -777,7 +780,7 @@ extern "C" {
     NSPoint windowPoint = [theEvent locationInWindow];
     NSPoint globalPoint = [[theEvent window] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
-    QPoint qlocal = QPoint(localPoint.x, flipYCoordinate(localPoint.y));
+    QPoint qlocal = QPoint(localPoint.x, localPoint.y);
     QPoint qglobal = QPoint(globalPoint.x, flipYCoordinate(globalPoint.y));
     Qt::MouseButtons buttons = QApplication::mouseButtons();
     bool wheelOK = false;

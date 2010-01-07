@@ -1648,6 +1648,17 @@
                 <string>&lt;p&gt;Note that any applications using the virtual framebuffer will be terminated if you change the Size or Depth &lt;i&gt;above&lt;/i&gt;. You may freely modify the Gamma &lt;i&gt;below&lt;/i&gt;.</string>
             </property>
         </widget>
+        <widget class="QRadioButton">
+            <property name="name">
+                <cstring>test_for_useless_buttongroupId</cstring>
+            </property>
+            <property name="text">
+                <string>Test</string>
+            </property>
+            <property name="buttonGroupId">
+                <string>1</string>
+            </property>
+        </widget>
     </grid>
 </widget>
 <customwidgets>

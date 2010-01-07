@@ -1289,6 +1289,12 @@ void tst_QPixmap::copy()
     QPixmap expected(10, 10);
     expected.fill(Qt::blue);
     QVERIFY(lenientCompare(dest, expected));
+
+    QPixmap trans;
+    trans.fill(Qt::transparent);
+
+    QPixmap transCopy = trans.copy();
+    QVERIFY(pixmapsAreEqual(&trans, &transCopy));
 }
 
 #ifdef QT3_SUPPORT

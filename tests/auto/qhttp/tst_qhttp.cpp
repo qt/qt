@@ -57,9 +57,6 @@
 # include <qsslsocket.h>
 #endif
 
-#ifndef TEST_QNETWORK_PROXY
-#define TEST_QNETWORK_PROXY
-#endif
 #include "../network-settings.h"
 
 //TESTED_CLASS=
@@ -198,9 +195,7 @@ void tst_QHttp::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
-#endif
 }
 
 void tst_QHttp::initTestCase()

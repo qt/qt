@@ -965,7 +965,15 @@ QByteArray QIODevice::readAll()
 
     QByteArray result;
     qint64 readBytes = 0;
-    if (d->isSequential() || (readBytes = size()) == 0) {
+
+    // flush internal read buffer
+    if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
+        result = d->buffer.readAll();
+        readBytes = result.size();
+    }
+
+    qint64 theSize;
+    if (d->isSequential() || (theSize = size()) == 0) {
         // Size is unknown, read incrementally.
         qint64 readResult;
         do {
@@ -977,7 +985,7 @@ QByteArray QIODevice::readAll()
     } else {
         // Read it all in one go.
         // If resize fails, don't read anything.
-        result.resize(int(readBytes - d->pos));
+        result.resize(int(theSize - d->pos));
         readBytes = read(result.data(), result.size());
     }
 

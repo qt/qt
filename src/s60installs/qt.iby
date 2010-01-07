@@ -90,27 +90,27 @@ file=ABI_DIR\BUILD_DIR\qts60plugin_5_0.dll   SHARED_LIB_DIR\qts60plugin_5_0.dll 
 S60_APP_RESOURCE(s60main)
 
 // imageformats stubs
-data=\epoc32\winscw\c\resource\qt\plugins\imageformats\qgif.qtplugin         resource\qt\plugins\imageformats\qgif.qtplugin
-data=\epoc32\winscw\c\resource\qt\plugins\imageformats\qico.qtplugin         resource\qt\plugins\imageformats\qico.qtplugin
-data=\epoc32\winscw\c\resource\qt\plugins\imageformats\qjpeg.qtplugin        resource\qt\plugins\imageformats\qjpeg.qtplugin
-data=\epoc32\winscw\c\resource\qt\plugins\imageformats\qmng.qtplugin         resource\qt\plugins\imageformats\qmng.qtplugin
-data=\epoc32\winscw\c\resource\qt\plugins\imageformats\qsvg.qtplugin         resource\qt\plugins\imageformats\qsvg.qtplugin
-data=\epoc32\winscw\c\resource\qt\plugins\imageformats\qtiff.qtplugin        resource\qt\plugins\imageformats\qtiff.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qgif.qtplugin         resource\qt\plugins\imageformats\qgif.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qico.qtplugin         resource\qt\plugins\imageformats\qico.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qjpeg.qtplugin        resource\qt\plugins\imageformats\qjpeg.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qmng.qtplugin         resource\qt\plugins\imageformats\qmng.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qsvg.qtplugin         resource\qt\plugins\imageformats\qsvg.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qtiff.qtplugin        resource\qt\plugins\imageformats\qtiff.qtplugin
 
 // codecs stubs
-data=\epoc32\winscw\c\resource\qt\plugins\codecs\qcncodecs.qtplugin          resource\qt\plugins\codecs\qcncodecs.qtplugin
-data=\epoc32\winscw\c\resource\qt\plugins\codecs\qjpcodecs.qtplugin          resource\qt\plugins\codecs\qjpcodecs.qtplugin
-data=\epoc32\winscw\c\resource\qt\plugins\codecs\qkrcodecs.qtplugin          resource\qt\plugins\codecs\qkrcodecs.qtplugin
-data=\epoc32\winscw\c\resource\qt\plugins\codecs\qtwcodecs.qtplugin          resource\qt\plugins\codecs\qtwcodecs.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qcncodecs.qtplugin          resource\qt\plugins\codecs\qcncodecs.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qjpcodecs.qtplugin          resource\qt\plugins\codecs\qjpcodecs.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qkrcodecs.qtplugin          resource\qt\plugins\codecs\qkrcodecs.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qtwcodecs.qtplugin          resource\qt\plugins\codecs\qtwcodecs.qtplugin
 
 // iconengines stubs
-data=\epoc32\winscw\c\resource\qt\plugins\iconengines\qsvgicon.qtplugin      resource\qt\plugins\iconengines\qsvgicon.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qsvgicon.qtplugin      resource\qt\plugins\iconengines\qsvgicon.qtplugin
 
 // Phonon MMF backend
-data=\epoc32\winscw\c\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\phonon_mmf.qtplugin resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin
 
 // graphicssystems
-data=\epoc32\winscw\c\resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin      resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin
+data=\epoc32\data\qt\qtlibspluginstubs\qvggraphicssystem.qtplugin      resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin
 
 // Stub sis file
 data=ZSYSTEM\install\qt.sis    System\Install\qt.sis

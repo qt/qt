@@ -94,6 +94,7 @@ public:
 
 class QBalloonTip : public QWidget
 {
+    Q_OBJECT
 public:
     static void showBalloon(QSystemTrayIcon::MessageIcon icon, const QString& title,
                             const QString& msg, QSystemTrayIcon *trayIcon,

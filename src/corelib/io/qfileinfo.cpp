@@ -573,6 +573,8 @@ QString QFileInfo::canonicalFilePath() const
 QString QFileInfo::absolutePath() const
 {
     Q_D(const QFileInfo);
+    if (d->data->fileName.isEmpty())
+        qWarning("QFileInfo::absolutePath: Constructed with empty filename");
     if(!d->data->fileEngine)
         return QLatin1String("");
     return d->getFileName(QAbstractFileEngine::AbsolutePathName);

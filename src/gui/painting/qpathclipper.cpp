@@ -1209,7 +1209,7 @@ static qreal computeAngle(const QPointF &v)
     }
 #else
     // doesn't seem to be robust enough
-    return atan2(v.x(), v.y()) + Q_PI;
+    return qAtan2(v.x(), v.y()) + Q_PI;
 #endif
 }
 

@@ -91,7 +91,6 @@
 #define OK_SIS_TARGET "ok_sis"
 #define FAIL_SIS_NOPKG_TARGET "fail_sis_nopkg"
 #define FAIL_SIS_NOCACHE_TARGET "fail_sis_nocache"
-#define RESTORE_BUILD_TARGET "restore_build"
 
 #define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
 
@@ -1762,9 +1761,14 @@ void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
 
 void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 {
-    t << SIS_TARGET ": " RESTORE_BUILD_TARGET << endl;
+    t << "-include " MAKE_CACHE_NAME << endl;
+    t << endl;
+
+    t << SIS_TARGET ":" << endl;
     QString siscommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
-                                  "$(MAKE) -s -f $(MAKEFILE) %4,$(MAKE) -s -f $(MAKEFILE) %5)," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %4," \
+                                  "$(if $(QT_SIS_TARGET),$(MAKE) -s -f $(MAKEFILE) %4," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %5))," \
                                   "$(MAKE) -s -f $(MAKEFILE) %6)")
                           .arg(fixedTarget)
                           .arg("pkg")
@@ -1789,12 +1793,7 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
     t << endl;
 
     t << FAIL_SIS_NOCACHE_TARGET ":" << endl;
-    t << "\t$(error Project has to be build before calling 'SIS' target)" << endl;
-    t << endl;
-
-
-    t << RESTORE_BUILD_TARGET ":" << endl;
-    t << "-include " MAKE_CACHE_NAME << endl;
+    t << "\t$(error Project has to be built or QT_SIS_TARGET environment variable has to be set before calling 'SIS' target)" << endl;
     t << endl;
 }
 
@@ -1851,4 +1850,23 @@ void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
 
     t << "distclean: clean dodistclean" << endl;
     t << endl;
+}
+
+void SymbianMakefileGenerator::generateExecutionTargets(QTextStream& t, const QStringList& platforms)
+{
+    // create execution targets
+    if (targetType == TypeExe) {
+        if (platforms.contains("winscw")) {
+            t << "ifeq (\"DEBUG-winscw\", \"$(QT_SIS_TARGET)\")" << endl;
+            t << "run:" << endl;
+            t << "\t-call " << epocRoot() << "epoc32/release/winscw/udeb/" << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
+            t << "else" << endl;
+        }
+        t << "run: sis" << endl;
+        t << "\trunonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis " << fixedTarget << "_$(QT_SIS_TARGET).sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
+        if (platforms.contains("winscw")) {
+            t << "endif" << endl;
+        }
+        t << endl;
+    }
 }

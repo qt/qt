@@ -569,14 +569,10 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     item->d_ptr->clearSubFocus();
 
-    if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
-        widget->d_func()->fixFocusChainBeforeReparenting(0, 0);
-    }
-
     if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
         unregisterScenePosItem(item);
 
+    QGraphicsScene *oldScene = item->d_func()->scene;
     item->d_func()->scene = 0;
 
     //We need to remove all children first because they might use their parent
@@ -585,6 +581,11 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         // Remove all children recursively
         for (int i = 0; i < item->d_ptr->children.size(); ++i)
             q->removeItem(item->d_ptr->children.at(i));
+    }
+
+    if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
+        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
+        widget->d_func()->fixFocusChainBeforeReparenting(0, oldScene, 0);
     }
 
     // Unregister focus proxy.
@@ -1560,7 +1561,10 @@ QGraphicsScene::QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObj
 }
 
 /*!
-    Destroys the QGraphicsScene object.
+  Removes and deletes all items from the scene object
+  before destroying the scene object. The scene object
+  is removed from the application's global scene list,
+  and it is removed from all associated views.
 */
 QGraphicsScene::~QGraphicsScene()
 {
@@ -2442,23 +2446,26 @@ void QGraphicsScene::destroyItemGroup(QGraphicsItemGroup *group)
 }
 
 /*!
-    Adds or moves the item \a item and all its childen to the scene.
+    Adds or moves the \a item and all its childen to this scene.
+    This scene takes ownership of the \a item.
 
     If the item is visible (i.e., QGraphicsItem::isVisible() returns
     true), QGraphicsScene will emit changed() once control goes back
     to the event loop.
 
-    If the item is already in a different scene, it will first be removed from
-    its old scene, and then added to this scene as a top-level.
+    If the item is already in a different scene, it will first be
+    removed from its old scene, and then added to this scene as a
+    top-level.
 
-    QGraphicsScene will send ItemSceneChange notifications to \a item while
-    it is added to the scene. If item does not currently belong to a scene, only one
-    notification is sent. If it does belong to scene already (i.e., it is
-    moved to this scene), QGraphicsScene will send an addition notification as
-    the item is removed from its previous scene.
+    QGraphicsScene will send ItemSceneChange notifications to \a item
+    while it is added to the scene. If item does not currently belong
+    to a scene, only one notification is sent. If it does belong to
+    scene already (i.e., it is moved to this scene), QGraphicsScene
+    will send an addition notification as the item is removed from its
+    previous scene.
 
-    If the item is a panel, the scene is active, and there is no active panel
-    in the scene, then the item will be activated.
+    If the item is a panel, the scene is active, and there is no
+    active panel in the scene, then the item will be activated.
 
     \sa removeItem(), addEllipse(), addLine(), addPath(), addPixmap(),
     addRect(), addText(), addWidget(), {QGraphicsItem#Sorting}{Sorting}
@@ -4670,10 +4677,13 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             painter->setWorldTransform(*transformPtr);
         painter->setOpacity(opacity);
 
-        if (sourced->lastEffectTransform != painter->worldTransform()) {
+        if (sourced->currentCachedSystem() != Qt::LogicalCoordinates
+            && sourced->lastEffectTransform != painter->worldTransform())
+        {
             sourced->lastEffectTransform = painter->worldTransform();
-            sourced->invalidateCache();
+            sourced->invalidateCache(QGraphicsEffectSourcePrivate::TransformChanged);
         }
+
         item->d_ptr->graphicsEffect->draw(painter);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;
@@ -5084,6 +5094,10 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     Example:
 
     \snippet doc/src/snippets/graphicssceneadditemsnippet.cpp 0
+
+    \obsolete Since Qt 4.6, this function is not called anymore unless
+    the QGraphicsView::IndirectPainting flag is given as an Optimization
+    flag.
 
     \sa drawBackground(), drawForeground()
 */

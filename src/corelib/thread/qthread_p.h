@@ -202,7 +202,7 @@ public:
     QStack<QEventLoop *> eventLoops;
     QPostEventList postEventList;
     bool canWait;
-    QMap<int, void *> tls;
+    QVector<void *> tls;
 
     QMutex mutex;
 

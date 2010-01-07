@@ -393,11 +393,12 @@ private:
     friend class QOpenGLPaintEnginePrivate;
     friend class QGL2PaintEngineEx;
     friend class QGL2PaintEngineExPrivate;
+    friend class QGLEngineShaderManager;
     friend class QGLWindowSurface;
     friend class QGLPixmapData;
     friend class QGLPixmapFilterBase;
     friend class QGLTextureGlyphCache;
-    friend class QGLShareRegister;
+    friend class QGLContextGroup;
     friend class QGLSharedResourceGuard;
     friend class QGLPixmapBlurFilter;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
@@ -546,6 +547,7 @@ private:
     friend class QGLPixelBuffer;
     friend class QGLPixelBufferPrivate;
     friend class QGLContext;
+    friend class QGLContextPrivate;
     friend class QGLOverlayWidget;
     friend class QOpenGLPaintEngine;
     friend class QGLPaintDevice;
