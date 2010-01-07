@@ -16,7 +16,9 @@ symbian*: {
   additional.path = desktopsettingsaware
   someTest.sources = test.pro
   someTest.path = test
-  DEPLOYMENT = additional deploy someTest
+  windowIcon.sources = ../heart.svg
+  DEPLOYMENT = additional deploy someTest windowIcon
+  LIBS += -lcone -lavkon
 }
 
 win32 {
