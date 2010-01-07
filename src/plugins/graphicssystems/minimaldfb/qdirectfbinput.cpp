@@ -83,6 +83,9 @@ void QDirectFbInput::handleEvents()
             case DWET_KEYUP:
                 handleKeyEvents(event);
                 break;
+            case DWET_ENTER:
+            case DWET_LEAVE:
+                handleEnterLeaveEvents(event);
             default:
                 break;
             }
@@ -163,6 +166,21 @@ void QDirectFbInput::handleKeyEvents(const DFBEvent &event)
     QKeyEvent keyEvent(type,key,modifiers,QChar(event.window.key_symbol));
     QWidget *tlw = tlwMap.value(event.window.window_id);
     QApplicationPrivate::handleKeyEvent(tlw,&keyEvent);
+}
+
+void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
+{
+    QWidget *tlw = tlwMap.value(event.window.window_id);
+    switch (event.window.type) {
+    case DWET_ENTER:
+        QApplicationPrivate::handleEnterEvent(tlw);
+        break;
+    case DWET_LEAVE:
+        QApplicationPrivate::handleLeaveEvent(tlw);
+        break;
+    default:
+        break;
+    }
 }
 
 inline QPoint QDirectFbInput::globalPoint(const DFBEvent &event) const

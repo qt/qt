@@ -58,7 +58,13 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *sc
     window->setWindowSurface(this);
     m_dfbWindow = m_screen->createWindow(window->rect(),window);
     m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
-    qDebug () << "initial surface: " << m_dfbSurface;
+
+    DFBSurfaceCapabilities caps;
+    m_dfbSurface->GetCapabilities(m_dfbSurface, &caps);
+    DFBSurfacePixelFormat format;
+    m_dfbSurface->GetPixelFormat(m_dfbSurface, &format);
+    qDebug() << "WindowSurface format " << QDirectFbConvenience::imageFormatFromSurfaceFormat(format,caps);
+
 
     QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
     m_pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);

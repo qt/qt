@@ -43,6 +43,7 @@ private:
     void handleMouseEvents(const DFBEvent &event);
     void handleWheelEvent(const DFBEvent &event);
     void handleKeyEvents(const DFBEvent &event);
+    void handleEnterLeaveEvents(const DFBEvent &event);
     IDirectFB *dfbInterface;
     IDirectFBDisplayLayer *dfbDisplayLayer;
     IDirectFBEventBuffer *eventBuffer;

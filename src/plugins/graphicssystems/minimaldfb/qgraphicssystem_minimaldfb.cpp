@@ -64,6 +64,7 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(int display)
     m_layer->GetConfiguration(m_layer, &config);
 
     m_format = QDirectFbConvenience::imageFormatFromSurfaceFormat(config.pixelformat, config.surface_caps);
+    qDebug() << "GraphcisSystemScreen has format: " << m_format;
     m_geometry = QRect(0,0,config.width,config.height);
     const int dpi = 72;
     const qreal inch = 25.4;
@@ -113,9 +114,6 @@ IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect, 
 
 QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
 {
-    IDirectFB *dfb;
-    DFBResult result = DFB_OK;
-
     const QStringList args = QCoreApplication::arguments();
     int argc = args.size();
     char **argv = new char*[argc];
@@ -123,7 +121,7 @@ QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
     for (int i = 0; i < argc; ++i)
         argv[i] = qstrdup(args.at(i).toLocal8Bit().constData());
 
-    result = DirectFBInit(&argc, &argv);
+    DFBResult result = DirectFBInit(&argc, &argv);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBScreen: error initializing DirectFB",
                       result);
