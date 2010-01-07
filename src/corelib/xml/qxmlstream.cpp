@@ -2884,8 +2884,6 @@ QStringRef QXmlStreamReader::documentEncoding() const
   \brief The QXmlStreamWriter class provides an XML writer with a
   simple streaming API.
 
-
-  \inmodule QtXml
   \ingroup xml-tools
 
   QXmlStreamWriter is the counterpart to QXmlStreamReader for writing
