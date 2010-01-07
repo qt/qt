@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,116 @@
 
 
 QT_BEGIN_NAMESPACE
+
+
+bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig config,
+                             const QX11Info &x11Info, bool useArgbVisual);
+//
+// QGLTempContext is a lass for creating a temporary GL context (which is
+// needed during QGLWidget initialization to retrieve GL extension info).
+// Faster to construct than a full QGLWidget.
+//
+class QGLTempContext
+{
+public:
+    QGLTempContext(int screen = 0) :
+        initialized(false),
+        window(0),
+        context(0),
+        surface(0)
+        {
+            display = eglGetDisplay(EGLNativeDisplayType(X11->display));
+
+            if (!eglInitialize(display, NULL, NULL)) {
+                qWarning("QGLTempContext: Unable to initialize EGL display.");
+                return;
+            }
+
+            EGLConfig config;
+            int numConfigs = 0;
+            EGLint attribs[] = {
+                EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+#ifdef QT_OPENGL_ES_2
+                EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+#endif
+                EGL_NONE
+            };
+
+            eglChooseConfig(display, attribs, &config, 1, &numConfigs);
+            if (!numConfigs) {
+                qWarning("QGLTempContext: No EGL configurations available.");
+                return;
+            }
+
+            XVisualInfo visualInfo;
+            XVisualInfo *vi;
+            int numVisuals;
+            EGLint id = 0;
+
+            eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &id);
+            if (id == 0) {
+                // EGL_NATIVE_VISUAL_ID is optional and might not be supported
+                // on some implementations - we'll have to do it the hard way
+                QX11Info xinfo;
+                qt_egl_setup_x11_visual(visualInfo, display, config, xinfo, false);
+            } else {
+                visualInfo.visualid = id;
+            }
+            vi = XGetVisualInfo(X11->display, VisualIDMask, &visualInfo, &numVisuals);
+            if (!vi || numVisuals < 1) {
+                qWarning("QGLTempContext: Unable to get X11 visual info id.");
+                return;
+            }
+
+            window = XCreateWindow(X11->display, RootWindow(X11->display, screen),
+                                   0, 0, 1, 1, 0,
+                                   vi->depth, InputOutput, vi->visual,
+                                   0, 0);
+
+            surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType) window, NULL);
+
+            if (surface == EGL_NO_SURFACE) {
+                qWarning("QGLTempContext: Error creating EGL surface.");
+                XFree(vi);
+                XDestroyWindow(X11->display, window);
+                return;
+            }
+
+            EGLint contextAttribs[] = {
+#ifdef QT_OPENGL_ES_2
+                EGL_CONTEXT_CLIENT_VERSION, 2,
+#endif
+                EGL_NONE
+            };
+            context = eglCreateContext(display, config, 0, contextAttribs);
+            if (context != EGL_NO_CONTEXT
+                && eglMakeCurrent(display, surface, surface, context))
+            {
+                initialized = true;
+            } else {
+                qWarning("QGLTempContext: Error creating EGL context.");
+                eglDestroySurface(display, surface);
+                XDestroyWindow(X11->display, window);
+            }
+            XFree(vi);
+        }
+
+    ~QGLTempContext() {
+        if (initialized) {
+            eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+            eglDestroyContext(display, context);
+            eglDestroySurface(display, surface);
+            XDestroyWindow(X11->display, window);
+        }
+    }
+
+private:
+    bool initialized;
+    Window window;
+    EGLContext context;
+    EGLSurface surface;
+    EGLDisplay display;
+};
 
 bool QGLFormat::hasOpenGLOverlays()
 {
@@ -446,12 +556,8 @@ void QGLExtensions::init()
     init_done = true;
 
     // We need a context current to initialize the extensions.
-    QGLWidget tmpWidget;
-    tmpWidget.makeCurrent();
-
+    QGLTempContext context;
     init_extensions();
-
-    tmpWidget.doneCurrent();
 }
 
 // Re-creates the EGL surface if the window ID has changed or if force is true

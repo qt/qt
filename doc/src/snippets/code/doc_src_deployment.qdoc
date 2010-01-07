@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -476,12 +476,8 @@ default_deployment.pkg_prerules += supported_platforms
 
 //! [58]
 embedded_deployments = \
-    "; Embed Open C dependencies" \
-    "@\"$${EPOCROOT}nokia_plugin/openc/s60opencsis/pips_s60_1_6_SS.sis\",(0x20013851)" \
-    "@\"$${EPOCROOT}nokia_plugin/openc/s60opencsis/openc_ssl_s60_1_6_SS.sis\",(0x200110CB)" \
-    "@\"$${EPOCROOT}nokia_plugin/opencpp/s60opencppsis/STDCPP_s60_1_6_SS.sis\",(0x2000F866)" \
     "; Embed Qt dependencies" \
-    "@\"$$[QT_INSTALL_PREFIX]/qt_rndsigned.sis\",(0x2001E61C)"
+    "@\"$$[QT_INSTALL_PREFIX]/qt_installer.sis\",(0x2001E62D)"
 
 default_deployment.pkg_prerules += embedded_deployments
 //! [58]

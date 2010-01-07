@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -91,7 +91,6 @@
 #define OK_SIS_TARGET "ok_sis"
 #define FAIL_SIS_NOPKG_TARGET "fail_sis_nopkg"
 #define FAIL_SIS_NOCACHE_TARGET "fail_sis_nocache"
-#define RESTORE_BUILD_TARGET "restore_build"
 
 #define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
 
@@ -1762,7 +1761,10 @@ void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
 
 void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 {
-    t << SIS_TARGET ": " RESTORE_BUILD_TARGET << endl;
+    t << "-include " MAKE_CACHE_NAME << endl;
+    t << endl;
+
+    t << SIS_TARGET ":" << endl;
     QString siscommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
                                   "$(MAKE) -s -f $(MAKEFILE) %4," \
                                   "$(if $(QT_SIS_TARGET),$(MAKE) -s -f $(MAKEFILE) %4," \
@@ -1792,11 +1794,6 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 
     t << FAIL_SIS_NOCACHE_TARGET ":" << endl;
     t << "\t$(error Project has to be built or QT_SIS_TARGET environment variable has to be set before calling 'SIS' target)" << endl;
-    t << endl;
-
-
-    t << RESTORE_BUILD_TARGET ":" << endl;
-    t << "-include " MAKE_CACHE_NAME << endl;
     t << endl;
 }
 
@@ -1866,7 +1863,7 @@ void SymbianMakefileGenerator::generateExecutionTargets(QTextStream& t, const QS
             t << "else" << endl;
         }
         t << "run: sis" << endl;
-        t << "\trunonphone --sis " << fixedTarget << "_$(QT_SIS_TARGET).sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
+        t << "\trunonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis " << fixedTarget << "_$(QT_SIS_TARGET).sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
         if (platforms.contains("winscw")) {
             t << "endif" << endl;
         }
