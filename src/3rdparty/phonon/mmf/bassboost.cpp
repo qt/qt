@@ -16,6 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include <BassBoostBase.h>
 #include "bassboost.h"
 
 QT_BEGIN_NAMESPACE
@@ -35,13 +36,26 @@ BassBoost::BassBoost(QObject *parent) : AbstractAudioEffect::AbstractAudioEffect
 void BassBoost::parameterChanged(const int,
                                  const QVariant &)
 {
-    // We should never be called, because we have no parameters.
+    Q_ASSERT_X(false, Q_FUNC_INFO, "BassBoost has not parameters");
 }
 
-bool BassBoost::activateOn(CPlayerType *player)
+void BassBoost::connectAudioPlayer(AudioPlayer::NativePlayer *player)
 {
-    m_effect.reset(CBassBoost::NewL(*player, true));
-    return true;
+    CBassBoost *ptr = 0;
+    QT_TRAP_THROWING(ptr = CBassBoost::NewL(*player));
+    m_effect.reset(ptr);
+}
+
+void BassBoost::connectVideoPlayer(VideoPlayer::NativePlayer *player)
+{
+    CBassBoost *ptr = 0;
+    QT_TRAP_THROWING(ptr = CBassBoost::NewL(*player));
+    m_effect.reset(ptr);
+}
+
+void BassBoost::applyParameters()
+{
+    // No parameters to apply
 }
 
 QT_END_NAMESPACE

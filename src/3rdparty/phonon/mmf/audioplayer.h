@@ -26,12 +26,10 @@ class TTimeIntervalMicroSeconds;
 
 #ifdef QT_PHONON_MMF_AUDIO_DRM
 #include <drmaudiosampleplayer.h>
-typedef CDrmPlayerUtility CPlayerType;
-typedef MDrmAudioPlayerCallback MPlayerObserverType;
+typedef MDrmAudioPlayerCallback NativePlayerObserver;
 #else
 #include <mdaaudiosampleplayer.h>
-typedef CMdaAudioPlayerUtility CPlayerType;
-typedef MMdaAudioPlayerCallback MPlayerObserverType;
+typedef MMdaAudioPlayerCallback NativePlayerObserver;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -44,17 +42,22 @@ namespace MMF
  * @short Wrapper over MMF audio client utility
  */
 class AudioPlayer   :   public AbstractMediaPlayer
-                    ,   public MPlayerObserverType    // typedef
-#ifdef QT_PHONON_MMF_AUDIO_DRM
+                    ,   public NativePlayerObserver
                     ,   public MAudioLoadingObserver
-#endif
 {
     Q_OBJECT
 
 public:
-    AudioPlayer();
-    explicit AudioPlayer(const AbstractPlayer& player);
+    AudioPlayer(MediaObject *parent = 0, const AbstractPlayer *player = 0);
     virtual ~AudioPlayer();
+
+#ifdef QT_PHONON_MMF_AUDIO_DRM
+typedef CDrmPlayerUtility NativePlayer;
+#else
+typedef CMdaAudioPlayerUtility NativePlayer;
+#endif
+
+    NativePlayer *nativePlayer() const;
 
     // AbstractMediaPlayer
     virtual void doPlay();
@@ -63,6 +66,8 @@ public:
     virtual void doSeek(qint64 milliseconds);
     virtual int setDeviceVolume(int mmfVolume);
     virtual int openFile(RFile& file);
+    virtual int openUrl(const QString& url);
+    virtual int bufferStatus() const;
     virtual void close();
 
     // MediaObjectInterface
@@ -70,15 +75,24 @@ public:
     virtual qint64 currentTime() const;
     virtual qint64 totalTime() const;
 
+    // AbstractMediaPlayer
+    virtual int numberOfMetaDataEntries() const;
+    virtual QPair<QString, QString> metaDataEntry(int index) const;
+
+    /**
+     * This class owns the pointer.
+     */
+    NativePlayer *player() const;
+
+private:
+    void construct();
+
+private:
 #ifdef QT_PHONON_MMF_AUDIO_DRM
     // MDrmAudioPlayerCallback
     virtual void MdapcInitComplete(TInt aError,
                                    const TTimeIntervalMicroSeconds &aDuration);
     virtual void MdapcPlayComplete(TInt aError);
-
-    // MAudioLoadingObserver
-    virtual void MaloLoadingStarted();
-    virtual void MaloLoadingComplete();
 #else
     // MMdaAudioPlayerCallback
     virtual void MapcInitComplete(TInt aError,
@@ -86,24 +100,19 @@ public:
     virtual void MapcPlayComplete(TInt aError);
 #endif
 
-    /**
-     * This class owns the pointer.
-     */
-    CPlayerType *player() const;
-
-private:
-    void construct();
-
-    // AbstractMediaPlayer
-    virtual int numberOfMetaDataEntries() const;
-    virtual QPair<QString, QString> metaDataEntry(int index) const;
+    // MAudioLoadingObserver
+    virtual void MaloLoadingStarted();
+    virtual void MaloLoadingComplete();
 
 private:
     /**
      * Using CPlayerType typedef in order to be able to easily switch between
      * CMdaAudioPlayerUtility and CDrmPlayerUtility
      */
-    QScopedPointer<CPlayerType> m_player;
+    QScopedPointer<NativePlayer> m_player;
+
+    qint64                      m_totalTime;
+
 };
 }
 }
