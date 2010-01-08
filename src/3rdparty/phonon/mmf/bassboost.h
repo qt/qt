@@ -19,7 +19,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_BASSBOOST_H
 #define PHONON_MMF_BASSBOOST_H
 
-#include <BassBoostBase.h>
 #include "abstractaudioeffect.h"
 
 QT_BEGIN_NAMESPACE
@@ -41,13 +40,12 @@ public:
     BassBoost(QObject *parent);
 
 protected:
-    virtual void parameterChanged(const int id,
-                                  const QVariant &value);
+    // AbstractAudioEffect
+    virtual void connectAudioPlayer(AudioPlayer::NativePlayer *player);
+    virtual void connectVideoPlayer(VideoPlayer::NativePlayer *player);
+    virtual void applyParameters();
+    virtual void parameterChanged(const int id, const QVariant &value);
 
-    virtual bool activateOn(CPlayerType *player);
-
-private:
-    QScopedPointer<CBassBoost> m_bassBoost;
 };
 }
 }
