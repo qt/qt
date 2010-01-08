@@ -2119,15 +2119,17 @@ void tst_QFile::fullDisk()
     file.write(&c, 0);
     QVERIFY(!file.flush());
     QCOMPARE(file.error(), QFile::ResourceError);
-    file.write(&c, 1);
+    QCOMPARE(file.write(&c, 1), qint64(1));
     QVERIFY(!file.flush());
     QCOMPARE(file.error(), QFile::ResourceError);
 
     file.close();
     QVERIFY(!file.isOpen());
     QCOMPARE(file.error(), QFile::ResourceError);
+
     file.open(QIODevice::WriteOnly);
     QCOMPARE(file.error(), QFile::NoError);
+    QVERIFY(file.flush()); // Shouldn't inherit write buffer
     file.close();
     QCOMPARE(file.error(), QFile::NoError);
 

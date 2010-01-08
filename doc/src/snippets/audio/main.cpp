@@ -89,9 +89,9 @@ private:
     {
 //![1]
         QAudioFormat format;
-        format.setFrequency(44100);
+        format.setSampleRate(44100);
 //![1]
-        format.setChannels(2);
+        format.setChannelCount(2);
         format.setSampleSize(16);
         format.setCodec("audio/pcm");
         format.setByteOrder(QAudioFormat::LittleEndian);
@@ -112,7 +112,7 @@ public slots:
         switch (newState) {
             case QAudio::StopState:
                 if (output->error() != QAudio::NoError) {
-                    // Do your error handlin
+                    // Perform error handling
                 } else {
                     // Normal stop
                 }

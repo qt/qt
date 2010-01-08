@@ -1285,7 +1285,7 @@ bool QResourceFileEngine::close()
 
 bool QResourceFileEngine::flush()
 {
-    return false;
+    return true;
 }
 
 qint64 QResourceFileEngine::read(char *data, qint64 len)

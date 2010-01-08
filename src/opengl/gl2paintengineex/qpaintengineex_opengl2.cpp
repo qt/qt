@@ -559,6 +559,9 @@ void QGL2PaintEngineExPrivate::resetGLState()
     glDepthMask(true);
     glDepthFunc(GL_LESS);
     glClearDepth(1);
+    glStencilMask(0xff);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    glStencilFunc(GL_ALWAYS, 0, 0xff);
 }
 
 void QGL2PaintEngineEx::endNativePainting()
