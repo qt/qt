@@ -8,6 +8,7 @@ SUBDIRS = containers-associative \
         qhostinfo \
 	qpainter \
 	qtestlib-simple	events \
+        qtext \
 	qiodevice \
 	qpixmap \
 	blendbench \
