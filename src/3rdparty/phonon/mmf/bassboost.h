@@ -42,7 +42,6 @@ public:
 protected:
     // AbstractAudioEffect
     virtual void connectAudioPlayer(AudioPlayer::NativePlayer *player);
-    virtual void connectVideoPlayer(VideoPlayer::NativePlayer *player);
     virtual void applyParameters();
     virtual void parameterChanged(const int id, const QVariant &value);
 

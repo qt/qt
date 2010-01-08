@@ -49,21 +49,15 @@ void AudioEqualizer::connectAudioPlayer(AudioPlayer::NativePlayer *player)
     m_effect.reset(ptr);
 }
 
-void AudioEqualizer::connectVideoPlayer(VideoPlayer::NativePlayer *player)
-{
-    CAudioEqualizer *ptr = 0;
-    QT_TRAP_THROWING(ptr = CAudioEqualizer::NewL(*player));
-    m_effect.reset(ptr);
-}
-
 void AudioEqualizer::applyParameters()
 {
-    Q_ASSERT_X(m_effect.data(), Q_FUNC_INFO, "Effect not created");
-    EffectParameter param;
-    foreach (param, parameters()) {
-        const int band = param.id();
-        const int level = parameterValue(param).toInt();
-        setBandLevel(band, level);
+    if (m_effect.data()) {
+        EffectParameter param;
+        foreach (param, parameters()) {
+            const int band = param.id();
+            const int level = parameterValue(param).toInt();
+            setBandLevel(band, level);
+        }
     }
 }
 

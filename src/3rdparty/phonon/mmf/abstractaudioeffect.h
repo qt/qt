@@ -86,7 +86,6 @@ protected:
     void disconnectMediaObject(MediaObject *mediaObject);
 
     virtual void connectAudioPlayer(AudioPlayer::NativePlayer *player) = 0;
-    virtual void connectVideoPlayer(VideoPlayer::NativePlayer *player) = 0;
     virtual void applyParameters() = 0;
 
     virtual void parameterChanged(const int id,
