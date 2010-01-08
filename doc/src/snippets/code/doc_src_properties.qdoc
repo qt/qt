@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -112,7 +112,7 @@ MyClass *myinstance = new MyClass;
 QObject *object = myinstance;
 
 myinstance->setPriority(MyClass::VeryHigh);
-object->setProperty("priority", "VeryHigh");
+object->setProperty("priority", (int)MyClass::VeryHigh);
 //! [6]
 
 

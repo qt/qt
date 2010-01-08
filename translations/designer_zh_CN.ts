@@ -4698,7 +4698,7 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <location line="+5"/>
-        <source>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
+        <source>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
         <translation>%1&lt;br/&gt;%2&lt;br/&gt;版权所有 2009 Nokia Corporation and/or its subsidiary(-ies)。所有权利已被保留。&lt;br/&gt;&lt;br/&gt;本程序是在&lt;b&gt;没有任何担保（其中包括任何特定目的的设计、商业和适当性的担保）&lt;/b&gt;的条件下提供的。&lt;br/&gt; </translation>
     </message>
     <message>
