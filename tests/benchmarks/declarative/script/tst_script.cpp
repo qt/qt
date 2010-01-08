@@ -41,6 +41,7 @@
 
 #include <qtest.h>
 #include <QmlEngine>
+#include <QmlComponent>
 #include <private/qmlengine_p.h>
 #include <private/qmlobjectscriptclass_p.h>
 #include <QScriptEngine>
@@ -71,8 +72,17 @@ private slots:
     void function_args_qobject();
     void function_args_qmlobject();
 
+    void signal_unconnected();
+    void signal_qml();
+    void signal_args();
+    void signal_unusedArgs();
 private:
 };
+
+inline QUrl TEST_FILE(const QString &filename)
+{
+    return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
+}
 
 class TestObject : public QObject
 {
@@ -83,6 +93,13 @@ public:
     TestObject(QObject *parent = 0);
 
     int x();
+
+    void emitMySignal() { emit mySignal(); }
+    void emitMySignalWithArgs(int n) { emit mySignalWithArgs(n); }
+
+signals:
+    void mySignal();
+    void mySignalWithArgs(int n);
 
 public slots:
     int method() {
@@ -96,6 +113,8 @@ public slots:
 private:
     int m_x;
 };
+QML_DECLARE_TYPE(TestObject);
+QML_DEFINE_TYPE(Qt.test, 1, 0, TestObject, TestObject);
 
 TestObject::TestObject(QObject *parent)
 : QObject(parent), m_x(0)
@@ -444,6 +463,62 @@ void tst_script::function_args_qmlobject()
     QBENCHMARK {
         prog.call();
     }
+}
+
+void tst_script::signal_unconnected()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("signal_unconnected.qml"));
+    TestObject *object = qobject_cast<TestObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QBENCHMARK {
+        object->emitMySignal();
+    }
+
+    delete object;
+}
+
+void tst_script::signal_qml()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("signal_qml.qml"));
+    TestObject *object = qobject_cast<TestObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QBENCHMARK {
+        object->emitMySignal();
+    }
+
+    delete object;
+}
+
+void tst_script::signal_args()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("signal_args.qml"));
+    TestObject *object = qobject_cast<TestObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QBENCHMARK {
+        object->emitMySignalWithArgs(11);
+    }
+
+    delete object;
+}
+
+void tst_script::signal_unusedArgs()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("signal_unusedArgs.qml"));
+    TestObject *object = qobject_cast<TestObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QBENCHMARK {
+        object->emitMySignalWithArgs(11);
+    }
+
+    delete object;
 }
 
 QTEST_MAIN(tst_script)
