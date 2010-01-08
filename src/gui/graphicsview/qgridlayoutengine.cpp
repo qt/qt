@@ -182,9 +182,9 @@ void QGridLayoutRowData::distributeMultiCells()
         QVarLengthArray<qreal> newSizes(span);
 
         for (int j = 0; j < NSizes; ++j) {
-            qreal extra = compare(totalBox, box, j);
+            qreal extra = compare(box, totalBox, j);
             if (extra > 0.0) {
-                calculateGeometries(start, end, totalBox.q_sizes(j), dummy.data(), newSizes.data(),
+                calculateGeometries(start, end, box.q_sizes(j), dummy.data(), newSizes.data(),
                                     0, totalBox);
 
                 for (int k = 0; k < span; ++k)

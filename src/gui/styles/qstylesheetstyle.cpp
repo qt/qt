@@ -1065,7 +1065,7 @@ QRect QRenderRule::boxRect(const QRect& cr, int flags) const
             r.adjust(-p[LeftEdge], -p[TopEdge], p[RightEdge], p[BottomEdge]);
         }
     }
-    if (hasBorder() && (flags & Border)) {
+    if (!hasNativeBorder() && (flags & Border)) {
         const int *b = border()->borders;
         r.adjust(-b[LeftEdge], -b[TopEdge], b[RightEdge], b[BottomEdge]);
     }

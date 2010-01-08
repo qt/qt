@@ -94,6 +94,9 @@ public:
     static QPixmap fontValuePixmap(const QFont &f);
     static QIcon fontValueIcon(const QFont &f);
     static QString fontValueText(const QFont &f);
+    static QString dateFormat();
+    static QString timeFormat();
+    static QString dateTimeFormat();
 };
 
 class QtBoolEdit : public QWidget {

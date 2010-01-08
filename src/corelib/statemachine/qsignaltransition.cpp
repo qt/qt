@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
       CheckedTransition(QCheckBox *check)
           : QSignalTransition(check, SIGNAL(stateChanged(int))) {}
   protected:
-      bool eventTest(QEvent *e) const {
+      bool eventTest(QEvent *e) {
           if (!QSignalTransition::eventTest(e))
               return false;
           QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);

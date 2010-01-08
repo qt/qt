@@ -1125,10 +1125,11 @@ QDir::Filters QDir::filter() const
                        execute access. The Executable value needs to be
                        combined with Dirs or Files.
     \value Modified  Only list files that have been modified (ignored
-                     under Unix).
-    \value Hidden  List hidden files (on Unix, files starting with a .).
+                     on Unix).
+    \value Hidden  List hidden files (on Unix, files starting with a ".").
     \value System  List system files (on Unix, FIFOs, sockets and
-                   device files)
+                   device files are included; on Windows, \c {.lnk}
+                   files are included)
     \value CaseSensitive  The filter should be case sensitive.
 
     \omitvalue DefaultFilter

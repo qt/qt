@@ -195,8 +195,8 @@ InputTest::InputTest()
 
     pullMode = true;
 
-    format.setFrequency(8000);
-    format.setChannels(1);
+    format.setSampleRate(8000);
+    format.setChannelCount(1);
     format.setSampleSize(16);
     format.setSampleType(QAudioFormat::SignedInt);
     format.setByteOrder(QAudioFormat::LittleEndian);

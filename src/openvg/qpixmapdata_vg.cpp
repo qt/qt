@@ -232,7 +232,7 @@ QPaintEngine* QVGPixmapData::paintEngine() const
 // This function works around QImage::bits() making a deep copy if the
 // QImage is not const.  We force it to be const and then get the bits.
 // XXX: Should add a QImage::constBits() in the future to replace this.
-static inline const uchar *qt_vg_imageBits(const QImage& image)
+const uchar *qt_vg_imageBits(const QImage& image)
 {
     return image.bits();
 }
