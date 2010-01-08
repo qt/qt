@@ -220,7 +220,7 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
         QScriptValue sobj = scriptEngine->newQObject(obj);
         return sobj.property(toString(name));
     } else {
-        if (!(lastData->flags & QmlPropertyCache::Data::IsConstant)) {
+        if (enginePriv->captureProperties && !(lastData->flags & QmlPropertyCache::Data::IsConstant)) {
             enginePriv->capturedProperties << 
                 QmlEnginePrivate::CapturedProperty(obj, lastData->coreIndex, lastData->notifyIndex);
         }
@@ -247,6 +247,41 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
             void *args[] = { &rv, 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
             return rv;
+        } else if (lastData->propType == QMetaType::QReal) {
+            qreal rv = 0;
+            void *args[] = { &rv, 0 };
+            QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
+            return QScriptValue(rv);
+        } else if (lastData->propType == QMetaType::Int) {
+            int rv = 0;
+            void *args[] = { &rv, 0 };
+            QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
+            return QScriptValue(rv);
+        } else if (lastData->propType == QMetaType::Bool) {
+            bool rv = false;
+            void *args[] = { &rv, 0 };
+            QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
+            return QScriptValue(rv);
+        } else if (lastData->propType == QMetaType::QString) {
+            QString rv;
+            void *args[] = { &rv, 0 };
+            QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
+            return QScriptValue(rv);
+        } else if (lastData->propType == QMetaType::UInt) {
+            uint rv = 0;
+            void *args[] = { &rv, 0 };
+            QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
+            return QScriptValue(rv);
+        } else if (lastData->propType == QMetaType::Float) {
+            float rv = 0;
+            void *args[] = { &rv, 0 };
+            QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
+            return QScriptValue(rv);
+        } else if (lastData->propType == QMetaType::Double) {
+            double rv = 0;
+            void *args[] = { &rv, 0 };
+            QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
+            return QScriptValue(rv);
         } else {
             QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
             return enginePriv->scriptValueFromVariant(var);

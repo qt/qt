@@ -144,6 +144,7 @@ public:
         int coreIndex;
         int notifyIndex;
     };
+    bool captureProperties;
     QPODVector<CapturedProperty> capturedProperties;
 
     QmlContext *rootContext;

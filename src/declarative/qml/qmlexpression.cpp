@@ -436,10 +436,12 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
     QmlEnginePrivate *ep = QmlEnginePrivate::get(q->engine());
 
     QmlExpression *lastCurrentExpression = ep->currentExpression;
+    bool lastCaptureProperties = ep->captureProperties;
     QPODVector<QmlEnginePrivate::CapturedProperty> lastCapturedProperties;
     ep->capturedProperties.copyAndClear(lastCapturedProperties);
 
     ep->currentExpression = q;
+    ep->captureProperties = data->trackChange;
 
     // This object might be deleted during the eval
     QmlExpressionData *localData = data;
@@ -452,6 +454,7 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
     }
 
     ep->currentExpression = lastCurrentExpression;
+    ep->captureProperties = lastCaptureProperties;
 
     // Check if we were deleted
     if (localData->q) {
