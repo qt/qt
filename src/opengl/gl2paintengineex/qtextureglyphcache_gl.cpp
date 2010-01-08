@@ -127,11 +127,28 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glViewport(0, 0, oldWidth, oldHeight);
 
-    float vertexCoordinateArray[] = { -1, -1, 1, -1, 1, 1, -1, 1 };
-    float textureCoordinateArray[] = { 0, 0, 1, 0, 1, 1, 0, 1 };
+    GLfloat* vertexCoordinateArray = pex->staticVertexCoordinateArray;
+    vertexCoordinateArray[0] = -1.0f;
+    vertexCoordinateArray[1] = -1.0f;
+    vertexCoordinateArray[2] =  1.0f;
+    vertexCoordinateArray[3] = -1.0f;
+    vertexCoordinateArray[4] =  1.0f;
+    vertexCoordinateArray[5] =  1.0f;
+    vertexCoordinateArray[6] = -1.0f;
+    vertexCoordinateArray[7] =  1.0f;
 
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
-    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
+    GLfloat* textureCoordinateArray = pex->staticTextureCoordinateArray;
+    textureCoordinateArray[0] = 0.0f;
+    textureCoordinateArray[1] = 0.0f;
+    textureCoordinateArray[2] = 1.0f;
+    textureCoordinateArray[3] = 0.0f;
+    textureCoordinateArray[4] = 1.0f;
+    textureCoordinateArray[5] = 1.0f;
+    textureCoordinateArray[6] = 0.0f;
+    textureCoordinateArray[7] = 1.0f;
+
+    pex->setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, vertexCoordinateArray);
+    pex->setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, textureCoordinateArray);
 
     pex->shaderManager->useBlitProgram();
     pex->shaderManager->blitProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
