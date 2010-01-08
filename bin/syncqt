@@ -68,6 +68,8 @@ my $force_win = 0;
 my $force_relative = 0;
 my $check_includes = 0;
 my $copy_headers = 0;
+my $create_uic_class_map = 1;
+my $create_private_headers = 1;
 my @modules_to_sync ;
 $force_relative = 1 if ( -d "/System/Library/Frameworks" );
 my $out_basedir = $basedir;
@@ -91,6 +93,7 @@ sub showUsage
     print "  -windows              Force platform to Windows          (default: " . ($force_win ? "yes" : "no") . ")\n";
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
     print "  -outdir <PATH>        Specify output directory for sync  (default: $out_basedir)\n";
+    print "  -separate-module <NAME>:<HEADERDIR> Create headers for <NAME> with original headers in <HEADERDIR> \n";
     print "  -help                 This help\n";
     exit 0;
 }
@@ -583,6 +586,9 @@ while ( @ARGV ) {
     } elsif("$arg" eq "-module") {
 	$var = "module";
 	$val = shift @ARGV;
+    } elsif("$arg" eq "-separate-module") {
+	$var = "separate-module";
+	$val = shift @ARGV;
     } elsif("$arg" eq "-show") {
 	$var = "showonly";
 	$val = "yes";
@@ -639,6 +645,13 @@ while ( @ARGV ) {
 	print "module :$val:\n";
 	die "No such module: $val" unless(defined $modules{$val});
 	push @modules_to_sync, $val;
+    } elsif ("$var" eq "separate-module") {
+        my ($module, $srcdir) = split(/:/, $val);
+        $modules{$module} = $srcdir;
+        push @modules_to_sync, $module;
+        delete $moduleheaders{$module} if ($moduleheaders{$module});
+        $create_uic_class_map = 0;
+        $create_private_headers = 0;
     } elsif ("$var" eq "output") {
 	my $outdir = $val;
 	if(checkRelative($outdir)) {
@@ -824,7 +837,7 @@ foreach (@modules_to_sync) {
 				    $header_copies++ if (syncHeader("$out_basedir/include/phonon_compat/Phonon/$class", "$out_basedir/include/$lib/$header", 0));
 				}
 			    }
-			} else {
+			} elsif ($create_private_headers) {
 			    @headers = ( "$out_basedir/include/$lib/private/$header" );
 			    push @headers, "$out_basedir/include/Qt/private/$header"
                               if ("$lib" ne "phonon");
@@ -920,7 +933,7 @@ foreach (@modules_to_sync) {
         }
     }
 }
-unless($showonly) {
+unless($showonly || !$create_uic_class_map) {
     my $class_lib_map = "$out_basedir/src/tools/uic/qclass_lib_map.h";
     if(-e "$class_lib_map") {
 	open CLASS_LIB_MAP, "<$class_lib_map";
