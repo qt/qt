@@ -406,6 +406,8 @@ public:
         return !visible || (childrenCombineOpacity() && isFullyTransparent());
     }
 
+    inline void markParentDirty(bool updateBoundingRect = false);
+
     void setFocusHelper(Qt::FocusReason focusReason, bool climb);
     void setSubFocus(QGraphicsItem *rootItem = 0);
     void clearSubFocus(QGraphicsItem *rootItem = 0);
@@ -752,6 +754,37 @@ inline void QGraphicsItemPrivate::ensureSortedChildren()
 inline bool QGraphicsItemPrivate::insertionOrder(QGraphicsItem *a, QGraphicsItem *b)
 {
     return a->d_ptr->siblingIndex < b->d_ptr->siblingIndex;
+}
+
+/*!
+    \internal
+*/
+inline void QGraphicsItemPrivate::markParentDirty(bool updateBoundingRect)
+{
+    QGraphicsItemPrivate *parentp = this;
+    while (parentp->parent) {
+        parentp = parentp->parent->d_ptr.data();
+        parentp->dirtyChildren = 1;
+
+        if (updateBoundingRect) {
+            parentp->dirtyChildrenBoundingRect = 1;
+            // ### Only do this if the parent's effect applies to the entire subtree.
+            parentp->notifyBoundingRectChanged = 1;
+        }
+#ifndef QT_NO_GRAPHICSEFFECT
+        if (parentp->graphicsEffect) {
+            if (updateBoundingRect) {
+                parentp->notifyInvalidated = 1;
+                static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()
+                                                                ->source->d_func())->invalidateCache();
+            }
+            if (parentp->graphicsEffect->isEnabled()) {
+                parentp->dirty = 1;
+                parentp->fullUpdatePending = 1;
+            }
+        }
+#endif
+    }
 }
 
 QT_END_NAMESPACE

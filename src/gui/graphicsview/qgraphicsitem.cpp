@@ -1115,11 +1115,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
     }
 
     if ((parent = newParent)) {
-        bool implicitUpdate = false;
         if (parent->d_func()->scene && parent->d_func()->scene != scene) {
             // Move this item to its new parent's scene
             parent->d_func()->scene->addItem(q);
-            implicitUpdate = true;
         } else if (!parent->d_func()->scene && scene) {
             // Remove this item from its former scene
             scene->removeItem(q);
@@ -1129,13 +1127,13 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         if (thisPointerVariant)
             parent->itemChange(QGraphicsItem::ItemChildAddedChange, *thisPointerVariant);
         if (scene) {
-            if (!implicitUpdate)
-                scene->d_func()->markDirty(q_ptr);
-
             // Re-enable scene pos notifications for new ancestors
             if (scenePosDescendants || (flags & QGraphicsItem::ItemSendsScenePositionChanges))
                 scene->d_func()->setScenePosItemEnabled(q, true);
         }
+
+        // Propagate dirty flags to the new parent
+        markParentDirty(/*updateBoundingRect=*/true);
 
         // Inherit ancestor flags from the new parent.
         updateAncestorFlags();
@@ -1143,11 +1141,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         // Update item visible / enabled.
         if (parent->d_ptr->visible != visible) {
             if (!parent->d_ptr->visible || !explicitlyHidden)
-                setVisibleHelper(parent->d_ptr->visible, /* explicit = */ false, /* update = */ !implicitUpdate);
+                setVisibleHelper(parent->d_ptr->visible, /* explicit = */ false, /* update = */ false);
         }
         if (parent->isEnabled() != enabled) {
             if (!parent->d_ptr->enabled || !explicitlyDisabled)
-                setEnabledHelper(parent->d_ptr->enabled, /* explicit = */ false, /* update = */ !implicitUpdate);
+                setEnabledHelper(parent->d_ptr->enabled, /* explicit = */ false, /* update = */ false);
         }
 
         // Auto-activate if visible and the parent is active.
@@ -1163,10 +1161,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
                 setVisibleHelper(true, /* explicit = */ false);
             if (!enabled && !explicitlyDisabled)
                 setEnabledHelper(true, /* explicit = */ false);
-
-            // If the item is being deleted, the whole scene will be updated.
-            if (scene)
-                scene->d_func()->markDirty(q_ptr);
         }
     }
 
@@ -7265,19 +7259,7 @@ void QGraphicsItem::prepareGeometryChange()
         }
     }
 
-    QGraphicsItem *parent = this;
-    while ((parent = parent->d_ptr->parent)) {
-        QGraphicsItemPrivate *parentp = parent->d_ptr.data();
-        parentp->dirtyChildrenBoundingRect = 1;
-        // ### Only do this if the parent's effect applies to the entire subtree.
-        parentp->notifyBoundingRectChanged = 1;
-#ifndef QT_NO_GRAPHICSEFFECT
-        if (parentp->scene && parentp->graphicsEffect) {
-            parentp->notifyInvalidated = 1;
-            static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()->source->d_func())->invalidateCache();
-        }
-#endif
-    }
+    d_ptr->markParentDirty(/*updateBoundingRect=*/true);
 }
 
 /*!
