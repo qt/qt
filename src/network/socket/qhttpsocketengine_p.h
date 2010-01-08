@@ -162,7 +162,7 @@ public:
     QNetworkProxy proxy;
     QString peerName;
     QTcpSocket *socket;
-    QByteArray readBuffer;
+    QByteArray readBuffer; // only used for parsing the proxy response
     QHttpSocketEngine::HttpState state;
     QAuthenticator authenticator;
     bool readNotificationEnabled;

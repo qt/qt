@@ -41,6 +41,8 @@
 
 #include "QtTest/private/qbenchmarkmeasurement_p.h"
 #include "QtTest/private/qbenchmark_p.h"
+#include "QtTest/private/qbenchmarkmetric_p.h"
+#include "qbenchmark.h"
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -77,14 +79,9 @@ int QBenchmarkTimeMeasurer::adjustMedianCount(int)
     return 1; 
 }
 
-QString QBenchmarkTimeMeasurer::unitText()
+QTest::QBenchmarkMetric QBenchmarkTimeMeasurer::metricType()
 {
-    return QLatin1String("msec");
-}
-
-QString QBenchmarkTimeMeasurer::metricText()
-{
-    return QLatin1String("walltime");
+    return QTest::WalltimeMilliseconds;
 }
 
 #ifdef HAVE_TICK_COUNTER // defined in 3rdparty/cycle_p.h
@@ -126,14 +123,9 @@ bool QBenchmarkTickMeasurer::needsWarmupIteration()
     return true; 
 }
 
-QString QBenchmarkTickMeasurer::unitText()
+QTest::QBenchmarkMetric QBenchmarkTickMeasurer::metricType()
 {
-    return QLatin1String("ticks");
-}
-
-QString QBenchmarkTickMeasurer::metricText()
-{
-    return QLatin1String("cputicks");
+    return QTest::CPUTicks;
 }
 
 #endif

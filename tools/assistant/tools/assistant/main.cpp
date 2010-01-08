@@ -427,6 +427,6 @@ int main(int argc, char *argv[])
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
     const int retval = a.exec();
     delete w;
-    delete &HelpEngineWrapper::instance();
+    HelpEngineWrapper::removeInstance();
     return retval;
 }

@@ -227,6 +227,9 @@ bool qt_gl_preferGL2Engine()
     \value DirectRendering   Specifies that the context is used for direct rendering to a display.
     \value HasOverlay        Enables the use of an overlay.
     \value SampleBuffers     Enables the use of sample buffers.
+    \value DeprecatedFunctions      Enables the use of deprecated functionality for OpenGL 3.x
+                                    contexts. A context with deprecated functionality enabled is
+                                    called a full context in the OpenGL specification.
     \value SingleBuffer      Specifies the use of a single buffer, as opposed to double buffers.
     \value NoDepthBuffer     Disables the use of a depth buffer.
     \value ColorIndex        Specifies that the context should use a color index as its pixel format.
@@ -237,6 +240,9 @@ bool qt_gl_preferGL2Engine()
     \value IndirectRendering Specifies that the context is used for indirect rendering to a buffer.
     \value NoOverlay         Disables the use of an overlay.
     \value NoSampleBuffers   Disables the use of sample buffers.
+    \value NoDeprecatedFunctions    Disables the use of deprecated functionality for OpenGL 3.x
+                                    contexts. A context with deprecated functionality disabled is
+                                    called a forward compatible context in the OpenGL specification.
 
     \sa {Sample Buffers Example}
 */
@@ -1082,6 +1088,88 @@ int QGLFormat::stencilBufferSize() const
 }
 
 /*!
+    \since 4.7
+
+    Set the OpenGL version. If a context compatible with the requested OpenGL version
+    cannot be created, a context compatible with version 1.x is created instead.
+
+    \sa majorVersion(), minorVersion()
+*/
+void QGLFormat::setVersion(int major, int minor)
+{
+    if (major < 1 || minor < 0) {
+        qWarning("QGLFormat::setVersion: Cannot set zero or negative version number %d.%d", major, minor);
+        return;
+    }
+    detach();
+    d->majorVersion = major;
+    d->minorVersion = minor;
+}
+
+/*!
+    \since 4.7
+
+    Returns the OpenGL major version.
+
+    \sa setVersion(), minorVersion()
+*/
+int QGLFormat::majorVersion() const
+{
+    return d->majorVersion;
+}
+
+/*!
+    \since 4.7
+
+    Returns the OpenGL minor version.
+
+    \sa setVersion(), majorVersion()
+*/
+int QGLFormat::minorVersion() const
+{
+    return d->minorVersion;
+}
+
+/*!
+    \enum QGLFormat::OpenGLContextProfile
+    \since 4.7
+
+    This enum describes the OpenGL context profiles that can be specified for contexts implementing
+    OpenGL version 3.2 or higher. These profiles are different from OpenGL ES profiles.
+
+    \value NoProfile            OpenGL version is lower than 3.2.
+    \value CoreProfile          Functionality deprecated in OpenGL version 3.0 is not available.
+    \value CompatibilityProfile Functionality from earlier OpenGL versions is available.
+*/
+
+/*!
+    \since 4.7
+
+    Set the OpenGL context profile. The profile is ignored if the requested OpenGL
+    version is less than 3.2.
+
+    \sa profile()
+*/
+void QGLFormat::setProfile(OpenGLContextProfile profile)
+{
+    detach();
+    d->profile = profile;
+}
+
+/*!
+    \since 4.7
+
+    Returns the OpenGL context profile.
+
+    \sa setProfile()
+*/
+QGLFormat::OpenGLContextProfile QGLFormat::profile() const
+{
+    return d->profile;
+}
+
+
+/*!
     \fn bool QGLFormat::hasOpenGL()
 
     Returns true if the window system has any OpenGL support;
@@ -1117,25 +1205,21 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                     if (parts[2].startsWith(QLatin1String("1.1")))
                         versionFlags |= QGLFormat::OpenGL_ES_Common_Version_1_1 |
                                         QGLFormat::OpenGL_ES_CommonLite_Version_1_1;
-                }
-                else {
+                } else {
                     // Not -CM, must be CL, CommonLite
                     versionFlags |= QGLFormat::OpenGL_ES_CommonLite_Version_1_0;
                     if (parts[2].startsWith(QLatin1String("1.1")))
                         versionFlags |= QGLFormat::OpenGL_ES_CommonLite_Version_1_1;
                 }
-            }
-            else {
+            } else {
                 // OpenGL ES version 2.0 or higher
                 versionFlags |= QGLFormat::OpenGL_ES_Version_2_0;
             }
-        }
-        else {
+        } else {
             // if < 3 parts to the name, it is an unrecognised OpenGL ES
             qWarning("Unrecognised OpenGL ES version");
         }
-    }
-    else {
+    } else {
         // not ES, regular OpenGL, the version numbers are first in the string
         if (versionString.startsWith(QLatin1String("1."))) {
             switch (versionString[2].toAscii()) {
@@ -1152,30 +1236,35 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             default:
                 break;
             }
-        }
-        else if (versionString.startsWith(QLatin1String("2."))) {
+        } else if (versionString.startsWith(QLatin1String("2."))) {
             versionFlags |= QGLFormat::OpenGL_Version_1_1 |
                             QGLFormat::OpenGL_Version_1_2 |
                             QGLFormat::OpenGL_Version_1_3 |
                             QGLFormat::OpenGL_Version_1_4 |
                             QGLFormat::OpenGL_Version_1_5 |
                             QGLFormat::OpenGL_Version_2_0;
-            QString minorVersion = versionString.section(QLatin1Char(' '), 0, 0).section(QLatin1Char('.'), 1, 1);
-            if (minorVersion == QChar(QLatin1Char('1')))
+            if (versionString[2].toAscii() == '1')
                 versionFlags |= QGLFormat::OpenGL_Version_2_1;
-        }
-        else if (versionString.startsWith(QLatin1String("3."))) {
-         versionFlags |= QGLFormat::OpenGL_Version_1_1 |
-                         QGLFormat::OpenGL_Version_1_2 |
-                         QGLFormat::OpenGL_Version_1_3 |
-                         QGLFormat::OpenGL_Version_1_4 |
-                         QGLFormat::OpenGL_Version_1_5 |
-                         QGLFormat::OpenGL_Version_2_0 |
-                         QGLFormat::OpenGL_Version_2_1 |
-                         QGLFormat::OpenGL_Version_3_0;
-        }
-        else
+        } else if (versionString.startsWith(QLatin1String("3."))) {
+            versionFlags |= QGLFormat::OpenGL_Version_1_1 |
+                            QGLFormat::OpenGL_Version_1_2 |
+                            QGLFormat::OpenGL_Version_1_3 |
+                            QGLFormat::OpenGL_Version_1_4 |
+                            QGLFormat::OpenGL_Version_1_5 |
+                            QGLFormat::OpenGL_Version_2_0 |
+                            QGLFormat::OpenGL_Version_2_1 |
+                            QGLFormat::OpenGL_Version_3_0;
+            switch (versionString[2].toAscii()) {
+            case '2':
+                versionFlags |= QGLFormat::OpenGL_Version_3_2;
+            case '1':
+                versionFlags |= QGLFormat::OpenGL_Version_3_1;
+            default:
+                break;
+            }
+        } else {
             qWarning("Unrecognised OpenGL version");
+        }
     }
     return versionFlags;
 }
@@ -1206,6 +1295,12 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
     \value OpenGL_Version_2_1  OpenGL version 2.1 or higher is present.
 
     \value OpenGL_Version_3_0  OpenGL version 3.0 or higher is present.
+
+    \value OpenGL_Version_3_1  OpenGL version 3.1 or higher is present.
+    Note that OpenGL version 3.1 or higher does not necessarily support all the features of
+    version 3.0 and lower.
+
+    \value OpenGL_Version_3_2  OpenGL version 3.2 or higher is present.
 
     \value OpenGL_ES_CommonLite_Version_1_0  OpenGL ES version 1.0 Common Lite or higher is present.
 
@@ -1379,14 +1474,20 @@ void QGLFormat::setDefaultOverlayFormat(const QGLFormat &f)
 
 bool operator==(const QGLFormat& a, const QGLFormat& b)
 {
-    return (int) a.d->opts == (int) b.d->opts && a.d->pln == b.d->pln && a.d->alphaSize == b.d->alphaSize
-        && a.d->accumSize == b.d->accumSize && a.d->stencilSize == b.d->stencilSize
+    return (a.d == b.d) || ((int) a.d->opts == (int) b.d->opts
+        && a.d->pln == b.d->pln
+        && a.d->alphaSize == b.d->alphaSize
+        && a.d->accumSize == b.d->accumSize
+        && a.d->stencilSize == b.d->stencilSize
         && a.d->depthSize == b.d->depthSize
         && a.d->redSize == b.d->redSize
         && a.d->greenSize == b.d->greenSize
         && a.d->blueSize == b.d->blueSize
         && a.d->numSamples == b.d->numSamples
-        && a.d->swapInterval == b.d->swapInterval;
+        && a.d->swapInterval == b.d->swapInterval
+        && a.d->majorVersion == b.d->majorVersion
+        && a.d->minorVersion == b.d->minorVersion
+        && a.d->profile == b.d->profile);
 }
 
 
@@ -1434,6 +1535,18 @@ void QGLContextGroup::removeGuard(QGLSharedResourceGuard *guard)
         guard->m_prev->m_next = guard->m_next;
     else
         m_guards = guard->m_next;
+}
+
+const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
+{
+    if (!ctx)
+        return 0;
+    QList<const QGLContext *> shares
+        (QGLContextPrivate::contextGroup(ctx)->shares());
+    if (shares.size() >= 2)
+        return (ctx == shares.at(0)) ? shares.at(1) : shares.at(0);
+    else
+        return 0;
 }
 
 QGLContextPrivate::~QGLContextPrivate()
@@ -1484,6 +1597,8 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     current_fbo = 0;
     default_fbo = 0;
     active_engine = 0;
+    for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
+        vertexAttributeArraysEnabledState[i] = false;
 }
 
 QGLContext* QGLContext::currentCtx = 0;
@@ -1729,12 +1844,6 @@ struct DDSFormat {
 #define GL_GENERATE_MIPMAP_HINT_SGIS  0x8192
 #endif
 
-Q_GLOBAL_STATIC(QGLShareRegister, _qgl_share_reg)
-Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
-{
-    return _qgl_share_reg();
-}
-
 /*!
     \class QGLContext
     \brief The QGLContext class encapsulates an OpenGL rendering context.
@@ -1873,6 +1982,35 @@ QGLContext::~QGLContext()
 void QGLContextPrivate::cleanup()
 {
 }
+
+#define ctx q_ptr
+void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled)
+{
+    Q_ASSERT(arrayIndex < QT_GL_VERTEX_ARRAY_TRACKED_COUNT);
+    Q_ASSERT(glEnableVertexAttribArray);
+
+    if (vertexAttributeArraysEnabledState[arrayIndex] && !enabled)
+        glDisableVertexAttribArray(arrayIndex);
+
+    if (!vertexAttributeArraysEnabledState[arrayIndex] && enabled)
+        glEnableVertexAttribArray(arrayIndex);
+
+    vertexAttributeArraysEnabledState[arrayIndex] = enabled;
+}
+
+void QGLContextPrivate::syncGlState()
+{
+    Q_ASSERT(glEnableVertexAttribArray);
+    for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i) {
+        if (vertexAttributeArraysEnabledState[i])
+            glEnableVertexAttribArray(i);
+        else
+            glDisableVertexAttribArray(i);
+    }
+
+}
+#undef ctx
+
 
 /*!
     \overload
@@ -2063,6 +2201,29 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
 // #define QGL_BIND_TEXTURE_DEBUG
 
+// map from Qt's ARGB endianness-dependent format to GL's big-endian RGBA layout
+static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
+{
+    const int width = img.width();
+    const int height = img.height();
+
+    if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
+        || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian))
+    {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
+        }
+    } else {
+        for (int i = 0; i < height; ++i) {
+            uint *p = (uint *) img.scanLine(i);
+            for (int x = 0; x < width; ++x)
+                p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
+        }
+    }
+}
+
 QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint internalFormat,
                                            const qint64 key, QGLContext::BindOptions options)
 {
@@ -2215,23 +2376,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         // 32 in the switch above is for the RGB16 case, where we set
         // the format to GL_RGB
         Q_ASSERT(img.depth() == 32);
-        const int width = img.width();
-        const int height = img.height();
-
-        if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
-            || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian)) {
-            for (int i=0; i < height; ++i) {
-                uint *p = (uint *) img.scanLine(i);
-                for (int x=0; x<width; ++x)
-                    p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
-            }
-        } else {
-            for (int i=0; i < height; ++i) {
-                uint *p = (uint *) img.scanLine(i);
-                for (int x=0; x<width; ++x)
-                    p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
-            }
-        }
+        qgl_byteSwapImage(img, pixel_type);
     }
 #ifdef QT_OPENGL_ES
     // OpenGL/ES requires that the internal and external formats be identical.
@@ -2947,7 +3092,7 @@ bool QGLContext::create(const QGLContext* shareContext)
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
     if (d->sharing)  // ok, we managed to share
-        qgl_share_reg()->addShare(this, shareContext);
+        QGLContextGroup::addShare(this, shareContext);
     return d->valid;
 }
 
@@ -3803,6 +3948,11 @@ bool QGLWidget::event(QEvent *e)
     }
 
 #if defined(QT_OPENGL_ES)
+    // A re-parent is likely to destroy the X11 window and re-create it. It is important
+    // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
+    if (e->type() == QEvent::ParentAboutToChange)
+        d->glcx->d_func()->destroyEglSurfaceForDevice();
+
     if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
         // The window may have been re-created during re-parent or state change - if so, the EGL
         // surface will need to be re-created.
@@ -4290,6 +4440,7 @@ static void qt_save_gl_state()
     glDisable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
     glDisable(GL_STENCIL_TEST);
+    glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -4343,6 +4494,10 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
    \note This function clears the stencil buffer.
 
    \note This function is not supported on OpenGL/ES systems.
+
+   \note This function temporarily disables depth-testing when the
+   text is drawn.
+
    \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 
@@ -4361,9 +4516,9 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     int height = d->glcx->device()->height();
     bool auto_swap = autoBufferSwap();
 
+    QPaintEngine::Type oldEngineType = qgl_engine_selector()->preferredPaintEngine();
+    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
     QPaintEngine *engine = paintEngine();
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
     QPainter *p;
     bool reuse_painter = false;
     if (engine->isActive()) {
@@ -4383,11 +4538,6 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->disable_clear_on_painter_begin = true;
-        if (engine->type() == QPaintEngine::OpenGL2) {
-            qt_save_gl_state();
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-        }
         p = new QPainter(this);
     }
 
@@ -4411,11 +4561,8 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         delete p;
         setAutoBufferSwap(auto_swap);
         d->disable_clear_on_painter_begin = false;
-        if (engine->type() == QPaintEngine::OpenGL2)
-            qt_restore_gl_state();
     }
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+    qgl_engine_selector()->setPreferredPaintEngine(oldEngineType);
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
@@ -4433,6 +4580,13 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     have the labels move with the model as it is rotated etc.
 
     \note This function is not supported on OpenGL/ES systems.
+
+    \note If depth testing is enabled before this function is called,
+    then the drawn text will be depth-tested against the models that
+    have already been drawn in the scene.  Use \c{glDisable(GL_DEPTH_TEST)}
+    before calling this function to annotate the models without
+    depth-testing the text.
+
     \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 void QGLWidget::renderText(double x, double y, double z, const QString &str, const QFont &font, int)
@@ -4456,9 +4610,9 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
                 &win_x, &win_y, &win_z);
     win_y = height - win_y; // y is inverted
 
+    QPaintEngine::Type oldEngineType = qgl_engine_selector()->preferredPaintEngine();
+    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
     QPaintEngine *engine = paintEngine();
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
     QPainter *p;
     bool reuse_painter = false;
     bool use_depth_testing = glIsEnabled(GL_DEPTH_TEST);
@@ -4472,8 +4626,6 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->disable_clear_on_painter_begin = true;
-        if (engine->type() == QPaintEngine::OpenGL2)
-            qt_save_gl_state();
         p = new QPainter(this);
     }
 
@@ -4502,13 +4654,10 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     } else {
         p->end();
         delete p;
-        if (engine->type() == QPaintEngine::OpenGL2)
-            qt_restore_gl_state();
         setAutoBufferSwap(auto_swap);
         d->disable_clear_on_painter_begin = false;
     }
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+    qgl_engine_selector()->setPreferredPaintEngine(oldEngineType);
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
@@ -4904,8 +5053,6 @@ void QGLWidgetPrivate::initContext(QGLContext *context, const QGLWidget* shareWi
 
     if (!glcx)
         glcx = new QGLContext(QGLFormat::defaultFormat(), q);
-
-    q->setAttribute(Qt::WA_NoSystemBackground);
 }
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
@@ -4929,7 +5076,7 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
 }
 #endif
 
-void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *share) {
+void QGLContextGroup::addShare(const QGLContext *context, const QGLContext *share) {
     Q_ASSERT(context && share);
     if (context->d_ptr->group == share->d_ptr->group)
         return;
@@ -4950,11 +5097,7 @@ void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *sha
     group->m_shares.append(context);
 }
 
-QList<const QGLContext *> QGLShareRegister::shares(const QGLContext *context) {
-    return context->d_ptr->group->m_shares;
-}
-
-void QGLShareRegister::removeShare(const QGLContext *context) {
+void QGLContextGroup::removeShare(const QGLContext *context) {
     // Remove the context from the group.
     QGLContextGroup *group = context->d_ptr->group;
     if (group->m_shares.isEmpty())

@@ -909,7 +909,7 @@ QAxMetaObject *QAxBase::internalMetaObject() const
     \property QAxBase::control
     \brief the name of the COM object wrapped by this QAxBase object.
 
-    Setting this property initilializes the COM object. Any COM object
+    Setting this property initializes the COM object. Any COM object
     previously set is shut down.
 
     The most efficient way to set this property is by using the

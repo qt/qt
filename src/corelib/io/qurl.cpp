@@ -3864,14 +3864,18 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
         url += "//";
 
         if ((options & QUrl::RemoveUserInfo) != QUrl::RemoveUserInfo) {
+            bool hasUserOrPass = false;
             if (!userName.isEmpty()) {
                 url += encodedUserName;
-                if (!(options & QUrl::RemovePassword) && !password.isEmpty()) {
-                    url += ':';
-                    url += encodedPassword;
-                }
-                url += '@';
+                hasUserOrPass = true;
             }
+            if (!(options & QUrl::RemovePassword) && !password.isEmpty()) {
+                url += ':';
+                url += encodedPassword;
+                hasUserOrPass = true;
+            }
+            if (hasUserOrPass)
+                url += '@';
         }
 
         if (host.startsWith(QLatin1Char('['))) {

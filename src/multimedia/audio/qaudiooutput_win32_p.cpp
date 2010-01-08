@@ -147,6 +147,14 @@ WAVEHDR* QAudioOutputPrivate::allocateBlocks(int size, int count)
 
 void QAudioOutputPrivate::freeBlocks(WAVEHDR* blockArray)
 {
+    WAVEHDR* blocks = blockArray;
+
+    int count = buffer_size/period_size;
+
+    for(int i = 0; i < count; i++) {
+        waveOutUnprepareHeader(hWaveOut,&blocks[i], sizeof(WAVEHDR));
+        blocks+=sizeof(WAVEHDR);
+    }
     HeapFree(GetProcessHeap(), 0, blockArray);
 }
 
@@ -205,7 +213,7 @@ bool QAudioOutputPrivate::open()
 #endif
     if(buffer_size == 0) {
         // Default buffer size, 200ms, default period size is 40ms
-        buffer_size = settings.frequency()*settings.channels()*(settings.sampleSize()/8)*0.2;
+        buffer_size = settings.sampleRate()*settings.channelCount()*(settings.sampleSize()/8)*0.2;
 	period_size = buffer_size/5;
     } else {
         period_size = buffer_size/5;
@@ -224,9 +232,9 @@ bool QAudioOutputPrivate::open()
     timeStamp.restart();
     elapsedTimeOffset = 0;
 
-    wfx.nSamplesPerSec = settings.frequency();
+    wfx.nSamplesPerSec = settings.sampleRate();
     wfx.wBitsPerSample = settings.sampleSize();
-    wfx.nChannels = settings.channels();
+    wfx.nChannels = settings.channelCount();
     wfx.cbSize = 0;
 
     wfx.wFormatTag = WAVE_FORMAT_PCM;
@@ -281,8 +289,8 @@ void QAudioOutputPrivate::close()
         return;
 
     deviceState = QAudio::StoppedState;
-    int delay = (buffer_size-bytesFree())*1000/(settings.frequency()
-                  *settings.channels()*(settings.sampleSize()/8));
+    int delay = (buffer_size-bytesFree())*1000/(settings.sampleRate()
+                  *settings.channelCount()*(settings.sampleSize()/8));
     waveOutReset(hWaveOut);
     Sleep(delay+10);
 
@@ -378,8 +386,8 @@ qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
         LeaveCriticalSection(&waveOutCriticalSection);
 #endif
         totalTimeValue += current->dwBufferLength
-            /(settings.channels()*(settings.sampleSize()/8))
-            *1000000/settings.frequency();;
+            /(settings.channelCount()*(settings.sampleSize()/8))
+            *1000000/settings.sampleRate();;
         waveCurrentBlock++;
         waveCurrentBlock %= buffer_size/period_size;
         current = &waveBlocks[waveCurrentBlock];

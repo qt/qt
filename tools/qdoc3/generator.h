@@ -183,6 +183,8 @@ class Generator
     static QSet<QString> outputFormats;
     static QStringList imageFiles;
     static QStringList imageDirs;
+    static QStringList exampleDirs;
+    static QStringList exampleImgExts;
     static QString outDir;
     static QString project;
 };

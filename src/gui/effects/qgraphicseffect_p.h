@@ -108,6 +108,13 @@ public:
         , m_cachedMode(QGraphicsEffect::PadToTransparentBorder)
     {}
 
+    enum InvalidateReason
+    {
+        TransformChanged,
+        EffectRectChanged,
+        SourceChanged
+    };
+
     virtual ~QGraphicsEffectSourcePrivate();
     virtual void detach() = 0;
     virtual QRectF boundingRect(Qt::CoordinateSystem system) const = 0;
@@ -121,7 +128,9 @@ public:
     virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0,
                            QGraphicsEffect::PixmapPadMode mode = QGraphicsEffect::PadToTransparentBorder) const = 0;
     virtual void effectBoundingRectChanged() = 0;
-    void invalidateCache(bool effectRectChanged = false) const;
+
+    void invalidateCache(InvalidateReason reason = SourceChanged) const;
+    Qt::CoordinateSystem currentCachedSystem() const { return m_cachedSystem; }
 
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;

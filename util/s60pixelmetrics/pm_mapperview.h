@@ -219,7 +219,7 @@ class CPixelMetricsMapperView : public CAknView
     private:    // Data
 
         // The view container.
-    	CPixelMetricsMapperViewContainer*    iView;
+        CPixelMetricsMapperViewContainer*    iView;
 
     };
 

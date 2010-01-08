@@ -4522,6 +4522,12 @@ typedef QHash<QFontEngine*, QGLGlyphHash*> QGLFontGlyphHash;
 typedef QHash<quint64, QGLFontTexture*> QGLFontTexHash;
 typedef QHash<const QGLContext*, QGLFontGlyphHash*> QGLContextHash;
 
+static inline void qt_delete_glyph_hash(QGLGlyphHash *hash)
+{
+    qDeleteAll(*hash);
+    delete hash;
+}
+
 class QGLGlyphCache : public QObject
 {
     Q_OBJECT
@@ -4562,7 +4568,7 @@ void QGLGlyphCache::fontEngineDestroyed(QObject *o)
         if (font_cache->find(fe) != font_cache->end()) {
             ctx = keys.at(i);
             QGLGlyphHash *cache = font_cache->take(fe);
-            delete cache;
+            qt_delete_glyph_hash(cache);
             break;
         }
     }
@@ -4599,7 +4605,7 @@ void QGLGlyphCache::cleanupContext(const QGLContext *ctx)
         QList<QFontEngine *> keys = font_cache->keys();
         for (int i=0; i < keys.size(); ++i) {
             QFontEngine *fe = keys.at(i);
-            delete font_cache->take(fe);
+            qt_delete_glyph_hash(font_cache->take(fe));
             quint64 font_key = (reinterpret_cast<quint64>(ctx) << 32) | reinterpret_cast<quint64>(fe);
             QGLFontTexture *font_tex = qt_font_textures.take(font_key);
             if (font_tex) {
@@ -4640,7 +4646,9 @@ void QGLGlyphCache::cleanCache()
     QList<const QGLContext *> keys = qt_context_cache.keys();
     for (int i=0; i < keys.size(); ++i) {
         QGLFontGlyphHash *font_cache = qt_context_cache.value(keys.at(i));
-        qDeleteAll(*font_cache);
+        QGLFontGlyphHash::Iterator it = font_cache->begin();
+        for (; it != font_cache->end(); ++it)
+            qt_delete_glyph_hash(it.value());
         font_cache->clear();
     }
     qDeleteAll(qt_context_cache);

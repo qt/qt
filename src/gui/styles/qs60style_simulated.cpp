@@ -337,6 +337,11 @@ bool QS60StylePrivate::isToolBarBackground()
     return true;
 }
 
+bool QS60StylePrivate::hasSliderGrooveGraphic()
+{
+    return false;
+}
+
 QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize)
 {
     QFont result;

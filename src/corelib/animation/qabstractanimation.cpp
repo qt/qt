@@ -242,7 +242,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
             animationTimer.stop();
             isPauseTimerActive = false;
             // invalidate the start reference time
-            time = QTime();
+            time.invalidate();
         } else {
             restartAnimationTimer();
             if (!time.isValid()) {

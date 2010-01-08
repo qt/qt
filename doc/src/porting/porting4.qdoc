@@ -3793,11 +3793,10 @@
     multimedia timer API, which gives us 1 millisecond resolution for
     QTimer.
 
-    Note that other versions of Windows have a lower timer resolution,
-    and that code relying on underlying system timer restrictions
-    encounters no such limitations using Qt 4 (e.g., setting an
-    interval of 0 millisecond results in Qt occupying all of the
-    processor time when no GUI events need processing).
+    Note that Windows 2000 has a lower timer resolution, and that code relying
+    on underlying system timer restrictions encounters no such limitations
+    using Qt 4 (e.g., setting an interval of 0 millisecond results in Qt
+    occupying all of the processor time when no GUI events need processing).
 
     \section1 QToolBar
 

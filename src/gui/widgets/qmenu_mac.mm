@@ -231,7 +231,7 @@ bool qt_mac_activate_action(MenuRef menu, uint command, QAction::ActionEvent act
 
     //now walk up firing for each "caused" widget (like in the platform independent menu)
     QWidget *caused = 0;
-    if (GetMenuItemProperty(menu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), 0, &caused) == noErr) {
+    if (action_e == QAction::Hover && GetMenuItemProperty(menu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), 0, &caused) == noErr) {
         MenuRef caused_menu = 0;
         if (QMenu *qmenu2 = qobject_cast<QMenu*>(caused))
             caused_menu = qmenu2->macMenu();
@@ -244,25 +244,17 @@ bool qt_mac_activate_action(MenuRef menu, uint command, QAction::ActionEvent act
             QWidget *widget = 0;
             GetMenuItemProperty(caused_menu, 0, kMenuCreatorQt, kMenuPropertyQWidget, sizeof(widget), 0, &widget);
             if (QMenu *qmenu = qobject_cast<QMenu*>(widget)) {
-                if (action_e == QAction::Trigger) {
-                    emit qmenu->triggered(action->action);
-                } else if (action_e == QAction::Hover) {
-                    action->action->showStatusText(widget);
-                    emit qmenu->hovered(action->action);
-                }
+                action->action->showStatusText(widget);
+                emit qmenu->hovered(action->action);
             } else if (QMenuBar *qmenubar = qobject_cast<QMenuBar*>(widget)) {
-                if (action_e == QAction::Trigger) {
-                    emit qmenubar->triggered(action->action);
-                } else if (action_e == QAction::Hover) {
-                    action->action->showStatusText(widget);
-                    emit qmenubar->hovered(action->action);
-                }
+                action->action->showStatusText(widget);
+                emit qmenubar->hovered(action->action);
                 break; //nothing more..
             }
 
             //walk up
             if (GetMenuItemProperty(caused_menu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget,
-                                   sizeof(caused), 0, &caused) != noErr)
+                                    sizeof(caused), 0, &caused) != noErr)
                 break;
             if (QMenu *qmenu2 = qobject_cast<QMenu*>(caused))
                 caused_menu = qmenu2->macMenu();

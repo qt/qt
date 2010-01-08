@@ -72,7 +72,7 @@ const QString CmdLineParser::m_helpMessage = QLatin1String(
         "                           file.\n"
         "-setCurrentFilter filter   Set the filter as the active filter.\n"
         "-remove-search-index       Removes the full text search index.\n"
-        "-rebuild-search-index      Re-builds the full text search index (potentially slow)\n."
+        "-rebuild-search-index      Re-builds the full text search index (potentially slow).\n"
         "-quiet                     Does not display any error or\n"
         "                           status message.\n"
         "-help                      Displays this help.\n"

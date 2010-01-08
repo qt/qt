@@ -931,7 +931,10 @@ void QComboBoxPrivate::init()
                                  QSizePolicy::ComboBox));
     setLayoutItemMargins(QStyle::SE_ComboBoxLayoutItem);
     q->setModel(new QStandardItemModel(0, 1, q));
-    q->setAttribute(Qt::WA_InputMethodEnabled);
+    if (!q->isEditable())
+        q->setAttribute(Qt::WA_InputMethodEnabled, false);
+    else
+        q->setAttribute(Qt::WA_InputMethodEnabled);
 }
 
 QComboBoxPrivateContainer* QComboBoxPrivate::viewContainer()

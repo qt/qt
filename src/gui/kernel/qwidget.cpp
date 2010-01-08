@@ -9782,13 +9782,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     }
 #endif
 
-    if (newParent) {
-        if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
+    if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
+        if (newParent)
             oldBs->removeDirtyWidget(this);
-            // Move the widget and all its static children from
-            // the old backing store to the new one.
-            oldBs->moveStaticWidgets(this);
-        }
+        // Move the widget and all its static children from
+        // the old backing store to the new one.
+        oldBs->moveStaticWidgets(this);
     }
 
     if ((QApplicationPrivate::app_compile_version < 0x040200
@@ -11880,16 +11879,20 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     mouse when a mouse button is pressed and keeps it until the last
     button is released.
 
-    Note that only visible widgets can grab mouse input. If
-    isVisible() returns false for a widget, that widget cannot call
-    grabMouse().
+    \note Only visible widgets can grab mouse input. If isVisible()
+    returns false for a widget, that widget cannot call grabMouse().
+
+    \note \bold{(Mac OS X developers)} For \e Cocoa, calling
+    grabMouse() on a widget only works when the mouse is inside the
+    frame of that widget.  For \e Carbon, it works outside the widget's
+    frame as well, like for Windows and X11.
 
     \sa releaseMouse() grabKeyboard() releaseKeyboard()
 */
 
 /*!
     \fn void QWidget::grabMouse(const QCursor &cursor)
-    \overload
+    \overload grabMouse()
 
     Grabs the mouse input and changes the cursor shape.
 
@@ -11898,6 +11901,8 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     mouse events until releaseMouse() is called().
 
     \warning Grabbing the mouse might lock the terminal.
+
+    \note \bold{(Mac OS X developers)} See the note in QWidget::grabMouse().
 
     \sa releaseMouse(), grabKeyboard(), releaseKeyboard(), setCursor()
 */
