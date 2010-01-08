@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "dirmodel.h"
+#include "fsmodel.h"
 
 //! [0]
 FileSystemModel::FileSystemModel(QObject *parent)
