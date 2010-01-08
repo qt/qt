@@ -57,10 +57,9 @@
     \table
     \header \o Option         \o Argument \o Description
 
-    \row \o \c{-o} \o \c{file} \o Writes output to \c{file} rather than
-                                  stdout.
+    \row \o \c{-o} \o \c{file} \o Write output to \c{file} rather than to stdout.
 
-    \row \o \c{-name} \o \c{name} \o Creates an external initialization 
+    \row \o \c{-name} \o \c{name} \o Create an external initialization 
     	    	      	 	     function with \c{name}.
 
     \row \o \c{-threshold} \o \c{level} \o Specifies a threshold \c{level} (in 
@@ -71,7 +70,7 @@
 					   threshold level is 70 bytes.
                                              
     \row \o \c{-compress} \o \c{level} \o Compress input files to the given
-                                          compression \{level}, which is an 
+                                          compression \c{level}, which is an 
 					  integer in the range 1 to 9. Level 1 
 					  does the least compression but is 
 					  fastest. Level 9 does the most 
@@ -84,13 +83,13 @@
     \row \o \c{-root} \o \c{path} \o Prefix the resource access path with \c{path}.
     	    	      	 	     The default is no prefix.
 
-    \row \o \c{-no-compress} \o \o Disables all compression.
+    \row \o \c{-no-compress} \o \o Disable compression.
 
-    \row \o \c{-binary} \o \o Outputs a binary file for use as a dynamic resource.
+    \row \o \c{-binary} \o \o Output a binary file for use as a dynamic resource.
 
-    \row \o \c{-version} \o \o Displays version information.
+    \row \o \c{-version} \o \o Display version information.
 
-    \row \o \c{-help} \o \o Displays usage information.
+    \row \o \c{-help} \o \o Display usage information.
 
     \endtable
 
