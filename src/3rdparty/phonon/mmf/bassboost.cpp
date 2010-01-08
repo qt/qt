@@ -28,15 +28,16 @@ using namespace Phonon::MMF;
   \internal
 */
 
-BassBoost::BassBoost(QObject *parent) : AbstractAudioEffect::AbstractAudioEffect(parent,
-                                                                                QList<EffectParameter>())
+BassBoost::BassBoost(QObject *parent, const QList<EffectParameter> &parameters)
+    :   AbstractAudioEffect::AbstractAudioEffect(parent, parameters)
 {
+
 }
 
 void BassBoost::parameterChanged(const int,
                                  const QVariant &)
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "BassBoost has not parameters");
+    Q_ASSERT_X(false, Q_FUNC_INFO, "BassBoost has no parameters");
 }
 
 void BassBoost::connectAudioPlayer(AudioPlayer::NativePlayer *player)
@@ -49,6 +50,20 @@ void BassBoost::connectAudioPlayer(AudioPlayer::NativePlayer *player)
 void BassBoost::applyParameters()
 {
     // No parameters to apply
+}
+
+//-----------------------------------------------------------------------------
+// Static functions
+//-----------------------------------------------------------------------------
+
+const char* BassBoost::description()
+{
+    return "Bass boost";
+}
+
+void BassBoost::getParameters(NativeEffect*, QList<EffectParameter>&)
+{
+
 }
 
 QT_END_NAMESPACE

@@ -37,10 +37,11 @@ using namespace Phonon::MMF;
 
 AbstractAudioEffect::AbstractAudioEffect(QObject *parent,
                                          const QList<EffectParameter> &params)
-    :   MediaNode::MediaNode(parent)
+    :   MediaNode(parent)
     ,   m_player(0)
     ,   m_params(params)
 {
+
 }
 
 QList<EffectParameter> AbstractAudioEffect::parameters() const
@@ -63,8 +64,10 @@ void AbstractAudioEffect::setParameterValue(const EffectParameter &param,
 {
     m_values.insert(param.id(), newValue);
     parameterChanged(param.id(), newValue);
-    // TODO: handle audio effect errors
-    TRAP_IGNORE(m_effect->ApplyL());
+
+    if (m_effect.data())
+        // TODO: handle audio effect errors
+        TRAP_IGNORE(m_effect->ApplyL());
 }
 
 void AbstractAudioEffect::connectMediaObject(MediaObject *mediaObject)

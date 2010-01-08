@@ -28,8 +28,10 @@ using namespace Phonon::MMF;
   \internal
 */
 
-AudioEqualizer::AudioEqualizer(QObject *parent) : AbstractAudioEffect::AbstractAudioEffect(parent, createParams())
+AudioEqualizer::AudioEqualizer(QObject *parent, const QList<EffectParameter> &parameters)
+    :   AbstractAudioEffect::AbstractAudioEffect(parent, parameters)
 {
+
 }
 
 void AudioEqualizer::parameterChanged(const int pid,
@@ -68,30 +70,32 @@ void AudioEqualizer::setBandLevel(int band, int level)
     TRAP_IGNORE(effect->SetBandLevelL(band, level));
 }
 
-QList<EffectParameter> AudioEqualizer::createParams()
+//-----------------------------------------------------------------------------
+// Static functions
+//-----------------------------------------------------------------------------
+
+const char* AudioEqualizer::description()
 {
-    QList<EffectParameter> retval;
+    return "Audio equalizer";
+}
 
-    // We temporarily create an AudioPlayer, and run the effect on it, so
-    // we can extract the readonly data we need.
-    AudioPlayer dummyPlayer;
-
-    CAudioEqualizer *eqPtr = 0;
-    QT_TRAP_THROWING(eqPtr = CAudioEqualizer::NewL(*dummyPlayer.nativePlayer()));
-    QScopedPointer<CAudioEqualizer> e(eqPtr);
-
+void AudioEqualizer::getParameters(NativeEffect *effect,
+    QList<EffectParameter> &parameters)
+{
     TInt32 dbMin;
     TInt32 dbMax;
-    e->DbLevelLimits(dbMin, dbMax);
+    effect->DbLevelLimits(dbMin, dbMax);
 
-    const int bandCount = e->NumberOfBands();
+    const int bandCount = effect->NumberOfBands();
 
-    for (int i = 0; i < bandCount; ++i) {
-        const qint32 hz = e->CenterFrequency(i);
+    // For some reason, band IDs are 1-based, as opposed to the
+    // 0-based indices used in just about other Symbian API...!
+    for (int i = 1; i <= bandCount; ++i) {
+        const qint32 hz = effect->CenterFrequency(i);
 
-        const qint32 defVol = e->BandLevel(i);
+        const qint32 defVol = effect->BandLevel(i);
 
-        retval.append(EffectParameter(i,
+        parameters.append(EffectParameter(i,
                                       tr("Frequency band, %1 Hz").arg(hz),
                                       EffectParameter::LogarithmicHint,
                                       QVariant(qint32(defVol)),
@@ -100,8 +104,6 @@ QList<EffectParameter> AudioEqualizer::createParams()
                                       QVariantList(),
                                       QString()));
     }
-
-    return retval;
 }
 
 QT_END_NAMESPACE

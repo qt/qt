@@ -68,18 +68,6 @@ public:
     virtual void setParameterValue(const EffectParameter &,
                                    const QVariant &newValue);
 
-    enum Type
-    {
-        EffectAudioEqualizer = 1,
-        EffectBassBoost,
-        EffectDistanceAttenuation,
-        EffectEnvironmentalReverb,
-        EffectListenerOrientation,
-        EffectLoudness,
-        EffectSourceOrientation,
-        EffectStereoWidening
-    };
-
 protected:
     // MediaNode
     void connectMediaObject(MediaObject *mediaObject);

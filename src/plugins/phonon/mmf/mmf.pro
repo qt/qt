@@ -81,6 +81,7 @@ LIBS += -lws32                    # For RWindow
 LIBS += -lefsrv                   # For file server
 LIBS += -lapgrfx -lapmime         # For recognizer
 LIBS += -lmmfcontrollerframework  # For CMMFMetaDataEntry
+LIBS += -lmediaclientaudiostream  # For CMdaAudioOutputStream
 
 # These are for effects.
 LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
