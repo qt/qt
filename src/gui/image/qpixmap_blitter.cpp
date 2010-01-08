@@ -75,10 +75,10 @@ int QBlittablePixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 
 void QBlittablePixmapData::fill(const QColor &color)
 {
-    if (blittable()->capabilities() & QBlittable::SolidRectCapability)
-        blittable()->fillRect(QRectF(0,0,w,h),color);
+    if (color.alpha() == 255 && blittable()->capabilities() & QBlittable::SolidRectCapability)
+         blittable()->fillRect(QRectF(0,0,w,h),color);
     else
-        blittable()->lock()->fill(color.rgb());
+        blittable()->lock()->fill(color.rgba());
 }
 
 QImage *QBlittablePixmapData::buffer()
@@ -102,6 +102,7 @@ void QBlittablePixmapData::fromImage(const QImage &image,
     resize(image.width(),image.height());
     QImage *thisImg = blittable()->lock();
     QPainter p(thisImg);
+    p.setCompositionMode(QPainter::CompositionMode_Source);
     p.drawImage(0,0,image,flags);
 }
 
