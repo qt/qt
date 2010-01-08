@@ -1239,10 +1239,6 @@ void qt_init(QApplicationPrivate *priv, int)
         [cocoaApp setMenu:[qtMenuLoader menu]];
         [newDelegate setMenuLoader:qtMenuLoader];
         [qtMenuLoader release];
-
-        NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
-        [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
-          forEventClass:kInternetEventClass andEventID:kAEGetURL];
     }
 #endif
     // Register for Carbon tablet proximity events on the event monitor target.
@@ -2434,6 +2430,23 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
     return eventNotHandledErr;
 #endif
 }
+
+#ifdef QT_MAC_USE_COCOA
+void QApplicationPrivate::setupAppleEvents()
+{
+    // This function is called from the event dispatcher when NSApplication has
+    // finished initialization, which appears to be just after [NSApplication run] has
+    // started to execute. By setting up our apple events handlers this late, we override
+    // the ones set up by NSApplication.
+    QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
+    NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
+    [eventManager setEventHandler:newDelegate andSelector:@selector(appleEventQuit:withReplyEvent:)
+     forEventClass:kCoreEventClass andEventID:kAEQuitApplication];
+    [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
+      forEventClass:kInternetEventClass andEventID:kAEGetURL];
+
+}
+#endif
 
 // In Carbon this is your one stop for apple events.
 // In Cocoa, it ISN'T. This is the catch-all Apple Event handler that exists

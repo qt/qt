@@ -625,7 +625,7 @@ static NSMenuItem *createNSMenuItem(const QString &title)
     NSMenuItem *item = [[NSMenuItem alloc] 
                          initWithTitle:qt_mac_QStringToNSString(title)
                          action:@selector(qtDispatcherToQAction:) keyEquivalent:@""];
-    [item setTarget:getMenuLoader()];
+    [item setTarget:nil];
     return item;
 }
 #endif
@@ -1106,7 +1106,7 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
                 action->menu = merge;
                 [cmd retain];
                 [cmd setAction:@selector(qtDispatcherToQAction:)];
-                [cmd setTarget:getMenuLoader()];
+                [cmd setTarget:nil];
                 [action->menuItem release];
                 action->menuItem = cmd;
                 QMenuMergeList *list = QMenuPrivate::mergeMenuItemsHash.value(merge);

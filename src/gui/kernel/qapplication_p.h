@@ -459,6 +459,9 @@ public:
     static OSStatus globalEventProcessor(EventHandlerCallRef, EventRef, void *);
     static OSStatus globalAppleEventProcessor(const AppleEvent *, AppleEvent *, long);
     static OSStatus tabletProximityCallback(EventHandlerCallRef, EventRef, void *);
+#ifdef QT_MAC_USE_COCOA
+    static void setupAppleEvents();
+#endif
     static bool qt_mac_apply_settings();
 #endif
 
