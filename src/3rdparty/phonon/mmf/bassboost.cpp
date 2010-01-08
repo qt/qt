@@ -46,13 +46,6 @@ void BassBoost::connectAudioPlayer(AudioPlayer::NativePlayer *player)
     m_effect.reset(ptr);
 }
 
-void BassBoost::connectVideoPlayer(VideoPlayer::NativePlayer *player)
-{
-    CBassBoost *ptr = 0;
-    QT_TRAP_THROWING(ptr = CBassBoost::NewL(*player));
-    m_effect.reset(ptr);
-}
-
 void BassBoost::applyParameters()
 {
     // No parameters to apply

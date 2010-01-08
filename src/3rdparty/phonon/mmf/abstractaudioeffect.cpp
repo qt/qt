@@ -80,15 +80,10 @@ void AbstractAudioEffect::connectMediaObject(MediaObject *mediaObject)
 
         if (AudioPlayer *audioPlayer = qobject_cast<AudioPlayer *>(player)) {
             connectAudioPlayer(audioPlayer->nativePlayer());
-        } else {
-            VideoPlayer *videoPlayer = qobject_cast<VideoPlayer *>(player);
-            Q_ASSERT_X(videoPlayer, Q_FUNC_INFO, "Player type not recognised");
-            connectVideoPlayer(videoPlayer->nativePlayer());
+            applyParameters();
+            // TODO: handle audio effect errors
+            TRAP_IGNORE(m_effect->EnableL());
         }
-
-        applyParameters();
-        // TODO: handle audio effect errors
-        TRAP_IGNORE(m_effect->EnableL());
     }
 }
 
