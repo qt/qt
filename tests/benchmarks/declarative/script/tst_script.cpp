@@ -76,6 +76,11 @@ private slots:
     void signal_qml();
     void signal_args();
     void signal_unusedArgs();
+
+    void slot_simple();
+    void slot_simple_js();
+    void slot_complex();
+    void slot_complex_js();
 private:
 };
 
@@ -516,6 +521,62 @@ void tst_script::signal_unusedArgs()
 
     QBENCHMARK {
         object->emitMySignalWithArgs(11);
+    }
+
+    delete object;
+}
+
+void tst_script::slot_simple()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("slot_simple.qml"));
+    TestObject *object = qobject_cast<TestObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QBENCHMARK {
+        object->emitMySignal();
+    }
+
+    delete object;
+}
+
+void tst_script::slot_simple_js()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("slot_simple_js.qml"));
+    TestObject *object = qobject_cast<TestObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QBENCHMARK {
+        object->emitMySignal();
+    }
+
+    delete object;
+}
+
+void tst_script::slot_complex()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("slot_complex.qml"));
+    TestObject *object = qobject_cast<TestObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QBENCHMARK {
+        object->emitMySignal();
+    }
+
+    delete object;
+}
+
+void tst_script::slot_complex_js()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("slot_complex_js.qml"));
+    TestObject *object = qobject_cast<TestObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QBENCHMARK {
+        object->emitMySignal();
     }
 
     delete object;
