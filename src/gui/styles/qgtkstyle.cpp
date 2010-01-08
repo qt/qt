@@ -1736,7 +1736,11 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            GtkWidget *gtkSpinButton = d->gtkWidget(QLS("GtkSpinButton"));
+
+            GtkWidget *gtkSpinButton = d->gtkWidget(
+                    spinBox->buttonSymbols == QAbstractSpinBox::NoButtons ?
+                    QLS("GtkEntry") :
+                    QLS("GtkSpinButton"));
             bool isEnabled = (spinBox->state & State_Enabled);
             bool hover = isEnabled && (spinBox->state & State_MouseOver);
             bool sunken = (spinBox->state & State_Sunken);
@@ -1744,32 +1748,35 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             bool downIsActive = (spinBox->activeSubControls == SC_SpinBoxDown);
             bool reverse = (spinBox->direction == Qt::RightToLeft);
 
-            //### Move this to subControlRect
-            QRect upRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
-            upRect.setTop(option->rect.top());
-
-            if (reverse)
-                upRect.setLeft(option->rect.left());
-            else
-                upRect.setRight(option->rect.right());
-
-            QRect editRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget);
-            QRect downRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
-            downRect.setBottom(option->rect.bottom());
-
-            if (reverse)
-                downRect.setLeft(option->rect.left());
-            else
-                downRect.setRight(option->rect.right());
-
-            QRect buttonRect = upRect | downRect;
             QRect editArea = option->rect;
+            QRect editRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget);
+            QRect upRect, downRect, buttonRect;
+            if (spinBox->buttonSymbols != QAbstractSpinBox::NoButtons) {
+                upRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
+                downRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
 
-            if (reverse)
-                editArea.setLeft(upRect.right());
-            else
-                editArea.setRight(upRect.left());
+                //### Move this to subControlRect
+                upRect.setTop(option->rect.top());
 
+                if (reverse)
+                    upRect.setLeft(option->rect.left());
+                else
+                    upRect.setRight(option->rect.right());
+
+                downRect.setBottom(option->rect.bottom());
+
+                if (reverse)
+                    downRect.setLeft(option->rect.left());
+                else
+                    downRect.setRight(option->rect.right());
+
+                buttonRect = upRect | downRect;
+
+                if (reverse)
+                    editArea.setLeft(upRect.right());
+                else
+                    editArea.setRight(upRect.left());
+            }
             if (spinBox->frame) {
                 GtkShadowType shadow = GTK_SHADOW_OUT;
                 GtkStateType state = gtkPainter.gtkState(option);
@@ -1803,29 +1810,31 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                                             GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE, GTK_SHADOW_NONE, style, key);
 
                 gtkPainter.paintShadow(gtkSpinButton, "entry", editArea, state, GTK_SHADOW_IN, gtkSpinButton->style, key);
-                gtkPainter.paintBox(gtkSpinButton, "spinbutton", buttonRect, state, GTK_SHADOW_IN, style, key);
+                if (spinBox->buttonSymbols != QAbstractSpinBox::NoButtons) {
+                    gtkPainter.paintBox(gtkSpinButton, "spinbutton", buttonRect, state, GTK_SHADOW_IN, style, key);
 
-                upRect.setSize(downRect.size());
-                if (!(option->state & State_Enabled))
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_INSENSITIVE, GTK_SHADOW_IN, style, key);
-                else if (upIsActive && sunken)
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_ACTIVE, GTK_SHADOW_IN, style, key);
-                else if (upIsActive && hover)
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style, key);
-                else
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
+                    upRect.setSize(downRect.size());
+                    if (!(option->state & State_Enabled))
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_INSENSITIVE, GTK_SHADOW_IN, style, key);
+                    else if (upIsActive && sunken)
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_ACTIVE, GTK_SHADOW_IN, style, key);
+                    else if (upIsActive && hover)
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style, key);
+                    else
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
 
-                if (!(option->state & State_Enabled))
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_INSENSITIVE, GTK_SHADOW_IN, style, key);
-                else if (downIsActive && sunken)
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_ACTIVE, GTK_SHADOW_IN, style, key);
-                else if (downIsActive && hover)
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style, key);
-                else
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
+                    if (!(option->state & State_Enabled))
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_INSENSITIVE, GTK_SHADOW_IN, style, key);
+                    else if (downIsActive && sunken)
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_ACTIVE, GTK_SHADOW_IN, style, key);
+                    else if (downIsActive && hover)
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style, key);
+                    else
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
 
-                if (option->state & State_HasFocus)
-                    GTK_WIDGET_UNSET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
+                    if (option->state & State_HasFocus)
+                        GTK_WIDGET_UNSET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
+                }
             }
 
             if (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus) {
@@ -1850,7 +1859,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     painter->drawLine(centerX - 2, centerY, centerX + 2, centerY);
                 }
 
-            } else {
+            } else if (spinBox->buttonSymbols == QAbstractSpinBox::UpDownArrows) {
                 int size = d->getSpinboxArrowSize();
                 int w = size / 2 - 1;
                 w -= w % 2 - 1; // force odd
