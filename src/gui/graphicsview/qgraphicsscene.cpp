@@ -1955,7 +1955,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSe
     \since 4.3
 
     This convenience function is equivalent to calling items(QRectF(\a x, \a y, \a w, \a h), \a mode).
-    
+
     This function is deprecated and returns incorrect results if the scene
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
@@ -4903,17 +4903,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (ignoreOpacity)
         item->d_ptr->ignoreOpacity = 1;
 
-    QGraphicsItem *p = item->d_ptr->parent;
-    while (p) {
-        p->d_ptr->dirtyChildren = 1;
-#ifndef QT_NO_GRAPHICSEFFECT
-        if (p->d_ptr->graphicsEffect && p->d_ptr->graphicsEffect->isEnabled()) {
-            p->d_ptr->dirty = 1;
-            p->d_ptr->fullUpdatePending = 1;
-        }
-#endif //QT_NO_GRAPHICSEFFECT
-        p = p->d_ptr->parent;
-    }
+    item->d_ptr->markParentDirty();
 }
 
 static inline bool updateHelper(QGraphicsViewPrivate *view, QGraphicsItemPrivate *item,
