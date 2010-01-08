@@ -127,7 +127,7 @@ public:
     QUrl baseUrl;
 };
 
-class QmlEnginePrivate : public QObjectPrivate
+class Q_AUTOTEST_EXPORT QmlEnginePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlEngine)
 public:

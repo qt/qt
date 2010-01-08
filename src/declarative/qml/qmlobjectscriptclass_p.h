@@ -66,7 +66,7 @@ class QmlEngine;
 class QScriptContext;
 class QScriptEngine;
 class QmlContext;
-class QmlObjectScriptClass : public QScriptDeclarativeClass
+class Q_AUTOTEST_EXPORT QmlObjectScriptClass : public QScriptDeclarativeClass
 {
 public:
     QmlObjectScriptClass(QmlEngine *);
