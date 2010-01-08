@@ -36,6 +36,7 @@ void InputSocketWaiter::run()
             break;
         emit newEvent();
         QMutex waitForProcessingMutex;
+        waitForProcessingMutex.lock();
         m_finishedProcessingEvents.wait(&waitForProcessingMutex);
     }
     m_cleanupMutex.unlock();
