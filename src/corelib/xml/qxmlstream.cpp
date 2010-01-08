@@ -3005,8 +3005,7 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
     deleteDevice = false;
 #ifndef QT_NO_TEXTCODEC
     codec = QTextCodec::codecForMib(106); // utf8
-    encoder = codec->makeEncoder();
-    encoder->fromUnicode(QLatin1String("")); // no byte order mark for utf8
+    encoder = codec->makeEncoder(QTextCodec::IgnoreHeader); // no byte order mark for utf8
 #endif
     inStartElement = inEmptyElement = false;
     wroteSomething = false;
@@ -3280,9 +3279,7 @@ void QXmlStreamWriter::setCodec(QTextCodec *codec)
     if (codec) {
         d->codec = codec;
         delete d->encoder;
-        d->encoder = codec->makeEncoder();
-        if (codec->mibEnum() == 106)
-            d->encoder->fromUnicode(QLatin1String("")); // no byte order mark for utf8
+        d->encoder = codec->makeEncoder(QTextCodec::IgnoreHeader); // no byte order mark for utf8
     }
 }
 
