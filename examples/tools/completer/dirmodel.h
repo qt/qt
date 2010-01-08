@@ -39,21 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef DIRMODEL_H
-#define DIRMODEL_H
+#ifndef FILESYSTEMMODEL_H
+#define FILESYSTEMMODEL_H
 
-#include <QDirModel>
+#include <QFileSystemModel>
 
-// With a QDirModel, set on a view, you will see "Program Files" in the view
+// With a QFileSystemModel, set on a view, you will see "Program Files" in the view
 // But with this model, you will see "C:\Program Files" in the view.
 // We acheive this, by having the data() return the entire file path for
 // the display role. Note that the Qt::EditRole over which the QCompleter
 // looks for matches is left unchanged
 //! [0]
-class DirModel : public QDirModel
+class FileSystemModel : public QFileSystemModel
 {
 public:
-    DirModel(QObject *parent = 0);
+    FileSystemModel(QObject *parent = 0);
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 };
 //! [0]

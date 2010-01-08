@@ -42,14 +42,14 @@
 #include "dirmodel.h"
 
 //! [0]
-DirModel::DirModel(QObject *parent)
-    : QDirModel(parent)
+FileSystemModel::FileSystemModel(QObject *parent)
+    : QFileSystemModel(parent)
 {
 }
 //! [0]
 
 //! [1]
-QVariant DirModel::data(const QModelIndex &index, int role) const
+QVariant FileSystemModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole && index.column() == 0) {
         QString path  = QDir::toNativeSeparators(filePath(index));
@@ -58,6 +58,7 @@ QVariant DirModel::data(const QModelIndex &index, int role) const
         return path;
     }
 
-    return QDirModel::data(index, role);
+    return QFileSystemModel::data(index, role);
 }
+
 //! [1]

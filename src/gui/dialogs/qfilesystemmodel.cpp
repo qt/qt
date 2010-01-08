@@ -150,6 +150,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \since 4.7
+    \fn void QFileSystemModel::directoryLoaded(const QString &path)
+
+    This signal is emitted when the gatherer thread has finished to load the \a path.
+
+*/
+
+/*!
     \fn bool QFileSystemModel::remove(const QModelIndex &index) const
 
     Removes the model item \a index from the file system model and \bold{deletes the
@@ -1869,6 +1877,8 @@ void QFileSystemModelPrivate::init()
             q, SLOT(_q_fileSystemChanged(QString,QList<QPair<QString,QFileInfo> >)));
     q->connect(&fileInfoGatherer, SIGNAL(nameResolved(QString,QString)),
             q, SLOT(_q_resolvedName(QString,QString)));
+    q->connect(&fileInfoGatherer, SIGNAL(directoryLoaded(QString)),
+               q, SIGNAL(directoryLoaded(QString)));
     q->connect(&delayedSortTimer, SIGNAL(timeout()), q, SLOT(_q_performDelayedSort()), Qt::QueuedConnection);
 }
 
