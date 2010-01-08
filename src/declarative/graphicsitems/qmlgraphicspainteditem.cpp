@@ -256,7 +256,7 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
             topaint = QRect(0,0,p->device()->width(),p->device()->height());
         else
             topaint = effectiveClip;
-    } else {
+    } else if (!effectiveClip.isEmpty()) {
         topaint &= effectiveClip;
     }
 
