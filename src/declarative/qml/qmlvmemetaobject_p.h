@@ -62,6 +62,7 @@
 #include <private/qobject_p.h>
 
 #include "qmlguard_p.h"
+#include "qmlcompiler_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -88,7 +89,7 @@ struct QmlVMEMetaData
         int parameterCount;
         int bodyOffset;
         int bodyLength;
-        int _dummy;
+        int scriptProgram;
     };
 
     PropertyData *propertyData() const {
@@ -108,8 +109,8 @@ class QmlRefCount;
 class QmlVMEMetaObject : public QAbstractDynamicMetaObject
 {
 public:
-    QmlVMEMetaObject(QObject *, const QMetaObject *, const QmlVMEMetaData *data,
-                     QmlRefCount * = 0);
+    QmlVMEMetaObject(QObject *obj, const QMetaObject *other, const QmlVMEMetaData *data,
+                     QmlCompiledData *compiledData);
     ~QmlVMEMetaObject();
 
     void registerInterceptor(int index, int valueIndex, QmlPropertyValueInterceptor *interceptor);
@@ -119,7 +120,7 @@ protected:
 
 private:
     QObject *object;
-    QmlRefCount *ref;
+    QmlCompiledData *compiledData;
     QmlGuard<QmlContext> ctxt;
 
     const QmlVMEMetaData *metaData;
@@ -130,6 +131,7 @@ private:
     QBitArray aConnected;
     QBitArray aInterceptors;
     QHash<int, QPair<int, QmlPropertyValueInterceptor*> > interceptors;
+    QScriptValue *methods;
 
     QAbstractDynamicMetaObject *parent;
 

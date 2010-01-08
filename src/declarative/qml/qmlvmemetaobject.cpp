@@ -44,6 +44,7 @@
 #include "qml.h"
 #include "qmlrefcount_p.h"
 #include "qmlexpression.h"
+#include "qmlexpression_p.h"
 #include "qmlcontext_p.h"
 
 #include <QColor>
@@ -56,11 +57,11 @@ QT_BEGIN_NAMESPACE
 QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
                                    const QMetaObject *other, 
                                    const QmlVMEMetaData *meta,
-                                   QmlRefCount *rc)
-: object(obj), ref(rc), ctxt(qmlContext(obj)), metaData(meta), parent(0)
+                                   QmlCompiledData *cdata)
+: object(obj), compiledData(cdata), ctxt(qmlContext(obj)), metaData(meta), methods(0),
+  parent(0)
 {
-    if (ref)
-        ref->addref();
+    compiledData->addref();
 
     *static_cast<QMetaObject *>(this) = *other;
     this->d.superdata = obj->metaObject();
@@ -91,12 +92,11 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
 
 QmlVMEMetaObject::~QmlVMEMetaObject()
 {
-    if (ref)
-        ref->release();
-    if (parent)
-        delete parent;
+    compiledData->release();
+    delete parent;
     qDeleteAll(listProperties);
     delete [] data;
+    delete [] methods;
 }
 
 int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
@@ -260,29 +260,36 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
             id -= plainSignals;
 
             if (id < metaData->methodCount) {
+                if (!ctxt->engine())
+                    return -1; // We can't run the method
+
+                QmlEnginePrivate *ep = QmlEnginePrivate::get(ctxt->engine());
+
+                if (!methods) 
+                    methods = new QScriptValue[metaData->methodCount];
+
                 QmlVMEMetaData::MethodData *data = metaData->methodData() + id;
-                const QChar *body = 
-                    (const QChar *)(((const char*)metaData) + data->bodyOffset);
+                if (!methods[id].isValid()) {
+                    const QChar *body = 
+                        (const QChar *)(((const char*)metaData) + data->bodyOffset);
 
-                QString code = QString::fromRawData(body, data->bodyLength);
+                    QString code = QString::fromRawData(body, data->bodyLength);
 
-                QVariant rv;
-                if (0 == (metaData->methodData() + id)->parameterCount) {
-                    QmlExpression expr(ctxt, code, object);
-                    expr.setTrackChange(false);
-                    rv = expr.value();
-                } else {
-                    QmlContext newCtxt(ctxt);
-                    QmlContextPrivate::get(&newCtxt)->isTemporary = true;
-                    QMetaMethod m = method(_id);
-                    QList<QByteArray> names = m.parameterNames(); 
-                    for (int ii = 0; ii < names.count(); ++ii) 
-                        newCtxt.setContextProperty(QString::fromLatin1(names.at(ii)), *(QVariant *)a[ii + 1]);
-                    QmlExpression expr(&newCtxt, code, object);
-                    expr.setTrackChange(false);
-                    rv = expr.value();
+                    // XXX Use QScriptProgram
+                    methods[id] = QmlExpressionPrivate::evalInObjectScope(ctxt, object, code);
                 }
-                if (a[0]) *reinterpret_cast<QVariant *>(a[0]) = rv;
+
+                QScriptValueList args;
+                if (data->parameterCount) {
+                    for (int ii = 0; ii < data->parameterCount; ++ii) {
+                        args << ep->scriptValueFromVariant(*(QVariant *)a[ii + 1]);
+                    }
+                }
+                QScriptValue rv = methods[id].call(ep->scriptEngine.globalObject(), args);
+
+                if (a[0]) *reinterpret_cast<QVariant *>(a[0]) = ep->scriptValueToVariant(rv);
+
+                return -1;
             }
             return -1;
         }

@@ -88,7 +88,6 @@ public:
     QmlEngine *engine;
 
     bool isInternal;
-    bool isTemporary;
 
     QmlIntegerCache *propertyNames;
     QList<QVariant> propertyValues;

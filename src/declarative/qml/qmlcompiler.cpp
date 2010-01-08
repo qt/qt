@@ -2341,13 +2341,24 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     }
 
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
-        const Object::DynamicSlot &s = obj->dynamicSlots.at(ii);
+        Object::DynamicSlot &s = obj->dynamicSlots[ii];
         QByteArray sig(s.name + '(');
+        QString funcScript(QLatin1String("(function("));
+
         for (int jj = 0; jj < s.parameterNames.count(); ++jj) {
-            if (jj) sig.append(',');
+            if (jj) { 
+                sig.append(',');
+                funcScript.append(QLatin1Char(','));
+            }
+            funcScript.append(s.parameterNames.at(jj));
             sig.append("QVariant");
         }
         sig.append(')');
+        funcScript.append(QLatin1Char(')'));
+        funcScript.append(s.body);
+        funcScript.append(QLatin1Char(')'));
+        s.body = funcScript;
+
         QMetaMethodBuilder b = builder.addSlot(sig);
         b.setReturnType("QVariant");
         b.setParameterNames(s.parameterNames);
