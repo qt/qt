@@ -117,11 +117,11 @@ struct StaticQtMetaObject : public QObject
 };
 
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
-: rootContext(0), currentExpression(0),
-  isDebugging(false), contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), globalClass(0),
-  cleanup(0), erroredBindings(0), 
-  inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttacheds(0), 
-  inBeginCreate(false), networkAccessManager(0), typeManager(e), uniqueId(1)
+: captureProperties(false), rootContext(0), currentExpression(0), isDebugging(false), 
+  contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), 
+  globalClass(0), cleanup(0), erroredBindings(0), inProgressCreations(0), 
+  scriptEngine(this), workerScriptEngine(0), componentAttacheds(0), inBeginCreate(false), 
+  networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
     fileImportPath.append(QLibraryInfo::location(QLibraryInfo::DataPath)+QDir::separator()+QLatin1String("qml"));
@@ -138,10 +138,7 @@ QUrl QmlScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 }
 
 QmlScriptEngine::QmlScriptEngine(QmlEnginePrivate *priv)
-    : p(priv),
-        sqlQueryClass(0),
-        namedNodeMapClass(0),
-        nodeListClass(0)
+: p(priv), sqlQueryClass(0), namedNodeMapClass(0), nodeListClass(0)
 {
     // Note that all documentation for stuff put on the global object goes in
     // doc/src/declarative/globalobject.qdoc
