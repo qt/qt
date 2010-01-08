@@ -144,7 +144,7 @@ public:
     Values are initialized as follows:
     \list
     \o frequency()  = -1
-    \o channels()   = -1
+    \o channelCount() = -1
     \o sampleSize() = -1
     \o byteOrder()  = QAudioFormat::Endian(QSysInfo::ByteOrder)
     \o sampleType() = QAudioFormat::Unknown
@@ -224,7 +224,16 @@ bool QAudioFormat::isValid() const
 }
 
 /*!
-   Sets the frequency (sample rate) to \a frequency.
+   Sets the sample rate to \a samplerate Hertz.
+*/
+
+void QAudioFormat::setSampleRate(int samplerate)
+{
+    d->frequency = samplerate;
+}
+
+/*!
+   \internal
 */
 
 void QAudioFormat::setFrequency(int frequency)
@@ -233,7 +242,16 @@ void QAudioFormat::setFrequency(int frequency)
 }
 
 /*!
-    Returns the current frequency (sample rate) value.
+    Returns the current sample rate in Hertz.
+*/
+
+int QAudioFormat::sampleRate() const
+{
+    return d->frequency;
+}
+
+/*!
+   \internal
 */
 
 int QAudioFormat::frequency() const
@@ -242,7 +260,16 @@ int QAudioFormat::frequency() const
 }
 
 /*!
-   Sets the number of channels to the \a channels value specified.
+   Sets the channel count to \a channels.
+*/
+
+void QAudioFormat::setChannelCount(int channels)
+{
+    d->channels = channels;
+}
+
+/*!
+   \internal
 */
 
 void QAudioFormat::setChannels(int channels)
@@ -251,7 +278,16 @@ void QAudioFormat::setChannels(int channels)
 }
 
 /*!
-    Returns the current number of channels.
+    Returns the current channel count value.
+*/
+
+int QAudioFormat::channelCount() const
+{
+    return d->channels;
+}
+
+/*!
+    \internal
 */
 
 int QAudioFormat::channels() const
