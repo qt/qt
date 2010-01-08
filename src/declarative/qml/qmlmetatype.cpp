@@ -462,7 +462,6 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
     if (uri)
         name += '/';
     name += cname;
-    name.replace('.','/');
 
     QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
                                 func, name, version_maj, version_min, mo, attach, attachMo, pStatus,

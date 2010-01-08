@@ -1,6 +1,8 @@
-This example show a C++ plugin that provides additional modules of QML types
-(in this case, a single module with a single extra type).
-to run:
+This example shows a module "com.nokia.TimeExample" that is implelement
+by a C++ plugin (providing the "Time" type), and by QML files (providing the
+"Clock" type).
+
+To run:
 
   make install
   qmlviewer plugins.qml

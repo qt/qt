@@ -79,6 +79,7 @@
 #include <QDebug>
 #include <QMetaObject>
 #include <QStack>
+#include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qcoreapplication.h>
@@ -123,6 +124,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
   inBeginCreate(false), networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
+    fileImportPath.append(QLibraryInfo::location(QLibraryInfo::DataPath)+QDir::separator()+QLatin1String("qml"));
 }
 
 QUrl QmlScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
@@ -1083,11 +1085,12 @@ static QString toLocalFileOrQrc(const QUrl& url)
 
 /////////////////////////////////////////////////////////////
 struct QmlEnginePrivate::ImportedNamespace {
+    QStringList uris;
     QStringList urls;
     QList<int> majversions;
     QList<int> minversions;
     QList<bool> isLibrary;
-    QList<bool> isBuiltin;
+    QList<bool> isBuiltin; // Types provided by C++ code (including plugins)
     QList<QString> qmlDirContent;
 
     bool find(const QByteArray& type, int *vmajor, int *vminor, QmlType** type_return, QUrl* url_return) const
@@ -1097,57 +1100,60 @@ struct QmlEnginePrivate::ImportedNamespace {
             int vmin = minversions.at(i);
 
             if (isBuiltin.at(i)) {
-                QByteArray qt = urls.at(i).toUtf8();
+                QByteArray qt = uris.at(i).toUtf8();
                 qt += '/';
                 qt += type;
+                if (qmlImportTrace())
+                    qDebug() << "Look in" << qt;
                 QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
                 if (vmajor) *vmajor = vmaj;
                 if (vminor) *vminor = vmin;
                 if (t) {
+                    if (qmlImportTrace())
+                        qDebug() << "Found" << qt;
                     if (type_return)
                         *type_return = t;
                     return true;
                 }
-            } else {
-                QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
-                QString qmldircontent = qmlDirContent.at(i);
-                if (vmaj || vmin || !qmldircontent.isEmpty()) {
-                    // Check version file - XXX cache these in QmlEngine!
-                    if (qmldircontent.isEmpty()) {
-                        QFile qmldir(toLocalFileOrQrc(QUrl(urls.at(i)+QLatin1String("/qmldir"))));
-                        if (qmldir.open(QIODevice::ReadOnly)) {
-                            qmldircontent = QString::fromUtf8(qmldir.readAll());
-                        }
+            }
+            QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
+            QString qmldircontent = qmlDirContent.at(i);
+            if (vmaj || vmin || !qmldircontent.isEmpty()) {
+                // Check version file - XXX cache these in QmlEngine!
+                if (qmldircontent.isEmpty()) {
+                    QFile qmldir(toLocalFileOrQrc(QUrl(urls.at(i)+QLatin1String("/qmldir"))));
+                    if (qmldir.open(QIODevice::ReadOnly)) {
+                        qmldircontent = QString::fromUtf8(qmldir.readAll());
                     }
-                    QString typespace = QString::fromUtf8(type)+QLatin1Char(' ');
-                    QStringList lines = qmldircontent.split(QLatin1Char('\n'));
-                    foreach (QString line, lines) {
-                        if (line.isEmpty() || line.at(0) == QLatin1Char('#'))
-                            continue;
-                        if (line.startsWith(typespace)) {
-                            int space1 = line.indexOf(QLatin1Char(' '));
-                            int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
-                            QString mapversions = line.mid(space1+1,space2<0?line.length()-space1-1:space2-space1-1);
-                            int dot = mapversions.indexOf(QLatin1Char('.'));
-                            int mapvmaj = mapversions.left(dot).toInt();
-                            if (mapvmaj<=vmaj) {
-                                if (mapvmaj<vmaj || vmin >= mapversions.mid(dot+1).toInt()) {
-                                    QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-1);
-                                    if (url_return)
-                                        *url_return = url.resolved(mapfile.toString());
-                                    return true;
-                                }
+                }
+                QString typespace = QString::fromUtf8(type)+QLatin1Char(' ');
+                QStringList lines = qmldircontent.split(QLatin1Char('\n'));
+                foreach (QString line, lines) {
+                    if (line.isEmpty() || line.at(0) == QLatin1Char('#'))
+                        continue;
+                    if (line.startsWith(typespace)) {
+                        int space1 = line.indexOf(QLatin1Char(' '));
+                        int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
+                        QString mapversions = line.mid(space1+1,space2<0?line.length()-space1-1:space2-space1-1);
+                        int dot = mapversions.indexOf(QLatin1Char('.'));
+                        int mapvmaj = mapversions.left(dot).toInt();
+                        if (mapvmaj<=vmaj) {
+                            if (mapvmaj<vmaj || vmin >= mapversions.mid(dot+1).toInt()) {
+                                QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-1);
+                                if (url_return)
+                                    *url_return = url.resolved(mapfile.toString());
+                                return true;
                             }
                         }
                     }
-                } else {
-                    // XXX search non-files too! (eg. zip files, see QT-524)
-                    QFileInfo f(toLocalFileOrQrc(url));
-                    if (f.exists()) {
-                        if (url_return)
-                            *url_return = url;
-                        return true;
-                    }
+                }
+            } else {
+                // XXX search non-files too! (eg. zip files, see QT-524)
+                QFileInfo f(toLocalFileOrQrc(url));
+                if (f.exists()) {
+                    if (url_return)
+                        *url_return = url;
+                    return true;
                 }
             }
         }
@@ -1195,19 +1201,19 @@ public:
                 }
             }
             if (!found) {
-                if (uri != QLatin1String("Qt")) { // skip well-known, it's not in a plugin
-                    QFactoryLoader *l = loader();
-                    QmlModuleFactoryInterface *factory =
-                        qobject_cast<QmlModuleFactoryInterface*>(l->instance(uri));
-                    // return value not used currently
-                }
-
                 // XXX assume it is a built-in type qualifier
                 isbuiltin = true;
+            } else {
+                QFactoryLoader *l = loader();
+                QmlModuleFactoryInterface *factory =
+                    qobject_cast<QmlModuleFactoryInterface*>(l->instance(uri));
+                if (factory)
+                    isbuiltin = true;
             }
         } else {
             url = base.resolved(QUrl(url)).toString();
         }
+        s->uris.prepend(uri);
         s->urls.prepend(url);
         s->majversions.prepend(vmaj);
         s->minversions.prepend(vmin);
@@ -1389,6 +1395,9 @@ QUrl QmlEnginePrivate::Imports::baseUrl() const
   in \c /opt/MyApp/lib/qml/com/mycompany/Feature/ for the components
   provided by that module (and in the case of versioned imports,
   for the \c qmldir file definiting the type version mapping.
+
+  By default, only the "qml" subdirectory of QLibraryInfo::location(QLibraryInfo::DataPath)
+  is included on the import path.
 */
 void QmlEngine::addImportPath(const QString& path)
 {

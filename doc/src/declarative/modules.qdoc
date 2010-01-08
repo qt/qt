@@ -63,13 +63,15 @@ This makes available all types in Qt that were available in Qt 4.6, regardless o
 actual version of Qt executing the QML. So even if Qt 4.7 adds a type that would conflict
 with a type you defined while using 4.6, that type is not imported, so there is no conflict.
 
-Types defined by plugins are made using QmlModulePlugin.
+Types defined by plugins are made using QmlModulePlugin.  Installed plugins and QML files
+can both contribute types to the same module.
 
 
 \section1 Importing Types Defined in QML
 
 When importing types \link components defined using QML\endlink, the syntax depends
 on whether or not the types are installed on the system.
+
 
 \section2 Installed QML Files
 
@@ -83,6 +85,7 @@ import com.nokia.Example 1.0
 Files imported in this way are found on the paths added by QmlEngine::addImportPath(),
 which by default only inludes \c $QTDIR/qml, so the above would make available those types
 defined in \c $QTDIR/qml/com/nokia/Example which are specified as being in version 1.0.
+Installed plugins and QML files can both contribute types to the same module.
 
 The specification of types to versions is given by a special file, \c qmldir which must
 exist in the module directory. The syntax is described below.

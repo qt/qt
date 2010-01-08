@@ -44,6 +44,58 @@
 #include <qdebug.h>
 #include <qdatetime.h>
 #include <qbasictimer.h>
+#include <qapplication.h>
+
+// Implements a "Time" class with hour and minute properties
+// that change on-the-minute yet efficiently sleep the rest
+// of the time.
+
+class MinuteTimer : public QObject
+{
+    Q_OBJECT
+public:
+    MinuteTimer(QObject *parent) : QObject(parent)
+    {
+    }
+
+    void start()
+    {
+        if (!timer.isActive()) {
+            time = QTime::currentTime();
+            timer.start(60000-time.second()*1000, this);
+        }
+    }
+
+    void stop()
+    {
+        timer.stop();
+    }
+
+    int hour() const { return time.hour(); }
+    int minute() const { return time.minute(); }
+
+signals:
+    void timeChanged();
+
+protected:
+    void timerEvent(QTimerEvent *)
+    {
+        QTime now = QTime::currentTime();
+        if (now.second() == 59 && now.minute() == time.minute() && now.hour() == time.hour()) {
+            // just missed time tick over, force it, wait extra 0.5 seconds
+            time.addSecs(60);
+            timer.start(60500, this);
+        } else {
+            time = now;
+            timer.start(60000-time.second()*1000, this);
+        }
+        emit timeChanged();
+    }
+
+private:
+    QTime time;
+    QBasicTimer timer;
+};
 
 class Time : public QObject
 {
@@ -54,30 +106,40 @@ class Time : public QObject
 public:
     Time(QObject *parent=0) : QObject(parent)
     {
-        timerEvent(0);
-        timer.start(30000,this);
+        if (++instances == 1) {
+            if (!timer)
+                timer = new MinuteTimer(qApp);
+            connect(timer, SIGNAL(timeChanged()), this, SIGNAL(timeChanged()));
+            timer->start();
+        }
     }
 
-    int minute() const { return t.minute(); }
-    int hour() const { return t.hour(); }
+    ~Time()
+    {
+        if (--instances == 0) {
+            timer->stop();
+        }
+    }
+
+    int minute() const { return timer->minute(); }
+    int hour() const { return timer->hour(); }
 
 signals:
     void timeChanged();
 
-protected:
-    void timerEvent(QTimerEvent *)
-    {
-        t = QTime::currentTime();
-        emit timeChanged();
-    }
-
 private:
-    QBasicTimer timer;
     QTime t;
+    static MinuteTimer *timer;
+    static int instances;
 };
+
+int Time::instances=0;
+MinuteTimer *Time::timer=0;
+
 
 QML_DECLARE_TYPE(Time);
 QML_DEFINE_TYPE(com.nokia.TimeExample,1,0,Time,Time);
+
 
 class QExampleQmlPlugin : public QmlModulePlugin
 {
