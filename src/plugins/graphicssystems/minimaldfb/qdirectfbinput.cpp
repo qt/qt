@@ -12,7 +12,6 @@
 InputSocketWaiter::InputSocketWaiter(IDirectFBEventBuffer *eventBuffer, QObject *parent)
     : QThread(parent), m_eventBuffer(eventBuffer),m_shouldStop(false)
 {
-    connect(qApp,SIGNAL(aboutToQuit()),SLOT(stop()));
     this->start();
 }
 
@@ -20,19 +19,26 @@ InputSocketWaiter::~InputSocketWaiter()
 {
     m_shouldStop = true;
     m_eventBuffer->WakeUp(m_eventBuffer);
-    m_mutex.lock();
+    m_cleanupMutex.lock();
+}
+
+void InputSocketWaiter::continueWaitingForEvents()
+{
+    m_finishedProcessingEvents.wakeAll();
 }
 
 void InputSocketWaiter::run()
 {
-    m_mutex.lock();
+    m_cleanupMutex.lock();
     while (1) {
         m_eventBuffer->WaitForEvent(m_eventBuffer);
         if (m_shouldStop)
             break;
         emit newEvent();
+        QMutex waitForProcessingMutex;
+        m_finishedProcessingEvents.wait(&waitForProcessingMutex);
     }
-    m_mutex.unlock();
+    m_cleanupMutex.unlock();
 }
 
 QDirectFbInput::QDirectFbInput(QObject *parent)
@@ -94,6 +100,7 @@ void QDirectFbInput::handleEvents()
 
         hasEvent = eventBuffer->HasEvent(eventBuffer);
     }
+    m_inputHandler->continueWaitingForEvents();
 }
 
 void QDirectFbInput::handleMouseEvents(const DFBEvent &event)

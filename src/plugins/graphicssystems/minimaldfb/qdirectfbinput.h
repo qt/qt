@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QMutex>
+#include <QWaitCondition>
 #include <QObject>
 #include <QHash>
 #include <QPoint>
@@ -16,6 +17,7 @@ class InputSocketWaiter : public QThread
 public:
     InputSocketWaiter(IDirectFBEventBuffer *eventBuffer, QObject *parent);
     virtual ~InputSocketWaiter();
+    void continueWaitingForEvents();
 protected:
     void run();
 signals:
@@ -23,7 +25,8 @@ signals:
 private:
      IDirectFBEventBuffer *m_eventBuffer;
      bool m_shouldStop;
-     QMutex m_mutex;
+     QMutex m_cleanupMutex;
+     QWaitCondition m_finishedProcessingEvents;
 };
 
 class QDirectFbInput : public QObject
