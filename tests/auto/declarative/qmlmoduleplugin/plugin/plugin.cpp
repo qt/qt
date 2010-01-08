@@ -48,7 +48,10 @@ class MyPluginType : public QObject
     Q_PROPERTY(int value READ value WRITE setValue)
 
 public:
-    MyPluginType(QObject *parent=0) : QObject(parent) { }
+    MyPluginType(QObject *parent=0) : QObject(parent)
+    {
+        qWarning("import worked");
+    }
 
     int value() const { return v; }
     void setValue(int i) { v = i; }
@@ -67,7 +70,6 @@ class MyPlugin : public QmlModulePlugin
 public:
     QStringList keys() const
     {
-qDebug() << "import worked";
         return QStringList() << QLatin1String("com.nokia.AutoTestQmlPluginType");
     }
 };

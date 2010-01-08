@@ -103,6 +103,7 @@ inline QUrl TEST_FILE(const QString &filename)
 void tst_qmlmoduleplugin::importsPlugin()
 {
     QmlEngine engine;
+    QTest::ignoreMessage(QtWarningMsg, "import worked");
     QmlComponent component(&engine, TEST_FILE("plugin.qml"));
     VERIFY_ERRORS(0);
     QObject *object = component.create();
