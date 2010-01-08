@@ -2495,7 +2495,6 @@ void QGtkStyle::drawControl(ControlElement element,
             const int windowsItemHMargin      =  3; // menu item hor text margin
             const int windowsItemVMargin      = 26; // menu item ver text margin
             const int windowsRightBorder      = 15; // right border on windows
-            GtkWidget *gtkMenu = d->gtkWidget(QLS("GtkMenu"));
             GtkWidget *gtkMenuItem = menuItem->checked ? d->gtkWidget(QLS("GtkMenu.GtkCheckMenuItem")) :
                                      d->gtkWidget(QLS("GtkMenu.GtkMenuItem"));
 
@@ -2509,6 +2508,7 @@ void QGtkStyle::drawControl(ControlElement element,
                 gboolean wide_separators = 0;
                 gint     separator_height = 0;
                 guint    horizontal_padding = 3;
+                QRect separatorRect = option->rect;
                 if (!d->gtk_check_version(2, 10, 0)) {
                     d->gtk_widget_style_get(gtkMenuSeparator,
                                            "wide-separators",    &wide_separators,
@@ -2516,13 +2516,16 @@ void QGtkStyle::drawControl(ControlElement element,
                                            "horizontal-padding", &horizontal_padding,
                                            NULL);
                 }
+                separatorRect.setHeight(option->rect.height() - 2 * gtkMenuSeparator->style->ythickness);
+                separatorRect.setWidth(option->rect.width() - 2 * (horizontal_padding + gtkMenuSeparator->style->xthickness));
+                separatorRect.moveCenter(option->rect.center());
                 if (wide_separators)
-                    gtkPainter.paintBox( gtkMenuSeparator, "hseparator",
-                                         option->rect.adjusted(0, 0, 0, -1), GTK_STATE_NORMAL, GTK_SHADOW_NONE, gtkMenu->style);
+                   gtkPainter.paintBox( gtkMenuSeparator, "hseparator",
+                                        separatorRect, GTK_STATE_NORMAL, GTK_SHADOW_NONE, gtkMenuSeparator->style);
                 else
                     gtkPainter.paintHline( gtkMenuSeparator, "hseparator",
-                                           menuItem->rect, GTK_STATE_NORMAL, gtkMenu->style,
-                                           option->rect.left() + horizontal_padding, option->rect.width() - 2*horizontal_padding, 2);
+                                           separatorRect, GTK_STATE_NORMAL, gtkMenuSeparator->style,
+                                           0, option->rect.right() - 1, 1);
                 painter->restore();
                 break;
             }
@@ -2530,7 +2533,7 @@ void QGtkStyle::drawControl(ControlElement element,
             bool selected = menuItem->state & State_Selected && menuItem->state & State_Enabled;
 
             if (selected) {
-                QRect rect = option->rect.adjusted(0, 0, 0, -1);
+                QRect rect = option->rect;
 #ifndef QT_NO_COMBOBOX
                 if (qobject_cast<const QComboBox*>(widget))
                     rect = option->rect;
@@ -2556,7 +2559,7 @@ void QGtkStyle::drawControl(ControlElement element,
 #endif
             if (!ignoreCheckMark) {
                 // Check
-                QRect checkRect(option->rect.left() + 7, option->rect.center().y() - checkSize/2, checkSize, checkSize);
+                QRect checkRect(option->rect.left() + 7, option->rect.center().y() - checkSize/2 + 1, checkSize, checkSize);
                 checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);
 
                 if (checkable && menuItem->icon.isNull()) {
@@ -2680,7 +2683,7 @@ void QGtkStyle::drawControl(ControlElement element,
             int tab = menuitem->tabWidth;
             int xm = windowsItemFrame + checkcol + windowsItemHMargin;
             int xpos = menuitem->rect.x() + xm + 1;
-            QRect textRect(xpos, y + windowsItemVMargin - 1, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
+            QRect textRect(xpos, y + windowsItemVMargin, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
             QRect vTextRect = visualRect(opt->direction, menuitem->rect, textRect);
             QString s = menuitem->text;
 
@@ -3150,41 +3153,35 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
                 newSize += QSize(6, 0);
         }
         break;
-
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             int textMargin = 8;
 
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 GtkWidget *gtkMenuSeparator = d->gtkWidget(QLS("GtkMenu.GtkSeparatorMenuItem"));
-                gboolean wide_separators;
-                gint     separator_height;
-                d->gtk_widget_style_get(gtkMenuSeparator,
-                                       "wide-separators",    &wide_separators,
-                                       "separator-height",   &separator_height,
-                                       NULL);
-                newSize = QSize(size.width(), wide_separators ? separator_height - 1 : 7 );
-
+                GtkRequisition sizeReq = {0, 0};
+                d->gtk_widget_size_request(gtkMenuSeparator, &sizeReq);
+                newSize = QSize(size.width(), sizeReq.height);
                 break;
             }
 
-            GtkWidget *gtkMenuItem = d->gtkWidget(QLS("GtkMenu.GtkMenuItem"));
+            GtkWidget *gtkMenuItem = d->gtkWidget(QLS("GtkMenu.GtkCheckMenuItem"));
             GtkStyle* style = gtkMenuItem->style;
-            newSize += QSize(textMargin + style->xthickness - 1, style->ythickness - 3);
+
+            // Note we get the perfect height for the default font since we
+            // set a fake text label on the gtkMenuItem
+            // But if custom fonts are used on the widget we need a minimum size
+            GtkRequisition sizeReq = {0, 0};
+            d->gtk_widget_size_request(gtkMenuItem, &sizeReq);
+            newSize.setHeight(qMax(newSize.height() - 4, sizeReq.height));
+            newSize += QSize(textMargin + style->xthickness - 1, 0);
 
             // Cleanlooks assumes a check column of 20 pixels so we need to
             // expand it a bit
             gint checkSize;
-            d->gtk_widget_style_get(d->gtkWidget(QLS("GtkMenu.GtkCheckMenuItem")), "indicator-size", &checkSize, NULL);
-            newSize.setHeight(qMax(newSize.height(), checkSize + 2));
+            d->gtk_widget_style_get(gtkMenuItem, "indicator-size", &checkSize, NULL);
             newSize.setWidth(newSize.width() + qMax(0, checkSize - 20));
         }
-
-        break;
-
-    case CT_Menu:
-        // This is evil, but QMenu adds 1 pixel too much
-        newSize -= QSize(0, 1);
 
         break;
 
