@@ -265,27 +265,16 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
 
                 QmlEnginePrivate *ep = QmlEnginePrivate::get(ctxt->engine());
 
-                if (!methods) 
-                    methods = new QScriptValue[metaData->methodCount];
-
-                QmlVMEMetaData::MethodData *data = metaData->methodData() + id;
-                if (!methods[id].isValid()) {
-                    const QChar *body = 
-                        (const QChar *)(((const char*)metaData) + data->bodyOffset);
-
-                    QString code = QString::fromRawData(body, data->bodyLength);
-
-                    // XXX Use QScriptProgram
-                    methods[id] = QmlExpressionPrivate::evalInObjectScope(ctxt, object, code);
-                }
+                QScriptValue function = method(id);
 
                 QScriptValueList args;
+                QmlVMEMetaData::MethodData *data = metaData->methodData() + id;
                 if (data->parameterCount) {
                     for (int ii = 0; ii < data->parameterCount; ++ii) {
                         args << ep->scriptValueFromVariant(*(QVariant *)a[ii + 1]);
                     }
                 }
-                QScriptValue rv = methods[id].call(ep->scriptEngine.globalObject(), args);
+                QScriptValue rv = function.call(ep->objectClass->newQObject(object), args);
 
                 if (a[0]) *reinterpret_cast<QVariant *>(a[0]) = ep->scriptValueToVariant(rv);
 
@@ -301,6 +290,29 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
         return object->qt_metacall(c, _id, a);
 }
 
+QScriptValue QmlVMEMetaObject::method(int index)
+{
+    if (!methods) 
+        methods = new QScriptValue[metaData->methodCount];
+
+    if (!methods[index].isValid()) {
+        QmlVMEMetaData::MethodData *data = metaData->methodData() + index;
+
+        const QChar *body = 
+            (const QChar *)(((const char*)metaData) + data->bodyOffset);
+
+        QString code = QString::fromRawData(body, data->bodyLength);
+
+        // XXX Use QScriptProgram
+        // XXX We should evaluate all methods in a single big script block to 
+        // improve the call time between dynamic methods defined on the same
+        // object
+        methods[index] = QmlExpressionPrivate::evalInObjectScope(ctxt, object, code);
+    }
+
+    return methods[index];
+}
+
 void QmlVMEMetaObject::listChanged(int id)
 {
     activate(object, methodOffset + id, 0);
@@ -314,5 +326,15 @@ void QmlVMEMetaObject::registerInterceptor(int index, int valueIndex, QmlPropert
     interceptors.insert(index, qMakePair(valueIndex, interceptor));
 }
 
+QScriptValue QmlVMEMetaObject::vmeMethod(int index)
+{
+    if (index < methodOffset) {
+        Q_ASSERT(parent);
+        return static_cast<QmlVMEMetaObject *>(parent)->vmeMethod(index);
+    }
+    int plainSignals = metaData->signalCount + metaData->propertyCount + metaData->aliasCount;
+    Q_ASSERT(index >= (methodOffset + plainSignals) && index < (methodOffset + metaData->methodCount));
+    return method(index - methodOffset - plainSignals);
+}
 
 QT_END_NAMESPACE

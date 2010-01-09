@@ -114,7 +114,7 @@ public:
     ~QmlVMEMetaObject();
 
     void registerInterceptor(int index, int valueIndex, QmlPropertyValueInterceptor *interceptor);
-
+    QScriptValue vmeMethod(int index);
 protected:
     virtual int metaCall(QMetaObject::Call _c, int _id, void **_a);
 
@@ -131,7 +131,9 @@ private:
     QBitArray aConnected;
     QBitArray aInterceptors;
     QHash<int, QPair<int, QmlPropertyValueInterceptor*> > interceptors;
+
     QScriptValue *methods;
+    QScriptValue method(int);
 
     QAbstractDynamicMetaObject *parent;
 

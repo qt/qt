@@ -107,6 +107,7 @@ public:
 
     const QMetaObject *root;
     QAbstractDynamicMetaObject rootData;
+    QmlPropertyCache *rootPropertyCache;
     QList<QString> primitives;
     QList<float> floatData;
     QList<int> intData;
@@ -324,6 +325,7 @@ private:
     QList<QmlError> exceptions;
     QmlCompiledData *output;
     QmlEngine *engine;
+    QmlParser::Object *unitRoot;
     QmlCompositeTypeData *unit;
 };
 QT_END_NAMESPACE
