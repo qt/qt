@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -444,7 +444,7 @@ void QDBusViewer::about()
     box.setText(QString::fromLatin1("<center><img src=\":/trolltech/qdbusviewer/images/qdbusviewer-128.png\">"
                 "<h3>%1</h3>"
                 "<p>Version %2</p></center>"
-                "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>")
+                "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>")
             .arg(tr("D-Bus Viewer")).arg(QLatin1String(QT_VERSION_STR)));
     box.setWindowTitle(tr("D-Bus Viewer"));
     box.exec();

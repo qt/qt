@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,6 +68,7 @@ private slots:
     void requestSoftwareInputPanel();
     void closeSoftwareInputPanel();
     void selections();
+    void focusProxy();
 };
 
 void tst_QInputContext::maximumTextLength()
@@ -246,6 +247,42 @@ void tst_QInputContext::selections()
     QCOMPARE(le.selectionStart(), 5);
     QCOMPARE(le.inputMethodQuery(Qt::ImCursorPosition).toInt(), 8);
     QCOMPARE(le.inputMethodQuery(Qt::ImAnchorPosition).toInt(), 5);
+}
+
+void tst_QInputContext::focusProxy()
+{
+    QWidget toplevel(0, Qt::X11BypassWindowManagerHint); toplevel.setObjectName("toplevel");
+    QWidget w(&toplevel); w.setObjectName("w");
+    QWidget proxy(&w); proxy.setObjectName("proxy");
+    QWidget proxy2(&w); proxy2.setObjectName("proxy2");
+    w.setFocusProxy(&proxy);
+    w.setAttribute(Qt::WA_InputMethodEnabled);
+    toplevel.show();
+    QApplication::setActiveWindow(&toplevel);
+    QTest::qWaitForWindowShown(&toplevel);
+    w.setFocus();
+    w.setAttribute(Qt::WA_NativeWindow); // we shouldn't crash!
+
+    proxy.setAttribute(Qt::WA_InputMethodEnabled);
+    proxy2.setAttribute(Qt::WA_InputMethodEnabled);
+
+    proxy2.setFocus();
+    w.setFocus();
+
+    QInputContext *gic = qApp->inputContext();
+    QVERIFY(gic);
+    qDebug() << gic->focusWidget() << &proxy;
+    QCOMPARE(gic->focusWidget(), &proxy);
+
+    // then change the focus proxy and check that input context is valid
+    QVERIFY(w.hasFocus());
+    QVERIFY(proxy.hasFocus());
+    QVERIFY(!proxy2.hasFocus());
+    w.setFocusProxy(&proxy2);
+    QVERIFY(!w.hasFocus());
+    QVERIFY(proxy.hasFocus());
+    QVERIFY(!proxy2.hasFocus());
+    QCOMPARE(gic->focusWidget(), &proxy);
 }
 
 QTEST_MAIN(tst_QInputContext)
