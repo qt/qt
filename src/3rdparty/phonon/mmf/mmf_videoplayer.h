@@ -39,13 +39,16 @@ namespace MMF
  */
 class VideoPlayer : public AbstractMediaPlayer
                   , public MVideoPlayerUtilityObserver
+                  , public MVideoLoadingObserver
 {
     Q_OBJECT
 
 public:
-    VideoPlayer();
-    explicit VideoPlayer(const AbstractPlayer& player);
+    VideoPlayer(MediaObject *parent = 0, const AbstractPlayer *player = 0);
     virtual ~VideoPlayer();
+
+    typedef CVideoPlayerUtility NativePlayer;
+    NativePlayer *nativePlayer() const;
 
     // AbstractPlayer
     virtual void doPlay();
@@ -54,6 +57,8 @@ public:
     virtual void doSeek(qint64 milliseconds);
     virtual int setDeviceVolume(int mmfVolume);
     virtual int openFile(RFile& file);
+    virtual int openUrl(const QString& url);
+    virtual int bufferStatus() const;
     virtual void close();
 
     // MediaObjectInterface
@@ -61,12 +66,12 @@ public:
     virtual qint64 currentTime() const;
     virtual qint64 totalTime() const;
 
-    // MVideoPlayerUtilityObserver
-    virtual void MvpuoOpenComplete(TInt aError);
-    virtual void MvpuoPrepareComplete(TInt aError);
-    virtual void MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError);
-    virtual void MvpuoPlayComplete(TInt aError);
-    virtual void MvpuoEvent(const TMMFEvent &aEvent);
+    // AbstractPlayer
+    virtual void videoOutputChanged();
+
+    // AbstractMediaPlayer
+    virtual int numberOfMetaDataEntries() const;
+    virtual QPair<QString, QString> metaDataEntry(int index) const;
 
 public Q_SLOTS:
     void videoWindowChanged();
@@ -80,12 +85,8 @@ private:
 
     void doPrepareCompleteL(TInt aError);
 
-    // AbstractPlayer
-    virtual void videoOutputChanged();
-
     void getVideoWindow();
     void initVideoOutput();
-
     void updateVideoRect();
 
     void applyPendingChanges();
@@ -94,12 +95,20 @@ private:
     void startDirectScreenAccess();
     bool stopDirectScreenAccess();
 
-    // AbstractMediaPlayer
-    virtual int numberOfMetaDataEntries() const;
-    virtual QPair<QString, QString> metaDataEntry(int index) const;
+private:
+    // MVideoPlayerUtilityObserver
+    virtual void MvpuoOpenComplete(TInt aError);
+    virtual void MvpuoPrepareComplete(TInt aError);
+    virtual void MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError);
+    virtual void MvpuoPlayComplete(TInt aError);
+    virtual void MvpuoEvent(const TMMFEvent &aEvent);
+
+    // MVideoLoadingObserver
+    virtual void MvloLoadingStarted();
+    virtual void MvloLoadingComplete();
 
 private:
-    QScopedPointer<CVideoPlayerUtility> m_player;
+    QScopedPointer<NativePlayer>        m_player;
 
     // Not owned
     RWsSession&                         m_wsSession;

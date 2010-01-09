@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractmediaplayer.h"
 #include "defs.h"
+#include "mediaobject.h"
 #include "utils.h"
 
 QT_BEGIN_NAMESPACE
@@ -36,27 +37,26 @@ using namespace Phonon::MMF;
 //-----------------------------------------------------------------------------
 
 const int       NullMaxVolume = -1;
+const int       BufferStatusTimerInterval = 100; // ms
 
 
 //-----------------------------------------------------------------------------
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
-            m_playPending(false)
-        ,   m_tickTimer(new QTimer(this))
-        ,   m_mmfMaxVolume(NullMaxVolume)
-{
-    connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
-}
-
-MMF::AbstractMediaPlayer::AbstractMediaPlayer(const AbstractPlayer& player) :
-        AbstractPlayer(player)
+MMF::AbstractMediaPlayer::AbstractMediaPlayer
+    (MediaObject *parent, const AbstractPlayer *player)
+        :   AbstractPlayer(player)
+        ,   m_parent(parent)
         ,   m_playPending(false)
-        ,   m_tickTimer(new QTimer(this))
+        ,   m_positionTimer(new QTimer(this))
+        ,   m_bufferStatusTimer(new QTimer(this))
         ,   m_mmfMaxVolume(NullMaxVolume)
+        ,   m_prefinishMarkSent(false)
+        ,   m_aboutToFinishSent(false)
 {
-    connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
+    connect(m_positionTimer.data(), SIGNAL(timeout()), this, SLOT(positionTick()));
+    connect(m_bufferStatusTimer.data(), SIGNAL(timeout()), this, SLOT(bufferStatusTick()));
 }
 
 //-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ void MMF::AbstractMediaPlayer::play()
 
     switch (privateState()) {
     case GroundState:
-        setError(NormalError);
+        setError(tr("Not ready to play"));
         break;
 
     case LoadingState:
@@ -80,7 +80,7 @@ void MMF::AbstractMediaPlayer::play()
     case StoppedState:
     case PausedState:
         doPlay();
-        startTickTimer();
+        startPositionTimer();
         changeState(PlayingState);
         break;
 
@@ -104,21 +104,22 @@ void MMF::AbstractMediaPlayer::pause()
     TRACE_ENTRY("state %d", privateState());
 
     m_playPending = false;
+    stopTimers();
 
     switch (privateState()) {
     case GroundState:
     case LoadingState:
     case PausedState:
+    case StoppedState:
         // Do nothing
         break;
 
-    case StoppedState:
     case PlayingState:
-    case ErrorState:
     case BufferingState:
-        doPause();
-        stopTickTimer();
         changeState(PausedState);
+        // Fall through
+    case ErrorState:
+        doPause();
         break;
 
         // Protection against adding new states and forgetting to update this switch
@@ -135,6 +136,7 @@ void MMF::AbstractMediaPlayer::stop()
     TRACE_ENTRY("state %d", privateState());
 
     m_playPending = false;
+    stopTimers();
 
     switch (privateState()) {
     case GroundState:
@@ -148,7 +150,6 @@ void MMF::AbstractMediaPlayer::stop()
     case BufferingState:
     case PausedState:
         doStop();
-        stopTickTimer();
         changeState(StoppedState);
         break;
 
@@ -173,14 +174,21 @@ void MMF::AbstractMediaPlayer::seek(qint64 ms)
     case PlayingState:
     case LoadingState:
     {
-        const bool tickTimerWasRunning = m_tickTimer->isActive();
-        stopTickTimer();
+        bool wasPlaying = false;
+        if (state() == PlayingState) {
+            stopPositionTimer();
+            doPause();
+            wasPlaying = true;
+        }
 
         doSeek(ms);
+        resetMarksIfRewound();
 
-        if (tickTimerWasRunning) {
-            startTickTimer();
+        if(wasPlaying && state() != ErrorState) {
+            doPlay();
+            startPositionTimer();
         }
+
         break;
     }
     case BufferingState:
@@ -203,17 +211,12 @@ void MMF::AbstractMediaPlayer::doSetTickInterval(qint32 interval)
     TRACE_CONTEXT(AbstractMediaPlayer::doSetTickInterval, EAudioApi);
     TRACE_ENTRY("state %d m_interval %d interval %d", privateState(), tickInterval(), interval);
 
-    m_tickTimer->setInterval(interval);
+    m_positionTimer->setInterval(interval);
 
     TRACE_EXIT_0();
 }
 
-MediaSource MMF::AbstractMediaPlayer::source() const
-{
-    return m_source;
-}
-
-void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& file)
+void MMF::AbstractMediaPlayer::open(const MediaSource &source, RFile& file)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::setFileSource, EAudioApi);
     TRACE_ENTRY("state %d source.type %d", privateState(), source.type());
@@ -221,15 +224,14 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
     close();
     changeState(GroundState);
 
-    // TODO: is it correct to assign even if the media type is not supported in
-    // the switch statement below?
-    m_source = source;
-
     TInt symbianErr = KErrNone;
+    QString errorMessage;
 
-    switch (m_source.type()) {
+    switch (source.type()) {
     case MediaSource::LocalFile: {
         symbianErr = openFile(file);
+        if (KErrNone != symbianErr)
+            errorMessage = tr("Error opening file");
         break;
     }
 
@@ -238,56 +240,35 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
 
         if (url.scheme() == QLatin1String("file")) {
             symbianErr = openFile(file);
-        }
-        else {
-            TRACE_0("Source type not supported");
-            // TODO: support network URLs
-            symbianErr = KErrNotSupported;
+            if (KErrNone != symbianErr)
+                errorMessage = tr("Error opening file");
+        } else {
+            symbianErr = openUrl(url.toString());
+            if (KErrNone != symbianErr)
+                errorMessage = tr("Error opening URL");
         }
 
         break;
     }
 
-    case MediaSource::Invalid:
-    case MediaSource::Disc:
-    case MediaSource::Stream:
-        TRACE_0("Source type not supported");
-        symbianErr = KErrNotSupported;
-        break;
+    // Other source types are handled in MediaObject::createPlayer
 
-    case MediaSource::Empty:
-        TRACE_0("Empty source - doing nothing");
-        TRACE_EXIT_0();
-        return;
-
-        // Protection against adding new media types and forgetting to update this switch
+    // Protection against adding new media types and forgetting to update this switch
     default:
         TRACE_PANIC(InvalidMediaTypePanic);
     }
 
-    if (KErrNone == symbianErr) {
+    if (errorMessage.isEmpty()) {
         changeState(LoadingState);
     } else {
-        TRACE("error %d", symbianErr)
-        setError(NormalError);
+        if (symbianErr)
+            setError(errorMessage, symbianErr);
+        else
+            setError(errorMessage);
     }
 
     TRACE_EXIT_0();
 }
-
-void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::setNextSource, EAudioApi);
-    TRACE_ENTRY("state %d", privateState());
-
-    // TODO: handle 'next source'
-
-    m_nextSource = source;
-    Q_UNUSED(source);
-
-    TRACE_EXIT_0();
-}
-
 
 void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
 {
@@ -300,6 +281,35 @@ void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
     TRACE_EXIT_0();
 }
 
+//-----------------------------------------------------------------------------
+// Private functions
+//-----------------------------------------------------------------------------
+
+void MMF::AbstractMediaPlayer::startPositionTimer()
+{
+    m_positionTimer->start(tickInterval());
+}
+
+void MMF::AbstractMediaPlayer::stopPositionTimer()
+{
+    m_positionTimer->stop();
+}
+
+void MMF::AbstractMediaPlayer::startBufferStatusTimer()
+{
+    m_bufferStatusTimer->start(BufferStatusTimerInterval);
+}
+
+void MMF::AbstractMediaPlayer::stopBufferStatusTimer()
+{
+    m_bufferStatusTimer->stop();
+}
+
+void MMF::AbstractMediaPlayer::stopTimers()
+{
+    stopPositionTimer();
+    stopBufferStatusTimer();
+}
 
 void MMF::AbstractMediaPlayer::doVolumeChanged()
 {
@@ -318,7 +328,7 @@ void MMF::AbstractMediaPlayer::doVolumeChanged()
         const int err = setDeviceVolume(volume);
 
         if (KErrNone != err) {
-            setError(NormalError);
+            setError(tr("Setting volume failed"), err);
         }
         break;
     }
@@ -330,25 +340,46 @@ void MMF::AbstractMediaPlayer::doVolumeChanged()
     }
 }
 
-
 //-----------------------------------------------------------------------------
 // Protected functions
 //-----------------------------------------------------------------------------
 
-void MMF::AbstractMediaPlayer::startTickTimer()
+void MMF::AbstractMediaPlayer::bufferingStarted()
 {
-    m_tickTimer->start(tickInterval());
+    m_stateBeforeBuffering = privateState();
+    changeState(BufferingState);
+    bufferStatusTick();
+    startBufferStatusTimer();
 }
 
-void MMF::AbstractMediaPlayer::stopTickTimer()
+void MMF::AbstractMediaPlayer::bufferingComplete()
 {
-    m_tickTimer->stop();
+    stopBufferStatusTimer();
+    emit MMF::AbstractPlayer::bufferStatus(100);
+    changeState(m_stateBeforeBuffering);
 }
 
 void MMF::AbstractMediaPlayer::maxVolumeChanged(int mmfMaxVolume)
 {
     m_mmfMaxVolume = mmfMaxVolume;
     doVolumeChanged();
+}
+
+void MMF::AbstractMediaPlayer::playbackComplete(int error)
+{
+    stopTimers();
+
+    if (KErrNone == error) {
+        changeState(StoppedState);
+
+        // MediaObject::switchToNextSource deletes the current player, so we
+        // call it via delayed slot invokation to ensure that this object does
+        // not get deleted during execution of a member function.
+        QMetaObject::invokeMethod(m_parent, "switchToNextSource", Qt::QueuedConnection);
+    }
+    else {
+        setError(tr("Playback complete"), error);
+    }
 }
 
 qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds &in)
@@ -360,10 +391,53 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
 // Slots
 //-----------------------------------------------------------------------------
 
-void MMF::AbstractMediaPlayer::tick()
+void MMF::AbstractMediaPlayer::positionTick()
 {
-    // For the MWC compiler, we need to qualify the base class.
-    emit MMF::AbstractPlayer::tick(currentTime());
+    emitMarksIfReached();
+
+    const qint64 current = currentTime();
+    emit MMF::AbstractPlayer::tick(current);
+}
+
+void MMF::AbstractMediaPlayer::emitMarksIfReached()
+{
+    const qint64 current = currentTime();
+    const qint64 total = totalTime();
+    const qint64 remaining = total - current;
+
+    if (prefinishMark() && !m_prefinishMarkSent) {
+        if (remaining < (prefinishMark() + tickInterval()/2)) {
+            m_prefinishMarkSent = true;
+            emit prefinishMarkReached(remaining);
+        }
+    }
+
+    if (!m_aboutToFinishSent) {
+        if (remaining < tickInterval()) {
+            m_aboutToFinishSent = true;
+            emit aboutToFinish();
+        }
+    }
+}
+
+void MMF::AbstractMediaPlayer::resetMarksIfRewound()
+{
+    const qint64 current = currentTime();
+    const qint64 total = totalTime();
+    const qint64 remaining = total - current;
+
+    if (prefinishMark() && m_prefinishMarkSent)
+        if (remaining >= (prefinishMark() + tickInterval()/2))
+            m_prefinishMarkSent = false;
+
+    if (m_aboutToFinishSent)
+        if (remaining >= tickInterval())
+            m_aboutToFinishSent = false;
+}
+
+void MMF::AbstractMediaPlayer::bufferStatusTick()
+{
+    emit MMF::AbstractPlayer::bufferStatus(bufferStatus());
 }
 
 void MMF::AbstractMediaPlayer::changeState(PrivateState newState)

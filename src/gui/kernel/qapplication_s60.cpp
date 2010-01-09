@@ -930,7 +930,7 @@ void QSymbianControl::PositionChanged()
 
 void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 {
-    if (m_ignoreFocusChanged)
+    if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
         return;
 
     // Popups never get focused, but still receive the FocusChanged when they are hidden.

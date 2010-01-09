@@ -81,13 +81,18 @@ bool MMF::AudioOutput::setOutputDevice(int index)
     return true;
 }
 
-bool MMF::AudioOutput::activateOnMediaObject(MediaObject *mo)
+void MMF::AudioOutput::connectMediaObject(MediaObject *mediaObject)
 {
     // Ensure that the MediaObject has the correct initial volume
-    mo->volumeChanged(m_volume);
+    mediaObject->volumeChanged(m_volume);
     // Connect MediaObject to receive future volume changes
-    connect(this, SIGNAL(volumeChanged(qreal)), mo, SLOT(volumeChanged(qreal)));
-    return true;
+    connect(this, SIGNAL(volumeChanged(qreal)), mediaObject, SLOT(volumeChanged(qreal)));
+}
+
+void MMF::AudioOutput::disconnectMediaObject(MediaObject *mediaObject)
+{
+    // Disconnect all signal-slot connections
+    disconnect(this, 0, mediaObject, 0);
 }
 
 QHash<QByteArray, QVariant> MMF::AudioOutput::audioOutputDescription(int index)
