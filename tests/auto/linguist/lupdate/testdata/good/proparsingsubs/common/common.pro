@@ -1,5 +1,2 @@
-TEMPLATE = app
-LANGUAGE = C++
-
-SOURCES +=  main.cpp
+SOURCES += main.cpp
 
