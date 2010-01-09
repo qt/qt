@@ -61,8 +61,8 @@ OpaqueJSClass::OpaqueJSClass(const JSClassDefinition* definition, OpaqueJSClass*
     if (const JSStaticValue* staticValue = definition->staticValues) {
         m_staticValues = new OpaqueJSClassStaticValuesTable();
         while (staticValue->name) {
-            m_staticValues->add(UString::Rep::createFromUTF8(staticValue->name),
-                              new StaticValueEntry(staticValue->getProperty, staticValue->setProperty, staticValue->attributes));
+            StaticValueEntry* e = new StaticValueEntry(staticValue->getProperty, staticValue->setProperty, staticValue->attributes);
+            m_staticValues->add(UString::Rep::createFromUTF8(staticValue->name), e);
             ++staticValue;
         }
     }
@@ -70,8 +70,8 @@ OpaqueJSClass::OpaqueJSClass(const JSClassDefinition* definition, OpaqueJSClass*
     if (const JSStaticFunction* staticFunction = definition->staticFunctions) {
         m_staticFunctions = new OpaqueJSClassStaticFunctionsTable();
         while (staticFunction->name) {
-            m_staticFunctions->add(UString::Rep::createFromUTF8(staticFunction->name),
-                                 new StaticFunctionEntry(staticFunction->callAsFunction, staticFunction->attributes));
+            StaticFunctionEntry* e = new StaticFunctionEntry(staticFunction->callAsFunction, staticFunction->attributes);
+            m_staticFunctions->add(UString::Rep::createFromUTF8(staticFunction->name), e);
             ++staticFunction;
         }
     }
@@ -149,8 +149,9 @@ OpaqueJSClassContextData::OpaqueJSClassContextData(OpaqueJSClass* jsClass)
         OpaqueJSClassStaticValuesTable::const_iterator end = jsClass->m_staticValues->end();
         for (OpaqueJSClassStaticValuesTable::const_iterator it = jsClass->m_staticValues->begin(); it != end; ++it) {
             ASSERT(!it->first->identifierTable());
-            staticValues->add(UString::Rep::createCopying(it->first->data(), it->first->size()),
-                              new StaticValueEntry(it->second->getProperty, it->second->setProperty, it->second->attributes));
+            StaticValueEntry* e = new StaticValueEntry(it->second->getProperty, it->second->setProperty, it->second->attributes);
+            staticValues->add(UString::Rep::createCopying(it->first->data(), it->first->size()), e);
+
         }
             
     } else
@@ -162,8 +163,8 @@ OpaqueJSClassContextData::OpaqueJSClassContextData(OpaqueJSClass* jsClass)
         OpaqueJSClassStaticFunctionsTable::const_iterator end = jsClass->m_staticFunctions->end();
         for (OpaqueJSClassStaticFunctionsTable::const_iterator it = jsClass->m_staticFunctions->begin(); it != end; ++it) {
             ASSERT(!it->first->identifierTable());
-            staticFunctions->add(UString::Rep::createCopying(it->first->data(), it->first->size()),
-                              new StaticFunctionEntry(it->second->callAsFunction, it->second->attributes));
+            StaticFunctionEntry* e = new StaticFunctionEntry(it->second->callAsFunction, it->second->attributes);
+            staticFunctions->add(UString::Rep::createCopying(it->first->data(), it->first->size()), e);
         }
             
     } else

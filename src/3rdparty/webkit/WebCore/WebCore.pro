@@ -2876,8 +2876,8 @@ contains(DEFINES, ENABLE_QT_BEARER=1) {
     SOURCES += \
         platform/network/qt/NetworkStateNotifierQt.cpp
 
-    LIBS += -lQtBearer
-
+    CONFIG += mobility
+    MOBILITY += bearer
 }
 
 contains(DEFINES, ENABLE_SVG=1) {
