@@ -419,15 +419,22 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
 
 bool QHttpNetworkConnectionChannel::ensureConnection()
 {
+    // resend this request after we receive the disconnected signal
+    if (socket->state() == QAbstractSocket::ClosingState) {
+        resendCurrent = true;
+        return false;
+    }
+
+    // already trying to connect?
+    if (socket->state() == QAbstractSocket::HostLookupState ||
+        socket->state() == QAbstractSocket::ConnectingState) {
+        return false;
+    }
+
     // make sure that this socket is in a connected state, if not initiate
     // connection to the host.
     if (socket->state() != QAbstractSocket::ConnectedState) {
         // connect to the host if not already connected.
-        // resend this request after we receive the disconnected signal
-        if (socket->state() == QAbstractSocket::ClosingState) {
-            resendCurrent = true;
-            return false;
-        }
         state = QHttpNetworkConnectionChannel::ConnectingState;
         pendingEncrypt = connection->d_func()->encrypt;
 
