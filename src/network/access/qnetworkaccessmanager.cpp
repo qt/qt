@@ -723,8 +723,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // third step: find a backend
     priv->backend = d->findBackend(op, request);
 
-    // fourth step: setup the reply
-    priv->setup(op, request, outgoingData);
 #ifndef QT_NO_NETWORKPROXY
     QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
     priv->proxyList = proxyList;
@@ -733,6 +731,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         priv->backend->setParent(reply);
         priv->backend->reply = priv;
     }
+    // fourth step: setup the reply
+    priv->setup(op, request, outgoingData);
 
 #ifndef QT_NO_OPENSSL
     reply->setSslConfiguration(request.sslConfiguration());

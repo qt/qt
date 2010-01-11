@@ -511,6 +511,7 @@ public:
         AA_MacPluginApplication = 5,
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
+        AA_S60DontConstructApplicationPanes = 8,
 
         // Add new attributes before this line
         AA_AttributeCount

@@ -415,14 +415,13 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
         lowPriorityQueue.prepend(pair);
         break;
     }
-    QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+    // this used to be called via invokeMethod and a QueuedConnection
+    _q_startNextRequest();
     return reply;
 }
 
 void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
 {
-    Q_Q(QHttpNetworkConnection);
-
     QHttpNetworkRequest request = pair.first;
     switch (request.priority()) {
     case QHttpNetworkRequest::HighPriority:
@@ -433,7 +432,8 @@ void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
         lowPriorityQueue.prepend(pair);
         break;
     }
-    QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+    // this used to be called via invokeMethod and a QueuedConnection
+    _q_startNextRequest();
 }
 
 void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socket)

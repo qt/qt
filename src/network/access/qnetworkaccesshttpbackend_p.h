@@ -104,6 +104,7 @@ private slots:
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);
     bool sendCacheContents(const QNetworkCacheMetaData &metaData);
+    void finished(); // override
 
 private:
     QHttpNetworkReply *httpReply;
@@ -118,7 +119,6 @@ private:
 #endif
 
     void disconnectFromHttp();
-    void finished();            // override
     void setupConnection();
     void validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
     void invalidateCache();

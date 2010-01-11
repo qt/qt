@@ -508,6 +508,13 @@ extern "C" {
     } else {
         [self setNeedsDisplay:YES];
     }
+
+    // Make sure the opengl context is updated on resize.
+    if (0 && qwidgetprivate->isGLWidget) {
+        qwidgetprivate->needWindowChange = true;
+        QEvent event(QEvent::MacGLWindowChange);
+        qApp->sendEvent(qwidget, &event);
+    }
 }
 
 - (void)drawRect:(NSRect)aRect

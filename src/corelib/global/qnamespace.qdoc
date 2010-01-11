@@ -134,7 +134,6 @@
     \value AA_DontShowIconsInMenus Actions with the Icon property won't be
            shown in any menus unless specifically set by the
            QAction::iconVisibleInMenu property.
-
            Menus that are currently open or menus already created in the native
            Mac OS X menubar \e{may not} pick up a change in this attribute. Changes
            in the QAction::iconVisibleInMenu property will always be picked up.
@@ -163,6 +162,12 @@
            will also flip accordingly (i.e., QKeySequence::Copy will be
            Command+C on the keyboard regardless of the value set, though what is output for
            QKeySequence::toString(QKeySequence::PortableText) will be different).
+
+    \value AA_S60DontConstructApplicationPanes Stops Qt from initializing the S60 status
+           pane and softkey pane on Symbian. This is useful to save memory and reduce
+           startup time for applications that will run in fullscreen mode during their
+           whole lifetime. This attribute must be set before QApplication is
+           constructed.
 
     \omitvalue AA_AttributeCount
 */

@@ -888,7 +888,14 @@ bool QDialog::s60AdjustedPosition()
     if (doS60Positioning) {
         // naive way to deduce screen orientation
         if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
-            p.setY(S60->screenHeightInPixels-height()-qt_TSize2QSize(S60->buttonGroupContainer()->Size()).height());
+            int cbaHeight;
+            const CEikButtonGroupContainer* bgContainer = S60->buttonGroupContainer();
+            if (!bgContainer) {
+                cbaHeight = 0;
+            } else {
+                cbaHeight = qt_TSize2QSize(bgContainer->Size()).height();
+            }
+            p.setY(S60->screenHeightInPixels-height()-cbaHeight);
             p.setX(0);
         } else {
             const int scrollbarWidth = style()->pixelMetric(QStyle::PM_ScrollBarExtent);

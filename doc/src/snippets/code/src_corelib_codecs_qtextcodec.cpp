@@ -62,6 +62,7 @@ while (new_data_available()) {
     QByteArray chunk = get_new_data();
     string += decoder->toUnicode(chunk);
 }
+delete decoder;
 //! [2]
 
 
