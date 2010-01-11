@@ -385,6 +385,14 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
     cacheHeaders.setAllRawHeaders(metaData.rawHeaders());
 
+    it = cacheHeaders.findRawHeader("etag");
+    if (it != cacheHeaders.rawHeaders.constEnd())
+        httpRequest.setHeaderField("If-None-Match", it->second);
+
+    QDateTime lastModified = metaData.lastModified();
+    if (lastModified.isValid())
+        httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
+
     if (CacheLoadControlAttribute == QNetworkRequest::PreferNetwork) {
         it = cacheHeaders.findRawHeader("Cache-Control");
         if (it != cacheHeaders.rawHeaders.constEnd()) {
@@ -393,14 +401,6 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
                 return;
         }
     }
-
-    it = cacheHeaders.findRawHeader("etag");
-    if (it != cacheHeaders.rawHeaders.constEnd())
-        httpRequest.setHeaderField("If-None-Match", it->second);
-
-    QDateTime lastModified = metaData.lastModified();
-    if (lastModified.isValid())
-        httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
 
     QDateTime currentDateTime = QDateTime::currentDateTime();
     QDateTime expirationDate = metaData.expirationDate();
