@@ -64,6 +64,8 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(int display)
     m_layer->GetConfiguration(m_layer, &config);
 
     m_format = QDirectFbConvenience::imageFormatFromSurfaceFormat(config.pixelformat, config.surface_caps);
+    qDebug() << QDirectFbConvenience::pixelFomatHasAlpha(config.pixelformat);
+    qDebug() << QDirectFbConvenience::colorDepthForSurface(config.pixelformat);
     qDebug() << "GraphcisSystemScreen has format: " << m_format;
     m_geometry = QRect(0,0,config.width,config.height);
     const int dpi = 72;

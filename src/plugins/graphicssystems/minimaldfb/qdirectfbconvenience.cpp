@@ -58,6 +58,11 @@ QImage::Format QDirectFbConvenience::imageFormatFromSurfaceFormat(const DFBSurfa
 
 }
 
+int QDirectFbConvenience::colorDepthForSurface(const DFBSurfacePixelFormat format)
+{
+    return ((0x1f << 7) & format) >> 7;
+}
+
 IDirectFBSurface *QDirectFbConvenience::dfbSurfaceForPixmapData(QPixmapData *pixmapData)
 {
     QBlittablePixmapData *blittablePmData = static_cast<QBlittablePixmapData *>(pixmapData);

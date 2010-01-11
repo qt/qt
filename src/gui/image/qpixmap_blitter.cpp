@@ -29,13 +29,15 @@ QBlittable *QBlittablePixmapData::blittable() const
 
 void QBlittablePixmapData::setBlittable(QBlittable *blittable)
 {
-    delete m_blittable;
     resize(blittable->rect().width(),blittable->rect().height());
     m_blittable = blittable;
 }
 
 void QBlittablePixmapData::resize(int width, int height)
 {
+
+    delete m_blittable;
+    m_blittable = 0;
     delete m_engine;
     m_engine = 0;
     d = QApplicationPrivate::graphicsSystem()->screens().at(0)->depth();

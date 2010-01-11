@@ -19,6 +19,8 @@ class QDirectFbConvenience
 {
 public:
     static QImage::Format imageFormatFromSurfaceFormat(const DFBSurfacePixelFormat format, const DFBSurfaceCapabilities caps);
+    static bool pixelFomatHasAlpha(const DFBSurfacePixelFormat format) { return (1 << 16) & format; }
+    static int colorDepthForSurface(const DFBSurfacePixelFormat format);
 
     //This is set by the graphicssystem constructor
     static IDirectFB *dfbInterface();

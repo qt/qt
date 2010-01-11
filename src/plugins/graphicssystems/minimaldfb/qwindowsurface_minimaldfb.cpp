@@ -63,6 +63,8 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *sc
     m_dfbSurface->GetCapabilities(m_dfbSurface, &caps);
     DFBSurfacePixelFormat format;
     m_dfbSurface->GetPixelFormat(m_dfbSurface, &format);
+    qDebug() << QDirectFbConvenience::pixelFomatHasAlpha(format);
+    qDebug() << QDirectFbConvenience::colorDepthForSurface(format);
     qDebug() << "WindowSurface format " << QDirectFbConvenience::imageFormatFromSurfaceFormat(format,caps);
 
 

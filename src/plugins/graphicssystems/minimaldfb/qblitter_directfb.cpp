@@ -18,13 +18,16 @@ QDirectFbBlitter::QDirectFbBlitter(const QRect &rect, IDirectFBSurface *surface)
         m_surface = surface;
     } else {
         DFBSurfaceDescription surfaceDesc;
+        memset(&surfaceDesc,0,sizeof(DFBSurfaceDescription));
         surfaceDesc.width = rect.width();
         surfaceDesc.height = rect.height();
         surfaceDesc.caps = DSCAPS_PREMULTIPLIED;
-        surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_CAPS);
+        surfaceDesc.pixelformat = DSPF_ARGB;
+        surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT);
 
         IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
         dfb->CreateSurface(dfb,&surfaceDesc, &m_surface);
+        m_surface->Clear(m_surface,0,0,0,0);
     }
 }
 
@@ -36,6 +39,10 @@ QDirectFbBlitter::~QDirectFbBlitter()
 void QDirectFbBlitter::fillRect(const QRectF &rect, const QColor &color)
 {
     m_surface->SetColor(m_surface, color.red(), color.green(), color.blue(), color.alpha());
+//    When the blitter api supports non opaque blits, also remember to change
+//    qpixmap_blitter.cpp::fill
+//    DFBSurfaceDrawingFlags drawingFlags = color.alpha() ? DSDRAW_BLEND : DSDRAW_NOFX;
+//    m_surface->SetDrawingFlags(m_surface, drawingFlags);
     m_surface->SetDrawingFlags(m_surface, DSDRAW_NOFX);
     m_surface->FillRectangle(m_surface, rect.x(), rect.y(),
                               rect.width(), rect.height());
@@ -49,6 +56,7 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
     m_surface->SetColor(m_surface, 0xff, 0xff, 0xff, 255);
 
     QPixmapData *data = pixmap.pixmapData();
+    Q_ASSERT(data->width() && data->height());
     Q_ASSERT(data->classId() == QPixmapData::BlitterClass);
     QBlittablePixmapData *blitPm = static_cast<QBlittablePixmapData*>(data);
     QDirectFbBlitter *dfbBlitter = static_cast<QDirectFbBlitter *>(blitPm->blittable());
