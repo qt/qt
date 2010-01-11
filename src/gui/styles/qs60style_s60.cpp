@@ -909,8 +909,11 @@ TAknsItemID QS60StyleModeSpecifics::partSpecificThemeId(int part)
 }
 
 QFont QS60StylePrivate::s60Font_specific(
-    QS60StyleEnums::FontCategories fontCategory, int pointSize)
+    QS60StyleEnums::FontCategories fontCategory,
+    int pointSize, bool resolveFontSize)
 {
+    Q_UNUSED(resolveFontSize);
+
     TAknFontCategory aknFontCategory = EAknFontCategoryUndefined;
     switch (fontCategory) {
         case QS60StyleEnums::FC_Primary:
