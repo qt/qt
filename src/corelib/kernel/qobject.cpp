@@ -2945,7 +2945,6 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
     return true;
 }
 
-
 /*!\internal
  */
 bool QMetaObject::disconnect(const QObject *sender, int signal_index,
@@ -2956,12 +2955,23 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                                           receiver, method_index);
 }
 
+/*!\internal
+ */
+bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
+                                const QObject *receiver, int method_index)
+{
+    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
+    return QMetaObjectPrivate::disconnect(sender, signal_index,
+                                          receiver, method_index,
+                                          QMetaObjectPrivate::DisconnectOne);
+}
+
 /*! \internal
     Helper function to remove the connection from the senders list and setting the receivers to 0
  */
 bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
                                           const QObject *receiver, int method_index,
-                                          QMutex *senderMutex)
+                                          QMutex *senderMutex, DisconnectType disconnectType)
 {
     bool success = false;
     while (c) {
@@ -2987,6 +2997,9 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
             c->receiver = 0;
 
             success = true;
+
+            if (disconnectType == DisconnectOne)
+                return success;
         }
         c = c->nextConnectionList;
     }
@@ -2997,7 +3010,8 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
     Same as the QMetaObject::disconnect, but \a signal_index must be the result of QObjectPrivate::signalIndex
  */
 bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
-                                    const QObject *receiver, int method_index)
+                                    const QObject *receiver, int method_index,
+                                    DisconnectType disconnectType)
 {
     if (!sender)
         return false;
@@ -3021,7 +3035,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
         for (signal_index = -1; signal_index < connectionLists->count(); ++signal_index) {
             QObjectPrivate::Connection *c =
                 (*connectionLists)[signal_index].first;
-            if (disconnectHelper(c, receiver, method_index, senderMutex)) {
+            if (disconnectHelper(c, receiver, method_index, senderMutex, disconnectType)) {
                 success = true;
                 connectionLists->dirty = true;
             }
@@ -3029,7 +3043,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
     } else if (signal_index < connectionLists->count()) {
         QObjectPrivate::Connection *c =
             (*connectionLists)[signal_index].first;
-        if (disconnectHelper(c, receiver, method_index, senderMutex)) {
+        if (disconnectHelper(c, receiver, method_index, senderMutex, disconnectType)) {
             success = true;
             connectionLists->dirty = true;
         }
