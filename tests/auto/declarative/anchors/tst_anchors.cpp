@@ -375,6 +375,7 @@ void tst_anchors::crash1()
 
     QString expect = "QML Text (" + view->url().toString() + ":4:5" + ") Possible anchor loop detected on fill.";
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1()); // XXX ideally, should be one message
     view->execute();
     qApp->processEvents();
 
