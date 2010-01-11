@@ -298,7 +298,6 @@ public:
     QNetworkReply *createRequest (Operation op, const QNetworkRequest &req, QIODevice * outgoingData)
     {
         QNetworkRequest request = req;
-        request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
         request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
         return QNetworkAccessManager::createRequest(op,request,outgoingData);
     }

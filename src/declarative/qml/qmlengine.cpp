@@ -1197,13 +1197,12 @@ public:
             if (!found) {
                 // XXX assume it is a built-in type qualifier
                 isbuiltin = true;
-            } else {
-                QFactoryLoader *l = loader();
-                QmlModuleFactoryInterface *factory =
-                    qobject_cast<QmlModuleFactoryInterface*>(l->instance(uri));
-                if (factory)
-                    isbuiltin = true;
             }
+            QFactoryLoader *l = loader();
+            QmlModuleFactoryInterface *factory =
+                qobject_cast<QmlModuleFactoryInterface*>(l->instance(uri));
+            if (factory)
+                isbuiltin = true;
         } else {
             url = base.resolved(QUrl(url)).toString();
         }
