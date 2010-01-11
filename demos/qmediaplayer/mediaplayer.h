@@ -112,6 +112,7 @@ public:
     void dropEvent(QDropEvent *e);
     void handleDrop(QDropEvent *e);
     void setFile(const QString &text);
+    void setLocation(const QString &location);
     void initVideoWindow();
     void initSettingsDialog();
 

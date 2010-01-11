@@ -139,29 +139,32 @@ bool Backend::startConnectionChange(QSet<QObject *>)
     return true;
 }
 
-bool Backend::connectNodes(QObject *source, QObject *target)
+bool Backend::connectNodes(QObject *sourceObject, QObject *targetObject)
 {
     TRACE_CONTEXT(Backend::connectNodes, EBackend);
-    TRACE_ENTRY("source 0x%08x target 0x%08x", source, target);
-    Q_ASSERT(qobject_cast<MediaNode *>(source));
-    Q_ASSERT(qobject_cast<MediaNode *>(target));
+    TRACE_ENTRY("source 0x%08x target 0x%08x", sourceObject, targetObject);
 
-    MediaNode *const mediaSource = static_cast<MediaNode *>(source);
-    MediaNode *const mediaTarget = static_cast<MediaNode *>(target);
+    MediaNode *const source = qobject_cast<MediaNode *>(sourceObject);
+    MediaNode *const target = qobject_cast<MediaNode *>(targetObject);
 
-    return mediaSource->connectMediaNode(mediaTarget);
+    Q_ASSERT_X(source, Q_FUNC_INFO, "source is not a MediaNode");
+    Q_ASSERT_X(target, Q_FUNC_INFO, "target is not a MediaNode");
+
+    return source->connectOutput(target);
 }
 
-bool Backend::disconnectNodes(QObject *source, QObject *target)
+bool Backend::disconnectNodes(QObject *sourceObject, QObject *targetObject)
 {
     TRACE_CONTEXT(Backend::disconnectNodes, EBackend);
-    TRACE_ENTRY("source 0x%08x target 0x%08x", source, target);
-    Q_ASSERT(qobject_cast<MediaNode *>(source));
-    Q_ASSERT(qobject_cast<MediaNode *>(target));
+    TRACE_ENTRY("source 0x%08x target 0x%08x", sourceObject, targetObject);
 
-    const bool result = static_cast<MediaNode *>(source)->disconnectMediaNode(static_cast<MediaNode *>(target));
+    MediaNode *const source = qobject_cast<MediaNode *>(sourceObject);
+    MediaNode *const target = qobject_cast<MediaNode *>(targetObject);
 
-    TRACE_RETURN("%d", result);
+    Q_ASSERT_X(source, Q_FUNC_INFO, "source is not a MediaNode");
+    Q_ASSERT_X(target, Q_FUNC_INFO, "target is not a MediaNode");
+
+    return source->disconnectOutput(target);
 }
 
 bool Backend::endConnectionChange(QSet<QObject *>)

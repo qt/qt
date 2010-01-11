@@ -166,6 +166,8 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         QByteArray header = QHttpNetworkRequestPrivate::header(request, false);
 #endif
         socket->write(header);
+        // flushing is dangerous (QSslSocket calls transmit which might read or error)
+//        socket->flush();
         QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
         if (uploadByteDevice) {
             // connect the signals so this function gets called again
@@ -258,7 +260,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         // ensure we try to receive a reply in all cases, even if _q_readyRead_ hat not been called
         // this is needed if the sends an reply before we have finished sending the request. In that
         // case receiveReply had been called before but ignored the server reply
-        receiveReply();
+        QMetaObject::invokeMethod(connection, "_q_receiveReply", Qt::QueuedConnection);
         break;
     }
     case QHttpNetworkConnectionChannel::ReadingState:
@@ -272,7 +274,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
 }
 
 
-void QHttpNetworkConnectionChannel::receiveReply()
+void QHttpNetworkConnectionChannel::_q_receiveReply()
 {
     Q_ASSERT(socket);
 
@@ -567,7 +569,7 @@ void QHttpNetworkConnectionChannel::allDone()
             connection->d_func()->fillPipeline(socket);
 
             // continue reading
-            receiveReply();
+            _q_receiveReply();
         }
     } else if (alreadyPipelinedRequests.isEmpty() && socket->bytesAvailable() > 0) {
         eatWhitespace();
@@ -739,7 +741,7 @@ void QHttpNetworkConnectionChannel::_q_readyRead()
     if (isSocketWaiting() || isSocketReading()) {
         state = QHttpNetworkConnectionChannel::ReadingState;
         if (reply)
-            receiveReply();
+            _q_receiveReply();
     }
 }
 
@@ -758,7 +760,7 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
     if (isSocketWaiting() || isSocketReading()) {
         state = QHttpNetworkConnectionChannel::ReadingState;
         if (reply)
-            receiveReply();
+            _q_receiveReply();
     } else if (state == QHttpNetworkConnectionChannel::IdleState && resendCurrent) {
         // re-sending request because the socket was in ClosingState
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);

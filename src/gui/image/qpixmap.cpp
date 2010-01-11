@@ -357,7 +357,9 @@ QPixmap QPixmap::copy(const QRect &rect) const
     if (isNull())
         return QPixmap();
 
-    const QRect r = rect.isEmpty() ? QRect(0, 0, width(), height()) : rect;
+    QRect r(0, 0, width(), height());
+    if (!rect.isEmpty())
+        r = r.intersected(rect);
 
     QPixmapData *d = data->createCompatiblePixmapData();
     d->copy(data.data(), r);

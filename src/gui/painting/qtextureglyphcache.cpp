@@ -47,6 +47,10 @@
 #include "private/qnativeimage_p.h"
 #include "private/qfontengine_ft_p.h"
 
+#ifndef QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH
+#define QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH 256
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG
@@ -112,7 +116,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
 
     rowHeight += margin * 2;
     if (isNull())
-        createCache(256, rowHeight);
+        createCache(QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH, rowHeight);
 
     // now actually use the coords and paint the wanted glyps into cache.
     QHash<glyph_t, Coord>::iterator iter = listItemCoordinates.begin();

@@ -15,5 +15,6 @@ HEADERS += trksignalhandler.h \
 windows { 
     SOURCES += serenum_win.cpp 
     LIBS += -lsetupapi \
-        -luuid
+        -luuid \
+        -ladvapi32
 }

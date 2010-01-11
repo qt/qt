@@ -113,7 +113,7 @@ bool isEffectSupported()
     AudioPlayer audioPlayer;
 
     QScopedPointer<TEffect> eff;
-    TRAPD(errorCode, eff.reset(TEffect::NewL(*audioPlayer.player())));
+    TRAPD(errorCode, eff.reset(TEffect::NewL(*audioPlayer.nativePlayer())));
 
     return errorCode != KErrNone;
 }
