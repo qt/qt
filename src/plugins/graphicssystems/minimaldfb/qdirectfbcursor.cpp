@@ -15,21 +15,24 @@ QDirectFBCursor::QDirectFBCursor(QGraphicsSystemScreen * screen) :
 void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
 {
     Q_UNUSED(widget);
+    int xSpot;
+    int ySpot;
+    QPixmap map;
+
     if (cursor->shape() != Qt::BitmapCursor) {
         image->set(cursor->shape());
+        xSpot = image->hotspot().x();
+        ySpot = image->hotspot().y();
+        QImage *i = image->image();
+        map = QPixmap::fromImage(*i);
     } else {
-        qDebug() << "non-shape cursor: not implemented yet";
-        return;
+        QPoint point = cursor->hotSpot();
+        xSpot = point.x();
+        ySpot = point.y();
+        map = cursor->pixmap();
     }
 
-    QImage *i = image->image();
-    QRect imageRect = i->rect();
-    QPixmap map = QPixmap::fromImage(*i);
-
     IDirectFBSurface *surface = QDirectFbConvenience::dfbSurfaceForPixmapData(map.pixmapData());
-
-    int xSpot = image->hotspot().x();
-    int ySpot = image->hotspot().y();
 
     if (m_layer->SetCooperativeLevel(m_layer, DLSCL_ADMINISTRATIVE) != DFB_OK) {
         return;
