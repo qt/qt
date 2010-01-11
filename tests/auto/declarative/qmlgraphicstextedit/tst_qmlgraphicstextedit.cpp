@@ -173,6 +173,7 @@ void tst_qmlgraphicstextedit::text()
         actual.replace(QRegExp(".*<body[^>]*>"),"");
         actual.replace(QRegExp("(<[^>]*>)+"),"<>");
         expected.replace(QRegExp("(<[^>]*>)+"),"<>");
+        expected = "<> <> <> " + expected;
         QCOMPARE(actual.simplified(),expected.simplified());
     }
 }
