@@ -866,8 +866,11 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
     QList<QHttpNetworkReply*> replies;
 
     for (int i = 0; i < requestCount; i++) {
-
-        QHttpNetworkRequest *request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+        QHttpNetworkRequest *request = 0;
+        if (i % 3)
+            request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Get);
+        else
+            request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Head);
         
         if (i % 2 || i % 3)
             request->setPipeliningAllowed(true);
@@ -957,7 +960,11 @@ void tst_QHttpNetworkConnection::getMultipleWithPriorities()
     QList<QHttpNetworkReply*> replies;
 
     for (int i = 0; i < requestCount; i++) {
-        QHttpNetworkRequest *request = new QHttpNetworkRequest(url);;
+        QHttpNetworkRequest *request = 0;
+        if (i % 3)
+            request = new QHttpNetworkRequest(url, QHttpNetworkRequest::Get);
+        else
+            request = new QHttpNetworkRequest(url, QHttpNetworkRequest::Head);
 
         if (i % 2)
             request->setPriority(QHttpNetworkRequest::HighPriority);
