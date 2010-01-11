@@ -326,31 +326,34 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
             lastStatus = reply->d_func()->statusCode;
             break;
         }
-        case QHttpNetworkReplyPrivate::ReadingHeaderState:
-            bytes += reply->d_func()->readHeader(socket);
-            if (reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState) {
-                if (reply->d_func()->isGzipped() && reply->d_func()->autoDecompress) {
+        case QHttpNetworkReplyPrivate::ReadingHeaderState: {
+            QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
+            bytes += replyPrivate->readHeader(socket);
+            if (replyPrivate->state == QHttpNetworkReplyPrivate::ReadingDataState) {
+                if (replyPrivate->isGzipped() && replyPrivate->autoDecompress) {
                     // remove the Content-Length from header
-                    reply->d_func()->removeAutoDecompressHeader();
+                    replyPrivate->removeAutoDecompressHeader();
                 } else {
-                    reply->d_func()->autoDecompress = false;
+                    replyPrivate->autoDecompress = false;
                 }
-                if (reply && reply->d_func()->statusCode == 100) {
-                    reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
+                if (replyPrivate->statusCode == 100) {
+                    replyPrivate->state = QHttpNetworkReplyPrivate::ReadingStatusState;
                     break; // ignore
                 }
-                if (reply->d_func()->shouldEmitSignals())
+                if (replyPrivate->shouldEmitSignals())
                     emit reply->headerChanged();
-                if (!reply->d_func()->expectContent()) {
-                    reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
+                if (!replyPrivate->expectContent()) {
+                    replyPrivate->state = QHttpNetworkReplyPrivate::AllDoneState;
                     this->state = QHttpNetworkConnectionChannel::IdleState;
                     allDone();
                     return;
                 }
             }
             break;
+        }
         case QHttpNetworkReplyPrivate::ReadingDataState: {
-           if (reply->d_func()->downstreamLimited && !reply->d_func()->responseData.isEmpty() && reply->d_func()->shouldEmitSignals()) {
+           QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
+           if (replyPrivate->downstreamLimited && !replyPrivate->responseData.isEmpty() && replyPrivate->shouldEmitSignals()) {
                // We already have some HTTP body data. We don't read more from the socket until
                // this is fetched by QHttpNetworkAccessHttpBackend. If we would read more,
                // we could not limit our read buffer usage.
@@ -360,19 +363,19 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                return;
            }
 
-            if (!reply->d_func()->isChunked() && !reply->d_func()->autoDecompress
-                && reply->d_func()->bodyLength > 0) {
+            if (!replyPrivate->isChunked() && !replyPrivate->autoDecompress
+                && replyPrivate->bodyLength > 0) {
                 // bulk files like images should fulfill these properties and
                 // we can therefore save on memory copying
-                bytes = reply->d_func()->readBodyFast(socket, &reply->d_func()->responseData);
-                reply->d_func()->totalProgress += bytes;
-                if (reply->d_func()->shouldEmitSignals()) {
+                bytes = replyPrivate->readBodyFast(socket, &replyPrivate->responseData);
+                replyPrivate->totalProgress += bytes;
+                if (replyPrivate->shouldEmitSignals()) {
                     QPointer<QHttpNetworkReply> replyPointer = reply;
                     emit reply->readyRead();
                     // make sure that the reply is valid
                     if (replyPointer.isNull())
                         return;
-                    emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
+                    emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
                     // make sure that the reply is valid
                     if (replyPointer.isNull())
                         return;
@@ -383,16 +386,16 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                 // use the traditional slower reading (for compressed encoding, chunked encoding,
                 // no content-length etc)
                 QByteDataBuffer byteDatas;
-                bytes = reply->d_func()->readBody(socket, &byteDatas);
+                bytes = replyPrivate->readBody(socket, &byteDatas);
                 if (bytes) {
-                    if (reply->d_func()->autoDecompress)
-                        reply->d_func()->appendCompressedReplyData(byteDatas);
+                    if (replyPrivate->autoDecompress)
+                        replyPrivate->appendCompressedReplyData(byteDatas);
                     else
-                        reply->d_func()->appendUncompressedReplyData(byteDatas);
+                        replyPrivate->appendUncompressedReplyData(byteDatas);
 
-                    if (!reply->d_func()->autoDecompress) {
-                        reply->d_func()->totalProgress += bytes;
-                        if (reply->d_func()->shouldEmitSignals()) {
+                    if (!replyPrivate->autoDecompress) {
+                        replyPrivate->totalProgress += bytes;
+                        if (replyPrivate->shouldEmitSignals()) {
                             QPointer<QHttpNetworkReply> replyPointer = reply;
                             // important: At the point of this readyRead(), the byteDatas list must be empty,
                             // else implicit sharing will trigger memcpy when the user is reading data!
@@ -400,7 +403,7 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                             // make sure that the reply is valid
                             if (replyPointer.isNull())
                                 return;
-                            emit reply->dataReadProgress(reply->d_func()->totalProgress, reply->d_func()->bodyLength);
+                            emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
                             // make sure that the reply is valid
                            if (replyPointer.isNull())
                                 return;
@@ -413,7 +416,7 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
 #endif
                 }
             }
-            if (reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState)
+            if (replyPrivate->state == QHttpNetworkReplyPrivate::ReadingDataState)
                 break;
             // everything done, fall through
             }
