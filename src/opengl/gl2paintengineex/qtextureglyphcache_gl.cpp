@@ -81,7 +81,7 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
         data[i] = 0;
 
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
     else
         glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
 
@@ -196,8 +196,20 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
             for (int x = 0; x < maskWidth; ++x)
                 src[x] = -src[x]; // convert 0 and 1 into 0 and 255
         }
-     }
-
+    } else if (mask.format() == QImage::Format_RGB32) {
+        // Make the alpha component equal to the average of the RGB values.
+        // This is needed when drawing sub-pixel antialiased text on translucent targets.
+        for (int y = 0; y < maskHeight; ++y) {
+            quint32 *src = (quint32 *) mask.scanLine(y);
+            for (int x = 0; x < maskWidth; ++x) {
+                uchar r = src[x] >> 16;
+                uchar g = src[x] >> 8;
+                uchar b = src[x];
+                quint32 avg = (quint32(r) + quint32(g) + quint32(b) + 1) / 3; // "+1" for rounding.
+                src[x] = (src[x] & 0x00ffffff) | (avg << 24);
+            }
+        }
+    }
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
     if (mask.format() == QImage::Format_RGB32) {
