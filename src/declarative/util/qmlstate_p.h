@@ -133,7 +133,7 @@ class Q_DECLARATIVE_EXPORT QmlState : public QObject
     Q_PROPERTY(QString extend READ extends WRITE setExtends)
     Q_PROPERTY(QmlList<QmlStateOperation *>* changes READ changes)
     Q_CLASSINFO("DefaultProperty", "changes")
-    Q_CLASSINFO("DeferredPropertyNames", "changes");
+    Q_CLASSINFO("DeferredPropertyNames", "changes")
 
 public:
     QmlState(QObject *parent=0);
