@@ -47,16 +47,45 @@ class QScriptContext;
 class Q_SCRIPT_EXPORT QScriptDeclarativeClass
 {
 public:
+    class Value
+    {
+    public:
+        Value();
+        Value(const Value &);
+        Value(const QScriptValue &);
+
+        Value(QScriptContext *, int);
+        Value(QScriptContext *, uint);
+        Value(QScriptContext *, bool);
+        Value(QScriptContext *, double);
+        Value(QScriptContext *, float);
+        Value(QScriptContext *, const QString &);
+        Value(QScriptEngine *, int);
+        Value(QScriptEngine *, uint);
+        Value(QScriptEngine *, bool);
+        Value(QScriptEngine *, double);
+        Value(QScriptEngine *, float);
+        Value(QScriptEngine *, const QString &);
+        ~Value();
+
+        QScriptValue toScriptValue(QScriptEngine *) const;
+    private:
+        char dummy[8];
+    };
+
     typedef void* Identifier;
 
     struct Object { virtual ~Object() {} };
 
     static QScriptValue newObject(QScriptEngine *, QScriptDeclarativeClass *, Object *);
+    static Value newObjectValue(QScriptEngine *, QScriptDeclarativeClass *, Object *);
     static QScriptDeclarativeClass *scriptClass(const QScriptValue &);
     static Object *object(const QScriptValue &);
 
     static QScriptValue function(const QScriptValue &, const Identifier &);
     static QScriptValue property(const QScriptValue &, const Identifier &);
+    static Value functionValue(const QScriptValue &, const Identifier &);
+    static Value propertyValue(const QScriptValue &, const Identifier &);
 
     static QScriptValue scopeChainValue(QScriptContext *, int index);
     static QScriptContext *pushCleanContext(QScriptEngine *);
@@ -91,7 +120,7 @@ public:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual QScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
     virtual QScriptValue::PropertyFlags propertyFlags(Object *, const Identifier &);
 

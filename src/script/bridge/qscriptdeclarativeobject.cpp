@@ -74,9 +74,9 @@ bool DeclarativeObjectDelegate::getOwnPropertySlot(QScriptObject* object,
     QScriptClass::QueryFlags flags = 
         m_class->queryProperty(m_object, identifier, QScriptClass::HandlesReadAccess);
     if (flags & QScriptClass::HandlesReadAccess) {
-        QScriptValue value = m_class->property(m_object, identifier);
+        QScriptDeclarativeClass::Value val = m_class->property(m_object, identifier);
         p->context = 0;
-        slot.setValue(engine->scriptValueToJSCValue(value));
+        slot.setValue((const JSC::JSValue &)val);
         return true;
     }
     p->context = 0;
