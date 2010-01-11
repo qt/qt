@@ -37,7 +37,7 @@ StereoWidening::StereoWidening(QObject *parent, const QList<EffectParameter>& pa
 
 }
 
-void StereoWidening::parameterChanged(const EffectParameter &param,
+int StereoWidening::parameterChanged(const EffectParameter &param,
                                  const QVariant &value)
 {
     Q_ASSERT_X(param.id() == 0, Q_FUNC_INFO, "Invalid parameter ID");
@@ -47,8 +47,7 @@ void StereoWidening::parameterChanged(const EffectParameter &param,
 
     TRAPD(err, concreteEffect()->SetStereoWideningLevelL(internalLevel));
 
-    // TODO: handle audio effect errors
-    Q_UNUSED(err);
+    return err;
 }
 
 //-----------------------------------------------------------------------------

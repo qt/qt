@@ -71,9 +71,10 @@ void AbstractAudioEffect::setParameterValue(const Phonon::EffectParameter &param
 
     if (m_effect.data()) {
         const EffectParameter& internalParam = internalParameter(param.id());
-        parameterChanged(internalParam, newValue);
+        int err = parameterChanged(internalParam, newValue);
+        TRAP(err, m_effect->ApplyL());
         // TODO: handle audio effect errors
-        TRAP_IGNORE(m_effect->ApplyL());
+        Q_UNUSED(err);
     }
 }
 
@@ -116,12 +117,16 @@ void AbstractAudioEffect::disconnectMediaObject(MediaObject *mediaObject)
 
 void AbstractAudioEffect::setEnabled(bool enabled)
 {
+    TInt err = KErrNone;
+
     if (enabled)
         // TODO: handle audio effect errors
-        TRAP_IGNORE(m_effect->EnableL())
+        TRAP(err, m_effect->EnableL())
     else
         // TODO: handle audio effect errors
-        TRAP_IGNORE(m_effect->DisableL())
+        TRAP(err, m_effect->DisableL())
+
+    Q_UNUSED(err);
 }
 
 void AbstractAudioEffect::createEffect()
@@ -134,15 +139,12 @@ void AbstractAudioEffect::createEffect()
 
     if (m_effect.data()) {
         EffectParameter param;
+	int err = 0;
         foreach (param, m_params) {
             const QVariant value = parameterValue(param);
-            parameterChanged(param, value);
+            err = parameterChanged(param, value);
         }
-
-        // TODO: handle audio effect errors
-        TRAP_IGNORE(m_effect->EnableL());
-    
-        setEnabled(true);
+	Q_UNUSED(err)
     }
 }
 

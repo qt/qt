@@ -86,7 +86,7 @@ protected:
 
     virtual void createEffect(AudioPlayer::NativePlayer *player) = 0;
 
-    virtual void parameterChanged(const EffectParameter &param,
+    virtual int parameterChanged(const EffectParameter &param,
                                   const QVariant &value) = 0;
 
 private:

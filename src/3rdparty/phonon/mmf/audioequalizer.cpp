@@ -37,15 +37,15 @@ AudioEqualizer::AudioEqualizer(QObject *parent, const QList<EffectParameter>& pa
 
 }
 
-void AudioEqualizer::parameterChanged(const EffectParameter &param,
+int AudioEqualizer::parameterChanged(const EffectParameter &param,
                                       const QVariant &value)
 {
     const int band = param.id() + 1;
     const qreal externalLevel = value.toReal();
     const int internalLevel = param.toInternalValue(externalLevel);
 
-    // TODO: handle audio effect errors
-    TRAP_IGNORE(concreteEffect()->SetBandLevelL(band, internalLevel));
+    TRAPD(err, concreteEffect()->SetBandLevelL(band, internalLevel));
+    return err;
 }
 
 

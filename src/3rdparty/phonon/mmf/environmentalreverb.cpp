@@ -51,7 +51,7 @@ EnvironmentalReverb::EnvironmentalReverb(QObject *parent, const QList<EffectPara
 
 }
 
-void EnvironmentalReverb::parameterChanged(const EffectParameter &param,
+int EnvironmentalReverb::parameterChanged(const EffectParameter &param,
                                       const QVariant &value)
 {
     const qreal externalLevel = value.toReal();
@@ -94,8 +94,7 @@ void EnvironmentalReverb::parameterChanged(const EffectParameter &param,
         Q_ASSERT_X(false, Q_FUNC_INFO, "Unknown parameter");
     }
 
-    // TODO: handle audio effect errors
-    Q_UNUSED(err);
+    return err;
 }
 
 

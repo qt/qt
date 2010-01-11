@@ -37,11 +37,12 @@ BassBoost::BassBoost(QObject *parent, const QList<EffectParameter> &parameters)
 
 }
 
-void BassBoost::parameterChanged(const EffectParameter &param,
+int BassBoost::parameterChanged(const EffectParameter &param,
                                  const QVariant &value)
 {
     Q_ASSERT_X(param.id() == 0, Q_FUNC_INFO, "Invalid parameter ID");
     setEnabled(value.toBool());
+    return 0;
 }
 
 //-----------------------------------------------------------------------------

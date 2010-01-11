@@ -46,8 +46,8 @@ public:
 protected:
     // AbstractAudioEffect
     virtual void createEffect(AudioPlayer::NativePlayer *player);
-    virtual void parameterChanged(const EffectParameter &param,
-                                  const QVariant &value);
+    virtual int parameterChanged(const EffectParameter &param,
+                                 const QVariant &value);
 
 private:
     CStereoWidening *concreteEffect();
