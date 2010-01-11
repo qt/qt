@@ -100,7 +100,7 @@ QmlListScriptClass::queryProperty(Object *object, const Identifier &name,
     }
 }
 
-QScriptValue QmlListScriptClass::property(Object *obj, const Identifier &name)
+QmlListScriptClass::Value QmlListScriptClass::property(Object *obj, const Identifier &name)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
@@ -123,7 +123,7 @@ QScriptValue QmlListScriptClass::property(Object *obj, const Identifier &name)
         quint32 count = qlist.count();
 
         if (name == m_lengthId.identifier)
-            return count;
+            return Value(scriptEngine, count);
         else if (lastIndex < count)
             return enginePriv->objectClass->newQObject(qlist.at(lastIndex));
         else
@@ -136,7 +136,7 @@ QScriptValue QmlListScriptClass::property(Object *obj, const Identifier &name)
         quint32 count = qmllist.count();
 
         if (name == m_lengthId.identifier)
-            return count;
+            return Value(scriptEngine, count);
         else if (lastIndex < count) 
             return enginePriv->objectClass->newQObject(qmllist.at(lastIndex));
         else

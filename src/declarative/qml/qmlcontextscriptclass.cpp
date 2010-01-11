@@ -196,7 +196,8 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
     return 0;
 }
 
-QScriptValue QmlContextScriptClass::property(Object *object, const Identifier &name)
+QmlContextScriptClass::Value
+QmlContextScriptClass::property(Object *object, const Identifier &name)
 {
     Q_UNUSED(object);
 
