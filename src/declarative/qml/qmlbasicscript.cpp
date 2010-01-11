@@ -494,7 +494,7 @@ const QMetaObject *
 QmlBasicScriptCompiler::fetch(int type, const QMetaObject *mo, int idx)
 {
     ScriptInstruction instr;
-    (int &)instr.type = type;
+    *((int*)&instr.type) = type;
     instr.constant.idx = idx;
     QMetaProperty prop = mo->property(idx);
     if (prop.isConstant())

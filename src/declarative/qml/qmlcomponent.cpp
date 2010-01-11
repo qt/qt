@@ -676,7 +676,7 @@ QObject * QmlComponentPrivate::begin(QmlContext *ctxt, QmlEnginePrivate *engineP
     return rv;
 }
 
-void QmlComponentPrivate::beginDeferred(QmlContext *ctxt, QmlEnginePrivate *enginePriv,
+void QmlComponentPrivate::beginDeferred(QmlContext *, QmlEnginePrivate *enginePriv,
                                         QObject *object, ConstructionState *state)
 {
     bool isRoot = !enginePriv->inBeginCreate;

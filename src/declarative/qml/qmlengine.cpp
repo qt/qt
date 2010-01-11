@@ -694,7 +694,7 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     if(ctxt->argumentCount() > 2)
         url = QUrl(ctxt->argument(2).toString());
     else
-        url = QUrl("inline");
+        url = QUrl(QLatin1String("inline"));
 
     if (url.isValid() && url.isRelative())
         url = context->resolvedUrl(url);

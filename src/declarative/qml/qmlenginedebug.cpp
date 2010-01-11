@@ -115,7 +115,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
     QVariant value = prop.read(obj);
     rv.value = valueContents(value);
 
-    if (prop.userType() < QVariant::UserType) {
+    if (QVariant::Type(prop.userType()) < QVariant::UserType) {
         rv.type = QmlObjectProperty::Basic;
     } else if (QmlMetaType::isObject(prop.userType()))  {
         rv.type = QmlObjectProperty::Object;
@@ -130,7 +130,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 QVariant QmlEngineDebugServer::valueContents(const QVariant &value) const
 {
     int userType = value.userType();
-    if (userType < QVariant::UserType)
+    if (QVariant::Type(userType) < QVariant::UserType)
         return value;
 
 

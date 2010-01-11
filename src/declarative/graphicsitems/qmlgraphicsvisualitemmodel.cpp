@@ -965,9 +965,9 @@ QVariant QmlGraphicsVisualDataModel::evaluate(int index, const QString &expressi
     return value;
 }
 
-int QmlGraphicsVisualDataModel::indexOf(QmlGraphicsItem *item, QObject *objectContext) const
+int QmlGraphicsVisualDataModel::indexOf(QmlGraphicsItem *item, QObject *) const
 {
-    QVariant val = QmlEngine::contextForObject(item)->contextProperty("index");
+    QVariant val = QmlEngine::contextForObject(item)->contextProperty(QLatin1String("index"));
         return val.toInt();
     return -1;
 }

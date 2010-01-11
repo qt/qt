@@ -2365,7 +2365,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
                 sig.append(',');
                 funcScript.append(QLatin1Char(','));
             }
-            funcScript.append(s.parameterNames.at(jj));
+            funcScript.append(QLatin1String(s.parameterNames.at(jj)));
             sig.append("QVariant");
         }
         sig.append(')');
