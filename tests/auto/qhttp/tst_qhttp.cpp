@@ -114,9 +114,6 @@ private slots:
     void abortInReadyRead();
     void abortInResponseHeaderReceived();
     void nestedEventLoop();
-
-
-    // manual tests
     void connectionClose();
 
 protected slots:
@@ -173,6 +170,23 @@ private:
 
     bool connectionWithAuth;
     bool proxyAuthCalled;
+};
+
+class ClosingServer: public QTcpServer
+{
+    Q_OBJECT
+public:
+    ClosingServer()
+    {
+        connect(this, SIGNAL(newConnection()), SLOT(handleConnection()));
+        listen();
+    }
+
+public slots:
+    void handleConnection()
+    {
+        delete nextPendingConnection();
+    }
 };
 
 //#define DUMP_SIGNALS
@@ -1491,20 +1505,14 @@ void tst_QHttp::abortInResponseHeaderReceived()
 
 void tst_QHttp::connectionClose()
 {
-    // This test tries to connect to a client's server, so it is disabled.
-    // Every now and then, someone please run it to make sure it's not broken.
-    // Note: the servers might change too...
-    //
     // This was added in response to bug 176822
-#ifndef Q_OS_SYMBIAN
-    QSKIP("This test is manual - read comments in the source code", SkipAll);
-#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
 
     QHttp http;
-    http.setHost("www.fon.com", QHttp::ConnectionModeHttps);
+    ClosingServer server;
+    http.setHost("localhost", QHttp::ConnectionModeHttps, server.serverPort());
     http.get("/login/gateway/processLogin");
 
     // another possibility:
