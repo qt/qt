@@ -657,6 +657,12 @@ void QNetworkAccessHttpBackend::downstreamReadyWrite()
         replyFinished();
 }
 
+void QNetworkAccessHttpBackend::setDownstreamLimited(bool b)
+{
+    if (httpReply)
+        httpReply->setDownstreamLimited(b);
+}
+
 void QNetworkAccessHttpBackend::replyReadyRead()
 {
     readFromHttp();

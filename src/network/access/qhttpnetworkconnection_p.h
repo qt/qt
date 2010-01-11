@@ -174,6 +174,9 @@ public:
     void fillPipeline(QAbstractSocket *socket);
     bool fillPipeline(QList<HttpMessagePair> &queue, QHttpNetworkConnectionChannel &channel);
 
+    // read more HTTP body after the next event loop spin
+    void readMoreLater(QHttpNetworkReply *reply);
+
     void copyCredentials(int fromChannel, QAuthenticator *auth, bool isProxy);
 
     // private slots

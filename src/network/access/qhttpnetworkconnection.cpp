@@ -731,6 +731,16 @@ void QHttpNetworkConnectionPrivate::_q_restartAuthPendingRequests()
     }
 }
 
+void QHttpNetworkConnectionPrivate::readMoreLater(QHttpNetworkReply *reply)
+{
+    for (int i = 0 ; i < channelCount; ++i) {
+        if (channels[i].reply ==  reply) {
+            // emulate a readyRead() from the socket
+            QMetaObject::invokeMethod(&channels[i], "_q_readyRead", Qt::QueuedConnection);
+            return;
+        }
+    }
+}
 
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent)
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)

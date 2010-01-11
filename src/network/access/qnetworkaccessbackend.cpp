@@ -161,6 +161,12 @@ void QNetworkAccessBackend::downstreamReadyWrite()
     // do nothing
 }
 
+void QNetworkAccessBackend::setDownstreamLimited(bool b)
+{
+    Q_UNUSED(b);
+    // do nothing
+}
+
 void QNetworkAccessBackend::copyFinished(QIODevice *)
 {
     // do nothing
