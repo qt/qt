@@ -126,9 +126,6 @@ private:
 
     QFixed glyphAdvance(HB_Glyph glyph) const;
 
-    CFbsBitmap *m_textRenderBitmap;
-    CFbsBitmapDevice *m_textRenderBitmapDevice;
-    CFbsBitGc *m_textRenderBitmapGc;
     CFont* m_font;
     const QFontEngineS60Extensions *m_extensions;
     qreal m_fontSizeInPixels;
