@@ -46,8 +46,8 @@ public:
 protected:
     // AbstractAudioEffect
     virtual void createEffect(AudioPlayer::NativePlayer *player);
-    virtual int parameterChanged(const EffectParameter &param,
-                                 const QVariant &value);
+    virtual int effectParameterChanged(const EffectParameter &param,
+                                       const QVariant &value);
 
 private:
     CEnvironmentalReverb *concreteEffect();

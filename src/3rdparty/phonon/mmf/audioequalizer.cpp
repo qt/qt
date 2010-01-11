@@ -37,10 +37,11 @@ AudioEqualizer::AudioEqualizer(QObject *parent, const QList<EffectParameter>& pa
 
 }
 
-int AudioEqualizer::parameterChanged(const EffectParameter &param,
+int AudioEqualizer::effectParameterChanged(const EffectParameter &param,
                                       const QVariant &value)
 {
-    const int band = param.id() + 1;
+    const int band = param.id() - ParameterBase + 1;
+
     const qreal externalLevel = value.toReal();
     const int internalLevel = param.toInternalValue(externalLevel);
 
@@ -87,7 +88,7 @@ bool AudioEqualizer::getParameters(CMdaAudioOutputStream *stream,
             // Phonon::EffectWidget.  See documentation of EffectParameter
             // for more details.
             EffectParameter param(
-                 /* parameterId */        i,
+                 /* parameterId */        ParameterBase + i,
                  /* name */               tr("%1 Hz").arg(hz),
                  /* hints */              EffectParameter::LogarithmicHint,
                  /* defaultValue */       QVariant(qreal(0.0)),

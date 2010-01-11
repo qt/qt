@@ -72,7 +72,6 @@ void AbstractAudioEffect::setParameterValue(const Phonon::EffectParameter &param
     if (m_effect.data()) {
         const EffectParameter& internalParam = internalParameter(param.id());
         int err = parameterChanged(internalParam, newValue);
-        TRAP(err, m_effect->ApplyL());
         // TODO: handle audio effect errors
         Q_UNUSED(err);
     }
@@ -158,6 +157,38 @@ const MMF::EffectParameter& AbstractAudioEffect::internalParameter(int id) const
     Q_ASSERT_X(result, Q_FUNC_INFO, "Parameter not found");
     return *result;
 }
+
+int AbstractAudioEffect::parameterChanged(const EffectParameter &param,
+            const QVariant &value)
+{
+    int err = 0;
+
+    switch (param.id()) {
+    case ParameterEnable:
+        setEnabled(value.toBool());
+        break;
+    default:
+        {
+        const EffectParameter& internalParam = internalParameter(param.id());
+        err = effectParameterChanged(internalParam, value);
+        }
+        break;
+    }
+
+    if (!err)
+        TRAP(err, m_effect->ApplyL());
+
+    return err;
+}
+
+int AbstractAudioEffect::effectParameterChanged(
+    const EffectParameter &param, const QVariant &value)
+{
+    // Default implementation
+    Q_ASSERT_X(false, Q_FUNC_INFO, "Effect has no parameters");
+    return 0;
+}
+
 
 QT_END_NAMESPACE
 

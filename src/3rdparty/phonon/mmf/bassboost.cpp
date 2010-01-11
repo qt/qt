@@ -37,14 +37,6 @@ BassBoost::BassBoost(QObject *parent, const QList<EffectParameter> &parameters)
 
 }
 
-int BassBoost::parameterChanged(const EffectParameter &param,
-                                 const QVariant &value)
-{
-    Q_ASSERT_X(param.id() == 0, Q_FUNC_INFO, "Invalid parameter ID");
-    setEnabled(value.toBool());
-    return 0;
-}
-
 //-----------------------------------------------------------------------------
 // Static functions
 //-----------------------------------------------------------------------------
@@ -57,24 +49,9 @@ const char* BassBoost::description()
 bool BassBoost::getParameters(CMdaAudioOutputStream *stream,
     QList<EffectParameter> &parameters)
 {
-    bool supported = false;
-
     QScopedPointer<CBassBoost> effect;
     TRAPD(err, effect.reset(CBassBoost::NewL(*stream)));
-
-    if(KErrNone == err) {
-        supported = true;
-
-        EffectParameter param(
-             /* parameterId */        0,
-             /* name */               tr("Enabled"),
-             /* hints */              EffectParameter::ToggledHint,
-             /* defaultValue */       QVariant(bool(true)));
-
-        parameters.append(param);
-    }
-
-    return supported;
+    return (KErrNone == err);
 }
 
 QT_END_NAMESPACE

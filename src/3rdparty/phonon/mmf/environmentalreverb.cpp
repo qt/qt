@@ -33,7 +33,7 @@ PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(EnvironmentalReverb)
 
 enum Parameters
 {
-    DecayHFRatio,
+    DecayHFRatio = AbstractAudioEffect::ParameterBase,
     DecayTime,
     Density,
     Diffusion,
@@ -51,7 +51,7 @@ EnvironmentalReverb::EnvironmentalReverb(QObject *parent, const QList<EffectPara
 
 }
 
-int EnvironmentalReverb::parameterChanged(const EffectParameter &param,
+int EnvironmentalReverb::effectParameterChanged(const EffectParameter &param,
                                       const QVariant &value)
 {
     const qreal externalLevel = value.toReal();

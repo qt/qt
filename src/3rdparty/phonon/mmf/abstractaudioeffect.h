@@ -72,6 +72,13 @@ public:
     virtual void setParameterValue(const Phonon::EffectParameter &,
                                    const QVariant &newValue);
 
+    // Parameters which are shared by all effects
+    enum CommonParameters
+    {
+        ParameterEnable = 0,
+        ParameterBase // must be last entry in enum
+    };
+
 public Q_SLOTS:
     void abstractPlayerChanged(AbstractPlayer *player);
     void stateChanged(Phonon::State newState,
@@ -82,16 +89,18 @@ protected:
     void connectMediaObject(MediaObject *mediaObject);
     void disconnectMediaObject(MediaObject *mediaObject);
 
-    void setEnabled(bool enabled);
-
     virtual void createEffect(AudioPlayer::NativePlayer *player) = 0;
 
-    virtual int parameterChanged(const EffectParameter &param,
-                                  const QVariant &value) = 0;
+    // Effect-specific parameter changed
+    virtual int effectParameterChanged(const EffectParameter &param,
+                                  const QVariant &value);
 
 private:
     void createEffect();
+    void setEnabled(bool enabled);
     const EffectParameter& internalParameter(int id) const;
+    int parameterChanged(const EffectParameter &param,
+            const QVariant &value);
 
 protected:
     QScopedPointer<CAudioEffect>    m_effect;

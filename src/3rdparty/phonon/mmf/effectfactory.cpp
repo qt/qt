@@ -176,6 +176,13 @@ EffectFactory::EffectData EffectFactory::getData()
     OutputStreamFactory streamFactory;
     QScopedPointer<CMdaAudioOutputStream> stream(streamFactory.create());
 
+    EffectParameter param(
+         /* parameterId */        AbstractAudioEffect::ParameterEnable,
+         /* name */               tr("Enabled"),
+         /* hints */              EffectParameter::ToggledHint,
+         /* defaultValue */       QVariant(bool(true)));
+    data.m_parameters.append(param);
+
     if (data.m_supported = BackendNode::getParameters
             (stream.data(), data.m_parameters)) {
         const QString description = QCoreApplication::translate
@@ -183,6 +190,14 @@ EffectFactory::EffectData EffectFactory::getData()
         data.m_descriptions.insert("name", description);
         data.m_descriptions.insert("description", description);
         data.m_descriptions.insert("available", true);
+    }
+
+    // Sanity check to ensure that all parameter IDs are unique
+    QSet<int> ids;
+    foreach (param, data.m_parameters) {
+        Q_ASSERT_X(ids.find(param.id()) == ids.end(), Q_FUNC_INFO,
+            "Parameter list contains duplicates");
+        ids.insert(param.id());
     }
 
     return data;

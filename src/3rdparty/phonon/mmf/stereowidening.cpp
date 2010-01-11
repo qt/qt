@@ -40,7 +40,7 @@ StereoWidening::StereoWidening(QObject *parent, const QList<EffectParameter>& pa
 int StereoWidening::parameterChanged(const EffectParameter &param,
                                  const QVariant &value)
 {
-    Q_ASSERT_X(param.id() == 0, Q_FUNC_INFO, "Invalid parameter ID");
+    Q_ASSERT_X(param.id() == ParameterBase, Q_FUNC_INFO, "Invalid parameter ID");
 
     const qreal externalLevel = value.toReal();
     const int internalLevel = param.toInternalValue(externalLevel);
@@ -75,7 +75,7 @@ bool StereoWidening::getParameters(CMdaAudioOutputStream *stream,
                 (effect->StereoWideningLevel(), 0, 100);
 
         EffectParameter param(
-             /* parameterId */        0,
+             /* parameterId */        ParameterBase,
              /* name */               tr("Level (%)"),
              /* hints */              EffectParameter::IntegerHint,
              /* defaultValue */       QVariant(defaultValue),
