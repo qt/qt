@@ -45,7 +45,7 @@
 #include "qmlgraphicsitem.h"
 
 #include "../util/qmlstate_p.h"
-#include "qpodvector_p.h"
+#include <private/qpodvector_p.h>
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
