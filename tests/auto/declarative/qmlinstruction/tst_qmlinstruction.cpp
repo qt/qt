@@ -388,7 +388,7 @@ void tst_qmlinstruction::dump()
     {
         QmlInstruction i;
         i.line = 34;
-        i.type = QmlInstruction::StoreObjPropBinding;
+        //i.type = QmlInstruction::StoreObjPropBinding; // removed!
         i.assignObjPropBinding.property = 28;
         i.assignObjPropBinding.contextIdx = 3;
         i.assignObjPropBinding.context = 7;
