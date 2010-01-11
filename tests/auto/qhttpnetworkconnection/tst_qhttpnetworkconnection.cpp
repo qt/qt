@@ -939,7 +939,7 @@ public Q_SLOTS:
         else
             QFAIL("Wrong priority!?");
 
-        QVERIFY(highPrioReceived >= lowPrioReceived);
+        QVERIFY(highPrioReceived + 7 >= lowPrioReceived);
 
         if (highPrioReceived + lowPrioReceived == requestCount)
             QTestEventLoop::instance().exitLoop();
