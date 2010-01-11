@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui>
-#include "dirmodel.h"
+#include "fsmodel.h"
 #include "mainwindow.h"
 
 //! [0]
