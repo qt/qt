@@ -82,37 +82,46 @@ const char* AudioEqualizer::description()
     return "Audio equalizer";
 }
 
-void AudioEqualizer::getParameters(NativeEffect *effect,
-    QList<EffectParameter> &parameters)
+bool AudioEqualizer::getParameters(CMdaAudioOutputStream *stream,
+    QList<EffectParameter>& parameters)
 {
-    TInt32 dbMin;
-    TInt32 dbMax;
-    effect->DbLevelLimits(dbMin, dbMax);
+    bool supported = false;
 
-    const int bandCount = effect->NumberOfBands();
+    QScopedPointer<CAudioEqualizer> effect;
+    TRAPD(err, effect.reset(CAudioEqualizer::NewL(*stream)));
 
-    // For some reason, band IDs are 1-based, as opposed to the
-    // 0-based indices used in just about other Symbian API...!
-    for (int i = 1; i <= bandCount; ++i) {
-        const qint32 hz = effect->CenterFrequency(i);
+    if (KErrNone == err) {
+        supported = true;
 
-        // We pass a floating-point parameter range of -1.0 to +1.0 for
-        // each band in order to work around a limitation in
-        // Phonon::EffectWidget.  See documentation of EffectParameter
-        // for more details.
-        EffectParameter param(
-             /* parameterId */        i,
-             /* name */               tr("%1 Hz").arg(hz),
-             /* hints */              EffectParameter::LogarithmicHint,
-             /* defaultValue */       QVariant(qreal(0.0)),
-             /* minimumValue */       QVariant(qreal(-1.0)),
-             /* maximumValue */       QVariant(qreal(+1.0)),
-             /* values */             QVariantList(),
-             /* description */        QString());
+        TInt32 dbMin;
+        TInt32 dbMax;
+        effect->DbLevelLimits(dbMin, dbMax);
 
-        param.setInternalRange(dbMin, dbMax);
-        parameters.append(param);
+        const int bandCount = effect->NumberOfBands();
+
+        // For some reason, band IDs are 1-based, as opposed to the
+        // 0-based indices used in just about other Symbian API...!
+        for (int i = 1; i <= bandCount; ++i) {
+            const qint32 hz = effect->CenterFrequency(i);
+
+            // We pass a floating-point parameter range of -1.0 to +1.0 for
+            // each band in order to work around a limitation in
+            // Phonon::EffectWidget.  See documentation of EffectParameter
+            // for more details.
+            EffectParameter param(
+                 /* parameterId */        i,
+                 /* name */               tr("%1 Hz").arg(hz),
+                 /* hints */              EffectParameter::LogarithmicHint,
+                 /* defaultValue */       QVariant(qreal(0.0)),
+                 /* minimumValue */       QVariant(qreal(-1.0)),
+                 /* maximumValue */       QVariant(qreal(+1.0)));
+
+            param.setInternalRange(dbMin, dbMax);
+            parameters.append(param);
+        }
     }
+
+    return supported;
 }
 
 QT_END_NAMESPACE

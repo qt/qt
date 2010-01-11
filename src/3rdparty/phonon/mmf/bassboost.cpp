@@ -61,9 +61,9 @@ const char* BassBoost::description()
     return "Bass boost";
 }
 
-void BassBoost::getParameters(NativeEffect*, QList<EffectParameter>&)
+bool BassBoost::getParameters(CMdaAudioOutputStream *, QList<EffectParameter>&)
 {
-
+    return true;
 }
 
 QT_END_NAMESPACE

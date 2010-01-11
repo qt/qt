@@ -19,17 +19,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QObject>
 #include <QCoreApplication>
 
-#include <AudioEqualizerBase.h>
-#include <BassBoostBase.h>
-#include <DistanceAttenuationBase.h>
-#include <DopplerBase.h>
-#include <EnvironmentalReverbBase.h>
-#include <ListenerOrientationBase.h>
-#include <LocationBase.h>
-#include <LoudnessBase.h>
-#include <SourceOrientationBase.h>
-#include <StereoWideningBase.h>
-
 #include <mdaaudiooutputstream.h>
 
 #include "audioequalizer.h"
@@ -171,19 +160,13 @@ EffectFactory::EffectData EffectFactory::getData()
     OutputStreamFactory streamFactory;
     QScopedPointer<CMdaAudioOutputStream> stream(streamFactory.create());
 
-    typedef typename BackendNode::NativeEffect NativeEffect;
-    QScopedPointer<NativeEffect> effect;
-    TRAPD(err, effect.reset(NativeEffect::NewL(*stream)));
-    data.m_supported = (KErrNone == err);
-
-    if (KErrNone == err) {
+    if (data.m_supported = BackendNode::getParameters
+            (stream.data(), data.m_parameters)) {
         const QString description = QCoreApplication::translate
             ("Phonon::MMF::EffectFactory", BackendNode::description());
         data.m_descriptions.insert("name", description);
         data.m_descriptions.insert("description", description);
         data.m_descriptions.insert("available", true);
-
-        BackendNode::getParameters(effect.data(), data.m_parameters);
     }
 
     return data;

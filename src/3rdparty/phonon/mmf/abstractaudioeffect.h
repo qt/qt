@@ -30,6 +30,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "mmf_medianode.h"
 #include "mmf_videoplayer.h"
 
+class CMdaAudioOutputStream;
+
 QT_BEGIN_NAMESPACE
 
 namespace Phonon

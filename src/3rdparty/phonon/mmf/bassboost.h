@@ -21,8 +21,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractaudioeffect.h"
 
-class CBassBoost;
-
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
@@ -43,9 +41,8 @@ public:
 
     // Static interface required by EffectFactory
     static const char* description();
-    typedef CBassBoost NativeEffect;
-    static void getParameters(NativeEffect *effect,
-        QList<EffectParameter> &parameters);
+    static bool getParameters(CMdaAudioOutputStream *stream,
+        QList<EffectParameter>& parameters);
 
 protected:
     // AbstractAudioEffect
