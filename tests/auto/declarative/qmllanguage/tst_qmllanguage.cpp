@@ -706,8 +706,15 @@ void tst_qmllanguage::valueTypes()
 {
     QmlComponent component(&engine, TEST_FILE("valueTypes.qml"));
     VERIFY_ERRORS(0);
+
+    QString message = QLatin1String("QML MyTypeObject (") + component.url().toString() + 
+                      QLatin1String(":2:1) Binding loop detected for property \"rectProperty.width\"");
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
+
     MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
     QVERIFY(object != 0);
+
 
     QCOMPARE(object->rectProperty(), QRect(10, 11, 12, 13));
     QCOMPARE(object->rectProperty2(), QRect(10, 11, 12, 13));
