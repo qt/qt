@@ -56,7 +56,7 @@ protected:
     virtual void parameterChanged(const int id, const QVariant &value);
 
 private:
-    void setBandLevel(int band, int level);
+    void setBandLevel(int band, qreal externalLevel);
 
 };
 }

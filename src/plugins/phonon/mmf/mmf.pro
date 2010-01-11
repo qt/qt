@@ -35,6 +35,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/defs.h                   \
            $$PHONON_MMF_DIR/dummyplayer.h            \
            $$PHONON_MMF_DIR/effectfactory.h          \
+           $$PHONON_MMF_DIR/effectparameter.h        \
            $$PHONON_MMF_DIR/mediaobject.h            \
            $$PHONON_MMF_DIR/mmf_medianode.h          \
            $$PHONON_MMF_DIR/mmf_videoplayer.h        \
@@ -57,6 +58,7 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/bassboost.cpp            \
            $$PHONON_MMF_DIR/dummyplayer.cpp          \
            $$PHONON_MMF_DIR/effectfactory.cpp        \
+           $$PHONON_MMF_DIR/effectparameter.cpp      \
            $$PHONON_MMF_DIR/mediaobject.cpp          \
            $$PHONON_MMF_DIR/mmf_medianode.cpp        \
            $$PHONON_MMF_DIR/mmf_videoplayer.cpp      \

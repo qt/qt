@@ -24,9 +24,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <AudioEffectBase.h>
 
 #include <Phonon/EffectInterface>
-#include <Phonon/EffectParameter>
 
 #include "audioplayer.h"
+#include "effectparameter.h"
 #include "mmf_medianode.h"
 #include "mmf_videoplayer.h"
 
@@ -63,9 +63,10 @@ public:
     AbstractAudioEffect(QObject *parent,
                         const QList<EffectParameter> &params);
 
-    virtual QList<EffectParameter> parameters() const;
-    virtual QVariant parameterValue(const EffectParameter &param) const;
-    virtual void setParameterValue(const EffectParameter &,
+    // Phonon::EffectInterface
+    virtual QList<Phonon::EffectParameter> parameters() const;
+    virtual QVariant parameterValue(const Phonon::EffectParameter &param) const;
+    virtual void setParameterValue(const Phonon::EffectParameter &,
                                    const QVariant &newValue);
 
 protected:
@@ -81,10 +82,10 @@ protected:
 
 protected:
     QScopedPointer<CAudioEffect>    m_effect;
+    const QList<EffectParameter>    m_params;
 
 private:
     AbstractMediaPlayer *           m_player;
-    const QList<EffectParameter>    m_params;
     QHash<int, QVariant>            m_values;
 };
 

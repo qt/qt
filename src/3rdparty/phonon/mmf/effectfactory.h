@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_EFFECTFACTORY_H
 
 #include "abstractaudioeffect.h"
+#include "effectparameter.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -39,7 +39,7 @@ void AudioEqualizer::parameterChanged(const int pid,
 {
     if (m_effect.data()) {
         const int band = pid;
-        const int level = value.toInt();
+        const qreal level = value.toReal();
         setBandLevel(band, level);
     }
 }
@@ -54,7 +54,7 @@ void AudioEqualizer::connectAudioPlayer(AudioPlayer::NativePlayer *player)
 void AudioEqualizer::applyParameters()
 {
     if (m_effect.data()) {
-        EffectParameter param;
+	Phonon::EffectParameter param;
         foreach (param, parameters()) {
             const int band = param.id();
             const int level = parameterValue(param).toInt();
@@ -63,11 +63,14 @@ void AudioEqualizer::applyParameters()
     }
 }
 
-void AudioEqualizer::setBandLevel(int band, int level)
+void AudioEqualizer::setBandLevel(int band, qreal externalLevel)
 {
+    const EffectParameter &param = m_params[band];
+    const int internalLevel = param.toInternalValue(externalLevel);
+
     CAudioEqualizer *const effect = static_cast<CAudioEqualizer *>(m_effect.data());
     // TODO: handle audio effect errors
-    TRAP_IGNORE(effect->SetBandLevelL(band, level));
+    TRAP_IGNORE(effect->SetBandLevelL(band, internalLevel));
 }
 
 //-----------------------------------------------------------------------------
@@ -93,17 +96,22 @@ void AudioEqualizer::getParameters(NativeEffect *effect,
     for (int i = 1; i <= bandCount; ++i) {
         const qint32 hz = effect->CenterFrequency(i);
 
-        const qint32 defVol = effect->BandLevel(i);
-
-        parameters.append(EffectParameter(
+        // We pass a floating-point parameter range of -1.0 to +1.0 for
+        // each band in order to work around a limitation in
+        // Phonon::EffectWidget.  See documentation of EffectParameter
+        // for more details.
+        EffectParameter param(
              /* parameterId */        i,
              /* name */               tr("%1 Hz").arg(hz),
              /* hints */              EffectParameter::LogarithmicHint,
-             /* defaultValue */       QVariant(qint32(defVol)),
-             /* minimumValue */       QVariant(qint32(dbMin)),
-             /* maximumValue */       QVariant(qint32(dbMax)),
+             /* defaultValue */       QVariant(qreal(0.0)),
+             /* minimumValue */       QVariant(qreal(-1.0)),
+             /* maximumValue */       QVariant(qreal(+1.0)),
              /* values */             QVariantList(),
-             /* description */        QString()));
+             /* description */        QString());
+
+        param.setInternalRange(dbMin, dbMax);
+        parameters.append(param);
     }
 }
 

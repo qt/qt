@@ -38,18 +38,23 @@ using namespace Phonon::MMF;
 AbstractAudioEffect::AbstractAudioEffect(QObject *parent,
                                          const QList<EffectParameter> &params)
     :   MediaNode(parent)
-    ,   m_player(0)
     ,   m_params(params)
+    ,   m_player(0)
 {
 
 }
 
-QList<EffectParameter> AbstractAudioEffect::parameters() const
+QList<Phonon::EffectParameter> AbstractAudioEffect::parameters() const
 {
-    return m_params;
+    // Convert from QList<MMF::EffectParameter> to QList<Phonon::EffectParameter>
+    QList<Phonon::EffectParameter> result;
+    EffectParameter param;
+    foreach (param, m_params)
+        result += param;
+    return result;
 }
 
-QVariant AbstractAudioEffect::parameterValue(const EffectParameter &queriedParam) const
+QVariant AbstractAudioEffect::parameterValue(const Phonon::EffectParameter &queriedParam) const
 {
     const QVariant &val = m_values.value(queriedParam.id());
 
@@ -59,7 +64,7 @@ QVariant AbstractAudioEffect::parameterValue(const EffectParameter &queriedParam
         return val;
 }
 
-void AbstractAudioEffect::setParameterValue(const EffectParameter &param,
+void AbstractAudioEffect::setParameterValue(const Phonon::EffectParameter &param,
                                             const QVariant &newValue)
 {
     m_values.insert(param.id(), newValue);
