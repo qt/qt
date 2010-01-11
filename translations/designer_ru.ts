@@ -3950,8 +3950,8 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <location line="+2"/>
-        <source>%1&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</source>
-        <translation type="unfinished">%1&lt;br/&gt;Copyright (C) 2009 Корпорация Nokia и/или её дочерние подразделения.</translation>
+        <source>%1&lt;br/&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translation type="unfinished">%1&lt;br/&gt;Copyright (C) 2010 Корпорация Nokia и/или её дочерние подразделения.</translation>
     </message>
 </context>
 <context>

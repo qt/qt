@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,7 +52,7 @@ class AudioInfo : public QIODevice
 {
     Q_OBJECT
 public:
-    AudioInfo(QObject* parent, QAudioInput* device);
+    AudioInfo(QObject *parent, QAudioInput *device);
     ~AudioInfo();
 
     void start();
@@ -63,7 +63,7 @@ public:
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
 
-    QAudioInput*   input;
+    QAudioInput *input;
 
 private:
     int m_maxValue;
@@ -97,21 +97,6 @@ public:
     InputTest();
     ~InputTest();
 
-    QAudioDeviceInfo device;
-    QAudioFormat   format;
-    QAudioInput*   audioInput;
-    AudioInfo*     audioinfo;
-    QIODevice*     input;
-    RenderArea*    canvas;
-
-    bool           pullMode;
-
-    QPushButton*   button;
-    QPushButton*   button2;
-    QComboBox*     deviceBox;
-
-    char*          buffer;
-
 private slots:
     void refreshDisplay();
     void status();
@@ -120,5 +105,21 @@ private slots:
     void toggleSuspend();
     void state(QAudio::State s);
     void deviceChanged(int idx);
+
+private:
+    AudioInfo *audioinfo;
+    QAudioDeviceInfo device;
+    QAudioFormat format;
+    QAudioInput *audioInput;
+    QIODevice *input;
+    RenderArea *canvas;
+
+    bool pullMode;
+
+    QPushButton *button;
+    QPushButton *button2;
+    QComboBox *deviceBox;
+
+    char *buffer;
 };
 
