@@ -53,6 +53,8 @@
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qmlscriptstring.h>
 
+QVariant myCustomVariantTypeConverter(const QString &data);
+
 class MyInterface 
 {
 public:
@@ -68,13 +70,6 @@ struct MyCustomVariantType
     int a;
 };
 Q_DECLARE_METATYPE(MyCustomVariantType);
-
-static QVariant myCustomVariantTypeConverter(const QString &data)
-{
-    MyCustomVariantType rv;
-    rv.a = data.toInt();
-    return QVariant::fromValue(rv);
-}
 
 class MyAttachedObject : public QObject
 {
