@@ -342,10 +342,13 @@ bool QS60StylePrivate::hasSliderGrooveGraphic()
     return false;
 }
 
-QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize)
+QFont QS60StylePrivate::s60Font_specific(
+        QS60StyleEnums::FontCategories fontCategory,
+        int pointSize, bool resolveFontSize)
 {
     QFont result;
-    result.setPointSize(pointSize);
+    if (resolveFontSize)
+        result.setPointSize(pointSize);
     switch (fontCategory) {
         case QS60StyleEnums::FC_Primary:
             result.setBold(true);
