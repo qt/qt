@@ -291,18 +291,6 @@ private:
     QString customargs;
 };
 
-class ConfiguredNetworkAccessManager : public QNetworkAccessManager {
-public:
-    ConfiguredNetworkAccessManager(QObject *parent) : QNetworkAccessManager(parent) { }
-
-    QNetworkReply *createRequest (Operation op, const QNetworkRequest &req, QIODevice * outgoingData)
-    {
-        QNetworkRequest request = req;
-        request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-        return QNetworkAccessManager::createRequest(op,request,outgoingData);
-    }
-};
-
 class PersistentCookieJar : public QNetworkCookieJar {
 public:
     PersistentCookieJar(QObject *parent) : QNetworkCookieJar(parent) { load(); }
@@ -383,7 +371,6 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
     canvas->setContentResizable(!skin || !scaleSkin);
-    canvas->engine()->setNetworkAccessManager(new ConfiguredNetworkAccessManager(canvas->engine()));
     canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));

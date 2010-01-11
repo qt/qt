@@ -404,6 +404,7 @@ QmlPixmapReply *QmlPixmapCache::request(QmlEngine *engine, const QUrl &url)
     QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(key);
     if (iter == qmlActivePixmapReplies.end()) {
         QNetworkRequest req(url);
+        req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
         QmlPixmapReply *item = new QmlPixmapReply(key, engine->networkAccessManager()->get(req));
         iter = qmlActivePixmapReplies.insert(key, item);
     } else {
