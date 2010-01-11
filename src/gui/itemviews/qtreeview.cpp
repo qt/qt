@@ -1241,15 +1241,6 @@ bool QTreeView::viewportEvent(QEvent *event)
                 viewport()->update(newRect);
             }
         }
-        if (selectionBehavior() == QAbstractItemView::SelectRows) {
-            QModelIndex newHoverIndex = indexAt(he->pos());
-            if (d->hover != newHoverIndex) {
-                QRect oldHoverRect = visualRect(d->hover);
-                QRect newHoverRect = visualRect(newHoverIndex);
-                viewport()->update(QRect(0, newHoverRect.y(), viewport()->width(), newHoverRect.height()));
-                viewport()->update(QRect(0, oldHoverRect.y(), viewport()->width(), oldHoverRect.height()));
-            }
-        }
         break; }
     default:
         break;
