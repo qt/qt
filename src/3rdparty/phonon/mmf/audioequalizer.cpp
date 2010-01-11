@@ -37,34 +37,17 @@ AudioEqualizer::AudioEqualizer(QObject *parent, const QList<EffectParameter>& pa
 
 }
 
-void AudioEqualizer::parameterChanged(const int pid,
+void AudioEqualizer::parameterChanged(const EffectParameter &param,
                                       const QVariant &value)
 {
-    const int band = pid;
-    const qreal level = value.toReal();
-    setBandLevel(band, level);
-}
-
-void AudioEqualizer::applyParameters()
-{
-    if (m_effect.data()) {
-	Phonon::EffectParameter param;
-        foreach (param, parameters()) {
-            const int band = param.id();
-            const qreal level = parameterValue(param).toReal();
-            setBandLevel(band, level);
-        }
-    }
-}
-
-void AudioEqualizer::setBandLevel(int band, qreal externalLevel)
-{
-    const EffectParameter &param = m_params[band-1]; // Band IDs are 1-based
+    const int band = param.id() + 1;
+    const qreal externalLevel = value.toReal();
     const int internalLevel = param.toInternalValue(externalLevel);
 
     // TODO: handle audio effect errors
     TRAP_IGNORE(concreteEffect()->SetBandLevelL(band, internalLevel));
 }
+
 
 //-----------------------------------------------------------------------------
 // Static functions
@@ -92,10 +75,12 @@ bool AudioEqualizer::getParameters(CMdaAudioOutputStream *stream,
 
         const int bandCount = effect->NumberOfBands();
 
-        // For some reason, band IDs are 1-based, as opposed to the
-        // 0-based indices used in just about other Symbian API...!
-        for (int i = 1; i <= bandCount; ++i) {
-            const qint32 hz = effect->CenterFrequency(i);
+        for (int i = 0; i < bandCount; ++i) {
+            // For some reason, band IDs are 1-based, as opposed to the
+            // 0-based indices used in just about other Symbian API...!
+            const int band = i + 1;
+
+            const qint32 hz = effect->CenterFrequency(band);
 
             // We pass a floating-point parameter range of -1.0 to +1.0 for
             // each band in order to work around a limitation in

@@ -37,15 +37,10 @@ BassBoost::BassBoost(QObject *parent, const QList<EffectParameter> &parameters)
 
 }
 
-void BassBoost::parameterChanged(const int,
+void BassBoost::parameterChanged(const EffectParameter &,
                                  const QVariant &)
 {
     Q_ASSERT_X(false, Q_FUNC_INFO, "BassBoost has no parameters");
-}
-
-void BassBoost::applyParameters()
-{
-    // No parameters to apply
 }
 
 //-----------------------------------------------------------------------------

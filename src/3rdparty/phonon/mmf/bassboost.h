@@ -49,8 +49,8 @@ public:
 protected:
     // AbstractAudioEffect
     virtual void createEffect(AudioPlayer::NativePlayer *player);
-    virtual void applyParameters();
-    virtual void parameterChanged(const int id, const QVariant &value);
+    virtual void parameterChanged(const EffectParameter &param,
+                                  const QVariant &value);
 
 private:
     CBassBoost *concreteEffect();

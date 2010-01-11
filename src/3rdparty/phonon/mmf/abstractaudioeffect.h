@@ -83,19 +83,19 @@ protected:
     void disconnectMediaObject(MediaObject *mediaObject);
 
     virtual void createEffect(AudioPlayer::NativePlayer *player) = 0;
-    virtual void applyParameters() = 0;
 
-    virtual void parameterChanged(const int id,
+    virtual void parameterChanged(const EffectParameter &param,
                                   const QVariant &value) = 0;
 
 private:
     void createEffect();
+    const EffectParameter& internalParameter(int id) const;
 
 protected:
     QScopedPointer<CAudioEffect>    m_effect;
-    const QList<EffectParameter>    m_params;
 
 private:
+    const QList<EffectParameter>    m_params;
     AbstractMediaPlayer *           m_player;
     QHash<int, QVariant>            m_values;
 };

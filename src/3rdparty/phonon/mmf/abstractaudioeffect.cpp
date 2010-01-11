@@ -70,7 +70,8 @@ void AbstractAudioEffect::setParameterValue(const Phonon::EffectParameter &param
     m_values.insert(param.id(), newValue);
 
     if (m_effect.data()) {
-        parameterChanged(param.id(), newValue);
+        const EffectParameter& internalParam = internalParameter(param.id());
+        parameterChanged(internalParam, newValue);
         // TODO: handle audio effect errors
         TRAP_IGNORE(m_effect->ApplyL());
     }
@@ -122,10 +123,26 @@ void AbstractAudioEffect::createEffect()
     }
 
     if (m_effect.data()) {
-        applyParameters();
+        EffectParameter param;
+        foreach (param, m_params) {
+            const QVariant value = parameterValue(param);
+            parameterChanged(param, value);
+        }
+
         // TODO: handle audio effect errors
         TRAP_IGNORE(m_effect->EnableL());
     }
+}
+
+const MMF::EffectParameter& AbstractAudioEffect::internalParameter(int id) const
+{
+    const EffectParameter *result = 0;
+    for (int i=0; i<m_params.count() && !result; ++i) {
+        if (m_params[i].id() == id)
+            result = &m_params[i];
+    }
+    Q_ASSERT_X(result, Q_FUNC_INFO, "Parameter not found");
+    return *result;
 }
 
 QT_END_NAMESPACE
