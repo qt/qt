@@ -570,7 +570,6 @@ inline static qreal toReal(Register *reg, int type, bool *ok = 0)
     if (type == QMetaType::QReal) {
         return reg->getqreal();
     } else if (type == qMetaTypeId<QVariant>()) {
-        *ok = true;
         return reg->getvariantptr()->toReal();
     } else {
         if (ok) *ok = false;
