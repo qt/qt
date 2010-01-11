@@ -178,7 +178,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Constructs a table view with a \a parent to represent a model's
+    Constructs a tree view with a \a parent to represent a model's
     data. Use setModel() to set the model.
 
     \sa QAbstractItemModel
