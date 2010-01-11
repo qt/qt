@@ -596,7 +596,7 @@ void QNetworkAccessHttpBackend::open()
         // unsuitable proxies
         QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
                                   Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProxyNotFoundError),
-                                  Q_ARG(QString, QCoreApplication::translate("QNetworkAccessHttpBackend", "No suitable proxy found")));
+                                  Q_ARG(QString, tr("No suitable proxy found")));
         QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
         return;
     }
