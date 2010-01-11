@@ -68,11 +68,26 @@ void AbstractAudioEffect::setParameterValue(const Phonon::EffectParameter &param
                                             const QVariant &newValue)
 {
     m_values.insert(param.id(), newValue);
-    parameterChanged(param.id(), newValue);
 
-    if (m_effect.data())
+    if (m_effect.data()) {
+        parameterChanged(param.id(), newValue);
         // TODO: handle audio effect errors
         TRAP_IGNORE(m_effect->ApplyL());
+    }
+}
+
+void AbstractAudioEffect::abstractPlayerChanged(AbstractPlayer *player)
+{
+    m_player = qobject_cast<AbstractMediaPlayer *>(player);
+    m_effect.reset();
+}
+
+void AbstractAudioEffect::stateChanged(Phonon::State newState,
+                                       Phonon::State oldState)
+{
+    if (Phonon::LoadingState == oldState
+        && Phonon::LoadingState != newState)
+        createEffect();
 }
 
 void AbstractAudioEffect::connectMediaObject(MediaObject *mediaObject)
@@ -80,25 +95,37 @@ void AbstractAudioEffect::connectMediaObject(MediaObject *mediaObject)
     Q_ASSERT_X(!m_player, Q_FUNC_INFO, "Player already connected");
     Q_ASSERT_X(!m_effect.data(), Q_FUNC_INFO, "Effect already created");
 
-    AbstractMediaPlayer *const player =
-        qobject_cast<AbstractMediaPlayer *>(mediaObject->abstractPlayer());
+    abstractPlayerChanged(mediaObject->abstractPlayer());
 
-    if (player) {
-        m_player = player;
+    connect(mediaObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)),
+            SLOT(stateChanged(Phonon::State, Phonon::State)));
 
-        if (AudioPlayer *audioPlayer = qobject_cast<AudioPlayer *>(player)) {
-            connectAudioPlayer(audioPlayer->nativePlayer());
-            applyParameters();
-            // TODO: handle audio effect errors
-            TRAP_IGNORE(m_effect->EnableL());
-        }
-    }
+    connect(mediaObject, SIGNAL(abstractPlayerChanged(AbstractPlayer *)),
+            SLOT(abstractPlayerChanged(AbstractPlayer *)));
+
+    if (mediaObject->state() != Phonon::LoadingState)
+        createEffect();
 }
 
-void AbstractAudioEffect::disconnectMediaObject(MediaObject * /*mediaObject*/)
+void AbstractAudioEffect::disconnectMediaObject(MediaObject *mediaObject)
 {
-    m_player = 0;
-    m_effect.reset();
+    mediaObject->disconnect(this);
+    abstractPlayerChanged(0);
+}
+
+void AbstractAudioEffect::createEffect()
+{
+    Q_ASSERT_X(m_player, Q_FUNC_INFO, "Invalid media player pointer");
+
+    if (AudioPlayer *audioPlayer = qobject_cast<AudioPlayer *>(m_player)) {
+        createEffect(audioPlayer->nativePlayer());
+    }
+
+    if (m_effect.data()) {
+        applyParameters();
+        // TODO: handle audio effect errors
+        TRAP_IGNORE(m_effect->EnableL());
+    }
 }
 
 QT_END_NAMESPACE

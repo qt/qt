@@ -44,7 +44,7 @@ void AudioEqualizer::parameterChanged(const int pid,
     }
 }
 
-void AudioEqualizer::connectAudioPlayer(AudioPlayer::NativePlayer *player)
+void AudioEqualizer::createEffect(AudioPlayer::NativePlayer *player)
 {
     CAudioEqualizer *ptr = 0;
     QT_TRAP_THROWING(ptr = CAudioEqualizer::NewL(*player));
@@ -57,7 +57,7 @@ void AudioEqualizer::applyParameters()
 	Phonon::EffectParameter param;
         foreach (param, parameters()) {
             const int band = param.id();
-            const int level = parameterValue(param).toInt();
+            const qreal level = parameterValue(param).toReal();
             setBandLevel(band, level);
         }
     }
@@ -65,7 +65,7 @@ void AudioEqualizer::applyParameters()
 
 void AudioEqualizer::setBandLevel(int band, qreal externalLevel)
 {
-    const EffectParameter &param = m_params[band];
+    const EffectParameter &param = m_params[band-1]; // Band IDs are 1-based
     const int internalLevel = param.toInternalValue(externalLevel);
 
     CAudioEqualizer *const effect = static_cast<CAudioEqualizer *>(m_effect.data());

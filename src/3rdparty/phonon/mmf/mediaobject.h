@@ -92,6 +92,7 @@ public Q_SLOTS:
     void switchToNextSource();
 
 Q_SIGNALS:
+    void abstractPlayerChanged(AbstractPlayer *player);
     void totalTimeChanged(qint64 length);
     void hasVideoChanged(bool hasVideo);
     void seekableChanged(bool seekable);

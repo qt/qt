@@ -40,7 +40,7 @@ void BassBoost::parameterChanged(const int,
     Q_ASSERT_X(false, Q_FUNC_INFO, "BassBoost has no parameters");
 }
 
-void BassBoost::connectAudioPlayer(AudioPlayer::NativePlayer *player)
+void BassBoost::createEffect(AudioPlayer::NativePlayer *player)
 {
     CBassBoost *ptr = 0;
     QT_TRAP_THROWING(ptr = CBassBoost::NewL(*player));

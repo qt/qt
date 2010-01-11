@@ -36,6 +36,7 @@ namespace Phonon
 {
 namespace MMF
 {
+class AbstractPlayer;
 class AbstractMediaPlayer;
 
 /**
@@ -69,16 +70,24 @@ public:
     virtual void setParameterValue(const Phonon::EffectParameter &,
                                    const QVariant &newValue);
 
+public Q_SLOTS:
+    void abstractPlayerChanged(AbstractPlayer *player);
+    void stateChanged(Phonon::State newState,
+                      Phonon::State oldState);
+
 protected:
     // MediaNode
     void connectMediaObject(MediaObject *mediaObject);
     void disconnectMediaObject(MediaObject *mediaObject);
 
-    virtual void connectAudioPlayer(AudioPlayer::NativePlayer *player) = 0;
+    virtual void createEffect(AudioPlayer::NativePlayer *player) = 0;
     virtual void applyParameters() = 0;
 
     virtual void parameterChanged(const int id,
                                   const QVariant &value) = 0;
+
+private:
+    void createEffect();
 
 protected:
     QScopedPointer<CAudioEffect>    m_effect;
