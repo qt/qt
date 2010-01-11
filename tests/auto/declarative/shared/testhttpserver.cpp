@@ -206,7 +206,7 @@ void TestHTTPServer::readyRead()
             continue;
         else {
             QByteArray data = ba.mid(ii);
-            qWarning() << "TestHTTPServer: Unexpected data" << data;
+            qWarning() << "TestHTTPServer: Unexpected data" << data << "\nExpected: " << waitData;
             m_hasFailed = true;
             socket->disconnect();
             return;
