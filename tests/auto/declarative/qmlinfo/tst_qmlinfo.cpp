@@ -75,14 +75,14 @@ void tst_qmlinfo::qmlObject()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    QString message = "QML " + QString(object->metaObject()->className()) + " (" + component.url().toString() + ":3:1) Test Message";
+    QString message = "QML QObject_QML_0 (" + component.url().toString() + ":3:1) Test Message";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     qmlInfo(object) << "Test Message";
 
     QObject *nested = qvariant_cast<QObject *>(object->property("nested"));
     QVERIFY(nested != 0);
 
-    message = "QML " + QString(nested->metaObject()->className()) + " (" + component.url().toString() + ":6:13) Second Test Message";
+    message = "QML QtObject (" + component.url().toString() + ":6:13) Second Test Message";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     qmlInfo(nested) << "Second Test Message";
 }
@@ -99,11 +99,11 @@ void tst_qmlinfo::nestedQmlObject()
     QObject *nested2 = qvariant_cast<QObject *>(object->property("nested2"));
     QVERIFY(nested2 != 0);
 
-    QString message = "QML " + QString(nested->metaObject()->className()) + " (" + component.url().toString() + ":5:13) Outer Object";
+    QString message = "QML NestedObject (" + component.url().toString() + ":5:13) Outer Object";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     qmlInfo(nested) << "Outer Object";
 
-    message = "QML " + QString(nested2->metaObject()->className()) + " (" + TEST_FILE("NestedObject.qml").toString() + ":6:14) Inner Object";
+    message = "QML QtObject (" + TEST_FILE("NestedObject.qml").toString() + ":6:14) Inner Object";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     qmlInfo(nested2) << "Inner Object";
 }
@@ -111,7 +111,7 @@ void tst_qmlinfo::nestedQmlObject()
 void tst_qmlinfo::nonQmlObject()
 {
     QObject object;
-    QTest::ignoreMessage(QtWarningMsg, "QML QObject (unknown location) Test Message");
+    QTest::ignoreMessage(QtWarningMsg, "QML QtObject (unknown location) Test Message");
     qmlInfo(&object) << "Test Message";
 
     QPushButton pbObject;
@@ -130,7 +130,7 @@ void tst_qmlinfo::nonQmlContextedObject()
     QObject object;
     QmlContext context(&engine);
     QmlEngine::setContextForObject(&object, &context);
-    QTest::ignoreMessage(QtWarningMsg, "QML QObject (unknown location) Test Message");
+    QTest::ignoreMessage(QtWarningMsg, "QML QtObject (unknown location) Test Message");
     qmlInfo(&object) << "Test Message";
 }
 
