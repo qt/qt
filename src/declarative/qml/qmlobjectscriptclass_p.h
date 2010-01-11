@@ -86,7 +86,7 @@ public:
                                            QScriptClass::QueryFlags flags, 
                                            QmlContext *evalContext,
                                            QueryHints hints = 0);
-    QScriptValue property(QObject *, const Identifier &);
+    Value property(QObject *, const Identifier &);
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
                      QmlContext *evalContext = 0);
 
@@ -94,7 +94,7 @@ protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual QScriptValue property(Object *, const Identifier &);
+    virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
     virtual bool isQObject() const;
     virtual QObject *toQObject(Object *, bool *ok = 0);

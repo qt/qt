@@ -139,7 +139,7 @@ QmlTypeNameScriptClass::queryProperty(Object *obj, const Identifier &name,
     return 0;
 }
 
-QScriptValue QmlTypeNameScriptClass::property(Object *obj, const Identifier &name)
+QmlTypeNameScriptClass::Value QmlTypeNameScriptClass::property(Object *obj, const Identifier &name)
 {
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     if (type) {

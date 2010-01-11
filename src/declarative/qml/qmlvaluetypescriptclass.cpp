@@ -67,7 +67,8 @@ QScriptValue QmlValueTypeScriptClass::newObject(QObject *object, int coreIndex, 
     ref->type = type;
     ref->object = object;
     ref->property = coreIndex;
-    return QScriptDeclarativeClass::newObject(QmlEnginePrivate::getScriptEngine(engine), this, ref);
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+    return QScriptDeclarativeClass::newObject(scriptEngine, this, ref);
 }
 
 QScriptClass::QueryFlags 
@@ -97,7 +98,7 @@ QmlValueTypeScriptClass::queryProperty(Object *obj, const Identifier &name,
     return rv;
 }
 
-QScriptValue QmlValueTypeScriptClass::property(Object *obj, const Identifier &)
+QmlValueTypeScriptClass::Value QmlValueTypeScriptClass::property(Object *obj, const Identifier &)
 {
     QmlValueTypeReference *ref = static_cast<QmlValueTypeReference *>(obj);
 
