@@ -4522,7 +4522,7 @@ if [ "$CFG_ZLIB" = "auto" ]; then
 fi
 
 if [ "$CFG_S60" = "auto" ]; then
-    if echo "$XQMAKESPEC" | grep symbian >& /dev/null; then
+    if echo "$XQMAKESPEC" | grep symbian > /dev/null; then
         CFG_S60=yes
     else
         CFG_S60=no
@@ -7052,7 +7052,8 @@ fi
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
 QCONFIG_FLAGS=`echo $QCONFIG_FLAGS`
 
-if echo $XPLATFORM | grep symbian >& /dev/null; then
+if echo $XPLATFORM | grep symbian >/dev/null
+then
     # Enable Symbian DLLs and export rules.
     # We cannot use Linux's default export rules since they export everything.
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_DLL"
