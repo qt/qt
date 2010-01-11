@@ -743,7 +743,6 @@ void tst_qmllanguage::cppnamespace()
 
     {
         QmlComponent component(&engine, TEST_FILE("cppnamespace.2.qml"));
-        qWarning() << component.errors();
         VERIFY_ERRORS(0);
         QObject *object = component.create();
         QVERIFY(object != 0);
