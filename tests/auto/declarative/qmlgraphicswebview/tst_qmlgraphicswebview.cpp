@@ -90,8 +90,8 @@ static QString strippedHtml(QString html)
 static QString fileContents(const QString& filename)
 {
     QFile file(filename);
-    Q_ASSERT(file.open(QIODevice::ReadOnly));
-    return file.readAll();
+    file.open(QIODevice::ReadOnly);
+    return QString::fromUtf8(file.readAll());
 }
 
 
