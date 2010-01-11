@@ -28,7 +28,10 @@ using namespace Phonon::MMF;
   \internal
 */
 
-AudioEqualizer::AudioEqualizer(QObject *parent, const QList<EffectParameter> &parameters)
+// Define functions which depend on concrete native effect class name
+PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(AudioEqualizer)
+
+AudioEqualizer::AudioEqualizer(QObject *parent, const QList<EffectParameter>& parameters)
     :   AbstractAudioEffect::AbstractAudioEffect(parent, parameters)
 {
 
@@ -42,13 +45,6 @@ void AudioEqualizer::parameterChanged(const int pid,
         const qreal level = value.toReal();
         setBandLevel(band, level);
     }
-}
-
-void AudioEqualizer::createEffect(AudioPlayer::NativePlayer *player)
-{
-    CAudioEqualizer *ptr = 0;
-    QT_TRAP_THROWING(ptr = CAudioEqualizer::NewL(*player));
-    m_effect.reset(ptr);
 }
 
 void AudioEqualizer::applyParameters()
@@ -68,9 +64,8 @@ void AudioEqualizer::setBandLevel(int band, qreal externalLevel)
     const EffectParameter &param = m_params[band-1]; // Band IDs are 1-based
     const int internalLevel = param.toInternalValue(externalLevel);
 
-    CAudioEqualizer *const effect = static_cast<CAudioEqualizer *>(m_effect.data());
     // TODO: handle audio effect errors
-    TRAP_IGNORE(effect->SetBandLevelL(band, internalLevel));
+    TRAP_IGNORE(concreteEffect()->SetBandLevelL(band, internalLevel));
 }
 
 //-----------------------------------------------------------------------------

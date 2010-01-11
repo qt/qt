@@ -21,6 +21,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractaudioeffect.h"
 
+class CAudioEqualizer;
+
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
@@ -54,6 +56,7 @@ protected:
 
 private:
     void setBandLevel(int band, qreal externalLevel);
+    CAudioEqualizer *concreteEffect();
 
 };
 }

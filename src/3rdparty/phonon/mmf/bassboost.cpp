@@ -24,6 +24,9 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+// Define functions which depend on concrete native effect class name
+PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(BassBoost)
+
 /*! \class MMF::BassBoost
   \internal
 */
@@ -38,13 +41,6 @@ void BassBoost::parameterChanged(const int,
                                  const QVariant &)
 {
     Q_ASSERT_X(false, Q_FUNC_INFO, "BassBoost has no parameters");
-}
-
-void BassBoost::createEffect(AudioPlayer::NativePlayer *player)
-{
-    CBassBoost *ptr = 0;
-    QT_TRAP_THROWING(ptr = CBassBoost::NewL(*player));
-    m_effect.reset(ptr);
 }
 
 void BassBoost::applyParameters()

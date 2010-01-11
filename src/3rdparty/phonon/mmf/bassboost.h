@@ -21,6 +21,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractaudioeffect.h"
 
+class CBassBoost;
+
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
@@ -49,6 +51,9 @@ protected:
     virtual void createEffect(AudioPlayer::NativePlayer *player);
     virtual void applyParameters();
     virtual void parameterChanged(const int id, const QVariant &value);
+
+private:
+    CBassBoost *concreteEffect();
 
 };
 }

@@ -103,6 +103,25 @@ private:
 }
 }
 
+
+// Macro for defining functions which depend on the native class name
+// for each of the effects.  Using this reduces repetition of boilerplate
+// in the implementations of the backend effect nodes.
+
+#define PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(Effect)                      \
+                                                                        \
+void Effect##::createEffect(AudioPlayer::NativePlayer *player)          \
+{                                                                       \
+    C##Effect *ptr = 0;                                                 \
+    QT_TRAP_THROWING(ptr = C##Effect::NewL(*player));                   \
+    m_effect.reset(ptr);                                                \
+}                                                                       \
+                                                                        \
+C##Effect* Effect::concreteEffect()                                     \
+{                                                                       \
+    return static_cast<C##Effect *>(m_effect.data());                   \
+}
+
 QT_END_NAMESPACE
 
 #endif
