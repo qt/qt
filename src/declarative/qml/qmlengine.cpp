@@ -1299,11 +1299,11 @@ static QmlTypeNameCache *cacheForNamespace(QmlEngine *engine, const QmlEnginePri
 
     QList<QmlType *> types = QmlMetaType::qmlTypes();
 
-    for (int ii = 0; ii < set.urls.count(); ++ii) {
+    for (int ii = 0; ii < set.uris.count(); ++ii) {
         if (!set.isBuiltin.at(ii))
             continue;
 
-        QByteArray base = set.urls.at(ii).toUtf8() + '/';
+        QByteArray base = set.uris.at(ii).toUtf8() + '/';
         int major = set.majversions.at(ii);
         int minor = set.minversions.at(ii);
 
