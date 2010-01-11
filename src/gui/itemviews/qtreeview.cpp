@@ -2644,10 +2644,13 @@ void QTreeView::selectAll()
         return;
     SelectionMode mode = d->selectionMode;
     d->executePostedLayout(); //make sure we lay out the items
-    if (mode != SingleSelection && !d->viewItems.isEmpty())
-        d->select(d->viewItems.first().index, d->viewItems.last().index,
+    if (mode != SingleSelection && !d->viewItems.isEmpty()) {
+        const QModelIndex &idx = d->viewItems.last().index;
+        QModelIndex lastItemIndex = idx.sibling(idx.row(), d->model->columnCount(idx.parent()) - 1);
+        d->select(d->viewItems.first().index, lastItemIndex,
                   QItemSelectionModel::ClearAndSelect
                   |QItemSelectionModel::Rows);
+    }
 }
 
 /*!
