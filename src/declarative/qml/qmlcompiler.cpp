@@ -2355,6 +2355,8 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
         ((QmlVMEMetaData *)dynamicData.data())->signalCount++;
     }
 
+    QStringList funcScripts;
+
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
         Object::DynamicSlot &s = obj->dynamicSlots[ii];
         QByteArray sig(s.name + '(');
@@ -2372,7 +2374,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
         funcScript.append(QLatin1Char(')'));
         funcScript.append(s.body);
         funcScript.append(QLatin1Char(')'));
-        s.body = funcScript;
+        funcScripts << funcScript;
 
         QMetaMethodBuilder b = builder.addSlot(sig);
         b.setReturnType("QVariant");
@@ -2380,20 +2382,21 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
 
         ((QmlVMEMetaData *)dynamicData.data())->methodCount++;
         QmlVMEMetaData::MethodData methodData =
-             { s.parameterNames.count(), 0, s.body.length(), 0 };
+             { s.parameterNames.count(), 0, funcScript.length(), 0 };
 
         dynamicData.append((char *)&methodData, sizeof(methodData));
     }
 
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
         const Object::DynamicSlot &s = obj->dynamicSlots.at(ii);
+        const QString &funcScript = funcScripts.at(ii);
         QmlVMEMetaData::MethodData *data =
             ((QmlVMEMetaData *)dynamicData.data())->methodData() + ii;
 
         data->bodyOffset = dynamicData.size();
 
-        dynamicData.append((const char *)s.body.constData(),
-                           (s.body.length() * sizeof(QChar)));
+        dynamicData.append((const char *)funcScript.constData(),
+                           (funcScript.length() * sizeof(QChar)));
     }
 
     obj->metadata = builder.toRelocatableData();
