@@ -641,9 +641,9 @@ void QmlExpressionPrivate::clearGuards()
 
     for (int ii = 0; ii < data->guardListLength; ++ii) {
         if (data->guardList[ii].data()) {
-            QMetaObject::disconnect(data->guardList[ii].data(), 
-                                    data->guardList[ii].notifyIndex, 
-                                    q, notifyIdx);
+            QMetaObject::disconnectOne(data->guardList[ii].data(), 
+                                       data->guardList[ii].notifyIndex, 
+                                       q, notifyIdx);
         }
     }
 
@@ -684,9 +684,9 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
             }
         } else if(data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
             // Cache miss
-            QMetaObject::disconnect(data->guardList[ii].data(), 
-                                    data->guardList[ii].notifyIndex, 
-                                    q, notifyIdx);
+            QMetaObject::disconnectOne(data->guardList[ii].data(), 
+                                       data->guardList[ii].notifyIndex, 
+                                       q, notifyIdx);
         } 
         /* else {
             // Cache miss, but nothing to do
@@ -732,9 +732,9 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
 
     for (int ii = properties.count(); ii < data->guardListLength; ++ii) {
         if (data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
-            QMetaObject::disconnect(data->guardList[ii].data(), 
-                                    data->guardList[ii].notifyIndex, 
-                                    q, notifyIdx);
+            QMetaObject::disconnectOne(data->guardList[ii].data(), 
+                                       data->guardList[ii].notifyIndex, 
+                                       q, notifyIdx);
         }
     }
 
