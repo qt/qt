@@ -334,6 +334,8 @@ struct Q_CORE_EXPORT QMetaObject
     // internal index-based disconnect
     static bool disconnect(const QObject *sender, int signal_index,
                            const QObject *receiver, int method_index);
+    static bool disconnectOne(const QObject *sender, int signal_index,
+                              const QObject *receiver, int method_index);
     // internal slot-name based connect
     static void connectSlotsByName(QObject *o);
 
