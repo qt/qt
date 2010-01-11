@@ -57,6 +57,12 @@ public:
     tst_xmlhttprequest() {}
 
 private slots:
+    void initTestCase() {
+        if (QLocale::system().name().replace(QChar::fromAscii('_'),QChar::fromAscii('-')) != QLatin1String("en-US")) {
+            qWarning() << "Test will fail unless LANG is en_US";
+        }
+    }
+
     void domExceptionCodes();
     void staticStateValues();
     void instanceStateValues();

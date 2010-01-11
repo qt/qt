@@ -6,7 +6,6 @@ function test() {
         function(tx) {
             tx.executeSql('CREATE TABLE IF NOT EXISTS Greeting(salutation TEXT, salutee TEXT)');
             tx.executeSql('INSERT INTO Greeting VALUES(?, ?)', [ 'hello', 'world' ]);
-            r = "passed";
         }
     );
 
