@@ -111,6 +111,14 @@ public:
         return returnHash;
     }
 
+    QVariant data(int index, int role) const {
+        if (role == 0)
+            return list.at(index).first;
+        if (role == 1)
+            return list.at(index).second;
+        return QVariant();
+    }
+
     void addItem(const QString &name, const QString &number) {
         list.append(QPair<QString,QString>(name, number));
         emit itemsInserted(list.count()-1, 1);

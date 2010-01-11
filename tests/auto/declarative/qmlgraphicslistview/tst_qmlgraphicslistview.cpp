@@ -160,6 +160,14 @@ public:
         }
     }
 
+    QVariant data(int index, int role) const
+    {
+        if (role==0)
+            return list.at(index).first;
+        if (role==1)
+            return list.at(index).second;
+        return QVariant();
+    }
     QHash<int, QVariant> data(int index, const QList<int> &roles) const {
         QHash<int,QVariant> returnHash;
 
@@ -891,8 +899,6 @@ void tst_QmlGraphicsListView::sections()
 
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
-
-    QCOMPARE(listview->sectionExpression(), QLatin1String("Math.floor(number/5)"));
 
     // Confirm items positioned correctly
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();

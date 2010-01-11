@@ -202,7 +202,6 @@ Q_SIGNALS:
     void orientationChanged();
     void currentIndexChanged();
     void currentSectionChanged();
-    void sectionExpressionChanged();
     void highlightMoveSpeedChanged();
     void highlightResizeSpeedChanged();
     void highlightChanged();

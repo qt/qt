@@ -62,6 +62,11 @@ private slots:
     void document();
     void paintDocToPixmap();
     void paintDocToPixmap_painterFill();
+    void control();
+    void paintControlToPixmap();
+    void paintControlToPixmap_painterFill();
+    void constructControl();
+    void constructDocument();
 
 private:
     QString m_text;
@@ -144,6 +149,48 @@ void tst_text::paintLayoutToPixmap_painterFill()
 
 void tst_text::document()
 {
+    QTextDocument *doc = new QTextDocument;
+
+    QBENCHMARK {
+        QTextDocument *doc = new QTextDocument;
+        doc->setHtml(m_text);
+    }
+}
+
+void tst_text::paintDocToPixmap()
+{
+    QTextDocument *doc = new QTextDocument;
+    doc->setHtml(m_text);
+    doc->setTextWidth(300);
+    QSize size = doc->size().toSize();
+
+    QBENCHMARK {
+        QPixmap img(size);
+        img.fill(Qt::transparent);
+        QPainter p(&img);
+        doc->drawContents(&p/*, QRectF(QPointF(0, 0), QSizeF(size))*/);
+    }
+}
+
+void tst_text::paintDocToPixmap_painterFill()
+{
+    QTextDocument *doc = new QTextDocument;
+    doc->setHtml(m_text);
+    doc->setTextWidth(300);
+    QSize size = doc->size().toSize();
+
+    QBENCHMARK {
+        QPixmap img(size);
+        QPainter p(&img);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
+        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        doc->drawContents(&p/*, QRectF(QPointF(0, 0), QSizeF(size))*/);
+    }
+}
+
+void tst_text::control()
+{
     QTextControl *control = new QTextControl(m_text);
 
     QBENCHMARK {
@@ -153,11 +200,12 @@ void tst_text::document()
     }
 }
 
-void tst_text::paintDocToPixmap()
+void tst_text::paintControlToPixmap()
 {
     QTextControl *control = new QTextControl;
     QTextDocument *doc = control->document();
     doc->setHtml(m_text);
+    doc->setTextWidth(300);
     QSize size = doc->size().toSize();
 
     QBENCHMARK {
@@ -168,11 +216,12 @@ void tst_text::paintDocToPixmap()
     }
 }
 
-void tst_text::paintDocToPixmap_painterFill()
+void tst_text::paintControlToPixmap_painterFill()
 {
     QTextControl *control = new QTextControl;
     QTextDocument *doc = control->document();
     doc->setHtml(m_text);
+    doc->setTextWidth(300);
     QSize size = doc->size().toSize();
 
     QBENCHMARK {
@@ -182,6 +231,28 @@ void tst_text::paintDocToPixmap_painterFill()
         p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
         p.setCompositionMode(QPainter::CompositionMode_SourceOver);
         control->drawContents(&p, QRectF(QPointF(0, 0), QSizeF(size)));
+    }
+}
+
+void tst_text::constructControl()
+{
+    QTextControl *control = new QTextControl;
+    delete control;
+
+    QBENCHMARK {
+        QTextControl *control = new QTextControl;
+        delete control;
+    }
+}
+
+void tst_text::constructDocument()
+{
+    QTextDocument *doc = new QTextDocument;
+    delete doc;
+
+    QBENCHMARK {
+        QTextDocument *doc = new QTextDocument;
+        delete doc;
     }
 }
 

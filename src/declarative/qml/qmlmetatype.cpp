@@ -1102,9 +1102,11 @@ bool QmlMetaType::copy(int type, void *data, const void *copy)
         case QMetaType::QBitmap:
             *static_cast<NS(QBitmap) *>(data) = *static_cast<const NS(QBitmap)*>(copy);
             return true;
+#ifndef QT_NO_CURSOR
         case QMetaType::QCursor:
             *static_cast<NS(QCursor) *>(data) = *static_cast<const NS(QCursor)*>(copy);
             return true;
+#endif
         case QMetaType::QSizePolicy:
             *static_cast<NS(QSizePolicy) *>(data) = *static_cast<const NS(QSizePolicy)*>(copy);
             return true;
@@ -1308,9 +1310,11 @@ bool QmlMetaType::copy(int type, void *data, const void *copy)
         case QMetaType::QBitmap:
             *static_cast<NS(QBitmap) *>(data) = NS(QBitmap)();
             return true;
+#ifndef QT_NO_CURSOR
         case QMetaType::QCursor:
             *static_cast<NS(QCursor) *>(data) = NS(QCursor)();
             return true;
+#endif
         case QMetaType::QSizePolicy:
             *static_cast<NS(QSizePolicy) *>(data) = NS(QSizePolicy)();
             return true;

@@ -134,6 +134,7 @@ void QmlFontLoader::setSource(const QUrl &url)
 #endif
     {
         QNetworkRequest req(d->url);
+        req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
         d->reply = qmlEngine(this)->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(replyFinished()));
     }

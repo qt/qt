@@ -56,8 +56,6 @@
 #include <QPen>
 #include <QFile>
 #include <QEvent>
-#include <QNetworkReply>
-#include <QNetworkRequest>
 #include <QGraphicsSceneMouseEvent>
 #include <QtScript/qscriptengine.h>
 #include <QtGui/qgraphicstransform.h>

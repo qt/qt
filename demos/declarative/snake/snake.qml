@@ -1,11 +1,12 @@
 import Qt 4.6
+import "content"
 
 Rectangle {
     id: screen;
     SystemPalette { id: activePalette }
     color: activePalette.window
 
-    Script { source: "snake.js" }
+    Script { source: "content/snake.js" }
 
     property int gridSize : 34
     property int margin: 4
@@ -59,7 +60,7 @@ Rectangle {
     Image {
         Image {
             id: title
-            source: "pics/snake.jpg"
+            source: "content/pics/snake.jpg"
             fillMode: "PreserveAspectCrop"
             anchors.fill: parent
             anchors.horizontalCenter: parent.horizontalCenter
@@ -77,7 +78,7 @@ Rectangle {
             }
         }
 
-        source: "pics/background.png"
+        source: "content/pics/background.png"
         fillMode: "PreserveAspectCrop"
 
         anchors.left: parent.left
