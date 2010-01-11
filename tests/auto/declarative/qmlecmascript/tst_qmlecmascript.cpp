@@ -106,7 +106,8 @@ private slots:
     void signalTriggeredBindings();
     void listProperties();
     void exceptionClearsOnReeval();
-    void exceptionProducesWarning();
+    void exceptionSlotProducesWarning();
+    void exceptionBindingProducesWarning();
     void transientErrors();
     void shutdownErrors();
     void externalScript();
@@ -933,12 +934,24 @@ void tst_qmlecmascript::exceptionClearsOnReeval()
     QCOMPARE(object->property("test").toBool(), true);
 }
 
-void tst_qmlecmascript::exceptionProducesWarning()
+void tst_qmlecmascript::exceptionSlotProducesWarning()
 {
     QmlComponent component(&engine, TEST_FILE("exceptionProducesWarning.qml"));
     QString url = component.url().toString();
 
-    QString warning = "Expected error - QTBUG-6507";
+    QString warning = component.url().toString() + ":6: Error: JS exception";
+
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+}
+
+void tst_qmlecmascript::exceptionBindingProducesWarning()
+{
+    QmlComponent component(&engine, TEST_FILE("exceptionProducesWarning2.qml"));
+    QString url = component.url().toString();
+
+    QString warning = component.url().toString() + ":5: Error: JS exception";
 
     QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());

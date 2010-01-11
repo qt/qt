@@ -3,6 +3,6 @@ import Qt.test 1.0
 
 MyQmlObject {
     Component.onCompleted:
-        { throw(123,"JS exception") }
+        { throw(new Error("JS exception")) }
 }
 
