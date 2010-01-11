@@ -120,7 +120,7 @@ void tst_lupdate::doCompare(const QStringList &actual, const QString &expectedFn
     }
     QByteArray diff;
     for (int j = qMax(0, i - 3); j < i; j++)
-        diff += expected.at(j) + '\n';
+        diff += actual.at(j) + '\n';
     diff += "<<<<<<< got\n";
     for (int j = i; j < gi; j++) {
         diff += actual.at(j) + '\n';
@@ -138,8 +138,8 @@ void tst_lupdate::doCompare(const QStringList &actual, const QString &expectedFn
         }
     }
     diff += ">>>>>>> expected\n";
-    for (int j = ei; j < qMin(ei + 3, expected.size()); j++)
-        diff += expected.at(j) + '\n';
+    for (int j = gi; j < qMin(gi + 3, actual.size()); j++)
+        diff += actual.at(j) + '\n';
     QFAIL(qPrintable((err ? "Output for " : "Result for ") + expectedFn + " does not meet expectations:\n" + diff));
 }
 
