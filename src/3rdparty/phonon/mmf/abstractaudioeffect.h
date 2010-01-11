@@ -82,6 +82,8 @@ protected:
     void connectMediaObject(MediaObject *mediaObject);
     void disconnectMediaObject(MediaObject *mediaObject);
 
+    void setEnabled(bool enabled);
+
     virtual void createEffect(AudioPlayer::NativePlayer *player) = 0;
 
     virtual void parameterChanged(const EffectParameter &param,

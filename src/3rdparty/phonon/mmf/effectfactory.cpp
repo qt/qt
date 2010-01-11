@@ -68,15 +68,16 @@ AbstractAudioEffect *EffectFactory::createAudioEffect(Type type,
     {
     case TypeBassBoost:
         effect = new BassBoost(parent, parameters);
+        break;
     case TypeAudioEqualizer:
         effect = new AudioEqualizer(parent, parameters);
+        break;
     case TypeDistanceAttenuation:
     case TypeEnvironmentalReverb:
     case TypeListenerOrientation:
     case TypeLoudness:
     case TypeSourceOrientation:
     case TypeStereoWidening:
-        break;
     default:
         Q_ASSERT_X(false, Q_FUNC_INFO, "Unknown effect");
     }
@@ -124,7 +125,7 @@ void EffectFactory::initialize()
     Q_ASSERT_X(!m_initialized, Q_FUNC_INFO, "Already initialized");
 
     INITIALIZE_EFFECT(AudioEqualizer)
-    //INITIALIZE_EFFECT(BassBoost)
+    INITIALIZE_EFFECT(BassBoost)
 
     m_initialized = true;
 }

@@ -30,10 +30,7 @@ namespace Phonon
 namespace MMF
 {
 /**
- * @short An "bass boost" effect.
- *
- * The documentation does not say what "bass boost" is, neither has it anykind
- * of setting. It's an on or off thing.
+ * @short A "bass boost" effect.
  */
 class BassBoost : public AbstractAudioEffect
 {

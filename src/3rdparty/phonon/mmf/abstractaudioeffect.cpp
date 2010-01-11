@@ -114,6 +114,16 @@ void AbstractAudioEffect::disconnectMediaObject(MediaObject *mediaObject)
     abstractPlayerChanged(0);
 }
 
+void AbstractAudioEffect::setEnabled(bool enabled)
+{
+    if (enabled)
+        // TODO: handle audio effect errors
+        TRAP_IGNORE(m_effect->EnableL())
+    else
+        // TODO: handle audio effect errors
+        TRAP_IGNORE(m_effect->DisableL())
+}
+
 void AbstractAudioEffect::createEffect()
 {
     Q_ASSERT_X(m_player, Q_FUNC_INFO, "Invalid media player pointer");
@@ -131,6 +141,8 @@ void AbstractAudioEffect::createEffect()
 
         // TODO: handle audio effect errors
         TRAP_IGNORE(m_effect->EnableL());
+    
+        setEnabled(true);
     }
 }
 
