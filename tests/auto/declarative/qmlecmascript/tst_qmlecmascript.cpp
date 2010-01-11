@@ -216,6 +216,13 @@ void tst_qmlecmascript::methods()
         QCOMPARE(object->property("test2").toInt(), 17);
         QCOMPARE(object->property("test3").toInt(), 16);
     }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("methods.5.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(object->property("test").toInt(), 9);
+    }
 }
 
 void tst_qmlecmascript::bindingLoop()
@@ -1051,6 +1058,7 @@ void tst_qmlecmascript::compositePropertyType()
     delete object;
 }
 
+// QTBUG-6781
 void tst_qmlecmascript::bug1()
 {
     QmlComponent component(&engine, TEST_FILE("bug.1.qml"));
@@ -1065,7 +1073,6 @@ void tst_qmlecmascript::bug1()
 
     object->setProperty("b", true);
 
-    QEXPECT_FAIL("", "QTBUG-6781", Continue);
     QCOMPARE(object->property("test").toInt(), 9);
 
     delete object;

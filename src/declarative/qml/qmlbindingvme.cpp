@@ -383,8 +383,8 @@ inline void subscribe(QObject *o, int notifyIndex,
     QmlBindingVME::Config::Subscription *s = config->subscriptions + subIndex;
     if (o != s->source || notifyIndex != s->notifyIndex)  {
         if (s->source)
-            QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    config->target, config->targetSlot + subIndex);
+            QMetaObject::disconnectOne(s->source, s->notifyIndex, 
+                                       config->target, config->targetSlot + subIndex);
         s->source = o;
         s->notifyIndex = notifyIndex;
         if (s->source && s->notifyIndex != -1) 
