@@ -625,9 +625,16 @@ void QHttpNetworkConnectionChannel::requeueCurrentlyPipelinedRequests()
 void QHttpNetworkConnectionChannel::eatWhitespace()
 {
     char c;
-    while (socket->bytesAvailable()) {
-        if (socket->peek(&c, 1) != 1)
+    do {
+        qint64 ret = socket->peek(&c, 1);
+
+        // nothing read, fine.
+        if (ret == 0)
             return;
+
+        // EOF from socket?
+        if (ret == -1)
+            return; // FIXME, we need to stop processing. however the next stuff done will also do that.
 
         // read all whitespace and line endings
         if (c == 11 || c == '\n' || c == '\r' || c == ' ' || c == 31) {
@@ -636,7 +643,7 @@ void QHttpNetworkConnectionChannel::eatWhitespace()
         } else {
             break;
         }
-    }
+    } while(true);
 }
 
 void QHttpNetworkConnectionChannel::handleStatus()
