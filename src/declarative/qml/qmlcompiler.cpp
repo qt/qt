@@ -90,7 +90,7 @@ using namespace QmlParser;
     Instantiate a new QmlCompiler.
 */
 QmlCompiler::QmlCompiler()
-: output(0), engine(0)
+: output(0), engine(0), unitRoot(0), unit(0)
 {
 }
 
@@ -611,6 +611,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
 
     this->engine = engine;
     this->unit = unit;
+    this->unitRoot = root;
     compileTree(root);
 
     if (!isError()) {
@@ -626,6 +627,8 @@ bool QmlCompiler::compile(QmlEngine *engine,
     savedCompileStates.clear();
     output = 0;
     this->engine = 0;
+    this->unit = 0;
+    this->unitRoot = 0;
 
     return !isError();
 }
@@ -836,7 +839,19 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
         meta.storeMeta.aliasData = output->indexForByteArray(obj->synthdata);
         meta.storeMeta.propertyCache = output->propertyCaches.count();
         // ### Surely the creation of this property cache could be more efficient
-        output->propertyCaches << QmlPropertyCache::create(engine, obj->metaObject());
+        QmlPropertyCache *propertyCache = 0;
+        if (tr.component && QmlComponentPrivate::get(tr.component)->cc->rootPropertyCache) {
+            propertyCache = QmlComponentPrivate::get(tr.component)->cc->rootPropertyCache->copy();
+        } else {
+            propertyCache = QmlPropertyCache::create(engine, obj->metaObject()->superClass());
+        }
+        propertyCache->append(engine, obj->metaObject(), QmlPropertyCache::Data::NoFlags,
+                              QmlPropertyCache::Data::IsVMEFunction);
+        if (obj == unitRoot) {
+            propertyCache->addref();
+            output->rootPropertyCache = propertyCache;
+        }
+        output->propertyCaches << propertyCache;
         output->bytecode << meta;
     }
 
@@ -2341,13 +2356,24 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     }
 
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
-        const Object::DynamicSlot &s = obj->dynamicSlots.at(ii);
+        Object::DynamicSlot &s = obj->dynamicSlots[ii];
         QByteArray sig(s.name + '(');
+        QString funcScript(QLatin1String("(function("));
+
         for (int jj = 0; jj < s.parameterNames.count(); ++jj) {
-            if (jj) sig.append(',');
+            if (jj) { 
+                sig.append(',');
+                funcScript.append(QLatin1Char(','));
+            }
+            funcScript.append(s.parameterNames.at(jj));
             sig.append("QVariant");
         }
         sig.append(')');
+        funcScript.append(QLatin1Char(')'));
+        funcScript.append(s.body);
+        funcScript.append(QLatin1Char(')'));
+        s.body = funcScript;
+
         QMetaMethodBuilder b = builder.addSlot(sig);
         b.setReturnType("QVariant");
         b.setParameterNames(s.parameterNames);

@@ -87,8 +87,8 @@ void QmlPropertyCache::Data::load(const QMetaMethod &m)
 }
 
 
-QmlPropertyCache::QmlPropertyCache(QmlEngine *engine)
-: QmlCleanup(engine)
+QmlPropertyCache::QmlPropertyCache(QmlEngine *e)
+: QmlCleanup(e), engine(e)
 {
 }
 
@@ -143,6 +143,83 @@ QmlPropertyCache::Data QmlPropertyCache::create(const QMetaObject *metaObject,
     }
 
     return rv;
+}
+
+QmlPropertyCache *QmlPropertyCache::copy() const
+{
+    QmlPropertyCache *cache = new QmlPropertyCache(engine);
+    cache->indexCache = indexCache;
+    cache->stringCache = stringCache;
+    cache->identifierCache = identifierCache;
+
+    for (int ii = 0; ii < indexCache.count(); ++ii)
+        indexCache.at(ii)->addref();
+    for (StringCache::ConstIterator iter = stringCache.begin(); iter != stringCache.end(); ++iter)
+        (*iter)->addref();
+    for (IdentifierCache::ConstIterator iter = identifierCache.begin(); iter != identifierCache.end(); ++iter)
+        (*iter)->addref();
+
+    return cache;
+}
+
+void QmlPropertyCache::append(QmlEngine *engine, const QMetaObject *metaObject, 
+                              Data::Flag propertyFlags, Data::Flag methodFlags)
+{
+    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
+
+    int propCount = metaObject->propertyCount();
+    int propOffset = metaObject->propertyOffset();
+
+    indexCache.resize(propCount);
+    for (int ii = propOffset; ii < propCount; ++ii) {
+        QMetaProperty p = metaObject->property(ii);
+        QString propName = QString::fromUtf8(p.name());
+
+        RData *data = new RData;
+        data->identifier = enginePriv->objectClass->createPersistentIdentifier(propName);
+
+        data->load(p, engine);
+        data->flags |= propertyFlags;
+
+        indexCache[ii] = data;
+
+        if (stringCache.contains(propName)) {
+            stringCache[propName]->release();
+            identifierCache[data->identifier.identifier]->release();
+        }
+
+        stringCache.insert(propName, data);
+        identifierCache.insert(data->identifier.identifier, data);
+        data->addref();
+        data->addref();
+    }
+
+    int methodCount = metaObject->methodCount();
+    int methodOffset = metaObject->methodOffset();
+    for (int ii = methodOffset; ii < methodCount; ++ii) {
+        QMetaMethod m = metaObject->method(ii);
+        QString methodName = QString::fromUtf8(m.signature());
+
+        int parenIdx = methodName.indexOf(QLatin1Char('('));
+        Q_ASSERT(parenIdx != -1);
+        methodName = methodName.left(parenIdx);
+
+        RData *data = new RData;
+        data->identifier = enginePriv->objectClass->createPersistentIdentifier(methodName);
+
+        if (stringCache.contains(methodName)) {
+            stringCache[methodName]->release();
+            identifierCache[data->identifier.identifier]->release();
+        }
+
+        data->load(m);
+        if (m.methodType() == QMetaMethod::Slot || m.methodType() == QMetaMethod::Method) 
+            data->flags |= methodFlags;
+
+        stringCache.insert(methodName, data);
+        identifierCache.insert(data->identifier.identifier, data);
+        data->addref();
+    }
 }
 
 // ### Optimize - check engine for the parent meta object etc.

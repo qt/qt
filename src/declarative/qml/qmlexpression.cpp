@@ -138,24 +138,40 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
                 dd->cachedPrograms[progIdx] =
                     new QScriptProgram(data->expression, data->url, data->line);
             }
-#endif
 
-            QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
-            scriptContext->pushScope(ep->contextClass->newContext(ctxt, me));
-
-#if !defined(Q_OS_SYMBIAN) 
-            data->expressionFunction = scriptEngine->evaluate(*dd->cachedPrograms.at(progIdx));
+            data->expressionFunction = evalInObjectScope(ctxt, me, *dd->cachedPrograms.at(progIdx));
 #else
-            data->expressionFunction = scriptEngine->evaluate(data->expression);
+            data->expressionFunction = evalInObjectScope(ctxt, me, data->expression);
 #endif
 
             data->expressionFunctionValid = true;
-            scriptEngine->popContext();
         }
     }
 
     data->QmlAbstractExpression::setContext(ctxt);
     data->me = me;
+}
+
+QScriptValue QmlExpressionPrivate::evalInObjectScope(QmlContext *context, QObject *object, 
+                                                     const QString &program)
+{
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(context->engine());
+    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
+    scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    QScriptValue rv = ep->scriptEngine.evaluate(program);
+    ep->scriptEngine.popContext();
+    return rv;
+}
+
+QScriptValue QmlExpressionPrivate::evalInObjectScope(QmlContext *context, QObject *object, 
+                                                     const QScriptProgram &program)
+{
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(context->engine());
+    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
+    scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    QScriptValue rv = ep->scriptEngine.evaluate(program);
+    ep->scriptEngine.popContext();
+    return rv;
 }
 
 /*!

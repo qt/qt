@@ -206,6 +206,15 @@ void tst_qmlecmascript::methods()
         QVERIFY(object != 0);
         QCOMPARE(object->property("test").toInt(), 19);
     }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("methods.4.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(object->property("test").toInt(), 19);
+        QCOMPARE(object->property("test2").toInt(), 17);
+        QCOMPARE(object->property("test3").toInt(), 16);
+    }
 }
 
 void tst_qmlecmascript::bindingLoop()

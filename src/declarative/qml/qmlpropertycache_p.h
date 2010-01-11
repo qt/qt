@@ -75,18 +75,21 @@ public:
         inline bool operator==(const Data &);
 
         enum Flag { 
+                    NoFlags           = 0x00000000,
+
                     // Can apply to all properties, except IsFunction
                     IsConstant        = 0x00000001,
                     IsWritable        = 0x00000002,
 
                     // These are mutually exclusive
                     IsFunction        = 0x00000004,
-                    IsQObjectDerived  = 0x00000008,
-                    IsEnumType        = 0x00000010,
-                    IsQmlList         = 0x00000020,
-                    IsQList           = 0x00000040,
-                    IsQmlBinding      = 0x00000080,
-                    IsQScriptValue    = 0x00000100
+                    IsVMEFunction     = 0x00000008,
+                    IsQObjectDerived  = 0x00000010,
+                    IsEnumType        = 0x00000020,
+                    IsQmlList         = 0x00000040,
+                    IsQList           = 0x00000080,
+                    IsQmlBinding      = 0x00000100,
+                    IsQScriptValue    = 0x00000200
         };
         Q_DECLARE_FLAGS(Flags, Flag)
                         
@@ -112,6 +115,10 @@ public:
 
     void update(QmlEngine *, const QMetaObject *);
 
+    QmlPropertyCache *copy() const;
+    void append(QmlEngine *, const QMetaObject *, Data::Flag propertyFlags = Data::NoFlags,
+                Data::Flag methodFlags = Data::NoFlags);
+
     static QmlPropertyCache *create(QmlEngine *, const QMetaObject *);
     static Data create(const QMetaObject *, const QString &);
 
@@ -131,6 +138,7 @@ private:
     typedef QHash<QString, RData *> StringCache;
     typedef QHash<QScriptDeclarativeClass::Identifier, RData *> IdentifierCache;
 
+    QmlEngine *engine;
     IndexCache indexCache;
     StringCache stringCache;
     IdentifierCache identifierCache;

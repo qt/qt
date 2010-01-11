@@ -157,10 +157,10 @@ void tst_script::property_js()
     }
 }
 
-static QScriptValue property_getter_method(QScriptContext *, QScriptEngine *) 
+static QScriptValue property_getter_method(QScriptContext *, QScriptEngine *engine) 
 {
     static int x = 0;
-    return QScriptValue(x++);
+    return QScriptValue(engine,x++);
 }
 
 void tst_script::property_getter()
