@@ -2776,9 +2776,6 @@ QmlType *QmlCompiler::toQmlType(QmlParser::Object *from)
 
 QStringList QmlCompiler::deferredProperties(QmlParser::Object *obj)
 {
-    if (!qmlExperimental())
-        return QStringList();
-
     const QMetaObject *mo = obj->metatype;
 
     int idx = mo->indexOfClassInfo("DeferredPropertyNames");
