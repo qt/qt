@@ -92,9 +92,11 @@ public Q_SLOTS:
     QVariant value(bool *isUndefined = 0);
 
 Q_SIGNALS:
-    virtual void valueChanged();
+    void valueChanged();
 
 protected:
+    virtual void emitValueChanged();
+
     QmlExpression(QmlContext *, const QString &, QObject *, 
                   QmlExpressionPrivate &dd);
     QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me, const QString &,

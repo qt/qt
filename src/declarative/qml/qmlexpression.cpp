@@ -627,7 +627,7 @@ QmlError QmlExpression::error() const
 /*! \internal */
 void QmlExpression::__q_notify()
 {
-    valueChanged();
+    emitValueChanged();
 }
 
 void QmlExpressionPrivate::clearGuards()
@@ -752,6 +752,15 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
     evaluated.  The expression must have been evaluated at least once (by
     calling QmlExpression::value()) before this signal will be emitted.
 */
+
+/*!
+    Subclasses can capture the emission of the valueChanged() signal by overriding
+    this function. They can choose whether to then call valueChanged().
+*/
+void QmlExpression::emitValueChanged()
+{
+    emit valueChanged();
+}
 
 QmlAbstractExpression::QmlAbstractExpression()
 : m_context(0), m_prevExpression(0), m_nextExpression(0)

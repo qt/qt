@@ -168,8 +168,9 @@ public:
     {
     }
 
-    virtual void valueChanged() {
+    void emitValueChanged() {
         changed = true;
+        QmlExpression::emitValueChanged();
     }
     bool changed;
 };

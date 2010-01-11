@@ -225,9 +225,10 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
     data->release();
 }
 
-void QmlBinding::valueChanged()
+void QmlBinding::emitValueChanged()
 {
     update();
+    // don't bother calling valueChanged()
 }
 
 void QmlBinding::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)

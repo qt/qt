@@ -114,7 +114,7 @@ public Q_SLOTS:
     void update() { update(QmlMetaProperty::DontRemoveBinding); }
 
 protected:
-    virtual void valueChanged();
+    void emitValueChanged();
 
 private:
     Q_DECLARE_PRIVATE(QmlBinding)
