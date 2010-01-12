@@ -78,6 +78,9 @@ QtGui
       hidden.
     * [QTBUG-6835] Mouse tracking is now automatically enabled when using
       AnchorUnderMouse for view transformation.
+    * [QTBUG-6958] Fix speed regression in _q_polishItems()
+    * [QTBUG-6544] Fix a crash on the focus chain when removing items from the scene.
+    * Fix a crash in KDE/Plasma with QGraphicsView with topLevels.
  - QGraphicsItem
     * [QTBUG-5917] Fixed memory leaks when removing a QGraphicsEffect from
       a QGraphicsItem or QWidget with setGraphicsEffect(0).
@@ -85,6 +88,8 @@ QtGui
       QGraphicsItem causing painting issues when scaling the QGraphicsView.
     * [QTBUG-5071] Fixes transformation problems when grouping/ungrouping
       the item with a QGraphicsItemGroup.
+ - QGraphicsWidget
+    * [QTBUG-6272] Only call updateFont if the font have changed.
  - QTextDocument
     * [QTBUG-5397] Fixed printing of QTextDocuments not including custom
       text objects.
