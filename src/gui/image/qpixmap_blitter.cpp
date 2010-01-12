@@ -102,10 +102,27 @@ void QBlittablePixmapData::fromImage(const QImage &image,
                                      Qt::ImageConversionFlags flags)
 {
     resize(image.width(),image.height());
-    QImage *thisImg = blittable()->lock();
-    QPainter p(thisImg);
-    p.setCompositionMode(QPainter::CompositionMode_Source);
-    p.drawImage(0,0,image,flags);
+    QImage *thisImg = buffer();
+
+    QImage correctFormatPic = image;
+    if (correctFormatPic.format() != thisImg->format())
+        correctFormatPic = correctFormatPic.convertToFormat(thisImg->format(), flags);
+
+    //jl: This does not ALWAYS work as expected :(
+//    QPainter p(thisImg);
+//    p.setCompositionMode(QPainter::CompositionMode_Source);
+//    p.drawImage(0,0,image,flags);
+
+    //So just copy strides by hand
+    uchar *mem = thisImg->bits();
+    const uchar *bits = correctFormatPic.bits();
+    int bytesCopied = 0;
+    while (bytesCopied < correctFormatPic.byteCount()) {
+        memcpy(mem,bits,correctFormatPic.bytesPerLine());
+        mem += thisImg->bytesPerLine();
+        bits += correctFormatPic.bytesPerLine();
+        bytesCopied+=correctFormatPic.bytesPerLine();
+    }
 }
 
 QPaintEngine *QBlittablePixmapData::paintEngine() const
