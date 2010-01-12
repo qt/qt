@@ -41,7 +41,6 @@
 
 
 #include <QtTest/QtTest>
-#include <QtGui/QtGui>
 #include <QtNetwork/QtNetwork>
 #include "../../shared/util.h"
 #include "../network-settings.h"
@@ -83,8 +82,7 @@ public:
         : QNetworkDiskCache(parent)
         , gotData(false)
     {
-        QString location = QDesktopServices::storageLocation(QDesktopServices::CacheLocation)
-                                    + QLatin1String("/qnetworkdiskcache/");
+        QString location = QDir::tempPath() + QLatin1String("/tst_qnetworkdiskcache/");
         setCacheDirectory(location);
         clear();
     }
