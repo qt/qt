@@ -55,6 +55,8 @@ QtGui
       GL implementation.
     * [QTBUG-6840] Fixed load() to not modify referenced copies.
     * [QTBUG-5840] Fixed a crash in fromImage() when passing in a null image.
+    * [QTBUG-6116] Fixed memory leak where a global object was not destroyed
+      at program exit.
  - QRasterPixmapData
     * [QTBUG-6985] Fixed metric() to return the correct height in mm.
  - QGraphicsObject
@@ -165,6 +167,15 @@ QtSql
 
  - foo
     * bar
+
+QtSvg
+-----
+
+ - QSvgRenderer
+    * [QTBUG-6867] Fixed regression in the parsing of paths with relative
+      offsets.
+    * [QTBUG-6899] Fixed crash when parsing invalid coordinate list.
+
 
 QtXml
 -----
