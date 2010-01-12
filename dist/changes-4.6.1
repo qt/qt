@@ -73,6 +73,39 @@ QtOpenGL
     * bindTexture(QString) now supports DDS, ETC1, PVRTC2, and PVRTC4
       compressed textures if the appropriate extensions are present
       in the GL implementation.
+    * bindTexture(QImage): Reduce double-copying of textures when flipping.
+    * [QTBUG-6454] Better EGL extension checking to avoid prefix problems
+      with EGL_foo matching EGL_foo_bar.
+    * [QTBUG-6217] Work around problems with glColor4ub() on Intel Q45/Q43
+      Express by consistently using glColor4f() everywhere.
+    * bindTexture(QImage): Fix GL_BGRA formats under OpenGL/ES by using
+      the same value for both internal and external texture formats.
+    * [QTBUG-5041] Disable depth testing while in renderText().
+ - QGLPaintDevice
+    * [QTBUG-6204] Rebind window surface fbo after native GL rendering.
+ - QGLEngineSelector
+    * [QTBUG-5638] Detect GL2 based on fragment shaders, not programs.
+      Fragment programs are a GL1 feature.
+ - QGLFramebufferObject
+    * [QTBUG-6712] Update docs to better explain how QPainter changes
+      the GL state when used on an FBO.
+ - QGLPixmapData
+    * [QTBUG-6902] Align GL_RGB data on a 4-byte line boundary.
+ - QTriangulatingStroker
+    * [QTBUG-6045] Crash in dashed line handling in the GL stroker.
+ - QGLGlyphCache
+    * [QTBUG-6936] Fix memory leak of QGLGlyphCoord objects.
+
+QtOpenVG
+--------
+
+ - [QT-2555] Automatically destroy VG pixmaps when the last window surface
+   goes away to reduce memory consumption of backgrounded applications.
+ - [QTBUG-6639] Recover from out-of-memory when creating VGImage's.
+ - [QT-2554] Add a VGImage allocation pool to support reclaiming older
+   images when the GPU runs out of memory.
+ - [QTBUG-7051] Reset the OpenVG scissor after a native painting call-out.
+ - [QTBUG-7015] Avoid deep copies of QImage in QImage::bits() calls.
 
 QtScript
 --------
@@ -95,8 +128,16 @@ QtXml
 Qt Plugins
 ----------
 
- - foo
-    * bar
+ - JPEG plugin
+    * Remove obsolete parameter string handling.
+    * [QT-2023] Re-implement ScaledSize, ClipRect, ScaledClipRect with
+      libjpeg features for greater performance.
+ - PBM plugin
+    * [QTBUG-6937] Use Mono instead of MonoLSB when writing pbm files.
+ - TIFF plugin
+    * [QTBUG-6870] BitsPerSample should default to 1 in TIFF files.
+ - PNG plugin
+    * [QTBUG-7161] Avoid a deep copy of QImage::bits() in the png writer.
 
 Third party components
 ----------------------
