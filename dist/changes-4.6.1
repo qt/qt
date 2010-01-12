@@ -46,6 +46,8 @@ QtCore
 QtGui
 -----
 
+ - QPixmapCache
+    * Fixed a small leak when using the new QPixmapCAche::Key based API.
  - QPixmap
     * load() and loadFromData() can now support compressed GL textures
       in the DDS, ETC1, PVRTC2, and PVRTC4 formats if the OpenGL graphics
@@ -63,6 +65,11 @@ QtGui
  - QPainter
     * [QTBUG-5939] Fixed incorrect redirection matrix that was causing
       wrong transformation for QGraphicsProxyWidgets.
+    * [QTBUG-6684] Added optimizations of 32-bit blend functions
+      for ARM platforms with NEON support.
+ - QGraphicsEffect
+    * [QTBUG-5918] Fixed redraw bugs when using graphics effects on
+      items while animating them by transformations.
  - QGraphicsView
     * [QTBUG-6935] When using CacheBackground, the background is now
       correctly repainted after the QGraphicsView is shown after being
@@ -76,6 +83,9 @@ QtGui
       QGraphicsItem causing painting issues when scaling the QGraphicsView.
     * [QTBUG-5071] Fixes transformation problems when grouping/ungrouping
       the item with a QGraphicsItemGroup.
+ - QTextDocument
+    * [QTBUG-5397] Fixed printing of QTextDocuments not including custom
+      text objects.
 
  - QTextDocument
     * [QTBUG-6051] Fixed an endless loop when printing a QTextDocument.
