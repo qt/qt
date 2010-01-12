@@ -53,6 +53,25 @@ QtGui
       GL implementation.
  - QGraphicsObject
     * 'id' property was removed. Use the 'objectName' property instead.
+ - QPrinter
+    * [QTBUG-3412] QGraphicsProxyWidgets are now rendered correctly when
+      printing a QGraphicsScene to PDF format.
+ - QPainter
+    * [QTBUG-5939] Fixed incorrect redirection matrix that was causing 
+      wrong transformation for QGraphicsProxyWidgets.
+ - QGraphicsView
+    * [QTBUG-6935] When using CacheBackground, the background is now 
+      correctly repainted after the QGraphicsView is shown after being
+      hidden.
+    * [QTBUG-6835] Mouse tracking is now automatically enabled when using
+      AnchorUnderMouse for view transformation.
+ - QGraphicsItem
+    * [QTBUG-5917] Fixed memory leaks when removing a QGraphicsEffect from
+      a QGraphicsItem or QWidget with setGraphicsEffect(0).
+    * [QTBUG-5859] Fixes incorrect rounding of the exposed rectangle of the
+      QGraphicsItem causing painting issues when scaling the QGraphicsView.
+    * [QTBUG-5071] Fixes transformation problems when grouping/ungrouping
+      the item with a QGraphicsItemGroup.
 
 QtDBus
 ------
