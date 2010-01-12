@@ -7958,6 +7958,34 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
 </context>
 <context>
+    <name>QXmlPatternistCLI</name>
+    <message>
+        <location filename="../src/xmlpatterns/api/qcoloringmessagehandler.cpp" line="+87"/>
+        <source>Warning in %1, at line %2, column %3: %4</source>
+        <translation>Fehler in %1, bei Zeile %2, Spalte %3: %4</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Warning in %1: %2</source>
+        <translation>Warnung in %1: %2</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Unknown location</source>
+        <translation>unbekannt</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Error %1 in %2, at line %3, column %4: %5</source>
+        <translation>Fehler %1 in %2, bei Zeile %3, Spalte %4: %5</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Error %1 in %2: %3</source>
+        <translation>Fehler %1 in %2: %3</translation>
+    </message>
+</context>
+<context>
     <name>QXmlStream</name>
     <message>
         <location filename="../src/corelib/xml/qxmlstream.cpp" line="+611"/>
