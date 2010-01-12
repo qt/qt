@@ -88,7 +88,7 @@ namespace QPatternist
      */
     inline uint qHash(const QUrl &uri)
     {
-        return qHash(uri.toString());
+        return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
     }
 
     /**

@@ -350,8 +350,8 @@ public:
     };
     int stateFlags;
 
-    QByteArray encodedNormalized;
-    const QByteArray & normalized();
+    mutable QByteArray encodedNormalized;
+    const QByteArray & normalized() const;
 
     mutable QUrlErrorInfo errorInfo;
     QString createErrorString();
@@ -3850,6 +3850,9 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
     if (!QURL_HASFLAG(stateFlags, Parsed)) parse();
     else ensureEncodedParts();
 
+    if (options==0x100) // private - see qHash(QUrl)
+        return normalized();
+
     QByteArray url;
 
     if (!(options & QUrl::RemoveScheme) && !scheme.isEmpty()) {
@@ -3920,12 +3923,13 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
 
 #define qToLower(ch) (((ch|32) >= 'a' && (ch|32) <= 'z') ? (ch|32) : ch)
 
-const QByteArray &QUrlPrivate::normalized()
+const QByteArray &QUrlPrivate::normalized() const
 {
     if (QURL_HASFLAG(stateFlags, QUrlPrivate::Normalized))
         return encodedNormalized;
 
-    QURL_SETFLAG(stateFlags, QUrlPrivate::Normalized);
+    QUrlPrivate *that = const_cast<QUrlPrivate *>(this);
+    QURL_SETFLAG(that->stateFlags, QUrlPrivate::Normalized);
 
     QUrlPrivate tmp = *this;
     tmp.scheme = tmp.scheme.toLower();
