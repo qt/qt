@@ -40,8 +40,11 @@ Optimizations
 QtCore
 ------
 
- - foo
-    * bar
+ - QFile
+    * Improve performance of getting the canonical filename on Linux
+      and Symbian by using realpath() system call
+    * Avoid stat() when opening a file
+
 
 QtGui
 -----
@@ -71,8 +74,18 @@ QtDBus
 QtNetwork
 ---------
 
- - foo
-    * bar
+ - QNetworkAccessManager
+    * HTTP: Smaller improvements
+    * HTTP: Send our locale with the HTTP request
+    * HTTP: Start Accept-language and Authorization header with capital letter
+    * file: Introduce special subclass for higher performance with file:// URLs
+ - QTcpSocket
+    * [QTBUG-5799] Fix waitForConnected() on Windows
+ - QNetworkProxyFactory
+    * Fixed systemProxyForQuery(), it could sometimes return invalid empty list
+      on Windows
+ - QHostInfo
+    * Use 5 parallel threads for host lookup instead of 1
 
 QtOpenGL
 --------
