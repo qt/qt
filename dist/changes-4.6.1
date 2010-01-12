@@ -45,6 +45,9 @@ QtCore
       and Symbian by using realpath() system call
     * Avoid stat() when opening a file
 
+ - QXmlStreamreader
+    * [merge request 1926] Fix parsing of DTDs that contain empty markup
+      declarations
 
 QtGui
 -----
@@ -84,6 +87,8 @@ QtNetwork
  - QNetworkProxyFactory
     * Fixed systemProxyForQuery(), it could sometimes return invalid empty list
       on Windows
+ - QNetworkCookieJar
+    * [QTBUG-5815] do not check paths when accepting cookies
  - QHostInfo
     * Use 5 parallel threads for host lookup instead of 1
 
