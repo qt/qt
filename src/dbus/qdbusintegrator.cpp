@@ -1826,7 +1826,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
         QDBusPendingCallPrivate *pcall = sendWithReplyAsync(message, timeout);
         Q_ASSERT(pcall);
 
-        if (pcall->replyMessage.type() != QDBusMessage::InvalidMessage) {
+        if (pcall->replyMessage.type() == QDBusMessage::InvalidMessage) {
             pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
             QEventLoop loop;
             loop.connect(pcall->watcherHelper, SIGNAL(reply(QDBusMessage)), SLOT(quit()));
