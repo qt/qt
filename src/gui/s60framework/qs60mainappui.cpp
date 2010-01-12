@@ -104,10 +104,16 @@ void QS60MainAppUi::ConstructL()
     // ENoAppResourceFile and ENonStandardResourceFile makes UI to work without
     // resource files in most SDKs. S60 3rd FP1 public seems to require resource file
     // even these flags are defined
-    BaseConstructL(CAknAppUi::EAknEnableSkin);
+    TInt flags = CAknAppUi::EAknEnableSkin;
+    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)) {
+        flags |= CAknAppUi::ENoScreenFurniture | CAknAppUi::ENonStandardResourceFile;
+    }
+    BaseConstructL(flags);
 
-    CEikButtonGroupContainer* nativeContainer = Cba();
-    nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+    if (!QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)) {
+        CEikButtonGroupContainer* nativeContainer = Cba();
+        nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+    }
 }
 
 /*!
