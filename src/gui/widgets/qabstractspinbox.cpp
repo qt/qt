@@ -66,7 +66,7 @@
 #endif
 
 #if defined(Q_OS_SYMBIAN)
-#include <W32STD.H>
+#include <w32std.h>
 #include <private/qt_s60_p.h>
 #endif
 

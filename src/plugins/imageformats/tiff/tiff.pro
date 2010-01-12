@@ -56,7 +56,7 @@ contains(QT_CONFIG, system-tiff) {
             wince*: {
                SOURCES += ../../../corelib/kernel/qfunctions_wince.cpp
             }
-            symbian*: {
+            symbian: {
                SOURCES += ../../../3rdparty/libtiff/port/lfind.c
             }
 }
