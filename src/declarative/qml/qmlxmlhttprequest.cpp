@@ -951,12 +951,12 @@ public:
     int replyStatus() const;
     QString replyStatusText() const;
 
-    void open(const QString &, const QUrl &);
+    QScriptValue open(const QString &, const QUrl &);
     void addHeader(const QString &, const QString &);
     QString header(const QString &name);
     QString headers();
-    void send(const QByteArray &);
-    void abort();
+    QScriptValue send(const QByteArray &);
+    QScriptValue abort();
 
     QString responseBody() const;
 private slots:
@@ -977,7 +977,7 @@ private:
     HeadersList m_headersList;
     void fillHeadersList();
 
-    void dispatchCallback();
+    QScriptValue dispatchCallback();
     QScriptValue m_callback;
 
     int m_status;
@@ -1044,7 +1044,7 @@ QString QmlXMLHttpRequest::replyStatusText() const
     return m_statusText;
 }
 
-void QmlXMLHttpRequest::open(const QString &method, const QUrl &url)
+QScriptValue QmlXMLHttpRequest::open(const QString &method, const QUrl &url)
 {
     destroyNetwork();
     m_sendFlag = false;
@@ -1053,7 +1053,7 @@ void QmlXMLHttpRequest::open(const QString &method, const QUrl &url)
     m_method = method;
     m_url = url;
     m_state = Opened;
-    dispatchCallback();
+    return dispatchCallback();
 }
 
 void QmlXMLHttpRequest::addHeader(const QString &name, const QString &value)
@@ -1107,12 +1107,13 @@ void QmlXMLHttpRequest::fillHeadersList()
     }
 }
 
-void QmlXMLHttpRequest::send(const QByteArray &data)
+QScriptValue QmlXMLHttpRequest::send(const QByteArray &data)
 {
     m_errorFlag = false;
     m_sendFlag = true;
 
-    dispatchCallback();
+    QScriptValue cbv = dispatchCallback();
+    if (cbv.isError()) return cbv;
 
     m_request.setUrl(m_url);
     QNetworkRequest request = m_request;
@@ -1160,9 +1161,11 @@ void QmlXMLHttpRequest::send(const QByteArray &data)
                      this, SLOT(error(QNetworkReply::NetworkError)));
     QObject::connect(m_network, SIGNAL(finished()),
                      this, SLOT(finished()));
+
+    return QScriptValue();
 }
 
-void QmlXMLHttpRequest::abort()
+QScriptValue QmlXMLHttpRequest::abort()
 {
     destroyNetwork();
     m_responseEntityBody = QByteArray();
@@ -1175,10 +1178,12 @@ void QmlXMLHttpRequest::abort()
 
         m_state = Done;
         m_sendFlag = false;
-        dispatchCallback();
+        QScriptValue cbv = dispatchCallback();
+        if (cbv.isError()) return cbv;
     }
 
     m_state = Unsent;
+    return QScriptValue();
 }
 
 void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
@@ -1193,14 +1198,18 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
     if (m_state < HeadersReceived) {
         m_state = HeadersReceived;
         fillHeadersList ();
-        dispatchCallback();
+        QScriptValue cbv = dispatchCallback();
+        if (cbv.isError())
+            qWarning().nospace() << qPrintable(cbv.toString());
     }
 
     bool wasEmpty = m_responseEntityBody.isEmpty();
     m_responseEntityBody.append(m_network->readAll());
     if (wasEmpty && !m_responseEntityBody.isEmpty()) {
         m_state = Loading;
-        dispatchCallback();
+        QScriptValue cbv = dispatchCallback();
+        if (cbv.isError())
+            qWarning().nospace() << qPrintable(cbv.toString());
     }
 }
 
@@ -1223,13 +1232,17 @@ void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
         error == QNetworkReply::AuthenticationRequiredError ||
         error == QNetworkReply::ContentReSendError) {
         m_state = Loading;
-        dispatchCallback();
+        QScriptValue cbv = dispatchCallback();
+        if (cbv.isError())
+            qWarning().nospace() << qPrintable(cbv.toString());
     } else {
         m_errorFlag = true;
     } 
 
     m_state = Done;
-    dispatchCallback();
+    QScriptValue cbv = dispatchCallback();
+    if (cbv.isError())
+        qWarning().nospace() << qPrintable(cbv.toString());
 }
 
 void QmlXMLHttpRequest::finished()
@@ -1244,16 +1257,22 @@ void QmlXMLHttpRequest::finished()
     if (m_state < HeadersReceived) {
         m_state = HeadersReceived;
         fillHeadersList ();
-        dispatchCallback();
+        QScriptValue cbv = dispatchCallback();
+        if (cbv.isError())
+            qWarning().nospace() << qPrintable(cbv.toString());
     }
     m_responseEntityBody.append(m_network->readAll());
     destroyNetwork();
     if (m_state < Loading) {
         m_state = Loading;
-        dispatchCallback();
+        QScriptValue cbv = dispatchCallback();
+        if (cbv.isError())
+            qWarning().nospace() << qPrintable(cbv.toString());
     }
     m_state = Done;
-    dispatchCallback();
+    QScriptValue cbv = dispatchCallback();
+    if (cbv.isError())
+        qWarning().nospace() << qPrintable(cbv.toString());
 }
 
 
@@ -1262,9 +1281,9 @@ QString QmlXMLHttpRequest::responseBody() const
     return QString::fromUtf8(m_responseEntityBody);
 }
 
-void QmlXMLHttpRequest::dispatchCallback()
+QScriptValue QmlXMLHttpRequest::dispatchCallback()
 {
-    m_callback.call();
+    return m_callback.call();
 }
 
 void QmlXMLHttpRequest::destroyNetwork()
@@ -1321,9 +1340,7 @@ static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngin
     if (!username.isNull()) url.setUserName(username);
     if (!password.isNull()) url.setPassword(password);
 
-    request->open(method, url);
-
-    return engine->undefinedValue();
+    return request->open(method, url);
 }
 
 static QScriptValue qmlxmlhttprequest_setRequestHeader(QScriptContext *context, QScriptEngine *engine)
@@ -1390,20 +1407,16 @@ static QScriptValue qmlxmlhttprequest_send(QScriptContext *context, QScriptEngin
     if (context->argumentCount() > 0)
         data = context->argument(0).toString().toUtf8();
 
-    request->send(data);
-
-    return engine->undefinedValue();
+    return request->send(data);
 }
 
-static QScriptValue qmlxmlhttprequest_abort(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue qmlxmlhttprequest_abort(QScriptContext *context, QScriptEngine *)
 {
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
     if (!request) 
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
-    request->abort();
-
-    return engine->undefinedValue();
+    return request->abort();
 }
 
 static QScriptValue qmlxmlhttprequest_getResponseHeader(QScriptContext *context, QScriptEngine *engine)

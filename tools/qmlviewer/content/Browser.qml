@@ -8,6 +8,7 @@ Rectangle {
     width: 320
     height: 480
     color: palette.window
+
     FolderListModel {
         id: folders1
         nameFilters: [ "*.qml" ]
@@ -34,6 +35,7 @@ Rectangle {
             }
             view.x = root.width;
             view.state = "current";
+            view.focus = true;
             folders.folder = path;
         }
         function up() {
@@ -49,6 +51,7 @@ Rectangle {
             }
             view.x = -root.width;
             view.state = "current";
+            view.focus = true;
             folders.folder = path;
         }
     }
@@ -65,7 +68,7 @@ Rectangle {
                 }
             }
             width: root.width
-            height: 48
+            height: 52
             color: "transparent"
             Rectangle {
                 id: highlight; visible: false
@@ -76,15 +79,16 @@ Rectangle {
                 }
             }
             Item {
-                width: 46; height: 46
+                width: 48; height: 48
                 Image { source: "images/folder.png"; anchors.centerIn: parent; visible: folders.isFolder(index)}
             }
             Text {
                 id: nameText
                 anchors.fill: parent; verticalAlignment: Text.AlignVCenter
-                text: fileName; anchors.leftMargin: 48
+                text: fileName
+                anchors.leftMargin: 54
                 font.pixelSize: 32
-                color: wrapper.isCurrentItem ? palette.highlightedText : palette.text
+                color: (wrapper.ListView.isCurrentItem && root.keyPressed) ? palette.highlightedText : palette.windowText
             }
             MouseRegion {
                 id: mouseRegion
@@ -110,9 +114,10 @@ Rectangle {
         width: parent.width
         model: folders1
         delegate: folderDelegate
-        highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
-        focus: true
+        highlight: Rectangle { color: palette.highlight; visible: root.keyPressed && view1.count != 0 }
+        highlightMoveSpeed: 1000
         pressDelay: 100
+        focus: true
         state: "current"
         states: [
             State {
@@ -140,6 +145,7 @@ Rectangle {
                 NumberAnimation { matchProperties: "x"; duration: 250 }
             }
         ]
+        Keys.onPressed: { root.keyPressed = true; }
     }
 
     ListView {
@@ -150,8 +156,8 @@ Rectangle {
         width: parent.width
         model: folders2
         delegate: folderDelegate
-        highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
-        focus: true
+        highlight: Rectangle { color: palette.highlight; visible: root.keyPressed && view2.count != 0 }
+        highlightMoveSpeed: 1000
         pressDelay: 100
         states: [
             State {
@@ -178,6 +184,7 @@ Rectangle {
                 NumberAnimation { matchProperties: "x"; duration: 250 }
             }
         ]
+        Keys.onPressed: { root.keyPressed = true; }
     }
 
     Keys.onPressed: {
@@ -185,9 +192,10 @@ Rectangle {
         if (event.key == Qt.Key_Return || event.key == Qt.Key_Select || event.key == Qt.Key_Right) {
             view.currentItem.launch();
             event.accepted = true;
+        } else if (event.key == Qt.Key_Left) {
+            up();
         }
     }
-    Keys.onLeftPressed: up()
 
     BorderImage {
         source: "images/titlebar.sci";
@@ -203,7 +211,9 @@ Rectangle {
             color: "transparent"
 
             Image { anchors.centerIn: parent; source: "images/up.png" }
-            MouseRegion { id: upRegion; anchors.fill: parent
+            MouseRegion { id: upRegion; anchors.centerIn: parent
+                width: 56
+                height: 56
                 onClicked: if (folders.parentFolder != "") up()
             }
             states: [
