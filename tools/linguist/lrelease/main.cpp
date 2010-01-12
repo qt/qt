@@ -111,6 +111,7 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
         if (!cd.errors().isEmpty())
             printOut(cd.error());
     }
+    cd.clearErrors();
     return ok;
 }
 
@@ -141,11 +142,11 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     if (!ok) {
         qWarning("lrelease error: cannot save '%s': %s\n",
                  qPrintable(qmFileName), qPrintable(cd.error()));
-        return false;
     } else if (!cd.errors().isEmpty()) {
         printOut(cd.error());
     }
-    return true;
+    cd.clearErrors();
+    return ok;
 }
 
 static bool releaseTsFile(const QString& tsFileName,

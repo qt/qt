@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui>
-#include "dirmodel.h"
+#include "fsmodel.h"
 #include "mainwindow.h"
 
 //! [0]
@@ -55,8 +55,8 @@ MainWindow::MainWindow(QWidget *parent)
     modelLabel->setText(tr("Model"));
 
     modelCombo = new QComboBox;
-    modelCombo->addItem(tr("QDirModel"));
-    modelCombo->addItem(tr("QDirModel that shows full path"));
+    modelCombo->addItem(tr("QFileSytemModel"));
+    modelCombo->addItem(tr("QFileSytemModel that shows full path"));
     modelCombo->addItem(tr("Country list"));
     modelCombo->addItem(tr("Word list"));
     modelCombo->setCurrentIndex(0);
@@ -218,17 +218,19 @@ void MainWindow::changeModel()
     switch (modelCombo->currentIndex()) {
     default:
     case 0:
-        { // Unsorted QDirModel
-            QDirModel *dirModel = new QDirModel(completer);
-            completer->setModel(dirModel);
+        { // Unsorted QFileSystemModel
+            QFileSystemModel *fsModel = new QFileSystemModel(completer);
+            fsModel->setRootPath("");
+            completer->setModel(fsModel);
             contentsLabel->setText(tr("Enter file path"));
         }
         break;
 //! [11] //! [12]
     case 1:
-        { // DirModel that shows full paths
-            DirModel *dirModel = new DirModel(completer);
-            completer->setModel(dirModel);
+        {   // FileSystemModel that shows full paths
+            FileSystemModel *fsModel = new FileSystemModel(completer);
+            completer->setModel(fsModel);
+            fsModel->setRootPath("");
             contentsLabel->setText(tr("Enter file path"));
         }
         break;

@@ -155,6 +155,7 @@ Q_SIGNALS:
     void updates(const QString &directory, const QList<QPair<QString, QFileInfo> > &updates);
     void newListOfFiles(const QString &directory, const QStringList &listOfFiles) const;
     void nameResolved(const QString &fileName, const QString &resolvedName) const;
+    void directoryLoaded(const QString &path);
 
 public:
     QFileInfoGatherer(QObject *parent = 0);

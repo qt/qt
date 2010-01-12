@@ -73,6 +73,12 @@ enum EngineMode {
 
 QT_BEGIN_NAMESPACE
 
+#define GL_STENCIL_HIGH_BIT         GLuint(0x80)
+#define QT_BRUSH_TEXTURE_UNIT       GLuint(0)
+#define QT_IMAGE_TEXTURE_UNIT       GLuint(0) //Can be the same as brush texture unit
+#define QT_MASK_TEXTURE_UNIT        GLuint(1)
+#define QT_BACKGROUND_TEXTURE_UNIT  GLuint(2)
+
 class QGL2PaintEngineExPrivate;
 
 
@@ -167,9 +173,9 @@ public:
             width(0), height(0),
             ctx(0),
             useSystemClip(true),
+            snapToPixelGrid(false),
             addOffset(false),
-            inverseScale(1),
-            inRenderText(false)
+            inverseScale(1)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -215,10 +221,6 @@ public:
         return shaderManager->getUniformLocation(uniform);
     }
 
-
-    void prepareDepthRangeForRenderText();
-    void restoreDepthRangeForRenderText();
-
     void clearClip(uint value);
     void writeClip(const QVectorPath &path, uint value);
     void resetClipIfNeeded();
@@ -227,7 +229,6 @@ public:
     void setScissor(const QRect &rect);
     void regenerateClip();
     void systemStateChanged();
-
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
     static QGL2PaintEngineExPrivate *getData(QGL2PaintEngineEx *engine) { return engine->d_func(); }
@@ -266,6 +267,7 @@ public:
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
 
+    bool snapToPixelGrid;
     bool addOffset; // When enabled, adds a 0.49,0.49 offset to matrix in updateMatrix
     GLfloat pmvMatrix[3][3];
     GLfloat inverseScale;
@@ -273,7 +275,6 @@ public:
     GLuint lastTextureUsed;
 
     bool needsSync;
-    bool inRenderText;
     bool multisamplingAlwaysEnabled;
 
     GLfloat depthRange[2];

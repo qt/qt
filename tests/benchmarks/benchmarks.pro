@@ -37,6 +37,7 @@ SUBDIRS = containers-associative \
 	qstringbuilder \
 	qstylesheetstyle \
 	qsvgrenderer \
+        qtcpserver \
 	qtableview \
 	qthreadstorage
 

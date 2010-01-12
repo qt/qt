@@ -160,6 +160,13 @@ QT_END_NAMESPACE
     qt_dispatchTabletProximityEvent(tabletEvent);
 }
 
+- (void)terminate:(id)sender
+{
+    // This function is called from the quit item in the
+    // menubar, when this window is the first responder
+    [NSApp terminate:sender];
+}
+
 - (void)sendEvent:(NSEvent *)event
 {
     QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];

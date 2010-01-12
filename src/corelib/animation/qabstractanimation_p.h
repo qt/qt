@@ -58,6 +58,10 @@
 #include <QtCore/qtimer.h>
 #include <private/qobject_p.h>
 
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif
+
 #ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
@@ -107,6 +111,61 @@ public:
 
 private:
     Q_DECLARE_PUBLIC(QAbstractAnimation)
+};
+
+class ElapsedTimer
+{
+public:
+    ElapsedTimer() {
+        invalidate();
+    }
+
+    void invalidate() {
+        m_started = -1;
+    }
+
+    bool isValid() const {
+        return m_started >= 0;
+    }
+
+    void start() {
+        m_started = getTickCount_sys();
+    }
+
+    qint64 elapsed() const {
+        qint64 current = getTickCount_sys();
+        qint64 delta = current - m_started;
+        if (delta < 0)
+            delta += getPeriod_sys();   //we wrapped around
+        return delta;
+    }
+
+private:
+    enum {
+        MSECS_PER_HOUR = 3600000,
+        MSECS_PER_MIN = 60000
+    };
+
+    qint64 m_started;
+
+    quint64 getPeriod_sys() const {
+#ifdef Q_OS_WIN
+        return Q_UINT64_C(0x100000000);
+#else
+        // fallback
+        return 86400 * 1000;
+#endif
+    }
+
+    qint64 getTickCount_sys() const {
+#ifdef Q_OS_WIN
+        return ::GetTickCount();
+#else
+        // fallback
+        const QTime t = QTime::currentTime();
+        return MSECS_PER_HOUR * t.hour() + MSECS_PER_MIN * t.minute() + 1000 * t.second() + t.msec();
+#endif
+    }
 };
 
 
@@ -162,7 +221,8 @@ private:
     // timer used to delay the check if we should start/stop the animation timer
     QBasicTimer startStopAnimationTimer;
 
-    QTime time;
+    ElapsedTimer time;
+
     int lastTick;
     int timingInterval;
     int currentAnimationIdx;

@@ -70,6 +70,7 @@ class Q_GUI_EXPORT QFileSystemModel : public QAbstractItemModel
 Q_SIGNALS:
     void rootPathChanged(const QString &newPath);
     void fileRenamed(const QString &path, const QString &oldName, const QString &newName);
+    void directoryLoaded(const QString &path);
 
 public:
     enum Roles {
