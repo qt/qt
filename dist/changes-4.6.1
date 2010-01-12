@@ -51,16 +51,20 @@ QtGui
       in the DDS, ETC1, PVRTC2, and PVRTC4 formats if the OpenGL graphics
       system is active and the appropriate extensions are present in the
       GL implementation.
+    * [QTBUG-6840] Fixed load() to not modify referenced copies.
+    * [QTBUG-5840] Fixed a crash in fromImage() when passing in a null image.
+ - QRasterPixmapData
+    * [QTBUG-6985] Fixed metric() to return the correct height in mm.
  - QGraphicsObject
     * 'id' property was removed. Use the 'objectName' property instead.
  - QPrinter
     * [QTBUG-3412] QGraphicsProxyWidgets are now rendered correctly when
       printing a QGraphicsScene to PDF format.
  - QPainter
-    * [QTBUG-5939] Fixed incorrect redirection matrix that was causing 
+    * [QTBUG-5939] Fixed incorrect redirection matrix that was causing
       wrong transformation for QGraphicsProxyWidgets.
  - QGraphicsView
-    * [QTBUG-6935] When using CacheBackground, the background is now 
+    * [QTBUG-6935] When using CacheBackground, the background is now
       correctly repainted after the QGraphicsView is shown after being
       hidden.
     * [QTBUG-6835] Mouse tracking is now automatically enabled when using
@@ -72,6 +76,9 @@ QtGui
       QGraphicsItem causing painting issues when scaling the QGraphicsView.
     * [QTBUG-5071] Fixes transformation problems when grouping/ungrouping
       the item with a QGraphicsItemGroup.
+
+ - QTextDocument
+    * [QTBUG-6051] Fixed an endless loop when printing a QTextDocument.
 
 QtDBus
 ------
@@ -114,6 +121,8 @@ QtOpenGL
     * [QTBUG-6045] Crash in dashed line handling in the GL stroker.
  - QGLGlyphCache
     * [QTBUG-6936] Fix memory leak of QGLGlyphCoord objects.
+ - QGLWidget
+    * [QTBUG-5002, QTBUG-6931] Fixed QGLWidget::renderText().
 
 QtOpenVG
 --------
@@ -173,12 +182,15 @@ Third party components
 Qt for Unix (X11 and Mac OS X)
 ------------------------------
 
- - 
+ -
 
 Qt for Linux/X11
 ----------------
 
- -
+ - QGL
+   * [QTBUG-5732] Fixed querying of GLX extensions under X11.
+ - QPrintDialog
+   * [QTBUG-5547] Fixed handling of the "..." button.
 
 Qt for Windows
 --------------
@@ -188,7 +200,9 @@ Qt for Windows
 Qt for Mac OS X
 ---------------
 
- -
+ - QPixmap
+   * [QTBUG-5070] Fixed a crash on Mac that could occur when loading
+   pixmaps of different sizes into the same QPixmap object.
 
 Qt for Embedded Linux
 ---------------------
