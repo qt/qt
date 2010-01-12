@@ -667,7 +667,7 @@ QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
         QString arg = ctxt->argument(0).toString();
         if (arg.isEmpty())
             return engine->nullValue();
-        QUrl url = QUrl(context->resolvedUrl(arg));
+        QUrl url = QUrl(context->resolvedUrl(QUrl(arg)));
         QmlComponent *c = new QmlComponent(activeEngine, url, activeEngine);
         c->setCreationContext(context);
         return activeEnginePriv->objectClass->newQObject(c, qMetaTypeId<QmlComponent*>());
@@ -1135,7 +1135,7 @@ struct QmlEnginePrivate::ImportedNamespace {
                             if (mapvmaj<vmaj || vmin >= mapversions.mid(dot+1).toInt()) {
                                 QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-1);
                                 if (url_return)
-                                    *url_return = url.resolved(mapfile.toString());
+                                    *url_return = url.resolved(QUrl(mapfile.toString()));
                                 return true;
                             }
                         }

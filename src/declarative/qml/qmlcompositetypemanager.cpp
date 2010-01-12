@@ -55,6 +55,12 @@
 
 QT_BEGIN_NAMESPACE
 
+inline uint qHash(const QUrl &uri)
+{
+    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
+}
+
+
 QmlCompositeTypeData::QmlCompositeTypeData()
 : status(Invalid), errorType(NoError), component(0), compiledComponent(0)
 {
@@ -165,14 +171,14 @@ QmlCompositeTypeManager::~QmlCompositeTypeManager()
 
 QmlCompositeTypeData *QmlCompositeTypeManager::get(const QUrl &url)
 {
-    QmlCompositeTypeData *unit = components.value(url.toString());
+    QmlCompositeTypeData *unit = components.value(url);
 
     if (!unit) {
         unit = new QmlCompositeTypeData;
         unit->status = QmlCompositeTypeData::Waiting;
         unit->progress = 0.0;
         unit->imports.setBaseUrl(url);
-        components.insert(url.toString(), unit);
+        components.insert(url, unit);
 
         loadSource(unit);
     }
@@ -216,7 +222,7 @@ void QmlCompositeTypeManager::replyFinished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
 
-    QmlCompositeTypeData *unit = components.value(reply->url().toString());
+    QmlCompositeTypeData *unit = components.value(reply->url());
     Q_ASSERT(unit);
 
     if (reply->error() != QNetworkReply::NoError) {
@@ -246,7 +252,7 @@ void QmlCompositeTypeManager::resourceReplyFinished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
 
-    QmlCompositeTypeResource *resource = resources.value(reply->url().toString());
+    QmlCompositeTypeResource *resource = resources.value(reply->url());
     Q_ASSERT(resource);
 
     if (reply->error() != QNetworkReply::NoError) {
@@ -337,7 +343,7 @@ void QmlCompositeTypeManager::requestProgress(qint64 received, qint64 total)
         return;
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
 
-    QmlCompositeTypeData *unit = components.value(reply->url().toString());
+    QmlCompositeTypeData *unit = components.value(reply->url());
     Q_ASSERT(unit);
 
     unit->progress = qreal(received)/total;
@@ -523,13 +529,13 @@ int QmlCompositeTypeManager::resolveTypes(QmlCompositeTypeData *unit)
             continue;
         }
 
-        QmlCompositeTypeData *urlUnit = components.value(url.toString());
+        QmlCompositeTypeData *urlUnit = components.value(url);
 
         if (!urlUnit) {
             urlUnit = new QmlCompositeTypeData;
             urlUnit->status = QmlCompositeTypeData::Waiting;
             urlUnit->imports.setBaseUrl(url);
-            components.insert(url.toString(), urlUnit);
+            components.insert(url, urlUnit);
 
             loadSource(urlUnit);
         }
@@ -591,13 +597,13 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
     for (int ii = 0; ii < resourceList.count(); ++ii) {
         QUrl url = unit->imports.baseUrl().resolved(resourceList.at(ii));
 
-        QmlCompositeTypeResource *resource = resources.value(url.toString());
+        QmlCompositeTypeResource *resource = resources.value(url);
 
         if (!resource) {
             resource = new QmlCompositeTypeResource;
             resource->status = QmlCompositeTypeResource::Waiting;
             resource->url = url.toString();
-            resources.insert(resource->url, resource);
+            resources.insert(url, resource);
 
             loadResource(resource);
         }

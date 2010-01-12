@@ -105,9 +105,9 @@ private:
     int resolveTypes(QmlCompositeTypeData *);
 
     QmlEngine *engine;
-    typedef QHash<QString, QmlCompositeTypeData *> Components;
+    typedef QHash<QUrl, QmlCompositeTypeData *> Components;
     Components components;
-    typedef QHash<QString, QmlCompositeTypeResource *> Resources;
+    typedef QHash<QUrl, QmlCompositeTypeResource *> Resources;
     Resources resources;
 };
 
