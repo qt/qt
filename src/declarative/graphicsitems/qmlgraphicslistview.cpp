@@ -1942,6 +1942,8 @@ QString QmlGraphicsListView::currentSection() const
     highlightFollowsCurrentItem must be true for these properties
     to have effect.
 
+    The default value for these properties is 400 pixels/second.
+
     \sa highlightFollowsCurrentItem
 */
 qreal QmlGraphicsListView::highlightMoveSpeed() const
