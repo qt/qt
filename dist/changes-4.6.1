@@ -55,14 +55,56 @@ QtGui
  - QApplication
     * [QTBUG-6654] Fix crashes when deleting QWidgets in touch event
       handlers.
-
+ - QPixmapCache
+    * Fixed a small leak when using the new QPixmapCAche::Key based API.
  - QPixmap
     * load() and loadFromData() can now support compressed GL textures
       in the DDS, ETC1, PVRTC2, and PVRTC4 formats if the OpenGL graphics
       system is active and the appropriate extensions are present in the
       GL implementation.
+    * [QTBUG-6840] Fixed load() to not modify referenced copies.
+    * [QTBUG-5840] Fixed a crash in fromImage() when passing in a null image.
+    * [QTBUG-6116] Fixed memory leak where a global object was not destroyed
+      at program exit.
+ - QRasterPixmapData
+    * [QTBUG-6985] Fixed metric() to return the correct height in mm.
  - QGraphicsObject
     * 'id' property was removed. Use the 'objectName' property instead.
+ - QPrinter
+    * [QTBUG-3412] QGraphicsProxyWidgets are now rendered correctly when
+      printing a QGraphicsScene to PDF format.
+ - QPainter
+    * [QTBUG-5939] Fixed incorrect redirection matrix that was causing
+      wrong transformation for QGraphicsProxyWidgets.
+    * [QTBUG-6684] Added optimizations of 32-bit blend functions
+      for ARM platforms with NEON support.
+ - QGraphicsEffect
+    * [QTBUG-5918] Fixed redraw bugs when using graphics effects on
+      items while animating them by transformations.
+ - QGraphicsView
+    * [QTBUG-6935] When using CacheBackground, the background is now
+      correctly repainted after the QGraphicsView is shown after being
+      hidden.
+    * [QTBUG-6835] Mouse tracking is now automatically enabled when using
+      AnchorUnderMouse for view transformation.
+    * [QTBUG-6958] Fix speed regression in _q_polishItems()
+    * [QTBUG-6544] Fix a crash on the focus chain when removing items from the scene.
+    * Fix a crash in KDE/Plasma with QGraphicsView with topLevels.
+ - QGraphicsItem
+    * [QTBUG-5917] Fixed memory leaks when removing a QGraphicsEffect from
+      a QGraphicsItem or QWidget with setGraphicsEffect(0).
+    * [QTBUG-5859] Fixes incorrect rounding of the exposed rectangle of the
+      QGraphicsItem causing painting issues when scaling the QGraphicsView.
+    * [QTBUG-5071] Fixes transformation problems when grouping/ungrouping
+      the item with a QGraphicsItemGroup.
+ - QGraphicsWidget
+    * [QTBUG-6272] Only call updateFont if the font have changed.
+ - QTextDocument
+    * [QTBUG-5397] Fixed printing of QTextDocuments not including custom
+      text objects.
+
+ - QTextDocument
+    * [QTBUG-6051] Fixed an endless loop when printing a QTextDocument.
 
  - QGraphicsScene
     * [QTBUG-6654] Fix crashes when deleting QGraphicsItems in touch
@@ -100,6 +142,50 @@ QtOpenGL
     * bindTexture(QString) now supports DDS, ETC1, PVRTC2, and PVRTC4
       compressed textures if the appropriate extensions are present
       in the GL implementation.
+    * bindTexture(QImage): Reduce double-copying of textures when flipping.
+    * [QTBUG-6454] Better EGL extension checking to avoid prefix problems
+      with EGL_foo matching EGL_foo_bar.
+    * [QTBUG-6217] Work around problems with glColor4ub() on Intel Q45/Q43
+      Express by consistently using glColor4f() everywhere.
+    * bindTexture(QImage): Fix GL_BGRA formats under OpenGL/ES by using
+      the same value for both internal and external texture formats.
+    * [QTBUG-5041] Disable depth testing while in renderText().
+ - QGLPaintDevice
+    * [QTBUG-6204] Rebind window surface fbo after native GL rendering.
+ - QGLEngineSelector
+    * [QTBUG-5638] Detect GL2 based on fragment shaders, not programs.
+      Fragment programs are a GL1 feature.
+ - QGLFramebufferObject
+    * [QTBUG-6712] Update docs to better explain how QPainter changes
+      the GL state when used on an FBO.
+ - QGLPixmapData
+    * [QTBUG-6902] Align GL_RGB data on a 4-byte line boundary.
+ - QTriangulatingStroker
+    * [QTBUG-6045] Crash in dashed line handling in the GL stroker.
+ - QGLGlyphCache
+    * [QTBUG-6936] Fix memory leak of QGLGlyphCoord objects.
+ - QGLWidget
+    * [QTBUG-5002, QTBUG-6931] Fixed QGLWidget::renderText().
+    * Fixed WA_TranslucentBackground for QGLWidgets on X11/EGL
+    * Fix EGL surface leaks when re-parenting on X11/EGL
+ - QGL2PaintEngineEx
+    * Performance: Don't mark brush as dirty if it hasn't changed
+    * Performance: Use 3x3 PMV matrices rather than 4x4
+    * Performance: Move the 0.5 offset we add for aliased rendering to updateMatrix()
+    * Performance: Remove superfluous enable/disable vertex arrtib arrays
+    * Performance: Track the glVertexAttribPointer and only update it if it's changed
+    * [QTBUG-7094]  Introduce new "snapToPixelGrid" flag for drawText
+
+QtOpenVG
+--------
+
+ - [QT-2555] Automatically destroy VG pixmaps when the last window surface
+   goes away to reduce memory consumption of backgrounded applications.
+ - [QTBUG-6639] Recover from out-of-memory when creating VGImage's.
+ - [QT-2554] Add a VGImage allocation pool to support reclaiming older
+   images when the GPU runs out of memory.
+ - [QTBUG-7051] Reset the OpenVG scissor after a native painting call-out.
+ - [QTBUG-7015] Avoid deep copies of QImage in QImage::bits() calls.
 
 QtScript
 --------
@@ -113,6 +199,15 @@ QtSql
  - foo
     * bar
 
+QtSvg
+-----
+
+ - QSvgRenderer
+    * [QTBUG-6867] Fixed regression in the parsing of paths with relative
+      offsets.
+    * [QTBUG-6899] Fixed crash when parsing invalid coordinate list.
+
+
 QtXml
 -----
 
@@ -122,8 +217,16 @@ QtXml
 Qt Plugins
 ----------
 
- - foo
-    * bar
+ - JPEG plugin
+    * Remove obsolete parameter string handling.
+    * [QT-2023] Re-implement ScaledSize, ClipRect, ScaledClipRect with
+      libjpeg features for greater performance.
+ - PBM plugin
+    * [QTBUG-6937] Use Mono instead of MonoLSB when writing pbm files.
+ - TIFF plugin
+    * [QTBUG-6870] BitsPerSample should default to 1 in TIFF files.
+ - PNG plugin
+    * [QTBUG-7161] Avoid a deep copy of QImage::bits() in the png writer.
 
 Third party components
 ----------------------
@@ -140,10 +243,15 @@ Third party components
 Qt for Unix (X11 and Mac OS X)
 ------------------------------
 
- - 
+ -
 
 Qt for Linux/X11
 ----------------
+
+ - [QTBUG-5732] Fixed querying of GLX extensions under X11.
+ - [QTBUG-5547] Fixed handling of the "..." button.
+ - Added new mkspec for Maemo targets (linux-g++-maemo)
+ - Added new mkspec for Scratchbox host compiler (unsupported/linux-host-g++)
 
  - QGuiEventDispatcherGlib (internal class)
     * Fix regression introduced in 4.6.0 that could cause X11 event
@@ -160,6 +268,7 @@ Qt for Linux/X11
 
 Qt for Windows
 --------------
+ - [QTBUG-5145] Compile fixes for win32-icc.
 
  - QAtomicPointer
     * [QTBUG-6079] Fix compilation for 64-bit Windows targets.
@@ -175,6 +284,9 @@ Qt for Windows
 Qt for Mac OS X
 ---------------
 
+ - QPixmap
+   * [QTBUG-5070] Fixed a crash on Mac that could occur when loading
+   pixmaps of different sizes into the same QPixmap object.
  - [QTBUG-6973] Fixed a memory leak when using QWidget::setWindowIcon() in carbon.
  - [QTBUG-5186] Fixed a bug which caused drag and drop icons to show 
    incorrectly.
