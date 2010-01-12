@@ -1190,7 +1190,7 @@ void CentralWidget::closeOrReloadTabs(const QList<int> &indices, bool tryReload)
         if (tryReload) {
             HelpViewer *viewer =
                     qobject_cast<HelpViewer*>(tabWidget->widget(tab));
-            if (HelpEngineWrapper::instance().findFile(viewer->url()).isValid()) {
+            if (HelpEngineWrapper::instance().findFile(viewer->source()).isValid()) {
                 viewer->reload();
                 close = false;
             }
