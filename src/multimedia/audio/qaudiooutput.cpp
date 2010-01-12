@@ -98,7 +98,7 @@ QT_BEGIN_NAMESPACE
 
       audio = new QAudioOutput(format, this);
       connect(audio,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlaying(QAudio::State)));
-      audio->start(inputFile);
+      audio->start(&inputFile);
 
     \endcode
 

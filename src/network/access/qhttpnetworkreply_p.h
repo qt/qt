@@ -125,6 +125,7 @@ public:
     qint64 bytesAvailable() const;
     qint64 bytesAvailableNextBlock() const;
     QByteArray readAny();
+    void setDownstreamLimited(bool t);
 
     bool isFinished() const;
 
@@ -229,6 +230,7 @@ public:
     bool requestIsPrepared;
 
     bool pipeliningUsed;
+    bool downstreamLimited;
 };
 
 

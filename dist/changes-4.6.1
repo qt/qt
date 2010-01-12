@@ -40,11 +40,18 @@ Optimizations
 QtCore
 ------
 
- - foo
-    * bar
+ - QFile
+    * Improve performance of getting the canonical filename on Linux
+      and Symbian by using realpath() system call
+    * Avoid stat() when opening a file
+
 
 QtGui
 -----
+
+ - QApplication
+    * [QTBUG-6654] Fix crashes when deleting QWidgets in touch event
+      handlers.
 
  - QPixmap
     * load() and loadFromData() can now support compressed GL textures
@@ -53,6 +60,10 @@ QtGui
       GL implementation.
  - QGraphicsObject
     * 'id' property was removed. Use the 'objectName' property instead.
+
+ - QGraphicsScene
+    * [QTBUG-6654] Fix crashes when deleting QGraphicsItems in touch
+      event handlers.
 
 QtDBus
 ------
@@ -63,8 +74,18 @@ QtDBus
 QtNetwork
 ---------
 
- - foo
-    * bar
+ - QNetworkAccessManager
+    * HTTP: Smaller improvements
+    * HTTP: Send our locale with the HTTP request
+    * HTTP: Start Accept-language and Authorization header with capital letter
+    * file: Introduce special subclass for higher performance with file:// URLs
+ - QTcpSocket
+    * [QTBUG-5799] Fix waitForConnected() on Windows
+ - QNetworkProxyFactory
+    * Fixed systemProxyForQuery(), it could sometimes return invalid empty list
+      on Windows
+ - QHostInfo
+    * Use 5 parallel threads for host lookup instead of 1
 
 QtOpenGL
 --------
@@ -118,12 +139,23 @@ Qt for Unix (X11 and Mac OS X)
 Qt for Linux/X11
 ----------------
 
- -
+ - QGuiEventDispatcherGlib (internal class)
+    * Fix regression introduced in 4.6.0 that could cause X11 event
+      processing to starve timer events.
+
+ - QFileSystemWatcher
+    * [QTBUG-4840] Fix memory leak in the dnotify implementation.
 
 Qt for Windows
 --------------
 
- -
+ - QAtomicPointer
+    * [QTBUG-6079] Fix compilation for 64-bit Windows targets.
+
+ - QEventDispatchWin32 (internal class)
+    * [QTBUG-6083] Fix a performance regression introduced in 4.6.0
+      that would cause all Qt posted events to be sent at 15-16ms
+      intervals (instead of as quickly as possible).
 
 Qt for Mac OS X
 ---------------

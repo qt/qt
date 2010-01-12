@@ -82,6 +82,8 @@ public:
     virtual bool waitForDownstreamReadyRead(int msecs);
 
     virtual void downstreamReadyWrite();
+    virtual void setDownstreamLimited(bool b);
+
     virtual void copyFinished(QIODevice *);
 #ifndef QT_NO_OPENSSL
     virtual void ignoreSslErrors();

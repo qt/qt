@@ -652,6 +652,9 @@ void QNetworkReplyImpl::setReadBufferSize(qint64 size)
         d->backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
 
     QNetworkReply::setReadBufferSize(size);
+
+    if (d->backend)
+        d->backend->setDownstreamLimited(d->readBufferMaxSize > 0);
 }
 
 #ifndef QT_NO_OPENSSL

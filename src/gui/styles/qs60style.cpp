@@ -1363,7 +1363,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 }
             }
 
-            int rightValue = widget ? widget->contentsRect().right() : 0;
+            int rightValue = widget ? widget->contentsRect().right() : voptAdj.rect.right();
 
             if (isScrollBarVisible)
                 rightValue -= scrollBarWidth;
