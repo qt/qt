@@ -92,6 +92,7 @@ public Q_SLOTS:
     void switchToNextSource();
 
 Q_SIGNALS:
+    void abstractPlayerChanged(AbstractPlayer *player);
     void totalTimeChanged(qint64 length);
     void hasVideoChanged(bool hasVideo);
     void seekableChanged(bool seekable);
@@ -101,8 +102,8 @@ Q_SIGNALS:
     // TODO: emit metaDataChanged from MediaObject
     void metaDataChanged(const QMultiMap<QString, QString>& metaData);
     void currentSourceChanged(const MediaSource& source);
-    void stateChanged(Phonon::State oldState,
-                      Phonon::State newState);
+    void stateChanged(Phonon::State newState,
+                      Phonon::State oldState);
     void finished();
     void tick(qint64 time);
 
