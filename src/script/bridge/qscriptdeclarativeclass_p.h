@@ -47,7 +47,7 @@ class QScriptContext;
 class Q_SCRIPT_EXPORT QScriptDeclarativeClass
 {
 public:
-    class Value
+    class Q_SCRIPT_EXPORT Value
     {
     public:
         Value();
