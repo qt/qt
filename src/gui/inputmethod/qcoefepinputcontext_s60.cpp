@@ -139,8 +139,7 @@ void QCoeFepInputContext::widgetDestroyed(QWidget *w)
     // Make sure that the input capabilities of whatever new widget got focused are queried.
     CCoeControl *ctrl = w->effectiveWinId();
     if (ctrl->IsFocused()) {
-        ctrl->SetFocus(false);
-        ctrl->SetFocus(true);
+        queueInputCapabilitiesChanged();
     }
 }
 

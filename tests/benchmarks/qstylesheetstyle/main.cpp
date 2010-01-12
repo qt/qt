@@ -49,16 +49,16 @@ class tst_qstylesheetstyle : public QObject
 private slots:
     void empty();
     void empty_events();
-    
+
     void simple();
     void simple_events();
-    
+
     void grid_data();
     void grid();
-    
+
 private:
     QWidget *buildSimpleWidgets();
-    
+
 };
 
 
@@ -103,7 +103,7 @@ void tst_qstylesheetstyle::empty_events()
     delete w;
 }
 
-static const char *simple_css = 
+static const char *simple_css =
    " QLineEdit { background: red; }   QPushButton { border: 1px solid yellow; color: pink; }  \n"
    " QCheckBox { margin: 3px 5px; background-color:red; } QAbstractButton { background-color: #456; } \n"
    " QFrame { padding: 3px; } QLabel { color: black } QSpinBox:hover { background-color:blue; }  ";
@@ -138,7 +138,7 @@ void tst_qstylesheetstyle::grid_data()
         QTest::addColumn<bool>("events");
         QTest::addColumn<bool>("show");
         QTest::addColumn<int>("N");
-        for (int n = 5; n <= 25; n += 5) { 
+        for (int n = 5; n <= 25; n += 5) {
            const QByteArray nString = QByteArray::number(n*n);
             QTest::newRow(("simple--" + nString).constData()) << false << false << n;
             QTest::newRow(("events--" + nString).constData()) << true << false << n;
@@ -152,6 +152,13 @@ void tst_qstylesheetstyle::grid()
     QFETCH(bool, events);
     QFETCH(bool, show);
     QFETCH(int, N);
+
+#ifdef Q_OS_SYMBIAN
+    // Symbian has limited stack (max 80k), which will run out when N >= 20 due to
+    // QWidget::show() using recursion among grid labels somewhere down the line.
+    if (show && N >= 20)
+        QSKIP("Grid too big for device to show", SkipSingle);
+#endif
 
     QWidget *w = new QWidget();
     QGridLayout *layout = new QGridLayout(w);

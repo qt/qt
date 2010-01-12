@@ -128,48 +128,57 @@ private:
 };
 
 const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
-    /* SP_QgnGrafBarWait */             {KAknsIIDQgnGrafBarWaitAnim,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafBarFrameCenter */      {KAknsIIDQgnGrafBarFrameCenter,         EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafBarFrameSideL */       {KAknsIIDQgnGrafBarFrameSideL,          EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafBarFrameSideR */       {KAknsIIDQgnGrafBarFrameSideR,          EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafBarProgress */         {KAknsIIDQgnGrafBarProgress,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafScrollArrowDown */     {KAknsIIDQgnGrafScrollArrowDown,     EDrawGulIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafScrollArrowLeft */     {KAknsIIDQgnGrafScrollArrowLeft,     EDrawGulIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafScrollArrowRight */    {KAknsIIDQgnGrafScrollArrowRight,    EDrawGulIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafScrollArrowUp */       {KAknsIIDQgnGrafScrollArrowUp,       EDrawGulIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabActiveL */          {KAknsIIDQgnGrafTabActiveL,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabActiveM */          {KAknsIIDQgnGrafTabActiveM,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabActiveR */          {KAknsIIDQgnGrafTabActiveR,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabPassiveL */         {KAknsIIDQgnGrafTabPassiveL,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabPassiveM */         {KAknsIIDQgnGrafTabPassiveM,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnGrafTabPassiveR */         {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiCheckboxOff */         {KAknsIIDQgnIndiCheckboxOff,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiCheckboxOn */          {KAknsIIDQgnIndiCheckboxOn,             EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafBarWait */                {KAknsIIDQgnGrafBarWaitAnim,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafBarFrameCenter */         {KAknsIIDQgnGrafBarFrameCenter,         EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafBarFrameSideL */          {KAknsIIDQgnGrafBarFrameSideL,          EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafBarFrameSideR */          {KAknsIIDQgnGrafBarFrameSideR,          EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafBarProgress */            {KAknsIIDQgnGrafBarProgress,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafScrollArrowDown */        {KAknsIIDQgnGrafScrollArrowDown,     EDrawGulIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafScrollArrowLeft */        {KAknsIIDQgnGrafScrollArrowLeft,     EDrawGulIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafScrollArrowRight */       {KAknsIIDQgnGrafScrollArrowRight,    EDrawGulIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafScrollArrowUp */          {KAknsIIDQgnGrafScrollArrowUp,       EDrawGulIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafTabActiveL */             {KAknsIIDQgnGrafTabActiveL,             EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafTabActiveM */             {KAknsIIDQgnGrafTabActiveM,             EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafTabActiveR */             {KAknsIIDQgnGrafTabActiveR,             EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafTabPassiveL */            {KAknsIIDQgnGrafTabPassiveL,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafTabPassiveM */            {KAknsIIDQgnGrafTabPassiveM,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafTabPassiveR */            {KAknsIIDQgnGrafTabPassiveR,            EDrawIcon,   ES60_All,    -1,-1},
+
+    // In 3.1 there is no slider groove.
+    /* SP_QgnGrafNsliderEndLeft */         {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19cf /* KAknsIIDQgnGrafNsliderEndLeft */},
+    /* SP_QgnGrafNsliderEndRight */        {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d0 /* KAknsIIDQgnGrafNsliderEndRight */},
+    /* SP_QgnGrafNsliderMiddle */          {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d2 /* KAknsIIDQgnGrafNsliderMiddle */},
+    /* SP_QgnIndiCheckboxOff */            {KAknsIIDQgnIndiCheckboxOff,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiCheckboxOn */             {KAknsIIDQgnIndiCheckboxOn,             EDrawIcon,   ES60_All,    -1,-1},
+
     // Following 5 items (SP_QgnIndiHlColSuper - SP_QgnIndiHlLineStraight) are available starting from S60 release 3.2.
     // In 3.1 CommonStyle drawing is used for these QTreeView elements, since no similar icons in AVKON UI.
-    /* SP_QgnIndiHlColSuper */          {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d5 /* KAknsIIDQgnIndiHlColSuper */},
-    /* SP_QgnIndiHlExpSuper */          {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d6 /* KAknsIIDQgnIndiHlExpSuper */},
-    /* SP_QgnIndiHlLineBranch */        {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d7 /* KAknsIIDQgnIndiHlLineBranch */},
-    /* SP_QgnIndiHlLineEnd */           {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d8 /* KAknsIIDQgnIndiHlLineEnd */},
-    /* SP_QgnIndiHlLineStraight */      {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d9 /* KAknsIIDQgnIndiHlLineStraight */},
-    /* SP_QgnIndiMarkedAdd */           {KAknsIIDQgnIndiMarkedAdd,              EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiNaviArrowLeft */       {KAknsIIDQgnIndiNaviArrowLeft,          EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiNaviArrowRight */      {KAknsIIDQgnIndiNaviArrowRight,         EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiRadiobuttOff */        {KAknsIIDQgnIndiRadiobuttOff,           EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiRadiobuttOn */         {KAknsIIDQgnIndiRadiobuttOn,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiSliderEdit */          {KAknsIIDQgnIndiSliderEdit,             EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnIndiSubMenu */             {KAknsIIDQgnIndiSubmenu,                EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteErased */              {KAknsIIDQgnNoteErased,                 EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteError */               {KAknsIIDQgnNoteError,                  EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteInfo */                {KAknsIIDQgnNoteInfo,                   EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteOk */                  {KAknsIIDQgnNoteOk,                     EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteQuery */               {KAknsIIDQgnNoteQuery,                  EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnNoteWarning */             {KAknsIIDQgnNoteWarning,                EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropFileSmall */           {KAknsIIDQgnPropFileSmall,              EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropFolderCurrent */       {KAknsIIDQgnPropFolderCurrent,          EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropFolderSmall */         {KAknsIIDQgnPropFolderSmall,            EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropFolderSmallNew */      {KAknsIIDQgnPropFolderSmallNew,         EDrawIcon,   ES60_All,    -1,-1},
-    /* SP_QgnPropPhoneMemcLarge */      {KAknsIIDQgnPropPhoneMemcLarge,         EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiHlColSuper */             {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d5 /* KAknsIIDQgnIndiHlColSuper */},
+    /* SP_QgnIndiHlExpSuper */             {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d6 /* KAknsIIDQgnIndiHlExpSuper */},
+    /* SP_QgnIndiHlLineBranch */           {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d7 /* KAknsIIDQgnIndiHlLineBranch */},
+    /* SP_QgnIndiHlLineEnd */              {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d8 /* KAknsIIDQgnIndiHlLineEnd */},
+    /* SP_QgnIndiHlLineStraight */         {KAknsIIDNone,                          EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x17d9 /* KAknsIIDQgnIndiHlLineStraight */},
+    /* SP_QgnIndiMarkedAdd */              {KAknsIIDQgnIndiMarkedAdd,              EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiNaviArrowLeft */          {KAknsIIDQgnIndiNaviArrowLeft,          EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiNaviArrowRight */         {KAknsIIDQgnIndiNaviArrowRight,         EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiRadiobuttOff */           {KAknsIIDQgnIndiRadiobuttOff,           EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiRadiobuttOn */            {KAknsIIDQgnIndiRadiobuttOn,            EDrawIcon,   ES60_All,    -1,-1},
+
+    // In 3.1 there different slider graphic and no pressed state.
+    /* SP_QgnGrafNsliderMarker */          {KAknsIIDQgnIndiSliderEdit,             EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d1 /* KAknsIIDQgnGrafNsliderMarker */},
+    /* SP_QgnGrafNsliderMarkerSelected */  {KAknsIIDQgnIndiSliderEdit,             EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x1a4a /* KAknsIIDQgnGrafNsliderMarkerSelected */},
+    /* SP_QgnIndiSubMenu */                {KAknsIIDQgnIndiSubmenu,                EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteErased */                 {KAknsIIDQgnNoteErased,                 EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteError */                  {KAknsIIDQgnNoteError,                  EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteInfo */                   {KAknsIIDQgnNoteInfo,                   EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteOk */                     {KAknsIIDQgnNoteOk,                     EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteQuery */                  {KAknsIIDQgnNoteQuery,                  EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnNoteWarning */                {KAknsIIDQgnNoteWarning,                EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropFileSmall */              {KAknsIIDQgnPropFileSmall,              EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropFolderCurrent */          {KAknsIIDQgnPropFolderCurrent,          EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropFolderSmall */            {KAknsIIDQgnPropFolderSmall,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropFolderSmallNew */         {KAknsIIDQgnPropFolderSmallNew,         EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnPropPhoneMemcLarge */         {KAknsIIDQgnPropPhoneMemcLarge,         EDrawIcon,   ES60_All,    -1,-1},
 
     // 3.1 & 3.2 do not have pressed state for scrollbar, so use normal scrollbar graphics instead.
     /* SP_QsnCpScrollHandleBottomPressed*/ {KAknsIIDQsnCpScrollHandleBottom,    EDrawIcon,   ES60_3_X,    EAknsMajorGeneric, 0x20f8}, /*KAknsIIDQsnCpScrollHandleBottomPressed*/
@@ -431,8 +440,11 @@ void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &style
         case QS60StyleEnums::SP_QgnIndiRadiobuttOn:
             fallbackIndex = EMbmAvkonQgn_indi_radiobutt_on;
             break;
-        case QS60StyleEnums::SP_QgnIndiSliderEdit:
-            fallbackIndex = EMbmAvkonQgn_indi_slider_edit;
+        case QS60StyleEnums::SP_QgnGrafNsliderMarker:
+            fallbackIndex = 17572; /* EMbmAvkonQgn_graf_nslider_marker */
+            break;
+        case QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected:
+            fallbackIndex = 17574; /* EMbmAvkonQgn_graf_nslider_marker_selected */
             break;
         case QS60StyleEnums::SP_QgnIndiSubMenu:
             fallbackIndex = EMbmAvkonQgn_indi_submenu;
@@ -585,6 +597,11 @@ bool QS60StylePrivate::isTouchSupported()
 bool QS60StylePrivate::isToolBarBackground()
 {
     return (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
+}
+
+bool QS60StylePrivate::hasSliderGrooveGraphic()
+{
+    return QSysInfo::s60Version() != QSysInfo::SV_S60_3_1;
 }
 
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
@@ -943,26 +960,13 @@ void QS60StylePrivate::setActiveLayout()
 {
     const QSize activeScreenSize(screenSize());
     int activeLayoutIndex = -1;
-    const bool mirrored = !QApplication::isLeftToRight();
     const short screenHeight = (short)activeScreenSize.height();
     const short screenWidth = (short)activeScreenSize.width();
     for (int i=0; i<m_numberOfLayouts; i++) {
         if (screenHeight==m_layoutHeaders[i].height &&
-            screenWidth==m_layoutHeaders[i].width &&
-            mirrored==m_layoutHeaders[i].mirroring) {
+            screenWidth==m_layoutHeaders[i].width) {
             activeLayoutIndex = i;
             break;
-        }
-    }
-
-    //not found, lets try without mirroring info
-    if (activeLayoutIndex==-1){
-        for (int i=0; i<m_numberOfLayouts; i++) {
-            if (screenHeight==m_layoutHeaders[i].height &&
-                screenWidth==m_layoutHeaders[i].width) {
-                activeLayoutIndex = i;
-                break;
-            }
         }
     }
 
@@ -971,9 +975,8 @@ void QS60StylePrivate::setActiveLayout()
         const QSysInfo::S60Version currentRelease = QSysInfo::s60Version();
         const bool landscape = screenHeight < screenWidth;
 
-        activeLayoutIndex = (currentRelease == QSysInfo::SV_S60_3_1 || currentRelease == QSysInfo::SV_S60_3_2) ? 0 : 4;
-        activeLayoutIndex += (!landscape) ? 2 : 0;
-        activeLayoutIndex += (!mirrored) ? 1 : 0;
+        activeLayoutIndex = (currentRelease == QSysInfo::SV_S60_3_1 || currentRelease == QSysInfo::SV_S60_3_2) ? 0 : 2;
+        activeLayoutIndex += (!landscape) ? 1 : 0;
     }
 
     m_pmPointer = data[activeLayoutIndex];
@@ -1130,9 +1133,21 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
 
 QPixmap QS60StylePrivate::backgroundTexture()
 {
+    bool createNewBackground = false;
     if (!m_background) {
+        createNewBackground = true;
+    } else {
+        //if background brush does not match screensize, re-create it
+        if (m_background->width() != S60->screenWidthInPixels ||
+            m_background->height() != S60->screenHeightInPixels) {
+            delete m_background;
+            createNewBackground = true;
+        }
+    }
+
+    if (createNewBackground) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
-                QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), 0, SkinElementFlags());
+            QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), 0, SkinElementFlags());
         m_background = new QPixmap(background);
     }
     return *m_background;
@@ -1140,8 +1155,7 @@ QPixmap QS60StylePrivate::backgroundTexture()
 
 QSize QS60StylePrivate::screenSize()
 {
-    const TSize screenSize = QS60Data::screenDevice()->SizeInPixels();
-    return QSize(screenSize.iWidth, screenSize.iHeight);
+    return QSize(S60->screenWidthInPixels, S60->screenHeightInPixels);
 }
 
 QS60Style::QS60Style()

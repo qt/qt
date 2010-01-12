@@ -3064,6 +3064,8 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
 {
     Q_Q(const QTreeView);
     QPixmap pixmap(rect.size());
+    if (rect.size().isEmpty())
+        return pixmap;
     pixmap.fill(Qt::transparent); //the base might not be opaque, and we don't want uninitialized pixels.
     QPainter painter(&pixmap);
     painter.fillRect(QRect(QPoint(0,0), rect.size()), q->palette().base());

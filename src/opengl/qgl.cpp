@@ -1436,6 +1436,18 @@ void QGLContextGroup::removeGuard(QGLSharedResourceGuard *guard)
         m_guards = guard->m_next;
 }
 
+const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
+{
+    if (!ctx)
+        return 0;
+    QList<const QGLContext *> shares
+        (QGLContextPrivate::contextGroup(ctx)->shares());
+    if (shares.size() >= 2)
+        return (ctx == shares.at(0)) ? shares.at(1) : shares.at(0);
+    else
+        return 0;
+}
+
 QGLContextPrivate::~QGLContextPrivate()
 {
     if (!group->m_refs.deref()) {
@@ -1484,6 +1496,8 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     current_fbo = 0;
     default_fbo = 0;
     active_engine = 0;
+    for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
+        vertexAttributeArraysEnabledState[i] = false;
 }
 
 QGLContext* QGLContext::currentCtx = 0;
@@ -1729,12 +1743,6 @@ struct DDSFormat {
 #define GL_GENERATE_MIPMAP_HINT_SGIS  0x8192
 #endif
 
-Q_GLOBAL_STATIC(QGLShareRegister, _qgl_share_reg)
-Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
-{
-    return _qgl_share_reg();
-}
-
 /*!
     \class QGLContext
     \brief The QGLContext class encapsulates an OpenGL rendering context.
@@ -1873,6 +1881,35 @@ QGLContext::~QGLContext()
 void QGLContextPrivate::cleanup()
 {
 }
+
+#define ctx q_ptr
+void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled)
+{
+    Q_ASSERT(arrayIndex < QT_GL_VERTEX_ARRAY_TRACKED_COUNT);
+    Q_ASSERT(glEnableVertexAttribArray);
+
+    if (vertexAttributeArraysEnabledState[arrayIndex] && !enabled)
+        glDisableVertexAttribArray(arrayIndex);
+
+    if (!vertexAttributeArraysEnabledState[arrayIndex] && enabled)
+        glEnableVertexAttribArray(arrayIndex);
+
+    vertexAttributeArraysEnabledState[arrayIndex] = enabled;
+}
+
+void QGLContextPrivate::syncGlState()
+{
+    Q_ASSERT(glEnableVertexAttribArray);
+    for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i) {
+        if (vertexAttributeArraysEnabledState[i])
+            glEnableVertexAttribArray(i);
+        else
+            glDisableVertexAttribArray(i);
+    }
+
+}
+#undef ctx
+
 
 /*!
     \overload
@@ -2954,7 +2991,7 @@ bool QGLContext::create(const QGLContext* shareContext)
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
     if (d->sharing)  // ok, we managed to share
-        qgl_share_reg()->addShare(this, shareContext);
+        QGLContextGroup::addShare(this, shareContext);
     return d->valid;
 }
 
@@ -4302,6 +4339,7 @@ static void qt_save_gl_state()
     glDisable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
     glDisable(GL_STENCIL_TEST);
+    glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -4355,6 +4393,10 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
    \note This function clears the stencil buffer.
 
    \note This function is not supported on OpenGL/ES systems.
+
+   \note This function temporarily disables depth-testing when the
+   text is drawn.
+
    \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 
@@ -4373,9 +4415,9 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     int height = d->glcx->device()->height();
     bool auto_swap = autoBufferSwap();
 
+    QPaintEngine::Type oldEngineType = qgl_engine_selector()->preferredPaintEngine();
+    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
     QPaintEngine *engine = paintEngine();
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
     QPainter *p;
     bool reuse_painter = false;
     if (engine->isActive()) {
@@ -4395,11 +4437,6 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->disable_clear_on_painter_begin = true;
-        if (engine->type() == QPaintEngine::OpenGL2) {
-            qt_save_gl_state();
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-        }
         p = new QPainter(this);
     }
 
@@ -4423,11 +4460,8 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         delete p;
         setAutoBufferSwap(auto_swap);
         d->disable_clear_on_painter_begin = false;
-        if (engine->type() == QPaintEngine::OpenGL2)
-            qt_restore_gl_state();
     }
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+    qgl_engine_selector()->setPreferredPaintEngine(oldEngineType);
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
@@ -4445,6 +4479,13 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     have the labels move with the model as it is rotated etc.
 
     \note This function is not supported on OpenGL/ES systems.
+
+    \note If depth testing is enabled before this function is called,
+    then the drawn text will be depth-tested against the models that
+    have already been drawn in the scene.  Use \c{glDisable(GL_DEPTH_TEST)}
+    before calling this function to annotate the models without
+    depth-testing the text.
+
     \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 void QGLWidget::renderText(double x, double y, double z, const QString &str, const QFont &font, int)
@@ -4468,9 +4509,9 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
                 &win_x, &win_y, &win_z);
     win_y = height - win_y; // y is inverted
 
+    QPaintEngine::Type oldEngineType = qgl_engine_selector()->preferredPaintEngine();
+    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
     QPaintEngine *engine = paintEngine();
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
     QPainter *p;
     bool reuse_painter = false;
     bool use_depth_testing = glIsEnabled(GL_DEPTH_TEST);
@@ -4484,8 +4525,6 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->disable_clear_on_painter_begin = true;
-        if (engine->type() == QPaintEngine::OpenGL2)
-            qt_save_gl_state();
         p = new QPainter(this);
     }
 
@@ -4514,13 +4553,10 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     } else {
         p->end();
         delete p;
-        if (engine->type() == QPaintEngine::OpenGL2)
-            qt_restore_gl_state();
         setAutoBufferSwap(auto_swap);
         d->disable_clear_on_painter_begin = false;
     }
-    if (engine->type() == QPaintEngine::OpenGL2)
-        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+    qgl_engine_selector()->setPreferredPaintEngine(oldEngineType);
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
@@ -4916,8 +4952,6 @@ void QGLWidgetPrivate::initContext(QGLContext *context, const QGLWidget* shareWi
 
     if (!glcx)
         glcx = new QGLContext(QGLFormat::defaultFormat(), q);
-
-    q->setAttribute(Qt::WA_NoSystemBackground);
 }
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
@@ -4941,7 +4975,7 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
 }
 #endif
 
-void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *share) {
+void QGLContextGroup::addShare(const QGLContext *context, const QGLContext *share) {
     Q_ASSERT(context && share);
     if (context->d_ptr->group == share->d_ptr->group)
         return;
@@ -4962,11 +4996,7 @@ void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *sha
     group->m_shares.append(context);
 }
 
-QList<const QGLContext *> QGLShareRegister::shares(const QGLContext *context) {
-    return context->d_ptr->group->m_shares;
-}
-
-void QGLShareRegister::removeShare(const QGLContext *context) {
+void QGLContextGroup::removeShare(const QGLContext *context) {
     // Remove the context from the group.
     QGLContextGroup *group = context->d_ptr->group;
     if (group->m_shares.isEmpty())

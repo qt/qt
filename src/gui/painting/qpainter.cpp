@@ -1329,7 +1329,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     of composition modes, brushes, clipping, transformation, etc, is
     close to an impossible task because of the number of
     permutations. As a compromise we have selected a subset of the
-    QPainter API and backends, were performance is guaranteed to be as
+    QPainter API and backends, where performance is guaranteed to be as
     good as we can sensibly get it for the given combination of
     hardware and software.
 

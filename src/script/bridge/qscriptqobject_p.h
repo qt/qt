@@ -78,6 +78,10 @@ public:
     virtual bool getOwnPropertySlot(QScriptObject*, JSC::ExecState*,
                                     const JSC::Identifier& propertyName,
                                     JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(QScriptObject*, JSC::ExecState*,
+                                    const JSC::Identifier& propertyName,
+                                    JSC::PropertyDescriptor&);
+
     virtual void put(QScriptObject*, JSC::ExecState* exec,
                      const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);

@@ -1221,9 +1221,10 @@ void WriteInitialization::writeProperties(const QString &varName,
             const DomRect *r = p->elementRect();
             m_output << m_indent << varName << "->resize(" << r->elementWidth() << ", " << r->elementHeight() << ");\n";
             continue;
-        } else if (propertyName == QLatin1String("buttonGroupId") && buttonGroupWidget) { // Q3ButtonGroup support
-            m_output << m_indent << m_driver->findOrInsertWidget(buttonGroupWidget) << "->insert("
-                   << varName << ", " << p->elementNumber() << ");\n";
+        } else if (propertyName == QLatin1String("buttonGroupId")) { // Q3ButtonGroup support
+            if (buttonGroupWidget)
+                m_output << m_indent << m_driver->findOrInsertWidget(buttonGroupWidget) << "->insert("
+                         << varName << ", " << p->elementNumber() << ");\n";
             continue;
         } else if (propertyName == QLatin1String("currentRow") // QListWidget::currentRow
                     && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QListWidget"))) {

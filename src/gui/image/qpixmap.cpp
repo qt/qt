@@ -357,7 +357,9 @@ QPixmap QPixmap::copy(const QRect &rect) const
     if (isNull())
         return QPixmap();
 
-    const QRect r = rect.isEmpty() ? QRect(0, 0, width(), height()) : rect;
+    QRect r(0, 0, width(), height());
+    if (!rect.isEmpty())
+        r = r.intersected(rect);
 
     QPixmapData *d = data->createCompatiblePixmapData();
     d->copy(data.data(), r);
@@ -831,14 +833,13 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     if (QPixmapCache::find(key, *this))
         return true;
 
-    if (!data)
-        data = QPixmapData::create(0, 0, QPixmapData::PixmapType);
-
-    if (data->fromFile(fileName, format, flags)) {
+    QPixmapData *tmp = QPixmapData::create(0, 0, QPixmapData::PixmapType);
+    if (tmp->fromFile(fileName, format, flags)) {
+        data = tmp;
         QPixmapCache::insert(key, *this);
         return true;
     }
-
+    delete tmp;
     return false;
 }
 

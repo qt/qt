@@ -68,8 +68,8 @@ private:
 
 void tst_QAudioInput::initTestCase()
 {
-    format.setFrequency(8000);
-    format.setChannels(1);
+    format.setSampleRate(8000);
+    format.setChannelCount(1);
     format.setSampleSize(8);
     format.setCodec("audio/pcm");
     format.setByteOrder(QAudioFormat::LittleEndian);
@@ -94,8 +94,8 @@ void tst_QAudioInput::settings()
         // Confirm the setting we added in the init function.
         QAudioFormat f = audio->format();
 
-        QVERIFY(format.channels() == f.channels());
-        QVERIFY(format.frequency() == f.frequency());
+        QVERIFY(format.channelCount() == f.channelCount());
+        QVERIFY(format.sampleRate() == f.sampleRate());
         QVERIFY(format.sampleSize() == f.sampleSize());
         QVERIFY(format.codec() == f.codec());
         QVERIFY(format.byteOrder() == f.byteOrder());

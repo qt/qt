@@ -78,20 +78,20 @@ QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
 {
     QAudioFormat nearest;
     if(mode == QAudio::AudioOutput) {
-        nearest.setFrequency(44100);
-        nearest.setChannels(2);
+        nearest.setSampleRate(44100);
+        nearest.setChannelCount(2);
         nearest.setByteOrder(QAudioFormat::LittleEndian);
         nearest.setSampleType(QAudioFormat::SignedInt);
         nearest.setSampleSize(16);
         nearest.setCodec(QLatin1String("audio/pcm"));
     } else {
-        nearest.setFrequency(8000);
-        nearest.setChannels(1);
+        nearest.setSampleRate(8000);
+        nearest.setChannelCount(1);
         nearest.setSampleType(QAudioFormat::UnSignedInt);
         nearest.setSampleSize(8);
         nearest.setCodec(QLatin1String("audio/pcm"));
         if(!testSettings(nearest)) {
-            nearest.setChannels(2);
+            nearest.setChannelCount(2);
             nearest.setSampleSize(16);
             nearest.setSampleType(QAudioFormat::SignedInt);
         }
@@ -253,8 +253,8 @@ bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
     snd_pcm_hw_params_any( handle, params );
 
     // set the values!
-    snd_pcm_hw_params_set_channels(handle,params,format.channels());
-    snd_pcm_hw_params_set_rate(handle,params,format.frequency(),dir);
+    snd_pcm_hw_params_set_channels(handle,params,format.channelCount());
+    snd_pcm_hw_params_set_rate(handle,params,format.sampleRate(),dir);
     switch(format.sampleSize()) {
         case 8:
             if(format.sampleType() == QAudioFormat::SignedInt)
@@ -295,18 +295,18 @@ bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
     } else
         testCodec = true;
 
-    if(err>=0 && format.channels() != -1) {
-        err = snd_pcm_hw_params_test_channels(handle,params,format.channels());
+    if(err>=0 && format.channelCount() != -1) {
+        err = snd_pcm_hw_params_test_channels(handle,params,format.channelCount());
         if(err>=0)
-            err = snd_pcm_hw_params_set_channels(handle,params,format.channels());
+            err = snd_pcm_hw_params_set_channels(handle,params,format.channelCount());
         if(err>=0)
             testChannel = true;
     }
 
-    if(err>=0 && format.frequency() != -1) {
-        err = snd_pcm_hw_params_test_rate(handle,params,format.frequency(),0);
+    if(err>=0 && format.sampleRate() != -1) {
+        err = snd_pcm_hw_params_test_rate(handle,params,format.sampleRate(),0);
         if(err>=0)
-            err = snd_pcm_hw_params_set_rate(handle,params,format.frequency(),dir);
+            err = snd_pcm_hw_params_set_rate(handle,params,format.sampleRate(),dir);
         if(err>=0)
             testFreq = true;
     }
@@ -403,6 +403,7 @@ void QAudioDeviceInfoInternal::updateLists()
 
 QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
 {
+    QList<QByteArray> allDevices;
     QList<QByteArray> devices;
     QByteArray filter;
 
@@ -430,6 +431,7 @@ QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
         if((name != NULL) && (descr != NULL) && ((io == NULL) || (io == filter))) {
             QString deviceName = QLatin1String(name);
             QString deviceDescription = QLatin1String(descr);
+            allDevices.append(deviceName.toLocal8Bit().constData());
             if(deviceDescription.contains(QLatin1String("Default Audio Device")))
                 devices.append(deviceName.toLocal8Bit().constData());
         }
@@ -457,6 +459,9 @@ QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
     if (idx > 0)
         devices.append("default");
 #endif
+    if (devices.size() == 0 && allDevices.size() > 0)
+        return allDevices;
+
     return devices;
 }
 

@@ -578,12 +578,13 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     protected functions connectNotify() and disconnectNotify() make
     it possible to track connections.
 
-    QObjects organize themselves in object trees. When you create a
-    QObject with another object as parent, the object will
-    automatically add itself to the parent's children() list. The
-    parent takes ownership of the object; i.e., it will automatically
-    delete its children in its destructor. You can look for an object
-    by name and optionally type using findChild() or findChildren().
+    QObjects organize themselves in \l {Object Trees and Object
+    Ownership} {object trees}. When you create a QObject with another
+    object as parent, the object will automatically add itself to the
+    parent's children() list. The parent takes ownership of the
+    object; i.e., it will automatically delete its children in its
+    destructor. You can look for an object by name and optionally type
+    using findChild() or findChildren().
 
     Every object has an objectName() and its class name can be found
     via the corresponding metaObject() (see QMetaObject::className()).
@@ -682,7 +683,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     \l{Writing Source Code for Translation} document.
 
     \sa QMetaObject, QPointer, QObjectCleanupHandler, Q_DISABLE_COPY()
-        {Object Trees and Object Ownership}
+    \sa {Object Trees and Object Ownership}
 */
 
 /*!

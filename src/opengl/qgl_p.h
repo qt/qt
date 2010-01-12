@@ -222,9 +222,8 @@ class QGLSharedResourceGuard;
 typedef QHash<QString, GLuint> QGLDDSCache;
 
 // QGLContextPrivate has the responsibility of creating context groups.
-// QGLContextPrivate and QGLShareRegister will both maintain the reference counter and destroy
+// QGLContextPrivate maintains the reference counter and destroys
 // context groups when needed.
-// QGLShareRegister has the responsibility of keeping the context pointer up to date.
 class QGLContextGroup
 {
 public:
@@ -233,9 +232,13 @@ public:
     QGLExtensionFuncs &extensionFuncs() {return m_extensionFuncs;}
     const QGLContext *context() const {return m_context;}
     bool isSharing() const { return m_shares.size() >= 2; }
+    QList<const QGLContext *> shares() const { return m_shares; }
 
     void addGuard(QGLSharedResourceGuard *guard);
     void removeGuard(QGLSharedResourceGuard *guard);
+
+    static void addShare(const QGLContext *context, const QGLContext *share);
+    static void removeShare(const QGLContext *context);
 private:
     QGLContextGroup(const QGLContext *context) : m_context(context), m_guards(0), m_refs(1) { }
 
@@ -249,13 +252,20 @@ private:
 
     void cleanupResources(const QGLContext *ctx);
 
-    friend class QGLShareRegister;
     friend class QGLContext;
     friend class QGLContextPrivate;
     friend class QGLContextResource;
 };
 
+// Get the context that resources for "ctx" will transfer to once
+// "ctx" is destroyed.  Returns null if nothing is sharing with ctx.
+Q_OPENGL_EXPORT const QGLContext *qt_gl_transfer_context(const QGLContext *);
+
 class QGLTexture;
+
+// This probably needs to grow to GL_MAX_VERTEX_ATTRIBS, but 3 is ok for now as that's
+// all the GL2 engine uses:
+#define QT_GL_VERTEX_ARRAY_TRACKED_COUNT 3
 
 class QGLContextPrivate
 {
@@ -275,6 +285,9 @@ public:
     int maxTextureSize();
 
     void cleanup();
+
+    void setVertexAttribArrayEnabled(int arrayIndex, bool enabled = true);
+    void syncGlState(); // Makes sure the GL context's state is what we think it is
 
 #if defined(Q_WS_WIN)
     HGLRC rc;
@@ -331,6 +344,8 @@ public:
     GLuint current_fbo;
     GLuint default_fbo;
     QPaintEngine *active_engine;
+
+    bool vertexAttributeArraysEnabledState[QT_GL_VERTEX_ARRAY_TRACKED_COUNT];
 
     static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }
 
@@ -394,19 +409,6 @@ public:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
-
-class Q_OPENGL_EXPORT QGLShareRegister
-{
-public:
-    QGLShareRegister() {}
-    ~QGLShareRegister() {}
-
-    void addShare(const QGLContext *context, const QGLContext *share);
-    QList<const QGLContext *> shares(const QGLContext *context);
-    void removeShare(const QGLContext *context);
-};
-
-extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
 
 // Temporarily make a context current if not already current or
 // shared with the current contex.  The previous context is made

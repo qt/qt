@@ -59,6 +59,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
+#include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -135,7 +136,7 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
     Q_Q(const QDial);
     double yy = (double)q->height()/2.0 - p.y();
     double xx = (double)p.x() - q->width()/2.0;
-    double a = (xx || yy) ? atan2(yy, xx) : 0;
+    double a = (xx || yy) ? qAtan2(yy, xx) : 0;
 
     if (a < Q_PI / -2)
         a = a + Q_PI * 2;
