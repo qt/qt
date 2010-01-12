@@ -128,7 +128,7 @@ void tst_lupdate::doCompare(const QStringList &actual, const QString &expectedFn
 {
     QFile file(expectedFn);
     QVERIFY2(file.open(QIODevice::ReadOnly | QIODevice::Text), qPrintable(expectedFn));
-    QStringList expected = QString(file.readAll()).trimmed().split('\n');
+    QStringList expected = QString(file.readAll()).split('\n');
 
     int ei = 0, ai = 0, em = expected.size(), am = actual.size();
     int oei = 0, oai = 0, oem = em, oam = am;
@@ -217,7 +217,7 @@ void tst_lupdate::doCompare(const QString &actualFn, const QString &expectedFn, 
 {
     QFile afile(actualFn);
     QVERIFY2(afile.open(QIODevice::ReadOnly | QIODevice::Text), qPrintable(actualFn));
-    QStringList actual = QString(afile.readAll()).trimmed().split('\n');
+    QStringList actual = QString(afile.readAll()).split('\n');
 
     doCompare(actual, expectedFn, err);
 }
@@ -282,7 +282,7 @@ void tst_lupdate::good()
     proc.setProcessChannelMode(QProcess::MergedChannels);
     proc.start(m_cmdLupdate + ' ' + lupdatecmd, QIODevice::ReadWrite | QIODevice::Text);
     QVERIFY2(proc.waitForFinished(5000), qPrintable(lupdatecmd));
-    QByteArray output = proc.readAll().trimmed();
+    QByteArray output = proc.readAll();
     QVERIFY2(proc.exitStatus() == QProcess::NormalExit,
              "\"lupdate " + lupdatecmd.toLatin1() + "\" crashed\n" + output);
     QVERIFY2(!proc.exitCode(),
