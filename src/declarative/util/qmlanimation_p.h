@@ -74,7 +74,6 @@ class Q_AUTOTEST_EXPORT QmlAbstractAnimation : public QObject, public QmlPropert
     Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged())
     Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
     Q_CLASSINFO("DefaultMethod", "start()")
-    Q_INTERFACES(QmlParserStatus)
 
 public:
     QmlAbstractAnimation(QObject *parent=0);
