@@ -64,6 +64,7 @@ private slots:
     }
 
     void domExceptionCodes();
+    void callbackException();
     void staticStateValues();
     void instanceStateValues();
     void constructor();
@@ -157,6 +158,31 @@ void tst_xmlhttprequest::domExceptionCodes()
     delete object;
 }
 
+#define TRY_WAIT(expr) \
+    do { \
+        for (int ii = 0; ii < 6; ++ii) { \
+            if ((expr)) break; \
+            QTest::qWait(50); \
+        } \
+        QVERIFY((expr)); \
+    } while (false) 
+
+void tst_xmlhttprequest::callbackException()
+{
+    QString expect = TEST_FILE("callbackException.qml").toString() + ":16: Error: Exception from Callback";
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+
+    QmlComponent component(&engine, TEST_FILE("callbackException.qml"));
+    QObject *object = component.beginCreate(engine.rootContext());
+    QVERIFY(object != 0);
+    object->setProperty("url", "testdocument.html");
+    component.completeCreate();
+
+    TRY_WAIT(object->property("threw").toBool() == true);
+
+    delete object;
+}
+
 // Test that the state value properties on the XMLHttpRequest constructor have the correct values.
 // ### WebKit does not do this, but it seems to fit the standard and QML better
 void tst_xmlhttprequest::staticStateValues()
@@ -218,15 +244,6 @@ void tst_xmlhttprequest::defaultState()
 
     delete object;
 }
-
-#define TRY_WAIT(expr) \
-    do { \
-        for (int ii = 0; ii < 6; ++ii) { \
-            if ((expr)) break; \
-            QTest::qWait(50); \
-        } \
-        QVERIFY((expr)); \
-    } while (false) 
 
 // Test valid XMLHttpRequest.open() calls
 void tst_xmlhttprequest::open()
