@@ -897,9 +897,11 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         {
             int type = registers[instr->cleanup.reg].gettype();
             if (type == qMetaTypeId<QVariant>()) {
-                ((QVariant *)registers[instr->cleanup.reg].typeDataPtr())->~QVariant();
+                registers[instr->cleanup.reg].getvariantptr()->~QVariant();
             } else if (type == QMetaType::QString) {
-                ((QString *)registers[instr->cleanup.reg].typeDataPtr())->~QString();
+                registers[instr->cleanup.reg].getstringptr()->~QString();
+            } else if (type == QMetaType::QUrl) {
+                registers[instr->cleanup.reg].geturlptr()->~QUrl();
             }
         }
         break;
