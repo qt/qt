@@ -161,8 +161,8 @@ int QmlCompiledData::indexForLocation(const QmlParser::LocationSpan &l)
     return rv;
 }
 
-QmlCompiledData::QmlCompiledData()
-: importCache(0), root(0), rootPropertyCache(0)
+QmlCompiledData::QmlCompiledData(QmlEngine *engine)
+: QmlCleanup(engine), importCache(0), root(0), rootPropertyCache(0)
 {
 }
 
@@ -188,6 +188,17 @@ QmlCompiledData::~QmlCompiledData()
     qDeleteAll(cachedPrograms);
     qDeleteAll(cachedClosures);
 }
+
+void QmlCompiledData::clear()
+{
+    qDeleteAll(cachedPrograms);
+    qDeleteAll(cachedClosures);
+    for (int ii = 0; ii < cachedClosures.count(); ++ii)
+        cachedClosures[ii] = 0;
+    for (int ii = 0; ii < cachedPrograms.count(); ++ii)
+        cachedPrograms[ii] = 0;
+}
+
 
 QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt, const QBitField &bindings) const
 {
