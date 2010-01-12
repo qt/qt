@@ -1152,7 +1152,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         if (d->ic) {
             delete d->ic;
         } else {
-            QInputContext *ic = inputContext();
+            QInputContext *ic = QApplicationPrivate::inputContext;
             if (ic) {
                 ic->widgetDestroyed(this);
             }
