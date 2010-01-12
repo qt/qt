@@ -88,7 +88,7 @@ public:
 
     QmlTransition *findTransition(const QString &from, const QString &to);
     void setCurrentStateInternal(const QString &state, bool = false);
-    void updateAutoState();
+    bool updateAutoState();
 };
 
 /*!
@@ -231,25 +231,30 @@ void QmlStateGroup::componentComplete()
 {
     Q_D(QmlStateGroup);
     d->componentComplete = true;
-    d->updateAutoState();
-    if (!d->currentState.isEmpty()) {
+
+    if (d->updateAutoState()) {
+        return;
+    } else if (!d->currentState.isEmpty()) {
         QString cs = d->currentState;
         d->currentState = QString();
         d->setCurrentStateInternal(cs, true);
     }
 }
 
-void QmlStateGroup::updateAutoState()
+/*!
+    Returns true if the state was changed, otherwise false.
+*/
+bool QmlStateGroup::updateAutoState()
 {
     Q_D(QmlStateGroup);
-    d->updateAutoState();
+    return d->updateAutoState();
 }
 
-void QmlStateGroupPrivate::updateAutoState()
+bool QmlStateGroupPrivate::updateAutoState()
 {
     Q_Q(QmlStateGroup);
     if (!componentComplete)
-        return;
+        return false;
 
     bool revert = false;
     for (int ii = 0; ii < states.count(); ++ii) {
@@ -260,16 +265,25 @@ void QmlStateGroupPrivate::updateAutoState()
                     if (stateChangeDebug()) 
                         qWarning() << "Setting auto state due to:" 
                                    << state->when()->expression();
-                    q->setState(state->name());
-                    return;
+                    if (currentState != state->name()) {
+                        q->setState(state->name());
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } else if (state->name() == currentState) {
                     revert = true;
                 }
             }
         }
     }
-    if (revert)
+    if (revert) {
+        bool rv = currentState != QString();
         q->setState(QString());
+        return rv;
+    } else {
+        return false;
+    }
 }
 
 QmlTransition *QmlStateGroupPrivate::findTransition(const QString &from, const QString &to)

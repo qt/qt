@@ -82,7 +82,7 @@ Q_SIGNALS:
 
 private:
     friend class QmlState;
-    void updateAutoState();
+    bool updateAutoState();
     void removeState(QmlState *state);
 };
 
