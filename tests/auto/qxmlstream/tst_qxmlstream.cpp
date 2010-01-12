@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -559,6 +559,7 @@ private slots:
     void hasAttributeSignature() const;
     void hasAttribute() const;
     void writeWithCodec() const;
+    void writeWithUtf8Codec() const;
     void writeWithStandalone() const;
     void entitiesAndWhitespace_1() const;
     void entitiesAndWhitespace_2() const;
@@ -1303,7 +1304,6 @@ void tst_QXmlStream::hasAttribute() const
 
 void tst_QXmlStream::writeWithCodec() const
 {
-
     QByteArray outarray;
     QXmlStreamWriter writer(&outarray);
     writer.setAutoFormatting(true);
@@ -1324,6 +1324,20 @@ void tst_QXmlStream::writeWithCodec() const
 
     QVERIFY(outarray.contains(latin2));
     QVERIFY(outarray.contains(codec->name()));
+}
+
+void tst_QXmlStream::writeWithUtf8Codec() const
+{
+    QByteArray outarray;
+    QXmlStreamWriter writer(&outarray);
+
+    QTextCodec *codec = QTextCodec::codecForMib(106); // utf-8
+    QVERIFY(codec);
+    writer.setCodec(codec);
+
+    writer.writeStartDocument("1.0");
+    static const char begin[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    QVERIFY(outarray.startsWith(begin));
 }
 
 void tst_QXmlStream::writeWithStandalone() const
