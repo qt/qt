@@ -516,7 +516,11 @@ void Element::setAttribute(const AtomicString& name, const AtomicString& value, 
         return;
     }
 
+#if COMPILER(RVCT)
+    const AtomicString localName = shouldIgnoreAttributeCase(this) ? name.lower() : name;
+#else
     const AtomicString& localName = shouldIgnoreAttributeCase(this) ? name.lower() : name;
+#endif
 
     // allocate attributemap if necessary
     Attribute* old = attributes(false)->getAttributeItem(localName, false);

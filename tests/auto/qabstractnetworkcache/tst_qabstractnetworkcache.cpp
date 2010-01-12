@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -136,7 +136,7 @@ void tst_QAbstractNetworkCache::expires_data()
     QTest::newRow("200-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_expires200.cgi" << AlwaysFalse;
     QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_expires200.cgi" << false;
     QTest::newRow("200-2") << QNetworkRequest::AlwaysCache << "httpcachetest_expires200.cgi" << AlwaysTrue;
-    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_expires200.cgi" << true;
+    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_expires200.cgi" << false;
 }
 
 void tst_QAbstractNetworkCache::expires()
@@ -158,7 +158,7 @@ void tst_QAbstractNetworkCache::lastModified_data()
     QTest::newRow("200-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_lastModified200.cgi" << AlwaysFalse;
     QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_lastModified200.cgi" << false;
     QTest::newRow("200-2") << QNetworkRequest::AlwaysCache << "httpcachetest_lastModified200.cgi" << AlwaysTrue;
-    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_lastModified200.cgi" << true;
+    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_lastModified200.cgi" << false;
 }
 
 void tst_QAbstractNetworkCache::lastModified()
@@ -180,7 +180,7 @@ void tst_QAbstractNetworkCache::etag_data()
     QTest::newRow("200-0") << QNetworkRequest::AlwaysNetwork << "httpcachetest_etag200.cgi" << AlwaysFalse;
     QTest::newRow("200-1") << QNetworkRequest::PreferNetwork << "httpcachetest_etag200.cgi" << false;
     QTest::newRow("200-2") << QNetworkRequest::AlwaysCache << "httpcachetest_etag200.cgi" << AlwaysTrue;
-    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_etag200.cgi" << true;
+    QTest::newRow("200-3") << QNetworkRequest::PreferCache << "httpcachetest_etag200.cgi" << false;
 }
 
 void tst_QAbstractNetworkCache::etag()
