@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1363,7 +1363,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 }
             }
 
-            int rightValue = widget ? widget->contentsRect().right() : 0;
+            int rightValue = widget ? widget->contentsRect().right() : voptAdj.rect.right();
 
             if (isScrollBarVisible)
                 rightValue -= scrollBarWidth;
