@@ -68,6 +68,7 @@ QtGui
     * [QTBUG-6654] Fix crashes when deleting QGraphicsItems in touch
       event handlers.
 
+
 QtDBus
 ------
 
@@ -151,6 +152,12 @@ Qt for Linux/X11
  - QFileSystemWatcher
     * [QTBUG-4840] Fix memory leak in the dnotify implementation.
 
+ - QIcon
+    * [QTBUG-6121] Fixed a problem causing svg-based icon themes to look fuzzy.
+
+ - QGtkStyle
+    * [QTBUG-6484] Ensure that gtk-enable-mnemonics is respected.
+
 Qt for Windows
 --------------
 
@@ -161,6 +168,9 @@ Qt for Windows
     * [QTBUG-6083] Fix a performance regression introduced in 4.6.0
       that would cause all Qt posted events to be sent at 15-16ms
       intervals (instead of as quickly as possible).
+ - Vista/XP styles
+    * [QTBUG-6271] Fixed a compatibility issue with MDI windows in 
+    certain non-standard themes.
 
 Qt for Mac OS X
 ---------------
