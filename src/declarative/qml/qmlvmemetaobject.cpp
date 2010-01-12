@@ -333,7 +333,7 @@ QScriptValue QmlVMEMetaObject::vmeMethod(int index)
         return static_cast<QmlVMEMetaObject *>(parent)->vmeMethod(index);
     }
     int plainSignals = metaData->signalCount + metaData->propertyCount + metaData->aliasCount;
-    Q_ASSERT(index >= (methodOffset + plainSignals) && index < (methodOffset + metaData->methodCount));
+    Q_ASSERT(index >= (methodOffset + plainSignals) && index < (methodOffset + plainSignals + metaData->methodCount));
     return method(index - methodOffset - plainSignals);
 }
 
