@@ -16,12 +16,12 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef PHONON_MMF_AUDIOEQUALIZER_H
-#define PHONON_MMF_AUDIOEQUALIZER_H
+#ifndef PHONON_MMF_STEREOWIDENING_H
+#define PHONON_MMF_STEREOWIDENING_H
 
 #include "abstractaudioeffect.h"
 
-class CAudioEqualizer;
+class CStereoWidening;
 
 QT_BEGIN_NAMESPACE
 
@@ -30,18 +30,13 @@ namespace Phonon
 namespace MMF
 {
 /**
- * @short A classic equalizer.
- *
- * The equalizer has a number of bands, and each band has a frequency, and a
- * volume. With Phonon's API, this is modeled such that each band is one
- * Phonon::EffectParameter, where Phonon::EffectParameter::id() is the band
- * number, and the setting is the volume level.
+ * @short A "bass boost" effect.
  */
-class AudioEqualizer : public AbstractAudioEffect
+class StereoWidening : public AbstractAudioEffect
 {
     Q_OBJECT
 public:
-    AudioEqualizer(QObject *parent, const QList<EffectParameter> &parameters);
+    StereoWidening(QObject *parent, const QList<EffectParameter>& parameters);
 
     // Static interface required by EffectFactory
     static const char* description();
@@ -51,11 +46,11 @@ public:
 protected:
     // AbstractAudioEffect
     virtual void createEffect(AudioPlayer::NativePlayer *player);
-    virtual int effectParameterChanged(const EffectParameter &param,
-                                       const QVariant &value);
+    virtual int parameterChanged(const EffectParameter &param,
+                                 const QVariant &value);
 
 private:
-    CAudioEqualizer *concreteEffect();
+    CStereoWidening *concreteEffect();
 
 };
 }

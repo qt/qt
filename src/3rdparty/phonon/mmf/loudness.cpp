@@ -16,8 +16,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <BassBoostBase.h>
-#include "bassboost.h"
+#include <LoudnessBase.h>
+#include "loudness.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -25,13 +25,13 @@ using namespace Phonon;
 using namespace Phonon::MMF;
 
 // Define functions which depend on concrete native effect class name
-PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(BassBoost)
+PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(Loudness)
 
-/*! \class MMF::BassBoost
+/*! \class MMF::Loudness
   \internal
 */
 
-BassBoost::BassBoost(QObject *parent, const QList<EffectParameter> &parameters)
+Loudness::Loudness(QObject *parent, const QList<EffectParameter>& parameters)
     :   AbstractAudioEffect::AbstractAudioEffect(parent, parameters)
 {
 
@@ -41,16 +41,16 @@ BassBoost::BassBoost(QObject *parent, const QList<EffectParameter> &parameters)
 // Static functions
 //-----------------------------------------------------------------------------
 
-const char* BassBoost::description()
+const char* Loudness::description()
 {
-    return "Bass boost";
+    return "Loudness";
 }
 
-bool BassBoost::getParameters(CMdaAudioOutputStream *stream,
+bool Loudness::getParameters(CMdaAudioOutputStream *stream,
     QList<EffectParameter> &parameters)
 {
-    QScopedPointer<CBassBoost> effect;
-    TRAPD(err, effect.reset(CBassBoost::NewL(*stream)));
+    QScopedPointer<CLoudness> effect;
+    TRAPD(err, effect.reset(CLoudness::NewL(*stream)));
     return (KErrNone == err);
 }
 
