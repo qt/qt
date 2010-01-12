@@ -74,10 +74,10 @@ class QmlComponent;
 class QmlContext;
 
 class QScriptProgram;
-class Q_AUTOTEST_EXPORT QmlCompiledData : public QmlRefCount
+class Q_AUTOTEST_EXPORT QmlCompiledData : public QmlRefCount, public QmlCleanup
 {
 public:
-    QmlCompiledData();
+    QmlCompiledData(QmlEngine *engine);
     virtual ~QmlCompiledData();
 
     QString name;
@@ -123,6 +123,10 @@ public:
     QList<QUrl> urls;
 
     void dumpInstructions();
+
+protected:
+    virtual void clear(); // From QmlCleanup
+
 private:
     void dump(QmlInstruction *, int idx = -1);
     QmlCompiledData(const QmlCompiledData &other);

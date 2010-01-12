@@ -472,6 +472,19 @@ static bool findproperty(QObject *obj, Register *output,
                 void *args[] = { output->typeDataPtr(), 0 };
                 QMetaObject::metacall(obj, QMetaObject::ReadProperty, property->coreIndex, args);
                 output->settype(QMetaType::QReal);
+            } else if (property->propType == QMetaType::Int) {
+                void *args[] = { output->typeDataPtr(), 0 };
+                QMetaObject::metacall(obj, QMetaObject::ReadProperty, property->coreIndex, args);
+                output->settype(QMetaType::Int);
+            } else if (property->propType == QMetaType::Bool) {
+                void *args[] = { output->typeDataPtr(), 0 };
+                QMetaObject::metacall(obj, QMetaObject::ReadProperty, property->coreIndex, args);
+                output->settype(QMetaType::Bool);
+            } else if (property->propType == QMetaType::QString) {
+                new (output->typeDataPtr()) QString();
+                void *args[] = { output->typeDataPtr(), 0 };
+                QMetaObject::metacall(obj, QMetaObject::ReadProperty, property->coreIndex, args);
+                output->settype(QMetaType::QString);
             } else {
                 new (output->typeDataPtr()) 
                     QVariant(obj->metaObject()->property(property->coreIndex).read(obj));
@@ -570,7 +583,6 @@ inline static qreal toReal(Register *reg, int type, bool *ok = 0)
     if (type == QMetaType::QReal) {
         return reg->getqreal();
     } else if (type == qMetaTypeId<QVariant>()) {
-        *ok = true;
         return reg->getvariantptr()->toReal();
     } else {
         if (ok) *ok = false;
@@ -624,6 +636,8 @@ inline static QUrl toUrl(Register *reg, int type, QmlContextPrivate *context, bo
             if (ok) *ok = false;
             return QUrl();
         }
+    } else if (type == QMetaType::QString) {
+        base = QUrl(*reg->getstringptr());
     } else {
         if (ok) *ok = false;
         return QUrl();
@@ -882,6 +896,8 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
             int type = registers[instr->cleanup.reg].gettype();
             if (type == qMetaTypeId<QVariant>()) {
                 ((QVariant *)registers[instr->cleanup.reg].typeDataPtr())->~QVariant();
+            } else if (type == QMetaType::QString) {
+                ((QString *)registers[instr->cleanup.reg].typeDataPtr())->~QString();
             }
         }
         break;

@@ -170,7 +170,7 @@ void QmlGraphicsTester::run()
 
     testscript = qobject_cast<QmlGraphicsVisualTest *>(c.create());
     if (testscript) testscript->setParent(this);
-    else executefailure();
+    else { executefailure(); exit(-1); }
     testscriptidx = 0;
 }
 

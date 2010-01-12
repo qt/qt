@@ -147,7 +147,7 @@ QmlTypeNameScriptClass::Value QmlTypeNameScriptClass::property(Object *obj, cons
     } else if (object) {
         return ep->objectClass->property(object, name);
     } else {
-        return QScriptValue(enumValue);
+        return Value(&ep->scriptEngine, enumValue);
     }
 }
 

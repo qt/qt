@@ -874,6 +874,9 @@ void QmlGraphicsGridView::setModel(const QVariant &model)
     The index is exposed as an accessible \c index property.  Properties of the
     model are also available depending upon the type of \l {qmlmodels}{Data Model}.
 
+    Note that the GridView will layout the items based on the size of the root item
+    in the delegate.
+
     Here is an example delegate:
     \snippet doc/src/snippets/declarative/gridview/gridview.qml 0
 */

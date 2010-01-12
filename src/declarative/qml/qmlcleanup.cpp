@@ -61,7 +61,9 @@ Create a QmlCleanup for \a engine
 QmlCleanup::QmlCleanup(QmlEngine *engine)
 : prev(0), next(0)
 {
-    Q_ASSERT(engine);
+    if (!engine)
+        return;
+
     QmlEnginePrivate *p = QmlEnginePrivate::get(engine);
 
     if (p->cleanup) next = p->cleanup;

@@ -60,7 +60,7 @@ static void msgHandler(QtMsgType, const char *msg)
 
 void tst_qmlinstruction::dump()
 {
-    QmlCompiledData *data = new QmlCompiledData;
+    QmlCompiledData *data = new QmlCompiledData(0);
     {
         QmlInstruction i;
         i.line = 0;

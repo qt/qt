@@ -125,7 +125,7 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
 {
     if (status == Complete && !compiledComponent) {
 
-        compiledComponent = new QmlCompiledData;
+        compiledComponent = new QmlCompiledData(engine);
         compiledComponent->url = imports.baseUrl();
         compiledComponent->name = compiledComponent->url.toString();
 

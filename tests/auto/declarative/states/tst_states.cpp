@@ -70,6 +70,7 @@ private slots:
     void explicitChanges();
     void propertyErrors();
     void incorrectRestoreBug();
+    void autoStateAtStartupRestoreBug();
     void deletingChange();
     void deletingState();
     void tempState();
@@ -741,6 +742,23 @@ void tst_states::incorrectRestoreBug()
 
     rect->setState("");
     QCOMPARE(rect->color(),QColor("green"));
+}
+
+void tst_states::autoStateAtStartupRestoreBug()
+{
+    QmlEngine engine;
+
+    QmlComponent component(&engine, SRCDIR "/data/autoStateAtStartupRestoreBug.qml");
+    QObject *obj = component.create();
+
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->property("test").toInt(), 3);
+
+    obj->setProperty("input", 2);
+
+    QCOMPARE(obj->property("test").toInt(), 9);
+
+    delete obj;
 }
 
 void tst_states::deletingChange()
