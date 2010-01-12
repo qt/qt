@@ -82,59 +82,133 @@ tst_lupdate::tst_lupdate()
     m_basePath = QDir::currentPath() + QLatin1String("/testdata/");
 }
 
+static bool prepareMatch(const QString &expect, QString *tmpl, int *require, int *accept)
+{
+    if (expect.startsWith(QLatin1Char('\\'))) {
+        *tmpl = expect.mid(1);
+        *require = *accept = 1;
+    } else if (expect.startsWith(QLatin1Char('?'))) {
+        *tmpl = expect.mid(1);
+        *require = 0;
+        *accept = 1;
+    } else if (expect.startsWith(QLatin1Char('*'))) {
+        *tmpl = expect.mid(1);
+        *require = 0;
+        *accept = INT_MAX;
+    } else if (expect.startsWith(QLatin1Char('+'))) {
+        *tmpl = expect.mid(1);
+        *require = 1;
+        *accept = INT_MAX;
+    } else if (expect.startsWith(QLatin1Char('{'))) {
+        int brc = expect.indexOf(QLatin1Char('}'), 1);
+        if (brc < 0)
+            return false;
+        *tmpl = expect.mid(brc + 1);
+        QString sub = expect.mid(1, brc - 1);
+        int com = sub.indexOf(QLatin1Char(','));
+        bool ok;
+        if (com < 0) {
+            *require = *accept = sub.toInt(&ok);
+            return ok;
+        } else {
+            *require = sub.left(com).toInt();
+            *accept = sub.mid(com + 1).toInt(&ok);
+            if (!ok)
+                *accept = INT_MAX;
+            return *accept >= *require;
+        }
+    } else {
+        *tmpl = expect;
+        *require = *accept = 1;
+    }
+    return true;
+}
+
 void tst_lupdate::doCompare(const QStringList &actual, const QString &expectedFn, bool err)
 {
     QFile file(expectedFn);
     QVERIFY2(file.open(QIODevice::ReadOnly | QIODevice::Text), qPrintable(expectedFn));
     QStringList expected = QString(file.readAll()).trimmed().split('\n');
 
-    int i = 0, ei = expected.size(), gi = actual.size();
-    for (; ; i++) {
-        if (i == gi) {
-            if (i == ei)
-                return;
-            gi = 0;
-            break;
-        } else if (i == ei) {
-            ei = 0;
-            break;
-        } else {
-            if (err ? !QRegExp(expected.at(i)).exactMatch(actual.at(i)) :
-                         (actual.at(i) != expected.at(i))) {
-                bool cond = true;
-                while (cond) {
-                    cond = (ei - 1) >= i && (gi - 1) >= i &&
-                         (err ? QRegExp(expected.at(ei - 1)).exactMatch(actual.at(gi - 1)) :
-                                (actual.at(gi - 1) == expected.at(ei - 1)));
-                    if (cond) {
-                        ei--, gi--;
-                    }
-                }
+    int ei = 0, ai = 0, em = expected.size(), am = actual.size();
+    int oei = 0, oai = 0, oem = em, oam = am;
+    int require = 0, accept = 0;
+    QString tmpl;
+    forever {
+        if (!accept) {
+            oei = ei, oai = ai;
+            if (ei == em) {
+                if (ai == am)
+                    return;
                 break;
             }
+            if (!prepareMatch(expected.at(ei++), &tmpl, &require, &accept))
+                QFAIL(qPrintable(QString("Malformed expected %1 at %3:%2")
+                                 .arg(err ? "output" : "result").arg(ei).arg(expectedFn)));
         }
+        if (ai == am) {
+            if (require <= 0) {
+                accept = 0;
+                continue;
+            }
+            break;
+        }
+        if (err ? !QRegExp(tmpl).exactMatch(actual.at(ai)) : (actual.at(ai) != tmpl)) {
+            if (require <= 0) {
+                accept = 0;
+                continue;
+            }
+            ei--;
+            require = accept = 0;
+            forever {
+                if (!accept) {
+                    oem = em, oam = am;
+                    if (ei == em)
+                        break;
+                    if (!prepareMatch(expected.at(--em), &tmpl, &require, &accept))
+                        QFAIL(qPrintable(QString("Malformed expected %1 at %3:%2")
+                                         .arg(err ? "output" : "result")
+                                         .arg(em + 1).arg(expectedFn)));
+                }
+                if (ai == am || (err ? !QRegExp(tmpl).exactMatch(actual.at(am - 1)) :
+                                       (actual.at(am - 1) != tmpl))) {
+                    if (require <= 0) {
+                        accept = 0;
+                        continue;
+                    }
+                    break;
+                }
+                accept--;
+                require--;
+                am--;
+            }
+            break;
+        }
+        accept--;
+        require--;
+        ai++;
     }
     QByteArray diff;
-    for (int j = qMax(0, i - 3); j < i; j++)
+    for (int j = qMax(0, oai - 3); j < oai; j++)
         diff += actual.at(j) + '\n';
     diff += "<<<<<<< got\n";
-    for (int j = i; j < gi; j++) {
+    for (int j = oai; j < oam; j++) {
         diff += actual.at(j) + '\n';
-        if (j >= i + 5) {
+        if (j >= oai + 5) {
             diff += "...\n";
             break;
         }
     }
     diff += "=========\n";
-    for (int j = i; j < ei; j++) {
+    for (int j = oei; j < oem; j++) {
         diff += expected.at(j) + '\n';
-        if (j >= i + 5) {
+        if (j >= oei + 5) {
             diff += "...\n";
             break;
         }
     }
     diff += ">>>>>>> expected\n";
-    for (int j = gi; j < qMin(gi + 3, actual.size()); j++)
+    for (int j = oam; j < qMin(oam + 3, actual.size()); j++)
         diff += actual.at(j) + '\n';
     QFAIL(qPrintable((err ? "Output for " : "Result for ") + expectedFn + " does not meet expectations:\n" + diff));
 }
