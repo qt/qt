@@ -205,6 +205,11 @@ void tst_QAbstractNetworkCache::cacheControl_data()
     QTest::newRow("304-2") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << true;
     QTest::newRow("304-3") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << AlwaysTrue;
     QTest::newRow("304-4") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << true;
+
+    // see QTBUG-7060
+    //QTest::newRow("nokia-boston") << QNetworkRequest::PreferNetwork << "http://waplabdc.nokia-boston.com/browser/users/venkat/cache/Cache_directives/private_1b.asp" << true;
+    QTest::newRow("304-2b") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol200.cgi?private, max-age=1000" << true;
+    QTest::newRow("304-4b") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol200.cgi?private, max-age=1000" << true;
 }
 
 void tst_QAbstractNetworkCache::cacheControl()
@@ -223,7 +228,8 @@ void tst_QAbstractNetworkCache::check()
     manager.setCache(diskCache);
     QCOMPARE(diskCache->gotData, false);
 
-    QNetworkRequest request(QUrl(TESTFILE + url));
+    QUrl realUrl = url.contains("://") ? url : TESTFILE + url;
+    QNetworkRequest request(realUrl);
 
     // prime the cache
     QNetworkReply *reply = manager.get(request);
