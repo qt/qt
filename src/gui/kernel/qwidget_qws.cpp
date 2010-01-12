@@ -287,7 +287,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         } else {
             // release previous focus information participating with
             // preedit preservation of qic -- while we still have a winId
-            QInputContext *qic = inputContext();
+            QInputContext *qic = QApplicationPrivate::inputContext;
             if (qic)
                 qic->widgetDestroyed(this);
         }
