@@ -39,23 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qnetworkconfiguration_s60_p.h"
-
 QT_BEGIN_NAMESPACE
-
-QNetworkConfigurationPrivate::QNetworkConfigurationPrivate()
-    : isValid(false), type(QNetworkConfiguration::Invalid),
-      roamingSupported(false), purpose(QNetworkConfiguration::UnknownPurpose), 
-      bearer(QNetworkConfigurationPrivate::BearerUnknown), numericId(0),
-      connectionId(0), manager(0)
-{
-}
-
-QNetworkConfigurationPrivate::~QNetworkConfigurationPrivate()
-{
-    //release pointers to member configurations
-    serviceNetworkMembers.clear(); 
-}
 
 QString QNetworkConfigurationPrivate::bearerName() const
 {
@@ -71,6 +55,5 @@ QString QNetworkConfigurationPrivate::bearerName() const
         default: return QString();
     }
 }
-
 
 QT_END_NAMESPACE

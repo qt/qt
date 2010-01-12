@@ -67,7 +67,6 @@ public:
     QNetworkConfigurationManagerPrivate()
     :   QObject(0), capFlags(0), firstUpdate(true)
     {
-        registerPlatformCapabilities();
         updateConfigurations();
     }
 
@@ -76,7 +75,6 @@ public:
     QNetworkConfiguration defaultConfiguration();
 
     QNetworkConfigurationManager::Capabilities capFlags;
-    void registerPlatformCapabilities();
 
     void performAsyncConfigurationUpdate();
 

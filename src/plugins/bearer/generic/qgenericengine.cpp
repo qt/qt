@@ -142,6 +142,8 @@ static QString qGetInterfaceType(const QString &interface)
 QGenericEngine::QGenericEngine(QObject *parent)
 :   QNetworkSessionEngine(parent)
 {
+    qDebug() << Q_FUNC_INFO;
+
     connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
     pollTimer.setInterval(10000);
     doRequestUpdate();
@@ -312,6 +314,11 @@ QNetworkSession::State QGenericEngine::sessionStateForId(const QString &id)
     }
 
     return QNetworkSession::Invalid;
+}
+
+QNetworkConfigurationManager::Capabilities QGenericEngine::capabilities() const
+{
+    return QNetworkConfigurationManager::ForcedRoaming;
 }
 
 QT_END_NAMESPACE

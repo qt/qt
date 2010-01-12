@@ -59,11 +59,6 @@ QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
         delete sessionEngines.takeFirst();
 }
 
-void QNetworkConfigurationManagerPrivate::registerPlatformCapabilities()
-{
-    capFlags = QNetworkConfigurationManager::ForcedRoaming;
-}
-
 void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurationPrivatePointer ptr)
 {
     if (!firstUpdate) {
@@ -177,106 +172,25 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         updating = false;
 
         QFactoryLoader *l = loader();
-        QStringList keys = l->keys();
 
-        if (keys.contains(QLatin1String("corewlan"))) {
-            QBearerEnginePlugin *coreWlanPlugin =
-                qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("corewlan")));
-            if (coreWlanPlugin) {
-                QNetworkSessionEngine *coreWifi = coreWlanPlugin->create(QLatin1String("corewlan"));
-                if (coreWifi) {
-                    sessionEngines.append(coreWifi);
-                    connect(coreWifi, SIGNAL(updateCompleted()),
-                            this, SLOT(updateConfigurations()));
-                    connect(coreWifi, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
-                    connect(coreWifi, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
-                    connect(coreWifi, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
-                }
-            }
-        }
+        foreach (const QString &key, l->keys()) {
+            QBearerEnginePlugin *plugin = qobject_cast<QBearerEnginePlugin *>(l->instance(key));
+            if (plugin) {
+                QNetworkSessionEngine *engine = plugin->create(key);
+                if (!engine)
+                    continue;
 
-        if (keys.contains(QLatin1String("networkmanager"))) {
-            QBearerEnginePlugin *nmPlugin =
-                qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("networkmanager")));
-            if (nmPlugin) {
-                QNetworkSessionEngine *nmWifi = nmPlugin->create(QLatin1String("networkmanager"));
-                if (nmWifi) {
-                    sessionEngines.append(nmWifi);
-                    connect(nmWifi, SIGNAL(updateCompleted()),
-                            this, SLOT(updateConfigurations()));
-                    connect(nmWifi, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
-                    connect(nmWifi, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
-                    connect(nmWifi, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
-                }
-            }
-        }
+                sessionEngines.append(engine);
+                connect(engine, SIGNAL(updateCompleted()),
+                        this, SLOT(updateConfigurations()));
+                connect(engine, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
+                        this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
+                connect(engine, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
+                        this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
+                connect(engine, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
+                        this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
 
-        if (keys.contains(QLatin1String("generic"))) {
-            QBearerEnginePlugin *genericPlugin =
-                qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("generic")));
-            if (genericPlugin) {
-                QNetworkSessionEngine *generic = genericPlugin->create(QLatin1String("generic"));
-                if (generic) {
-                    sessionEngines.append(generic);
-                    connect(generic, SIGNAL(updateCompleted()),
-                            this, SLOT(updateConfigurations()));
-                    connect(generic, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
-                    connect(generic, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
-                    connect(generic, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
-                }
-            }
-        }
-
-        if (keys.contains(QLatin1String("nla"))) {
-            QBearerEnginePlugin *nlaPlugin =
-                qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("nla")));
-            if (nlaPlugin) {
-                QNetworkSessionEngine *nla = nlaPlugin->create(QLatin1String("nla"));
-                if (nla) {
-                    sessionEngines.append(nla);
-                    connect(nla, SIGNAL(updateCompleted()),
-                            this, SLOT(updateConfigurations()));
-                    connect(nla, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
-                    connect(nla, SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
-                    connect(nla, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
-                }
-            }
-        }
-
-        if (keys.contains(QLatin1String("nativewifi"))) {
-            QBearerEnginePlugin *nativeWifiPlugin =
-                qobject_cast<QBearerEnginePlugin *>(l->instance(QLatin1String("nativewifi")));
-            if (nativeWifiPlugin) {
-                QNetworkSessionEngine *nativeWifi =
-                    nativeWifiPlugin->create(QLatin1String("nativewifi"));
-                if (nativeWifi) {
-                    sessionEngines.append(nativeWifi);
-                    connect(nativeWifi, SIGNAL(updateCompleted()),
-                            this, SLOT(updateConfigurations()));
-                    connect(nativeWifi,
-                            SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationAdded(QNetworkConfigurationPrivatePointer)));
-                    connect(nativeWifi,
-                            SIGNAL(configurationRemoved(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
-                    connect(nativeWifi,
-                            SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
-                            this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
-
-                    capFlags |= QNetworkConfigurationManager::CanStartAndStopInterfaces;
-                }
+                capFlags |= engine->capabilities();
             }
         }
     }

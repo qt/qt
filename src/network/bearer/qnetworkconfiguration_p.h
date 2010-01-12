@@ -92,7 +92,6 @@ public:
     bool internet;
 
     QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
-    QNetworkInterface serviceInterface;
 
 private:
 

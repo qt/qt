@@ -512,4 +512,9 @@ QNetworkSession::State QCoreWlanEngine::sessionStateForId(const QString &id)
     return QNetworkSession::Invalid;
 }
 
+QNetworkConfigurationManager::Capabilities QCoreWlanEngine::capabilities() const
+{
+    return QNetworkConfigurationManager::ForcedRoaming;
+}
+
 QT_END_NAMESPACE

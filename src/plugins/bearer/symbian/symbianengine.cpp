@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qnetworkconfigmanager_s60_p.h"
+#include "symbianengine.h"
 
 #include <commdb.h>
 #include <cdbcols.h>
@@ -63,12 +63,27 @@ QT_BEGIN_NAMESPACE
 static const int KValueThatWillBeAddedToSNAPId = 1000;
 static const int KUserChoiceIAPId = 0;
 
-QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
-    : QObject(0), CActive(CActive::EPriorityIdle), capFlags(0), iFirstUpdate(true), iInitOk(true)
+SymbianNetworkConfigurationPrivate::SymbianNetworkConfigurationPrivate()
+:   bearer(BearerUnknown), numericId(0), connectionId(0), manager(0)
 {
+}
+
+SymbianNetworkConfigurationPrivate::~SymbianNetworkConfigurationPrivate()
+{
+}
+
+inline SymbianNetworkConfigurationPrivate *toSymbianConfig(QNetworkConfigurationPrivatePointer ptr)
+{
+    return static_cast<SymbianNetworkConfigurationPrivate *>(ptr.data());
+}
+
+SymbianEngine::SymbianEngine(QObject *parent)
+:   QNetworkSessionEngine(parent), CActive(CActive::EPriorityIdle), iInitOk(true)
+{
+    qDebug() << Q_FUNC_INFO;
+
     CActiveScheduler::Add(this);
 
-    registerPlatformCapabilities();
     TRAPD(error, ipCommsDB = CCommsDatabase::NewL(EDatabaseTypeIAP));
     if (error != KErrNone) {
         iInitOk = false;
@@ -86,9 +101,9 @@ QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
     }
 #endif
     
-    QNetworkConfigurationPrivate* cpPriv = new QNetworkConfigurationPrivate();
+    SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     cpPriv->name = "UserChoice";
-    cpPriv->bearer = QNetworkConfigurationPrivate::BearerUnknown;
+    cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
     cpPriv->state = QNetworkConfiguration::Discovered;
     cpPriv->isValid = true;
     cpPriv->id = QString::number(qHash(KUserChoiceIAPId));
@@ -98,8 +113,9 @@ QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
     cpPriv->purpose = QNetworkConfiguration::UnknownPurpose;
     cpPriv->roamingSupported = false;
     cpPriv->manager = this;
-    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr(cpPriv);
-    userChoiceConfigurations.insert(cpPriv->id, ptr);
+
+    QNetworkConfigurationPrivatePointer ptr(cpPriv);
+    userChoiceConfigurations.insert(ptr->id, ptr);
 
     updateConfigurations();
     updateStatesToSnaps();
@@ -108,31 +124,9 @@ QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
     startCommsDatabaseNotifications();
 }
 
-QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate() 
+SymbianEngine::~SymbianEngine()
 {
     Cancel();
-
-    QList<QString> configIdents = snapConfigurations.keys();
-    foreach(QString oldIface, configIdents) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = snapConfigurations.take(oldIface);
-        priv->isValid = false;
-        priv->id.clear();
-    }
-
-    configIdents = accessPointConfigurations.keys();
-    foreach(QString oldIface, configIdents) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.take(oldIface);
-        priv->isValid = false;
-        priv->id.clear();
-    }
-
-    configIdents = userChoiceConfigurations.keys();
-    foreach(QString oldIface, configIdents) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = userChoiceConfigurations.take(oldIface);
-        priv->isValid = false;
-        priv->id.clear();
-        priv->manager = 0;
-    }
 
     iConnectionMonitor.CancelNotifications();
     iConnectionMonitor.Close();
@@ -146,19 +140,24 @@ QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
 }
 
 
-void QNetworkConfigurationManagerPrivate::registerPlatformCapabilities()
+QNetworkConfigurationManager::Capabilities SymbianEngine::capabilities() const
 {
-    capFlags |= QNetworkConfigurationManager::CanStartAndStopInterfaces;
-    capFlags |= QNetworkConfigurationManager::DirectConnectionRouting;
-    capFlags |= QNetworkConfigurationManager::SystemSessionSupport;
+    QNetworkConfigurationManager::Capabilities capFlags;
+
+    capFlags = QNetworkConfigurationManager::CanStartAndStopInterfaces |
+               QNetworkConfigurationManager::DirectConnectionRouting |
+               QNetworkConfigurationManager::SystemSessionSupport |
+               QNetworkConfigurationManager::DataStatistics;
+
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-    capFlags |= QNetworkConfigurationManager::ApplicationLevelRoaming;
-    capFlags |= QNetworkConfigurationManager::ForcedRoaming;
+    capFlags |= QNetworkConfigurationManager::ApplicationLevelRoaming |
+                QNetworkConfigurationManager::ForcedRoaming;
 #endif
-    capFlags |= QNetworkConfigurationManager::DataStatistics;
+
+    return capFlags;
 }
 
-void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
+void SymbianEngine::requestUpdate()
 {
     if (!iInitOk || iUpdateGoingOn) {
         return;
@@ -170,7 +169,7 @@ void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
     updateAvailableAccessPoints(); // Asynchronous call
 }
 
-void QNetworkConfigurationManagerPrivate::updateConfigurations()
+void SymbianEngine::updateConfigurations()
 {
     if (!iInitOk) {
         return;
@@ -179,7 +178,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
     TRAP_IGNORE(updateConfigurationsL());
 }
 
-void QNetworkConfigurationManagerPrivate::updateConfigurationsL()
+void SymbianEngine::updateConfigurationsL()
 {
     QList<QString> knownConfigs = accessPointConfigurations.keys();
     QList<QString> knownSnapConfigs = snapConfigurations.keys();
@@ -200,16 +199,12 @@ void QNetworkConfigurationManagerPrivate::updateConfigurationsL()
         if (accessPointConfigurations.contains(ident)) {
             knownConfigs.removeOne(ident);
         } else {
-            QNetworkConfigurationPrivate* cpPriv = NULL;
+            SymbianNetworkConfigurationPrivate* cpPriv = NULL;
             TRAP(error, cpPriv = configFromConnectionMethodL(connectionMethod));
             if (error == KErrNone) {
-                QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr(cpPriv);
-                accessPointConfigurations.insert(cpPriv->id, ptr);
-                if (!iFirstUpdate) {
-                    QNetworkConfiguration item;
-                    item.d = ptr;
-                    emit configurationAdded(item);
-                }
+                QNetworkConfigurationPrivatePointer ptr(cpPriv);
+                accessPointConfigurations.insert(ptr->id, ptr);
+                emit configurationAdded(ptr);
             }
         }
         CleanupStack::PopAndDestroy(&connectionMethod);
@@ -228,7 +223,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurationsL()
         if (snapConfigurations.contains(ident)) {
             knownSnapConfigs.removeOne(ident);
         } else {
-            QNetworkConfigurationPrivate* cpPriv = new QNetworkConfigurationPrivate();
+            SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
             CleanupStack::PushL(cpPriv);
     
             HBufC *pName = destination.NameLC();
@@ -246,17 +241,13 @@ void QNetworkConfigurationManagerPrivate::updateConfigurationsL()
             cpPriv->roamingSupported = false;
             cpPriv->manager = this;
 
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr(cpPriv);
+            QNetworkConfigurationPrivatePointer ptr(cpPriv);
             snapConfigurations.insert(ident, ptr);
-            if (!iFirstUpdate) {
-                QNetworkConfiguration item;
-                item.d = ptr;
-                emit configurationAdded(item);
-            }
+            emit configurationAdded(ptr);
             
             CleanupStack::Pop(cpPriv);
         }
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> privSNAP = snapConfigurations.value(ident);
+        QNetworkConfigurationPrivatePointer privSNAP = snapConfigurations.value(ident);
             
         for (int j=0; j < destination.ConnectionMethodCount(); j++) {
             RCmConnectionMethod connectionMethod = destination.ConnectionMethodL(j);
@@ -265,33 +256,29 @@ void QNetworkConfigurationManagerPrivate::updateConfigurationsL()
             TUint32 iapId = connectionMethod.GetIntAttributeL(CMManager::ECmIapId);
             QString iface = QString::number(qHash(iapId));
             // Check that IAP can be found from accessPointConfigurations list
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(iface);
-            if (priv.data() == 0) {
-                QNetworkConfigurationPrivate* cpPriv = NULL; 
+            QNetworkConfigurationPrivatePointer priv = accessPointConfigurations.value(iface);
+            if (!priv) {
+                SymbianNetworkConfigurationPrivate *cpPriv = NULL;
                 TRAP(error, cpPriv = configFromConnectionMethodL(connectionMethod));
                 if (error == KErrNone) {
-                    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr(cpPriv);
-                    ptr.data()->serviceNetworkPtr = privSNAP;
-                    accessPointConfigurations.insert(cpPriv->id, ptr);
-                    if (!iFirstUpdate) {
-                        QNetworkConfiguration item;
-                        item.d = ptr;
-                        emit configurationAdded(item);
-                    }
+                    QNetworkConfigurationPrivatePointer ptr(cpPriv);
+                    toSymbianConfig(ptr)->serviceNetworkPtr = privSNAP;
+                    accessPointConfigurations.insert(ptr->id, ptr);
+                    emit configurationAdded(ptr);
                     privSNAP->serviceNetworkMembers.append(ptr);
                 }
             } else {
                 knownConfigs.removeOne(iface);
                 // Check that IAP can be found from related SNAP's configuration list
                 bool iapFound = false;
-                for (int i=0; i<privSNAP->serviceNetworkMembers.count(); i++) {
-                    if (privSNAP->serviceNetworkMembers[i]->numericId == iapId) {
+                for (int i = 0; i < privSNAP->serviceNetworkMembers.count(); i++) {
+                    if (toSymbianConfig(privSNAP->serviceNetworkMembers[i])->numericId == iapId) {
                         iapFound = true;
                         break;
                     }
                 }
                 if (!iapFound) {
-                    priv.data()->serviceNetworkPtr = privSNAP; 
+                    toSymbianConfig(priv)->serviceNetworkPtr = privSNAP;
                     privSNAP->serviceNetworkMembers.append(priv);
                 }
             }
@@ -321,15 +308,12 @@ void QNetworkConfigurationManagerPrivate::updateConfigurationsL()
         if (accessPointConfigurations.contains(ident)) {
             knownConfigs.removeOne(ident);
         } else {
-            QNetworkConfigurationPrivate* cpPriv = new QNetworkConfigurationPrivate();
+            SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
             if (readNetworkConfigurationValuesFromCommsDb(apId, cpPriv)) {
-                QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr(cpPriv);
+                QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ident, ptr);
-                if (!iFirstUpdate) {
-                    QNetworkConfiguration item;
-                    item.d = ptr;
-                    emit configurationAdded(item);
-                }
+
+                emit configurationAdded(ptr);
             } else {
                 delete cpPriv;
             }
@@ -340,47 +324,37 @@ void QNetworkConfigurationManagerPrivate::updateConfigurationsL()
 #endif
     updateActiveAccessPoints();
     
-    foreach (QString oldIface, knownConfigs) {
+    foreach (const QString &oldIface, knownConfigs) {
         //remove non existing IAP
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.take(oldIface);
-        priv->isValid = false;
-        if (!iFirstUpdate) {
-            QNetworkConfiguration item;
-            item.d = priv;
-            emit configurationRemoved(item);
-        }
+        QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(oldIface);
+        emit configurationRemoved(ptr);
+
         // Remove non existing IAP from SNAPs
-        QList<QString> snapConfigIdents = snapConfigurations.keys();
-        foreach (QString iface, snapConfigIdents) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv2 = snapConfigurations.value(iface);
+        foreach (const QString &iface, snapConfigurations.keys()) {
+            QNetworkConfigurationPrivatePointer ptr2 = snapConfigurations.value(iface);
             // => Check if one of the IAPs of the SNAP is active
-            for (int i=0; i<priv2->serviceNetworkMembers.count(); i++) {
-                if (priv2->serviceNetworkMembers[i]->numericId == priv->numericId) {
-                    priv2->serviceNetworkMembers.removeAt(i);
+            for (int i = 0; i < ptr2->serviceNetworkMembers.count(); ++i) {
+                if (toSymbianConfig(ptr2->serviceNetworkMembers[i])->numericId ==
+                    toSymbianConfig(ptr)->numericId) {
+                    ptr2->serviceNetworkMembers.removeAt(i);
                     break;
                 }
             }
         }    
     }
-    foreach (QString oldIface, knownSnapConfigs) {
-        //remove non existing SNAPs
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = snapConfigurations.take(oldIface);
-        priv->isValid = false;
-        if (!iFirstUpdate) {
-            QNetworkConfiguration item;
-            item.d = priv;
-            emit configurationRemoved(item);
-        }
-    }
 
-    iFirstUpdate = false;
+    foreach (const QString &oldIface, knownSnapConfigs) {
+        //remove non existing SNAPs
+        QNetworkConfigurationPrivatePointer ptr = snapConfigurations.take(oldIface);
+        emit configurationRemoved(ptr);
+    }
 }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-QNetworkConfigurationPrivate* QNetworkConfigurationManagerPrivate::configFromConnectionMethodL(
+SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
         RCmConnectionMethod& connectionMethod)
 {
-    QNetworkConfigurationPrivate* cpPriv = new QNetworkConfigurationPrivate();
+    SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     CleanupStack::PushL(cpPriv);
     
     TUint32 iapId = connectionMethod.GetIntAttributeL(CMManager::ECmIapId);
@@ -395,25 +369,25 @@ QNetworkConfigurationPrivate* QNetworkConfigurationManagerPrivate::configFromCon
     TUint32 bearerId = connectionMethod.GetIntAttributeL(CMManager::ECmCommsDBBearerType);
     switch (bearerId) {
     case KCommDbBearerCSD:
-        cpPriv->bearer = QNetworkConfigurationPrivate::Bearer2G;
+        cpPriv->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
         break;
     case KCommDbBearerWcdma:
-        cpPriv->bearer = QNetworkConfigurationPrivate::BearerWCDMA;
+        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerWCDMA;
         break;
     case KCommDbBearerLAN:
-        cpPriv->bearer = QNetworkConfigurationPrivate::BearerEthernet;
+        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerEthernet;
         break;
     case KCommDbBearerVirtual:
-        cpPriv->bearer = QNetworkConfigurationPrivate::BearerUnknown;
+        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
         break;
     case KCommDbBearerPAN:
-        cpPriv->bearer = QNetworkConfigurationPrivate::BearerUnknown;
+        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
         break;
     case KCommDbBearerWLAN:
-        cpPriv->bearer = QNetworkConfigurationPrivate::BearerWLAN;
+        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerWLAN;
         break;
     default:
-        cpPriv->bearer = QNetworkConfigurationPrivate::BearerUnknown;
+        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
         break;
     }
     
@@ -460,8 +434,8 @@ QNetworkConfigurationPrivate* QNetworkConfigurationManagerPrivate::configFromCon
     return cpPriv;
 }
 #else
-bool QNetworkConfigurationManagerPrivate::readNetworkConfigurationValuesFromCommsDb(
-        TUint32 aApId, QNetworkConfigurationPrivate* apNetworkConfiguration)
+bool SymbianEngine::readNetworkConfigurationValuesFromCommsDb(
+        TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration)
 {
     TRAPD(error, readNetworkConfigurationValuesFromCommsDbL(aApId,apNetworkConfiguration));
     if (error != KErrNone) {
@@ -470,8 +444,8 @@ bool QNetworkConfigurationManagerPrivate::readNetworkConfigurationValuesFromComm
     return true;
 }
 
-void QNetworkConfigurationManagerPrivate::readNetworkConfigurationValuesFromCommsDbL(
-        TUint32 aApId, QNetworkConfigurationPrivate* apNetworkConfiguration)
+void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
+        TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration)
 {
     CApDataHandler* pDataHandler = CApDataHandler::NewLC(*ipCommsDB); 
     CApAccessPointItem* pAPItem = CApAccessPointItem::NewLC(); 
@@ -500,28 +474,28 @@ void QNetworkConfigurationManagerPrivate::readNetworkConfigurationValuesFromComm
     apNetworkConfiguration->roamingSupported = false;
     switch (pAPItem->BearerTypeL()) {
     case EApBearerTypeCSD:      
-        apNetworkConfiguration->bearer = QNetworkConfigurationPrivate::Bearer2G;
+        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
         break;
     case EApBearerTypeGPRS:
-        apNetworkConfiguration->bearer = QNetworkConfigurationPrivate::Bearer2G;
+        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
         break;
     case EApBearerTypeHSCSD:
-        apNetworkConfiguration->bearer = QNetworkConfigurationPrivate::BearerHSPA;
+        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
         break;
     case EApBearerTypeCDMA:
-        apNetworkConfiguration->bearer = QNetworkConfigurationPrivate::BearerCDMA2000;
+        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerCDMA2000;
         break;
     case EApBearerTypeWLAN:
-        apNetworkConfiguration->bearer = QNetworkConfigurationPrivate::BearerWLAN;
+        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerWLAN;
         break;
     case EApBearerTypeLAN:
-        apNetworkConfiguration->bearer = QNetworkConfigurationPrivate::BearerEthernet;
+        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerEthernet;
         break;
     case EApBearerTypeLANModem:
-        apNetworkConfiguration->bearer = QNetworkConfigurationPrivate::BearerEthernet;
+        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerEthernet;
         break;
     default:
-        apNetworkConfiguration->bearer = QNetworkConfigurationPrivate::BearerUnknown;
+        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
         break;
     }
     apNetworkConfiguration->manager = this;
@@ -532,22 +506,22 @@ void QNetworkConfigurationManagerPrivate::readNetworkConfigurationValuesFromComm
 }
 #endif
 
-QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration()
+QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfiguration()
 {
-    QNetworkConfiguration config;
+    QNetworkConfigurationPrivatePointer ptr;
 
     if (iInitOk) {
         stopCommsDatabaseNotifications();
-        TRAP_IGNORE(config = defaultConfigurationL());
+        TRAP_IGNORE(ptr = defaultConfigurationL());
         startCommsDatabaseNotifications();
     }
 
-    return config;
+    return ptr;
 }
 
-QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfigurationL()
+QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
 {
-    QNetworkConfiguration item;
+    QNetworkConfigurationPrivatePointer ptr;
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     // Check Default Connection (SNAP or IAP)
@@ -555,31 +529,22 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfigurationL
     iCmManager.ReadDefConnL(defaultConnectionValue);
     if (defaultConnectionValue.iType == ECmDefConnDestination) {
         QString iface = QString::number(qHash(defaultConnectionValue.iId+KValueThatWillBeAddedToSNAPId));
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = snapConfigurations.value(iface);
-        if (priv.data() != 0) {
-            item.d = priv;
-        }
+        ptr = snapConfigurations.value(iface);
     } else if (defaultConnectionValue.iType == ECmDefConnConnectionMethod) {
         QString iface = QString::number(qHash(defaultConnectionValue.iId));
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(iface);
-        if (priv.data() != 0) {
-            item.d = priv;
-        }
-    } 
+        ptr = accessPointConfigurations.value(iface);
+    }
 #endif
     
-    if (!item.isValid()) {
+    if (!ptr->isValid) {
         QString iface = QString::number(qHash(KUserChoiceIAPId));
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = userChoiceConfigurations.value(iface);
-        if (priv.data() != 0) {
-            item.d = priv;
-        }
+        ptr = userChoiceConfigurations.value(iface);
     }
     
-    return item;
+    return ptr;
 }
 
-void QNetworkConfigurationManagerPrivate::updateActiveAccessPoints()
+void SymbianEngine::updateActiveAccessPoints()
 {
     bool online = false;
     QList<QString> inactiveConfigs = accessPointConfigurations.keys();
@@ -599,23 +564,26 @@ void QNetworkConfigurationManagerPrivate::updateActiveAccessPoints()
             iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
             User::WaitForRequest(status);
             QString ident = QString::number(qHash(apId));
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(ident);
-            if (priv.data()) {
+
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+            if (ptr) {
                 online = true;
                 inactiveConfigs.removeOne(ident);
-                priv.data()->connectionId = connectionId;
+
+                toSymbianConfig(ptr)->connectionId = connectionId;
+
                 // Configuration is Active
-                changeConfigurationStateTo(priv, QNetworkConfiguration::Active);
+                changeConfigurationStateTo(ptr, QNetworkConfiguration::Active);
             }
         }
     }
 
     // Make sure that state of rest of the IAPs won't be Active
-    foreach (QString iface, inactiveConfigs) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(iface);
-        if (priv.data()) {
+    foreach (const QString &iface, inactiveConfigs) {
+        QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
+        if (ptr) {
             // Configuration is either Defined or Discovered
-            changeConfigurationStateAtMaxTo(priv, QNetworkConfiguration::Discovered);
+            changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Discovered);
         }
     }
 
@@ -625,7 +593,7 @@ void QNetworkConfigurationManagerPrivate::updateActiveAccessPoints()
     }
 }
 
-void QNetworkConfigurationManagerPrivate::updateAvailableAccessPoints()
+void SymbianEngine::updateAvailableAccessPoints()
 {
     if (!ipAccessPointsAvailabilityScanner) {
         ipAccessPointsAvailabilityScanner = new AccessPointsAvailabilityScanner(*this, iConnectionMonitor);
@@ -636,7 +604,7 @@ void QNetworkConfigurationManagerPrivate::updateAvailableAccessPoints()
     }
 }
 
-void QNetworkConfigurationManagerPrivate::accessPointScanningReady(TBool scanSuccessful, TConnMonIapInfo iapInfo)
+void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapInfo iapInfo)
 {
     iUpdateGoingOn = false;
     if (scanSuccessful) {
@@ -646,22 +614,22 @@ void QNetworkConfigurationManagerPrivate::accessPointScanningReady(TBool scanSuc
         // if state is not already Active
         for(TUint i=0; i<iapInfo.iCount; i++) {
             QString ident = QString::number(qHash(iapInfo.iIap[i].iIapId));
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(ident);
-            if (priv.data()) {
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+            if (ptr) {
                 unavailableConfigs.removeOne(ident);
-                if (priv.data()->state < QNetworkConfiguration::Active) {
+                if (ptr->state < QNetworkConfiguration::Active) {
                     // Configuration is either Discovered or Active
-                    changeConfigurationStateAtMinTo(priv, QNetworkConfiguration::Discovered);
+                    changeConfigurationStateAtMinTo(ptr, QNetworkConfiguration::Discovered);
                 }
             }
         }
         
         // Make sure that state of rest of the IAPs won't be Discovered or Active
-        foreach (QString iface, unavailableConfigs) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(iface);
-            if (priv.data()) {
+        foreach (const QString &iface, unavailableConfigs) {
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
+            if (ptr) {
                 // Configuration is Defined
-                changeConfigurationStateAtMaxTo(priv, QNetworkConfiguration::Defined);
+                changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Defined);
             }
         }
     }
@@ -670,51 +638,47 @@ void QNetworkConfigurationManagerPrivate::accessPointScanningReady(TBool scanSuc
     
     startCommsDatabaseNotifications();
     
-    emit this->configurationUpdateComplete();
+    qDebug() << Q_FUNC_INFO << "updateCompleted()";
+    emit updateCompleted();
 }
 
-void QNetworkConfigurationManagerPrivate::updateStatesToSnaps()
+void SymbianEngine::updateStatesToSnaps()
 {
     // Go through SNAPs and set correct state to SNAPs
     QList<QString> snapConfigIdents = snapConfigurations.keys();
     foreach (QString iface, snapConfigIdents) {
         bool discovered = false;
         bool active = false;
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = snapConfigurations.value(iface);
+        QNetworkConfigurationPrivatePointer ptr = snapConfigurations.value(iface);
         // => Check if one of the IAPs of the SNAP is discovered or active
         //    => If one of IAPs is active, also SNAP is active
         //    => If one of IAPs is discovered but none of the IAPs is active, SNAP is discovered
-        for (int i=0; i<priv->serviceNetworkMembers.count(); i++) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv2 = priv->serviceNetworkMembers[i];
-            if ((priv->serviceNetworkMembers[i]->state & QNetworkConfiguration::Active) 
+        for (int i=0; i<ptr->serviceNetworkMembers.count(); i++) {
+            if ((ptr->serviceNetworkMembers[i]->state & QNetworkConfiguration::Active)
                     == QNetworkConfiguration::Active) {
                 active = true;
                 break;
-            } else if ((priv->serviceNetworkMembers[i]->state & QNetworkConfiguration::Discovered) 
+            } else if ((ptr->serviceNetworkMembers[i]->state & QNetworkConfiguration::Discovered)
                         == QNetworkConfiguration::Discovered) {
                 discovered = true;
             }
         }
         if (active) {
-            changeConfigurationStateTo(priv, QNetworkConfiguration::Active);
+            changeConfigurationStateTo(ptr, QNetworkConfiguration::Active);
         } else if (discovered) {
-            changeConfigurationStateTo(priv, QNetworkConfiguration::Discovered);
+            changeConfigurationStateTo(ptr, QNetworkConfiguration::Discovered);
         } else {
-            changeConfigurationStateTo(priv, QNetworkConfiguration::Defined);
+            changeConfigurationStateTo(ptr, QNetworkConfiguration::Defined);
         }
     }    
 }
 
-bool QNetworkConfigurationManagerPrivate::changeConfigurationStateTo(QExplicitlySharedDataPointer<QNetworkConfigurationPrivate>& sharedData,
-                                                                     QNetworkConfiguration::StateFlags newState)
+bool SymbianEngine::changeConfigurationStateTo(QNetworkConfigurationPrivatePointer ptr,
+                                               QNetworkConfiguration::StateFlags newState)
 {
-    if (newState != sharedData.data()->state) {
-        sharedData.data()->state = newState;
-        QNetworkConfiguration item;
-        item.d = sharedData;
-        if (!iFirstUpdate) {
-            emit configurationChanged(item);
-        }
+    if (newState != ptr->state) {
+        ptr->state = newState;
+        emit configurationChanged(ptr);
         return true;
     }
     return false;
@@ -724,16 +688,12 @@ bool QNetworkConfigurationManagerPrivate::changeConfigurationStateTo(QExplicitly
  * state (e.g. Discovered state does not overwrite Active state) but
  * makes sure that state is at minimum given state.
 */
-bool QNetworkConfigurationManagerPrivate::changeConfigurationStateAtMinTo(QExplicitlySharedDataPointer<QNetworkConfigurationPrivate>& sharedData,
-                                                                          QNetworkConfiguration::StateFlags newState)
+bool SymbianEngine::changeConfigurationStateAtMinTo(QNetworkConfigurationPrivatePointer ptr,
+                                                    QNetworkConfiguration::StateFlags newState)
 {
-    if ((newState | sharedData.data()->state) != sharedData.data()->state) {
-        sharedData.data()->state = (sharedData.data()->state | newState);
-        QNetworkConfiguration item;
-        item.d = sharedData;
-        if (!iFirstUpdate) {
-            emit configurationChanged(item);
-        }
+    if ((newState | ptr->state) != ptr->state) {
+        ptr->state = (ptr->state | newState);
+        emit configurationChanged(ptr);
         return true;
     }
     return false;
@@ -744,22 +704,18 @@ bool QNetworkConfigurationManagerPrivate::changeConfigurationStateAtMinTo(QExpli
  * makes sure that state is at maximum given state (e.g. Discovered state
  * does not overwrite Defined state).
 */
-bool QNetworkConfigurationManagerPrivate::changeConfigurationStateAtMaxTo(QExplicitlySharedDataPointer<QNetworkConfigurationPrivate>& sharedData,
-                                                                          QNetworkConfiguration::StateFlags newState)
+bool SymbianEngine::changeConfigurationStateAtMaxTo(QNetworkConfigurationPrivatePointer ptr,
+                                                    QNetworkConfiguration::StateFlags newState)
 {
-    if ((newState & sharedData.data()->state) != sharedData.data()->state) {
-        sharedData.data()->state = (newState & sharedData.data()->state);
-        QNetworkConfiguration item;
-        item.d = sharedData;
-        if (!iFirstUpdate) {
-            emit configurationChanged(item);
-        }
+    if ((newState & ptr->state) != ptr->state) {
+        ptr->state = (newState & ptr->state);
+        emit configurationChanged(ptr);
         return true;
     }
     return false;
 }
 
-void QNetworkConfigurationManagerPrivate::startCommsDatabaseNotifications()
+void SymbianEngine::startCommsDatabaseNotifications()
 {
     if (!iWaitingCommsDatabaseNotifications) {
         iWaitingCommsDatabaseNotifications = ETrue;
@@ -771,7 +727,7 @@ void QNetworkConfigurationManagerPrivate::startCommsDatabaseNotifications()
     }
 }
 
-void QNetworkConfigurationManagerPrivate::stopCommsDatabaseNotifications()
+void SymbianEngine::stopCommsDatabaseNotifications()
 {
     if (iWaitingCommsDatabaseNotifications) {
         iWaitingCommsDatabaseNotifications = EFalse;
@@ -787,7 +743,7 @@ void QNetworkConfigurationManagerPrivate::stopCommsDatabaseNotifications()
     }
 }
 
-void QNetworkConfigurationManagerPrivate::RunL()
+void SymbianEngine::RunL()
 {
     if (iStatus != KErrCancel) {
         RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
@@ -823,13 +779,13 @@ void QNetworkConfigurationManagerPrivate::RunL()
     }
 }
 
-void QNetworkConfigurationManagerPrivate::DoCancel()
+void SymbianEngine::DoCancel()
 {
     ipCommsDB->CancelRequestNotification();
 }
 
 
-void QNetworkConfigurationManagerPrivate::EventL(const CConnMonEventBase& aEvent)
+void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 {
     switch (aEvent.EventType()) {
     case EConnMonCreateConnection:
@@ -843,13 +799,14 @@ void QNetworkConfigurationManagerPrivate::EventL(const CConnMonEventBase& aEvent
         iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
         User::WaitForRequest(status);
         QString ident = QString::number(qHash(apId));
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(ident);
-        if (priv.data()) {
-            priv.data()->connectionId = connectionId;
+
+        QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+        if (ptr) {
+            toSymbianConfig(ptr)->connectionId = connectionId;
             // Configuration is Active
-            if (changeConfigurationStateTo(priv, QNetworkConfiguration::Active)) {
+            if (changeConfigurationStateTo(ptr, QNetworkConfiguration::Active))
                 updateStatesToSnaps();
-            }
+
             if (!iOnline) {
                 iOnline = true;
                 emit this->onlineStateChanged(iOnline);
@@ -863,20 +820,19 @@ void QNetworkConfigurationManagerPrivate::EventL(const CConnMonEventBase& aEvent
         CConnMonDeleteConnection* realEvent;
         realEvent = (CConnMonDeleteConnection*) &aEvent;
         TUint connectionId = realEvent->ConnectionId();
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = dataByConnectionId(connectionId);
-        if (priv.data()) {
-            priv.data()->connectionId = 0;
+
+        QNetworkConfigurationPrivatePointer ptr = dataByConnectionId(connectionId);
+        if (ptr) {
+            toSymbianConfig(ptr)->connectionId = 0;
             // Configuration is either Defined or Discovered
-            if (changeConfigurationStateAtMaxTo(priv, QNetworkConfiguration::Discovered)) {
+            if (changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Discovered))
                 updateStatesToSnaps();
-            }
         }
         
         bool online = false;
-        QList<QString> iapConfigs = accessPointConfigurations.keys();
-        foreach (QString iface, iapConfigs) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(iface);
-            if (priv.data()->state == QNetworkConfiguration::Active) {
+        foreach (const QString &iface, accessPointConfigurations.keys()) {
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
+            if (ptr->state == QNetworkConfiguration::Active) {
                 online = true;
                 break;
             }
@@ -896,18 +852,19 @@ void QNetworkConfigurationManagerPrivate::EventL(const CConnMonEventBase& aEvent
         QList<QString> unDiscoveredConfigs = accessPointConfigurations.keys();
         for ( TUint i = 0; i < iaps.Count(); i++ ) {
             QString ident = QString::number(qHash(iaps.iIap[i].iIapId));
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(ident);
-            if (priv.data()) {
+
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+            if (ptr) {
                 // Configuration is either Discovered or Active 
-                changeConfigurationStateAtMinTo(priv, QNetworkConfiguration::Discovered);
+                changeConfigurationStateAtMinTo(ptr, QNetworkConfiguration::Discovered);
                 unDiscoveredConfigs.removeOne(ident);
             }
         }
-        foreach (QString iface, unDiscoveredConfigs) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = accessPointConfigurations.value(iface);
-            if (priv.data()) {
+        foreach (const QString &iface, unDiscoveredConfigs) {
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
+            if (ptr) {
                 // Configuration is Defined
-                changeConfigurationStateAtMaxTo(priv, QNetworkConfiguration::Defined);
+                changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Defined);
             }
         }
         }
@@ -919,24 +876,24 @@ void QNetworkConfigurationManagerPrivate::EventL(const CConnMonEventBase& aEvent
     }
 }
 
-QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> QNetworkConfigurationManagerPrivate::dataByConnectionId(TUint aConnectionId)
+QNetworkConfigurationPrivatePointer SymbianEngine::dataByConnectionId(TUint aConnectionId)
 {
     QNetworkConfiguration item;
     
-    QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> >::const_iterator i =
+    QHash<QString, QNetworkConfigurationPrivatePointer>::const_iterator i =
             accessPointConfigurations.constBegin();
     while (i != accessPointConfigurations.constEnd()) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> priv = i.value();
-        if (priv.data()->connectionId == aConnectionId) {
-            return priv;
-        }
+        QNetworkConfigurationPrivatePointer ptr = i.value();
+        if (toSymbianConfig(ptr)->connectionId == aConnectionId)
+            return ptr;
+
         ++i;
     }
 
-    return QExplicitlySharedDataPointer<QNetworkConfigurationPrivate>();
+    return QNetworkConfigurationPrivatePointer();
 }
 
-AccessPointsAvailabilityScanner::AccessPointsAvailabilityScanner(QNetworkConfigurationManagerPrivate& owner,
+AccessPointsAvailabilityScanner::AccessPointsAvailabilityScanner(SymbianEngine& owner,
                                                                RConnectionMonitor& connectionMonitor)
     : CActive(CActive::EPriorityStandard), iOwner(owner), iConnectionMonitor(connectionMonitor)
 {
@@ -970,5 +927,5 @@ void AccessPointsAvailabilityScanner::RunL()
         iOwner.accessPointScanningReady(true,iIapBuf());
     }
 }
-#include "moc_qnetworkconfigmanager_s60_p.cpp"
+
 QT_END_NAMESPACE

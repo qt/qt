@@ -71,6 +71,8 @@ public:
 
     QNetworkSession::State sessionStateForId(const QString &id);
 
+    QNetworkConfigurationManager::Capabilities capabilities() const;
+
     static bool getAllScInterfaces();
 
 private Q_SLOTS:

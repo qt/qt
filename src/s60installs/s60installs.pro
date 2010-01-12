@@ -79,7 +79,12 @@ symbian: {
         DEPLOYMENT += phonon_backend_plugins
     }
 
-    DEPLOYMENT += qtresources qtlibraries imageformats_plugins codecs_plugins graphicssystems_plugins
+    DEPLOYMENT += qtresources \
+                  qtlibraries \
+                  imageformats_plugins \
+                  codecs_plugins \
+                  graphicssystems_plugins \
+                  bearer_plugins
 
     contains(QT_CONFIG, svg): {
        qtlibraries.sources += QtSvg.dll
@@ -114,6 +119,9 @@ symbian: {
         qtlibraries.sources += QtOpenVG.dll
         graphicssystems_plugins.sources += qvggraphicssystem.dll
     }
+
+    bearer_plugins.path = c:$$QT_PLUGINS_BASE_DIR/bearer
+    bearer_plugins.sources += qgenericbearer.dll qsymbianbearer.dll
 
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
     BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CORE_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"

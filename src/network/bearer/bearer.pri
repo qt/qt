@@ -10,35 +10,11 @@ SOURCES += bearer/qnetworksession.cpp \
            bearer/qnetworkconfigmanager.cpp \
            bearer/qnetworkconfiguration.cpp
 
-symbian {
-    exists($${EPOCROOT}epoc32/release/winscw/udeb/cmmanager.lib)| \
-    exists($${EPOCROOT}epoc32/release/armv5/lib/cmmanager.lib) {
-        message("Building with SNAP support")
-        DEFINES += SNAP_FUNCTIONALITY_AVAILABLE
-        LIBS += -lcmmanager
-    } else {
-        message("Building without SNAP support")
-        LIBS += -lapengine
-    }
-    
-    INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
+symbian_disabled {
+    HEADERS += bearer/qnetworksession_s60_p.h
 
-    HEADERS += bearer/qnetworkconfigmanager_s60_p.h \
-               bearer/qnetworkconfiguration_s60_p.h \
-               bearer/qnetworksession_s60_p.h
-    SOURCES += bearer/qnetworkconfigmanager_s60_p.cpp \
-               bearer/qnetworkconfiguration_s60_p.cpp \
+    SOURCES += bearer/qnetworkconfiguration_s60_p.cpp \
                bearer/qnetworksession_s60_p.cpp
-               
-    LIBS += -lcommdb \
-            -lapsettingshandlerui \
-            -lconnmon \
-            -lcentralrepository \
-            -lesock \
-            -linsock \
-            -lecom \
-            -lefsrv \
-            -lnetmeta
 } else:maemo {
     QT += dbus
     CONFIG += link_pkgconfig

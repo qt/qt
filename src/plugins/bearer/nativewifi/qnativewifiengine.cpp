@@ -461,4 +461,10 @@ QNetworkSession::State QNativeWifiEngine::sessionStateForId(const QString &id)
     return QNetworkSession::Invalid;
 }
 
+QNetworkConfigurationManager::Capabilities QNativeWifiEngine::capabilities() const
+{
+    return QNetworkConfigurationManager::ForcedRoaming |
+            QNetworkConfigurationManager::CanStartAndStopInterfaces;
+}
+
 QT_END_NAMESPACE

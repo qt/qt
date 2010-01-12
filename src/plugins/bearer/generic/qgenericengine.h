@@ -71,6 +71,8 @@ public:
 
     QNetworkSession::State sessionStateForId(const QString &id);
 
+    QNetworkConfigurationManager::Capabilities capabilities() const;
+
 private Q_SLOTS:
     void doRequestUpdate();
 

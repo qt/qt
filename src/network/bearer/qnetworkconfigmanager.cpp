@@ -41,12 +41,8 @@
 
 #include "qnetworkconfigmanager.h"
 
-#ifdef Q_OS_SYMBIAN
-#include "qnetworkconfigmanager_s60_p.h"
-#else
 #include "qnetworkconfigmanager_p.h"
 #include "qnetworksessionengine_p.h"
-#endif
 
 #include <QtCore/qstringlist.h>
 
@@ -54,12 +50,10 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNetworkConfigurationManagerPrivate, connManager);
 
-#ifndef Q_OS_SYMBIAN
 QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 {
     return connManager();
 }
-#endif
 
 /*!
     \class QNetworkConfigurationManager
@@ -238,32 +232,6 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
     QList<QNetworkConfiguration> result;
     QNetworkConfigurationManagerPrivate* conPriv = connManager();
 
-#ifdef Q_OS_SYMBIAN
-    QList<QString> cpsIdents = conPriv->accessPointConfigurations.keys();
-
-    //find all InternetAccessPoints
-    foreach (const QString &ii, cpsIdents) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p =
-            conPriv->accessPointConfigurations.value(ii);
-        if ( (p->state & filter) == filter ) {
-            QNetworkConfiguration pt;
-            pt.d = conPriv->accessPointConfigurations.value(ii);
-            result << pt;
-        }
-    }
-
-    //find all service networks
-    cpsIdents = conPriv->snapConfigurations.keys();
-    foreach (const QString &ii, cpsIdents) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p =
-            conPriv->snapConfigurations.value(ii);
-        if ( (p->state & filter) == filter ) {
-            QNetworkConfiguration pt;
-            pt.d = conPriv->snapConfigurations.value(ii);
-            result << pt;
-        }
-    }
-#else
     foreach (QNetworkSessionEngine *engine, conPriv->sessionEngines) {
         QStringList cpsIdents = engine->accessPointConfigurations.keys();
 
@@ -290,7 +258,6 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
             }
         }
     }
-#endif
 
     return result;
 }
@@ -307,14 +274,6 @@ QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(
 
     QNetworkConfiguration item;
 
-#ifdef Q_OS_SYMBIAN
-    if (conPriv->accessPointConfigurations.contains(identifier))
-        item.d = conPriv->accessPointConfigurations.value(identifier);
-    else if (conPriv->snapConfigurations.contains(identifier))
-        item.d = conPriv->snapConfigurations.value(identifier);
-    else if (conPriv->userChoiceConfigurations.contains(identifier))
-        item.d = conPriv->userChoiceConfigurations.value(identifier);
-#else
     foreach (QNetworkSessionEngine *engine, conPriv->sessionEngines) {
         if (engine->accessPointConfigurations.contains(identifier))
             item.d = engine->accessPointConfigurations.value(identifier);
@@ -327,7 +286,6 @@ QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(
 
         return item;
     }
-#endif
 
     return item;
 }

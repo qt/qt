@@ -41,11 +41,7 @@
 
 #include "qnetworkconfiguration.h"
 
-#ifdef Q_OS_SYMBIAN
-#include "qnetworkconfiguration_s60_p.h"
-#else
 #include "qnetworkconfiguration_p.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 

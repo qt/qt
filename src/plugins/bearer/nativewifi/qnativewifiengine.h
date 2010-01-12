@@ -82,6 +82,8 @@ public:
 
     QNetworkSession::State sessionStateForId(const QString &id);
 
+    QNetworkConfigurationManager::Capabilities capabilities() const;
+
     inline bool available() const { return handle != 0; }
 
 public Q_SLOTS:

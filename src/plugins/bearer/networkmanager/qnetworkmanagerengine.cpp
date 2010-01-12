@@ -667,5 +667,11 @@ QNetworkSession::State QNetworkManagerEngine::sessionStateForId(const QString &i
     return QNetworkSession::Invalid;
 }
 
+QNetworkConfigurationManager::Capabilities QNetworkManagerEngine::capabilities() const
+{
+    return QNetworkConfigurationManager::ForcedRoaming |
+           QNetworkConfigurationManager::CanStartAndStopInterfaces;
+}
+
 QT_END_NAMESPACE
 

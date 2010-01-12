@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,36 +39,48 @@
 **
 ****************************************************************************/
 
-#include "qnetworksessionengine_p.h"
+#include "symbianengine.h"
+
+#include <QtNetwork/qbearerplugin.h>
+
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
-QNetworkSessionEngine::QNetworkSessionEngine(QObject *parent)
-:   QObject(parent)
+class QSymbianEnginePlugin : public QBearerEnginePlugin
+{
+public:
+    QSymbianEnginePlugin();
+    ~QSymbianEnginePlugin();
+
+    QStringList keys() const;
+    QBearerEngine *create(const QString &key) const;
+};
+
+QSymbianEnginePlugin::QSymbianEnginePlugin()
 {
 }
 
-QNetworkSessionEngine::~QNetworkSessionEngine()
+QSymbianEnginePlugin::~QSymbianEnginePlugin()
 {
-    foreach (const QString &oldIface, snapConfigurations.keys()) {
-        QNetworkConfigurationPrivatePointer priv = snapConfigurations.take(oldIface);
-        priv->isValid = false;
-        priv->id.clear();
-    }
-
-    foreach (const QString &oldIface, accessPointConfigurations.keys()) {
-        QNetworkConfigurationPrivatePointer priv = accessPointConfigurations.take(oldIface);
-        priv->isValid = false;
-        priv->id.clear();
-    }
-
-    foreach (const QString &oldIface, userChoiceConfigurations.keys()) {
-        QNetworkConfigurationPrivatePointer priv = userChoiceConfigurations.take(oldIface);
-        priv->isValid = false;
-        priv->id.clear();
-    }
 }
 
-#include "moc_qnetworksessionengine_p.cpp"
+QStringList QSymbianEnginePlugin::keys() const
+{
+    return QStringList() << QLatin1String("symbian");
+}
+
+QBearerEngine *QSymbianEnginePlugin::create(const QString &key) const
+{
+    qDebug() << Q_FUNC_INFO;
+
+    if (key == QLatin1String("symbian"))
+        return new SymbianEngine;
+    else
+        return 0;
+}
+
+Q_EXPORT_STATIC_PLUGIN(QSymbianEnginePlugin)
+Q_EXPORT_PLUGIN2(qsymbianbearer, QSymbianEnginePlugin)
+
 QT_END_NAMESPACE
-

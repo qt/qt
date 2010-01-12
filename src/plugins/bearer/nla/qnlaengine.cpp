@@ -631,6 +631,11 @@ QNetworkSession::State QNlaEngine::sessionStateForId(const QString &id)
     return QNetworkSession::Invalid;
 }
 
+QNetworkConfigurationManager::Capabilities QNlaEngine::capabilities() const
+{
+    return QNetworkConfigurationManager::ForcedRoaming;
+}
+
 #include "qnlaengine.moc"
 QT_END_NAMESPACE
 

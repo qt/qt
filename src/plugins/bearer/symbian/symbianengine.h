@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,22 +39,11 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKCONFIGURATIONMANAGERPRIVATE_H
-#define QNETWORKCONFIGURATIONMANAGERPRIVATE_H
+#ifndef SYMBIANENGINE_H
+#define SYMBIANENGINE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
+#include <QtNetwork/private/qnetworksessionengine_p.h>
 #include <QtNetwork/qnetworkconfigmanager.h>
-#include "qnetworkconfiguration_s60_p.h"
 
 #include <QHash>
 #include <rconnmon.h>
@@ -73,43 +62,80 @@ QT_BEGIN_NAMESPACE
 class QNetworkSessionPrivate;
 class AccessPointsAvailabilityScanner;
 
-class QNetworkConfigurationManagerPrivate : public QObject, public CActive, public MConnectionMonitorObserver
+class SymbianNetworkConfigurationPrivate : public QNetworkConfigurationPrivate
+{
+public:
+    enum Bearer {
+        BearerEthernet,
+        BearerWLAN,
+        Bearer2G,
+        BearerCDMA2000,
+        BearerWCDMA,
+        BearerHSPA,
+        BearerBluetooth,
+        BearerWiMAX,
+        BearerUnknown = -1
+    };
+
+    SymbianNetworkConfigurationPrivate();
+    ~SymbianNetworkConfigurationPrivate();
+
+    Bearer bearer;
+
+    TUint32 numericId;
+    TUint connectionId;
+
+    TAny *manager;
+
+    QNetworkConfigurationPrivatePointer serviceNetworkPtr;
+
+    QString mappingName;
+};
+
+class SymbianEngine : public QNetworkSessionEngine, public CActive,
+                      public MConnectionMonitorObserver
 {
     Q_OBJECT
 
 public:
-    QNetworkConfigurationManagerPrivate();
-    virtual ~QNetworkConfigurationManagerPrivate(); 
+    SymbianEngine(QObject *parent = 0);
+    virtual ~SymbianEngine();
 
-    QNetworkConfiguration defaultConfiguration();
-    void performAsyncConfigurationUpdate();
+    QString getInterfaceFromId(const QString &id) { return QString(); }
+    bool hasIdentifier(const QString &id) { return false; }
+
+    void connectToId(const QString &id) { }
+    void disconnectFromId(const QString &id) { }
+
+    void requestUpdate();
+
+    QNetworkSession::State sessionStateForId(const QString &id) { return QNetworkSession::Invalid; }
+
+    QNetworkConfigurationManager::Capabilities capabilities() const;
+
+    QNetworkConfigurationPrivatePointer defaultConfiguration();
 
 Q_SIGNALS:
-    void configurationAdded(const QNetworkConfiguration& config);
-    void configurationRemoved(const QNetworkConfiguration& config);
-    void configurationUpdateComplete();
-    void configurationChanged(const QNetworkConfiguration& config);
     void onlineStateChanged(bool isOnline);
     
 public Q_SLOTS:
     void updateConfigurations();
 
 private:
-    void registerPlatformCapabilities();
     void updateStatesToSnaps();
-    bool changeConfigurationStateTo(QExplicitlySharedDataPointer<QNetworkConfigurationPrivate>& sharedData,
+    bool changeConfigurationStateTo(QNetworkConfigurationPrivatePointer ptr,
                                     QNetworkConfiguration::StateFlags newState);
-    bool changeConfigurationStateAtMinTo(QExplicitlySharedDataPointer<QNetworkConfigurationPrivate>& sharedData,
+    bool changeConfigurationStateAtMinTo(QNetworkConfigurationPrivatePointer ptr,
                                          QNetworkConfiguration::StateFlags newState);
-    bool changeConfigurationStateAtMaxTo(QExplicitlySharedDataPointer<QNetworkConfigurationPrivate>& sharedData,
-                                          QNetworkConfiguration::StateFlags newState);
+    bool changeConfigurationStateAtMaxTo(QNetworkConfigurationPrivatePointer ptr,
+                                         QNetworkConfiguration::StateFlags newState);
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-    QNetworkConfigurationPrivate* configFromConnectionMethodL(RCmConnectionMethod& connectionMethod);
+    SymbianNetworkConfigurationPrivate *configFromConnectionMethodL(RCmConnectionMethod& connectionMethod);
 #else
     bool readNetworkConfigurationValuesFromCommsDb(
-            TUint32 aApId, QNetworkConfigurationPrivate* apNetworkConfiguration);
+            TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration);
     void readNetworkConfigurationValuesFromCommsDbL(
-            TUint32 aApId, QNetworkConfigurationPrivate* apNetworkConfiguration);
+            TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration);
 #endif    
     
     void updateConfigurationsL();
@@ -119,10 +145,10 @@ private:
     void startCommsDatabaseNotifications();
     void stopCommsDatabaseNotifications();
 
-    QNetworkConfiguration defaultConfigurationL();
+    QNetworkConfigurationPrivatePointer defaultConfigurationL();
     TBool GetS60PlatformVersion(TUint& aMajor, TUint& aMinor) const;
     void startMonitoringIAPData(TUint32 aIapId);
-    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> dataByConnectionId(TUint aConnectionId);
+    QNetworkConfigurationPrivatePointer dataByConnectionId(TUint aConnectionId);
 
 protected: // From CActive
     void RunL();
@@ -131,17 +157,7 @@ protected: // From CActive
 private: // MConnectionMonitorObserver
     void EventL(const CConnMonEventBase& aEvent);
 
-public: // Data
-    //this table contains an up to date list of all configs at any time.
-    //it must be updated if configurations change, are added/removed or
-    //the members of ServiceNetworks change
-    QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > accessPointConfigurations;
-    QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > snapConfigurations;
-    QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > userChoiceConfigurations;
-    QNetworkConfigurationManager::Capabilities capFlags;
-    
 private: // Data
-    bool               iFirstUpdate; 
     CCommsDatabase*    ipCommsDB;
     RConnectionMonitor iConnectionMonitor;
 
@@ -164,7 +180,7 @@ private: // Data
 class AccessPointsAvailabilityScanner : public CActive
 {
 public:
-    AccessPointsAvailabilityScanner(QNetworkConfigurationManagerPrivate& owner,
+    AccessPointsAvailabilityScanner(SymbianEngine& owner,
                                    RConnectionMonitor& connectionMonitor); 
     ~AccessPointsAvailabilityScanner();
 
@@ -175,11 +191,11 @@ protected: // From CActive
     void DoCancel();
 
 private: // Data
-    QNetworkConfigurationManagerPrivate& iOwner;
+    SymbianEngine& iOwner;
     RConnectionMonitor& iConnectionMonitor;
     TConnMonIapInfoBuf iIapBuf;
 };
 
 QT_END_NAMESPACE
 
-#endif //QNETWORKCONFIGURATIONMANAGERPRIVATE_H
+#endif
