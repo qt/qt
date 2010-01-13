@@ -67,15 +67,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QGestureManager *qt_gestureManager = 0;
-
-QGestureManager* QGestureManager::instance()
-{
-    if (!qt_gestureManager)
-        qt_gestureManager = new QGestureManager(qApp);
-    return qt_gestureManager;
-}
-
 QGestureManager::QGestureManager(QObject *parent)
     : QObject(parent), state(NotGesture), m_lastCustomGestureId(0)
 {

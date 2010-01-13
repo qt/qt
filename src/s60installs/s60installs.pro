@@ -36,7 +36,7 @@ symbian: {
 
     sqlitedeployment = \
         "; Deploy sqlite onto phone that does not have it already" \
-        "@\"sqlite3.sis\", (0x2002af5f)"
+        "@\"$$PWD/sqlite3.sis\", (0x2002af5f)"
     qtlibraries.pkg_postrules += sqlitedeployment
 
     qtlibraries.path = c:/sys/bin

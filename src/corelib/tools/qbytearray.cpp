@@ -1603,8 +1603,9 @@ QByteArray& QByteArray::append(const char *str)
     array and returns a reference to this byte array.
 
     If \a len is negative, the length of the string will be determined
-    automatically using qstrlen(). If \a len is zero or the length of the
-    string is zero, nothing will be appended to the byte array.
+    automatically using qstrlen(). If \a len is zero or \a str is
+    null, nothing is appended to the byte array. Ensure that \a len is
+    \e not longer than \a str.
 */
 
 QByteArray &QByteArray::append(const char *str, int len)
