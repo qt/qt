@@ -1187,6 +1187,14 @@ void tst_qmllanguage::importsInstalled_data()
     QTest::addColumn<QString>("type");
 
     // import installed
+    QTest::newRow("installed import 0")
+        << "import com.nokia.installedtest 0.0\n"
+           "InstalledTestTP {}"
+        << "QmlGraphicsRectangle";
+    QTest::newRow("installed import 0 as TP")
+        << "import com.nokia.installedtest 0.0 as TP\n"
+           "TP.InstalledTestTP {}"
+        << "QmlGraphicsRectangle";
     QTest::newRow("installed import 1")
         << "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"

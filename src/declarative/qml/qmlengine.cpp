@@ -1112,7 +1112,7 @@ struct QmlEnginePrivate::ImportedNamespace {
             }
             QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
             QString qmldircontent = qmlDirContent.at(i);
-            if (vmaj || vmin || !qmldircontent.isEmpty()) {
+            if (vmaj>=0 || !qmldircontent.isEmpty()) {
                 // Check version file - XXX cache these in QmlEngine!
                 if (qmldircontent.isEmpty()) {
                     QFile qmldir(toLocalFileOrQrc(QUrl(urls.at(i)+QLatin1String("/qmldir"))));
