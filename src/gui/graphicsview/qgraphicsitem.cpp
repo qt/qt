@@ -800,8 +800,36 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
             return;
     }
 
-    foreach (QGraphicsItem *child, children)
-        child->d_ptr->updateAncestorFlag(childFlag, flag, enabled, false);
+    for (int i = 0; i < children.size(); ++i)
+        children.at(i)->d_ptr->updateAncestorFlag(childFlag, flag, enabled, false);
+}
+
+void QGraphicsItemPrivate::updateAncestorFlags()
+{
+    int flags = 0;
+    if (parent) {
+        // Inherit the parent's ancestor flags.
+        QGraphicsItemPrivate *pd = parent->d_ptr.data();
+        flags = pd->ancestorFlags;
+
+        // Add in flags from the parent.
+        if (pd->filtersDescendantEvents)
+            flags |= AncestorFiltersChildEvents;
+        if (pd->handlesChildEvents)
+            flags |= AncestorHandlesChildEvents;
+        if (pd->flags & QGraphicsItem::ItemClipsChildrenToShape)
+            flags |= AncestorClipsChildren;
+        if (pd->flags & QGraphicsItem::ItemIgnoresTransformations)
+            flags |= AncestorIgnoresTransformations;
+    }
+
+    if (ancestorFlags == flags)
+        return; // No change; stop propagation.
+    ancestorFlags = flags;
+
+    // Propagate to children recursively.
+    for (int i = 0; i < children.size(); ++i)
+        children.at(i)->d_ptr->updateAncestorFlags();
 }
 
 /*!
@@ -1004,7 +1032,8 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
     if (scene) {
         // Deliver the change to the index
-        scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
+        if (scene->d_func()->indexMethod != QGraphicsScene::NoIndex)
+            scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
 
         // Disable scene pos notifications for old ancestors
         if (scenePosDescendants || (flags & QGraphicsItem::ItemSendsScenePositionChanges))
@@ -1044,7 +1073,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     QGraphicsItem *p = parent;
     QGraphicsItem *parentFocusScopeItem = 0;
     while (p) {
-        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+        if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope) {
             // If this item's focus scope's focus scope item points
             // to this item or a descendent, then clear it.
             QGraphicsItem *fsi = p->d_ptr->focusScopeItem;
@@ -1065,11 +1094,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
             QGraphicsItem *ancestorScope = 0;
             QGraphicsItem *p = subFocusItem->d_ptr->parent;
             while (p) {
-                if (p->flags() & QGraphicsItem::ItemIsFocusScope)
+                if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)
                     ancestorScope = p;
-                if (p->isPanel())
+                if (p->d_ptr->flags & QGraphicsItem::ItemIsPanel)
                     break;
-                p = p->parentItem();
+                p = p->d_ptr->parent;
             }
             if (ancestorScope)
                 newFocusScopeItem = ancestorScope;
@@ -1077,7 +1106,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
         QGraphicsItem *p = newParent;
         while (p) {
-            if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+            if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope) {
                 p->d_ptr->focusScopeItem = newFocusScopeItem;
                 // Ensure the new item is no longer the subFocusItem. The
                 // only way to set focus on a child of a focus scope is
@@ -1113,30 +1142,24 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         }
 
         // Inherit ancestor flags from the new parent.
-        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
-        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
-        updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
-        updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
+        updateAncestorFlags();
 
         // Update item visible / enabled.
-        if (parent->isVisible() != visible) {
-            if (!parent->isVisible() || !explicitlyHidden)
-                setVisibleHelper(parent->isVisible(), /* explicit = */ false, /* update = */ !implicitUpdate);
+        if (parent->d_ptr->visible != visible) {
+            if (!parent->d_ptr->visible || !explicitlyHidden)
+                setVisibleHelper(parent->d_ptr->visible, /* explicit = */ false, /* update = */ !implicitUpdate);
         }
         if (parent->isEnabled() != enabled) {
-            if (!parent->isEnabled() || !explicitlyDisabled)
-                setEnabledHelper(parent->isEnabled(), /* explicit = */ false, /* update = */ !implicitUpdate);
+            if (!parent->d_ptr->enabled || !explicitlyDisabled)
+                setEnabledHelper(parent->d_ptr->enabled, /* explicit = */ false, /* update = */ !implicitUpdate);
         }
 
         // Auto-activate if visible and the parent is active.
-        if (q->isVisible() && parent->isActive())
+        if (visible && parent->isActive())
             q->setActive(true);
     } else {
         // Inherit ancestor flags from the new parent.
-        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
-        updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
-        updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
-        updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
+        updateAncestorFlags();
 
         if (!inDestructor) {
             // Update item visible / enabled.
