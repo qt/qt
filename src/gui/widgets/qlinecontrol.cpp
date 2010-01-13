@@ -510,10 +510,12 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
             o.format.setForeground(m_palette.brush(QPalette::HighlightedText));
         } else {
             // mask selection
-            o.start = m_cursor;
-            o.length = 1;
-            o.format.setBackground(m_palette.brush(QPalette::Text));
-            o.format.setForeground(m_palette.brush(QPalette::Window));
+            if(!m_blinkPeriod || m_blinkStatus){
+                o.start = m_cursor;
+                o.length = 1;
+                o.format.setBackground(m_palette.brush(QPalette::Text));
+                o.format.setForeground(m_palette.brush(QPalette::Window));
+            }
         }
         selections.append(o);
     }
