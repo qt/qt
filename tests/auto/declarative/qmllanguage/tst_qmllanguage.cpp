@@ -1133,6 +1133,10 @@ void tst_qmllanguage::importsLocal_data()
         << "import \"subdir\"\n" // QT-613
            "Test {}"
         << "QmlGraphicsRectangle";
+    QTest::newRow("local import second")
+        << "import Qt 4.6\nimport \"subdir\"\n"
+           "Test {}"
+        << "QmlGraphicsRectangle";
     QTest::newRow("local import as")
         << "import \"subdir\" as T\n"
            "T.Test {}"
