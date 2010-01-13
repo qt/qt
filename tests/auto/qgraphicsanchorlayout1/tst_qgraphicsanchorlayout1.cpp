@@ -1525,7 +1525,11 @@ void tst_QGraphicsAnchorLayout1::testMulti_data()
         }
 
 
-        QTest::newRow("Linear multi") << QSizeF(width, height) << theData << theResult;
+        if (sizeof(qreal) == 4) {
+            qDebug("Linear multi: Skipping! (qreal has too little precision, result will be wrong)");
+        } else {
+            QTest::newRow("Linear multi") << QSizeF(width, height) << theData << theResult;
+        }
     }
 
     // Multiple widgets, V shape
@@ -1595,7 +1599,11 @@ void tst_QGraphicsAnchorLayout1::testMulti_data()
             }
 
         }
-        QTest::newRow("V multi") << QSizeF(width, height) << theData << theResult;
+        if (sizeof(qreal) == 4) {
+            qDebug("V multi: Skipping! (qreal has too little precision, result will be wrong)");
+        } else {
+            QTest::newRow("V multi") << QSizeF(width, height) << theData << theResult;
+        }
     }
 
     // Multiple widgets, grid
@@ -1653,7 +1661,11 @@ void tst_QGraphicsAnchorLayout1::testMulti_data()
                 << BasicResult(i, QRectF(((i%d)+1)*horizontalStep, ((i/d)+1)*verticalStep, horizontalStep, verticalStep) );
         }
 
-        QTest::newRow("Grid multi") << QSizeF(200, 100) << theData << theResult;
+        if (sizeof(qreal) == 4) {
+            qDebug("Grid multi: Skipping! (qreal has too little precision, result will be wrong)");
+        } else {
+            QTest::newRow("Grid multi") << QSizeF(200, 100) << theData << theResult;
+        }
     }
 }
 
