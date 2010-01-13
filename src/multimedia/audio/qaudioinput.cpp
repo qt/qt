@@ -103,7 +103,7 @@ QT_BEGIN_NAMESPACE
 
       audio = new QAudioInput(format, this);
       QTimer::singleShot(3000, this, SLOT(stopRecording()));
-      audio->start(outputFile);
+      audio->start(&outputFile);
       // Records audio for 3000ms
     }
     \endcode
