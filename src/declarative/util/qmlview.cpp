@@ -290,7 +290,8 @@ void QmlView::execute()
     if (d->qml.isEmpty()) {
         d->component = new QmlComponent(&d->engine, d->source, this);
     } else {
-        d->component = new QmlComponent(&d->engine, d->qml.toUtf8(), d->source, this);
+        d->component = new QmlComponent(&d->engine, this);
+        d->component->setData(d->qml.toUtf8(), d->source);
     }
     connect (&d->engine, SIGNAL (quit ()), this, SIGNAL (quit ()));
 
@@ -485,7 +486,8 @@ QmlGraphicsItem* QmlView::addItem(const QString &qml, QmlGraphicsItem* parent)
     if (!d->root)
         return 0;
 
-    QmlComponent component(&d->engine, qml.toUtf8(), QUrl());
+    QmlComponent component(&d->engine);
+    component.setData(qml.toUtf8(), QUrl());
     if(d->component->isError()) {
         QList<QmlError> errorList = d->component->errors();
         foreach (const QmlError &error, errorList) {
