@@ -374,6 +374,11 @@ QGraphicsEffectSourcePrivate::~QGraphicsEffectSourcePrivate()
     invalidateCache();
 }
 
+void QGraphicsEffectSourcePrivate::setCachedOffset(const QPoint &offset)
+{
+    m_cachedOffset = offset;
+}
+
 void QGraphicsEffectSourcePrivate::invalidateCache(InvalidateReason reason) const
 {
     if (m_cachedMode != QGraphicsEffect::PadToEffectiveBoundingRect
