@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QWidget>
+#include <QWebElement>
 
 #include "ui_form.h"
 
@@ -53,7 +54,7 @@ public:
 protected:
     void showStatus(const QString &msg);
     void showError(const QString &msg);
-    QString evalJS(const QString &js);
+    QWebElement document() const;
 
 private slots:
 
