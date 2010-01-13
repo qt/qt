@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,6 +90,7 @@ public slots:
 private slots:
     void getSetCheck();
     void constructing();
+    void isDetached();
     void assignment();
     void comparison();
     void copying();
@@ -316,6 +317,25 @@ void tst_QUrl::constructing()
     QCOMPARE(buildUNC.toLocalFile(), QString::fromLatin1("//somehost/somepath"));
     buildUNC.toEncoded();
     QVERIFY(!buildUNC.isEmpty());
+}
+
+void tst_QUrl::isDetached()
+{
+    QUrl url;
+    QVERIFY(!url.isDetached());
+
+    url = "http://qt.nokia.com/";
+    QVERIFY(url.isDetached());
+
+    url.clear();
+    QVERIFY(!url.isDetached());
+
+    url.setHost("qt.nokia.com");
+    QVERIFY(url.isDetached());
+
+    QUrl url2 = url;
+    QVERIFY(!url.isDetached());
+    QVERIFY(!url2.isDetached());
 }
 
 void tst_QUrl::assignment()

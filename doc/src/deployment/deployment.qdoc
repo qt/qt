@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -118,10 +118,15 @@
     of the libraries used by the application.  Using static linking,
     however, the Qt run-time is compiled into the executable.
 
-    In particular, you will need to deploy Qt plugins, such as
-    JPEG support or SQL drivers. For more information about plugins,
-    see the \l {plugins-howto.html}{How to Create Qt Plugins}
-    documentation.
+    In general, you should deploy all plugins that your build of Qt uses,
+    excluding only those that you have identified as being unnecessary
+    for your application and its users.
+
+    For instance, you may need to deploy plugins for JPEG support and
+    SQL drivers, but you should also deploy plugins that your users may
+    require, including those for accessibility.
+    For more information about plugins, see the
+    \l{plugins-howto.html}{How to Create Qt Plugins} documentation.
 
     When deploying an application using the shared library approach
     you must ensure that the Qt libraries will use the correct path to

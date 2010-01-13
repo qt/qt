@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1136,8 +1136,9 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
     if (QGraphicsObject *object = item->toGraphicsObject()) {
-        if (qt_gestureManager) {
-            if (qt_gestureManager->filterEvent(object, event))
+        QGestureManager *gestureManager = QApplicationPrivate::instance()->gestureManager;
+        if (gestureManager) {
+            if (gestureManager->filterEvent(object, event))
                 return true;
         }
     }
@@ -6159,9 +6160,10 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original, QWidge
         }
     }
 
-    Q_ASSERT(qt_gestureManager); // it would be very odd if we got called without a manager.
+    QGestureManager *gestureManager = QApplicationPrivate::instance()->gestureManager;
+    Q_ASSERT(gestureManager); // it would be very odd if we got called without a manager.
     for (setIter = canceledGestures.begin(); setIter != canceledGestures.end(); ++setIter) {
-        qt_gestureManager->recycle(*setIter);
+        gestureManager->recycle(*setIter);
         gestureTargets.remove(*setIter);
     }
 }

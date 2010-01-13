@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -116,6 +116,7 @@ private slots:
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void task226366_lowerCaseHardDriveWindows();
 #endif
+    void completionOnLevelAfterRoot();
     void task233037_selectingDirectory();
     void task235069_hideOnEscape();
     void task236402_dontWatchDeletedDir();
@@ -202,7 +203,7 @@ void tst_QFiledialog::heapCorruption()
     qDeleteAll(dialogs);
 }
 
-struct FriendlyQFileDialog : public QFileDialog
+struct FriendlyQFileDialog : public QNonNativeFileDialog
 {
     friend class tst_QFileDialog;
     Q_DECLARE_PRIVATE(QFileDialog)
@@ -551,6 +552,45 @@ void tst_QFiledialog::task226366_lowerCaseHardDriveWindows()
     QCOMPARE(edit->text(), QString("C:"));
 }
 #endif
+
+void tst_QFiledialog::completionOnLevelAfterRoot()
+{
+    QNonNativeFileDialog fd;
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    fd.setDirectory("C:");
+    QDir current = fd.directory();
+    current.mkdir("completionOnLevelAfterRootTest");
+#else
+    fd.setFilter(QDir::Hidden | QDir::AllDirs | QDir::Files | QDir::System);
+    fd.setDirectory("/");
+    QDir etc("/etc");
+    if (!etc.exists())
+        QSKIP("This test requires to have an etc directory under /", SkipAll);
+#endif
+    fd.show();
+    QLineEdit *edit = qFindChild<QLineEdit*>(&fd, "fileNameEdit");
+    QTest::qWait(2000);
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    //I love testlib :D
+    QTest::keyClick(edit, Qt::Key_C);
+    QTest::keyClick(edit, Qt::Key_O);
+    QTest::keyClick(edit, Qt::Key_M);
+    QTest::keyClick(edit, Qt::Key_P);
+    QTest::keyClick(edit, Qt::Key_L);
+#else
+    QTest::keyClick(edit, Qt::Key_E);
+    QTest::keyClick(edit, Qt::Key_T);
+#endif
+    QTest::qWait(200);
+    QTest::keyClick(edit->completer()->popup(), Qt::Key_Down);
+    QTest::qWait(200);
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    QCOMPARE(edit->text(), QString("completionOnLevelAfterRootTest"));
+    current.rmdir("completionOnLevelAfterRootTest");
+#else
+    QCOMPARE(edit->text(), QString("etc"));
+#endif
+}
 
 void tst_QFiledialog::task233037_selectingDirectory()
 {

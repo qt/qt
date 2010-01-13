@@ -83,6 +83,8 @@ public:
 
     void renderPrivate(QPainter*, QWebFrame::RenderLayer, const QRegion& clip);
 
+    bool scrollOverflow(int dx, int dy);
+
     QWebFrame *q;
     Qt::ScrollBarPolicy horizontalScrollBarPolicy;
     Qt::ScrollBarPolicy verticalScrollBarPolicy;

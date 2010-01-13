@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -343,7 +343,8 @@ bool QS60StylePrivate::drawsOwnThemeBackground(const QWidget *widget)
 }
 
 QFont QS60StylePrivate::s60Font(
-    QS60StyleEnums::FontCategories fontCategory, int pointSize) const
+    QS60StyleEnums::FontCategories fontCategory,
+    int pointSize, bool resolveFontSize) const
 {
     QFont result;
     int actualPointSize = pointSize;
@@ -356,7 +357,7 @@ QFont QS60StylePrivate::s60Font(
     Q_ASSERT(actualPointSize > 0);
     const QPair<QS60StyleEnums::FontCategories, int> key(fontCategory, actualPointSize);
     if (!m_mappedFontsCache.contains(key)) {
-        result = s60Font_specific(fontCategory, actualPointSize);
+        result = s60Font_specific(fontCategory, actualPointSize, resolveFontSize);
         m_mappedFontsCache.insert(key, result);
     } else {
         result = m_mappedFontsCache.value(key);
@@ -620,8 +621,10 @@ void QS60StylePrivate::setFont(QWidget *widget) const
         fontCategory = QS60StyleEnums::FC_Title;
     }
     if (fontCategory != QS60StyleEnums::FC_Undefined) {
+        const bool resolveFontSize = widget->testAttribute(Qt::WA_SetFont)
+            && (widget->font().resolve() & QFont::SizeResolved);
         const QFont suggestedFont =
-            s60Font(fontCategory, widget->font().pointSizeF());
+            s60Font(fontCategory, widget->font().pointSizeF(), resolveFontSize);
         widget->setFont(suggestedFont);
     }
 }

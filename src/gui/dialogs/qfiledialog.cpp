@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3245,6 +3245,10 @@ QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
     QString currentLocation = dirModel->rootPath();
     QString path = index.data(QFileSystemModel::FilePathRole).toString();
     if (!currentLocation.isEmpty() && path.startsWith(currentLocation)) {
+#if defined(Q_OS_UNIX) || defined(Q_OS_WINCE)
+        if (currentLocation == QDir::separator())
+            return path.mid(currentLocation.length());
+#endif
         return path.mid(currentLocation.length() + 1);
     }
     return index.data(QFileSystemModel::FilePathRole).toString();
@@ -3300,6 +3304,10 @@ QStringList QFSCompleter::splitPath(const QString &path) const
         else
             dirModel = sourceModel;
         QString currentLocation = QDir::toNativeSeparators(dirModel->rootPath());
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+        if (currentLocation.endsWith(QLatin1Char(':')))
+            currentLocation.append(sep);
+#endif
         if (currentLocation.contains(sep) && path != currentLocation) {
             QStringList currentLocationList = splitPath(currentLocation);
             while (!currentLocationList.isEmpty()
