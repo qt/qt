@@ -1669,16 +1669,16 @@ inline QGraphicsLayoutItem *getItem(
     return widgets[index];
 }
 
-static QRectF truncate(QRectF original)
+static bool fuzzierCompare(qreal a, qreal b)
 {
-    QRectF result;
+    return qAbs(a - b) <= qreal(0.0001);
+}
 
-    result.setX(qRound(original.x() * 1000000) / 1000000.0);
-    result.setY(qRound(original.y() * 1000000) / 1000000.0);
-    result.setWidth(qRound(original.width() * 1000000) / 1000000.0);
-    result.setHeight(qRound(original.height() * 1000000) / 1000000.0);
+static bool fuzzierCompare(const QRectF &r1, const QRectF &r2)
+{
 
-    return result;
+    return fuzzierCompare(r1.x(), r2.x()) && fuzzierCompare(r1.y(), r2.y())
+        && fuzzierCompare(r1.width(), r2.width()) && fuzzierCompare(r1.height(), r2.height());
 }
 
 void tst_QGraphicsAnchorLayout1::testBasicLayout()
@@ -1727,10 +1727,10 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
     // Validate
     for (int i = 0; i < result.count(); ++i) {
         const BasicLayoutTestResult item = result[i];
-        QRectF expected = truncate(item.rect);
-        QRectF actual = truncate(widgets[item.index]->geometry());
+        QRectF expected = item.rect;
+        QRectF actual = widgets[item.index]->geometry();
 
-        QCOMPARE(actual, expected);
+        QVERIFY(fuzzierCompare(actual, expected));
     }
 
     // Test mirrored mode
@@ -1744,10 +1744,10 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         if (mirroredRect.isValid()){
             mirroredRect.moveLeft(size.width()-item.rect.width()-item.rect.left());
         }
-        QRectF expected = truncate(mirroredRect);
-        QRectF actual = truncate(widgets[item.index]->geometry());
+        QRectF expected = mirroredRect;
+        QRectF actual = widgets[item.index]->geometry();
 
-        QCOMPARE(actual, expected);
+        QVERIFY(fuzzierCompare(actual, expected));
     }
 
     qDeleteAll(widgets);
