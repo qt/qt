@@ -153,7 +153,7 @@ public:
         dirtyChildren(0),
         localCollisionHack(0),
         inSetPosHelper(0),
-        needSortChildren(1), // ### can be 0 by default?
+        needSortChildren(0),
         allChildrenDirty(0),
         fullUpdatePending(0),
         flags(0),
@@ -197,6 +197,7 @@ public:
 
     void updateAncestorFlag(QGraphicsItem::GraphicsItemFlag childFlag,
                             AncestorFlag flag = NoFlag, bool enabled = false, bool root = true);
+    void updateAncestorFlags();
     void setIsMemberOfGroup(bool enabled);
     void remapItemPos(QEvent *event, QGraphicsItem *item);
     QPointF genericMapFromScene(const QPointF &pos, const QWidget *viewport) const;
@@ -721,11 +722,13 @@ inline QTransform QGraphicsItemPrivate::transformToParent() const
 inline void QGraphicsItemPrivate::ensureSortedChildren()
 {
     if (needSortChildren) {
-        qSort(children.begin(), children.end(), qt_notclosestLeaf);
         needSortChildren = 0;
         sequentialOrdering = 1;
+        if (children.isEmpty())
+            return;
+        qSort(children.begin(), children.end(), qt_notclosestLeaf);
         for (int i = 0; i < children.size(); ++i) {
-            if (children[i]->d_ptr->siblingIndex != i) {
+            if (children.at(i)->d_ptr->siblingIndex != i) {
                 sequentialOrdering = 0;
                 break;
             }
