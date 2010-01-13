@@ -361,7 +361,14 @@ void QMetaType::registerStreamOperators(const char *typeName, SaveOperator saveO
     int idx = type(typeName);
     if (!idx)
         return;
+    registerStreamOperators(idx, saveOp, loadOp);
+}
 
+/*! \internal
+*/
+void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
+                                        LoadOperator loadOp)
+{
     QVector<QCustomTypeInfo> *ct = customTypes();
     if (!ct)
         return;
