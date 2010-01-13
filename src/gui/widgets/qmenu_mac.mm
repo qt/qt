@@ -725,32 +725,6 @@ bool qt_mac_menubar_is_open()
     return qt_mac_menus_open_count > 0;
 }
 
-void qt_mac_clear_menubar()
-{
-    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
-        return;
-
-#ifndef QT_MAC_USE_COCOA
-    MenuRef clear_menu = 0;
-    if (CreateNewMenu(0, 0, &clear_menu) == noErr) {
-        SetRootMenu(clear_menu);
-        ReleaseMenu(clear_menu);
-    } else {
-        qWarning("QMenu: Internal error at %s:%d", __FILE__, __LINE__);
-    }
-    ClearMenuBar();
-    qt_mac_command_set_enabled(0, kHICommandPreferences, false);
-    InvalMenuBar();
-#else
-    QMacCocoaAutoReleasePool pool;
-    QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
-    NSMenu *menu = [loader menu];
-    [loader ensureAppMenuInMenu:menu];
-    [NSApp setMainMenu:menu];
-#endif
-}
-
-
 QMacMenuAction::~QMacMenuAction()
 {
 #ifdef QT_MAC_USE_COCOA
@@ -2006,6 +1980,36 @@ static void cancelAllMenuTracking()
 #endif
 }
 
+void qt_mac_clear_menubar()
+{
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
+        return;
+
+#ifndef QT_MAC_USE_COCOA
+    MenuRef clear_menu = 0;
+    if (CreateNewMenu(0, 0, &clear_menu) == noErr) {
+        SetRootMenu(clear_menu);
+        ReleaseMenu(clear_menu);
+    } else {
+        qWarning("QMenu: Internal error at %s:%d", __FILE__, __LINE__);
+    }
+    ClearMenuBar();
+    qt_mac_command_set_enabled(0, kHICommandPreferences, false);
+    InvalMenuBar();
+#else
+    QMacCocoaAutoReleasePool pool;
+    QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
+    NSMenu *menu = [loader menu];
+    [loader ensureAppMenuInMenu:menu];
+    [NSApp setMainMenu:menu];
+    const bool modal = qt_mac_should_disable_menu(0);
+    if (qt_mac_current_menubar.qmenubar || modal != qt_mac_current_menubar.modal)
+        qt_mac_set_modal_state(menu, modal);
+    qt_mac_current_menubar.qmenubar = 0;
+    qt_mac_current_menubar.modal = modal;
+#endif
+}
+
 /*!
   \internal
 
@@ -2081,23 +2085,6 @@ bool QMenuBar::macUpdateMenuBar()
             }
             qt_mac_current_menubar.modal = modal;
         }
-    } else {
-        // INVARIANT: There is no menubar specified, so the default one with the application
-        // menu is shown. Check if we need to disable it because of modality. We set
-        // qt_mac_current_menubar.qmenubar to nil to mean the default nib loaded menu:
-#ifdef QT_MAC_USE_COCOA
-        QMacCocoaAutoReleasePool pool;
-        QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
-        OSMenuRef menu = [loader menu];
-        [loader ensureAppMenuInMenu:menu];
-        [NSApp setMainMenu:menu];
-        const bool modal = qt_mac_should_disable_menu(0);
-        if (qt_mac_current_menubar.qmenubar || modal != qt_mac_current_menubar.modal)
-            qt_mac_set_modal_state(menu, modal);
-        qt_mac_current_menubar.qmenubar = 0;
-        qt_mac_current_menubar.modal = modal;
-        ret = true;
-#endif
     }
 
     if(!ret)
