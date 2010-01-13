@@ -1517,18 +1517,14 @@ qint64 QFile::readData(char *data, qint64 len)
     if (!d->ensureFlushed())
         return -1;
 
-    qint64 ret = -1;
     qint64 read = d->fileEngine->read(data, len);
-    if (read != -1)
-        ret = read;
-
-    if(ret < 0) {
+    if(read < 0) {
         QFile::FileError err = d->fileEngine->error();
         if(err == QFile::UnspecifiedError)
             err = QFile::ReadError;
         d->setError(err, d->fileEngine->errorString());
     }
-    return ret;
+    return read;
 }
 
 /*!
