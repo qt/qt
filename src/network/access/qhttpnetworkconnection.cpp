@@ -691,19 +691,31 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
                 channels[i].sendRequest();
         }
     }
+
+    // dequeue new ones
+
     QAbstractSocket *socket = 0;
     for (int i = 0; i < channelCount; ++i) {
         QAbstractSocket *chSocket = channels[i].socket;
-        // send the request using the idle socket
-        if (!channels[i].isSocketBusy()) {
+        // try to get a free AND connected socket
+        if (!channels[i].isSocketBusy() && channels[i].socket->state() == QAbstractSocket::ConnectedState) {
             socket = chSocket;
+            dequeueAndSendRequest(socket);
             break;
         }
     }
 
-    // this socket is free,
-    if (socket)
-        dequeueAndSendRequest(socket);
+    if (!socket) {
+        for (int i = 0; i < channelCount; ++i) {
+            QAbstractSocket *chSocket = channels[i].socket;
+            // try to get a free unconnected socket
+            if (!channels[i].isSocketBusy()) {
+                socket = chSocket;
+                dequeueAndSendRequest(socket);
+                break;
+            }
+        }
+    }
 
     // try to push more into all sockets
     // ### FIXME we should move this to the beginning of the function
@@ -731,6 +743,16 @@ void QHttpNetworkConnectionPrivate::_q_restartAuthPendingRequests()
     }
 }
 
+void QHttpNetworkConnectionPrivate::readMoreLater(QHttpNetworkReply *reply)
+{
+    for (int i = 0 ; i < channelCount; ++i) {
+        if (channels[i].reply ==  reply) {
+            // emulate a readyRead() from the socket
+            QMetaObject::invokeMethod(&channels[i], "_q_readyRead", Qt::QueuedConnection);
+            return;
+        }
+    }
+}
 
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent)
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)

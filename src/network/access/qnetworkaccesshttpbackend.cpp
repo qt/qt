@@ -144,7 +144,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
         QByteArray key = QByteArray(header.constData() + pos, end - pos).trimmed().toLower();
         pos = end + 1;
 
-        if (equal != -1) {
+        if (uint(equal) < uint(comma)) {
             // case: token "=" (token | quoted-string)
             // skip spaces
             pos = nextNonWhitespace(header, pos);
@@ -596,7 +596,7 @@ void QNetworkAccessHttpBackend::open()
         // unsuitable proxies
         QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
                                   Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProxyNotFoundError),
-                                  Q_ARG(QString, QCoreApplication::translate("QNetworkAccessHttpBackend", "No suitable proxy found")));
+                                  Q_ARG(QString, tr("No suitable proxy found")));
         QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
         return;
     }
@@ -655,6 +655,12 @@ void QNetworkAccessHttpBackend::downstreamReadyWrite()
     readFromHttp();
     if (httpReply && httpReply->bytesAvailable() == 0 && httpReply->isFinished())
         replyFinished();
+}
+
+void QNetworkAccessHttpBackend::setDownstreamLimited(bool b)
+{
+    if (httpReply)
+        httpReply->setDownstreamLimited(b);
 }
 
 void QNetworkAccessHttpBackend::replyReadyRead()

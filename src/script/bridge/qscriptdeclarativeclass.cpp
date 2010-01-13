@@ -319,6 +319,11 @@ QStringList QScriptDeclarativeClass::propertyNames(Object *object)
     return QStringList();
 }
 
+bool QScriptDeclarativeClass::isQObject() const
+{
+    return false;
+}
+
 QObject *QScriptDeclarativeClass::toQObject(Object *, bool *ok)
 {
     if (ok) *ok = false;

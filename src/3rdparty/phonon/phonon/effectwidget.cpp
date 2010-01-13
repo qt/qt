@@ -15,7 +15,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public 
+    You should have received a copy of the GNU Lesser General Public
     License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
@@ -151,7 +151,7 @@ void EffectWidgetPrivate::autogenerateUi()
                 bool minValueOk = false;
                 bool maxValueOk = false;
                 const int minValue = para.minimumValue().toInt(&minValueOk);
-                const int maxValue = para.minimumValue().toInt(&maxValueOk);
+                const int maxValue = para.maximumValue().toInt(&maxValueOk);
 
                 sb->setRange(minValueOk ? minValue : DEFAULT_MIN_INT, maxValueOk ? maxValue : DEFAULT_MAX_INT);
                 sb->setValue(value.toInt());

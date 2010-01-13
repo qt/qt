@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Linguist of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,49 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef TESTLUPDATE_H
-#define TESTLUPDATE_H
+// IMPORTANT!!!! If you want to add testdata to this file,
+// always add it to the end in order to not change the linenumbers of translations!!!
 
-#include <QObject>
-#include <QProcess>
-#include <QStringList>
+#define QTCORE <QtCore>
+#include QTCORE // Hidden from lupdate, but compiles
 
-class TestLUpdate : public QObject
-{
+class A: public QObject {
     Q_OBJECT
+    void foo()
+    {
+        // number Heuristics
+        tr("version 2.0 now");
 
-public:
-    TestLUpdate();
-    virtual ~TestLUpdate();
+        // same text match
+        tr("this is the matched same text");
 
-    void setWorkingDirectory( const QString &workDir);
-    bool run( const QString &commandline);
-    bool updateProFile( const QString &arguments);
-    bool qmake();
-    QStringList getErrorMessages() {
-        return make_result;
+        // failed same text
+        tr("this is the non-matched same text");
     }
-    void clearResult() {
-        make_result.clear();
-    }
-private:
-    QString     m_cmdLupdate;
-    QString     m_cmdQMake;
-    QString     m_workDir;
-    QProcess	*childProc;
-    QStringList env_list;
-    QStringList make_result;
-
-    bool	child_show;
-    bool    qws_mode;
-    bool	exit_ok;
-
-    bool runChild( bool showOutput, const QString &program, const QStringList &argList = QStringList());
-    void addMakeResult( const QString &result );
-    void childHasData();
-
-private slots:
-    void childReady(int exitCode);
 };
 
-#endif // TESTLUPDATE_H

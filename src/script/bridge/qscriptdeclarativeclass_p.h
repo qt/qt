@@ -97,6 +97,7 @@ public:
 
     virtual QStringList propertyNames(Object *);
 
+    virtual bool isQObject() const;
     virtual QObject *toQObject(Object *, bool *ok = 0);
     virtual QVariant toVariant(Object *, bool *ok = 0);
 

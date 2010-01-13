@@ -46,7 +46,7 @@ QScriptValue three = myEngine.evaluate("1 + 2");
 
 
 //! [1]
-QScriptValue fun = myEngine.evaluate("function(a, b) { return a + b; }");
+QScriptValue fun = myEngine.evaluate("(function(a, b) { return a + b; })");
 QScriptValueList args;
 args << 1 << 2;
 QScriptValue threeAgain = fun.call(QScriptValue(), args);
