@@ -196,6 +196,9 @@ public:
     void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
     void drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType, const QTextItemInt &ti);
 
+    // Calls glVertexAttributePointer if the pointer has changed
+    inline void setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer);
+
     // draws whatever is in the vertex array:
     void drawVertexArrays(const float *data, int *stops, int stopCount, GLenum primitive);
     void drawVertexArrays(QGL2PEXVertexArray &vertexArray, GLenum primitive) {
@@ -229,6 +232,7 @@ public:
     void setScissor(const QRect &rect);
     void regenerateClip();
     void systemStateChanged();
+
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
     static QGL2PaintEngineExPrivate *getData(QGL2PaintEngineEx *engine) { return engine->d_func(); }
@@ -291,7 +295,23 @@ public:
 
     QSet<QVectorPath::CacheEntry *> pathCaches;
     QVector<GLuint> unusedVBOSToClean;
+
+    const GLfloat *vertexAttribPointers[3];
 };
+
+
+void QGL2PaintEngineExPrivate::setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer)
+{
+    Q_ASSERT(arrayIndex < 3);
+    if (pointer == vertexAttribPointers[arrayIndex])
+        return;
+
+    vertexAttribPointers[arrayIndex] = pointer;
+    if (arrayIndex == QT_OPACITY_ATTR)
+        glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, pointer);
+    else
+        glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, pointer);
+}
 
 QT_END_NAMESPACE
 

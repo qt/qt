@@ -41,19 +41,36 @@
 
 #include <QDebug>
 #include <QTextDocument>
+#include <QTextDocumentWriter>
 #include <QTextLayout>
+#include <QTextCursor>
 #include <QFile>
+#include <QBuffer>
 #include <qtest.h>
+
+Q_DECLARE_METATYPE(QTextDocument*)
 
 class tst_QText: public QObject
 {
     Q_OBJECT
+public:
+    tst_QText() {
+        m_lorem = QString::fromLatin1("Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.");
+    }
+
 private slots:
     void loadHtml_data();
     void loadHtml();
 
     void shaping_data();
     void shaping();
+
+    void odfWriting_empty();
+    void odfWriting_text();
+    void odfWriting_images();
+
+private:
+    QString m_lorem;
 };
 
 void tst_QText::loadHtml_data()
@@ -63,7 +80,7 @@ void tst_QText::loadHtml_data()
     QTest::newRow("simple") << QString::fromLatin1("<html><b>Foo</b></html>");
     QTest::newRow("simple2") << QString::fromLatin1("<b>Foo</b>");
 
-    QString parag = QString::fromLatin1("<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. <b>Duis <i>autem</i> vel eum </b> iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.</p>");
+    QString parag = QString::fromLatin1("<p>%1</p>").arg(m_lorem);
     QString header = QString::fromLatin1("<html><head><title>test</title></head><body>");
     QTest::newRow("long") << QString::fromLatin1("<html><head><title>test</title></head><body>") + parag + parag + parag
         + parag + parag + parag + parag + parag + parag + parag + parag + parag + parag + parag + parag + parag + parag
@@ -87,7 +104,7 @@ void tst_QText::shaping_data()
 {
     QTest::addColumn<QString>("parag");
     QTest::newRow("empty") << QString();
-    QTest::newRow("lorem") << QString::fromLatin1("Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.");
+    QTest::newRow("lorem") << m_lorem;
     QTest::newRow("short") << QString::fromLatin1("Lorem ipsum dolor sit amet");
 
     QFile file(QString::fromLatin1(SRCDIR) + QLatin1String("/bidi.txt"));
@@ -118,6 +135,64 @@ void tst_QText::shaping()
         lay.createLine();
         lay.endLayout();
     }
+}
+
+void tst_QText::odfWriting_empty()
+{
+    QVERIFY(QTextDocumentWriter::supportedDocumentFormats().contains("ODF")); // odf compiled in
+    QTextDocument *doc = new QTextDocument();
+    // write it
+    QBENCHMARK {
+        QBuffer buffer;
+        buffer.open(QIODevice::WriteOnly);
+        QTextDocumentWriter writer(&buffer, "ODF");
+        writer.write(doc);
+    }
+    delete doc;
+}
+
+void tst_QText::odfWriting_text()
+{
+    QTextDocument *doc = new QTextDocument();
+    QTextCursor cursor(doc);
+    QTextBlockFormat bf;
+    bf.setIndent(2);
+    cursor.insertBlock(bf);
+    cursor.insertText(m_lorem);
+    bf.setTopMargin(10);
+    cursor.insertBlock(bf);
+    cursor.insertText(m_lorem);
+    bf.setRightMargin(30);
+    cursor.insertBlock(bf);
+    cursor.insertText(m_lorem);
+
+    // write it
+    QBENCHMARK {
+        QBuffer buffer;
+        buffer.open(QIODevice::WriteOnly);
+        QTextDocumentWriter writer(&buffer, "ODF");
+        writer.write(doc);
+    }
+    delete doc;
+}
+
+void tst_QText::odfWriting_images()
+{
+    QTextDocument *doc = new QTextDocument();
+    QTextCursor cursor(doc);
+    cursor.insertText(m_lorem);
+    QImage image(400, 200, QImage::Format_ARGB32_Premultiplied);
+    cursor.insertImage(image);
+    cursor.insertText(m_lorem);
+
+    // write it
+    QBENCHMARK {
+        QBuffer buffer;
+        buffer.open(QIODevice::WriteOnly);
+        QTextDocumentWriter writer(&buffer, "ODF");
+        writer.write(doc);
+    }
+    delete doc;
 }
 
 QTEST_MAIN(tst_QText)

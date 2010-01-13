@@ -81,7 +81,7 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
         data[i] = 0;
 
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
     else
         glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
 
@@ -127,11 +127,28 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glViewport(0, 0, oldWidth, oldHeight);
 
-    float vertexCoordinateArray[] = { -1, -1, 1, -1, 1, 1, -1, 1 };
-    float textureCoordinateArray[] = { 0, 0, 1, 0, 1, 1, 0, 1 };
+    GLfloat* vertexCoordinateArray = pex->staticVertexCoordinateArray;
+    vertexCoordinateArray[0] = -1.0f;
+    vertexCoordinateArray[1] = -1.0f;
+    vertexCoordinateArray[2] =  1.0f;
+    vertexCoordinateArray[3] = -1.0f;
+    vertexCoordinateArray[4] =  1.0f;
+    vertexCoordinateArray[5] =  1.0f;
+    vertexCoordinateArray[6] = -1.0f;
+    vertexCoordinateArray[7] =  1.0f;
 
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
-    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
+    GLfloat* textureCoordinateArray = pex->staticTextureCoordinateArray;
+    textureCoordinateArray[0] = 0.0f;
+    textureCoordinateArray[1] = 0.0f;
+    textureCoordinateArray[2] = 1.0f;
+    textureCoordinateArray[3] = 0.0f;
+    textureCoordinateArray[4] = 1.0f;
+    textureCoordinateArray[5] = 1.0f;
+    textureCoordinateArray[6] = 0.0f;
+    textureCoordinateArray[7] = 1.0f;
+
+    pex->setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, vertexCoordinateArray);
+    pex->setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, textureCoordinateArray);
 
     pex->shaderManager->useBlitProgram();
     pex->shaderManager->blitProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
@@ -179,8 +196,20 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
             for (int x = 0; x < maskWidth; ++x)
                 src[x] = -src[x]; // convert 0 and 1 into 0 and 255
         }
-     }
-
+    } else if (mask.format() == QImage::Format_RGB32) {
+        // Make the alpha component equal to the average of the RGB values.
+        // This is needed when drawing sub-pixel antialiased text on translucent targets.
+        for (int y = 0; y < maskHeight; ++y) {
+            quint32 *src = (quint32 *) mask.scanLine(y);
+            for (int x = 0; x < maskWidth; ++x) {
+                uchar r = src[x] >> 16;
+                uchar g = src[x] >> 8;
+                uchar b = src[x];
+                quint32 avg = (quint32(r) + quint32(g) + quint32(b) + 1) / 3; // "+1" for rounding.
+                src[x] = (src[x] & 0x00ffffff) | (avg << 24);
+            }
+        }
+    }
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
     if (mask.format() == QImage::Format_RGB32) {

@@ -1,6 +1,3 @@
-TEMPLATE = app
-LANGUAGE = C++
-
 # Try to reference a variable that does not exist:
 MYVAR=$$THIS_VARIABLE_IS_NOT_DEFINED
 
@@ -31,10 +28,4 @@ if (exists($$member($$(PATH), 0))) {
     SOURCES += main_dependpath.cpp
 }
 
-TRANSLATIONS        += project.ts
-
-exists( $$TRANSLATIONS ) {
-    win32: system(del $$TRANSLATIONS)
-    unix:  system(rm -f $$TRANSLATIONS)
-}
-
+TRANSLATIONS = project.ts
