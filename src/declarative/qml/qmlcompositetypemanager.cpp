@@ -461,8 +461,6 @@ int QmlCompositeTypeManager::resolveTypes(QmlCompositeTypeData *unit)
     int waiting = 0;
 
     foreach (QmlScriptParser::Import imp, unit->data.imports()) {
-        int dot = imp.version.indexOf(QLatin1Char('.'));
-        if (dot < 0) dot = imp.version.length();
         QString qmldir;
         if (imp.type == QmlScriptParser::Import::File && imp.qualifier.isEmpty()) {
             QString importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir"))).toString();
@@ -473,8 +471,22 @@ int QmlCompositeTypeManager::resolveTypes(QmlCompositeTypeData *unit)
                 }
             }
         }
-        if (!QmlEnginePrivate::get(engine)->addToImport(
-                &unit->imports, qmldir, imp.uri, imp.qualifier, imp.version.left(dot).toInt(), imp.version.mid(dot+1).toInt(), imp.type))
+
+        int vmaj = -1;
+        int vmin = -1;
+        if (!imp.version.isEmpty()) {
+            int dot = imp.version.indexOf(QLatin1Char('.'));
+            if (dot < 0) {
+                vmaj = imp.version.toInt();
+                vmin = 0;
+            } else {
+                vmaj = imp.version.left(dot).toInt();
+                vmin = imp.version.mid(dot+1).toInt();
+            }
+        }
+
+        if (!QmlEnginePrivate::get(engine)->
+                addToImport(&unit->imports, qmldir, imp.uri, imp.qualifier, vmaj, vmin, imp.type))
         {
             QmlError error;
             error.setUrl(unit->imports.baseUrl());
