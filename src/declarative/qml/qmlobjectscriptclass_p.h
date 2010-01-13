@@ -89,6 +89,7 @@ public:
     Value property(QObject *, const Identifier &);
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
                      QmlContext *evalContext = 0);
+    virtual QStringList propertyNames(Object *);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 

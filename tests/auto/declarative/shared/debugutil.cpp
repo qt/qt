@@ -157,7 +157,8 @@ int QmlDebugTest::runTests(QmlTestFactory *factory, const QList<QByteArray> &qml
     QmlEngine engine;  // blocks until client connects
 
     foreach (const QByteArray &code, qml) {
-        QmlComponent c(&engine, code, QUrl("file://"));
+        QmlComponent c(&engine);
+        c.setData(code, QUrl("file://"));
         Q_ASSERT(c.isReady());  // fails if bad syntax
         data.items << qobject_cast<QmlGraphicsItem*>(c.create());
     }

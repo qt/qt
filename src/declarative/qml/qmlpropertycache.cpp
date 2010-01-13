@@ -130,6 +130,8 @@ QmlPropertyCache::Data QmlPropertyCache::create(const QMetaObject *metaObject,
     int methodCount = metaObject->methodCount();
     for (int ii = methodCount - 1; ii >= 0; --ii) {
         QMetaMethod m = metaObject->method(ii);
+        if (m.access() == QMetaMethod::Private)
+            continue;
         QString methodName = QString::fromUtf8(m.signature());
 
         int parenIdx = methodName.indexOf(QLatin1Char('('));
@@ -198,6 +200,8 @@ void QmlPropertyCache::append(QmlEngine *engine, const QMetaObject *metaObject,
     int methodOffset = metaObject->methodOffset();
     for (int ii = methodOffset; ii < methodCount; ++ii) {
         QMetaMethod m = metaObject->method(ii);
+        if (m.access() == QMetaMethod::Private)
+            continue;
         QString methodName = QString::fromUtf8(m.signature());
 
         int parenIdx = methodName.indexOf(QLatin1Char('('));
@@ -268,6 +272,8 @@ void QmlPropertyCache::update(QmlEngine *engine, const QMetaObject *metaObject)
     int methodCount = metaObject->methodCount();
     for (int ii = methodCount - 1; ii >= 0; --ii) {
         QMetaMethod m = metaObject->method(ii);
+        if (m.access() == QMetaMethod::Private)
+            continue;
         QString methodName = QString::fromUtf8(m.signature());
 
         int parenIdx = methodName.indexOf(QLatin1Char('('));
@@ -328,6 +334,11 @@ QString QmlPropertyCache::Data::name(const QMetaObject *metaObject)
         QMetaProperty p = metaObject->property(coreIndex);
         return QString::fromUtf8(p.name());
     }
+}
+
+QStringList QmlPropertyCache::propertyNames() const
+{
+    return stringCache.keys();
 }
 
 QT_END_NAMESPACE

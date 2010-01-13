@@ -63,7 +63,8 @@ void tst_QmlListModel::static_i18n()
     QString expect = QString::fromUtf8("na\303\257ve");
     QString componentStr = "import Qt 4.6\nListModel { ListElement { prop1: \""+expect+"\" } }";
     QmlEngine engine;
-    QmlComponent component(&engine, componentStr.toUtf8(), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(componentStr.toUtf8(), QUrl("file://"));
     QmlListModel *obj = qobject_cast<QmlListModel*>(component.create());
     QVERIFY(obj != 0);
     QString prop = obj->get(0).property(QLatin1String("prop1")).toString();
@@ -208,8 +209,9 @@ void tst_QmlListModel::error()
     QFETCH(QString, error);
 
     QmlEngine engine;
-    QmlComponent component(&engine, qml.toUtf8(),
-                           QUrl::fromLocalFile(QString("dummy.qml")));
+    QmlComponent component(&engine);
+    component.setData(qml.toUtf8(),
+                      QUrl::fromLocalFile(QString("dummy.qml")));
     if (error.isEmpty()) {
         QVERIFY(!component.isError());
     } else {

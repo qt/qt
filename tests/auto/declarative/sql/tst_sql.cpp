@@ -200,7 +200,8 @@ void tst_sql::testQml()
         "Text { Script { source: \""+jsfile+"\" } text: test() }";
 
     engine->setOfflineStoragePath(dbDir());
-    QmlComponent component(engine, qml.toUtf8(), QUrl::fromLocalFile(SRCDIR "/empty.qml")); // just a file for relative local imports
+    QmlComponent component(engine);
+    component.setData(qml.toUtf8(), QUrl::fromLocalFile(SRCDIR "/empty.qml")); // just a file for relative local imports
     QmlGraphicsText *text = qobject_cast<QmlGraphicsText*>(component.create());
     QVERIFY(text != 0);
     QCOMPARE(text->text(),QString("passed"));

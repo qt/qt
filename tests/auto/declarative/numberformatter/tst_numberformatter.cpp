@@ -203,7 +203,8 @@ void tst_numberformat::text()
     QString componentStr = QString("import Qt 4.6\nNumberFormatter { number: ") + string + QString("; format: \"") + format + QString("\" }");
 
     QmlEngine engine;
-    QmlComponent formatterComponent(&engine, componentStr.toAscii(), QUrl("file:///"));
+    QmlComponent formatterComponent(&engine);
+    formatterComponent.setData(componentStr.toUtf8(), QUrl("file:///"));
     if(formatterComponent.isError())
         qDebug() << formatterComponent.errors();
     QVERIFY(formatterComponent.isReady());

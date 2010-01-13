@@ -125,6 +125,7 @@ public:
     inline Data *property(const QScriptDeclarativeClass::Identifier &id) const;
     Data *property(const QString &) const;
     Data *property(int) const;
+    QStringList propertyNames() const;
 
 protected:
     virtual void clear();

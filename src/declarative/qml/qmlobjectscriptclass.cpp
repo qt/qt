@@ -402,5 +402,28 @@ QScriptValue QmlObjectScriptClass::destroy(QScriptContext *context, QScriptEngin
     return engine->nullValue();
 }
 
+QStringList QmlObjectScriptClass::propertyNames(Object *object)
+{
+    QObject *obj = toQObject(object);
+    if (!obj)
+        return QStringList();
+
+    QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(engine);
+
+    QmlPropertyCache *cache = 0;
+    QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
+    if (ddata)
+        cache = ddata->propertyCache;
+    if (!cache) {
+        cache = enginePrivate->cache(obj);
+        if (cache && ddata) { cache->addref(); ddata->propertyCache = cache; }
+    }
+
+    if (!cache)
+        return QStringList();
+
+    return cache->propertyNames();
+}
+
 QT_END_NAMESPACE
 

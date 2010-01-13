@@ -320,7 +320,8 @@ QmlWorkerScriptEngine *QmlEnginePrivate::getWorkerScriptEngine()
 
     \code
     QmlEngine engine;
-    QmlComponent component(&engine, "import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6\nText { text: \"Hello world!\" }", QUrl());
     QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(component.create());
 
     //add item to view, etc
@@ -703,7 +704,8 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     if(!parentArg) 
         return engine->nullValue();
 
-    QmlComponent component(activeEngine, qml.toUtf8(), url);
+    QmlComponent component(activeEngine);
+    component.setData(qml.toUtf8(), url);
 
     if(component.isError()) {
         QList<QmlError> errors = component.errors();

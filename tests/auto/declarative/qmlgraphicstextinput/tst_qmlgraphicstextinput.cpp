@@ -100,7 +100,8 @@ tst_qmlgraphicstextinput::tst_qmlgraphicstextinput()
 void tst_qmlgraphicstextinput::text()
 {
     {
-        QmlComponent textinputComponent(&engine, "import Qt 4.6\nTextInput {  text: \"\"  }", QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData("import Qt 4.6\nTextInput {  text: \"\"  }", QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -110,7 +111,8 @@ void tst_qmlgraphicstextinput::text()
     for (int i = 0; i < standard.size(); i++)
     {
         QString componentStr = "import Qt 4.6\nTextInput { text: \"" + standard.at(i) + "\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -123,7 +125,8 @@ void tst_qmlgraphicstextinput::width()
 {
     // uses Font metrics to find the width for standard
     {
-        QmlComponent textinputComponent(&engine, "import Qt 4.6\nTextInput {  text: \"\" }", QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData("import Qt 4.6\nTextInput {  text: \"\" }", QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -137,7 +140,8 @@ void tst_qmlgraphicstextinput::width()
         qreal metricWidth = fm.width(standard.at(i));
 
         QString componentStr = "import Qt 4.6\nTextInput { text: \"" + standard.at(i) + "\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -150,7 +154,8 @@ void tst_qmlgraphicstextinput::font()
     //test size, then bold, then italic, then family
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.pointSize: 40; text: \"Hello World\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -161,7 +166,8 @@ void tst_qmlgraphicstextinput::font()
 
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.bold: true; text: \"Hello World\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -171,7 +177,8 @@ void tst_qmlgraphicstextinput::font()
 
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.italic: true; text: \"Hello World\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -181,7 +188,8 @@ void tst_qmlgraphicstextinput::font()
  
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.family: \"Helvetica\"; text: \"Hello World\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -192,7 +200,8 @@ void tst_qmlgraphicstextinput::font()
 
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.family: \"\"; text: \"Hello World\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -206,7 +215,8 @@ void tst_qmlgraphicstextinput::color()
     for (int i = 0; i < colorStrings.size(); i++)
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->color(), QColor(colorStrings.at(i)));
@@ -216,7 +226,8 @@ void tst_qmlgraphicstextinput::color()
     for (int i = 0; i < colorStrings.size(); i++)
     {
         QString componentStr = "import Qt 4.6\nTextInput {  selectionColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->selectionColor(), QColor(colorStrings.at(i)));
@@ -226,7 +237,8 @@ void tst_qmlgraphicstextinput::color()
     for (int i = 0; i < colorStrings.size(); i++)
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  selectedTextColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->selectedTextColor(), QColor(colorStrings.at(i)));
@@ -238,7 +250,8 @@ void tst_qmlgraphicstextinput::color()
         testColor.setAlpha(170);
 
         QString componentStr = "import Qt 4.6\nTextInput {  color: \"" + colorStr + "\"; text: \"Hello World\" }";
-        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlComponent textinputComponent(&engine);
+        textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -250,7 +263,8 @@ void tst_qmlgraphicstextinput::selection()
 {
     QString testStr = standard[0];
     QString componentStr = "import Qt 4.6\nTextInput {  text: \""+ testStr +"\"; }";
-    QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+    QmlComponent textinputComponent(&engine);
+    textinputComponent.setData(componentStr.toLatin1(), QUrl());
     QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
     QVERIFY(textinputObject != 0);
 
@@ -380,7 +394,8 @@ void tst_qmlgraphicstextinput::masks()
 void tst_qmlgraphicstextinput::validators()
 {
     QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
-    QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+    QmlComponent textinputComponent(&engine);
+    textinputComponent.setData(componentStr.toLatin1(), QUrl());
     QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
     QVERIFY(textinputObject != 0);
 

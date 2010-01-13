@@ -75,10 +75,8 @@ class Q_DECLARATIVE_EXPORT QmlComponent : public QObject
 public:
     QmlComponent(QObject *parent = 0);
     QmlComponent(QmlEngine *, QObject *parent=0);
-    QmlComponent(QmlEngine *, const QString &url, QObject *parent = 0);
+    QmlComponent(QmlEngine *, const QString &fileName, QObject *parent = 0);
     QmlComponent(QmlEngine *, const QUrl &url, QObject *parent = 0);
-    QmlComponent(QmlEngine *, const QByteArray &data, 
-                 const QUrl &baseUrl, QObject *parent=0);
     virtual ~QmlComponent();
 
     Q_ENUMS(Status)

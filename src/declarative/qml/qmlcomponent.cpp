@@ -347,22 +347,6 @@ QmlComponent::QmlComponent(QmlEngine *engine, const QString &fileName,
 }
 
 /*!
-    Create a QmlComponent from the given QML \a data and give it the
-    specified \a parent and \a engine.  \a url is used to provide a base path
-    for items resolved by this component, and may be an empty url if the 
-    component contains no items to resolve.
-
-    \sa setData()
-*/
-QmlComponent::QmlComponent(QmlEngine *engine, const QByteArray &data, const QUrl &url, QObject *parent)
-    : QObject(*(new QmlComponentPrivate), parent)
-{
-    Q_D(QmlComponent);
-    d->engine = engine;
-    setData(data,url);
-}
-
-/*!
     \internal
 */
 QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledData *cc, int start, int count, QObject *parent)
