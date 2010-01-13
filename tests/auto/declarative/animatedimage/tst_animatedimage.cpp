@@ -173,7 +173,8 @@ void tst_animatedimage::remote_data()
 void tst_animatedimage::invalidSource()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, "import Qt 4.6\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl("file://"));
     QVERIFY(component.isReady());
 
     QTest::ignoreMessage(QtWarningMsg, "Error Reading Animated Image File  QUrl( \"file:no-such-file.gif\" )  ");

@@ -94,7 +94,8 @@ tst_qmlgraphicsimage::tst_qmlgraphicsimage()
 void tst_qmlgraphicsimage::noSource()
 {
     QString componentStr = "import Qt 4.6\nImage { source: \"\" }";
-    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsImage *obj = qobject_cast<QmlGraphicsImage*>(component.create());
     QVERIFY(obj != 0);
     QCOMPARE(obj->source(), QUrl());
@@ -138,7 +139,8 @@ void tst_qmlgraphicsimage::imageSource()
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
     QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\" }";
-    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsImage *obj = qobject_cast<QmlGraphicsImage*>(component.create());
     QVERIFY(obj != 0);
     
@@ -165,7 +167,8 @@ void tst_qmlgraphicsimage::clearSource()
     QString componentStr = "import Qt 4.6\nImage { source: srcImage }";
     QmlContext *ctxt = engine.rootContext();
     ctxt->setContextProperty("srcImage", SRCDIR "/data/colors.png");
-    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsImage *obj = qobject_cast<QmlGraphicsImage*>(component.create());
     QVERIFY(obj != 0);
     QVERIFY(obj->status() == QmlGraphicsImage::Ready);
@@ -184,7 +187,8 @@ void tst_qmlgraphicsimage::clearSource()
 void tst_qmlgraphicsimage::resized()
 {
     QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 300 }";
-    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsImage *obj = qobject_cast<QmlGraphicsImage*>(component.create());
     QVERIFY(obj != 0);
     QCOMPARE(obj->width(), 300.);
@@ -197,7 +201,8 @@ void tst_qmlgraphicsimage::resized()
 void tst_qmlgraphicsimage::smooth()
 {
     QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
-    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsImage *obj = qobject_cast<QmlGraphicsImage*>(component.create());
     QVERIFY(obj != 0);
     QCOMPARE(obj->width(), 300.);
@@ -216,7 +221,8 @@ void tst_qmlgraphicsimage::pixmap()
     QmlContext *ctxt = engine.rootContext();
     ctxt->setContextProperty("testPixmap", pixmap);
 
-    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl("file://"));
 
     QmlGraphicsImage *obj = qobject_cast<QmlGraphicsImage*>(component.create());
     QVERIFY(obj != 0);

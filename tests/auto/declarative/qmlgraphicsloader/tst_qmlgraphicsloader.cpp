@@ -92,7 +92,8 @@ tst_QmlGraphicsLoader::tst_QmlGraphicsLoader()
 
 void tst_QmlGraphicsLoader::url()
 {
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"Rect120x60.qml\" }"), TEST_FILE(""));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"Rect120x60.qml\" }"), TEST_FILE(""));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item());
@@ -124,7 +125,8 @@ void tst_QmlGraphicsLoader::invalidUrl()
 {
     QTest::ignoreMessage(QtWarningMsg, "(:-1: File error for URL file://" SRCDIR "/data/IDontExist.qml) ");
 
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item() == 0);
@@ -138,7 +140,8 @@ void tst_QmlGraphicsLoader::invalidUrl()
 void tst_QmlGraphicsLoader::clear()
 {
     {
-        QmlComponent component(&engine, QByteArray(
+        QmlComponent component(&engine);
+        component.setData(QByteArray(
                     "import Qt 4.6\n"
                     " Loader { id: loader\n"
                     "  source: 'Rect120x60.qml'\n"
@@ -184,7 +187,8 @@ void tst_QmlGraphicsLoader::clear()
 
 void tst_QmlGraphicsLoader::urlToComponent()
 {
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\n"
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\n"
                 "Loader {\n"
                 " id: loader\n"
                 " Component { id: myComp; Rectangle { width: 10; height: 10 } }\n"
@@ -292,7 +296,8 @@ void tst_QmlGraphicsLoader::networkRequestUrl()
     QVERIFY(server.isValid());
     server.serveDirectory("data");
 
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), TEST_FILE(""));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), TEST_FILE(""));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
 
@@ -312,7 +317,8 @@ void tst_QmlGraphicsLoader::networkComponent()
     QVERIFY(server.isValid());
     server.serveDirectory("slowdata", TestHTTPServer::Delay);
 
-    QmlComponent component(&engine, QByteArray(
+    QmlComponent component(&engine);
+    component.setData(QByteArray(
                 "import Qt 4.6\n"
                 "import \"http://127.0.0.1:14445/\" as NW\n"
                 "Item {\n"
@@ -344,7 +350,8 @@ void tst_QmlGraphicsLoader::failNetworkRequest()
 
     QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14445/IDontExist.qml) ");
 
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/IDontExist.qml\" }"), TEST_FILE(""));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/IDontExist.qml\" }"), TEST_FILE(""));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
 

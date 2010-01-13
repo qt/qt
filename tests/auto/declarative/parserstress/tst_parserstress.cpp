@@ -130,8 +130,8 @@ void tst_parserstress::ecmascript()
 
     QByteArray qmlData = qml.toUtf8();
 
-    QmlComponent component(&engine, qmlData, 
-                           QUrl::fromLocalFile(SRCDIR + QString("/dummy.qml")));
+    QmlComponent component(&engine);
+    component.setData(qmlData, QUrl::fromLocalFile(SRCDIR + QString("/dummy.qml")));
     QVERIFY(!component.isError());
 }
 

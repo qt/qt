@@ -900,7 +900,8 @@ void tst_qmlmetaproperty::write()
 
 void tst_qmlmetaproperty::writeObjectToList()
 {
-    QmlComponent containerComponent(&engine, "import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
+    QmlComponent containerComponent(&engine);
+    containerComponent.setData("import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
     MyContainer *container = qobject_cast<MyContainer*>(containerComponent.create());
     QVERIFY(container != 0);
     QVERIFY(container->children()->size() == 1);
@@ -915,7 +916,8 @@ void tst_qmlmetaproperty::writeObjectToList()
 Q_DECLARE_METATYPE(QList<QObject *>);
 void tst_qmlmetaproperty::writeListToList()
 {
-    QmlComponent containerComponent(&engine, "import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
+    QmlComponent containerComponent(&engine);
+    containerComponent.setData("import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
     MyContainer *container = qobject_cast<MyContainer*>(containerComponent.create());
     QVERIFY(container != 0);
     QVERIFY(container->children()->size() == 1);
@@ -935,7 +937,8 @@ void tst_qmlmetaproperty::writeListToList()
 
 void tst_qmlmetaproperty::writeObjectToQmlList()
 {
-    QmlComponent containerComponent(&engine, "import Test 1.0\nMyContainer { qmlChildren: MyQmlObject {} }", QUrl());
+    QmlComponent containerComponent(&engine);
+    containerComponent.setData("import Test 1.0\nMyContainer { qmlChildren: MyQmlObject {} }", QUrl());
     MyContainer *container = qobject_cast<MyContainer*>(containerComponent.create());
     QVERIFY(container != 0);
     QVERIFY(container->qmlChildren()->size() == 1);

@@ -1000,7 +1000,8 @@ void tst_qmllanguage::scriptString()
 // Check that first child of qml is of given type. Empty type insists on error.
 void tst_qmllanguage::testType(const QString& qml, const QString& type)
 {
-    QmlComponent component(&engine, qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
+    QmlComponent component(&engine);
+    component.setData(qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
 
     QTRY_VERIFY(!component.isLoading());
 
@@ -1313,7 +1314,8 @@ void tst_qmllanguage::qmlAttachedPropertiesObjectMethod()
 
 void tst_qmllanguage::crash1()
 {
-    QmlComponent component(&engine, "Component {}");
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6\nComponent {}", QUrl());
 }
 
 void tst_qmllanguage::crash2()
