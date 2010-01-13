@@ -1017,6 +1017,7 @@ void tst_qmllanguage::testType(const QString& qml, const QString& type)
 QML_DECLARE_TYPE(TestType)
 QML_DECLARE_TYPE(TestType2)
 
+QML_DEFINE_TYPE(com.nokia.Test, 0, 0, TestTP, TestType)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 0, Test, TestType)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 5, Test, TestType)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 8, Test, TestType2)
@@ -1040,6 +1041,14 @@ void tst_qmllanguage::importsBuiltin_data()
         << "import com.nokia.Test 0.0\n"
            "Test {}"
         << "";
+    QTest::newRow("in version 0.0")
+        << "import com.nokia.Test 0.0\n"
+           "TestTP {}"
+        << "TestType";
+    QTest::newRow("qualified in version 0.0")
+        << "import com.nokia.Test 0.0 as T\n"
+           "T.TestTP {}"
+        << "TestType";
     QTest::newRow("in version 1.0")
         << "import com.nokia.Test 1.0\n"
            "Test {}"
