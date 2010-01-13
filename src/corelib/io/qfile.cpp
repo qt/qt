@@ -1152,12 +1152,11 @@ bool QFile::open(int fd, OpenMode mode)
 int
 QFile::handle() const
 {
-    if (!isOpen())
+    Q_D(const QFile);
+    if (!isOpen() || !d->fileEngine)
         return -1;
 
-    if (fileEngine())
-        return d->fileEngine->handle();
-    return -1;
+    return d->fileEngine->handle();
 }
 
 /*!
@@ -1353,7 +1352,11 @@ bool
 QFile::flush()
 {
     Q_D(QFile);
-    fileEngine();
+    if (!d->fileEngine) {
+        qWarning("QFile::flush: No file engine. Is IODevice open?");
+        return false;
+    }
+
     if (!d->writeBuffer.isEmpty()) {
         qint64 size = d->writeBuffer.size();
         if (_qfile_writeData(d->fileEngine, &d->writeBuffer) != size) {
@@ -1394,7 +1397,7 @@ QFile::close()
     d->writeBuffer.clear();
 
     // keep earlier error from flush
-    if (fileEngine()->close() && flushed)
+    if (d->fileEngine->close() && flushed)
         unsetError();
     else if (flushed)
         d->setError(d->fileEngine->error(), d->fileEngine->errorString());
