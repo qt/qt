@@ -401,7 +401,7 @@ public:
     static bool drawsOwnThemeBackground(const QWidget *widget);
 
     QFont s60Font(QS60StyleEnums::FontCategories fontCategory,
-        int pointSize = -1) const;
+        int pointSize = -1, bool resolveFontSize = true) const;
     // clears all style caches (fonts, colors, pixmaps)
     void clearCaches(CacheClearReason reason = CC_UndefinedChange);
 
@@ -484,7 +484,8 @@ private:
     static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
         QPainter *painter, SkinElementFlags flags = KDefaultSkinElementFlags);
 
-    static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize);
+    static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory,
+                                  int pointSize, bool resolveFontSize);
 
     static QSize screenSize();
 

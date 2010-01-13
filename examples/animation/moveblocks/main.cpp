@@ -147,7 +147,6 @@ QState *createGeometryState(QObject *w1, const QRect &rect1,
 {
     QState *result = new QState(parent);
     result->assignProperty(w1, "geometry", rect1);
-    result->assignProperty(w1, "geometry", rect1);
     result->assignProperty(w2, "geometry", rect2);
     result->assignProperty(w3, "geometry", rect3);
     result->assignProperty(w4, "geometry", rect4);
