@@ -74,9 +74,6 @@
 #ifdef Q_OS_SYMBIAN
 #include <w32std.h>
 #endif
-#ifdef Q_WS_MAC
-#include <private/qt_mac_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -485,13 +482,6 @@ public:
 #ifdef QT_KEYPAD_NAVIGATION
     static QWidget *oldEditFocus;
     static Qt::NavigationMode navigationMode;
-#endif
-
-//  We need to have an autorelease pool in place in order
-//  to catch releases done in between creating the QApplication
-//  instance and calling QApplicaiton::exec();
-#if defined(QT_MAC_USE_COCOA)
-    QMacCocoaAutoReleasePool pool;
 #endif
 
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)
