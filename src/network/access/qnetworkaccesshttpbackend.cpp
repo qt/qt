@@ -144,7 +144,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
         QByteArray key = QByteArray(header.constData() + pos, end - pos).trimmed().toLower();
         pos = end + 1;
 
-        if (equal != -1) {
+        if (uint(equal) < uint(comma)) {
             // case: token "=" (token | quoted-string)
             // skip spaces
             pos = nextNonWhitespace(header, pos);

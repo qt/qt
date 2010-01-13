@@ -57,7 +57,7 @@
 
 Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
 
-static const char *const catalogFile = SRCDIR "XML-Test-Suite/xmlconf/finalCatalog.xml";
+static const char *const catalogFile = "XML-Test-Suite/xmlconf/finalCatalog.xml";
 static const int expectedRunCount = 1646;
 static const int expectedSkipCount = 532;
 
@@ -804,7 +804,7 @@ void tst_QXmlStream::testReader_data() const
     QTest::addColumn<QString>("xml");
     QTest::addColumn<QString>("ref");
     QDir dir;
-    dir.cd(SRCDIR "data/");
+    dir.cd("data/");
     foreach(QString filename , dir.entryList(QStringList() << "*.xml")) {
         QString reference =  QFileInfo(filename).baseName() + ".ref";
         QTest::newRow(dir.filePath(filename).toLatin1().data()) << dir.filePath(filename) << dir.filePath(reference);
@@ -1183,7 +1183,7 @@ void tst_QXmlStream::crashInUTF16Codec() const
     QEventLoop eventLoop;
 
     QNetworkAccessManager networkManager;
-    QNetworkRequest request(QUrl::fromLocalFile(QLatin1String(SRCDIR "data/051reduced.xml")));
+    QNetworkRequest request(QUrl::fromLocalFile(QLatin1String("data/051reduced.xml")));
     QNetworkReply *const reply = networkManager.get(request);
     eventLoop.connect(reply, SIGNAL(finished()), SLOT(quit()));
 
