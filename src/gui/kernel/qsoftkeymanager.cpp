@@ -211,7 +211,8 @@ bool QSoftKeyManager::event(QEvent *e)
 void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
 {
     // lets not update softkeys if s60 native dialog or menu is shown
-    if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog())
+    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
+            || CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog())
         return;
 
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();

@@ -56,9 +56,9 @@ QT_BEGIN_NAMESPACE
 bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig config,
                              const QX11Info &x11Info, bool useArgbVisual);
 //
-// QGLTempContext is a lass for creating a temporary GL context (which is
-// needed during QGLWidget initialization to retrieve GL extension info).
-// Faster to construct than a full QGLWidget.
+// QGLTempContext is a class for creating a temporary GL context
+// (which is needed during QGLWidget initialization to retrieve GL
+// extension info).  Faster to construct than a full QGLWidget.
 //
 class QGLTempContext
 {
@@ -68,82 +68,82 @@ public:
         window(0),
         context(0),
         surface(0)
-        {
-            display = eglGetDisplay(EGLNativeDisplayType(X11->display));
+    {
+        display = eglGetDisplay(EGLNativeDisplayType(X11->display));
 
-            if (!eglInitialize(display, NULL, NULL)) {
-                qWarning("QGLTempContext: Unable to initialize EGL display.");
-                return;
-            }
-
-            EGLConfig config;
-            int numConfigs = 0;
-            EGLint attribs[] = {
-                EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-#ifdef QT_OPENGL_ES_2
-                EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-#endif
-                EGL_NONE
-            };
-
-            eglChooseConfig(display, attribs, &config, 1, &numConfigs);
-            if (!numConfigs) {
-                qWarning("QGLTempContext: No EGL configurations available.");
-                return;
-            }
-
-            XVisualInfo visualInfo;
-            XVisualInfo *vi;
-            int numVisuals;
-            EGLint id = 0;
-
-            eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &id);
-            if (id == 0) {
-                // EGL_NATIVE_VISUAL_ID is optional and might not be supported
-                // on some implementations - we'll have to do it the hard way
-                QX11Info xinfo;
-                qt_egl_setup_x11_visual(visualInfo, display, config, xinfo, false);
-            } else {
-                visualInfo.visualid = id;
-            }
-            vi = XGetVisualInfo(X11->display, VisualIDMask, &visualInfo, &numVisuals);
-            if (!vi || numVisuals < 1) {
-                qWarning("QGLTempContext: Unable to get X11 visual info id.");
-                return;
-            }
-
-            window = XCreateWindow(X11->display, RootWindow(X11->display, screen),
-                                   0, 0, 1, 1, 0,
-                                   vi->depth, InputOutput, vi->visual,
-                                   0, 0);
-
-            surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType) window, NULL);
-
-            if (surface == EGL_NO_SURFACE) {
-                qWarning("QGLTempContext: Error creating EGL surface.");
-                XFree(vi);
-                XDestroyWindow(X11->display, window);
-                return;
-            }
-
-            EGLint contextAttribs[] = {
-#ifdef QT_OPENGL_ES_2
-                EGL_CONTEXT_CLIENT_VERSION, 2,
-#endif
-                EGL_NONE
-            };
-            context = eglCreateContext(display, config, 0, contextAttribs);
-            if (context != EGL_NO_CONTEXT
-                && eglMakeCurrent(display, surface, surface, context))
-            {
-                initialized = true;
-            } else {
-                qWarning("QGLTempContext: Error creating EGL context.");
-                eglDestroySurface(display, surface);
-                XDestroyWindow(X11->display, window);
-            }
-            XFree(vi);
+        if (!eglInitialize(display, NULL, NULL)) {
+            qWarning("QGLTempContext: Unable to initialize EGL display.");
+            return;
         }
+
+        EGLConfig config;
+        int numConfigs = 0;
+        EGLint attribs[] = {
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+#ifdef QT_OPENGL_ES_2
+            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+#endif
+            EGL_NONE
+        };
+
+        eglChooseConfig(display, attribs, &config, 1, &numConfigs);
+        if (!numConfigs) {
+            qWarning("QGLTempContext: No EGL configurations available.");
+            return;
+        }
+
+        XVisualInfo visualInfo;
+        XVisualInfo *vi;
+        int numVisuals;
+        EGLint id = 0;
+
+        eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &id);
+        if (id == 0) {
+            // EGL_NATIVE_VISUAL_ID is optional and might not be supported
+            // on some implementations - we'll have to do it the hard way
+            QX11Info xinfo;
+            qt_egl_setup_x11_visual(visualInfo, display, config, xinfo, false);
+        } else {
+            visualInfo.visualid = id;
+        }
+        vi = XGetVisualInfo(X11->display, VisualIDMask, &visualInfo, &numVisuals);
+        if (!vi || numVisuals < 1) {
+            qWarning("QGLTempContext: Unable to get X11 visual info id.");
+            return;
+        }
+
+        window = XCreateWindow(X11->display, RootWindow(X11->display, screen),
+                               0, 0, 1, 1, 0,
+                               vi->depth, InputOutput, vi->visual,
+                               0, 0);
+
+        surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType) window, NULL);
+
+        if (surface == EGL_NO_SURFACE) {
+            qWarning("QGLTempContext: Error creating EGL surface.");
+            XFree(vi);
+            XDestroyWindow(X11->display, window);
+            return;
+        }
+
+        EGLint contextAttribs[] = {
+#ifdef QT_OPENGL_ES_2
+            EGL_CONTEXT_CLIENT_VERSION, 2,
+#endif
+            EGL_NONE
+        };
+        context = eglCreateContext(display, config, 0, contextAttribs);
+        if (context != EGL_NO_CONTEXT
+            && eglMakeCurrent(display, surface, surface, context))
+        {
+            initialized = true;
+        } else {
+            qWarning("QGLTempContext: Error creating EGL context.");
+            eglDestroySurface(display, surface);
+            XDestroyWindow(X11->display, window);
+        }
+        XFree(vi);
+    }
 
     ~QGLTempContext() {
         if (initialized) {
@@ -349,7 +349,7 @@ bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig conf
 
     // If EGL does not know the visual ID, so try to select an appropriate one ourselves, first
     // using XRender if we're supposed to have an alpha, then falling back to XGetVisualInfo
-          
+
 #if !defined(QT_NO_XRENDER)
     if (vi.visualid == 0 && useArgbVisual) {
         // Try to use XRender to find an ARGB visual we can use

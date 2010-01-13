@@ -653,7 +653,8 @@ void Scene::initGL()
 
 static void loadMatrix(const QMatrix4x4& m)
 {
-    GLfloat mat[16];
+    // static to prevent glLoadMatrixf to fail on certain drivers
+    static GLfloat mat[16];
     const qreal *data = m.constData();
     for (int index = 0; index < 16; ++index)
         mat[index] = data[index];
@@ -662,7 +663,8 @@ static void loadMatrix(const QMatrix4x4& m)
 
 static void multMatrix(const QMatrix4x4& m)
 {
-    GLfloat mat[16];
+    // static to prevent glMultMatrixf to fail on certain drivers
+    static GLfloat mat[16];
     const qreal *data = m.constData();
     for (int index = 0; index < 16; ++index)
         mat[index] = data[index];
