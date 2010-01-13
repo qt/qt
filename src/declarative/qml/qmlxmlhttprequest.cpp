@@ -45,6 +45,7 @@
 #include "qmlengine_p.h"
 #include "qmlrefcount_p.h"
 #include "qmlengine_p.h"
+#include "qmlexpression_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtScript/qscriptvalue.h>
@@ -979,6 +980,7 @@ private:
 
     QScriptValue dispatchCallback();
     QScriptValue m_callback;
+    void printError(const QScriptValue&);
 
     int m_status;
     QString m_statusText;
@@ -1199,8 +1201,7 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
         m_state = HeadersReceived;
         fillHeadersList ();
         QScriptValue cbv = dispatchCallback();
-        if (cbv.isError())
-            qWarning().nospace() << qPrintable(cbv.toString());
+        if (cbv.isError()) printError(cbv);
     }
 
     bool wasEmpty = m_responseEntityBody.isEmpty();
@@ -1208,8 +1209,7 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
     if (wasEmpty && !m_responseEntityBody.isEmpty()) {
         m_state = Loading;
         QScriptValue cbv = dispatchCallback();
-        if (cbv.isError())
-            qWarning().nospace() << qPrintable(cbv.toString());
+        if (cbv.isError()) printError(cbv);
     }
 }
 
@@ -1233,16 +1233,14 @@ void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
         error == QNetworkReply::ContentReSendError) {
         m_state = Loading;
         QScriptValue cbv = dispatchCallback();
-        if (cbv.isError())
-            qWarning().nospace() << qPrintable(cbv.toString());
+        if (cbv.isError()) printError(cbv);
     } else {
         m_errorFlag = true;
     } 
 
     m_state = Done;
     QScriptValue cbv = dispatchCallback();
-    if (cbv.isError())
-        qWarning().nospace() << qPrintable(cbv.toString());
+    if (cbv.isError()) printError(cbv);
 }
 
 void QmlXMLHttpRequest::finished()
@@ -1258,21 +1256,18 @@ void QmlXMLHttpRequest::finished()
         m_state = HeadersReceived;
         fillHeadersList ();
         QScriptValue cbv = dispatchCallback();
-        if (cbv.isError())
-            qWarning().nospace() << qPrintable(cbv.toString());
+        if (cbv.isError()) printError(cbv);
     }
     m_responseEntityBody.append(m_network->readAll());
     destroyNetwork();
     if (m_state < Loading) {
         m_state = Loading;
         QScriptValue cbv = dispatchCallback();
-        if (cbv.isError())
-            qWarning().nospace() << qPrintable(cbv.toString());
+        if (cbv.isError()) printError(cbv);
     }
     m_state = Done;
     QScriptValue cbv = dispatchCallback();
-    if (cbv.isError())
-        qWarning().nospace() << qPrintable(cbv.toString());
+    if (cbv.isError()) printError(cbv);
 }
 
 
@@ -1284,6 +1279,13 @@ QString QmlXMLHttpRequest::responseBody() const
 QScriptValue QmlXMLHttpRequest::dispatchCallback()
 {
     return m_callback.call();
+}
+
+void QmlXMLHttpRequest::printError(const QScriptValue& sv)
+{
+    QmlError error;
+    QmlExpressionPrivate::exceptionToError(sv.engine(), error);
+    qWarning().nospace() << qPrintable(error.toString());
 }
 
 void QmlXMLHttpRequest::destroyNetwork()

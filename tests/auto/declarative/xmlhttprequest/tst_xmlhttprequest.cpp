@@ -65,6 +65,7 @@ private slots:
 
     void domExceptionCodes();
     void callbackException();
+    void callbackException_data();
     void staticStateValues();
     void instanceStateValues();
     void constructor();
@@ -167,15 +168,32 @@ void tst_xmlhttprequest::domExceptionCodes()
         QVERIFY((expr)); \
     } while (false) 
 
+
+void tst_xmlhttprequest::callbackException_data()
+{
+    QTest::addColumn<QString>("which");
+    QTest::addColumn<int>("line");
+
+    QTest::newRow("on-opened") << "1" << 15;
+    QTest::newRow("on-loading") << "3" << 15;
+    QTest::newRow("on-done") << "4" << 15;
+}
+
 void tst_xmlhttprequest::callbackException()
 {
-    QString expect = TEST_FILE("callbackException.qml").toString() + ":16: Error: Exception from Callback";
+    // Test exception reporting for exceptions thrown at various points.
+
+    QFETCH(QString, which);
+    QFETCH(int, line);
+    
+    QString expect = TEST_FILE("callbackException.qml").toString() + ":"+QString::number(line)+": Error: Exception from Callback";
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
 
     QmlComponent component(&engine, TEST_FILE("callbackException.qml"));
     QObject *object = component.beginCreate(engine.rootContext());
     QVERIFY(object != 0);
     object->setProperty("url", "testdocument.html");
+    object->setProperty("which", which);
     component.completeCreate();
 
     TRY_WAIT(object->property("threw").toBool() == true);
