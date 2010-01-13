@@ -1241,15 +1241,6 @@ bool QTreeView::viewportEvent(QEvent *event)
                 viewport()->update(newRect);
             }
         }
-        if (selectionBehavior() == QAbstractItemView::SelectRows) {
-            QModelIndex newHoverIndex = indexAt(he->pos());
-            if (d->hover != newHoverIndex) {
-                QRect oldHoverRect = visualRect(d->hover);
-                QRect newHoverRect = visualRect(newHoverIndex);
-                viewport()->update(QRect(0, newHoverRect.y(), viewport()->width(), newHoverRect.height()));
-                viewport()->update(QRect(0, oldHoverRect.y(), viewport()->width(), oldHoverRect.height()));
-            }
-        }
         break; }
     default:
         break;
@@ -2644,10 +2635,13 @@ void QTreeView::selectAll()
         return;
     SelectionMode mode = d->selectionMode;
     d->executePostedLayout(); //make sure we lay out the items
-    if (mode != SingleSelection && !d->viewItems.isEmpty())
-        d->select(d->viewItems.first().index, d->viewItems.last().index,
+    if (mode != SingleSelection && !d->viewItems.isEmpty()) {
+        const QModelIndex &idx = d->viewItems.last().index;
+        QModelIndex lastItemIndex = idx.sibling(idx.row(), d->model->columnCount(idx.parent()) - 1);
+        d->select(d->viewItems.first().index, lastItemIndex,
                   QItemSelectionModel::ClearAndSelect
                   |QItemSelectionModel::Rows);
+    }
 }
 
 /*!
