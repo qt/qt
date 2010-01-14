@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <qtest.h>
-#include "private/qguard_p.h"
+#include "private/qmlguard_p.h"
 #include <QWeakPointer>
 
 class tst_pointers : public QObject
@@ -51,15 +51,15 @@ public:
     tst_pointers() {}
 
 private slots:
-    void guard();
+    void qmlguard();
     void weakPointer();
 };
 
-void tst_pointers::guard()
+void tst_pointers::qmlguard()
 {
     QObject *obj = new QObject;
     QBENCHMARK {
-        QGuard<QObject> guardedObject;
+        QmlGuard<QObject> guardedObject;
         guardedObject = obj;
     }
 }
