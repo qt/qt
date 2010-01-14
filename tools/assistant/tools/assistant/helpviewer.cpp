@@ -626,7 +626,8 @@ bool HelpViewer::canOpenPage(const QString &url)
 {
     TRACE_OBJ
     return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
-        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive);
+        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive)
+        || url == QLatin1String("blank");
 }
 
 bool HelpViewer::isLocalUrl(const QUrl &url)
