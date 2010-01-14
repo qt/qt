@@ -58,6 +58,7 @@
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qapplication.h>
 #include <QtGui/qtextedit.h>
+#include <QtGui/qtextbrowser.h>
 #include <QtGui/qmenu.h>
 #include "qdialog_p.h"
 #include <QtGui/qfont.h>
@@ -188,8 +189,8 @@ public:
     bool autoAddOkButton;
     QAbstractButton *detectedEscapeButton;
     QLabel *informativeLabel;
-#ifdef Q_OS_SYMBIAN
-    QTextEdit *textEdit;
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+    QTextBrowser *textBrowser;
 #endif
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
@@ -2462,12 +2463,12 @@ void QMessageBox::setInformativeText(const QString &text)
 #endif
         label->setWordWrap(true);
         QGridLayout *grid = static_cast<QGridLayout *>(layout());
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
         label->hide();
-        QTextEdit *textEdit = new QTextEdit(this);
-        textEdit->setReadOnly(true);
-        grid->addWidget(textEdit, 1, 1, 1, 1);
-        d->textEdit = textEdit;
+        QTextBrowser *textBrowser = new QTextBrowser(this);
+        textBrowser->setOpenExternalLinks(true);
+        grid->addWidget(textBrowser, 1, 1, 1, 1);
+        d->textBrowser = textBrowser;
 #else
         grid->addWidget(label, 1, 1, 1, 1);
 #endif
@@ -2475,9 +2476,9 @@ void QMessageBox::setInformativeText(const QString &text)
     }
     d->informativeLabel->setText(text);
 
-#ifdef Q_OS_SYMBIAN
-    //We need to put the informative label inside textEdit to enable scrolling of long texts.
-    d->textEdit->setText(d->informativeLabel->text());
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+    //We need to put the informative label inside textBrowser to enable scrolling of long texts.
+    d->textBrowser->setText(d->informativeLabel->text());
 #endif
 
     d->updateSize();

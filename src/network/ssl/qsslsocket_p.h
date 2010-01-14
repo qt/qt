@@ -83,9 +83,6 @@ public:
     QList<QSslError> ignoreErrorsList;
     bool* readyReadEmittedPointer;
 
-    QRingBuffer readBuffer;
-    QRingBuffer writeBuffer;
-
     QSslConfigurationPrivate configuration;
     QList<QSslError> sslErrors;
 
