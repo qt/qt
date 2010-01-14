@@ -302,7 +302,7 @@ void QBlitterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 void QBlitterPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 {
     Q_D(QBlitterPaintEngine);
-    if (d->capabillities->canBlitterFillRect() && color.alpha() == 255) {
+    if (d->capabillities->canBlitterFillRect() && color.alpha() == 0xff) {
         d->fillRect(rect, color);
     } else {
         d->lock();
@@ -319,7 +319,7 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
         return;
     Q_D(QBlitterPaintEngine);
     if (qbrush_style(brush) == Qt::SolidPattern
-        && qbrush_color(brush).alpha() == 255
+        && qbrush_color(brush).alpha() == 0xff
         && d->capabillities->canBlitterFillRect())
     {
         d->fillRect(rect, qbrush_color(brush));

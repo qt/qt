@@ -50,11 +50,6 @@ void QDirectFbBlitter::fillRect(const QRectF &rect, const QColor &color)
 
 void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &srcRect)
 {
-    quint32 blittingFlags = pixmap.hasAlphaChannel() ? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX;
-
-    m_surface->SetBlittingFlags(m_surface, DFBSurfaceBlittingFlags(blittingFlags));
-    m_surface->SetColor(m_surface, 0xff, 0xff, 0xff, 255);
-
     QPixmapData *data = pixmap.pixmapData();
     Q_ASSERT(data->width() && data->height());
     Q_ASSERT(data->classId() == QPixmapData::BlitterClass);
@@ -62,6 +57,14 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
     QDirectFbBlitter *dfbBlitter = static_cast<QDirectFbBlitter *>(blitPm->blittable());
 
     IDirectFBSurface *s = dfbBlitter->m_surface;
+
+    quint32 blittingFlags = pixmap.hasAlpha()? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX;
+
+    s->SetBlittingFlags(s, DFBSurfaceBlittingFlags(blittingFlags));
+    m_surface->SetBlittingFlags(m_surface, DFBSurfaceBlittingFlags(blittingFlags));
+    m_surface->SetPorterDuff(m_surface,DSPD_SRC_OVER);
+    m_surface->SetDstBlendFunction(m_surface,DSBF_INVSRCALPHA);
+
     const DFBRectangle sRect = { srcRect.x(), srcRect.y(), rect.width(), rect.height() };
 
     DFBResult result;
@@ -73,7 +76,6 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
     }
     if (result != DFB_OK)
         DirectFBError("QDirectFBBlitter::drawPixmap()", result);
-
 }
 
 QImage *QDirectFbBlitter::doLock()

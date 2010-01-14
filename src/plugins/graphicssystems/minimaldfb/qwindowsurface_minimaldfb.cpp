@@ -47,8 +47,6 @@
 
 #include <QtCore/qdebug.h>
 
-#include <wait.h>
-
 QT_BEGIN_NAMESPACE
 
 QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *screen, QWidget *window)
