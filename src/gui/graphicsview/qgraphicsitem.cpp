@@ -1630,7 +1630,7 @@ bool QGraphicsItem::isWidget() const
 */
 bool QGraphicsItem::isWindow() const
 {
-    return isWidget() && (static_cast<const QGraphicsWidget *>(this)->windowType() & Qt::Window);
+    return d_ptr->isWidget && (static_cast<const QGraphicsWidget *>(this)->windowType() & Qt::Window);
 }
 
 /*!
@@ -1667,9 +1667,9 @@ QGraphicsItem::GraphicsItemFlags QGraphicsItem::flags() const
 void QGraphicsItem::setFlag(GraphicsItemFlag flag, bool enabled)
 {
     if (enabled)
-        setFlags(flags() | flag);
+        setFlags(GraphicsItemFlags(d_ptr->flags) | flag);
     else
-        setFlags(flags() & ~flag);
+        setFlags(GraphicsItemFlags(d_ptr->flags) & ~flag);
 }
 
 /*!
@@ -1716,7 +1716,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     flags = GraphicsItemFlags(itemChange(ItemFlagsChange, quint32(flags)).toUInt());
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
-    if (d_ptr->scene)
+    if (d_ptr->scene && d_ptr->scene->d_func()->indexMethod != QGraphicsScene::NoIndex)
         d_ptr->scene->d_func()->index->itemChange(this, ItemFlagsChange, quint32(flags));
 
     // Flags that alter the geometry of the item (or its children).
@@ -1726,7 +1726,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
 
     // Keep the old flags to compare the diff.
-    GraphicsItemFlags oldFlags = this->flags();
+    GraphicsItemFlags oldFlags = GraphicsItemFlags(d_ptr->flags);
 
     // Update flags.
     d_ptr->flags = flags;
@@ -1755,7 +1755,23 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         d_ptr->updateAncestorFlag(ItemIgnoresTransformations);
     }
 
+    if ((flags & ItemNegativeZStacksBehindParent) != (oldFlags & ItemNegativeZStacksBehindParent)) {
+        // NB! We change the flags directly here, so we must also update d_ptr->flags.
+        // Note that this has do be done before the ItemStacksBehindParent check
+        // below; otherwise we will loose the change.
+
+        // Update stack-behind.
+        if (d_ptr->z < qreal(0.0))
+            flags |= ItemStacksBehindParent;
+        else
+            flags &= ~ItemStacksBehindParent;
+        d_ptr->flags = flags;
+    }
+
     if ((flags & ItemStacksBehindParent) != (oldFlags & ItemStacksBehindParent)) {
+        // NB! This check has to come after the ItemNegativeZStacksBehindParent
+        // check above. Be careful.
+
         // Ensure child item sorting is up to date when toggling this flag.
         if (d_ptr->parent)
             d_ptr->parent->d_ptr->needSortChildren = 1;
@@ -1769,10 +1785,6 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
             d_ptr->scene->d_func()->updateInputMethodSensitivityInViews();
     }
 
-    if ((flags & ItemNegativeZStacksBehindParent) != (oldFlags & ItemNegativeZStacksBehindParent)) {
-        // Update stack-behind.
-        setFlag(ItemStacksBehindParent, d_ptr->z < qreal(0.0));
-    }
 
     if ((d_ptr->panelModality != NonModal)
         && d_ptr->scene
