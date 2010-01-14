@@ -883,6 +883,7 @@ void QWidgetPrivate::createSysExtra()
     extra->activated = 0;
     extra->nativePaintMode = QWExtra::Default;
     extra->receiveNativePaintEvents = 0;
+    extra->inExpose = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
