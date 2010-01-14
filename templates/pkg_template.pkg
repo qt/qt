@@ -1,0 +1,23 @@
+; Language
+&EN
+
+; SIS header: name, uid, version
+#{"MyApp"},(0xE001e45e),1,0,0
+
+; Localised Vendor name
+%{"Vendor"}
+
+; Unique Vendor name
+:"Vendor"
+
+; Manual PKG pre-rules from PRO files
+; Default HW/platform dependencies
+[0x101F7961],0,0,0,{"S60ProductID"}
+[0x102032BE],0,0,0,{"S60ProductID"}
+[0x102752AE],0,0,0,{"S60ProductID"}
+[0x1028315F],0,0,0,{"S60ProductID"}
+ 
+; Executable and default resource files
+"MyApp.exe"    - "!:\sys\bin\MyApp.exe"
+"MyApp.rsc"    - "!:\resource\apps\MyApp.rsc"
+"QtCore.dll"   - "!:\resource\apps\QtCore.dll"
