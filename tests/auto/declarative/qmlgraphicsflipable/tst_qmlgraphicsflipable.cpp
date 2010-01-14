@@ -98,11 +98,11 @@ void tst_qmlgraphicsflipable::setFrontAndBack()
     QVERIFY(obj->front() != 0);
     QVERIFY(obj->back() != 0);
 
-    QString message = "QML " + QString(obj->metaObject()->className()) + " (" + c.url().toString() + ":3:1) front is a write-once property";
+    QString message = "QML Flipable (" + c.url().toString() + ":3:1) front is a write-once property";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     obj->setFront(new QmlGraphicsRectangle());
 
-    message = "QML " + QString(obj->metaObject()->className()) + " (" + c.url().toString() + ":3:1) back is a write-once property";
+    message = "QML Flipable (" + c.url().toString() + ":3:1) back is a write-once property";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(message));
     obj->setBack(new QmlGraphicsRectangle());
     delete obj;

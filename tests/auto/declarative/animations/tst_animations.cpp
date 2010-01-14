@@ -151,6 +151,15 @@ void tst_animations::simpleColor()
     animation.setCurrentTime(125);
     QVERIFY(animation.currentTime() == 125);
     QCOMPARE(rect.color(), QColor::fromRgbF(0.498039, 0, 0.498039, 1));
+
+    rect.setColor(QColor("green"));
+    animation.setFrom(QColor("blue"));
+    QVERIFY(animation.from() == QColor("blue"));
+    animation.restart();
+    QCOMPARE(rect.color(), QColor("blue"));
+    QVERIFY(animation.isRunning());
+    animation.setCurrentTime(125);
+    QCOMPARE(rect.color(), QColor::fromRgbF(0.498039, 0, 0.498039, 1));
 }
 
 void tst_animations::alwaysRunToEnd()
@@ -297,12 +306,16 @@ void tst_animations::badProperties()
         QmlEngine engine;
 
         QmlComponent c1(&engine, QUrl("file://" SRCDIR "/data/badproperty1.qml"));
-        QTest::ignoreMessage(QtWarningMsg, "QML ColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"border.colr\"");
+        QByteArray message = "QML ColorAnimation (file://" SRCDIR "/data/badproperty1.qml:18:9) Cannot animate non-existant property \"border.colr\"";
+        QTest::ignoreMessage(QtWarningMsg, message);
+        QTest::ignoreMessage(QtWarningMsg, message); // why twice?
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c1.create());
         QVERIFY(rect);
 
         QmlComponent c2(&engine, QUrl("file://" SRCDIR "/data/badproperty2.qml"));
-        QTest::ignoreMessage(QtWarningMsg, "QML ColorAnimation (file://" SRCDIR "/data/badproperty2.qml:22:9) Cannot animate read-only property \"border\"");
+        message = "QML ColorAnimation (file://" SRCDIR "/data/badproperty2.qml:18:9) Cannot animate read-only property \"border\"";
+        QTest::ignoreMessage(QtWarningMsg, message);
+        QTest::ignoreMessage(QtWarningMsg, message); // why twice?
         rect = qobject_cast<QmlGraphicsRectangle*>(c2.create());
         QVERIFY(rect);
 
