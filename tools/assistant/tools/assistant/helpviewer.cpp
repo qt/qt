@@ -48,6 +48,8 @@
 #include <QtCore/QEvent>
 #include <QtCore/QVariant>
 #include <QtCore/QByteArray>
+#include <QtCore/QStringBuilder>
+#include <QtCore/QTemporaryFile>
 #include <QtCore/QTimer>
 
 #include <QtGui/QMenu>
@@ -243,19 +245,17 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
     if (isLocalUrl(url)) {
         const QString& path = url.path();
         if (path.endsWith(QLatin1String(".pdf"))) {
-            const int lastDash = path.lastIndexOf(QChar('/'));
-            QString fileName = QDir::tempPath() + QDir::separator();
-            if (lastDash < 0)
-                fileName += path;
-            else
-                fileName += path.mid(lastDash + 1, path.length());
-
-            QFile tmpFile(QDir::cleanPath(fileName));
-            if (tmpFile.open(QIODevice::ReadWrite)) {
-                tmpFile.write(HelpEngineWrapper::instance().fileData(url));
-                tmpFile.close();
+            QTemporaryFile tmpTmpFile;
+            if (!tmpTmpFile.open())
+                return false;
+            const QString extension = QFileInfo(path).completeSuffix();
+            QFile actualTmpFile(tmpTmpFile.fileName() % QLatin1String(".")
+                                % extension);
+            if (actualTmpFile.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+                actualTmpFile.write(HelpEngineWrapper::instance().fileData(url));
+                actualTmpFile.close();
+                QDesktopServices::openUrl(QUrl(actualTmpFile.fileName()));
             }
-            QDesktopServices::openUrl(QUrl(tmpFile.fileName()));
 
             if (closeNewTab)
                 QMetaObject::invokeMethod(CentralWidget::instance(), "closeTab");
