@@ -47,7 +47,7 @@ collection.  If you need to store a Value, convert it to a QScriptValue and stor
 
 QScriptDeclarativeClass::Value::Value()
 {
-    new (this) JSC::JSValue();
+    new (this) JSC::JSValue(JSC::jsUndefined());
 }
 
 QScriptDeclarativeClass::Value::Value(const Value &other)
@@ -406,6 +406,16 @@ QScriptEngine *QScriptDeclarativeClass::engine() const
     return d_ptr->engine;
 }
 
+bool QScriptDeclarativeClass::supportsCall() const
+{
+    return d_ptr->supportsCall;
+}
+
+void QScriptDeclarativeClass::setSupportsCall(bool c)
+{
+    d_ptr->supportsCall = c;
+}
+
 QScriptDeclarativeClass::PersistentIdentifier 
 QScriptDeclarativeClass::createPersistentIdentifier(const QString &str)
 {
@@ -477,6 +487,14 @@ QScriptDeclarativeClass::propertyFlags(Object *object, const Identifier &name)
     Q_UNUSED(object);
     Q_UNUSED(name);
     return 0;
+}
+
+QScriptDeclarativeClass::Value QScriptDeclarativeClass::call(Object *object, 
+                                                             QScriptContext *ctxt)
+{
+    Q_UNUSED(object);
+    Q_UNUSED(ctxt);
+    return Value();
 }
 
 QStringList QScriptDeclarativeClass::propertyNames(Object *object)

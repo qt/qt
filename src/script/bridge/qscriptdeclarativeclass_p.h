@@ -111,6 +111,9 @@ public:
 
     QScriptEngine *engine() const;
 
+    bool supportsCall() const;
+    void setSupportsCall(bool);
+
     PersistentIdentifier createPersistentIdentifier(const QString &);
     PersistentIdentifier createPersistentIdentifier(const Identifier &);
 
@@ -123,6 +126,7 @@ public:
     virtual Value property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
     virtual QScriptValue::PropertyFlags propertyFlags(Object *, const Identifier &);
+    virtual Value call(Object *, QScriptContext *);
 
     virtual QStringList propertyNames(Object *);
 
