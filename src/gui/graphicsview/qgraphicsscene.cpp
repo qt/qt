@@ -3767,10 +3767,10 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
 
 bool QGraphicsScenePrivate::itemAcceptsHoverEvents_helper(const QGraphicsItem *item) const
 {
-    return (!item->isBlockedByModalPanel() &&
-            (item->acceptHoverEvents()
-             || (item->isWidget()
-                 && static_cast<const QGraphicsWidget *>(item)->d_func()->hasDecoration())));
+    return (item->d_ptr->acceptsHover
+            || (item->d_ptr->isWidget
+                && static_cast<const QGraphicsWidget *>(item)->d_func()->hasDecoration()))
+           && !item->isBlockedByModalPanel();
 }
 
 /*!
