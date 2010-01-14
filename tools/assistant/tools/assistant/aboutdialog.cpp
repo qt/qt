@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "helpviewer.h"
 #include "tracer.h"
 
 #include <QtCore/QBuffer>
@@ -97,7 +98,7 @@ void AboutLabel::setSource(const QUrl &url)
     TRACE_OBJ
     if (url.isValid() 
         && (url.scheme() == QLatin1String("http") || url.scheme() == QLatin1String("ftp") 
-            || url.scheme() == QLatin1String("mailto") || url.path().endsWith(QLatin1String("pdf")))) {
+            || url.scheme() == QLatin1String("mailto") || !HelpViewer::canOpenPage(url.path()))) {
         if (!QDesktopServices::openUrl(url)) {
             QMessageBox::warning(this, tr("Warning"),
                          tr("Unable to launch external application.\n"),
