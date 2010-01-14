@@ -17,6 +17,19 @@ Task Tracker:   http://qt.nokia.com/developer/task-tracker
 Merge Request:  http://qt.gitorious.org
 
 ****************************************************************************
+*                           General                                        *
+****************************************************************************
+
+Optimizations
+-------------
+
+ - Optimized empty QUrl creation
+    * Empty QUrls no longer allocate memory now
+
+ * See list of Important Behavior Changes below
+
+
+****************************************************************************
 *                          Library                                         *
 ****************************************************************************
 
@@ -27,6 +40,17 @@ QtCore
     * Improve performance of getting the canonical filename on Linux
       and Symbian by using realpath() system call.
     * Avoid stat() when opening a file.
+
+ - QLibrary and QPluginLoader
+    * Do not look at the Qt patch-level version embedded in plugins'
+      buildkeys when trying to determine if the plugin is compatible
+
+ - QProcessEnvironment
+    * [QTBUG-6701] Ensure we don't crash in operator==
+
+ - QTextEncoder
+    * [merge request 399] QTextEncoder::fromUnicode as QT3 support
+      member
 
  - QXmlStreamreader
     * [merge request 1926] Fix parsing of DTDs that contain empty markup
@@ -91,6 +115,30 @@ QtGui
       text objects.
     * [QTBUG-6051] Fixed an endless loop when printing a QTextDocument.
 
+QtDBus
+------
+
+ - QDBusConnection
+    * [QTBUG-5979] Fixed the signal-delivery mechanism to update
+      correctly when the sender name changes/appears on the bus.
+    * [QTBUG-7041] Fixed marshalling of booleans in release mode.
+    * [QT-2307] Fixed calls with the QDBus::BlockWithGui mode.
+ - QDBusInterface
+    * Made it continue working even when the remote object
+      introspection fails.
+ - QDBusInterface and qdbuscpp2xml
+    * [QTBUG-5563] Fixed an issue with generating annotations in
+      signals.
+ - QDBusPendingReply and QDBusReply
+    * [QTBUG-6571] Fixed a crash that would happen if you tried to
+      make a call with a disconnected QDBusConnection.
+
+QtMultimedia
+------------
+
+ - QAudioOutput
+   * [Merge request 418] Fixed compilation the example provided for
+     QAudioOutput::start.
 
 QtNetwork
 ---------
@@ -98,6 +146,8 @@ QtNetwork
  - QNetworkAccessManager
     * HTTP: Send our locale with the HTTP request.
     * HTTP: Start Accept-language and Authorization header with capital letter.
+    * HTTP: Fix caching algorithm, matching RFC 2612 and the documentation.
+    * HTTP [QTBUG-7060]: Fix an issue with headers like "private, max-age=300".
     * file: Introduce special subclass for higher performance with file:// URLs.
  - QTcpSocket
     * [QTBUG-5799] Fix waitForConnected() on Windows.
@@ -174,6 +224,7 @@ QtWebKit
  - Fixed wrapping of QObjects with recurring identity (webkit.org/b/31681).
  - Fixed compilation with ICC.
  - Fixed assertion when dragging SVG images (webkit.org/b/32511).
+ - Added the framecapture example to the default build (merge request 2235)
 
 QtSql
 -----
@@ -213,6 +264,16 @@ Qt Plugins
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
+
+Qt for Unix (X11 and Mac OS X)
+------------------------------
+
+ - [QTBUG-6755] Ensure we don't call select(2) with a negative timeout
+   if the timer expires during timeout recalculation.
+ - Added mkspecs for Sun CC that enable -library=stlport by default,
+   to restore STL capability with that compiler.
+ - [QTBUG-6576] Fixed compilation on HP-UX 11.11.
+ - [QTBUG-6961] Fixed compilation on HURD.
 
 Qt for Linux/X11
 ----------------
@@ -286,4 +347,18 @@ Qt for Symbian
  - uic
    * [QTBUG-5824] Fixed code generation to generate a call to
      QMainWindow::setCentralWidget() for promoted widgets as well.
+
+****************************************************************************
+* Important Behavior Changes *
+****************************************************************************
+
+ - Phonon
+   * Include headers have been changed. The only official method for
+     including Phonon headers is <phonon/ClassName> or
+     <phonon/classname.h>. This change was necessary because of
+     frameworks on Mac.
+
+     Compatibility is provided for <Phonon/*> includes, but is not
+     guaranteed to work. Including <phonon> and <Phonon> is not
+     supported.
 
