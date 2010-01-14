@@ -2194,6 +2194,41 @@ void QWidgetPrivate::finishCreateWindow_sys_Carbon(OSWindowRef windowRef)
     applyMaxAndMinSizeOnWindow();
 }
 #else  // QT_MAC_USE_COCOA
+
+void QWidgetPrivate::setWindowLevel()
+{
+    Q_Q(QWidget);
+    const QWidget * const windowParent = q->window()->parentWidget();
+    const QWidget * const primaryWindow = windowParent ? windowParent->window() : 0;
+    NSInteger winLevel = -1;
+
+    if (q->windowType() == Qt::Popup) {
+        winLevel = NSPopUpMenuWindowLevel;
+        // Popup should be in at least the same level as its parent.
+        if (primaryWindow) {
+            OSWindowRef parentRef = qt_mac_window_for(primaryWindow);
+            winLevel = qMax([parentRef level], winLevel);
+        }
+    } else if (q->windowType() == Qt::Tool) {
+        winLevel = NSFloatingWindowLevel;
+    } else if (q->windowType() == Qt::Dialog) {
+        // Correct modality level (NSModalPanelWindowLevel) will be
+        // set by cocoa when creating a modal session later.
+        winLevel = NSNormalWindowLevel;
+    }
+
+    // StayOnTop window should appear above Tool windows.
+    if (data.window_flags & Qt::WindowStaysOnTopHint)
+        winLevel = NSPopUpMenuWindowLevel;
+    // Tooltips should appear above StayOnTop windows.
+    if (q->windowType() == Qt::ToolTip)
+        winLevel = NSScreenSaverWindowLevel;
+    // All other types are Normal level.
+    if (winLevel == -1)
+        winLevel = NSNormalWindowLevel;
+    [qt_mac_window_for(q) setLevel:winLevel];
+}
+
 void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWindowRef)
 {
     Q_Q(QWidget);
@@ -2266,6 +2301,7 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
         q->setAttribute(Qt::WA_WState_WindowOpacitySet, false);
     }
 
+    setWindowLevel();
     macUpdateHideOnSuspend();
     macUpdateOpaqueSizeGrip();
     macUpdateIgnoreMouseEvents();
@@ -4697,7 +4733,7 @@ void QWidgetPrivate::setModal_sys()
     bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
     if (windowParent && q->windowModality() == Qt::WindowModal){
-        // Window should be window-modal, which implies a sheet.
+        // INVARIANT: Window should be window-modal (which implies a sheet).
         if (!alreadySheet) {
             // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
@@ -4714,47 +4750,20 @@ void QWidgetPrivate::setModal_sys()
                 [static_cast<NSPanel *>(windowRef) setWorksWhenModal:YES];
         }
     } else {
-        // Window shold not be window-modal, and as such, not a sheet.
+        // INVARIANT: Window shold _not_ be window-modal (and as such, not a sheet).
+        // If the window is application modal, there in no need to do much at this point.
         if (alreadySheet){
             // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
             windowRef = qt_mac_window_for(q);
         }
-        if (q->windowModality() == Qt::ApplicationModal) {
-            [windowRef setLevel:NSModalPanelWindowLevel];
-        } else if (primaryWindow && primaryWindow->windowModality() == Qt::ApplicationModal) {
+        if (q->windowModality() == Qt::NonModal
+                   && primaryWindow && primaryWindow->windowModality() == Qt::ApplicationModal) {
             // INVARIANT: Our window is a dialog that has a dialog parent that is
             // application modal, or . This means that q is supposed to be on top of this
             // dialog and not be modally shaddowed:
-            [windowRef setLevel:NSModalPanelWindowLevel];
             if ([windowRef isKindOfClass:[NSPanel class]])
                 [static_cast<NSPanel *>(windowRef) setWorksWhenModal:YES];
-        } else {
-            // INVARIANT: q should not be modal.
-            NSInteger winLevel = -1;
-            if (q->windowType() == Qt::Popup) {
-                winLevel = NSPopUpMenuWindowLevel;
-                // Popup should be in at least the same level as its parent.
-                if (primaryWindow) {
-                    OSWindowRef parentRef = qt_mac_window_for(primaryWindow);
-                    winLevel = qMax([parentRef level], winLevel);
-                }
-            } else if (q->windowType() == Qt::Tool) {
-                winLevel = NSFloatingWindowLevel;
-            } else if (q->windowType() == Qt::Dialog) {
-                winLevel = NSModalPanelWindowLevel;
-            }
-
-            // StayOnTop window should appear above Tool windows.
-            if (data.window_flags & Qt::WindowStaysOnTopHint)
-                winLevel = NSPopUpMenuWindowLevel;
-            // Tooltips should appear above StayOnTop windows.
-            if (q->windowType() == Qt::ToolTip)
-                winLevel = NSScreenSaverWindowLevel;
-            // All other types are Normal level.
-            if (winLevel == -1)
-                winLevel = NSNormalWindowLevel;
-            [windowRef setLevel:winLevel];
         }
     }
 

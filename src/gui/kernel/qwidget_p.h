@@ -761,6 +761,7 @@ public:
     void initWindowPtr();
     void finishCreateWindow_sys_Carbon(OSWindowRef windowRef);
 #else
+    void setWindowLevel();
     void finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ windowRef);
     void syncCocoaMask();
     void finishCocoaMaskSetup();
