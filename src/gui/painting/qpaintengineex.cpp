@@ -417,13 +417,6 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         } else if (style == Qt::NoPen) {
             d->activeStroker = 0;
         } else {
-            // ### re-enable...
-            if (pen.isCosmetic()) {
-                d->dasher.setClipRect(d->exDeviceRect);
-            } else {
-                QRectF clipRect = state()->matrix.inverted().mapRect(QRectF(d->exDeviceRect));
-                d->dasher.setClipRect(clipRect);
-            }
             d->dasher.setDashPattern(pen.dashPattern());
             d->dasher.setDashOffset(pen.dashOffset());
             d->activeStroker = &d->dasher;
@@ -432,6 +425,15 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
     if (!d->activeStroker) {
         return;
+    }
+
+    if (pen.style() > Qt::SolidLine) {
+        if (pen.isCosmetic()) {
+            d->activeStroker->setClipRect(d->exDeviceRect);
+        } else {
+            QRectF clipRect = state()->matrix.inverted().mapRect(QRectF(d->exDeviceRect));
+            d->activeStroker->setClipRect(clipRect);
+        }
     }
 
     const QPainterPath::ElementType *types = path.elements();
