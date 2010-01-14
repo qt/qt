@@ -607,7 +607,6 @@ void QmlViewer::setLandscape()
 
 void QmlViewer::toggleOrientation()
 {
-    qWarning("HELLO");
     DeviceOrientation::instance()->setOrientation(DeviceOrientation::instance()->orientation()==DeviceOrientation::Portrait?DeviceOrientation::Landscape:DeviceOrientation::Portrait);
 }
 
