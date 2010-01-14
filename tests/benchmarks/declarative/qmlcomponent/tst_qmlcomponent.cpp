@@ -23,7 +23,7 @@
 **
 ** In addition, as a special exception, Nokia gives you certain additional
 ** rights.  These rights are described in the Nokia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** version 1.1, included in the file LGPL_EXCEPTION.qml in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -89,13 +89,13 @@ void tst_qmlcomponent::creation_data()
 {
     QTest::addColumn<QString>("file");
 
-    QTest::newRow("Object") << "object.txt";
-    QTest::newRow("Object - Id") << "object_id.txt";
-    QTest::newRow("MyQmlObject") << "myqmlobject.txt";
-    QTest::newRow("MyQmlObject: basic binding") << "myqmlobject_binding.txt";
-    QTest::newRow("Synthesized properties") << "synthesized_properties.txt";
-    QTest::newRow("Synthesized properties.2") << "synthesized_properties.2.txt";
-    QTest::newRow("SameGame - BoomBlock") << "samegame/BoomBlock.qml";
+    QTest::newRow("Object") << "data/object.qml";
+    QTest::newRow("Object - Id") << "data/object_id.qml";
+    QTest::newRow("MyQmlObject") << "data/myqmlobject.qml";
+    QTest::newRow("MyQmlObject: basic binding") << "data/myqmlobject_binding.qml";
+    QTest::newRow("Synthesized properties") << "data/synthesized_properties.qml";
+    QTest::newRow("Synthesized properties.2") << "data/synthesized_properties.2.qml";
+    QTest::newRow("SameGame - BoomBlock") << "data/samegame/BoomBlock.qml";
 }
 
 void tst_qmlcomponent::creation()
