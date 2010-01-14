@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -238,15 +238,15 @@ public:
     void sortChildren(int column, const QModelIndex &parent);
 
     inline int translateVisibleLocation(QFileSystemNode *parent, int row) const {
-        if (sortOrder == Qt::AscendingOrder)
-                return row;
-        if (parent->dirtyChildrenIndex == -1 || row < parent->dirtyChildrenIndex)
-            if (parent->dirtyChildrenIndex != -1)
-                return parent->dirtyChildrenIndex - row - 1;
-            else
+        if (sortOrder != Qt::AscendingOrder) {
+            if (parent->dirtyChildrenIndex == -1)
                 return parent->visibleChildren.count() - row - 1;
-        else
-            return row;
+
+            if (row < parent->dirtyChildrenIndex)
+                return parent->dirtyChildrenIndex - row - 1;
+        }
+
+        return row;
     }
 
     inline static QString myComputer() {

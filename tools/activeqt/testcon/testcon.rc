@@ -23,7 +23,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "FileDescription", "ActiveQt Test Container\0"
 				VALUE "FileVersion", "1,0,0,1\0"
 				VALUE "InternalName", "testcon\0"
-				VALUE "LegalCopyright", "Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)\0"
+				VALUE "LegalCopyright", "Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).0"
 				VALUE "LegalTrademarks", "\0"
 				VALUE "OriginalFilename", "testcon.exe\0"
 				VALUE "ProductName", "ActiveQt Test Container\0"

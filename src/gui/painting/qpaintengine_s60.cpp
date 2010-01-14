@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,18 +47,25 @@ QT_BEGIN_NAMESPACE
 class QS60PaintEnginePrivate : public QRasterPaintEnginePrivate
 {
 public:
-    QS60PaintEnginePrivate(QS60PaintEngine *engine) { Q_UNUSED(engine); }
+    QS60PaintEnginePrivate() {}
 };
 
 QS60PaintEngine::QS60PaintEngine(QPaintDevice *device, QS60PixmapData *data)
-    : QRasterPaintEngine(*(new QS60PaintEnginePrivate(this)), device), pixmapData(data)
+    : QRasterPaintEngine(*(new QS60PaintEnginePrivate), device), pixmapData(data)
 {
 }
 
 bool QS60PaintEngine::begin(QPaintDevice *device)
 {
+    Q_D(QS60PaintEngine);
+
     pixmapData->beginDataAccess();
-    return QRasterPaintEngine::begin(device);
+    bool ret = QRasterPaintEngine::begin(device);
+    // Make sure QPaintEngine::paintDevice() returns the proper device.
+    // QRasterPaintEngine changes pdev to QImage in case of RasterClass QPixmapData
+    // which is incorrect in Symbian.
+    d->pdev = device;
+    return ret;
 }
 
 bool QS60PaintEngine::end()

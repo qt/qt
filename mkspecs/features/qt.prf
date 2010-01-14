@@ -160,9 +160,7 @@ for(QTLIB, $$list($$lower($$unique(QT)))) {
    else:isEqual(QTLIB, dbus):qlib = QtDBus
    else:isEqual(QTLIB, phonon) {
        qlib = phonon
-       INCLUDEPATH += $$QMAKE_INCDIR_QT/phonon_compat/phonon
        INCLUDEPATH += $$QMAKE_INCDIR_QT/phonon_compat
-       INCLUDEPATH += $$QMAKE_INCDIR_QT/phonon/Phonon
 
        # The Helix backend requires this. Since we can't let a plugin set it,
        # we bump the values for all Symbian Phonon plugins.

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -862,27 +862,28 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
     \ingroup richtext-processing
     \ingroup shared
 
-
-    Text cursors are objects that are used to access and modify the contents
-    and underlying structure of text documents via a programming interface
-    that mimics the behavior of a cursor in a text editor. QTextCursor contains
-    information about both the cursor's position within a QTextDocument and any
-    selection that it has made.
+    Text cursors are objects that are used to access and modify the
+    contents and underlying structure of text documents via a
+    programming interface that mimics the behavior of a cursor in a
+    text editor. QTextCursor contains information about both the
+    cursor's position within a QTextDocument and any selection that it
+    has made.
 
     QTextCursor is modeled on the way a text cursor behaves in a text
-    editor, providing a programmatic means of performing standard actions
-    through the user interface. A document can be thought of as a
-    single string of characters with the cursor's position() being \e
-    between any two characters (or at the very beginning or very end
-    of the document). Documents can also contain tables, lists,
-    images, and other objects in addition to text but, from the developer's
-    point of view, the document can be treated as one long string.
-    Some portions of that string can be considered to lie within particular
-    blocks (e.g. paragraphs), or within a table's cell, or a list's item,
-    or other structural elements. When we refer to "current character" we
-    mean the character immediately after the cursor position() in the
-    document; similarly the "current block" is the block that contains the
-    cursor position().
+    editor, providing a programmatic means of performing standard
+    actions through the user interface. A document can be thought of
+    as a single string of characters. The cursor's current position()
+    then is always either \e between two consecutive characters in the
+    string, or else \e before the very first character or \e after the
+    very last character in the string.  Documents can also contain
+    tables, lists, images, and other objects in addition to text but,
+    from the developer's point of view, the document can be treated as
+    one long string.  Some portions of that string can be considered
+    to lie within particular blocks (e.g. paragraphs), or within a
+    table's cell, or a list's item, or other structural elements. When
+    we refer to "current character" we mean the character immediately
+    \e before the cursor position() in the document. Similarly, the
+    "current block" is the block that contains the cursor position().
 
     A QTextCursor also has an anchor() position. The text that is
     between the anchor() and the position() is the selection. If
@@ -940,11 +941,12 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
     undo/redo) using beginEditBlock() and endEditBlock().
 
     Cursor movements are limited to valid cursor positions. In Latin
-    writing this is usually after every character in the text. In some
-    other writing systems cursor movements are limited to "clusters"
-    (e.g. a syllable in Devanagari, or a base letter plus diacritics).
-    Functions such as movePosition() and deleteChar() limit cursor
-    movement to these valid positions.
+    writing this is between any two consecutive characters in the
+    text, before the first character, or after the last character. In
+    some other writing systems cursor movements are limited to
+    "clusters" (e.g. a syllable in Devanagari, or a base letter plus
+    diacritics).  Functions such as movePosition() and deleteChar()
+    limit cursor movement to these valid positions.
 
     \sa \link richtext.html Rich Text Processing\endlink
 
@@ -1739,8 +1741,9 @@ void QTextCursor::mergeBlockCharFormat(const QTextCharFormat &modifier)
 }
 
 /*!
-    Returns the format of the character immediately before the cursor position(). If the cursor is
-    positioned at the beginning of a text block that is not empty then the format of the character
+    Returns the format of the character immediately before the cursor
+    position(). If the cursor is positioned at the beginning of a text
+    block that is not empty then the format of the character
     immediately after the cursor is returned.
 
     \sa insertText(), blockFormat()

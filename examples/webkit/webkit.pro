@@ -3,7 +3,8 @@ SUBDIRS +=  domtraversal \
             formextractor \
             previewer \
             fancybrowser \
-            simpleselector
+            simpleselector \
+            framecapture
 
 contains(QT_CONFIG, openssl):SUBDIRS += googlechat
 
