@@ -903,12 +903,12 @@ void QCompleterPrivate::showPopup(const QRect& rect)
         popup->show();
 }
 
-
 void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)
 {
     Q_Q(QCompleter);
-    Q_UNUSED(path);
-    q->complete();
+    //the path given by QFileSystemModel does not end with /
+    if (q->completionPrefix() != path + QLatin1Char('/'))
+        q->complete();
 }
 
 /*!
@@ -1023,6 +1023,7 @@ void QCompleter::setModel(QAbstractItemModel *model)
 #else
         setCaseSensitivity(Qt::CaseSensitive);
 #endif
+        setCompletionRole(QFileSystemModel::FileNameRole);
         connect(fsModel, SIGNAL(directoryLoaded(QString)), this, SLOT(_q_fileSystemModelDirectoryLoaded(QString)));
     }
 #endif // QT_NO_FILESYSTEMMODEL
@@ -1685,7 +1686,11 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
     QModelIndex idx = index;
     QStringList list;
     do {
-        QString t = sourceModel->data(idx, Qt::EditRole).toString();
+        QString t;
+        if (isDirModel)
+            t = sourceModel->data(idx, Qt::EditRole).toString();
+        else
+            t = sourceModel->data(idx, QFileSystemModel::FileNameRole).toString();
         list.prepend(t);
         QModelIndex parent = idx.parent();
         idx = parent.sibling(parent.row(), index.column());
