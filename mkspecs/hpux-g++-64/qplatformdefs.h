@@ -76,47 +76,7 @@
 #include <net/if.h>
 #endif
 
-#ifdef QT_LARGEFILE_SUPPORT
-#define QT_STATBUF              struct stat64
-#define QT_STATBUF4TSTAT        struct stat64
-#define QT_STAT                 ::stat64
-#define QT_FSTAT                ::fstat64
-#define QT_LSTAT                ::lstat64
-#define QT_OPEN                 ::open64
-#define QT_TRUNCATE             ::truncate64
-#define QT_FTRUNCATE            ::ftruncate64
-#define QT_LSEEK                ::lseek64
-#else
-#define QT_STATBUF		struct stat
-#define QT_STATBUF4TSTAT	struct stat
-#define QT_STAT			::stat
-#define QT_FSTAT		::fstat
-#define QT_LSTAT		::lstat
-#define QT_OPEN                 ::open
-#define QT_TRUNCATE             ::truncate
-#define QT_FTRUNCATE            ::ftruncate
-#define QT_LSEEK                ::lseek
-#endif
-
-#ifdef QT_LARGEFILE_SUPPORT
-#define QT_FOPEN                ::fopen64
-#define QT_FSEEK                ::fseeko64
-#define QT_FTELL                ::ftello64
-#define QT_FGETPOS              ::fgetpos64
-#define QT_FSETPOS              ::fsetpos64
-#define QT_MMAP                 ::mmap64
-#define QT_FPOS_T               fpos64_t
-#define QT_OFF_T                off64_t
-#else
-#define QT_FOPEN                ::fopen
-#define QT_FSEEK                ::fseek
-#define QT_FTELL                ::ftell
-#define QT_FGETPOS              ::fgetpos
-#define QT_FSETPOS              ::fsetpos
-#define QT_MMAP                 ::mmap
-#define QT_FPOS_T               fpos_t
-#define QT_OFF_T                long
-#endif
+#include "../common/xopen-lfs/qplatformdefs.h"
 
 #define QT_STAT_REG		S_IFREG
 #define QT_STAT_DIR		S_IFDIR
@@ -133,7 +93,6 @@
 #define QT_CHDIR		::chdir
 #define QT_MKDIR		::mkdir
 #define QT_RMDIR		::rmdir
-#define QT_OPEN_LARGEFILE       O_LARGEFILE
 #define QT_OPEN_RDONLY		O_RDONLY
 #define QT_OPEN_WRONLY		O_WRONLY
 #define QT_OPEN_RDWR		O_RDWR
