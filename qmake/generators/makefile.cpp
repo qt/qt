@@ -2412,16 +2412,14 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         //qmake it
         if(!subtarget->profile.isEmpty()) {
             QString out = subtarget->makefile;
-            QString in = fileFixify(in_directory + subtarget->profile, in_directory);
-            if(in.startsWith(in_directory))
-                in = in.mid(in_directory.length());
+            QString in = fileFixify(in_directory + subtarget->profile, out_directory, QString(), FileFixifyAbsolute);
             if(out.startsWith(in_directory))
                 out = out.mid(in_directory.length());
             t << mkfile << ": " << "\n\t";
             if(!in_directory.isEmpty()) {
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin
-                  << "$(QMAKE) " << subtarget->in_directory << QDir::separator() << in << buildArgs(in_directory) << " -o " << out
+                  << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
                   << in_directory_cdout << endl;
             } else {
                 t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
@@ -2433,7 +2431,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             if(!in_directory.isEmpty()) {
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin
-                  << "$(QMAKE) " << subtarget->in_directory << QDir::separator() << in << buildArgs(in_directory) << " -o " << out
+                  << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
                   << in_directory_cdout << endl;
             } else {
                 t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
