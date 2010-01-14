@@ -9,10 +9,6 @@ Rectangle {
         color: "red"
         width: 50; height: 50
         x: 100; y: 100
-        MouseRegion {
-            anchors.fill: parent
-            onClicked: if (Wrapper.state == "state1") Wrapper.state = ""; else Wrapper.state = "state1";
-        }
     }
     states: State {
         name: "state1"
@@ -21,4 +17,5 @@ Rectangle {
     transitions: Transition {
         ColorAnimation { target: MyRect; to: "red"; property: "border.colr"; duration: 1000 }
     }
+    Component.onCompleted: if (Wrapper.state == "state1") Wrapper.state = ""; else Wrapper.state = "state1";
 }
