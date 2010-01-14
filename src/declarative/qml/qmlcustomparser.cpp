@@ -55,37 +55,26 @@ using namespace QmlParser;
     \brief The QmlCustomParser class allows you to add new arbitrary types to QML.
     \internal
 
-    By subclassing QmlCustomParser, you can add an XML parser for
+    By subclassing QmlCustomParser, you can add a parser for
     building a particular type.
 
-    The subclass must implement compile() and create(), and define
-    itself in the meta type system with one of the macros:
+    The subclass must implement compile() and setCustomData(), and define
+    itself in the meta type system with the macro:
 
     \code
-    QML_DEFINE_CUSTOM_PARSER(Name, parserClass)
-    \endcode
-
-    \code
-    QML_DEFINE_CUSTOM_PARSER_NS("XmlNamespaceUri", Name, parserClass)
+    QML_DEFINE_CUSTOM_TYPE(Module, MajorVersion, MinorVersion, Name, TypeClass, ParserClass)
     \endcode
 */
 
 /*
-    \fn QByteArray QmlCustomParser::compile(QXmlStreamReader& reader)
+    \fn QByteArray QmlCustomParser::compile(const QList<QmlCustomParserProperty> & properties)
 
-    Upon entry to this function, \a reader is positioned on a
-    QXmlStreamReader::StartElement with the name specified when the
-    class was defined with the QML_DEFINE_CUSTOM_PARSER macro.
-
-    The custom parser must consume tokens from \a reader until the
-    EndElement matching the initial start element is reached, or until
-    error.
+    The custom parser processes \a properties, and returns
+    a QByteArray containing data meaningful only to the
+    custom parser; the type engine will pass this same data to
+    setCustomData() when making an instance of the data.
 
     Errors must be reported via the error() functions.
-
-    The returned QByteArray contains data meaningful only to the
-    custom parser; the type engine will pass this same data to
-    create() when making an instance of the data.
 
     The QByteArray may be cached between executions of the system, so
     it must contain correctly-serialized data (not, for example,
@@ -93,16 +82,13 @@ using namespace QmlParser;
 */
 
 /*
-    \fn QVariant QmlCustomParser::create(const QByteArray &data)
+    \fn void QmlCustomParser::setCustomData(QObject *object, const QByteArray &data)
 
-    This function returns a QVariant containing the value represented
+    This function sets \a object to have the properties defined
     by \a data, which is a block of data previously returned by a call
     to compile().
 
-    If the compile is for a type, the variant should be a pointer to
-    the correctly-named QObject subclass (i.e. the one defined by
-    QML_DEFINE_TYPE for the same-named type as this custom parser is
-    defined for).
+    The \a object will be an instance of the TypeClass specified by QML_DEFINE_CUSTOM_TYPE.
 */
 
 QmlCustomParserNode 
