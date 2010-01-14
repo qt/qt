@@ -244,7 +244,7 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
 
     if (isLocalUrl(url)) {
         const QString& path = url.path();
-        if (path.endsWith(QLatin1String(".pdf"))) {
+        if (!HelpViewer::canOpenPage(path)) {
             QTemporaryFile tmpTmpFile;
             if (!tmpTmpFile.open())
                 return false;
@@ -476,12 +476,12 @@ void HelpViewer::zoomOut(int range)
 bool HelpViewer::launchedWithExternalApp(const QUrl &url)
 {
     TRACE_OBJ
-    bool isPdf = url.path().endsWith(QLatin1String(".pdf"));
+    const bool canOpen = canOpenPage(url.path());
     if (url.scheme() == QLatin1String("http")
         || url.scheme() == QLatin1String("ftp")
-        || url.scheme() == QLatin1String("mailto") || isPdf) {
+        || url.scheme() == QLatin1String("mailto") || !canOpen) {
         bool launched = false;
-        if (isPdf && url.scheme() == QLatin1String("qthelp")) {
+        if (!canOpen && url.scheme() == QLatin1String("qthelp")) {
             const QString& path = url.path();
             const int lastDash = path.lastIndexOf(QChar('/'));
             QString fileName = QDir::tempPath() + QDir::separator();
@@ -637,5 +637,13 @@ void HelpViewer::home()
     TRACE_OBJ
     setSource(helpEngine.homePage());
 }
+
+bool HelpViewer::canOpenPage(const QString &url)
+{
+    TRACE_OBJ
+    return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
+        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive);
+}
+
 
 QT_END_NAMESPACE

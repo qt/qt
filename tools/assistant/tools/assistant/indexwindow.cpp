@@ -43,6 +43,7 @@
 #include "indexwindow.h"
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
+#include "helpviewer.h"
 #include "topicchooser.h"
 
 #include <QtGui/QLayout>
@@ -218,7 +219,7 @@ void IndexWindow::open(QHelpIndexWidget* indexWidget, const QModelIndex &index)
             return;
         }
 
-        if (url.path().endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))
+        if (!HelpViewer::canOpenPage(url.path()))
             CentralWidget::instance()->setSource(url);
         else
             CentralWidget::instance()->setSourceInNewTab(url);

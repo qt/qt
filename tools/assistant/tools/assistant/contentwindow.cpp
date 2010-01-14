@@ -43,6 +43,7 @@
 #include "contentwindow.h"
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
+#include "helpviewer.h"
 
 #include <QtGui/QLayout>
 #include <QtGui/QFocusEvent>
@@ -143,7 +144,7 @@ bool ContentWindow::eventFilter(QObject *o, QEvent *e)
                     qobject_cast<QHelpContentModel*>(m_contentWidget->model());
                 if (contentModel) {
                     QHelpContentItem *itm = contentModel->contentItemAt(index);
-                    if (itm && !isPdfFile(itm))
+                    if (itm && HelpViewer::canOpenPage(itm->url().path()))
                         CentralWidget::instance()->setSourceInNewTab(itm->url());
                 }
             } else if (button == Qt::LeftButton) {
@@ -169,7 +170,7 @@ void ContentWindow::showContextMenu(const QPoint &pos)
     QMenu menu;
     QAction *curTab = menu.addAction(tr("Open Link"));
     QAction *newTab = menu.addAction(tr("Open Link in New Tab"));
-    if (isPdfFile(itm))
+    if (!HelpViewer::canOpenPage(itm->url().path()))
         newTab->setEnabled(false);
     
     menu.move(m_contentWidget->mapToGlobal(pos));
@@ -192,13 +193,6 @@ void ContentWindow::itemClicked(const QModelIndex &index)
         if (itm)
             emit linkActivated(itm->url());
     }
-}
-
-bool ContentWindow::isPdfFile(QHelpContentItem *item) const
-{
-    TRACE_OBJ
-    const QString &path = item->url().path();
-    return path.endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive);
 }
 
 QT_END_NAMESPACE

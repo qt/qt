@@ -97,6 +97,8 @@ public:
     inline qreal zoom() const
     { return textSizeMultiplier(); }
 
+    static bool canOpenPage(const QString &url);
+
 public Q_SLOTS:
     void home();
     void backward() { back(); }
@@ -143,6 +145,7 @@ public:
     { return textCursor().hasSelection(); }
 
     bool launchedWithExternalApp(const QUrl &url);
+    static bool canOpenPage(const QString &url);
 
 public Q_SLOTS:
     void home();
