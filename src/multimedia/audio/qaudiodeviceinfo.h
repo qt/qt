@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -84,9 +84,7 @@ public:
 
     QStringList supportedCodecs() const;
     QList<int> supportedFrequencies() const;
-    QList<int> supportedSampleRates() const;
     QList<int> supportedChannels() const;
-    QList<int> supportedChannelCounts() const;
     QList<int> supportedSampleSizes() const;
     QList<QAudioFormat::Endian> supportedByteOrders() const;
     QList<QAudioFormat::SampleType> supportedSampleTypes() const;

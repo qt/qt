@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@
 #include "bridge/qscriptvariant_p.h"
 #include "bridge/qscriptqobject_p.h"
 #include "bridge/qscriptdeclarativeclass_p.h"
+#include "bridge/qscriptdeclarativeobject_p.h"
 
 /*!
   \since 4.3
@@ -1570,9 +1571,10 @@ QObject *QScriptValue::toQObject() const
     Q_D(const QScriptValue);
     if (isQObject()) {
         QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
-        return static_cast<QScript::QObjectDelegate*>(object->delegate())->value();
-    } else if (QScriptDeclarativeClass *dc = QScriptDeclarativeClass::scriptClass(*this)) {
-        return dc->toQObject(QScriptDeclarativeClass::object(*this));
+        QScriptObjectDelegate *delegate = object->delegate();
+        if (delegate->type() == QScriptObjectDelegate::DeclarativeClassObject)
+            return static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->scriptClass()->toQObject(QScriptDeclarativeClass::object(*this));
+        return static_cast<QScript::QObjectDelegate*>(delegate)->value();
     } else if (isVariant()) {
         QVariant var = toVariant();
         int type = var.userType();
@@ -2245,7 +2247,9 @@ bool QScriptValue::isQObject() const
         return false;
     QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
     QScriptObjectDelegate *delegate = object->delegate();
-    return (delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
+    return (delegate && (delegate->type() == QScriptObjectDelegate::QtObject ||
+                         (delegate->type() == QScriptObjectDelegate::DeclarativeClassObject &&
+                          static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->scriptClass()->isQObject())));
 }
 
 /*!

@@ -297,7 +297,10 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
         break;
     }
 
+    if (oldPlayer)
+        emit abstractPlayerChanged(0);
     m_player.reset(newPlayer);
+    emit abstractPlayerChanged(newPlayer);
 
     if (oldPlayerHasVideo != hasVideo()) {
         emit hasVideoChanged(hasVideo());

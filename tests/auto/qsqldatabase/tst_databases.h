@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -221,7 +221,8 @@ public:
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 3309, "CLIENT_COMPRESS=1;CLIENT_SSL=1" ); // MySQL 5.0.18 Linux
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "silence.nokia.troll.no" ); // MySQL 5.1.36 Windows
 //         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql4-nokia.trolltech.com.au" ); // MySQL 4.1.22-2.el4  linux
-//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql5-nokia.trolltech.com.au" ); // MySQL 5.0.45-7.el5 linux
+//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql50.apac.nokia.com" ); // MySQL 5.0.45-7.el5 linux
+//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql51.apac.nokia.com" ); // MySQL 5.1.36-6.7.2.i586 linux
 
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no" ); // V7.2 NOT SUPPORTED!
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 5434 ); // V7.2 NOT SUPPORTED! Multi-byte
@@ -230,7 +231,8 @@ public:
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 5437 ); // V8.0.3
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "silence.nokia.troll.no" );         // V8.2.1, UTF-8
 //         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "postgres74-nokia.trolltech.com.au" );         // Version 7.4.19-1.el4_6.1
-//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "postgres81-nokia.trolltech.com.au" );         // Version 8.1.11-1.el5_1.1
+//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql81.apac.nokia.com" );         // Version 8.1.11-1.el5_1.1
+//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql84.apac.nokia.com" );         // Version 8.4.1-2.1.i586
 
 //         addDb( "QDB2", "testdb", "troll", "trond", "silence.nokia.troll.no" ); // DB2 v9.1 on silence
 
@@ -248,7 +250,7 @@ public:
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.nokia.troll.no\\ICEBLINK", "troll", "trond", "" );
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
 
-//         addDb( "QODBC", "DRIVER={MySQL ODBC 3.51 Driver};SERVER=mysql5-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=mysql5-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=mysql4-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk", "troll", "trondk", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.nokia.troll.no;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond", "troll", "trond", "" );
@@ -259,6 +261,7 @@ public:
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={Microsoft Access Driver (*.mdb)};DBQ=c:\\dbs\\access\\testdb.mdb", "", "", "" );
+//         addDb( "QODBC", "DRIVER={Postgresql};SERVER=postgres81-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
     }
 
     void open()
@@ -335,7 +338,10 @@ public:
                 foreach(const QString &table2, dbtables.filter(table, Qt::CaseInsensitive)) {
                     if(table2.compare(table.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
                         table=db.driver()->escapeIdentifier(table2, QSqlDriver::TableName);
-                        wasDropped = q.exec( "drop table " + table);
+                        if(db.driverName().startsWith( "QPSQL" ))
+                            wasDropped = q.exec( "drop table " + table + " cascade");
+                        else
+                            wasDropped = q.exec( "drop table " + table);
                         dbtables.removeAll(table2);
                     }
                 }

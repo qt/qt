@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,7 +42,9 @@
 #include "qcore_unix_p.h"
 
 #ifndef Q_OS_VXWORKS
+# if !defined(Q_OS_HPUX) || defined(__ia64)
 #  include <sys/select.h>
+# endif
 #  include <sys/time.h>
 #else
 #  include <selectLib.h>

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2456,7 +2456,7 @@ int QObject::receivers(const char *signal) const
     If you pass the Qt::UniqueConnection \a type, the connection will only
     be made if it is not a duplicate. If there is already a duplicate
     (exact same signal to the exact same slot on the same objects),
-    the connection will fail and connect will return false
+    the connection will fail and connect will return false.
 
     The optional \a type parameter describes the type of connection
     to establish. In particular, it determines whether a particular

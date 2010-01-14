@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -95,8 +95,27 @@ public:
 
 #include <qcolor.h>
 
+/*
+    QGLTemporaryContext implementation
+*/
 
+class QGLTemporaryContextPrivate
+{
+public:
+    QGLWidget *widget;
+};
 
+QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
+    : d(new QGLTemporaryContextPrivate)
+{
+    d->widget = new QGLWidget;
+    d->widget->makeCurrent();
+}
+
+QGLTemporaryContext::~QGLTemporaryContext()
+{
+    delete d->widget;
+}
 
 /*****************************************************************************
   QGLFormat Win32/WGL-specific code
@@ -625,23 +644,6 @@ void QGLWidget::setColormap(const QGLColormap & c)
         free(lpal);
         d->updateColormap();
     }
-}
-
-void QGLExtensions::init()
-{
-    static bool init_done = false;
-
-    if (init_done)
-        return;
-    init_done = true;
-
-    // We need a context current to initialize the extensions.
-    QGLWidget tmpWidget;
-    tmpWidget.makeCurrent();
-
-    init_extensions();
-
-    tmpWidget.doneCurrent();
 }
 
 QT_END_NAMESPACE

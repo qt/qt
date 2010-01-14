@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -96,8 +96,8 @@ void AudioTest::test()
         } else {
             QAudioFormat nearest = deviceInfo.nearestFormat(settings);
             logOutput->append(tr("Failed"));
-            nearestFreq->setText(QString("%1").arg(nearest.sampleRate()));
-            nearestChannel->setText(QString("%1").arg(nearest.channelCount()));
+            nearestFreq->setText(QString("%1").arg(nearest.frequency()));
+            nearestChannel->setText(QString("%1").arg(nearest.channels()));
             nearestCodec->setText(nearest.codec());
             nearestSampleSize->setText(QString("%1").arg(nearest.sampleSize()));
 
@@ -149,18 +149,18 @@ void AudioTest::deviceChanged(int idx)
     deviceInfo = deviceBox->itemData(idx).value<QAudioDeviceInfo>();
 
     frequencyBox->clear();
-    QList<int> freqz = deviceInfo.supportedSampleRates();
+    QList<int> freqz = deviceInfo.supportedFrequencies();
     for(int i = 0; i < freqz.size(); ++i)
         frequencyBox->addItem(QString("%1").arg(freqz.at(i)));
     if(freqz.size())
-        settings.setSampleRate(freqz.at(0));
+        settings.setFrequency(freqz.at(0));
 
     channelsBox->clear();
-    QList<int> chz = deviceInfo.supportedChannelCounts();
+    QList<int> chz = deviceInfo.supportedChannels();
     for(int i = 0; i < chz.size(); ++i)
         channelsBox->addItem(QString("%1").arg(chz.at(i)));
     if(chz.size())
-        settings.setChannelCount(chz.at(0));
+        settings.setChannels(chz.at(0));
 
     codecsBox->clear();
     QStringList codecz = deviceInfo.supportedCodecs();
@@ -217,12 +217,12 @@ void AudioTest::deviceChanged(int idx)
 void AudioTest::freqChanged(int idx)
 {
     // freq has changed
-    settings.setSampleRate(frequencyBox->itemText(idx).toInt());
+    settings.setFrequency(frequencyBox->itemText(idx).toInt());
 }
 
 void AudioTest::channelChanged(int idx)
 {
-    settings.setChannelCount(channelsBox->itemText(idx).toInt());
+    settings.setChannels(channelsBox->itemText(idx).toInt());
 }
 
 void AudioTest::codecChanged(int idx)

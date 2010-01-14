@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,14 +44,14 @@
 
 #include <QWidget>
 
-#include <Phonon/AudioOutput>
-#include <Phonon/SeekSlider>
-#include <Phonon/MediaObject>
-#include <Phonon/VolumeSlider>
-#include <Phonon/BackendCapabilities>
-#include <Phonon/Effect>
-#include <Phonon/EffectParameter>
-#include <Phonon/ObjectDescriptionModel>
+#include <phonon/audiooutput.h>
+#include <phonon/seekslider.h>
+#include <phonon/mediaobject.h>
+#include <phonon/volumeslider.h>
+#include <phonon/backendcapabilities.h>
+#include <phonon/effect.h>
+#include <phonon/effectparameter.h>
+#include <phonon/objectdescriptionmodel.h>
 #include <QList>
 
 QT_BEGIN_NAMESPACE

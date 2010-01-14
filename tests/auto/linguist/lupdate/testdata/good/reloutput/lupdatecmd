@@ -1,0 +1,2 @@
+TRANSLATION: translations/project.ts
+lupdate project.pro -ts translations/project.ts
