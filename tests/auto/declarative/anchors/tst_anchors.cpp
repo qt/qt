@@ -207,7 +207,8 @@ void tst_anchors::illegalSets()
     QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
 
     QmlEngine engine;
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\n" + qml.toUtf8()), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\n" + qml.toUtf8()), QUrl("file://"));
     if (!component.isReady())
         qWarning() << "Test errors:" << component.errors();
     QVERIFY(component.isReady());
