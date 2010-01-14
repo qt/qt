@@ -132,6 +132,7 @@ private slots:
     void adjustSizeSlot();
     void setPortrait();
     void setLandscape();
+    void toggleOrientation();
     void startNetwork();
     void toggleFullScreen();
     void unpackWgt();

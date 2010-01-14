@@ -540,6 +540,13 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 
     QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
     QActionGroup *orientation = new QActionGroup(parent);
+
+    QAction *toggleOrientation = new QAction(tr("&Toggle Orientation"), parent);
+    toggleOrientation->setCheckable(true);
+    toggleOrientation->setShortcut(QKeySequence("Ctrl+T"));
+    settingsMenu->addAction(toggleOrientation);
+    connect(toggleOrientation, SIGNAL(triggered()), this, SLOT(toggleOrientation()));
+
     orientation->setExclusive(true);
     portraitOrientation = new QAction(tr("orientation: Portrait"), parent);
     portraitOrientation->setCheckable(true);
@@ -596,6 +603,12 @@ void QmlViewer::setLandscape()
 {
     DeviceOrientation::instance()->setOrientation(DeviceOrientation::Landscape);
     landscapeOrientation->setChecked(true);
+}
+
+void QmlViewer::toggleOrientation()
+{
+    qWarning("HELLO");
+    DeviceOrientation::instance()->setOrientation(DeviceOrientation::instance()->orientation()==DeviceOrientation::Portrait?DeviceOrientation::Landscape:DeviceOrientation::Portrait);
 }
 
 void QmlViewer::toggleFullScreen()
