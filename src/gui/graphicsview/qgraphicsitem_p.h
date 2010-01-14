@@ -225,7 +225,11 @@ public:
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     int depth() const;
 #ifndef QT_NO_GRAPHICSEFFECT
-    void invalidateGraphicsEffectsRecursively();
+    enum InvalidateReason {
+        OpacityChanged
+    };
+    void invalidateParentGraphicsEffectsRecursively();
+    void invalidateChildGraphicsEffectsRecursively(InvalidateReason reason);
 #endif //QT_NO_GRAPHICSEFFECT
     void invalidateDepthRecursively();
     void resolveDepth();

@@ -2567,7 +2567,9 @@ void QGraphicsItem::setOpacity(qreal opacity)
     // Update.
     if (d_ptr->scene) {
 #ifndef QT_NO_GRAPHICSEFFECT
-        d_ptr->invalidateGraphicsEffectsRecursively();
+        d_ptr->invalidateParentGraphicsEffectsRecursively();
+        if (!(d_ptr->flags & ItemDoesntPropagateOpacityToChildren))
+            d_ptr->invalidateChildGraphicsEffectsRecursively(QGraphicsItemPrivate::OpacityChanged);
 #endif //QT_NO_GRAPHICSEFFECT
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
@@ -5077,7 +5079,7 @@ int QGraphicsItemPrivate::depth() const
     \internal
 */
 #ifndef QT_NO_GRAPHICSEFFECT
-void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
+void QGraphicsItemPrivate::invalidateParentGraphicsEffectsRecursively()
 {
     QGraphicsItemPrivate *itemPrivate = this;
     do {
@@ -5088,6 +5090,21 @@ void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
                 static_cast<QGraphicsItemEffectSourcePrivate *>(itemPrivate->graphicsEffect->d_func()->source->d_func())->invalidateCache();
         }
     } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
+}
+
+void QGraphicsItemPrivate::invalidateChildGraphicsEffectsRecursively(QGraphicsItemPrivate::InvalidateReason reason)
+{
+    for (int i = 0; i < children.size(); ++i) {
+        QGraphicsItemPrivate *childPrivate = children.at(i)->d_ptr.data();
+        if (reason == OpacityChanged && (childPrivate->flags & QGraphicsItem::ItemIgnoresParentOpacity))
+            continue;
+        if (childPrivate->graphicsEffect) {
+            childPrivate->notifyInvalidated = 1;
+            static_cast<QGraphicsItemEffectSourcePrivate *>(childPrivate->graphicsEffect->d_func()->source->d_func())->invalidateCache();
+        }
+
+        childPrivate->invalidateChildGraphicsEffectsRecursively(reason);
+    }
 }
 #endif //QT_NO_GRAPHICSEFFECT
 
@@ -5333,7 +5350,7 @@ void QGraphicsItem::update(const QRectF &rect)
 
     // Make sure we notify effects about invalidated source.
 #ifndef QT_NO_GRAPHICSEFFECT
-    d_ptr->invalidateGraphicsEffectsRecursively();
+    d_ptr->invalidateParentGraphicsEffectsRecursively();
 #endif //QT_NO_GRAPHICSEFFECT
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
