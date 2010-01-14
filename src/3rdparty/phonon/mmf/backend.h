@@ -21,8 +21,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ancestormovemonitor.h"
 
-#include <Phonon/MediaSource>
-#include <Phonon/BackendInterface>
+#include <Phonon/mediasource.h>
+#include <Phonon/backendinterface.h>
 #include <QScopedPointer>
 
 QT_BEGIN_NAMESPACE

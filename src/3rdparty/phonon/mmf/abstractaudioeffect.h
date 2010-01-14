@@ -23,8 +23,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <AudioEffectBase.h>
 
-#include <Phonon/EffectInterface>
-#include <Phonon/EffectParameter>
+#include <Phonon/effectinterface.h>
+#include <Phonon/effectparameter.h>
 
 #include "audioplayer.h"
 #include "mmf_medianode.h"

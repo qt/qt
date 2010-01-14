@@ -23,8 +23,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "videooutput.h"
 
 #include <QtGui/QWidget>
-#include <Phonon/VideoWidget>
-#include <Phonon/VideoWidgetInterface>
+#include <Phonon/videowidget.h>
+#include <Phonon/videowidgetinterface.h>
 
 QT_BEGIN_NAMESPACE
 

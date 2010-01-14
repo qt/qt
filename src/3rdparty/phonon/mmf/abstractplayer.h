@@ -20,7 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_ABSTRACTPLAYER_H
 
 #include <Phonon/phononnamespace.h>
-#include <Phonon/MediaSource.h>
+#include <Phonon/mediasource.h>
 
 #include <QObject>
 
