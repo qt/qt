@@ -2195,7 +2195,10 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     GLuint pixel_type;
     if (QGLExtensions::glExtensions() & QGLExtensions::BGRATextureFormat) {
         externalFormat = GL_BGRA;
-        pixel_type = GL_UNSIGNED_INT_8_8_8_8_REV;
+        if (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2)
+            pixel_type = GL_UNSIGNED_INT_8_8_8_8_REV;
+        else
+            pixel_type = GL_UNSIGNED_BYTE;
     } else {
         externalFormat = GL_RGBA;
         pixel_type = GL_UNSIGNED_BYTE;
@@ -2274,12 +2277,9 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         qgl_byteSwapImage(img, pixel_type);
     }
 #ifdef QT_OPENGL_ES
-    // OpenGL/ES requires that the internal and external formats be identical.
-    // This is typically used to convert GL_RGBA into GL_BGRA.
-    // Also, we need to use GL_UNSIGNED_BYTE when the format is GL_BGRA.
+    // OpenGL/ES requires that the internal and external formats be
+    // identical.
     internalFormat = externalFormat;
-    if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV)
-        pixel_type = GL_UNSIGNED_BYTE;
 #endif
 #ifdef QGL_BIND_TEXTURE_DEBUG
     printf(" - uploading, image.format=%d, externalFormat=0x%x, internalFormat=0x%x, pixel_type=0x%x\n",
