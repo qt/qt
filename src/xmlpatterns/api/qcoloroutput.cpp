@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -153,51 +153,56 @@ const char *const ColorOutputPrivate::backgrounds[] =
 };
 
 /*!
- \since 4.4
- \nonreentrant
- \brief Outputs colored messages to \c stderr.
- \internal
+  \class ColorOutput
+  \since 4.4
+  \nonreentrant
+  \brief Outputs colored messages to \c stderr.
+  \internal
 
- ColorOutput is a convenience class for outputting messages to \c stderr
- using color escape codes, as mandated in ECMA-48. ColorOutput will only
- color output when it is detected to be suitable. For instance, if \c stderr is
- detected to be attached to a file instead of a TTY, no coloring will be done.
+  ColorOutput is a convenience class for outputting messages to \c
+  stderr using color escape codes, as mandated in ECMA-48. ColorOutput
+  will only color output when it is detected to be suitable. For
+  instance, if \c stderr is detected to be attached to a file instead
+  of a TTY, no coloring will be done.
 
- ColorOutput does its best attempt. but it is generally undefined what coloring
- or effect the various coloring flags has. It depends strongly on what terminal
- software that is being used.
+  ColorOutput does its best attempt. but it is generally undefined
+  what coloring or effect the various coloring flags has. It depends
+  strongly on what terminal software that is being used.
 
- When using `echo -e 'my escape sequence'`, \033 works as an initiator but not
- when printing from a C++ program, despite having escaped the backslash.
- That's why we below use characters with value 0x1B.
+  When using `echo -e 'my escape sequence'`, \c{\033} works as an
+  initiator but not when printing from a C++ program, despite having
+  escaped the backslash.  That's why we below use characters with
+  value 0x1B.
 
- It can be convenient to subclass ColorOutput with a private scope, such that the
- functions are directly available in the class using it.
+  It can be convenient to subclass ColorOutput with a private scope,
+  such that the functions are directly available in the class using
+  it.
 
- \section1 Usage
+  \section1 Usage
 
- To output messages, call write() or writeUncolored(). write() takes as second
- argument an integer, which ColorOutput uses as a lookup key to find the color
- it should color the text in. The mapping from keys to colors is done using
- insertMapping(). Typically this is used by having enums for the various kinds
- of messages, which subsequently are registered.
+  To output messages, call write() or writeUncolored(). write() takes
+  as second argument an integer, which ColorOutput uses as a lookup
+  key to find the color it should color the text in. The mapping from
+  keys to colors is done using insertMapping(). Typically this is used
+  by having enums for the various kinds of messages, which
+  subsequently are registered.
 
- \code
- enum MyMessage
- {
+  \code
+  enum MyMessage
+  {
     Error,
     Important
- };
+  };
 
- ColorOutput output;
- output.insertMapping(Error, ColorOutput::RedForeground);
- output.insertMapping(Import, ColorOutput::BlueForeground);
+  ColorOutput output;
+  output.insertMapping(Error, ColorOutput::RedForeground);
+  output.insertMapping(Import, ColorOutput::BlueForeground);
 
- output.write("This is important", Important);
- output.write("Jack, I'm only the selected official!", Error);
- \endcode
+  output.write("This is important", Important);
+  output.write("Jack, I'm only the selected official!", Error);
+  \endcode
 
- \sa {http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html}                        {Bash Prompt HOWTO, 6.1. Colours}
+  \sa {http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html}                        {Bash Prompt HOWTO, 6.1. Colours}
      {http://linuxgazette.net/issue51/livingston-blade.html}                    {Linux Gazette, Tweaking Eterm, Edward Livingston-Blade}
      {http://www.ecma-international.org/publications/standards/Ecma-048.htm}    {Standard ECMA-48, Control Functions for Coded Character Sets, ECMA International},
      {http://en.wikipedia.org/wiki/ANSI_escape_code}                            {Wikipedia, ANSI escape code}
@@ -205,10 +210,34 @@ const char *const ColorOutputPrivate::backgrounds[] =
  */
 
 /*!
- \enum ColorOutput::ColorCode
+  \enum ColorOutput::ColorCodeComponent
+  \value BlackForeground
+  \value BlueForeground
+  \value GreenForeground
+  \value CyanForeground
+  \value RedForeground
+  \value PurpleForeground
+  \value BrownForeground
+  \value LightGrayForeground
+  \value DarkGrayForeground
+  \value LightBlueForeground
+  \value LightGreenForeground
+  \value LightCyanForeground
+  \value LightRedForeground
+  \value LightPurpleForeground
+  \value YellowForeground
+  \value WhiteForeground
+  \value BlackBackground
+  \value BlueBackground
+  \value GreenBackground
+  \value CyanBackground
+  \value RedBackground
+  \value PurpleBackground
+  \value BrownBackground
 
- \value DefaultColor ColorOutput performs no coloring. This typically means black on white
-                     or white on black, depending on the settings of the user's terminal.
+  \value DefaultColor ColorOutput performs no coloring. This typically
+                     means black on white or white on black, depending
+                     on the settings of the user's terminal.
  */
 
 /*!

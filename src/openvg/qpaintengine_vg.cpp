@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -200,6 +200,7 @@ public:
 
     QRegion scissorRegion;  // Currently active scissor region.
     bool scissorActive;     // True if scissor region is active.
+    bool scissorDirty;      // True if scissor is dirty after native painting.
 
     QPaintEngine::DirtyFlags dirty;
 
@@ -357,6 +358,7 @@ void QVGPaintEnginePrivate::init()
     rawVG = false;
 
     scissorActive = false;
+    scissorDirty = false;
 
     dirty = 0;
 
@@ -984,6 +986,9 @@ static QImage colorizeBitmap(const QImage &image, const QColor &color)
     return dest;
 }
 
+// defined in qpixmapdata_vg.cpp.
+const uchar *qt_vg_imageBits(const QImage& image);
+
 static VGImage toVGImage
     (const QImage & image, Qt::ImageConversionFlags flags = Qt::AutoColor)
 {
@@ -1017,7 +1022,7 @@ static VGImage toVGImage
         break;
     }
 
-    const uchar *pixels = img.bits();
+    const uchar *pixels = qt_vg_imageBits(img);
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (format, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -1061,7 +1066,7 @@ static VGImage toVGImageSubRect
         break;
     }
 
-    const uchar *pixels = img.bits() + bpp * sr.x() +
+    const uchar *pixels = qt_vg_imageBits(img) + bpp * sr.x() +
                           img.bytesPerLine() * sr.y();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
@@ -1083,7 +1088,7 @@ static VGImage toVGImageWithOpacity(const QImage & image, qreal opacity)
     painter.drawImage(0, 0, image);
     painter.end();
 
-    const uchar *pixels = img.bits();
+    const uchar *pixels = qt_vg_imageBits(img);
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -1105,7 +1110,7 @@ static VGImage toVGImageWithOpacitySubRect
     painter.drawImage(QPoint(0, 0), image, sr);
     painter.end();
 
-    const uchar *pixels = img.bits();
+    const uchar *pixels = qt_vg_imageBits(img);
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -2083,6 +2088,7 @@ void QVGPaintEngine::updateScissor()
             // so there is no point doing any scissoring.
             vgSeti(VG_SCISSORING, VG_FALSE);
             d->scissorActive = false;
+            d->scissorDirty = false;
             return;
         }
     } else
@@ -2100,6 +2106,7 @@ void QVGPaintEngine::updateScissor()
                 // so there is no point doing any scissoring.
                 vgSeti(VG_SCISSORING, VG_FALSE);
                 d->scissorActive = false;
+                d->scissorDirty = false;
                 return;
             }
         } else
@@ -2109,11 +2116,12 @@ void QVGPaintEngine::updateScissor()
         if (region.isEmpty()) {
             vgSeti(VG_SCISSORING, VG_FALSE);
             d->scissorActive = false;
+            d->scissorDirty = false;
             return;
         }
     }
 
-    if (d->scissorActive && region == d->scissorRegion)
+    if (d->scissorActive && region == d->scissorRegion && !d->scissorDirty)
         return;
 
     QVector<QRect> rects = region.rects();
@@ -2131,6 +2139,7 @@ void QVGPaintEngine::updateScissor()
 
     vgSetiv(VG_SCISSOR_RECTS, count * 4, params.data());
     vgSeti(VG_SCISSORING, VG_TRUE);
+    d->scissorDirty = false;
     d->scissorActive = true;
     d->scissorRegion = region;
 }
@@ -3166,15 +3175,15 @@ void QVGFontGlyphCache::cacheGlyphs
         if (!scaledImage.isNull()) {  // Not a space character
             if (scaledImage.format() == QImage::Format_Indexed8) {
                 vgImage = vgCreateImage(VG_A_8, scaledImage.width(), scaledImage.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, scaledImage.bits(), scaledImage.bytesPerLine(), VG_A_8, 0, 0, scaledImage.width(), scaledImage.height());
+                vgImageSubData(vgImage, qt_vg_imageBits(scaledImage), scaledImage.bytesPerLine(), VG_A_8, 0, 0, scaledImage.width(), scaledImage.height());
             } else if (scaledImage.format() == QImage::Format_Mono) {
                 QImage img = scaledImage.convertToFormat(QImage::Format_Indexed8);
                 vgImage = vgCreateImage(VG_A_8, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, img.bits(), img.bytesPerLine(), VG_A_8, 0, 0, img.width(), img.height());
+                vgImageSubData(vgImage, qt_vg_imageBits(img), img.bytesPerLine(), VG_A_8, 0, 0, img.width(), img.height());
             } else {
                 QImage img = scaledImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
                 vgImage = vgCreateImage(VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, img.bits(), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
+                vgImageSubData(vgImage, qt_vg_imageBits(img), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
             }
         }
         origin[0] = -metrics.x.toReal() + 0.5f;
@@ -3333,6 +3342,7 @@ void QVGPaintEngine::endNativePainting()
     d->brushType = (VGPaintType)0;
     d->clearColor = QColor();
     d->fillPaint = d->brushPaint;
+    d->scissorDirty = true;
     restoreState(QPaintEngine::AllDirty);
     d->dirty = dirty;
     d->rawVG = false;
@@ -3640,7 +3650,7 @@ void QVGCompositionHelper::drawCursorPixmap
         if (vgImage == VG_INVALID_HANDLE)
             return;
         vgImageSubData
-            (vgImage, img.bits() + img.bytesPerLine() * (img.height() - 1),
+            (vgImage, qt_vg_imageBits(img) + img.bytesPerLine() * (img.height() - 1),
              -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
              img.width(), img.height());
 
@@ -3666,15 +3676,17 @@ void QVGCompositionHelper::setScissor(const QRegion& region)
 
     vgSetiv(VG_SCISSOR_RECTS, count * 4, params.data());
     vgSeti(VG_SCISSORING, VG_TRUE);
+    d->scissorDirty = false;
     d->scissorActive = true;
     d->scissorRegion = region;
 }
 
 void QVGCompositionHelper::clearScissor()
 {
-    if (d->scissorActive) {
+    if (d->scissorActive || d->scissorDirty) {
         vgSeti(VG_SCISSORING, VG_FALSE);
         d->scissorActive = false;
+        d->scissorDirty = false;
     }
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,9 +42,21 @@
 // IMPORTANT!!!! If you want to add testdata to this file,
 // always add it to the end in order to not change the linenumbers of translations!!!
 
+#define QTCORE <QtCore>
+#include QTCORE // Hidden from lupdate, but compiles
 
-void func1() {
-    QApplication::tr("Hello world");
-}
+class A: public QObject {
+    Q_OBJECT
+    void foo()
+    {
+        // number Heuristics
+        tr("version 2.0 now");
 
+        // same text match
+        tr("this is the matched same text");
+
+        // failed same text
+        tr("this is the non-matched same text");
+    }
+};
 

@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_BACKEND_H
 
 #include "ancestormovemonitor.h"
+#include "effectfactory.h"
 
 #include <Phonon/MediaSource>
 #include <Phonon/BackendInterface>
@@ -53,6 +54,7 @@ Q_SIGNALS:
 
 private:
     QScopedPointer<AncestorMoveMonitor> m_ancestorMoveMonitor;
+    QScopedPointer<EffectFactory>       m_effectFactory;
 
 };
 }

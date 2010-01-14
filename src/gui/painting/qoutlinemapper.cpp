@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -225,9 +225,10 @@ void QOutlineMapper::endOutline()
     controlPointRect = boundingRect(elements, element_count);
 
 #ifdef QT_DEBUG_CONVERT
-    printf(" - control point rect (%.2f, %.2f) %.2f x %.2f\n",
+    printf(" - control point rect (%.2f, %.2f) %.2f x %.2f, clip=(%d,%d, %dx%d)\n",
            controlPointRect.x(), controlPointRect.y(),
-           controlPointRect.width(), controlPointRect.height());
+           controlPointRect.width(), controlPointRect.height(),
+           m_clip_rect.x(), m_clip_rect.y(), m_clip_rect.width(), m_clip_rect.height());
 #endif
 
 
@@ -235,7 +236,9 @@ void QOutlineMapper::endOutline()
     const bool do_clip = (controlPointRect.left() < -QT_RASTER_COORD_LIMIT
                           || controlPointRect.right() > QT_RASTER_COORD_LIMIT
                           || controlPointRect.top() < -QT_RASTER_COORD_LIMIT
-                          || controlPointRect.bottom() > QT_RASTER_COORD_LIMIT);
+                          || controlPointRect.bottom() > QT_RASTER_COORD_LIMIT
+                          || controlPointRect.width() > QT_RASTER_COORD_LIMIT
+                          || controlPointRect.height() > QT_RASTER_COORD_LIMIT);
 
     if (do_clip) {
         clipElements(elements, elementTypes(), element_count);

@@ -1,7 +1,7 @@
 #!/bin/sh
 #############################################################################
 ##
-## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
@@ -2257,7 +2257,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
         mkdir -p "$outpath/bin"
         echo "#!/bin/sh" >"$outpath/bin/syncqt"
         echo "QTDIR=\"$relpath\"; export QTDIR" >>"$outpath/bin/syncqt"
-        echo "perl \"$relpath/bin/syncqt\" -outdir \"$outpath\" $*" >>"$outpath/bin/syncqt"
+        echo "perl \"$relpath/bin/syncqt\" -outdir \"$outpath\" \"\$@\"" >>"$outpath/bin/syncqt"
         chmod 755 "$outpath/bin/syncqt"
     fi
 
@@ -5107,7 +5107,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x Common Lite Profile functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " QMAKE_INCDIR_OPENGL_ES1CL, QMAKE_LIBDIR_OPENGL_ES1CL and QMAKE_LIBS_OPENGL_ES1CL in"
             echo " ${XQMAKESPEC}."
             exit 1
         fi
@@ -5117,7 +5117,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " QMAKE_INCDIR_OPENGL_ES1, QMAKE_LIBDIR_OPENGL_ES1 and QMAKE_LIBS_OPENGL_ES1 in"
             echo " ${XQMAKESPEC}."
             exit 1
         fi
@@ -5127,7 +5127,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL ES 2.0 functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " QMAKE_INCDIR_OPENGL_ES2, QMAKE_LIBDIR_OPENGL_ES2 and QMAKE_LIBS_OPENGL_ES2 in"
             echo " ${XQMAKESPEC}."
             exit 1
         fi

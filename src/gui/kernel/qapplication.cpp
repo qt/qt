@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -177,6 +177,7 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
     directPainters = 0;
 #endif
 
+    gestureManager = 0;
     gestureWidget = 0;
 
     if (!self)
@@ -3632,7 +3633,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     }
 
     // walk through parents and check for gestures
-    if (qt_gestureManager) {
+    if (d->gestureManager) {
         switch (e->type()) {
         case QEvent::Paint:
         case QEvent::MetaCall:
@@ -3664,13 +3665,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             break;
         default:
             if (receiver->isWidgetType()) {
-                if (qt_gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
+                if (d->gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
                     return true;
             } else {
                 // a special case for events that go to QGesture objects.
                 // We pass the object to the gesture manager and it'll figure
                 // out if it's QGesture or not.
-                if (qt_gestureManager->filterEvent(receiver, e))
+                if (d->gestureManager->filterEvent(receiver, e))
                     return true;
             }
         }
@@ -5230,6 +5231,8 @@ QInputContext *QApplication::inputContext() const
 {
     Q_D(const QApplication);
     Q_UNUSED(d);// only static members being used.
+    if (QApplicationPrivate::is_app_closing)
+        return d->inputContext;
 #ifdef Q_WS_X11
     if (!X11)
         return 0;
@@ -5674,6 +5677,14 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
                                             const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
     QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints);
+}
+
+QGestureManager* QGestureManager::instance()
+{
+    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+    if (!qAppPriv->gestureManager)
+        qAppPriv->gestureManager = new QGestureManager(qApp);
+    return qAppPriv->gestureManager;
 }
 
 QT_END_NAMESPACE
