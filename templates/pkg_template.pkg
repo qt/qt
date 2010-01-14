@@ -19,5 +19,7 @@
  
 ; Executable and default resource files
 "MyApp.exe"    - "!:\sys\bin\MyApp.exe"
+"QtCore.dll"   - "!:\sys\bin\QtCore.dll"
+"QtGui.dll"    - "!:\sys\bin\QtGui.dll"
+; Currently you need to get this from a Windows build.
 "MyApp.rsc"    - "!:\resource\apps\MyApp.rsc"
-"QtCore.dll"   - "!:\resource\apps\QtCore.dll"
