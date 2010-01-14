@@ -160,7 +160,7 @@ void AudioTest::deviceChanged(int idx)
     for(int i = 0; i < chz.size(); ++i)
         channelsBox->addItem(QString("%1").arg(chz.at(i)));
     if(chz.size())
-        settings.setChannelCount(chz.at(0));
+        settings.setChannels(chz.at(0));
 
     codecsBox->clear();
     QStringList codecz = deviceInfo.supportedCodecs();
@@ -222,7 +222,7 @@ void AudioTest::freqChanged(int idx)
 
 void AudioTest::channelChanged(int idx)
 {
-    settings.setChannelCount(channelsBox->itemText(idx).toInt());
+    settings.setChannels(channelsBox->itemText(idx).toInt());
 }
 
 void AudioTest::codecChanged(int idx)

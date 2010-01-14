@@ -169,8 +169,8 @@ void tst_QAudioDeviceInfo::isformat()
 {
     if(available) {
         QAudioFormat     format;
-        format.setSampleRate(44100);
-        format.setChannelCount(2);
+        format.setFrequency(44100);
+        format.setChannels(2);
         format.setSampleType(QAudioFormat::SignedInt);
         format.setByteOrder(QAudioFormat::LittleEndian);
         format.setSampleSize(16);

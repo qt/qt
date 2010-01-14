@@ -263,15 +263,6 @@ int QAudioFormat::frequency() const
    Sets the channel count to \a channels.
 */
 
-void QAudioFormat::setChannelCount(int channels)
-{
-    d->channels = channels;
-}
-
-/*!
-   \internal
-*/
-
 void QAudioFormat::setChannels(int channels)
 {
     d->channels = channels;

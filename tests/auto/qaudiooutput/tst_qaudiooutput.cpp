@@ -71,8 +71,8 @@ private:
 
 void tst_QAudioOutput::initTestCase()
 {
-    format.setSampleRate(8000);
-    format.setChannelCount(1);
+    format.setFrequency(8000);
+    format.setChannels(1);
     format.setSampleSize(8);
     format.setCodec("audio/pcm");
     format.setByteOrder(QAudioFormat::LittleEndian);
