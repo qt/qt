@@ -89,8 +89,8 @@ void tst_qmlmetaproperty::lookup_data()
 {
     QTest::addColumn<QString>("file");
 
-    QTest::newRow("Simple Object") << "object.txt";
-    QTest::newRow("Synthesized Object") << "synthesized_object.txt";
+    QTest::newRow("Simple Object") << "data/object.qml";
+    QTest::newRow("Synthesized Object") << "data/synthesized_object.qml";
 }
 
 void tst_qmlmetaproperty::lookup()

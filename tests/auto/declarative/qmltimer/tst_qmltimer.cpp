@@ -91,7 +91,8 @@ tst_qmltimer::tst_qmltimer()
 void tst_qmltimer::notRepeating()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 100; running: true }"), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; running: true }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
     QVERIFY(timer->isRunning());
@@ -111,7 +112,8 @@ void tst_qmltimer::notRepeating()
 void tst_qmltimer::notRepeatingStart()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 100 }"), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100 }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
     QVERIFY(!timer->isRunning());
@@ -135,7 +137,8 @@ void tst_qmltimer::notRepeatingStart()
 void tst_qmltimer::repeat()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 100; repeat: true; running: true }"), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; repeat: true; running: true }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -164,7 +167,8 @@ void tst_qmltimer::repeat()
 void tst_qmltimer::triggeredOnStart()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 100; running: true; triggeredOnStart: true }"), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; running: true; triggeredOnStart: true }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
     QVERIFY(timer->triggeredOnStart());
@@ -186,7 +190,8 @@ void tst_qmltimer::triggeredOnStart()
 void tst_qmltimer::triggeredOnStartRepeat()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 100; running: true; triggeredOnStart: true; repeat: true }"), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; running: true; triggeredOnStart: true; repeat: true }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -208,7 +213,8 @@ void tst_qmltimer::triggeredOnStartRepeat()
 void tst_qmltimer::noTriggerIfNotRunning()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QByteArray(
+    QmlComponent component(&engine);
+    component.setData(QByteArray(
         "import Qt 4.6\n"
         "Item { property bool ok: true\n"
             "Timer { id: t1; interval: 100; repeat: true; running: true; onTriggered: if (!running) ok=false }"
@@ -226,7 +232,8 @@ void tst_qmltimer::noTriggerIfNotRunning()
 void tst_qmltimer::changeDuration()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 200; repeat: true; running: true }"), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 200; repeat: true; running: true }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -249,7 +256,8 @@ void tst_qmltimer::changeDuration()
 void tst_qmltimer::restart()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 500; repeat: true; running: true }"), QUrl("file://"));
+    QmlComponent component(&engine);
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 500; repeat: true; running: true }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
 

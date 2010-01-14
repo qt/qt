@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,8 @@ private slots:
     void sizeConstraints();
     void setGeometry();
     void setStyleShouldChangeSpacing();
+
+    void taskQTBUG_7103_minMaxWidthNotRespected();
 };
 
 class CustomLayoutStyle : public QWindowsStyle
@@ -246,6 +248,31 @@ void tst_QBoxLayout::setStyleShouldChangeSpacing()
     delete style2;
 }
 
+void tst_QBoxLayout::taskQTBUG_7103_minMaxWidthNotRespected()
+{
+    QLabel *label = new QLabel("Qt uses standard C++, but makes extensive use of the C pre-processor to enrich the language. Qt can also be used in several other programming languages via language bindings. It runs on all major platforms, and has extensive internationalization support. Non-GUI features include SQL database access, XML parsing, thread management, network support and a unified cross-platform API for file handling.");
+    label->setWordWrap(true);
+    label->setFixedWidth(200);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(label);
+    layout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+
+    QWidget widget;
+    widget.setLayout(layout);
+    widget.show();
+    QTest::qWaitForWindowShown(&widget);
+
+    int height = label->height();
+
+    QRect g = widget.geometry();
+    g.setWidth(600);
+    widget.setGeometry(g);
+
+    QTest::qWait(50);
+
+    QCOMPARE(label->height(), height);
+}
 
 QTEST_MAIN(tst_QBoxLayout)
 #include "tst_qboxlayout.moc"

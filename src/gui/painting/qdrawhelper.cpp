@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1364,7 +1364,10 @@ static void QT_FASTCALL comp_func_SourceOver(uint *dest, const uint *src, int le
         for (int i = 0; i < length; ++i) {
             PRELOAD_COND2(dest, src)
             uint s = src[i];
-            dest[i] = s + BYTE_MUL(dest[i], qAlpha(~s));
+            if (s >= 0xff000000)
+                dest[i] = s;
+            else if (s != 0)
+                dest[i] = s + BYTE_MUL(dest[i], qAlpha(~s));
         }
     } else {
         for (int i = 0; i < length; ++i) {

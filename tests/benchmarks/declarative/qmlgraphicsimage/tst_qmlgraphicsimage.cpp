@@ -59,11 +59,6 @@ private:
     QmlEngine engine;
 };
 
-inline QUrl TEST_FILE(const QString &filename)
-{
-    return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
-}
-
 void tst_qmlgraphicsimage::qmlgraphicsimage()
 {
     int x = 0;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -475,8 +475,10 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     QRasterPaintEngineState *s = state();
     ensureOutlineMapper();
     d->outlineMapper->m_clip_rect = d->deviceRect.adjusted(-10, -10, 10, 10);
+
+    // This is the upp
     QRect bounds(-QT_RASTER_COORD_LIMIT, -QT_RASTER_COORD_LIMIT,
-                 2*QT_RASTER_COORD_LIMIT, 2*QT_RASTER_COORD_LIMIT);
+                 QT_RASTER_COORD_LIMIT*2 - 1, QT_RASTER_COORD_LIMIT * 2 - 1);
     d->outlineMapper->m_clip_rect = bounds.intersected(d->outlineMapper->m_clip_rect);
 
 

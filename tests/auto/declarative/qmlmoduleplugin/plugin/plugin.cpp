@@ -68,6 +68,11 @@ class MyPlugin : public QmlModulePlugin
 {
     Q_OBJECT
 public:
+    MyPlugin()
+    {
+        qWarning("plugin created");
+    }
+
     QStringList keys() const
     {
         return QStringList() << QLatin1String("com.nokia.AutoTestQmlPluginType");

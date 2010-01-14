@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -317,6 +317,18 @@ void Launcher::handleResult(const TrkResult &result)
         case TrkNotifyStopped: { // Notified Stopped
             logMessage(prefix + "NOTE: STOPPED  " + str);
             // 90 01   78 6a 40 40   00 00 07 23   00 00 07 24  00 00
+            QString reason;
+            if (result.data.size() >= 14) {
+                uint pc = extractInt(result.data.mid(0,4).constData());
+                uint pid = extractInt(result.data.mid(4,4).constData());
+                uint tid = extractInt(result.data.mid(8,4).constData());
+                ushort len = extractShort(result.data.mid(12,2).constData());
+                if(len > 0)
+                    reason = result.data.mid(14, len);
+                emit(stopped(pc, pid, tid, reason));
+            } else {
+                emit(stopped(0, 0, 0, reason));
+            }
             //const char *data = result.data.data();
 //            uint addr = extractInt(data); //code address: 4 bytes; code base address for the library
 //            uint pid = extractInt(data + 4); // ProcessID: 4 bytes;
@@ -691,5 +703,13 @@ void Launcher::startInferiorIfNeeded()
         appendString(&ba, ba2, TargetByteOrder);
     }
     d->m_device->sendTrkMessage(TrkCreateItem, TrkCallback(this, &Launcher::handleCreateProcess), ba); // Create Item
+}
+
+void Launcher::resume(uint pid, uint tid)
+{
+    QByteArray ba;
+    appendInt(&ba, pid, BigEndian);
+    appendInt(&ba, tid, BigEndian);
+    d->m_device->sendTrkMessage(TrkContinue, TrkCallback(), ba, "CONTINUE");
 }
 } // namespace trk

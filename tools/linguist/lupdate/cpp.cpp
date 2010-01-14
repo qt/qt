@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1732,7 +1732,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         plural = true;
                     }
                 }
-                if (!pendingContext.isEmpty()) {
+                if (!pendingContext.isEmpty() && !prefix.startsWith(strColons)) {
                     QStringList unresolved;
                     if (!fullyQualify(namespaces, pendingContext, true, &functionContext, &unresolved)) {
                         functionContextUnresolved = unresolved.join(strColons);

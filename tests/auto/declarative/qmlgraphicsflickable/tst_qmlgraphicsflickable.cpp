@@ -86,7 +86,7 @@ void tst_qmlgraphicsflickable::create()
     QCOMPARE(obj->isInteractive(), true);
     QCOMPARE(obj->overShoot(), true);
     QCOMPARE(obj->pressDelay(), 0);
-    QCOMPARE(obj->maximumFlickVelocity(), 5000.);
+    QCOMPARE(obj->maximumFlickVelocity(), 2000.);
 
     delete obj;
 }

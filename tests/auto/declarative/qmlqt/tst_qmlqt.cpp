@@ -254,7 +254,7 @@ void tst_qmlqt::tint()
 
     QCOMPARE(qvariant_cast<QColor>(object->property("test1")), QColor::fromRgbF(0, 0, 1));
     QCOMPARE(qvariant_cast<QColor>(object->property("test2")), QColor::fromRgbF(1, 0, 0));
-    // Fails due to QT-2424
+    QEXPECT_FAIL("", "QT-2424",Continue);
     QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor::fromRgbF(1, 0, 0)); 
     QCOMPARE(qvariant_cast<QColor>(object->property("test4")), QColor());
     QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor());

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,81 +41,149 @@
 
 #include <QDebug>
 #include <QCoreApplication>
+#include <QObject>
 #include "trksignalhandler.h"
+
+class TrkSignalHandlerPrivate
+{
+    friend class TrkSignalHandler;
+public:
+    TrkSignalHandlerPrivate();
+    ~TrkSignalHandlerPrivate();
+private:
+    QTextStream out;
+    QTextStream err;
+    int loglevel;
+};
 
 void TrkSignalHandler::copyingStarted()
 {
-    qDebug() << "Copying...\n";
+    if(d->loglevel > 0)
+        d->out << "Copying..." << endl;
 }
 
 void TrkSignalHandler::canNotConnect(const QString &errorMessage)
 {
-    qWarning() << "Cannot Connect - " << errorMessage;
+    d->err << "Cannot Connect - " << errorMessage << endl;
 }
 
 void TrkSignalHandler::canNotCreateFile(const QString &filename, const QString &errorMessage)
 {
-    qWarning() << "Cannot create file (" << filename << ") - " << errorMessage << "\n";
+    d->err << "Cannot create file (" << filename << ") - " << errorMessage << endl;
 }
 
 void TrkSignalHandler::canNotWriteFile(const QString &filename, const QString &errorMessage)
 {
-    qWarning() << "Cannot write file (" << filename << ") - " << errorMessage << "\n";
+    d->err << "Cannot write file (" << filename << ") - " << errorMessage << endl;
 }
 
 void TrkSignalHandler::canNotCloseFile(const QString &filename, const QString &errorMessage)
 {
-    qWarning() << "Cannot close file (" << filename << ") - " << errorMessage << "\n";
+    d->err << "Cannot close file (" << filename << ") - " << errorMessage << endl;
 }
 
 void TrkSignalHandler::installingStarted()
 {
-    qDebug() << "Installing...\n";
+    if(d->loglevel > 0)
+        d->out << "Installing..." << endl;
 }
 
 void TrkSignalHandler::canNotInstall(const QString &packageFilename, const QString &errorMessage)
 {
-    qWarning() << "Cannot install file (" << packageFilename << ") - " << errorMessage << "\n";
+    d->err << "Cannot install file (" << packageFilename << ") - " << errorMessage << endl;
 }
 
 void TrkSignalHandler::installingFinished()
 {
-    qDebug() << "Installing finished\n";
+    if(d->loglevel > 0)
+        d->out << "Installing finished" << endl;
 }
 
 void TrkSignalHandler::startingApplication()
 {
-    qDebug() << "Starting app...\n";
+    if(d->loglevel > 0)
+        d->out << "Starting app..." << endl;
 }
 
 void TrkSignalHandler::applicationRunning(uint pid)
 {
-    qDebug() << "Running...\n";
+    if(d->loglevel > 0)
+        d->out << "Running..." << endl;
 }
 
 void TrkSignalHandler::canNotRun(const QString &errorMessage)
 {
-    qWarning() << "Cannot run - " << errorMessage << "\n";
+    d->err << "Cannot run - " << errorMessage << endl;
 }
 
 void TrkSignalHandler::finished()
 {
-    qDebug() << "Done.\n";
+    if(d->loglevel > 0)
+        d->out << "Done." << endl;
     QCoreApplication::quit();
 }
 
 void TrkSignalHandler::applicationOutputReceived(const QString &output)
 {
-    qDebug() << "> " << output;
+    d->out << output;
 }
 
 void TrkSignalHandler::copyProgress(int percent)
 {
-    qDebug() << percent << "%";
+    if(d->loglevel > 0) {
+        d->out << percent << "% ";
+        d->out.flush();
+        if(percent==100)
+            d->out << endl;
+    }
 }
 
 void TrkSignalHandler::stateChanged(int state)
 {
-    qDebug() << "State" << state;
+    if(d->loglevel > 1)
+        d->out << "State" << state << endl;
 }
 
+void TrkSignalHandler::setLogLevel(int level)
+{
+    d->loglevel = level;
+}
+
+void TrkSignalHandler::stopped(uint pc, uint pid, uint tid, const QString& reason)
+{
+    d->err << "STOPPED: pc=" << hex << pc << " pid=" << pid
+           << " tid=" << tid << dec << " - " << reason << endl;
+    // if it was a breakpoint, then we could continue with "emit resume(pid, tid);"
+    // since we have set no breakpoints, it will be a just in time debug of a panic / exception
+    emit terminate();
+}
+
+void TrkSignalHandler::timeout()
+{
+    d->err << "FAILED: stopping test due to timeout" << endl;
+    emit terminate();
+}
+
+TrkSignalHandlerPrivate::TrkSignalHandlerPrivate() :
+        out(stdout),
+        err(stderr),
+        loglevel(0)
+{
+
+}
+
+TrkSignalHandlerPrivate::~TrkSignalHandlerPrivate()
+{
+    out.flush();
+    err.flush();
+}
+
+TrkSignalHandler::TrkSignalHandler()
+{
+    d = new TrkSignalHandlerPrivate();
+}
+
+TrkSignalHandler::~TrkSignalHandler()
+{
+    delete d;
+}

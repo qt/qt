@@ -8,6 +8,7 @@ SUBDIRS = containers-associative \
         qhostinfo \
 	qpainter \
 	qtestlib-simple	events \
+        qtext \
 	qiodevice \
 	qpixmap \
 	blendbench \
@@ -37,7 +38,9 @@ SUBDIRS = containers-associative \
 	qstringbuilder \
 	qstylesheetstyle \
 	qsvgrenderer \
+        qtcpserver \
 	qtableview \
 	qthreadstorage
 
 contains(QT_CONFIG, opengl): SUBDIRS += opengl
+contains(QT_CONFIG, declarative): SUBDIRS += declarative

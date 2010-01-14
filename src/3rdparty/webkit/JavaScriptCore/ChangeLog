@@ -1,3 +1,44 @@
+2010-01-07  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        RVCT compiler with "-Otime -O3" optimization tries to optimize out 
+        inline new'ed pointers that are passed as arguments.
+        Proposed patch assigns new'ed pointer explicitly outside function call.
+
+        * API/JSClassRef.cpp:
+        (OpaqueJSClass::OpaqueJSClass):
+        (OpaqueJSClassContextData::OpaqueJSClassContextData):
+
+2010-01-07  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        Added time-based optimization and increased optimization level to O3,
+        conditionally for COMPILER(RVCT), 
+        for increasing performance of JavaScript execution.
+        (Default settings are Ospace and O2)
+
+        * runtime/Structure.h:
+
+2009-11-19  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Build fix for 32-bit Sparc machines: these machines are big-endian.
+
+        * wtf/Platform.h:
+
+2009-12-08  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Darin Adler.
+
+        Make WebKit build correctly on FreeBSD, IA64, and Alpha.
+        Based on work by Petr Salinger <Petr.Salinger@seznam.cz>,
+        and Colin Watson <cjwatson@ubuntu.com>.
+
+        * wtf/Platform.h:
+
 2009-12-18  Yongjun Zhang  <yongjun.zhang@nokia.com>
 
         Reviewed by Simon Hausmann.

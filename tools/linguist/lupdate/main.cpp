@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -237,17 +237,11 @@ int main(int argc, char **argv)
         Verbose | // verbose is on by default starting with Qt 4.2
         HeuristicSameText | HeuristicSimilarText | HeuristicNumber;
     int numFiles = 0;
-    bool standardSyntax = true;
     bool metTsFlag = false;
     bool recursiveScan = true;
 
     QString extensions = m_defaultExtensions;
     QSet<QString> extensionsNameFilters;
-
-    for (int  i = 1; i < argc; ++i) {
-        if (args.at(i) == QLatin1String("-ts"))
-            standardSyntax = false;
-    }
 
     for (int i = 1; i < argc; ++i) {
         QString arg = args.at(i);
@@ -374,8 +368,6 @@ int main(int argc, char **argv)
         }
 
         numFiles++;
-
-        QString fullText;
 
         codecForTr.clear();
         codecForSource.clear();

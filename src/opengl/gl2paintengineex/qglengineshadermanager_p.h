@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -344,6 +344,7 @@ public:
 */
 
     QGLEngineSharedShaders(const QGLContext *context);
+    ~QGLEngineSharedShaders();
 
     QGLShaderProgram *simpleProgram() { return simpleShaderProg; }
     QGLShaderProgram *blitProgram() { return blitShaderProg; }
@@ -467,6 +468,9 @@ public:
 
     void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
+
+    void useSimpleProgram();
+    void useBlitProgram();
 
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers

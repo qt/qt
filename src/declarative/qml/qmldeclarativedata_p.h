@@ -63,7 +63,7 @@ class QmlCompiledData;
 class QmlAbstractBinding;
 class QmlContext;
 class QmlPropertyCache;
-class QmlDeclarativeData : public QDeclarativeData
+class Q_AUTOTEST_EXPORT QmlDeclarativeData : public QDeclarativeData
 {
 public:
     QmlDeclarativeData(QmlContext *ctxt = 0)

@@ -3,7 +3,6 @@ SOURCES  += ../tst_qudpsocket.cpp
 QT = core network
 
 MOC_DIR=tmp
-DEFINES += TEST_QNETWORK_PROXY
 
 win32 {
   CONFIG(debug, debug|release) {

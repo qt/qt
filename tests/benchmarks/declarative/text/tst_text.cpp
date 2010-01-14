@@ -168,7 +168,7 @@ void tst_text::paintDocToPixmap()
         QPixmap img(size);
         img.fill(Qt::transparent);
         QPainter p(&img);
-        doc->drawContents(&p/*, QRectF(QPointF(0, 0), QSizeF(size))*/);
+        doc->drawContents(&p);
     }
 }
 
@@ -185,7 +185,7 @@ void tst_text::paintDocToPixmap_painterFill()
         p.setCompositionMode(QPainter::CompositionMode_Source);
         p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
         p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        doc->drawContents(&p/*, QRectF(QPointF(0, 0), QSizeF(size))*/);
+        doc->drawContents(&p);
     }
 }
 

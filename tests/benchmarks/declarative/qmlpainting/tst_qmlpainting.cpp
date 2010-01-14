@@ -59,21 +59,25 @@ private slots:
     void drawRoundedRect();
     void drawScaledRoundedRect();
     void drawTransformedRoundedRect();
+
     void drawAntialiasedRoundedRect();
     void drawScaledAntialiasedRoundedRect_data();
     void drawScaledAntialiasedRoundedRect();
     void drawTransformedAntialiasedRoundedRect_data();
     void drawTransformedAntialiasedRoundedRect();
+
     void drawImageRoundedRect();
     void drawScaledImageRoundedRect_data();
     void drawScaledImageRoundedRect();
     void drawTransformedImageRoundedRect_data();
     void drawTransformedImageRoundedRect();
+
     void drawScaleGridRoundedRect();
     void drawScaledScaleGridRoundedRect_data();
     void drawScaledScaleGridRoundedRect();
     void drawTransformedScaleGridRoundedRect_data();
     void drawTransformedScaleGridRoundedRect();
+
     void drawTransformedTransparentImage_data();
     void drawTransformedTransparentImage();
     void drawTransformedSemiTransparentImage_data();
@@ -131,7 +135,7 @@ void tst_QmlPainting::drawRoundedRect()
     QBENCHMARK {
         p.drawRoundedRect(QRectF(.5, .5, 80, 80), 10, 10);
     }
-    surface.save("regular.png");
+    //surface.save("regular.png");
 }
 
 void tst_QmlPainting::drawScaledRoundedRect()
@@ -147,7 +151,7 @@ void tst_QmlPainting::drawScaledRoundedRect()
     QBENCHMARK {
         p.drawRoundedRect(10, 10, 80, 80, 10, 10);
     }
-    surface.save("scaled.png");
+    //surface.save("scaled.png");
 }
 
 void tst_QmlPainting::drawTransformedRoundedRect()
@@ -163,7 +167,7 @@ void tst_QmlPainting::drawTransformedRoundedRect()
         p.setWorldTransform(QTransform(0.956957, 0, 0.000704124, 0, 1, 0, 16.141, 0, 0.735953));
         p.drawRoundedRect(100, 100, 80, 80, 10, 10);
     }
-    surface.save("transformed.png");
+    //surface.save("transformed.png");
 }
 
 void tst_QmlPainting::drawAntialiasedRoundedRect()
@@ -179,7 +183,7 @@ void tst_QmlPainting::drawAntialiasedRoundedRect()
     QBENCHMARK {
         p.drawRoundedRect(QRectF(.5, .5, 80, 80), 10, 10);
     }
-    surface.save("aar.png");
+    //surface.save("aar.png");
 }
 
 void tst_QmlPainting::drawScaledAntialiasedRoundedRect_data()
@@ -206,7 +210,7 @@ void tst_QmlPainting::drawScaledAntialiasedRoundedRect()
     QBENCHMARK {
         p.drawRoundedRect(10, 10, 80, 80, 10, 10);
     }
-    surface.save("aas.png");
+    //surface.save("aas.png");
 }
 
 void tst_QmlPainting::drawTransformedAntialiasedRoundedRect_data()
@@ -233,7 +237,7 @@ void tst_QmlPainting::drawTransformedAntialiasedRoundedRect()
         p.setWorldTransform(transform);
         p.drawRoundedRect(100, 100, 80, 80, 10, 10);
     }
-    surface.save("aat.png");
+    //surface.save("aat.png");
 }
 
 void tst_QmlPainting::drawImageRoundedRect()
@@ -256,7 +260,7 @@ void tst_QmlPainting::drawImageRoundedRect()
     QBENCHMARK {
         p.drawImage(0,0, rectImage);
     }
-    surface.save("ri.png");
+    //surface.save("ri.png");
 }
 
 void tst_QmlPainting::drawScaledImageRoundedRect_data()
@@ -290,7 +294,7 @@ void tst_QmlPainting::drawScaledImageRoundedRect()
     QBENCHMARK {
         p.drawImage(0,0, rectImage);
     }
-    surface.save("si.png");
+    //surface.save("si.png");
 }
 
 void tst_QmlPainting::drawTransformedImageRoundedRect_data()
@@ -324,7 +328,7 @@ void tst_QmlPainting::drawTransformedImageRoundedRect()
         p.setWorldTransform(QTransform(0.956957, 0, 0.000704124, 0, 1, 0, 16.141, 0, 0.735953));
         p.drawImage(100,100, rectImage);
     }
-    surface.save("ti.png");
+    //surface.save("ti.png");
 }
 
 //code from QmlGraphicsRectangle for drawing rounded rects
@@ -352,28 +356,8 @@ void tst_QmlPainting::drawScaleGridRoundedRect()
 
     QBENCHMARK {
         const int pw = 2;
-        //int offset = int(radius+1.5+pw);
         int width = 80;
         int height = 80;
-
-        /*int w = width+pw;
-        int h = height+pw;
-        int xOffset = offset;
-        int xSide = xOffset * 2;
-        bool xMiddles=true;
-        if (xSide > w) {
-            xMiddles=false;
-            xOffset = w/2 + 1;
-            xSide = xOffset * 2;
-        }
-        int yOffset = offset;
-        int ySide = yOffset * 2;
-        bool yMiddles=true;
-        if (ySide > h) {
-            yMiddles = false;
-            yOffset = h/2 + 1;
-            ySide = yOffset * 2;
-        }*/
 
         int xOffset = (rectPixmap.width()-1)/2;
         int yOffset = (rectPixmap.height()-1)/2;
@@ -385,7 +369,7 @@ void tst_QmlPainting::drawScaleGridRoundedRect()
         //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
         qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width+pw, height+pw), margins, rectPixmap, rectPixmap.rect(), margins, rules);
     }
-    surface.save("rsg.png");
+    //surface.save("rsg.png");
 }
 
 void tst_QmlPainting::drawScaledScaleGridRoundedRect_data()
@@ -429,28 +413,8 @@ void tst_QmlPainting::drawScaledScaleGridRoundedRect()
 
     QBENCHMARK {
         const int pw = 2;
-        //int offset = int(radius+1.5+pw);
         int width = 80;
         int height = 80;
-
-        /*int w = width+pw;
-        int h = height+pw;
-        int xOffset = offset;
-        int xSide = xOffset * 2;
-        bool xMiddles=true;
-        if (xSide > w) {
-            xMiddles=false;
-            xOffset = w/2 + 1;
-            xSide = xOffset * 2;
-        }
-        int yOffset = offset;
-        int ySide = yOffset * 2;
-        bool yMiddles=true;
-        if (ySide > h) {
-            yMiddles = false;
-            yOffset = h/2 + 1;
-            ySide = yOffset * 2;
-        }*/
 
         int xOffset = (rectPixmap.width()-1)/2;
         int yOffset = (rectPixmap.height()-1)/2;
@@ -462,7 +426,7 @@ void tst_QmlPainting::drawScaledScaleGridRoundedRect()
         //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
         qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width+pw, height+pw), margins, rectPixmap, rectPixmap.rect(), margins, rules);
     }
-    surface.save("ssg.png");
+    //surface.save("ssg.png");
 }
 
 void tst_QmlPainting::drawTransformedScaleGridRoundedRect_data()
@@ -511,25 +475,6 @@ void tst_QmlPainting::drawTransformedScaleGridRoundedRect()
         int width = 80;
         int height = 80;
 
-        /*int w = width+pw;
-        int h = height+pw;
-        int xOffset = offset;
-        int xSide = xOffset * 2;
-        bool xMiddles=true;
-        if (xSide > w) {
-            xMiddles=false;
-            xOffset = w/2 + 1;
-            xSide = xOffset * 2;
-        }
-        int yOffset = offset;
-        int ySide = yOffset * 2;
-        bool yMiddles=true;
-        if (ySide > h) {
-            yMiddles = false;
-            yOffset = h/2 + 1;
-            ySide = yOffset * 2;
-        }*/
-
         int xOffset = (rectPixmap.width()-1)/2;
         int yOffset = (rectPixmap.height()-1)/2;
         Q_ASSERT(rectPixmap.width() == 2*xOffset + 1);
@@ -540,7 +485,7 @@ void tst_QmlPainting::drawTransformedScaleGridRoundedRect()
         //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
         qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width+pw, height+pw), margins, rectPixmap, rectPixmap.rect(), margins, rules);
     }
-    surface.save("tsg.png");
+    //surface.save("tsg.png");
 }
 
 void tst_QmlPainting::drawTransformedTransparentImage_data()

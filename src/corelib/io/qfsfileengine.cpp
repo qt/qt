@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -144,7 +144,7 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
         return path;
 #endif
     // Mac OS X 10.5.x doesn't support the realpath(X,0) extenstion we use here.
-#if defined(Q_OS_LINIX) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_LINUX) || defined(Q_OS_SYMBIAN)
     char *ret = realpath(path.toLocal8Bit().constData(), (char*)0);
     if (ret) {
         QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
