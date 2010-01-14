@@ -44,8 +44,11 @@
 #include "qmlstate_p_p.h"
 
 #include <qmlbinding.h>
+#include <qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
+
+DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
 class QmlTransitionManagerPrivate
 {
@@ -236,6 +239,15 @@ void QmlTransitionManager::transition(const QList<Action> &list,
                 action.event->execute();
         } else if (!action.event && !action.toBinding) {
             action.property.write(action.toValue);
+        }
+    }
+    if (stateChangeDebug()) {
+        foreach(const Action &action, applyList) {
+            if (action.event)
+                qWarning() << "    No transition for event:" << action.event->typeName();
+            else
+                qWarning() << "    No transition for:" << action.property.object()
+                           << action.property.name() << action.fromValue << action.toValue;
         }
     }
     if (!transition)
