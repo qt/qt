@@ -181,12 +181,12 @@ bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
     if(!format.codec().startsWith(QLatin1String("audio/pcm")))
         failed = true;
 
-    if(!failed && !(format.channelCount() == 1 || format.channelCount() == 2))
+    if(!failed && !(format.channels() == 1 || format.channels() == 2))
         failed = true;
 
     if(!failed) {
-        if(!(format.sampleRate() == 8000 || format.sampleRate() == 11025 || format.sampleRate() == 22050 ||
-	   format.sampleRate() == 44100 || format.sampleRate() == 48000 || format.sampleRate() == 96000))
+        if(!(format.frequency() == 8000 || format.frequency() == 11025 || format.frequency() == 22050 ||
+	   format.frequency() == 44100 || format.frequency() == 48000 || format.frequency() == 96000))
 	    failed = true;
     }
 

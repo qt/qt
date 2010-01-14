@@ -95,8 +95,8 @@ void tst_QAudioOutput::settings()
         // Confirm the setting we added in the init function.
         QAudioFormat f = audio->format();
 
-        QVERIFY(format.channelCount() == f.channelCount());
-        QVERIFY(format.sampleRate() == f.sampleRate());
+        QVERIFY(format.channels() == f.channels());
+        QVERIFY(format.frequency() == f.frequency());
         QVERIFY(format.sampleSize() == f.sampleSize());
         QVERIFY(format.codec() == f.codec());
         QVERIFY(format.byteOrder() == f.byteOrder());

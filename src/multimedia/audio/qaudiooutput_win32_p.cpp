@@ -213,7 +213,7 @@ bool QAudioOutputPrivate::open()
 #endif
     if(buffer_size == 0) {
         // Default buffer size, 200ms, default period size is 40ms
-        buffer_size = settings.sampleRate()*settings.channelCount()*(settings.sampleSize()/8)*0.2;
+        buffer_size = settings.frequency()*settings.channels()*(settings.sampleSize()/8)*0.2;
 	period_size = buffer_size/5;
     } else {
         period_size = buffer_size/5;
@@ -232,9 +232,9 @@ bool QAudioOutputPrivate::open()
     timeStamp.restart();
     elapsedTimeOffset = 0;
 
-    wfx.nSamplesPerSec = settings.sampleRate();
+    wfx.nSamplesPerSec = settings.frequency();
     wfx.wBitsPerSample = settings.sampleSize();
-    wfx.nChannels = settings.channelCount();
+    wfx.nChannels = settings.channels();
     wfx.cbSize = 0;
 
     wfx.wFormatTag = WAVE_FORMAT_PCM;
@@ -289,8 +289,8 @@ void QAudioOutputPrivate::close()
         return;
 
     deviceState = QAudio::StoppedState;
-    int delay = (buffer_size-bytesFree())*1000/(settings.sampleRate()
-                  *settings.channelCount()*(settings.sampleSize()/8));
+    int delay = (buffer_size-bytesFree())*1000/(settings.frequency()
+                  *settings.channels()*(settings.sampleSize()/8));
     waveOutReset(hWaveOut);
     Sleep(delay+10);
 
@@ -386,8 +386,8 @@ qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
         LeaveCriticalSection(&waveOutCriticalSection);
 #endif
         totalTimeValue += current->dwBufferLength
-            /(settings.channelCount()*(settings.sampleSize()/8))
-            *1000000/settings.sampleRate();;
+            /(settings.channels()*(settings.sampleSize()/8))
+            *1000000/settings.frequency();;
         waveCurrentBlock++;
         waveCurrentBlock %= buffer_size/period_size;
         current = &waveBlocks[waveCurrentBlock];

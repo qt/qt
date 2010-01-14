@@ -48,8 +48,8 @@ QT_BEGIN_NAMESPACE
 QDebug operator<<(QDebug dbg, const QAudioFormat& audioFormat)
 {
     dbg.nospace() << "QAudioFormat(" <<
-            audioFormat.sampleRate() << "," <<
-            audioFormat.channelCount() << "," <<
+            audioFormat.frequency() << "," <<
+            audioFormat.channels() << "," <<
             audioFormat.sampleSize()<< "," <<
             audioFormat.codec() << "," <<
             audioFormat.byteOrder() << "," <<
@@ -84,9 +84,9 @@ AudioStreamBasicDescription toAudioStreamBasicDescription(QAudioFormat const& au
     AudioStreamBasicDescription sf;
 
     sf.mFormatFlags         = kAudioFormatFlagIsPacked;
-    sf.mSampleRate          = audioFormat.sampleRate();
+    sf.mSampleRate          = audioFormat.frequency();
     sf.mFramesPerPacket     = 1;
-    sf.mChannelsPerFrame    = audioFormat.channelCount();
+    sf.mChannelsPerFrame    = audioFormat.channels();
     sf.mBitsPerChannel      = audioFormat.sampleSize();
     sf.mBytesPerFrame       = sf.mChannelsPerFrame * (sf.mBitsPerChannel / 8);
     sf.mBytesPerPacket      = sf.mFramesPerPacket * sf.mBytesPerFrame;

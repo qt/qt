@@ -78,7 +78,11 @@ void tst_QAudioFormat::checkNull()
     QVERIFY(!audioFormat1.isValid());
 
     audioFormat0.setFrequency(44100);
+<<<<<<< HEAD:tests/auto/qaudioformat/tst_qaudioformat.cpp
     audioFormat0.setChannels(2);
+=======
+    audioFormat0.setChannelCount(2);
+>>>>>>> 80d4a49... Frequency to SampleRate and channels to channelCount.:tests/auto/qaudioformat/tst_qaudioformat.cpp
     audioFormat0.setSampleSize(16);
     audioFormat0.setCodec("audio/pcm");
     audioFormat0.setSampleType(QAudioFormat::SignedInt);
@@ -88,14 +92,18 @@ void tst_QAudioFormat::checkNull()
 void tst_QAudioFormat::checkFrequency()
 {
     QAudioFormat    audioFormat;
-    audioFormat.setSampleRate(44100);
-    QVERIFY(audioFormat.sampleRate() == 44100);
+    audioFormat.setFrequency(44100);
+    QVERIFY(audioFormat.frequency() == 44100);
 }
 
 void tst_QAudioFormat::checkChannels()
 {
     QAudioFormat    audioFormat;
+<<<<<<< HEAD:tests/auto/qaudioformat/tst_qaudioformat.cpp
     audioFormat.setChannels(2);
+=======
+    audioFormat.setChannelCount(2);
+>>>>>>> 80d4a49... Frequency to SampleRate and channels to channelCount.:tests/auto/qaudioformat/tst_qaudioformat.cpp
     QVERIFY(audioFormat.channels() == 2);
 }
 
@@ -138,14 +146,22 @@ void tst_QAudioFormat::checkEquality()
 
     // on filled formats
     audioFormat0.setFrequency(8000);
+<<<<<<< HEAD:tests/auto/qaudioformat/tst_qaudioformat.cpp
     audioFormat0.setChannels(1);
+=======
+    audioFormat0.setChannelCount(1);
+>>>>>>> 80d4a49... Frequency to SampleRate and channels to channelCount.:tests/auto/qaudioformat/tst_qaudioformat.cpp
     audioFormat0.setSampleSize(8);
     audioFormat0.setCodec("audio/pcm");
     audioFormat0.setByteOrder(QAudioFormat::LittleEndian);
     audioFormat0.setSampleType(QAudioFormat::UnSignedInt);
 
     audioFormat1.setFrequency(8000);
+<<<<<<< HEAD:tests/auto/qaudioformat/tst_qaudioformat.cpp
     audioFormat1.setChannels(1);
+=======
+    audioFormat1.setChannelCount(1);
+>>>>>>> 80d4a49... Frequency to SampleRate and channels to channelCount.:tests/auto/qaudioformat/tst_qaudioformat.cpp
     audioFormat1.setSampleSize(8);
     audioFormat1.setCodec("audio/pcm");
     audioFormat1.setByteOrder(QAudioFormat::LittleEndian);
@@ -154,7 +170,7 @@ void tst_QAudioFormat::checkEquality()
     QVERIFY(audioFormat0 == audioFormat1);
     QVERIFY(!(audioFormat0 != audioFormat1));
 
-    audioFormat0.setSampleRate(44100);
+    audioFormat0.setFrequency(44100);
     QVERIFY(audioFormat0 != audioFormat1);
     QVERIFY(!(audioFormat0 == audioFormat1));
 }
@@ -165,7 +181,11 @@ void tst_QAudioFormat::checkAssignment()
     QAudioFormat    audioFormat1;
 
     audioFormat0.setFrequency(8000);
+<<<<<<< HEAD:tests/auto/qaudioformat/tst_qaudioformat.cpp
     audioFormat0.setChannels(1);
+=======
+    audioFormat0.setChannelCount(1);
+>>>>>>> 80d4a49... Frequency to SampleRate and channels to channelCount.:tests/auto/qaudioformat/tst_qaudioformat.cpp
     audioFormat0.setSampleSize(8);
     audioFormat0.setCodec("audio/pcm");
     audioFormat0.setByteOrder(QAudioFormat::LittleEndian);
