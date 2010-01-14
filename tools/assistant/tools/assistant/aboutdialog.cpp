@@ -96,9 +96,8 @@ QVariant AboutLabel::loadResource(int type, const QUrl &name)
 void AboutLabel::setSource(const QUrl &url)
 {
     TRACE_OBJ
-    if (url.isValid() 
-        && (url.scheme() == QLatin1String("http") || url.scheme() == QLatin1String("ftp") 
-            || url.scheme() == QLatin1String("mailto") || !HelpViewer::canOpenPage(url.path()))) {
+    if (url.isValid() && (!HelpViewer::isLocalUrl(url)
+        || !HelpViewer::canOpenPage(url.path()))) {
         if (!QDesktopServices::openUrl(url)) {
             QMessageBox::warning(this, tr("Warning"),
                          tr("Unable to launch external application.\n"),

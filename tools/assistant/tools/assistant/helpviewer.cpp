@@ -208,20 +208,6 @@ QWebPage *HelpPage::createWindow(QWebPage::WebWindowType)
     return newPage;
 }
 
-static bool isLocalUrl(const QUrl &url)
-{
-    TRACE_OBJ
-    const QString scheme = url.scheme();
-    if (scheme.isEmpty()
-        || scheme == QLatin1String("file")
-        || scheme == QLatin1String("qrc")
-        || scheme == QLatin1String("data")
-        || scheme == QLatin1String("qthelp")
-        || scheme == QLatin1String("about"))
-        return true;
-    return false;
-}
-
 void HelpPage::triggerAction(WebAction action, bool checked)
 {
     TRACE_OBJ
@@ -242,7 +228,7 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
     const bool closeNewTab = closeNewTabIfNeeded;
     closeNewTabIfNeeded = false;
 
-    if (isLocalUrl(url)) {
+    if (HelpViewer::isLocalUrl(url)) {
         const QString& path = url.path();
         if (!HelpViewer::canOpenPage(path)) {
             QTemporaryFile tmpTmpFile;
@@ -477,9 +463,7 @@ bool HelpViewer::launchedWithExternalApp(const QUrl &url)
 {
     TRACE_OBJ
     const bool canOpen = canOpenPage(url.path());
-    if (url.scheme() == QLatin1String("http")
-        || url.scheme() == QLatin1String("ftp")
-        || url.scheme() == QLatin1String("mailto") || !canOpen) {
+    if (!isLocalUrl(url) || !canOpen) {
         bool launched = false;
         if (!canOpen && url.scheme() == QLatin1String("qthelp")) {
             const QString& path = url.path();
@@ -643,6 +627,18 @@ bool HelpViewer::canOpenPage(const QString &url)
     TRACE_OBJ
     return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
         || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive);
+}
+
+bool HelpViewer::isLocalUrl(const QUrl &url)
+{
+    TRACE_OBJ
+    const QString scheme = url.scheme();
+    return scheme.isEmpty()
+        || scheme == QLatin1String("file")
+        || scheme == QLatin1String("qrc")
+        || scheme == QLatin1String("data")
+        || scheme == QLatin1String("qthelp")
+        || scheme == QLatin1String("about");
 }
 
 

@@ -98,6 +98,7 @@ public:
     { return textSizeMultiplier(); }
 
     static bool canOpenPage(const QString &url);
+    static bool isLocalUrl(const QUrl &url);
 
 public Q_SLOTS:
     void home();
@@ -146,6 +147,7 @@ public:
 
     bool launchedWithExternalApp(const QUrl &url);
     static bool canOpenPage(const QString &url);
+    static bool isLocalUrl(const QUrl &url);
 
 public Q_SLOTS:
     void home();
