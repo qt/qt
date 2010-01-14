@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,6 +56,7 @@
 #include "QtCore/qglobal.h"
 #include "QtCore/qatomic.h"
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/QLinkedList>
 #include "private/qtextengine_p.h"
 #include "private/qfont_p.h"
 
@@ -219,9 +220,7 @@ public:
     virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
 
     void setGlyphCache(void *key, QFontEngineGlyphCache *data);
-    void setGlyphCache(QFontEngineGlyphCache::Type key, QFontEngineGlyphCache *data);
-    QFontEngineGlyphCache *glyphCache(void *key, const QTransform &transform) const;
-    QFontEngineGlyphCache *glyphCache(QFontEngineGlyphCache::Type key, const QTransform &transform) const;
+    QFontEngineGlyphCache *glyphCache(void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const;
 
     static const uchar *getCMap(const uchar *table, uint tableSize, bool *isSymbolFont, int *cmapSize);
     static quint32 getTrueTypeGlyphIndex(const uchar *cmap, uint unicode);
@@ -254,12 +253,13 @@ protected:
     static const QVector<QRgb> &grayPalette();
 
 private:
-    /// remove old entries from the glyph cache. Helper method for the setGlyphCache ones.
-    void expireGlyphCache();
+    struct GlyphCacheEntry {
+        void *context;
+        QFontEngineGlyphCache *cache;
+        bool operator==(const GlyphCacheEntry &other) { return context == other.context && cache == other.cache; }
+    };
 
-    GlyphPointerHash m_glyphPointerHash;
-    GlyphIntHash m_glyphIntHash;
-    mutable QList<QFontEngineGlyphCache*> m_glyphCacheQueue;
+    mutable QLinkedList<GlyphCacheEntry> m_glyphCaches;
 };
 
 inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId &f2)

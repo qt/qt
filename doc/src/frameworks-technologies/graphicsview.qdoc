@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -437,13 +437,10 @@
       \section2 Animation
 
         Graphics View supports animation at several levels. You can easily
-        assemble animation paths by associating a QGraphicsItemAnimation with
-        your item. This allows timeline controlled animations that operate at
-        a steady speed on all platforms (although the frame rate may vary
-        depending on the platform's performance).  QGraphicsItemAnimation
-        allows you to create a path for an item's position, rotation, scale,
-        shear and translation. The animation can be controlled by a QSlider,
-        or more commonly by QTimeLine.
+        assemble animation by using the Animation Framework. For that you'll
+		need your items to inherit from QGraphicsObject and associate 
+		QPropertyAnimation with them. QPropertyAnimation allows to animate any 
+		QObject property.
 
         Another option is to create a custom item that inherits from QObject
         and QGraphicsItem. The item can the set up its own timers, and control
@@ -453,9 +450,6 @@
         QCanvas in Qt 3, is to \e advance the scene by calling
         QGraphicsScene::advance(), which in turn calls
         QGraphicsItem::advance().
-
-        See also the \l{Drag and Drop Robot Example}{Drag and Drop Robot}
-        example for an illustration of timeline-based animation techniques.
 
       \section2 OpenGL Rendering
 

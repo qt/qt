@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1766,6 +1766,12 @@ void QTextDocument::print(QPrinter *printer) const
     // paranoia check
     fromPage = qMax(1, fromPage);
     toPage = qMin(doc->pageCount(), toPage);
+
+    if (toPage < fromPage) {
+        // if the user entered a page range outside the actual number
+        // of printable pages, just return
+        return;
+    }
 
     if (printer->pageOrder() == QPrinter::LastPageFirst) {
         int tmp = fromPage;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,7 +71,7 @@ private:
         for(int iCodes = 0; iCodes <= 0xFF; iCodes++) {
             ulTable[iCodes] = Reflect(iCodes, 8) << 24;
             for(int iPos = 0; iPos < 8; iPos++) {
-                ulTable[iCodes] = (ulTable[iCodes] << 1)
+                ulTable[iCodes] = ((ulTable[iCodes] << 1) & 0xffffffff)
                     ^ ((ulTable[iCodes] & (1 << 31)) ? ulPolynomial : 0);
             }
 
@@ -84,7 +84,7 @@ private:
         // Swap bit 0 for bit 7, bit 1 For bit 6, etc....
         for(int iPos = 1; iPos < (cChar + 1); iPos++) {
             if(ulReflect & 1) {
-                ulValue |= (1 << (cChar - iPos));
+                ulValue |= (1ul << (cChar - iPos));
             }
             ulReflect >>= 1;
         }

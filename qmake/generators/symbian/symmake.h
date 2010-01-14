@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -96,10 +96,17 @@ protected:
     QString generateUID3();
 
     void initMmpVariables();
-    void checkOverridability(QStringList &overridableKeywords, QString &checkString);
+    void handleMmpRulesOverrides(QString &checkString,
+                                 bool &inResourceBlock,
+                                 QStringList &restrictedMmpKeywords,
+                                 const QStringList &restrictableMmpKeywords,
+                                 const QStringList &overridableMmpKeywords);
+    void appendKeywordIfMatchFound(QStringList &list,
+                                   const QStringList &keywordList,
+                                   QString &checkString);
 
     void writeHeader(QTextStream &t);
-    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension);
+    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension, const QString &iconFile);
 
     static bool removeDuplicatedStrings(QStringList& stringList);
 
@@ -141,9 +148,10 @@ protected:
 
     void writeSisTargets(QTextStream &t);
     void generateDistcleanTargets(QTextStream& t);
+    void generateExecutionTargets(QTextStream& t, const QStringList& platforms);
 
     // Subclass implements
-    virtual void writeBldInfExtensionRulesPart(QTextStream& t) = 0;
+    virtual void writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile) = 0;
     virtual void writeBldInfMkFilePart(QTextStream& t, bool addDeploymentExtension) = 0;
     virtual void writeMkFile(const QString& wrapperFileName, bool deploymentOnly) = 0;
     virtual void writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile) = 0;

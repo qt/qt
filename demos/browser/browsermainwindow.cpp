@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,8 +90,8 @@ BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
     QWidget *centralWidget = new QWidget(this);
     BookmarksModel *boomarksModel = BrowserApplication::bookmarksManager()->bookmarksModel();
     m_bookmarksToolbar = new BookmarksToolBar(boomarksModel, this);
-    connect(m_bookmarksToolbar, SIGNAL(openUrl(const QUrl&)),
-            m_tabWidget, SLOT(loadUrlInCurrentTab(const QUrl&)));
+    connect(m_bookmarksToolbar, SIGNAL(openUrl(QUrl)),
+            m_tabWidget, SLOT(loadUrlInCurrentTab(QUrl)));
     connect(m_bookmarksToolbar->toggleViewAction(), SIGNAL(toggled(bool)),
             this, SLOT(updateBookmarksToolbarActionText(bool)));
 
@@ -109,22 +109,22 @@ BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
     centralWidget->setLayout(layout);
 	setCentralWidget(centralWidget);
 
-    connect(m_tabWidget, SIGNAL(loadPage(const QString &)),
-        this, SLOT(loadPage(const QString &)));
-    connect(m_tabWidget, SIGNAL(setCurrentTitle(const QString &)),
-        this, SLOT(slotUpdateWindowTitle(const QString &)));
-    connect(m_tabWidget, SIGNAL(showStatusBarMessage(const QString&)),
-            statusBar(), SLOT(showMessage(const QString&)));
-    connect(m_tabWidget, SIGNAL(linkHovered(const QString&)),
-            statusBar(), SLOT(showMessage(const QString&)));
+    connect(m_tabWidget, SIGNAL(loadPage(QString)),
+        this, SLOT(loadPage(QString)));
+    connect(m_tabWidget, SIGNAL(setCurrentTitle(QString)),
+        this, SLOT(slotUpdateWindowTitle(QString)));
+    connect(m_tabWidget, SIGNAL(showStatusBarMessage(QString)),
+            statusBar(), SLOT(showMessage(QString)));
+    connect(m_tabWidget, SIGNAL(linkHovered(QString)),
+            statusBar(), SLOT(showMessage(QString)));
     connect(m_tabWidget, SIGNAL(loadProgress(int)),
             this, SLOT(slotLoadProgress(int)));
     connect(m_tabWidget, SIGNAL(tabsChanged()),
             m_autoSaver, SLOT(changeOccurred()));
-    connect(m_tabWidget, SIGNAL(geometryChangeRequested(const QRect &)),
-            this, SLOT(geometryChangeRequested(const QRect &)));
-    connect(m_tabWidget, SIGNAL(printRequested(QWebFrame *)),
-            this, SLOT(printRequested(QWebFrame *)));
+    connect(m_tabWidget, SIGNAL(geometryChangeRequested(QRect)),
+            this, SLOT(geometryChangeRequested(QRect)));
+    connect(m_tabWidget, SIGNAL(printRequested(QWebFrame*)),
+            this, SLOT(printRequested(QWebFrame*)));
     connect(m_tabWidget, SIGNAL(menuBarVisibilityChangeRequested(bool)),
             menuBar(), SLOT(setVisible(bool)));
     connect(m_tabWidget, SIGNAL(statusBarVisibilityChangeRequested(bool)),
@@ -369,10 +369,10 @@ void BrowserMainWindow::setupMenu()
 
     // History
     HistoryMenu *historyMenu = new HistoryMenu(this);
-    connect(historyMenu, SIGNAL(openUrl(const QUrl&)),
-            m_tabWidget, SLOT(loadUrlInCurrentTab(const QUrl&)));
-    connect(historyMenu, SIGNAL(hovered(const QString&)), this,
-            SLOT(slotUpdateStatusbar(const QString&)));
+    connect(historyMenu, SIGNAL(openUrl(QUrl)),
+            m_tabWidget, SLOT(loadUrlInCurrentTab(QUrl)));
+    connect(historyMenu, SIGNAL(hovered(QString)), this,
+            SLOT(slotUpdateStatusbar(QString)));
     historyMenu->setTitle(tr("Hi&story"));
     menuBar()->addMenu(historyMenu);
     QList<QAction*> historyActions;
@@ -404,10 +404,10 @@ void BrowserMainWindow::setupMenu()
 
     // Bookmarks
     BookmarksMenu *bookmarksMenu = new BookmarksMenu(this);
-    connect(bookmarksMenu, SIGNAL(openUrl(const QUrl&)),
-            m_tabWidget, SLOT(loadUrlInCurrentTab(const QUrl&)));
-    connect(bookmarksMenu, SIGNAL(hovered(const QString&)),
-            this, SLOT(slotUpdateStatusbar(const QString&)));
+    connect(bookmarksMenu, SIGNAL(openUrl(QUrl)),
+            m_tabWidget, SLOT(loadUrlInCurrentTab(QUrl)));
+    connect(bookmarksMenu, SIGNAL(hovered(QString)),
+            this, SLOT(slotUpdateStatusbar(QString)));
     bookmarksMenu->setTitle(tr("&Bookmarks"));
     menuBar()->addMenu(bookmarksMenu);
 
@@ -455,16 +455,16 @@ void BrowserMainWindow::setupToolBar()
     m_historyBack->setMenu(m_historyBackMenu);
     connect(m_historyBackMenu, SIGNAL(aboutToShow()),
             this, SLOT(slotAboutToShowBackMenu()));
-    connect(m_historyBackMenu, SIGNAL(triggered(QAction *)),
-            this, SLOT(slotOpenActionUrl(QAction *)));
+    connect(m_historyBackMenu, SIGNAL(triggered(QAction*)),
+            this, SLOT(slotOpenActionUrl(QAction*)));
     m_navigationBar->addAction(m_historyBack);
 
     m_historyForward->setIcon(style()->standardIcon(QStyle::SP_ArrowForward, 0, this));
     m_historyForwardMenu = new QMenu(this);
     connect(m_historyForwardMenu, SIGNAL(aboutToShow()),
             this, SLOT(slotAboutToShowForwardMenu()));
-    connect(m_historyForwardMenu, SIGNAL(triggered(QAction *)),
-            this, SLOT(slotOpenActionUrl(QAction *)));
+    connect(m_historyForwardMenu, SIGNAL(triggered(QAction*)),
+            this, SLOT(slotOpenActionUrl(QAction*)));
     m_historyForward->setMenu(m_historyForwardMenu);
     m_navigationBar->addAction(m_historyForward);
 
@@ -478,7 +478,7 @@ void BrowserMainWindow::setupToolBar()
 
     m_toolbarSearch = new ToolbarSearch(m_navigationBar);
     m_navigationBar->addWidget(m_toolbarSearch);
-    connect(m_toolbarSearch, SIGNAL(search(const QUrl&)), SLOT(loadUrl(const QUrl&)));
+    connect(m_toolbarSearch, SIGNAL(search(QUrl)), SLOT(loadUrl(QUrl)));
 
     m_chaseWidget = new ChaseWidget(this);
     m_navigationBar->addWidget(m_chaseWidget);
@@ -487,8 +487,8 @@ void BrowserMainWindow::setupToolBar()
 void BrowserMainWindow::slotShowBookmarksDialog()
 {
     BookmarksDialog *dialog = new BookmarksDialog(this);
-    connect(dialog, SIGNAL(openUrl(const QUrl&)),
-            m_tabWidget, SLOT(loadUrlInCurrentTab(const QUrl&)));
+    connect(dialog, SIGNAL(openUrl(QUrl)),
+            m_tabWidget, SLOT(loadUrlInCurrentTab(QUrl)));
     dialog->show();
 }
 
@@ -636,8 +636,8 @@ void BrowserMainWindow::slotFilePrintPreview()
     if (!currentTab())
         return;
     QPrintPreviewDialog *dialog = new QPrintPreviewDialog(this);
-    connect(dialog, SIGNAL(paintRequested(QPrinter *)),
-            currentTab(), SLOT(print(QPrinter *)));
+    connect(dialog, SIGNAL(paintRequested(QPrinter*)),
+            currentTab(), SLOT(print(QPrinter*)));
     dialog->exec();
 #endif
 }

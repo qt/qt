@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -128,7 +128,6 @@ IDirectFBWindow *QDirectFBWindowSurface::directFBWindow() const
     return (dfbWindow ? dfbWindow : (sibling ? sibling->dfbWindow : 0));
 }
 
-
 void QDirectFBWindowSurface::createWindow(const QRect &rect)
 {
     IDirectFBDisplayLayer *layer = screen->dfbDisplayLayer();
@@ -169,6 +168,9 @@ void QDirectFBWindowSurface::createWindow(const QRect &rect)
         DirectFBErrorFatal("QDirectFBWindowSurface::createWindow", result);
 
     if (window()) {
+        if (window()->windowFlags() & Qt::WindowStaysOnTopHint) {
+            dfbWindow->SetStackingClass(dfbWindow, DWSC_UPPER);
+        }
         DFBWindowID winid;
         result = dfbWindow->GetID(dfbWindow, &winid);
         if (result != DFB_OK) {

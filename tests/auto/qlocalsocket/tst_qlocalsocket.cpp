@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -695,7 +695,7 @@ public:
                   || socket.error() == QLocalSocket::ConnectionRefusedError)
              && tries < 1000);
         if (tries == 0 && socket.state() != QLocalSocket::ConnectedState) {
-            QVERIFY(socket.waitForConnected(3000));
+            QVERIFY(socket.waitForConnected(7000));
             QVERIFY(socket.state() == QLocalSocket::ConnectedState);
         }
 
@@ -725,7 +725,7 @@ public:
         int done = clients;
         while (done > 0) {
             bool timedOut = true;
-            QVERIFY(server.waitForNewConnection(3000, &timedOut));
+            QVERIFY(server.waitForNewConnection(7000, &timedOut));
             QVERIFY(!timedOut);
             QLocalSocket *serverSocket = server.nextPendingConnection();
             QVERIFY(serverSocket);

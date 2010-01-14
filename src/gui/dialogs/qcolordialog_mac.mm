@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,6 +79,7 @@ QT_USE_NAMESPACE
     BOOL mHackedPanel;
     NSInteger mResultCode;
     BOOL mDialogIsExecuting;
+    BOOL mResultSet;
 }
 - (id)initWithColorPanel:(NSColorPanel *)panel
        stolenContentView:(NSView *)stolenContentView
@@ -116,6 +117,7 @@ QT_USE_NAMESPACE
     mHackedPanel = (okButton != 0);
     mResultCode = NSCancelButton;
     mDialogIsExecuting = false;
+    mResultSet = false;
 
     if (mHackedPanel) {
         [self relayout];
@@ -159,11 +161,13 @@ QT_USE_NAMESPACE
 - (BOOL)windowShouldClose:(id)window
 {
     Q_UNUSED(window);
-    if (mHackedPanel) {
-        [self onCancelClicked];
-    } else {
+    if (!mHackedPanel)
         [self updateQtColor];
+    if (mDialogIsExecuting) {
         [self finishOffWithCode:NSCancelButton];
+    } else {
+        mResultSet = true;
+        mPriv->colorDialog()->reject();
     }
     return true;
 }
@@ -240,11 +244,12 @@ QT_USE_NAMESPACE
 
 - (void)onCancelClicked
 {
-    Q_ASSERT(mHackedPanel);
-    [[mStolenContentView window] close];
-    delete mQtColor;
-    mQtColor = new QColor();
-    [self finishOffWithCode:NSCancelButton];
+    if (mHackedPanel) {
+        [[mStolenContentView window] close];
+        delete mQtColor;
+        mQtColor = new QColor();
+        [self finishOffWithCode:NSCancelButton];
+    }
 }
 
 - (void)updateQtColor
@@ -306,10 +311,16 @@ QT_USE_NAMESPACE
     } else {
         // Since we are not in a modal event loop, we can safely close
         // down QColorDialog
-        if (mResultCode == NSCancelButton)
-            mPriv->colorDialog()->reject();
-        else
-            mPriv->colorDialog()->accept();
+        // Calling accept() or reject() can in turn call closeCocoaColorPanel.
+        // This check will prevent any such recursion.
+        if (!mResultSet) {
+            mResultSet = true;
+            if (mResultCode == NSCancelButton) {
+                mPriv->colorDialog()->reject();
+            } else {
+                mPriv->colorDialog()->accept();
+            }
+        }
     }
 }
 

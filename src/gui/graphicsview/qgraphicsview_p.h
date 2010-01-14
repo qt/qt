@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -85,6 +85,9 @@ public:
 
     qint64 horizontalScroll() const;
     qint64 verticalScroll() const;
+
+    QRectF mapRectToScene(const QRect &rect) const;
+    QRectF mapRectFromScene(const QRectF &rect) const;
 
     QPointF mousePressItemPoint;
     QPointF mousePressScenePoint;
@@ -172,10 +175,17 @@ public:
 
     inline void dispatchPendingUpdateRequests()
     {
+#ifndef Q_WS_MAC
+        // QWidget::update() works slightly different on the Mac; it's not part of
+        // our backing store so it needs special threatment.
         if (qt_widget_private(viewport)->paintOnScreen())
             QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);
         else
             QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
+#else
+        QCoreApplication::processEvents(QEventLoop::AllEvents | QEventLoop::ExcludeSocketNotifiers
+                                        | QEventLoop::ExcludeUserInputEvents);
+#endif
     }
 
     bool updateRect(const QRect &rect);

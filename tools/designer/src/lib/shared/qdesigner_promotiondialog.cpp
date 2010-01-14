@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -219,8 +219,8 @@ namespace qdesigner_internal {
         m_treeView->setMinimumWidth(450);
         m_treeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-        connect(m_treeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
-                this, SLOT(slotSelectionChanged(QItemSelection, QItemSelection)));
+        connect(m_treeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+                this, SLOT(slotSelectionChanged(QItemSelection,QItemSelection)));
 
         connect(m_treeView, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(slotTreeViewContextMenu(QPoint)));
@@ -248,18 +248,18 @@ namespace qdesigner_internal {
             preselectedBaseClass = baseClassNameList.indexOf(QLatin1String("QFrame"));
 
         NewPromotedClassPanel *newPromotedClassPanel = new NewPromotedClassPanel(baseClassNameList, preselectedBaseClass);
-        connect(newPromotedClassPanel, SIGNAL(newPromotedClass(PromotionParameters, bool *)), this, SLOT(slotNewPromotedClass(PromotionParameters, bool *)));
+        connect(newPromotedClassPanel, SIGNAL(newPromotedClass(PromotionParameters,bool*)), this, SLOT(slotNewPromotedClass(PromotionParameters,bool*)));
         connect(this, SIGNAL(selectedBaseClassChanged(QString)),
                 newPromotedClassPanel, SLOT(chooseBaseClass(QString)));
         vboxLayout->addWidget(newPromotedClassPanel);
         // button box
         vboxLayout->addWidget(m_buttonBox);
         // connect model
-        connect(m_model, SIGNAL(includeFileChanged(QDesignerWidgetDataBaseItemInterface*, QString)),
-                this, SLOT(slotIncludeFileChanged(QDesignerWidgetDataBaseItemInterface*, QString)));
+        connect(m_model, SIGNAL(includeFileChanged(QDesignerWidgetDataBaseItemInterface*,QString)),
+                this, SLOT(slotIncludeFileChanged(QDesignerWidgetDataBaseItemInterface*,QString)));
 
-        connect(m_model, SIGNAL(classNameChanged(QDesignerWidgetDataBaseItemInterface*, QString)),
-                this, SLOT(slotClassNameChanged(QDesignerWidgetDataBaseItemInterface*, QString)));
+        connect(m_model, SIGNAL(classNameChanged(QDesignerWidgetDataBaseItemInterface*,QString)),
+                this, SLOT(slotClassNameChanged(QDesignerWidgetDataBaseItemInterface*,QString)));
 
         // focus
         if (m_mode == ModeEditChooseClass)

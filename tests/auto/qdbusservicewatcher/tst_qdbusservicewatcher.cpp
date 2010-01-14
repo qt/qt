@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,12 +47,13 @@ class tst_QDBusServiceWatcher: public QObject
 {
     Q_OBJECT
     QString serviceName;
+    int testCounter;
 public:
     tst_QDBusServiceWatcher();
 
 private slots:
     void initTestCase();
-    void cleanup();
+    void init();
 
     void watchForCreation();
     void watchForDisappearance();
@@ -61,7 +62,7 @@ private slots:
 };
 
 tst_QDBusServiceWatcher::tst_QDBusServiceWatcher()
-    : serviceName("com.example.TestName")
+    : testCounter(0)
 {
 }
 
@@ -71,10 +72,10 @@ void tst_QDBusServiceWatcher::initTestCase()
     QVERIFY(con.isConnected());
 }
 
-void tst_QDBusServiceWatcher::cleanup()
+void tst_QDBusServiceWatcher::init()
 {
-    // ensure that the name isn't registered
-    QDBusConnection::sessionBus().unregisterService(serviceName);
+    // change the service name from test to test
+    serviceName = "com.example.TestService" + QString::number(testCounter++);
 }
 
 void tst_QDBusServiceWatcher::watchForCreation()
@@ -135,6 +136,7 @@ void tst_QDBusServiceWatcher::watchForDisappearance()
     QVERIFY(con.isConnected());
 
     QDBusServiceWatcher watcher(serviceName, con, QDBusServiceWatcher::WatchForUnregistration);
+    watcher.setObjectName("watcher for disappearance");
 
     QSignalSpy spyR(&watcher, SIGNAL(serviceRegistered(QString)));
     QSignalSpy spyU(&watcher, SIGNAL(serviceUnregistered(QString)));

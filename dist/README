@@ -26,6 +26,10 @@ For Mac OS X Cocoa, the binary package requires Mac OS X 10.5 (Leopard) or
 later and GCC 4.0.1 to develop applications.  Its applications will run
 on Mac OS X 10.5 and above.
 
+If you want to install the precompiled binary package for Symbian,
+follow these instructions:
+http://qt.nokia.com/doc/%SHORTVERSION%/install-symbian-installer.html
+
 
 DEMOS AND EXAMPLES
 
@@ -52,7 +56,7 @@ documentation is available at http://qt.nokia.com/doc/.
 SUPPORTED PLATFORMS
 
 For a complete list of supported platforms, see
-http://qt.nokia.com/doc/%VERSION%/supported-platforms.html.
+http://qt.nokia.com/doc/%SHORTVERSION%/supported-platforms.html.
 
 
 COMMERCIAL EDITIONS
@@ -65,7 +69,7 @@ the QtCore, QtGui (except QGraphicsView), QtTest, QtDBus and
 Qt3Support modules.
 
 For a full listing of the contents of each module, please refer to 
-http://qt.nokia.com/doc/%VERSION%/modules.html
+http://qt.nokia.com/doc/%SHORTVERSION%/modules.html
 
 
 HOW TO REPORT A BUG

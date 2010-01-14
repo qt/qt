@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,7 +82,7 @@
     horizontal and vertical resolution of the device in dots per
     inch. The physicalDpiX() and physicalDpiY() functions also return
     the resolution of the device in dots per inch, but note that if
-    the logical and vertical resolution differ, the corresponding
+    the logical and physical resolution differ, the corresponding
     QPaintEngine must handle the mapping. Finally, the colorCount()
     function returns the number of different colors available for the
     paint device.

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1849,8 +1849,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
             || e->preeditString() != cursor.block().layout()->preeditAreaText()
             || e->replacementLength() > 0;
 
+    cursor.beginEditBlock();
     if (isGettingInput) {
-        cursor.beginEditBlock();
         cursor.removeSelectedText();
     }
 
@@ -1876,7 +1876,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
 
     QTextBlock block = cursor.block();
     QTextLayout *layout = block.layout();
-    layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
+    if (isGettingInput)
+        layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
     QList<QTextLayout::FormatRange> overrides;
     preeditCursor = e->preeditString().length();
     hideCursor = false;
@@ -1897,9 +1898,7 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         }
     }
     layout->setAdditionalFormats(overrides);
-
-    if (isGettingInput)
-        cursor.endEditBlock();
+    cursor.endEditBlock();
 }
 
 QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const
@@ -1939,7 +1938,11 @@ void QTextControlPrivate::focusEvent(QFocusEvent *e)
     emit q->updateRequest(q->selectionRect());
     if (e->gotFocus()) {
 #ifdef QT_KEYPAD_NAVIGATION
-        if (!QApplication::keypadNavigationEnabled() || (hasEditFocus && e->reason() == Qt::PopupFocusReason)) {
+        if (!QApplication::keypadNavigationEnabled() || (hasEditFocus && (e->reason() == Qt::PopupFocusReason
+#ifdef Q_OS_SYMBIAN
+            || e->reason() == Qt::ActiveWindowFocusReason
+#endif
+            ))) {
 #endif
         cursorOn = (interactionFlags & Qt::TextSelectableByKeyboard);
         if (interactionFlags & Qt::TextEditable) {

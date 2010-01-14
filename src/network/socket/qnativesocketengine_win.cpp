@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1107,10 +1107,22 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
 
-    if (selectForRead)
+    if (selectForRead) {
         ret = select(0, &fds, 0, 0, timeout < 0 ? 0 : &tv);
-    else
-        ret = select(0, 0, &fds, 0, timeout < 0 ? 0 : &tv);
+    } else {
+        // select for write
+
+        // Windows needs this to report errors when connecting a socket ...
+        fd_set fdexception;
+        FD_ZERO(&fdexception);
+        FD_SET(socketDescriptor, &fdexception);
+
+        ret = select(0, 0, &fds, &fdexception, timeout < 0 ? 0 : &tv);
+
+        // ... but if it is actually set, pretend it did not happen
+        if (ret > 0 && FD_ISSET(socketDescriptor, &fdexception))
+            ret--;
+    }
 
     if (readEnabled)
         readNotifier->setEnabled(true);
@@ -1125,9 +1137,10 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout,
     bool readEnabled = checkRead && readNotifier && readNotifier->isEnabled();
     if (readEnabled)
         readNotifier->setEnabled(false);
-    
+
     fd_set fdread;
     fd_set fdwrite;
+    fd_set fdexception;
 
     int ret = 0;
 
@@ -1137,9 +1150,13 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout,
         fdread.fd_array[0] = socketDescriptor;
     }
     memset(&fdwrite, 0, sizeof(fd_set));
+    FD_ZERO(&fdexception);
     if (checkWrite) {
         fdwrite.fd_count = 1;
         fdwrite.fd_array[0] = socketDescriptor;
+
+        // Windows needs this to report errors when connecting a socket
+        FD_SET(socketDescriptor, &fdexception);
     }
 
     struct timeval tv;
@@ -1147,10 +1164,15 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout,
     tv.tv_usec = (timeout % 1000) * 1000;
 
 #if !defined(Q_OS_WINCE)
-    ret = select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
+    ret = select(socketDescriptor + 1, &fdread, &fdwrite, &fdexception, timeout < 0 ? 0 : &tv);
 #else
-    ret = select(1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
+    ret = select(1, &fdread, &fdwrite, &fdexception, timeout < 0 ? 0 : &tv);
 #endif
+
+     //... but if it is actually set, pretend it did not happen
+    if (ret > 0 && FD_ISSET(socketDescriptor, &fdexception))
+        ret--;
+
     if (readEnabled)
         readNotifier->setEnabled(true);
 

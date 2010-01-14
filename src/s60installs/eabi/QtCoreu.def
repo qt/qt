@@ -2556,7 +2556,7 @@ EXPORTS
 	_ZNK14QObjectPrivate10senderListEv @ 2555 NONAME
 	_ZNK14QObjectPrivate11signalIndexEPKc @ 2556 NONAME
 	_ZNK14QObjectPrivate12receiverListEPKc @ 2557 NONAME
-	_ZNK14QObjectPrivate17isSignalConnectedEi @ 2558 NONAME
+	_ZNK14QObjectPrivate17isSignalConnectedEi @ 2558 NONAME ABSENT
 	_ZNK14QObjectPrivate8isSenderEPK7QObjectPKc @ 2559 NONAME
 	_ZNK14QStringMatcher7indexInEPK5QCharii @ 2560 NONAME
 	_ZNK14QStringMatcher7indexInERK7QStringi @ 2561 NONAME
@@ -3619,4 +3619,18 @@ EXPORTS
 	_ZN15QBasicAtomicInt19isFetchAndAddNativeEv @ 3618 NONAME
 	_ZN15QBasicAtomicInt21isFetchAndStoreNativeEv @ 3619 NONAME
 	_ZN15QBasicAtomicInt25isReferenceCountingNativeEv @ 3620 NONAME
+	_ZN13QStateMachine11SignalEventC1EP7QObjectiRK5QListI8QVariantE @ 3621 NONAME
+	_ZN13QStateMachine11SignalEventC2EP7QObjectiRK5QListI8QVariantE @ 3622 NONAME
+	_ZN13QStateMachine11SignalEventD0Ev @ 3623 NONAME
+	_ZN13QStateMachine11SignalEventD1Ev @ 3624 NONAME
+	_ZN13QStateMachine11SignalEventD2Ev @ 3625 NONAME
+	_ZN13QStateMachine12WrappedEventC1EP7QObjectP6QEvent @ 3626 NONAME
+	_ZN13QStateMachine12WrappedEventC2EP7QObjectP6QEvent @ 3627 NONAME
+	_ZN13QStateMachine12WrappedEventD0Ev @ 3628 NONAME
+	_ZN13QStateMachine12WrappedEventD1Ev @ 3629 NONAME
+	_ZN13QStateMachine12WrappedEventD2Ev @ 3630 NONAME
+	_ZTIN13QStateMachine11SignalEventE @ 3631 NONAME
+	_ZTIN13QStateMachine12WrappedEventE @ 3632 NONAME
+	_ZTVN13QStateMachine11SignalEventE @ 3633 NONAME
+	_ZTVN13QStateMachine12WrappedEventE @ 3634 NONAME
 

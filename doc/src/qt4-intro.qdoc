@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -491,7 +491,7 @@
     rich end-user applications for devices running S60 3.1 and
     later.
 
-    See the \l{Symbian Platform - Introduction to Qt} for more information.
+    See the \l{The Symbian platform - Introduction to Qt} for more information.
 
     \section1 Animation Framework
 
@@ -549,7 +549,7 @@
     the state machine, it is also easier to use the framework for
     animating GUIs, for instance.
 
-    See \l{The State Machine Framework} documentation for more infromation.
+    See \l{The State Machine Framework} documentation for more information.
 
     \section1 Multi-Touch and Gestures
 

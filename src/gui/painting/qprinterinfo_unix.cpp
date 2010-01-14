@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,7 +75,9 @@ private:
     QString                     m_name;
     bool                        m_isNull;
     bool                        m_default;
-    QList<QPrinter::PaperSize>  m_paperSizes;
+    mutable bool                m_mustGetPaperSizes;
+    mutable QList<QPrinter::PaperSize> m_paperSizes;
+    int                         m_cupsPrinterIndex;
 
     QPrinterInfo*               q_ptr;
 };
@@ -838,16 +840,7 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
             list.append(QPrinterInfo(printerName));
             if (cupsPrinters[i].is_default)
                 list[i].d_ptr->m_default = true;
-            // Find paper sizes.
-            cups.setCurrentPrinter(i);
-            const ppd_option_t* sizes = cups.pageSizes();
-            if (sizes) {
-                for (int j = 0; j < sizes->num_choices; ++j) {
-                    list[i].d_ptr->m_paperSizes.append(
-                            QPrinterInfoPrivate::string2PaperSize(
-                            QLatin1String(sizes->choices[j].choice)));
-                }
-            }
+            list[i].d_ptr->m_cupsPrinterIndex = i;
         }
     } else {
 #endif
@@ -909,16 +902,7 @@ QPrinterInfo::QPrinterInfo(const QPrinter& printer)
             if (printerName == printer.printerName()) {
                 if (cupsPrinters[i].is_default)
                     d->m_default = true;
-                // Find paper sizes.
-                cups.setCurrentPrinter(i);
-                const ppd_option_t* sizes = cups.pageSizes();
-                if (sizes) {
-                    for (int j = 0; j < sizes->num_choices; ++j) {
-                        d->m_paperSizes.append(
-                                QPrinterInfoPrivate::string2PaperSize(
-                                QLatin1String(sizes->choices[j].choice)));
-                    }
-                }
+                d->m_cupsPrinterIndex = i;
                 return;
             }
         }
@@ -983,6 +967,26 @@ bool QPrinterInfo::isDefault() const
 QList< QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 {
     const Q_D(QPrinterInfo);
+    if (d->m_mustGetPaperSizes) {
+        d->m_mustGetPaperSizes = false;
+
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+        QCUPSSupport cups;
+        if (QCUPSSupport::isAvailable()) {
+            // Find paper sizes from CUPS.
+            cups.setCurrentPrinter(d->m_cupsPrinterIndex);
+            const ppd_option_t* sizes = cups.pageSizes();
+            if (sizes) {
+                for (int j = 0; j < sizes->num_choices; ++j) {
+                    d->m_paperSizes.append(
+                        QPrinterInfoPrivate::string2PaperSize(
+                            QLatin1String(sizes->choices[j].choice)));
+                }
+            }
+        }
+#endif
+
+    }
     return d->m_paperSizes;
 }
 
@@ -993,6 +997,8 @@ QPrinterInfoPrivate::QPrinterInfoPrivate()
 {
     m_isNull = true;
     m_default = false;
+    m_mustGetPaperSizes = true;
+    m_cupsPrinterIndex = 0;
     q_ptr = 0;
 }
 
@@ -1001,6 +1007,8 @@ QPrinterInfoPrivate::QPrinterInfoPrivate(const QString& name)
     m_name = name;
     m_isNull = false;
     m_default = false;
+    m_mustGetPaperSizes = true;
+    m_cupsPrinterIndex = 0;
     q_ptr = 0;
 }
 

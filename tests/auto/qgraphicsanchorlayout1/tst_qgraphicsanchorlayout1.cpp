@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -167,7 +167,7 @@ public:
         {
             setContentsMargins( 0,0,0,0 );
             if (name.isEmpty())
-                setData(0, QString::fromAscii("w%1").arg(int(this)));
+                setData(0, QString::fromAscii("w%1").arg(quintptr(this)));
             else
                 setData(0, name);
         }
@@ -356,6 +356,8 @@ void tst_QGraphicsAnchorLayout1::testItemAt()
 
     QVERIFY( layout->itemAt(0) == widget2 );
 
+    delete widget1;
+
     widget->setLayout(layout);
     delete widget;
 }
@@ -459,6 +461,12 @@ void tst_QGraphicsAnchorLayout1::testAddAndRemoveAnchor()
     layout->removeAnchor(widget1, Qt::AnchorLeft, layout, Qt::AnchorLeft);
 
     QCOMPARE( layout->count(), 0 );
+
+    delete widget1;
+    delete widget2;
+    delete widget3;
+    delete widget4;
+    delete widget5;
 
     widget->setLayout(layout);
     delete widget;
@@ -1740,9 +1748,9 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         QRectF actual = truncate(widgets[item.index]->geometry());
 
         QCOMPARE(actual, expected);
-        delete widgets[item.index];
     }
 
+    qDeleteAll(widgets);
     delete widget;
 }
 
@@ -2231,8 +2239,9 @@ void tst_QGraphicsAnchorLayout1::testRemoveCenterAnchor()
         const BasicLayoutTestResult item = result[i];
 
         QCOMPARE(widgets[item.index]->geometry(), item.rect);
-        delete widgets[item.index];
     }
+
+    qDeleteAll(widgets);
     delete widget;
 }
 
@@ -2360,7 +2369,7 @@ void tst_QGraphicsAnchorLayout1::testSingleSizePolicy()
     QFETCH(bool, valid);
 
     // create objects
-    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsWidget widget;
     TheAnchorLayout *layout = new TheAnchorLayout;
     TestWidget *childWidget = new TestWidget;
 
@@ -2370,11 +2379,11 @@ void tst_QGraphicsAnchorLayout1::testSingleSizePolicy()
     layout->setAnchor( layout, Qt::AnchorTop, childWidget, Qt::AnchorTop, 10 );
     layout->setAnchor( childWidget, Qt::AnchorBottom, layout, Qt::AnchorBottom, 10 );
 
-    widget->setLayout( layout );
+    widget.setLayout( layout );
 
     // set test case specific: policy and size
     childWidget->setSizePolicy( policy );
-    widget->setGeometry( QRectF( QPoint(0,0), size ) );
+    widget.setGeometry( QRectF( QPoint(0,0), size ) );
 
     QCOMPARE( layout->isValid() , valid );
 
@@ -2516,7 +2525,7 @@ void tst_QGraphicsAnchorLayout1::testDoubleSizePolicy()
     QFETCH(qreal, width2);
 
     // create objects
-    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsWidget widget;
     TheAnchorLayout *layout = new TheAnchorLayout;
     TestWidget *childWidget1 = new TestWidget;
     TestWidget *childWidget2 = new TestWidget;
@@ -2526,13 +2535,13 @@ void tst_QGraphicsAnchorLayout1::testDoubleSizePolicy()
     layout->setAnchor( childWidget1, Qt::AnchorRight, childWidget2, Qt::AnchorLeft, 10 );
     layout->setAnchor( childWidget2, Qt::AnchorRight, layout, Qt::AnchorRight, 10 );
 
-    widget->setLayout( layout );
+    widget.setLayout( layout );
 
     // set test case specific: policy
     childWidget1->setSizePolicy( policy1 );
     childWidget2->setSizePolicy( policy2 );
 
-    widget->setGeometry( QRectF( QPoint(0,0), QSize( 100,100 ) ) );
+    widget.setGeometry( QRectF( QPoint(0,0), QSize( 100,100 ) ) );
 
     // check results:
     if ( width1 == -1.0f ) {
@@ -2649,7 +2658,7 @@ void tst_QGraphicsAnchorLayout1::testSizeDistribution()
     QFETCH(qreal, width2);
 
     // create objects
-    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsWidget widget;
     TheAnchorLayout *layout = new TheAnchorLayout;
     TestWidget *childWidget1 = new TestWidget;
     TestWidget *childWidget2 = new TestWidget;
@@ -2659,7 +2668,7 @@ void tst_QGraphicsAnchorLayout1::testSizeDistribution()
     layout->setAnchor( childWidget1, Qt::AnchorRight, childWidget2, Qt::AnchorLeft, 10 );
     layout->setAnchor( childWidget2, Qt::AnchorRight, layout, Qt::AnchorRight, 10 );
 
-    widget->setLayout( layout );
+    widget.setLayout( layout );
 
     // set test case specific: size hints
     childWidget1->setMinimumWidth( sizeHints1.value( Qt::MinimumSize ) );
@@ -2670,7 +2679,7 @@ void tst_QGraphicsAnchorLayout1::testSizeDistribution()
     childWidget2->setPreferredWidth( sizeHints2.value( Qt::PreferredSize ) );
     childWidget2->setMaximumWidth( sizeHints2.value( Qt::MaximumSize ) );
 
-    widget->setGeometry( QRectF( QPoint(0,0), QSize( 100,100 ) ) );
+    widget.setGeometry( QRectF( QPoint(0,0), QSize( 100,100 ) ) );
 
     // check results:
     if ( width1 == -1.0f ) {

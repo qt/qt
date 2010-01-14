@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -212,8 +212,8 @@ void QWidgetAction::releaseWidget(QWidget *widget)
     if (!d->createdWidgets.contains(widget))
         return;
 
-    disconnect(widget, SIGNAL(destroyed(QObject *)),
-               this, SLOT(_q_widgetDestroyed(QObject *)));
+    disconnect(widget, SIGNAL(destroyed(QObject*)),
+               this, SLOT(_q_widgetDestroyed(QObject*)));
     d->createdWidgets.removeAll(widget);
     deleteWidget(widget);
 }

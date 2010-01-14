@@ -1551,6 +1551,7 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
                               | PreSubstProperty
                               | BelowSubstProperty
                               | AboveSubstProperty
+                              | PostSubstProperty
                               | HalantProperty
                               | PositioningProperties);
 
@@ -1608,14 +1609,7 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
         // pres always applies
         // blws always applies
         // abvs always applies
-
-        // psts
-        // ### this looks slightly different from before, but I believe it's correct
-        if (reordered[len-1] != halant || base != len-2)
-            properties[base] &= ~PostSubstProperty;
-        for (i = base+1; i < len; ++i)
-            properties[i] &= ~PostSubstProperty;
-
+        // psts always applies
         // halant always applies
 
 #ifdef INDIC_DEBUG

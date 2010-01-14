@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -160,6 +160,10 @@ QRectF QGraphicsEffectSource::boundingRect(Qt::CoordinateSystem system) const
 /*!
     Returns the bounding rectangle of the source mapped to the given \a system.
 
+    Calling this function with Qt::DeviceCoordinates outside of
+    QGraphicsEffect::draw() will give undefined results, as there is no device
+    context available.
+
     \sa draw()
 */
 QRectF QGraphicsEffect::sourceBoundingRect(Qt::CoordinateSystem system) const
@@ -309,7 +313,10 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     // Shortcut, no cache for childless pixmap items...
     const QGraphicsItem *item = graphicsItem();
     if (system == Qt::LogicalCoordinates && mode == QGraphicsEffect::NoPad && item && isPixmap()) {
-        return ((QGraphicsPixmapItem *) item)->pixmap();
+        const QGraphicsPixmapItem *pixmapItem = static_cast<const QGraphicsPixmapItem *>(item);
+        if (offset)
+            *offset = pixmapItem->offset().toPoint();
+        return pixmapItem->pixmap();
     }
 
     if (system == Qt::DeviceCoordinates && item
@@ -348,6 +355,10 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     The returned pixmap is clipped to the current painter's device rectangle when
     \a system is Qt::DeviceCoordinates.
 
+    Calling this function with Qt::DeviceCoordinates outside of
+    QGraphicsEffect::draw() will give undefined results, as there is no device
+    context available.
+
     \sa draw(), boundingRect()
 */
 QPixmap QGraphicsEffect::sourcePixmap(Qt::CoordinateSystem system, QPoint *offset, QGraphicsEffect::PixmapPadMode mode) const
@@ -363,10 +374,14 @@ QGraphicsEffectSourcePrivate::~QGraphicsEffectSourcePrivate()
     invalidateCache();
 }
 
-void QGraphicsEffectSourcePrivate::invalidateCache(bool effectRectChanged) const
+void QGraphicsEffectSourcePrivate::invalidateCache(InvalidateReason reason) const
 {
-    if (effectRectChanged && m_cachedMode != QGraphicsEffect::PadToEffectiveBoundingRect)
+    if (m_cachedMode != QGraphicsEffect::PadToEffectiveBoundingRect
+        && (reason == EffectRectChanged
+            || reason == TransformChanged
+               && m_cachedSystem == Qt::LogicalCoordinates))
         return;
+
     QPixmapCache::remove(m_cacheKey);
 }
 
@@ -398,8 +413,8 @@ QGraphicsEffect::~QGraphicsEffect()
 
 /*!
     Returns the effective bounding rectangle for this effect, i.e., the
-    bounding rectangle of the source, adjusted by any margins applied by
-    the effect itself.
+    bounding rectangle of the source in device coordinates, adjusted by
+    any margins applied by the effect itself.
 
     \sa boundingRectFor(), updateBoundingRect()
 */
@@ -413,7 +428,7 @@ QRectF QGraphicsEffect::boundingRect() const
 
 /*!
     Returns the effective bounding rectangle for this effect, given the
-    provided \a rect in the source's coordinate space. When writing
+    provided \a rect in the device coordinates. When writing
     you own custom effect, you must call updateBoundingRect() whenever any
     parameters are changed that may cause this this function to return a
     different value.
@@ -512,7 +527,7 @@ void QGraphicsEffect::updateBoundingRect()
     Q_D(QGraphicsEffect);
     if (d->source) {
         d->source->d_func()->effectBoundingRectChanged();
-        d->source->d_func()->invalidateCache(true);
+        d->source->d_func()->invalidateCache(QGraphicsEffectSourcePrivate::EffectRectChanged);
     }
 }
 
@@ -829,22 +844,19 @@ QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
 void QGraphicsBlurEffect::draw(QPainter *painter)
 {
     Q_D(QGraphicsBlurEffect);
-    if (d->filter->radius() <= 0) {
+    if (d->filter->radius() < 1) {
         drawSource(painter);
         return;
     }
 
     PixmapPadMode mode = PadToEffectiveBoundingRect;
     if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
-        mode = PadToTransparentBorder;
+        mode = NoPad;
 
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
-    const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset, mode);
-    QTransform restoreTransform = painter->worldTransform();
-    painter->setWorldTransform(QTransform());
+    QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset, mode);
     d->filter->draw(painter, offset, pixmap);
-    painter->setWorldTransform(restoreTransform);
 }
 
 /*!
@@ -1025,7 +1037,7 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter)
 
     PixmapPadMode mode = PadToEffectiveBoundingRect;
     if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
-        mode = PadToTransparentBorder;
+        mode = NoPad;
 
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;

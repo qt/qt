@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -110,8 +110,8 @@ QScriptEdit::QScriptEdit(QWidget *parent)
 
     QObject::connect(this, SIGNAL(blockCountChanged(int)),
                      this, SLOT(updateExtraAreaWidth()));
-    QObject::connect(this, SIGNAL(updateRequest(const QRect &, int)),
-                     this, SLOT(updateExtraArea(const QRect &, int)));
+    QObject::connect(this, SIGNAL(updateRequest(QRect,int)),
+                     this, SLOT(updateExtraArea(QRect,int)));
     QObject::connect(this, SIGNAL(cursorPositionChanged()),
                      this, SLOT(highlightCurrentLine()));
 

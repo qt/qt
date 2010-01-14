@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -867,7 +867,15 @@ void QDesignerMenuBar::showMenu(int index)
             if ((menu->windowFlags() & Qt::Popup) != Qt::Popup)
                 menu->setWindowFlags(Qt::Popup);
             menu->adjustSize();
-            menu->move(mapToGlobal(g.bottomLeft()));
+            if (layoutDirection() == Qt::LeftToRight) {
+                menu->move(mapToGlobal(g.bottomLeft()));
+            } else {
+                // The position is not initially correct due to the unknown width,
+                // causing it to overlap a bit the first time it is invoked.
+                const QSize menuSize = menu->size();
+                QPoint point = g.bottomRight() - QPoint(menu->width(), 0);
+                menu->move(mapToGlobal(point));
+            }
             menu->setFocus(Qt::MouseFocusReason);
             menu->raise();
             menu->show();

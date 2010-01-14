@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,7 +83,11 @@ struct Q_NOTIFYICONIDENTIFIER {
     GUID guidItem;
 };
 
+#define Q_MSGFLT_ALLOW 1
+
 typedef HRESULT (WINAPI *PtrShell_NotifyIconGetRect)(const Q_NOTIFYICONIDENTIFIER* identifier, RECT* iconLocation);
+typedef BOOL (WINAPI *PtrChangeWindowMessageFilter)(UINT message, DWORD dwFlag);
+typedef BOOL (WINAPI *PtrChangeWindowMessageFilterEx)(HWND hWnd, UINT message, DWORD action, void* pChangeFilterStruct);
 
 class QSystemTrayIconSys : QWidget
 {
@@ -142,6 +146,23 @@ QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *object)
     // For restoring the tray icon after explorer crashes
     if (!MYWM_TASKBARCREATED) {
         MYWM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+    }
+
+    // Allow the WM_TASKBARCREATED message through the UIPI filter on Windows Vista and higher
+    static PtrChangeWindowMessageFilterEx pChangeWindowMessageFilterEx =
+        (PtrChangeWindowMessageFilterEx)QLibrary::resolve(QLatin1String("user32"), "ChangeWindowMessageFilterEx");
+
+    if (pChangeWindowMessageFilterEx) {
+        // Call the safer ChangeWindowMessageFilterEx API if available
+        pChangeWindowMessageFilterEx(winId(), MYWM_TASKBARCREATED, Q_MSGFLT_ALLOW, 0);
+    } else {
+        static PtrChangeWindowMessageFilter pChangeWindowMessageFilter =
+            (PtrChangeWindowMessageFilter)QLibrary::resolve(QLatin1String("user32"), "ChangeWindowMessageFilter");
+
+        if (pChangeWindowMessageFilter) {
+            // Call the deprecated ChangeWindowMessageFilter API otherwise
+            pChangeWindowMessageFilter(MYWM_TASKBARCREATED, Q_MSGFLT_ALLOW);
+        }
     }
 }
 

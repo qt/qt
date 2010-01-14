@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,6 +53,10 @@
 QT_BEGIN_NAMESPACE
 
 #define Q_TRANSPARENT 0x00ffffff
+
+// avoid going through QImage::scanLine() which calls detach
+#define FAST_SCAN_LINE(bits, bpl, y) (bits + (y) * bpl)
+
 
 /*
   Incremental image decoder for GIF image format.
@@ -135,7 +139,7 @@ private:
     int frame;
     bool out_of_bounds;
     bool digress;
-    void nextY(QImage *image);
+    void nextY(unsigned char *bits, int bpl);
     void disposePrevious(QImage *image);
 };
 
@@ -231,6 +235,10 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
     //    "The Graphics Interchange Format(c) is the Copyright property of
     //    CompuServe Incorporated. GIF(sm) is a Service Mark property of
     //    CompuServe Incorporated."
+
+    image->detach();
+    int bpl = image->bytesPerLine();
+    unsigned char *bits = image->bits();
 
 #define LM(l, m) (((m)<<8)|l)
     digress = false;
@@ -335,7 +343,9 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                 QImage::Format format = trans_index >= 0 ? QImage::Format_ARGB32 : QImage::Format_RGB32;
                 if (image->isNull()) {
                     (*image) = QImage(swidth, sheight, format);
-                    memset(image->bits(), 0, image->byteCount());
+                    bpl = image->bytesPerLine();
+                    bits = image->bits();
+                    memset(bits, 0, image->byteCount());
 
                     // ### size of the upcoming frame, should rather
                     // be known before decoding it.
@@ -393,11 +403,13 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                         backingstore = QImage(qMax(backingstore.width(), w),
                                               qMax(backingstore.height(), h),
                                               QImage::Format_RGB32);
-                        memset(image->bits(), 0, image->byteCount());
+                        memset(bits, 0, image->byteCount());
                     }
+                    const int dest_bpl = backingstore.bytesPerLine();
+                    unsigned char *dest_data = backingstore.bits();
                     for (int ln=0; ln<h; ln++) {
-                        memcpy(backingstore.scanLine(ln),
-                               image->scanLine(t+ln)+l, w*sizeof(QRgb));
+                        memcpy(FAST_SCAN_LINE(dest_data, dest_bpl, ln),
+                               FAST_SCAN_LINE(bits, bpl, t+ln) + l, w*sizeof(QRgb));
                     }
                 }
 
@@ -470,14 +482,14 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                     if (needfirst) {
                         firstcode=oldcode=code;
                         if (!out_of_bounds && image->height() > y && firstcode!=trans_index)
-                            ((QRgb*)image->scanLine(y))[x] = color(firstcode);
+                            ((QRgb*)FAST_SCAN_LINE(bits, bpl, y))[x] = color(firstcode);
                         x++;
                         if (x>=swidth) out_of_bounds = true;
                         needfirst=false;
                         if (x>=left+width) {
                             x=left;
                             out_of_bounds = left>=swidth || y>=sheight;
-                            nextY(image);
+                            nextY(bits, bpl);
                         }
                     } else {
                         incode=code;
@@ -515,7 +527,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                         const QRgb *map = lcmap ? localcmap : globalcmap;
                         QRgb *line = 0;
                         if (!out_of_bounds && h > y)
-                            line = (QRgb*)image->scanLine(y);
+                            line = (QRgb*)FAST_SCAN_LINE(bits, bpl, y);
                         while (sp>stack) {
                             const uchar index = *(--sp);
                             if (!out_of_bounds && h > y && index!=trans_index) {
@@ -529,9 +541,9 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                             if (x>=left+width) {
                                 x=left;
                                 out_of_bounds = left>=swidth || y>=sheight;
-                                nextY(image);
+                                nextY(bits, bpl);
                                 if (!out_of_bounds && h > y)
-                                    line = (QRgb*)image->scanLine(y);
+                                    line = (QRgb*)FAST_SCAN_LINE(bits, bpl, y);
                             }
                         }
                     }
@@ -644,7 +656,7 @@ void QGIFFormat::fillRect(QImage *image, int col, int row, int w, int h, QRgb co
     }
 }
 
-void QGIFFormat::nextY(QImage *image)
+void QGIFFormat::nextY(unsigned char *bits, int bpl)
 {
     int my;
     switch (interlace) {
@@ -660,7 +672,7 @@ void QGIFFormat::nextY(QImage *image)
         // Don't dup with transparency
         if (trans_index < 0) {
             for (i=1; i<=my; i++) {
-                memcpy(image->scanLine(y+i)+left*sizeof(QRgb), image->scanLine(y)+left*sizeof(QRgb),
+                memcpy(FAST_SCAN_LINE(bits, bpl, y+i)+left*sizeof(QRgb), FAST_SCAN_LINE(bits, bpl, y)+left*sizeof(QRgb),
                        (right-left+1)*sizeof(QRgb));
             }
         }
@@ -689,7 +701,7 @@ void QGIFFormat::nextY(QImage *image)
         // Don't dup with transparency
         if (trans_index < 0) {
             for (i=1; i<=my; i++) {
-                memcpy(image->scanLine(y+i)+left*sizeof(QRgb), image->scanLine(y)+left*sizeof(QRgb),
+                memcpy(FAST_SCAN_LINE(bits, bpl, y+i)+left*sizeof(QRgb), FAST_SCAN_LINE(bits, bpl, y)+left*sizeof(QRgb),
                        (right-left+1)*sizeof(QRgb));
             }
         }
@@ -713,7 +725,7 @@ void QGIFFormat::nextY(QImage *image)
         // Don't dup with transparency
         if (trans_index < 0) {
             for (i=1; i<=my; i++) {
-                memcpy(image->scanLine(y+i)+left*sizeof(QRgb), image->scanLine(y)+left*sizeof(QRgb),
+                memcpy(FAST_SCAN_LINE(bits, bpl, y+i)+left*sizeof(QRgb), FAST_SCAN_LINE(bits, bpl, y)+left*sizeof(QRgb),
                        (right-left+1)*sizeof(QRgb));
             }
         }

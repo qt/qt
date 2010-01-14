@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -760,8 +760,8 @@ QtGradientEditor::QtGradientEditor(QWidget *parent)
     d_ptr->m_ui.detailsButton->setIcon(icon);
 
     connect(d_ptr->m_ui.detailsButton, SIGNAL(clicked(bool)), this, SLOT(slotDetailsChanged(bool)));
-    connect(d_ptr->m_gradientStopsController, SIGNAL(gradientStopsChanged(const QGradientStops &)),
-                this, SLOT(slotGradientStopsChanged(const QGradientStops &)));
+    connect(d_ptr->m_gradientStopsController, SIGNAL(gradientStopsChanged(QGradientStops)),
+                this, SLOT(slotGradientStopsChanged(QGradientStops)));
 
     QIcon iconLinear(QLatin1String(":/trolltech/qtgradienteditor/images/typelinear.png"));
     QIcon iconRadial(QLatin1String(":/trolltech/qtgradienteditor/images/typeradial.png"));
@@ -806,18 +806,18 @@ QtGradientEditor::QtGradientEditor(QWidget *parent)
     connect(d_ptr->m_ui.spreadComboBox, SIGNAL(activated(int)),
                 this, SLOT(slotSpreadChanged(int)));
 
-    connect(d_ptr->m_ui.gradientWidget, SIGNAL(startLinearChanged(const QPointF &)),
-                this, SLOT(startLinearChanged(const QPointF &)));
-    connect(d_ptr->m_ui.gradientWidget, SIGNAL(endLinearChanged(const QPointF &)),
-                this, SLOT(endLinearChanged(const QPointF &)));
-    connect(d_ptr->m_ui.gradientWidget, SIGNAL(centralRadialChanged(const QPointF &)),
-                this, SLOT(centralRadialChanged(const QPointF &)));
-    connect(d_ptr->m_ui.gradientWidget, SIGNAL(focalRadialChanged(const QPointF &)),
-                this, SLOT(focalRadialChanged(const QPointF &)));
+    connect(d_ptr->m_ui.gradientWidget, SIGNAL(startLinearChanged(QPointF)),
+                this, SLOT(startLinearChanged(QPointF)));
+    connect(d_ptr->m_ui.gradientWidget, SIGNAL(endLinearChanged(QPointF)),
+                this, SLOT(endLinearChanged(QPointF)));
+    connect(d_ptr->m_ui.gradientWidget, SIGNAL(centralRadialChanged(QPointF)),
+                this, SLOT(centralRadialChanged(QPointF)));
+    connect(d_ptr->m_ui.gradientWidget, SIGNAL(focalRadialChanged(QPointF)),
+                this, SLOT(focalRadialChanged(QPointF)));
     connect(d_ptr->m_ui.gradientWidget, SIGNAL(radiusRadialChanged(qreal)),
                 this, SLOT(radiusRadialChanged(qreal)));
-    connect(d_ptr->m_ui.gradientWidget, SIGNAL(centralConicalChanged(const QPointF &)),
-                this, SLOT(centralConicalChanged(const QPointF &)));
+    connect(d_ptr->m_ui.gradientWidget, SIGNAL(centralConicalChanged(QPointF)),
+                this, SLOT(centralConicalChanged(QPointF)));
     connect(d_ptr->m_ui.gradientWidget, SIGNAL(angleConicalChanged(qreal)),
                 this, SLOT(angleConicalChanged(qreal)));
 

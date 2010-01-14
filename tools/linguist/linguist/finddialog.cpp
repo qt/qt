@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,7 +57,7 @@ FindDialog::FindDialog(QWidget *parent)
     findNxt->setEnabled(false);
 
     connect(findNxt, SIGNAL(clicked()), this, SLOT(emitFindNext()));
-    connect(led, SIGNAL(textChanged(const QString &)), this, SLOT(verifyText(const QString &)));
+    connect(led, SIGNAL(textChanged(QString)), this, SLOT(verifyText(QString)));
 
     led->setFocus();
 }

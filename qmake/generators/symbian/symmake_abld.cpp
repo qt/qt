@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,15 +88,15 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         t << "# ==============================================================================" << "\n" << endl;
 
         t << endl << endl;
-        
+
         t << "MAKE = make" << endl;
         t << endl;
-        
+
         t << "VISUAL_CFG = RELEASE" << endl;
-        t << "ifeq \"$(CFG)\" \"UDEB\"" << endl;        
-        t << "VISUAL_CFG = DEBUG" << endl;        
-        t << "endif" << endl;           
-        t << endl;        
+        t << "ifeq \"$(CFG)\" \"UDEB\"" << endl;
+        t << "VISUAL_CFG = DEBUG" << endl;
+        t << "endif" << endl;
+        t << endl;
 
         t << DO_NOTHING_TARGET " :" << endl;
         t << "\t" << "@rem " DO_NOTHING_TARGET << endl << endl;
@@ -113,8 +113,8 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
             cleanDepsWinscw.append(WINSCW_DEPLOYMENT_CLEAN_TARGET);
             finalDeps.append(DO_NOTHING_TARGET);
             finalDepsWinscw.append(WINSCW_DEPLOYMENT_TARGET);
-            wrapperTargets << WINSCW_DEPLOYMENT_TARGET 
-                << WINSCW_DEPLOYMENT_CLEAN_TARGET 
+            wrapperTargets << WINSCW_DEPLOYMENT_TARGET
+                << WINSCW_DEPLOYMENT_CLEAN_TARGET
                 << STORE_BUILD_TARGET;
         } else {
             buildDeps.append(CREATE_TEMPS_TARGET " " PRE_TARGETDEPS_TARGET " " STORE_BUILD_TARGET);
@@ -153,9 +153,9 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         QString makefile(Option::fixPathToTargetOS(fileInfo(wrapperFileName).canonicalFilePath()));
         foreach(QString target, wrapperTargets) {
             t << target << " : " << makefile << endl;
-            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SIS_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;                    
-        }     
-        
+            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SIS_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;
+        }
+
         t << endl;
     } // if(ft.open(QIODevice::WriteOnly))
 }
@@ -372,17 +372,36 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "\t-bldmake clean" << endl;
     t << endl;
 
-    // Create execution target
-    if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
-        t << "run:" << endl;
-        t << "\t-call " << epocRoot() << "epoc32\\release\\winscw\\udeb\\" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << endl << endl;
+    t << "clean-debug: $(ABLD)" << endl;
+    foreach(QString item, debugPlatforms) {
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " udeb" << endl;
     }
+    t << endl;
+    t << "clean-release: $(ABLD)" << endl;
+    foreach(QString item, releasePlatforms) {
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
+    }
+    t << endl;
+
+    // For more specific builds, targets are in this form: clean-build-platform, e.g. clean-release-armv5
+    foreach(QString item, debugPlatforms) {
+        t << "clean-debug-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " udeb" << endl;
+    }
+    foreach(QString item, releasePlatforms) {
+        t << "clean-release-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
+    }
+    t << endl;
+
+    generateExecutionTargets(t, debugPlatforms);
 }
 
-void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t)
+void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)
 {
     // We don't use extensions for anything in abld
     Q_UNUSED(t);
+    Q_UNUSED(iconTargetFile);
 }
 
 bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)

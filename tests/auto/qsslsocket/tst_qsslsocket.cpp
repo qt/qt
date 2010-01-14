@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,13 +51,8 @@
 #include <QtNetwork/qtcpserver.h>
 #include <QtTest/QtTest>
 
-#ifndef TEST_QNETWORK_PROXY
-#define TEST_QNETWORK_PROXY
-#endif
-#ifdef TEST_QNETWORK_PROXY
 #include <QNetworkProxy>
 #include <QAuthenticator>
-#endif
 
 #include "../network-settings.h"
 
@@ -253,7 +248,6 @@ void tst_QSslSocket::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy);
     QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic);
 
@@ -261,14 +255,12 @@ void tst_QSslSocket::initTestCase_data()
     QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic);
     // uncomment the line below when NTLM works
 //    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm);
-#endif
 }
 
 void tst_QSslSocket::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         QString fluke = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
         QNetworkProxy proxy;
@@ -295,15 +287,12 @@ void tst_QSslSocket::init()
             break;
         }
         QNetworkProxy::setApplicationProxy(proxy);
-#endif
     }
 }
 
 void tst_QSslSocket::cleanup()
 {
-#ifdef TEST_QNETWORK_PROXY
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
-#endif
 }
 
 #ifndef QT_NO_OPENSSL
@@ -347,7 +336,6 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.sslConfiguration(), QSslConfiguration::defaultConfiguration());
     QCOMPARE(socket.errorString(), QString("Unknown error"));
     char c = '\0';
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
     QVERIFY(!socket.getChar(&c));
     QCOMPARE(c, '\0');
     QVERIFY(!socket.isOpen());

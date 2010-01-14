@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -343,8 +343,8 @@ void* qglx_getProcAddress(const char* procName)
     static bool triedResolvingGlxGetProcAddress = false;
     if (!triedResolvingGlxGetProcAddress) {
         triedResolvingGlxGetProcAddress = true;
-        QList<QByteArray> glxExt = QByteArray(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)).split(' ');
-        if (glxExt.contains("GLX_ARB_get_proc_address")) {
+        QGLExtensionMatcher extensions(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
+        if (extensions.match("GLX_ARB_get_proc_address")) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
             void *handle = dlopen(NULL, RTLD_LAZY);
             if (handle) {
@@ -523,8 +523,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         if (!d->gpm)
             return false;
     }
-    QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(xinfo->display(), xinfo->screen())).split(' ');
-    if (glxExt.contains("GLX_SGI_video_sync")) {
+    QGLExtensionMatcher extensions(glXQueryExtensionsString(xinfo->display(), xinfo->screen()));
+    if (extensions.match("GLX_SGI_video_sync")) {
         if (d->glFormat.swapInterval() == -1)
             d->glFormat.setSwapInterval(0);
     } else {
@@ -630,8 +630,8 @@ void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
     static bool useTranspExt = false;
     static bool useTranspExtChecked = false;
     if (f.plane() && !useTranspExtChecked && d->paintDevice) {
-        QByteArray estr(glXQueryExtensionsString(xinfo->display(), xinfo->screen()));
-        useTranspExt = estr.contains("GLX_EXT_visual_info");
+        QGLExtensionMatcher extensions(glXQueryExtensionsString(xinfo->display(), xinfo->screen()));
+        useTranspExt = extensions.match("GLX_EXT_visual_info");
         //# (A bit simplistic; that could theoretically be a substring)
         if (useTranspExt) {
             QByteArray cstr(glXGetClientString(xinfo->display(), GLX_VENDOR));
@@ -825,7 +825,7 @@ void QGLContext::reset()
     d->valid = false;
     d->transpColor = QColor();
     d->initDone = false;
-    qgl_share_reg()->removeShare(this);
+    QGLContextGroup::removeShare(this);
 }
 
 
@@ -875,8 +875,8 @@ void QGLContext::swapBuffers() const
             static bool resolved = false;
             if (!resolved) {
                 const QX11Info *xinfo = qt_x11Info(d->paintDevice);
-                QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(xinfo->display(), xinfo->screen())).split(' ');
-                if (glxExt.contains("GLX_SGI_video_sync")) {
+                QGLExtensionMatcher extensions(glXQueryExtensionsString(xinfo->display(), xinfo->screen()));
+                if (extensions.match("GLX_SGI_video_sync")) {
                     glXGetVideoSyncSGI =  (qt_glXGetVideoSyncSGI)qglx_getProcAddress("glXGetVideoSyncSGI");
                     glXWaitVideoSyncSGI = (qt_glXWaitVideoSyncSGI)qglx_getProcAddress("glXWaitVideoSyncSGI");
                 }
@@ -1107,8 +1107,8 @@ void *QGLContext::getProcAddress(const QString &proc) const
     if (resolved && !glXGetProcAddressARB)
         return 0;
     if (!glXGetProcAddressARB) {
-        QList<QByteArray> glxExt = QByteArray(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)).split(' ');
-        if (glxExt.contains("GLX_ARB_get_proc_address")) {
+        QGLExtensionMatcher extensions(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
+        if (extensions.match("GLX_ARB_get_proc_address")) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
             void *handle = dlopen(NULL, RTLD_LAZY);
             if (handle) {
@@ -1131,6 +1131,72 @@ void *QGLContext::getProcAddress(const QString &proc) const
         return 0;
     return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(proc.toLatin1().data()));
 }
+
+//
+// This class is used to create a temporary, minimal GL context, which is used
+// to retrive GL version and extension info. It's significantly faster to
+// construct than a QGLWidget, and it doesn't have the recursive creation
+// problem that QGLWidget would have. E.g. creating a temporary QGLWidget to
+// retrieve GL info as part of the QGLWidget initialization.
+//
+class QGLTempContext
+{
+public:
+    QGLTempContext(int screen = 0) :
+            initialized(false),
+            old_drawable(0),
+            old_context(0)
+    {
+        int attribs[] = {GLX_RGBA, XNone};
+        XVisualInfo *vi = glXChooseVisual(X11->display, screen, attribs);
+        if (!vi) {
+            qWarning("QGLTempContext: No GL capable X visuals available.");
+            return;
+        }
+
+        int useGL;
+        glXGetConfig(X11->display, vi, GLX_USE_GL, &useGL);
+        if (!useGL) {
+            XFree(vi);
+            return;
+        }
+
+        old_drawable = glXGetCurrentDrawable();
+        old_context = glXGetCurrentContext();
+
+        XSetWindowAttributes a;
+        a.colormap = qt_gl_choose_cmap(X11->display, vi);
+        drawable = XCreateWindow(X11->display, RootWindow(X11->display, screen),
+                                 0, 0, 1, 1, 0,
+                                 vi->depth, InputOutput, vi->visual,
+                                 CWColormap, &a);
+        context = glXCreateContext(X11->display, vi, 0, True);
+        if (context && glXMakeCurrent(X11->display, drawable, context)) {
+            initialized = true;
+        } else {
+            qWarning("QGLTempContext: Unable to create GL context.");
+            XDestroyWindow(X11->display, drawable);
+        }
+        XFree(vi);
+    }
+
+    ~QGLTempContext() {
+        if (initialized) {
+            glXMakeCurrent(X11->display, 0, 0);
+            glXDestroyContext(X11->display, context);
+            XDestroyWindow(X11->display, drawable);
+        }
+        if (old_drawable && old_context)
+            glXMakeCurrent(X11->display, old_drawable, old_context);
+    }
+
+private:
+    bool initialized;
+    Window drawable;
+    GLXContext context;
+    GLXDrawable old_drawable;
+    GLXContext old_context;
+};
 
 /*****************************************************************************
   QGLOverlayWidget (Internal overlay class for X11)
@@ -1574,8 +1640,7 @@ void QGLExtensions::init()
         return;
     init_done = true;
 
-    QGLWidget dmy;
-    dmy.makeCurrent();
+    QGLTempContext context;
     init_extensions();
 
     // nvidia 9x.xx unix drivers contain a bug which requires us to call glFinish before releasing an fbo
@@ -1609,8 +1674,8 @@ static bool qt_resolveTextureFromPixmap(QPaintDevice *paintDevice)
             return false; // Can't use TFP without NPOT
         }
         const QX11Info *xinfo = qt_x11Info(paintDevice);
-        QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(xinfo->display(), xinfo->screen())).split(' ');
-        if (glxExt.contains("GLX_EXT_texture_from_pixmap")) {
+        QGLExtensionMatcher extensions(glXQueryExtensionsString(xinfo->display(), xinfo->screen()));
+        if (extensions.match("GLX_EXT_texture_from_pixmap")) {
             glXBindTexImageEXT = (qt_glXBindTexImageEXT) qglx_getProcAddress("glXBindTexImageEXT");
             glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) qglx_getProcAddress("glXReleaseTexImageEXT");
         }

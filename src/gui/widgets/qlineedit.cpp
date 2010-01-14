@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -383,6 +383,38 @@ void QLineEdit::setText(const QString& text)
     d->control->setText(text);
 }
 
+// ### Qt 4.7: remove this #if guard
+#if (QT_VERSION >= 0x407000) || defined(Q_WS_MAEMO_5)
+/*!
+    \since 4.7
+
+    \property QLineEdit::placeholderText
+    \brief the line edit's placeholder text
+
+    Setting this property makes the line edit display a grayed-out
+    placeholder text as long as the text() is empty and the widget doesn't
+    have focus.
+
+    By default, this property contains an empty string.
+
+    \sa text()
+*/
+QString QLineEdit::placeholderText() const
+{
+    Q_D(const QLineEdit);
+    return d->placeholderText;
+}
+
+void QLineEdit::setPlaceholderText(const QString& placeholderText)
+{
+    Q_D(QLineEdit);
+    if (d->placeholderText != placeholderText) {
+        d->placeholderText = placeholderText;
+        if (!hasFocus())
+            update();
+    }
+}
+#endif
 
 /*!
     \property QLineEdit::displayText
@@ -1411,6 +1443,18 @@ bool QLineEdit::event(QEvent * e)
         QTimer::singleShot(0, this, SLOT(_q_handleWindowActivate()));
     }else if(e->type() == QEvent::ShortcutOverride){
         d->control->processEvent(e);
+    } else if (e->type() == QEvent::KeyRelease) {
+        d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
+    } else if (e->type() == QEvent::Show) {
+        //In order to get the cursor blinking if QComboBox::setEditable is called when the combobox has focus
+        if (hasFocus()) {
+            d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
+            QStyleOptionFrameV2 opt;
+            initStyleOption(&opt);
+            if ((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
+                || style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
+                d->setCursorVisible(true);
+        }
     }
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1515,7 +1559,7 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
     }
 #endif
 
-    if (!isReadOnly())
+    if (!isReadOnly() && rect().contains(e->pos()))
         d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
@@ -1615,6 +1659,8 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
     }
 #endif
     d->control->processKeyEvent(event);
+    if (event->isAccepted())
+        d->control->setCursorBlinkPeriod(0);
 }
 
 /*!
@@ -1715,7 +1761,11 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
         d->clickCausedFocus = 1;
     }
 #ifdef QT_KEYPAD_NAVIGATION
-    if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && e->reason() == Qt::PopupFocusReason)){
+    if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && ( e->reason() == Qt::PopupFocusReason
+#ifdef Q_OS_SYMBIAN
+            || e->reason() == Qt::ActiveWindowFocusReason
+#endif
+            ))) {
 #endif
     d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
     QStyleOptionFrameV2 opt;
@@ -1824,6 +1874,18 @@ void QLineEdit::paintEvent(QPaintEvent *)
          break;
     }
     QRect lineRect(r.x() + d->horizontalMargin, d->vscroll, r.width() - 2*d->horizontalMargin, fm.height());
+
+    if (d->control->text().isEmpty()) {
+        if (!hasFocus() && !d->placeholderText.isEmpty()) {
+            QColor col = pal.text().color();
+            col.setAlpha(128);
+            QPen oldpen = p.pen();
+            p.setPen(col);
+            p.drawText(lineRect, va, d->placeholderText);
+            p.setPen(oldpen);
+            return;
+        }
+    }
 
     int cix = qRound(d->control->cursorToX());
 
@@ -2004,38 +2066,48 @@ QMenu *QLineEdit::createStandardContextMenu()
     Q_D(QLineEdit);
     QMenu *popup = new QMenu(this);
     popup->setObjectName(QLatin1String("qt_edit_menu"));
+    QAction *action = 0;
 
-    QAction *action = popup->addAction(QLineEdit::tr("&Undo") + ACCEL_KEY(QKeySequence::Undo));
-    action->setEnabled(d->control->isUndoAvailable());
-    connect(action, SIGNAL(triggered()), SLOT(undo()));
+    if (!isReadOnly()) {
+        action = popup->addAction(QLineEdit::tr("&Undo") + ACCEL_KEY(QKeySequence::Undo));
+        action->setEnabled(d->control->isUndoAvailable());
+        connect(action, SIGNAL(triggered()), SLOT(undo()));
 
-    action = popup->addAction(QLineEdit::tr("&Redo") + ACCEL_KEY(QKeySequence::Redo));
-    action->setEnabled(d->control->isRedoAvailable());
-    connect(action, SIGNAL(triggered()), SLOT(redo()));
+        action = popup->addAction(QLineEdit::tr("&Redo") + ACCEL_KEY(QKeySequence::Redo));
+        action->setEnabled(d->control->isRedoAvailable());
+        connect(action, SIGNAL(triggered()), SLOT(redo()));
 
-    popup->addSeparator();
+        popup->addSeparator();
+    }
 
 #ifndef QT_NO_CLIPBOARD
-    action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
-    action->setEnabled(!d->control->isReadOnly() && d->control->hasSelectedText()
-            && d->control->echoMode() == QLineEdit::Normal);
-    connect(action, SIGNAL(triggered()), SLOT(cut()));
+    if (!isReadOnly()) {
+        action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
+        action->setEnabled(!d->control->isReadOnly() && d->control->hasSelectedText()
+                && d->control->echoMode() == QLineEdit::Normal);
+        connect(action, SIGNAL(triggered()), SLOT(cut()));
+    }
 
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
     action->setEnabled(d->control->hasSelectedText()
             && d->control->echoMode() == QLineEdit::Normal);
     connect(action, SIGNAL(triggered()), SLOT(copy()));
 
-    action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
-    action->setEnabled(!d->control->isReadOnly() && !QApplication::clipboard()->text().isEmpty());
-    connect(action, SIGNAL(triggered()), SLOT(paste()));
+    if (!isReadOnly()) {
+        action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
+        action->setEnabled(!d->control->isReadOnly() && !QApplication::clipboard()->text().isEmpty());
+        connect(action, SIGNAL(triggered()), SLOT(paste()));
+    }
 #endif
 
-    action = popup->addAction(QLineEdit::tr("Delete"));
-    action->setEnabled(!d->control->isReadOnly() && !d->control->text().isEmpty() && d->control->hasSelectedText());
-    connect(action, SIGNAL(triggered()), d->control, SLOT(_q_deleteSelected()));
+    if (!isReadOnly()) {
+        action = popup->addAction(QLineEdit::tr("Delete"));
+        action->setEnabled(!d->control->isReadOnly() && !d->control->text().isEmpty() && d->control->hasSelectedText());
+        connect(action, SIGNAL(triggered()), d->control, SLOT(_q_deleteSelected()));
+    }
 
-    popup->addSeparator();
+    if (!popup->isEmpty())
+        popup->addSeparator();
 
     action = popup->addAction(QLineEdit::tr("Select All") + ACCEL_KEY(QKeySequence::SelectAll));
     action->setEnabled(!d->control->text().isEmpty() && !d->control->allSelected());

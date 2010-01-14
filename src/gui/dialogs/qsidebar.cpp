@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -293,20 +293,20 @@ void QUrlModel::setFileSystemModel(QFileSystemModel *model)
     if (model == fileSystemModel)
         return;
     if (fileSystemModel != 0) {
-        disconnect(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
-            this, SLOT(dataChanged(const QModelIndex &, const QModelIndex &)));
+        disconnect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+            this, SLOT(dataChanged(QModelIndex,QModelIndex)));
         disconnect(model, SIGNAL(layoutChanged()),
             this, SLOT(layoutChanged()));
-        disconnect(model, SIGNAL(rowsRemoved(const QModelIndex &, int, int)),
+        disconnect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
             this, SLOT(layoutChanged()));
     }
     fileSystemModel = model;
     if (fileSystemModel != 0) {
-        connect(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
-            this, SLOT(dataChanged(const QModelIndex &, const QModelIndex &)));
+        connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+            this, SLOT(dataChanged(QModelIndex,QModelIndex)));
         connect(model, SIGNAL(layoutChanged()),
             this, SLOT(layoutChanged()));
-        connect(model, SIGNAL(rowsRemoved(const QModelIndex &, int, int)),
+        connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
             this, SLOT(layoutChanged()));
     }
     clear();
@@ -381,14 +381,14 @@ void QSidebar::init(QFileSystemModel *model, const QList<QUrl> &newUrls)
     setModel(urlModel);
     setItemDelegate(new QSideBarDelegate(this));
 
-    connect(selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
-            this, SLOT(clicked(const QModelIndex &)));
+    connect(selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+            this, SLOT(clicked(QModelIndex)));
 #ifndef QT_NO_DRAGANDDROP
     setDragDropMode(QAbstractItemView::DragDrop);
 #endif
     setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
-            this, SLOT(showContextMenu(const QPoint &)));
+    connect(this, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(showContextMenu(QPoint)));
     urlModel->setUrls(newUrls);
     setCurrentIndex(this->model()->index(0,0));
 }
@@ -414,8 +414,8 @@ QSize QSidebar::sizeHint() const
 
 void QSidebar::selectUrl(const QUrl &url)
 {
-    disconnect(selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
-               this, SLOT(clicked(const QModelIndex &)));
+    disconnect(selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+               this, SLOT(clicked(QModelIndex)));
 
     selectionModel()->clear();
     for (int i = 0; i < model()->rowCount(); ++i) {
@@ -425,8 +425,8 @@ void QSidebar::selectUrl(const QUrl &url)
         }
     }
 
-    connect(selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
-            this, SLOT(clicked(const QModelIndex &)));
+    connect(selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+            this, SLOT(clicked(QModelIndex)));
 }
 
 #ifndef QT_NO_MENU

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,6 +80,8 @@ QT_BEGIN_NAMESPACE
     void Q_GUI_QWS_EXPORT qt_memrotate90(const srctype*, int, int, int, desttype*, int); \
     void Q_GUI_QWS_EXPORT qt_memrotate180(const srctype*, int, int, int, desttype*, int); \
     void Q_GUI_QWS_EXPORT qt_memrotate270(const srctype*, int, int, int, desttype*, int)
+
+void Q_GUI_EXPORT qt_memrotate90(const quint32*, int, int, int, quint32*, int);
 
 QT_DECL_MEMROTATE(quint32, quint32);
 QT_DECL_MEMROTATE(quint32, quint16);

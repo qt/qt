@@ -45,6 +45,7 @@ using namespace Phonon::MMF;
 
 MMF::MediaObject::MediaObject(QObject *parent) : MMF::MediaNode::MediaNode(parent)
                                                , m_recognizerOpened(false)
+                                               , m_nextSourceSet(false)
 {
     m_player.reset(new DummyPlayer());
 
@@ -211,18 +212,20 @@ qint64 MMF::MediaObject::totalTime() const
 
 MediaSource MMF::MediaObject::source() const
 {
-    return m_player->source();
+    return m_source;
 }
 
 void MMF::MediaObject::setSource(const MediaSource &source)
 {
+    switchToSource(source);
+}
+
+void MMF::MediaObject::switchToSource(const MediaSource &source)
+{
     createPlayer(source);
-
-    // This is a hack to work around KErrInUse from MMF client utility
-    // OpenFileL calls
-    m_player->setFileSource(source, m_file);
-
-    emit currentSourceChanged(source);
+    m_source = source;
+    m_player->open(m_source, m_file);
+    emit currentSourceChanged(m_source);
 }
 
 void MMF::MediaObject::createPlayer(const MediaSource &source)
@@ -238,7 +241,6 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     const bool oldPlayerHasVideo = oldPlayer->hasVideo();
     const bool oldPlayerSeekable = oldPlayer->isSeekable();
 
-    Phonon::ErrorType error = NoError;
     QString errorMessage;
 
     // Determine media type
@@ -254,8 +256,10 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
                 mediaType = fileMediaType(url.toLocalFile());
             }
             else {
-                errorMessage = QLatin1String("Network streaming not supported yet");
-                error = NormalError;
+                // Streaming playback is generally not supported by the implementation
+                // of the audio player API, so we use CVideoPlayerUtility for both
+                // audio and video streaming.
+                mediaType = MediaTypeVideo;
             }
         }
         break;
@@ -263,8 +267,7 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     case MediaSource::Invalid:
     case MediaSource::Disc:
     case MediaSource::Stream:
-        TRACE_0("Unsupported media type");
-        error = NormalError;
+        errorMessage = tr("Error opening source: type not supported");
         break;
 
     case MediaSource::Empty:
@@ -281,34 +284,23 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     switch (mediaType) {
     case MediaTypeUnknown:
         TRACE_0("Media type could not be determined");
-        if (oldPlayer) {
-            newPlayer = new DummyPlayer(*oldPlayer);
-        } else {
-            newPlayer = new DummyPlayer();
-        }
-
-        error = NormalError;
-        errorMessage = tr("Media type could not be determined");
+        newPlayer = new DummyPlayer(oldPlayer);
+        errorMessage = tr("Error opening source: media type could not be determined");
         break;
 
     case MediaTypeAudio:
-        if (oldPlayer) {
-            newPlayer = new AudioPlayer(*oldPlayer);
-        } else {
-            newPlayer = new AudioPlayer();
-        }
+        newPlayer = new AudioPlayer(this, oldPlayer);
         break;
 
     case MediaTypeVideo:
-        if (oldPlayer) {
-            newPlayer = new VideoPlayer(*oldPlayer);
-        } else {
-            newPlayer = new VideoPlayer();
-        }
+        newPlayer = new VideoPlayer(this, oldPlayer);
         break;
     }
 
+    if (oldPlayer)
+        emit abstractPlayerChanged(0);
     m_player.reset(newPlayer);
+    emit abstractPlayerChanged(newPlayer);
 
     if (oldPlayerHasVideo != hasVideo()) {
         emit hasVideoChanged(hasVideo());
@@ -319,16 +311,19 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     }
 
     connect(m_player.data(), SIGNAL(totalTimeChanged(qint64)), SIGNAL(totalTimeChanged(qint64)));
-    connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+    connect(m_player.data(), SIGNAL(stateChanged(Phonon::State,Phonon::State)), SIGNAL(stateChanged(Phonon::State,Phonon::State)));
     connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
     connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
-    connect(m_player.data(), SIGNAL(metaDataChanged(const QMultiMap<QString, QString>&)), SIGNAL(metaDataChanged(const QMultiMap<QString, QString>&)));
+    connect(m_player.data(), SIGNAL(bufferStatus(int)), SIGNAL(bufferStatus(int)));
+    connect(m_player.data(), SIGNAL(metaDataChanged(QMultiMap<QString,QString>)), SIGNAL(metaDataChanged(QMultiMap<QString,QString>)));
+    connect(m_player.data(), SIGNAL(aboutToFinish()), SIGNAL(aboutToFinish()));
+    connect(m_player.data(), SIGNAL(prefinishMarkReached(qint32)), SIGNAL(tick(qint32)));
 
     // We need to call setError() after doing the connects, otherwise the
     // error won't be received.
-    if (error != NoError) {
+    if (!errorMessage.isEmpty()) {
         Q_ASSERT(m_player);
-        m_player->setError(error, errorMessage);
+        m_player->setError(errorMessage);
     }
 
     TRACE_EXIT_0();
@@ -336,7 +331,8 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 
 void MMF::MediaObject::setNextSource(const MediaSource &source)
 {
-    m_player->setNextSource(source);
+    m_nextSource = source;
+    m_nextSourceSet = true;
 }
 
 qint32 MMF::MediaObject::prefinishMark() const
@@ -365,6 +361,25 @@ void MMF::MediaObject::volumeChanged(qreal volume)
 }
 
 //-----------------------------------------------------------------------------
+// MediaNode
+//-----------------------------------------------------------------------------
+
+void MMF::MediaObject::connectMediaObject(MediaObject * /*mediaObject*/)
+{
+    // This function should never be called - see MediaNode::setMediaObject()
+    Q_ASSERT_X(false, Q_FUNC_INFO,
+        "Connection of MediaObject to MediaObject");
+}
+
+void MMF::MediaObject::disconnectMediaObject(MediaObject * /*mediaObject*/)
+{
+    // This function should never be called - see MediaNode::setMediaObject()
+    Q_ASSERT_X(false, Q_FUNC_INFO,
+        "Disconnection of MediaObject from MediaObject");
+}
+
+
+//-----------------------------------------------------------------------------
 // Video output
 //-----------------------------------------------------------------------------
 
@@ -379,10 +394,17 @@ AbstractPlayer *MMF::MediaObject::abstractPlayer() const
     return m_player.data();
 }
 
-bool MMF::MediaObject::activateOnMediaObject(MediaObject *)
+//-----------------------------------------------------------------------------
+// Playlist support
+//-----------------------------------------------------------------------------
+
+void MMF::MediaObject::switchToNextSource()
 {
-    // Guess what, we do nothing.
-    return true;
+    if (m_nextSourceSet) {
+        m_nextSourceSet = false;
+        switchToSource(m_nextSource);
+        play();
+    }
 }
 
 QT_END_NAMESPACE

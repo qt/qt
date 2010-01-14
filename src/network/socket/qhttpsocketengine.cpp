@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -212,28 +212,14 @@ qint64 QHttpSocketEngine::bytesAvailable() const
 qint64 QHttpSocketEngine::read(char *data, qint64 maxlen)
 {
     Q_D(QHttpSocketEngine);
-    qint64 bytesRead = 0;
-
-    if (!d->readBuffer.isEmpty()) {
-        // Read as much from the buffer as we can.
-        bytesRead = qMin((qint64)d->readBuffer.size(), maxlen);
-        memcpy(data, d->readBuffer.constData(), bytesRead);
-        data += bytesRead;
-        maxlen -= bytesRead;
-        d->readBuffer = d->readBuffer.mid(bytesRead);
-    }
-
-    qint64 bytesReadFromSocket = d->socket->read(data, maxlen);
+    qint64 bytesRead = d->socket->read(data, maxlen);
 
     if (d->socket->state() == QAbstractSocket::UnconnectedState
         && d->socket->bytesAvailable() == 0) {
         emitReadNotification();
     }
 
-    if (bytesReadFromSocket > 0) {
-        // Add to what we read so far.
-        bytesRead += bytesReadFromSocket;
-    } else if (bytesRead == 0 && bytesReadFromSocket == -1) {
+    if (bytesRead == -1) {
         // If nothing has been read so far, and the direct socket read
         // failed, return the socket's error. Otherwise, fall through and
         // return as much as we read so far.
@@ -560,7 +546,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
     }
 
     QHttpResponseHeader responseHeader(QString::fromLatin1(d->readBuffer));
-    d->readBuffer.clear();
+    d->readBuffer.clear(); // we parsed the proxy protocol response. from now on direct socket reading will be done
 
     int statusCode = responseHeader.statusCode();
     if (statusCode == 200) {

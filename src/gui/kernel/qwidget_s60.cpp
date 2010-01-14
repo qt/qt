@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -488,12 +488,6 @@ void QWidgetPrivate::show_sys()
 
         if(q->isWindow())
             id->setFocusSafely(true);
-
-        // Force setting of the icon after window is made visible,
-        // this is needed even WA_SetWindowIcon is not set, as in that case we need
-        // to reset to the application level window icon
-        if(q->isWindow())
-            setWindowIcon_sys(true);
     }
 
     invalidateBuffer(q->rect());
@@ -887,7 +881,8 @@ void QWidgetPrivate::deleteTLSysExtra()
 void QWidgetPrivate::createSysExtra()
 {
     extra->activated = 0;
-    extra->disableBlit = 0;
+    extra->nativePaintMode = QWExtra::Default;
+    extra->receiveNativePaintEvents = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -1157,7 +1152,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         if (d->ic) {
             delete d->ic;
         } else {
-            QInputContext *ic = inputContext();
+            QInputContext *ic = QApplicationPrivate::inputContext;
             if (ic) {
                 ic->widgetDestroyed(this);
             }
@@ -1180,18 +1175,6 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             if (id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
                 id->setFocusSafely(false);
             id->ControlEnv()->AppUi()->RemoveFromStack(id);
-
-            // Hack to activate window under destroyed one. With this activation
-            // the next visible window will get keyboard focus
-            WId wid = CEikonEnv::Static()->AppUi()->TopFocusedControl();
-            if (wid) {
-                QWidget *widget = QWidget::find(wid);
-                QApplication::setActiveWindow(widget);
-                if (widget) {
-                    // Reset global window title for focusing window
-                    widget->d_func()->setWindowTitle_sys(widget->windowTitle());
-                }
-            }
         }
     }
 

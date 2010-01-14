@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -773,7 +773,7 @@ void QListView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
 void QListView::mouseMoveEvent(QMouseEvent *e)
 {
     if (!isVisible())
-	return;
+        return;
     Q_D(QListView);
     QAbstractItemView::mouseMoveEvent(e);
     if (state() == DragSelectingState
@@ -832,16 +832,16 @@ void QListView::resizeEvent(QResizeEvent *e)
       return;
 
     bool listWrap = (d->viewMode == ListMode) && d->wrapItemText;
-    bool flowDimensionChanged = (d->flow == LeftToRight && delta.width() != 0) 
-				|| (d->flow == TopToBottom && delta.height() != 0);
+    bool flowDimensionChanged = (d->flow == LeftToRight && delta.width() != 0)
+                                || (d->flow == TopToBottom && delta.height() != 0);
 
     // We post a delayed relayout in the following cases :
     // - we're wrapping
     // - the state is NoState, we're adjusting and the size has changed in the flowing direction
-    if (listWrap 
+    if (listWrap
         || (state() == NoState && d->resizeMode == Adjust && flowDimensionChanged)) {
-	d->doDelayedItemsLayout(100); // wait 1/10 sec before starting the layout
-    } else {	
+        d->doDelayedItemsLayout(100); // wait 1/10 sec before starting the layout
+    } else {
         QAbstractItemView::resizeEvent(e);
     }
 }
@@ -966,15 +966,19 @@ void QListView::paintEvent(QPaintEvent *e)
     bool alternateBase = false;
     int previousRow = -2; // trigger the alternateBase adjustment on first pass
 
+    int maxSize = (flow() == TopToBottom)
+        ? qMax(viewport()->size().width(), d->contentsSize().width()) - 2 * d->spacing()
+        : qMax(viewport()->size().height(), d->contentsSize().height()) - 2 * d->spacing();
+
     QVector<QModelIndex>::const_iterator end = toBeRendered.constEnd();
     for (QVector<QModelIndex>::const_iterator it = toBeRendered.constBegin(); it != end; ++it) {
         Q_ASSERT((*it).isValid());
         option.rect = visualRect(*it);
 
         if (flow() == TopToBottom)
-            option.rect.setWidth(qMin(d->contentsSize().width() - 2 * d->spacing(), option.rect.width()));
+            option.rect.setWidth(qMin(maxSize, option.rect.width()));
         else
-            option.rect.setHeight(qMin(d->contentsSize().height() - 2 * d->spacing(), option.rect.height()));
+            option.rect.setHeight(qMin(maxSize, option.rect.height()));
 
         option.state = state;
         if (selections && selections->isSelected(*it))
@@ -1147,7 +1151,9 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         }
         return d->closestIndex(initialRect, intersectVector);
     case MovePageUp:
-        rect.moveTop(rect.top() - d->viewport->height());
+        // move current by (visibileRowCount - 1) items.
+        // rect.translate(0, -rect.height()); will happen in the switch fallthrough for MoveUp.
+        rect.moveTop(rect.top() - d->viewport->height() + 2 * rect.height());
         if (rect.top() < rect.height())
             rect.moveTop(rect.height());
     case MovePrevious:
@@ -1173,7 +1179,9 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         }
         return d->closestIndex(initialRect, intersectVector);
     case MovePageDown:
-        rect.moveTop(rect.top() + d->viewport->height());
+        // move current by (visibileRowCount - 1) items.
+        // rect.translate(0, rect.height()); will happen in the switch fallthrough for MoveDown.
+        rect.moveTop(rect.top() + d->viewport->height() - 2 * rect.height());
         if (rect.bottom() > contents.height() - rect.height())
             rect.moveBottom(contents.height() - rect.height());
     case MoveNext:
@@ -1445,7 +1453,7 @@ void QListView::doItemsLayout()
     // so we set the state to expanding to avoid
     // triggering another layout
     QAbstractItemView::State oldState = state();
-    setState(ExpandingState); 
+    setState(ExpandingState);
     if (d->model->columnCount(d->root) > 0) { // no columns means no contents
         d->resetBatchStartRow();
         if (layoutMode() == SinglePass)

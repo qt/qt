@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -141,6 +141,7 @@ private slots:
 #if defined QTEST_HAVE_GIF
     void gifHandlerBugs();
     void animatedGif();
+    void gifImageCount();
 #endif
 
     void readCorruptImage_data();
@@ -322,7 +323,15 @@ void tst_QImageReader::setScaledSize_data()
     QTest::newRow("PPM: test") << "test.ppm" << QSize(10, 10) << QByteArray("ppm");
     QTest::newRow("XBM: gnus") << "gnus" << QSize(200, 200) << QByteArray("xbm");
 #ifdef QTEST_HAVE_JPEG
-    QTest::newRow("JPEG: beavis") << "beavis" << QSize(200, 200) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis A") << "beavis" << QSize(200, 200) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis B") << "beavis" << QSize(175, 175) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis C") << "beavis" << QSize(100, 100) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis D") << "beavis" << QSize(100, 200) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis E") << "beavis" << QSize(200, 100) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis F") << "beavis" << QSize(87, 87) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis G") << "beavis" << QSize(50, 45) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis H") << "beavis" << QSize(43, 43) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis I") << "beavis" << QSize(25, 25) << QByteArray("jpeg");
 #endif // QTEST_HAVE_JPEG
 #ifdef QTEST_HAVE_GIF
     QTest::newRow("GIF: earth") << "earth" << QSize(200, 200) << QByteArray("gif");
@@ -717,6 +726,13 @@ void tst_QImageReader::gifHandlerBugs()
         QVERIFY(!im1.isNull());  QVERIFY(!im2.isNull());
         QCOMPARE(im1.convertToFormat(QImage::Format_ARGB32), im2.convertToFormat(QImage::Format_ARGB32));
     }
+
+    // Check the undocumented feature.
+    {
+        QImageReader io(prefix + "endless-anim.gif");
+        QVERIFY(io.canRead());
+        QCOMPARE(io.loopCount(), -1);
+    }
 }
 
 void tst_QImageReader::animatedGif()
@@ -729,6 +745,136 @@ void tst_QImageReader::animatedGif()
         QString frameName = QString(":images/qt%1.gif").arg(++i);
         QCOMPARE(image, QImage(frameName));
         image = io.read();
+    }
+}
+
+// http://bugreports.qt.nokia.com/browse/QTBUG-6696
+// Check the count of images in various call orders...
+void tst_QImageReader::gifImageCount()
+{
+    // just read every frame... and see how much we got..
+    {
+        QImageReader io(":images/four-frames.gif");
+
+        QVERIFY(io.canRead());
+        QImage blackFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QImage whiteFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QImage greenFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QImage blueFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QImage emptyFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QCOMPARE(blackFrame.pixel(0,0), qRgb(0, 0, 0));
+        QCOMPARE(blackFrame.size(), QSize(64,64));
+
+        QCOMPARE(whiteFrame.pixel(0,0), qRgb(0xff, 0xff, 0xff));
+        QCOMPARE(whiteFrame.size(), QSize(64,64));
+
+        QCOMPARE(greenFrame.pixel(0,0), qRgb(0x0, 0xff, 0x0));
+        QCOMPARE(greenFrame.size(), QSize(64,64));
+
+        QCOMPARE(blueFrame.pixel(0,0), qRgb(0x0, 0x0, 0xff));
+        QCOMPARE(blueFrame.size(), QSize(64,64));
+        QVERIFY(emptyFrame.isNull());
+    }
+
+    // Read and get the size
+    {
+        QImageReader io(":images/four-frames.gif");
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QVERIFY(io.canRead());
+        QImage blackFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QVERIFY(io.canRead());
+        QImage whiteFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QVERIFY(io.canRead());
+        QImage greenFrame = io.read();
+
+        QVERIFY(io.canRead());
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QVERIFY(io.canRead());
+        QImage blueFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QCOMPARE(io.size(), QSize());
+        QCOMPARE(io.size(), QSize());
+        QVERIFY(!io.canRead());
+        QImage emptyFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QCOMPARE(blackFrame.pixel(0,0), qRgb(0, 0, 0));
+        QCOMPARE(blackFrame.size(), QSize(64,64));
+
+        QCOMPARE(whiteFrame.pixel(0,0), qRgb(0xff, 0xff, 0xff));
+        QCOMPARE(whiteFrame.size(), QSize(64,64));
+
+        QCOMPARE(greenFrame.pixel(0,0), qRgb(0x0, 0xff, 0x0));
+        QCOMPARE(greenFrame.size(), QSize(64,64));
+
+        QCOMPARE(blueFrame.pixel(0,0), qRgb(0x0, 0x0, 0xff));
+        QCOMPARE(blueFrame.size(), QSize(64,64));
+        QVERIFY(emptyFrame.isNull());
+    }
+
+    // Do a Size query as substitute for canRead
+    {
+        QImageReader io(":images/four-frames.gif");
+
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QImage blackFrame = io.read();
+
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QImage whiteFrame = io.read();
+
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QImage greenFrame = io.read();
+
+        QCOMPARE(io.size(), QSize(64,64));
+        QCOMPARE(io.size(), QSize(64,64));
+        QImage blueFrame = io.read();
+
+        QCOMPARE(io.size(), QSize());
+        QVERIFY(!io.canRead());
+        QImage emptyFrame = io.read();
+
+        QVERIFY(!io.canRead());
+        QCOMPARE(blackFrame.pixel(0,0), qRgb(0, 0, 0));
+        QCOMPARE(blackFrame.size(), QSize(64,64));
+
+        QCOMPARE(whiteFrame.pixel(0,0), qRgb(0xff, 0xff, 0xff));
+        QCOMPARE(whiteFrame.size(), QSize(64,64));
+
+        QCOMPARE(greenFrame.pixel(0,0), qRgb(0x0, 0xff, 0x0));
+        QCOMPARE(greenFrame.size(), QSize(64,64));
+
+        QCOMPARE(blueFrame.pixel(0,0), qRgb(0x0, 0x0, 0xff));
+        QCOMPARE(blueFrame.size(), QSize(64,64));
+        QVERIFY(emptyFrame.isNull());
     }
 }
 #endif

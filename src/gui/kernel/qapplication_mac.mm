@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1687,7 +1687,10 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             UInt32 mac_buttons = 0;
             GetEventParameter(event, kEventParamMouseChord, typeUInt32, 0,
                               sizeof(mac_buttons), 0, &mac_buttons);
-            buttons = qt_mac_get_buttons(mac_buttons);
+            if (ekind != kEventMouseWheelMoved)
+                buttons = qt_mac_get_buttons(mac_buttons);
+            else
+                buttons = QApplication::mouseButtons();
         }
 
         int wheel_deltaX = 0;
@@ -2449,7 +2452,7 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
         switch(aeID) {
         case kAEQuitApplication: {
             extern bool qt_mac_quit_menu_item_enabled; // qmenu_mac.cpp
-            if(!QApplicationPrivate::modalState() && qt_mac_quit_menu_item_enabled) {
+            if (qt_mac_quit_menu_item_enabled) {
                 QCloseEvent ev;
                 QApplication::sendSpontaneousEvent(app, &ev);
                 if(ev.isAccepted()) {

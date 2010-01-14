@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,6 +69,7 @@ private slots:
     void opacity();
     void grayscale();
     void colorize();
+    void drawPixmapItem();
 };
 
 void tst_QGraphicsEffect::initTestCase()
@@ -196,8 +197,8 @@ void tst_QGraphicsEffect::source()
     // Uninstall effect on QGraphicsItem.
     effect->reset();
     item->setGraphicsEffect(0);
-    QVERIFY(!effect->source());
-    QVERIFY(effect->m_sourceChangedFlags & QGraphicsEffect::SourceDetached);
+    QVERIFY(!effect);
+    effect = new CustomEffect;
 
     // The item takes ownership and should delete the effect when destroyed.
     item->setGraphicsEffect(effect);
@@ -249,10 +250,10 @@ void tst_QGraphicsEffect::boundingRect()
     QCOMPARE(effect->boundingRect(), effect->boundingRectFor(itemRect));
 
     // Uninstall effect on QGraphicsItem.
+    QPointer<CustomEffect> ptr = effect;
     item->setGraphicsEffect(0);
-    QCOMPARE(effect->boundingRect(), QRectF());
+    QVERIFY(!ptr);
 
-    delete effect;
     delete item;
 }
 
@@ -343,11 +344,11 @@ void tst_QGraphicsEffect::draw()
     QCOMPARE(item->numRepaints, 0);
 
     // Make sure uninstalling an effect triggers a repaint.
+    QPointer<CustomEffect> ptr = effect;
     item->setGraphicsEffect(0);
+    QVERIFY(!ptr);
     QTest::qWait(50);
-    QCOMPARE(effect->numRepaints, 0);
     QCOMPARE(item->numRepaints, 1);
-    delete effect;
 }
 
 void tst_QGraphicsEffect::opacity()
@@ -463,6 +464,54 @@ void tst_QGraphicsEffect::colorize()
     painter.end();
 
     QCOMPARE(image.pixel(10, 10), qRgb(122, 193, 66));
+}
+
+class PixmapItemEffect : public QGraphicsEffect
+{
+public:
+    PixmapItemEffect(const QPixmap &source)
+        : QGraphicsEffect()
+        , pixmap(source)
+        , repaints(0)
+    {}
+
+    QRectF boundingRectFor(const QRectF &rect) const
+    { return rect; }
+
+    void draw(QPainter *painter)
+    {
+        QVERIFY(sourcePixmap(Qt::LogicalCoordinates).pixmapData() == pixmap.pixmapData());
+        QVERIFY((painter->worldTransform().type() <= QTransform::TxTranslate) == (sourcePixmap(Qt::DeviceCoordinates).pixmapData() == pixmap.pixmapData()));
+
+        ++repaints;
+    }
+    QPixmap pixmap;
+    int repaints;
+};
+
+void tst_QGraphicsEffect::drawPixmapItem()
+{
+    QImage image(32, 32, QImage::Format_RGB32);
+    QPainter p(&image);
+    p.fillRect(0, 0, 32, 16, Qt::blue);
+    p.fillRect(0, 16, 32, 16, Qt::red);
+    p.end();
+
+    QGraphicsScene scene;
+    QGraphicsPixmapItem *item = new QGraphicsPixmapItem(QPixmap::fromImage(image));
+    scene.addItem(item);
+
+    PixmapItemEffect *effect = new PixmapItemEffect(item->pixmap());
+    item->setGraphicsEffect(effect);
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    item->rotate(180);
+    QTest::qWait(50);
+
+    QTRY_VERIFY(effect->repaints >= 2);
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)

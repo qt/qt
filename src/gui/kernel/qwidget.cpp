@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -366,7 +366,8 @@ bool QWidget::hasEditFocus() const
     normally; otherwise, Qt::Key_Up and Qt::Key_Down are used to
     change focus.
 
-    This feature is only available in Qt for Embedded Linux.
+    This feature is only available in Qt for Embedded Linux and Qt
+    for Symbian.
 
     \sa hasEditFocus(), QApplication::keypadNavigationEnabled()
 */
@@ -3090,7 +3091,8 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
         QWidget *focusWidget = effectiveFocusWidget();
         QInputContext *qic = focusWidget->d_func()->inputContext();
         if (enable) {
-            qic->setFocusWidget(focusWidget);
+            if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
+                qic->setFocusWidget(focusWidget);
         } else {
             qic->reset();
             qic->setFocusWidget(0);
@@ -4611,7 +4613,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
     if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolve();
-    } else 
+    } else
 #endif //QT_NO_GRAPHICSVIEW
     if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedFontResolveMask = 0;
@@ -5051,6 +5053,8 @@ QGraphicsEffect *QWidget::graphicsEffect() const
     If \a effect is the installed on a different widget, setGraphicsEffect() will remove
     the effect from the widget and install it on this widget.
 
+    QWidget takes ownership of \a effect.
+
     \note This function will apply the effect on itself and all its children.
 
     \since 4.6
@@ -5064,28 +5068,22 @@ void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
     if (d->graphicsEffect == effect)
         return;
 
-    if (d->graphicsEffect && effect) {
+    if (d->graphicsEffect) {
+        d->invalidateBuffer(rect());
         delete d->graphicsEffect;
         d->graphicsEffect = 0;
     }
 
-    if (!effect) {
-        // Unset current effect.
-        QGraphicsEffectPrivate *oldEffectPrivate = d->graphicsEffect->d_func();
-        d->graphicsEffect = 0;
-        if (oldEffectPrivate) {
-            oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
-        }
-    } else {
+    if (effect) {
         // Set new effect.
         QGraphicsEffectSourcePrivate *sourced = new QWidgetEffectSourcePrivate(this);
         QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
         d->graphicsEffect = effect;
         effect->d_func()->setGraphicsEffectSource(source);
+        update();
     }
 
     d->updateIsOpaque();
-    update();
 }
 #endif //QT_NO_GRAPHICSEFFECT
 
@@ -6051,6 +6049,11 @@ bool QWidget::hasFocus() const
     (Nothing happens if the focus in and focus out widgets are the
     same.)
 
+    \note On embedded platforms, setFocus() will not cause an input panel
+    to be opened by the input method. If you want this to happen, you
+    have to send a QEvent::RequestSoftwareInputPanel event to the
+    widget yourself.
+
     setFocus() gives focus to a widget regardless of its focus policy,
     but does not clear any keyboard grab (see grabKeyboard()).
 
@@ -6063,7 +6066,7 @@ bool QWidget::hasFocus() const
 
     \sa hasFocus(), clearFocus(), focusInEvent(), focusOutEvent(),
     setFocusPolicy(), focusWidget(), QApplication::focusWidget(), grabKeyboard(),
-    grabMouse(), {Keyboard Focus}
+    grabMouse(), {Keyboard Focus}, QEvent::RequestSoftwareInputPanel
 */
 
 void QWidget::setFocus(Qt::FocusReason reason)
@@ -8254,7 +8257,8 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                QApplication::sendEvent(o, event);
+                if (o)
+                    QApplication::sendEvent(o, event);
             }
         }
         update();
@@ -8283,7 +8287,7 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                if (o != QApplication::activeModalWidget()) {
+                if (o && o != QApplication::activeModalWidget()) {
                     if (qobject_cast<QWidget *>(o) && static_cast<QWidget *>(o)->isWindow()) {
                         // do not forward the event to child windows,
                         // QApplication does this for us
@@ -8379,9 +8383,10 @@ bool QWidget::event(QEvent *event)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
     {
+#ifndef Q_WS_MAC
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
         const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().first();
-        if (touchPoint.isPrimary())
+        if (touchPoint.isPrimary() || touchEvent->deviceType() == QTouchEvent::TouchPad)
             break;
 
         // fake a mouse event!
@@ -8410,6 +8415,7 @@ bool QWidget::event(QEvent *event)
                                Qt::LeftButton,
                                touchEvent->modifiers());
         (void) QApplication::sendEvent(this, &mouseEvent);
+#endif // Q_WS_MAC
         break;
     }
     case QEvent::Gesture:
@@ -9775,13 +9781,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     }
 #endif
 
-    if (newParent) {
-        if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
+    if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
+        if (newParent)
             oldBs->removeDirtyWidget(this);
-            // Move the widget and all its static children from
-            // the old backing store to the new one.
-            oldBs->moveStaticWidgets(this);
-        }
+        // Move the widget and all its static children from
+        // the old backing store to the new one.
+        oldBs->moveStaticWidgets(this);
     }
 
     if ((QApplicationPrivate::app_compile_version < 0x040200
@@ -9902,13 +9907,13 @@ void QWidget::scroll(int dx, int dy)
     Q_D(QWidget);
 #ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
-	// Graphics View maintains its own dirty region as a list of rects;
-	// until we can connect item updates directly to the view, we must
-	// separately add a translated dirty region.
-	if (!d->dirty.isEmpty()) {
-	    foreach (const QRect &rect, (d->dirty.translated(dx, dy)).rects())
-		proxy->update(rect);
-	}
+        // Graphics View maintains its own dirty region as a list of rects;
+        // until we can connect item updates directly to the view, we must
+        // separately add a translated dirty region.
+        if (!d->dirty.isEmpty()) {
+            foreach (const QRect &rect, (d->dirty.translated(dx, dy)).rects())
+                proxy->update(rect);
+        }
         proxy->scroll(dx, dy, proxy->subWidgetRect(this));
         return;
     }
@@ -9937,13 +9942,13 @@ void QWidget::scroll(int dx, int dy, const QRect &r)
     Q_D(QWidget);
 #ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
-	// Graphics View maintains its own dirty region as a list of rects;
-	// until we can connect item updates directly to the view, we must
-	// separately add a translated dirty region.
-	if (!d->dirty.isEmpty()) {
-	    foreach (const QRect &rect, (d->dirty.translated(dx, dy) & r).rects())
-		proxy->update(rect);
-	}
+        // Graphics View maintains its own dirty region as a list of rects;
+        // until we can connect item updates directly to the view, we must
+        // separately add a translated dirty region.
+        if (!d->dirty.isEmpty()) {
+            foreach (const QRect &rect, (d->dirty.translated(dx, dy) & r).rects())
+                proxy->update(rect);
+        }
         proxy->scroll(dx, dy, r.translated(proxy->subWidgetRect(this).topLeft().toPoint()));
         return;
     }
@@ -10364,17 +10369,22 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
         QInputContext *ic = 0;
-        if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
+        if (on && !internalWinId() && hasFocus()
+            && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
             ic = focusWidget->d_func()->inputContext();
-            ic->reset();
-            ic->setFocusWidget(0);
+            if (ic) {
+                ic->reset();
+                ic->setFocusWidget(0);
+            }
         }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
-        if (ic && isEnabled())
+        if (ic && isEnabled() && focusWidget->isEnabled()
+            && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
             ic->setFocusWidget(focusWidget);
+        }
 #endif //QT_NO_IM
         break;
     }
@@ -10411,7 +10421,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         if (!ic && (!on || hasFocus()))
             ic = focusWidget->d_func()->inputContext();
         if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != focusWidget && isEnabled()) {
+            if (on && hasFocus() && ic->focusWidget() != focusWidget && isEnabled()
+                && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
                 ic->setFocusWidget(focusWidget);
             } else if (!on && ic->focusWidget() == focusWidget) {
                 ic->reset();
@@ -11878,16 +11889,20 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     mouse when a mouse button is pressed and keeps it until the last
     button is released.
 
-    Note that only visible widgets can grab mouse input. If
-    isVisible() returns false for a widget, that widget cannot call
-    grabMouse().
+    \note Only visible widgets can grab mouse input. If isVisible()
+    returns false for a widget, that widget cannot call grabMouse().
+
+    \note \bold{(Mac OS X developers)} For \e Cocoa, calling
+    grabMouse() on a widget only works when the mouse is inside the
+    frame of that widget.  For \e Carbon, it works outside the widget's
+    frame as well, like for Windows and X11.
 
     \sa releaseMouse() grabKeyboard() releaseKeyboard()
 */
 
 /*!
     \fn void QWidget::grabMouse(const QCursor &cursor)
-    \overload
+    \overload grabMouse()
 
     Grabs the mouse input and changes the cursor shape.
 
@@ -11896,6 +11911,8 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     mouse events until releaseMouse() is called().
 
     \warning Grabbing the mouse might lock the terminal.
+
+    \note \bold{(Mac OS X developers)} See the note in QWidget::grabMouse().
 
     \sa releaseMouse(), grabKeyboard(), releaseKeyboard(), setCursor()
 */

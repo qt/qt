@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,12 +97,28 @@
     \o mingw32-make 3.80.0-3
     \endlist
 
+    \note For users of the MinGW binary package: This package is now
+    based on MinGW 4.4. The installer no longer offers to download
+    MinGW for you, but rather offers to use a version of MinGW that
+    you already have installed on your machine. You just tell the
+    installer which directory MinGW is installed in. If you don't
+    already have MinGW 4.4 installed, you can download a .zip archive
+    from our \l{ftp://ftp.trolltech.com/misc/MinGW-gcc440_1.zip} {ftp
+    site}. This archive provides fixes to MinGW and support for
+    missing API, See the _patches directory in the archive for
+    details.
+
+    \note A MinGW installation is only needed to build against the
+    binary pacakge, not to run the pre-compiled binaries that are in
+    the package.
+
     \section2 GCC 4.0.0
 
-    The released package of the compiler has some bugs that lead to miscompilations.
-    We recommend using GCC 4.0.1 or later, or to use a recent CVS snapshot of the
-    GCC 4.0 branch. The version of GCC 4.0.0 that is shipped with Mac OS X 10.4
-    "Tiger" is known to work with Qt for Mac OS X.
+    The released package of the compiler has some bugs that lead to
+    miscompilations.  We recommend using GCC 4.0.1 or later, or to use
+    a recent CVS snapshot of the GCC 4.0 branch. The version of GCC
+    4.0.0 that is shipped with Mac OS X 10.4 "Tiger" is known to work
+    with Qt for Mac OS X.
 
     \section2 HP-UX
 
@@ -180,7 +196,7 @@
 
     \list
     \o Windows - Intel(R) C++ Compiler for 32-bit applications,
-       Version 8.1 Build 20050309Z Package ID: W_CC_PC_8.1.026
+       Version 9.1.040.
     \o Altix - Intel(R) C++ Itanium(R) Compiler for Itanium(R)-based
        applications Version 8.1 Build 20050406 Package ID: l_cc_pc_8.1.030
     \endlist
@@ -287,4 +303,9 @@
     Make sure you have the
     \l{http://www-1.ibm.com/support/search.wss?rs=32&amp;tc=SSEP5D&amp;dc=D400}{latest upgrades}
     installed.
+
+    \section2 GCCE (Symbian)
+
+    GCCE cannot be used to compile Qt libaries for the Symbian platform, but GCCE is supported
+    when compiling Qt applications for Symbian platform.
 */

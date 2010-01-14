@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,8 +61,8 @@ EmbeddedDialog::EmbeddedDialog(QWidget *parent)
             this, SLOT(layoutDirectionChanged(int)));
     connect(ui->spacing, SIGNAL(valueChanged(int)),
             this, SLOT(spacingChanged(int)));
-    connect(ui->fontComboBox, SIGNAL(currentFontChanged(const QFont &)),
-            this, SLOT(fontChanged(const QFont &)));
+    connect(ui->fontComboBox, SIGNAL(currentFontChanged(QFont)),
+            this, SLOT(fontChanged(QFont)));
     connect(ui->style, SIGNAL(activated(QString)),
             this, SLOT(styleChanged(QString)));
 }

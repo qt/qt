@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -116,7 +116,9 @@ public:
     QRect boundingRect() const;
     QVector<QRect> rects() const;
     void setRects(const QRect *rect, int num);
+#ifdef QT_DEPRECATED
     QT_DEPRECATED int numRects() const;
+#endif
     int rectCount() const;
 
     const QRegion operator|(const QRegion &r) const;

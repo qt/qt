@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,12 +76,12 @@ InstallDialog::InstallDialog(QHelpEngineCore *helpEngine, QWidget *parent,
     m_windowTitle = tr("Install Documentation");
 
     m_http = new QHttp(this);
-    connect(m_http, SIGNAL(requestFinished(int, bool)),
-            this, SLOT(httpRequestFinished(int, bool)));
-    connect(m_http, SIGNAL(dataReadProgress(int, int)),
-            this, SLOT(updateDataReadProgress(int, int)));
-    connect(m_http, SIGNAL(responseHeaderReceived(const QHttpResponseHeader &)),
-            this, SLOT(readResponseHeader(const QHttpResponseHeader &)));
+    connect(m_http, SIGNAL(requestFinished(int,bool)),
+            this, SLOT(httpRequestFinished(int,bool)));
+    connect(m_http, SIGNAL(dataReadProgress(int,int)),
+            this, SLOT(updateDataReadProgress(int,int)));
+    connect(m_http, SIGNAL(responseHeaderReceived(QHttpResponseHeader)),
+            this, SLOT(readResponseHeader(QHttpResponseHeader)));
     connect(m_ui.installButton, SIGNAL(clicked()), this, SLOT(install()));
     connect(m_ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelDownload()));
     connect(m_ui.browseButton, SIGNAL(clicked()), this, SLOT(browseDirectories()));

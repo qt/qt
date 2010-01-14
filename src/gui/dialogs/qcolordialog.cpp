@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1594,8 +1594,8 @@ void QColorDialogPrivate::init(const QColor &initial)
 
     cs = new QColorShower(q);
     QObject::connect(cs, SIGNAL(newCol(QRgb)), q, SLOT(_q_newColorTypedIn(QRgb)));
-    QObject::connect(cs, SIGNAL(currentColorChanged(const QColor&)),
-                     q, SIGNAL(currentColorChanged(const QColor&)));
+    QObject::connect(cs, SIGNAL(currentColorChanged(QColor)),
+                     q, SIGNAL(currentColorChanged(QColor)));
 #if defined(Q_WS_S60)
     if (!nonTouchUI)
         pWidth -= cp->size().width();
@@ -1904,7 +1904,7 @@ void QColorDialog::setVisible(bool visible)
 void QColorDialog::open(QObject *receiver, const char *member)
 {
     Q_D(QColorDialog);
-    connect(this, SIGNAL(colorSelected(const QColor&)), receiver, member);
+    connect(this, SIGNAL(colorSelected(QColor)), receiver, member);
     d->receiverToDisconnectOnClose = receiver;
     d->memberToDisconnectOnClose = member;
     QDialog::open();
@@ -2036,7 +2036,7 @@ void QColorDialog::done(int result)
         d->selectedQColor = QColor();
     }
     if (d->receiverToDisconnectOnClose) {
-        disconnect(this, SIGNAL(colorSelected(const QColor&)),
+        disconnect(this, SIGNAL(colorSelected(QColor)),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
         d->receiverToDisconnectOnClose = 0;
     }

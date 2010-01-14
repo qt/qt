@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -314,6 +314,10 @@
 
 	\snippet doc/src/snippets/code/doc_src_qtscript.qdoc 1
 
+        For detailed information on how to make your application
+        scriptable with QtScript, see \l{Making Applications
+        Scriptable}.
+
 	The QtScript module is part of the \l{Qt Full Framework Edition} and the
 	\l{Open Source Versions of Qt}.
 
@@ -405,59 +409,58 @@
 */
 
 /*!
-	\module QtSvg
-	\title QtSvg Module
-	\since 4.1
-	\contentspage All Qt Modules
-	\previouspage QtSql
-	\nextpage QtWebKit
-	\ingroup modules
+        \module QtSvg
+        \title QtSvg Module
+        \since 4.1
+        \contentspage All Qt Modules
+        \previouspage QtSql
+        \nextpage QtWebKit
+        \ingroup modules
 
-	\brief The QtSvg module provides classes for displaying the contents of SVG
-	files.
+        \brief The QtSvg module provides classes for displaying and creating SVG files.
 
-	To include the definitions of the module's classes, use the
-	following directive:
+        To include the definitions of the module's classes, use the
+        following directive:
 
-	\snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 0
+        \snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 0
 
-	To link against the module, add this line to your \l qmake \c
-	.pro file:
+        To link against the module, add this line to your \l qmake \c
+        .pro file:
 
-	\snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 1
+        \snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 1
 
-	The QtSvg module is part of the \l{Qt Full Framework Edition} and the
-	\l{Open Source Versions of Qt}.
+        The QtSvg module is part of the \l{Qt Full Framework Edition} and the
+        \l{Open Source Versions of Qt}.
 
-	\section1 License Information
+        \section1 License Information
 
-	Some code for arc handling in this module is derived from code with
-	the following license:
+        Some code for arc handling in this module is derived from code with
+        the following license:
 
-	\legalese
-	Copyright  2002 USC/Information Sciences Institute
+        \legalese
+        Copyright  2002 USC/Information Sciences Institute
 
-	Permission to use, copy, modify, distribute, and sell this software
-	and its documentation for any purpose is hereby granted without
-	fee, provided that the above copyright notice appear in all copies
-	and that both that copyright notice and this permission notice
-	appear in supporting documentation, and that the name of
-	Information Sciences Institute not be used in advertising or
-	publicity pertaining to distribution of the software without
-	specific, written prior permission.  Information Sciences Institute
-	makes no representations about the suitability of this software for
-	any purpose.  It is provided "as is" without express or implied
-	warranty.
+        Permission to use, copy, modify, distribute, and sell this software
+        and its documentation for any purpose is hereby granted without
+        fee, provided that the above copyright notice appear in all copies
+        and that both that copyright notice and this permission notice
+        appear in supporting documentation, and that the name of
+        Information Sciences Institute not be used in advertising or
+        publicity pertaining to distribution of the software without
+        specific, written prior permission.  Information Sciences Institute
+        makes no representations about the suitability of this software for
+        any purpose.  It is provided "as is" without express or implied
+        warranty.
 
-	INFORMATION SCIENCES INSTITUTE DISCLAIMS ALL WARRANTIES WITH REGARD
-	TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
-	MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL INFORMATION SCIENCES
-	INSTITUTE BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-	DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA
-	OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-	TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-	PERFORMANCE OF THIS SOFTWARE.
-	\endlegalese
+        INFORMATION SCIENCES INSTITUTE DISCLAIMS ALL WARRANTIES WITH REGARD
+        TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+        MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL INFORMATION SCIENCES
+        INSTITUTE BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+        DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA
+        OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+        TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+        PERFORMANCE OF THIS SOFTWARE.
+        \endlegalese
 */
 
 /*!
@@ -499,7 +502,7 @@
     \ingroup modules
 
     \brief The QtXmlPatterns module provides support for XPath,
-    XQuery, XSLT and XML schema-validation.
+    XQuery, XSLT and XML Schema validation.
 
     To include the definitions of the module's classes, use the
     following directive:
@@ -619,7 +622,7 @@
     Copyright (C) 2004-2009 Matthias Kretz <kretz@kde.org> \BR
     Copyright (C) 2008 Ian Monroe <ian@monroe.nu> \BR
     Copyright (C) 2007-2008 Trolltech ASA \BR
-    Copyright (C) 2008-2009 Nokia Corporation and/or its subsidiary(-ies). \BR
+    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies). \BR
     Contact: Nokia Corporation (qt-info@nokia.com)
 
     This library is free software; you can redistribute it and/or
@@ -791,7 +794,7 @@
 
     \legalese
     Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team \BR
-    Changes are Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+    Changes are Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -860,7 +863,7 @@
     the following license.
 
     \legalese
-    Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)\br
@@ -910,7 +913,7 @@
     the following license.
 
     \legalese
-    Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\br
     All rights reserved.
 
     Contact:  Nokia Corporation (qt-info@nokia.com)\br
@@ -993,9 +996,9 @@
     \brief Describes the use and license of the qtmain helper library.
 
     qtmain is a helper library that enables the developer to write a
-    cross-platform main() function on Windows. If you do not use \l qmake
-    or other build tools such as CMake, then you need to link against
-    the \c qtmain library.
+    cross-platform main() function on Windows and on the Symbian platform.
+    If you do not use \l qmake or other build tools such as CMake, then you
+    need to link against the \c qtmain library.
 
     \section1 License Information
 
@@ -1005,12 +1008,12 @@
     the following license.
     
     \legalese
-    Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).\br
+    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\br
     All rights reserved.
 
-    Contact:  Nokia Corporation (qt-info@nokia.com)\br
+    Contact:  Nokia Corporation (qt-info@nokia.com)
 
-    You may use this file under the terms of the BSD license as follows:\br
+    You may use this file under the terms of the BSD license as follows:
 
     "Redistribution and use in source and binary forms, with or without modification,
     are permitted provided that the following conditions are met:
@@ -1033,6 +1036,48 @@
     BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
     ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+    \endlegalese
+
+    The contents of the \c{qts60main.cpp} and \c{qts60main_mcrt0.cpp} files,
+    located in the \c{src/s60main} directory are not covered by the
+    \l{GNU General Public License (GPL)}, the
+    \l{GNU Lesser General Public License (LGPL)}, or the
+    \l{Qt Commercial Editions}{Qt Commercial License}. Instead, they are
+    distributed under the following license.
+    
+    \legalese
+    Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\br
+    All rights reserved.\br
+    Contact: Nokia Corporation (qt-info@nokia.com)
+
+    This file is part of the Symbian application wrapper of the Qt Toolkit.
+
+    You may use this file under the terms of the BSD license as follows:
+
+    "Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are
+    met:\br
+      * Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.\br
+      * Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.\br
+      * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+        the names of its contributors may be used to endorse or promote
+        products derived from this software without specific prior written
+        permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+    IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
     \endlegalese
 */
 

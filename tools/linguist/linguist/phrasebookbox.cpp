@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -87,7 +87,7 @@ PhraseBookBox::PhraseBookBox(PhraseBook *phraseBook, QWidget *parent)
             this, SLOT(targetChanged(QString)));
     connect(definitionLed, SIGNAL(textChanged(QString)),
             this, SLOT(definitionChanged(QString)));
-    connect(phraseList->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
+    connect(phraseList->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
             this, SLOT(selectionChanged()));
     connect(newBut, SIGNAL(clicked()), this, SLOT(newPhrase()));
     connect(removeBut, SIGNAL(clicked()), this, SLOT(removePhrase()));

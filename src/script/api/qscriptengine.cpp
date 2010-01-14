@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -33,6 +33,7 @@
 #include "qscriptvalue_p.h"
 #include "qscriptvalueiterator.h"
 #include "qscriptclass.h"
+#include "qscriptcontextinfo.h"
 #include "qscriptprogram.h"
 #include "qscriptprogram_p.h"
 #include "qdebug.h"
@@ -698,9 +699,9 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
         return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): third argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
     QString context;
-// ### implement context resolution
-//    if (ctx->parentContext())
-//        context = QFileInfo(ctx->parentContext()->fileName()).baseName();
+    QScriptContext *ctx = QScriptEnginePrivate::contextForFrame(exec);
+    if (ctx && ctx->parentContext())
+        context = QFileInfo(QScriptContextInfo(ctx->parentContext()).fileName()).baseName();
 #endif
     QString text(args.at(0).toString(exec));
 #ifndef QT_NO_QOBJECT
@@ -776,7 +777,11 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     qMetaTypeId<QObjectList>();
 #endif
 
-    JSC::initializeThreading(); // ### hmmm
+    if (!QCoreApplication::instance()) {
+        qFatal("QScriptEngine: Must construct a Q(Core)Application before a QScriptEngine");
+        return;
+    }
+    JSC::initializeThreading();
 
     globalData = JSC::JSGlobalData::create().releaseRef();
     globalData->clientData = new QScript::GlobalClientData(this);
@@ -1097,16 +1102,6 @@ void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
         }
     }
 
-#ifndef QT_NO_QOBJECT
-    {
-        QHash<QObject*, QScript::QObjectData*>::const_iterator it;
-        for (it = m_qobjectData.constBegin(); it != m_qobjectData.constEnd(); ++it) {
-            QScript::QObjectData *qdata = it.value();
-            qdata->mark(markStack);
-        }
-    }
-#endif
-
     {
         QHash<int, QScriptTypeInfo*>::const_iterator it;
         for (it = m_typeInfos.constBegin(); it != m_typeInfos.constEnd(); ++it) {
@@ -1130,6 +1125,17 @@ void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
             context = context->parentContext();
         }
     }
+
+#ifndef QT_NO_QOBJECT
+    markStack.drain(); // make sure everything is marked before marking qobject data
+    {
+        QHash<QObject*, QScript::QObjectData*>::const_iterator it;
+        for (it = m_qobjectData.constBegin(); it != m_qobjectData.constEnd(); ++it) {
+            QScript::QObjectData *qdata = it.value();
+            qdata->mark(markStack);
+        }
+    }
+#endif
 }
 
 bool QScriptEnginePrivate::isCollecting() const
@@ -1302,7 +1308,7 @@ QScript::QObjectData *QScriptEnginePrivate::qobjectData(QObject *object)
     QScript::QObjectData *data = new QScript::QObjectData(this);
     m_qobjectData.insert(object, data);
     QObject::connect(object, SIGNAL(destroyed(QObject*)),
-                     q_func(), SLOT(_q_objectDestroyed(QObject *)));
+                     q_func(), SLOT(_q_objectDestroyed(QObject*)));
     return data;
 }
 

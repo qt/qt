@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -598,16 +598,21 @@ int QToolBarAreaLayoutInfo::distance(const QPoint &pos) const
 {
     switch (dockPos) {
         case QInternal::LeftDock:
-            return pos.x() - rect.right();
+            if (pos.y() < rect.bottom())
+                return pos.x() - rect.right();
         case QInternal::RightDock:
-            return rect.left() - pos.x();
+            if (pos.y() < rect.bottom())
+                return rect.left() - pos.x();
         case QInternal::TopDock:
-            return pos.y() - rect.bottom();
+            if (pos.x() < rect.right())
+                return pos.y() - rect.bottom();
         case QInternal::BottomDock:
-            return rect.top() - pos.y();
+            if (pos.x() < rect.right())
+                return rect.top() - pos.y();
         default:
-            return -1;
+            break;
     }
+    return -1;
 }
 
 /******************************************************************************
@@ -1296,6 +1301,8 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
     QList<QToolBar*> toolBars = _toolBars;
     int lines;
     stream >> lines;
+	if (!testing)
+	testing = mainWindow->unifiedTitleAndToolBarOnMac();
 
     for (int j = 0; j < lines; ++j) {
         int pos;
@@ -1306,6 +1313,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
         stream >> cnt;
 
         QToolBarAreaLayoutInfo &dock = docks[pos];
+		const bool applyingLayout = !testing && !(pos == QInternal::TopDock && mainWindow->unifiedTitleAndToolBarOnMac());
         QToolBarAreaLayoutLine line(dock.o);
 
         for (int k = 0; k < cnt; ++k) {
@@ -1346,7 +1354,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
                 continue;
             }
 
-            if (!testing) {
+            if (applyingLayout) {
                 item.widgetItem = new QWidgetItemV2(toolBar);
                 toolBar->setOrientation(floating ? ((shown & 2) ? Qt::Vertical : Qt::Horizontal) : dock.o);
                 toolBar->setVisible(shown & 1);
@@ -1357,7 +1365,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
             }
         }
 
-        if (!testing) {
+        if (applyingLayout) {
             dock.lines.append(line);
         }
     }

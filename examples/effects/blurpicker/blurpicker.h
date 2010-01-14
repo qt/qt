@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,7 +51,7 @@
 class BlurPicker: public QGraphicsView
 {
     Q_OBJECT
-    Q_PROPERTY(qreal index READ index WRITE setIndex);
+    Q_PROPERTY(qreal index READ index WRITE setIndex)
 
 public:
     BlurPicker(QWidget *parent = 0);

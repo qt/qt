@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -161,12 +161,17 @@ public:
     QByteArray fromUnicode(const QString& str);
     QByteArray fromUnicode(const QChar *uc, int len);
 #ifdef QT3_SUPPORT
-    QByteArray fromUnicode(const QString& uc, int& lenInOut);
+    QT3_SUPPORT QByteArray fromUnicode(const QString& uc, int& lenInOut);
 #endif
     bool hasFailure() const;
 private:
     const QTextCodec *c;
     QTextCodec::ConverterState state;
+
+    friend class QXmlStreamWriter;
+    friend class QXmlStreamWriterPrivate;
+    friend class QCoreXmlStreamWriter;
+    friend class QCoreXmlStreamWriterPrivate;
 };
 
 class Q_CORE_EXPORT QTextDecoder {

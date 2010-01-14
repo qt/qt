@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -133,36 +133,46 @@ private:
     TTimeIntervalMicroSeconds iDuration;
 };
 
+static QS60Beep* qt_S60Beep = 0;
+
 QS60Beep::~QS60Beep()
 {
+    if (iToneUtil) {
+        switch (iState) {
+        case EBeepPlaying:
+            iToneUtil->CancelPlay();
+            break;
+        case EBeepNotPrepared:
+            iToneUtil->CancelPrepare();
+            break;
+        }
+    }
     delete iToneUtil;
 }
 
 QS60Beep* QS60Beep::NewL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
 {
-    QS60Beep* self=new (ELeave) QS60Beep();
+    QS60Beep* self = new (ELeave) QS60Beep();
     CleanupStack::PushL(self);
     self->ConstructL(aFrequency, aDuration);
     CleanupStack::Pop();
     return self;
-};
+}
 
 void QS60Beep::ConstructL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
 {
-    iToneUtil=CMdaAudioToneUtility::NewL(*this);
-    iState=EBeepNotPrepared;
-    iFrequency=aFrequency;
-    iDuration=aDuration;
-    iToneUtil->PrepareToPlayTone(iFrequency,iDuration);
+    iToneUtil = CMdaAudioToneUtility::NewL(*this);
+    iState = EBeepNotPrepared;
+    iFrequency = aFrequency;
+    iDuration = aDuration;
+    iToneUtil->PrepareToPlayTone(iFrequency, iDuration);
 }
 
 void QS60Beep::Play()
 {
-    if (iState != EBeepNotPrepared) {
-        if (iState == EBeepPlaying) {
-            iToneUtil->CancelPlay();
-            iState = EBeepPrepared;
-        }
+    if (iState == EBeepPlaying) {
+        iToneUtil->CancelPlay();
+        iState = EBeepPrepared;
     }
 
     iToneUtil->Play();
@@ -173,13 +183,14 @@ void QS60Beep::MatoPrepareComplete(TInt aError)
 {
     if (aError == KErrNone) {
         iState = EBeepPrepared;
+        Play();
     }
 }
 
 void QS60Beep::MatoPlayComplete(TInt aError)
 {
     Q_UNUSED(aError);
-    iState=EBeepPrepared;
+    iState = EBeepPrepared;
 }
 
 
@@ -350,6 +361,8 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
+
+        DrawableWindow()->SetPointerGrab(ETrue);
     }
 }
 
@@ -461,41 +474,6 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));
 }
 
-typedef QPair<QWidget*,QMouseEvent> Event;
-
-/*
- * Helper function called by HandlePointerEvent - separated to keep that function readable
- */
-static void generateEnterLeaveEvents(QList<Event> &events, QWidget *widgetUnderPointer,
-    QPoint globalPos, Qt::MouseButton button, Qt::KeyboardModifiers modifiers)
-{
-    //moved to another widget, create enter and leave events
-    if (S60->lastPointerEventTarget) {
-        QMouseEvent mEventLeave(QEvent::Leave, S60->lastPointerEventTarget->mapFromGlobal(
-            S60->lastCursorPos), S60->lastCursorPos, button, QApplicationPrivate::mouse_buttons,
-            modifiers);
-        events.append(Event(S60->lastPointerEventTarget, mEventLeave));
-    }
-    if (widgetUnderPointer) {
-        QMouseEvent mEventEnter(QEvent::Enter, widgetUnderPointer->mapFromGlobal(globalPos),
-            globalPos, button, QApplicationPrivate::mouse_buttons, modifiers);
-
-        events.append(Event(widgetUnderPointer, mEventEnter));
-#ifndef QT_NO_CURSOR
-        S60->curWin = widgetUnderPointer->effectiveWinId();
-        if (!QApplication::overrideCursor()) {
-#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
-            if (S60->brokenPointerCursors)
-                qt_symbian_set_pointer_sprite(widgetUnderPointer->cursor());
-            else
-#endif
-                qt_symbian_setWindowCursor(widgetUnderPointer->cursor(), S60->curWin);
-        }
-#endif
-    }
-}
-
-
 void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
 {
     QMouseEvent::Type type;
@@ -503,85 +481,77 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
     Qt::KeyboardModifiers modifiers = mapToQtModifiers(pEvent.iModifiers);
 
-    if (type == QMouseEvent::None)
-        return;
-
-    // store events for later sending/saving
-    QList<Event > events;
-
     QPoint widgetPos = QPoint(pEvent.iPosition.iX, pEvent.iPosition.iY);
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
-
-    // widgets interested in the event
-    QWidget *widgetUnderPointer = qwidget->childAt(widgetPos);
-    if (!widgetUnderPointer)
-        widgetUnderPointer = qwidget; //i.e. this container widget
-
-    QWidget *widgetWithMouseGrab = QWidget::mouseGrabber();
-
-    // handle auto grab of pointer when pressing / releasing
-    if (!widgetWithMouseGrab && type == QEvent::MouseButtonPress) {
-        //if previously auto-grabbed, generate a fake mouse release (platform bug: mouse release event was lost)
-        if (S60->mousePressTarget) {
-            QMouseEvent mEvent(QEvent::MouseButtonRelease, S60->mousePressTarget->mapFromGlobal(globalPos), globalPos,
-                button, QApplicationPrivate::mouse_buttons, modifiers);
-            events.append(Event(S60->mousePressTarget,mEvent));
-        }
-        //auto grab the mouse
-        widgetWithMouseGrab = S60->mousePressTarget = widgetUnderPointer;
-        widgetWithMouseGrab->grabMouse();
-    }
-    if (widgetWithMouseGrab && widgetWithMouseGrab == S60->mousePressTarget && type == QEvent::MouseButtonRelease) {
-        //release the auto grab - note this release event still goes to the autograb widget
-        S60->mousePressTarget = 0;
-        widgetWithMouseGrab->releaseMouse();
-    }
-
-    QWidget *widgetToReceiveMouseEvent;
-    if (widgetWithMouseGrab)
-        widgetToReceiveMouseEvent = widgetWithMouseGrab;
-    else
-        widgetToReceiveMouseEvent = widgetUnderPointer;
-
-    //queue QEvent::Enter and QEvent::Leave, if the pointer has moved
-    if (widgetUnderPointer != S60->lastPointerEventTarget && (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove))
-        generateEnterLeaveEvents(events, widgetUnderPointer, globalPos, button, modifiers);
-
-    //save global state
     S60->lastCursorPos = globalPos;
     S60->lastPointerEventPos = widgetPos;
+
+    QWidget *mouseGrabber = QWidget::mouseGrabber();
+
+    QWidget *popupWidget = qApp->activePopupWidget();
+    QWidget *popupReceiver = 0;
+    if (popupWidget) {
+        QWidget *popupChild = popupWidget->childAt(popupWidget->mapFromGlobal(globalPos));
+        popupReceiver = popupChild ? popupChild : popupWidget;
+    }
+
+    if (mouseGrabber) {
+        if (popupReceiver) {
+            sendMouseEvent(popupReceiver, type, globalPos, button, modifiers);
+        } else {
+            sendMouseEvent(mouseGrabber, type, globalPos, button, modifiers);
+        }
+        // No Enter/Leave events in grabbing mode.
+        return;
+    }
+
+    QWidget *widgetUnderPointer = qwidget->childAt(widgetPos);
+    if (!widgetUnderPointer)
+        widgetUnderPointer = qwidget;
+
+    QApplicationPrivate::dispatchEnterLeave(widgetUnderPointer, S60->lastPointerEventTarget);
     S60->lastPointerEventTarget = widgetUnderPointer;
+
+    QWidget *receiver;
+    if (!popupReceiver && S60->mousePressTarget && type != QEvent::MouseButtonPress) {
+        receiver = S60->mousePressTarget;
+        if (type == QEvent::MouseButtonRelease)
+            S60->mousePressTarget = 0;
+    } else {
+        receiver = popupReceiver ? popupReceiver : widgetUnderPointer;
+        if (type == QEvent::MouseButtonPress)
+            S60->mousePressTarget = receiver;
+    }
 
 #if !defined(QT_NO_CURSOR) && !defined(Q_SYMBIAN_FIXED_POINTER_CURSORS)
     if (S60->brokenPointerCursors)
         qt_symbian_move_cursor_sprite();
 #endif
 
-    //queue this event.
-    Q_ASSERT(widgetToReceiveMouseEvent);
-    QMouseEvent mEvent(type, widgetToReceiveMouseEvent->mapFromGlobal(globalPos), globalPos,
+    sendMouseEvent(receiver, type, globalPos, button, modifiers);
+}
+
+void QSymbianControl::sendMouseEvent(
+        QWidget *receiver,
+        QEvent::Type type,
+        const QPoint &globalPos,
+        Qt::MouseButton button,
+        Qt::KeyboardModifiers modifiers)
+{
+    Q_ASSERT(receiver);
+    QMouseEvent mEvent(type, receiver->mapFromGlobal(globalPos), globalPos,
         button, QApplicationPrivate::mouse_buttons, modifiers);
-    events.append(Event(widgetToReceiveMouseEvent,mEvent));
     QEventDispatcherS60 *dispatcher;
     // It is theoretically possible for someone to install a different event dispatcher.
-    if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(widgetToReceiveMouseEvent->d_func()->threadData->eventDispatcher)) != 0) {
+    if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(receiver->d_func()->threadData->eventDispatcher)) != 0) {
         if (dispatcher->excludeUserInputEvents()) {
-            for (int i=0;i < events.count();++i)
-            {
-                Event next = events[i];
-                dispatcher->saveInputEvent(this, next.first, new QMouseEvent(next.second));
-            }
+            dispatcher->saveInputEvent(this, receiver, new QMouseEvent(mEvent));
             return;
         }
     }
 
-    //send events in the queue
-    for (int i=0;i < events.count();++i)
-    {
-        Event next = events[i];
-        sendMouseEvent(next.first, &(next.second));
-    }
+    sendMouseEvent(receiver, &mEvent);
 }
 
 bool QSymbianControl::sendMouseEvent(QWidget *widget, QMouseEvent *mEvent)
@@ -661,27 +631,58 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
                         fakeEvent.iType = TPointerEvent::EButton1Up;
                     S60->virtualMouseAccel = 1;
                     S60->virtualMouseLastKey = 0;
+                    switch (keyCode) {
+                    case Qt::Key_Left:
+                        S60->virtualMousePressedKeys &= ~QS60Data::Left;
+                        break;
+                    case Qt::Key_Right:
+                        S60->virtualMousePressedKeys &= ~QS60Data::Right;
+                        break;
+                    case Qt::Key_Up:
+                        S60->virtualMousePressedKeys &= ~QS60Data::Up;
+                        break;
+                    case Qt::Key_Down:
+                        S60->virtualMousePressedKeys &= ~QS60Data::Down;
+                        break;
+                    case Qt::Key_Select:
+                        S60->virtualMousePressedKeys &= ~QS60Data::Select;
+                        break;
+                    }
                 }
                 else if (type == EEventKey) {
                     switch (keyCode) {
                     case Qt::Key_Left:
+                        S60->virtualMousePressedKeys |= QS60Data::Left;
                         x -= S60->virtualMouseAccel;
                         fakeEvent.iType = TPointerEvent::EMove;
                         break;
                     case Qt::Key_Right:
+                        S60->virtualMousePressedKeys |= QS60Data::Right;
                         x += S60->virtualMouseAccel;
                         fakeEvent.iType = TPointerEvent::EMove;
                         break;
                     case Qt::Key_Up:
+                        S60->virtualMousePressedKeys |= QS60Data::Up;
                         y -= S60->virtualMouseAccel;
                         fakeEvent.iType = TPointerEvent::EMove;
                         break;
                     case Qt::Key_Down:
+                        S60->virtualMousePressedKeys |= QS60Data::Down;
                         y += S60->virtualMouseAccel;
                         fakeEvent.iType = TPointerEvent::EMove;
                         break;
                     case Qt::Key_Select:
-                        fakeEvent.iType = TPointerEvent::EButton1Down;
+                        // Platform bug. If you start pressing several keys simultaneously (for
+                        // example for drag'n'drop), Symbian starts producing spurious up and
+                        // down messages for some keys. Therefore, make sure we have a clean slate
+                        // of pressed keys before starting a new button press.
+                        if (S60->virtualMousePressedKeys != 0) {
+                            S60->virtualMousePressedKeys |= QS60Data::Select;
+                            return EKeyWasConsumed;
+                        } else {
+                            S60->virtualMousePressedKeys |= QS60Data::Select;
+                            fakeEvent.iType = TPointerEvent::EButton1Down;
+                        }
                         break;
                     }
                 }
@@ -712,7 +713,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
-                false, 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
+                (keyEvent.iRepeats != 0), 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
 //        WId wid = reinterpret_cast<RWindowGroup *>(keyEvent.Handle())->Child();
 //        if (!wid)
 //             Could happen if window isn't shown yet.
@@ -812,6 +813,12 @@ void QSymbianControl::Draw(const TRect& controlRect) const
     if (!engine)
         return;
 
+    const bool sendNativePaintEvents = qwidget->d_func()->extraData()->receiveNativePaintEvents;
+    if (sendNativePaintEvents) {
+        const QRect r = qt_TRect2QRect(controlRect);
+        QMetaObject::invokeMethod(qwidget, "beginNativePaintEvent", Qt::DirectConnection, Q_ARG(QRect, r));
+    }
+
     // Map source rectangle into coordinates of the backing store.
     const QPoint controlBase(controlRect.iTl.iX, controlRect.iTl.iY);
     const QPoint backingStoreBase = qwidget->mapTo(qwidget->window(), controlBase);
@@ -822,13 +829,47 @@ void QSymbianControl::Draw(const TRect& controlRect) const
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
 
-        if(!qwidget->d_func()->extraData()->disableBlit) {
+        switch(qwidget->d_func()->extraData()->nativePaintMode) {
+        case QWExtra::Disable:
+            // Do nothing
+            break;
+
+        case QWExtra::Blit:
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
+            break;
+
+        case QWExtra::ZeroFill:
+            if (Window().DisplayMode() == EColor16MA) {
+                gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
+                gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
+                gc.SetBrushColor(TRgb::Color16MA(0));
+                gc.Clear(controlRect);
+            } else {
+                gc.SetBrushColor(TRgb(0x000000));
+                gc.Clear(controlRect);
+            };
+            break;
+
+        default:
+            Q_ASSERT(false);
         }
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());
+    }
+
+    if (sendNativePaintEvents) {
+        const QRect r = qt_TRect2QRect(controlRect);
+        // The draw ops aren't actually sent to WSERV until the graphics
+        // context is deactivated, which happens in the function calling
+        // this one.  We therefore delay the delivery of endNativePaintEvent,
+        // to ensure that drawing has completed by the time the widget
+        // receives the event.  Note that, if the widget needs to ensure
+        // that the draw ops have actually been executed into the output
+        // framebuffer, a call to RWsSession::Flush is required in the
+        // endNativePaintEvent implementation.
+        QMetaObject::invokeMethod(qwidget, "endNativePaintEvent", Qt::QueuedConnection, Q_ARG(QRect, r));
     }
 }
 
@@ -889,7 +930,7 @@ void QSymbianControl::PositionChanged()
 
 void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
 {
-    if (m_ignoreFocusChanged)
+    if (m_ignoreFocusChanged || (qwidget->windowType() & Qt::WindowType_Mask) == Qt::Desktop)
         return;
 
     // Popups never get focused, but still receive the FocusChanged when they are hidden.
@@ -908,6 +949,8 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         }
 
         QApplication::setActiveWindow(qwidget->window());
+        qwidget->d_func()->setWindowIcon_sys(true);
+        qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
         // If widget is fullscreen, hide status pane and button container
         // otherwise show them.
@@ -945,7 +988,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
             TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
             SetExtent(r.iTl, r.Size());
         }
-        qwidget->d_func()->setWindowIcon_sys(true);
+        if (IsFocused() && IsVisible()) {
+            qwidget->d_func()->setWindowIcon_sys(true);
+            qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
+        }
         break;
     case KUidValueCoeFontChangeEvent:
         // font change event
@@ -1221,6 +1267,10 @@ void qt_init(QApplicationPrivate * /* priv */, int)
  *****************************************************************************/
 void qt_cleanup()
 {
+    if(qt_S60Beep) {
+        delete qt_S60Beep;
+        qt_S60Beep = 0;
+    }
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there
 
@@ -1462,14 +1512,13 @@ void QApplication::setCursorFlashTime(int msecs)
 
 void QApplication::beep()
 {
-    TInt frequency=440;
-    TTimeIntervalMicroSeconds duration(500000);
-    QS60Beep* beep=NULL;
-    TRAPD(err, beep=QS60Beep::NewL(frequency, duration));
-    if (!err)
-        beep->Play();
-    delete beep;
-    beep=NULL;
+    if (!qt_S60Beep) {
+        TInt frequency = 880;
+        TTimeIntervalMicroSeconds duration(500000);
+        TRAP_IGNORE(qt_S60Beep=QS60Beep::NewL(frequency, duration));
+    }
+    if (qt_S60Beep)
+        qt_S60Beep->Play();
 }
 
 /*!

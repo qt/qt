@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -858,6 +858,33 @@ void tst_QTextScriptEngine::malayalam()
 	    QSKIP("couln't find AkrutiMal2", SkipAll);
 	}
     }
+    {
+        if (QFontDatabase().families(QFontDatabase::Malayalam).contains("Rachana")) {
+            QFont f("Rachana");
+            const ShapeTable shape_table [] = {
+                { { 0xd37, 0xd4d, 0xd1f, 0xd4d, 0xd30, 0xd40, 0x0 },
+                  { 0x385, 0xa3, 0x0 } },
+                { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
+                  { 0x2ff, 0x0 } },
+                { { 0xd33, 0xd4d, 0xd33, 0x0 },
+                  { 0x3f8, 0x0 } },
+                { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
+                  { 0x2ff, 0x0 } },
+
+                { {0}, {0} }
+            };
+
+
+            const ShapeTable *s = shape_table;
+            while (s->unicode[0]) {
+                QVERIFY( shaping(f, s) );
+                ++s;
+            }
+        } else {
+            QSKIP("couln't find Rachana", SkipAll);
+        }
+    }
+
 #else
     QSKIP("X11 specific test", SkipAll);
 #endif

@@ -35,11 +35,15 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/defs.h                   \
            $$PHONON_MMF_DIR/dummyplayer.h            \
            $$PHONON_MMF_DIR/effectfactory.h          \
+           $$PHONON_MMF_DIR/effectparameter.h        \
+           $$PHONON_MMF_DIR/environmentalreverb.h    \
+           $$PHONON_MMF_DIR/loudness.h               \
            $$PHONON_MMF_DIR/mediaobject.h            \
            $$PHONON_MMF_DIR/mmf_medianode.h          \
            $$PHONON_MMF_DIR/mmf_videoplayer.h        \
+           $$PHONON_MMF_DIR/stereowidening.h         \
            $$PHONON_MMF_DIR/objectdump.h             \
-           $$PHONON_MMF_DIR/objectdump_global.h      \
+           $$PHONON_MMF_DIR/objectdump_symbian.h     \
            $$PHONON_MMF_DIR/objecttree.h             \
            $$PHONON_MMF_DIR/utils.h                  \
            $$PHONON_MMF_DIR/videooutput.h            \
@@ -57,17 +61,19 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/bassboost.cpp            \
            $$PHONON_MMF_DIR/dummyplayer.cpp          \
            $$PHONON_MMF_DIR/effectfactory.cpp        \
+           $$PHONON_MMF_DIR/effectparameter.cpp      \
+           $$PHONON_MMF_DIR/environmentalreverb.cpp  \
+           $$PHONON_MMF_DIR/loudness.cpp             \
            $$PHONON_MMF_DIR/mediaobject.cpp          \
            $$PHONON_MMF_DIR/mmf_medianode.cpp        \
            $$PHONON_MMF_DIR/mmf_videoplayer.cpp      \
+           $$PHONON_MMF_DIR/stereowidening.cpp       \
            $$PHONON_MMF_DIR/objectdump.cpp           \
+           $$PHONON_MMF_DIR/objectdump_symbian.cpp   \
            $$PHONON_MMF_DIR/objecttree.cpp           \
            $$PHONON_MMF_DIR/utils.cpp                \
            $$PHONON_MMF_DIR/videooutput.cpp          \
            $$PHONON_MMF_DIR/videowidget.cpp
-
-HEADERS += $$PHONON_MMF_DIR/objectdump_symbian.h
-SOURCES += $$PHONON_MMF_DIR/objectdump_symbian.cpp
 
 LIBS += -lcone
 LIBS += -lws32
@@ -83,6 +89,7 @@ LIBS += -lws32                    # For RWindow
 LIBS += -lefsrv                   # For file server
 LIBS += -lapgrfx -lapmime         # For recognizer
 LIBS += -lmmfcontrollerframework  # For CMMFMetaDataEntry
+LIBS += -lmediaclientaudiostream  # For CMdaAudioOutputStream
 
 # These are for effects.
 LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect

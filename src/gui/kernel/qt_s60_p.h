@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -103,6 +103,14 @@ public:
     int defaultDpiY;
     WId curWin;
     int virtualMouseLastKey;
+    enum PressedKeys {
+        Select = 0x1,
+        Right = 0x2,
+        Down = 0x4,
+        Left = 0x8,
+        Up = 0x10
+    };
+    int virtualMousePressedKeys; // of the above type, but avoids casting problems
     int virtualMouseAccel;
     int virtualMouseMaxAccel;
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
@@ -192,6 +200,12 @@ private:
     TKeyResponse OfferKeyEvent(const TKeyEvent& aKeyEvent,TEventCode aType);
     TKeyResponse sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent);
     bool sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
+    void sendMouseEvent(
+            QWidget *receiver,
+            QEvent::Type type,
+            const QPoint &globalPos,
+            Qt::MouseButton button,
+            Qt::KeyboardModifiers modifiers);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);

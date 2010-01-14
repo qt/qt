@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,7 +76,7 @@ QDBusViewer::QDBusViewer(const QDBusConnection &connection, QWidget *parent)  :
     tree = new QTreeView;
     tree->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(tree, SIGNAL(activated(const QModelIndex&)), this, SLOT(activate(const QModelIndex&)));
+    connect(tree, SIGNAL(activated(QModelIndex)), this, SLOT(activate(QModelIndex)));
 
     refreshAction = new QAction(tr("&Refresh"), tree);
     refreshAction->setData(42); // increase the amount of 42 used as magic number by one
@@ -444,7 +444,7 @@ void QDBusViewer::about()
     box.setText(QString::fromLatin1("<center><img src=\":/trolltech/qdbusviewer/images/qdbusviewer-128.png\">"
                 "<h3>%1</h3>"
                 "<p>Version %2</p></center>"
-                "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>")
+                "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>")
             .arg(tr("D-Bus Viewer")).arg(QLatin1String(QT_VERSION_STR)));
     box.setWindowTitle(tr("D-Bus Viewer"));
     box.exec();

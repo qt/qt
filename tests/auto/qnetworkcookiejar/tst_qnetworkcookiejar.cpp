@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -168,13 +168,16 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
     cookie.setDomain("something.completely.different");
     QTest::newRow("security-domain-1") << preset << cookie << "http://www.foo.tld" << result << false;
 
-    cookie.setDomain("www.foo.tld");
+    // we want the cookie to be accepted although the path does not match, see QTBUG-5815
+    cookie.setDomain(".foo.tld");
     cookie.setPath("/something");
-    QTest::newRow("security-path-1") << preset << cookie << "http://www.foo.tld" << result << false;
+    result += cookie;
+    QTest::newRow("security-path-1") << preset << cookie << "http://www.foo.tld" << result << true;
 
     // setting the defaults:
     finalCookie = cookie;
     finalCookie.setPath("/something/");
+    finalCookie.setDomain("www.foo.tld");
     cookie.setPath("");
     cookie.setDomain("");
     result.clear();
@@ -285,6 +288,22 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QTest::newRow("exp-match-4") << allCookies << "http://qt.nokia.com/web" << result;
     QTest::newRow("exp-match-4") << allCookies << "http://qt.nokia.com/web/" << result;
     QTest::newRow("exp-match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
+
+    // path matching
+    allCookies.clear();
+    QNetworkCookie anotherCookie;
+    anotherCookie.setName("a");
+    anotherCookie.setPath("/web");
+    anotherCookie.setDomain(".nokia.com");
+    allCookies += anotherCookie;
+    result.clear();
+    QTest::newRow("path-unmatch-1") << allCookies << "http://nokia.com/" << result;
+    QTest::newRow("path-unmatch-2") << allCookies << "http://nokia.com/something/else" << result;
+    result += anotherCookie;
+    QTest::newRow("path-match-1") << allCookies << "http://nokia.com/web" << result;
+    QTest::newRow("path-match-2") << allCookies << "http://nokia.com/web/" << result;
+    QTest::newRow("path-match-3") << allCookies << "http://nokia.com/web/content" << result;
+
 }
 
 void tst_QNetworkCookieJar::cookiesForUrl()

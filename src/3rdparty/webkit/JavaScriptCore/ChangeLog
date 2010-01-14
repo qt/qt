@@ -1,3 +1,121 @@
+2010-01-07  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        RVCT compiler with "-Otime -O3" optimization tries to optimize out 
+        inline new'ed pointers that are passed as arguments.
+        Proposed patch assigns new'ed pointer explicitly outside function call.
+
+        * API/JSClassRef.cpp:
+        (OpaqueJSClass::OpaqueJSClass):
+        (OpaqueJSClassContextData::OpaqueJSClassContextData):
+
+2010-01-07  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        Added time-based optimization and increased optimization level to O3,
+        conditionally for COMPILER(RVCT), 
+        for increasing performance of JavaScript execution.
+        (Default settings are Ospace and O2)
+
+        * runtime/Structure.h:
+
+2009-11-19  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Build fix for 32-bit Sparc machines: these machines are big-endian.
+
+        * wtf/Platform.h:
+
+2009-12-08  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Darin Adler.
+
+        Make WebKit build correctly on FreeBSD, IA64, and Alpha.
+        Based on work by Petr Salinger <Petr.Salinger@seznam.cz>,
+        and Colin Watson <cjwatson@ubuntu.com>.
+
+        * wtf/Platform.h:
+
+2009-12-18  Yongjun Zhang  <yongjun.zhang@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=32713
+        [Qt] make wtf/Assertions.h compile in winscw compiler.
+
+        Add string arg before ellipsis to help winscw compiler resolve variadic
+        macro definitions in wtf/Assertions.h. 
+
+        * wtf/Assertions.h:
+
+2009-11-30  Jan-Arve Sæther  <jan-arve.saether@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation with win32-icc
+
+        The Intel compiler does not support the __has_trivial_constructor type
+        trait.  The Intel Compiler can report itself as _MSC_VER >= 1400. The
+        reason for that is that the Intel Compiler depends on the Microsoft
+        Platform SDK, and in order to try to be "fully" MS compatible it will
+        "pretend" to be the same MS compiler as was shipped with the MS PSDK.
+        (Thus, compiling with win32-icc with VC8 SDK will make the source code
+        "think" the compiler at hand supports this type trait).
+
+        * wtf/TypeTraits.h:
+
+2009-11-28  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        Apply workaround for the limitation of VirtualFree with MEM_RELEASE to all ports running on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=31943
+
+        * runtime/MarkStack.h:
+        (JSC::MarkStack::MarkStackArray::shrinkAllocation):
+
+2009-11-18  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Fix the clobber list of cacheFlush for ARM and Thumb2 on Linux
+        https://bugs.webkit.org/show_bug.cgi?id=31631
+
+        * jit/ExecutableAllocator.h:
+        (JSC::ExecutableAllocator::cacheFlush):
+
+2009-11-23  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Symbian] Fix lastIndexOf() for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=31773
+
+        Symbian soft floating point library has problems with operators
+        comparing NaN to numbers. Without a workaround lastIndexOf() 
+        function does not work.
+
+        Patch developed by David Leong.
+
+        * runtime/StringPrototype.cpp:
+        (JSC::stringProtoFuncLastIndexOf):Add an extra test 
+        to check for NaN for Symbian.
+
+2009-11-18  Harald Fernengel  <harald.fernengel@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix detection of linux-g++
+
+        Never use "linux-g++*" to check for linux-g++, since this will break embedded
+        builds which use linux-arm-g++ and friends. Use 'linux*-g++*' to check for any
+        g++ on linux mkspec.
+
+        * JavaScriptCore.pri:
+
 2009-11-16  Joerg Bornemann  <joerg.bornemann@trolltech.com>
 
         Reviewed by Simon Hausmann.

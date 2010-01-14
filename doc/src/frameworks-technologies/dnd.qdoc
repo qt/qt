@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -426,6 +426,7 @@
 
     \legalese
     Copyright 1996 Daniel Dardailler.
+    Copyright 1999 Matt Koss
 
     Permission to use, copy, modify, distribute, and sell this software
     for any purpose is hereby granted without fee, provided that the above
@@ -436,13 +437,11 @@
     written prior permission. Daniel Dardailler makes no representations
     about the suitability of this software for any purpose. It is
     provided "as is" without express or implied warranty.
-
-    Modifications Copyright 1999 Matt Koss, under the same license as
-    above.
     \endlegalese
-    \omit NOTE: The copyright notice is from qmotifdnd_x11.cpp. \endomit
+    \omit NOTE: The original version of this copyright notice can be found
+    in qmotifdnd_x11.cpp. \endomit
 
-    Note: The Motif Drag \& Drop Protocol only allows receivers to
+    \note The Motif Drag \& Drop Protocol only allows receivers to
     request data in response to a QDropEvent. If you attempt to
     request data in response to e.g. a QDragMoveEvent, an empty
     QByteArray is returned.

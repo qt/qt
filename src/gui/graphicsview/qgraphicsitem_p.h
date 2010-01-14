@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -152,8 +152,6 @@ public:
         dirty(0),
         dirtyChildren(0),
         localCollisionHack(0),
-        dirtyClipPath(1),
-        emptyClipPath(0),
         inSetPosHelper(0),
         needSortChildren(1), // ### can be 0 by default?
         allChildrenDirty(0),
@@ -221,7 +219,7 @@ public:
     void appendGraphicsTransform(QGraphicsTransform *t);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
-    bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
+    bool discardUpdateRequest(bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     int depth() const;
 #ifndef QT_NO_GRAPHICSEFFECT
@@ -237,6 +235,8 @@ public:
                          const QRegion &exposedRegion, bool allItems = false) const;
     QRectF effectiveBoundingRect() const;
     QRectF sceneEffectiveBoundingRect() const;
+
+    QRectF effectiveBoundingRect(const QRectF &rect) const;
 
     virtual void resolveFont(uint inheritedMask)
     {
@@ -307,26 +307,6 @@ public:
     QGraphicsItemCache *extraItemCache() const;
     void removeExtraItemCache();
 
-    inline void setCachedClipPath(const QPainterPath &path)
-    {
-        cachedClipPath = path;
-        dirtyClipPath = 0;
-        emptyClipPath = 0;
-    }
-
-    inline void setEmptyCachedClipPath()
-    {
-        emptyClipPath = 1;
-        dirtyClipPath = 0;
-    }
-
-    void setEmptyCachedClipPathRecursively(const QRectF &emptyIfOutsideThisRect = QRectF());
-
-    inline void invalidateCachedClipPath()
-    { /*static int count = 0 ;qWarning("%i", ++count);*/ dirtyClipPath = 1; emptyClipPath = 0; }
-
-    void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
-    void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
     inline void ensureSceneTransform()
     {
@@ -409,17 +389,12 @@ public:
         return true;
     }
 
-    inline bool isClippedAway() const
-    { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
-
     inline bool childrenClippedToShape() const
     { return (flags & QGraphicsItem::ItemClipsChildrenToShape) || children.isEmpty(); }
 
     inline bool isInvisible() const
     {
-        return !visible
-               || (childrenClippedToShape() && isClippedAway())
-               || (childrenCombineOpacity() && isFullyTransparent());
+        return !visible || (childrenCombineOpacity() && isFullyTransparent());
     }
 
     void setFocusHelper(Qt::FocusReason focusReason, bool climb);
@@ -435,7 +410,6 @@ public:
     inline void sendScenePosChange();
     virtual void siblingOrderChange();
 
-    QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
     QRectF needsRepaint;
     QMap<QWidget *, QRect> paintedViewBoundingRects;
@@ -480,8 +454,6 @@ public:
     quint32 dirty : 1;
     quint32 dirtyChildren : 1;
     quint32 localCollisionHack : 1;
-    quint32 dirtyClipPath : 1;
-    quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
@@ -592,7 +564,10 @@ public:
     {}
 
     inline void detach()
-    { item->setGraphicsEffect(0); }
+    {
+        item->d_ptr->graphicsEffect = 0;
+        item->prepareGeometryChange();
+    }
 
     inline const QGraphicsItem *graphicsItem() const
     { return item; }

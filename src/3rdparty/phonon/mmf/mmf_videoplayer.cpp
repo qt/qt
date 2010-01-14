@@ -44,23 +44,14 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoPlayer::VideoPlayer()
-        :   m_wsSession(CCoeEnv::Static()->WsSession())
-        ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
-        ,   m_window(0)
-        ,   m_totalTime(0)
-        ,   m_pendingChanges(false)
-{
-    construct();
-}
-
-MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
-        :   AbstractMediaPlayer(player)
+MMF::VideoPlayer::VideoPlayer(MediaObject *parent, const AbstractPlayer *player)
+        :   AbstractMediaPlayer(parent, player)
         ,   m_wsSession(CCoeEnv::Static()->WsSession())
         ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
         ,   m_window(0)
         ,   m_totalTime(0)
         ,   m_pendingChanges(false)
+        ,   m_dsaActive(false)
 {
     construct();
 }
@@ -75,19 +66,22 @@ void MMF::VideoPlayer::construct()
     const TInt priority = 0;
     const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
 
-    TRAPD(err,
-        m_player.reset(CVideoPlayerUtility::NewL
+    CVideoPlayerUtility *player = 0;
+    QT_TRAP_THROWING(player = CVideoPlayerUtility::NewL
             (
                  *this,
                  priority, preference,
                  m_wsSession, m_screenDevice,
                  *m_window,
                  m_videoRect, m_videoRect
-            ))
+            )
         );
+    m_player.reset(player);
 
-    if (KErrNone != err)
-        changeState(ErrorState);
+    // CVideoPlayerUtility::NewL starts DSA
+    m_dsaActive = true;
+
+    m_player->RegisterForVideoLoadingNotification(*this);
 
     TRACE_EXIT_0();
 }
@@ -101,6 +95,11 @@ MMF::VideoPlayer::~VideoPlayer()
     // object, so we do not need to disconnect from m_videoOutput here.
 
     TRACE_EXIT_0();
+}
+
+CVideoPlayerUtility* MMF::VideoPlayer::nativePlayer() const
+{
+    return m_player.data();
 }
 
 //-----------------------------------------------------------------------------
@@ -121,9 +120,9 @@ void MMF::VideoPlayer::doPause()
     TRACE_CONTEXT(VideoPlayer::doPause, EVideoApi);
 
     TRAPD(err, m_player->PauseL());
-    if (KErrNone != err) {
+    if (KErrNone != err && state() != ErrorState) {
         TRACE("PauseL error %d", err);
-        setError(NormalError);
+        setError(tr("Pause failed"), err);
     }
 }
 
@@ -136,24 +135,10 @@ void MMF::VideoPlayer::doSeek(qint64 ms)
 {
     TRACE_CONTEXT(VideoPlayer::doSeek, EVideoApi);
 
-    bool wasPlaying = false;
-    if (state() == PlayingState) {
-        // The call to SetPositionL does not have any effect if playback is
-        // ongoing, so we pause before seeking.
-        doPause();
-        wasPlaying = true;
-    }
-
     TRAPD(err, m_player->SetPositionL(TTimeIntervalMicroSeconds(ms * 1000)));
 
-    if (KErrNone == err) {
-        if (wasPlaying)
-            doPlay();
-    }
-    else {
-        TRACE("SetPositionL error %d", err);
-        setError(NormalError);
-    }
+    if(KErrNone != err)
+        setError(tr("Seek failed"), err);
 }
 
 int MMF::VideoPlayer::setDeviceVolume(int mmfVolume)
@@ -166,6 +151,19 @@ int MMF::VideoPlayer::openFile(RFile& file)
 {
     TRAPD(err, m_player->OpenFileL(file));
     return err;
+}
+
+int MMF::VideoPlayer::openUrl(const QString& url)
+{
+    TRAPD(err, m_player->OpenUrlL(qt_QString2TPtrC(url)));
+    return err;
+}
+
+int MMF::VideoPlayer::bufferStatus() const
+{
+    int result = 0;
+    TRAP_IGNORE(m_player->GetVideoLoadingProgressL(result));
+    return result;
 }
 
 void MMF::VideoPlayer::close()
@@ -194,7 +192,7 @@ qint64 MMF::VideoPlayer::currentTime() const
 
         // If we don't cast away constness here, we simply have to ignore
         // the error.
-        const_cast<VideoPlayer*>(this)->setError(NormalError);
+        const_cast<VideoPlayer*>(this)->setError(tr("Getting position failed"), err);
     }
 
     return result;
@@ -220,7 +218,7 @@ void MMF::VideoPlayer::MvpuoOpenComplete(TInt aError)
     if (KErrNone == aError)
         m_player->Prepare();
     else
-        setError(NormalError);
+        setError(tr("Opening clip failed"), aError);
 
     TRACE_EXIT_0();
 }
@@ -246,7 +244,7 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
         emit totalTimeChanged(totalTime());
         changeState(StoppedState);
     } else {
-        setError(NormalError);
+        setError(tr("Buffering clip failed"), err);
     }
 
     TRACE_EXIT_0();
@@ -271,7 +269,6 @@ void MMF::VideoPlayer::MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError)
     TRACE_CONTEXT(VideoPlayer::MvpuoFrameReady, EVideoApi);
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    // TODO
     Q_UNUSED(aFrame);
     Q_UNUSED(aError);   // suppress warnings in release builds
 
@@ -283,8 +280,9 @@ void MMF::VideoPlayer::MvpuoPlayComplete(TInt aError)
     TRACE_CONTEXT(VideoPlayer::MvpuoPlayComplete, EVideoApi)
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    Q_UNUSED(aError);   // suppress warnings in release builds
-    changeState(StoppedState);
+    // Call base class function which handles end of playback for both
+    // audio and video clips.
+    playbackComplete(aError);
 
     TRACE_EXIT_0();
 }
@@ -294,10 +292,24 @@ void MMF::VideoPlayer::MvpuoEvent(const TMMFEvent &aEvent)
     TRACE_CONTEXT(VideoPlayer::MvpuoEvent, EVideoApi);
     TRACE_ENTRY("state %d", state());
 
-    // TODO
     Q_UNUSED(aEvent);
 
     TRACE_EXIT_0();
+}
+
+
+//-----------------------------------------------------------------------------
+// MVideoLoadingObserver callbacks
+//-----------------------------------------------------------------------------
+
+void MMF::VideoPlayer::MvloLoadingStarted()
+{
+    bufferingStarted();
+}
+
+void MMF::VideoPlayer::MvloLoadingComplete()
+{
+    bufferingComplete();
 }
 
 
@@ -315,8 +327,7 @@ void MMF::VideoPlayer::getVideoWindow()
         m_videoOutput->dump();
 
         initVideoOutput();
-        m_window = m_videoOutput->videoWindow();
-        updateVideoRect();
+        videoWindowChanged();
     } else
         // Top-level window
         m_window = QApplication::activeWindow()->effectiveWinId()->DrawableWindow();
@@ -349,6 +360,18 @@ void MMF::VideoPlayer::initVideoOutput()
     Q_ASSERT(connected);
 
     connected = connect(
+        m_videoOutput, SIGNAL(beginVideoWindowNativePaint()),
+        this, SLOT(suspendDirectScreenAccess())
+    );
+    Q_ASSERT(connected);
+
+    connected = connect(
+        m_videoOutput, SIGNAL(endVideoWindowNativePaint()),
+        this, SLOT(resumeDirectScreenAccess())
+    );
+    Q_ASSERT(connected);
+
+    connected = connect(
         m_videoOutput, SIGNAL(aspectRatioChanged()),
         this, SLOT(aspectRatioChanged())
     );
@@ -370,10 +393,46 @@ void MMF::VideoPlayer::videoWindowChanged()
     TRACE_ENTRY("state %d", state());
 
     m_window = m_videoOutput->videoWindow();
-
     updateVideoRect();
 
     TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::suspendDirectScreenAccess()
+{
+    m_dsaWasActive = stopDirectScreenAccess();
+}
+
+void MMF::VideoPlayer::resumeDirectScreenAccess()
+{
+    if(m_dsaWasActive) {
+        startDirectScreenAccess();
+        m_dsaWasActive = false;
+    }
+}
+
+void MMF::VideoPlayer::startDirectScreenAccess()
+{
+    if(!m_dsaActive) {
+        TRAPD(err, m_player->StartDirectScreenAccessL());
+        if(KErrNone == err)
+            m_dsaActive = true;
+        else
+            setError(tr("Video display error"), err);
+    }
+}
+
+bool MMF::VideoPlayer::stopDirectScreenAccess()
+{
+    const bool dsaWasActive = m_dsaActive;
+    if(m_dsaActive) {
+        TRAPD(err, m_player->StopDirectScreenAccessL());
+        if(KErrNone == err)
+            m_dsaActive = false;
+        else
+            setError(tr("Video display error"), err);
+    }
+    return dsaWasActive;
 }
 
 // Helper function for aspect ratio / scale mode handling
@@ -393,7 +452,18 @@ QSize scaleToAspect(const QSize& srcRect, int aspectWidth, int aspectHeight)
 void MMF::VideoPlayer::updateVideoRect()
 {
     QRect videoRect;
-    const QRect windowRect = m_videoOutput->videoWindowRect();
+    QRect windowRect = m_videoOutput->videoWindowRect();
+
+    // Clip to physical window size
+    // This is due to a defect in the layout when running on S60 3.2, which
+    // results in the rectangle of the video widget extending outside the
+    // screen in certain circumstances.  These include the initial startup
+    // of the mediaplayer demo in portrait mode.  When this rectangle is
+    // passed to the CVideoPlayerUtility, no video is rendered.
+    const TSize screenSize = m_screenDevice.SizeInPixels();
+    const QRect screenRect(0, 0, screenSize.iWidth, screenSize.iHeight);
+    windowRect = windowRect.intersected(screenRect);
+
     const QSize windowSize = windowRect.size();
 
     // Calculate size of smallest rect which contains video frame size
@@ -536,7 +606,7 @@ void MMF::VideoPlayer::applyVideoWindowChange()
     TRAPD(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight, antialias));
     if(KErrNone != err) {
         TRACE("SetScaleFactorL (1) err %d", err);
-        setError(NormalError);
+        setError(tr("Video display error"), err);
     }
 
     if(KErrNone == err) {
@@ -551,12 +621,13 @@ void MMF::VideoPlayer::applyVideoWindowChange()
 
         if (KErrNone != err) {
             TRACE("SetDisplayWindowL err %d", err);
-            setError(NormalError);
+            setError(tr("Video display error"), err);
         } else {
+            m_dsaActive = true;
             TRAP(err, m_player->SetScaleFactorL(m_scaleWidth, m_scaleHeight, antialias));
             if(KErrNone != err) {
                 TRACE("SetScaleFactorL (2) err %d", err);
-                setError(NormalError);
+                setError(tr("Video display error"), err);
             }
         }
     }

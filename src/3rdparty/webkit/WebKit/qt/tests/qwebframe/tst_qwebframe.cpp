@@ -605,6 +605,8 @@ private slots:
     void render();
     void scrollPosition();
     void evaluateWillCauseRepaint();
+    void qObjectWrapperWithSameIdentity();
+    void scrollRecursively();
 
 private:
     QString  evalJS(const QString&s) {
@@ -2291,7 +2293,7 @@ void tst_QWebFrame::requestedUrl()
     qRegisterMetaType<QList<QSslError> >("QList<QSslError>");
     qRegisterMetaType<QNetworkReply* >("QNetworkReply*");
 
-    QSignalSpy spy2(page.networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)));
+    QSignalSpy spy2(page.networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
     frame->setUrl(QUrl("qrc:/fake-ssl-error.html"));
     QTest::qWait(200);
     QCOMPARE(spy2.count(), 1);
@@ -2780,11 +2782,114 @@ void tst_QWebFrame::evaluateWillCauseRepaint()
     view.page()->mainFrame()->evaluateJavaScript(
         "document.getElementById('junk').style.display = 'none';");
 
-    ::waitForSignal(view.page(), SIGNAL(repaintRequested( const QRect &)));
+    ::waitForSignal(view.page(), SIGNAL(repaintRequested(QRect)));
 
     QTest::qWait(2000);
 }
 
+class TestFactory : public QObject
+{
+    Q_OBJECT
+public:
+    TestFactory()
+        : obj(0), counter(0)
+    {}
+
+    Q_INVOKABLE QObject* getNewObject()
+    {
+        delete obj;
+        obj = new QObject(this);
+        obj->setObjectName(QLatin1String("test") + QString::number(++counter));
+        return obj;
+
+    }
+
+    QObject* obj;
+    int counter;
+};
+
+void tst_QWebFrame::qObjectWrapperWithSameIdentity()
+{
+    m_view->setHtml("<script>function triggerBug() { document.getElementById('span1').innerText = test.getNewObject().objectName; }</script>"
+                    "<body><span id='span1'>test</span></body>");
+
+    QWebFrame* mainFrame = m_view->page()->mainFrame();
+    QCOMPARE(mainFrame->toPlainText(), QString("test"));
+
+    mainFrame->addToJavaScriptWindowObject("test", new TestFactory, QScriptEngine::ScriptOwnership);
+
+    mainFrame->evaluateJavaScript("triggerBug();");
+    QCOMPARE(mainFrame->toPlainText(), QString("test1"));
+
+    mainFrame->evaluateJavaScript("triggerBug();");
+    QCOMPARE(mainFrame->toPlainText(), QString("test2"));
+}
+
+bool QWEBKIT_EXPORT qtwebkit_webframe_scrollRecursively(QWebFrame* qFrame, int dx, int dy);
+
+void tst_QWebFrame::scrollRecursively()
+{
+    // The test content is 
+    // a nested frame set
+    // The main frame scrolls
+    // and has two children
+    // an iframe and a div overflow
+    // both scroll
+    QWebView webView;
+    QWebPage* webPage = webView.page();
+    QSignalSpy loadSpy(webPage, SIGNAL(loadFinished(bool)));
+    QUrl url = QUrl("qrc:///testiframe.html");
+    webPage->mainFrame()->load(url);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QList<QWebFrame*> children =  webPage->mainFrame()->childFrames();
+    QVERIFY(children.count() == 1);
+
+    // 1st test
+    // call scrollRecursively over mainframe
+    // verify scrolled
+    // verify scroll postion changed
+    QPoint scrollPosition(webPage->mainFrame()->scrollPosition());
+    QVERIFY(qtwebkit_webframe_scrollRecursively(webPage->mainFrame(), 10, 10));
+    QVERIFY(scrollPosition != webPage->mainFrame()->scrollPosition());
+
+    // 2nd test
+    // call scrollRecursively over child iframe
+    // verify scrolled
+    // verify child scroll position changed
+    // verify parent's scroll position did not change
+    scrollPosition = webPage->mainFrame()->scrollPosition();
+    QPoint childScrollPosition = children.at(0)->scrollPosition();
+    QVERIFY(qtwebkit_webframe_scrollRecursively(children.at(0), 10, 10));
+    QVERIFY(scrollPosition == webPage->mainFrame()->scrollPosition());
+    QVERIFY(childScrollPosition != children.at(0)->scrollPosition());
+
+    // 3rd test
+    // call scrollRecursively over div overflow
+    // verify scrolled == true
+    // verify parent and child frame's scroll postion did not change
+    QWebElement div = webPage->mainFrame()->documentElement().findFirst("#content1");
+    QMouseEvent evpres(QEvent::MouseMove, div.geometry().center(), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+    webPage->event(&evpres);
+    scrollPosition = webPage->mainFrame()->scrollPosition();
+    childScrollPosition = children.at(0)->scrollPosition();
+    QVERIFY(qtwebkit_webframe_scrollRecursively(webPage->mainFrame(), 5, 5));
+    QVERIFY(childScrollPosition == children.at(0)->scrollPosition());
+    QVERIFY(scrollPosition == webPage->mainFrame()->scrollPosition());
+
+    // 4th test
+    // call scrollRecursively twice over childs iframe
+    // verify scrolled == true first time
+    // verify parent's scroll == true second time
+    // verify parent and childs scroll position changed
+    childScrollPosition = children.at(0)->scrollPosition();
+    QVERIFY(qtwebkit_webframe_scrollRecursively(children.at(0), -10, -10));
+    QVERIFY(childScrollPosition != children.at(0)->scrollPosition());
+    scrollPosition = webPage->mainFrame()->scrollPosition();
+    QVERIFY(qtwebkit_webframe_scrollRecursively(children.at(0), -10, -10));
+    QVERIFY(scrollPosition != webPage->mainFrame()->scrollPosition());
+
+}
 
 QTEST_MAIN(tst_QWebFrame)
 #include "tst_qwebframe.moc"

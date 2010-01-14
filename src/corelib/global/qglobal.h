@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.6.0"
+#define QT_VERSION_STR   "4.6.1"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040600
+#define QT_VERSION 0x040601
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -910,6 +910,8 @@ QT_END_INCLUDE_NAMESPACE
 /* Symbian OS defines TRUE = 1 and FALSE = 0,
 redefine to built-in booleans to make autotests work properly */
 #ifdef Q_OS_SYMBIAN
+    #include <e32def.h> /* Symbian OS defines */
+
     #undef TRUE
     #undef FALSE
 #endif

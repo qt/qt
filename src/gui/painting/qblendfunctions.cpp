@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -605,7 +605,7 @@ static void qt_blend_argb32_on_argb32(uchar *destPixels, int dbpl,
 }
 
 
-static void qt_blend_rgb32_on_rgb32(uchar *destPixels, int dbpl,
+void qt_blend_rgb32_on_rgb32(uchar *destPixels, int dbpl,
                              const uchar *srcPixels, int sbpl,
                              int w, int h,
                              int const_alpha)
@@ -738,10 +738,6 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
 
     quint32 basex;
     quint32 srcy;
-
-    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
-    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
-
 
     if (sx < 0) {
         int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;

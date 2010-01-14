@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -282,8 +282,8 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \i SelectPreviousPage   \i Shift+PgUp                       \i Shift+PgUp             \i Shift+PgUp     \i Shift+PgUp                            \i Shift+PgUp
     \row    \i SelectStartOfLine    \i Shift+Home                       \i Ctrl+Shift+Left        \i Shift+Home     \i Shift+Home                            \i Shift+Home
     \row    \i SelectEndOfLine      \i Shift+End                        \i Ctrl+Shift+Right       \i Shift+End      \i Shift+End                             \i Shift+End
-    \row    \i SelectStartOfBlock   \i (none)                           \i Alt+Shift+Up           \i (none)         \i (none)                                \i (none)
-    \row    \i SelectEndOfBlock     \i (none)                           \i Alt+Shift+Down         \i (none)         \i (none)                                \i (none)
+    \row    \i SelectStartOfBlock   \i (none)                           \i Alt+Shift+Up, Meta+Shift+A \i (none)     \i (none)                                \i (none)
+    \row    \i SelectEndOfBlock     \i (none)                           \i Alt+Shift+Down, Meta+Shift+E \i (none)   \i (none)                                \i (none)
     \row    \i SelectStartOfDocument\i Ctrl+Shift+Home                  \i Ctrl+Shift+Up, Shift+Home          \i Ctrl+Shift+Home\i Ctrl+Shift+Home           \i Ctrl+Shift+Home
     \row    \i SelectEndOfDocument  \i Ctrl+Shift+End                   \i Ctrl+Shift+Down, Shift+End        \i Ctrl+Shift+End \i Ctrl+Shift+End             \i Ctrl+Shift+End
     \row    \i DeleteStartOfWord    \i Ctrl+Backspace                   \i Alt+Backspace          \i Ctrl+Backspace \i Ctrl+Backspace                        \i (none)
@@ -732,6 +732,8 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_Down,                QApplicationPrivate::KB_Mac},
     {QKeySequence::MoveToPreviousPage,      0,          Qt::META | Qt::Key_PageUp,              QApplicationPrivate::KB_Mac},
     {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_PageDown,            QApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectStartOfBlock,      0,          Qt::META | Qt::SHIFT | Qt::Key_A,       QApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectEndOfBlock,        0,          Qt::META | Qt::SHIFT | Qt::Key_E,       QApplicationPrivate::KB_Mac},
     {QKeySequence::SelectStartOfLine,       0,          Qt::META | Qt::SHIFT | Qt::Key_Left,    QApplicationPrivate::KB_Mac},
     {QKeySequence::SelectEndOfLine,         0,          Qt::META | Qt::SHIFT | Qt::Key_Right,   QApplicationPrivate::KB_Mac}    
 };

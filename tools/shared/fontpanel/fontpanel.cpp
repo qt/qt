@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,7 +73,7 @@ FontPanel::FontPanel(QWidget *parentWidget) :
     connect(m_writingSystemComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(slotWritingSystemChanged(int)));
     formLayout->addRow(tr("&Writing system"), m_writingSystemComboBox);
 
-    connect(m_familyComboBox, SIGNAL( currentFontChanged(QFont)), this, SLOT(slotFamilyChanged(QFont)));
+    connect(m_familyComboBox, SIGNAL(currentFontChanged(QFont)), this, SLOT(slotFamilyChanged(QFont)));
     formLayout->addRow(tr("&Family"), m_familyComboBox);
 
     m_styleComboBox->setEditable(false);

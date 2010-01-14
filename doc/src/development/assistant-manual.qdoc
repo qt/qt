@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,7 +130,7 @@
             \o -collectionFile <file.qhc>
             \o Uses the specified collection file instead of the default one.
         \row
-            \o -showUrl URL
+            \o -showUrl <URL>
             \o Shows the document referenced by URL.
         \row
             \o -enableRemoteControl
@@ -156,7 +156,12 @@
             \o Unregisters the specified compressed help file from the given
             collection file.
         \row
-            \o -setCurrentFilter filter
+            \o -remove-search-index
+            \o Purges the help search engine's index. This option is
+               useful in case the associated index files get corrupted.
+               \QA will re-index the documentation at the next start-up.
+        \row
+            \o -setCurrentFilter <filter>
             \o Sets the given filter as the active filter.
         \row
             \o -quiet

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,7 @@
 #include <QtGui/qdialog.h>
 #include <QtGui/qapplication.h>
 #include <QtGui/private/qwidget_p.h>
+#include <QtGui/qaction.h>
 
 #include "qdialogbuttonbox.h"
 
@@ -258,6 +259,31 @@ static const int layouts[2][5][14] =
         { ActionRole, ApplyRole, ResetRole, Stretch, HelpRole, EOL, EOL, EOL, EOL, EOL, EOL, EOL, EOL, EOL }
     }
 };
+
+class QDialogButtonEnabledProxy : public QObject
+{
+public:
+    QDialogButtonEnabledProxy(QObject *parent, QWidget *src, QAction *trg) : QObject(parent), source(src), target(trg)
+    {
+        source->installEventFilter(this);
+        target->setEnabled(source->isEnabled());
+    }
+    ~QDialogButtonEnabledProxy()
+    {
+        source->removeEventFilter(this);
+    }
+    bool eventFilter(QObject *object, QEvent *event)
+    {
+        if (object == source && event->type() == QEvent::EnabledChange) {
+            target->setEnabled(source->isEnabled());
+        }
+        return false;
+    };
+private:
+    QWidget *source;
+    QAction *target;
+};
+
 
 class QDialogButtonBoxPrivate : public QWidgetPrivate
 {
@@ -548,7 +574,9 @@ void QDialogButtonBoxPrivate::addButton(QAbstractButton *button, QDialogButtonBo
     QObject::connect(button, SIGNAL(destroyed()), q, SLOT(_q_handleButtonDestroyed()));
     buttonLists[role].append(button);
 #ifdef QT_SOFTKEYS_ENABLED
-    softKeyActions.insert(button, createSoftKey(button, role));
+    QAction *action = createSoftKey(button, role);
+    softKeyActions.insert(button, action);
+    new QDialogButtonEnabledProxy(action, button, action);
 #endif
     if (doLayout)
         layoutButtons();
@@ -1215,6 +1243,30 @@ bool QDialogButtonBox::event(QEvent *event)
     }else if (event->type() == QEvent::LanguageChange) {
         d->retranslateStrings();
     }
+#ifdef QT_SOFTKEYS_ENABLED
+    else if (event->type() == QEvent::ParentChange) {
+        QWidget *dialog = 0;
+        QWidget *p = this;
+        while (p && !p->isWindow()) {
+            p = p->parentWidget();
+            if ((dialog = qobject_cast<QDialog *>(p)))
+                break;
+        }
+
+        // If the parent changes, then move the softkeys
+        for (QHash<QAbstractButton *, QAction *>::const_iterator it = d->softKeyActions.constBegin();
+            it != d->softKeyActions.constEnd(); ++it) {
+            QAction *current = it.value();
+            QList<QWidget *> widgets = current->associatedWidgets();
+            foreach (QWidget *w, widgets)
+                w->removeAction(current);
+            if (dialog)
+                dialog->addAction(current);
+            else
+                addAction(current);
+        }
+    }
+#endif
 
     return QWidget::event(event);
 }

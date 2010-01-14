@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1573,9 +1573,6 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba)
     cannot be detected from the content provided, \a defaultCodec is
     returned.
 
-    The behavior of this function is undefined if \a ba is not
-    encoded in unicode.
-
     \sa codecForHtml()
 */
 QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaultCodec)
@@ -1619,9 +1616,6 @@ QTextCodec *QTextCodec::codecForUtfText(const QByteArray &ba, QTextCodec *defaul
     using the BOM (Byte Order Mark) and returns a QTextCodec instance
     that is capable of decoding the text to unicode. If the codec
     cannot be detected, this overload returns a Latin-1 QTextCodec.
-
-    The behavior of this function is undefined if \a ba is not
-    encoded in unicode.
 
     \sa codecForHtml()
 */

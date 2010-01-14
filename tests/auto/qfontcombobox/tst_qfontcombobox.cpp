@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -123,9 +123,11 @@ void tst_QFontComboBox::currentFont_data()
     QTest::addColumn<QFont>("currentFont");
     // Normalize the names
     QFont defaultFont;
+    QFontInfo fi(defaultFont);
+    defaultFont = QFont(fi.family()); // make sure we have a real font name and not something like 'Sans Serif'.
     QTest::newRow("default") << defaultFont;
     defaultFont.setPointSize(defaultFont.pointSize() + 10);
-    QTest::newRow("default") << defaultFont;
+    QTest::newRow("default2") << defaultFont;
     QFontDatabase db;
     QStringList list = db.families();
     for (int i = 0; i < list.count(); ++i) {
@@ -144,9 +146,11 @@ void tst_QFontComboBox::currentFont()
     QFont oldCurrentFont = box.currentFont();
 
     box.setCurrentFont(currentFont);
-    QCOMPARE(box.currentFont(), currentFont);
-    QString boxFontFamily = QFontInfo(box.currentFont()).family();
     QRegExp foundry(" \\[.*\\]");
+    if (!box.currentFont().family().contains(foundry)) {
+        QCOMPARE(box.currentFont(), currentFont);
+    }
+    QString boxFontFamily = QFontInfo(box.currentFont()).family();
     if (!currentFont.family().contains(foundry))
         boxFontFamily.remove(foundry);
     QCOMPARE(boxFontFamily, currentFont.family());

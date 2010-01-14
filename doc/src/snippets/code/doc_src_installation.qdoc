@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,13 +41,13 @@
 
 //! [0]
 cd /tmp
-gunzip qt-x11-opensource-desktop-%VERSION%.tar.gz        # uncompress the archive
-tar xvf qt-x11-opensource-desktop-%VERSION%.tar          # unpack it
+gunzip qt-everywhere-opensource-src-%VERSION%.tar.gz        # uncompress the archive
+tar xvf qt-everywhere-opensource-src-%VERSION%.tar          # unpack it
 //! [0]
 
 
 //! [1]
-cd /tmp/qt-x11-opensource-desktop-%VERSION%
+cd /tmp/qt-everywhere-opensource-src-%VERSION%
 ./configure
 //! [1]
 
@@ -102,13 +102,13 @@ nmake
 
 //! [11]
 cd /tmp
-gunzip qt-mac-opensource-desktop-%VERSION%.tar.gz        # uncompress the archive
-tar xvf qt-mac-opensource-desktop-%VERSION%.tar          # unpack it
+gunzip qt-everywhere-opensource-src-%VERSION%.tar.gz        # uncompress the archive
+tar xvf qt-everywhere-opensource-src-%VERSION%.tar          # unpack it
 //! [11]
 
 
 //! [12]
-cd /tmp/qt-mac-opensource-desktop-%VERSION%
+cd /tmp/qt-everywhere-opensource-src-%VERSION%
 ./configure
 //! [12]
 
@@ -198,10 +198,12 @@ make release-armv5
 //! [29]
 cd src\s60installs
 make sis QT_SIS_OPTIONS=-i QT_SIS_CERTIFICATE=<certificate file> QT_SIS_KEY=<certificate key file>
+cd ..\3rdparty\webkit\WebCore
+make sis QT_SIS_OPTIONS=-i QT_SIS_CERTIFICATE=<certificate file> QT_SIS_KEY=<certificate key file>
 //! [29]
 
 //! [30]
-cd embedded\fluidlauncher
+cd demos\embedded\fluidlauncher
 make sis QT_SIS_OPTIONS=-i
 //! [30]
 
@@ -209,3 +211,14 @@ make sis QT_SIS_OPTIONS=-i
 cd \Qt\%VERSION%
 configure -platform win32-g++ -xplatform symbian-sbsv2
 //! [31]
+
+//! [32]
+cd <Your SDK path>\S60CppExamples\Note\group
+bldmake bldfiles
+abld build winscw udeb
+abld build gcce urel
+//! [32]
+
+//! [33]
+SYMBIANBUILD_DEPENDENCYOFF=1
+//! [33]

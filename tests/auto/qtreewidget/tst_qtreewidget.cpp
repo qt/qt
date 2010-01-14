@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -168,6 +168,8 @@ private slots:
     void task239150_editorWidth();
     void setTextUpdate();
     void taskQTBUG2844_visualItemRect();
+    void setChildIndicatorPolicy();
+
 
 public slots:
     void itemSelectionChanged();
@@ -3290,6 +3292,57 @@ void tst_QTreeWidget::taskQTBUG2844_visualItemRect()
     QCOMPARE(tree.visualItemRect(&item), rectCol0 | rectCol1);
 }
 
+void tst_QTreeWidget::setChildIndicatorPolicy()
+{
+    QTreeWidget treeWidget;
+    treeWidget.setColumnCount(1);
+
+    class MyItemDelegate : public QStyledItemDelegate
+    {
+    public:
+        MyItemDelegate() : numPaints(0), expectChildren(false)  { }
+        void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+        {
+            numPaints++;
+            QCOMPARE(!(option.state & QStyle::State_Children), !expectChildren);
+            QStyledItemDelegate::paint(painter, option, index);
+        }
+        mutable int numPaints;
+        bool expectChildren;
+    } delegate;
+
+    treeWidget.setItemDelegate(&delegate);
+    treeWidget.show();
+
+    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList("Hello"));
+    treeWidget.insertTopLevelItem(0, item);
+    QTest::qWait(50);
+    QTRY_VERIFY(delegate.numPaints > 0);
+
+    delegate.numPaints = 0;
+    delegate.expectChildren = true;
+    item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
+    QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
+
+    delegate.numPaints = 0;
+    delegate.expectChildren = false;
+    item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicatorWhenChildless);
+    QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
+
+    delegate.numPaints = 0;
+    delegate.expectChildren = true;
+    new QTreeWidgetItem(item);
+    QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
+
+    delegate.numPaints = 0;
+    delegate.expectChildren = false;
+    item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+    QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
+}
 
 
 

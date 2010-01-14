@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -121,7 +121,7 @@ public:
     XML = 54,
 
     ACCEPT_STATE = 416,
-    RULE_COUNT = 269,
+    RULE_COUNT = 270,
     STATE_COUNT = 427,
     TERMINAL_COUNT = 57,
     NON_TERMINAL_COUNT = 84,
@@ -172,105 +172,105 @@ const char *const QXmlStreamReader_Table::spell [] = {
 const short QXmlStreamReader_Table::lhs [] = {
   57, 57, 59, 59, 59, 59, 59, 59, 59, 59, 
   67, 68, 64, 72, 72, 72, 75, 66, 66, 66, 
-  66, 79, 78, 80, 80, 80, 80, 80, 80, 81, 
-  81, 81, 81, 81, 81, 81, 87, 83, 88, 88, 
-  88, 88, 91, 92, 93, 93, 93, 93, 94, 94, 
-  96, 96, 96, 97, 97, 98, 98, 99, 99, 100, 
-  100, 89, 89, 95, 90, 101, 101, 103, 103, 103, 
-  103, 103, 103, 103, 103, 103, 103, 104, 105, 105, 
-  105, 105, 107, 108, 109, 109, 84, 84, 110, 110, 
-  112, 112, 85, 85, 85, 65, 65, 76, 114, 63, 
-  115, 116, 86, 86, 86, 117, 117, 117, 117, 117, 
+  66, 79, 78, 80, 80, 80, 80, 80, 80, 80, 
+  81, 81, 81, 81, 81, 81, 81, 87, 83, 88, 
+  88, 88, 88, 91, 92, 93, 93, 93, 93, 94, 
+  94, 96, 96, 96, 97, 97, 98, 98, 99, 99, 
+  100, 100, 89, 89, 95, 90, 101, 101, 103, 103, 
+  103, 103, 103, 103, 103, 103, 103, 103, 104, 105, 
+  105, 105, 105, 107, 108, 109, 109, 84, 84, 110, 
+  110, 112, 112, 85, 85, 85, 65, 65, 76, 114, 
+  63, 115, 116, 86, 86, 86, 117, 117, 117, 117, 
   117, 117, 117, 117, 117, 117, 117, 117, 117, 117, 
-  117, 117, 117, 117, 117, 117, 117, 117, 118, 118, 
-  119, 119, 119, 119, 119, 119, 119, 119, 122, 70, 
-  70, 70, 70, 123, 124, 123, 124, 123, 124, 123, 
-  124, 126, 126, 126, 126, 126, 126, 126, 126, 126, 
+  117, 117, 117, 117, 117, 117, 117, 117, 117, 118, 
+  118, 119, 119, 119, 119, 119, 119, 119, 119, 122, 
+  70, 70, 70, 70, 123, 124, 123, 124, 123, 124, 
+  123, 124, 126, 126, 126, 126, 126, 126, 126, 126, 
   126, 126, 126, 126, 126, 126, 126, 126, 126, 126, 
-  126, 126, 126, 125, 73, 113, 113, 113, 113, 127, 
-  128, 127, 128, 127, 128, 127, 128, 129, 129, 129, 
+  126, 126, 126, 126, 125, 73, 113, 113, 113, 113, 
+  127, 128, 127, 128, 127, 128, 127, 128, 129, 129, 
   129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 
   129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 
-  129, 129, 106, 106, 106, 106, 131, 132, 131, 132, 
-  131, 131, 132, 132, 133, 133, 133, 133, 135, 71, 
-  71, 71, 136, 136, 137, 62, 60, 61, 138, 121, 
-  82, 130, 134, 120, 139, 139, 139, 139, 58, 58, 
-  58, 58, 58, 58, 58, 58, 58, 58, 74, 69, 
-  69, 77, 111, 102, 102, 102, 102, 102, 140};
+  129, 129, 129, 106, 106, 106, 106, 131, 132, 131, 
+  132, 131, 131, 132, 132, 133, 133, 133, 133, 135, 
+  71, 71, 71, 136, 136, 137, 62, 60, 61, 138, 
+  121, 82, 130, 134, 120, 139, 139, 139, 139, 58, 
+  58, 58, 58, 58, 58, 58, 58, 58, 58, 74, 
+  69, 69, 77, 111, 102, 102, 102, 102, 102, 140};
 
 const short QXmlStreamReader_Table::rhs [] = {
   2, 1, 4, 2, 2, 2, 2, 2, 2, 0, 
   1, 1, 9, 2, 4, 0, 4, 4, 6, 6, 
-  4, 1, 3, 1, 1, 1, 2, 2, 2, 1, 
-  1, 1, 1, 1, 1, 1, 4, 4, 1, 1, 
-  1, 1, 1, 2, 1, 1, 1, 0, 2, 2, 
-  2, 6, 6, 1, 5, 1, 5, 3, 5, 0, 
-  1, 6, 8, 4, 2, 1, 5, 1, 1, 1, 
-  1, 1, 1, 1, 1, 6, 7, 1, 2, 2, 
-  1, 4, 3, 3, 1, 2, 5, 6, 4, 6, 
-  3, 5, 5, 3, 4, 4, 5, 2, 3, 2, 
-  2, 4, 5, 5, 7, 1, 1, 1, 1, 1, 
+  4, 1, 3, 1, 1, 1, 2, 2, 2, 0, 
+  1, 1, 1, 1, 1, 1, 1, 4, 4, 1, 
+  1, 1, 1, 1, 2, 1, 1, 1, 0, 2, 
+  2, 2, 6, 6, 1, 5, 1, 5, 3, 5, 
+  0, 1, 6, 8, 4, 2, 1, 5, 1, 1, 
+  1, 1, 1, 1, 1, 1, 6, 7, 1, 2, 
+  2, 1, 4, 3, 3, 1, 2, 5, 6, 4, 
+  6, 3, 5, 5, 3, 4, 4, 5, 2, 3, 
+  2, 2, 4, 5, 5, 7, 1, 1, 1, 1, 
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-  2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 
-  2, 3, 3, 2, 2, 2, 2, 1, 1, 1, 
+  1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 
+  2, 2, 3, 3, 2, 2, 2, 2, 1, 1, 
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-  1, 1, 1, 1, 1, 2, 2, 3, 3, 2, 
-  2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 
+  1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 
+  2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-  1, 1, 2, 2, 3, 3, 2, 2, 2, 2, 
-  1, 1, 1, 1, 1, 1, 1, 1, 5, 0, 
-  1, 3, 1, 3, 2, 4, 3, 5, 1, 3, 
-  3, 3, 3, 4, 1, 1, 2, 2, 2, 4, 
-  2, 2, 2, 2, 2, 2, 2, 0, 1, 0, 
-  1, 1, 1, 1, 1, 1, 1, 1, 2};
+  1, 1, 1, 2, 2, 3, 3, 2, 2, 2, 
+  2, 1, 1, 1, 1, 1, 1, 1, 1, 5, 
+  0, 1, 3, 1, 3, 2, 4, 3, 5, 1, 
+  3, 3, 3, 3, 4, 1, 1, 2, 2, 2, 
+  4, 2, 2, 2, 2, 2, 2, 2, 0, 1, 
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 2};
 
 const short QXmlStreamReader_Table::action_default [] = {
-  10, 258, 0, 2, 1, 0, 124, 116, 118, 119, 
-  126, 128, 122, 11, 113, 107, 0, 108, 127, 110, 
-  114, 112, 120, 123, 125, 106, 109, 111, 117, 115, 
-  130, 121, 239, 12, 253, 135, 249, 252, 0, 129, 
-  139, 256, 16, 251, 137, 136, 0, 255, 138, 258, 
-  230, 257, 254, 0, 0, 263, 0, 246, 245, 0, 
-  248, 247, 244, 240, 98, 262, 0, 235, 0, 0, 
-  259, 96, 97, 100, 0, 131, 133, 132, 134, 0, 
-  0, 260, 0, 0, 175, 0, 172, 164, 166, 167, 
-  141, 153, 170, 161, 155, 156, 152, 158, 162, 160, 
-  168, 171, 151, 154, 157, 159, 165, 163, 173, 169, 
-  149, 174, 0, 143, 147, 145, 150, 140, 148, 0, 
-  146, 142, 144, 0, 15, 14, 261, 0, 22, 21, 
-  260, 0, 0, 20, 0, 0, 31, 36, 30, 0, 
-  32, 260, 0, 33, 0, 24, 0, 34, 0, 26, 
-  35, 25, 0, 241, 40, 39, 260, 42, 48, 260, 
-  41, 0, 43, 260, 48, 260, 0, 260, 0, 48, 
-  0, 47, 45, 46, 50, 51, 260, 260, 0, 56, 
-  260, 53, 260, 0, 57, 0, 54, 260, 52, 260, 
-  0, 55, 64, 0, 260, 60, 260, 0, 58, 61, 
-  62, 0, 260, 0, 0, 59, 63, 44, 49, 65, 
-  0, 38, 0, 0, 260, 0, 93, 94, 0, 0, 
-  0, 0, 260, 0, 209, 200, 202, 204, 177, 189, 
-  207, 198, 192, 190, 193, 188, 195, 197, 205, 208, 
-  187, 191, 194, 196, 201, 199, 203, 206, 210, 212, 
-  211, 185, 0, 0, 242, 179, 183, 181, 0, 0, 
-  92, 186, 176, 184, 0, 182, 178, 180, 91, 0, 
-  95, 0, 0, 0, 0, 0, 260, 85, 260, 0, 
-  261, 0, 86, 0, 88, 68, 73, 72, 69, 70, 
-  71, 260, 74, 75, 0, 0, 0, 268, 267, 265, 
-  266, 264, 66, 260, 0, 260, 0, 0, 67, 76, 
-  260, 0, 260, 0, 0, 77, 0, 78, 0, 81, 
-  84, 0, 0, 214, 224, 223, 0, 226, 228, 227, 
-  225, 0, 243, 216, 220, 218, 222, 213, 221, 0, 
-  219, 215, 217, 0, 80, 79, 0, 82, 0, 83, 
-  87, 99, 0, 37, 0, 0, 0, 0, 90, 89, 
-  0, 102, 23, 27, 29, 28, 0, 0, 260, 261, 
-  0, 260, 0, 105, 104, 260, 0, 103, 101, 0, 
-  0, 18, 260, 17, 0, 19, 0, 0, 250, 0, 
-  260, 0, 238, 0, 231, 237, 0, 236, 233, 260, 
-  260, 261, 232, 234, 0, 260, 0, 229, 260, 0, 
-  260, 0, 230, 0, 0, 13, 269, 9, 5, 8, 
-  4, 0, 7, 258, 6, 0, 3};
+  10, 259, 0, 2, 1, 0, 125, 117, 119, 120, 
+  127, 129, 123, 11, 114, 108, 0, 109, 128, 111, 
+  115, 113, 121, 124, 126, 107, 110, 112, 118, 116, 
+  131, 122, 240, 12, 254, 136, 250, 253, 0, 130, 
+  140, 257, 16, 252, 138, 137, 0, 256, 139, 259, 
+  231, 258, 255, 0, 0, 264, 0, 247, 246, 0, 
+  249, 248, 245, 241, 99, 263, 0, 236, 0, 0, 
+  260, 97, 98, 101, 0, 132, 134, 133, 135, 0, 
+  0, 261, 0, 0, 176, 0, 173, 165, 167, 168, 
+  142, 154, 171, 162, 156, 157, 153, 159, 163, 161, 
+  169, 172, 152, 155, 158, 160, 166, 164, 174, 170, 
+  150, 175, 0, 144, 148, 146, 151, 141, 149, 0, 
+  147, 143, 145, 0, 15, 14, 262, 0, 22, 21, 
+  261, 30, 0, 20, 0, 0, 32, 37, 31, 0, 
+  33, 261, 0, 34, 0, 24, 0, 35, 0, 26, 
+  36, 25, 0, 242, 41, 40, 261, 43, 49, 261, 
+  42, 0, 44, 261, 49, 261, 0, 261, 0, 49, 
+  0, 48, 46, 47, 51, 52, 261, 261, 0, 57, 
+  261, 54, 261, 0, 58, 0, 55, 261, 53, 261, 
+  0, 56, 65, 0, 261, 61, 261, 0, 59, 62, 
+  63, 0, 261, 0, 0, 60, 64, 45, 50, 66, 
+  0, 39, 0, 0, 261, 0, 94, 95, 0, 0, 
+  0, 0, 261, 0, 210, 201, 203, 205, 178, 190, 
+  208, 199, 193, 191, 194, 189, 196, 198, 206, 209, 
+  188, 192, 195, 197, 202, 200, 204, 207, 211, 213, 
+  212, 186, 0, 0, 243, 180, 184, 182, 0, 0, 
+  93, 187, 177, 185, 0, 183, 179, 181, 92, 0, 
+  96, 0, 0, 0, 0, 0, 261, 86, 261, 0, 
+  262, 0, 87, 0, 89, 69, 74, 73, 70, 71, 
+  72, 261, 75, 76, 0, 0, 0, 269, 268, 266, 
+  267, 265, 67, 261, 0, 261, 0, 0, 68, 77, 
+  261, 0, 261, 0, 0, 78, 0, 79, 0, 82, 
+  85, 0, 0, 215, 225, 224, 0, 227, 229, 228, 
+  226, 0, 244, 217, 221, 219, 223, 214, 222, 0, 
+  220, 216, 218, 0, 81, 80, 0, 83, 0, 84, 
+  88, 100, 0, 38, 0, 0, 0, 0, 91, 90, 
+  0, 103, 23, 27, 29, 28, 0, 0, 261, 262, 
+  0, 261, 0, 106, 105, 261, 0, 104, 102, 0, 
+  0, 18, 261, 17, 0, 19, 0, 0, 251, 0, 
+  261, 0, 239, 0, 232, 238, 0, 237, 234, 261, 
+  261, 262, 233, 235, 0, 261, 0, 230, 261, 0, 
+  261, 0, 231, 0, 0, 13, 270, 9, 5, 8, 
+  4, 0, 7, 259, 6, 0, 3};
 
 const short QXmlStreamReader_Table::goto_default [] = {
   2, 4, 3, 49, 388, 43, 37, 52, 47, 41, 
@@ -736,8 +736,8 @@ public:
     }
 };
 
-class QXmlStreamEntityResolver;
 
+class QXmlStreamEntityResolver;
 #ifndef QT_NO_XMLSTREAMREADER
 class QXmlStreamReaderPrivate : public QXmlStreamReader_Table, public QXmlStreamPrivateTagStack{
     QXmlStreamReader *q_ptr;
@@ -1355,44 +1355,44 @@ bool QXmlStreamReaderPrivate::parse()
             scanDtd = false;
         break;
 
-        case 36:
+        case 37:
             if (!scanString(spell[EMPTY], EMPTY, false)
                 && !scanString(spell[ANY], ANY, false)
                 && atEnd) {
-                resume(36);
+                resume(37);
                 return false;
             }
         break;
 
-        case 42:
+        case 43:
             if (!scanString(spell[PCDATA], PCDATA, false) && atEnd) {
-                resume(42);
+                resume(43);
                 return false;
             }
         break;
 
-        case 67: {
+        case 68: {
             lastAttributeIsCData = true;
         } break;
 
-        case 77:
+        case 78:
             if (!scanAfterDefaultDecl() && atEnd) {
-                resume(77);
+                resume(78);
                 return false;
             }
         break;
 
-        case 82:
+        case 83:
                 sym(1) = sym(2);
                 lastAttributeValue.clear();
                 lastAttributeIsCData = false;
                 if (!scanAttType() && atEnd) {
-                    resume(82);
+                    resume(83);
                     return false;
                 }
         break;
 
-        case 83: {
+        case 84: {
             DtdAttribute &dtdAttribute = dtdAttributes.push();
             dtdAttribute.tagName.clear();
             dtdAttribute.isCDATA = lastAttributeIsCData;
@@ -1413,7 +1413,7 @@ bool QXmlStreamReaderPrivate::parse()
             }
         } break;
 
-        case 87: {
+        case 88: {
             if (referenceToUnparsedEntityDetected && !standalone)
                 break;
             int n = dtdAttributes.size();
@@ -1433,9 +1433,9 @@ bool QXmlStreamReaderPrivate::parse()
             }
         } break;
 
-        case 88: {
+        case 89: {
             if (!scanPublicOrSystem() && atEnd) {
-                resume(88);
+                resume(89);
                 return false;
             }
             EntityDeclaration &entityDeclaration = entityDeclarations.push();
@@ -1443,9 +1443,9 @@ bool QXmlStreamReaderPrivate::parse()
             entityDeclaration.name = symString(3);
         } break;
 
-        case 89: {
+        case 90: {
             if (!scanPublicOrSystem() && atEnd) {
-                resume(89);
+                resume(90);
                 return false;
             }
             EntityDeclaration &entityDeclaration = entityDeclarations.push();
@@ -1454,9 +1454,9 @@ bool QXmlStreamReaderPrivate::parse()
             entityDeclaration.parameter = true;
         } break;
 
-        case 90: {
+        case 91: {
             if (!scanNData() && atEnd) {
-                resume(90);
+                resume(91);
                 return false;
             }
             EntityDeclaration &entityDeclaration = entityDeclarations.top();
@@ -1464,9 +1464,9 @@ bool QXmlStreamReaderPrivate::parse()
             entityDeclaration.external = true;
         } break;
 
-        case 91: {
+        case 92: {
             if (!scanNData() && atEnd) {
-                resume(91);
+                resume(92);
                 return false;
             }
             EntityDeclaration &entityDeclaration = entityDeclarations.top();
@@ -1475,7 +1475,7 @@ bool QXmlStreamReaderPrivate::parse()
             entityDeclaration.external = true;
         } break;
 
-        case 92: {
+        case 93: {
             EntityDeclaration &entityDeclaration = entityDeclarations.top();
             entityDeclaration.notationName = symString(3);
             if (entityDeclaration.parameter)
@@ -1483,8 +1483,8 @@ bool QXmlStreamReaderPrivate::parse()
         }
         //fall through
 
-        case 93:
-        case 94: {
+        case 94:
+        case 95: {
             if (referenceToUnparsedEntityDetected && !standalone) {
                 entityDeclarations.pop();
                 break;
@@ -1502,7 +1502,7 @@ bool QXmlStreamReaderPrivate::parse()
             }
         } break;
 
-        case 95: {
+        case 96: {
             setType(QXmlStreamReader::ProcessingInstruction);
             int pos = sym(4).pos + sym(4).len;
             processingInstructionTarget = symString(3);
@@ -1515,39 +1515,39 @@ bool QXmlStreamReaderPrivate::parse()
                 else if(!QXmlUtils::isNCName(piTarget))
                     raiseWellFormedError(QXmlStream::tr("%1 is an invalid processing instruction name.").arg(piTarget));
             } else if (type != QXmlStreamReader::Invalid){
-                resume(95);
+                resume(96);
                 return false;
             }
         } break;
 
-        case 96:
+        case 97:
             setType(QXmlStreamReader::ProcessingInstruction);
             processingInstructionTarget = symString(3);
             if (!processingInstructionTarget.toString().compare(QLatin1String("xml"), Qt::CaseInsensitive))
                 raiseWellFormedError(QXmlStream::tr("Invalid processing instruction name."));
         break;
 
-        case 97:
-            if (!scanAfterLangleBang() && atEnd) {
-                resume(97);
-                return false;
-            }
-        break;
-
         case 98:
-            if (!scanUntil("--")) {
+            if (!scanAfterLangleBang() && atEnd) {
                 resume(98);
                 return false;
             }
         break;
 
-        case 99: {
+        case 99:
+            if (!scanUntil("--")) {
+                resume(99);
+                return false;
+            }
+        break;
+
+        case 100: {
             setType(QXmlStreamReader::Comment);
             int pos = sym(1).pos + 4;
             text = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
         } break;
 
-        case 100: {
+        case 101: {
             setType(QXmlStreamReader::Characters);
             isCDATA = true;
 	    isWhitespace = false;
@@ -1555,131 +1555,131 @@ bool QXmlStreamReaderPrivate::parse()
             if (scanUntil("]]>", -1)) {
                 text = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
             } else {
-                resume(100);
+                resume(101);
                 return false;
             }
         } break;
 
-        case 101: {
+        case 102: {
             if (!scanPublicOrSystem() && atEnd) {
-                resume(101);
+                resume(102);
                 return false;
             }
             NotationDeclaration &notationDeclaration = notationDeclarations.push();
             notationDeclaration.name = symString(3);
         } break;
 
-        case 102: {
+        case 103: {
             NotationDeclaration &notationDeclaration = notationDeclarations.top();
             notationDeclaration.systemId = symString(3);
             notationDeclaration.publicId.clear();
         } break;
 
-        case 103: {
+        case 104: {
             NotationDeclaration &notationDeclaration = notationDeclarations.top();
             notationDeclaration.systemId.clear();
             checkPublicLiteral((notationDeclaration.publicId = symString(3)));
         } break;
 
-        case 104: {
+        case 105: {
             NotationDeclaration &notationDeclaration = notationDeclarations.top();
             checkPublicLiteral((notationDeclaration.publicId = symString(3)));
             notationDeclaration.systemId = symString(5);
         } break;
 
-        case 128:
+        case 129:
             isWhitespace = false;
             // fall through
 
-        case 129:
+        case 130:
             sym(1).len += fastScanContentCharList();
             if (atEnd && !inParseEntity) {
-                resume(129);
+                resume(130);
                 return false;
             }
 	break;
 
-        case 138:
+        case 139:
 	    if (!textBuffer.isEmpty()) {
                 setType(QXmlStreamReader::Characters);
                 text = &textBuffer;
 	    }
 	break;
 
-        case 139:
         case 140:
+        case 141:
             clearSym();
         break;
 
-        case 141:
         case 142:
+        case 143:
             sym(1) = sym(2);
         break;
 
-        case 143:
         case 144:
         case 145:
         case 146:
+        case 147:
             sym(1).len += sym(2).len;
         break;
 
-        case 172:
+        case 173:
 	    if (normalizeLiterals)
                 textBuffer.data()[textBuffer.size()-1] = QLatin1Char(' ');
         break;
 
-        case 173:
+        case 174:
             sym(1).len += fastScanLiteralContent();
             if (atEnd) {
-                resume(173);
+                resume(174);
                 return false;
             }
         break;
 
-        case 174: {
+        case 175: {
             if (!QXmlUtils::isPublicID(symString(1).toString())) {
                 raiseWellFormedError(QXmlStream::tr("%1 is an invalid PUBLIC identifier.").arg(symString(1).toString()));
-                resume(174);
+                resume(175);
                 return false;
             }
         } break;
 
-        case 175:
         case 176:
+        case 177:
             clearSym();
         break;
 
-        case 177:
         case 178:
+        case 179:
 	    sym(1) = sym(2);
         break;
 
-        case 179:
         case 180:
         case 181:
         case 182:
+        case 183:
             sym(1).len += sym(2).len;
         break;
 
-        case 212:
         case 213:
+        case 214:
             clearSym();
         break;
 
-        case 214:
         case 215:
+        case 216:
             sym(1) = sym(2);
             lastAttributeValue = symString(1);
         break;
 
-        case 216:
         case 217:
         case 218:
         case 219:
+        case 220:
             sym(1).len += sym(2).len;
         break;
 
-        case 228: {
+        case 229: {
             QStringRef prefix = symPrefix(1);
             if (prefix.isEmpty() && symString(1) == QLatin1String("xmlns") && namespaceProcessing) {
                 NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
@@ -1749,7 +1749,7 @@ bool QXmlStreamReaderPrivate::parse()
             }
         } break;
 
-        case 234: {
+        case 235: {
             normalizeLiterals = true;
             Tag &tag = tagStack_push();
             prefix = tag.namespaceDeclaration.prefix  = addToStringStorage(symPrefix(2));
@@ -1759,11 +1759,11 @@ bool QXmlStreamReaderPrivate::parse()
                 raiseWellFormedError(QXmlStream::tr("Invalid XML name."));
         } break;
 
-        case 235:
+        case 236:
             isEmptyElement = true;
         // fall through
 
-        case 236:
+        case 237:
             setType(QXmlStreamReader::StartElement);
             resolveTag();
             if (tagStack.size() == 1 && hasSeenTag && !inParseEntity)
@@ -1771,7 +1771,7 @@ bool QXmlStreamReaderPrivate::parse()
             hasSeenTag = true;
         break;
 
-        case 237: {
+        case 238: {
             setType(QXmlStreamReader::EndElement);
             Tag &tag = tagStack_pop();
 
@@ -1782,7 +1782,7 @@ bool QXmlStreamReaderPrivate::parse()
                 raiseWellFormedError(QXmlStream::tr("Opening and ending tag mismatch."));
         } break;
 
-        case 238:
+        case 239:
             if (entitiesMustBeDeclared()) {
                 raiseWellFormedError(QXmlStream::tr("Entity '%1' not declared.").arg(unresolvedEntity));
                 break;
@@ -1791,7 +1791,7 @@ bool QXmlStreamReaderPrivate::parse()
             name = &unresolvedEntity;
 	break;
 
-        case 239: {
+        case 240: {
             sym(1).len += sym(2).len + 1;
             QString reference = symString(2).toString();
             if (entityHash.contains(reference)) {
@@ -1830,7 +1830,7 @@ bool QXmlStreamReaderPrivate::parse()
 
         } break;
 
-        case 240: {
+        case 241: {
             sym(1).len += sym(2).len + 1;
             QString reference = symString(2).toString();
             if (parameterEntityHash.contains(reference)) {
@@ -1849,11 +1849,11 @@ bool QXmlStreamReaderPrivate::parse()
             }
         } break;
 
-        case 241:
+        case 242:
             sym(1).len += sym(2).len + 1;
         break;
 
-        case 242: {
+        case 243: {
             sym(1).len += sym(2).len + 1;
             QString reference = symString(2).toString();
             if (entityHash.contains(reference)) {
@@ -1889,7 +1889,7 @@ bool QXmlStreamReaderPrivate::parse()
             }
         } break;
 
-        case 243: {
+        case 244: {
             if (uint s = resolveCharRef(3)) {
                 if (s >= 0xffff)
                     putStringLiteral(QString::fromUcs4(&s, 1));
@@ -1903,43 +1903,43 @@ bool QXmlStreamReaderPrivate::parse()
             }
         } break;
 
-        case 246:
         case 247:
+        case 248:
             sym(1).len += sym(2).len;
         break;
 
-        case 258:
+        case 259:
             sym(1).len += fastScanSpace();
             if (atEnd) {
-                resume(258);
+                resume(259);
                 return false;
             }
         break;
 
-        case 261: {
+        case 262: {
             sym(1).len += fastScanName(&sym(1).prefix);
-            if (atEnd) {
-                resume(261);
-                return false;
-            }
-        } break;
-
-        case 262:
-            sym(1).len += fastScanName();
             if (atEnd) {
                 resume(262);
                 return false;
             }
-        break;
+        } break;
 
         case 263:
+            sym(1).len += fastScanName();
+            if (atEnd) {
+                resume(263);
+                return false;
+            }
+        break;
+
         case 264:
         case 265:
         case 266:
         case 267:
+        case 268:
             sym(1).len += fastScanNMTOKEN();
             if (atEnd) {
-                resume(267);
+                resume(268);
                 return false;
             }
 
@@ -1958,7 +1958,8 @@ bool QXmlStreamReaderPrivate::parse()
     }
     return false;
 }
+#endif //QT_NO_XMLSTREAMREADER.xml
 
-#endif //QT_NO_XMLSTREAMREADER
+
 #endif // QXMLSTREAM_P_H
 

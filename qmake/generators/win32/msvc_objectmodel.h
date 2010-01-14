@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -298,7 +298,8 @@ enum linkProgressOption {
 };
 enum machineTypeOption {
     machineNotSet,
-    machineX86
+    machineX86,
+    machineX64 = 17
 };
 enum midlCharOption {
     midlCharUnsigned,

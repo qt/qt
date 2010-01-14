@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -249,21 +249,19 @@ QThemeIconEntries QIconLoader::findIconHelper(const QString &themeName,
         const QIconDirInfo &dirInfo = subDirs.at(i);
         QString subdir = dirInfo.path;
         QDir currentDir(contentDir + subdir);
-
-        if (dirInfo.type == QIconDirInfo::Scalable && m_supportsSvg &&
-            currentDir.exists(iconName + svgext)) {
-            ScalableEntry *iconEntry = new ScalableEntry;
-            iconEntry->dir = dirInfo;
-            iconEntry->filename = currentDir.filePath(iconName + svgext);
-            entries.append(iconEntry);
-
-        } else if (currentDir.exists(iconName + pngext)) {
+        if (currentDir.exists(iconName + pngext)) {
             PixmapEntry *iconEntry = new PixmapEntry;
             iconEntry->dir = dirInfo;
             iconEntry->filename = currentDir.filePath(iconName + pngext);
             // Notice we ensure that pixmap entries allways come before
             // scalable to preserve search order afterwards
             entries.prepend(iconEntry);
+        } else if (m_supportsSvg &&
+            currentDir.exists(iconName + svgext)) {
+            ScalableEntry *iconEntry = new ScalableEntry;
+            iconEntry->dir = dirInfo;
+            iconEntry->filename = currentDir.filePath(iconName + svgext);
+            entries.append(iconEntry);
         }
     }
 
@@ -444,10 +442,8 @@ QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QSize &size)
 
 /*
  * Returns the actual icon size. For scalable svg's this is equivalent
- * to the requested size. Otherwise the closest match is returned.
- *
- * todo: the spec is a bit fuzzy in this area, but we should probably
- * allow scaling down pixmap icons as well.
+ * to the requested size. Otherwise the closest match is returned but
+ * we can never return a bigger size than the requested size.
  *
  */
 QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
@@ -460,8 +456,10 @@ QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
         const QIconDirInfo &dir = entry->dir;
         if (dir.type == QIconDirInfo::Scalable)
             return size;
-        else
-            return QSize(dir.size, dir.size);
+        else {
+            int result = qMin<int>(dir.size, qMin(size.width(), size.height()));
+            return QSize(result, result);
+        }
     }
     return QIconEngineV2::actualSize(size, mode, state);
 }

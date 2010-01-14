@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -118,6 +118,10 @@
     loaded into the QWebView, and therefore needs to be loaded every time a new 
     page is loaded. Once the jQuery library is loaded, we can start executing 
     the different jQuery functions in the browser.
+
+    The rotateImages() function is then called explicitely to make sure
+    that the images of the newly loaded page respect the state of the toggle
+    action.
 
     \snippet examples/webkit/fancybrowser/mainwindow.cpp 7
 

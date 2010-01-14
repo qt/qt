@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,6 +77,7 @@
 #include <e32def.h>
 #include <e32debug.h>
 #include <f32file.h>
+#include <e32math.h>
 # include "private/qcore_symbian_p.h"
 
 _LIT(qt_S60Filter, "Series60v?.*.sis");
@@ -1225,7 +1226,7 @@ bool qSharedBuild()
 
     Defined on Mac OS X.
 
-    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS
+    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_LITE, Q_WS_S60
 */
 
 /*!
@@ -1234,7 +1235,7 @@ bool qSharedBuild()
 
     Defined on Windows.
 
-    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS
+    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_LITE, Q_WS_S60
 */
 
 /*!
@@ -1243,7 +1244,7 @@ bool qSharedBuild()
 
     Defined on X11.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_LITE, Q_WS_S60
 */
 
 /*!
@@ -1252,7 +1253,7 @@ bool qSharedBuild()
 
     Defined on Qt for Embedded Linux.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_LITE
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_LITE, Q_WS_S60
 */
 
 /*!
@@ -1261,7 +1262,7 @@ bool qSharedBuild()
 
     Defined on Qt for Embedded Linux, Lite version.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
 */
 
 /*!
@@ -1606,6 +1607,29 @@ bool qSharedBuild()
     Defined if the application is compiled using Green Hills
     Optimizing C++ Compilers.
 */
+
+/*!
+  \macro Q_OS_MAC
+  \relates <QtGlobal>
+
+  Defined on MAC OS (synonym for Darwin).
+ */
+
+/*!
+  \macro Q_OS_SYMBIAN
+  \relates <QtGlobal>
+
+  Defined on Symbian.
+ */
+
+/*!
+  \macro Q_WS_S60
+  \relates <QtGlobal>
+
+  Defined on S60.
+
+  \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS
+ */
 
 #if defined(QT_BUILD_QMAKE)
 // needed to bootstrap qmake
@@ -2502,7 +2526,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 #endif
 }
 
-#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2524,8 +2548,6 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 
     Sets the argument \a seed to be used to generate a new random number sequence of
     pseudo random integers to be returned by qrand().
-
-    If no seed value is provided, qrand() is automatically seeded with a value of 1.
 
     The sequence of random numbers generated is deterministic per thread. For example,
     if two threads call qsrand(1) and subsequently calls qrand(), the threads will get
@@ -2550,8 +2572,9 @@ void qsrand(uint seed)
         srand(seed);
     }
 #else
-    // On Windows srand() and rand() already use Thread-Local-Storage
+    // On Windows and Symbian srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls
+    // this is also valid for QT_NO_THREAD
     srand(seed);
 #endif
 }
@@ -2567,7 +2590,7 @@ void qsrand(uint seed)
 */
 void qsrand()
 {
-#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
     SeedStorage *seedStorage = randTLS();
     if (seedStorage) {
         SeedStorageType *pseed = seedStorage->localData();
@@ -2581,24 +2604,28 @@ void qsrand()
         *pseed = QDateTime::currentDateTime().toTime_t()
                  + quintptr(&pseed)
                  + serial.fetchAndAddRelaxed(1);
-#if defined(Q_OS_WIN)
-        // for Windows the srand function must still be called.
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+        // for Windows and Symbian the srand function must still be called.
         srand(*pseed);
 #endif
     }
 
-#elif defined(Q_OS_WIN)
+//QT_NO_THREAD implementations
+#else
     static unsigned int seed = 0;
 
     if (seed)
         return;
 
+#if defined(Q_OS_SYMBIAN)
+    seed = Math::Random();
+#elif defined(Q_OS_WIN)
     seed = GetTickCount();
-    srand(seed);
 #else
-    // Symbian?
-
-#endif // defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+    seed = quintptr(&seed) + QDateTime::currentDateTime().toTime_t();
+#endif
+    srand(seed);
+#endif // defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
 }
 
 /*!
@@ -2635,8 +2662,9 @@ int qrand()
         return rand();
     }
 #else
-    // On Windows srand() and rand() already use Thread-Local-Storage
+    // On Windows and Symbian srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls
+    // this is also valid for QT_NO_THREAD
     return rand();
 #endif
 }

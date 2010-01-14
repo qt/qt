@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,7 +79,7 @@
            the examples menus and connect their slots and signals.
 	\o The \c TabletCanvas class inherits QWidget and 
 	   receives tablet events. It uses the events to paint on a
-	   QImage, which it draws onto itself.
+           offscreen pixmap, which it draws onto itself.
 	\o The \c TabletApplication class inherits QApplication. This
 	   class handles tablet events that are not sent to \c tabletEvent(). 
 	   We will look at this later.
@@ -214,16 +214,16 @@
     alphaChannelType, \c colorSturationType, and \c penWidthType,
     which we provide access functions for. 
 
-    We draw on a QImage with \c myPen and \c myBrush using \c
+    We draw on a QPixmap with \c myPen and \c myBrush using \c
     myColor. The \c saveImage() and \c loadImage() saves and loads
-    the QImage to disk. The image is drawn on the widget in \c
+    the QPixmap to disk. The pixmap is drawn on the widget in \c
     paintEvent(). The \c pointerType and \c deviceType keeps the type
     of pointer, which is either a pen or an eraser, and device
     currently used on the tablet, which is either a stylus or an
     airbrush.
 
     The interpretation of events from the tablet is done in \c
-    tabletEvent(); \c paintImage(), \c updateBrush(), and \c
+    tabletEvent(); \c paintPixmap(), \c updateBrush(), and \c
     brushPattern() are helper functions used by \c tabletEvent().
 
 
@@ -234,20 +234,20 @@
     \snippet examples/widgets/tablet/tabletcanvas.cpp 0
 
     In the constructor we initialize our class variables. We need
-    to draw the background of our image, as the default is gray.
+    to draw the background of our pixmap, as the default is gray.
 
     Here is the implementation of \c saveImage():
 
     \snippet examples/widgets/tablet/tabletcanvas.cpp 1
 
-    QImage implements functionality to save itself to disk, so we
-    simply call \l{QImage::}{save()}.
+    QPixmap implements functionality to save itself to disk, so we
+    simply call \l{QPixmap::}{save()}.
 
     Here is the implementation of \c loadImage():
 
     \snippet examples/widgets/tablet/tabletcanvas.cpp 2
 
-    We simply call \l{QImage::}{load()}, which loads the image in \a
+    We simply call \l{QPixmap::}{load()}, which loads the image in \a
     file.
 
     Here is the implementation of \c tabletEvent():
@@ -259,7 +259,7 @@
     is pressed down on, leaves, or moves on the tablet. We set the \c
     deviceDown to true when a device is pressed down on the tablet;
     we then know when we should draw when we receive move events. We
-    have implemented the \c updateBrush() and \c paintImage() helper
+    have implemented the \c updateBrush() and \c paintPixmap() helper
     functions to update \c myBrush and \c myPen after the state of \c
     alphaChannelType, \c colorSaturationType, and \c lineWidthType.
 
@@ -267,13 +267,13 @@
 
     \snippet examples/widgets/tablet/tabletcanvas.cpp 4
 
-    We simply draw the image to the top left of the widget.
+    We simply draw the pixmap to the top left of the widget.
 
-    Here is the implementation of \c paintImage():
+    Here is the implementation of \c paintPixmap():
 
     \snippet examples/widgets/tablet/tabletcanvas.cpp 5
 
-    In this function we draw on the image based on the movement of the
+    In this function we draw on the pixmap based on the movement of the
     device. If the device used on the tablet is a stylus we want to draw a
     line between the positions of the stylus recorded in \c polyLine. We
     also assume that this is a reasonable handling of any unknown device,
@@ -334,7 +334,7 @@
    
     We finally check wether the pointer is the stylus or the eraser.
     If it is the eraser, we set the color to the background color of
-    the image an let the pressure decide the pen width, else we set
+    the pixmap an let the pressure decide the pen width, else we set
     the colors we have set up previously in the function.
 
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qpixmapfilter_vg_p.h"
+#include "qvgimagepool_p.h"
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qpainter.h>
 
@@ -82,9 +83,9 @@ void QVGPixmapConvolutionFilter::draw
         return;
 
     QSize size = pd->size();
-    VGImage dstImage = vgCreateImage
+    VGImage dstImage = QVGImagePool::instance()->createTemporaryImage
         (VG_sARGB_8888_PRE, size.width(), size.height(),
-         VG_IMAGE_QUALITY_FASTER);
+         VG_IMAGE_QUALITY_FASTER, pd);
     if (dstImage == VG_INVALID_HANDLE)
         return;
 
@@ -124,7 +125,7 @@ void QVGPixmapConvolutionFilter::draw
 
     if(child != dstImage)
         vgDestroyImage(child);
-    vgDestroyImage(dstImage);
+    QVGImagePool::instance()->releaseImage(0, dstImage);
 }
 
 QVGPixmapColorizeFilter::QVGPixmapColorizeFilter()
@@ -155,9 +156,9 @@ void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const
         return;
 
     QSize size = pd->size();
-    VGImage dstImage = vgCreateImage
+    VGImage dstImage = QVGImagePool::instance()->createTemporaryImage
         (VG_sARGB_8888_PRE, size.width(), size.height(),
-         VG_IMAGE_QUALITY_FASTER);
+         VG_IMAGE_QUALITY_FASTER, pd);
     if (dstImage == VG_INVALID_HANDLE)
         return;
 
@@ -217,7 +218,7 @@ void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const
 
     if(child != dstImage)
         vgDestroyImage(child);
-    vgDestroyImage(dstImage);
+    QVGImagePool::instance()->releaseImage(0, dstImage);
 }
 
 QVGPixmapDropShadowFilter::QVGPixmapDropShadowFilter()
@@ -248,9 +249,9 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
         return;
 
     QSize size = pd->size();
-    VGImage dstImage = vgCreateImage
+    VGImage dstImage = QVGImagePool::instance()->createTemporaryImage
         (VG_A_8, size.width(), size.height(),
-         VG_IMAGE_QUALITY_FASTER);
+         VG_IMAGE_QUALITY_FASTER, pd);
     if (dstImage == VG_INVALID_HANDLE)
         return;
 
@@ -282,7 +283,7 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
 
     if(child != dstImage)
         vgDestroyImage(child);
-    vgDestroyImage(dstImage);
+    QVGImagePool::instance()->releaseImage(0, dstImage);
 
     // Now draw the actual pixmap over the top.
     painter->drawPixmap(dest, src, srect);
@@ -316,9 +317,9 @@ void QVGPixmapBlurFilter::draw(QPainter *painter, const QPointF &dest, const QPi
         return;
 
     QSize size = pd->size();
-    VGImage dstImage = vgCreateImage
+    VGImage dstImage = QVGImagePool::instance()->createTemporaryImage
         (VG_sARGB_8888_PRE, size.width(), size.height(),
-         VG_IMAGE_QUALITY_FASTER);
+         VG_IMAGE_QUALITY_FASTER, pd);
     if (dstImage == VG_INVALID_HANDLE)
         return;
 
@@ -347,7 +348,7 @@ void QVGPixmapBlurFilter::draw(QPainter *painter, const QPointF &dest, const QPi
 
     if(child != dstImage)
         vgDestroyImage(child);
-    vgDestroyImage(dstImage);
+    QVGImagePool::instance()->releaseImage(0, dstImage);
 }
 
 #endif

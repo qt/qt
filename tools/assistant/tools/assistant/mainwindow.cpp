@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -592,8 +592,8 @@ void MainWindow::setupActions()
         SLOT(updateNavigationItems()));
     connect(m_centralWidget, SIGNAL(highlighted(QString)), statusBar(),
         SLOT(showMessage(QString)));
-    connect(m_centralWidget, SIGNAL(addNewBookmark(QString, QString)), this,
-        SLOT(addNewBookmark(QString, QString)));
+    connect(m_centralWidget, SIGNAL(addNewBookmark(QString,QString)), this,
+        SLOT(addNewBookmark(QString,QString)));
 
     // bookmarks
     connect(m_bookmarkWidget, SIGNAL(requestShowLink(QUrl)), m_centralWidget,
@@ -604,8 +604,8 @@ void MainWindow::setupActions()
     // index window
     connect(m_indexWindow, SIGNAL(linkActivated(QUrl)), m_centralWidget,
         SLOT(setSource(QUrl)));
-    connect(m_indexWindow, SIGNAL(linksActivated(QMap<QString, QUrl>, QString)),
-        this, SLOT(showTopicChooser(QMap<QString, QUrl>, QString)));
+    connect(m_indexWindow, SIGNAL(linksActivated(QMap<QString,QUrl>,QString)),
+        this, SLOT(showTopicChooser(QMap<QString,QUrl>,QString)));
     connect(m_indexWindow, SIGNAL(escapePressed()), this,
         SLOT(activateCurrentCentralWidgetTab()));
 
@@ -850,7 +850,7 @@ void MainWindow::showAboutDialog()
         aboutDia.setText(QString::fromLatin1("<center>"
             "<h3>%1</h3>"
             "<p>Version %2</p></center>"
-            "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>")
+            "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>")
             .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR)),
             resources);
         QLatin1String path(":/trolltech/assistant/images/assistant-128.png");

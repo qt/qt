@@ -2264,7 +2264,7 @@ EXPORTS
 	?isSequential@QIODevice@@UBE_NXZ @ 2263 NONAME ; bool QIODevice::isSequential(void) const
 	?isSequential@QIODevicePrivate@@QBE_NXZ @ 2264 NONAME ; bool QIODevicePrivate::isSequential(void) const
 	?isSequential@QProcess@@UBE_NXZ @ 2265 NONAME ; bool QProcess::isSequential(void) const
-	?isSignalConnected@QObjectPrivate@@QBE_NH@Z @ 2266 NONAME ; bool QObjectPrivate::isSignalConnected(int) const
+	?isSignalConnected@QObjectPrivate@@QBE_NI@Z @ 2266 NONAME ; bool QObjectPrivate::isSignalConnected(unsigned int) const
 	?isSimpleText@QString@@QBE_NXZ @ 2267 NONAME ; bool QString::isSimpleText(void) const
 	?isSingleShot@QTimer@@QBE_NXZ @ 2268 NONAME ; bool QTimer::isSingleShot(void) const
 	?isSpace@QChar@@QBE_NXZ @ 2269 NONAME ; bool QChar::isSpace(void) const
@@ -4387,4 +4387,15 @@ EXPORTS
 	?QBasicAtomicPointer_isFetchAndAddNative@@YA_NXZ @ 4386 NONAME ; bool QBasicAtomicPointer_isFetchAndAddNative(void)
 	?QBasicAtomicPointer_isFetchAndStoreNative@@YA_NXZ @ 4387 NONAME ; bool QBasicAtomicPointer_isFetchAndStoreNative(void)
 	?QBasicAtomicPointer_isTestAndSetNative@@YA_NXZ @ 4388 NONAME ; bool QBasicAtomicPointer_isTestAndSetNative(void)
+	??0SignalEvent@QStateMachine@@QAE@PAVQObject@@HABV?$QList@VQVariant@@@@@Z @ 4389 NONAME ; QStateMachine::SignalEvent::SignalEvent(class QObject *, int, class QList<class QVariant> const &)
+	??0WrappedEvent@QStateMachine@@QAE@PAVQObject@@PAVQEvent@@@Z @ 4390 NONAME ; QStateMachine::WrappedEvent::WrappedEvent(class QObject *, class QEvent *)
+	??1SignalEvent@QStateMachine@@UAE@XZ @ 4391 NONAME ; QStateMachine::SignalEvent::~SignalEvent(void)
+	??1WrappedEvent@QStateMachine@@UAE@XZ @ 4392 NONAME ; QStateMachine::WrappedEvent::~WrappedEvent(void)
+	??_ESignalEvent@QStateMachine@@UAE@I@Z @ 4393 NONAME ; QStateMachine::SignalEvent::~SignalEvent(unsigned int)
+	??_EWrappedEvent@QStateMachine@@UAE@I@Z @ 4394 NONAME ; QStateMachine::WrappedEvent::~WrappedEvent(unsigned int)
+	?arguments@SignalEvent@QStateMachine@@QBE?AV?$QList@VQVariant@@@@XZ @ 4395 NONAME ; class QList<class QVariant> QStateMachine::SignalEvent::arguments(void) const
+	?event@WrappedEvent@QStateMachine@@QBEPAVQEvent@@XZ @ 4396 NONAME ; class QEvent * QStateMachine::WrappedEvent::event(void) const
+	?object@WrappedEvent@QStateMachine@@QBEPAVQObject@@XZ @ 4397 NONAME ; class QObject * QStateMachine::WrappedEvent::object(void) const
+	?sender@SignalEvent@QStateMachine@@QBEPAVQObject@@XZ @ 4398 NONAME ; class QObject * QStateMachine::SignalEvent::sender(void) const
+	?signalIndex@SignalEvent@QStateMachine@@QBEHXZ @ 4399 NONAME ; int QStateMachine::SignalEvent::signalIndex(void) const
 

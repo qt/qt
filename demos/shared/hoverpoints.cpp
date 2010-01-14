@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,7 +66,7 @@ HoverPoints::HoverPoints(QWidget *widget, PointShape shape)
     m_editable = true;
     m_enabled = true;
 
-    connect(this, SIGNAL(pointsChanged(const QPolygonF &)),
+    connect(this, SIGNAL(pointsChanged(QPolygonF)),
             m_widget, SLOT(update()));
 }
 

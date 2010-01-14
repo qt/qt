@@ -188,9 +188,8 @@ embedded {
             HEADERS += \
                 kernel/qeventdispatcher_glib_qws_p.h
             QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
+            LIBS_PRIVATE +=$$QT_LIBS_GLIB
 	}
-
-
 }
 
 embedded_lite {
@@ -225,7 +224,8 @@ embedded_lite {
                 qcocoaapplication_mac_p.h \
                 qcocoaapplicationdelegate_mac_p.h \
                 qmacgesturerecognizer_mac_p.h \
-                qmultitouch_mac_p.h
+                qmultitouch_mac_p.h \
+                qcocoasharedwindowmethods_mac_p.h
 
         OBJECTIVE_SOURCES += \
                 kernel/qcursor_mac.mm \

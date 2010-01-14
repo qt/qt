@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -476,7 +476,7 @@ void QGLContext::reset()
     d->valid = false;
     d->transpColor = QColor();
     d->initDone = false;
-    qgl_share_reg()->removeShare(this);
+    QGLContextGroup::removeShare(this);
 }
 
 void QGLContext::makeCurrent()
@@ -606,10 +606,22 @@ void QGLContext::updatePaintDevice()
             }
         }
     } else if (d->paintDevice->devType() == QInternal::Pixmap) {
-        QPixmap *pm = (QPixmap *)d->paintDevice;
-        PixMapHandle mac_pm = GetGWorldPixMap((GWorldPtr)pm->macQDHandle());
-        aglSetOffScreen((AGLContext)d->cx, pm->width(), pm->height(),
-                GetPixRowBytes(mac_pm), GetPixBaseAddr(mac_pm));
+        QPixmap *pm = reinterpret_cast<QPixmap *>(d->paintDevice);
+
+        unsigned long qdformat = k32ARGBPixelFormat;
+        if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
+            qdformat = k32BGRAPixelFormat;
+        Rect rect;
+        SetRect(&rect, 0, 0, pm->width(), pm->height());
+
+        GWorldPtr gworld;
+        NewGWorldFromPtr(&gworld, qdformat, &rect, 0, 0, 0,
+                         reinterpret_cast<char *>(qt_mac_pixmap_get_base(pm)), 
+                         qt_mac_pixmap_get_bytes_per_line(pm));
+
+        PixMapHandle pixmapHandle = GetGWorldPixMap(gworld);
+        aglSetOffScreen(reinterpret_cast<AGLContext>(d->cx), pm->width(), pm->height(),
+                        GetPixRowBytes(pixmapHandle), GetPixBaseAddr(pixmapHandle));
     } else {
         qWarning("QGLContext::updatePaintDevice(): Not sure how to render OpenGL on this device!");
     }

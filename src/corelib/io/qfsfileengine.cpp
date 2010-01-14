@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,6 +55,7 @@
 #include "private/qcore_unix_p.h"
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -136,6 +137,21 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
 {
     if (path.isEmpty())
         return path;
+
+    // FIXME let's see if this stuff works, then we might be able to remove some of the other code.
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    if (path.size() == 1 && path.at(0) == QLatin1Char('/'))
+        return path;
+#endif
+    // Mac OS X 10.5.x doesn't support the realpath(X,0) extenstion we use here.
+#if defined(Q_OS_LINUX) || defined(Q_OS_SYMBIAN)
+    char *ret = realpath(path.toLocal8Bit().constData(), (char*)0);
+    if (ret) {
+        QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
+        free(ret);
+        return canonicalPath;
+    }
+#endif
 
     QFileInfo fi;
     const QChar slash(QLatin1Char('/'));

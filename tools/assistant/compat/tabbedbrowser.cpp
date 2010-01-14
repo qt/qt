@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -217,7 +217,7 @@ void TabbedBrowser::init()
         opt.init(tabBar);
         opt.shape = tabBar->shape();
         tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(tabBar, SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(openTabMenu(const QPoint&)));
+        connect(tabBar, SIGNAL(customContextMenuRequested(QPoint)), SLOT(openTabMenu(QPoint)));
     }
 
     // workaround for sgi style
@@ -248,7 +248,7 @@ void TabbedBrowser::init()
 	QObject::connect(ui.toolPrevious, SIGNAL(clicked()), this, SLOT(findPrevious()));
 	QObject::connect(ui.toolNext, SIGNAL(clicked()), this, SLOT(findNext()));
 	QObject::connect(ui.editFind, SIGNAL(returnPressed()), this, SLOT(findNext()));
-	QObject::connect(ui.editFind, SIGNAL(textEdited(const QString&)),
+	QObject::connect(ui.editFind, SIGNAL(textEdited(QString)),
 				     this, SLOT(find(QString)));
 	ui.frameFind->setVisible(false);
 	ui.labelWrapped->setVisible(false);

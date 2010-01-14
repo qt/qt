@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,8 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 
+#include <iostream>
+
 static int usage(const QStringList &args)
 {
     Q_UNUSED(args);
@@ -55,7 +57,7 @@ static int usage(const QStringList &args)
     foreach (Translator::FileFormat format, Translator::registeredFileFormats())
         loaders += line.arg(format.extension, -5).arg(format.description);
 
-    qWarning("%s", qPrintable(QString(QLatin1String("\nUsage:\n"
+    std::cerr << qPrintable(QString(QLatin1String("\nUsage:\n"
         "    lconvert [options] <infile> [<infile>...]\n\n"
         "lconvert is part of Qt's Linguist tool chain. It can be used as a\n"
         "stand-alone tool to convert and filter translation data files.\n"
@@ -117,7 +119,7 @@ static int usage(const QStringList &args)
         "    0 on success\n"
         "    1 on command line parse failures\n"
         "    2 on read failures\n"
-        "    3 on write failures\n")).arg(loaders)));
+        "    3 on write failures\n")).arg(loaders));
     return 1;
 }
 

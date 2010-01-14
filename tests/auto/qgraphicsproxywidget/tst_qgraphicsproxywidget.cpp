@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -181,6 +181,7 @@ private slots:
     void updateAndDelete();
     void inputMethod();
     void clickFocus();
+    void windowFrameMargins();
 };
 
 // Subclass that exposes the protected functions.
@@ -3504,6 +3505,29 @@ void tst_QGraphicsProxyWidget::clickFocus()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
     QVERIFY(!proxy->hasFocus());
     QVERIFY(!proxy->widget()->hasFocus());
+}
+
+void tst_QGraphicsProxyWidget::windowFrameMargins()
+{
+    // Make sure the top margin is non-zero when passing Qt::Window.
+    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(0, Qt::Window);
+
+    qreal left, top, right, bottom;
+    proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
+    QVERIFY(top > 0);
+
+    proxy->setWidget(new QPushButton("testtest"));
+    proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
+    QVERIFY(top > 0);
+
+    QGraphicsScene scene;
+    scene.addItem(proxy);
+    proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
+    QVERIFY(top > 0);
+
+    proxy->unsetWindowFrameMargins();
+    proxy->getWindowFrameMargins(&left, &top, &right, &bottom);
+    QVERIFY(top > 0);
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)

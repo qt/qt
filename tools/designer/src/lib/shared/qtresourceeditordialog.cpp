@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1960,30 +1960,30 @@ QtResourceEditorDialog::QtResourceEditorDialog(QDesignerFormEditorInterface *cor
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setWindowTitle(tr("Edit Resources"));
 
-    connect(d_ptr->m_qrcManager, SIGNAL(qrcFileInserted(QtQrcFile *)),
-                this, SLOT(slotQrcFileInserted(QtQrcFile *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(qrcFileMoved(QtQrcFile *, QtQrcFile *)),
-                this, SLOT(slotQrcFileMoved(QtQrcFile *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(qrcFileRemoved(QtQrcFile *)),
-                this, SLOT(slotQrcFileRemoved(QtQrcFile *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(resourcePrefixInserted(QtResourcePrefix *)),
-                this, SLOT(slotResourcePrefixInserted(QtResourcePrefix *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(resourcePrefixMoved(QtResourcePrefix *, QtResourcePrefix *)),
-                this, SLOT(slotResourcePrefixMoved(QtResourcePrefix *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(resourcePrefixChanged(QtResourcePrefix *, const QString &)),
-                this, SLOT(slotResourcePrefixChanged(QtResourcePrefix *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(resourceLanguageChanged(QtResourcePrefix *, const QString &)),
-                this, SLOT(slotResourceLanguageChanged(QtResourcePrefix *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(resourcePrefixRemoved(QtResourcePrefix *)),
-                this, SLOT(slotResourcePrefixRemoved(QtResourcePrefix *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(resourceFileInserted(QtResourceFile *)),
-                this, SLOT(slotResourceFileInserted(QtResourceFile *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(resourceFileMoved(QtResourceFile *, QtResourceFile *)),
-                this, SLOT(slotResourceFileMoved(QtResourceFile *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(resourceAliasChanged(QtResourceFile *, const QString &)),
-                this, SLOT(slotResourceAliasChanged(QtResourceFile *)));
-    connect(d_ptr->m_qrcManager, SIGNAL(resourceFileRemoved(QtResourceFile *)),
-                this, SLOT(slotResourceFileRemoved(QtResourceFile *)));
+    connect(d_ptr->m_qrcManager, SIGNAL(qrcFileInserted(QtQrcFile*)),
+                this, SLOT(slotQrcFileInserted(QtQrcFile*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(qrcFileMoved(QtQrcFile*,QtQrcFile*)),
+                this, SLOT(slotQrcFileMoved(QtQrcFile*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(qrcFileRemoved(QtQrcFile*)),
+                this, SLOT(slotQrcFileRemoved(QtQrcFile*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(resourcePrefixInserted(QtResourcePrefix*)),
+                this, SLOT(slotResourcePrefixInserted(QtResourcePrefix*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(resourcePrefixMoved(QtResourcePrefix*,QtResourcePrefix*)),
+                this, SLOT(slotResourcePrefixMoved(QtResourcePrefix*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(resourcePrefixChanged(QtResourcePrefix*,QString)),
+                this, SLOT(slotResourcePrefixChanged(QtResourcePrefix*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(resourceLanguageChanged(QtResourcePrefix*,QString)),
+                this, SLOT(slotResourceLanguageChanged(QtResourcePrefix*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(resourcePrefixRemoved(QtResourcePrefix*)),
+                this, SLOT(slotResourcePrefixRemoved(QtResourcePrefix*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(resourceFileInserted(QtResourceFile*)),
+                this, SLOT(slotResourceFileInserted(QtResourceFile*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(resourceFileMoved(QtResourceFile*,QtResourceFile*)),
+                this, SLOT(slotResourceFileMoved(QtResourceFile*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(resourceAliasChanged(QtResourceFile*,QString)),
+                this, SLOT(slotResourceAliasChanged(QtResourceFile*)));
+    connect(d_ptr->m_qrcManager, SIGNAL(resourceFileRemoved(QtResourceFile*)),
+                this, SLOT(slotResourceFileRemoved(QtResourceFile*)));
 
     QIcon upIcon = qdesigner_internal::createIconSet(QString::fromUtf8("up.png"));
     QIcon downIcon = qdesigner_internal::createIconSet(QString::fromUtf8("down.png"));
@@ -2037,10 +2037,10 @@ QtResourceEditorDialog::QtResourceEditorDialog(QDesignerFormEditorInterface *cor
     connect(d_ptr->m_moveDownAction, SIGNAL(triggered()), this, SLOT(slotMoveDown()));
 
     d_ptr->m_ui.qrcFileList->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(d_ptr->m_ui.qrcFileList, SIGNAL(customContextMenuRequested(const QPoint &)),
-                this, SLOT(slotListWidgetContextMenuRequested(const QPoint &)));
-    connect(d_ptr->m_ui.qrcFileList, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-                    this, SLOT(slotCurrentQrcFileChanged(QListWidgetItem *)));
+    connect(d_ptr->m_ui.qrcFileList, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(slotListWidgetContextMenuRequested(QPoint)));
+    connect(d_ptr->m_ui.qrcFileList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+                    this, SLOT(slotCurrentQrcFileChanged(QListWidgetItem*)));
 
     d_ptr->m_treeModel = new QStandardItemModel(this);
     d_ptr->m_treeModel->setColumnCount(2);
@@ -2052,12 +2052,12 @@ QtResourceEditorDialog::QtResourceEditorDialog(QDesignerFormEditorInterface *cor
     connect(d_ptr->m_ui.resourceTreeView->header(), SIGNAL(sectionDoubleClicked(int)), d_ptr->m_ui.resourceTreeView, SLOT(resizeColumnToContents(int)));
     d_ptr->m_ui.resourceTreeView->setTextElideMode(Qt::ElideLeft);
 
-    connect(d_ptr->m_ui.resourceTreeView, SIGNAL(customContextMenuRequested(const QPoint &)),
-                this, SLOT(slotTreeViewContextMenuRequested(const QPoint &)));
-    connect(d_ptr->m_treeModel, SIGNAL(itemChanged(QStandardItem *)),
-                this, SLOT(slotTreeViewItemChanged(QStandardItem *)));
-    connect(d_ptr->m_treeSelection, SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
-                    this, SLOT(slotCurrentTreeViewItemChanged(const QModelIndex &)));
+    connect(d_ptr->m_ui.resourceTreeView, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(slotTreeViewContextMenuRequested(QPoint)));
+    connect(d_ptr->m_treeModel, SIGNAL(itemChanged(QStandardItem*)),
+                this, SLOT(slotTreeViewItemChanged(QStandardItem*)));
+    connect(d_ptr->m_treeSelection, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+                    this, SLOT(slotCurrentTreeViewItemChanged(QModelIndex)));
 
     d_ptr->m_ui.resourceTreeView->setColumnWidth(0, 200);
 

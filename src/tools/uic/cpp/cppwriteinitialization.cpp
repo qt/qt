@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1221,9 +1221,10 @@ void WriteInitialization::writeProperties(const QString &varName,
             const DomRect *r = p->elementRect();
             m_output << m_indent << varName << "->resize(" << r->elementWidth() << ", " << r->elementHeight() << ");\n";
             continue;
-        } else if (propertyName == QLatin1String("buttonGroupId") && buttonGroupWidget) { // Q3ButtonGroup support
-            m_output << m_indent << m_driver->findOrInsertWidget(buttonGroupWidget) << "->insert("
-                   << varName << ", " << p->elementNumber() << ");\n";
+        } else if (propertyName == QLatin1String("buttonGroupId")) { // Q3ButtonGroup support
+            if (buttonGroupWidget)
+                m_output << m_indent << m_driver->findOrInsertWidget(buttonGroupWidget) << "->insert("
+                         << varName << ", " << p->elementNumber() << ");\n";
             continue;
         } else if (propertyName == QLatin1String("currentRow") // QListWidget::currentRow
                     && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QListWidget"))) {
@@ -2709,11 +2710,11 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
     m_output << m_indent << "QObject::connect("
         << sender
         << ", "
-        << "SIGNAL(" << connection->elementSignal() << ')'
+        << "SIGNAL("<<connection->elementSignal()<<')'
         << ", "
         << receiver
         << ", "
-        << "SLOT(" << connection->elementSlot() << ')'
+        << "SLOT("<<connection->elementSlot()<<')'
         << ");\n";
 }
 

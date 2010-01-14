@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2290,11 +2290,8 @@ void tst_QComboBox::setItemDelegate()
     QComboBox comboBox;
     QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
     comboBox.setItemDelegate(itemDelegate);
-#ifdef Q_CC_MWERKS
+    // the cast is a workaround for the XLC and Metrowerks compilers
     QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
-#else
-    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
-#endif
 }
 
 void tst_QComboBox::task253944_itemDelegateIsReset()
@@ -2303,19 +2300,13 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
     QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
     comboBox.setItemDelegate(itemDelegate);
 
+    // the casts are workarounds for the XLC and Metrowerks compilers
+
     comboBox.setEditable(true);
-#ifdef Q_CC_MWERKS
     QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
-#else
-    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
-#endif
 
     comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
-#ifdef Q_CC_MWERKS
     QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
-#else
-    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
-#endif
 }
 
 
@@ -2525,10 +2516,12 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
     layout.addWidget(&edit);
 
     w.show();
+    QApplication::setActiveWindow(&w);
     QTest::qWaitForWindowShown(&w);
     cb.clearEditText();
     cb.setFocus();
     QApplication::processEvents();
+    QTRY_VERIFY(cb.hasFocus());
     QTest::keyClick(0, '1');
     QCOMPARE(spy.count(), 0);
     edit.setFocus();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,7 @@
 #include "qvarlengtharray.h"
 
 #include <QtDebug>
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,7 +71,7 @@ static void insertOrRemoveItems(QVector<T> &items, int index, int delta)
 static qreal growthFactorBelowPreferredSize(qreal desired, qreal sumAvailable, qreal sumDesired)
 {
     Q_ASSERT(sumDesired != 0.0);
-    return desired * ::pow(sumAvailable / sumDesired, desired / sumDesired);
+    return desired * qPow(sumAvailable / sumDesired, desired / sumDesired);
 }
 
 static qreal fixedDescent(qreal descent, qreal ascent, qreal targetSize)
@@ -181,9 +182,9 @@ void QGridLayoutRowData::distributeMultiCells()
         QVarLengthArray<qreal> newSizes(span);
 
         for (int j = 0; j < NSizes; ++j) {
-            qreal extra = compare(totalBox, box, j);
+            qreal extra = compare(box, totalBox, j);
             if (extra > 0.0) {
-                calculateGeometries(start, end, totalBox.q_sizes(j), dummy.data(), newSizes.data(),
+                calculateGeometries(start, end, box.q_sizes(j), dummy.data(), newSizes.data(),
                                     0, totalBox);
 
                 for (int k = 0; k < span; ++k)

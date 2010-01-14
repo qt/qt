@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -163,10 +163,10 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
             textItem->setFont(myFont);
             textItem->setTextInteractionFlags(Qt::TextEditorInteraction);
             textItem->setZValue(1000.0);
-            connect(textItem, SIGNAL(lostFocus(DiagramTextItem *)),
-                    this, SLOT(editorLostFocus(DiagramTextItem *)));
-            connect(textItem, SIGNAL(selectedChange(QGraphicsItem *)),
-                    this, SIGNAL(itemSelected(QGraphicsItem *)));
+            connect(textItem, SIGNAL(lostFocus(DiagramTextItem*)),
+                    this, SLOT(editorLostFocus(DiagramTextItem*)));
+            connect(textItem, SIGNAL(selectedChange(QGraphicsItem*)),
+                    this, SIGNAL(itemSelected(QGraphicsItem*)));
             addItem(textItem);
             textItem->setDefaultTextColor(myTextColor);
             textItem->setPos(mouseEvent->scenePos());

@@ -9,6 +9,15 @@ symbian: {
 
     webkitlibs.sources = QtWebKit.dll
     webkitlibs.path = /sys/bin
+    vendorinfo = \
+        "; Localised Vendor name" \
+        "%{\"Nokia, Qt\"}" \
+        " " \
+        "; Unique Vendor name" \
+        ":\"Nokia, Qt\"" \
+        " "
+    webkitlibs.pkg_prerules = vendorinfo
+
     DEPLOYMENT += webkitlibs
 
     TARGET.UID3 = 0x200267C2
@@ -137,7 +146,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_SHARED_WORKERS=.): DEFINES += ENABLE_SHARED_WORKERS=1
 !contains(DEFINES, ENABLE_WORKERS=.): DEFINES += ENABLE_WORKERS=1
 !contains(DEFINES, ENABLE_XHTMLMP=.): DEFINES += ENABLE_XHTMLMP=0
-!contains(DEFINES, ENABLE_DATAGRID=.): DEFINES += ENABLE_DATAGRID=1
+!contains(DEFINES, ENABLE_DATAGRID=.): DEFINES += ENABLE_DATAGRID=0
 
 # SVG support
 !contains(DEFINES, ENABLE_SVG=0) {
@@ -179,6 +188,15 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_XSLT=.) {
     contains(QT_CONFIG, xmlpatterns):!lessThan(QT_MINOR_VERSION, 5):DEFINES += ENABLE_XSLT=1
     else:DEFINES += ENABLE_XSLT=0
+}
+
+!CONFIG(QTDIR_build):!contains(DEFINES, ENABLE_QT_BEARER=.) {
+    symbian: {
+        exists($${EPOCROOT}epoc32/release/winscw/udeb/QtBearer.lib)| \
+        exists($${EPOCROOT}epoc32/release/armv5/lib/QtBearer.lib) {
+            DEFINES += ENABLE_QT_BEARER=1
+        }
+    }
 }
 
 DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
@@ -2861,6 +2879,17 @@ contains(DEFINES, ENABLE_XHTMLMP=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_XHTMLMP=1
 }
 
+contains(DEFINES, ENABLE_QT_BEARER=1) {
+    HEADERS += \
+        platform/network/qt/NetworkStateNotifierPrivate.h
+
+    SOURCES += \
+        platform/network/qt/NetworkStateNotifierQt.cpp
+
+    CONFIG += mobility
+    MOBILITY += bearer
+}
+
 contains(DEFINES, ENABLE_SVG=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_SVG=1
 
@@ -3383,16 +3412,15 @@ CONFIG(QTDIR_build):isEqual(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 4
     }
 }
 
-# Temporary workaround to pick up the DEF file from the same place as all the others
 symbian {
     shared {
         contains(MMP_RULES, defBlock) {
             MMP_RULES -= defBlock
 
             MMP_RULES += "$${LITERAL_HASH}ifdef WINSCW" \
-                    "DEFFILE ../../../s60installs/bwins/$${TARGET}.def" \
+                    "DEFFILE ../WebKit/qt/symbian/bwins/$${TARGET}.def" \
                     "$${LITERAL_HASH}elif defined EABI" \
-                    "DEFFILE ../../../s60installs/eabi/$${TARGET}.def" \
+                    "DEFFILE ../WebKit/qt/symbian/eabi/$${TARGET}.def" \
                     "$${LITERAL_HASH}endif"
         }
     }

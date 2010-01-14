@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1114,7 +1114,7 @@ void tst_QScriptContext::calledAsConstructor()
         QVERIFY(!fun3.property("calledAsConstructor").toBool());
         eng.evaluate("new test();");
         if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "calledAsConstructor is not correctly set for JS functions when JIT is enabled", Continue);
+            QEXPECT_FAIL("", "QTBUG-6132: calledAsConstructor is not correctly set for JS functions when JIT is enabled", Continue);
         QVERIFY(fun3.property("calledAsConstructor").toBool());
     }
 

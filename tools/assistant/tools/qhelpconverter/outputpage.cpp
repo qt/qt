@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,9 +55,9 @@ OutputPage::OutputPage(QWidget *parent)
     setButtonText(QWizard::NextButton, tr("Convert..."));
 
     m_ui.setupUi(this);
-    connect(m_ui.projectLineEdit, SIGNAL(textChanged(const QString&)),
+    connect(m_ui.projectLineEdit, SIGNAL(textChanged(QString)),
         this, SIGNAL(completeChanged()));
-    connect(m_ui.collectionLineEdit, SIGNAL(textChanged(const QString&)),
+    connect(m_ui.collectionLineEdit, SIGNAL(textChanged(QString)),
         this, SIGNAL(completeChanged()));
 
     registerField(QLatin1String("ProjectFileName"),

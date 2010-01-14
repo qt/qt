@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,6 +97,7 @@ public:
 
     virtual QStringList propertyNames(Object *);
 
+    virtual bool isQObject() const;
     virtual QObject *toQObject(Object *, bool *ok = 0);
     virtual QVariant toVariant(Object *, bool *ok = 0);
 

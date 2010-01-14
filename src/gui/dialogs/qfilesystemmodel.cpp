@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1223,8 +1223,7 @@ bool QFileSystemModel::dropMimeData(const QMimeData *data, Qt::DropAction action
     case Qt::MoveAction:
         for (; it != urls.constEnd(); ++it) {
             QString path = (*it).toLocalFile();
-            success = QFile::copy(path, to + QFileInfo(path).fileName())
-                      && QFile::remove(path) && success;
+            success = QFile::rename(path, to + QFileInfo(path).fileName()) && success;
         }
         break;
     default:
@@ -1779,7 +1778,7 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QL
             node->fileName = fileName;
         }
 
-        if (info.size() == -1) {
+        if (info.size() == -1 && !info.isSymLink()) {
             removeNode(parentNode, fileName);
             continue;
         }
@@ -1864,12 +1863,12 @@ void QFileSystemModelPrivate::init()
 {
     Q_Q(QFileSystemModel);
     qRegisterMetaType<QList<QPair<QString,QFileInfo> > >("QList<QPair<QString,QFileInfo> >");
-    q->connect(&fileInfoGatherer, SIGNAL(newListOfFiles(const QString &, const QStringList &)),
-               q, SLOT(_q_directoryChanged(const QString &, const QStringList &)));
-    q->connect(&fileInfoGatherer, SIGNAL(updates(const QString &, const QList<QPair<QString, QFileInfo> > &)),
-            q, SLOT(_q_fileSystemChanged(const QString &, const QList<QPair<QString, QFileInfo> > &)));
-    q->connect(&fileInfoGatherer, SIGNAL(nameResolved(const QString &, const QString &)),
-            q, SLOT(_q_resolvedName(const QString &, const QString &)));
+    q->connect(&fileInfoGatherer, SIGNAL(newListOfFiles(QString,QStringList)),
+               q, SLOT(_q_directoryChanged(QString,QStringList)));
+    q->connect(&fileInfoGatherer, SIGNAL(updates(QString,QList<QPair<QString,QFileInfo> >)),
+            q, SLOT(_q_fileSystemChanged(QString,QList<QPair<QString,QFileInfo> >)));
+    q->connect(&fileInfoGatherer, SIGNAL(nameResolved(QString,QString)),
+            q, SLOT(_q_resolvedName(QString,QString)));
     q->connect(&delayedSortTimer, SIGNAL(timeout()), q, SLOT(_q_performDelayedSort()), Qt::QueuedConnection);
 }
 

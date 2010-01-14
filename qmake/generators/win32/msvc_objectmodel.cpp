@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1394,8 +1394,10 @@ bool VCLinkerTool::parseOption(const char* option)
         case 0x0005bb6: // X86
             TargetMachine = machineX86;
             break;
-        // so we put the others in AdditionalOptions...
         case 0x0005b94: // X64
+            TargetMachine = machineX64;
+            break;
+        // so we put the others in AdditionalOptions...
         case 0x0046063: // AM33
         case 0x000466d: // ARM
         case 0x0004795: // CEE

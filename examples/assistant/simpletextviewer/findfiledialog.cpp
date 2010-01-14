@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -176,9 +176,9 @@ void FindFileDialog::createComboBoxes()
     directoryComboBox->setSizePolicy(QSizePolicy::Expanding,
                                      QSizePolicy::Preferred);
 
-    connect(fileNameComboBox, SIGNAL(editTextChanged(const QString &)),
+    connect(fileNameComboBox, SIGNAL(editTextChanged(QString)),
             this, SLOT(update()));
-    connect(directoryComboBox, SIGNAL(currentIndexChanged(const QString &)),
+    connect(directoryComboBox, SIGNAL(currentIndexChanged(QString)),
             this, SLOT(update()));
 }
 
@@ -190,8 +190,8 @@ void FindFileDialog::createFilesTree()
     foundFilesTree->setRootIsDecorated(false);
     foundFilesTree->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    connect(foundFilesTree, SIGNAL(itemActivated(QTreeWidgetItem *, int)),
-            this, SLOT(openFile(QTreeWidgetItem *)));
+    connect(foundFilesTree, SIGNAL(itemActivated(QTreeWidgetItem*,int)),
+            this, SLOT(openFile(QTreeWidgetItem*)));
 }
 
 void FindFileDialog::createLabels()

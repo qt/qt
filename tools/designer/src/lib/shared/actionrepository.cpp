@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -226,7 +226,7 @@ void  ActionModel::setItems(QDesignerFormEditorInterface *core, QAction *action,
     item->setText(action->text());
     item->setToolTip(action->text());
     // shortcut
-    const QString shortcut = actionShortCut(core, action).value().toString();
+    const QString shortcut = actionShortCut(core, action).value().toString(QKeySequence::NativeText);
     item = sl[ShortCutColumn];
     item->setText(shortcut);
     item->setToolTip(shortcut);
@@ -504,10 +504,10 @@ ActionView::ActionView(QWidget *parent) :
     addWidget(m_actionListView);
     addWidget(m_actionTreeView);
     // Wire signals
-    connect(m_actionTreeView, SIGNAL(contextMenuRequested(QContextMenuEvent*, QAction*)),
-            this, SIGNAL(contextMenuRequested(QContextMenuEvent*, QAction*)));
-    connect(m_actionListView, SIGNAL(contextMenuRequested(QContextMenuEvent*, QAction*)),
-            this, SIGNAL(contextMenuRequested(QContextMenuEvent*, QAction*)));
+    connect(m_actionTreeView, SIGNAL(contextMenuRequested(QContextMenuEvent*,QAction*)),
+            this, SIGNAL(contextMenuRequested(QContextMenuEvent*,QAction*)));
+    connect(m_actionListView, SIGNAL(contextMenuRequested(QContextMenuEvent*,QAction*)),
+            this, SIGNAL(contextMenuRequested(QContextMenuEvent*,QAction*)));
 
     // make it possible for vs integration to reimplement edit action dialog
     // [which it shouldn't do actually]

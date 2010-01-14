@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -471,7 +471,6 @@ QImageReaderPrivate::QImageReaderPrivate(QImageReader *qq)
     handler = 0;
     quality = -1;
     imageReaderError = QImageReader::UnknownError;
-    errorString = QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "Unknown error"));
 
     q = qq;
 }
@@ -1214,11 +1213,12 @@ bool QImageReader::jumpToImage(int imageNumber)
 }
 
 /*!
-    For image formats that support animation, this function returns
-    the number of times the animation should loop. Otherwise, it
-    returns -1.
+    For image formats that support animation, this function returns the number
+    of times the animation should loop. If this function returns -1, it can
+    either mean the animation should loop forever, or that an error occurred.
+    If an error occurred, canRead() will return false.
 
-    \sa supportsAnimation(), QImageIOHandler::loopCount()
+    \sa supportsAnimation(), QImageIOHandler::loopCount(), canRead()
 */
 int QImageReader::loopCount() const
 {
@@ -1228,13 +1228,13 @@ int QImageReader::loopCount() const
 }
 
 /*!
-    For image formats that support animation, this function returns
-    the total number of images in the animation.
+    For image formats that support animation, this function returns the total
+    number of images in the animation. If the format does not support
+    animation, 0 is returned.
 
-    Certain animation formats do not support this feature, in which
-    case 0 is returned.
+    This function returns -1 if an error occurred.
 
-    \sa supportsAnimation(), QImageIOHandler::imageCount()
+    \sa supportsAnimation(), QImageIOHandler::imageCount(), canRead()
 */
 int QImageReader::imageCount() const
 {
@@ -1244,11 +1244,13 @@ int QImageReader::imageCount() const
 }
 
 /*!
-    For image formats that support animation, this function returns
-    the number of milliseconds to wait until displaying the next frame
-    in the animation. Otherwise, 0 is returned.
+    For image formats that support animation, this function returns the number
+    of milliseconds to wait until displaying the next frame in the animation.
+    If the image format doesn't support animation, 0 is returned.
 
-    \sa supportsAnimation(), QImageIOHandler::nextImageDelay()
+    This function returns -1 if an error occurred.
+
+    \sa supportsAnimation(), QImageIOHandler::nextImageDelay(), canRead()
 */
 int QImageReader::nextImageDelay() const
 {
@@ -1258,11 +1260,13 @@ int QImageReader::nextImageDelay() const
 }
 
 /*!
-    For image formats that support animation, this function returns
-    the sequence number of the current frame. Otherwise, -1 is
-    returned.
+    For image formats that support animation, this function returns the
+    sequence number of the current frame. If the image format doesn't support
+    animation, 0 is returned.
 
-    \sa supportsAnimation(), QImageIOHandler::currentImageNumber()
+    This function returns -1 if an error occurred.
+
+    \sa supportsAnimation(), QImageIOHandler::currentImageNumber(), canRead()
 */
 int QImageReader::currentImageNumber() const
 {
@@ -1302,6 +1306,8 @@ QImageReader::ImageReaderError QImageReader::error() const
 */
 QString QImageReader::errorString() const
 {
+    if (d->errorString.isEmpty())
+        return QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "Unknown error"));
     return d->errorString;
 }
 

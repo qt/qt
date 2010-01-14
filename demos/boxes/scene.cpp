@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -345,7 +345,7 @@ RenderOptionsDialog::RenderOptionsDialog()
                         ColorEdit *colorEdit = new ColorEdit(it->toUInt(&ok, 16), m_parameterNames.size() - 1);
                         m_parameterEdits << colorEdit;
                         layout->addWidget(colorEdit);
-                        connect(colorEdit, SIGNAL(colorChanged(QRgb, int)), this, SLOT(setColorParameter(QRgb, int)));
+                        connect(colorEdit, SIGNAL(colorChanged(QRgb,int)), this, SLOT(setColorParameter(QRgb,int)));
                         ++row;
                     } else if (type == "float") {
                         layout->addWidget(new QLabel(m_parameterNames.back()));
@@ -353,7 +353,7 @@ RenderOptionsDialog::RenderOptionsDialog()
                         FloatEdit *floatEdit = new FloatEdit(it->toFloat(&ok), m_parameterNames.size() - 1);
                         m_parameterEdits << floatEdit;
                         layout->addWidget(floatEdit);
-                        connect(floatEdit, SIGNAL(valueChanged(float, int)), this, SLOT(setFloatParameter(float, int)));
+                        connect(floatEdit, SIGNAL(valueChanged(float,int)), this, SLOT(setFloatParameter(float,int)));
                         ++row;
                     }
                 }
@@ -496,8 +496,8 @@ Scene::Scene(int width, int height, int maxTextureSize)
     m_renderOptions->resize(m_renderOptions->sizeHint());
 
     connect(m_renderOptions, SIGNAL(dynamicCubemapToggled(int)), this, SLOT(toggleDynamicCubemap(int)));
-    connect(m_renderOptions, SIGNAL(colorParameterChanged(const QString &, QRgb)), this, SLOT(setColorParameter(const QString &, QRgb)));
-    connect(m_renderOptions, SIGNAL(floatParameterChanged(const QString &, float)), this, SLOT(setFloatParameter(const QString &, float)));
+    connect(m_renderOptions, SIGNAL(colorParameterChanged(QString,QRgb)), this, SLOT(setColorParameter(QString,QRgb)));
+    connect(m_renderOptions, SIGNAL(floatParameterChanged(QString,float)), this, SLOT(setFloatParameter(QString,float)));
     connect(m_renderOptions, SIGNAL(textureChanged(int)), this, SLOT(setTexture(int)));
     connect(m_renderOptions, SIGNAL(shaderChanged(int)), this, SLOT(setShader(int)));
 
@@ -653,7 +653,8 @@ void Scene::initGL()
 
 static void loadMatrix(const QMatrix4x4& m)
 {
-    GLfloat mat[16];
+    // static to prevent glLoadMatrixf to fail on certain drivers
+    static GLfloat mat[16];
     const qreal *data = m.constData();
     for (int index = 0; index < 16; ++index)
         mat[index] = data[index];
@@ -662,7 +663,8 @@ static void loadMatrix(const QMatrix4x4& m)
 
 static void multMatrix(const QMatrix4x4& m)
 {
-    GLfloat mat[16];
+    // static to prevent glMultMatrixf to fail on certain drivers
+    static GLfloat mat[16];
     const qreal *data = m.constData();
     for (int index = 0; index < 16; ++index)
         mat[index] = data[index];

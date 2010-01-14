@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,22 +83,23 @@ struct QObjectConnection
 
     void mark(JSC::MarkStack& markStack)
     {
-        // ### need to find out if senderWrapper is marked
         if (senderWrapper) {
-            // see if the sender should be marked or not
+            // see if the sender should be marked or not;
+            // if the C++ object is owned by script, we don't want
+            // it to stay alive due to a script connection.
             Q_ASSERT(senderWrapper.inherits(&QScriptObject::info));
             QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(senderWrapper));
-            QScriptObjectDelegate *delegate = scriptObject->delegate();
-            Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
-            QObjectDelegate *inst = static_cast<QObjectDelegate*>(delegate);
-            if ((inst->ownership() == QScriptEngine::ScriptOwnership)
-                || ((inst->ownership() == QScriptEngine::AutoOwnership)
-                    && inst->value() && !inst->value()->parent())) {
-                // #### don't mark if not marked otherwise
-                //senderWrapper = JSC::JSValue();
-                markStack.append(senderWrapper);
-            } else {
-                markStack.append(senderWrapper);
+            if (!JSC::Heap::isCellMarked(scriptObject)) {
+                QScriptObjectDelegate *delegate = scriptObject->delegate();
+                Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
+                QObjectDelegate *inst = static_cast<QObjectDelegate*>(delegate);
+                if ((inst->ownership() == QScriptEngine::ScriptOwnership)
+                    || ((inst->ownership() == QScriptEngine::AutoOwnership)
+                        && inst->value() && !inst->value()->parent())) {
+                    senderWrapper = JSC::JSValue();
+                } else {
+                    markStack.append(senderWrapper);
+                }
             }
         }
         if (receiver)
@@ -1172,6 +1173,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
                                          const JSC::Identifier &propertyName,
                                          JSC::PropertySlot &slot)
 {
+    //Note: this has to be kept in sync with getOwnPropertyDescriptor
 #ifndef QT_NO_PROPERTIES
     QByteArray name = QString(propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
@@ -1279,6 +1281,142 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
     }
 
     return QScriptObjectDelegate::getOwnPropertySlot(object, exec, propertyName, slot);
+#else //QT_NO_PROPERTIES
+    return false;
+#endif //QT_NO_PROPERTIES
+}
+
+
+bool QObjectDelegate::getOwnPropertyDescriptor(QScriptObject *object, JSC::ExecState *exec,
+                                         const JSC::Identifier &propertyName,
+                                         JSC::PropertyDescriptor &descriptor)
+{
+    //Note: this has to be kept in sync with getOwnPropertySlot abd getPropertyAttributes
+#ifndef QT_NO_PROPERTIES
+    QByteArray name = QString(propertyName.ustring()).toLatin1();
+    QObject *qobject = data->value;
+    if (!qobject) {
+        QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
+                          .arg(QString::fromLatin1(name));
+        descriptor.setValue(JSC::throwError(exec, JSC::GeneralError, message));
+        return true;
+    }
+
+    const QScriptEngine::QObjectWrapOptions &opt = data->options;
+
+    const QMetaObject *meta = qobject->metaObject();
+    {
+        QHash<QByteArray, JSC::JSValue>::const_iterator it = data->cachedMembers.constFind(name);
+        if (it != data->cachedMembers.constEnd()) {
+            int index;
+            if (GeneratePropertyFunctions && ((index = meta->indexOfProperty(name)) != -1)) {
+                QMetaProperty prop = meta->property(index);
+                descriptor.setAccessorDescriptor(it.value(), it.value(), flagsForMetaProperty(prop));
+                if (!prop.isWritable())
+                    descriptor.setWritable(false);
+            } else {
+                unsigned attributes = QObjectMemberAttribute;
+                if (opt & QScriptEngine::SkipMethodsInEnumeration)
+                    attributes |= JSC::DontEnum;
+                descriptor.setDescriptor(it.value(), attributes);
+            }
+            return true;
+        }
+    }
+
+    QScriptEnginePrivate *eng = scriptEngineFromExec(exec);
+    int index = -1;
+    if (name.contains('(')) {
+        QByteArray normalized = QMetaObject::normalizedSignature(name);
+        if (-1 != (index = meta->indexOfMethod(normalized))) {
+            QMetaMethod method = meta->method(index);
+            if (hasMethodAccess(method, index, opt)) {
+                if (!(opt & QScriptEngine::ExcludeSuperClassMethods)
+                    || (index >= meta->methodOffset())) {
+                    QtFunction *fun = new (exec)QtFunction(
+                        object, index, /*maybeOverloaded=*/false,
+                        &exec->globalData(), eng->originalGlobalObject()->functionStructure(),
+                        propertyName);
+                    data->cachedMembers.insert(name, fun);
+                    unsigned attributes = QObjectMemberAttribute;
+                    if (opt & QScriptEngine::SkipMethodsInEnumeration)
+                        attributes |= JSC::DontEnum;
+                    descriptor.setDescriptor(fun, attributes);
+                    return true;
+                }
+            }
+        }
+    }
+
+    index = meta->indexOfProperty(name);
+    if (index != -1) {
+        QMetaProperty prop = meta->property(index);
+        if (prop.isScriptable()) {
+            if (!(opt & QScriptEngine::ExcludeSuperClassProperties)
+                || (index >= meta->propertyOffset())) {
+                unsigned attributes = flagsForMetaProperty(prop);
+                if (GeneratePropertyFunctions) {
+                    QtPropertyFunction *fun = new (exec)QtPropertyFunction(
+                        meta, index, &exec->globalData(),
+                        eng->originalGlobalObject()->functionStructure(),
+                        propertyName);
+                    data->cachedMembers.insert(name, fun);
+                    descriptor.setAccessorDescriptor(fun, fun, attributes);
+                    if (attributes & JSC::ReadOnly)
+                        descriptor.setWritable(false);
+                } else {
+                    JSC::JSValue val;
+                    if (!prop.isValid())
+                        val = JSC::jsUndefined();
+                    else
+                        val = eng->jscValueFromVariant(prop.read(qobject));
+                    descriptor.setDescriptor(val, attributes);
+                }
+                return true;
+            }
+        }
+    }
+
+    index = qobject->dynamicPropertyNames().indexOf(name);
+    if (index != -1) {
+        JSC::JSValue val = eng->jscValueFromVariant(qobject->property(name));
+        descriptor.setDescriptor(val, QObjectMemberAttribute);
+        return true;
+    }
+
+    const int offset = (opt & QScriptEngine::ExcludeSuperClassMethods)
+                       ? meta->methodOffset() : 0;
+    for (index = meta->methodCount() - 1; index >= offset; --index) {
+        QMetaMethod method = meta->method(index);
+        if (hasMethodAccess(method, index, opt)
+            && (methodName(method) == name)) {
+            QtFunction *fun = new (exec)QtFunction(
+                object, index, /*maybeOverloaded=*/true,
+                &exec->globalData(), eng->originalGlobalObject()->functionStructure(),
+                propertyName);
+            unsigned attributes = QObjectMemberAttribute;
+            if (opt & QScriptEngine::SkipMethodsInEnumeration)
+                attributes |= JSC::DontEnum;
+            descriptor.setDescriptor(fun, attributes);
+            data->cachedMembers.insert(name, fun);
+            return true;
+        }
+    }
+
+    if (!(opt & QScriptEngine::ExcludeChildObjects)) {
+        QList<QObject*> children = qobject->children();
+        for (index = 0; index < children.count(); ++index) {
+            QObject *child = children.at(index);
+            if (child->objectName() == QString(propertyName.ustring())) {
+                QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
+                QScriptValue tmp = QScriptEnginePrivate::get(eng)->newQObject(child, QScriptEngine::QtOwnership, opt);
+                descriptor.setDescriptor(eng->scriptValueToJSCValue(tmp), JSC::ReadOnly | JSC::DontDelete | JSC::DontEnum);
+                return true;
+            }
+        }
+    }
+
+    return QScriptObjectDelegate::getOwnPropertyDescriptor(object, exec, propertyName, descriptor);
 #else //QT_NO_PROPERTIES
     return false;
 #endif //QT_NO_PROPERTIES
@@ -1436,7 +1574,7 @@ bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
                                             unsigned &attributes) const
 {
 #ifndef QT_NO_PROPERTIES
-    // ### try to avoid duplicating logic from getOwnPropertySlot()
+    //Note: this has to be kept in sync with getOwnPropertyDescriptor and getOwnPropertySlot
     QByteArray name = ((QString)propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
     if (!qobject)
@@ -1687,6 +1825,7 @@ QObjectPrototype::QObjectPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::St
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/0, exec->propertyNames().toString, qobjectProtoFuncToString), JSC::DontEnum);
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/1, JSC::Identifier(exec, "findChild"), qobjectProtoFuncFindChild), JSC::DontEnum);
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, /*length=*/1, JSC::Identifier(exec, "findChildren"), qobjectProtoFuncFindChildren), JSC::DontEnum);
+    this->structure()->setHasGetterSetterProperties(true);
 }
 
 const JSC::ClassInfo QMetaObjectWrapperObject::info = { "QMetaObject", 0, 0, 0 };

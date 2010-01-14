@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -111,6 +111,8 @@ private slots:
 
     void testMoveWithinOwnRange_data();
     void testMoveWithinOwnRange();
+
+    void testMoveThroughProxy();
 
     void testReset();
 
@@ -1110,6 +1112,25 @@ void tst_QAbstractItemModel::testMoveSameParentUp()
             QCOMPARE(idx, persistentIndex);
         }
     }
+}
+
+void tst_QAbstractItemModel::testMoveThroughProxy()
+{
+    QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
+    proxy->setSourceModel(m_model);
+
+    QList<QPersistentModelIndex> persistentList;
+
+    persistentList.append(proxy->index(0, 0));
+    persistentList.append(proxy->index(0, 0, proxy->mapFromSource(m_model->index(5, 0))));
+
+    ModelMoveCommand *moveCommand = new ModelMoveCommand(m_model, this);
+    moveCommand->setNumCols(4);
+    moveCommand->setAncestorRowNumbers(QList<int>() << 5);
+    moveCommand->setStartRow(0);
+    moveCommand->setEndRow(0);
+    moveCommand->setDestRow(0);
+    moveCommand->doCommand();
 }
 
 void tst_QAbstractItemModel::testMoveToGrandParent_data()

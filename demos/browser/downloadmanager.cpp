@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,8 +94,8 @@ void DownloadItem::init()
     connect(m_reply, SIGNAL(readyRead()), this, SLOT(downloadReadyRead()));
     connect(m_reply, SIGNAL(error(QNetworkReply::NetworkError)),
             this, SLOT(error(QNetworkReply::NetworkError)));
-    connect(m_reply, SIGNAL(downloadProgress(qint64, qint64)),
-            this, SLOT(downloadProgress(qint64, qint64)));
+    connect(m_reply, SIGNAL(downloadProgress(qint64,qint64)),
+            this, SLOT(downloadProgress(qint64,qint64)));
     connect(m_reply, SIGNAL(metaDataChanged()),
             this, SLOT(metaDataChanged()));
     connect(m_reply, SIGNAL(finished()),

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -306,7 +306,6 @@ private:
 
     // the string to read from and current position in the string
     QTextCodec *yySourceCodec;
-    bool yySourceIsUnicode;
     QString yyInStr;
     const ushort *yyInPtr;
 
@@ -353,7 +352,6 @@ void CppParser::setInput(const QString &in)
     yyInStr = in;
     yyFileName = QString();
     yySourceCodec = 0;
-    yySourceIsUnicode = true;
     yyForceUtf8 = true;
 }
 
@@ -362,7 +360,6 @@ void CppParser::setInput(QTextStream &ts, const QString &fileName)
     yyInStr = ts.readAll();
     yyFileName = fileName;
     yySourceCodec = ts.codec();
-    yySourceIsUnicode = yySourceCodec->name().startsWith("UTF-");
     yyForceUtf8 = false;
 }
 
@@ -1430,24 +1427,24 @@ QString CppParser::transcode(const QString &str, bool utf8)
 {
     static const char tab[] = "abfnrtv";
     static const char backTab[] = "\a\b\f\n\r\t\v";
-    const QString in = (!utf8 || yySourceIsUnicode)
-        ? str : QString::fromUtf8(yySourceCodec->fromUnicode(str).data());
-    QString out;
+    // This function has to convert back to bytes, as C's \0* sequences work at that level.
+    const QByteArray in = yyForceUtf8 ? str.toUtf8() : tor->codec()->fromUnicode(str);
+    QByteArray out;
 
     out.reserve(in.length());
     for (int i = 0; i < in.length();) {
-        ushort c = in[i++].unicode();
+        uchar c = in[i++];
         if (c == '\\') {
             if (i >= in.length())
                 break;
-            c = in[i++].unicode();
+            c = in[i++];
 
             if (c == '\n')
                 continue;
 
             if (c == 'x') {
                 QByteArray hex;
-                while (i < in.length() && isxdigit((c = in[i].unicode()))) {
+                while (i < in.length() && isxdigit((c = in[i]))) {
                     hex += c;
                     i++;
                 }
@@ -1456,7 +1453,7 @@ QString CppParser::transcode(const QString &str, bool utf8)
                 QByteArray oct;
                 int n = 0;
                 oct += c;
-                while (n < 2 && i < in.length() && (c = in[i].unicode()) >= '0' && c < '8') {
+                while (n < 2 && i < in.length() && (c = in[i]) >= '0' && c < '8') {
                     i++;
                     n++;
                     oct += c;
@@ -1464,13 +1461,14 @@ QString CppParser::transcode(const QString &str, bool utf8)
                 out += oct.toUInt(0, 8);
             } else {
                 const char *p = strchr(tab, c);
-                out += QChar(QLatin1Char(!p ? c : backTab[p - tab]));
+                out += !p ? c : backTab[p - tab];
             }
         } else {
             out += c;
         }
     }
-    return out;
+    return (utf8 || yyForceUtf8) ? QString::fromUtf8(out.constData(), out.length())
+                                 : tor->codec()->toUnicode(out);
 }
 
 void CppParser::recordMessage(
@@ -1734,7 +1732,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         plural = true;
                     }
                 }
-                if (!pendingContext.isEmpty()) {
+                if (!pendingContext.isEmpty() && !prefix.startsWith(strColons)) {
                     QStringList unresolved;
                     if (!fullyQualify(namespaces, pendingContext, true, &functionContext, &unresolved)) {
                         functionContextUnresolved = unresolved.join(strColons);
@@ -2150,9 +2148,9 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
         QTextStream ts(&file);
         ts.setCodec(codec);
         ts.setAutoDetectUnicode(true);
-        if (ts.codec()->name() == "UTF-16")
-            translator.setCodecName("System");
         parser.setInput(ts, filename);
+        if (cd.m_outputCodec.isEmpty() && ts.codec()->name() == "UTF-16")
+            translator.setCodecName("System");
         Translator *tor = new Translator;
         tor->setCodecName(translator.codecName());
         parser.setTranslator(tor);

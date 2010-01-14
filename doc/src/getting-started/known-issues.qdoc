@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,43 +45,47 @@
     \ingroup platform-specific
     \brief A summary of known issues in Qt %VERSION% at the time of release.
 
-    This page documents known problems with the packaging and installation in
-    Qt %VERSION%, as well as issues with third party software that we have
-    not been able to work around. For a list of such issues in previous Qt
-    versions refer to this page in the respective documentation.
+    An up-to-date list of known issues with Qt %VERSION% can be found via the
+    \l{http://bugreports.qt.nokia.com/}{Qt Bug Tracker}.
 
     For a list list of known bugs in Qt %VERSION%, see the \l{Task Tracker}
     on the Qt website.
 
     An overview of known issues may also be found at:
-    \l{http://qt.gitorious.org/qt/pages/Qt460BetaKnownIssues}
+    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues}
     {Known Issues Wiki}.
 
     \section1 Installation Issues
 
     \section2 Installing the Source Package on Unix systems
 
+    \list
+
     \o  If you download a Zip source package, you will need to convert
         Windows-style line endings (CR/LF) to Unix-style line-endings (LF) when
         you uncompress the package.  To do this, give the "-a" option when you
         run the "unzip' command.
-    
-        If you fail to supply the "-a" option when unzipping the package, you
+
+    \o  If you fail to supply the "-a" option when unzipping the package, you
         will see the following error message when you attempt to execute the
         configure command:
         "bash: ./configure: /bin/sh^M: bad interpreter: No such file or directory"
+
     \endlist
 
     \section2 Installing on Mac OS X 10.6 "Snow Leopard"
+
     \list
+
     \o Performing a new install of the Qt 4.6 beta on Snow Leopard
        triggers a bug in the installer that causes the install to fail.
        Updating an existing Qt installation works fine.
 
-       There are two workarounds, either disable spotlight for the target
+    \o There are two workarounds, either disable spotlight for the target
        drive during the install, or do a custom install where you deselect
        documentation and examples. Run the installer again as a full
        install to get the documentation and examples installed.
+
     \endlist
 
     \section1 Issues with Third Party Software
@@ -107,6 +111,7 @@
     \section2 Windows
 
     \list
+
     \o  When using version 6.14.11.6921 of the NVIDIA drivers for the GeForce
         6600 GT under Windows XP, Qt applications which use drag and drop will
         display reduced size drag and drop icons when run alongside
@@ -122,13 +127,39 @@
     \o  A bug in the Firebird database can cause an application to crash when
         \c{fbembed.dll} is unloaded. The bug is fixed in version 2.5.
 
+    \o  On Windows 7, resizing windows is slower than on Vista/Xp. This is because
+        the gesture initialization process (required for native gesture support)
+        currently calls winId() on widgets, which causes whole widget hierarchies
+        to use native window handles. This slows down resizing.
+
+    \o  Compile errors with Intel C++ Compiler.\br
+        There seems to be a bug in the Intel compiler with respect to
+        over-agressive inlining of code.
+        The problem will manifest itself during the link phase of QtGui where
+        it fails with the error that it cannot find QObjectData::~QObjectData().
+        See \l{http://bugreports.qt.nokia.com/browse/QTBUG-5145} for updates on this
+        bug.
+        Also, due to some bugs in WebKit, the QtScript and QtWebKit modules
+        will not compile.
+        See \l{http://bugreports.qt.nokia.com/browse/QTBUG-6297} for a
+        workaround for QtScript.
+        
     \endlist
 
     \section2 Mac OS X
 
     \list
+
     \o  If a sheet is opened for a given window, clicking the title bar of that
         window will cause it to flash. This behavior has been reported to Apple
         (bug number 5827676).
+
+    \endlist
+
+    \section2 Symbian
+
+    \list
+    \o  Check known issues for Symbian at
+    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues} {Known Issues Wiki}.
     \endlist
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1784,7 +1784,7 @@ Q_GLOBAL_STATIC(QFontSubst, globalFontSubst)
 static void initFontSubst()
 {
     // default substitutions
-    static const char *initTbl[] = {
+    static const char * const initTbl[] = {
 
 #if defined(Q_WS_X11)
         "arial",        "helvetica",
@@ -1815,7 +1815,6 @@ static void initFontSubst()
         list.append(QString::fromLatin1(initTbl[i+1]));
     }
 }
-
 
 /*!
     Returns the first family name to be used whenever \a familyName is

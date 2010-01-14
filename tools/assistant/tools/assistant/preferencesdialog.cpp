@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,11 +83,11 @@ PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine, QWidget *paren
         m_ui.attributeWidget->header()->hide();
         m_ui.attributeWidget->setRootIsDecorated(false);
 
-        connect(m_ui.attributeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
+        connect(m_ui.attributeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
             this, SLOT(updateFilterMap()));
 
         connect(m_ui.filterWidget,
-            SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this,
+            SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this,
             SLOT(updateAttributes(QListWidgetItem*)));
 
         connect(m_ui.filterAddButton, SIGNAL(clicked()), this,

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -236,11 +236,13 @@ public:
                 EdgeData *data = edgeData(v, v1);
                 bool forward = data->from == v;
                 if (forward) {
-                    edges += QString::fromAscii("\"%1\"->\"%2\" [label=\"[%3,%4,%5]\" dir=both color=\"#000000:#a0a0a0\"] \n")
+                    edges += QString::fromAscii("\"%1\"->\"%2\" [label=\"[%3,%4,%5,%6,%7]\" color=\"#000000\"] \n")
                         .arg(v->toString())
                         .arg(v1->toString())
                         .arg(data->minSize)
+                        .arg(data->minPrefSize)
                         .arg(data->prefSize)
+                        .arg(data->maxPrefSize)
                         .arg(data->maxSize)
                         ;
                 }

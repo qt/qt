@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,10 +50,10 @@ QtGradientViewDialog::QtGradientViewDialog(QWidget *parent)
 {
     m_ui.setupUi(this);
     m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-    connect(m_ui.gradientView, SIGNAL(currentGradientChanged(const QString &)),
-            this, SLOT(slotGradientSelected(const QString &)));
-    connect(m_ui.gradientView, SIGNAL(gradientActivated(const QString &)),
-            this, SLOT(slotGradientActivated(const QString &)));
+    connect(m_ui.gradientView, SIGNAL(currentGradientChanged(QString)),
+            this, SLOT(slotGradientSelected(QString)));
+    connect(m_ui.gradientView, SIGNAL(gradientActivated(QString)),
+            this, SLOT(slotGradientActivated(QString)));
 }
 
 void QtGradientViewDialog::setGradientManager(QtGradientManager *manager)

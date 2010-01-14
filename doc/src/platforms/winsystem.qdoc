@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,9 +102,9 @@
     When compiling for this platform, the macro \c{Q_WS_WINCE} is defined.
     See the \l{Qt for Windows CE} documentation for more information.
 
-    \section1 Qt for Symbian Platform
+    \section1 Qt for the Symbian platform
 
     When compiling for this platform, the macro \c{Q_WS_S60} is defined.
-    See the \l{Symbian Platform - Introduction to Qt} documentation for
+    See the \l{The Symbian platform - Introduction to Qt} documentation for
     more information.
 */

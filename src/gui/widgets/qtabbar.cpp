@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1948,7 +1948,8 @@ void QTabBar::changeEvent(QEvent *event)
     Q_D(QTabBar);
     if (event->type() == QEvent::StyleChange) {
         d->elideMode = Qt::TextElideMode(style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, this));
-        d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
+        if (!d->useScrollButtonsSetByUser)
+            d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
         d->refresh();
     } else if (event->type() == QEvent::FontChange) {
         d->refresh();
@@ -2003,6 +2004,7 @@ bool QTabBar::usesScrollButtons() const
 void QTabBar::setUsesScrollButtons(bool useButtons)
 {
     Q_D(QTabBar);
+    d->useScrollButtonsSetByUser = true;
     if (d->useScrollButtons == useButtons)
         return;
     d->useScrollButtons = useButtons;

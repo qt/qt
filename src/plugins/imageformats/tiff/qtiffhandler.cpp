@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -192,11 +192,10 @@ bool QTiffHandler::read(QImage *image)
         return false;
     }
 
+    // BitsPerSample defaults to 1 according to the TIFF spec.
     uint16 bitPerSample;
-    if (!TIFFGetField(tiff, TIFFTAG_BITSPERSAMPLE, &bitPerSample)) {
-        TIFFClose(tiff);
-        return false;
-    }
+    if (!TIFFGetField(tiff, TIFFTAG_BITSPERSAMPLE, &bitPerSample))
+        bitPerSample = 1;
 
     bool grayscale = photometric == PHOTOMETRIC_MINISBLACK || photometric == PHOTOMETRIC_MINISWHITE;
     if (grayscale && bitPerSample == 1) {

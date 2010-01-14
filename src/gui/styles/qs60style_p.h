@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -119,6 +119,9 @@ public:
         SP_QgnGrafTabPassiveL,
         SP_QgnGrafTabPassiveM,
         SP_QgnGrafTabPassiveR,
+        SP_QgnGrafNsliderEndLeft,
+        SP_QgnGrafNsliderEndRight,
+        SP_QgnGrafNsliderMiddle,
         SP_QgnIndiCheckboxOff,
         SP_QgnIndiCheckboxOn,
         SP_QgnIndiHlColSuper,     // Available in S60 release 3.2 and later.
@@ -131,7 +134,8 @@ public:
         SP_QgnIndiNaviArrowRight,
         SP_QgnIndiRadiobuttOff,
         SP_QgnIndiRadiobuttOn,
-        SP_QgnIndiSliderEdit,
+        SP_QgnGrafNsliderMarker,
+        SP_QgnGrafNsliderMarkerSelected,
         SP_QgnIndiSubMenu,
         SP_QgnNoteErased,
         SP_QgnNoteError,
@@ -271,15 +275,6 @@ public:
         SP_QsnFrButtonSideLInactive,
         SP_QsnFrButtonSideRInactive,
         SP_QsnFrButtonCenterInactive,
-        SP_QsnFrNotepadCornerTl,
-        SP_QsnFrNotepadCornerTr,
-        SP_QsnFrNotepadCornerBl,
-        SP_QsnFrNotepadCornerBr,
-        SP_QsnFrNotepadSideT,
-        SP_QsnFrNotepadSideB,
-        SP_QsnFrNotepadSideL,
-        SP_QsnFrNotepadSideR,
-        SP_QsnFrNotepadCenter
     };
 
     enum ColorLists {
@@ -322,6 +317,10 @@ public:
         SE_ScrollBarHandleVertical,
         SE_SliderHandleHorizontal,
         SE_SliderHandleVertical,
+        SE_SliderHandleSelectedHorizontal,
+        SE_SliderHandleSelectedVertical,
+        SE_SliderGrooveVertical,
+        SE_SliderGrooveHorizontal,
         SE_TabBarTabEastActive,
         SE_TabBarTabEastInactive,
         SE_TabBarTabNorthActive,
@@ -402,7 +401,7 @@ public:
     static bool drawsOwnThemeBackground(const QWidget *widget);
 
     QFont s60Font(QS60StyleEnums::FontCategories fontCategory,
-        int pointSize = -1) const;
+        int pointSize = -1, bool resolveFontSize = true) const;
     // clears all style caches (fonts, colors, pixmaps)
     void clearCaches(CacheClearReason reason = CC_UndefinedChange);
 
@@ -412,14 +411,13 @@ public:
 
     static bool isTouchSupported();
     static bool isToolBarBackground();
+    static bool hasSliderGrooveGraphic();
 
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(SkinFrameElements frame) const;
 
     //set theme palette for application
     void setThemePalette(QApplication *application) const;
-    //set theme palette for style option
-    void setThemePalette(QStyleOption *option) const;
     //access to theme palette
     static QPalette* themePalette();
 
@@ -453,6 +451,10 @@ public:
 
     static QSize naviPaneSize();
 
+    //Checks that the current brush is transparent or has BrushStyle NoBrush,
+    //so that theme graphic background can be drawn.
+    static bool canDrawThemeBackground(const QBrush &backgroundBrush);
+
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
@@ -482,7 +484,8 @@ private:
     static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
         QPainter *painter, SkinElementFlags flags = KDefaultSkinElementFlags);
 
-    static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize);
+    static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory,
+                                  int pointSize, bool resolveFontSize);
 
     static QSize screenSize();
 

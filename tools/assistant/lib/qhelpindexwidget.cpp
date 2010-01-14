@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,6 +130,7 @@ void QHelpIndexProvider::stopCollecting()
     m_abort = true;
     m_mutex.unlock();
     wait();
+    m_abort = false;
 }
 
 QStringList QHelpIndexProvider::indices() const
@@ -164,7 +165,6 @@ void QHelpIndexProvider::run()
     foreach (QString dbFileName, m_helpEngine->fileNameReaderMap.keys()) {
         m_mutex.lock();
         if (m_abort) {
-            m_abort = false;
             m_mutex.unlock();
             return;
         }
@@ -181,7 +181,6 @@ void QHelpIndexProvider::run()
             foreach (QString s, lst)
                 indicesSet.insert(s);
             if (m_abort) {
-                m_abort = false;
                 m_mutex.unlock();
                 return;
             }
@@ -194,7 +193,6 @@ void QHelpIndexProvider::run()
     m_mutex.lock();
     m_indices = indicesSet.values();
     qSort(m_indices.begin(), m_indices.end(), caseInsensitiveLessThan);
-    m_abort = false;
     m_mutex.unlock();
 }
 
@@ -391,8 +389,8 @@ QHelpIndexWidget::QHelpIndexWidget()
 {
     setEditTriggers(QAbstractItemView::NoEditTriggers);
     setUniformItemSizes(true);
-    connect(this, SIGNAL(activated(const QModelIndex&)),
-        this, SLOT(showLink(const QModelIndex&)));
+    connect(this, SIGNAL(activated(QModelIndex)),
+        this, SLOT(showLink(QModelIndex)));
 }
 
 void QHelpIndexWidget::showLink(const QModelIndex &index)

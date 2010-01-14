@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -197,14 +197,15 @@ void tst_QSystemLock::processes_data()
  */
 void tst_QSystemLock::processes()
 {
+    QSKIP("This test takes about 15 minutes and needs to be trimmed down before we can re-enable it", SkipAll);
     QFETCH(int, readOnly);
     QFETCH(int, readWrite);
 
     QStringList scripts;
     for (int i = 0; i < readOnly; ++i)
-        scripts.append(QFileInfo(SRCDIR "lackey/scripts/ systemlock_read.js").absoluteFilePath() );
+        scripts.append(QFileInfo(SRCDIR "/../lackey/scripts/systemlock_read.js").absoluteFilePath() );
     for (int i = 0; i < readWrite; ++i)
-        scripts.append(QFileInfo(SRCDIR "lackey/scripts/systemlock_readwrite.js").absoluteFilePath());
+        scripts.append(QFileInfo(SRCDIR "/../lackey/scripts/systemlock_readwrite.js").absoluteFilePath());
 
     QList<QProcess*> consumers;
     unsigned int failedProcesses = 0;
@@ -213,8 +214,8 @@ void tst_QSystemLock::processes()
         QStringList arguments = QStringList() << scripts.at(i);
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
-        
-        p->start(QFileInfo(SRCDIR "lackey/lackey").absoluteFilePath(), arguments);
+
+        p->start("../lackey/lackey", arguments);
         // test, if the process could be started.
 
         if (p->waitForStarted(2000))

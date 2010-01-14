@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,12 +58,12 @@ ChatDialog::ChatDialog(QWidget *parent)
     connect(sendButton, SIGNAL(clicked()), this, SLOT(returnPressed()));
 #endif
     connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(returnPressed()));
-    connect(&client, SIGNAL(newMessage(const QString &, const QString &)),
-            this, SLOT(appendMessage(const QString &, const QString &)));
-    connect(&client, SIGNAL(newParticipant(const QString &)),
-            this, SLOT(newParticipant(const QString &)));
-    connect(&client, SIGNAL(participantLeft(const QString &)),
-            this, SLOT(participantLeft(const QString &)));
+    connect(&client, SIGNAL(newMessage(QString,QString)),
+            this, SLOT(appendMessage(QString,QString)));
+    connect(&client, SIGNAL(newParticipant(QString)),
+            this, SLOT(newParticipant(QString)));
+    connect(&client, SIGNAL(participantLeft(QString)),
+            this, SLOT(participantLeft(QString)));
 
     myNickName = client.nickName();
     newParticipant(myNickName);

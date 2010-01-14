@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -292,6 +292,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       processDirtyItemsEmitted(false),
       selectionChanging(0),
       needSortTopLevelItems(true),
+      unpolishedItemsModified(true),
       holesInTopLevelSiblingIndex(false),
       topLevelSequentialOrdering(true),
       scenePosDescendantsUpdatePending(false),
@@ -428,12 +429,12 @@ void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::_q_polishItems()
 {
-    QSet<QGraphicsItem *>::Iterator it;
+    QSet<QGraphicsItem *>::Iterator it = unpolishedItems.begin();
     const QVariant booleanTrueVariant(true);
     while (!unpolishedItems.isEmpty()) {
-        it = unpolishedItems.begin();
         QGraphicsItem *item = *it;
-        unpolishedItems.erase(it);
+        it = unpolishedItems.erase(it);
+        unpolishedItemsModified = false;
         if (!item->d_ptr->explicitlyHidden) {
             item->itemChange(QGraphicsItem::ItemVisibleChange, booleanTrueVariant);
             item->itemChange(QGraphicsItem::ItemVisibleHasChanged, booleanTrueVariant);
@@ -442,6 +443,8 @@ void QGraphicsScenePrivate::_q_polishItems()
             QEvent event(QEvent::Polish);
             QApplication::sendEvent((QGraphicsWidget *)item, &event);
         }
+        if (unpolishedItemsModified)
+            it = unpolishedItems.begin();
     }
 }
 
@@ -555,7 +558,8 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     // Clear focus on the item to remove any reference in the focusWidget chain.
     item->clearFocus();
 
-    markDirty(item, QRectF(), false, false, false, false, /*removingItemFromScene=*/true);
+    markDirty(item, QRectF(), /*invalidateChildren=*/false, /*force=*/false,
+              /*ignoreOpacity=*/false, /*removingItemFromScene=*/true);
 
     if (item->d_ptr->inDestructor) {
         // The item is actually in its destructor, we call the special method in the index.
@@ -568,14 +572,10 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     item->d_ptr->clearSubFocus();
 
-    if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
-        widget->d_func()->fixFocusChainBeforeReparenting(0, 0);
-    }
-
     if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
         unregisterScenePosItem(item);
 
+    QGraphicsScene *oldScene = item->d_func()->scene;
     item->d_func()->scene = 0;
 
     //We need to remove all children first because they might use their parent
@@ -584,6 +584,11 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         // Remove all children recursively
         for (int i = 0; i < item->d_ptr->children.size(); ++i)
             q->removeItem(item->d_ptr->children.at(i));
+    }
+
+    if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
+        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
+        widget->d_func()->fixFocusChainBeforeReparenting(0, oldScene, 0);
     }
 
     // Unregister focus proxy.
@@ -612,6 +617,19 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (item == lastActivePanel)
         lastActivePanel = 0;
 
+    // Cancel active touches
+    {
+        QMap<int, QGraphicsItem *>::iterator it = itemForTouchPointId.begin();
+        while (it != itemForTouchPointId.end()) {
+            if (it.value() == item) {
+                sceneCurrentTouchPoints.remove(it.key());
+                it = itemForTouchPointId.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+
     // Disable selectionChanged() for individual items
     ++selectionChanging;
     int oldSelectedItemsSize = selectedItems.size();
@@ -621,6 +639,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     hoverItems.removeAll(item);
     cachedItemsUnderMouse.removeAll(item);
     unpolishedItems.remove(item);
+    unpolishedItemsModified = true;
     resetDirtyItem(item);
 
     //We remove all references of item from the sceneEventFilter arrays
@@ -1117,8 +1136,9 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
     if (QGraphicsObject *object = item->toGraphicsObject()) {
-        if (qt_gestureManager) {
-            if (qt_gestureManager->filterEvent(object, event))
+        QGestureManager *gestureManager = QApplicationPrivate::instance()->gestureManager;
+        if (gestureManager) {
+            if (gestureManager->filterEvent(object, event))
                 return true;
         }
     }
@@ -1546,7 +1566,10 @@ QGraphicsScene::QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObj
 }
 
 /*!
-    Destroys the QGraphicsScene object.
+  Removes and deletes all items from the scene object
+  before destroying the scene object. The scene object
+  is removed from the application's global scene list,
+  and it is removed from all associated views.
 */
 QGraphicsScene::~QGraphicsScene()
 {
@@ -2428,23 +2451,26 @@ void QGraphicsScene::destroyItemGroup(QGraphicsItemGroup *group)
 }
 
 /*!
-    Adds or moves the item \a item and all its childen to the scene.
+    Adds or moves the \a item and all its childen to this scene.
+    This scene takes ownership of the \a item.
 
     If the item is visible (i.e., QGraphicsItem::isVisible() returns
     true), QGraphicsScene will emit changed() once control goes back
     to the event loop.
 
-    If the item is already in a different scene, it will first be removed from
-    its old scene, and then added to this scene as a top-level.
+    If the item is already in a different scene, it will first be
+    removed from its old scene, and then added to this scene as a
+    top-level.
 
-    QGraphicsScene will send ItemSceneChange notifications to \a item while
-    it is added to the scene. If item does not currently belong to a scene, only one
-    notification is sent. If it does belong to scene already (i.e., it is
-    moved to this scene), QGraphicsScene will send an addition notification as
-    the item is removed from its previous scene.
+    QGraphicsScene will send ItemSceneChange notifications to \a item
+    while it is added to the scene. If item does not currently belong
+    to a scene, only one notification is sent. If it does belong to
+    scene already (i.e., it is moved to this scene), QGraphicsScene
+    will send an addition notification as the item is removed from its
+    previous scene.
 
-    If the item is a panel, the scene is active, and there is no active panel
-    in the scene, then the item will be activated.
+    If the item is a panel, the scene is active, and there is no
+    active panel in the scene, then the item will be activated.
 
     \sa removeItem(), addEllipse(), addLine(), addPath(), addPixmap(),
     addRect(), addText(), addWidget(), {QGraphicsItem#Sorting}{Sorting}
@@ -2556,11 +2582,10 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     item->d_ptr->resolveFont(d->font.resolve());
     item->d_ptr->resolvePalette(d->palette.resolve());
 
-    if (!item->d_ptr->explicitlyHidden) {
-       if (d->unpolishedItems.isEmpty())
-           QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
-       d->unpolishedItems.insert(item);
-    }
+    if (d->unpolishedItems.isEmpty())
+        QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+    d->unpolishedItems.insert(item);
+    d->unpolishedItemsModified = true;
 
     // Reenable selectionChanged() for individual items
     --d->selectionChanging;
@@ -4234,7 +4259,6 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     if (!subPix.isNull()) {
         // Blit the subpixmap into the main pixmap.
         pixmapPainter.begin(pix);
-        pixmapPainter.setCompositionMode(QPainter::CompositionMode_Source);
         pixmapPainter.setClipRegion(pixmapExposed);
         pixmapPainter.drawPixmap(br.topLeft(), subPix);
         pixmapPainter.end();
@@ -4422,9 +4446,12 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         bool allowPartialCacheExposure = !viewRect.contains(deviceRect);
 #else
         // Only if deviceRect is 20% taller or wider than the desktop.
-        QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
-        bool allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
-                                          || desktopRect.height() * 1.2 < deviceRect.height());
+        bool allowPartialCacheExposure = false;
+        if (widget) {
+            QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
+            allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
+                                         || desktopRect.height() * 1.2 < deviceRect.height());
+        }
 #endif
         QRegion scrollExposure;
         if (deviceData->cacheIndent != QPoint() || allowPartialCacheExposure) {
@@ -4656,10 +4683,13 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             painter->setWorldTransform(*transformPtr);
         painter->setOpacity(opacity);
 
-        if (sourced->lastEffectTransform != painter->worldTransform()) {
+        if (sourced->currentCachedSystem() != Qt::LogicalCoordinates
+            && sourced->lastEffectTransform != painter->worldTransform())
+        {
             sourced->lastEffectTransform = painter->worldTransform();
-            sourced->invalidateCache();
+            sourced->invalidateCache(QGraphicsEffectSourcePrivate::TransformChanged);
         }
+
         item->d_ptr->graphicsEffect->draw(painter);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;
@@ -4758,15 +4788,13 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 }
 
 void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, bool invalidateChildren,
-                                      bool maybeDirtyClipPath, bool force, bool ignoreOpacity,
-                                      bool removingItemFromScene)
+                                      bool force, bool ignoreOpacity, bool removingItemFromScene)
 {
     Q_ASSERT(item);
     if (updateAll)
         return;
 
-    if (item->d_ptr->discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath,
-                                          /*ignoreVisibleBit=*/force,
+    if (item->d_ptr->discardUpdateRequest(/*ignoreVisibleBit=*/force,
                                           /*ignoreDirtyBit=*/removingItemFromScene || invalidateChildren,
                                           /*ignoreOpacity=*/ignoreOpacity)) {
         if (item->d_ptr->dirty) {
@@ -5072,6 +5100,10 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     Example:
 
     \snippet doc/src/snippets/graphicssceneadditemsnippet.cpp 0
+
+    \obsolete Since Qt 4.6, this function is not called anymore unless
+    the QGraphicsView::IndirectPainting flag is given as an Optimization
+    flag.
 
     \sa drawBackground(), drawForeground()
 */
@@ -5680,17 +5712,22 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         touchEvent->setAccepted(acceptTouchEvents);
         res = acceptTouchEvents && sendEvent(item, touchEvent);
         eventAccepted = touchEvent->isAccepted();
-        item->d_ptr->acceptedTouchBeginEvent = (res && eventAccepted);
+        if (itemForTouchPointId.value(touchEvent->touchPoints().first().id()) == 0) {
+            // item was deleted
+            item = 0;
+        } else {
+            item->d_ptr->acceptedTouchBeginEvent = (res && eventAccepted);
+        }
         touchEvent->spont = false;
         if (res && eventAccepted) {
             // the first item to accept the TouchBegin gets an implicit grab.
             for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
                 const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
-                itemForTouchPointId[touchPoint.id()] = item;
+                itemForTouchPointId[touchPoint.id()] = item; // can be zero
             }
             break;
         }
-        if (item->isPanel())
+        if (item && item->isPanel())
             break;
     }
 
@@ -6121,9 +6158,10 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original, QWidge
         }
     }
 
-    Q_ASSERT(qt_gestureManager); // it would be very odd if we got called without a manager.
+    QGestureManager *gestureManager = QApplicationPrivate::instance()->gestureManager;
+    Q_ASSERT(gestureManager); // it would be very odd if we got called without a manager.
     for (setIter = canceledGestures.begin(); setIter != canceledGestures.end(); ++setIter) {
-        qt_gestureManager->recycle(*setIter);
+        gestureManager->recycle(*setIter);
         gestureTargets.remove(*setIter);
     }
 }

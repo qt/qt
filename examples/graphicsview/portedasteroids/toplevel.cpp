@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -129,10 +129,10 @@ KAstTopLevel::KAstTopLevel( QWidget *parent, const char *name )
 
     view = new KAsteroidsView( mainWin );
     view->setFocusPolicy( Qt::StrongFocus );
-    connect( view, SIGNAL( shipKilled() ), SLOT( slotShipKilled() ) );
-    connect( view, SIGNAL( rockHit(int) ), SLOT( slotRockHit(int) ) );
-    connect( view, SIGNAL( rocksRemoved() ), SLOT( slotRocksRemoved() ) );
-    connect( view, SIGNAL( updateVitals() ), SLOT( slotUpdateVitals() ) );
+    connect( view, SIGNAL(shipKilled()), SLOT(slotShipKilled()) );
+    connect( view, SIGNAL(rockHit(int)), SLOT(slotRockHit(int)) );
+    connect( view, SIGNAL(rocksRemoved()), SLOT(slotRocksRemoved()) );
+    connect( view, SIGNAL(updateVitals()), SLOT(slotUpdateVitals()) );
 
     Q3VBoxLayout *vb = new Q3VBoxLayout( mainWin );
     Q3HBoxLayout *hb = new Q3HBoxLayout;

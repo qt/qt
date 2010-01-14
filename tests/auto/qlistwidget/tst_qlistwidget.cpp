@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -862,11 +862,18 @@ void tst_QListWidget::moveItemsPriv_data()
     QTest::newRow("Empty") << 0 << 0 << 0 << false;
     QTest::newRow("Overflow src") << 5 << 5 << 2 << false;
     QTest::newRow("Underflow src") << 5 << -1 << 2 << false;
-    QTest::newRow("Overflow dst") << 5 << 2 << 5 << false;
+    QTest::newRow("Overflow dst") << 5 << 2 << 6 << false;
     QTest::newRow("Underflow dst") << 5 << 2 << -1 << false;
     QTest::newRow("Same place") << 5 << 2 << 2 << false;
     QTest::newRow("Up") << 5 << 4 << 2 << true;
     QTest::newRow("Down") << 5 << 2 << 4 << true;
+    QTest::newRow("QTBUG-6532 assert") << 5 << 0 << 1 << false;
+    QTest::newRow("QTBUG-6565 to the end") << 5 << 3 << 5 << true;
+    QTest::newRow("Same place 2") << 2 << 0 << 1 << false;
+    QTest::newRow("swap") << 2 << 0 << 2 << true;
+    QTest::newRow("swap2") << 4 << 1 << 3 << true;
+    QTest::newRow("swap3") << 4 << 3 << 2 << true;
+    QTest::newRow("swap4") << 2 << 1 << 0 << true;
 }
 
 void tst_QListWidget::moveItemsPriv()

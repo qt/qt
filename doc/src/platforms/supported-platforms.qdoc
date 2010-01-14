@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -89,8 +89,8 @@
                                      \o gcc (\l{http://www.codesourcery.com/}{Codesourcery version)}
     \row    \o Windows CE 5.0 (ARMv4i, x86, MIPS)
                                      \o MSVC 2005 WinCE 5.0 Standard (x86, pocket, smart, mipsii)
-    \row    \o Symbian (S60 3.1, 3.2 and 5.0)
-                                     \o RVCT, GCCE, WINSCW
+    \row    \o Symbian (Symbian/S60 3.1, 3.2 and 5.0)
+                                     \o RVCT 2.2 [build 686 or later], WINSCW 3.2.5 [build 482 or later], GCCE (for applications)
     \endtable
 
     \section1 Tier 2 Platforms
@@ -155,4 +155,21 @@
     warranties and conditions, either express or implied, including, but not limited to,
     implied warranties of merchantability, fitness for a particular purpose, title and
     non-infringement with regard to the Licensed Software.
+    
+    \section1 Planned Changes for Qt 4.7
+
+    The following changes to the list of supported platforms are at time of publishing
+    planned for Qt 4.7:
+
+    \list
+    \o Upgrade Windows 7 to Tier 1
+    \o Upgrade Mac OS X 10.6 to Tier 1
+    \o Add support for Visual Studio 2010 (Tier 2)
+    \o Move support for Carbon implementation of Qt on Mac OS X from Tier 1 to Tier 2
+    \o Drop support for MinGW 3.4
+    \o Drop support for Visual Studio 2003
+    \o Drop support for HP-UX on PA-RISC
+    \o Drop support for Windows Mobile 5
+    \o Drop support for OpenGL ES Common Lite 1.0
+    \endlist
 */

@@ -1,3 +1,2 @@
-TEMPLATE       =subdirs
-
-SUBDIRS			=  sub1
+TEMPLATE = subdirs
+SUBDIRS = sub1

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -357,7 +357,9 @@ QPixmap QPixmap::copy(const QRect &rect) const
     if (isNull())
         return QPixmap();
 
-    const QRect r = rect.isEmpty() ? QRect(0, 0, width(), height()) : rect;
+    QRect r(0, 0, width(), height());
+    if (!rect.isEmpty())
+        r = r.intersected(rect);
 
     QPixmapData *d = data->createCompatiblePixmapData();
     d->copy(data.data(), r);
@@ -831,14 +833,13 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     if (QPixmapCache::find(key, *this))
         return true;
 
-    if (!data)
-        data = QPixmapData::create(0, 0, QPixmapData::PixmapType);
-
-    if (data->fromFile(fileName, format, flags)) {
+    QPixmapData *tmp = QPixmapData::create(0, 0, QPixmapData::PixmapType);
+    if (tmp->fromFile(fileName, format, flags)) {
+        data = tmp;
         QPixmapCache::insert(key, *this);
         return true;
     }
-
+    delete tmp;
     return false;
 }
 
@@ -1165,7 +1166,7 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
 Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
-    if (data->classId() == QPixmapData::X11Class)
+    if (data && data->classId() == QPixmapData::X11Class)
         return static_cast<const QX11PixmapData*>(data.constData())->handle();
 #endif
     return 0;
@@ -1216,7 +1217,7 @@ QPixmap::QPixmap(const QImage& image)
     if (!qt_pixmap_thread_test())
         return;
 
-    if (data->pixelType() == QPixmapData::BitmapType)
+    if (data && data->pixelType() == QPixmapData::BitmapType)
         *this = QBitmap::fromImage(image);
     else
         *this = fromImage(image);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -375,6 +375,45 @@
 
     Some irrelevant member functions have been omitted from this
     example.
+
+    \section1 Signals And Slots With Default Arguments
+
+    The signatures of signals and slots may contain arguments, and the
+    arguments can have defualt values. Consider QObject::destroyed():
+
+    \code
+    void destroyed(QObject* = 0); 
+    \endcode
+
+    When a QObject is deleted, it emits this QObject::destroyed()
+    signal. We want to catch this signal, wherever we might have a
+    dangling reference to the deleted QObject, so we can clean it up.
+    A suitable slot signature might be:
+
+    \code
+    void objectDestroyed(QObject* obj = 0);
+    \endcode
+
+    To connect the signal to the slot, we use QObject::connect() and
+    the \c{SIGNAL()} and \c{SLOT()} macros. The rule about whether to
+    include arguments or not in the \c{SIGNAL()} and \c{SLOT()}
+    macros, if the arguments have default values, is that the
+    signature passed to the \c{SIGNAL()} macro must \e not have fewer
+    arguments than the signature passed to the \c{SLOT()} macro.
+
+    All of these would work:
+    \code
+    connect(sender, SIGNAL(destroyed(QObject*)), this, SLOT(objectDestroyed(Qbject*)));
+    connect(sender, SIGNAL(destroyed(QObject*)), this, SLOT(objectDestroyed()));
+    connect(sender, SIGNAL(destroyed()), this, SLOT(objectDestroyed()));
+    \endcode
+    But this one won't work:
+    \code
+    connect(sender, SIGNAL(destroyed()), this, SLOT(objectDestroyed(QObject*)));
+    \endcode
+
+    ...because the slot will be expecting a QObject that the signal
+    will not send. This connection will report a runtime error.
 
     \section1 Advanced Signals and Slots Usage
 

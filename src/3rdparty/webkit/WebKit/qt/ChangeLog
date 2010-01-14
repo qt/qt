@@ -1,3 +1,226 @@
+2009-12-18  Joe Ligman  <joseph.ligman@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Add new API to QWebFrame to scrollRecursively starting with any css overflow 
+        then checking current frame and then ancestors
+        https://bugs.webkit.org/show_bug.cgi?id=32668
+
+        * Api/qwebframe.cpp:
+        (QWebFramePrivate::scrollOverflow):
+        (QWebFrame::scrollRecursively):
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+        * tests/qwebframe/qwebframe.qrc:
+        * tests/qwebframe/testiframe.html: Added.
+        * tests/qwebframe/testiframe2.html: Added.
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2010-01-07  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Allow the application to override online/offline network status
+        https://bugs.webkit.org/show_bug.cgi?id=32684
+
+        Add a setting so that applications can overide the network status.
+        Applications that use this setting still need to block network access
+        through QNAM.
+
+        * Api/qwebsettings.cpp:
+        (qt_networkAccessAllowed):
+
+2010-01-07  Yongjun Zhang  <yongjun.zhang@nokia.com>, Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] need an API to suspend and resume active Javascript DOM objects.
+        https://bugs.webkit.org/show_bug.cgi?id=31673
+
+        Add suspend and resume DOM objects private API to QWebFrame.
+
+        * Api/qwebframe.cpp:
+        (qt_suspendActiveDOMObjects):
+        (qt_resumeActiveDOMObjects):
+
+2009-12-30  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Upstream Symbian def files from Qt 4.6.
+
+        These files define the ABI of QtWebKit on Symbian.
+
+        * symbian/bwins/QtWebKitu.def: Added.
+        * symbian/eabi/QtWebKitu.def: Added.
+
+2009-12-14  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Fix JavaScript prompt behavior for empty/null strings.
+        https://bugs.webkit.org/show_bug.cgi?id=30914
+
+        The patch is based on the work done by Gupta Manish.
+
+        In the default implementation of the JavaScript prompt
+        we are using a QInputDialog to get the text and this has
+        one quirk with regard to not entering any text.
+
+        In other WebKit ports and in Firefox an empty string is
+        returned but in the Qt case it is a null string.
+
+        Change the API documentation in QWebPage to mention we want to
+        have a non null string but do the fixup in the ChromeClientQt
+        to support existing code.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::javaScriptPrompt): Change API documentation
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::runJavaScriptPrompt): Fixup null QString
+
+2009-12-21  David Boddie  <dboddie@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Doc: Minor fixes to language.
+
+        * Api/qwebpage.cpp:
+
+2009-12-15  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Qt] Do not disable the inspector on show and hide
+        https://bugs.webkit.org/show_bug.cgi?id=31851
+
+        On Qt/X11 with some window managers the window will be
+        hidden when switching windows. In this case all the results
+        are gone when coming back to the window.
+
+        Attempt to use the CloseEvent to figure out if the window
+        was closed and withdrawn as this is more friendly to the
+        user of the inspector client.
+
+        * Api/qwebinspector.cpp:
+        (QWebInspector::event):
+        (QWebInspector::hideEvent):
+
+2009-12-13  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] Re-enable QWebView::renderHints property for Qt for Symbian
+
+        https://bugs.webkit.org/show_bug.cgi?id=28273
+
+        The bug in Qt's moc that triggered a linking error when declaring this
+        property has been fixed and we can remove the workaround.
+
+        * Api/qwebview.h:
+
+2009-11-30  Abhinav Mithal  <abhinav.mithal@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt][Symbian] Report SymbianOS in user agent string for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=31961
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl):
+
+2009-11-28  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] SoftwareInputPanelRequest event sent when clicking in newly loaded page
+
+        https://bugs.webkit.org/show_bug.cgi?id=31401
+
+        Don't set the event unless there is a focused node we can use
+        for editing afterwards.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::handleSoftwareInputPanel):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods):
+
+2009-11-23  David Boddie  <dboddie@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Updated the QWebElement documentation with links to examples and
+        external resources.
+        Fixed the project file for the webelement snippet and tidied up the
+        markers used for quoting the code.
+
+        * Api/qwebelement.cpp:
+        * docs/webkitsnippets/webelement/main.cpp:
+        (findAll):
+        * docs/webkitsnippets/webelement/webelement.pro:
+
+2009-11-23  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Wrong runtime instance objects of wrapped QObjects may be used if
+        the wrapped object died before the gc removed the instance.
+
+        https://bugs.webkit.org/show_bug.cgi?id=31681
+
+        Added a unit-test to verify that wrapping a QObject with the
+        same identity as a previously but now dead object works.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2009-11-19  Olivier Goffart  <ogoffart@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Normalize signal and slot signatures.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::setPage):
+        * Api/qwebview.cpp:
+        (QWebView::setPage):
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::setFrame):
+        * docs/webkitsnippets/qtwebkit_qwebinspector_snippet.cpp:
+        (wrapInFunction):
+        * tests/qwebframe/tst_qwebframe.cpp:
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::modified):
+        (tst_QWebPage::database):
+
+2009-11-18  Paul Olav Tvete  <paul.tvete@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Make the QWebElement::render() test pass when pixmaps aren't 32 bit.
+
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::render):
+
+2009-11-18  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Clarify and simplify the legal section in the overview documentation,
+        after review with our legal team.
+
+        * docs/qtwebkit.qdoc:
+
+2009-11-18  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed and suggested by Tor Arne Vestbø.
+
+        Fix the autotest after commit ecbb2c0dd21bfc197e1f7b53150ec9b1a1d8cb8f
+        to compare the Qt::ImFont property's family against an explicitly
+        previously configured family.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods):
+
 2009-11-16  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.

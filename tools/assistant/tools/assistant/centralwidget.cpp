@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -223,14 +223,14 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
     QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 
     vboxLayout->setMargin(0);
+    tabWidget = new QTabWidget(this);
 #ifndef Q_OS_MAC
     resourcePath.append(QLatin1String("win"));
 #else
     resourcePath.append(QLatin1String("mac"));
+    tabWidget->setDocumentMode(true);
 #endif
 
-    tabWidget = new QTabWidget(this);
-    tabWidget->setDocumentMode(true);
     connect(tabWidget, SIGNAL(currentChanged(int)), this,
         SLOT(currentPageChanged(int)));
 
@@ -1002,7 +1002,7 @@ void CentralWidget::updateBrowserFont()
 
     int i = searchAttached ? 1 : 0;
     getBrowserFontFor(tabWidget->widget(i), &font);
-    for (i; i < tabWidget->count(); ++i)
+    for ( ; i < tabWidget->count(); ++i)
         setBrowserFontFor(tabWidget->widget(i), font);
 }
 

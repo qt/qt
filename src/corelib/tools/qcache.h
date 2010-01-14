@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,8 +70,9 @@ class QCache
         if (l == &n) l = n.p;
         if (f == &n) f = n.n;
         total -= n.c;
-        delete n.t;
+        T *obj = n.t;
         hash.remove(*n.keyPtr);
+        delete obj;
     }
     inline T *relink(const Key &key) {
         typename QHash<Key, Node>::iterator i = hash.find(key);

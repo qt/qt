@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -171,11 +171,11 @@ Main::Main()
     splitter->addWidget(textBrowser);
     textBrowser->show();
 
-    connect(textBrowser, SIGNAL(featureClicked(const QString&)),
-            this, SLOT(showInfo(const QString&)));
+    connect(textBrowser, SIGNAL(featureClicked(QString)),
+            this, SLOT(showInfo(QString)));
     connect(featureTree, SIGNAL(activated(QModelIndex)),
 	    this, SLOT(showInfo(QModelIndex)));
-    connect(featureModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)),
+    connect(featureModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(modelChanged()));
     connect(featureTree, SIGNAL(clicked(QModelIndex)),
             this, SLOT(showInfo(QModelIndex)));
@@ -505,7 +505,7 @@ void Main::about()
 	"<p><b><font size=\"+2\">Qtopia Core build configuration</font></b></p>"
 	"<p></p>"
 	"<p>Version 2.0</p>"
-	"<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
+	"<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>"
 	"<p></p>"
     );
 }

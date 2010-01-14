@@ -158,8 +158,8 @@ void WTFLogVerbose(const char* file, int line, const char* function, WTFLogChann
 #define ASSERT(assertion) ((void)0)
 #if COMPILER(MSVC7)
 #define ASSERT_WITH_MESSAGE(assertion) ((void)0)
-#elif PLATFORM(SYMBIAN)
-#define ASSERT_WITH_MESSAGE(assertion...) ((void)0)
+#elif COMPILER(WINSCW)
+#define ASSERT_WITH_MESSAGE(assertion, arg...) ((void)0)
 #else
 #define ASSERT_WITH_MESSAGE(assertion, ...) ((void)0)
 #endif /* COMPILER(MSVC7) */
@@ -176,8 +176,8 @@ void WTFLogVerbose(const char* file, int line, const char* function, WTFLogChann
 while (0)
 #if COMPILER(MSVC7)
 #define ASSERT_WITH_MESSAGE(assertion) ((void)0)
-#elif PLATFORM(SYMBIAN)
-#define ASSERT_WITH_MESSAGE(assertion...) ((void)0)
+#elif COMPILER(WINSCW)
+#define ASSERT_WITH_MESSAGE(assertion, arg...) ((void)0)
 #else
 #define ASSERT_WITH_MESSAGE(assertion, ...) do \
     if (!(assertion)) { \
@@ -219,11 +219,11 @@ while (0)
 
 /* FATAL */
 
-#if FATAL_DISABLED && !COMPILER(MSVC7) && !PLATFORM(SYMBIAN)
+#if FATAL_DISABLED && !COMPILER(MSVC7) && !COMPILER(WINSCW)
 #define FATAL(...) ((void)0)
 #elif COMPILER(MSVC7)
 #define FATAL() ((void)0)
-#elif PLATFORM(SYMBIAN)
+#elif COMPILER(WINSCW)
 #define FATAL(args...) ((void)0)
 #else
 #define FATAL(...) do { \
@@ -234,24 +234,24 @@ while (0)
 
 /* LOG_ERROR */
 
-#if ERROR_DISABLED && !COMPILER(MSVC7) && !PLATFORM(SYMBIAN)
+#if ERROR_DISABLED && !COMPILER(MSVC7) && !COMPILER(WINSCW)
 #define LOG_ERROR(...) ((void)0)
 #elif COMPILER(MSVC7)
 #define LOG_ERROR() ((void)0)
-#elif PLATFORM(SYMBIAN)
-#define LOG_ERROR(args...) ((void)0)
+#elif COMPILER(WINSCW)
+#define LOG_ERROR(arg...)  ((void)0)
 #else
 #define LOG_ERROR(...) WTFReportError(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, __VA_ARGS__)
 #endif
 
 /* LOG */
 
-#if LOG_DISABLED && !COMPILER(MSVC7) && !PLATFORM(SYMBIAN)
+#if LOG_DISABLED && !COMPILER(MSVC7) && !COMPILER(WINSCW)
 #define LOG(channel, ...) ((void)0)
 #elif COMPILER(MSVC7)
 #define LOG() ((void)0)
-#elif PLATFORM(SYMBIAN)
-#define LOG(channel, args...) ((void)0)
+#elif COMPILER(WINSCW)
+#define LOG(arg...) ((void)0)
 #else
 #define LOG(channel, ...) WTFLog(&JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
 #define JOIN_LOG_CHANNEL_WITH_PREFIX(prefix, channel) JOIN_LOG_CHANNEL_WITH_PREFIX_LEVEL_2(prefix, channel)
@@ -260,12 +260,12 @@ while (0)
 
 /* LOG_VERBOSE */
 
-#if LOG_DISABLED && !COMPILER(MSVC7) && !PLATFORM(SYMBIAN)
+#if LOG_DISABLED && !COMPILER(MSVC7) && !COMPILER(WINSCW)
 #define LOG_VERBOSE(channel, ...) ((void)0)
 #elif COMPILER(MSVC7)
 #define LOG_VERBOSE(channel) ((void)0)
-#elif PLATFORM(SYMBIAN)
-#define LOG_VERBOSE(channel, args...) ((void)0)
+#elif COMPILER(WINSCW)
+#define LOG_VERBOSE(channel, arg...) ((void)0)
 #else
 #define LOG_VERBOSE(channel, ...) WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, &JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
 #endif

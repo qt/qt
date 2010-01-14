@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,6 +63,11 @@
 
 #if defined(Q_WS_X11)
 #include <limits.h>
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+#include <W32STD.H>
+#include <private/qt_s60_p.h>
 #endif
 
 //#define QABSTRACTSPINBOX_QSBDEBUG
@@ -939,10 +944,12 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
         d->edit->setCursorPosition(d->prefix.size());
 
     int steps = 1;
+    bool isPgUpOrDown = false;
     switch (event->key()) {
     case Qt::Key_PageUp:
     case Qt::Key_PageDown:
         steps *= 10;
+        isPgUpOrDown = true;
     case Qt::Key_Up:
     case Qt::Key_Down: {
 #ifdef QT_KEYPAD_NAVIGATION
@@ -964,7 +971,13 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
         if (style()->styleHint(QStyle::SH_SpinBox_AnimateButton, 0, this)) {
             d->buttonState = (Keyboard | (up ? Up : Down));
         }
-        stepBy(steps);
+        if (d->spinClickTimerId == -1)
+            stepBy(steps);
+        if(event->isAutoRepeat() && !isPgUpOrDown) {
+            if(d->spinClickThresholdTimerId == -1 && d->spinClickTimerId == -1) {
+                d->updateState(up, true);
+            }
+        }
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::updateAccessibility(this, 0, QAccessible::ValueChanged);
 #endif
@@ -1061,8 +1074,7 @@ void QAbstractSpinBox::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QAbstractSpinBox);
 
-    if (d->buttonState & Keyboard && !event->isAutoRepeat()
-        && style()->styleHint(QStyle::SH_SpinBox_AnimateButton, 0, this)) {
+    if (d->buttonState & Keyboard && !event->isAutoRepeat())  {
         d->reset();
     } else {
         d->edit->event(event);
@@ -1148,6 +1160,34 @@ void QAbstractSpinBox::hideEvent(QHideEvent *event)
     QWidget::hideEvent(event);
 }
 
+
+/*!
+    \internal
+
+    Used when acceleration is turned on. We need to get the
+    keyboard auto repeat rate from OS. This value is used as
+    argument when starting acceleration related timers.
+
+    Every platform should, either, use native calls to obtain
+    the value or hard code some reasonable rate.
+
+    Remember that time value should be given in msecs.
+*/
+static int getKeyboardAutoRepeatRate() {
+    int ret = 30;
+#if defined(Q_OS_SYMBIAN)
+    TTimeIntervalMicroSeconds32 initialTime;
+    TTimeIntervalMicroSeconds32 time;
+    S60->wsSession().GetKeyboardRepeatRate(initialTime, time);
+    ret = time.Int() / 1000; // msecs
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    DWORD time;
+    if (SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &time, 0) != FALSE)
+        ret = static_cast<int>(1000 / static_cast<int>(time)); // msecs
+#endif
+    return ret; // msecs
+}
+
 /*!
     \reimp
 */
@@ -1160,14 +1200,17 @@ void QAbstractSpinBox::timerEvent(QTimerEvent *event)
     if (event->timerId() == d->spinClickThresholdTimerId) {
         killTimer(d->spinClickThresholdTimerId);
         d->spinClickThresholdTimerId = -1;
-        d->spinClickTimerId = startTimer(d->spinClickTimerInterval);
+        d->effectiveSpinRepeatRate = d->buttonState & Keyboard
+                                     ? getKeyboardAutoRepeatRate()
+                                     : d->spinClickTimerInterval;
+        d->spinClickTimerId = startTimer(d->effectiveSpinRepeatRate);
         doStep = true;
     } else if (event->timerId() == d->spinClickTimerId) {
         if (d->accelerate) {
-            d->acceleration = d->acceleration + (int)(d->spinClickTimerInterval * 0.05);
-            if (d->spinClickTimerInterval - d->acceleration >= 10) {
+            d->acceleration = d->acceleration + (int)(d->effectiveSpinRepeatRate * 0.05);
+            if (d->effectiveSpinRepeatRate - d->acceleration >= 10) {
                 killTimer(d->spinClickTimerId);
-                d->spinClickTimerId = startTimer(d->spinClickTimerInterval - d->acceleration);
+                d->spinClickTimerId = startTimer(d->effectiveSpinRepeatRate - d->acceleration);
             }
         }
         doStep = true;
@@ -1308,8 +1351,8 @@ void QAbstractSpinBox::mouseReleaseEvent(QMouseEvent *event)
 QAbstractSpinBoxPrivate::QAbstractSpinBoxPrivate()
     : edit(0), type(QVariant::Invalid), spinClickTimerId(-1),
       spinClickTimerInterval(100), spinClickThresholdTimerId(-1), spinClickThresholdTimerInterval(-1),
-      buttonState(None), cachedText(QLatin1String("\x01")), cachedState(QValidator::Invalid),
-      pendingEmit(false), readOnly(false), wrapping(false),
+      effectiveSpinRepeatRate(1), buttonState(None), cachedText(QLatin1String("\x01")),
+      cachedState(QValidator::Invalid), pendingEmit(false), readOnly(false), wrapping(false),
       ignoreCursorPositionChanged(false), frame(true), accelerate(false), keyboardTracking(true),
       cleared(false), ignoreUpdateEdit(false), correctionMode(QAbstractSpinBox::CorrectToPreviousValue),
       acceleration(0), hoverControl(QStyle::SC_None), buttonSymbols(QAbstractSpinBox::UpDownArrows), validator(0)
@@ -1554,7 +1597,7 @@ void QAbstractSpinBoxPrivate::reset()
     Updates the state of the spinbox.
 */
 
-void QAbstractSpinBoxPrivate::updateState(bool up)
+void QAbstractSpinBoxPrivate::updateState(bool up, bool fromKeyboard /* = false */)
 {
     Q_Q(QAbstractSpinBox);
     if ((up && (buttonState & Up)) || (!up && (buttonState & Down)))
@@ -1563,7 +1606,7 @@ void QAbstractSpinBoxPrivate::updateState(bool up)
     if (q && (q->stepEnabled() & (up ? QAbstractSpinBox::StepUpEnabled
                                   : QAbstractSpinBox::StepDownEnabled))) {
         spinClickThresholdTimerId = q->startTimer(spinClickThresholdTimerInterval);
-        buttonState = (up ? (Mouse | Up) : (Mouse | Down));
+        buttonState = (up ? Up : Down) | (fromKeyboard ? Keyboard : Mouse);
         q->stepBy(up ? 1 : -1);
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::updateAccessibility(q, 0, QAccessible::ValueChanged);
@@ -1856,8 +1899,10 @@ QValidator::State QSpinBoxValidator::validate(QString &input, int &pos) const
     if (dptr->specialValueText.size() > 0 && input == dptr->specialValueText)
         return QValidator::Acceptable;
 
-    if (!dptr->prefix.isEmpty() && !input.startsWith(dptr->prefix))
+    if (!dptr->prefix.isEmpty() && !input.startsWith(dptr->prefix)) {
         input.prepend(dptr->prefix);
+        pos += dptr->prefix.length();
+    }
 
     if (!dptr->suffix.isEmpty() && !input.endsWith(dptr->suffix))
         input.append(dptr->suffix);

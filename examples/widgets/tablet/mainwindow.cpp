@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -169,8 +169,8 @@ void MainWindow::createActions()
     alphaChannelGroup->addAction(alphaChannelPressureAction);
     alphaChannelGroup->addAction(alphaChannelTiltAction);
     alphaChannelGroup->addAction(noAlphaChannelAction);
-    connect(alphaChannelGroup, SIGNAL(triggered(QAction *)),
-            this, SLOT(alphaActionTriggered(QAction *)));
+    connect(alphaChannelGroup, SIGNAL(triggered(QAction*)),
+            this, SLOT(alphaActionTriggered(QAction*)));
 
 //! [9]
     colorSaturationVTiltAction = new QAction(tr("&Vertical Tilt"), this);
@@ -191,8 +191,8 @@ void MainWindow::createActions()
     colorSaturationGroup->addAction(colorSaturationHTiltAction);
     colorSaturationGroup->addAction(colorSaturationPressureAction);
     colorSaturationGroup->addAction(noColorSaturationAction);
-    connect(colorSaturationGroup, SIGNAL(triggered(QAction *)),
-            this, SLOT(saturationActionTriggered(QAction *)));
+    connect(colorSaturationGroup, SIGNAL(triggered(QAction*)),
+            this, SLOT(saturationActionTriggered(QAction*)));
 
     lineWidthPressureAction = new QAction(tr("&Pressure"), this);
     lineWidthPressureAction->setCheckable(true);
@@ -208,8 +208,8 @@ void MainWindow::createActions()
     lineWidthGroup->addAction(lineWidthPressureAction);
     lineWidthGroup->addAction(lineWidthTiltAction);
     lineWidthGroup->addAction(lineWidthFixedAction);
-    connect(lineWidthGroup, SIGNAL(triggered(QAction *)),
-            this, SLOT(lineWidthActionTriggered(QAction *)));
+    connect(lineWidthGroup, SIGNAL(triggered(QAction*)),
+            this, SLOT(lineWidthActionTriggered(QAction*)));
 
     exitAction = new QAction(tr("E&xit"), this);
     exitAction->setShortcuts(QKeySequence::Quit);

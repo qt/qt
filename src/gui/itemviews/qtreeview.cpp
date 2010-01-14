@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -178,7 +178,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Constructs a table view with a \a parent to represent a model's
+    Constructs a tree view with a \a parent to represent a model's
     data. Use setModel() to set the model.
 
     \sa QAbstractItemModel
@@ -215,6 +215,13 @@ void QTreeView::setModel(QAbstractItemModel *model)
     Q_D(QTreeView);
     if (model == d->model)
         return;
+    if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
+        disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                this, SLOT(rowsRemoved(QModelIndex,int,int)));
+
+        disconnect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_modelAboutToBeReset()));
+    }
+
     if (d->selectionModel) { // support row editing
         disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
                    d->model, SLOT(submit()));
@@ -838,10 +845,10 @@ void QTreeView::setSortingEnabled(bool enable)
         // because otherwise it will not call sort on the model.
         sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
         connect(header(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                this, SLOT(_q_sortIndicatorChanged(int, Qt::SortOrder)), Qt::UniqueConnection);
+                this, SLOT(_q_sortIndicatorChanged(int,Qt::SortOrder)), Qt::UniqueConnection);
     } else {
         disconnect(header(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                   this, SLOT(_q_sortIndicatorChanged(int, Qt::SortOrder)));
+                   this, SLOT(_q_sortIndicatorChanged(int,Qt::SortOrder)));
     }
     d->sortingEnabled = enable;
 }
@@ -1232,15 +1239,6 @@ bool QTreeView::viewportEvent(QEvent *event)
                 //moves the mouse over those elements they are updated
                 viewport()->update(oldRect);
                 viewport()->update(newRect);
-            }
-        }
-        if (selectionBehavior() == QAbstractItemView::SelectRows) {
-            QModelIndex newHoverIndex = indexAt(he->pos());
-            if (d->hover != newHoverIndex) {
-                QRect oldHoverRect = visualRect(d->hover);
-                QRect newHoverRect = visualRect(newHoverIndex);
-                viewport()->update(QRect(0, newHoverRect.y(), viewport()->width(), newHoverRect.height()));
-                viewport()->update(QRect(0, oldHoverRect.y(), viewport()->width(), oldHoverRect.height()));
             }
         }
         break; }
@@ -2637,10 +2635,13 @@ void QTreeView::selectAll()
         return;
     SelectionMode mode = d->selectionMode;
     d->executePostedLayout(); //make sure we lay out the items
-    if (mode != SingleSelection && !d->viewItems.isEmpty())
-        d->select(d->viewItems.first().index, d->viewItems.last().index,
+    if (mode != SingleSelection && !d->viewItems.isEmpty()) {
+        const QModelIndex &idx = d->viewItems.last().index;
+        QModelIndex lastItemIndex = idx.sibling(idx.row(), d->model->columnCount(idx.parent()) - 1);
+        d->select(d->viewItems.first().index, lastItemIndex,
                   QItemSelectionModel::ClearAndSelect
                   |QItemSelectionModel::Rows);
+    }
 }
 
 /*!
@@ -2767,6 +2768,7 @@ int QTreeView::sizeHintForColumn(int column) const
     d->executePostedLayout();
     if (d->viewItems.isEmpty())
         return -1;
+    ensurePolished();
     int w = 0;
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
     const QVector<QTreeViewItem> viewItems = d->viewItems;
@@ -3056,6 +3058,8 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
 {
     Q_Q(const QTreeView);
     QPixmap pixmap(rect.size());
+    if (rect.size().isEmpty())
+        return pixmap;
     pixmap.fill(Qt::transparent); //the base might not be opaque, and we don't want uninitialized pixels.
     QPainter painter(&pixmap);
     painter.fillRect(QRect(QPoint(0,0), rect.size()), q->palette().base());

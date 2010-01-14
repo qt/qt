@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1367,10 +1367,13 @@ qreal QFontMetricsF::rightBearing(QChar ch) const
 */
 qreal QFontMetricsF::width(const QString &text) const
 {
+    int pos = text.indexOf(QLatin1Char('\x9c'));
+    int len = (pos != -1) ? pos : text.length();
+
     QTextEngine layout(text, d.data());
     layout.ignoreBidi = true;
     layout.itemize();
-    return layout.width(0, text.length()).toReal();
+    return layout.width(0, len).toReal();
 }
 
 /*!
@@ -1587,7 +1590,7 @@ QRectF QFontMetricsF::boundingRect(const QRectF &rect, int flags, const QString&
 */
 QSizeF QFontMetricsF::size(int flags, const QString &text, int tabStops, int *tabArray) const
 {
-    return boundingRect(QRectF(), flags, text, tabStops, tabArray).size();
+    return boundingRect(QRectF(), flags | Qt::TextLongestVariant, text, tabStops, tabArray).size();
 }
 
 /*!
@@ -1642,7 +1645,20 @@ QRectF QFontMetricsF::tightBoundingRect(const QString &text) const
 */
 QString QFontMetricsF::elidedText(const QString &text, Qt::TextElideMode mode, qreal width, int flags) const
 {
-    QStackTextEngine engine(text, QFont(d.data()));
+    QString _text = text;
+    if (!(flags & Qt::TextLongestVariant)) {
+        int posA = 0;
+        int posB = _text.indexOf(QLatin1Char('\x9c'));
+        while (posB >= 0) {
+            QString portion = _text.mid(posA, posB - posA);
+            if (size(flags, portion).width() <= width)
+                return portion;
+            posA = posB + 1;
+            posB = _text.indexOf(QLatin1Char('\x9c'), posA);
+        }
+        _text = _text.mid(posA);
+    }
+    QStackTextEngine engine(_text, QFont(d.data()));
     return engine.elidedText(mode, QFixed::fromReal(width), flags);
 }
 

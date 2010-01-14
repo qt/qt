@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,8 +67,8 @@ public:
         : QTreeWidget(parent)
     {
         header()->hide();
-        connect(this, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
-            this, SLOT(itemActivated(QTreeWidgetItem*, int)));
+        connect(this, SIGNAL(itemActivated(QTreeWidgetItem*,int)),
+            this, SLOT(itemActivated(QTreeWidgetItem*,int)));
     }
 
     void showResultPage(const QList<QHelpSearchEngine::SearchHit> hits)
@@ -99,8 +99,8 @@ public:
     QCLuceneResultWidget(QWidget *parent = 0)
         : QTextBrowser(parent)
     {
-        connect(this, SIGNAL(anchorClicked(const QUrl&)),
-            this, SIGNAL(requestShowLink(const QUrl&)));
+        connect(this, SIGNAL(anchorClicked(QUrl)),
+            this, SIGNAL(requestShowLink(QUrl)));
         setContextMenuPolicy(Qt::NoContextMenu);
     }
 
@@ -385,8 +385,8 @@ QHelpSearchResultWidget::QHelpSearchResultWidget(QHelpSearchEngine *engine)
     d->resultTextBrowser = new QCLuceneResultWidget(this);
     vLayout->addWidget(d->resultTextBrowser);
 
-    connect(d->resultTextBrowser, SIGNAL(requestShowLink(const QUrl&)), this,
-        SIGNAL(requestShowLink(const QUrl&)));
+    connect(d->resultTextBrowser, SIGNAL(requestShowLink(QUrl)), this,
+        SIGNAL(requestShowLink(QUrl)));
 
     connect(d->nextResultPage, SIGNAL(clicked()), d, SLOT(showNextResultPage()));
     connect(d->lastResultPage, SIGNAL(clicked()), d, SLOT(showLastResultPage()));
@@ -401,8 +401,8 @@ QHelpSearchResultWidget::QHelpSearchResultWidget(QHelpSearchEngine *engine)
 #else
     d->resultTreeWidget = new QDefaultResultWidget(this);
     vLayout->addWidget(d->resultTreeWidget);
-    connect(d->resultTreeWidget, SIGNAL(requestShowLink(const QUrl&)), this,
-        SIGNAL(requestShowLink(const QUrl&)));
+    connect(d->resultTreeWidget, SIGNAL(requestShowLink(QUrl)), this,
+        SIGNAL(requestShowLink(QUrl)));
 #endif
 
     connect(engine, SIGNAL(searchingFinished(int)), d, SLOT(setResults(int)));

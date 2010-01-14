@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,7 +102,9 @@ public:
 
     bool isInvertible() const { return !qFuzzyIsNull(_m11*_m22 - _m12*_m21); }
     qreal determinant() const { return _m11*_m22 - _m12*_m21; }
+#ifdef QT_DEPRECATED
     QT_DEPRECATED qreal det() const { return _m11*_m22 - _m12*_m21; }
+#endif
 
     QMatrix inverted(bool *invertible = 0) const;
 

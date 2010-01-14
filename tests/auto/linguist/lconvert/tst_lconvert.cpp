@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -213,6 +213,7 @@ void tst_lconvert::readverifies_data()
     QTest::newRow("relative locations") << "relative.ts" << "ts";
     QTest::newRow("message ids") << "msgid.ts" << "ts";
     QTest::newRow("length variants") << "variants.ts" << "ts";
+    QTest::newRow("qph") << "phrasebook.qph" << "qph";
 }
 
 void tst_lconvert::readverifies()

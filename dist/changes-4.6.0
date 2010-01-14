@@ -73,6 +73,8 @@ New features
    * Support for getting return arguments in remote method invocation
      via QMetaMethod::invokeMethod.
 
+ - The QtScript module is now based on the 3rdparty JavaScriptCore library. It
+   is only available under the LGPL or a compatible license.
 
 Optimizations
 -------------
@@ -89,9 +91,14 @@ Optimizations
 
 QtCore
 ------
+ - QAbstractItemModel
+    * [MR#972] Added API to move items
+    * [MR#1072] Added function beginResetModel() / endResetModel()
+
 
  - QByteArray
     * New overloads for QByteArray::insert() and QByteArray::prepend().
+    * [MR#1286] Added value_type typedef for STL compatibility
 
  - QEventDispatcherGlib (internal class)
     * Fix a regression introduced in 4.5.3 that would cause timers to not
@@ -193,6 +200,8 @@ QtGui
  - QAbstractItemView
     * [256502] Fixes selectionModel::hasSelection return value after
       model::reset.
+    * [MR#1426] Fixes some issues with Shift-selection
+    * [MR#1668] New QAbstractItemView::setDefaultDropAction
 
  - QApplication
     * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
@@ -315,6 +324,7 @@ QtGui
  - QListView
     * [243335] Fixed the visualRect to return correct values when the widget is
       not yet shown.
+    * [MR#666] Fixed selection with Shift-Arrow/Shift-Click in QListView's IconMode
 
  - QMainWindow
     * [226060] Adding actions to a toolbar would always make the next toolbar
@@ -420,6 +430,9 @@ QtGui
     * [240325] Even with wrap mode set to Qt::TextWordWrap, the layout
       would sometimes break outside word boundaries when floating objects
       affected the width available to the text.
+    * [MR#681] Added support for roman numbering for lists
+    * [MR#1753] Fixed escaping HTML attributes QTextDocument::toHtml()
+
 
  - QTextLayout
     * [QTBUG-4468] Count tabs as multiple characters when applying a fixed
@@ -441,6 +454,7 @@ QtGui
 
  - QTreeWidget
     * [253109] Shows the widget when calling setItemWidget.
+    * [MR#1393] Use stable sorting.
 
  - QWidget
     * Added inputMethodHints property.
@@ -610,7 +624,7 @@ QtWebKit
 
  - QWebElement
    * New class; introduced to implement DOM like operations on a web page.
- 
+
  - QWebFrame
    * New properties for an URL and a focus management.
    * New signals delivering current loading status.
@@ -858,17 +872,17 @@ Qt for Embedded Linux
 
  - Phonon on Windows
    * Now much more reliable when reading a file through a QIODevice.
-   * If Video Mixing Renderer 9 is not available, falls back to software 
+   * If Video Mixing Renderer 9 is not available, falls back to software
      rendering.
    * Fixed a flicker issue when switching source with a transition time of 0
-   
- - [QTBUG-3620] Fixed bug on X11 that caused bitmap fonts to become so small 
-   it was unreadable when printed or presented in a print preview widget. 
-   
- - [QTBUG-4445] Fixed bug on Windows that caused problems when printing 
-   text where several characters were represented by a single glyph, e.g. 
+
+ - [QTBUG-3620] Fixed bug on X11 that caused bitmap fonts to become so small
+   it was unreadable when printed or presented in a print preview widget.
+
+ - [QTBUG-4445] Fixed bug on Windows that caused problems when printing
+   text where several characters were represented by a single glyph, e.g.
    a double 't' with the Calibri font.
-   
+
  - EGL and OpenGL/ES
    * Protect the use of version-specific EGL symbols with #ifdef's.
    * Make sure an EGL context is current when resolving GL extensions.
@@ -1152,4 +1166,11 @@ Qt for Windows CE
 
     X11: LIBS += -lX11
     Mac: LIBS += -framework AppKit -framework Carbon
+
+- QtScript: Behavior changes due to using JavaScriptCore in the back-end:
+  * QDateTime is no longer used for date parsing and string conversion of
+    Date objects; instead the (more compliant) date processing from
+    JavaScriptCore is used.
+  * RegExp objects are no longer thin wrappers around QRegExp; they are now
+    "proper" JavaScript RegExp objects.
 

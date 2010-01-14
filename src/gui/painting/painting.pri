@@ -390,6 +390,13 @@ symbian {
         QMAKE_CXXFLAGS.ARMCC *= -O3
 }
 
+neon {
+    DEFINES += QT_HAVE_NEON
+    HEADERS += painting/qdrawhelper_neon_p.h
+    SOURCES += painting/qdrawhelper_neon.cpp
+    QMAKE_CXXFLAGS *= -mfpu=neon
+}
+
 contains(QT_CONFIG, zlib) {
    INCLUDEPATH += ../3rdparty/zlib
 } else:!contains(QT_CONFIG, no-zlib) {

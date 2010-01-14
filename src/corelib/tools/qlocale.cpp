@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1187,14 +1187,14 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     }
     case DateFormatLong:
     case DateFormatShort:
-        return macToQtFormat(getMacDateFormat(type == DateFormatShort
+        return getMacDateFormat(type == DateFormatShort
                                 ? kCFDateFormatterShortStyle
-                                : kCFDateFormatterLongStyle));
+                                : kCFDateFormatterLongStyle);
     case TimeFormatLong:
     case TimeFormatShort:
-        return macToQtFormat(getMacTimeFormat(type == TimeFormatShort
+        return getMacTimeFormat(type == TimeFormatShort
                                 ? kCFDateFormatterShortStyle
-                                : kCFDateFormatterLongStyle));
+                                : kCFDateFormatterLongStyle);
     case DayNameLong:
     case DayNameShort:
         return macDayName(in.toInt(), (type == DayNameShort));

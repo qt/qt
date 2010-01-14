@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,7 +70,7 @@ class Q_CORE_EXPORT QStateMachine : public QState
     Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
 #endif
 public:
-    class SignalEvent : public QEvent
+    class Q_CORE_EXPORT SignalEvent : public QEvent
     {
     public:
         SignalEvent(QObject *sender, int signalIndex,
@@ -89,7 +89,7 @@ public:
         friend class QSignalTransitionPrivate;
     };
 
-    class WrappedEvent : public QEvent
+    class Q_CORE_EXPORT WrappedEvent : public QEvent
     {
     public:
         WrappedEvent(QObject *object, QEvent *event);

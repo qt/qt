@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -421,20 +421,20 @@ void QtGradientStopsWidget::setGradientStopsModel(QtGradientStopsModel *model)
         return;
 
     if (d_ptr->m_model) {
-        disconnect(d_ptr->m_model, SIGNAL(stopAdded(QtGradientStop *)),
-                    this, SLOT(slotStopAdded(QtGradientStop *)));
-        disconnect(d_ptr->m_model, SIGNAL(stopRemoved(QtGradientStop *)),
-                    this, SLOT(slotStopRemoved(QtGradientStop *)));
-        disconnect(d_ptr->m_model, SIGNAL(stopMoved(QtGradientStop *, qreal)),
-                    this, SLOT(slotStopMoved(QtGradientStop *, qreal)));
-        disconnect(d_ptr->m_model, SIGNAL(stopsSwapped(QtGradientStop *, QtGradientStop *)),
-                    this, SLOT(slotStopsSwapped(QtGradientStop *, QtGradientStop *)));
-        disconnect(d_ptr->m_model, SIGNAL(stopChanged(QtGradientStop *, const QColor &)),
-                    this, SLOT(slotStopChanged(QtGradientStop *, const QColor &)));
-        disconnect(d_ptr->m_model, SIGNAL(stopSelected(QtGradientStop *, bool)),
-                    this, SLOT(slotStopSelected(QtGradientStop *, bool)));
-        disconnect(d_ptr->m_model, SIGNAL(currentStopChanged(QtGradientStop *)),
-                    this, SLOT(slotCurrentStopChanged(QtGradientStop *)));
+        disconnect(d_ptr->m_model, SIGNAL(stopAdded(QtGradientStop*)),
+                    this, SLOT(slotStopAdded(QtGradientStop*)));
+        disconnect(d_ptr->m_model, SIGNAL(stopRemoved(QtGradientStop*)),
+                    this, SLOT(slotStopRemoved(QtGradientStop*)));
+        disconnect(d_ptr->m_model, SIGNAL(stopMoved(QtGradientStop*,qreal)),
+                    this, SLOT(slotStopMoved(QtGradientStop*,qreal)));
+        disconnect(d_ptr->m_model, SIGNAL(stopsSwapped(QtGradientStop*,QtGradientStop*)),
+                    this, SLOT(slotStopsSwapped(QtGradientStop*,QtGradientStop*)));
+        disconnect(d_ptr->m_model, SIGNAL(stopChanged(QtGradientStop*,QColor)),
+                    this, SLOT(slotStopChanged(QtGradientStop*,QColor)));
+        disconnect(d_ptr->m_model, SIGNAL(stopSelected(QtGradientStop*,bool)),
+                    this, SLOT(slotStopSelected(QtGradientStop*,bool)));
+        disconnect(d_ptr->m_model, SIGNAL(currentStopChanged(QtGradientStop*)),
+                    this, SLOT(slotCurrentStopChanged(QtGradientStop*)));
 
         d_ptr->m_stops.clear();
     }
@@ -442,20 +442,20 @@ void QtGradientStopsWidget::setGradientStopsModel(QtGradientStopsModel *model)
     d_ptr->m_model = model;
 
     if (d_ptr->m_model) {
-        connect(d_ptr->m_model, SIGNAL(stopAdded(QtGradientStop *)),
-                    this, SLOT(slotStopAdded(QtGradientStop *)));
-        connect(d_ptr->m_model, SIGNAL(stopRemoved(QtGradientStop *)),
-                    this, SLOT(slotStopRemoved(QtGradientStop *)));
-        connect(d_ptr->m_model, SIGNAL(stopMoved(QtGradientStop *, qreal)),
-                    this, SLOT(slotStopMoved(QtGradientStop *, qreal)));
-        connect(d_ptr->m_model, SIGNAL(stopsSwapped(QtGradientStop *, QtGradientStop *)),
-                    this, SLOT(slotStopsSwapped(QtGradientStop *, QtGradientStop *)));
-        connect(d_ptr->m_model, SIGNAL(stopChanged(QtGradientStop *, const QColor &)),
-                    this, SLOT(slotStopChanged(QtGradientStop *, const QColor &)));
-        connect(d_ptr->m_model, SIGNAL(stopSelected(QtGradientStop *, bool)),
-                    this, SLOT(slotStopSelected(QtGradientStop *, bool)));
-        connect(d_ptr->m_model, SIGNAL(currentStopChanged(QtGradientStop *)),
-                    this, SLOT(slotCurrentStopChanged(QtGradientStop *)));
+        connect(d_ptr->m_model, SIGNAL(stopAdded(QtGradientStop*)),
+                    this, SLOT(slotStopAdded(QtGradientStop*)));
+        connect(d_ptr->m_model, SIGNAL(stopRemoved(QtGradientStop*)),
+                    this, SLOT(slotStopRemoved(QtGradientStop*)));
+        connect(d_ptr->m_model, SIGNAL(stopMoved(QtGradientStop*,qreal)),
+                    this, SLOT(slotStopMoved(QtGradientStop*,qreal)));
+        connect(d_ptr->m_model, SIGNAL(stopsSwapped(QtGradientStop*,QtGradientStop*)),
+                    this, SLOT(slotStopsSwapped(QtGradientStop*,QtGradientStop*)));
+        connect(d_ptr->m_model, SIGNAL(stopChanged(QtGradientStop*,QColor)),
+                    this, SLOT(slotStopChanged(QtGradientStop*,QColor)));
+        connect(d_ptr->m_model, SIGNAL(stopSelected(QtGradientStop*,bool)),
+                    this, SLOT(slotStopSelected(QtGradientStop*,bool)));
+        connect(d_ptr->m_model, SIGNAL(currentStopChanged(QtGradientStop*)),
+                    this, SLOT(slotCurrentStopChanged(QtGradientStop*)));
 
         QList<QtGradientStop *> stops = d_ptr->m_model->stops().values();
         QListIterator<QtGradientStop *> itStop(stops);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,11 +54,18 @@
 #include <QtCore/QStringList>
 #include <QtCore/QTextCodec>
 
+#include <iostream>
+
 static QString m_defaultExtensions;
+
+static void printErr(const QString & out)
+{
+    qWarning("%s", qPrintable(out));
+}
 
 static void printOut(const QString & out)
 {
-    qWarning("%s", qPrintable(out));
+    std::cerr << qPrintable(out);
 }
 
 static void recursiveFileInfoList(const QDir &dir,
@@ -137,7 +144,7 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
         cd.m_sortContexts = !(options & NoSort);
         if (QFile(fileName).exists()) {
             if (!tor.load(fileName, cd, QLatin1String("auto"))) {
-                printOut(cd.error());
+                printErr(cd.error());
                 *fail = true;
                 continue;
             }
@@ -197,11 +204,11 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
 
         out.normalizeTranslations(cd);
         if (!cd.errors().isEmpty()) {
-            printOut(cd.error());
+            printErr(cd.error());
             cd.clearErrors();
         }
         if (!out.save(fileName, cd, QLatin1String("auto"))) {
-            printOut(cd.error());
+            printErr(cd.error());
             *fail = true;
         }
     }
@@ -230,17 +237,11 @@ int main(int argc, char **argv)
         Verbose | // verbose is on by default starting with Qt 4.2
         HeuristicSameText | HeuristicSimilarText | HeuristicNumber;
     int numFiles = 0;
-    bool standardSyntax = true;
     bool metTsFlag = false;
     bool recursiveScan = true;
 
     QString extensions = m_defaultExtensions;
     QSet<QString> extensionsNameFilters;
-
-    for (int  i = 1; i < argc; ++i) {
-        if (args.at(i) == QLatin1String("-ts"))
-            standardSyntax = false;
-    }
 
     for (int i = 1; i < argc; ++i) {
         QString arg = args.at(i);
@@ -368,8 +369,6 @@ int main(int argc, char **argv)
 
         numFiles++;
 
-        QString fullText;
-
         codecForTr.clear();
         codecForSource.clear();
 
@@ -494,6 +493,7 @@ int main(int argc, char **argv)
             if (!tmp.isEmpty() && !tmp.first().isEmpty()) {
                 codecForTr = tmp.first().toLatin1();
                 fetchedTor.setCodecName(codecForTr);
+                cd.m_outputCodec = codecForTr;
             }
             tmp = variables.value("CODECFORSRC");
             if (!tmp.isEmpty() && !tmp.first().isEmpty()) {

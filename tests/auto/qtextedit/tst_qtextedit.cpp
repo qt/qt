@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -200,6 +200,7 @@ private slots:
     void pasteFromQt3RichText();
     void noWrapBackgrounds();
     void preserveCharFormatAfterUnchangingSetPosition();
+    void twoSameInputMethodEvents();
 
 private:
     void createSelection();
@@ -2181,6 +2182,24 @@ void tst_QTextEdit::preserveCharFormatAfterUnchangingSetPosition()
     edit.setTextCursor(c);
 
     QCOMPARE(edit.textColor(), color);
+}
+
+// Regression test for QTBUG-4696
+void tst_QTextEdit::twoSameInputMethodEvents()
+{
+    ed->setText("testLine");
+    ed->show();
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor,
+                                                   ed->textCursor().position(),
+                                                   0,
+                                                   QVariant()));
+
+    QInputMethodEvent event("PreEditText", attributes);
+    QApplication::sendEvent(ed, &event);
+    QCOMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
+    QApplication::sendEvent(ed, &event);
+    QCOMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
 }
 
 QTEST_MAIN(tst_QTextEdit)

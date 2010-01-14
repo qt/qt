@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -266,8 +266,8 @@ void QPrintDialogPrivate::setupDestination()
 
     // print destinations
     printerOrFile = new QButtonGroup(q);
-    QObject::connect(printerOrFile, SIGNAL(buttonClicked(QAbstractButton *)),
-            q, SLOT(_q_printerOrFileSelected(QAbstractButton *)));
+    QObject::connect(printerOrFile, SIGNAL(buttonClicked(QAbstractButton*)),
+            q, SLOT(_q_printerOrFileSelected(QAbstractButton*)));
 
     printToPrinterButton = q->findChild<QRadioButton *>("printToPrinterButton");
     printerOrFile->addButton(printToPrinterButton);
@@ -288,8 +288,8 @@ void QPrintDialogPrivate::setupPrinterSettings()
 
     // color mode
     colorMode = new QButtonGroup(q);
-    QObject::connect(colorMode, SIGNAL(buttonClicked(QAbstractButton *)),
-        q, SLOT(_q_colorModeSelected(QAbstractButton *)));
+    QObject::connect(colorMode, SIGNAL(buttonClicked(QAbstractButton*)),
+        q, SLOT(_q_colorModeSelected(QAbstractButton*)));
 
     printColor = q->findChild<QRadioButton *>("printColor");
     colorMode->addButton(printColor);

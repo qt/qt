@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,7 +49,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QDebug>
 
-#include <qdbus_symbols_p.h>          // for the DBUS_* constants
+#include "qdbus_symbols_p.h"          // for the DBUS_* constants
 
 QT_BEGIN_NAMESPACE
 
@@ -394,6 +394,12 @@ void QDBusConnectionInterface::disconnectNotify(const char *signalName)
     empty string, it means the name \a name has just been created; if
     \a newOwner is empty, the name \a name has no current owner and is
     no longer available.
+
+    \note connecting to this signal will make the application listen for and
+    receive every single service ownership change on the bus. Depending on
+    how many services are running, this make the application be activated to
+    receive more signals than it needs. To avoid this problem, use the
+    QDBusServiceWatcher class, which can listen for specific changes.
 */
 
 /*!

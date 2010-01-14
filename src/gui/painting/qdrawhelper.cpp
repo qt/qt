@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,7 @@
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
 #include <private/qdrawhelper_armv6_p.h>
+#include <private/qdrawhelper_neon_p.h>
 #include <private/qmath_p.h>
 #include <qmath.h>
 
@@ -1182,7 +1183,7 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
         rx -= data->gradient.conical.center.x;
         ry -= data->gradient.conical.center.y;
         while (buffer < end) {
-            qreal angle = atan2(ry, rx) + data->gradient.conical.angle;
+            qreal angle = qAtan2(ry, rx) + data->gradient.conical.angle;
 
             *buffer = qt_gradient_pixel(&data->gradient, 1 - angle / (2*Q_PI));
 
@@ -1196,7 +1197,7 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
         if (!rw)
             rw = 1;
         while (buffer < end) {
-            qreal angle = atan2(ry/rw - data->gradient.conical.center.x,
+            qreal angle = qAtan2(ry/rw - data->gradient.conical.center.x,
                                 rx/rw - data->gradient.conical.center.y)
                           + data->gradient.conical.angle;
 
@@ -1363,7 +1364,10 @@ static void QT_FASTCALL comp_func_SourceOver(uint *dest, const uint *src, int le
         for (int i = 0; i < length; ++i) {
             PRELOAD_COND2(dest, src)
             uint s = src[i];
-            dest[i] = s + BYTE_MUL(dest[i], qAlpha(~s));
+            if (s >= 0xff000000)
+                dest[i] = s;
+            else if (s != 0)
+                dest[i] = s + BYTE_MUL(dest[i], qAlpha(~s));
         }
     } else {
         for (int i = 0; i < length; ++i) {
@@ -7140,17 +7144,17 @@ void qt_build_pow_tables() {
     }
 #else
     for (int i=0; i<256; ++i) {
-        qt_pow_rgb_gamma[i] = uchar(qRound(pow(i / qreal(255.0), smoothing) * 255));
-        qt_pow_rgb_invgamma[i] = uchar(qRound(pow(i / qreal(255.), 1 / smoothing) * 255));
+        qt_pow_rgb_gamma[i] = uchar(qRound(qPow(i / qreal(255.0), smoothing) * 255));
+        qt_pow_rgb_invgamma[i] = uchar(qRound(qPow(i / qreal(255.), 1 / smoothing) * 255));
     }
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     const qreal gray_gamma = 2.31;
     for (int i=0; i<256; ++i)
-        qt_pow_gamma[i] = uint(qRound(pow(i / qreal(255.), gray_gamma) * 2047));
+        qt_pow_gamma[i] = uint(qRound(qPow(i / qreal(255.), gray_gamma) * 2047));
     for (int i=0; i<2048; ++i)
-        qt_pow_invgamma[i] = uchar(qRound(pow(i / 2047.0, 1 / gray_gamma) * 255));
+        qt_pow_invgamma[i] = uchar(qRound(qPow(i / 2047.0, 1 / gray_gamma) * 255));
 #endif
 }
 
@@ -7725,7 +7729,8 @@ enum CPUFeatures {
     SSE         = 0x10,
     SSE2        = 0x20,
     CMOV        = 0x40,
-    IWMMXT      = 0x80
+    IWMMXT      = 0x80,
+    NEON        = 0x100
 };
 
 static uint detectCPUFeatures()
@@ -7751,6 +7756,9 @@ static uint detectCPUFeatures()
     // runtime detection only available when running as a previlegied process
     static const bool doIWMMXT = !qgetenv("QT_NO_IWMMXT").toInt();
     return doIWMMXT ? IWMMXT : 0;
+#elif defined(QT_HAVE_NEON)
+    static const bool doNEON = !qgetenv("QT_NO_NEON").toInt();
+    return doNEON ? NEON : 0;
 #else
     uint features = 0;
 #if defined(__x86_64__) || defined(Q_OS_WIN64)
@@ -8122,7 +8130,14 @@ void qInitDrawhelperAsm()
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_armv6;
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
-#endif // Q_CC_RVCT && QT_HAVE_ARMV6
+#elif defined(QT_HAVE_NEON)
+        if (features & NEON) {
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
+        }
+#endif
 
     if (functionForModeSolidAsm) {
         const int destinationMode = QPainter::CompositionMode_Destination;

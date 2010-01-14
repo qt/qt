@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,11 +66,9 @@
 #include <qplatformdefs.h>
 #include <qhostinfo.h>
 
-#ifdef TEST_QNETWORK_PROXY
-# include <QNetworkProxy>
+#include <QNetworkProxy>
 Q_DECLARE_METATYPE(QNetworkProxy)
 Q_DECLARE_METATYPE(QList<QNetworkProxy>)
-#endif
 
 #include "../network-settings.h"
 
@@ -95,9 +93,6 @@ private slots:
     void constructing();
     void clientServerLoop();
     void ipv6Server();
-    void ipv4LoopbackPerformanceTest();
-    void ipv6LoopbackPerformanceTest();
-    void ipv4PerformanceTest();
     void crashTests();
     void maxPendingConnections();
     void listenError();
@@ -106,12 +101,10 @@ private slots:
     void listenWhileListening();
     void addressReusable();
     void setNewSocketDescriptorBlocking();
-#ifdef TEST_QNETWORK_PROXY
     void invalidProxy_data();
     void invalidProxy();
     void proxyFactory_data();
     void proxyFactory();
-#endif
 };
 
 // Testing get/set functions
@@ -143,29 +136,23 @@ void tst_QTcpServer::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
-#endif
 }
 
 void tst_QTcpServer::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
         }
-#endif
     }
 }
 
 void tst_QTcpServer::cleanup()
 {
-#ifdef TEST_QNETWORK_PROXY
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
-#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -258,159 +245,6 @@ void tst_QTcpServer::ipv6Server()
 }
 
 //----------------------------------------------------------------------------------
-void tst_QTcpServer::ipv4LoopbackPerformanceTest()
-{
-    QFETCH_GLOBAL(bool, setProxy);
-    if (setProxy)
-        return;
-
-    QTcpServer server;
-    QVERIFY(server.listen(QHostAddress::LocalHost));
-
-    QVERIFY(server.isListening());
-
-    QTcpSocket clientA;
-    clientA.connectToHost(QHostAddress::LocalHost, server.serverPort());
-    QVERIFY(clientA.waitForConnected(5000));
-    QVERIFY(clientA.state() == QAbstractSocket::ConnectedState);
-
-    QVERIFY(server.waitForNewConnection());
-    QTcpSocket *clientB = server.nextPendingConnection();
-    QVERIFY(clientB);
-
-    QByteArray buffer(16384, '@');
-    QTime stopWatch;
-    stopWatch.start();
-    qlonglong totalWritten = 0;
-    while (stopWatch.elapsed() < 5000) {
-        QVERIFY(clientA.write(buffer.data(), buffer.size()) > 0);
-        clientA.flush();
-        totalWritten += buffer.size();
-        while (clientB->waitForReadyRead(100)) {
-            if (clientB->bytesAvailable() == 16384)
-                break;
-        }
-        clientB->read(buffer.data(), buffer.size());
-        clientB->write(buffer.data(), buffer.size());
-        clientB->flush();
-        totalWritten += buffer.size();
-        while (clientA.waitForReadyRead(100)) {
-            if (clientA.bytesAvailable() == 16384)
-                break;
-        }
-        clientA.read(buffer.data(), buffer.size());
-    }
-
-    qDebug("\t\t%s: %.1fMB/%.1fs: %.1fMB/s",
-           server.serverAddress().toString().toLatin1().constData(),
-           totalWritten / (1024.0 * 1024.0),
-           stopWatch.elapsed() / 1000.0,
-           (totalWritten / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));
-
-    delete clientB;
-}
-
-//----------------------------------------------------------------------------------
-void tst_QTcpServer::ipv6LoopbackPerformanceTest()
-{
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
-#endif
-    QTcpServer server;
-    if (!server.listen(QHostAddress::LocalHostIPv6, 0)) {
-        QVERIFY(server.serverError() == QAbstractSocket::UnsupportedSocketOperationError);
-    } else {
-        QTcpSocket clientA;
-        clientA.connectToHost(server.serverAddress(), server.serverPort());
-        QVERIFY(clientA.waitForConnected(5000));
-
-        QVERIFY(server.waitForNewConnection(5000));
-        QTcpSocket *clientB = server.nextPendingConnection();
-        QVERIFY(clientB);
-
-        QByteArray buffer(16384, '@');
-        QTime stopWatch;
-        stopWatch.start();
-        qlonglong totalWritten = 0;
-        while (stopWatch.elapsed() < 5000) {
-            clientA.write(buffer.data(), buffer.size());
-            clientA.flush();
-            totalWritten += buffer.size();
-            while (clientB->waitForReadyRead(100)) {
-                if (clientB->bytesAvailable() == 16384)
-                    break;
-            }
-            clientB->read(buffer.data(), buffer.size());
-            clientB->write(buffer.data(), buffer.size());
-            clientB->flush();
-            totalWritten += buffer.size();
-            while (clientA.waitForReadyRead(100)) {
-                if (clientA.bytesAvailable() == 16384)
-                   break;
-            }
-            clientA.read(buffer.data(), buffer.size());
-        }
-
-        qDebug("\t\t%s: %.1fMB/%.1fs: %.1fMB/s",
-               server.serverAddress().toString().toLatin1().constData(),
-               totalWritten / (1024.0 * 1024.0),
-               stopWatch.elapsed() / 1000.0,
-               (totalWritten / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));
-        delete clientB;
-    }
-}
-
-//----------------------------------------------------------------------------------
-void tst_QTcpServer::ipv4PerformanceTest()
-{
-    QTcpSocket probeSocket;
-    probeSocket.connectToHost(QtNetworkSettings::serverName(), 143);
-    QVERIFY(probeSocket.waitForConnected(5000));
-
-    QTcpServer server;
-    QVERIFY(server.listen(probeSocket.localAddress(), 0));
-
-    QTcpSocket clientA;
-    clientA.connectToHost(server.serverAddress(), server.serverPort());
-    QVERIFY(clientA.waitForConnected(5000));
-
-    QVERIFY(server.waitForNewConnection(5000));
-    QTcpSocket *clientB = server.nextPendingConnection();
-    QVERIFY(clientB);
-
-    QByteArray buffer(16384, '@');
-    QTime stopWatch;
-    stopWatch.start();
-    qlonglong totalWritten = 0;
-    while (stopWatch.elapsed() < 5000) {
-        qlonglong writtenA = clientA.write(buffer.data(), buffer.size());
-        clientA.flush();
-        totalWritten += buffer.size();
-        while (clientB->waitForReadyRead(100)) {
-            if (clientB->bytesAvailable() == writtenA)
-                break;
-        }
-        clientB->read(buffer.data(), buffer.size());
-        qlonglong writtenB = clientB->write(buffer.data(), buffer.size());
-        clientB->flush();
-        totalWritten += buffer.size();
-        while (clientA.waitForReadyRead(100)) {
-            if (clientA.bytesAvailable() == writtenB)
-               break;
-        }
-        clientA.read(buffer.data(), buffer.size());
-    }
-
-    qDebug("\t\t%s: %.1fMB/%.1fs: %.1fMB/s",
-           probeSocket.localAddress().toString().toLatin1().constData(),
-           totalWritten / (1024.0 * 1024.0),
-           stopWatch.elapsed() / 1000.0,
-           (totalWritten / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));
-
-    delete clientB;
-}
-
-//----------------------------------------------------------------------------------
 void tst_QTcpServer::crashTests()
 {
     QTcpServer server;
@@ -423,12 +257,10 @@ void tst_QTcpServer::maxPendingConnections()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 only 1 connection is allowed ever", SkipAll);
         }
-#endif
     }
     //### sees to fail sometimes ... a timing issue with the test on windows
     QTcpServer server;
@@ -464,12 +296,10 @@ void tst_QTcpServer::listenError()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 we can not make hard requirements on the address or port", SkipAll);
         }
-#endif
     }
     QTcpServer server;
     QVERIFY(!server.listen(QHostAddress("1.2.3.4"), 0));
@@ -513,17 +343,15 @@ void tst_QTcpServer::waitForConnectionTest()
 
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("Localhost servers don't work well with SOCKS5", SkipAll);
         }
-#endif
     }
 
     QTcpSocket findLocalIpSocket;
     findLocalIpSocket.connectToHost(QtNetworkSettings::serverName(), 143);
-    QVERIFY(findLocalIpSocket.waitForConnected(2000));
+    QVERIFY(findLocalIpSocket.waitForConnected(5000));
 
     QTcpServer server;
     bool timeout = false;
@@ -624,12 +452,10 @@ void tst_QTcpServer::addressReusable()
 
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 this test does not make senans at the momment", SkipAll);
         }
-#endif
     }
 #if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QString signalName = QString::fromLatin1("/test_signal.txt");
@@ -667,12 +493,10 @@ void tst_QTcpServer::setNewSocketDescriptorBlocking()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 we can not make the socket descripter blocking", SkipAll);
         }
-#endif
     }
     SeverWithBlockingSockets server;
     QVERIFY(server.listen());
@@ -683,7 +507,6 @@ void tst_QTcpServer::setNewSocketDescriptorBlocking()
     QVERIFY(server.ok);
 }
 
-#ifdef TEST_QNETWORK_PROXY
 void tst_QTcpServer::invalidProxy_data()
 {
     QTest::addColumn<int>("type");
@@ -838,7 +661,6 @@ void tst_QTcpServer::proxyFactory()
     // Sometimes, error codes change for the better
     QTEST(int(server.serverError()), "expectedError");
 }
-#endif
 
 QTEST_MAIN(tst_QTcpServer)
 #include "tst_qtcpserver.moc"

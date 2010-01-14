@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,10 +53,10 @@ MainWindow::MainWindow(QWidget *parent)
     setupFontTree();
 
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(fontTree, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
-            this, SLOT(showFont(QTreeWidgetItem *)));
-    connect(fontTree, SIGNAL(itemChanged(QTreeWidgetItem *, int)),
-            this, SLOT(updateStyles(QTreeWidgetItem *, int)));
+    connect(fontTree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
+            this, SLOT(showFont(QTreeWidgetItem*)));
+    connect(fontTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
+            this, SLOT(updateStyles(QTreeWidgetItem*,int)));
 
     fontTree->setItemSelected(fontTree->topLevelItem(0), true);
     showFont(fontTree->topLevelItem(0));
@@ -279,8 +279,8 @@ void MainWindow::on_printPreviewAction_triggered()
 
     QPrinter printer(QPrinter::HighResolution);
     QPrintPreviewDialog preview(&printer, this);
-    connect(&preview, SIGNAL(paintRequested(QPrinter *)),
-            this, SLOT(printDocument(QPrinter *)));
+    connect(&preview, SIGNAL(paintRequested(QPrinter*)),
+            this, SLOT(printDocument(QPrinter*)));
     preview.exec();
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,8 @@
 #include <private/qapplication_p.h>
 #include <qcalendarwidget.h>
 #include <qmainwindow.h>
+#include <qdockwidget.h>
+#include <qtoolbar.h>
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
 
@@ -356,6 +358,7 @@ private slots:
     void paintOnScreenPossible();
 #endif
     void reparentStaticWidget();
+    void QTBUG6883_reparentStaticWidget2();
 #ifdef Q_WS_QWS
     void updateOutsideSurfaceClip();
 #endif
@@ -384,11 +387,14 @@ private slots:
 
     void activateWindow();
 
+    void openModal_taskQTBUG_5804();
+
 #ifdef Q_OS_SYMBIAN
     void cbaVisibility();
 #endif
 
     void focusProxyAndInputMethods();
+    void scrollWithoutBackingStore();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -8725,6 +8731,31 @@ void tst_QWidget::reparentStaticWidget()
     // Please don't crash.
     paintOnScreen.resize(paintOnScreen.size() + QSize(2, 2));
     QTest::qWait(20);
+
+}
+
+void tst_QWidget::QTBUG6883_reparentStaticWidget2()
+{
+    QMainWindow mw;
+    QDockWidget *one = new QDockWidget("one", &mw);
+    mw.addDockWidget(Qt::LeftDockWidgetArea, one , Qt::Vertical);
+
+    QWidget *child = new QWidget();
+    child->setPalette(Qt::red);
+    child->setAutoFillBackground(true);
+    child->setAttribute(Qt::WA_StaticContents);
+    child->resize(100, 100);
+    one->setWidget(child);
+
+    QToolBar *mainTools = mw.addToolBar("Main Tools");
+    mainTools->addWidget(new QLineEdit);
+
+    mw.show();
+    QTest::qWaitForWindowShown(&mw);
+
+    one->setFloating(true);
+    QTest::qWait(20);
+    //do not crash
 }
 
 #ifdef Q_WS_QWS
@@ -9546,6 +9577,22 @@ void tst_QWidget::setGraphicsEffect()
     delete widget;
     QVERIFY(!blurEffect);
     delete anotherWidget;
+
+    // Ensure the effect is uninstalled when deleting it
+    widget = new QWidget;
+    blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    delete blurEffect;
+    QVERIFY(!widget->graphicsEffect());
+
+    // Ensure the existing effect is uninstalled and deleted when setting a null effect
+    blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    widget->setGraphicsEffect(0);
+    QVERIFY(!widget->graphicsEffect());
+    QVERIFY(!blurEffect);
+
+    delete widget;
 }
 
 void tst_QWidget::activateWindow()
@@ -9581,6 +9628,29 @@ void tst_QWidget::activateWindow()
 
     QTRY_VERIFY(mainwindow->isActiveWindow());
     QTRY_VERIFY(!mainwindow2->isActiveWindow());
+}
+
+void tst_QWidget::openModal_taskQTBUG_5804()
+{
+    class Widget : public QWidget
+    {
+    public:
+        Widget(QWidget *parent) : QWidget(parent)
+        {
+        }
+        ~Widget()
+        {
+            QMessageBox msgbox;
+            QTimer::singleShot(10, &msgbox, SLOT(accept()));
+            msgbox.exec(); //open a modal dialog
+        }
+    };
+
+    QWidget *win = new QWidget;
+    new Widget(win);
+    win->show();
+    QTest::qWaitForWindowShown(win);
+    delete win;
 }
 
 #ifdef Q_OS_SYMBIAN
@@ -9676,6 +9746,43 @@ void tst_QWidget::focusProxyAndInputMethods()
     QCOMPARE(inputContext->focusWidget(), toplevel);
 
     delete toplevel;
+}
+
+class scrollWidgetWBS : public QWidget
+{
+public:
+    void deleteBackingStore()
+    {
+        if (static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
+            delete static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore;
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = 0;
+        }
+    }
+    void enableBackingStore()
+    {
+        if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = new QWidgetBackingStore(this);
+            static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBuffer(this->rect());
+            repaint();
+        }
+    }
+};
+
+void tst_QWidget::scrollWithoutBackingStore()
+{
+    scrollWidgetWBS scrollable;
+    scrollable.resize(100,100);
+    QLabel child(QString("@"),&scrollable);
+    child.resize(50,50);
+    scrollable.show();
+    QTest::qWaitForWindowShown(&scrollable);
+    scrollable.scroll(50,50);
+    QCOMPARE(child.pos(),QPoint(50,50));
+    scrollable.deleteBackingStore();
+    scrollable.scroll(-25,-25);
+    QCOMPARE(child.pos(),QPoint(25,25));
+    scrollable.enableBackingStore();
+    QCOMPARE(child.pos(),QPoint(25,25));
 }
 
 QTEST_MAIN(tst_QWidget)

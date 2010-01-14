@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,12 +66,12 @@ in the \l{Qt for X11 Requirements} document.
     For the open source version you do not need a license file.
 
 \o  Unpack the archive if you have not done so already. For example,
-    if you have the \c{qt-x11-opensource-desktop-%VERSION%.tar.gz}
+    if you have the \c{qt-everywhere-opensource-src-%VERSION%.tar.gz}
     package, type the following commands at a command line prompt:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 0
 
-    This creates the directory \c{/tmp/qt-x11-opensource-desktop-%VERSION%}
+    This creates the directory \c{/tmp/qt-everywhere-opensource-src-%VERSION%}
     containing the files from the archive. We only support the GNU version of
     the tar archiving utility. Note that on some systems it is called gtar.
 
@@ -299,12 +299,12 @@ The following instructions describe how to install Qt from the source package.
     For the open source version you do not need a license file.
 
 \o  Unpack the archive if you have not done so already. For example,
-    if you have the \c{qt-mac-opensource-desktop-%VERSION%.tar.gz}
+    if you have the \c{qt-everywhere-opensource-src-%VERSION%.tar.gz}
     package, type the following commands at a command line prompt:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 11
 
-    This creates the directory \c{/tmp/qt-mac-opensource-desktop-%VERSION%}
+    This creates the directory \c{/tmp/qt-everywhere-opensource-src-%VERSION%}
     containing the files from the archive.
 
 \o  Building
@@ -423,7 +423,7 @@ in the \l{Qt for Windows CE Requirements} document.
         "Control Panel->System->Advanced->Environment variables" and for
         older versions by editing \c{c:\autoexec.bat}.
 
-        Make sure the enviroment variables for your compiler are set. 
+        Make sure the enviroment variables for your compiler are set.
         Visual Studio includes \c{vcvars32.bat} for that purpose - or simply
         use the "Visual Studio Command Prompt" from the Start menu.
 
@@ -495,12 +495,12 @@ in the \l{Qt for Windows CE Requirements} document.
 */
 
 /*! \page install-Symbian-installer.html
-\title Installing Qt on the Symbian Platform from a Binary Package
-\ingroup qts60
+\title Installing Qt on the Symbian platform from a Binary Package
+\ingroup qtsymbian
 \brief How to install Qt on the Symbian platform from a binary package.
 
-\note Qt for Symbian platform has some requirements that are given in more detail
-in the \l{Qt for Symbian platform Requirements} document.
+\note Qt for the Symbian platform has some requirements that are given in more detail
+in the \l{Qt for the Symbian platform Requirements} document.
 
 \list 1
 
@@ -511,30 +511,41 @@ in the \l{Qt for Symbian platform Requirements} document.
         \note Qt must be installed on the same drive as the Symbian SDK you are
         using, and the install path must not contain any spaces.
 
+    \o  Install Qt into a device
+
+        To run Qt applications on a device, \c{qt_installer.sis} found
+        in the Qt installation directory must be first installed into the device.
+        \c{Qt_installer.sis} contains Qt libraries and Open C libraries all in one
+        convenient package.
+        Begin installation by connecting your device via USB cable to a computer that
+        has the \l{http://www.nokia.com/pcsuite}{Nokia PC Suite} installed.
+        On the device, select "PC Suite mode". In Windows Explorer right click
+        on the \c{qt_installer.sis} file, select "Install with Nokia Application
+        Installer" and follow the instructions.
+
     \o  Running Qt demos
 
         We've included a subset of the Qt demos in this package for you
         to try out. An excellent starting point is the "fluidlauncher"
-        demo. To run the demo on a real device, you first have to install
-        \c{qt.sis} and \c{fluidlauncher.sis} found in the Qt installation
-        directory. Begin by connecting your phone using the USB cable and
-        selecting "PC Suite mode". In Windows Explorer right click on the
-        \c{.sis} files and select "Install with Nokia Application Installer"
-        and follow the instructions.
+        demo.
+
+        To run the demo on a real device, install \c{fluidlauncher.sis}
+        found in the Qt installation directory to a device that already has Qt installed.
+        After installation, you can find fluidlauncher in the applications folder of the device.
 
         To run the demos and examples on the emulator, you need to build them first.
-        Open the "Qt for Symbian platform Command Prompt" from the Start menu and type:
+        Open the "Qt for the Symbian platform Command Prompt" from the Start menu and type:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 25
 
-        To run the demos on the emulator simply navigate to the directory of the demo 
+        To run the demos on the emulator simply navigate to the directory of the demo
         you want to see and run:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 27
 
         For more information about building and running Qt programs on the
 Symbian platform,
-        see \l{Symbian platform - Introduction to Qt}.
+        see \l{The Symbian platform - Introduction to Qt}.
 
     We hope you will enjoy using Qt.
 
@@ -542,25 +553,40 @@ Symbian platform,
 
 */
 /*! \page install-Symbian.html
-\title Installing Qt on the Symbian Platform
+\title Installing Qt on the Symbian platform
 \ingroup installation
-\ingroup qts60
+\ingroup qtsymbian
 \brief How to install Qt on the Symbian platform.
 
 \note Qt for the Symbian platform has some requirements that are given in more detail
-in the \l{Qt for Symbian Platform Requirements} document.
+in the \l{Qt for the Symbian platform Requirements} document.
 
 \note \bold {This document describes how to install and configure Qt for
-the Symbian platform from scratch. 
+the Symbian platform from scratch.
 If you are using pre-built binaries, follow the instructions given in the
-\l{Installing Qt on the Symbian Platform from a Binary Package} document.}
+\l{Installing Qt on the Symbian platform from a Binary Package} document.}
 
 \list 1
 
+    \o  Setup the development environment
+
+        Make sure your Symbian development environment is correctly installed and
+        patched as explained in the \l{Qt for the Symbian platform Requirements} document.
+
+        After you have finished the Symbian development environment setup, it is good
+        to verify that environment is functional for example by compiling one
+        of the pure Symbian examples for both emulator and HW. This can be done from
+        command prompt as follows:
+
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 32
+
+        If all steps pass without errors your Symbian development environment is
+        very likely installed correctly.
+
     \o  Install Qt
 
-        Uncompress the package into the directory you want Qt installed,
-        e.g. \c{C:\Qt\%VERSION%}.
+        Uncompress the \l{http://qt.nokia.com/downloads}{downloaded} source package into the
+        directory you want Qt installed, e.g. \c{C:\Qt\%VERSION%}.
 
         \note Qt must be installed on the same drive as the Symbian SDK you are
         using, and the install path must not contain any spaces.
@@ -581,6 +607,13 @@ If you are using pre-built binaries, follow the instructions given in the
         emulator. This is done by locating the Carbide.c++ submenu on the Start
         menu, and choosing "Configure environment for WINSCW command line".
 
+        If you are planning to use abld (the default build system that comes with the S60 SDK)
+        to build Qt, you will also need to set the following environment variable:
+
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 33
+
+        This is not necessary for other applications, only when building Qt.
+
     \o  Configure Qt
 
         To configure Qt for the Symbian platform, do:
@@ -589,10 +622,11 @@ If you are using pre-built binaries, follow the instructions given in the
         to build the tools using MinGW, and the libraries using abld.
         or
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 31
-        to build the tools using MinGW, and the libraries using sbsv2.
+        to build the tools using MinGW, and the libraries using SBSv2.
 
-        For other options, type \c{configure -help} to get a list of all available
-        options.
+        SBSv2 (also known as \l{http://developer.symbian.org/wiki/index.php/Introduction_to_RAPTOR} {Raptor})
+        is a next-generation Symbian build system. SBSv2 is not officially
+        supported by any of the S60 SDKs currently available from Forum Nokia.
 
     \o  Build Qt
 
@@ -615,8 +649,8 @@ If you are using pre-built binaries, follow the instructions given in the
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 29
 
-        \note You will need to supply certificate that allows installation 
-        of binaries with "All -Tcb" capability to your device. 
+        \note You will need to supply certificate that allows installation
+        of binaries with "All -Tcb" capability to your device.
 
         Similarly, install fluidlauncher to the device:
 
@@ -625,13 +659,13 @@ If you are using pre-built binaries, follow the instructions given in the
         This will create a self-signed \c fluidlauncher_armv5_urel.sis and
         install it to your device.
 
-        To run the demos on the emulator simply navigate to the directory of the demo 
+        To run the demos on the emulator simply navigate to the directory of the demo
         you want to see and run:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 27
 
         For more information about building and running Qt programs on the
-Symbian platform, see \l{Symbian platform - Introduction to Qt}.
+        Symbian platform, see \l{The Symbian platform - Introduction to Qt}.
 
     We hope you will enjoy using Qt.
 
@@ -666,7 +700,7 @@ Symbian platform, see \l{Symbian platform - Introduction to Qt}.
     \list
     \o \l{Qt for Embedded Linux Requirements}
     \o \l{Qt for Mac OS X Requirements}
-    \o \l{Qt for Symbian platform Requirements}
+    \o \l{Qt for the Symbian platform Requirements}
     \o \l{Qt for Windows CE Requirements}
     \o \l{Qt for Windows Requirements}
     \o \l{Qt for X11 Requirements}
@@ -684,6 +718,10 @@ Symbian platform, see \l{Symbian platform - Introduction to Qt}.
     first install the Visual Studio Service Pack 1 available
     \l{http://www.microsoft.com/downloads/details.aspx?FamilyId=BB4A75AB-E2D4-4C96-B39D-37BAF6B5B1DC&amp;displaylang=en}{here}
     to avoid runtime conflicts.
+
+    If you are using a source code package of Qt, you must first install Perl so 
+    that the syncqt script invoked by configure can be executed. You can download
+    this \l{http://www.activestate/downloads/}{here}.  
 
     To build Qt with Phonon on Windows, you require:
 
@@ -801,7 +839,7 @@ Symbian platform, see \l{Symbian platform - Introduction to Qt}.
     when building Qt from its source code. On Debian-based GNU/Linux systems,
     for example, we recommend that you install the following development
     packages:
-    
+
     \list
     \o libfontconfig1-dev
     \o libfreetype6-dev
@@ -824,7 +862,7 @@ Symbian platform, see \l{Symbian platform - Introduction to Qt}.
     The configure script will autodetect if OpenGL headers and libraries are
     installed on your system, and if so, it will include the QtOpenGL module
     in the Qt library.
-    
+
     If your OpenGL headers or libraries are placed in a non-standard directory,
     you may need to change the \c QMAKE_INCDIR_OPENGL and/or
     \c QMAKE_LIBDIR_OPENGL in the config file for your system.
@@ -928,7 +966,7 @@ Symbian platform, see \l{Symbian platform - Introduction to Qt}.
 
     \table
     \header \o{1,2} Architecture \o{1,2} Compiler  \o{2,1} QtCore       \o{2,1} QtGui        \o{2,1} QtNetwork    \o{2,1} QtWebKit
-    \header                                        \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal 
+    \header                                        \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal
     \row    \o linux-x86-g++ \o GCC 4.2.4          \o 1.7M    \o 2.7M   \o 3.3M    \o 9.9M   \o 653K    \o 1.1M   \o N/A     \o 17M
     \row    \o linux-arm-g++ \o GCC 4.1.1          \o 1.9M    \o 3.2M   \o 4.1M    \o 11M    \o 507K    \o 1.0M   \o N/A     \o 17M
     \row    \o linux-mips-g++ (MIPS32)
@@ -951,14 +989,14 @@ Symbian platform, see \l{Symbian platform - Introduction to Qt}.
 
 /*!
     \page requirements-symbian.html
-    \title Qt for Symbian Platform Requirements
+    \title Qt for the Symbian platform Requirements
     \ingroup installation
     \brief Setting up the Symbian platform environment for Qt.
     \previouspage General Qt Requirements
 
-    Qt for Symbian platform requires the following software installed on your development PC:
+    Qt for the Symbian platform requires the following software installed on your development PC:
     \list
-        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}           
+        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}
            \list
            \o \bold{Note:} It may be necessary to update the Carbide compiler.
               See \l{http://pepper.troll.no/s60prereleases/patches/}{here} for instructions how to check your
@@ -969,26 +1007,41 @@ Symbian platform, see \l{Symbian platform - Introduction to Qt}.
            \o \bold{Note:} According to Symbian, version 5.6.1 build 638 is mandatory. Using later versions may result in unexplained errors.
            \endlist
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
-        \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}. 
+           \list
+           \o \bold{Note:} Users of \bold{S60 Platform SDK 3rd Edition FP1} also need special update. The update can be found
+           \l{http://pepper.troll.no/s60prereleases/patches/}{here}.
+           \endlist
+        \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}.
            Install this to all Symbian SDKs you plan to use Qt with.
         \o Building Qt tools from scratch requires \l{http://www.mingw.org/}{MinGW 3.4.5 or higher}, or another windows compiler.
            \list
            \o \bold{Note:} This is not required if you are using pre-built binary package.
            \endlist
         \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} 2.2 [build 686] or later,
-           which is not available free of charge. 
+           which is not available free of charge.
     \endlist
 
-    Running Qt on real device requires the following packages to be installed on your device.
-    The packages can be found in the Symbian SDK where you installed Open C/C++:
+    Running Qt on real device requires the Open C to be installed on the device.
+    The Open C installation packages are embedded into \c{qt_installer.sis}, which is included in
+    Qt for Symbian binary package. If you are building Qt from scratch, you can find the
+    required packages in the Symbian SDK where you installed Open C/C++:
     \list
         \o \c{nokia_plugin\openc\s60opencsis\pips_s60_<version>.sis}
         \o \c{nokia_plugin\openc\s60opencsis\openc_ssl_s60_<version>.sis}
         \o \c{nokia_plugin\opencpp\s60opencppsis\stdcpp_s60_<version>.sis}
     \endlist
 
-    \note Users of \bold{S60 Platform SDK 3rd Edition FP1} also need special updates. The update can be found
-    \l{http://pepper.troll.no/s60prereleases/patches/}{here}.
+    If you wish to do hardware debugging with Carbide or run applications in real devices using "make run" command,
+    TRK must be installed to the device. \bold{Note:} TRK is not required if you just want to install and run
+    applications manually on the device.
+    \list
+        \o \l{http://tools.ext.nokia.com/trk/}{Application TRK}. Choose the correct
+           installation package based on the S60 version of your device (S60_<S60-version>_app_trk_<TRK-version>.sisx).
+    \endlist
+
+
+    We recommend you to take a look at \l{http://developer.symbian.org/wiki/index.php/Qt_Quick_Start}{Symbian Foundation - Qt Quick Start}
+    to get more information about how to setup the development environment.
 
     \sa {Known Issues in %VERSION%}
 */

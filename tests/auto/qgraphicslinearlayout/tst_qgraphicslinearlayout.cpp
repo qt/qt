@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -146,7 +146,7 @@ void tst_QGraphicsLinearLayout::initTestCase()
 {
     // since the style will influence the results, we have to ensure
     // that the tests are run using the same style on all platforms
-#ifdef Q_WS_S60
+#if defined( Q_WS_S60 )|| defined (Q_WS_WINCE)
     QApplication::setStyle(new QWindowsStyle);
 #else
     QApplication::setStyle(new QPlastiqueStyle);

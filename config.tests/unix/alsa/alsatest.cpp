@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,8 +40,11 @@
 ****************************************************************************/
 
 #include <alsa/asoundlib.h>
+#if(!(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 10))
+#error "Alsa version found too old, require >= 1.0.10"
+#endif
+
 int main(int argc,char **argv)
 {
-    return 0;
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -735,6 +735,9 @@ void QMenuBarPrivate::init()
         wceCreateMenuBar(q->parentWidget());
         if(wce_menubar)
             q->hide();
+    }
+    else {
+        QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
     }
 #endif
 #ifdef Q_WS_S60
@@ -1486,7 +1489,8 @@ bool QMenuBar::event(QEvent *e)
     break;
     case QEvent::ShortcutOverride: {
         QKeyEvent *kev = static_cast<QKeyEvent*>(e);
-        if (kev->key() == Qt::Key_Escape) {
+        //we only filter out escape if there is a current action
+        if (kev->key() == Qt::Key_Escape && d->currentAction) {
             e->accept();
             return true;
         }
@@ -1934,7 +1938,7 @@ void QMenuBar::setDefaultAction(QAction *act)
     if (qt_wince_is_mobile())
         if (d->defaultAction) {
             disconnect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));
-            disconnect(d->defaultAction, SIGNAL(destroyed ()), this, SLOT(_q_updateDefaultAction()));
+            disconnect(d->defaultAction, SIGNAL(destroyed()), this, SLOT(_q_updateDefaultAction()));
         }
 #endif
     d->defaultAction = act;

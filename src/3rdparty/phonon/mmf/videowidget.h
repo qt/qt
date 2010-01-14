@@ -61,7 +61,9 @@ public:
     virtual QWidget *widget();
 
 protected:
-    virtual bool activateOnMediaObject(MediaObject *mo);
+    // MediaNode
+    void connectMediaObject(MediaObject *mediaObject);
+    void disconnectMediaObject(MediaObject *mediaObject);
 
 private:
     QScopedPointer<VideoOutput>             m_videoOutput;

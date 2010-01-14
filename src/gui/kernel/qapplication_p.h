@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -84,6 +84,7 @@ class QInputContext;
 class QObject;
 class QWidget;
 class QSocketNotifier;
+class QGestureManager;
 
 extern bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
@@ -509,9 +510,10 @@ public:
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
+    QGestureManager *gestureManager;
     QWidget *gestureWidget;
 
-    QMap<int, QWidget *> widgetForTouchPointId;
+    QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -167,7 +167,8 @@ private slots:
     void task223138_triggered();
     void task256322_highlight();
     void menubarSizeHint();
-    
+    void taskQTBUG4965_escapeEaten();
+
 #if defined(QT3_SUPPORT)
     void indexBasedInsertion_data();
     void indexBasedInsertion();
@@ -1359,7 +1360,7 @@ tst_QMenuBar::allowActiveAndDisabled()
     // disabled menu items are added
 
     QMenu fileMenu("&File");
-    // Task 241043 : check that second menu is activated 
+    // Task 241043 : check that second menu is activated
     // if all items are disabled
     QAction *act = fileMenu.addAction("Disabled");
     act->setEnabled(false);
@@ -1387,7 +1388,7 @@ tst_QMenuBar::allowActiveAndDisabled()
         QCOMPARE(mb->activeAction()->text(), fileMenu.title());
     else
         QCOMPARE(mb->activeAction()->text(), fileMenu.title());
-    
+
     mb->hide();
 #endif //Q_WS_MAC
 }
@@ -1602,7 +1603,7 @@ void tst_QMenuBar::menubarSizeHint()
         virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0, const QWidget * widget = 0 ) const
         {
             // I chose strange values (prime numbers to be more sure that the size of the menubar is correct)
-            switch (metric) 
+            switch (metric)
             {
             case QStyle::PM_MenuBarItemSpacing:
                 return 7;
@@ -1620,7 +1621,7 @@ void tst_QMenuBar::menubarSizeHint()
 
     QMenuBar mb;
     mb.setNativeMenuBar(false); //we can't check the geometry of native menubars
-		
+
     mb.setStyle(&style);
     //this is a list of arbitrary strings so that we check the geometry
     QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";
@@ -1664,6 +1665,30 @@ void tst_QMenuBar::menubarSizeHint()
     QCOMPARE(resSize, mb.sizeHint());
 }
 
+void tst_QMenuBar::taskQTBUG4965_escapeEaten()
+{
+#ifdef Q_WS_MAC
+    QSKIP("On Mac, do not test the menubar with escape key", SkipAll);
+#endif
+    QMenuBar menubar;
+    QMenu menu("menu1");
+    QAction *first = menubar.addMenu(&menu);
+    menu.addAction("quit", &menubar, SLOT(close()), QKeySequence("ESC"));
+    menubar.show();
+    QApplication::setActiveWindow(&menubar);
+    QTest::qWaitForWindowShown(&menubar);
+    menubar.setActiveAction(first);
+    QTRY_VERIFY(menu.isVisible());
+    QCOMPARE(menubar.activeAction(), first);
+    QTest::keyClick(0, Qt::Key_Escape);
+    QVERIFY(!menu.isVisible());
+    QTRY_VERIFY(menubar.hasFocus());
+    QCOMPARE(menubar.activeAction(), first);
+    QTest::keyClick(0, Qt::Key_Escape);
+    QVERIFY(!menubar.activeAction());
+    QTest::keyClick(0, Qt::Key_Escape); //now the action should be triggered
+    QTRY_VERIFY(!menubar.isVisible());
+}
 
 #if defined(QT3_SUPPORT)
 void tst_QMenuBar::indexBasedInsertion_data()

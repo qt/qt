@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,8 +104,8 @@ void ConfigDialog::createIcons()
     queryButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
     connect(contentsWidget,
-            SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-            this, SLOT(changePage(QListWidgetItem *, QListWidgetItem*)));
+            SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+            this, SLOT(changePage(QListWidgetItem*,QListWidgetItem*)));
 }
 
 void ConfigDialog::changePage(QListWidgetItem *current, QListWidgetItem *previous)

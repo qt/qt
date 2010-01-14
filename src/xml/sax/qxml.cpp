@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3063,11 +3063,11 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     Aspects of the parsing behavior can be adapted using setFeature()
     and setProperty().
     
+    \snippet doc/src/snippets/code/src_xml_sax_qxml.cpp 0
+
     QXmlSimpleReader is not reentrant. If you want to use the class
     in threaded code, lock the code using QXmlSimpleReader with a
     locking mechanism, such as a QMutex.
-
-    \snippet doc/src/snippets/code/src_xml_sax_qxml.cpp 0
 */
 
 static inline bool is_S(QChar ch)

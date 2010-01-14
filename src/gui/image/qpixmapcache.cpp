@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -423,6 +423,11 @@ QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)
 }
 
 Q_GLOBAL_STATIC(QPMCache, pm_cache)
+
+int Q_AUTOTEST_EXPORT q_QPixmapCache_keyHashSize()
+{
+    return pm_cache()->size();
+}
 
 QPixmapCacheEntry::~QPixmapCacheEntry()
 {

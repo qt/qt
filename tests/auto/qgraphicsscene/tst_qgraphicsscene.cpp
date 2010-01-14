@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,8 @@
 #endif
 
 #include <QtGui>
+#include <private/qgraphicsscene_p.h>
+#include <private/qgraphicssceneindex_p.h>
 #include <math.h>
 #include "../../shared/util.h"
 
@@ -269,6 +271,7 @@ private slots:
     void initialFocus();
     void polishItems();
     void isActive();
+    void siblingIndexAlwaysValid();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -276,6 +279,8 @@ private slots:
     void task176178_itemIndexMethodBreaksSceneRect();
     void task160653_selectionChanged();
     void task250680_childClip();
+    void taskQTBUG_5904_crashWithDeviceCoordinateCache();
+    void taskQT657_paintIntoCacheWithTransparentParts();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -1458,6 +1463,7 @@ void tst_QGraphicsScene::focusItemLostFocus()
 class ClearTestItem : public QGraphicsRectItem
 {
 public:
+    ClearTestItem(QGraphicsItem *parent = 0) : QGraphicsRectItem(parent) {}
     ~ClearTestItem() { qDeleteAll(items); }
     QList<QGraphicsItem *> items;
 };
@@ -1482,6 +1488,11 @@ void tst_QGraphicsScene::clear()
     scene.addItem(secondItem);
     QCOMPARE(scene.items().at(0), firstItem);
     QCOMPARE(scene.items().at(1), secondItem);
+
+    ClearTestItem *thirdItem = new ClearTestItem(firstItem);
+    QGraphicsItem *forthItem = new QGraphicsRectItem(firstItem);
+    thirdItem->items += forthItem;
+
     // must not crash even if firstItem deletes secondItem
     scene.clear();
     QVERIFY(scene.items().isEmpty());
@@ -4178,6 +4189,124 @@ void tst_QGraphicsScene::isActive()
     QVERIFY(!scene1.hasFocus());
     QVERIFY(!scene2.hasFocus());
 
+}
+
+void tst_QGraphicsScene::siblingIndexAlwaysValid()
+{
+    QGraphicsScene scene;
+
+    QGraphicsWidget *parent = new QGraphicsWidget;
+    parent->setZValue(350);
+    parent->setGeometry(0, 0, 100, 100);
+    QGraphicsWidget *parent2 = new QGraphicsWidget;
+    parent2->setGeometry(10, 10, 50, 50);
+    QGraphicsWidget *child = new QGraphicsWidget(parent2);
+    child->setGeometry(15, 15, 25, 25);
+    child->setZValue(150);
+    //Both are top level
+    scene.addItem(parent);
+    scene.addItem(parent2);
+
+    //Then we make the child a top level
+    child->setParentItem(0);
+
+    //This is trigerred by a repaint...
+    QGraphicsScenePrivate::get(&scene)->index->estimateTopLevelItems(QRectF(), Qt::AscendingOrder);
+
+    delete child;
+
+    //If there are in the list that's bad, we crash...
+    QVERIFY(!QGraphicsScenePrivate::get(&scene)->topLevelItems.contains(static_cast<QGraphicsItem *>(child)));
+
+    //Other case
+    QGraphicsScene scene2;
+    // works with bsp tree index
+    scene2.setItemIndexMethod(QGraphicsScene::NoIndex);
+
+    QGraphicsView view2(&scene2);
+
+    // first add the blue rect
+    QGraphicsRectItem* const item1 = new QGraphicsRectItem(QRect( 10, 10, 10, 10 ));
+    item1->setPen(QColor(Qt::blue));
+    item1->setBrush(Qt::blue);
+    scene2.addItem(item1);
+
+    // then add the red rect
+    QGraphicsRectItem* const item2 = new QGraphicsRectItem(5, 5, 10, 10);
+    item2->setPen(QColor(Qt::red));
+    item2->setBrush(Qt::red);
+    scene2.addItem(item2);
+
+    // now the blue one is visible on top of the red one -> swap them (important for the bug)
+    item1->setZValue(1.0);
+    item2->setZValue(0.0);
+
+    view2.show();
+
+    // handle events as a real life app would do
+    QApplication::processEvents();
+
+    // now delete the red rect
+    delete item2;
+
+    // handle events as a real life app would do
+     QApplication::processEvents();
+
+     //We should not crash
+
+}
+
+void tst_QGraphicsScene::taskQTBUG_5904_crashWithDeviceCoordinateCache()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rectItem = scene.addRect(QRectF(0, 0, 100, 200), QPen(Qt::black), QBrush(Qt::green));
+
+    rectItem->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+
+    QPixmap pixmap(100,200);
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+    // No crash, then it passed!
+}
+
+void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
+{
+    QWidget *w = new QWidget();
+    w->setPalette(Qt::blue);
+    w->setGeometry(0, 0, 50, 50);
+
+    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsView *view = new QGraphicsView(scene);
+
+    QGraphicsProxyWidget *proxy = scene->addWidget(w);
+    proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    proxy->rotate(15);
+
+    view->show();
+    QTest::qWaitForWindowShown(view);
+    w->update(10,10,10,10);
+    QTest::qWait(50);
+
+    QPixmap pix;
+    QGraphicsItemPrivate* itemp = QGraphicsItemPrivate::get(proxy);
+    QPixmapCache::Key key = itemp->extraItemCache()->deviceData.value(view->viewport()).key;
+    QVERIFY(QPixmapCache::find(key, &pix));
+
+    QTransform t = proxy->sceneTransform();
+    // Map from scene coordinates to pixmap coordinates.
+    // X origin in the pixmap is the most-left point
+    // of the item's boundingRect in the scene.
+    qreal adjust = t.mapRect(proxy->boundingRect().toRect()).left();
+    QRect rect = t.mapRect(QRect(10, 10, 10, 10)).adjusted(-adjust, 0, -adjust + 1, 1);
+    QPixmap subpix = pix.copy(rect);
+
+    QImage im = subpix.toImage();
+    for(int i = 0; i < im.width(); i++) {
+        for(int j = 0; j < im.height(); j++)
+            QCOMPARE(qAlpha(im.pixel(i, j)), 255);
+    }
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

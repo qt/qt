@@ -16,8 +16,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef QT_NO_DEBUG
-
 #include <QByteArray>
 #include <QDebug>
 #include <QHash>
@@ -392,7 +390,7 @@ void QVisitorPrivate::dumpNode
         // No annotations - just dump the object pointer
         const bool isNodeLine = true;
         QByteArray buffer = branchBuffer(branches, isNodeLine, isLastChild);
-        qDebug() << 0; // TODO
+        qDebug() << 0;
     }
     else {
         // Dump annotations
@@ -524,6 +522,4 @@ void dumpAncestors(const QObject& leaf, QVisitor& visitor)
 } // namespace ObjectDump
 
 QT_END_NAMESPACE
-
-#endif
 

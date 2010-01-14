@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,7 +50,6 @@
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(QString, busService, (QLatin1String(DBUS_SERVICE_DBUS)))
-Q_GLOBAL_STATIC_WITH_ARGS(QString, busPath, (QLatin1String(DBUS_PATH_DBUS)))
 Q_GLOBAL_STATIC_WITH_ARGS(QString, busInterface, (QLatin1String(DBUS_INTERFACE_DBUS)))
 Q_GLOBAL_STATIC_WITH_ARGS(QString, signalName, (QLatin1String("NameOwnerChanged")))
 
@@ -127,7 +126,7 @@ QStringList QDBusServiceWatcherPrivate::matchArgsForService(const QString &servi
 void QDBusServiceWatcherPrivate::addService(const QString &service)
 {
     QStringList matchArgs = matchArgsForService(service);
-    connection.connect(*busService(), *busPath(), *busInterface(), *signalName(),
+    connection.connect(*busService(), QString(), *busInterface(), *signalName(),
                        matchArgs, QString(), q_func(),
                        SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
@@ -135,7 +134,7 @@ void QDBusServiceWatcherPrivate::addService(const QString &service)
 void QDBusServiceWatcherPrivate::removeService(const QString &service)
 {
     QStringList matchArgs = matchArgsForService(service);
-    connection.disconnect(*busService(), *busPath(), *busInterface(), *signalName(),
+    connection.disconnect(*busService(), QString(), *busInterface(), *signalName(),
                           matchArgs, QString(), q_func(),
                           SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }

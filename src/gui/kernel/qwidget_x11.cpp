@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -527,8 +527,13 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         QX11InfoData *xd = &X11->screens[qt_x11_create_desktop_on_screen];
         xinfo.setX11Data(xd);
     } else if (parentXinfo && (parentXinfo->screen() != xinfo.screen()
-                               || parentXinfo->visual() != xinfo.visual()))
+                               || (parentXinfo->visual() != xinfo.visual()
+                                   && !q->inherits("QGLWidget"))))
     {
+        // QGLWidgets have to be excluded here as they have a
+        // specially crafted QX11Info structure which can't be swapped
+        // out with the parent widgets QX11Info. The parent visual,
+        // for instance, might not even be GL capable.
         xinfo = *parentXinfo;
     }
 
@@ -1079,7 +1084,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         } else {
             // release previous focus information participating with
             // preedit preservation of qic
-            QInputContext *qic = inputContext();
+            QInputContext *qic = QApplicationPrivate::inputContext;
             if (qic)
                 qic->widgetDestroyed(this);
         }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -213,10 +213,12 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
     case QEvent::StyleChange:
     case QEvent::Show:
         if (QProgressBar *bar = qobject_cast<QProgressBar *>(o)) {
-            d->bars << bar;
-            if (d->bars.size() == 1) {
-                Q_ASSERT(d->animationFps> 0);
-                d->animateTimer = startTimer(1000 / d->animationFps);
+            if (!d->bars.contains(bar)) {
+                d->bars << bar;
+                if (d->bars.size() == 1) {
+                    Q_ASSERT(d->animationFps> 0);
+                    d->animateTimer = startTimer(1000 / d->animationFps);
+                }
             }
         }
         break;
@@ -2989,7 +2991,6 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
 #ifndef QT_NO_COMBOBOX
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
-            p->save();
             QBrush editBrush = cmb->palette.brush(QPalette::Base);
             if ((cmb->subControls & SC_ComboBoxFrame)) {
                 if (cmb->frame) {
@@ -3059,7 +3060,6 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                     proxy()->drawPrimitive(PE_FrameFocusRect, &focus, p, widget);
                 }
             }
-            p->restore();
         }
         break;
 #endif // QT_NO_COMBOBOX

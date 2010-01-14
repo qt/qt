@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1805,15 +1805,9 @@
 
   \section1 ECMAScript Compatibility
 
-  QtScript implements all the built-in classes and functions defined
-  in ECMA-262.
-
-  The Date parsing and string conversion functions are implemented using
-  QDateTime::fromString() and QDateTime::toString(), respectively.
-
-  The RegExp class is a wrapper around QRegExp. The QRegExp semantics
-  do not precisely match the semantics for regular expressions defined
-  in ECMA-262.
+  QtScript implements all the built-in objects and properties defined
+  in the \l{ECMA-262} standard; see the
+  \l{ECMAScript Reference}{ECMAScript reference} for an overview.
 
   \section1 QtScript Extensions to ECMAScript
 

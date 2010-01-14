@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -139,11 +139,12 @@ void ScribbleArea::mouseReleaseEvent(QMouseEvent *event)
 }
 
 //! [12] //! [13]
-void ScribbleArea::paintEvent(QPaintEvent * /* event */)
+void ScribbleArea::paintEvent(QPaintEvent *event)
 //! [13] //! [14]
 {
     QPainter painter(this);
-    painter.drawImage(QPoint(0, 0), image);
+    QRect dirtyRect = event->rect();
+    painter.drawImage(dirtyRect, image, dirtyRect);
 }
 //! [14]
 

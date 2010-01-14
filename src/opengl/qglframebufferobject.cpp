@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -597,6 +597,12 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     the constructors that take a QGLFramebufferObject parameter, and set the
     QGLFramebufferObject::samples() property to a non-zero value.
 
+    When painting to a QGLFramebufferObject using QPainter, the state of
+    the current GL context will be altered by the paint engine to reflect
+    its needs.  Applications should not rely upon the GL state being reset
+    to its original conditions, particularly the current shader program,
+    GL viewport, texture units, and drawing modes.
+
     For multisample framebuffer objects a color render buffer is created,
     otherwise a texture with the specified texture target is created.
     The color render buffer or texture will have the specified internal
@@ -899,8 +905,8 @@ bool QGLFramebufferObject::release()
 #endif
 
     if (current) {
-        current->d_ptr->current_fbo = 0;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+        current->d_ptr->current_fbo = current->d_ptr->default_fbo;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, current->d_ptr->default_fbo);
     }
 
     return true;

@@ -698,13 +698,13 @@ EXPORTS
 	_ZN11QFontDialogD2Ev @ 697 NONAME
 	_ZN11QFontEngine11boundingBoxEjRK10QTransform @ 698 NONAME
 	_ZN11QFontEngine11grayPaletteEv @ 699 NONAME
-	_ZN11QFontEngine13setGlyphCacheEN21QFontEngineGlyphCache4TypeEPS0_ @ 700 NONAME
+	_ZN11QFontEngine13setGlyphCacheEN21QFontEngineGlyphCache4TypeEPS0_ @ 700 NONAME ABSENT
 	_ZN11QFontEngine13setGlyphCacheEPvP21QFontEngineGlyphCache @ 701 NONAME
 	_ZN11QFontEngine15addGlyphsToPathEPjP11QFixedPointiP12QPainterPath6QFlagsIN9QTextItem10RenderFlagEE @ 702 NONAME
 	_ZN11QFontEngine16addOutlineToPathEffRK12QGlyphLayoutP12QPainterPath6QFlagsIN9QTextItem10RenderFlagEE @ 703 NONAME
 	_ZN11QFontEngine16alphaMapForGlyphEj @ 704 NONAME
 	_ZN11QFontEngine16alphaMapForGlyphEjRK10QTransform @ 705 NONAME
-	_ZN11QFontEngine16expireGlyphCacheEv @ 706 NONAME
+	_ZN11QFontEngine16expireGlyphCacheEv @ 706 NONAME ABSENT
 	_ZN11QFontEngine16getUnscaledGlyphEjP12QPainterPathP15glyph_metrics_t @ 707 NONAME
 	_ZN11QFontEngine16loadKerningPairsE6QFixed @ 708 NONAME
 	_ZN11QFontEngine16tightBoundingBoxERK12QGlyphLayout @ 709 NONAME
@@ -4680,9 +4680,9 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate28ensureSequentialSiblingIndexEv @ 4679 NONAME
 	_ZN20QGraphicsItemPrivate29ensureSceneTransformRecursiveEPP13QGraphicsItem @ 4680 NONAME
 	_ZN20QGraphicsItemPrivate30updateSceneTransformFromParentEv @ 4681 NONAME
-	_ZN20QGraphicsItemPrivate33setEmptyCachedClipPathRecursivelyERK6QRectF @ 4682 NONAME
-	_ZN20QGraphicsItemPrivate35invalidateCachedClipPathRecursivelyEbRK6QRectF @ 4683 NONAME
-	_ZN20QGraphicsItemPrivate36updateCachedClipPathFromSetPosHelperERK7QPointF @ 4684 NONAME
+	_ZN20QGraphicsItemPrivate33setEmptyCachedClipPathRecursivelyERK6QRectF @ 4682 NONAME ABSENT
+	_ZN20QGraphicsItemPrivate35invalidateCachedClipPathRecursivelyEbRK6QRectF @ 4683 NONAME ABSENT
+	_ZN20QGraphicsItemPrivate36updateCachedClipPathFromSetPosHelperERK7QPointF @ 4684 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate8addChildEP13QGraphicsItem @ 4685 NONAME
 	_ZN20QGraphicsPolygonItem10setPolygonERK9QPolygonF @ 4686 NONAME
 	_ZN20QGraphicsPolygonItem11setFillRuleEN2Qt8FillRuleE @ 4687 NONAME
@@ -5221,8 +5221,8 @@ EXPORTS
 	_ZN24QImagePixmapCleanupHooks17executeImageHooksEx @ 5220 NONAME
 	_ZN24QImagePixmapCleanupHooks18executePixmapHooksEP7QPixmap @ 5221 NONAME ABSENT
 	_ZN24QImagePixmapCleanupHooks8instanceEv @ 5222 NONAME
-	_ZN24QImagePixmapCleanupHooksC1Ev @ 5223 NONAME
-	_ZN24QImagePixmapCleanupHooksC2Ev @ 5224 NONAME
+	_ZN24QImagePixmapCleanupHooksC1Ev @ 5223 NONAME ABSENT
+	_ZN24QImagePixmapCleanupHooksC2Ev @ 5224 NONAME ABSENT
 	_ZN24QPixmapConvolutionFilter11qt_metacallEN11QMetaObject4CallEiPPv @ 5225 NONAME
 	_ZN24QPixmapConvolutionFilter11qt_metacastEPKc @ 5226 NONAME
 	_ZN24QPixmapConvolutionFilter16staticMetaObjectE @ 5227 NONAME DATA 16
@@ -7615,8 +7615,8 @@ EXPORTS
 	_ZNK11QFontDialog11currentFontEv @ 7614 NONAME
 	_ZNK11QFontDialog12selectedFontEv @ 7615 NONAME
 	_ZNK11QFontDialog7optionsEv @ 7616 NONAME
-	_ZNK11QFontEngine10glyphCacheEN21QFontEngineGlyphCache4TypeERK10QTransform @ 7617 NONAME
-	_ZNK11QFontEngine10glyphCacheEPvRK10QTransform @ 7618 NONAME
+	_ZNK11QFontEngine10glyphCacheEN21QFontEngineGlyphCache4TypeERK10QTransform @ 7617 NONAME ABSENT
+	_ZNK11QFontEngine10glyphCacheEPvRK10QTransform @ 7618 NONAME ABSENT
 	_ZNK11QFontEngine10glyphCountEv @ 7619 NONAME
 	_ZNK11QFontEngine10propertiesEv @ 7620 NONAME
 	_ZNK11QFontEngine12getSfntTableEj @ 7621 NONAME
@@ -9388,7 +9388,7 @@ EXPORTS
 	_ZNK20QGraphicsItemPrivate15initStyleOptionEP24QStyleOptionGraphicsItemRK10QTransformRK7QRegionb @ 9387 NONAME
 	_ZNK20QGraphicsItemPrivate19genericMapFromSceneERK7QPointFPK7QWidget @ 9388 NONAME
 	_ZNK20QGraphicsItemPrivate19maybeExtraItemCacheEv @ 9389 NONAME
-	_ZNK20QGraphicsItemPrivate20discardUpdateRequestEbbbb @ 9390 NONAME
+	_ZNK20QGraphicsItemPrivate20discardUpdateRequestEbbbb @ 9390 NONAME ABSENT
 	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEv @ 9391 NONAME
 	_ZNK20QGraphicsItemPrivate22inputMethodQueryHelperEN2Qt16InputMethodQueryE @ 9392 NONAME
 	_ZNK20QGraphicsItemPrivate24combineTransformToParentEP10QTransformPKS0_ @ 9393 NONAME
@@ -11571,7 +11571,7 @@ EXPORTS
 	_ZN11QTapGesture19getStaticMetaObjectEv @ 11570 NONAME
 	_ZN11QTapGestureC1EP7QObject @ 11571 NONAME
 	_ZN11QTapGestureC2EP7QObject @ 11572 NONAME
-	_ZN11QVectorPath12addCacheDataEP14QPaintEngineExPvPFvS2_E @ 11573 NONAME
+	_ZN11QVectorPath12addCacheDataEP14QPaintEngineExPvPFvS2_E @ 11573 NONAME ABSENT
 	_ZN12QApplication18symbianEventFilterEPK13QSymbianEvent @ 11574 NONAME
 	_ZN12QApplication19symbianProcessEventEPK13QSymbianEvent @ 11575 NONAME
 	_ZN13QGestureEvent11setAcceptedEN2Qt11GestureTypeEb @ 11576 NONAME
@@ -11735,4 +11735,53 @@ EXPORTS
 	_Zls6QDebugP15QGraphicsObject @ 11734 NONAME
 	_Zls6QDebugRK12QStyleOption @ 11735 NONAME
 	_Zls6QDebugRKN12QStyleOption10OptionTypeE @ 11736 NONAME
+	_ZN12QTextControl31setIgnoreUnusedNavigationEventsEb @ 11737 NONAME
+	_ZNK12QTextControl28ignoreUnusedNavigationEventsEv @ 11738 NONAME
+	_ZN11QVectorPathD1Ev @ 11739 NONAME
+	_ZN11QVectorPathD2Ev @ 11740 NONAME
+	_ZNK11QVectorPath12addCacheDataEP14QPaintEngineExPvPFvS1_S2_E @ 11741 NONAME
+	_ZNK20QGraphicsItemPrivate20discardUpdateRequestEbbb @ 11742 NONAME
+	_ZN11QEglContext10extensionsEv @ 11743 NONAME ABSENT
+	_ZN11QEglContext10getDisplayEP12QPaintDevice @ 11744 NONAME ABSENT
+	_ZN11QEglContext10waitClientEv @ 11745 NONAME ABSENT
+	_ZN11QEglContext10waitNativeEv @ 11746 NONAME ABSENT
+	_ZN11QEglContext11doneCurrentEv @ 11747 NONAME ABSENT
+	_ZN11QEglContext11errorStringEi @ 11748 NONAME ABSENT
+	_ZN11QEglContext11makeCurrentEi @ 11749 NONAME ABSENT
+	_ZN11QEglContext11openDisplayEP12QPaintDevice @ 11750 NONAME ABSENT
+	_ZN11QEglContext11swapBuffersEi @ 11751 NONAME ABSENT
+	_ZN11QEglContext12chooseConfigERK14QEglPropertiesN4QEgl16PixelFormatMatchE @ 11752 NONAME ABSENT
+	_ZN11QEglContext12hasExtensionEPKc @ 11753 NONAME ABSENT
+	_ZN11QEglContext13createContextEPS_PK14QEglProperties @ 11754 NONAME ABSENT
+	_ZN11QEglContext13createSurfaceEP12QPaintDevicePK14QEglProperties @ 11755 NONAME ABSENT
+	_ZN11QEglContext14currentContextEN4QEgl3APIE @ 11756 NONAME ABSENT
+	_ZN11QEglContext14defaultDisplayEP12QPaintDevice @ 11757 NONAME ABSENT
+	_ZN11QEglContext14destroySurfaceEi @ 11758 NONAME ABSENT
+	_ZN11QEglContext14dumpAllConfigsEv @ 11759 NONAME ABSENT
+	_ZN11QEglContext15lazyDoneCurrentEv @ 11760 NONAME ABSENT
+	_ZN11QEglContext17setCurrentContextEN4QEgl3APIEPS_ @ 11761 NONAME ABSENT
+	_ZN11QEglContext7destroyEv @ 11762 NONAME ABSENT
+	_ZN11QEglContextC1Ev @ 11763 NONAME ABSENT
+	_ZN11QEglContextC2Ev @ 11764 NONAME ABSENT
+	_ZN11QEglContextD1Ev @ 11765 NONAME ABSENT
+	_ZN11QEglContextD2Ev @ 11766 NONAME ABSENT
+	_ZN14QEglProperties11removeValueEi @ 11767 NONAME ABSENT
+	_ZN14QEglProperties14dumpAllConfigsEv @ 11768 NONAME ABSENT
+	_ZN14QEglProperties14setPixelFormatEN6QImage6FormatE @ 11769 NONAME ABSENT
+	_ZN14QEglProperties17setRenderableTypeEN4QEgl3APIE @ 11770 NONAME ABSENT
+	_ZN14QEglProperties19reduceConfigurationEv @ 11771 NONAME ABSENT
+	_ZN14QEglProperties20setPaintDeviceFormatEP12QPaintDevice @ 11772 NONAME ABSENT
+	_ZN14QEglProperties8setValueEii @ 11773 NONAME ABSENT
+	_ZN14QEglPropertiesC1Ei @ 11774 NONAME ABSENT
+	_ZN14QEglPropertiesC1Ev @ 11775 NONAME ABSENT
+	_ZN14QEglPropertiesC2Ei @ 11776 NONAME ABSENT
+	_ZN14QEglPropertiesC2Ev @ 11777 NONAME ABSENT
+	_ZNK11QEglContext12configAttribEiPi @ 11778 NONAME ABSENT
+	_ZNK11QEglContext16configPropertiesEi @ 11779 NONAME ABSENT
+	_ZNK11QEglContext7isValidEv @ 11780 NONAME ABSENT
+	_ZNK11QEglContext9isCurrentEv @ 11781 NONAME ABSENT
+	_ZNK14QEglProperties5valueEi @ 11782 NONAME ABSENT
+	_ZNK14QEglProperties8toStringEv @ 11783 NONAME ABSENT
+	_ZNK11QFontEngine10glyphCacheEPvN21QFontEngineGlyphCache4TypeERK10QTransform @ 11784 NONAME
+	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectERK6QRectF @ 11785 NONAME
 

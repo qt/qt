@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -147,6 +147,14 @@ WAVEHDR* QAudioOutputPrivate::allocateBlocks(int size, int count)
 
 void QAudioOutputPrivate::freeBlocks(WAVEHDR* blockArray)
 {
+    WAVEHDR* blocks = blockArray;
+
+    int count = buffer_size/period_size;
+
+    for(int i = 0; i < count; i++) {
+        waveOutUnprepareHeader(hWaveOut,&blocks[i], sizeof(WAVEHDR));
+        blocks+=sizeof(WAVEHDR);
+    }
     HeapFree(GetProcessHeap(), 0, blockArray);
 }
 

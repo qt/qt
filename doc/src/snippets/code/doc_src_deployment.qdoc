@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -453,3 +453,40 @@ CONFIG+=x86 ppc
 //! [54]
 qApp->addLibraryPath("C:/customPath/plugins");
 //! [54]
+
+//! [55]
+cd examples\widgets\wiggly
+//! [55]
+
+//! [56]
+vendorinfo = \
+    "%{\"Example Localized Vendor\"}" \
+    ":\"Example Vendor\""
+
+default_deployment.pkg_prerules = vendorinfo
+//! [56]
+
+//! [57]
+supported_platforms = \
+    "; This demo only supports S60 5.0" \
+    "[0x1028315F],0,0,0,{\"S60ProductID\"}"
+
+default_deployment.pkg_prerules += supported_platforms
+//! [57]
+
+//! [58]
+embedded_deployments = \
+    "; Embed Qt dependencies" \
+    "@\"$$[QT_INSTALL_PREFIX]/qt_installer.sis\",(0x2001E62D)"
+
+default_deployment.pkg_prerules += embedded_deployments
+//! [58]
+
+//! [59]
+qmake
+make release-gcce
+//! [59]
+
+//! [60]
+make sis
+//! [60]

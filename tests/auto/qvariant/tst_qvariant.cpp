@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -272,6 +272,8 @@ private slots:
     void numericalConvert();
     void moreCustomTypes();
     void variantInVariant();
+
+    void colorInteger();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -3386,6 +3388,21 @@ void tst_QVariant::variantInVariant()
     QVariant var9(qMetaTypeId<QVariant>(), &var1);
     QCOMPARE(var9.userType(), qMetaTypeId<QVariant>());
     QCOMPARE(qvariant_cast<QVariant>(var9), var1);
+}
+
+void tst_QVariant::colorInteger()
+{
+    QVariant v = QColor(Qt::red);
+    QCOMPARE(v.type(), QVariant::Color);
+    QCOMPARE(v.value<QColor>(), QColor(Qt::red));
+
+    v.setValue(1000);
+    QCOMPARE(v.type(), QVariant::Int);
+    QCOMPARE(v.toInt(), 1000);
+
+    v.setValue(QColor(Qt::yellow));
+    QCOMPARE(v.type(), QVariant::Color);
+    QCOMPARE(v.value<QColor>(), QColor(Qt::yellow));
 }
 
 QTEST_MAIN(tst_QVariant)

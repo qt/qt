@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -211,6 +211,7 @@ private slots:
     void centerOnDirtyItem();
     void mouseTracking();
     void mouseTracking2();
+    void mouseTracking3();
     void render();
     void exposeRegion();
     void update_data();
@@ -235,6 +236,7 @@ private slots:
     void task259503_scrollingArtifacts();
     void QTBUG_4151_clipAndIgnore_data();
     void QTBUG_4151_clipAndIgnore();
+    void QTBUG_5859_exposedRect();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -3402,6 +3404,102 @@ void tst_QGraphicsView::mouseTracking2()
     QCOMPARE(spy.count(), 1);
 }
 
+void tst_QGraphicsView::mouseTracking3()
+{
+    // Mouse tracking should be automatically enabled if AnchorUnderMouse is used for
+    // view transform or resize. We never disable mouse tracking if it is already enabled.
+
+    { // Make sure we enable mouse tracking when using AnchorUnderMouse for view transformation.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        QVERIFY(!view.viewport()->hasMouseTracking());
+
+        view.setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    { // Make sure we enable mouse tracking when using AnchorUnderMouse for view resizing.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        QVERIFY(!view.viewport()->hasMouseTracking());
+
+        view.setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    { // Make sure we don't disable mouse tracking in setViewport/setScene (transformation anchor).
+        QGraphicsView view;
+        view.setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        QVERIFY(view.viewport()->hasMouseTracking());
+
+        QWidget *viewport = new QWidget;
+        view.setViewport(viewport);
+        QVERIFY(viewport->hasMouseTracking());
+
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        view.setScene(&scene);
+        QVERIFY(viewport->hasMouseTracking());
+    }
+
+    { // Make sure we don't disable mouse tracking in setViewport/setScene (resize anchor).
+        QGraphicsView view;
+        view.setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+        QVERIFY(view.viewport()->hasMouseTracking());
+
+        QWidget *viewport = new QWidget;
+        view.setViewport(viewport);
+        QVERIFY(viewport->hasMouseTracking());
+
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        view.setScene(&scene);
+        QVERIFY(viewport->hasMouseTracking());
+    }
+
+    // Make sure we don't disable mouse tracking when adding an item (transformation anchor).
+    { // Adding an item to the scene before the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        scene.addItem(item);
+
+        QGraphicsView view;
+        view.setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        view.setScene(&scene);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    { // Adding an item to the scene after the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        view.setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        scene.addItem(item);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    // Make sure we don't disable mouse tracking when adding an item (resize anchor).
+    { // Adding an item to the scene before the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        scene.addItem(item);
+
+        QGraphicsView view;
+        view.setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+        view.setScene(&scene);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+
+    { // Adding an item to the scene after the scene is set on the view.
+        QGraphicsScene scene(-10000, -10000, 20000, 20000);
+        QGraphicsView view(&scene);
+        view.setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+
+        QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+        scene.addItem(item);
+        QVERIFY(view.viewport()->hasMouseTracking());
+    }
+}
+
 class RenderTester : public QGraphicsRectItem
 {
 public:
@@ -3600,7 +3698,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
     item->setFlag(QGraphicsItem::ItemIsFocusable);
     scene.addItem(item);
     scene.setFocusItem(item);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
 
     item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, false);
@@ -3615,35 +3713,35 @@ void tst_QGraphicsView::inputMethodSensitivity()
     scene.addItem(item2);
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item2);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     scene.setFocusItem(item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(0);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     scene.setFocusItem(item2);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item2);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     view.setScene(0);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item2);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item2));
 
     scene.setFocusItem(item);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), false);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     view.setScene(&scene);
     QCOMPARE(view.testAttribute(Qt::WA_InputMethodEnabled), true);
-    QCOMPARE(scene.focusItem(), item);
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 }
 
 class InputContextTester : public QInputContext
@@ -3865,6 +3963,44 @@ void tst_QGraphicsView::QTBUG_4151_clipAndIgnore()
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
     QCOMPARE(view.items(view.rect()).size(), numItems);
+}
+
+void tst_QGraphicsView::QTBUG_5859_exposedRect()
+{
+    class CustomScene : public QGraphicsScene
+    {
+    public:
+        CustomScene(const QRectF &rect) : QGraphicsScene(rect) { }
+        void drawBackground(QPainter *painter, const QRectF &rect)
+        { lastBackgroundExposedRect = rect; }
+        QRectF lastBackgroundExposedRect;
+    };
+
+    class CustomRectItem : public QGraphicsRectItem
+    {
+    public:
+        CustomRectItem(const QRectF &rect) : QGraphicsRectItem(rect)
+        { setFlag(QGraphicsItem::ItemUsesExtendedStyleOption); }
+        void paint(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+        { lastExposedRect = option->exposedRect; }
+        QRectF lastExposedRect;
+    };
+
+    CustomScene scene(QRectF(0,0,50,50));
+
+    CustomRectItem item(scene.sceneRect());
+
+    scene.addItem(&item);
+
+    QGraphicsView view(&scene);
+    view.scale(4.15, 4.15);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    view.viewport()->repaint(10,10,20,20);
+    QApplication::processEvents();
+
+    QCOMPARE(item.lastExposedRect, scene.lastBackgroundExposedRect);
 }
 
 QTEST_MAIN(tst_QGraphicsView)

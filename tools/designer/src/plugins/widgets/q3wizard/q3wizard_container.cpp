@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,7 +55,7 @@ Q3WizardHelper::Q3WizardHelper(Q3Wizard *wizard)
     : QObject(wizard),
     m_wizard(wizard)
 {
-    connect(m_wizard, SIGNAL(selected(const QString &)), this, SLOT(slotCurrentChanged()));
+    connect(m_wizard, SIGNAL(selected(QString)), this, SLOT(slotCurrentChanged()));
 }
 
 void Q3WizardHelper::slotCurrentChanged()

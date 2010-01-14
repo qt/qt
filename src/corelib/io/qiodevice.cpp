@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -965,7 +965,16 @@ QByteArray QIODevice::readAll()
 
     QByteArray result;
     qint64 readBytes = 0;
-    if (d->isSequential() || (readBytes = size()) == 0) {
+
+    // flush internal read buffer
+    if (!(d->openMode & Text) && !d->buffer.isEmpty()) {
+        result = d->buffer.readAll();
+        readBytes = result.size();
+        d->pos += readBytes;
+    }
+
+    qint64 theSize;
+    if (d->isSequential() || (theSize = size()) == 0) {
         // Size is unknown, read incrementally.
         qint64 readResult;
         do {
@@ -977,8 +986,8 @@ QByteArray QIODevice::readAll()
     } else {
         // Read it all in one go.
         // If resize fails, don't read anything.
-        result.resize(int(readBytes - d->pos));
-        readBytes = read(result.data(), result.size());
+        result.resize(int(readBytes + theSize - d->pos));
+        readBytes += read(result.data() + readBytes, result.size() - readBytes);
     }
 
     if (readBytes <= 0)
@@ -1157,6 +1166,10 @@ QByteArray QIODevice::readLine(qint64 maxSize)
         // If resize fails or maxSize == 0, read incrementally
         if (maxSize == 0)
             maxSize = INT_MAX;
+
+        // The first iteration needs to leave an extra byte for the terminating null
+        result.resize(1);
+
         qint64 readResult;
         do {
             result.resize(int(qMin(maxSize, result.size() + QIODEVICE_BUFFERSIZE)));
@@ -1164,7 +1177,7 @@ QByteArray QIODevice::readLine(qint64 maxSize)
             if (readResult > 0 || readBytes == 0)
                 readBytes += readResult;
         } while (readResult == QIODEVICE_BUFFERSIZE
-                && result[int(readBytes)] != '\n');
+                && result[int(readBytes - 1)] != '\n');
     } else
         readBytes = readLine(result.data(), result.size());
 
@@ -1404,6 +1417,9 @@ bool QIODevicePrivate::putCharHelper(char c)
 */
 bool QIODevice::getChar(char *c)
 {
+    Q_D(QIODevice);
+    CHECK_READABLE(getChar, false);
+
     char ch;
     return (1 == read(c ? c : &ch, 1));
 }

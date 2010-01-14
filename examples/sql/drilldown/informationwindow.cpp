@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,16 +83,15 @@ InformationWindow::InformationWindow(int id, QSqlRelationalTableModel *offices,
     connect(imageFileEditor, SIGNAL(currentIndexChanged(int)),
             this, SLOT(enableButtons()));
 
-    QGridLayout *layout = new QGridLayout;
-    layout->addWidget(locationLabel, 0, 0, Qt::AlignLeft | Qt::AlignTop);
-    layout->addWidget(countryLabel, 1, 0, Qt::AlignLeft | Qt::AlignTop);
-    layout->addWidget(imageFileLabel, 2, 0, Qt::AlignLeft | Qt::AlignTop);
-    layout->addWidget(descriptionLabel, 3, 0, Qt::AlignLeft | Qt::AlignTop);
-    layout->addWidget(locationText, 0, 1);
-    layout->addWidget(countryText, 1, 1);
-    layout->addWidget(imageFileEditor, 2, 1);
-    layout->addWidget(descriptionEditor, 3, 1);
-    layout->addWidget(buttonBox, 4, 0, 1, 2);
+    QFormLayout *formLayout = new QFormLayout;
+    formLayout->addRow(locationLabel, locationText);
+    formLayout->addRow(countryLabel, countryText);
+    formLayout->addRow(imageFileLabel, imageFileEditor);
+    formLayout->addRow(descriptionLabel, descriptionEditor);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addLayout(formLayout);
+    layout->addWidget(buttonBox);
     setLayout(layout);
 
     locationId = id;
@@ -101,9 +100,6 @@ InformationWindow::InformationWindow(int id, QSqlRelationalTableModel *offices,
     setWindowFlags(Qt::Window);
     enableButtons(false);
     setWindowTitle(tr("Office: %1").arg(locationText->text()));
-#ifndef Q_OS_SYMBIAN
-    resize(320, sizeHint().height());
-#endif
 }
 //! [4]
 
@@ -154,8 +150,8 @@ void InformationWindow::createButtons()
 //! [8]
 
 //! [9]
-    buttonBox = new QDialogButtonBox;
-    buttonBox->addButton(submitButton, QDialogButtonBox::ResetRole);
+    buttonBox = new QDialogButtonBox(this);
+    buttonBox->addButton(submitButton, QDialogButtonBox::AcceptRole);
     buttonBox->addButton(revertButton, QDialogButtonBox::ResetRole);
     buttonBox->addButton(closeButton, QDialogButtonBox::RejectRole);
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -178,6 +178,8 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* 
     if (ok) {
         xshmimg->data = (char*)shmat(xshminfo.shmid, 0, 0);
         xshminfo.shmaddr = xshmimg->data;
+        if (shmctl(xshminfo.shmid, IPC_RMID, 0) == -1)
+            qWarning() << "Error while marking the shared memory segment to be destroyed";
         ok = (xshminfo.shmaddr != (char*)-1);
         if (ok)
             image = QImage((uchar *)xshmimg->data, width, height, systemFormat());

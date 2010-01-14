@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,7 +64,7 @@ void Torpedo::launch()
     launchAnimation->setEndValue(QPointF(x(),qobject_cast<GraphicsScene *>(scene())->sealLevel() - 15));
     launchAnimation->setEasingCurve(QEasingCurve::InQuad);
     launchAnimation->setDuration(y()/currentSpeed*10);
-    connect(launchAnimation,SIGNAL(valueChanged(const QVariant &)),this,SLOT(onAnimationLaunchValueChanged(const QVariant &)));
+    connect(launchAnimation,SIGNAL(valueChanged(QVariant)),this,SLOT(onAnimationLaunchValueChanged(QVariant)));
     connect(this,SIGNAL(torpedoExploded()), launchAnimation, SLOT(stop()));
 
     //We setup the state machine of the torpedo

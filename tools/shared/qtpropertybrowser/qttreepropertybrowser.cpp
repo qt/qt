@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -310,7 +310,7 @@ QWidget *QtPropertyEditorDelegate::createEditor(QWidget *parent,
             if (editor) {
                 editor->setAutoFillBackground(true);
                 editor->installEventFilter(const_cast<QtPropertyEditorDelegate *>(this));
-                connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(slotEditorDestroyed(QObject *)));
+                connect(editor, SIGNAL(destroyed(QObject*)), this, SLOT(slotEditorDestroyed(QObject*)));
                 m_propertyToEditor[property] = editor;
                 m_editorToProperty[editor] = property;
                 m_editedItem = item;
@@ -452,8 +452,8 @@ void QtTreePropertyBrowserPrivate::init(QWidget *parent)
 
     m_expandIcon = drawIndicatorIcon(q_ptr->palette(), q_ptr->style());
 
-    QObject::connect(m_treeWidget, SIGNAL(collapsed(const QModelIndex &)), q_ptr, SLOT(slotCollapsed(const QModelIndex &)));
-    QObject::connect(m_treeWidget, SIGNAL(expanded(const QModelIndex &)), q_ptr, SLOT(slotExpanded(const QModelIndex &)));
+    QObject::connect(m_treeWidget, SIGNAL(collapsed(QModelIndex)), q_ptr, SLOT(slotCollapsed(QModelIndex)));
+    QObject::connect(m_treeWidget, SIGNAL(expanded(QModelIndex)), q_ptr, SLOT(slotExpanded(QModelIndex)));
     QObject::connect(m_treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), q_ptr, SLOT(slotCurrentTreeItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
 }
 

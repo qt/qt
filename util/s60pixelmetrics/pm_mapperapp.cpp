@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,7 +65,6 @@
 #include <aknglobalnote.h>
 
 #include <CentralRepository.h>
-#include <AvkonInternalCRKeys.h>    // KAknLayoutId
 
 #include <Aknsutils.h>
 #include <AknUtils.h>
@@ -89,7 +88,7 @@ _LIT(KEndBraceWithCommaAndCRLF, "},\n");
 _LIT(KCRLF, "\n");
 
 // Number of header lines in layout data.
-const TInt KHeaderValues = 5;
+const TInt KHeaderValues = 4;
 
 // ============================ MEMBER FUNCTIONS ===============================
 
@@ -156,37 +155,27 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
             Exit();
             break;
         case ECmdSwitchOutput:
+		    {
+            HBufC* buffer = HBufC::NewLC( 100 );
+            TPtr bufferPtr = buffer->Des();
+            TBool last = ETrue;
+            bufferPtr.Append(_L("Output switched to "));
             iFileOutputOn = !iFileOutputOn;
+            if (iFileOutputOn)
+                bufferPtr.Append(_L("file."));
+            else
+                bufferPtr.Append(_L("screen."));
+            ShowL( *buffer, last );
+			}
             break;
         case ECmdStatus:
             {
             ClearL();
 
             // layout
-            CRepository* repository = NULL;
-            TInt value = KErrNotFound;
-            TRAPD(ret, repository = CRepository::NewL(KCRUidAvkon));
-            if (ret == KErrNone)
-                {
-                ret = repository->Get(KAknLayoutId, value);
-                }
-            delete repository;
-            ret= 0;
             HBufC* buffer = HBufC::NewLC( 100 );
             TPtr bufferPtr = buffer->Des();
-            bufferPtr.Append(_L("Layout: "));
-            if (ret==KErrNone)
-                {
-                bufferPtr.AppendNum(value);
-                }
-            else
-                {
-                bufferPtr.Append(_L("(error) "));
-                bufferPtr.AppendNum(ret);
-                }
             TBool last = ETrue;
-            ShowL( *buffer, last );
-            bufferPtr.Zero();
 
             // Orientation
             bufferPtr.Append(_L("Orientation: "));
@@ -198,12 +187,6 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
             bufferPtr.Append(_L("Output: "));
             if (iFileOutputOn) bufferPtr.Append(_L("File"));
             else bufferPtr.Append(_L("Screen"));
-            ShowL( *buffer, last );
-            bufferPtr.Zero();
-
-            // Automode
-            bufferPtr.Append(_L("AutoMode: "));
-            bufferPtr.AppendNum((TInt)iAutoMode);
             ShowL( *buffer, last );
             bufferPtr.Zero();
 
@@ -261,47 +244,24 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
             CleanupStack::PopAndDestroy( buffer );
             }
             break;
-        case ECmdSwitchMirroring:
-            {
-            // set the shared data value
-            CRepository* repository = NULL;
-            TRAPD(ret, repository = CRepository::NewL(KCRUidAvkon));
-            if (ret == KErrNone)
-                {
-                TInt value = KErrNotFound;
-                repository->Get(KAknLayoutId, value);
-                if ( value == EAknLayoutIdELAF)
-                    {
-                    value = EAknLayoutIdABRW;
-                    }
-                else if (value ==EAknLayoutIdABRW)
-                    {
-                    value = EAknLayoutIdELAF;
-                    }
-                ret = repository->Set(KAknLayoutId, value);
-                }
-            delete repository;
-            // now inform all open apps of the switch
-            TWsEvent event;
-            event.SetType(KEikDynamicLayoutVariantSwitch);
-            iEikonEnv->WsSession().SendEventToAllWindowGroups(event);
-            }
-            break;
         case ECmdSwitchOrientation:
             {
             ClearL();
+            HBufC* buffer = HBufC::NewLC( 100 );
+            TPtr bufferPtr = buffer->Des();
+            TBool last = ETrue;
+
             #ifndef __SERIES60_31__
             if (!iAvkonAppUi->OrientationCanBeChanged())
                 {
-                HBufC* buffer = HBufC::NewLC( 100 );
-                TPtr bufferPtr = buffer->Des();
                 bufferPtr.Append(_L("Orientation cannot be changed."));
-                TBool last = EFalse;
                 ShowL( *buffer, last );
                 bufferPtr.Zero();
                 delete buffer;
+                break;
                 }
             #endif //__SERIES60_31__
+
             if ( iAvkonAppUi->Orientation() == CAknAppUiBase::EAppUiOrientationPortrait)
                 {
                 iAvkonAppUi->SetOrientationL(CAknAppUiBase::EAppUiOrientationLandscape);
@@ -314,15 +274,11 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
                 {
                 // unspecified
                 iAvkonAppUi->SetOrientationL(CAknAppUiBase::EAppUiOrientationLandscape);
-                /*User::After(100000);
-                HBufC* buffer = HBufC::NewLC( 100 );
-                TPtr bufferPtr = buffer->Des();
-                bufferPtr.Append(_L("Orientation unspecified."));
-                TBool last = EFalse;
-                ShowL( *buffer, last );
-                bufferPtr.Zero();
-                delete buffer;*/
                 }
+            bufferPtr.Append(_L("Orientation changed."));
+            ShowL( *buffer, last );
+            bufferPtr.Zero();
+            delete buffer;
             break;
             }
         case ECmdStartCalculations:
@@ -362,12 +318,6 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
                 tgt.AppendNum(version.minorVersion, EDecimal); // put minor version into text file
                 ShowL( tgt, last );
                 tgt.Zero();
-                // MIRRORED
-                TBool mirrored = AknLayoutUtils::LayoutMirrored();
-                tgt.Append(_L("mirrored: \t"));
-                tgt.AppendNum(mirrored, EDecimal); // put mirrored state into text file
-                ShowL( tgt, last );
-                tgt.Zero();
                 }
 
             TInt myValue = KErrNotFound;
@@ -385,32 +335,14 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
                 if (index==QStyle::PM_SubMenuOverlap) index = QStyle::PM_CustomBase;
                 index++;
                 }
-            if (iAutoMode && !iMode)
-                {
-                HandleCommandL(ECmdSwitchMirroring);
-                iMode = ETrue;
-                }
             }
             break;
         case ECmdCreateHeaderFile:
             CreateHeaderFileL();
             break;
-        case ECmdSetAutoMode:
-            iAutoMode = !iAutoMode;
         default:
             break;
         }
-    }
-void CPixelMetricsMapperAppUi::DoAutoOperationL()
-    {
-    HandleCommandL(ECmdStartCalculations);
-    iMode = EFalse;
-    HandleCommandL(ECmdSwitchMirroring);
-    }
-
-TBool CPixelMetricsMapperAppUi::ReadyForAutoOp() const
-    {
-    return (iAutoMode && iMode);
     }
 
 // -----------------------------------------------------------------------------
@@ -834,21 +766,7 @@ void CPixelMetricsMapperAppUi::CreateHeaderFileL() const
             User::LeaveIfError( lex.Val(nextValue) );
             if ( loop <= KHeaderValues-1)
                 {
-                if (loop == KHeaderValues -1 ) // true / false values
-                    {
-                    if (nextValue == 1)
-                        {
-                        bufferLayoutHdr.Append(_L("true"));
-                        }
-                    else
-                        {
-                        bufferLayoutHdr.Append(_L("false"));
-                        }
-                    }
-                else
-                    {
-                    bufferLayoutHdr.AppendNum(nextValue);
-                    }
+                bufferLayoutHdr.AppendNum(nextValue);
                 }
             else
                 {
@@ -882,13 +800,11 @@ TFileName CPixelMetricsMapperAppUi::CreateLayoutNameL(TFileText& aFileHandle) co
     // Layout data is deployed like this:
     // first line - height
     // second line - width
-    // fifth line mirror info
     TFileName lines;
     TFileName layoutName;
 
     TInt height = -666;
     TInt width = -666;
-    TInt mirroring = -666;
     // Collect name information.
     for (TInt i=0; i<6; i++)
         {
@@ -906,10 +822,6 @@ TFileName CPixelMetricsMapperAppUi::CreateLayoutNameL(TFileText& aFileHandle) co
         if (i==1) //width is second
             {
             error = myLexer.Val(width);
-            }
-        if (i==4) //mirror info is fourth
-            {
-            error = myLexer.Val(mirroring);
             }
         User::LeaveIfError(error);
         }
@@ -965,10 +877,6 @@ TFileName CPixelMetricsMapperAppUi::CreateLayoutNameL(TFileText& aFileHandle) co
     else
         {
         layoutName.Append(_L("Portrait"));
-        }
-    if (mirroring)
-        {
-        layoutName.Append(_L(" Mirrored"));
         }
     return layoutName;
     }

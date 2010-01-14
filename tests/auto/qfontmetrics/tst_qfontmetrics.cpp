@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,6 +72,7 @@ private slots:
     void veryNarrowElidedText();
     void averageCharWidth();
     void elidedMultiLength();
+    void elidedMultiLengthF();
     void bearingIncludedInBoundingRect();
 };
 
@@ -218,13 +219,13 @@ void tst_QFontMetrics::averageCharWidth()
     QVERIFY(fmf.averageCharWidth() != 0);
 }
 
-void tst_QFontMetrics::elidedMultiLength()
+template<class FontMetrics> void elidedMultiLength_helper()
 {
     QString text1 = "Long Text 1\x9cShorter\x9csmall";
     QString text1_long = "Long Text 1";
     QString text1_short = "Shorter";
     QString text1_small = "small";
-    QFontMetrics fm = QFontMetrics(QFont());
+    FontMetrics fm = FontMetrics(QFont());
     int width_long = fm.size(0, text1_long).width();
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, 8000), text1_long);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long + 1), text1_long);
@@ -238,7 +239,16 @@ void tst_QFontMetrics::elidedMultiLength()
     QString text1_el = QString::fromLatin1("s") + ellipsisChar;
     int width_small = fm.width(text1_el);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_small + 1), text1_el);
+}
 
+void tst_QFontMetrics::elidedMultiLength()
+{
+    elidedMultiLength_helper<QFontMetrics>();
+}
+
+void tst_QFontMetrics::elidedMultiLengthF()
+{
+    elidedMultiLength_helper<QFontMetricsF>();
 }
 
 void tst_QFontMetrics::bearingIncludedInBoundingRect()

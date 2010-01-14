@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,6 +82,8 @@ public:
     virtual bool waitForDownstreamReadyRead(int msecs);
 
     virtual void downstreamReadyWrite();
+    virtual void setDownstreamLimited(bool b);
+
     virtual void copyFinished(QIODevice *);
 #ifndef QT_NO_OPENSSL
     virtual void ignoreSslErrors();
@@ -104,6 +106,7 @@ private slots:
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);
     bool sendCacheContents(const QNetworkCacheMetaData &metaData);
+    void finished(); // override
 
 private:
     QHttpNetworkReply *httpReply;
@@ -118,7 +121,6 @@ private:
 #endif
 
     void disconnectFromHttp();
-    void finished();            // override
     void setupConnection();
     void validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
     void invalidateCache();

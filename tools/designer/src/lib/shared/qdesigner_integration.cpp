@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -117,7 +117,7 @@ void QDesignerIntegration::initialize()
 
     // Extensions
     if (QDesignerPropertyEditor *designerPropertyEditor= qobject_cast<QDesignerPropertyEditor *>(core()->propertyEditor())) {
-        connect(designerPropertyEditor, SIGNAL(propertyValueChanged(QString, QVariant, bool)), this, SLOT(updateProperty(QString, QVariant, bool)));
+        connect(designerPropertyEditor, SIGNAL(propertyValueChanged(QString,QVariant,bool)), this, SLOT(updateProperty(QString,QVariant,bool)));
         connect(designerPropertyEditor, SIGNAL(resetProperty(QString)), this, SLOT(resetProperty(QString)));
         connect(designerPropertyEditor, SIGNAL(addDynamicProperty(QString,QVariant)),
                 this, SLOT(addDynamicProperty(QString,QVariant)));

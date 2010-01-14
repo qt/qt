@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2392,8 +2392,8 @@ void QDesignerResource::createResources(DomResources *resources)
     } else {
         resourceSet = m_formWindow->core()->resourceModel()->addResourceSet(paths);
         m_formWindow->setResourceSet(resourceSet);
-        QObject::connect(m_formWindow->core()->resourceModel(), SIGNAL(resourceSetActivated(QtResourceSet *, bool)),
-                m_formWindow, SLOT(resourceSetActivated(QtResourceSet *, bool)));
+        QObject::connect(m_formWindow->core()->resourceModel(), SIGNAL(resourceSetActivated(QtResourceSet*,bool)),
+                m_formWindow, SLOT(resourceSetActivated(QtResourceSet*,bool)));
     }
 }
 

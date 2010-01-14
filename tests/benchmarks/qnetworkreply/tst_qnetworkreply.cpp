@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -561,15 +561,15 @@ void tst_qnetworkreply::httpUploadPerformance()
       generator.start();
       time.start();
       QTestEventLoop::instance().enterLoop(40);
+      qint64 elapsed = time.elapsed();
+      reader.exit();
+      reader.wait();
+      QVERIFY(reply->isFinished());
       QCOMPARE(reply->error(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 
-      qint64 elapsed = time.elapsed();
       qDebug() << "tst_QNetworkReply::httpUploadPerformance" << elapsed << "msec, "
               << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
-
-      reader.exit();
-      reader.wait();
 }
 
 

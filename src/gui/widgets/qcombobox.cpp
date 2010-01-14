@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -931,7 +931,10 @@ void QComboBoxPrivate::init()
                                  QSizePolicy::ComboBox));
     setLayoutItemMargins(QStyle::SE_ComboBoxLayoutItem);
     q->setModel(new QStandardItemModel(0, 1, q));
-    q->setAttribute(Qt::WA_InputMethodEnabled);
+    if (!q->isEditable())
+        q->setAttribute(Qt::WA_InputMethodEnabled, false);
+    else
+        q->setAttribute(Qt::WA_InputMethodEnabled);
 }
 
 QComboBoxPrivateContainer* QComboBoxPrivate::viewContainer()

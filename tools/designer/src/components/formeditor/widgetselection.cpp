@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,7 +86,7 @@ static inline Layout *managedLayoutOf(const QDesignerFormEditorInterface *core,
 
 // ----------- WidgetHandle
 WidgetHandle::WidgetHandle(FormWindow *parent, WidgetHandle::Type t, WidgetSelection *s) :
-    InvisibleWidget(parent->mainContainer()),
+    InvisibleWidget(parent->formContainer()),
     m_widget(0),
     m_type(t),
     m_formWindow( parent),
@@ -638,7 +638,7 @@ void WidgetSelection::updateGeometry()
         return;
 
     QPoint p = m_widget->parentWidget()->mapToGlobal(m_widget->pos());
-    p = m_formWindow->mapFromGlobal(p);
+    p = m_formWindow->formContainer()->mapFromGlobal(p);
     const QRect r(p, m_widget->size());
 
     const int w = 6;

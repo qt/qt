@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -812,12 +812,11 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             value = PixelMetricMenuValue(metric, mainPaneRect);
             break;
         case QStyle::PM_ButtonIconSize:
+            {
             //lets use voice recorder icons as a base
             //Unfortunately S60 graphics don't separate button bevel graphics from the actual icon.
             //Se we have no means to query the margin from bevel border to "central icon" border.
             //So, we need to make a estimate...
-
-            const TInt varietyForButtons = !landscape ? 0 : 1;
 
             TAknLayoutRect vRMainRect;
             vRMainRect.LayoutRect( mainPaneRect, AknLayoutScalable_Apps::main_vorec_pane() );
@@ -833,7 +832,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
 
             // 0.32 is the estimate how much the icon occupies of the button bevel area
             value = vRButtonCellGraphicsRect.Rect().Width() * 0.32;
-
+            }
             break;
         case QStyle::PM_SmallIconSize:
             {
