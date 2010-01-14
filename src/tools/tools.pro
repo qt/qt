@@ -20,7 +20,7 @@ src_tools_uic3.target = sub-uic3
 src_tools_idc.subdir = $$QT_SOURCE_TREE/src/tools/idc
 src_tools_idc.target = sub-idc
 
-!wince*:!symbian:!ordered {
+!wince*:!ordered {
     # Set dependencies for each subdir
     src_tools_moc.depends = src_tools_bootstrap
     src_tools_rcc.depends = src_tools_bootstrap
