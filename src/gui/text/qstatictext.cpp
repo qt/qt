@@ -64,8 +64,15 @@ QT_BEGIN_NAMESPACE
     The class primarily provides an optimization for cases where text and the transformations on
     the painter are static over several paint events. If the text or its layout is changed
     regularly, QPainter::drawText() is the more efficient alternative. Translating the painter
-    will not affect the performance of drawStaticText(), but altering any other parts of the
-    painter's transformation will cause the layout of the static text to be recalculated.
+    will not cause the layout of the text to be recalculated, but will cause a very small
+    performance impact on drawStaticText(). Altering any other parts of the painter's
+    transformation or the painter's font will cause the layout of the static text to be
+    recalculated. This should be avoided as often as possible to maximize the performance
+    benefit of using QStaticText.
+
+    In addition, only affine transformations are supported by drawStaticText(). Calling
+    drawStaticText() on a projected painter will perform slightly worse than using the regular
+    drawText() call, so this should be avoided.
 
     \code
     class MyWidget: public QWidget
@@ -95,8 +102,8 @@ QT_BEGIN_NAMESPACE
     If you set a maximum size on the QStaticText object, this will bound the text. The text will
     be formatted so that no line exceeds the given width. When the object is painted, it will 
     be clipped at the given size. The position of the text is decided by the argument
-    passed to QPainter::drawStaticText() and can change from call to call without affecting 
-    performance.
+    passed to QPainter::drawStaticText() and can change from call to call with a minimal impact
+    on performance.
 
     \sa QPainter::drawText(), QPainter::drawStaticText(), QTextLayout, QTextDocument
 */
