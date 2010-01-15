@@ -78,14 +78,12 @@
 #include <net/if.h>
 #endif
 
-#define QT_FOPEN                ::fopen
-#define QT_FSEEK                ::fseek
-#define QT_FTELL                ::ftell
-#define QT_FGETPOS              ::fgetpos
-#define QT_FSETPOS              ::fsetpos
-#define QT_MMAP                 ::mmap
-#define QT_FPOS_T               fpos_t
+#include "../common/c89/qplatformdefs.h"
+
+#undef QT_OFF_T
 #define QT_OFF_T                off_t
+
+#define QT_MMAP                 ::mmap
 
 #define QT_STATBUF		struct stat
 #define QT_STATBUF4TSTAT	struct stat

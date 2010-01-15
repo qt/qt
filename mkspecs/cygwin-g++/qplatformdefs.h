@@ -81,6 +81,7 @@
 //#include <windows.h>
 #include <netinet/in.h>
 
+#include "../common/c89/qplatformdefs.h"
 
 #define QT_STATBUF		struct stat
 #define QT_STATBUF4TSTAT	struct stat
@@ -113,15 +114,7 @@
 #define QT_OPEN_CREAT		O_CREAT
 #define QT_OPEN_TRUNC		O_TRUNC
 #define QT_OPEN_APPEND		O_APPEND
-#define QT_FOPEN                ::fopen
-#define QT_FOPEN                ::fopen
-#define QT_FSEEK                ::fseek
-#define QT_FTELL                ::ftell
-#define QT_FGETPOS              ::fgetpos
-#define QT_FSETPOS              ::fsetpos
 #define QT_MMAP                 ::mmap
-#define QT_FPOS_T               fpos_t
-#define QT_OFF_T                long
 
 #define QT_SIGNAL_RETTYPE	void
 #define QT_SIGNAL_ARGS		int
