@@ -484,7 +484,7 @@ void QStaticTextPrivate::init()
 
         if (size.isValid()) {
             QRectF boundingRect;
-            painter.drawText(QRectF(QPointF(0, 0), size), 0, text, &boundingRect);
+            painter.drawText(QRectF(QPointF(0, 0), size), Qt::TextWordWrap, text, &boundingRect);
 
             needsClipRect = boundingRect.width() > size.width()
                             || boundingRect.height() > size.height();
