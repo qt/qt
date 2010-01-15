@@ -101,6 +101,7 @@ class QmlListScriptClass;
 class QmlCleanup;
 class QmlBindingData;
 class QmlWorkerScriptEngine;
+class QmlGlobalScriptClass;
 
 class QmlScriptEngine : public QScriptEngine
 {
@@ -160,7 +161,7 @@ public:
     QmlTypeNameScriptClass *typeNameClass;
     QmlListScriptClass *listClass;
     // Global script class
-    QScriptClass *globalClass;
+    QmlGlobalScriptClass *globalClass;
 
     // Registered cleanup handlers
     QmlCleanup *cleanup;

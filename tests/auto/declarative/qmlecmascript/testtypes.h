@@ -48,6 +48,7 @@
 #include <QtCore/qsize.h>
 #include <QtDeclarative/qmllist.h>
 #include <QtCore/qrect.h>
+#include <QtScript/qscriptvalue.h>
 
 class MyQmlAttachedObject : public QObject
 {
@@ -126,7 +127,7 @@ signals:
 
 public slots:
     void deleteMe() { delete this; }
-    void method() { m_methodCalled = true; }
+    void methodNoArgs() { m_methodCalled = true; }
     void method(int a) { if(a == 163) m_methodIntCalled = true; }
     void setString(const QString &s) { m_string = s; }
 
@@ -330,6 +331,49 @@ public:
 
 };
 QML_DECLARE_TYPE(MyTypeObject);
+
+Q_DECLARE_METATYPE(QScriptValue);
+class MyInvokableObject : public QObject
+{
+    Q_OBJECT
+public:
+    MyInvokableObject() { reset(); }
+
+    int invoked() const { return m_invoked; }
+    bool error() const { return m_invokedError; }
+    const QVariantList &actuals() const { return m_actuals; }
+    void reset() { m_invoked = -1; m_invokedError = false; m_actuals.clear(); }
+
+    Q_INVOKABLE QPointF method_get_QPointF() { return QPointF(99.3, -10.2); }
+    Q_INVOKABLE QPoint method_get_QPoint() { return QPoint(9, 12); }
+
+    Q_INVOKABLE void method_NoArgs() { invoke(0); }
+    Q_INVOKABLE int method_NoArgs_int() { invoke(1); return 6; }
+    Q_INVOKABLE qreal method_NoArgs_real() { invoke(2); return 19.7; }
+    Q_INVOKABLE QPointF method_NoArgs_QPointF() { invoke(3); return QPointF(123, 4.5); }
+    Q_INVOKABLE QObject *method_NoArgs_QObject() { invoke(4); return this; }
+    Q_INVOKABLE MyInvokableObject *method_NoArgs_unknown() { invoke(5); return this; }
+    Q_INVOKABLE QScriptValue method_NoArgs_QScriptValue() { invoke(6); return QScriptValue("Hello world"); }
+    Q_INVOKABLE QVariant method_NoArgs_QVariant() { invoke(7); return QVariant("QML rocks"); }
+
+    Q_INVOKABLE void method_int(int a) { invoke(8); m_actuals << a; }
+    Q_INVOKABLE void method_intint(int a, int b) { invoke(9); m_actuals << a << b; }
+    Q_INVOKABLE void method_real(qreal a) { invoke(10); m_actuals << a; }
+    Q_INVOKABLE void method_QString(QString a) { invoke(11); m_actuals << a; }
+    Q_INVOKABLE void method_QPointF(QPointF a) { invoke(12); m_actuals << a; }
+    Q_INVOKABLE void method_QObject(QObject *a) { invoke(13); m_actuals << qVariantFromValue(a); }
+    Q_INVOKABLE void method_QScriptValue(QScriptValue a) { invoke(14); m_actuals << qVariantFromValue(a); }
+    Q_INVOKABLE void method_intQScriptValue(int a, QScriptValue b) { invoke(15); m_actuals << a << qVariantFromValue(b); }
+    
+    Q_INVOKABLE void method_overload(int a) { invoke(16); m_actuals << a; }
+    Q_INVOKABLE void method_overload(int a, int b) { invoke(17); m_actuals << a << b; }
+
+private:
+    void invoke(int idx) { if (m_invoked != -1) m_invokedError = true; m_invoked = idx;}
+    int m_invoked;
+    bool m_invokedError;
+    QVariantList m_actuals;
+};
 
 #endif // TESTTYPES_H
 

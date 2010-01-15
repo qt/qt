@@ -139,7 +139,7 @@ public:
     void setCustomType(const MyCustomVariantType &v)  { m_custom = v; }
 public slots:
     void basicSlot() { qWarning("MyQmlObject::basicSlot"); }
-    void basicSlot(int v) { qWarning("MyQmlObject::basicSlot(%d)", v); }
+    void basicSlotWithArgs(int v) { qWarning("MyQmlObject::basicSlotWithArgs(%d)", v); }
 
 signals:
     void basicSignal();

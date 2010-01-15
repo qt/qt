@@ -66,6 +66,21 @@ class QmlEngine;
 class QScriptContext;
 class QScriptEngine;
 class QmlContext;
+
+class Q_AUTOTEST_EXPORT QmlObjectMethodScriptClass : public QScriptDeclarativeClass
+{
+public:
+    QmlObjectMethodScriptClass(QmlEngine *);
+    ~QmlObjectMethodScriptClass();
+
+    QScriptValue newMethod(QObject *, const QmlPropertyCache::Data *);
+protected:
+    virtual Value call(Object *, QScriptContext *);
+
+private:
+    QmlEngine *engine;
+};
+
 class Q_AUTOTEST_EXPORT QmlObjectScriptClass : public QScriptDeclarativeClass
 {
 public:
@@ -101,6 +116,8 @@ protected:
     virtual QObject *toQObject(Object *, bool *ok = 0);
 
 private:
+    QmlObjectMethodScriptClass methods;
+
     QmlTypeNameCache::Data *lastTNData;
     QmlPropertyCache::Data *lastData;
     QmlPropertyCache::Data local;

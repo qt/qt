@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlGlobalScriptClass : public QScriptClass
+class Q_AUTOTEST_EXPORT QmlGlobalScriptClass : public QScriptClass
 {
 public:
     QmlGlobalScriptClass(QScriptEngine *);
@@ -71,6 +71,8 @@ public:
 
     virtual void setProperty(QScriptValue &object, const QScriptString &name,
                              uint id, const QScriptValue &value);
+
+    void explicitSetProperty(const QString &, const QScriptValue &);
 
 private:
     QScriptValue globalObject;
