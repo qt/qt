@@ -2732,6 +2732,35 @@ void QWidgetPrivate::transferChildren()
     }
 }
 
+#ifdef QT_MAC_USE_COCOA
+void QWidgetPrivate::setSubWindowStacking(bool set)
+{
+    Q_Q(QWidget);
+    if (!q->isWindow() || !q->testAttribute(Qt::WA_WState_Created))
+        return;
+
+    if (QWidget *parent = q->parentWidget()) {
+        if (parent->testAttribute(Qt::WA_WState_Created)) {
+            if (set)
+                [qt_mac_window_for(parent) addChildWindow:qt_mac_window_for(q) ordered:NSWindowAbove];
+            else
+                [qt_mac_window_for(parent) removeChildWindow:qt_mac_window_for(q)];
+        }
+    }
+
+    QList<QWidget *> widgets = q->findChildren<QWidget *>();
+    for (int i=0; i<widgets.size(); ++i) {
+        QWidget *child = widgets.at(i);
+        if (child->isWindow() && child->testAttribute(Qt::WA_WState_Created)) {
+            if (set)
+                [qt_mac_window_for(q) addChildWindow:qt_mac_window_for(child) ordered:NSWindowAbove];
+            else
+                [qt_mac_window_for(q) removeChildWindow:qt_mac_window_for(child)];
+        }
+    }
+}
+#endif
+
 void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
@@ -2883,7 +2912,6 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
             current = current->parentWidget();
         }
     }
-
     invalidateBuffer(q->rect());
     qt_event_request_window_change(q);
 }
@@ -3345,6 +3373,7 @@ void QWidgetPrivate::show_sys()
 #else
             // sync the opacity value back (in case of a fade).
             [window setAlphaValue:q->windowOpacity()];
+            setSubWindowStacking(true);
 
             QWidget *top = 0;
             if (QApplicationPrivate::tryModalHelper(q, &top)) {
@@ -3361,7 +3390,6 @@ void QWidgetPrivate::show_sys()
                 if (NSWindow *modalWin = qt_mac_window_for(top))
                     [modalWin orderFront:window];
             }
-
 #endif
             if (q->windowType() == Qt::Popup) {
 			    if (q->focusWidget())
@@ -3422,6 +3450,7 @@ void QWidgetPrivate::hide_sys()
 
     QMacCocoaAutoReleasePool pool;
     if(q->isWindow()) {
+        setSubWindowStacking(false);
         OSWindowRef window = qt_mac_window_for(q);
         if(qt_mac_is_macsheet(q)) {
 #ifndef QT_MAC_USE_COCOA
@@ -4751,17 +4780,16 @@ void QWidgetPrivate::setModal_sys()
         }
     } else {
         // INVARIANT: Window shold _not_ be window-modal (and as such, not a sheet).
-        // If the window is application modal, there in no need to do much at this point.
         if (alreadySheet){
             // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
             windowRef = qt_mac_window_for(q);
         }
         if (q->windowModality() == Qt::NonModal
-                   && primaryWindow && primaryWindow->windowModality() == Qt::ApplicationModal) {
-            // INVARIANT: Our window is a dialog that has a dialog parent that is
-            // application modal, or . This means that q is supposed to be on top of this
-            // dialog and not be modally shaddowed:
+            && primaryWindow && primaryWindow->windowModality() == Qt::ApplicationModal) {
+            // INVARIANT: Our window has a parent that is application modal.
+            // This means that q is supposed to be on top of this window and
+            // not be modally shaddowed:
             if ([windowRef isKindOfClass:[NSPanel class]])
                 [static_cast<NSPanel *>(windowRef) setWorksWhenModal:YES];
         }
