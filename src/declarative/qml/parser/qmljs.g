@@ -92,6 +92,7 @@
 %token T_FEED_UI_OBJECT_MEMBER
 %token T_FEED_JS_STATEMENT
 %token T_FEED_JS_EXPRESSION
+%token T_FEED_JS_SOURCE_ELEMENT
 
 %nonassoc SHIFT_THERE
 %nonassoc T_IDENTIFIER T_COLON T_SIGNAL T_PROPERTY T_READONLY
@@ -287,6 +288,7 @@ public:
     bool parse() { return parse(T_FEED_UI_PROGRAM); }
     bool parseStatement() { return parse(T_FEED_JS_STATEMENT); }
     bool parseExpression() { return parse(T_FEED_JS_EXPRESSION); }
+    bool parseSourceElement() { return parse(T_FEED_JS_SOURCE_ELEMENT); }
     bool parseUiObjectMember() { return parse(T_FEED_UI_OBJECT_MEMBER); }
 
     AST::UiProgram *ast() const
@@ -554,6 +556,14 @@ case $rule_number: {
 ./
 
 TopLevel: T_FEED_JS_EXPRESSION Expression ;
+/.
+case $rule_number: {
+  sym(1).Node = sym(2).Node;
+  program = sym(1).Node;
+} break;
+./
+
+TopLevel: T_FEED_JS_SOURCE_ELEMENT Expression ;
 /.
 case $rule_number: {
   sym(1).Node = sym(2).Node;
@@ -3031,7 +3041,8 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
 
         for (int tk = 1; tk < TERMINAL_COUNT; ++tk) {
             if (tk == T_AUTOMATIC_SEMICOLON || tk == T_FEED_UI_PROGRAM    ||
-                tk == T_FEED_JS_STATEMENT   || tk == T_FEED_JS_EXPRESSION)
+                tk == T_FEED_JS_STATEMENT   || tk == T_FEED_JS_EXPRESSION ||
+                tk == T_FEED_JS_SOURCE_ELEMENT)
                continue;
 
             int a = t_action(errorState, tk);
