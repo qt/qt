@@ -196,8 +196,8 @@ InputTest::InputTest()
     pullMode = true;
 
     // AudioInfo class only supports mono S16LE samples!
-    format.setFrequency(8000);
-    format.setChannels(1);
+    format.setSampleRate(8000);
+    format.setChannelCount(1);
     format.setSampleSize(16);
     format.setSampleType(QAudioFormat::SignedInt);
     format.setByteOrder(QAudioFormat::LittleEndian);

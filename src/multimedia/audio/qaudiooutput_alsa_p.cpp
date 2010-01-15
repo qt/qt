@@ -278,7 +278,7 @@ bool QAudioOutputPrivate::open()
     int dir;
     int err=-1;
     int count=0;
-    unsigned int freakuency=settings.frequency();
+    unsigned int freakuency=settings.sampleRate();
 
     QString dev = QLatin1String(m_device.constData());
     if(!dev.contains(QLatin1String("default"))) {
@@ -343,7 +343,7 @@ bool QAudioOutputPrivate::open()
         }
     }
     if ( !fatal ) {
-        err = snd_pcm_hw_params_set_channels( handle, hwparams, (unsigned int)settings.channels() );
+        err = snd_pcm_hw_params_set_channels( handle, hwparams, (unsigned int)settings.channelCount() );
         if ( err < 0 ) {
             fatal = true;
             errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_channels: err = %1").arg(err);
@@ -483,7 +483,7 @@ qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
         err = snd_pcm_writei( handle, data, frames );
     }
     if(err > 0) {
-        totalTimeValue += err*1000000/settings.frequency();
+        totalTimeValue += err*1000000/settings.sampleRate();
         resuming = false;
         errorState = QAudio::NoError;
         deviceState = QAudio::ActiveState;
