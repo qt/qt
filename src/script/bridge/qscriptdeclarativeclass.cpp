@@ -90,6 +90,11 @@ QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, const QString &value
     new (this) JSC::JSValue(JSC::jsString(QScriptEnginePrivate::frameForContext(ctxt), value));
 }
 
+QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, const QScriptValue &value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::get(ctxt->engine())->scriptValueToJSCValue(value));
+}
+
 QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, int value)
 {
     new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->currentFrame, value);
@@ -120,11 +125,10 @@ QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, const QString &value)
     new (this) JSC::JSValue(JSC::jsString(QScriptEnginePrivate::get(eng)->currentFrame, value));
 }
 
-QScriptDeclarativeClass::Value::Value(const QScriptValue &value)
+QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, const QScriptValue &value)
 {
-    new (this) JSC::JSValue(QScriptValuePrivate::get(&value)->engine->scriptValueToJSCValue(value));
+        new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->scriptValueToJSCValue(value));
 }
-
 
 QScriptDeclarativeClass::Value::~Value()
 {
