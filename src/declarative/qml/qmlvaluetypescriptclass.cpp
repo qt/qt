@@ -106,7 +106,8 @@ QmlValueTypeScriptClass::Value QmlValueTypeScriptClass::property(Object *obj, co
     ref->type->read(ref->object, ref->property);
     QVariant rv = p.read(ref->type);
 
-    return static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine))->scriptValueFromVariant(rv);
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+    return Value(scriptEngine, static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine))->scriptValueFromVariant(rv));
 }
 
 void QmlValueTypeScriptClass::setProperty(Object *obj, const Identifier &, 

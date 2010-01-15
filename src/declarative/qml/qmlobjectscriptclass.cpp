@@ -198,33 +198,34 @@ QmlObjectScriptClass::property(Object *object, const Identifier &name)
 QmlObjectScriptClass::Value
 QmlObjectScriptClass::property(QObject *obj, const Identifier &name)
 {
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+
     if (name == m_destroyId.identifier)
-        return m_destroy;
+        return Value(scriptEngine, m_destroy);
     else if (name == m_toStringId.identifier)
-        return m_toString;
+        return Value(scriptEngine, m_toString);
 
     if (lastData && !lastData->isValid())
-        return QmlEnginePrivate::getScriptEngine(engine)->undefinedValue();
+        return Value();
 
     Q_ASSERT(obj);
 
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
 
     if (lastTNData) {
 
         if (lastTNData->type)
-            return enginePriv->typeNameClass->newObject(obj, lastTNData->type);
+            return Value(scriptEngine, enginePriv->typeNameClass->newObject(obj, lastTNData->type));
         else
-            return enginePriv->typeNameClass->newObject(obj, lastTNData->typeNamespace);
+            return Value(scriptEngine, enginePriv->typeNameClass->newObject(obj, lastTNData->typeNamespace));
 
     } else if (lastData->flags & QmlPropertyCache::Data::IsFunction) {
         if (lastData->flags & QmlPropertyCache::Data::IsVMEFunction) {
-            return ((QmlVMEMetaObject *)(obj->metaObject()))->vmeMethod(lastData->coreIndex);
+            return Value(scriptEngine, ((QmlVMEMetaObject *)(obj->metaObject()))->vmeMethod(lastData->coreIndex));
         } else {
             // ### Optimize
             QScriptValue sobj = scriptEngine->newQObject(obj);
-            return sobj.property(toString(name));
+            return Value(scriptEngine, sobj.property(toString(name)));
         }
     } else {
         if (enginePriv->captureProperties && !(lastData->flags & QmlPropertyCache::Data::IsConstant)) {
@@ -235,25 +236,23 @@ QmlObjectScriptClass::property(QObject *obj, const Identifier &name)
         if ((uint)lastData->propType < QVariant::UserType) {
             QmlValueType *valueType = enginePriv->valueTypes[lastData->propType];
             if (valueType)
-                return enginePriv->valueTypeClass->newObject(obj, lastData->coreIndex, valueType);
+                return Value(scriptEngine, enginePriv->valueTypeClass->newObject(obj, lastData->coreIndex, valueType));
         }
 
         if (lastData->flags & QmlPropertyCache::Data::IsQList) {
-            return enginePriv->listClass->newList(obj, lastData->coreIndex, 
-                                                  QmlListScriptClass::QListPtr);
+            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::QListPtr));
         } else if (lastData->flags & QmlPropertyCache::Data::IsQmlList) {
-            return enginePriv->listClass->newList(obj, lastData->coreIndex, 
-                                                  QmlListScriptClass::QmlListPtr);
+            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::QmlListPtr));
         } else if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
             QObject *rv = 0;
             void *args[] = { &rv, 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
-            return newQObject(rv, lastData->propType);
+            return Value(scriptEngine, newQObject(rv, lastData->propType));
         } else if (lastData->flags & QmlPropertyCache::Data::IsQScriptValue) {
             QScriptValue rv = scriptEngine->nullValue();
             void *args[] = { &rv, 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
-            return rv;
+            return Value(scriptEngine, rv);
         } else if (lastData->propType == QMetaType::QReal) {
             qreal rv = 0;
             void *args[] = { &rv, 0 };
@@ -291,7 +290,7 @@ QmlObjectScriptClass::property(QObject *obj, const Identifier &name)
             return Value(scriptEngine, rv);
         } else {
             QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
-            return enginePriv->scriptValueFromVariant(var);
+            return Value(scriptEngine, enginePriv->scriptValueFromVariant(var));
         }
 
     }

@@ -107,7 +107,7 @@ QmlListScriptClass::Value QmlListScriptClass::property(Object *obj, const Identi
 
     ListData *data = (ListData *)obj;
     if (!data->object) 
-        return scriptEngine->undefinedValue();
+        return Value();
 
     void *list = 0;
     void *args[] = { &list, 0 };
@@ -115,7 +115,7 @@ QmlListScriptClass::Value QmlListScriptClass::property(Object *obj, const Identi
                           data->propertyIdx, args);
 
     if (!list)
-        return scriptEngine->undefinedValue();
+        return Value();
 
     if (data->type == QListPtr) {
         const QList<QObject *> &qlist = *((QList<QObject *>*)list);
@@ -125,9 +125,9 @@ QmlListScriptClass::Value QmlListScriptClass::property(Object *obj, const Identi
         if (name == m_lengthId.identifier)
             return Value(scriptEngine, count);
         else if (lastIndex < count)
-            return enginePriv->objectClass->newQObject(qlist.at(lastIndex));
+            return Value(scriptEngine, enginePriv->objectClass->newQObject(qlist.at(lastIndex)));
         else
-            return scriptEngine->undefinedValue();
+            return Value();
 
     } else {
         Q_ASSERT(data->type == QmlListPtr);
@@ -138,9 +138,9 @@ QmlListScriptClass::Value QmlListScriptClass::property(Object *obj, const Identi
         if (name == m_lengthId.identifier)
             return Value(scriptEngine, count);
         else if (lastIndex < count) 
-            return enginePriv->objectClass->newQObject(qmllist.at(lastIndex));
+            return Value(scriptEngine, enginePriv->objectClass->newQObject(qmllist.at(lastIndex)));
         else
-            return scriptEngine->undefinedValue();
+            return Value();
     }
 }
 
