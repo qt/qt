@@ -81,8 +81,6 @@
 #undef QT_SOCKLEN_T
 #define QT_SOCKLEN_T            size_t
 
-#define QT_STATBUF4TSTAT	struct stat
-
 #define QT_SNPRINTF		::snprintf
 #define QT_VSNPRINTF		::vsnprintf
 

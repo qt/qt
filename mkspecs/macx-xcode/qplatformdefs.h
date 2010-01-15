@@ -91,8 +91,6 @@
 
 #define QT_SIGNAL_IGNORE        (void (*)(int))1
 
-#define QT_STATBUF4TSTAT	struct stat
-
 #define QT_SNPRINTF		::snprintf
 #define QT_VSNPRINTF		::vsnprintf
 

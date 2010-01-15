@@ -94,8 +94,6 @@
 #define QT_SOCKLEN_T            int
 #endif
 
-#define QT_STATBUF4TSTAT	struct stat
-
 #if defined(_XOPEN_SOURCE) && defined(_OSF_SOURCE)
 // Not available in the <unistd.h> header file of Tru64 4.0F.
 // Fixed in the <unistd.h> header of Tru64 5.0A so we copy/paste from there...

@@ -84,8 +84,6 @@
 // NetBSD 1.0 - 1.3.3           int
 // NetBSD 1.4 - 1.5             socklen_t
 
-#define QT_STATBUF4TSTAT	struct stat
-
 #define QT_SNPRINTF		::snprintf
 #define QT_VSNPRINTF		::vsnprintf
 

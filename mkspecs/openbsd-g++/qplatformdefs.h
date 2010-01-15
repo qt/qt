@@ -85,8 +85,6 @@
 // OpenBSD 2.2 - 2.4            int
 // OpenBSD 2.5 - 2.8            socklen_t
 
-#define QT_STATBUF4TSTAT	struct stat
-
 #define QT_SNPRINTF		::snprintf
 #define QT_VSNPRINTF		::vsnprintf
 

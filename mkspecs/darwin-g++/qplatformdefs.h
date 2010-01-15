@@ -79,8 +79,6 @@
 #undef QT_OPEN_LARGEFILE
 #define QT_OPEN_LARGEFILE       0
 
-#define QT_STATBUF4TSTAT	struct stat
-
 #define QT_SNPRINTF		::snprintf
 #define QT_VSNPRINTF		::vsnprintf
 
