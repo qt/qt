@@ -829,7 +829,16 @@ void QmlGraphicsText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidg
             y = (h - d->cachedLayoutSize.height()) / 2;
             break;
         }
+        bool needClip = !clip() && (d->cachedLayoutSize.width() > width() ||
+                                    d->cachedLayoutSize.height() > height());
+
+        if (needClip) {
+            p->save();
+            p->setClipRect(boundingRect(), Qt::IntersectClip);
+        }
         d->drawWrappedText(p, QPointF(0,y), false);
+        if (needClip)
+            p->restore();
     }
 }
 
