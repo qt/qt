@@ -75,42 +75,22 @@
 #include <net/if.h>
 #endif
 
-#include "../common/xopen-lfs/qplatformdefs.h"
+#define QT_USE_XOPEN_LFS_EXTENSIONS
+#include "../common/posix/qplatformdefs.h"
 
-#define QT_STAT_REG		S_IFREG
-#define QT_STAT_DIR		S_IFDIR
-#define QT_STAT_MASK		S_IFMT
-#define QT_STAT_LNK		S_IFLNK
-#define QT_SOCKET_CONNECT	::connect
-#define QT_SOCKET_BIND		::bind
-#define QT_FILENO		fileno
-#define QT_CLOSE		::close
-#define QT_READ			::read
-#define QT_WRITE		::write
-#define QT_ACCESS		::access
-#define QT_GETCWD		::getcwd
-#define QT_CHDIR		::chdir
-#define QT_MKDIR		::mkdir
-#define QT_RMDIR		::rmdir
-#define QT_OPEN_RDONLY		O_RDONLY
-#define QT_OPEN_WRONLY		O_WRONLY
-#define QT_OPEN_RDWR		O_RDWR
-#define QT_OPEN_CREAT		O_CREAT
-#define QT_OPEN_TRUNC		O_TRUNC
-#define QT_OPEN_APPEND		O_APPEND
-
-#define QT_SIGNAL_RETTYPE	void
-#if defined(_LANGUAGE_C_PLUS_PLUS) || !defined(_SGIAPI)
-#define QT_SIGNAL_ARGS		int
-#else
-#define QT_SIGNAL_ARGS		void
-#endif
-#define QT_SIGNAL_IGNORE	SIG_IGN
+#undef QT_SOCKLEN_T
+#undef QT_SIGNAL_ARGS
 
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE-0 >= 500)
-#define QT_SOCKLEN_T		size_t
+#define QT_SOCKLEN_T            size_t
 #else
-#define QT_SOCKLEN_T		int
+#define QT_SOCKLEN_T            int
+#endif
+
+#if defined(_LANGUAGE_C_PLUS_PLUS) || !defined(_SGIAPI)
+#define QT_SIGNAL_ARGS          int
+#else
+#define QT_SIGNAL_ARGS          void
 #endif
 
 // Irix 6.5 and better
@@ -119,6 +99,4 @@
 #define QT_VSNPRINTF		::vsnprintf
 #endif
 
-
 #endif // QPLATFORMDEFS_H
-

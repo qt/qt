@@ -47,45 +47,29 @@
 #include "qglobal.h"
 #include "qfunctions_vxworks.h"
 
-#include "../../common/xopen-lfs/qplatformdefs.h"
+#define QT_USE_XOPEN_LFS_EXTENSIONS
+#include "../../common/posix/qplatformdefs.h"
 
 #undef QT_LSTAT
-#define QT_LSTAT                QT_STAT
+#undef QT_MKDIR
+#undef QT_READ
+#undef QT_WRITE
+#undef QT_SOCKLEN_T
+#undef QT_SOCKET_CONNECT
 
-#define QT_STAT_REG             S_IFREG
-#define QT_STAT_DIR             S_IFDIR
-#define QT_STAT_MASK            S_IFMT
-#define QT_STAT_LNK             S_IFLNK
-#define QT_SOCKET_CONNECT(sd, to, tolen) \
-                                ::connect(sd, (struct sockaddr *) to, tolen)
-#define QT_SOCKET_BIND          ::bind
-#define QT_FILENO               fileno
-#define QT_CLOSE                ::close
+#define QT_LSTAT                QT_STAT
+#define QT_MKDIR(dir, perm)     ::mkdir(dir)
+
 #define QT_READ(fd, buf, len)   ::read(fd, (char*) buf, len)
 #define QT_WRITE(fd, buf, len)  ::write(fd, (char*) buf, len)
-#define QT_ACCESS               ::access
-#define QT_GETCWD               ::getcwd
-#define QT_CHDIR                ::chdir
-#define QT_MKDIR(dir, perm)     ::mkdir(dir)
-#define QT_RMDIR                ::rmdir
-#define QT_OPEN_RDONLY          O_RDONLY
-#define QT_OPEN_WRONLY          O_WRONLY
-#define QT_OPEN_RDWR            O_RDWR
-#define QT_OPEN_CREAT           O_CREAT
-#define QT_OPEN_TRUNC           O_TRUNC
-#define QT_OPEN_APPEND          O_APPEND
-
-#define QT_SIGNAL_RETTYPE       void
-#define QT_SIGNAL_ARGS          int
-#define QT_SIGNAL_IGNORE        SIG_IGN
 
 // there IS a socklen_t in sys/socket.h (unsigned int),
 // but sockLib.h uses int in all function declaration...
-//#define QT_SOCKLEN_T            socklen_t
 #define QT_SOCKLEN_T            int
+#define QT_SOCKET_CONNECT(sd, to, tolen) \
+                                ::connect(sd, (struct sockaddr *) to, tolen)
 
 #define QT_SNPRINTF             ::snprintf
 #define QT_VSNPRINTF            ::vsnprintf
-
 
 #endif // QPLATFORMDEFS_H

@@ -79,6 +79,16 @@
 #include <net/if.h>
 #endif
 
+#define QT_USE_XOPEN_LFS_EXTENSIONS
+#include "../common/posix/qplatformdefs.h"
+
+#undef QT_SOCKLEN_T
+#undef QT_SOCKET_CONNECT
+#undef QT_SOCKET_BIND
+
+#define QT_SOCKET_CONNECT       qt_socket_connect
+#define QT_SOCKET_BIND          qt_socket_bind
+
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE-0 >= 500) && (_XOPEN_VERSION-0 >= 500)
 // Solaris 7 and better with specific feature test macros
 #define QT_SOCKLEN_T            socklen_t
@@ -103,34 +113,6 @@ static inline int qt_socket_bind(int s, struct sockaddr *addr, QT_SOCKLEN_T addr
 #if defined(bind)
 # undef bind
 #endif
-
-#include "../common/xopen-lfs/qplatformdefs.h"
-
-#define QT_STAT_REG		S_IFREG
-#define QT_STAT_DIR		S_IFDIR
-#define QT_STAT_MASK		S_IFMT
-#define QT_STAT_LNK		S_IFLNK
-#define QT_SOCKET_CONNECT	qt_socket_connect
-#define QT_SOCKET_BIND		qt_socket_bind
-#define QT_FILENO		fileno
-#define QT_CLOSE                ::close
-#define QT_READ			::read
-#define QT_WRITE		::write
-#define QT_ACCESS		::access
-#define QT_GETCWD		::getcwd
-#define QT_CHDIR		::chdir
-#define QT_MKDIR		::mkdir
-#define QT_RMDIR		::rmdir
-#define QT_OPEN_RDONLY		O_RDONLY
-#define QT_OPEN_WRONLY		O_WRONLY
-#define QT_OPEN_RDWR		O_RDWR
-#define QT_OPEN_CREAT		O_CREAT
-#define QT_OPEN_TRUNC		O_TRUNC
-#define QT_OPEN_APPEND		O_APPEND
-
-#define QT_SIGNAL_RETTYPE	void
-#define QT_SIGNAL_ARGS		int
-#define QT_SIGNAL_IGNORE	SIG_IGN
 
 #if !defined(_XOPEN_UNIX)
 // Solaris 2.5.1

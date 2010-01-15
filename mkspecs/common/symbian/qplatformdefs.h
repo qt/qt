@@ -84,48 +84,23 @@
 #endif
 #include <arpa/inet.h>
 
-#include "../xopen-lfs/qplatformdefs.h"
+#define QT_USE_XOPEN_LFS_EXTENSIONS
+#include "../posix/qplatformdefs.h"
 
 #undef QT_OPEN_LARGEFILE
-#define QT_OPEN_LARGEFILE   0
+#undef QT_SOCKLEN_T
 
-#define QT_STAT_REG		S_IFREG
-#define QT_STAT_DIR		S_IFDIR
-#define QT_STAT_MASK		S_IFMT
-#define QT_STAT_LNK		S_IFLNK
-#define QT_SOCKET_CONNECT	::connect
-#define QT_SOCKET_BIND		::bind
-#define QT_FILENO		fileno
-#define QT_CLOSE		::close
-#define QT_READ			::read
-#define QT_WRITE		::write
-#define QT_ACCESS		::access
-#define QT_GETCWD		::getcwd
-#define QT_CHDIR		::chdir
-#define QT_MKDIR		::mkdir
-#define QT_RMDIR		::rmdir
-#define QT_OPEN_RDONLY		O_RDONLY
-#define QT_OPEN_WRONLY		O_WRONLY
-#define QT_OPEN_RDWR		O_RDWR
-#define QT_OPEN_CREAT		O_CREAT
-#define QT_OPEN_TRUNC		O_TRUNC
-#define QT_OPEN_APPEND		O_APPEND
-
-#define QT_SIGNAL_RETTYPE	void
-#define QT_SIGNAL_ARGS		int
-#define QT_SIGNAL_IGNORE	SIG_IGN
+#define QT_OPEN_LARGEFILE       0
 
 #if (defined(__GLIBC__) && (__GLIBC__ >= 2)) || defined(Q_OS_SYMBIAN)
-#define QT_SOCKLEN_T		socklen_t
+#define QT_SOCKLEN_T            socklen_t
 #else
-#define QT_SOCKLEN_T		int
+#define QT_SOCKLEN_T            int
 #endif
-
 
 #if defined(__ISO_C_VISIBLE) && (__ISO_C_VISIBLE >= 1999)
 #define QT_SNPRINTF     ::snprintf
 #define QT_VSNPRINTF    ::vsnprintf
 #endif
-
 
 #endif // QPLATFORMDEFS_H
