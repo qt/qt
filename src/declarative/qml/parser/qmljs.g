@@ -208,7 +208,7 @@ namespace QmlJS {
 class Engine;
 class NameId;
 
-class Parser: protected $table
+class QML_PARSER_EXPORT Parser: protected $table
 {
 public:
     union Value {
