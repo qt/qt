@@ -1228,17 +1228,6 @@ void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const 
     d->drawTexture(dest, srcRect, size, false);
 }
 
-void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
-{
-    Q_D(QGL2PaintEngineEx);
-
-    ensureActive();
-
-    // ### What about transformations and huge fonts? These are not passed through cache
-    // in drawTextItem().
-    d->drawCachedGlyphs(textItem);
-}
-
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
     Q_D(QGL2PaintEngineEx);
@@ -1287,7 +1276,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
             staticTextItem.numGlyphs = glyphs.size();
             staticTextItem.glyphPositions = positions.data();
 
-            d->drawCachedGlyphs(&staticTextItem);
+            d->drawCachedGlyphs(glyphType, &staticTextItem);
         }
         return;
     }
@@ -1295,13 +1284,9 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     QPaintEngineEx::drawTextItem(p, ti);
 }
 
-void QGL2PaintEngineExPrivate::drawCachedGlyphs(QStaticTextItem *staticTextItem)
+void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem)
 {
     Q_Q(QGL2PaintEngineEx);
-
-    QFontEngineGlyphCache::Type glyphType = staticTextItem->fontEngine->glyphFormat >= 0
-        ? QFontEngineGlyphCache::Type(staticTextItem->fontEngine->glyphFormat)
-        : QFontEngineGlyphCache::Raster_A8;
 
     QGLTextureGlyphCache *cache =
         (QGLTextureGlyphCache *) staticTextItem->fontEngine->glyphCache(ctx, glyphType, QTransform());
@@ -1434,7 +1419,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QStaticTextItem *staticTextItem)
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
-    glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
+    glDrawArrays(GL_TRIANGLES, 0, 6 * staticTextItem->numGlyphs);
 }
 
 void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)

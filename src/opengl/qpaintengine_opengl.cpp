@@ -4914,7 +4914,7 @@ void QOpenGLPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     d->flushDrawQueue();
 
     // make sure the glyphs we want to draw are in the cache
-    qt_glyph_cache()->cacheGlyphs(d->device.context(), textItem->fontEngine, textItem->glyphs,
+    qt_glyph_cache()->cacheGlyphs(d->device->context(), textItem->fontEngine, textItem->glyphs,
                                   textItem->numGlyphs);
 
     d->setGradientOps(Qt::SolidPattern, QRectF()); // turns off gradient ops
