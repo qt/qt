@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,14 +44,13 @@
 int main(int argv, char **args)
 {
     QApplication app(argv, args);
+    QWidget *button;
 
   {
 //![0]
     QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
-//![0]
 
-//![1]
     QState *s1 = new QState();
     s1->assignProperty(object, "fooBar", 1.0);
     machine.addState(s1);
@@ -59,7 +58,7 @@ int main(int argv, char **args)
 
     QState *s2 = new QState();
     machine.addState(s2);
-//![1]
+//![0]
   }
 
   {
@@ -110,21 +109,50 @@ int main(int argv, char **args)
   }
 
   {
+    QMainWindow *mainWindow = 0;
 
 //![5]
+    QMessageBox *messageBox = new QMessageBox(mainWindow);
+    messageBox->addButton(QMessageBox::Ok);
+    messageBox->setText("Button geometry has been set!");
+    messageBox->setIcon(QMessageBox::Information);
+
     QState *s1 = new QState();
-    s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
 
     QState *s2 = new QState();
+    s2->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
+    connect(s2, SIGNAL(entered()), messageBox, SLOT(exec()));
 
-    s1->addTransition(s1, SIGNAL(polished()), s2);
+    s1->addTransition(button, SIGNAL(clicked()), s2);
 //![5]
+  }
+
+  {
+    QMainWindow *mainWindow = 0;
+
+//![6]
+    QMessageBox *messageBox = new QMessageBox(mainWindow);
+    messageBox->addButton(QMessageBox::Ok);
+    messageBox->setText("Button geometry has been set!");
+    messageBox->setIcon(QMessageBox::Information);
+
+    QState *s1 = new QState();
+
+    QState *s2 = new QState();
+    s2->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
+
+    QState *s3 = new QState();
+    connect(s3, SIGNAL(entered()), messageBox, SLOT(exec()));
+
+    s1->addTransition(button, SIGNAL(clicked()), s2);
+    s2->addTransition(s2, SIGNAL(propertiesAssigned()), s3);
+//![6]
 
   }
 
   {
 
-//![6]
+//![7]
     QState *s1 = new QState();
     QState *s2 = new QState();
 
@@ -134,9 +162,11 @@ int main(int argv, char **args)
     QStateMachine machine;
     machine.setInitialState(s1);
     machine.addDefaultAnimation(new QPropertyAnimation(object, "fooBar"));
-//![6]
+//![7]
 
   }
+
+
 
     return app.exec();
 }

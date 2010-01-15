@@ -1,7 +1,7 @@
 #!/bin/sh
 #############################################################################
 ##
-## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
@@ -42,7 +42,7 @@
 
 me=$(dirname $0)
 mkdir -p $me/out
-(cd $me/out && ../../../../util/qlalr/qlalr --troll --no-debug --no-lines ../qxmlstream.g)
+(cd $me/out && ../../../../util/qlalr/qlalr --qt --no-debug --no-lines ../qxmlstream.g)
 
 for f in $me/out/*.h; do
     n=$(basename $f)

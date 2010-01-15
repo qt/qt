@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -948,7 +948,7 @@ bool QFontDialogPrivate::sharedFontPanelAvailable = true;
 void QFontDialog::open(QObject *receiver, const char *member)
 {
     Q_D(QFontDialog);
-    connect(this, SIGNAL(fontSelected(const QFont&)), receiver, member);
+    connect(this, SIGNAL(fontSelected(QFont)), receiver, member);
     d->receiverToDisconnectOnClose = receiver;
     d->memberToDisconnectOnClose = member;
     QDialog::open();
@@ -1038,7 +1038,7 @@ void QFontDialog::done(int result)
         d->selectedFont = QFont();
     }
     if (d->receiverToDisconnectOnClose) {
-        disconnect(this, SIGNAL(fontSelected(const QFont&)),
+        disconnect(this, SIGNAL(fontSelected(QFont)),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
         d->receiverToDisconnectOnClose = 0;
     }

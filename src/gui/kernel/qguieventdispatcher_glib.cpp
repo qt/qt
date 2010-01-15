@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -152,6 +152,8 @@ static gboolean x11EventSourceDispatch(GSource *s, GSourceFunc callback, gpointe
 
  out:
 
+    source->d->runTimersOnceWithNormalPriority();
+
     if (callback)
         callback(user_data);
     return true;
@@ -212,6 +214,11 @@ void QGuiEventDispatcherGlib::startingUp()
     d->x11EventSource->q = this;
     d->x11EventSource->d = d;
     g_source_add_poll(&d->x11EventSource->source, &d->x11EventSource->pollfd);
+}
+
+void QGuiEventDispatcherGlib::flush()
+{
+    XFlush(X11->display);
 }
 
 QT_END_NAMESPACE

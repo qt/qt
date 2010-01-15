@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -220,7 +220,7 @@ void tst_QMatrix4x4::mapVector3D()
     QVector3D v(10.5f, -2.0f, 3.0f);
     QVector3D result;
 
-    m1.inferSpecialType();
+    m1.optimize();
 
     QBENCHMARK {
         result = m1 * v;
@@ -244,7 +244,7 @@ void tst_QMatrix4x4::mapVector2D()
     QPointF v(10.5f, -2.0f);
     QPointF result;
 
-    m1.inferSpecialType();
+    m1.optimize();
 
     QBENCHMARK {
         result = m1 * v;

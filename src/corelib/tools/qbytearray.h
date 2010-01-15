@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -164,6 +164,7 @@ public:
     inline const char *constData() const;
     inline void detach();
     bool isDetached() const;
+    inline bool isSharedWith(const QByteArray &other) const { return d == other.d; }
     void clear();
 
 #ifdef Q_COMPILER_MANGLES_RETURN_TYPE
@@ -572,7 +573,7 @@ inline QByteArray &QByteArray::setNum(float n, char f, int prec)
 { return setNum(double(n),f,prec); }
 
 
-#ifndef QT_NO_DATASTREAM
+#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QByteArray &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QByteArray &);
 #endif

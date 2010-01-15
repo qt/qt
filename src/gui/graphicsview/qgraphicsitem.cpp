@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,7 +52,7 @@
     painting implementation and item interaction through its event handlers.
     QGraphicsItem is part of \l{The Graphics View Framework}
 
-    \img graphicsview-items.png
+    \image graphicsview-items.png
 
     For convenience, Qt provides a set of standard graphics items for the most
     common shapes. These are:
@@ -378,14 +378,20 @@
     it's parent if it's z-value is negative. This flag enables setZValue() to
     toggle ItemStacksBehindParent.
 
-    \value ItemIsPanel. The item is a panel. A panel provides activation and
+    \value ItemIsPanel The item is a panel. A panel provides activation and
     contained focus handling. Only one panel can be active at a time (see
     QGraphicsItem::isActive()). When no panel is active, QGraphicsScene
     activates all non-panel items. Window items (i.e.,
     QGraphicsItem::isWindow() returns true) are panels. This flag was
     introduced in Qt 4.6.
 
-    \omitvalue ItemIsFocusScope Internal only (for now).
+    \omitvalue ItemIsFocusScope \omit Internal only (for now). \endomit
+
+    \value ItemSendsScenePositionChanges The item enables itemChange()
+    notifications for ItemScenePositionHasChanged. For performance reasons,
+    these notifications are disabled by default. You must enable this flag
+    to receive notifications for scene position changes. This flag was
+    introduced in Qt 4.6.
 */
 
 /*!
@@ -562,6 +568,14 @@
     \value ItemOpacityHasChanged The item's opacity has changed. The value
     argument is the new opacity (i.e., a double). Do not call setOpacity() as
     this notification is delivered. The return value is ignored.
+
+    \value ItemScenePositionHasChanged The item's scene position has changed.
+    This notification is sent if the ItemSendsScenePositionChanges flag is
+    enabled, and after the item's scene position has changed (i.e., the
+    position or transformation of the item itself or the position or
+    transformation of any ancestor has changed). The value argument is the
+    new scene position (the same as scenePos()), and QGraphicsItem ignores
+    the return value for this notification (i.e., a read-only notification).
 */
 
 /*!
@@ -741,7 +755,6 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
         case QGraphicsItem::ItemClipsChildrenToShape:
             flag = AncestorClipsChildren;
             enabled = flags & QGraphicsItem::ItemClipsChildrenToShape;
-            invalidateCachedClipPathRecursively(/*childrenOnly=*/true);
             break;
         case QGraphicsItem::ItemIgnoresTransformations:
             flag = AncestorIgnoresTransformations;
@@ -990,6 +1003,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     if (scene) {
         // Deliver the change to the index
         scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
+
+        // Disable scene pos notifications for old ancestors
+        if (scenePosDescendants || (flags & QGraphicsItem::ItemSendsScenePositionChanges))
+            scene->d_func()->setScenePosItemEnabled(q, false);
     }
 
     if (subFocusItem && parent) {
@@ -1039,13 +1056,31 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     }
 
     // Update focus scope item ptr in new scope.
-    if (newParent) {
+    QGraphicsItem *newFocusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
+    if (newFocusScopeItem && newParent) {
+        if (subFocusItem) {
+            // Find the subFocusItem's topmost focus scope.
+            QGraphicsItem *ancestorScope = 0;
+            QGraphicsItem *p = subFocusItem->d_ptr->parent;
+            while (p) {
+                if (p->flags() & QGraphicsItem::ItemIsFocusScope)
+                    ancestorScope = p;
+                if (p->isPanel())
+                    break;
+                p = p->parentItem();
+            }
+            if (ancestorScope)
+                newFocusScopeItem = ancestorScope;
+        }
+
         QGraphicsItem *p = newParent;
         while (p) {
             if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-                p->d_ptr->focusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
-                // ### The below line might not make sense...
-                if (subFocusItem)
+                p->d_ptr->focusScopeItem = newFocusScopeItem;
+                // Ensure the new item is no longer the subFocusItem. The
+                // only way to set focus on a child of a focus scope is
+                // by setting focus on the scope itself.
+                if (subFocusItem && !p->focusItem())
                     subFocusItem->d_ptr->clearSubFocus();
                 break;
             }
@@ -1066,10 +1101,13 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
         parent->d_ptr->addChild(q);
         parent->itemChange(QGraphicsItem::ItemChildAddedChange, thisPointerVariant);
-        if (!implicitUpdate && scene) {
-            scene->d_func()->markDirty(q_ptr, QRect(),
-                                       /*invalidateChildren=*/false,
-                                       /*maybeDirtyClipPath=*/true);
+        if (scene) {
+            if (!implicitUpdate)
+                scene->d_func()->markDirty(q_ptr);
+
+            // Re-enable scene pos notifications for new ancestors
+            if (scenePosDescendants || (flags & QGraphicsItem::ItemSendsScenePositionChanges))
+                scene->d_func()->setScenePosItemEnabled(q, true);
         }
 
         // Inherit ancestor flags from the new parent.
@@ -1106,11 +1144,8 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
                 setEnabledHelper(true, /* explicit = */ false);
 
             // If the item is being deleted, the whole scene will be updated.
-            if (scene) {
-                scene->d_func()->markDirty(q_ptr, QRect(),
-                                           /*invalidateChildren=*/false,
-                                           /*maybeDirtyClipPath=*/true);
-            }
+            if (scene)
+                scene->d_func()->markDirty(q_ptr);
         }
     }
 
@@ -1199,7 +1234,7 @@ void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, con
         const QTransform reverseMap = worldTransform.inverted();
         const QVector<QRect> exposedRects(exposedRegion.rects());
         for (int i = 0; i < exposedRects.size(); ++i) {
-            option->exposedRect |= reverseMap.mapRect(exposedRects.at(i));
+            option->exposedRect |= reverseMap.mapRect(QRectF(exposedRects.at(i)));
             if (option->exposedRect.contains(brect))
                 break;
         }
@@ -1287,6 +1322,8 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
 */
 QGraphicsItem::~QGraphicsItem()
 {
+    if (d_ptr->isObject)
+        QObjectPrivate::get(static_cast<QGraphicsObject *>(this))->wasDeleted = true;
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
 
@@ -1304,8 +1341,8 @@ QGraphicsItem::~QGraphicsItem()
     }
 
     if (!d_ptr->children.isEmpty()) {
-        QList<QGraphicsItem *> oldChildren = d_ptr->children;
-        qDeleteAll(oldChildren);
+        while (!d_ptr->children.isEmpty())
+            delete d_ptr->children.first();
         Q_ASSERT(d_ptr->children.isEmpty());
     }
 
@@ -1316,7 +1353,9 @@ QGraphicsItem::~QGraphicsItem()
         d_ptr->setParentItemHelper(0);
     }
 
+#ifndef QT_NO_GRAPHICSEFFECT
     delete d_ptr->graphicsEffect;
+#endif //QT_NO_GRAPHICSEFFECT
     if (d_ptr->transformData) {
         for(int i = 0; i < d_ptr->transformData->graphicsTransforms.size(); ++i) {
             QGraphicsTransform *t = d_ptr->transformData->graphicsTransforms.at(i);
@@ -1658,7 +1697,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         d_ptr->scene->d_func()->index->itemChange(this, ItemFlagsChange, quint32(flags));
 
     // Flags that alter the geometry of the item (or its children).
-    const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations);
+    const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations | ItemIsSelectable);
     bool fullUpdate = (quint32(flags) & geomChangeFlagsMask) != (d_ptr->flags & geomChangeFlagsMask);
     if (fullUpdate)
         d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
@@ -1686,9 +1725,6 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         // all children.
         d_ptr->updateAncestorFlag(ItemClipsChildrenToShape);
     }
-
-    if ((flags & ItemClipsToShape) != (oldFlags & ItemClipsToShape))
-        d_ptr->invalidateCachedClipPath();
 
     if ((flags & ItemIgnoresTransformations) != (oldFlags & ItemIgnoresTransformations)) {
         // Item children clipping changes. Propagate the ancestor flag to
@@ -1726,9 +1762,13 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     }
 
     if (d_ptr->scene) {
-        d_ptr->scene->d_func()->markDirty(this, QRectF(),
-                                          /*invalidateChildren=*/true,
-                                          /*maybeDirtyClipPath*/true);
+        if ((flags & ItemSendsScenePositionChanges) != (oldFlags & ItemSendsScenePositionChanges)) {
+            if (flags & ItemSendsScenePositionChanges)
+                d_ptr->scene->d_func()->registerScenePosItem(this);
+            else
+                d_ptr->scene->d_func()->unregisterScenePosItem(this);
+        }
+        d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
     }
 
     // Notify change.
@@ -2076,12 +2116,8 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
         QGraphicsItemCache *c = (QGraphicsItemCache *)qVariantValue<void *>(extra(ExtraCacheData));
         if (c)
             c->purge();
-        if (scene) {
-            scene->d_func()->markDirty(q_ptr, QRectF(),
-                                       /*invalidateChildren=*/false,
-                                       /*maybeDirtyClipPath=*/false,
-                                       /*force=*/true);
-        }
+        if (scene)
+            scene->d_func()->markDirty(q_ptr, QRectF(), /*invalidateChildren=*/false, /*force=*/true);
     }
 
     // Certain properties are dropped as an item becomes invisible.
@@ -2145,7 +2181,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     }
 
     // Enable subfocus
-    if (newVisible) {
+    if (scene && newVisible) {
         QGraphicsItem *p = parent;
         bool done = false;
         while (p) {
@@ -2486,10 +2522,11 @@ void QGraphicsItem::setOpacity(qreal opacity)
 
     // Update.
     if (d_ptr->scene) {
+#ifndef QT_NO_GRAPHICSEFFECT
         d_ptr->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
-                                          /*maybeDirtyClipPath=*/false,
                                           /*force=*/false,
                                           /*ignoreOpacity=*/true);
     }
@@ -2503,6 +2540,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
 
     \since 4.6
 */
+#ifndef QT_NO_GRAPHICSEFFECT
 QGraphicsEffect *QGraphicsItem::graphicsEffect() const
 {
     return d_ptr->graphicsEffect;
@@ -2516,6 +2554,8 @@ QGraphicsEffect *QGraphicsItem::graphicsEffect() const
     If \a effect is the installed on a different item, setGraphicsEffect() will remove
     the effect from the item and install it on this item.
 
+    QGraphicsItem takes ownership of \a effect.
+
     \note This function will apply the effect on itself and all its children.
 
     \since 4.6
@@ -2525,29 +2565,49 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
     if (d_ptr->graphicsEffect == effect)
         return;
 
-    if (d_ptr->graphicsEffect && effect) {
+    if (d_ptr->graphicsEffect) {
         delete d_ptr->graphicsEffect;
         d_ptr->graphicsEffect = 0;
     }
 
-    if (!effect) {
-        // Unset current effect.
-        QGraphicsEffectPrivate *oldEffectPrivate = d_ptr->graphicsEffect->d_func();
-        d_ptr->graphicsEffect = 0;
-        if (oldEffectPrivate) {
-            oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
-            if (d_ptr->scene) // Update the views directly.
-                d_ptr->scene->d_func()->markDirty(this, QRectF(), false, false, false, false, true);
-        }
-    } else {
+    if (effect) {
         // Set new effect.
         QGraphicsEffectSourcePrivate *sourced = new QGraphicsItemEffectSourcePrivate(this);
         QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
         d_ptr->graphicsEffect = effect;
         effect->d_func()->setGraphicsEffectSource(source);
+        prepareGeometryChange();
     }
+}
+#endif //QT_NO_GRAPHICSEFFECT
 
-    prepareGeometryChange();
+/*!
+    \internal
+    \since 4.6
+    Returns the effective bounding rect of the given item space rect.
+    If the item has no effect, the rect is returned unmodified.
+    If the item has an effect, the effective rect can be extend beyond the
+    item's bounding rect, depending on the effect.
+
+    \sa boundingRect()
+*/
+QRectF QGraphicsItemPrivate::effectiveBoundingRect(const QRectF &rect) const
+{
+#ifndef QT_NO_GRAPHICSEFFECT
+    Q_Q(const QGraphicsItem);
+    QGraphicsEffect *effect = graphicsEffect;
+    if (scene && effect && effect->isEnabled()) {
+        QRectF sceneRect = q->mapRectToScene(rect);
+        QRectF sceneEffectRect;
+        foreach (QGraphicsView *view, scene->views()) {
+            QRectF deviceRect = view->d_func()->mapRectFromScene(sceneRect);
+            QRect deviceEffectRect = effect->boundingRectFor(deviceRect).toAlignedRect();
+            sceneEffectRect |= view->d_func()->mapRectToScene(deviceEffectRect);
+        }
+        return q->mapRectFromScene(sceneEffectRect);
+    }
+#endif //QT_NO_GRAPHICSEFFECT
+    return rect;
 }
 
 /*!
@@ -2562,22 +2622,30 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 */
 QRectF QGraphicsItemPrivate::effectiveBoundingRect() const
 {
-    QGraphicsEffect *effect = graphicsEffect;
-    QRectF brect = effect && effect->isEnabled() ? effect->boundingRect() : q_ptr->boundingRect();
+#ifndef QT_NO_GRAPHICSEFFECT
+    Q_Q(const QGraphicsItem);
+    QRectF brect = effectiveBoundingRect(q_ptr->boundingRect());
     if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
         return brect;
 
     const QGraphicsItem *effectParent = parent;
     while (effectParent) {
-        effect = effectParent->d_ptr->graphicsEffect;
-        if (effect && effect->isEnabled())
-            brect = effect->boundingRectFor(brect);
+        QGraphicsEffect *effect = effectParent->d_ptr->graphicsEffect;
+        if (scene && effect && effect->isEnabled()) {
+            const QRectF brectInParentSpace = q->mapRectToItem(effectParent, brect);
+            const QRectF effectRectInParentSpace = effectParent->d_ptr->effectiveBoundingRect(brectInParentSpace);
+            brect = effectParent->mapRectToItem(q, effectRectInParentSpace);
+        }
         if (effectParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
             return brect;
         effectParent = effectParent->d_ptr->parent;
     }
 
     return brect;
+#else //QT_NO_GRAPHICSEFFECT
+    return q_ptr->boundingRect();
+#endif //QT_NO_GRAPHICSEFFECT
+
 }
 
 /*!
@@ -2931,7 +2999,7 @@ bool QGraphicsItem::hasFocus() const
 {
     if (d_ptr->focusProxy)
         return d_ptr->focusProxy->hasFocus();
-    return (d_ptr->scene && d_ptr->scene->focusItem() == this);
+    return isActive() && (d_ptr->scene && d_ptr->scene->focusItem() == this);
 }
 
 /*!
@@ -2982,8 +3050,11 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     while (p) {
         if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
             p->d_ptr->focusScopeItem = q_ptr;
-            if (!q_ptr->isActive() || !p->focusItem())
+            if (!p->focusItem()) {
+                // If you call setFocus on a child of a focus scope that
+                // doesn't currently have a focus item, then stop.
                 return;
+            }
             break;
         }
         p = p->d_ptr->parent;
@@ -3286,6 +3357,9 @@ QPointF QGraphicsItem::pos() const
 */
 void QGraphicsItem::setX(qreal x)
 {
+    if (d_ptr->inDestructor)
+        return;
+
     d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
 }
 
@@ -3307,6 +3381,9 @@ void QGraphicsItem::setX(qreal x)
 */
 void QGraphicsItem::setY(qreal y)
 {
+    if (d_ptr->inDestructor)
+        return;
+
     d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));
 }
 
@@ -3330,7 +3407,6 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
 {
     Q_Q(QGraphicsItem);
     inSetPosHelper = 1;
-    updateCachedClipPathFromSetPosHelper(pos);
     if (scene)
         q->prepareGeometryChange();
     QPointF oldPos = this->pos;
@@ -3372,6 +3448,9 @@ void QGraphicsItem::setPos(const QPointF &pos)
     if (d_ptr->pos == pos)
         return;
 
+    if (d_ptr->inDestructor)
+        return;
+
     // Update and repositition.
     if (!(d_ptr->flags & ItemSendsGeometryChanges)) {
         d_ptr->setPosHelper(pos);
@@ -3389,6 +3468,7 @@ void QGraphicsItem::setPos(const QPointF &pos)
 
     // Send post-notification.
     itemChange(QGraphicsItem::ItemPositionHasChanged, newPosVariant);
+    d_ptr->sendScenePosChange();
 }
 
 /*!
@@ -3999,6 +4079,7 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 
     // Send post-notification.
     itemChange(ItemTransformHasChanged, newTransformVariant);
+    d_ptr->sendScenePosChange();
 }
 
 /*!
@@ -4223,6 +4304,24 @@ void QGraphicsItemPrivate::ensureSequentialSiblingIndex()
 }
 
 /*!
+    \internal
+*/
+inline void QGraphicsItemPrivate::sendScenePosChange()
+{
+    Q_Q(QGraphicsItem);
+    if (scene) {
+        if (flags & QGraphicsItem::ItemSendsScenePositionChanges)
+            q->itemChange(QGraphicsItem::ItemScenePositionHasChanged, q->scenePos());
+        if (scenePosDescendants) {
+            foreach (QGraphicsItem *item, scene->d_func()->scenePosItems) {
+                if (q->isAncestorOf(item))
+                    item->itemChange(QGraphicsItem::ItemScenePositionHasChanged, item->scenePos());
+            }
+        }
+    }
+}
+
+/*!
     \since 4.6
 
     Stacks this item before \a sibling, which must be a sibling item (i.e., the
@@ -4264,7 +4363,7 @@ void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
     // Only move items with the same Z value, and that need moving.
     int siblingIndex = sibling->d_ptr->siblingIndex;
     int myIndex = d_ptr->siblingIndex;
-    if (myIndex >= siblingIndex && d_ptr->z == sibling->d_ptr->z) {
+    if (myIndex >= siblingIndex) {
         siblings->move(myIndex, siblingIndex);
         // Fixup the insertion ordering.
         for (int i = 0; i < siblings->size(); ++i) {
@@ -4273,6 +4372,12 @@ void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
                 ++index;
         }
         d_ptr->siblingIndex = siblingIndex;
+        for (int i = 0; i < siblings->size(); ++i) {
+            int &index = siblings->at(i)->d_ptr->siblingIndex;
+            if (i != siblingIndex && index >= siblingIndex && index <= myIndex)
+                siblings->at(i)->d_ptr->siblingOrderChange();
+        }
+        d_ptr->siblingOrderChange();
     }
 }
 
@@ -4437,22 +4542,12 @@ bool QGraphicsItem::isClipped() const
 QPainterPath QGraphicsItem::clipPath() const
 {
     Q_D(const QGraphicsItem);
-    if (!d->dirtyClipPath)
-        return d->emptyClipPath ? QPainterPath() : d->cachedClipPath;
-
-    if (!isClipped()) {
-        d_ptr->setCachedClipPath(QPainterPath());
-        return d->cachedClipPath;
-    }
+    if (!isClipped())
+        return QPainterPath();
 
     const QRectF thisBoundingRect(boundingRect());
-    if (thisBoundingRect.isEmpty()) {
-        if (d_ptr->flags & ItemClipsChildrenToShape)
-            d_ptr->setEmptyCachedClipPathRecursively();
-        else
-            d_ptr->setEmptyCachedClipPath();
+    if (thisBoundingRect.isEmpty())
         return QPainterPath();
-    }
 
     QPainterPath clip;
     // Start with the item's bounding rect.
@@ -4463,40 +4558,18 @@ QPainterPath QGraphicsItem::clipPath() const
         const QGraphicsItem *lastParent = this;
 
         // Intersect any in-between clips starting at the top and moving downwards.
-        bool foundValidClipPath = false;
         while ((parent = parent->d_ptr->parent)) {
             if (parent->d_ptr->flags & ItemClipsChildrenToShape) {
                 // Map clip to the current parent and intersect with its shape/clipPath
                 clip = lastParent->itemTransform(parent).map(clip);
-                if ((foundValidClipPath = !parent->d_ptr->dirtyClipPath && parent->isClipped())) {
-                    if (parent->d_ptr->emptyClipPath) {
-                        if (d_ptr->flags & ItemClipsChildrenToShape)
-                            d_ptr->setEmptyCachedClipPathRecursively();
-                        else
-                            d_ptr->setEmptyCachedClipPath();
-                        return QPainterPath();
-                    }
-                    clip = clip.intersected(parent->d_ptr->cachedClipPath);
-                    if (!(parent->d_ptr->flags & ItemClipsToShape))
-                        clip = clip.intersected(parent->shape());
-                } else {
-                    clip = clip.intersected(parent->shape());
-                }
-
-                if (clip.isEmpty()) {
-                    if (d_ptr->flags & ItemClipsChildrenToShape)
-                        d_ptr->setEmptyCachedClipPathRecursively();
-                    else
-                        d_ptr->setEmptyCachedClipPath();
+                clip = clip.intersected(parent->shape());
+                if (clip.isEmpty())
                     return clip;
-                }
                 lastParent = parent;
             }
 
-            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
-                || foundValidClipPath) {
+            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
                 break;
-            }
         }
 
         if (lastParent != this) {
@@ -4509,7 +4582,6 @@ QPainterPath QGraphicsItem::clipPath() const
     if (d->flags & ItemClipsToShape)
         clip = clip.intersected(shape());
 
-    d_ptr->setCachedClipPath(clip);
     return clip;
 }
 
@@ -4928,15 +5000,14 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
     \internal
     Returns true if we can discard an update request; otherwise false.
 */
-bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignoreVisibleBit,
-                                                bool ignoreDirtyBit, bool ignoreOpacity) const
+bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreVisibleBit, bool ignoreDirtyBit,
+                                                bool ignoreOpacity) const
 {
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
     return !scene
            || (!visible && !ignoreVisibleBit && !this->ignoreVisible)
            || (!ignoreDirtyBit && fullUpdatePending)
-           || (!ignoreClipping && (childrenClippedToShape() && isClippedAway()))
            || (!ignoreOpacity && !this->ignoreOpacity && childrenCombineOpacity() && isFullyTransparent());
 }
 
@@ -4954,6 +5025,7 @@ int QGraphicsItemPrivate::depth() const
 /*!
     \internal
 */
+#ifndef QT_NO_GRAPHICSEFFECT
 void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
 {
     QGraphicsItemPrivate *itemPrivate = this;
@@ -4966,6 +5038,7 @@ void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
         }
     } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 /*!
     \internal
@@ -5069,109 +5142,6 @@ void QGraphicsItemPrivate::removeExtraItemCache()
     unsetExtra(ExtraCacheData);
 }
 
-void QGraphicsItemPrivate::setEmptyCachedClipPathRecursively(const QRectF &emptyIfOutsideThisRect)
-{
-    setEmptyCachedClipPath();
-
-    const bool checkRect = !emptyIfOutsideThisRect.isNull()
-                           && !(flags & QGraphicsItem::ItemClipsChildrenToShape);
-    for (int i = 0; i < children.size(); ++i) {
-        if (!checkRect) {
-            children.at(i)->d_ptr->setEmptyCachedClipPathRecursively();
-            continue;
-        }
-
-        QGraphicsItem *child = children.at(i);
-        const QRectF rect = child->mapRectFromParent(emptyIfOutsideThisRect);
-        if (rect.intersects(child->boundingRect()))
-            child->d_ptr->invalidateCachedClipPathRecursively(false, rect);
-        else
-            child->d_ptr->setEmptyCachedClipPathRecursively(rect);
-    }
-}
-
-void QGraphicsItemPrivate::invalidateCachedClipPathRecursively(bool childrenOnly, const QRectF &emptyIfOutsideThisRect)
-{
-    if (!childrenOnly)
-        invalidateCachedClipPath();
-
-    const bool checkRect = !emptyIfOutsideThisRect.isNull();
-    for (int i = 0; i < children.size(); ++i) {
-        if (!checkRect) {
-            children.at(i)->d_ptr->invalidateCachedClipPathRecursively(false);
-            continue;
-        }
-
-        QGraphicsItem *child = children.at(i);
-        const QRectF rect = child->mapRectFromParent(emptyIfOutsideThisRect);
-        if (rect.intersects(child->boundingRect()))
-            child->d_ptr->invalidateCachedClipPathRecursively(false, rect);
-        else
-            child->d_ptr->setEmptyCachedClipPathRecursively(rect);
-    }
-}
-
-void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &newPos)
-{
-    Q_ASSERT(inSetPosHelper);
-
-    if (inDestructor || !(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
-        return; // Not clipped by any ancestor.
-
-    // Find closest clip ancestor and transform.
-    Q_Q(QGraphicsItem);
-    // COMBINE
-    QTransform thisToParentTransform = QTransform::fromTranslate(newPos.x(), newPos.y());
-    if (transformData)
-        thisToParentTransform = transformData->computedFullTransform(&thisToParentTransform);
-    QGraphicsItem *clipParent = parent;
-    while (clipParent && !clipParent->d_ptr->inDestructor && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
-        thisToParentTransform *= clipParent->d_ptr->transformToParent();
-        clipParent = clipParent->d_ptr->parent;
-    }
-
-    // Ensure no parents are currently being deleted. This can only
-    // happen if the item is moved by a dying ancestor.
-    QGraphicsItem *p = clipParent;
-    while (p) {
-        if (p->d_ptr->inDestructor)
-            return;
-        p = p->d_ptr->parent;
-    }
-
-    // From here everything is calculated in clip parent's coordinates.
-    const QRectF parentBoundingRect(clipParent->boundingRect());
-    const QRectF thisBoundingRect(thisToParentTransform.mapRect(q->boundingRect()));
-
-    if (!parentBoundingRect.intersects(thisBoundingRect)) {
-        // Item is moved outside the clip parent's bounding rect,
-        // i.e. it is fully clipped and the clip path is empty.
-        if (flags & QGraphicsItem::ItemClipsChildrenToShape)
-            setEmptyCachedClipPathRecursively();
-        else
-            setEmptyCachedClipPathRecursively(thisToParentTransform.inverted().mapRect(parentBoundingRect));
-        return;
-    }
-
-    const QPainterPath parentClip(clipParent->isClipped() ? clipParent->clipPath() : clipParent->shape());
-    if (parentClip.contains(thisBoundingRect))
-        return; // Item is inside the clip parent's shape. No update required.
-
-    const QRectF parentClipRect(parentClip.controlPointRect());
-    if (!parentClipRect.intersects(thisBoundingRect)) {
-        // Item is moved outside the clip parent's shape,
-        // i.e. it is fully clipped and the clip path is empty.
-        if (flags & QGraphicsItem::ItemClipsChildrenToShape)
-            setEmptyCachedClipPathRecursively();
-        else
-            setEmptyCachedClipPathRecursively(thisToParentTransform.inverted().mapRect(parentClipRect));
-    } else {
-        // Item is partially inside the clip parent's shape,
-        // i.e. the cached clip path must be invalidated.
-        invalidateCachedClipPathRecursively(false, thisToParentTransform.inverted().mapRect(parentClipRect));
-    }
-}
-
 // Traverses all the ancestors up to the top-level and updates the pointer to
 // always point to the top-most item that has a dirty scene transform.
 // It then backtracks to the top-most dirty item and start calculating the
@@ -5270,6 +5240,16 @@ void QGraphicsItemPrivate::subFocusItemChange()
 /*!
     \internal
 
+    Subclasses can reimplement this function to be notified when its
+    siblingIndex order is changed.
+*/
+void QGraphicsItemPrivate::siblingOrderChange()
+{
+}
+
+/*!
+    \internal
+
     Tells us if it is a proxy widget
 */
 bool QGraphicsItemPrivate::isProxyWidget() const
@@ -5301,7 +5281,9 @@ void QGraphicsItem::update(const QRectF &rect)
         return;
 
     // Make sure we notify effects about invalidated source.
+#ifndef QT_NO_GRAPHICSEFFECT
     d_ptr->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         // Invalidate cache.
@@ -7176,9 +7158,7 @@ void QGraphicsItem::prepareGeometryChange()
 
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
         scenePrivate->index->prepareBoundingRectChange(this);
-        scenePrivate->markDirty(this, QRectF(),
-                                /*invalidateChildren=*/true,
-                                /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
+        scenePrivate->markDirty(this, QRectF(), /*invalidateChildren=*/true);
 
         // For compatibility reasons, we have to update the item's old geometry
         // if someone is connected to the changed signal or the scene has no views.
@@ -7197,19 +7177,16 @@ void QGraphicsItem::prepareGeometryChange()
 
     QGraphicsItem *parent = this;
     while ((parent = parent->d_ptr->parent)) {
-        parent->d_ptr->dirtyChildrenBoundingRect = 1;
+        QGraphicsItemPrivate *parentp = parent->d_ptr.data();
+        parentp->dirtyChildrenBoundingRect = 1;
         // ### Only do this if the parent's effect applies to the entire subtree.
-        parent->d_ptr->notifyBoundingRectChanged = 1;
-    }
-
-    if (d_ptr->inSetPosHelper)
-        return;
-
-    if (d_ptr->flags & ItemClipsChildrenToShape
-        || d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
-        d_ptr->invalidateCachedClipPathRecursively();
-    } else {
-        d_ptr->invalidateCachedClipPath();
+        parentp->notifyBoundingRectChanged = 1;
+#ifndef QT_NO_GRAPHICSEFFECT
+        if (parentp->scene && parentp->graphicsEffect) {
+            parentp->notifyInvalidated = 1;
+            static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()->source->d_func())->invalidateCache();
+        }
+#endif
     }
 }
 
@@ -7320,16 +7297,29 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 }
 
 /*!
-    Subscribes the graphics object to the given \a gesture for the specified \a context.
+    Subscribes the graphics object to the given \a gesture with specific \a flags.
 
-    \sa QGestureEvent
+    \sa ungrabGesture(), QGestureEvent
 */
-
-void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
+void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureFlags flags)
 {
     QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
-    d->gestureContext.insert(gesture, context);
+    d->gestureContext.insert(gesture, flags);
     (void)QGestureManager::instance(); // create a gesture manager
+}
+
+/*!
+    Unsubscribes the graphics object from the given \a gesture.
+
+    \sa grabGesture(), QGestureEvent
+*/
+void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
+{
+    QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
+    if (d->gestureContext.remove(gesture)) {
+        QGestureManager *manager = QGestureManager::instance();
+        manager->cleanupCachedGestures(this, gesture);
+    }
 }
 
 /*!
@@ -7340,13 +7330,6 @@ void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext co
   by QObject::parent().
 
   \sa QGraphicsItem::setParentItem(), QGraphicsItem::parentObject()
-*/
-
-/*!
-  \property QGraphicsObject::id
-  \brief the id of of the item
-
-  \sa QObject::objectName(), QObject::setObjectName()
 */
 
 /*!
@@ -9157,10 +9140,14 @@ void QGraphicsPixmapItem::setOffset(const QPointF &offset)
 QRectF QGraphicsPixmapItem::boundingRect() const
 {
     Q_D(const QGraphicsPixmapItem);
-    qreal pw = 1.0;
     if (d->pixmap.isNull())
         return QRectF();
-    return QRectF(d->offset, d->pixmap.size()).adjusted(-pw/2, -pw/2, pw/2, pw/2);
+    if (d->flags & ItemIsSelectable) {
+        qreal pw = 1.0;
+        return QRectF(d->offset, d->pixmap.size()).adjusted(-pw/2, -pw/2, pw/2, pw/2);
+    } else {
+        return QRectF(d->offset, d->pixmap.size());
+    }
 }
 
 /*!
@@ -9475,8 +9462,11 @@ void QGraphicsTextItem::setDefaultTextColor(const QColor &col)
 {
     QTextControl *c = dd->textControl();
     QPalette pal = c->palette();
+    QColor old = pal.color(QPalette::Text);
     pal.setColor(QPalette::Text, col);
     c->setPalette(pal);
+    if (old != col)
+        update();
 }
 
 /*!
@@ -9670,12 +9660,14 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
         // Reset the focus widget's input context, regardless
         // of how this item gained or lost focus.
         if (QWidget *fw = qApp->focusWidget()) {
+#ifndef QT_NO_IM
             if (QInputContext *qic = fw->inputContext()) {
                 if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut)
                     qic->reset();
                 else
                     qic->update();
             }
+#endif //QT_NO_IM
         }
         break;
     default:
@@ -9742,7 +9734,7 @@ void QGraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
 
     QWidget *widget = event->widget();
-    if (widget) {
+    if (widget && (dd->control->textInteractionFlags() & Qt::TextEditable) && boundingRect().contains(event->pos())) {
         qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), dd->clickCausedFocus);
     }
     dd->clickCausedFocus = 0;
@@ -10046,9 +10038,10 @@ bool QGraphicsTextItemPrivate::_q_mouseOnEdge(QGraphicsSceneMouseEvent *event)
 void QGraphicsTextItem::setTextInteractionFlags(Qt::TextInteractionFlags flags)
 {
     if (flags == Qt::NoTextInteraction)
-        setFlags(this->flags() & ~QGraphicsItem::ItemIsFocusable);
+        setFlags(this->flags() & ~(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod));
     else
-        setFlags(this->flags() | QGraphicsItem::ItemIsFocusable);
+        setFlags(this->flags() | QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
+
     dd->textControl()->setTextInteractionFlags(flags);
 }
 
@@ -10551,6 +10544,20 @@ void QGraphicsItemGroup::addToGroup(QGraphicsItem *item)
     if (!item->pos().isNull())
         newItemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
 
+    // removing additional transformations properties applied with itemTransform()
+    QPointF origin = item->transformOriginPoint();
+    QMatrix4x4 m;
+    QList<QGraphicsTransform*> transformList = item->transformations();
+    for (int i = 0; i < transformList.size(); ++i)
+        transformList.at(i)->applyTo(&m);
+    newItemTransform *= m.toTransform().inverted();
+    newItemTransform.translate(origin.x(), origin.y());
+    newItemTransform.rotate(-item->rotation());
+    newItemTransform.scale(1/item->scale(), 1/item->scale());
+    newItemTransform.translate(-origin.x(), -origin.y());
+
+    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
+
     item->setTransform(newItemTransform);
     item->d_func()->setIsMemberOfGroup(true);
     prepareGeometryChange();
@@ -10575,11 +10582,39 @@ void QGraphicsItemGroup::removeFromGroup(QGraphicsItem *item)
     }
 
     QGraphicsItem *newParent = d_ptr->parent;
+
+    // COMBINE
+    bool ok;
+    QTransform itemTransform;
+    if (newParent)
+        itemTransform = item->itemTransform(newParent, &ok);
+    else
+        itemTransform = item->sceneTransform();
+
     QPointF oldPos = item->mapToItem(newParent, 0, 0);
     item->setParentItem(newParent);
-    // ### This function should remap the item's matrix to keep the item's
-    // transformation unchanged relative to the scene.
     item->setPos(oldPos);
+
+    // removing position from translation component of the new transform
+    if (!item->pos().isNull())
+        itemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
+
+    // removing additional transformations properties applied
+    // with itemTransform() or sceneTransform()
+    QPointF origin = item->transformOriginPoint();
+    QMatrix4x4 m;
+    QList<QGraphicsTransform*> transformList = item->transformations();
+    for (int i = 0; i < transformList.size(); ++i)
+        transformList.at(i)->applyTo(&m);
+    itemTransform *= m.toTransform().inverted();
+    itemTransform.translate(origin.x(), origin.y());
+    itemTransform.rotate(-item->rotation());
+    itemTransform.scale(1 / item->scale(), 1 / item->scale());
+    itemTransform.translate(-origin.x(), -origin.y());
+
+    // ### Expensive, we could maybe use dirtySceneTransform bit for optimization
+
+    item->setTransform(itemTransform);
     item->d_func()->setIsMemberOfGroup(item->group() != 0);
 
     // ### Quite expensive. But removeFromGroup() isn't called very often.
@@ -10636,6 +10671,7 @@ int QGraphicsItemGroup::type() const
     return Type;
 }
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
@@ -10679,7 +10715,8 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
     }
 }
 
-QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
+QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
+                                                 QGraphicsEffect::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     if (!info && deviceCoordinates) {
@@ -10687,15 +10724,44 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
         return QPixmap();
     }
-
     if (!item->d_ptr->scene)
         return QPixmap();
     QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
 
     const QRectF sourceRect = boundingRect(system);
-    QRect effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+    QRectF effectRectF;
+
+    bool unpadded = false;
+    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
+        if (info) {
+            effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
+            unpadded = (effectRectF.size() == sourceRect.size());
+            if (info && system == Qt::LogicalCoordinates)
+                effectRectF = info->painter->worldTransform().inverted().mapRect(effectRectF);
+        } else {
+            // no choice but to send a logical coordinate bounding rect to boundingRectFor
+            effectRectF = item->graphicsEffect()->boundingRectFor(sourceRect);
+        }
+    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
+        // adjust by 1.5 to account for cosmetic pens
+        effectRectF = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5);
+    } else {
+        effectRectF = sourceRect;
+        unpadded = true;
+    }
+
+    QRect effectRect = effectRectF.toAlignedRect();
+
     if (offset)
         *offset = effectRect.topLeft();
+
+    bool untransformed = !deviceCoordinates
+            || info->painter->worldTransform().type() <= QTransform::TxTranslate;
+    if (untransformed && unpadded && isPixmap()) {
+        if (offset)
+            *offset = boundingRect(system).topLeft().toPoint();
+        return static_cast<QGraphicsPixmapItem *>(item)->pixmap();
+    }
 
     if (deviceCoordinates) {
         // Clip to viewport rect.
@@ -10721,7 +10787,6 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
             effectRect.setBottom(deviceHeight -1);
 
     }
-
     if (effectRect.isEmpty())
         return QPixmap();
 
@@ -10759,6 +10824,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
 
     return pixmap;
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, QGraphicsItem *item)
@@ -10768,8 +10834,12 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
         return debug;
     }
 
-    debug << "QGraphicsItem(this =" << ((void*)item)
-          << ", parent =" << ((void*)item->parentItem())
+    if (QGraphicsObject *o = item->toGraphicsObject())
+        debug << o->metaObject()->className();
+    else
+        debug << "QGraphicsItem";
+    debug << "(this =" << (void*)item
+          << ", parent =" << (void*)item->parentItem()
           << ", pos =" << item->pos()
           << ", z =" << item->zValue() << ", flags = "
           << item->flags() << ")";
@@ -10878,6 +10948,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)
     case QGraphicsItem::ItemOpacityHasChanged:
         str = "ItemOpacityHasChanged";
         break;
+    case QGraphicsItem::ItemScenePositionHasChanged:
+        str = "ItemScenePositionHasChanged";
+        break;
     }
     debug << str;
     return debug;
@@ -10934,6 +11007,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemIsFocusScope:
         str = "ItemIsFocusScope";
+        break;
+    case QGraphicsItem::ItemSendsScenePositionChanges:
+        str = "ItemSendsScenePositionChanges";
         break;
     }
     debug << str;

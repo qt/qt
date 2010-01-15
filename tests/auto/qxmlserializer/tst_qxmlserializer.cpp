@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -148,7 +148,7 @@ void tst_QXmlSerializer::outputDevice() const
     {
         const QXmlQuery query;
         const QXmlSerializer serializer(query, &file);
-        QCOMPARE(serializer.outputDevice(), &file);
+        QCOMPARE(serializer.outputDevice(), static_cast< QIODevice *>(&file));
     }
 }
 
@@ -158,7 +158,7 @@ void tst_QXmlSerializer::serializationError() const
     QXmlQuery query;
     MessageSilencer silencer;
     query.setMessageHandler(&silencer);
-    
+
     query.setQuery(queryString);
 
     QByteArray output;

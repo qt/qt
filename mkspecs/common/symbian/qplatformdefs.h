@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -112,6 +112,7 @@
 #define QT_FTELL                ::ftello64
 #define QT_FGETPOS              ::fgetpos64
 #define QT_FSETPOS              ::fsetpos64
+#define QT_MMAP                 ::mmap64
 #define QT_FPOS_T               fpos64_t
 #define QT_OFF_T                off64_t
 #else
@@ -120,6 +121,7 @@
 #define QT_FTELL                ::ftell
 #define QT_FGETPOS              ::fgetpos
 #define QT_FSETPOS              ::fsetpos
+#define QT_MMAP                 ::mmap
 #define QT_FPOS_T               fpos_t
 #define QT_OFF_T                long
 #endif
@@ -139,6 +141,7 @@
 #define QT_CHDIR		::chdir
 #define QT_MKDIR		::mkdir
 #define QT_RMDIR		::rmdir
+#define QT_OPEN_LARGEFILE	0
 #define QT_OPEN_RDONLY		O_RDONLY
 #define QT_OPEN_WRONLY		O_WRONLY
 #define QT_OPEN_RDWR		O_RDWR

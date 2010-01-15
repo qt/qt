@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2297,7 +2297,21 @@ int QCalendarWidget::monthShown() const
 void QCalendarWidget::setCurrentPage(int year, int month)
 {
     Q_D(QCalendarWidget);
+    QDate currentDate = d->getCurrentDate();
+    int day = currentDate.day();
+    int daysInMonths = QDate(year, month, 1).daysInMonth();
+    if (day > daysInMonths)
+        day = daysInMonths;
+
     d->showMonth(year, month);
+
+    QDate newDate(year, month, day);
+    int row = -1, col = -1;
+    d->m_model->cellForDate(newDate, &row, &col);
+    if (row != -1 && col != -1) {
+        d->m_view->selectionModel()->setCurrentIndex(d->m_model->index(row, col),
+                                                  QItemSelectionModel::NoUpdate);
+    }
 }
 
 /*!

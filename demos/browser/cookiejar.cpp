@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -668,8 +668,8 @@ CookiesExceptionsDialog::CookiesExceptionsDialog(CookieJar *cookieJar, QWidget *
     CookieModel *cookieModel = new CookieModel(cookieJar, this);
     domainLineEdit->setCompleter(new QCompleter(cookieModel, domainLineEdit));
 
-    connect(domainLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(textChanged(const QString &)));
+    connect(domainLineEdit, SIGNAL(textChanged(QString)),
+            this, SLOT(textChanged(QString)));
     connect(blockButton, SIGNAL(clicked()), this, SLOT(block()));
     connect(allowButton, SIGNAL(clicked()), this, SLOT(allow()));
     connect(allowForSessionButton, SIGNAL(clicked()), this, SLOT(allowForSession()));

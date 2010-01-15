@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -4033,6 +4033,27 @@ void tst_QAccessibility::labelTest()
 
     delete acc_label;
     delete label;
+    QTestAccessibility::clearEvents();
+
+    QPixmap testPixmap(50, 50);
+    testPixmap.fill();
+
+    QLabel imageLabel;
+    imageLabel.setPixmap(testPixmap);
+    imageLabel.setToolTip("Test Description");
+
+    acc_label = QAccessible::queryAccessibleInterface(&imageLabel);
+    QVERIFY(acc_label);
+
+    QAccessibleImageInterface *imageInterface = acc_label->imageInterface();
+    QVERIFY(imageInterface);
+
+    QCOMPARE(imageInterface->imageSize(), testPixmap.size());
+    QCOMPARE(imageInterface->imageDescription(), QString::fromLatin1("Test Description"));
+    QCOMPARE(imageInterface->imagePosition(QAccessible2::RelativeToParent), imageLabel.geometry());
+
+    delete acc_label;
+
     QTestAccessibility::clearEvents();
 #else
     QSKIP("Test needs accessibility support.", SkipAll);

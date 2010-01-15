@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -184,6 +184,10 @@ typedef void (APIENTRY *_glBlitFramebufferEXT) (int srcX0, int srcY0, int srcX1,
 typedef void (APIENTRY *_glRenderbufferStorageMultisampleEXT) (GLenum target, GLsizei samples,
                                                                GLenum internalformat, GLsizei width, GLsizei height);
 
+// ARB_texture_compression
+typedef void (APIENTRY *_glCompressedTexImage2DARB) (GLenum, GLint, GLenum, GLsizei,
+                                                     GLsizei, GLint, GLsizei, const GLvoid *);
+
 QT_BEGIN_NAMESPACE
 
 struct QGLExtensionFuncs
@@ -289,6 +293,11 @@ struct QGLExtensionFuncs
 #endif
         qt_glMapBufferARB = 0;
         qt_glUnmapBufferARB = 0;
+
+#if !defined(QT_OPENGL_ES)
+        // Texture compression
+        qt_glCompressedTexImage2DARB = 0;
+#endif
     }
 
 
@@ -397,6 +406,10 @@ struct QGLExtensionFuncs
     _glMapBufferARB qt_glMapBufferARB;
     _glUnmapBufferARB qt_glUnmapBufferARB;
 
+#if !defined(QT_OPENGL_ES)
+    // Texture compression
+    _glCompressedTexImage2DARB qt_glCompressedTexImage2DARB;
+#endif
 };
 
 
@@ -586,6 +599,20 @@ struct QGLExtensionFuncs
 #define GL_DECR_WRAP 0x8508
 #endif
 
+#ifndef GL_VERSION_1_5
+#define GL_ARRAY_BUFFER                                         0x8892
+#define GL_ELEMENT_ARRAY_BUFFER                                 0x8893
+#define GL_STREAM_DRAW                                          0x88E0
+#define GL_STREAM_READ                                          0x88E1
+#define GL_STREAM_COPY                                          0x88E2
+#define GL_STATIC_DRAW                                          0x88E4
+#define GL_STATIC_READ                                          0x88E5
+#define GL_STATIC_COPY                                          0x88E6
+#define GL_DYNAMIC_DRAW                                         0x88E8
+#define GL_DYNAMIC_READ                                         0x88E9
+#define GL_DYNAMIC_COPY                                         0x88EA
+#endif
+
 #ifndef GL_VERSION_2_0
 #define GL_FRAGMENT_SHADER 0x8B30
 #define GL_VERTEX_SHADER 0x8B31
@@ -730,6 +757,10 @@ struct QGLExtensionFuncs
 
 #if defined(QT_OPENGL_ES_2)
 #define glClearDepth glClearDepthf
+#endif
+
+#if !defined(QT_OPENGL_ES)
+#define glCompressedTexImage2D QGLContextPrivate::extensionFuncs(ctx).qt_glCompressedTexImage2DARB
 #endif
 
 extern bool qt_resolve_framebufferobject_extensions(QGLContext *ctx);

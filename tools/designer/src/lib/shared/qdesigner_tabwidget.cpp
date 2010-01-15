@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -399,6 +399,7 @@ static const char *currentTabNameKey = "currentTabName";
 static const char *currentTabIconKey = "currentTabIcon";
 static const char *currentTabToolTipKey = "currentTabToolTip";
 static const char *currentTabWhatsThisKey = "currentTabWhatsThis";
+static const char *tabMovableKey = "movable";
 
 QTabWidgetPropertySheet::QTabWidgetPropertySheet(QTabWidget *object, QObject *parent) :
     QDesignerPropertySheet(object, parent),
@@ -411,6 +412,8 @@ QTabWidgetPropertySheet::QTabWidgetPropertySheet(QTabWidget *object, QObject *pa
         formWindowBase()->addReloadableProperty(this, indexOf(QLatin1String(currentTabIconKey)));
     createFakeProperty(QLatin1String(currentTabToolTipKey), qVariantFromValue(qdesigner_internal::PropertySheetStringValue()));
     createFakeProperty(QLatin1String(currentTabWhatsThisKey), qVariantFromValue(qdesigner_internal::PropertySheetStringValue()));
+    // Prevent the tab widget's drag and drop handling from interfering with Designer's
+    createFakeProperty(QLatin1String(tabMovableKey), QVariant(false));
 }
 
 QTabWidgetPropertySheet::TabWidgetProperty QTabWidgetPropertySheet::tabWidgetPropertyFromName(const QString &name)

@@ -2,6 +2,26 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="zh_CN">
 <context>
+    <name></name>
+    <message id="xx_hello">
+        <location filename="finddialog.cpp" line="70"/>
+        <source>Hello</source>
+        <translation>Hallo</translation>
+    </message>
+    <message id="xx_world">
+        <location filename="finddialog.cpp" line="73"/>
+        <source>New world</source>
+        <oldsource>World</oldsource>
+        <translation type="unfinished">Welt</translation>
+    </message>
+    <message id="qtn_virtual">
+        <location filename="finddialog.cpp" line="81"/>
+        <source></source>
+        <extracomment>A message without source string</extracomment>
+        <translation></translation>
+    </message>
+</context>
+<context>
     <name>FindDialog</name>
     <message>
         <source></source>
@@ -44,6 +64,11 @@
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
+    </message>
+    <message id="new_id">
+        <location filename="finddialog.cpp" line="77"/>
+        <source>this is just some text</source>
+        <translation type="unfinished">Unfertige Uebersetzung</translation>
     </message>
 </context>
 </TS>

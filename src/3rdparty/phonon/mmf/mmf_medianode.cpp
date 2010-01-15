@@ -29,92 +29,123 @@ using namespace Phonon::MMF;
   \internal
 */
 
-MMF::MediaNode::MediaNode(QObject *parent) : QObject::QObject(parent)
-                                           , m_source(0)
-                                           , m_target(0)
-                                           , m_isApplied(false)
+MMF::MediaNode::MediaNode(QObject *parent)
+    :   QObject(parent)
+    ,   m_mediaObject(qobject_cast<MediaObject *>(this))
+    ,   m_input(0)
 {
+
 }
 
-bool MMF::MediaNode::connectMediaNode(MediaNode *target)
+MMF::MediaNode::~MediaNode()
 {
-    m_target = target;
-    m_target->setSource(this);
-
-    return applyNodesOnMediaObject(target);
+    // Phonon framework ensures nodes are disconnected before being destroyed.
+    Q_ASSERT_X(!m_mediaObject, Q_FUNC_INFO,
+        "Media node not disconnected before destruction");
 }
 
-bool MMF::MediaNode::disconnectMediaNode(MediaNode *target)
+bool MMF::MediaNode::connectOutput(MediaNode *output)
 {
-    Q_UNUSED(target);
-    m_target = 0;
-    m_isApplied = false;
-    return true;
-}
+    Q_ASSERT_X(output, Q_FUNC_INFO, "Null output pointer");
 
-void MMF::MediaNode::setSource(MediaNode *source)
-{
-    m_source = source;
-}
+    bool connected = false;
 
-MMF::MediaNode *MMF::MediaNode::source() const
-{
-    return m_source;
-}
+    // Check that this connection will not result in a graph which
+    // containing more than one MediaObject
+    const bool mediaObjectMisMatch =
+            m_mediaObject
+        &&  output->m_mediaObject
+        &&  m_mediaObject != output->m_mediaObject;
 
-MMF::MediaNode *MMF::MediaNode::target() const
-{
-    return m_target;
-}
+    const bool canConnect =
+            !output->isMediaObject()
+        &&  !output->m_input
+        &&  !m_outputs.contains(output);
 
-bool MMF::MediaNode::applyNodesOnMediaObject(MediaNode *)
-{
-    // Algorithmically, this can be expressed in a more efficient way by
-    // exercising available assumptions, but it complicates code for input
-    // data(length of the graph) which typically is very small.
-
-    // First, we go to the very beginning of the graph.
-    MMF::MediaNode *current = this;
-    do {
-        MediaNode *const candidate = current->source();
-        if (candidate)
-            current = candidate;
-        else
-            break;
+    if (canConnect && !mediaObjectMisMatch) {
+        output->m_input = this;
+        m_outputs += output;
+        updateMediaObject();
+        connected = true;
     }
-    while (current);
 
-    // Now we do two things, while walking to the other end:
-    // 1. Find the MediaObject, if present
-    // 2. Collect a list of all unapplied MediaNodes
+    return connected;
+}
 
-    QList<MediaNode *> unapplied;
-    MMF::MediaObject *mo = 0;
+bool MMF::MediaNode::disconnectOutput(MediaNode *output)
+{
+    Q_ASSERT_X(output, Q_FUNC_INFO, "Null output pointer");
 
-    do {
-        if (!current->m_isApplied)
-            unapplied.append(current);
+    bool disconnected = false;
 
-        if (!mo)
-            mo = qobject_cast<MMF::MediaObject *>(current);
+    if (m_outputs.contains(output) && this == output->m_input) {
+        output->m_input = 0;
+        const bool removed = m_outputs.removeOne(output);
+        Q_ASSERT_X(removed, Q_FUNC_INFO, "Output removal failed");
 
-        current = current->target();
+        Q_ASSERT_X(!m_outputs.contains(output), Q_FUNC_INFO,
+            "Output list contains duplicate entries");
+
+        // Perform traversal across each of the two graphs separately
+        updateMediaObject();
+        output->updateMediaObject();
+
+        disconnected = true;
     }
-    while (current);
 
-    // Now, lets activate all the objects, if we found the MediaObject.
+    return disconnected;
+}
 
-    if (mo) {
-        for (int i = 0; i < unapplied.count(); ++i) {
-            MediaNode *const at = unapplied.at(i);
+bool MMF::MediaNode::isMediaObject() const
+{
+    return (qobject_cast<const MediaObject *>(this) != 0);
+}
 
-            // We don't want to apply MediaObject on itself.
-            if (at != mo)
-                at->activateOnMediaObject(mo);
+void MMF::MediaNode::updateMediaObject()
+{
+    QList<MediaNode *> nodes;
+    MediaObject *mediaObject = 0;
+
+    // Traverse the graph, collecting a list of nodes, and locating
+    // the MediaObject node, if present
+    visit(nodes, mediaObject);
+
+    MediaNode *node = 0;
+    foreach(node, nodes)
+        node->setMediaObject(mediaObject);
+}
+
+void MMF::MediaNode::setMediaObject(MediaObject *mediaObject)
+{
+    if(!isMediaObject() && m_mediaObject != mediaObject) {
+        if (!mediaObject)
+            disconnectMediaObject(m_mediaObject);
+        else {
+            Q_ASSERT_X(!m_mediaObject, Q_FUNC_INFO, "MediaObject already set");
+            connectMediaObject(mediaObject);
         }
+        m_mediaObject = mediaObject;
+    }
+}
+
+void MMF::MediaNode::visit(QList<MediaNode *>& visited, MediaObject*& mediaObject)
+{
+    if (isMediaObject()) {
+        // There can never be more than one MediaObject per graph, due to the
+        // mediaObjectMisMatch test in connectOutput().
+        Q_ASSERT_X(!mediaObject, Q_FUNC_INFO, "MediaObject already found");
+        mediaObject = static_cast<MediaObject *>(this);
     }
 
-    return true;
+    visited += this;
+
+    if (m_input && !visited.contains(m_input))
+        m_input->visit(visited, mediaObject);
+
+    MediaNode *output = 0;
+    foreach (output, m_outputs)
+        if (!visited.contains(output))
+            output->visit(visited, mediaObject);
 }
 
 QT_END_NAMESPACE

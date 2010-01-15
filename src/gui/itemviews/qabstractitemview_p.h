@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -117,6 +117,7 @@ public:
     virtual void _q_columnsInserted(const QModelIndex &parent, int start, int end);
     virtual void _q_modelDestroyed();
     virtual void _q_layoutChanged();
+    void _q_headerDataChanged() { doDelayedItemsLayout(); }
 
     void fetchMore();
 
@@ -151,6 +152,8 @@ public:
                                                                    const QEvent *event) const;
     virtual void selectAll(QItemSelectionModel::SelectionFlags command);
 
+    void setHoverIndex(const QPersistentModelIndex &index);
+
     void checkMouseMove(const QPersistentModelIndex &index);
     inline void checkMouseMove(const QPoint &pos) { checkMouseMove(q_func()->indexAt(pos)); }
 
@@ -164,7 +167,8 @@ public:
     }
 
 #ifndef QT_NO_DRAGANDDROP
-    QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+    virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+
     inline bool canDecode(QDropEvent *e) const {
         QStringList modelTypes = model->mimeTypes();
         const QMimeData *mime = e->mimeData();
@@ -343,6 +347,7 @@ public:
     QMap<int, QPointer<QAbstractItemDelegate> > columnDelegates;
     QPointer<QItemSelectionModel> selectionModel;
     QItemSelectionModel::SelectionFlag ctrlDragSelectionFlag;
+    bool noSelectionOnMousePress;
 
     QAbstractItemView::SelectionMode selectionMode;
     QAbstractItemView::SelectionBehavior selectionBehavior;
@@ -392,6 +397,7 @@ public:
     int autoScrollMargin;
     int autoScrollCount;
     bool shouldScrollToCurrentOnShow; //used to know if we should scroll to current on show event
+    bool shouldClearStatusTip; //if there is a statustip currently shown that need to be cleared when leaving.
 
     bool alternatingColors;
 

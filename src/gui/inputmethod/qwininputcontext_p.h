@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,7 +56,7 @@
 #include "QtGui/qinputcontext.h"
 #include "QtCore/qt_windows.h"
 
-#if defined(Q_CC_MINGW) && !defined(IMR_RECONVERTSTRING)
+#if !defined(IMR_RECONVERTSTRING)
 typedef struct tagRECONVERTSTRING {
     DWORD dwSize;
     DWORD dwVersion;

@@ -34,7 +34,7 @@
 #include <wtf/OwnPtr.h>
 
 #if USE(QXMLSTREAM)
-#include <QtXml/qxmlstream.h>
+#include <qxmlstream.h>
 #else
 #include <libxml/tree.h>
 #include <libxml/xmlstring.h>
@@ -124,7 +124,10 @@ public:
         friend bool parseXMLDocumentFragment(const String& chunk, DocumentFragment* fragment, Element* parent);
 
         void initializeParserContext(const char* chunk = 0);
-        void setCurrentNode(Node*);
+
+        void pushCurrentNode(Node*);
+        void popCurrentNode();
+        void clearCurrentNodeStack();
 
         void insertErrorMessageBlock();
 
@@ -148,7 +151,7 @@ public:
         Vector<xmlChar> m_bufferedText;
 #endif
         Node* m_currentNode;
-        bool m_currentNodeIsReferenced;
+        Vector<Node*> m_currentNodeStack;
 
         bool m_sawError;
         bool m_sawXSLTransform;

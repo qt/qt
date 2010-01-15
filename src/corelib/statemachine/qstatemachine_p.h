@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,6 +73,8 @@ class QSignalEventGenerator;
 class QSignalTransition;
 class QAbstractState;
 class QAbstractTransition;
+class QFinalState;
+class QHistoryState;
 class QState;
 
 #ifndef QT_NO_ANIMATION
@@ -138,6 +140,11 @@ public:
                          const QList<QAbstractState*> &exitedStates,
                          const QList<QAbstractState*> &enteredStates);
 
+    static QState *toStandardState(QAbstractState *state);
+    static const QState *toStandardState(const QAbstractState *state);
+    static QFinalState *toFinalState(QAbstractState *state);
+    static QHistoryState *toHistoryState(QAbstractState *state);
+
     bool isInFinalState(QAbstractState *s) const;
     static bool isFinal(const QAbstractState *s);
     static bool isParallel(const QAbstractState *s);
@@ -200,7 +207,7 @@ public:
     QSet<QAbstractState *> pendingErrorStatesForDefaultEntry;
 
 #ifndef QT_NO_ANIMATION
-    bool animationsEnabled;
+    bool animated;
 
     QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> >
         initializeAnimation(QAbstractAnimation *abstractAnimation, 

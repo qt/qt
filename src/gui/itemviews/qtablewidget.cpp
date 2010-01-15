@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2458,7 +2458,7 @@ const QTableWidgetItem *QTableWidget::itemPrototype() const
 
     The table widget will use the item prototype clone function when it needs
     to create a new table item.  For example when the user is editing
-    editing in an empty cell.  This is useful when you have a QTableWidgetItem
+    in an empty cell.  This is useful when you have a QTableWidgetItem
     subclass and want to make sure that QTableWidget creates instances of
     your subclass.
 

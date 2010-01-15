@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,7 +60,7 @@ QT_MODULE(Multimedia)
 
 struct Q_MULTIMEDIA_EXPORT QAudioEngineFactoryInterface : public QFactoryInterface
 {
-    virtual QList<QByteArray> deviceList(QAudio::Mode) const = 0;
+    virtual QList<QByteArray> availableDevices(QAudio::Mode) const = 0;
     virtual QAbstractAudioInput* createInput(const QByteArray& device, const QAudioFormat& format = QAudioFormat()) = 0;
     virtual QAbstractAudioOutput* createOutput(const QByteArray& device, const QAudioFormat& format = QAudioFormat()) = 0;
     virtual QAbstractAudioDeviceInfo* createDeviceInfo(const QByteArray& device, QAudio::Mode mode) = 0;
@@ -80,7 +80,7 @@ public:
     ~QAudioEnginePlugin();
 
     virtual QStringList keys() const = 0;
-    virtual QList<QByteArray> deviceList(QAudio::Mode) const = 0;
+    virtual QList<QByteArray> availableDevices(QAudio::Mode) const = 0;
     virtual QAbstractAudioInput* createInput(const QByteArray& device, const QAudioFormat& format = QAudioFormat()) = 0;
     virtual QAbstractAudioOutput* createOutput(const QByteArray& device, const QAudioFormat& format = QAudioFormat()) = 0;
     virtual QAbstractAudioDeviceInfo* createDeviceInfo(const QByteArray& device, QAudio::Mode mode) = 0;

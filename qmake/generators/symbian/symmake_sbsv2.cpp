@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -171,26 +171,41 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         t << "\t$(QMAKE)" << endl;
         t << endl;
 
+        QString winscw("winscw");
         t << "debug: " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS)";
         foreach(QString item, debugPlatforms) {
-            t << "\t$(SBS) -c " << item << "_udeb" << testClause << endl;
+            if(QString::compare(item, winscw) == 0)
+                t << " -c " << item << "_udeb.mwccinc" << testClause;
+            else
+                t << " -c " << item << "_udeb" << testClause;
         }
         t << endl;
         t << "release: " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS)";
         foreach(QString item, releasePlatforms) {
-            t << "\t$(SBS) -c " << item << "_urel" << testClause << endl;
+            if(QString::compare(item, winscw) == 0)
+                t << " -c " << item << "_urel.mwccinc" << testClause;
+            else
+                t << " -c " << item << "_urel" << testClause;
         }
         t << endl;
 
         // For more specific builds, targets are in this form: build-platform, e.g. release-armv5
         foreach(QString item, debugPlatforms) {
             t << "debug-" << item << ": " << BLD_INF_FILENAME << endl;
-            t << "\t$(SBS) -c " << item << "_udeb" << testClause << endl;
+            if(QString::compare(item, winscw) == 0)
+                t << "\t$(SBS) -c " << item << "_udeb.mwccinc" << testClause << endl;
+            else
+                t << "\t$(SBS) -c " << item << "_udeb" << testClause << endl;
         }
 
         foreach(QString item, releasePlatforms) {
             t << "release-" << item << ": " << BLD_INF_FILENAME << endl;
-            t << "\t$(SBS) -c " << item << "_urel" << testClause << endl;
+            if(QString::compare(item, winscw) == 0)
+                t << "\t$(SBS) -c " << item << "_urel.mwccinc" << testClause << endl;
+            else
+                t << "\t$(SBS) -c " << item << "_urel" << testClause << endl;
         }
 
         t << endl;
@@ -224,14 +239,34 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     t << "\t-$(SBS) reallyclean" << endl;
     t << endl;
 
-    // create execution target
-    if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
-        t << "run:" << endl;
-        t << "\t-call " << epocRoot() << "epoc32/release/winscw/udeb/" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << endl << endl;
+    t << "clean-debug: " << BLD_INF_FILENAME << endl;
+    t << "\t$(SBS) reallyclean";
+    foreach(QString item, debugPlatforms) {
+        t << " -c " << item << "_udeb" << testClause;
     }
+    t << endl;
+    t << "clean-release: " << BLD_INF_FILENAME << endl;
+    t << "\t$(SBS) reallyclean";
+    foreach(QString item, releasePlatforms) {
+        t << " -c " << item << "_urel" << testClause;
+    }
+    t << endl;
+
+    // For more specific builds, targets are in this form: clean-build-platform, e.g. clean-release-armv5
+    foreach(QString item, debugPlatforms) {
+        t << "clean-debug-" << item << ": " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS) reallyclean -c " << item << "_udeb" << testClause << endl;
+    }
+    foreach(QString item, releasePlatforms) {
+        t << "clean-release-" << item << ": " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS) reallyclean -c " << item << "_urel" << testClause << endl;
+    }
+    t << endl;
+
+    generateExecutionTargets(t, debugPlatforms);
 }
 
-void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t)
+void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)
 {
     // Makes sure we have needed FLMs in place.
     exportFlm();
@@ -369,37 +404,21 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         t << "START EXTENSION s60/mifconv" << endl;
 
         QFileInfo iconInfo = fileInfo(icon);
-        QString iconPath = iconInfo.path();
+
+        QFileInfo bldinf(project->values("MAKEFILE").first());
+        QString iconPath = bldinf.dir().relativeFilePath(iconInfo.path());
+
         QString iconFile = iconInfo.baseName();
+
+        QFileInfo iconTargetInfo = fileInfo(iconTargetFile);
+        QString iconTarget = iconTargetInfo.fileName();
 
         t << "OPTION SOURCES -c32 " << iconFile << endl;
         t << "OPTION SOURCEDIR " << iconPath << endl;
-        t << "OPTION TARGETFILE " << uid3 << ".mif" << endl;
+        t << "OPTION TARGETFILE " << iconTarget << endl;
         t << "OPTION SVGENCODINGVERSION 3" << endl; // Compatibility with S60 3.1 devices and up
         t << "END" << endl;
     }
-
-    // Generate temp dirs
-    QString tempDirs;
-    for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
-        QStringList values = it.value();
-        for (int i = 0; i < values.size(); ++i) {
-            QString value = values.at(i);
-            if (value.endsWith("/" QT_EXTRA_INCLUDE_DIR)) {
-                value = fileInfo(value).absoluteFilePath();
-                tempDirs.append(value);
-                tempDirs.append(" ");
-            }
-        }
-    }
-
-    if (tempDirs.size())
-        tempDirs.chop(1); // Remove final space
-
-    t << "START EXTENSION qt/qmake_generate_temp_dirs" << endl;
-    t << "OPTION DIRS " << tempDirs << endl;
-    t << "END" << endl;
-    t << endl;
 
     t << "START EXTENSION qt/qmake_store_build" << endl;
     t << "END" << endl;
@@ -413,4 +432,11 @@ void SymbianSbsv2MakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool a
     // We don't generate extension makefile in sbsb2
     Q_UNUSED(t);
     Q_UNUSED(addDeploymentExtension);
+}
+
+void SymbianSbsv2MakefileGenerator::appendAbldTempDirs(QStringList& sysincspaths, QString includepath)
+{
+    //Do nothing
+    Q_UNUSED(sysincspaths);
+    Q_UNUSED(includepath);
 }

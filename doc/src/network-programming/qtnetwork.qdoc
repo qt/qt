@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -101,7 +101,7 @@
 
     Each application or library can create one or more instances of
     QNetworkAccessManager to handle network communication.
-    
+
     \section1 Writing FTP Clients with QFtp
 
     FTP (File Transfer Protocol) is a protocol used almost exclusively
@@ -155,7 +155,7 @@
     commands based on the result of a previous command. It also
     enables you to provide detailed feedback to the user.
 
-    The \l{network/ftp}{FTP} example
+    The \l{network/qftp}{FTP} example
     illustrates how to write an FTP client.
     Writing your own FTP (or HTTP) server is possible using the
     lower-level classes QTcpSocket and QTcpServer.

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -299,6 +299,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_emitUpdated())
     Q_PRIVATE_SLOT(d_func(), void _q_polishItems())
     Q_PRIVATE_SLOT(d_func(), void _q_processDirtyItems())
+    Q_PRIVATE_SLOT(d_func(), void _q_updateScenePosDescendants())
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
     friend class QGraphicsView;

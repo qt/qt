@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -326,7 +326,8 @@ int QCommandLinkButton::heightForWidth(int width) const
     Q_D(const QCommandLinkButton);
     int heightWithoutDescription = d->descriptionOffset() + d->bottomMargin();
     // find the width available for the description area
-    return heightWithoutDescription + d->descriptionHeight(width);
+    return qMax(heightWithoutDescription + d->descriptionHeight(width),
+                iconSize().height() + d->topMargin() + d->bottomMargin());
 }
 
 /*! \reimp */

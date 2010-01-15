@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -211,6 +211,9 @@ public:
 
     inline bool isUndoAvailable() const { return undoEnabled && undoState > 0; }
     inline bool isRedoAvailable() const { return undoEnabled && undoState < undoStack.size(); }
+
+    inline int availableUndoSteps() const { return undoEnabled ? undoState : 0; }
+    inline int availableRedoSteps() const { return undoEnabled ? qMax(undoStack.size() - undoState - 1, 0) : 0; }
 
     inline QString buffer() const { return text; }
     QString plainText() const;

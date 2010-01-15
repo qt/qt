@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -123,5 +123,6 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
 - (void)setMenuLoader:(QT_MANGLE_NAMESPACE(QCocoaMenuLoader)*)menuLoader;
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader;
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate;
+- (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
 @end
 #endif

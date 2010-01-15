@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,8 +68,6 @@ class Q3FileDialogQFileListView;
 class QUrlInfo;
 
 #ifndef QT_NO_FILEDIALOG
-
-#ifndef QT_MAC_USE_COCOA
 
 class Q_COMPAT_EXPORT Q3FileIconProvider : public QObject
 {
@@ -338,8 +336,6 @@ private:
                                             bool = true, bool = false);
 #endif
 };
-
-#endif // QT_MAC_USE_COCOA
 
 #endif // QT_NO_FILEDIALOG
 

@@ -112,47 +112,51 @@ CL_NS_DEF(index)
 	  return _freq; 
   }
 
-  bool SegmentTermDocs::next() {
+
+bool SegmentTermDocs::next()
+{
     while (true) {
-      if (count == df)
-        return false;
+        if (count == df)
+            return false;
 
-      uint32_t docCode = freqStream->readVInt();
-      _doc += docCode >> 1; //unsigned shift
-      if ((docCode & 1) != 0)			  // if low bit is set
-        _freq = 1;				  // _freq is one
-      else
-        _freq = freqStream->readVInt();		  // else read _freq
-      count++;
+        uint32_t docCode = freqStream->readVInt();
+        _doc += docCode >> 1;   //unsigned shift
+        if ((docCode & 1) != 0)             // if low bit is set
+            _freq = 1;                      // _freq is one
+        else
+            _freq = freqStream->readVInt(); // else read _freq
+        count++;
 
-      if ( (deletedDocs == NULL) || (deletedDocs->get(_doc) == false ) )
-        break;
-      skippingDoc();
+        if (deletedDocs == NULL || (_doc >= 0 && !deletedDocs->get(_doc)))
+            break;
+        skippingDoc();
     }
     return true;
-  }
+}
 
-  int32_t SegmentTermDocs::read(int32_t* docs, int32_t* freqs, int32_t length) {
+
+int32_t SegmentTermDocs::read(int32_t* docs, int32_t* freqs, int32_t length)
+{
     int32_t i = 0;
-//todo: one optimization would be to get the pointer buffer for ram or mmap dirs 
-//and iterate over them instead of using readByte() intensive functions.
-    while (i<length && count < df) {
-      uint32_t docCode = freqStream->readVInt();
-      _doc += docCode >> 1;
-      if ((docCode & 1) != 0)			  // if low bit is set
-        _freq = 1;				  // _freq is one
-      else
-        _freq = freqStream->readVInt();		  // else read _freq
-      count++;
+    // TODO: one optimization would be to get the pointer buffer for ram or mmap
+    // dirs and iterate over them instead of using readByte() intensive functions.
+    while (i < length && count < df) {
+        uint32_t docCode = freqStream->readVInt();
+        _doc += docCode >> 1;
+        if ((docCode & 1) != 0)             // if low bit is set
+            _freq = 1;                      // _freq is one
+        else
+            _freq = freqStream->readVInt(); // else read _freq
+        count++;
 
-      if (deletedDocs == NULL || !deletedDocs->get(_doc)) {
-        docs[i] = _doc;
-        freqs[i] = _freq;
-        i++;
-      }
+        if (deletedDocs == NULL || (_doc >= 0 && !deletedDocs->get(_doc))) {
+            docs[i] = _doc;
+            freqs[i] = _freq;
+            i++;
+        }
     }
     return i;
-  }
+}
 
   bool SegmentTermDocs::skipTo(const int32_t target){
     if (df >= skipInterval) {                      // optimized case

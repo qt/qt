@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,7 @@ class QPaintBufferPlayback;
 
 class Q_GUI_EXPORT QPaintBuffer : public QPaintDevice
 {
+    Q_DECLARE_PRIVATE(QPaintBuffer)
 public:
     QPaintBuffer();
     QPaintBuffer(const QPaintBuffer &other);
@@ -311,7 +312,7 @@ public:
     virtual ~QPainterReplayer() { }
 
     void setupTransform(QPainter *painter);
-    void process(const QPaintBufferCommand &cmd);
+    virtual void process(const QPaintBufferCommand &cmd);
     void draw(const QPaintBuffer &buffer, QPainter *painter, int frame);
 
 protected:
@@ -326,7 +327,7 @@ class Q_GUI_EXPORT QPaintEngineExReplayer : public QPainterReplayer
 public:
     QPaintEngineExReplayer() { }
 
-    void process(const QPaintBufferCommand &cmd);
+    virtual void process(const QPaintBufferCommand &cmd);
 };
 
 class QPaintBufferEnginePrivate;

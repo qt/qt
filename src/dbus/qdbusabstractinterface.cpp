@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -279,9 +279,17 @@ QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d,
     : QDBusAbstractInterfaceBase(d, parent)
 {
     // keep track of the service owner
-    if (!d_func()->currentOwner.isEmpty())
-        QObject::connect(d_func()->connectionPrivate(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-                         this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+    if (d.isValid &&
+        d.connection.isConnected()
+        && !d.service.isEmpty()
+        && !d.service.startsWith(QLatin1Char(':')))
+        d_func()->connection.connect(QLatin1String(DBUS_SERVICE_DBUS), // service
+                                     QString(), // path
+                                     QLatin1String(DBUS_INTERFACE_DBUS), // interface
+                                     QLatin1String("NameOwnerChanged"),
+                                     QStringList() << d.service,
+                                     QString(), // signature
+                                     this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
 
 /*!
@@ -296,9 +304,17 @@ QDBusAbstractInterface::QDBusAbstractInterface(const QString &service, const QSt
                                                  con, false), parent)
 {
     // keep track of the service owner
-    if (d_func()->connection.isConnected())
-        QObject::connect(d_func()->connectionPrivate(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-                         this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+    if (d_func()->isValid &&
+        d_func()->connection.isConnected()
+        && !service.isEmpty()
+        && !service.startsWith(QLatin1Char(':')))
+        d_func()->connection.connect(QLatin1String(DBUS_SERVICE_DBUS), // service
+                                     QString(), // path
+                                     QLatin1String(DBUS_INTERFACE_DBUS), // interface
+                                     QLatin1String("NameOwnerChanged"),
+                                     QStringList() << service,
+                                     QString(), //signature
+                                     this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
 }
 
 /*!
@@ -544,9 +560,10 @@ void QDBusAbstractInterface::connectNotify(const char *signal)
         return;
 
     QDBusConnectionPrivate *conn = d->connectionPrivate();
-    if (conn)
-        conn->connectRelay(d->service, d->currentOwner, d->path, d->interface,
+    if (conn) {
+        conn->connectRelay(d->service, d->path, d->interface,
                            this, signal);
+    }
 }
 
 /*!
@@ -562,7 +579,7 @@ void QDBusAbstractInterface::disconnectNotify(const char *signal)
 
     QDBusConnectionPrivate *conn = d->connectionPrivate();
     if (conn)
-        conn->disconnectRelay(d->service, d->currentOwner, d->path, d->interface,
+        conn->disconnectRelay(d->service, d->path, d->interface,
                               this, signal);
 }
 

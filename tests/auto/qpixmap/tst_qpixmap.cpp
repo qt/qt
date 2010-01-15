@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,6 +47,8 @@
 #include <qmatrix.h>
 #include <qdesktopwidget.h>
 #include <qpaintengine.h>
+#include <qtreewidget.h>
+#include <qsplashscreen.h>
 
 #include <private/qpixmapdata_p.h>
 
@@ -169,6 +171,7 @@ private slots:
     void loadFromDataNullValues();
 
     void preserveDepth();
+    void splash_crash();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -293,7 +296,7 @@ void tst_QPixmap::setAlphaChannel()
     QRgb expected = alpha == 0 ? 0 : qRgba(red, green, blue, alpha);
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            if (result.numColors() > 0) {
+            if (result.colorCount() > 0) {
                 ok &= result.pixelIndex(x, y) == expected;
             } else {
                 ok &= result.pixel(x, y) == expected;
@@ -330,7 +333,7 @@ void tst_QPixmap::fromImage()
 
     QImage image(37, 16, format);
 
-    if (image.numColors() == 2) {
+    if (image.colorCount() == 2) {
         image.setColor(0, QColor(Qt::color0).rgba());
         image.setColor(1, QColor(Qt::color1).rgba());
     }
@@ -731,7 +734,7 @@ void tst_QPixmap::testMetrics()
 void tst_QPixmap::createMaskFromColor()
 {
     QImage image(3, 3, QImage::Format_Indexed8);
-    image.setNumColors(10);
+    image.setColorCount(10);
     image.setColor(0, 0xffffffff);
     image.setColor(1, 0xff000000);
     image.setColor(2, 0xffff0000);
@@ -791,13 +794,31 @@ void tst_QPixmap::drawBitmap()
 void tst_QPixmap::grabWidget()
 {
     QWidget widget;
-    widget.setPalette(Qt::green);
+    QImage image(128, 128, QImage::Format_ARGB32_Premultiplied);
+    for (int row = 0; row < image.height(); ++row) {
+        QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
+        for (int col = 0; col < image.width(); ++col)
+            line[col] = qRgb(rand() & 255, row, col);
+    }
+
+    QPalette pal = widget.palette();
+    pal.setBrush(QPalette::Window, QBrush(image));
+    widget.setPalette(pal);
     widget.resize(128, 128);
 
-    QPixmap expected(64, 64);
-    expected.fill(Qt::green);
-
+    QPixmap expected = QPixmap::fromImage(QImage(image.scanLine(64) + 64 * 4, 64, 64, image.bytesPerLine(), image.format()));
     QPixmap actual = QPixmap::grabWidget(&widget, QRect(64, 64, 64, 64));
+    QVERIFY(lenientCompare(actual, expected));
+
+    actual = QPixmap::grabWidget(&widget, 64, 64);
+    QVERIFY(lenientCompare(actual, expected));
+
+    // Make sure a widget that is not yet shown is grabbed correctly.
+    QTreeWidget widget2;
+    actual = QPixmap::grabWidget(&widget2);
+    widget2.show();
+    expected = QPixmap::grabWidget(&widget2);
+
     QVERIFY(lenientCompare(actual, expected));
 }
 
@@ -1134,6 +1155,8 @@ void tst_QPixmap::fromSymbianCFbsBitmap_data()
     QTest::newRow("EColor4K big") << EColor4K << largeWidth << largeHeight << QColor(Qt::red);
     QTest::newRow("EColor64K small") << EColor64K << smallWidth << smallHeight << QColor(Qt::green);
     QTest::newRow("EColor64K big") << EColor64K << largeWidth << largeHeight << QColor(Qt::green);
+    QTest::newRow("EColor16M small") << EColor16M << smallWidth << smallHeight << QColor(Qt::yellow);
+    QTest::newRow("EColor16M big") << EColor16M << largeWidth << largeHeight << QColor(Qt::yellow);
     QTest::newRow("EColor16MU small") << EColor16MU << smallWidth << smallHeight << QColor(Qt::red);
     QTest::newRow("EColor16MU big") << EColor16MU << largeWidth << largeHeight << QColor(Qt::red);
     QTest::newRow("EColor16MA small opaque") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0);
@@ -1285,6 +1308,12 @@ void tst_QPixmap::copy()
     QPixmap expected(10, 10);
     expected.fill(Qt::blue);
     QVERIFY(lenientCompare(dest, expected));
+
+    QPixmap trans;
+    trans.fill(Qt::transparent);
+
+    QPixmap transCopy = trans.copy();
+    QVERIFY(pixmapsAreEqual(&trans, &transCopy));
 }
 
 #ifdef QT3_SUPPORT
@@ -1417,6 +1446,17 @@ void tst_QPixmap::fromImage_crash()
     QPainter painter(&pm);
 
     delete img;
+}
+
+//This is testing QPixmapData::createCompatiblePixmapData - see QTBUG-5977
+void tst_QPixmap::splash_crash()
+{
+    QPixmap pix;
+    pix = QPixmap(":/images/designer.png");
+    QSplashScreen splash(pix);
+    splash.show();
+    QCoreApplication::processEvents();
+    splash.close();
 }
 
 void tst_QPixmap::fromData()

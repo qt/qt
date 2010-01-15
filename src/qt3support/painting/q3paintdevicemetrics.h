@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,7 +63,7 @@ public:
     int logicalDpiY() const { return pdev->logicalDpiY(); }
     int physicalDpiX() const { return pdev->physicalDpiX(); }
     int physicalDpiY() const { return pdev->physicalDpiY(); }
-    int numColors() const { return pdev->numColors(); }
+    int numColors() const { return pdev->colorCount(); }
     int depth() const { return pdev->depth(); }
 
 private:

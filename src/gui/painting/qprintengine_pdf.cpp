@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -206,7 +206,7 @@ void QPdfEngine::drawImage(const QRectF &rectangle, const QImage &image, const Q
     QRect sourceRect = sr.toRect();
     QImage im = sourceRect != image.rect() ? image.copy(sourceRect) : image;
     bool bitmap = true;
-    const int object = d->addImage(image, &bitmap, im.cacheKey());
+    const int object = d->addImage(im, &bitmap, im.cacheKey());
     if (object < 0)
         return;
 

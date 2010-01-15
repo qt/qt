@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,10 +65,10 @@ public:
     int animationCount() const;
     int indexOfAnimation(QAbstractAnimation *animation) const;
     void addAnimation(QAbstractAnimation *animation);
-    void insertAnimationAt(int index, QAbstractAnimation *animation);
+    void insertAnimation(int index, QAbstractAnimation *animation);
     void removeAnimation(QAbstractAnimation *animation);
-    QAbstractAnimation *takeAnimationAt(int index);
-    void clearAnimations();
+    QAbstractAnimation *takeAnimation(int index);
+    void clear();
 
 protected:
     QAnimationGroup(QAnimationGroupPrivate &dd, QObject *parent);

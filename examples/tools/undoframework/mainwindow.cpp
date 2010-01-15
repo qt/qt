@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,8 +61,8 @@ MainWindow::MainWindow()
     diagramScene->setBackgroundBrush(pixmapBrush);
     diagramScene->setSceneRect(QRect(0, 0, 500, 500));
 
-    connect(diagramScene, SIGNAL(itemMoved(DiagramItem *, const QPointF &)),
-            this, SLOT(itemMoved(DiagramItem *, const QPointF &)));
+    connect(diagramScene, SIGNAL(itemMoved(DiagramItem*,QPointF)),
+            this, SLOT(itemMoved(DiagramItem*,QPointF)));
 
     setWindowTitle("Undo Framework");
     QGraphicsView *view = new QGraphicsView(diagramScene);

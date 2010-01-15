@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,6 +77,7 @@
 #include <e32def.h>
 #include <e32debug.h>
 #include <f32file.h>
+#include <e32math.h>
 # include "private/qcore_symbian_p.h"
 
 _LIT(qt_S60Filter, "Series60v?.*.sis");
@@ -960,7 +961,7 @@ QT_BEGIN_NAMESPACE
     \relates <QtGlobal>
 
     Turns the major, minor and patch numbers of a version into an
-    integer, 0xMMNNPP (MM = major, NN = minor, PP = patch). This can 
+    integer, 0xMMNNPP (MM = major, NN = minor, PP = patch). This can
     be compared with another similarly processed version id.
 
     \sa QT_VERSION
@@ -1191,6 +1192,10 @@ bool qSharedBuild()
     \value SV_9_2 Symbian OS v9.2
     \value SV_9_3 Symbian OS v9.3
     \value SV_9_4 Symbian OS v9.4
+    \value SV_SF_1 Symbian^1
+    \value SV_SF_2 Symbian^2
+    \value SV_SF_3 Symbian^3
+    \value SV_SF_4 Symbian^4
     \value SV_Unknown An unknown and currently unsupported platform
 
     \sa S60Version, WinVersion, MacVersion
@@ -1207,6 +1212,8 @@ bool qSharedBuild()
     \value SV_S60_3_1 S60 3rd Edition Feature Pack 1
     \value SV_S60_3_2 S60 3rd Edition Feature Pack 2
     \value SV_S60_5_0 S60 5th Edition
+    \value SV_S60_5_1 S60 5th Edition Feature Pack 1
+    \value SV_S60_5_2 S60 5th Edition Feature Pack 2
     \value SV_S60_Unknown An unknown and currently unsupported platform
     \omitvalue SV_S60_None
 
@@ -1219,7 +1226,7 @@ bool qSharedBuild()
 
     Defined on Mac OS X.
 
-    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS
+    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
 */
 
 /*!
@@ -1228,7 +1235,7 @@ bool qSharedBuild()
 
     Defined on Windows.
 
-    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS
+    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_S60
 */
 
 /*!
@@ -1237,7 +1244,7 @@ bool qSharedBuild()
 
     Defined on X11.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_S60
 */
 
 /*!
@@ -1246,7 +1253,7 @@ bool qSharedBuild()
 
     Defined on Qt for Embedded Linux.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_S60
 */
 
 /*!
@@ -1592,6 +1599,29 @@ bool qSharedBuild()
     Optimizing C++ Compilers.
 */
 
+/*!
+  \macro Q_OS_MAC
+  \relates <QtGlobal>
+
+  Defined on MAC OS (synonym for Darwin).
+ */
+
+/*!
+  \macro Q_OS_SYMBIAN
+  \relates <QtGlobal>
+
+  Defined on Symbian.
+ */
+
+/*!
+  \macro Q_WS_S60
+  \relates <QtGlobal>
+
+  Defined on S60.
+
+  \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS
+ */
+
 #if defined(QT_BUILD_QMAKE)
 // needed to bootstrap qmake
 static const unsigned int qt_one = 1;
@@ -1795,7 +1825,7 @@ QSysInfo::S60Version QSysInfo::s60Version()
     TInt err = fileFinder.FindWildByDir(qt_S60Filter, qt_S60SystemInstallDir, contents);
     if (err == KErrNone) {
         err = contents->Sort(EDescending|ESortByName);
-        if (err == KErrNone) {
+        if (err == KErrNone && contents->Count() > 0 && (*contents)[0].iName.Length() >= 12) {
             TInt major = (*contents)[0].iName[9] - '0';
             TInt minor = (*contents)[0].iName[11] - '0';
             if (major == 3) {
@@ -1807,6 +1837,12 @@ QSysInfo::S60Version QSysInfo::s60Version()
             } else if (major == 5) {
                 if (minor == 0) {
                     return cachedS60Version = SV_S60_5_0;
+                }
+                else if (minor == 1) {
+                    return cachedS60Version = SV_S60_5_1;
+                }
+                else if (minor == 2) {
+                    return cachedS60Version = SV_S60_5_2;
                 }
             }
         }
@@ -1822,12 +1858,10 @@ QSysInfo::S60Version QSysInfo::s60Version()
     return cachedS60Version = SV_S60_3_2;
 #   elif defined(__S60_50__)
     return cachedS60Version = SV_S60_5_0;
-#   else
-    return cachedS60Version = SV_S60_Unknown;
 #   endif
-#  else
-    return cachedS60Version = SV_S60_Unknown;
 #  endif
+    //If reaching here, it was not possible to determine the version
+    return cachedS60Version = SV_S60_Unknown;
 }
 QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 {
@@ -1837,6 +1871,10 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
     case SV_S60_3_2:
         return SV_9_3;
     case SV_S60_5_0:
+        return SV_9_4;
+    case SV_S60_5_1:
+        return SV_9_4;
+    case SV_S60_5_2:
         return SV_9_4;
     default:
         return SV_Unknown;
@@ -2479,7 +2517,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 #endif
 }
 
-#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2502,8 +2540,6 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
     Sets the argument \a seed to be used to generate a new random number sequence of
     pseudo random integers to be returned by qrand().
 
-    If no seed value is provided, qrand() is automatically seeded with a value of 1.
-
     The sequence of random numbers generated is deterministic per thread. For example,
     if two threads call qsrand(1) and subsequently calls qrand(), the threads will get
     the same random number sequence.
@@ -2513,13 +2549,23 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 void qsrand(uint seed)
 {
 #if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
-    SeedStorageType *pseed = randTLS()->localData();
-    if (!pseed)
-        randTLS()->setLocalData(pseed = new SeedStorageType);
-    *pseed = seed;
+    SeedStorage *seedStorage = randTLS();
+    if (seedStorage) {
+        SeedStorageType *pseed = seedStorage->localData();
+        if (!pseed)
+            seedStorage->setLocalData(pseed = new SeedStorageType);
+        *pseed = seed;
+    } else {
+        //golbal static seed storage should always exist,
+        //except after being deleted by QGlobalStaticDeleter.
+        //But since it still can be called from destructor of another
+        //global static object, fallback to sqrand(seed)
+        srand(seed);
+    }
 #else
-    // On Windows srand() and rand() already use Thread-Local-Storage
+    // On Windows and Symbian srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls
+    // this is also valid for QT_NO_THREAD
     srand(seed);
 #endif
 }
@@ -2535,35 +2581,42 @@ void qsrand(uint seed)
 */
 void qsrand()
 {
-#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
-    SeedStorageType *pseed = randTLS()->localData();
-    if (pseed) {
-        // already seeded
-        return;
-    }
-    randTLS()->setLocalData(pseed = new SeedStorageType);
-    // start beyond 1 to avoid the sequence reset
-    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
-    *pseed = QDateTime::currentDateTime().toTime_t()
-             + quintptr(&pseed)
-             + serial.fetchAndAddRelaxed(1);
-#if defined(Q_OS_WIN)
-    // for Windows the srand function must still be called.
-    srand(*pseed);
+#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
+    SeedStorage *seedStorage = randTLS();
+    if (seedStorage) {
+        SeedStorageType *pseed = seedStorage->localData();
+        if (pseed) {
+            // already seeded
+            return;
+        }
+        seedStorage->setLocalData(pseed = new SeedStorageType);
+        // start beyond 1 to avoid the sequence reset
+        static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
+        *pseed = QDateTime::currentDateTime().toTime_t()
+                 + quintptr(&pseed)
+                 + serial.fetchAndAddRelaxed(1);
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+        // for Windows and Symbian the srand function must still be called.
+        srand(*pseed);
 #endif
+    }
 
-#elif defined(Q_OS_WIN)
+//QT_NO_THREAD implementations
+#else
     static unsigned int seed = 0;
 
     if (seed)
         return;
 
+#if defined(Q_OS_SYMBIAN)
+    seed = Math::Random();
+#elif defined(Q_OS_WIN)
     seed = GetTickCount();
+#else
+    seed = quintptr(&seed) + QDateTime::currentDateTime().toTime_t();
+#endif
     srand(seed);
-#else 
-    // Symbian?
-
-#endif // defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#endif // defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
 }
 
 /*!
@@ -2584,15 +2637,25 @@ void qsrand()
 int qrand()
 {
 #if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
-    SeedStorageType *pseed = randTLS()->localData();
-    if (!pseed) {
-        randTLS()->setLocalData(pseed = new SeedStorageType);
-        *pseed = 1;
+    SeedStorage *seedStorage = randTLS();
+    if (seedStorage) {
+        SeedStorageType *pseed = seedStorage->localData();
+        if (!pseed) {
+            seedStorage->setLocalData(pseed = new SeedStorageType);
+            *pseed = 1;
+        }
+        return rand_r(pseed);
+    } else {
+        //golbal static seed storage should always exist,
+        //except after being deleted by QGlobalStaticDeleter.
+        //But since it still can be called from destructor of another
+        //global static object, fallback to qrand()
+        return rand();
     }
-    return rand_r(pseed);
 #else
-    // On Windows srand() and rand() already use Thread-Local-Storage
+    // On Windows and Symbian srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls
+    // this is also valid for QT_NO_THREAD
     return rand();
 #endif
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,7 @@
 
 //! [1]
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(const QUrl& url)
 {
     progress = 0;
 
@@ -60,9 +60,9 @@ MainWindow::MainWindow()
 
 //! [2]
     view = new QWebView(this);
-    view->load(QUrl("http://www.google.com/ncr"));
+    view->load(url);
     connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
-    connect(view, SIGNAL(titleChanged(const QString&)), SLOT(adjustTitle()));
+    connect(view, SIGNAL(titleChanged(QString)), SLOT(adjustTitle()));
     connect(view, SIGNAL(loadProgress(int)), SLOT(setProgress(int)));
     connect(view, SIGNAL(loadFinished(bool)), SLOT(finishLoading(bool)));
 
@@ -78,11 +78,16 @@ MainWindow::MainWindow()
     toolBar->addWidget(locationEdit);
 //! [2]
 
+    QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
+    QAction* viewSourceAction = new QAction("Page Source", this);
+    connect(viewSourceAction, SIGNAL(triggered()), SLOT(viewSource()));
+    viewMenu->addAction(viewSourceAction);
+
 //! [3]
     QMenu *effectMenu = menuBar()->addMenu(tr("&Effect"));
     effectMenu->addAction("Highlight all links", this, SLOT(highlightAllLinks()));
 
-    QAction *rotateAction = new QAction(this);
+    rotateAction = new QAction(this);
     rotateAction->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
     rotateAction->setCheckable(true);
     rotateAction->setText(tr("Turn images upside down"));
@@ -99,6 +104,24 @@ MainWindow::MainWindow()
     setUnifiedTitleAndToolBarOnMac(true);
 }
 //! [3]
+
+void MainWindow::viewSource()
+{
+    QNetworkAccessManager* accessManager = view->page()->networkAccessManager();
+    QNetworkRequest request(view->url());
+    QNetworkReply* reply = accessManager->get(request);
+    connect(reply, SIGNAL(finished()), this, SLOT(slotSourceDownloaded()));
+}
+
+void MainWindow::slotSourceDownloaded()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(const_cast<QObject*>(sender()));
+    QTextEdit* textEdit = new QTextEdit(NULL);
+    textEdit->setAttribute(Qt::WA_DeleteOnClose);
+    textEdit->show();
+    textEdit->setPlainText(reply->readAll());
+    reply->deleteLater();
+}
 
 //! [4]
 void MainWindow::adjustLocation()
@@ -136,6 +159,8 @@ void MainWindow::finishLoading(bool)
     progress = 100;
     adjustTitle();
     view->page()->mainFrame()->evaluateJavaScript(jQuery);
+
+    rotateImages(rotateAction->isChecked());
 }
 //! [6]
 
@@ -148,14 +173,13 @@ void MainWindow::highlightAllLinks()
 //! [7]
 
 //! [8]
-void MainWindow::rotateImages(bool toggle)
+void MainWindow::rotateImages(bool invert)
 {
-    QString code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s') } )";
-    view->page()->mainFrame()->evaluateJavaScript(code);
-    if (toggle)
-        code = "$('img').each( function () { $(this).css('-webkit-transform', 'rotate(180deg)') } )";
+    QString code;
+    if (invert)
+        code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s'); $(this).css('-webkit-transform', 'rotate(180deg)') } )";
     else
-        code = "$('img').each( function () { $(this).css('-webkit-transform', 'rotate(0deg)') } )";
+        code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s'); $(this).css('-webkit-transform', 'rotate(0deg)') } )";
     view->page()->mainFrame()->evaluateJavaScript(code);
 }
 //! [8]

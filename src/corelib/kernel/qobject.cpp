@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -145,8 +145,7 @@ QObjectPrivate::QObjectPrivate(int version)
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;
-    for (uint i = 0; i < (sizeof connectedSignals / sizeof connectedSignals[0]); ++i)
-        connectedSignals[i] = 0;
+    connectedSignals[0] = connectedSignals[1] = 0;
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
@@ -579,12 +578,13 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     protected functions connectNotify() and disconnectNotify() make
     it possible to track connections.
 
-    QObjects organize themselves in object trees. When you create a
-    QObject with another object as parent, the object will
-    automatically add itself to the parent's children() list. The
-    parent takes ownership of the object i.e. it will automatically
-    delete its children in its destructor. You can look for an object
-    by name and optionally type using findChild() or findChildren().
+    QObjects organize themselves in \l {Object Trees and Object
+    Ownership} {object trees}. When you create a QObject with another
+    object as parent, the object will automatically add itself to the
+    parent's children() list. The parent takes ownership of the
+    object; i.e., it will automatically delete its children in its
+    destructor. You can look for an object by name and optionally type
+    using findChild() or findChildren().
 
     Every object has an objectName() and its class name can be found
     via the corresponding metaObject() (see QMetaObject::className()).
@@ -646,7 +646,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     to be stored in one of the container classes. You must store
     pointers.
 
-    \section2 Auto-Connection
+    \section1 Auto-Connection
 
     Qt's meta-object system provides a mechanism to automatically connect
     signals and slots between QObject subclasses and their children. As long
@@ -660,7 +660,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     given in the \l{Using a Designer UI File in Your Application} section of
     the \QD manual.
 
-    \section2 Dynamic Properties
+    \section1 Dynamic Properties
 
     From Qt 4.2, dynamic properties can be added to and removed from QObject
     instances at run-time. Dynamic properties do not need to be declared at
@@ -673,8 +673,17 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     and both standard Qt widgets and user-created forms can be given dynamic
     properties.
 
+    \section1 Internationalization (i18n)
+
+    All QObject subclasses support Qt's translation features, making it possible
+    to translate an application's user interface into different languages.
+
+    To make user-visible text translatable, it must be wrapped in calls to
+    the tr() function. This is explained in detail in the
+    \l{Writing Source Code for Translation} document.
+
     \sa QMetaObject, QPointer, QObjectCleanupHandler, Q_DISABLE_COPY()
-        {Object Trees and Object Ownership}
+    \sa {Object Trees and Object Ownership}
 */
 
 /*!
@@ -835,14 +844,7 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
 QObject::~QObject()
 {
     Q_D(QObject);
-    if (d->wasDeleted) {
-#if defined(QT_DEBUG)
-        qWarning("QObject: Double deletion detected");
-#endif
-        return;
-    }
     d->wasDeleted = true;
-
     d->blockSig = 0; // unblock signals so we always emit destroyed()
 
     if (!d->isWidget) {
@@ -869,7 +871,7 @@ QObject::~QObject()
         // all the signal/slots connections are still in place - if we don't
         // quit now, we will crash pretty soon.
         qWarning("Detected an unexpected exception in ~QObject while emitting destroyed().");
-#if defined(Q_AUTOTEST_EXPORT) && !defined(QT_NO_EXCEPTIONS)
+#if defined(Q_BUILD_INTERNAL) && !defined(QT_NO_EXCEPTIONS)
         struct AutotestException : public std::exception
         {
             const char *what() const throw() { return "autotest swallow"; }
@@ -901,7 +903,8 @@ QObject::~QObject()
         // disconnect all receivers
         if (d->connectionLists) {
             ++d->connectionLists->inUse;
-            for (int signal = -1; signal < d->connectionLists->count(); ++signal) {
+            int connectionListsCount = d->connectionLists->count();
+            for (int signal = -1; signal < connectionListsCount; ++signal) {
                 QObjectPrivate::ConnectionList &connectionList =
                     (*d->connectionLists)[signal];
 
@@ -938,16 +941,17 @@ QObject::~QObject()
         // disconnect all senders
         QObjectPrivate::Connection *node = d->senders;
         while (node) {
-            QMutex *m = signalSlotLock(node->sender);
+            QObject *sender = node->sender;
+            QMutex *m = signalSlotLock(sender);
             node->prev = &node;
             bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
             //the node has maybe been removed while the mutex was unlocked in relock?
-            if (!node || signalSlotLock(node->sender) != m) {
+            if (!node || node->sender != sender) {
                 m->unlock();
                 continue;
             }
             node->receiver = 0;
-            QObjectConnectionListVector *senderLists = node->sender->d_func()->connectionLists;
+            QObjectConnectionListVector *senderLists = sender->d_func()->connectionLists;
             if (senderLists)
                 senderLists->dirty = true;
 
@@ -2157,64 +2161,9 @@ void QObject::deleteLater()
     otherwise returns \a sourceText itself if no appropriate translated string
     is available.
 
-    See the sections below on Disambiguation and Handling Plurals for more
-    information about the optional \a disambiguation and \a n parameters.
-
-    QObject and its subclasses obtain translated strings from any translator
-    objects that have been installed on the application object; see the
-    QTranslator documentation for details about this mechanism.
-
-    A translatable string is referenced by its translation context;
-    this is the name of the QObject subclass whose tr() function is invoked,
-    as in the following example:
-
+    Example:
     \snippet mainwindows/sdi/mainwindow.cpp implicit tr context
     \dots
-
-    Here, the context is \c MainWindow because it is the \c MainWindow::tr()
-    function that is invoked. Translation contexts can be given explicitly
-    by fully qualifying the call to tr(); for example:
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp explicit tr context
-
-    This call obtains the translated text for "Page up" from the \c QScrollBar
-    context.
-
-    \section1 Defining Translation Contexts
-
-    The translation context for QObject and each QObject subclass is the
-    class name itself. Developers subclassing QObject must use the
-    Q_OBJECT macro in their class definition to override the translation
-    context. This macro sets the context to the name of the subclass.
-
-    If Q_OBJECT is not used in a class definition, the context will be
-    inherited from the base class. For example, since all QObject-based
-    classes in Qt provide a context, a new QWidget subclass defined without
-    a Q_OBJECT macro will use the "QWidget" context if its tr() function
-    is invoked.
-
-    \section1 Translator Comments
-
-    Developers can include information about each translatable string to
-    help translators with the translation process. These are extracted
-    when \l lupdate is used to process the source files. The recommended
-    way to add comments is to annotate the tr() calls in your code with
-    comments of the form:
-
-    \tt{//: ...}
-
-    or
-
-    \tt{\begincomment: ... \endcomment}
-
-    Examples:
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 40
-
-    In these examples, the comments will be associated with the strings
-    passed to tr() in the context of each call.
-
-    \section1 Disambiguation
 
     If the same \a sourceText is used in different roles within the
     same context, an additional identifying string may be passed in
@@ -2224,76 +2173,12 @@ void QObject::deleteLater()
     Example:
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 17
+    \dots
 
-    \section1 Meta Data
-
-    Additional data can be attached to each translatable message.
-    The syntax:
-
-    \tt{//= <id>}
-
-    can be used to give the message a unique identifier to support tools
-    which need it.
-    The syntax:
-
-    \tt{//~ <field name> <field contents>}
-
-    can be used to attach meta data to the message. The field name should consist
-    of a domain prefix (possibly the conventional file extension of the file format
-    the field is inspired by), a hyphen and the actual field name in
-    underscore-delimited notation. For storage in TS files, the field name together
-    with the prefix "extra-" will form an XML element name. The field contents will
-    be XML-escaped, but otherwise appear verbatim as the element's contents.
-    Any number of unique fields can be added to each message.
-
-    Example:
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp meta data
-
-    Meta data appearing right in front of a magic TRANSLATOR comment applies to the
-    whole TS file.
-
-    \section1 Character Encodings
-
-    You can set the encoding for \a sourceText by calling QTextCodec::setCodecForTr().
-    By default \a sourceText is assumed to be in Latin-1 encoding.
-
-    \section1 Handling Plurals
-
-    If \a n >= 0, all occurrences of \c %n in the resulting string
-    are replaced with a decimal representation of \a n. In addition,
-    depending on \a n's value, the translation text may vary.
-
-    Example:
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 18
-
-    The table below shows what string is returned depending on the
-    active translation:
-
-    \table
-    \header \o      \o{3,1} Active Translation
-    \header \o \a n \o No Translation        \o French                                 \o English
-    \row    \o 0    \o "0 message(s) saved"  \o "0 message sauvegard\unicode{0xE9}"    \o "0 message\bold{s} saved"
-    \row    \o 1    \o "1 message(s) saved"  \o "1 message sauvegard\unicode{0xE9}"    \o "1 message saved"
-    \row    \o 2    \o "2 message(s) saved"  \o "2 message\bold{s} sauvegard\unicode{0xE9}\bold{s}"  \o "2 message\bold{s} saved"
-    \row    \o 37   \o "37 message(s) saved" \o "37 message\bold{s} sauvegard\unicode{0xE9}\bold{s}" \o "37 message\bold{s} saved"
-    \endtable
-
-    This idiom is more flexible than the traditional approach; e.g.,
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 19
-
-    because it also works with target languages that have several
-    plural forms (e.g., Irish has a special "dual" form that should
-    be used when \c n is 2), and it handles the \e n == 0 case
-    correctly for languages such as French that require the singular.
-    See the \l{Qt Linguist Manual} for details.
-
-    Instead of \c %n, you can use \c %Ln to produce a localized
-    representation of \a n. The conversion uses the default locale,
-    set using QLocale::setDefault(). (If no default locale was
-    specified, the "C" locale is used.)
+    See \l{Writing Source Code for Translation} for a detailed description of
+    Qt's translation mechanisms in general, and the
+    \l{Writing Source Code for Translation#Disambiguation}{Disambiguation}
+    section for information on disambiguation.
 
     \warning This method is reentrant only if all translators are
     installed \e before calling this method. Installing or removing
@@ -2573,7 +2458,7 @@ int QObject::receivers(const char *signal) const
     If you pass the Qt::UniqueConnection \a type, the connection will only
     be made if it is not a duplicate. If there is already a duplicate
     (exact same signal to the exact same slot on the same objects),
-    the connection will fail and connect will return false
+    the connection will fail and connect will return false.
 
     The optional \a type parameter describes the type of connection
     to establish. In particular, it determines whether a particular
@@ -2627,20 +2512,25 @@ bool QObject::connect(const QObject *sender, const char *signal,
     const QMetaObject *smeta = sender->metaObject();
     const char *signal_arg = signal;
     ++signal; //skip code
-    int signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal);
+    int signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, false);
     if (signal_index < 0) {
         // check for normalized signatures
         tmp_signal_name = QMetaObject::normalizedSignature(signal - 1);
         signal = tmp_signal_name.constData() + 1;
 
         smeta = sender->metaObject();
-        signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal);
+        signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, false);
+    }
+    if (signal_index < 0) {
+        // re-use tmp_signal_name and signal from above
 
-        if (signal_index < 0) {
-            err_method_notfound(sender, signal_arg, "connect");
-            err_info_about_objects("connect", sender, receiver);
-            return false;
-        }
+        smeta = sender->metaObject();
+        signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, true);
+    }
+    if (signal_index < 0) {
+        err_method_notfound(sender, signal_arg, "connect");
+        err_info_about_objects("connect", sender, receiver);
+        return false;
     }
     signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
     int signalOffset, methodOffset;
@@ -2660,16 +2550,21 @@ bool QObject::connect(const QObject *sender, const char *signal,
     int method_index = -1;
     switch (membcode) {
     case QSLOT_CODE:
-        method_index = rmeta->indexOfSlot(method);
+        method_index = QMetaObjectPrivate::indexOfSlot(rmeta, method, false);
         break;
     case QSIGNAL_CODE:
-        method_index = rmeta->indexOfSignal(method);
+        method_index = QMetaObjectPrivate::indexOfSignalRelative(&rmeta, method, false);
+        if (method_index >= 0)
+            method_index += rmeta->methodOffset();
         break;
     }
     if (method_index < 0) {
         // check for normalized methods
         tmp_method_name = QMetaObject::normalizedSignature(method);
         method = tmp_method_name.constData();
+
+        // rmeta may have been modified above
+        rmeta = receiver->metaObject();
         switch (membcode) {
         case QSLOT_CODE:
             method_index = rmeta->indexOfSlot(method);
@@ -2857,7 +2752,9 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     do {
         int signal_index = -1;
         if (signal) {
-            signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal);
+            signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, false);
+            if (signal_index < 0)
+                signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, true);
             if (signal_index < 0)
                 break;
             signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
@@ -2968,6 +2865,27 @@ void QObject::disconnectNotify(const char *)
 {
 }
 
+/* \internal
+    convert a signal index from the method range to the signal range
+ */
+static int methodIndexToSignalIndex(const QMetaObject *metaObject, int signal_index)
+{
+    if (signal_index < 0)
+        return signal_index;
+    while (metaObject && metaObject->methodOffset() > signal_index)
+        metaObject = metaObject->superClass();
+
+    if (metaObject) {
+        int signalOffset, methodOffset;
+        computeOffsets(metaObject, &signalOffset, &methodOffset);
+        if (signal_index < metaObject->methodCount())
+            signal_index = QMetaObjectPrivate::originalClone(metaObject, signal_index - methodOffset) + signalOffset;
+        else
+            signal_index = signal_index - methodOffset + signalOffset;
+    }
+    return signal_index;
+}
+
 /*!\internal
    \a types is a 0-terminated vector of meta types for queued
    connections.
@@ -2978,16 +2896,7 @@ void QObject::disconnectNotify(const char *)
 bool QMetaObject::connect(const QObject *sender, int signal_index,
                           const QObject *receiver, int method_index, int type, int *types)
 {
-    if (signal_index > 0) {
-        const QMetaObject *mo = sender->metaObject();
-        while (mo && mo->methodOffset() > signal_index)
-            mo = mo->superClass();
-        if (mo) {
-            int signalOffset, methodOffset;
-            computeOffsets(mo, &signalOffset, &methodOffset);
-            signal_index = QMetaObjectPrivate::originalClone(mo, signal_index - methodOffset) + signalOffset;
-        }
-    }
+    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
     return QMetaObjectPrivate::connect(sender, signal_index,
                                        receiver, method_index, type, types);
 }
@@ -3042,13 +2951,9 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
 
     QObjectPrivate *const sender_d = QObjectPrivate::get(s);
     if (signal_index < 0) {
-        for (uint i = 0; i < (sizeof sender_d->connectedSignals
-                              / sizeof sender_d->connectedSignals[0] ); ++i)
-            sender_d->connectedSignals[i] = ~0u;
-    } else if (signal_index < (int)sizeof sender_d->connectedSignals * 8) {
-        uint n = (signal_index / (8 * sizeof sender_d->connectedSignals[0]));
-        sender_d->connectedSignals[n] |= (1 << (signal_index - n * 8
-                                    * sizeof sender_d->connectedSignals[0]));
+        sender_d->connectedSignals[0] = sender_d->connectedSignals[1] = ~0;
+    } else if (signal_index < (int)sizeof(sender_d->connectedSignals) * 8) {
+        sender_d->connectedSignals[signal_index >> 5] |= (1 << (signal_index & 0x1f));
     }
 
     return true;
@@ -3060,16 +2965,7 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
 bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                              const QObject *receiver, int method_index)
 {
-    if (signal_index > 0) {
-        const QMetaObject *mo = sender->metaObject();
-        while (mo && mo->methodOffset() > signal_index)
-            mo = mo->superClass();
-        if (mo) {
-            int signalOffset, methodOffset;
-            computeOffsets(mo, &signalOffset, &methodOffset);
-            signal_index = QMetaObjectPrivate::originalClone(mo, signal_index - methodOffset) + signalOffset;
-        }
-    }
+    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
     return QMetaObjectPrivate::disconnect(sender, signal_index,
                                           receiver, method_index);
 }
@@ -3306,15 +3202,9 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
     computeOffsets(m, &signalOffset, &methodOffset);
 
     int signal_index = signalOffset + local_signal_index;
-    if (signal_index < (int)sizeof(sender->d_func()->connectedSignals) * 8
-        && !qt_signal_spy_callback_set.signal_begin_callback
-        && !qt_signal_spy_callback_set.signal_end_callback) {
-        uint n = (signal_index / (8 * sizeof sender->d_func()->connectedSignals[0]));
-        uint m = 1 << (signal_index - n * 8 * sizeof sender->d_func()->connectedSignals[0]);
-        if ((sender->d_func()->connectedSignals[n] & m) == 0)
-            // nothing connected to these signals, and no spy
-            return;
-    }
+
+    if (!sender->d_func()->isSignalConnected(signal_index))
+        return; // nothing connected to these signals, and no spy
 
     if (sender->d_func()->blockSig)
         return;
@@ -3466,35 +3356,15 @@ int QObjectPrivate::signalIndex(const char *signalName) const
 {
     Q_Q(const QObject);
     const QMetaObject *base = q->metaObject();
-    int relative_index = QMetaObjectPrivate::indexOfSignalRelative(&base, signalName);
+    int relative_index = QMetaObjectPrivate::indexOfSignalRelative(&base, signalName, false);
+    if (relative_index < 0)
+        relative_index = QMetaObjectPrivate::indexOfSignalRelative(&base, signalName, true);
     if (relative_index < 0)
         return relative_index;
     relative_index = QMetaObjectPrivate::originalClone(base, relative_index);
     int signalOffset, methodOffset;
     computeOffsets(base, &signalOffset, &methodOffset);
     return relative_index + signalOffset;
-}
-
-/*! \internal
-
-  Returns true if the signal with index \a signal_index from object \a sender is connected.
-  Signals with indices above a certain range are always considered connected (see connectedSignals
-  in QObjectPrivate). If a signal spy is installed, all signals are considered connected.
-
-  \a signal_index must be the index returned by QObjectPrivate::signalIndex;
-*/
-bool QObjectPrivate::isSignalConnected(int signal_index) const
-{
-    if (signal_index < (int)sizeof(connectedSignals) * 8
-        && !qt_signal_spy_callback_set.signal_begin_callback
-        && !qt_signal_spy_callback_set.signal_end_callback) {
-        uint n = (signal_index / (8 * sizeof connectedSignals[0]));
-        uint m = 1 << (signal_index - n * 8 * sizeof connectedSignals[0]);
-        if ((connectedSignals[n] & m) == 0)
-            // nothing connected to these signals, and no spy
-            return false;
-    }
-    return true;
 }
 
 /*****************************************************************************

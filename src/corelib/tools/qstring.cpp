@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1092,7 +1092,12 @@ QString::QString(QChar ch)
     \internal
 */
 
-/*! \fn void QString::isDetached() const
+/*! \fn bool QString::isDetached() const
+
+    \internal
+*/
+
+/*! \fn bool QString::isSharedWith(const QString &other) const
 
     \internal
 */
@@ -2682,7 +2687,7 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
     realloc();
 
     int index = 0;
-    int numCaptures = rx2.numCaptures();
+    int numCaptures = rx2.captureCount();
     int al = after.length();
     QRegExp::CaretMode caretMode = QRegExp::CaretAtZero;
 
@@ -7205,7 +7210,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
 */
 
 
-#ifndef QT_NO_DATASTREAM
+#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 /*!
     \fn QDataStream &operator<<(QDataStream &stream, const QString &string)
     \relates QString

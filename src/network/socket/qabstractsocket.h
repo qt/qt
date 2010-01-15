@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -216,6 +216,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_startConnecting(const QHostInfo &))
     Q_PRIVATE_SLOT(d_func(), void _q_abortConnectionAttempt())
     Q_PRIVATE_SLOT(d_func(), void _q_testConnection())
+    Q_PRIVATE_SLOT(d_func(), void _q_forceDisconnect())
 
 #ifdef QT3_SUPPORT
 public:

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -754,6 +754,12 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 size)
     return d->nativeWrite(data, size);
 }
 
+
+qint64 QNativeSocketEngine::bytesToWrite() const
+{
+    return 0;
+}
+
 /*!
     Reads up to \a maxSize bytes into \a data from the socket.
     Returns the number of bytes read, or -1 if an error occurred.
@@ -870,7 +876,7 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
 */
 bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
 {
-    Q_D(const QNativeSocketEngine);
+    Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForWrite(), false);
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForWrite(),
                       QAbstractSocket::UnconnectedState, false);
@@ -887,6 +893,24 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
         setState(QAbstractSocket::ConnectedState);
         d_func()->fetchConnectionParameters();
         return true;
+    } else {
+        int value = 0;
+        int valueSize = sizeof(value);
+        if (::getsockopt(d->socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
+            if (value == WSAECONNREFUSED) {
+                d->setError(QAbstractSocket::ConnectionRefusedError, QNativeSocketEnginePrivate::ConnectionRefusedErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            } else if (value == WSAETIMEDOUT) {
+                d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::ConnectionTimeOutErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            } else if (value == WSAEHOSTUNREACH) {
+                d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::HostUnreachableErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            }
+        }
     }
 #endif
 
@@ -907,7 +931,7 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
                                       bool checkRead, bool checkWrite,
                                       int msecs, bool *timedOut)
 {
-    Q_D(const QNativeSocketEngine);
+    Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForWrite(), false);
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForReadOrWrite(),
                       QAbstractSocket::UnconnectedState, false);
@@ -921,6 +945,24 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
         setState(QAbstractSocket::ConnectedState);
         d_func()->fetchConnectionParameters();
         return true;
+    } else {
+        int value = 0;
+        int valueSize = sizeof(value);
+        if (::getsockopt(d->socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
+            if (value == WSAECONNREFUSED) {
+                d->setError(QAbstractSocket::ConnectionRefusedError, QNativeSocketEnginePrivate::ConnectionRefusedErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            } else if (value == WSAETIMEDOUT) {
+                d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::ConnectionTimeOutErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            } else if (value == WSAEHOSTUNREACH) {
+                d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::HostUnreachableErrorString);
+                d->socketState = QAbstractSocket::UnconnectedState;
+                return false;
+            }
+        }
     }
 #endif
     if (ret == 0) {

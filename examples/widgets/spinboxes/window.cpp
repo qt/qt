@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -144,8 +144,8 @@ void Window::createDateTimeEdits()
     formatComboBox->addItem("hh:mm ap");
 //! [9] //! [10]
 
-    connect(formatComboBox, SIGNAL(activated(const QString &)),
-            this, SLOT(setFormatString(const QString &)));
+    connect(formatComboBox, SIGNAL(activated(QString)),
+            this, SLOT(setFormatString(QString)));
 //! [10]
 
     setFormatString(formatComboBox->currentText());

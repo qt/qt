@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "../shared/collectionconfiguration.h"
 #include "../shared/helpgenerator.h"
 
 #include <QtCore/QDir>
@@ -87,6 +88,7 @@ public:
     QStringList filesToRegister() const { return m_filesToRegister; }
 
     QString cacheDirectory() const { return m_cacheDirectory; }
+    bool cacheDirRelativeToCollection() const { return m_cacheDirRelativeToCollection; }
 
 private:
     void raiseErrorWithLine();
@@ -115,6 +117,7 @@ private:
     QMap<QString, QString> m_filesToGenerate;
     QStringList m_filesToRegister;
     QString m_cacheDirectory;
+    bool m_cacheDirRelativeToCollection;
 };
 
 void CollectionConfigReader::raiseErrorWithLine()
@@ -198,6 +201,9 @@ void CollectionConfigReader::readAssistantSettings()
             } else if (name() == QLatin1String("aboutDialog")) {
                 readAboutDialog();
             } else if (name() == "cacheDirectory") {
+                m_cacheDirRelativeToCollection =
+                    attributes().value(QLatin1String("base"))
+                    == QLatin1String("collection");
                 m_cacheDirectory = readElementText();
             } else {
                 raiseErrorWithLine();
@@ -322,6 +328,14 @@ void CollectionConfigReader::readRegister()
     }
 }
 
+namespace {
+    QString absoluteFileName(const QString &basePath, const QString &fileName)
+    {
+        return QFileInfo(fileName).isAbsolute() ?
+            fileName : basePath + QDir::separator() + fileName;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     QString error;
@@ -403,13 +417,13 @@ int main(int argc, char *argv[])
     while (it != config.filesToGenerate().constEnd()) {
         fprintf(stdout, "Generating help for %s...\n", qPrintable(it.key()));
         QHelpProjectData helpData;
-        if (!helpData.readData(basePath + QDir::separator() + it.key())) {
+        if (!helpData.readData(absoluteFileName(basePath, it.key()))) {
             fprintf(stderr, "%s\n", qPrintable(helpData.errorMessage()));
             return -1;
         }
 
         HelpGenerator helpGenerator;
-        if (!helpGenerator.generate(&helpData, basePath + QDir::separator() + it.value())) {
+        if (!helpGenerator.generate(&helpData, absoluteFileName(basePath, it.value()))) {
             fprintf(stderr, "%s\n", qPrintable(helpGenerator.error()));
             return -1;
         }
@@ -433,49 +447,54 @@ int main(int argc, char *argv[])
     }
 
     foreach (const QString &file, config.filesToRegister()) {
-        if (!helpEngine.registerDocumentation(basePath + QDir::separator() + file)) {
+        if (!helpEngine.registerDocumentation(absoluteFileName(basePath, file))) {
             fprintf(stderr, "%s\n", qPrintable(helpEngine.error()));
             return -1;
         }
     }
 
     if (!config.title().isEmpty())
-        helpEngine.setCustomValue(QLatin1String("WindowTitle"), config.title());
+        CollectionConfiguration::setWindowTitle(helpEngine, config.title());
 
     if (!config.homePage().isEmpty()) {
-        helpEngine.setCustomValue(QLatin1String("defaultHomepage"),
-        config.homePage());
+        CollectionConfiguration::setDefaultHomePage(helpEngine,
+            config.homePage());
     }
 
-    if (!config.startPage().isEmpty())
-        helpEngine.setCustomValue(QLatin1String("LastShownPages"), config.startPage());
+    if (!config.startPage().isEmpty()) {
+        CollectionConfiguration::setLastShownPages(helpEngine,
+            QStringList(config.startPage()));
+    }
 
-    if (!config.currentFilter().isEmpty())
-        helpEngine.setCustomValue(QLatin1String("CurrentFilter"), config.currentFilter());
+    if (!config.currentFilter().isEmpty()) {
+        helpEngine.setCurrentFilter(config.currentFilter());
+    }
 
-    if (!config.cacheDirectory().isEmpty())
-        helpEngine.setCustomValue(QLatin1String("CacheDirectory"), config.cacheDirectory());
+    if (!config.cacheDirectory().isEmpty()) {
+        CollectionConfiguration::setCacheDir(helpEngine, config.cacheDirectory(),
+            config.cacheDirRelativeToCollection());
+    }
 
-    helpEngine.setCustomValue(QLatin1String("EnableFilterFunctionality"),
+    CollectionConfiguration::setFilterFunctionalityEnabled(helpEngine,
         config.enableFilterFunctionality());
-    helpEngine.setCustomValue(QLatin1String("HideFilterFunctionality"),
-        config.hideFilterFunctionality());
-    helpEngine.setCustomValue(QLatin1String("EnableDocumentationManager"),
+    CollectionConfiguration::setFilterToolbarVisible(helpEngine,
+        !config.hideFilterFunctionality());
+    CollectionConfiguration::setDocumentationManagerEnabled(helpEngine,
         config.enableDocumentationManager());
-    helpEngine.setCustomValue(QLatin1String("EnableAddressBar"),
+    CollectionConfiguration::setAddressBarEnabled(helpEngine,
         config.enableAddressBar());
-    helpEngine.setCustomValue(QLatin1String("HideAddressBar"),
-        config.hideAddressBar());
-    helpEngine.setCustomValue(QLatin1String("CreationTime"),
+    CollectionConfiguration::setAddressBarVisible(helpEngine,
+         !config.hideAddressBar());
+    CollectionConfiguration::setCreationTime(helpEngine,
         QDateTime::currentDateTime().toTime_t());
 
     if (!config.applicationIcon().isEmpty()) {
-        QFile icon(basePath + QDir::separator() + config.applicationIcon());
+        QFile icon(absoluteFileName(basePath, config.applicationIcon()));
         if (!icon.open(QIODevice::ReadOnly)) {
             fprintf(stderr, "Cannot open %s!\n", qPrintable(icon.fileName()));
             return -1;
         }
-        helpEngine.setCustomValue(QLatin1String("ApplicationIcon"), icon.readAll());
+        CollectionConfiguration::setApplicationIcon(helpEngine, icon.readAll());
     }
 
     if (config.aboutMenuTexts().count()) {
@@ -487,16 +506,16 @@ int main(int argc, char *argv[])
             s << it.value();
             ++it;
         }
-        helpEngine.setCustomValue(QLatin1String("AboutMenuTexts"), ba);
+        CollectionConfiguration::setAboutMenuTexts(helpEngine, ba);
     }
 
     if (!config.aboutIcon().isEmpty()) {
-        QFile icon(basePath + QDir::separator() + config.aboutIcon());
+        QFile icon(absoluteFileName(basePath, config.aboutIcon()));
         if (!icon.open(QIODevice::ReadOnly)) {
             fprintf(stderr, "Cannot open %s!\n", qPrintable(icon.fileName()));
             return -1;
         }
-        helpEngine.setCustomValue(QLatin1String("AboutIcon"), icon.readAll());
+        CollectionConfiguration::setAboutIcon(helpEngine, icon.readAll());
     }
 
     if (config.aboutTextFiles().count()) {
@@ -512,7 +531,7 @@ int main(int argc, char *argv[])
 
         while (it != config.aboutTextFiles().constEnd()) {
             s << it.key();
-            QFileInfo fi(basePath + QDir::separator() + it.value());
+            QFileInfo fi(absoluteFileName(basePath, it.value()));
             QFile f(fi.absoluteFilePath());
             if (!f.open(QIODevice::ReadOnly)) {
                 fprintf(stderr, "Cannot open %s!\n", qPrintable(f.fileName()));
@@ -544,14 +563,14 @@ int main(int argc, char *argv[])
             }
             ++it;
         }
-        helpEngine.setCustomValue(QLatin1String("AboutTexts"), ba);
+        CollectionConfiguration::setAboutTexts(helpEngine, ba);
         if (imgData.count()) {
             QByteArray imageData;
             QBuffer buffer(&imageData);
             buffer.open(QIODevice::WriteOnly);
             QDataStream out(&buffer);
             out << imgData;
-            helpEngine.setCustomValue(QLatin1String("AboutImages"), imageData);
+            CollectionConfiguration::setAboutImages(helpEngine, imageData);
         }
     }
 

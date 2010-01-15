@@ -26,9 +26,12 @@ mac {
 
 embedded:SUBDIRS += kmap2qmap
 
+contains(QT_CONFIG, declarative):SUBDIRS += qmlviewer qmldebugger
 contains(QT_CONFIG, dbus):SUBDIRS += qdbus
 !wince*:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns xmlpatternsvalidator
 embedded: SUBDIRS += makeqpf
+
+!wince*:!cross_compile:SUBDIRS += qdoc3
 
 CONFIG+=ordered
 QTDIR_build:REQUIRES = "contains(QT_CONFIG, full-config)"

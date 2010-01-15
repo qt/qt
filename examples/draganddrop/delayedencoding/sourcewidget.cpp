@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,8 +102,8 @@ void SourceWidget::startDrag()
 {
     mimeData = new MimeData;
 
-    connect(mimeData, SIGNAL(dataRequested(const QString &)),
-            this, SLOT(createData(const QString &)), Qt::DirectConnection);
+    connect(mimeData, SIGNAL(dataRequested(QString)),
+            this, SLOT(createData(QString)), Qt::DirectConnection);
 
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);

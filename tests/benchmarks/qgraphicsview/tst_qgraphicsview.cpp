@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,25 +62,25 @@ class QEventWaiter : public QEventLoop
 {
 public:
     QEventWaiter(QObject *receiver, QEvent::Type type)
-	: waiting(false), t(type)
+        : waiting(false), t(type)
     {
-	receiver->installEventFilter(this);
+        receiver->installEventFilter(this);
     }
 
     void wait()
     {
-	waiting = true;
-	exec();
+        waiting = true;
+        exec();
     }
 
     bool eventFilter(QObject *receiver, QEvent *event)
     {
-	Q_UNUSED(receiver);
-	if (waiting && event->type() == t) {
-	    waiting = false;
-	    exit();
-	}
-	return false;
+        Q_UNUSED(receiver);
+        if (waiting && event->type() == t) {
+            waiting = false;
+            exit();
+        }
+        return false;
     }
 
 private:
@@ -166,20 +166,26 @@ void tst_QGraphicsView::paintSingleItem()
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&image);
     QBENCHMARK {
-	view.viewport()->render(&painter);
+        view.viewport()->render(&painter);
     }
 }
+
+#ifdef Q_OS_SYMBIAN
+#  define DEEP_STACKING_COUNT 200
+#else
+#  define DEEP_STACKING_COUNT 1000
+#endif
 
 void tst_QGraphicsView::paintDeepStackingItems()
 {
     QGraphicsScene scene(0, 0, 100, 100);
     QGraphicsRectItem *item = scene.addRect(0, 0, 10, 10);
     QGraphicsRectItem *lastRect = item;
-    for (int i = 0; i < 1000; ++i) {
-	QGraphicsRectItem *rect = scene.addRect(0, 0, 10, 10);
-	rect->setPos(1, 1);
-	rect->setParentItem(lastRect);	
-	lastRect = rect;
+    for (int i = 0; i < DEEP_STACKING_COUNT; ++i) {
+        QGraphicsRectItem *rect = scene.addRect(0, 0, 10, 10);
+        rect->setPos(1, 1);
+        rect->setParentItem(lastRect);
+        lastRect = rect;
     }
 
     QGraphicsView view(&scene);
@@ -192,7 +198,7 @@ void tst_QGraphicsView::paintDeepStackingItems()
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&image);
     QBENCHMARK {
-	view.viewport()->render(&painter);
+        view.viewport()->render(&painter);
     }
 }
 
@@ -202,11 +208,11 @@ void tst_QGraphicsView::paintDeepStackingItems_clipped()
     QGraphicsRectItem *item = scene.addRect(0, 0, 10, 10);
     item->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
     QGraphicsRectItem *lastRect = item;
-    for (int i = 0; i < 1000; ++i) {
-	QGraphicsRectItem *rect = scene.addRect(0, 0, 10, 10);
-	rect->setPos(1, 1);
-	rect->setParentItem(lastRect);	
-	lastRect = rect;
+    for (int i = 0; i < DEEP_STACKING_COUNT; ++i) {
+        QGraphicsRectItem *rect = scene.addRect(0, 0, 10, 10);
+        rect->setPos(1, 1);
+        rect->setParentItem(lastRect);
+        lastRect = rect;
     }
 
     QGraphicsView view(&scene);
@@ -219,7 +225,7 @@ void tst_QGraphicsView::paintDeepStackingItems_clipped()
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&image);
     QBENCHMARK {
-	view.viewport()->render(&painter);
+        view.viewport()->render(&painter);
     }
 }
 
@@ -239,8 +245,8 @@ void tst_QGraphicsView::moveSingleItem()
     int n = 1;
     QBENCHMARK {
         item->setPos(25 * n, 25 * n);
-	waiter.wait();
-	n = n ? 0 : 1;
+        waiter.wait();
+        n = n ? 0 : 1;
     }
 }
 
@@ -382,18 +388,18 @@ void tst_QGraphicsView::chipTester()
     tester.setOpenGL(opengl);
     tester.setOperation(ChipTester::Operation(operation));
     QBENCHMARK {
-	tester.runBenchmark();
+        tester.runBenchmark();
     }
 }
 
 static void addChildHelper(QGraphicsItem *parent, int n, bool rotate)
 {
     if (!n)
-	return;
+        return;
     QGraphicsRectItem *item = new QGraphicsRectItem(QRectF(0, 0, 50, 50), parent);
     item->setPos(10, 10);
     if (rotate)
-	item->rotate(10);
+        item->rotate(10);
     addChildHelper(item, n - 1, rotate);
 }
 
@@ -421,12 +427,12 @@ void tst_QGraphicsView::deepNesting()
 
     QGraphicsScene scene;
     for (int y = 0; y < 15; ++y) {
-	for (int x = 0; x < 15; ++x) {
-	    QGraphicsItem *item1 = scene.addRect(QRectF(0, 0, 50, 50));
-	    if (rotate) item1->rotate(10);
-	    item1->setPos(x * 25, y * 25);
-	    addChildHelper(item1, 30, rotate);
-	}
+        for (int x = 0; x < 15; ++x) {
+            QGraphicsItem *item1 = scene.addRect(QRectF(0, 0, 50, 50));
+            if (rotate) item1->rotate(10);
+            item1->setPos(x * 25, y * 25);
+            addChildHelper(item1, 30, rotate);
+        }
     }
     scene.setItemIndexMethod(bsp ? QGraphicsScene::BspTreeIndex : QGraphicsScene::NoIndex);
     scene.setSortCacheEnabled(sortCache);
@@ -441,11 +447,11 @@ void tst_QGraphicsView::deepNesting()
 
     QBENCHMARK {
 #ifdef CALLGRIND_DEBUG
-	CALLGRIND_START_INSTRUMENTATION
+        CALLGRIND_START_INSTRUMENTATION
 #endif
-	view.viewport()->repaint();
+        view.viewport()->repaint();
 #ifdef CALLGRIND_DEBUG
-	CALLGRIND_STOP_INSTRUMENTATION
+        CALLGRIND_STOP_INSTRUMENTATION
 #endif
     }
 }
@@ -456,36 +462,36 @@ public:
     AnimatedPixmapItem(int x, int y, bool rot, bool scal, QGraphicsItem *parent = 0)
         : QGraphicsPixmapItem(parent), rotateFactor(0), scaleFactor(0)
     {
-	rotate = rot;
-	scale = scal;
-	xspeed = x;
-	yspeed = y;
+        rotate = rot;
+        scale = scal;
+        xspeed = x;
+        yspeed = y;
     }
 
 protected:
     void advance(int i)
-    { 
-	if (!i)
-	    return;
-	int x = int(pos().x()) + pixmap().width();
-	x += xspeed;
-	x = (x % (300 + pixmap().width() * 2)) - pixmap().width();
-	int y = int(pos().y()) + pixmap().width();
-	y += yspeed;
-	y = (y % (300 + pixmap().width() * 2)) - pixmap().width();
-	setPos(x, y);
+    {
+        if (!i)
+            return;
+        int x = int(pos().x()) + pixmap().width();
+        x += xspeed;
+        x = (x % (300 + pixmap().width() * 2)) - pixmap().width();
+        int y = int(pos().y()) + pixmap().width();
+        y += yspeed;
+        y = (y % (300 + pixmap().width() * 2)) - pixmap().width();
+        setPos(x, y);
 
-	int rot = rotateFactor;
-	int sca = scaleFactor;
+        int rot = rotateFactor;
+        int sca = scaleFactor;
         if (rotate)
-	    rotateFactor = 1 + (rot + xspeed) % 360;
+            rotateFactor = 1 + (rot + xspeed) % 360;
         if (scale)
-	    scaleFactor = 1 + (sca + yspeed) % 50;
+            scaleFactor = 1 + (sca + yspeed) % 50;
 
-	if (rotate || scale) {
-	    qreal s = 0.5 + scaleFactor / 50.0;
-	    setTransform(QTransform().rotate(rotateFactor).scale(s, s));
-	}
+        if (rotate || scale) {
+            qreal s = 0.5 + scaleFactor / 50.0;
+            setTransform(QTransform().rotate(rotateFactor).scale(s, s));
+        }
     }
 
 private:
@@ -543,38 +549,38 @@ void tst_QGraphicsView::imageRiver()
     view.show();
 
     QPixmap pix(":/images/designer.png");
-    QVERIFY(!pix.isNull());   
+    QVERIFY(!pix.isNull());
 
     QList<QGraphicsItem *> items;
     QFile file(":/random.data");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QDataStream str(&file);
     for (int i = 0; i < 100; ++i) {
-	AnimatedPixmapItem *item;
-	if (direction == 0) item = new AnimatedPixmapItem((i % 4) + 1, 0, rotation, scale);
-	if (direction == 1) item = new AnimatedPixmapItem(0, (i % 4) + 1, rotation, scale);
-	if (direction == 2) item = new AnimatedPixmapItem((i % 4) + 1, (i % 4) + 1, rotation, scale);
-	item->setPixmap(pix);
+        AnimatedPixmapItem *item;
+        if (direction == 0) item = new AnimatedPixmapItem((i % 4) + 1, 0, rotation, scale);
+        if (direction == 1) item = new AnimatedPixmapItem(0, (i % 4) + 1, rotation, scale);
+        if (direction == 2) item = new AnimatedPixmapItem((i % 4) + 1, (i % 4) + 1, rotation, scale);
+        item->setPixmap(pix);
         int rnd1, rnd2;
         str >> rnd1 >> rnd2;
-	item->setPos(-pix.width() + rnd1 % (view.width() + pix.width()),
-		     -pix.height() + rnd2 % (view.height() + pix.height()));
-	scene.addItem(item);
+        item->setPos(-pix.width() + rnd1 % (view.width() + pix.width()),
+                     -pix.height() + rnd2 % (view.height() + pix.height()));
+        scene.addItem(item);
     }
 
     view.count = 0;
 
     QBENCHMARK {
 #ifdef CALLGRIND_DEBUG
-	CALLGRIND_START_INSTRUMENTATION
+        CALLGRIND_START_INSTRUMENTATION
 #endif
-	for (int i = 0; i < 100; ++i) {
-	    scene.advance();
-	    while (view.count < (i+1))
-		qApp->processEvents();
-	}
+        for (int i = 0; i < 100; ++i) {
+            scene.advance();
+            while (view.count < (i+1))
+                qApp->processEvents();
+        }
 #ifdef CALLGRIND_DEBUG
-	CALLGRIND_STOP_INSTRUMENTATION
+        CALLGRIND_STOP_INSTRUMENTATION
 #endif
     }
 }
@@ -585,38 +591,38 @@ public:
     AnimatedTextItem(int x, int y, bool rot, bool scal, QGraphicsItem *parent = 0)
         : QGraphicsSimpleTextItem(parent), rotateFactor(0), scaleFactor(25)
     {
-	setText("River of text");
-	rotate = rot;
-	scale = scal;
-	xspeed = x;
-	yspeed = y;
+        setText("River of text");
+        rotate = rot;
+        scale = scal;
+        xspeed = x;
+        yspeed = y;
     }
 
 protected:
     void advance(int i)
-    { 
-	if (!i)
-	    return;
-	QRect r = boundingRect().toRect();
-	int x = int(pos().x()) + r.width();
-	x += xspeed;
-	x = (x % (300 + r.width() * 2)) - r.width();
-	int y = int(pos().y()) + r.width();
-	y += yspeed;
-	y = (y % (300 + r.width() * 2)) - r.width();
-	setPos(x, y);
+    {
+        if (!i)
+            return;
+        QRect r = boundingRect().toRect();
+        int x = int(pos().x()) + r.width();
+        x += xspeed;
+        x = (x % (300 + r.width() * 2)) - r.width();
+        int y = int(pos().y()) + r.width();
+        y += yspeed;
+        y = (y % (300 + r.width() * 2)) - r.width();
+        setPos(x, y);
 
-	int rot = rotateFactor;
-	int sca = scaleFactor;
+        int rot = rotateFactor;
+        int sca = scaleFactor;
         if (rotate)
-	    rotateFactor = 1 + (rot + xspeed) % 360;
+            rotateFactor = 1 + (rot + xspeed) % 360;
         if (scale)
-	    scaleFactor = 1 + (sca + yspeed) % 50;
+            scaleFactor = 1 + (sca + yspeed) % 50;
 
-	if (rotate || scale) {
-	    qreal s = 0.5 + scaleFactor / 50.0;
-	    setTransform(QTransform().rotate(rotateFactor).scale(s, s));
-	}
+        if (rotate || scale) {
+            qreal s = 0.5 + scaleFactor / 50.0;
+            setTransform(QTransform().rotate(rotateFactor).scale(s, s));
+        }
     }
 
 private:
@@ -657,37 +663,37 @@ void tst_QGraphicsView::textRiver()
     view.show();
 
     QPixmap pix(":/images/designer.png");
-    QVERIFY(!pix.isNull());   
+    QVERIFY(!pix.isNull());
 
     QList<QGraphicsItem *> items;
     QFile file(":/random.data");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QDataStream str(&file);
     for (int i = 0; i < 100; ++i) {
-	AnimatedTextItem *item;
-	if (direction == 0) item = new AnimatedTextItem((i % 4) + 1, 0, rotation, scale);
-	if (direction == 1) item = new AnimatedTextItem(0, (i % 4) + 1, rotation, scale);
-	if (direction == 2) item = new AnimatedTextItem((i % 4) + 1, (i % 4) + 1, rotation, scale);
+        AnimatedTextItem *item;
+        if (direction == 0) item = new AnimatedTextItem((i % 4) + 1, 0, rotation, scale);
+        if (direction == 1) item = new AnimatedTextItem(0, (i % 4) + 1, rotation, scale);
+        if (direction == 2) item = new AnimatedTextItem((i % 4) + 1, (i % 4) + 1, rotation, scale);
         int rnd1, rnd2;
         str >> rnd1 >> rnd2;
-	item->setPos(-pix.width() + rnd1 % (view.width() + pix.width()),
-		     -pix.height() + rnd2 % (view.height() + pix.height()));
-	scene.addItem(item);
+        item->setPos(-pix.width() + rnd1 % (view.width() + pix.width()),
+                     -pix.height() + rnd2 % (view.height() + pix.height()));
+        scene.addItem(item);
     }
 
     view.count = 0;
 
     QBENCHMARK {
 #ifdef CALLGRIND_DEBUG
-	CALLGRIND_START_INSTRUMENTATION
+        CALLGRIND_START_INSTRUMENTATION
 #endif
-	for (int i = 0; i < 100; ++i) {
-	    scene.advance();
-	    while (view.count < (i+1))
-		qApp->processEvents();
-	}
+        for (int i = 0; i < 100; ++i) {
+            scene.advance();
+            while (view.count < (i+1))
+                qApp->processEvents();
+        }
 #ifdef CALLGRIND_DEBUG
-	CALLGRIND_STOP_INSTRUMENTATION
+        CALLGRIND_STOP_INSTRUMENTATION
 #endif
     }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -87,7 +87,6 @@ Q_GUI_EXPORT
     int composingLength;
     bool sendKeyEvents;
     QString *composingText;
-    QStringList *currentCustomTypes;
     NSInteger dragEnterSequence;
 }
 - (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
@@ -97,7 +96,6 @@ Q_GUI_EXPORT
 - (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender;
 - (void)draggingExited:(id < NSDraggingInfo >)sender;
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;
-- (void)registerDragTypes;
 - (void)removeDropData;
 - (void)addDropData:(id <NSDraggingInfo>)sender;
 - (void)setSupportedActions:(NSDragOperation)actions;

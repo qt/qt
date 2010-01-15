@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,6 +70,7 @@ public:
         }
         connect(&m_layoutSignalMapper, SIGNAL(mapped(QWidget*)), ui->m_stackWidget, SLOT(setCurrentWidget(QWidget*)));
 
+#ifdef QT_KEYPAD_NAVIGATION
         const struct {
             QObject *action;
             Qt::NavigationMode mode;
@@ -85,6 +86,9 @@ public:
             m_modeSignalMapper.setMapping(modeMappings[i].action, int(modeMappings[i].mode));
         }
         connect(&m_modeSignalMapper, SIGNAL(mapped(int)), SLOT(setNavigationMode(int)));
+#else // QT_KEYPAD_NAVIGATION
+        ui->m_menuNavigation_mode->deleteLater();
+#endif // QT_KEYPAD_NAVIGATION
 
         const struct {
             QObject *button;
@@ -112,10 +116,12 @@ public:
     }
 
 protected slots:
+#ifdef QT_KEYPAD_NAVIGATION
     void setNavigationMode(int mode)
     {
         QApplication::setNavigationMode(Qt::NavigationMode(mode));
     }
+#endif // QT_KEYPAD_NAVIGATION
 
     void openDialog(int dialog)
     {
@@ -163,7 +169,9 @@ private:
 
     Ui_KeypadNavigation *ui;
     QSignalMapper m_layoutSignalMapper;
+#ifdef QT_KEYPAD_NAVIGATION
     QSignalMapper m_modeSignalMapper;
+#endif // QT_KEYPAD_NAVIGATION
     QSignalMapper m_dialogSignalMapper;
 };
 

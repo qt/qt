@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -155,187 +155,187 @@ static const char writingSystems_for_xlfd_encoding[sizeof(xlfd_encoding)][QFontD
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-2
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-3
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-4
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-9
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-10
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-13
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-14
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-15
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // hp-roman8
     { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-5
     { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // *-cp1251
     { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // koi8-ru
     { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // koi8-u
     { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // koi8-r
     { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-7
     { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-8
     { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // gb18030-0
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // gb18030.2000-0
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // gbk-0
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // gb2312.*-0
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // jisx0201*-0
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-      0 },
+      0, 0 },
     // jisx0208*-0
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-      0 },
+      0, 0 },
     // ksc5601*-*
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-      0 },
+      0, 0 },
     // big5hkscs-0
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-      0 },
+      0, 0 },
     // hkscs-1
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-      0 },
+      0, 0 },
     // big5*-*
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-      0 },
+      0, 0 },
     // tscii-*
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // tis620*-*
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso8859-11
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // mulelao-1
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // ethiopic-unicode
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0 },
+      0, 0 },
     // iso10646-1
     { 0, 1, 1, 1, 1, 1, 1, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
       1, 1, 0, 1, 0, 1, 1, 0, 0, 0,
-      0 },
+      0, 0 },
     // unicode-*
     { 0, 1, 1, 1, 1, 1, 1, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
       1, 1, 0, 1, 0, 1, 1, 0, 0, 0,
-      0 },
+      0, 0 },
     // *-symbol
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1 },
+      1, 0 },
     // *-fontspecific
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1 },
+      1, 0 },
     // fontspecific-*
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      1 }
+      1, 0 }
 
 };
 
@@ -835,7 +835,8 @@ static const char *specialLanguages[] = {
     "ko", // Hangul
     "", // Ogham
     "", // Runic
-    "km" // Khmer
+    "km", // Khmer
+    "" // N'Ko
 };
 enum { SpecialLanguageCount = sizeof(specialLanguages) / sizeof(const char *) };
 
@@ -866,7 +867,8 @@ static const ushort specialChars[] = {
     0, // Hangul
     0x1681, // Ogham
     0x16a0, // Runic
-    0  // Khmer
+    0,  // Khmer
+    0x7ca // N'Ko
 };
 enum { SpecialCharCount = sizeof(specialChars) / sizeof(ushort) };
 
@@ -905,7 +907,8 @@ static const char *languageForWritingSystem[] = {
     "vi",  // Vietnamese
     0, // Symbol
     0, // Ogham
-    0 // Runic
+    0, // Runic
+    0 // N'Ko
 };
 enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
 
@@ -944,7 +947,8 @@ static const ushort sampleCharForWritingSystem[] = {
     0,  // Vietnamese
     0, // Symbol
     0x1681, // Ogham
-    0x16a0 // Runic
+    0x16a0, // Runic
+    0x7ca // N'Ko
 };
 enum { SampleCharCount = sizeof(sampleCharForWritingSystem) / sizeof(ushort) };
 
@@ -984,7 +988,8 @@ static const char *openType[] = {
     0,  // Vietnamese
     0, // Symbol
     0, // Ogham
-    0 // Runic
+    0, // Runic
+    "nko " // N'Ko
 };
 enum { OpenTypeCount = sizeof(openType) / sizeof(const char *) };
 
@@ -1472,7 +1477,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
                          !(request.styleStrategy & QFont::NoAntialias));
     }
 
-    if (script != QUnicodeTables::Common) {
+    if (script != QUnicodeTables::Common && *specialLanguages[script] != '\0') {
         Q_ASSERT(script < QUnicodeTables::ScriptCount);
         FcLangSet *ls = FcLangSetCreate();
         FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
@@ -1615,7 +1620,7 @@ static QFontEngine *tryPatternLoad(FcPattern *p, int screen,
                 goto done;
             if (!FcCharSetHasChar(cs, specialChars[script]))
                 goto done;
-        } else {
+        } else if (*specialLanguages[script] != '\0'){
             FcLangSet *langSet = 0;
             if (FcPatternGetLangSet(match, FC_LANG, 0, &langSet) != FcResultMatch)
                 goto done;

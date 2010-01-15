@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,8 +97,8 @@ void MainWindow::createMenus()
     connect(removeAct, SIGNAL(triggered()),
         addressWidget, SLOT(removeEntry()));
 
-    connect(addressWidget, SIGNAL(selectionChanged(const QItemSelection &)),
-        this, SLOT(updateActions(const QItemSelection &)));
+    connect(addressWidget, SIGNAL(selectionChanged(QItemSelection)),
+        this, SLOT(updateActions(QItemSelection)));
 }
 //! [1b]
 

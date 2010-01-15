@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,27 +69,13 @@
 #include <QtGui/QTreeView>
 #include <qpixmapcache.h>
 #undef signals // Collides with GTK stymbols
-#include "qgtkpainter_p.h"
-#include "qstylehelper_p.h"
-
+#include <private/qgtkpainter_p.h>
+#include <private/qstylehelper_p.h>
+#include <private/qgtkstyle_p.h>
 #include <private/qcleanlooksstyle_p.h>
 
 
 QT_BEGIN_NAMESPACE
-
-typedef QStringList (*_qt_filedialog_open_filenames_hook)(QWidget * parent, const QString &caption, const QString &dir,
-                                                          const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-typedef QString (*_qt_filedialog_open_filename_hook)     (QWidget * parent, const QString &caption, const QString &dir,
-                                                          const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-typedef QString (*_qt_filedialog_save_filename_hook)     (QWidget * parent, const QString &caption, const QString &dir,
-                                                          const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-typedef QString (*_qt_filedialog_existing_directory_hook)(QWidget *parent, const QString &caption, const QString &dir,
-                                                          QFileDialog::Options options);
-
-extern Q_GUI_EXPORT _qt_filedialog_open_filename_hook qt_filedialog_open_filename_hook;
-extern Q_GUI_EXPORT _qt_filedialog_open_filenames_hook qt_filedialog_open_filenames_hook;
-extern Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook;
-extern Q_GUI_EXPORT _qt_filedialog_existing_directory_hook qt_filedialog_existing_directory_hook;
 
 static const char * const dock_widget_close_xpm[] =
     {
@@ -137,57 +123,26 @@ static const char * const dock_widget_restore_xpm[] =
         "           "
     };
 
-
-class QGtkStyleFilter : public QObject
-{
-public:
-    QGtkStyleFilter() {}
-private:
-    bool eventFilter(QObject *obj, QEvent *e);
-};
-
-bool QGtkStyleFilter::eventFilter(QObject *obj, QEvent *e)
-{
-    if (e->type() == QEvent::ApplicationPaletteChange) {
-        // Only do this the first time since this will also
-        // generate applicationPaletteChange events
-        if (!qt_app_palettes_hash() ||  qt_app_palettes_hash()->isEmpty()) {
-            QGtk::applyCustomPaletteHash();
-        }
-    }
-    return QObject::eventFilter(obj, e);
-}
-
-class QGtkStylePrivate : public QCleanlooksStylePrivate
-{
-    Q_DECLARE_PUBLIC(QGtkStyle)
-public:
-    QGtkStylePrivate()
-            : QCleanlooksStylePrivate()
-    {
-        QGtk::initGtkWidgets();
-        if (QGtk::isThemeAvailable())
-            qApp->installEventFilter(&filter);
-
-    }
-    QGtkStyleFilter filter;
-};
-
 static const int groupBoxBottomMargin    =  2;  // space below the groupbox
 static const int groupBoxTitleMargin     =  6;  // space between contents and title
 static const int groupBoxTopMargin       =  2;
 
-// Get size of the arrow controls in a GtkSpinButton
-static int spinboxArrowSize()
+/*!
+  Returns the configuration string for \a value.
+  Returns \a fallback if \a value is not found.
+ */
+QString QGtkStyle::getGConfString(const QString &value, const QString &fallback)
 {
-    const int MIN_ARROW_WIDTH = 6;
-    GtkWidget *spinButton = QGtk::gtkWidget(QLS("GtkSpinButton"));
-    GtkStyle *style = spinButton->style;
-    gint size = QGtk::pango_font_description_get_size (style->font_desc);
-    gint arrow_size;
-    arrow_size = qMax(PANGO_PIXELS (size), MIN_ARROW_WIDTH) + style->xthickness;
-    arrow_size += arrow_size%2 + 1;
-    return arrow_size;
+    return QGtkStylePrivate::getGConfString(value, fallback);
+}
+
+/*!
+  Returns the configuration boolean for \a key.
+  Returns \a fallback if \a key is not found.
+ */
+bool QGtkStyle::getGConfBool(const QString &key, bool fallback)
+{
+    return QGtkStylePrivate::getGConfBool(key, fallback);
 }
 
 static QColor mergedColors(const QColor &colorA, const QColor &colorB, int factor = 50)
@@ -233,7 +188,22 @@ static GdkColor fromQColor(const QColor &color)
 QGtkStyle::QGtkStyle()
     : QCleanlooksStyle(*new QGtkStylePrivate)
 {
+    Q_D(QGtkStyle);
+    d->init();
 }
+
+/*!
+    \internal
+
+    Constructs a QGtkStyle object.
+*/
+QGtkStyle::QGtkStyle(QGtkStylePrivate &dd)
+     : QCleanlooksStyle(dd)
+{
+    Q_D(QGtkStyle);
+    d->init();
+}
+
 
 /*!
     Destroys the QGtkStyle object.
@@ -247,11 +217,13 @@ QGtkStyle::~QGtkStyle()
 */
 QPalette QGtkStyle::standardPalette() const
 {
+    Q_D(const QGtkStyle);
+
     QPalette palette = QCleanlooksStyle::standardPalette();
-    if (QGtk::isThemeAvailable()) {
-        GtkStyle *style = QGtk::gtkStyle();
-        GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
-        GtkWidget *gtkEntry = QGtk::gtkWidget(QLS("GtkEntry"));
+    if (d->isThemeAvailable()) {
+        GtkStyle *style = d->gtkStyle();
+        GtkWidget *gtkButton = d->gtkWidget(QLS("GtkButton"));
+        GtkWidget *gtkEntry = d->getTextColorWidget();
 
         GdkColor gdkBg, gdkBase, gdkText, gdkForeground, gdkSbg, gdkSfg;
         QColor bg, base, text, fg, highlight, highlightText;
@@ -281,12 +253,12 @@ QPalette QGtkStyle::standardPalette() const
         palette.setColor(QPalette::Base, base);
 
         QColor alternateRowColor = palette.base().color().lighter(93); // ref gtkstyle.c draw_flat_box
-        GtkWidget *gtkTreeView = QGtk::gtkWidget(QLS("GtkTreeView"));
+        GtkWidget *gtkTreeView = d->gtkWidget(QLS("GtkTreeView"));
         GdkColor *gtkAltBase = NULL;
-        QGtk::gtk_widget_style_get(gtkTreeView, "odd-row-color", &gtkAltBase, NULL);
+        d->gtk_widget_style_get(gtkTreeView, "odd-row-color", &gtkAltBase, NULL);
         if (gtkAltBase) {
             alternateRowColor = QColor(gtkAltBase->red>>8, gtkAltBase->green>>8, gtkAltBase->blue>>8);
-            QGtk::gdk_color_free(gtkAltBase);
+            d->gdk_color_free(gtkAltBase);
         }
         palette.setColor(QPalette::AlternateBase, alternateRowColor);
 
@@ -306,7 +278,8 @@ QPalette QGtkStyle::standardPalette() const
         highlightText.setHsv(highlightText.hue(), 0, highlightText.value(), highlightText.alpha());
         palette.setColor(QPalette::Disabled, QPalette::Highlight, highlight);
         palette.setColor(QPalette::Disabled, QPalette::HighlightedText, highlightText);
-        style = QGtk::gtk_rc_get_style_by_paths(QGtk::gtk_settings_get_default(), "gtk-tooltips", "GtkWindow", Q_GTK_TYPE_WINDOW);
+        style = d->gtk_rc_get_style_by_paths(d->gtk_settings_get_default(), "gtk-tooltips", "GtkWindow",
+                d->gtk_window_get_type());
         if (style) {
             gdkText = style->fg[GTK_STATE_NORMAL];
             text = QColor(gdkText.red>>8, gdkText.green>>8, gdkText.blue>>8);
@@ -321,10 +294,12 @@ QPalette QGtkStyle::standardPalette() const
 */
 void QGtkStyle::polish(QPalette &palette)
 {
+    Q_D(QGtkStyle);
+
     // QCleanlooksStyle will alter the palette, hence we do
     // not want to polish the palette unless we are using it as
     // the fallback
-    if (!QGtk::isThemeAvailable())
+    if (!d->isThemeAvailable())
         QCleanlooksStyle::polish(palette);
     else
         palette = palette.resolve(standardPalette());
@@ -335,19 +310,21 @@ void QGtkStyle::polish(QPalette &palette)
 */
 void QGtkStyle::polish(QApplication *app)
 {
+    Q_D(QGtkStyle);
+
     QCleanlooksStyle::polish(app);
     // Custom fonts and palettes with QtConfig are intentionally 
     // not supported as these should be entirely determined by
     // current Gtk settings
-    if (app->desktopSettingsAware() && QGtk::isThemeAvailable()) {
+    if (app->desktopSettingsAware() && d->isThemeAvailable()) {
         QApplicationPrivate::setSystemPalette(standardPalette());
-        QApplicationPrivate::setSystemFont(QGtk::getThemeFont());
-        QGtk::applyCustomPaletteHash();
-        if (!QGtk::isKDE4Session()) {
-            qt_filedialog_open_filename_hook = &QGtk::openFilename;
-            qt_filedialog_save_filename_hook = &QGtk::saveFilename;
-            qt_filedialog_open_filenames_hook = &QGtk::openFilenames;
-            qt_filedialog_existing_directory_hook = &QGtk::openDirectory;
+        QApplicationPrivate::setSystemFont(d->getThemeFont());
+        d->applyCustomPaletteHash();
+        if (!d->isKDE4Session()) {
+            qt_filedialog_open_filename_hook = &QGtkStylePrivate::openFilename;
+            qt_filedialog_save_filename_hook = &QGtkStylePrivate::saveFilename;
+            qt_filedialog_open_filenames_hook = &QGtkStylePrivate::openFilenames;
+            qt_filedialog_existing_directory_hook = &QGtkStylePrivate::openDirectory;
         }
     }
 }
@@ -357,11 +334,13 @@ void QGtkStyle::polish(QApplication *app)
 */
 void QGtkStyle::unpolish(QApplication *app)
 {
+    Q_D(QGtkStyle);
+
     QCleanlooksStyle::unpolish(app);
     QPixmapCache::clear();
 
-    if (app->desktopSettingsAware() && QGtk::isThemeAvailable()
-        && !QGtk::isKDE4Session()) {
+    if (app->desktopSettingsAware() && d->isThemeAvailable()
+        && !d->isKDE4Session()) {
         qt_filedialog_open_filename_hook = 0;
         qt_filedialog_save_filename_hook = 0;
         qt_filedialog_open_filenames_hook = 0;
@@ -375,8 +354,10 @@ void QGtkStyle::unpolish(QApplication *app)
 
 void QGtkStyle::polish(QWidget *widget)
 {
+    Q_D(QGtkStyle);
+
     QCleanlooksStyle::polish(widget);
-    if (!QGtk::isThemeAvailable())
+    if (!d->isThemeAvailable())
         return;
     if (qobject_cast<QAbstractButton*>(widget)
             || qobject_cast<QToolButton*>(widget)
@@ -404,21 +385,22 @@ void QGtkStyle::unpolish(QWidget *widget)
     \reimp
 */
 int QGtkStyle::pixelMetric(PixelMetric metric,
-
                            const QStyleOption *option,
                            const QWidget *widget) const
 {
-    if (!QGtk::isThemeAvailable())
+    Q_D(const QGtkStyle);
+
+    if (!d->isThemeAvailable())
         return QCleanlooksStyle::pixelMetric(metric, option, widget);
 
     switch (metric) {
     case PM_DefaultFrameWidth:
         if (qobject_cast<const QFrame*>(widget)) {
             if (GtkStyle *style =
-                QGtk::gtk_rc_get_style_by_paths(QGtk::gtk_settings_get_default(),
+                d->gtk_rc_get_style_by_paths(d->gtk_settings_get_default(),
                                                 "*.GtkScrolledWindow",
                                                 "*.GtkScrolledWindow",
-                                                Q_GTK_TYPE_WINDOW))
+                                                d->gtk_window_get_type()))
                 return qMax(style->xthickness, style->ythickness);
         }
         return 2;
@@ -439,16 +421,16 @@ int QGtkStyle::pixelMetric(PixelMetric metric,
         return 0;
 
     case PM_ButtonShiftHorizontal: {
-        GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+        GtkWidget *gtkButton = d->gtkWidget(QLS("GtkButton"));
         guint horizontal_shift;
-        QGtk::gtk_widget_style_get(gtkButton, "child-displacement-x", &horizontal_shift, NULL);
+        d->gtk_widget_style_get(gtkButton, "child-displacement-x", &horizontal_shift, NULL);
         return horizontal_shift;
     }
 
     case PM_ButtonShiftVertical: {
-        GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+        GtkWidget *gtkButton = d->gtkWidget(QLS("GtkButton"));
         guint vertical_shift;
-        QGtk::gtk_widget_style_get(gtkButton, "child-displacement-y", &vertical_shift, NULL);
+        d->gtk_widget_style_get(gtkButton, "child-displacement-y", &vertical_shift, NULL);
         return vertical_shift;
     }
 
@@ -456,18 +438,18 @@ int QGtkStyle::pixelMetric(PixelMetric metric,
         return 0;
 
     case PM_MenuPanelWidth: {
-        GtkWidget *gtkMenu = QGtk::gtkWidget(QLS("GtkMenu"));
+        GtkWidget *gtkMenu = d->gtkWidget(QLS("GtkMenu"));
         guint horizontal_padding = 0;
         // horizontal-padding is used by Maemo to get thicker borders
-        if (!QGtk::gtk_check_version(2, 10, 0))
-            QGtk::gtk_widget_style_get(gtkMenu, "horizontal-padding", &horizontal_padding, NULL);
+        if (!d->gtk_check_version(2, 10, 0))
+            d->gtk_widget_style_get(gtkMenu, "horizontal-padding", &horizontal_padding, NULL);
         int padding = qMax<int>(gtkMenu->style->xthickness, horizontal_padding);
         return padding;
     }
 
     case PM_ButtonIconSize: {
         int retVal = 24;
-        GtkSettings *settings = QGtk::gtk_settings_get_default();
+        GtkSettings *settings = d->gtk_settings_get_default();
         gchararray icon_sizes;
         g_object_get(settings, "gtk-icon-sizes", &icon_sizes, NULL);
         QStringList values = QString(QLS(icon_sizes)).split(QLatin1Char(':'));
@@ -513,9 +495,9 @@ int QGtkStyle::pixelMetric(PixelMetric metric,
 
     case PM_SliderThickness:
     case PM_SliderControlThickness: {
-        GtkWidget *gtkScale = QGtk::gtkWidget(QLS("GtkHScale"));
+        GtkWidget *gtkScale = d->gtkWidget(QLS("GtkHScale"));
         gint val;
-        QGtk::gtk_widget_style_get(gtkScale, "slider-width", &val, NULL);
+        d->gtk_widget_style_get(gtkScale, "slider-width", &val, NULL);
         if (metric == PM_SliderControlThickness)
             return val + 2*gtkScale->style->ythickness;
         return val;
@@ -524,8 +506,8 @@ int QGtkStyle::pixelMetric(PixelMetric metric,
     case PM_ScrollBarExtent: {
         gint sliderLength;
         gint trough_border;
-        GtkWidget *hScrollbar = QGtk::gtkWidget(QLS("GtkHScrollbar"));
-        QGtk::gtk_widget_style_get(hScrollbar,
+        GtkWidget *hScrollbar = d->gtkWidget(QLS("GtkHScrollbar"));
+        d->gtk_widget_style_get(hScrollbar,
                                "trough-border",   &trough_border,
                                "slider-width",    &sliderLength,
                                NULL);
@@ -537,35 +519,35 @@ int QGtkStyle::pixelMetric(PixelMetric metric,
 
     case PM_SliderLength:
         gint val;
-        QGtk::gtk_widget_style_get(QGtk::gtkWidget(QLS("GtkHScale")), "slider-length", &val, NULL);
+        d->gtk_widget_style_get(d->gtkWidget(QLS("GtkHScale")), "slider-length", &val, NULL);
         return val;
 
     case PM_ExclusiveIndicatorWidth:
     case PM_ExclusiveIndicatorHeight:
     case PM_IndicatorWidth:
     case PM_IndicatorHeight: {
-        GtkWidget *gtkCheckButton = QGtk::gtkWidget(QLS("GtkCheckButton"));
+        GtkWidget *gtkCheckButton = d->gtkWidget(QLS("GtkCheckButton"));
         gint size, spacing;
-        QGtk::gtk_widget_style_get(gtkCheckButton, "indicator-spacing", &spacing, "indicator-size", &size, NULL);
+        d->gtk_widget_style_get(gtkCheckButton, "indicator-spacing", &spacing, "indicator-size", &size, NULL);
         return size + 2 * spacing;
     }
 
     case PM_MenuBarVMargin: {
-        GtkWidget *gtkMenubar = QGtk::gtkWidget(QLS("GtkMenuBar"));
+        GtkWidget *gtkMenubar = d->gtkWidget(QLS("GtkMenuBar"));
         return  qMax(0, gtkMenubar->style->ythickness);
     }
     case PM_ScrollView_ScrollBarSpacing:
     {
         gint spacing = 3;
-        GtkWidget *gtkScrollWindow = QGtk::gtkWidget(QLS("GtkScrolledWindow"));
+        GtkWidget *gtkScrollWindow = d->gtkWidget(QLS("GtkScrolledWindow"));
         Q_ASSERT(gtkScrollWindow);
-        QGtk::gtk_widget_style_get(gtkScrollWindow, "scrollbar-spacing", &spacing, NULL);
+        d->gtk_widget_style_get(gtkScrollWindow, "scrollbar-spacing", &spacing, NULL);
         return spacing;
     }
     case PM_SubMenuOverlap: {
         gint offset = 0;
-        GtkWidget *gtkMenu = QGtk::gtkWidget(QLS("GtkMenu"));
-        QGtk::gtk_widget_style_get(gtkMenu, "horizontal-offset", &offset, NULL);
+        GtkWidget *gtkMenu = d->gtkWidget(QLS("GtkMenu"));
+        d->gtk_widget_style_get(gtkMenu, "horizontal-offset", &offset, NULL);
         return offset;
     }
     default:
@@ -580,7 +562,9 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
 
                          QStyleHintReturn *returnData = 0) const
 {
-    if (!QGtk::isThemeAvailable())
+    Q_D(const QGtkStyle);
+
+    if (!d->isThemeAvailable())
         return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
 
     switch (hint) {
@@ -588,7 +572,7 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
     case SH_DialogButtonLayout: {
         int ret = QDialogButtonBox::GnomeLayout;
         gboolean alternateOrder = 0;
-        GtkSettings *settings = QGtk::gtk_settings_get_default();
+        GtkSettings *settings = d->gtk_settings_get_default();
         g_object_get(settings, "gtk-alternative-button-order", &alternateOrder, NULL);
 
         if (alternateOrder)
@@ -601,9 +585,9 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
 
     case SH_ToolButtonStyle:
     {
-        if (QGtk::isKDE4Session())
+        if (d->isKDE4Session())
             return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
-        GtkWidget *gtkToolbar = QGtk::gtkWidget(QLS("GtkToolbar"));
+        GtkWidget *gtkToolbar = d->gtkWidget(QLS("GtkToolbar"));
         GtkToolbarStyle toolbar_style = GTK_TOOLBAR_ICONS;
         g_object_get(gtkToolbar, "toolbar-style", &toolbar_style, NULL);
         switch (toolbar_style) {
@@ -626,9 +610,9 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
         return int(false);
 
     case SH_ComboBox_Popup: {
-        GtkWidget *gtkComboBox = QGtk::gtkWidget(QLS("GtkComboBox"));
+        GtkWidget *gtkComboBox = d->gtkWidget(QLS("GtkComboBox"));
         gboolean appears_as_list;
-        QGtk::gtk_widget_style_get((GtkWidget*)gtkComboBox, "appears-as-list", &appears_as_list, NULL);
+        d->gtk_widget_style_get((GtkWidget*)gtkComboBox, "appears-as-list", &appears_as_list, NULL);
         return appears_as_list ? 0 : 1;
     }
 
@@ -640,7 +624,7 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
 
     case SH_Menu_SubMenuPopupDelay: {
         gint delay = 225;
-        GtkSettings *settings = QGtk::gtk_settings_get_default();
+        GtkSettings *settings = d->gtk_settings_get_default();
         g_object_get(settings, "gtk-menu-popup-delay", &delay, NULL);
         return delay;
     }
@@ -649,16 +633,25 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
         gboolean scrollbars_within_bevel = false;
         if (widget && widget->isWindow())
             scrollbars_within_bevel = true;
-        else if (!QGtk::gtk_check_version(2, 12, 0)) {
-            GtkWidget *gtkScrollWindow = QGtk::gtkWidget(QLS("GtkScrolledWindow"));
-            QGtk::gtk_widget_style_get(gtkScrollWindow, "scrollbars-within-bevel", &scrollbars_within_bevel, NULL);
+        else if (!d->gtk_check_version(2, 12, 0)) {
+            GtkWidget *gtkScrollWindow = d->gtkWidget(QLS("GtkScrolledWindow"));
+            d->gtk_widget_style_get(gtkScrollWindow, "scrollbars-within-bevel", &scrollbars_within_bevel, NULL);
         }
         return !scrollbars_within_bevel;
     }
 
     case SH_DialogButtonBox_ButtonsHaveIcons: {
-        static bool buttonsHaveIcons = QGtk::getGConfBool(QLS("/desktop/gnome/interface/buttons_have_icons"));
+        static bool buttonsHaveIcons = d->getGConfBool(QLS("/desktop/gnome/interface/buttons_have_icons"));
         return buttonsHaveIcons;
+    }
+
+    case SH_UnderlineShortcut: {
+        gboolean underlineShortcut = true;
+        if (!d->gtk_check_version(2, 12, 0)) {
+            GtkSettings *settings = d->gtk_settings_get_default();
+            g_object_get(settings, "gtk-enable-mnemonics", &underlineShortcut, NULL);
+        }
+        return underlineShortcut;
     }
 
     default:
@@ -670,17 +663,18 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
     \reimp
 */
 void QGtkStyle::drawPrimitive(PrimitiveElement element,
-
                               const QStyleOption *option,
                               QPainter *painter,
                               const QWidget *widget) const
 {
-    if (!QGtk::isThemeAvailable()) {
+    Q_D(const QGtkStyle);
+
+    if (!d->isThemeAvailable()) {
         QCleanlooksStyle::drawPrimitive(element, option, painter, widget);
         return;
     }
 
-    GtkStyle* style = QGtk::gtkStyle();
+    GtkStyle* style = d->gtkStyle();
     QGtkPainter gtkPainter(painter);
 
     switch (element) {
@@ -715,10 +709,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             else if (option->state & State_Raised)
                 shadow_type = GTK_SHADOW_OUT;
 
-            GtkStyle *style = QGtk::gtk_rc_get_style_by_paths(QGtk::gtk_settings_get_default(),
-                                     "*.GtkScrolledWindow", "*.GtkScrolledWindow", Q_GTK_TYPE_WINDOW);
+            GtkStyle *style = d->gtk_rc_get_style_by_paths(d->gtk_settings_get_default(),
+                                     "*.GtkScrolledWindow", "*.GtkScrolledWindow", d->gtk_window_get_type());
             if (style)
-                gtkFramePainter.paintShadow(QGtk::gtkWidget(QLS("GtkFrame")), "viewport", pmRect,
+                gtkFramePainter.paintShadow(d->gtkWidget(QLS("GtkFrame")), "viewport", pmRect,
                                          option->state & State_Enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
                                          shadow_type, style);
             QPixmapCache::insert(pmKey, pixmap);
@@ -745,8 +739,9 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
     break;
 
     case PE_PanelTipLabel: {
-        GtkWidget *gtkWindow = QGtk::gtkWidget(QLS("GtkWindow")); // The Murrine Engine currently assumes a widget is passed
-        style = QGtk::gtk_rc_get_style_by_paths(QGtk::gtk_settings_get_default(), "gtk-tooltips", "GtkWindow", Q_GTK_TYPE_WINDOW);
+        GtkWidget *gtkWindow = d->gtkWidget(QLS("GtkWindow")); // The Murrine Engine currently assumes a widget is passed
+        style = d->gtk_rc_get_style_by_paths(d->gtk_settings_get_default(), "gtk-tooltips", "GtkWindow",
+                d->gtk_window_get_type());
         gtkPainter.paintFlatBox(gtkWindow, "tooltip", option->rect, GTK_STATE_NORMAL, GTK_SHADOW_NONE, style);
     }
     break;
@@ -759,8 +754,8 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             break;
         }
         GtkShadowType shadow_type;
-        GtkWidget *gtkStatusbarFrame = QGtk::gtkWidget(QLS("GtkStatusbar.GtkFrame"));
-        QGtk::gtk_widget_style_get(gtkStatusbarFrame->parent, "shadow-type", &shadow_type, NULL);
+        GtkWidget *gtkStatusbarFrame = d->gtkWidget(QLS("GtkStatusbar.GtkFrame"));
+        d->gtk_widget_style_get(gtkStatusbarFrame->parent, "shadow-type", &shadow_type, NULL);
         gtkPainter.paintShadow(gtkStatusbarFrame, "frame", option->rect, GTK_STATE_NORMAL,
                                shadow_type, gtkStatusbarFrame->style);
     }
@@ -768,7 +763,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
     case PE_IndicatorHeaderArrow:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
-            GtkWidget *gtkTreeHeader = QGtk::gtkWidget(QLS("GtkTreeView.GtkButton"));
+            GtkWidget *gtkTreeHeader = d->gtkWidget(QLS("GtkTreeView.GtkButton"));
             GtkStateType state = gtkPainter.gtkState(option);
             style = gtkTreeHeader->style;
             GtkArrowType type = GTK_ARROW_UP;
@@ -806,7 +801,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             rect.translate(2, 0);
             GtkExpanderStyle openState = GTK_EXPANDER_EXPANDED;
             GtkExpanderStyle closedState = GTK_EXPANDER_COLLAPSED;
-            GtkWidget *gtkTreeView = QGtk::gtkWidget(QLS("GtkTreeView"));
+            GtkWidget *gtkTreeView = d->gtkWidget(QLS("GtkTreeView"));
 
             GtkStateType state = GTK_STATE_NORMAL;
             if (!(option->state & State_Enabled))
@@ -842,7 +837,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
     case PE_IndicatorToolBarSeparator:
         {
             const int margin = 6;
-            GtkWidget *gtkSeparator = QGtk::gtkWidget(QLS("GtkToolbar.GtkSeparatorToolItem"));
+            GtkWidget *gtkSeparator = d->gtkWidget(QLS("GtkToolbar.GtkSeparatorToolItem"));
             if (option->state & State_Horizontal) {
                 const int offset = option->rect.width()/2;
                 QRect rect = option->rect.adjusted(offset, margin, 0, -margin);
@@ -862,9 +857,9 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
        break;
 
     case PE_IndicatorToolBarHandle: {
-        GtkWidget *gtkToolbar = QGtk::gtkWidget(QLS("GtkToolbar"));
+        GtkWidget *gtkToolbar = d->gtkWidget(QLS("GtkToolbar"));
         GtkShadowType shadow_type;
-        QGtk::gtk_widget_style_get(gtkToolbar, "shadow-type", &shadow_type, NULL);
+        d->gtk_widget_style_get(gtkToolbar, "shadow-type", &shadow_type, NULL);
         //Note when the toolbar is horizontal, the handle is vertical
         painter->setClipRect(option->rect);
         gtkPainter.paintHandle(gtkToolbar, "toolbar", option->rect.adjusted(-1, -1 ,0 ,1),
@@ -910,14 +905,14 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         GtkStateType state = gtkPainter.gtkState(option);
 
         QColor arrowColor = option->palette.buttonText().color();
-        GtkWidget *gtkArrow = QGtk::gtkWidget(QLS("GtkArrow"));
+        GtkWidget *gtkArrow = d->gtkWidget(QLS("GtkArrow"));
         GdkColor color = fromQColor(arrowColor);
-        QGtk::gtk_widget_modify_fg (gtkArrow, state, &color);
+        d->gtk_widget_modify_fg (gtkArrow, state, &color);
         gtkPainter.paintArrow(gtkArrow, "button", arrowRect,
                               type, state, shadow, FALSE, gtkArrow->style,
                               QString::number(arrowColor.rgba(), 16));
         // Passing NULL will revert the color change
-        QGtk::gtk_widget_modify_fg (gtkArrow, state, NULL);
+        d->gtk_widget_modify_fg (gtkArrow, state, NULL);
     }
     break;
 
@@ -926,7 +921,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         break;
 
     case PE_PanelMenu: {
-            GtkWidget *gtkMenu = QGtk::gtkWidget(QLS("GtkMenu"));
+            GtkWidget *gtkMenu = d->gtkWidget(QLS("GtkMenu"));
             gtkPainter.setAlphaSupport(false); // Note, alpha disabled for performance reasons
             gtkPainter.paintBox(gtkMenu, "menu", option->rect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, gtkMenu->style, QString());
         }
@@ -938,7 +933,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
         // This is only used by floating tool bars
         if (qobject_cast<const QToolBar *>(widget)) {
-            GtkWidget *gtkMenubar = QGtk::gtkWidget(QLS("GtkMenuBar"));
+            GtkWidget *gtkMenubar = d->gtkWidget(QLS("GtkMenuBar"));
             gtkPainter.paintBox( gtkMenubar, "toolbar",  option->rect,
                                  GTK_STATE_NORMAL, GTK_SHADOW_OUT, style);
             gtkPainter.paintBox( gtkMenubar, "menu",  option->rect,
@@ -947,13 +942,13 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         break;
 
     case PE_FrameLineEdit: {
-        GtkWidget *gtkEntry = QGtk::gtkWidget(QLS("GtkEntry"));
+        GtkWidget *gtkEntry = d->gtkWidget(QLS("GtkEntry"));
 
 
         gboolean interior_focus;
         gint focus_line_width;
         QRect rect = option->rect;
-        QGtk::gtk_widget_style_get(gtkEntry,
+        d->gtk_widget_style_get(gtkEntry,
                                "interior-focus", &interior_focus,
                                "focus-line-width", &focus_line_width, NULL);
 
@@ -981,7 +976,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
     case PE_PanelLineEdit:
         if (const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            GtkWidget *gtkEntry = QGtk::gtkWidget(QLS("GtkEntry"));
+            GtkWidget *gtkEntry = d->gtkWidget(QLS("GtkEntry"));
             if (panel->lineWidth > 0)
                 proxy()->drawPrimitive(PE_FrameLineEdit, option, painter, widget);
             uint resolve_mask = option->palette.resolve();
@@ -999,37 +994,32 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
     case PE_FrameTabWidget:
         if (const QStyleOptionTabWidgetFrame *frame = qstyleoption_cast<const QStyleOptionTabWidgetFrame*>(option)) {
-            GtkWidget *gtkNotebook = QGtk::gtkWidget(QLS("GtkNotebook"));
+            GtkWidget *gtkNotebook = d->gtkWidget(QLS("GtkNotebook"));
             style = gtkPainter.getStyle(gtkNotebook);
             gtkPainter.setAlphaSupport(false);
             GtkShadowType shadow = GTK_SHADOW_OUT;
             GtkStateType state = GTK_STATE_NORMAL; // Only state supported by gtknotebook
-            if (const QTabWidget *tabwidget = qobject_cast<const QTabWidget*>(widget)) {
-                // We should introduce QStyleOptionTabWidgetFrameV2 to obtain this information
-                // No gap if we do not show the actual tabs
-                QTabBar *tabBar = tabwidget->findChild<QTabBar*>();
-                if (tabwidget->count() > 0 && tabBar->isVisible()) {
-                    QRect tabRect = tabBar->tabRect(tabBar->currentIndex());
-                    int begin = 0, size = 0;
-                    GtkPositionType frameType = GTK_POS_TOP;
-                    QTabBar::Shape shape = frame->shape;
-                    if (shape == QTabBar::RoundedNorth || shape == QTabBar::RoundedSouth) {
-                        begin = option->direction == Qt::LeftToRight ?
-                                frame->leftCornerWidgetSize.width() + tabRect.left() :
-                                frame->rect.width() - frame->tabBarSize.width() + tabRect.left()
-                                - frame->rightCornerWidgetSize.width();
-                        size = tabRect.width();
-                        frameType = (shape == QTabBar::RoundedNorth) ? GTK_POS_TOP : GTK_POS_BOTTOM;
-                    } else {
-                        begin = frame->leftCornerWidgetSize.height() + tabRect.top();
-                        size = tabRect.height();
-                        frameType = (shape == QTabBar::RoundedWest) ? GTK_POS_LEFT : GTK_POS_RIGHT;
-                    }
-                    gtkPainter.paintBoxGap(gtkNotebook, "notebook",  option->rect, state, shadow, frameType,
-                                            begin, size, style);
-                    break; // done
+            bool reverse = (option->direction == Qt::RightToLeft);
+            QGtkStylePrivate::gtk_widget_set_direction(gtkNotebook, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
+            if (const QStyleOptionTabWidgetFrameV2 *tabframe = qstyleoption_cast<const QStyleOptionTabWidgetFrameV2*>(option)) {
+                GtkPositionType frameType = GTK_POS_TOP;
+                QTabBar::Shape shape = frame->shape;
+                int gapStart = 0;
+                int gapSize = 0;
+                if (shape == QTabBar::RoundedNorth || shape == QTabBar::RoundedSouth) {
+                    frameType = (shape == QTabBar::RoundedNorth) ? GTK_POS_TOP : GTK_POS_BOTTOM;
+                    gapStart = tabframe->selectedTabRect.left();
+                    gapSize = tabframe->selectedTabRect.width();
+                } else {
+                    frameType = (shape == QTabBar::RoundedWest) ? GTK_POS_LEFT : GTK_POS_RIGHT;
+                    gapStart = tabframe->selectedTabRect.y();
+                    gapSize = tabframe->selectedTabRect.height();
                 }
+                gtkPainter.paintBoxGap(gtkNotebook, "notebook",  option->rect, state, shadow, frameType,
+                                        gapStart, gapSize, style);
+                break; // done
             }
+
             // Note this is only the fallback option
             gtkPainter.paintBox(gtkNotebook, "notebook",  option->rect, state, shadow, style);
         }
@@ -1052,10 +1042,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         GtkStateType state = gtkPainter.gtkState(option);
         if (option->state & State_On || option->state & State_Sunken)
             state = GTK_STATE_ACTIVE;
-        GtkWidget *gtkButton = QGtk::gtkWidget(isTool ? QLS("GtkToolButton.GtkButton") : QLS("GtkButton"));
+        GtkWidget *gtkButton = d->gtkWidget(isTool ? QLS("GtkToolButton.GtkButton") : QLS("GtkButton"));
         gint focusWidth, focusPad;
         gboolean interiorFocus = false;
-        QGtk::gtk_widget_style_get (gtkButton,
+        d->gtk_widget_style_get (gtkButton,
                                 "focus-line-width", &focusWidth,
                                 "focus-padding", &focusPad,
                                 "interior-focus", &interiorFocus, NULL);
@@ -1108,14 +1098,14 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         else
             shadow = GTK_SHADOW_OUT;
 
-        GtkWidget *gtkRadioButton = QGtk::gtkWidget(QLS("GtkRadioButton"));
+        GtkWidget *gtkRadioButton = d->gtkWidget(QLS("GtkRadioButton"));
         gint spacing;
-        QGtk::gtk_widget_style_get(gtkRadioButton, "indicator-spacing", &spacing, NULL);
+        d->gtk_widget_style_get(gtkRadioButton, "indicator-spacing", &spacing, NULL);
         QRect buttonRect = option->rect.adjusted(spacing, spacing, -spacing, -spacing);
         gtkPainter.setClipRect(option->rect);
         // ### Note: Ubuntulooks breaks when the proper widget is passed
         //           Murrine engine requires a widget not to get RGBA check - warnings
-        GtkWidget *gtkCheckButton = QGtk::gtkWidget(QLS("GtkCheckButton"));
+        GtkWidget *gtkCheckButton = d->gtkWidget(QLS("GtkCheckButton"));
         gtkPainter.paintOption(gtkCheckButton , buttonRect, state, shadow, gtkRadioButton->style, QLS("radiobutton"));
 
     }
@@ -1137,12 +1127,12 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
         int spacing;
 
-        GtkWidget *gtkCheckButton = QGtk::gtkWidget(QLS("GtkCheckButton"));
+        GtkWidget *gtkCheckButton = d->gtkWidget(QLS("GtkCheckButton"));
 
         // Some styles such as aero-clone assume they can paint in the spacing area
         gtkPainter.setClipRect(option->rect);
 
-        QGtk::gtk_widget_style_get(gtkCheckButton, "indicator-spacing", &spacing, NULL);
+        d->gtk_widget_style_get(gtkCheckButton, "indicator-spacing", &spacing, NULL);
 
         QRect checkRect = option->rect.adjusted(spacing, spacing, -spacing, -spacing);
 
@@ -1209,12 +1199,14 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
                                    QPainter *painter, const QWidget *widget) const
 {
-    if (!QGtk::isThemeAvailable()) {
+    Q_D(const QGtkStyle);
+
+    if (!d->isThemeAvailable()) {
         QCleanlooksStyle::drawComplexControl(control, option, painter, widget);
         return;
     }
 
-    GtkStyle* style = QGtk::gtkStyle();
+    GtkStyle* style = d->gtkStyle();
     QGtkPainter gtkPainter(painter);
     QColor button = option->palette.button().color();
     QColor dark;
@@ -1269,7 +1261,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             if ((groupBox->subControls & QStyle::SC_GroupBoxLabel) && !groupBox->text.isEmpty()) {
                 // Draw prelight background
-                GtkWidget *gtkCheckButton = QGtk::gtkWidget(QLS("GtkCheckButton"));
+                GtkWidget *gtkCheckButton = d->gtkWidget(QLS("GtkCheckButton"));
 
                 if (option->state & State_MouseOver) {
                     QRect bgRect = textRect | checkBoxRect;
@@ -1345,14 +1337,14 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             QString comboBoxPath = QLS(comboBox->editable ? "GtkComboBoxEntry" : "GtkComboBox");
 
             // We use the gtk widget to position arrows and separators for us
-            GtkWidget *gtkCombo = QGtk::gtkWidget(comboBoxPath);
+            GtkWidget *gtkCombo = d->gtkWidget(comboBoxPath);
             GtkAllocation geometry = {0, 0, option->rect.width(), option->rect.height()};
-            QGtk::gtk_widget_set_direction(gtkCombo, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
-            QGtk::gtk_widget_size_allocate(gtkCombo, &geometry);
+            d->gtk_widget_set_direction(gtkCombo, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
+            d->gtk_widget_size_allocate(gtkCombo, &geometry);
 
             QString buttonPath = comboBoxPath + QLS(".GtkToggleButton");
-            GtkWidget *gtkToggleButton = QGtk::gtkWidget(buttonPath);
-            QGtk::gtk_widget_set_direction(gtkToggleButton, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
+            GtkWidget *gtkToggleButton = d->gtkWidget(buttonPath);
+            d->gtk_widget_set_direction(gtkToggleButton, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             if (gtkToggleButton && (appears_as_list || comboBox->editable)) {
                 if (focus)
                     GTK_WIDGET_SET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
@@ -1360,8 +1352,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 if (comboBox->editable || appears_as_list) {
                     GtkStateType frameState = (state == GTK_STATE_PRELIGHT) ? GTK_STATE_NORMAL : state;
                     QString entryPath = QLS(comboBox->editable ? "GtkComboBoxEntry.GtkEntry" : "GtkComboBox.GtkFrame");
-                    GtkWidget *gtkEntry = QGtk::gtkWidget(entryPath);
-                    QGtk::gtk_widget_set_direction(gtkEntry, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
+                    GtkWidget *gtkEntry = d->gtkWidget(entryPath);
+                    d->gtk_widget_set_direction(gtkEntry, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
                     QRect frameRect = option->rect;
 
                     if (reverse)
@@ -1385,7 +1377,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     else {
                         gtkCachedPainter.paintFlatBox(gtkEntry, "entry_bg", contentRect,
                                                 option->state & State_Enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
-                                                GTK_SHADOW_NONE, style, entryPath + QString::number(focus));
+                                                GTK_SHADOW_NONE, gtkCombo->style, entryPath + QString::number(focus));
                     }
 
                     gtkCachedPainter.paintShadow(gtkEntry, comboBox->editable ? "entry" : "frame", frameRect, frameState,
@@ -1430,7 +1422,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 // Draw the separator between label and arrows
                 QString vSeparatorPath = buttonPath + QLS(".GtkHBox.GtkVSeparator");
 
-                if (GtkWidget *gtkVSeparator = QGtk::gtkWidget(vSeparatorPath)) {
+                if (GtkWidget *gtkVSeparator = d->gtkWidget(vSeparatorPath)) {
                     QRect vLineRect(gtkVSeparator->allocation.x,
                                     gtkVSeparator->allocation.y,
                                     gtkVSeparator->allocation.width,
@@ -1442,7 +1434,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
 
                     gint interiorFocus = true;
-                    QGtk::gtk_widget_style_get(gtkToggleButton, "interior-focus", &interiorFocus, NULL);
+                    d->gtk_widget_style_get(gtkToggleButton, "interior-focus", &interiorFocus, NULL);
                     int xt = interiorFocus ? gtkToggleButton->style->xthickness : 0;
                     int yt = interiorFocus ? gtkToggleButton->style->ythickness : 0;
                     if (focus && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget)))
@@ -1466,14 +1458,14 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 QString arrowPath = comboBoxPath + QLS(appears_as_list ? ".GtkToggleButton.GtkArrow"
                                                     : ".GtkToggleButton.GtkHBox.GtkArrow");
 
-                GtkWidget *gtkArrow = QGtk::gtkWidget(arrowPath);
+                GtkWidget *gtkArrow = d->gtkWidget(arrowPath);
                 gfloat scale = 0.7;
                 gint minSize = 15;
                 QRect arrowWidgetRect;
 
-                if (gtkArrow && !QGtk::gtk_check_version(2, 12, 0)) {
-                    QGtk::gtk_widget_style_get(gtkArrow, "arrow-scaling", &scale, NULL);
-                    QGtk::gtk_widget_style_get(gtkCombo, "arrow-size", &minSize, NULL);
+                if (gtkArrow && !d->gtk_check_version(2, 12, 0)) {
+                    d->gtk_widget_style_get(gtkArrow, "arrow-scaling", &scale, NULL);
+                    d->gtk_widget_style_get(gtkCombo, "arrow-size", &minSize, NULL);
                 }
                 if (gtkArrow) {
                     arrowWidgetRect = QRect(gtkArrow->allocation.x, gtkArrow->allocation.y,
@@ -1491,9 +1483,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
                 if (sunken) {
                     int xoff, yoff;
-                    GtkWidget *gtkButton = QGtk::gtkWidget(comboBoxPath + QLS(".GtkToggleButton"));
-                    QGtk::gtk_widget_style_get(gtkButton, "child-displacement-x", &xoff, NULL);
-                    QGtk::gtk_widget_style_get(gtkButton, "child-displacement-y", &yoff, NULL);
+                    GtkWidget *gtkButton = d->gtkWidget(comboBoxPath + QLS(".GtkToggleButton"));
+                    d->gtk_widget_style_get(gtkButton, "child-displacement-x", &xoff, NULL);
+                    d->gtk_widget_style_get(gtkButton, "child-displacement-y", &yoff, NULL);
                     arrowRect = arrowRect.adjusted(xoff, yoff, xoff, yoff);
                 }
 
@@ -1564,7 +1556,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             QStyleOptionToolButton label = *toolbutton;
             label.state = bflags;
-            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkToolButton.GtkButton"));
+            GtkWidget *gtkButton = d->gtkWidget(QLS("GtkToolButton.GtkButton"));
             QPalette pal = toolbutton->palette;
             if (option->state & State_Enabled && 
                 option->state & State_MouseOver && !(widget && widget->testAttribute(Qt::WA_SetPalette))) {
@@ -1599,8 +1591,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            GtkWidget *gtkHScrollBar = QGtk::gtkWidget(QLS("GtkHScrollbar"));
-            GtkWidget *gtkVScrollBar = QGtk::gtkWidget(QLS("GtkVScrollbar"));
+            GtkWidget *gtkHScrollBar = d->gtkWidget(QLS("GtkHScrollbar"));
+            GtkWidget *gtkVScrollBar = d->gtkWidget(QLS("GtkVScrollbar"));
 
             // Fill background in case the scrollbar is partially transparent
             painter->fillRect(option->rect, option->palette.background());
@@ -1617,8 +1609,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             gboolean trough_side_details = false;
             gboolean stepper_size = 14;
             gint trough_border = 1;
-            if (!QGtk::gtk_check_version(2, 10, 0)) {
-                QGtk::gtk_widget_style_get((GtkWidget*)(scrollbarWidget),
+            if (!d->gtk_check_version(2, 10, 0)) {
+                d->gtk_widget_style_get((GtkWidget*)(scrollbarWidget),
                                            "trough-border",   &trough_border,
                                            "trough-side-details",   &trough_side_details,
                                            "trough-under-steppers", &trough_under_steppers,
@@ -1642,12 +1634,12 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 fakePos = maximum;
             else if (scrollBar->sliderPosition > scrollBar->minimum)
                 fakePos = maximum - 1;
-            GtkObject *adjustment =  QGtk::gtk_adjustment_new(fakePos, 0, maximum, 0, 0, 0);
+            GtkObject *adjustment =  d->gtk_adjustment_new(fakePos, 0, maximum, 0, 0, 0);
 
             if (horizontal)
-                QGtk::gtk_range_set_adjustment((GtkRange*)(gtkHScrollBar), (GtkAdjustment*)(adjustment));
+                d->gtk_range_set_adjustment((GtkRange*)(gtkHScrollBar), (GtkAdjustment*)(adjustment));
             else
-                QGtk::gtk_range_set_adjustment((GtkRange*)(gtkVScrollBar), (GtkAdjustment*)(adjustment));
+                d->gtk_range_set_adjustment((GtkRange*)(gtkVScrollBar), (GtkAdjustment*)(adjustment));
 
             if (scrollBar->subControls & SC_ScrollBarGroove) {
                 GtkStateType state = GTK_STATE_ACTIVE;
@@ -1744,7 +1736,11 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            GtkWidget *gtkSpinButton = QGtk::gtkWidget(QLS("GtkSpinButton"));
+
+            GtkWidget *gtkSpinButton = d->gtkWidget(
+                    spinBox->buttonSymbols == QAbstractSpinBox::NoButtons ?
+                    QLS("GtkEntry") :
+                    QLS("GtkSpinButton"));
             bool isEnabled = (spinBox->state & State_Enabled);
             bool hover = isEnabled && (spinBox->state & State_MouseOver);
             bool sunken = (spinBox->state & State_Sunken);
@@ -1752,32 +1748,35 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             bool downIsActive = (spinBox->activeSubControls == SC_SpinBoxDown);
             bool reverse = (spinBox->direction == Qt::RightToLeft);
 
-            //### Move this to subControlRect
-            QRect upRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
-            upRect.setTop(option->rect.top());
-
-            if (reverse)
-                upRect.setLeft(option->rect.left());
-            else
-                upRect.setRight(option->rect.right());
-
-            QRect editRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget);
-            QRect downRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
-            downRect.setBottom(option->rect.bottom());
-
-            if (reverse)
-                downRect.setLeft(option->rect.left());
-            else
-                downRect.setRight(option->rect.right());
-
-            QRect buttonRect = upRect | downRect;
             QRect editArea = option->rect;
+            QRect editRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxEditField, widget);
+            QRect upRect, downRect, buttonRect;
+            if (spinBox->buttonSymbols != QAbstractSpinBox::NoButtons) {
+                upRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
+                downRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
 
-            if (reverse)
-                editArea.setLeft(upRect.right());
-            else
-                editArea.setRight(upRect.left());
+                //### Move this to subControlRect
+                upRect.setTop(option->rect.top());
 
+                if (reverse)
+                    upRect.setLeft(option->rect.left());
+                else
+                    upRect.setRight(option->rect.right());
+
+                downRect.setBottom(option->rect.bottom());
+
+                if (reverse)
+                    downRect.setLeft(option->rect.left());
+                else
+                    downRect.setRight(option->rect.right());
+
+                buttonRect = upRect | downRect;
+
+                if (reverse)
+                    editArea.setLeft(upRect.right());
+                else
+                    editArea.setRight(upRect.left());
+            }
             if (spinBox->frame) {
                 GtkShadowType shadow = GTK_SHADOW_OUT;
                 GtkStateType state = gtkPainter.gtkState(option);
@@ -1811,29 +1810,31 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                                             GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE, GTK_SHADOW_NONE, style, key);
 
                 gtkPainter.paintShadow(gtkSpinButton, "entry", editArea, state, GTK_SHADOW_IN, gtkSpinButton->style, key);
-                gtkPainter.paintBox(gtkSpinButton, "spinbutton", buttonRect, state, GTK_SHADOW_IN, style, key);
+                if (spinBox->buttonSymbols != QAbstractSpinBox::NoButtons) {
+                    gtkPainter.paintBox(gtkSpinButton, "spinbutton", buttonRect, state, GTK_SHADOW_IN, style, key);
 
-                upRect.setSize(downRect.size());
-                if (!(option->state & State_Enabled))
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_INSENSITIVE, GTK_SHADOW_IN, style, key);
-                else if (upIsActive && sunken)
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_ACTIVE, GTK_SHADOW_IN, style, key);
-                else if (upIsActive && hover)
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style, key);
-                else
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
+                    upRect.setSize(downRect.size());
+                    if (!(option->state & State_Enabled))
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_INSENSITIVE, GTK_SHADOW_IN, style, key);
+                    else if (upIsActive && sunken)
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_ACTIVE, GTK_SHADOW_IN, style, key);
+                    else if (upIsActive && hover)
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style, key);
+                    else
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_up", upRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
 
-                if (!(option->state & State_Enabled))
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_INSENSITIVE, GTK_SHADOW_IN, style, key);
-                else if (downIsActive && sunken)
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_ACTIVE, GTK_SHADOW_IN, style, key);
-                else if (downIsActive && hover)
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style, key);
-                else
-                    gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
+                    if (!(option->state & State_Enabled))
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_INSENSITIVE, GTK_SHADOW_IN, style, key);
+                    else if (downIsActive && sunken)
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_ACTIVE, GTK_SHADOW_IN, style, key);
+                    else if (downIsActive && hover)
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style, key);
+                    else
+                        gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
 
-                if (option->state & State_HasFocus)
-                    GTK_WIDGET_UNSET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
+                    if (option->state & State_HasFocus)
+                        GTK_WIDGET_UNSET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
+                }
             }
 
             if (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus) {
@@ -1858,8 +1859,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     painter->drawLine(centerX - 2, centerY, centerX + 2, centerY);
                 }
 
-            } else {
-                int size = spinboxArrowSize();
+            } else if (spinBox->buttonSymbols == QAbstractSpinBox::UpDownArrows) {
+                int size = d->getSpinboxArrowSize();
                 int w = size / 2 - 1;
                 w -= w % 2 - 1; // force odd
                 int h = (w + 1)/2;
@@ -1891,8 +1892,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            GtkWidget *hScaleWidget = QGtk::gtkWidget(QLS("GtkHScale"));
-            GtkWidget *vScaleWidget = QGtk::gtkWidget(QLS("GtkVScale"));
+            GtkWidget *hScaleWidget = d->gtkWidget(QLS("GtkHScale"));
+            GtkWidget *vScaleWidget = d->gtkWidget(QLS("GtkVScale"));
 
             QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
@@ -1916,16 +1917,16 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             style = scaleWidget->style;
 
             if ((option->subControls & SC_SliderGroove) && groove.isValid()) {
-                GtkObject *adjustment =  QGtk::gtk_adjustment_new(slider->sliderPosition,
+                GtkObject *adjustment =  d->gtk_adjustment_new(slider->sliderPosition,
                                          slider->minimum,
                                          slider->maximum,
                                          slider->singleStep,
                                          slider->singleStep,
                                          slider->pageStep);
                 int outerSize;
-                QGtk::gtk_range_set_adjustment ((GtkRange*)(scaleWidget), (GtkAdjustment*)(adjustment));
-                QGtk::gtk_range_set_inverted((GtkRange*)(scaleWidget), !horizontal);
-                QGtk::gtk_widget_style_get(scaleWidget, "trough-border", &outerSize, NULL);
+                d->gtk_range_set_adjustment ((GtkRange*)(scaleWidget), (GtkAdjustment*)(adjustment));
+                d->gtk_range_set_inverted((GtkRange*)(scaleWidget), !horizontal);
+                d->gtk_widget_style_get(scaleWidget, "trough-border", &outerSize, NULL);
                 outerSize++;
 
                 GtkStateType state = gtkPainter.gtkState(option);
@@ -1933,12 +1934,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 QRect grooveRect = option->rect.adjusted(focusFrameMargin, outerSize + focusFrameMargin,
                                    -focusFrameMargin, -outerSize - focusFrameMargin);
 
-                gtkPainter.paintBox( scaleWidget, "trough", grooveRect, state,
-                                     GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
-
                 gboolean trough_side_details = false; // Indicates if the upper or lower scale background differs
-                if (!QGtk::gtk_check_version(2, 10, 0))
-                    QGtk::gtk_widget_style_get((GtkWidget*)(scaleWidget), "trough-side-details",   &trough_side_details, NULL);
+                if (!d->gtk_check_version(2, 10, 0))
+                    d->gtk_widget_style_get((GtkWidget*)(scaleWidget), "trough-side-details",   &trough_side_details, NULL);
 
                 if (!trough_side_details) {
                     gtkPainter.paintBox( scaleWidget, "trough", grooveRect, state,
@@ -2072,18 +2070,20 @@ void QGtkStyle::drawControl(ControlElement element,
                             QPainter *painter,
                             const QWidget *widget) const
 {
-    if (!QGtk::isThemeAvailable()) {
+    Q_D(const QGtkStyle);
+
+    if (!d->isThemeAvailable()) {
         QCleanlooksStyle::drawControl(element, option, painter, widget);
         return;
     }
 
-    GtkStyle* style = QGtk::gtkStyle();
+    GtkStyle* style = d->gtkStyle();
     QGtkPainter gtkPainter(painter);
 
     switch (element) {
     case CE_ProgressBarLabel:
         if (const QStyleOptionProgressBar *bar = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
-            GtkWidget *gtkProgressBar = QGtk::gtkWidget(QLS("GtkProgressBar"));
+            GtkWidget *gtkProgressBar = d->gtkWidget(QLS("GtkProgressBar"));
             if (!gtkProgressBar)
                 return;
 
@@ -2186,7 +2186,7 @@ void QGtkStyle::drawControl(ControlElement element,
             if (button->features & QStyleOptionButton::HasMenu)
                 ir = ir.adjusted(0, 0, -pixelMetric(PM_MenuButtonIndicator, button, widget), 0);
 
-            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+            GtkWidget *gtkButton = d->gtkWidget(QLS("GtkButton"));
             QPalette pal = button->palette;
             int labelState = GTK_STATE_INSENSITIVE;
             if (option->state & State_Enabled)
@@ -2207,7 +2207,7 @@ void QGtkStyle::drawControl(ControlElement element,
             bool isRadio = (element == CE_RadioButton);
 
             // Draw prelight background
-            GtkWidget *gtkRadioButton = QGtk::gtkWidget(QLS("GtkRadioButton"));
+            GtkWidget *gtkRadioButton = d->gtkWidget(QLS("GtkRadioButton"));
 
             if (option->state & State_MouseOver) {
                 gtkPainter.paintFlatBox(gtkRadioButton, "checkbutton", option->rect,
@@ -2275,7 +2275,7 @@ void QGtkStyle::drawControl(ControlElement element,
             }
 
             if (!cb->currentText.isEmpty() && !cb->editable) {
-                GtkWidget *gtkCombo = QGtk::gtkWidget(QLS("GtkComboBox"));
+                GtkWidget *gtkCombo = d->gtkWidget(QLS("GtkComboBox"));
                 QPalette pal = cb->palette;
                 int labelState = GTK_STATE_INSENSITIVE;
 
@@ -2352,9 +2352,9 @@ void QGtkStyle::drawControl(ControlElement element,
         // Draws the header in tables.
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             Q_UNUSED(header);
-            GtkWidget *gtkTreeView = QGtk::gtkWidget(QLS("GtkTreeView"));
+            GtkWidget *gtkTreeView = d->gtkWidget(QLS("GtkTreeView"));
             // Get the middle column
-            GtkTreeViewColumn *column = QGtk::gtk_tree_view_get_column((GtkTreeView*)gtkTreeView, 1);
+            GtkTreeViewColumn *column = d->gtk_tree_view_get_column((GtkTreeView*)gtkTreeView, 1);
             Q_ASSERT(column);
 
             GtkWidget *gtkTreeHeader = column->button;
@@ -2373,7 +2373,7 @@ void QGtkStyle::drawControl(ControlElement element,
 #ifndef QT_NO_SIZEGRIP
 
     case CE_SizeGrip: {
-        GtkWidget *gtkStatusbar = QGtk::gtkWidget(QLS("GtkStatusbar.GtkFrame"));
+        GtkWidget *gtkStatusbar = d->gtkWidget(QLS("GtkStatusbar.GtkFrame"));
         QRect gripRect = option->rect.adjusted(0, 0, -gtkStatusbar->style->xthickness, -gtkStatusbar->style->ythickness);
         gtkPainter.paintResizeGrip( gtkStatusbar, "statusbar", gripRect, GTK_STATE_NORMAL,
                                     GTK_SHADOW_OUT, QApplication::isRightToLeft() ?
@@ -2385,7 +2385,7 @@ void QGtkStyle::drawControl(ControlElement element,
 #endif // QT_NO_SIZEGRIP
 
     case CE_MenuBarEmptyArea: {
-        GtkWidget *gtkMenubar = QGtk::gtkWidget(QLS("GtkMenuBar"));
+        GtkWidget *gtkMenubar = d->gtkWidget(QLS("GtkMenuBar"));
         GdkColor gdkBg = gtkMenubar->style->bg[GTK_STATE_NORMAL]; // Theme can depend on transparency
         painter->fillRect(option->rect, QColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8));
         if (widget) { // See CE_MenuBarItem
@@ -2395,7 +2395,7 @@ void QGtkStyle::drawControl(ControlElement element,
             QPainter pmPainter(&pixmap);
             QGtkPainter gtkMenuBarPainter(&pmPainter);
             GtkShadowType shadow_type;
-            QGtk::gtk_widget_style_get(gtkMenubar, "shadow-type", &shadow_type, NULL);
+            d->gtk_widget_style_get(gtkMenubar, "shadow-type", &shadow_type, NULL);
             gtkMenuBarPainter.paintBox( gtkMenubar, "menubar",  menuBarRect,
                                         GTK_STATE_NORMAL, shadow_type, gtkMenubar->style);
             pmPainter.end();
@@ -2408,8 +2408,8 @@ void QGtkStyle::drawControl(ControlElement element,
         painter->save();
 
         if (const QStyleOptionMenuItem *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            GtkWidget *gtkMenubarItem = QGtk::gtkWidget(QLS("GtkMenuBar.GtkMenuItem"));
-            GtkWidget *gtkMenubar = QGtk::gtkWidget(QLS("GtkMenuBar"));
+            GtkWidget *gtkMenubarItem = d->gtkWidget(QLS("GtkMenuBar.GtkMenuItem"));
+            GtkWidget *gtkMenubar = d->gtkWidget(QLS("GtkMenuBar"));
 
             style = gtkMenubarItem->style;
 
@@ -2424,7 +2424,7 @@ void QGtkStyle::drawControl(ControlElement element,
                 QPainter pmPainter(&pixmap);
                 QGtkPainter menubarPainter(&pmPainter);
                 GtkShadowType shadow_type;
-                QGtk::gtk_widget_style_get(gtkMenubar, "shadow-type", &shadow_type, NULL);
+                d->gtk_widget_style_get(gtkMenubar, "shadow-type", &shadow_type, NULL);
                 GdkColor gdkBg = gtkMenubar->style->bg[GTK_STATE_NORMAL]; // Theme can depend on transparency
                 painter->fillRect(option->rect, QColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8));
                 menubarPainter.paintBox(gtkMenubar, "menubar",  menuBarRect,
@@ -2448,7 +2448,7 @@ void QGtkStyle::drawControl(ControlElement element,
 
             if (act) {
                 GtkShadowType shadowType = GTK_SHADOW_NONE;
-                QGtk::gtk_widget_style_get (gtkMenubarItem, "selected-shadow-type", &shadowType, NULL);
+                d->gtk_widget_style_get (gtkMenubarItem, "selected-shadow-type", &shadowType, NULL);
                 gtkPainter.paintBox(gtkMenubarItem, "menuitem",  option->rect.adjusted(0, 0, 0, 3),
                                     GTK_STATE_PRELIGHT, shadowType, gtkMenubarItem->style);
                 //draw text
@@ -2465,7 +2465,7 @@ void QGtkStyle::drawControl(ControlElement element,
         break;
 
     case CE_Splitter: {
-        GtkWidget *gtkWindow = QGtk::gtkWidget(QLS("GtkWindow")); // The Murrine Engine currently assumes a widget is passed
+        GtkWidget *gtkWindow = d->gtkWidget(QLS("GtkWindow")); // The Murrine Engine currently assumes a widget is passed
         gtkPainter.paintHandle(gtkWindow, "splitter", option->rect, gtkPainter.gtkState(option), GTK_SHADOW_NONE,
                                 !(option->state & State_Horizontal) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL,
                                 style);
@@ -2485,9 +2485,9 @@ void QGtkStyle::drawControl(ControlElement element,
             if (toolbar->positionWithinLine != QStyleOptionToolBar::End)
                 rect.adjust(0, 0, 1, 0);
 
-            GtkWidget *gtkToolbar = QGtk::gtkWidget(QLS("GtkToolbar"));
+            GtkWidget *gtkToolbar = d->gtkWidget(QLS("GtkToolbar"));
             GtkShadowType shadow_type = GTK_SHADOW_NONE;
-            QGtk::gtk_widget_style_get(gtkToolbar, "shadow-type", &shadow_type, NULL);
+            d->gtk_widget_style_get(gtkToolbar, "shadow-type", &shadow_type, NULL);
             gtkPainter.paintBox( gtkToolbar, "toolbar",  rect,
                                  GTK_STATE_NORMAL, shadow_type, gtkToolbar->style);
         }
@@ -2504,34 +2504,37 @@ void QGtkStyle::drawControl(ControlElement element,
             const int windowsItemHMargin      =  3; // menu item hor text margin
             const int windowsItemVMargin      = 26; // menu item ver text margin
             const int windowsRightBorder      = 15; // right border on windows
-            GtkWidget *gtkMenu = QGtk::gtkWidget(QLS("GtkMenu"));
-            GtkWidget *gtkMenuItem = menuItem->checked ? QGtk::gtkWidget(QLS("GtkMenu.GtkCheckMenuItem")) :
-                                     QGtk::gtkWidget(QLS("GtkMenu.GtkMenuItem"));
+            GtkWidget *gtkMenuItem = menuItem->checked ? d->gtkWidget(QLS("GtkMenu.GtkCheckMenuItem")) :
+                                     d->gtkWidget(QLS("GtkMenu.GtkMenuItem"));
 
             style = gtkPainter.getStyle(gtkMenuItem);
             QColor borderColor = option->palette.background().color().darker(160);
             QColor shadow = option->palette.dark().color();
 
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
-                GtkWidget *gtkMenuSeparator = QGtk::gtkWidget(QLS("GtkMenu.GtkSeparatorMenuItem"));
+                GtkWidget *gtkMenuSeparator = d->gtkWidget(QLS("GtkMenu.GtkSeparatorMenuItem"));
                 painter->setPen(shadow.lighter(106));
                 gboolean wide_separators = 0;
                 gint     separator_height = 0;
                 guint    horizontal_padding = 3;
-                if (!QGtk::gtk_check_version(2, 10, 0)) {
-                    QGtk::gtk_widget_style_get(gtkMenuSeparator,
+                QRect separatorRect = option->rect;
+                if (!d->gtk_check_version(2, 10, 0)) {
+                    d->gtk_widget_style_get(gtkMenuSeparator,
                                            "wide-separators",    &wide_separators,
                                            "separator-height",   &separator_height,
                                            "horizontal-padding", &horizontal_padding,
                                            NULL);
                 }
+                separatorRect.setHeight(option->rect.height() - 2 * gtkMenuSeparator->style->ythickness);
+                separatorRect.setWidth(option->rect.width() - 2 * (horizontal_padding + gtkMenuSeparator->style->xthickness));
+                separatorRect.moveCenter(option->rect.center());
                 if (wide_separators)
-                    gtkPainter.paintBox( gtkMenuSeparator, "hseparator",
-                                         option->rect.adjusted(0, 0, 0, -1), GTK_STATE_NORMAL, GTK_SHADOW_NONE, gtkMenu->style);
+                   gtkPainter.paintBox( gtkMenuSeparator, "hseparator",
+                                        separatorRect, GTK_STATE_NORMAL, GTK_SHADOW_NONE, gtkMenuSeparator->style);
                 else
                     gtkPainter.paintHline( gtkMenuSeparator, "hseparator",
-                                           menuItem->rect, GTK_STATE_NORMAL, gtkMenu->style,
-                                           option->rect.left() + horizontal_padding, option->rect.width() - 2*horizontal_padding, 2);
+                                           separatorRect, GTK_STATE_NORMAL, gtkMenuSeparator->style,
+                                           0, option->rect.right() - 1, 1);
                 painter->restore();
                 break;
             }
@@ -2539,7 +2542,7 @@ void QGtkStyle::drawControl(ControlElement element,
             bool selected = menuItem->state & State_Selected && menuItem->state & State_Enabled;
 
             if (selected) {
-                QRect rect = option->rect.adjusted(0, 0, -1, -1);
+                QRect rect = option->rect;
 #ifndef QT_NO_COMBOBOX
                 if (qobject_cast<const QComboBox*>(widget))
                     rect = option->rect;
@@ -2553,7 +2556,7 @@ void QGtkStyle::drawControl(ControlElement element,
             bool ignoreCheckMark = false;
 
             gint checkSize;
-            QGtk::gtk_widget_style_get(QGtk::gtkWidget(QLS("GtkMenu.GtkCheckMenuItem")), "indicator-size", &checkSize, NULL);
+            d->gtk_widget_style_get(d->gtkWidget(QLS("GtkMenu.GtkCheckMenuItem")), "indicator-size", &checkSize, NULL);
 
             int checkcol = qMax(menuItem->maxIconWidth, qMax(20, checkSize));
 
@@ -2565,7 +2568,7 @@ void QGtkStyle::drawControl(ControlElement element,
 #endif
             if (!ignoreCheckMark) {
                 // Check
-                QRect checkRect(option->rect.left() + 7, option->rect.center().y() - checkSize/2, checkSize, checkSize);
+                QRect checkRect(option->rect.left() + 7, option->rect.center().y() - checkSize/2 + 1, checkSize, checkSize);
                 checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);
 
                 if (checkable && menuItem->icon.isNull()) {
@@ -2646,7 +2649,7 @@ void QGtkStyle::drawControl(ControlElement element,
                 int pixw = pixmap.width();
                 int pixh = pixmap.height();
                 QRect pmr(0, 0, pixw, pixh);
-                pmr.moveCenter(vCheckRect.center());
+                pmr.moveCenter(vCheckRect.center() - QPoint(0, 1));
                 painter->setPen(menuItem->palette.text().color());
                 if (!ignoreCheckMark && checkable && checked) {
                     QStyleOption opt = *option;
@@ -2688,7 +2691,7 @@ void QGtkStyle::drawControl(ControlElement element,
             menuitem->rect.getRect(&x, &y, &w, &h);
             int tab = menuitem->tabWidth;
             int xm = windowsItemFrame + checkcol + windowsItemHMargin;
-            int xpos = menuitem->rect.x() + xm;
+            int xpos = menuitem->rect.x() + xm + 1;
             QRect textRect(xpos, y + windowsItemVMargin, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
             QRect vTextRect = visualRect(opt->direction, menuitem->rect, textRect);
             QString s = menuitem->text;
@@ -2736,13 +2739,19 @@ void QGtkStyle::drawControl(ControlElement element,
                 QFontMetrics fm(menuitem->font);
                 int arrow_size = fm.ascent() + fm.descent() - 2 * gtkMenuItem->style->ythickness;
                 gfloat arrow_scaling = 0.8;
+                int extra = 0;
+                if (!d->gtk_check_version(2, 16, 0)) {
+                    // "arrow-scaling" is actually hardcoded and fails on hardy (see gtk+-2.12/gtkmenuitem.c)
+                    // though the current documentation states otherwise
+                    d->gtk_widget_style_get(gtkMenuItem, "arrow-scaling", &arrow_scaling, NULL);
+                    // in versions < 2.16 ythickness was previously subtracted from the arrow_size
+                    extra = 2 * gtkMenuItem->style->ythickness;
+                }
 
-                // "arrow-scaling" is actually hardcoded and fails on hardy (see gtk+-2.12/gtkmenuitem.c)
-                // though the current documentation states otherwise
                 int horizontal_padding;
-                QGtk::gtk_widget_style_get(gtkMenuItem, "horizontal-padding", &horizontal_padding, NULL);
+                d->gtk_widget_style_get(gtkMenuItem, "horizontal-padding", &horizontal_padding, NULL);
 
-                const int dim = static_cast<int>(arrow_size * arrow_scaling);
+                const int dim = static_cast<int>(arrow_size * arrow_scaling) + extra;
                 int xpos = menuItem->rect.left() + menuItem->rect.width() - horizontal_padding - dim;
                 QRect  vSubMenuRect = visualRect(option->direction, menuItem->rect,
                                                  QRect(xpos, menuItem->rect.top() +
@@ -2758,12 +2767,12 @@ void QGtkStyle::drawControl(ControlElement element,
 
     case CE_PushButton:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+            GtkWidget *gtkButton = d->gtkWidget(QLS("GtkButton"));
             proxy()->drawControl(CE_PushButtonBevel, btn, painter, widget);
             QStyleOptionButton subopt = *btn;
             subopt.rect = subElementRect(SE_PushButtonContents, btn, widget);
             gint interiorFocus = true;
-            QGtk::gtk_widget_style_get(gtkButton, "interior-focus", &interiorFocus, NULL);
+            d->gtk_widget_style_get(gtkButton, "interior-focus", &interiorFocus, NULL);
             int xt = interiorFocus ? gtkButton->style->xthickness : 0;
             int yt = interiorFocus ? gtkButton->style->ythickness : 0;
 
@@ -2784,7 +2793,7 @@ void QGtkStyle::drawControl(ControlElement element,
 
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-            GtkWidget *gtkNotebook = QGtk::gtkWidget(QLS("GtkNotebook"));
+            GtkWidget *gtkNotebook = d->gtkWidget(QLS("GtkNotebook"));
             style = gtkPainter.getStyle(gtkNotebook);
 
             QRect rect = option->rect;
@@ -2851,7 +2860,7 @@ void QGtkStyle::drawControl(ControlElement element,
     case CE_ProgressBarGroove:
         if (const QStyleOptionProgressBar *bar = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
             Q_UNUSED(bar);
-            GtkWidget *gtkProgressBar = QGtk::gtkWidget(QLS("GtkProgressBar"));
+            GtkWidget *gtkProgressBar = d->gtkWidget(QLS("GtkProgressBar"));
             GtkStateType state = gtkPainter.gtkState(option);
             gtkPainter.paintBox( gtkProgressBar, "trough",  option->rect, state, GTK_SHADOW_IN, gtkProgressBar->style);
         }
@@ -2861,7 +2870,7 @@ void QGtkStyle::drawControl(ControlElement element,
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *bar = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
             GtkStateType state = option->state & State_Enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE;
-            GtkWidget *gtkProgressBar = QGtk::gtkWidget(QLS("GtkProgressBar"));
+            GtkWidget *gtkProgressBar = d->gtkWidget(QLS("GtkProgressBar"));
             style = gtkProgressBar->style;
             gtkPainter.paintBox( gtkProgressBar, "trough",  option->rect, state, GTK_SHADOW_IN, style);
             int xt = style->xthickness;
@@ -2909,8 +2918,8 @@ void QGtkStyle::drawControl(ControlElement element,
             else if (bar->progress > bar->minimum)
                 fakePos = maximum - 1;
 
-            GtkObject *adjustment =  QGtk::gtk_adjustment_new(fakePos, 0, maximum, 0, 0, 0);
-            QGtk::gtk_progress_set_adjustment((GtkProgress*)(gtkProgressBar), (GtkAdjustment*)(adjustment));
+            GtkObject *adjustment =  d->gtk_adjustment_new(fakePos, 0, maximum, 0, 0, 0);
+            d->gtk_progress_set_adjustment((GtkProgress*)(gtkProgressBar), (GtkAdjustment*)(adjustment));
 
             QRect progressBar;
 
@@ -2950,8 +2959,10 @@ void QGtkStyle::drawControl(ControlElement element,
 QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComplex *option,
                                 SubControl subControl, const QWidget *widget) const
 {
+    Q_D(const QGtkStyle);
+
     QRect rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
-    if (!QGtk::isThemeAvailable())
+    if (!d->isThemeAvailable())
         return QCleanlooksStyle::subControlRect(control, option, subControl, widget);
 
     switch (control) {
@@ -3017,7 +3028,7 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
 
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            GtkWidget *gtkSpinButton = QGtk::gtkWidget(QLS("GtkSpinButton"));
+            GtkWidget *gtkSpinButton = d->gtkWidget(QLS("GtkSpinButton"));
             int center = spinbox->rect.height() / 2;
             int xt = spinbox->frame ? gtkSpinButton->style->xthickness : 0;
             int yt = spinbox->frame ? gtkSpinButton->style->ythickness : 0;
@@ -3025,7 +3036,7 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
 
             QSize bs;
             bs.setHeight(qMax(8, spinbox->rect.height()/2 - y));
-            bs.setWidth(spinboxArrowSize());
+            bs.setWidth(d->getSpinboxArrowSize());
             int x, lx, rx;
             x = spinbox->rect.width() - y - bs.width() + 2;
             lx = xt;
@@ -3071,17 +3082,17 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
         if (const QStyleOptionComboBox *box = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             // We employ the gtk widget to position arrows and separators for us
             QString comboBoxPath = box->editable ? QLS("GtkComboBoxEntry") : QLS("GtkComboBox");
-            GtkWidget *gtkCombo = QGtk::gtkWidget(comboBoxPath);
-            QGtk::gtk_widget_set_direction(gtkCombo, (option->direction == Qt::RightToLeft) ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
+            GtkWidget *gtkCombo = d->gtkWidget(comboBoxPath);
+            d->gtk_widget_set_direction(gtkCombo, (option->direction == Qt::RightToLeft) ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             GtkAllocation geometry = {0, 0, qMax(0, option->rect.width()), qMax(0, option->rect.height())};
-            QGtk::gtk_widget_size_allocate(gtkCombo, &geometry);
+            d->gtk_widget_size_allocate(gtkCombo, &geometry);
             int appears_as_list = !proxy()->styleHint(QStyle::SH_ComboBox_Popup, option, widget);
             QString arrowPath = comboBoxPath + QLS(".GtkToggleButton");
 
             if (!box->editable && !appears_as_list)
                 arrowPath += QLS(".GtkHBox.GtkArrow");
 
-            GtkWidget *arrowWidget = QGtk::gtkWidget(arrowPath);
+            GtkWidget *arrowWidget = d->gtkWidget(arrowPath);
             if (!arrowWidget)
                 return QCleanlooksStyle::subControlRect(control, option, subControl, widget);
 
@@ -3126,87 +3137,81 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
   \reimp
 */
 QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
-
                                   const QSize &size, const QWidget *widget) const
 {
+    Q_D(const QGtkStyle);
 
     QSize newSize = QCleanlooksStyle::sizeFromContents(type, option, size, widget);
-    if (!QGtk::isThemeAvailable())
+    if (!d->isThemeAvailable())
         return newSize;
 
     switch (type) {
 
     case CT_ToolButton:
         if (const QStyleOptionToolButton *toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
-            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkToolButton.GtkButton"));
-            newSize = size + QSize(2 * gtkButton->style->xthickness, 1 + 2 * gtkButton->style->ythickness);
+            GtkWidget *gtkButton = d->gtkWidget(QLS("GtkToolButton.GtkButton"));
+            newSize = size + QSize(2 * gtkButton->style->xthickness, 2 + 2 * gtkButton->style->ythickness);
             if (widget && qobject_cast<QToolBar *>(widget->parentWidget())) {
                 QSize minSize(0, 25);
                 if (toolbutton->toolButtonStyle != Qt::ToolButtonTextOnly)
                     minSize = toolbutton->iconSize + QSize(12, 12);
                 newSize = newSize.expandedTo(minSize);
             }
-            
+
             if (toolbutton->features & QStyleOptionToolButton::HasMenu)
                 newSize += QSize(6, 0);
         }
         break;
-
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             int textMargin = 8;
 
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
-                GtkWidget *gtkMenuSeparator = QGtk::gtkWidget(QLS("GtkMenu.GtkSeparatorMenuItem"));
-                gboolean wide_separators;
-                gint     separator_height;
-                QGtk::gtk_widget_style_get(gtkMenuSeparator,
-                                       "wide-separators",    &wide_separators,
-                                       "separator-height",   &separator_height,
-                                       NULL);
-                newSize = QSize(size.width(), wide_separators ? separator_height - 1 : 7 );
-
+                GtkWidget *gtkMenuSeparator = d->gtkWidget(QLS("GtkMenu.GtkSeparatorMenuItem"));
+                GtkRequisition sizeReq = {0, 0};
+                d->gtk_widget_size_request(gtkMenuSeparator, &sizeReq);
+                newSize = QSize(size.width(), sizeReq.height);
                 break;
             }
 
-            GtkWidget *gtkMenuItem = QGtk::gtkWidget(QLS("GtkMenu.GtkMenuItem"));
+            GtkWidget *gtkMenuItem = d->gtkWidget(QLS("GtkMenu.GtkCheckMenuItem"));
             GtkStyle* style = gtkMenuItem->style;
-            newSize += QSize(textMargin + style->xthickness - 2, style->ythickness - 4);
+
+            // Note we get the perfect height for the default font since we
+            // set a fake text label on the gtkMenuItem
+            // But if custom fonts are used on the widget we need a minimum size
+            GtkRequisition sizeReq = {0, 0};
+            d->gtk_widget_size_request(gtkMenuItem, &sizeReq);
+            newSize.setHeight(qMax(newSize.height() - 4, sizeReq.height));
+            newSize += QSize(textMargin + style->xthickness - 1, 0);
 
             // Cleanlooks assumes a check column of 20 pixels so we need to
             // expand it a bit
             gint checkSize;
-            QGtk::gtk_widget_style_get(QGtk::gtkWidget(QLS("GtkMenu.GtkCheckMenuItem")), "indicator-size", &checkSize, NULL);
-            newSize.setHeight(qMax(newSize.height(), checkSize + 2));
+            d->gtk_widget_style_get(gtkMenuItem, "indicator-size", &checkSize, NULL);
             newSize.setWidth(newSize.width() + qMax(0, checkSize - 20));
         }
 
         break;
 
-    case CT_Menu:
-        // This is evil, but QMenu adds 1 pixel too much
-        newSize -= QSize(0, 1);
-
-        break;
-
     case CT_SpinBox:
         // QSpinBox does some nasty things that depends on CT_LineEdit
-        newSize = size + QSize(0, -QGtk::gtkWidget(QLS("GtkSpinButton"))->style->ythickness * 2 + 2);
+        newSize = size + QSize(0, -d->gtkWidget(QLS("GtkSpinButton"))->style->ythickness * 2);
         break;
 
     case CT_PushButton:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+            GtkWidget *gtkButton = d->gtkWidget(QLS("GtkButton"));
             gint focusPadding, focusWidth;
-            QGtk::gtk_widget_style_get(gtkButton, "focus-padding", &focusPadding, NULL);
-            QGtk::gtk_widget_style_get(gtkButton, "focus-line-width", &focusWidth, NULL);
+            d->gtk_widget_style_get(gtkButton, "focus-padding", &focusPadding, NULL);
+            d->gtk_widget_style_get(gtkButton, "focus-line-width", &focusWidth, NULL);
             newSize = size;
             newSize += QSize(2*gtkButton->style->xthickness + 4, 2*gtkButton->style->ythickness);
             newSize += QSize(2*(focusWidth + focusPadding + 2), 2*(focusWidth + focusPadding));
 
-            GtkWidget *gtkButtonBox = QGtk::gtkWidget(QLS("GtkHButtonBox"));
+            GtkWidget *gtkButtonBox = d->gtkWidget(QLS("GtkHButtonBox"));
             gint minWidth = 85, minHeight = 0;
-            QGtk::gtk_widget_style_get(gtkButtonBox, "child-min-width", &minWidth,
+            d->gtk_widget_style_get(gtkButtonBox, "child-min-width", &minWidth,
                                    "child-min-height", &minHeight, NULL);
             if (!btn->text.isEmpty() && newSize.width() < minWidth)
                 newSize.setWidth(minWidth);
@@ -3217,18 +3222,14 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
         break;
 
     case CT_Slider: {
-        GtkWidget *gtkSlider = QGtk::gtkWidget(QLS("GtkHScale"));
+        GtkWidget *gtkSlider = d->gtkWidget(QLS("GtkHScale"));
         newSize = size + QSize(2*gtkSlider->style->xthickness, 2*gtkSlider->style->ythickness);
     }
     break;
 
-    case CT_MenuBarItem://cleanlooks adds 2 pixels
-        newSize = QWindowsStyle::sizeFromContents(type, option, size, widget) + QSize(0, 1);
-        break;
-
     case CT_LineEdit: {
-        GtkWidget *gtkEntry = QGtk::gtkWidget(QLS("GtkEntry"));
-        newSize = size + QSize(2*gtkEntry->style->xthickness, 2*gtkEntry->style->ythickness);
+        GtkWidget *gtkEntry = d->gtkWidget(QLS("GtkEntry"));
+        newSize = size + QSize(2*gtkEntry->style->xthickness, 2 + 2*gtkEntry->style->ythickness);
     }
     break;
 
@@ -3238,12 +3239,12 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
 
     case CT_ComboBox:
         if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            GtkWidget *gtkCombo = QGtk::gtkWidget(QLS("GtkComboBox"));
+            GtkWidget *gtkCombo = d->gtkWidget(QLS("GtkComboBox"));
             QRect arrowButtonRect = proxy()->subControlRect(CC_ComboBox, combo, SC_ComboBoxArrow, widget);
             newSize = size + QSize(12 + arrowButtonRect.width() + 2*gtkCombo->style->xthickness, 4 + 2*gtkCombo->style->ythickness);
 
             if (!(widget && qobject_cast<QToolBar *>(widget->parentWidget())))
-                newSize += QSize(0, 3);
+                newSize += QSize(0, 2);
         }
         break;
 
@@ -3256,7 +3257,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
             if (!tab->icon.isNull())
                 newSize += QSize(6, 0);
         }
-        newSize += QSize(1, 0);
+        newSize += QSize(1, 1);
         break;
 
     default:
@@ -3271,7 +3272,9 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
 QPixmap QGtkStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
                                   const QWidget *widget) const
 {
-    if (!QGtk::isThemeAvailable())
+    Q_D(const QGtkStyle);
+
+    if (!d->isThemeAvailable())
         return QCleanlooksStyle::standardPixmap(sp, option, widget);
 
     QPixmap pixmap;
@@ -3338,7 +3341,9 @@ QIcon QGtkStyle::standardIconImplementation(StandardPixmap standardIcon,
                                                   const QStyleOption *option,
                                                   const QWidget *widget) const
 {
-    if (!QGtk::isThemeAvailable())
+    Q_D(const QGtkStyle);
+
+    if (!d->isThemeAvailable())
         return QCleanlooksStyle::standardIconImplementation(standardIcon, option, widget);
     switch (standardIcon) {
     case SP_DialogDiscardButton:
@@ -3376,12 +3381,28 @@ QIcon QGtkStyle::standardIconImplementation(StandardPixmap standardIcon,
 /*! \reimp */
 QRect QGtkStyle::subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const
 {
+    Q_D(const QGtkStyle);
+
     QRect r = QCleanlooksStyle::subElementRect(element, option, widget);
     switch (element) {
     case SE_ProgressBarLabel:
     case SE_ProgressBarContents:
     case SE_ProgressBarGroove:
         return option->rect;
+    case SE_PushButtonContents:
+        if (!d->gtk_check_version(2, 10, 0)) {
+            GtkWidget *gtkButton = d->gtkWidget(QLS("GtkButton"));
+            GtkBorder *border = 0;
+            d->gtk_widget_style_get(gtkButton, "inner-border", &border, NULL);
+            if (border) {
+                r = option->rect.adjusted(border->left, border->top, -border->right, -border->bottom);
+                d->gtk_border_free(border);
+            } else {
+                r = option->rect.adjusted(1, 1, -1, -1);
+            }
+            r = visualRect(option->direction, option->rect, r);
+        }
+        break;
     default:
         break;
     }

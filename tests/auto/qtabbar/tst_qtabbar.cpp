@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -273,6 +273,9 @@ void tst_QTabBar::setElideMode()
     if (tabElideMode != -128)
         tabBar.setElideMode(Qt::TextElideMode(tabElideMode));
     QTEST(int(tabBar.elideMode()), "expectedMode");
+    // Make sure style sheet does not override user set mode
+    tabBar.setStyleSheet("QWidget { background-color: #ABA8A6;}");
+    QTEST(int(tabBar.elideMode()), "expectedMode");
 }
 
 void tst_QTabBar::setUsesScrollButtons_data()
@@ -294,6 +297,10 @@ void tst_QTabBar::setUsesScrollButtons()
     QTabBar tabBar;
     if (usesArrows != -128)
         tabBar.setUsesScrollButtons(usesArrows);
+    QTEST(tabBar.usesScrollButtons(), "expectedArrows");
+
+    // Make sure style sheet does not override user set mode
+    tabBar.setStyleSheet("QWidget { background-color: #ABA8A6;}");
     QTEST(tabBar.usesScrollButtons(), "expectedArrows");
 }
 
@@ -532,7 +539,7 @@ void tst_QTabBar::task251184_removeTab()
 
     QCOMPARE(bar.count(), 1);
     QCOMPARE(bar.currentIndex(), 0);
-    QCOMPARE(bar.tabText(bar.currentIndex()), QString("bar2"));    
+    QCOMPARE(bar.tabText(bar.currentIndex()), QString("bar2"));
 }
 
 

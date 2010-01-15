@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,11 +42,14 @@
 #ifndef CENTRALWIDGET_H
 #define CENTRALWIDGET_H
 
+#include <QtCore/QList>
 #include <QtCore/QUrl>
 #include <QtCore/QPoint>
 #include <QtCore/QObject>
 
 #include <QtGui/QWidget>
+
+#include "searchwidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +68,6 @@ class CentralWidget;
 class PrintHelper;
 class MainWindow;
 
-class SearchWidget;
 class QHelpSearchEngine;
 
 class FindWidget : public QWidget
@@ -108,7 +110,7 @@ class CentralWidget : public QWidget
     Q_OBJECT
 
 public:
-    CentralWidget(QHelpEngine *engine, MainWindow *parent);
+    CentralWidget(MainWindow *parent);
     ~CentralWidget();
 
     void setupWidget();
@@ -123,6 +125,9 @@ public:
     HelpViewer *currentHelpViewer() const;
     void activateTab(bool onlyHelpViewer = false);
 
+    bool searchWidgetAttached() const {
+        return m_searchWidget && m_searchWidget->isAttached();
+    }
     void createSearchWidget(QHelpSearchEngine *searchEngine);
     void activateSearchWidget(bool updateLastTabPage = false);
     void removeSearchWidget();
@@ -130,6 +135,7 @@ public:
     int availableHelpViewer() const;
     bool enableTabCloseAction() const;
 
+    void closeOrReloadTabs(const QList<int> &indices, bool tryReload);
     void closeTabAt(int index);
     QMap<int, QString> currentSourceFileList() const;
 
@@ -190,15 +196,16 @@ private:
     void highlightSearchTerms();
     void setLastShownPages();
 
+    void getBrowserFontFor(QWidget* viewer, QFont *font);
+    void setBrowserFontFor(QWidget *widget, const QFont &font);
+
 private:
     int lastTabPage;
-    QString collectionFile;
     QList<QAction*> globalActionList;
 
     QWidget *findBar;
     QTabWidget *tabWidget;
     FindWidget *findWidget;
-    QHelpEngine *helpEngine;
     QPrinter *printer;
     bool usesDefaultCollection;
 

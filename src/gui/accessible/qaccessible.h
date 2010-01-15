@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -311,7 +311,8 @@ namespace QAccessible2
         EditableTextInterface,
         ValueInterface,
         TableInterface,
-        ActionInterface
+        ActionInterface,
+        ImageInterface
     };
 }
 
@@ -321,6 +322,7 @@ class QAccessibleEditableTextInterface;
 class QAccessibleValueInterface;
 class QAccessibleTableInterface;
 class QAccessibleActionInterface;
+class QAccessibleImageInterface;
 
 class Q_GUI_EXPORT QAccessibleInterface : public QAccessible
 {
@@ -380,6 +382,9 @@ public:
 
     inline QAccessibleActionInterface *actionInterface()
     { return reinterpret_cast<QAccessibleActionInterface *>(cast_helper(QAccessible2::ActionInterface)); }
+
+    inline QAccessibleImageInterface *imageInterface()
+    { return reinterpret_cast<QAccessibleImageInterface *>(cast_helper(QAccessible2::ImageInterface)); }
 
 private:
     QAccessible2Interface *cast_helper(QAccessible2::InterfaceType);

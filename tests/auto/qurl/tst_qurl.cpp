@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,6 +90,7 @@ public slots:
 private slots:
     void getSetCheck();
     void constructing();
+    void isDetached();
     void assignment();
     void comparison();
     void copying();
@@ -316,6 +317,25 @@ void tst_QUrl::constructing()
     QCOMPARE(buildUNC.toLocalFile(), QString::fromLatin1("//somehost/somepath"));
     buildUNC.toEncoded();
     QVERIFY(!buildUNC.isEmpty());
+}
+
+void tst_QUrl::isDetached()
+{
+    QUrl url;
+    QVERIFY(!url.isDetached());
+
+    url = "http://qt.nokia.com/";
+    QVERIFY(url.isDetached());
+
+    url.clear();
+    QVERIFY(!url.isDetached());
+
+    url.setHost("qt.nokia.com");
+    QVERIFY(url.isDetached());
+
+    QUrl url2 = url;
+    QVERIFY(!url.isDetached());
+    QVERIFY(!url2.isDetached());
 }
 
 void tst_QUrl::assignment()
@@ -1682,6 +1702,12 @@ void tst_QUrl::toString_constructed_data()
 			<< QByteArray("//qt.nokia.com/index.html");
     QTest::newRow("data2") << QString::fromLatin1("file") << n << n << n << -1 << QString::fromLatin1("/root") << QByteArray()
                         << n << QString::fromLatin1("file:///root") << QByteArray("file:///root");
+    QTest::newRow("userAndPass") << QString::fromLatin1("http") << QString::fromLatin1("dfaure") << QString::fromLatin1("kde")
+                                 << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
+                                 << QString::fromLatin1("http://dfaure:kde@kde.org:443/") << QByteArray("http://dfaure:kde@kde.org:443/");
+    QTest::newRow("PassWithoutUser") << QString::fromLatin1("http") << n << QString::fromLatin1("kde")
+                                     << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
+                                     << QString::fromLatin1("http://:kde@kde.org:443/") << QByteArray("http://:kde@kde.org:443/");
 }
 
 void tst_QUrl::toString_constructed()
@@ -1717,6 +1743,7 @@ void tst_QUrl::toString_constructed()
 
     QVERIFY(url.isValid());
     QCOMPARE(url.toString(), asString);
+    QCOMPARE(QString::fromLatin1(url.toEncoded()), QString::fromLatin1(asEncoded)); // readable in case of differences
     QCOMPARE(url.toEncoded(), asEncoded);
 }
 
@@ -3713,7 +3740,7 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("add scheme-0") << "example.org" << QUrl("http://example.org");
     QTest::newRow("add scheme-1") << "www.example.org" << QUrl("http://www.example.org");
     QTest::newRow("add scheme-2") << "ftp.example.org" << QUrl("ftp://ftp.example.org");
-    QTest::newRow("add scheme-3") << "webkit" << QUrl("webkit");
+    QTest::newRow("add scheme-3") << "hostname" << QUrl("http://hostname");
 
     // QUrl's tolerant parser should already handle this
     QTest::newRow("not-encoded-0") << "http://example.org/test page.html" << QUrl::fromEncoded("http://example.org/test%20page.html");
@@ -3723,6 +3750,9 @@ void tst_QUrl::fromUserInput_data()
     portUrl.setPort(80);
     QTest::newRow("port-0") << "example.org:80" << portUrl;
     QTest::newRow("port-1") << "http://example.org:80" << portUrl;
+    portUrl.setPath("path");
+    QTest::newRow("port-1") << "example.org:80/path" << portUrl;
+    QTest::newRow("port-1") << "http://example.org:80/path" << portUrl;
 
     // mailto doesn't have a ://, but is valid
     QUrl mailto("ben@example.net");
@@ -3730,10 +3760,11 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("mailto") << "mailto:ben@example.net" << mailto;
 
     // misc
-    QTest::newRow("localhost-0") << "localhost" << QUrl("http://localhost");
     QTest::newRow("localhost-1") << "localhost:80" << QUrl("http://localhost:80");
     QTest::newRow("spaces-0") << "  http://example.org/test page.html " << QUrl("http://example.org/test%20page.html");
     QTest::newRow("trash-0") << "example.org/test?someData=42%&someOtherData=abcde#anchor" << QUrl::fromEncoded("http://example.org/test?someData=42%25&someOtherData=abcde#anchor");
+    QTest::newRow("other-scheme-0") << "spotify:track:0hO542doVbfGDAGQULMORT" << QUrl("spotify:track:0hO542doVbfGDAGQULMORT");
+    QTest::newRow("other-scheme-1") << "weirdscheme:80:otherstuff" << QUrl("weirdscheme:80:otherstuff");
 
     // FYI: The scheme in the resulting url user
     QUrl authUrl("user:pass@domain.com");

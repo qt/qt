@@ -68,9 +68,15 @@ private slots:
     void simpleCollection();
     void attributes();
     void attributesNS();
+    void listAttributes();
     void classes();
     void namespaceURI();
+    void iteration();
+    void nonConstIterator();
+    void constIterator();
     void foreachManipulation();
+    void emptyCollection();
+    void appendCollection();
     void evaluateJavaScript();
     void documentElement();
     void frame();
@@ -134,7 +140,7 @@ void tst_QWebElement::simpleCollection()
     m_mainFrame->setHtml(html);
     QWebElement body = m_mainFrame->documentElement();
 
-    QList<QWebElement> list = body.findAll("p");
+    QWebElementCollection list = body.findAll("p");
     QCOMPARE(list.count(), 2);
     QCOMPARE(list.at(0).toPlainText(), QString("first para"));
     QCOMPARE(list.at(1).toPlainText(), QString("second para"));
@@ -180,6 +186,29 @@ void tst_QWebElement::attributesNS()
     svg.setAttributeNS("http://www.w3.org/2000/svg", "svg:foobar", "true");
     QVERIFY(svg.hasAttributeNS("http://www.w3.org/2000/svg", "foobar"));
     QCOMPARE(svg.attributeNS("http://www.w3.org/2000/svg", "foobar", "defaultblah"), QString("true"));
+}
+
+void tst_QWebElement::listAttributes()
+{
+    QString content = "<html xmlns=\"http://www.w3.org/1999/xhtml\" "
+                      "xmlns:svg=\"http://www.w3.org/2000/svg\">"
+                      "<body><svg:svg foo=\"\" svg:bar=\"\">"
+                      "</svg:svg></body></html>";
+
+    m_mainFrame->setContent(content.toUtf8(), "application/xhtml+xml");
+
+    QWebElement svg = m_mainFrame->findFirstElement("svg");
+    QVERIFY(!svg.isNull());
+
+    QVERIFY(svg.attributeNames().contains("foo"));
+    QVERIFY(svg.attributeNames("http://www.w3.org/2000/svg").contains("bar"));
+
+    svg.setAttributeNS("http://www.w3.org/2000/svg", "svg:foobar", "true");
+    QVERIFY(svg.attributeNames().contains("foo"));
+    QStringList attributes = svg.attributeNames("http://www.w3.org/2000/svg");
+    QCOMPARE(attributes.size(), 2);
+    QVERIFY(attributes.contains("bar"));
+    QVERIFY(attributes.contains("foobar"));
 }
 
 void tst_QWebElement::classes()
@@ -267,6 +296,72 @@ void tst_QWebElement::namespaceURI()
 
 }
 
+void tst_QWebElement::iteration()
+{
+    QString html = "<body><p>first para</p><p>second para</p></body>";
+    m_mainFrame->setHtml(html);
+    QWebElement body = m_mainFrame->documentElement();
+
+   QWebElementCollection paras = body.findAll("p");
+    QList<QWebElement> referenceList = paras.toList();
+
+    QList<QWebElement> foreachList;
+    foreach(QWebElement p, paras) {
+       foreachList.append(p);
+    }
+    QVERIFY(foreachList.count() == 2);
+    QCOMPARE(foreachList.count(), referenceList.count());
+    QCOMPARE(foreachList.at(0), referenceList.at(0));
+    QCOMPARE(foreachList.at(1), referenceList.at(1));
+
+    QList<QWebElement> forLoopList;
+    for (int i = 0; i < paras.count(); ++i) {
+        forLoopList.append(paras.at(i));
+    }
+    QVERIFY(foreachList.count() == 2);
+    QCOMPARE(foreachList.count(), referenceList.count());
+    QCOMPARE(foreachList.at(0), referenceList.at(0));
+    QCOMPARE(foreachList.at(1), referenceList.at(1));
+
+    for (int i = 0; i < paras.count(); ++i) {
+        QCOMPARE(paras.at(i), paras[i]);
+    }
+
+    QCOMPARE(paras.at(0), paras.first());
+    QCOMPARE(paras.at(1), paras.last());
+}
+
+void tst_QWebElement::nonConstIterator()
+{
+    QString html = "<body><p>first para</p><p>second para</p></body>";
+    m_mainFrame->setHtml(html);
+    QWebElement body = m_mainFrame->documentElement();
+    QWebElementCollection paras = body.findAll("p");
+
+    QWebElementCollection::iterator it = paras.begin();
+    QCOMPARE(*it, paras.at(0));
+    ++it;
+    (*it).encloseWith("<div>");
+    QCOMPARE(*it, paras.at(1));
+    ++it;
+    QCOMPARE(it,  paras.end());
+}
+
+void tst_QWebElement::constIterator()
+{
+    QString html = "<body><p>first para</p><p>second para</p></body>";
+    m_mainFrame->setHtml(html);
+    QWebElement body = m_mainFrame->documentElement();
+    const QWebElementCollection paras = body.findAll("p");
+
+    QWebElementCollection::const_iterator it = paras.begin();
+    QCOMPARE(*it, paras.at(0));
+    ++it;
+    QCOMPARE(*it, paras.at(1));
+    ++it;
+    QCOMPARE(it,  paras.end());
+}
+
 void tst_QWebElement::foreachManipulation()
 {
     QString html = "<body><p>first para</p><p>second para</p></body>";
@@ -278,6 +373,43 @@ void tst_QWebElement::foreachManipulation()
     }
 
     QCOMPARE(body.findAll("div").count(), 4);
+}
+
+void tst_QWebElement::emptyCollection()
+{
+    QWebElementCollection emptyCollection;
+    QCOMPARE(emptyCollection.count(), 0);
+}
+
+void tst_QWebElement::appendCollection()
+{
+    QString html = "<body><span class='a'>aaa</span><p>first para</p><div>foo</div>"
+        "<span class='b'>bbb</span><p>second para</p><div>bar</div></body>";
+    m_mainFrame->setHtml(html);
+    QWebElement body = m_mainFrame->documentElement();
+
+    QWebElementCollection collection = body.findAll("p");
+    QCOMPARE(collection.count(), 2);
+
+    collection.append(body.findAll("div"));
+    QCOMPARE(collection.count(), 4);
+
+    collection += body.findAll("span.a");
+    QCOMPARE(collection.count(), 5);
+
+    QWebElementCollection all = collection + body.findAll("span.b");
+    QCOMPARE(all.count(), 6);
+    QCOMPARE(collection.count(), 5);
+
+     all += collection;
+    QCOMPARE(all.count(), 11);
+
+    QCOMPARE(collection.count(), 5);
+    QWebElementCollection test;
+    test.append(collection);
+    QCOMPARE(test.count(), 5);
+    test.append(QWebElementCollection());
+    QCOMPARE(test.count(), 5);
 }
 
 void tst_QWebElement::evaluateJavaScript()
@@ -629,7 +761,7 @@ void tst_QWebElement::clear()
 
     QCOMPARE(body.findAll("div").count(), 1);
     QCOMPARE(body.findAll("p").count(), 3);
-    body.findFirst("div").removeChildren();
+    body.findFirst("div").removeAllChildren();
     QCOMPARE(body.findAll("div").count(), 1);
     QCOMPARE(body.findAll("p").count(), 2);
 }
@@ -773,7 +905,7 @@ void tst_QWebElement::nullSelect()
 {
     m_mainFrame->setHtml("<body><p>Test");
 
-    QList<QWebElement> collection = m_mainFrame->findAllElements("invalid{syn(tax;;%#$f223e>>");
+    QWebElementCollection collection = m_mainFrame->findAllElements("invalid{syn(tax;;%#$f223e>>");
     QVERIFY(collection.count() == 0);
 }
 
@@ -815,7 +947,7 @@ void tst_QWebElement::hasSetFocus()
                             "<input type='text' id='input2'/>" \
                             "</body></html>");
 
-    QList<QWebElement> inputs = m_mainFrame->documentElement().findAll("input");
+    QWebElementCollection inputs = m_mainFrame->documentElement().findAll("input");
     QWebElement input1 = inputs.at(0);
     input1.setFocus();
     QVERIFY(input1.hasFocus());
@@ -851,7 +983,10 @@ void tst_QWebElement::render()
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(loadSpy.count(), 1);
 
-    QList<QWebElement> imgs = page.mainFrame()->findAllElements("img");
+    QSize size = page.mainFrame()->contentsSize();
+    page.setViewportSize(size);
+
+    QWebElementCollection imgs = page.mainFrame()->findAllElements("img");
     QCOMPARE(imgs.count(), 1);
 
     QImage resource(":/image.png");
@@ -860,7 +995,10 @@ void tst_QWebElement::render()
     QImage testImage(resource.width(), resource.height(), QImage::Format_ARGB32);
     QPainter painter0(&testImage);
     painter0.fillRect(imageRect, Qt::white);
-    painter0.drawImage(0, 0, resource);
+    // render() uses pixmaps internally, and pixmaps might have bit depths
+    // other than 32, giving different pixel values due to rounding.
+    QPixmap pix = QPixmap::fromImage(resource);
+    painter0.drawPixmap(0, 0, pix);
     painter0.end();
 
     QImage image1(resource.width(), resource.height(), QImage::Format_ARGB32);
@@ -882,7 +1020,7 @@ void tst_QWebElement::render()
 
     // compare table rendered through QWebElement::render to whole page table rendering
     QRect tableRect(0, 0, 300, 300);
-    QList<QWebElement> tables = page.mainFrame()->findAllElements("table");
+    QWebElementCollection tables = page.mainFrame()->findAllElements("table");
     QCOMPARE(tables.count(), 1);
 
     QImage image3(300, 300, QImage::Format_ARGB32);
@@ -893,7 +1031,6 @@ void tst_QWebElement::render()
 
     QImage image4(300, 300, QImage::Format_ARGB32);
     QPainter painter4(&image4);
-    page.mainFrame()->setClipRenderToViewport(false);
     page.mainFrame()->render(&painter4, tableRect);
     painter4.end();
 

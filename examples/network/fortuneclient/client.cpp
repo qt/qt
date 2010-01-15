@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,8 +62,10 @@ Client::Client(QWidget *parent)
     // use the first non-localhost IPv4 address
     for (int i = 0; i < ipAddressesList.size(); ++i) {
         if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
-            ipAddressesList.at(i).toIPv4Address())
+            ipAddressesList.at(i).toIPv4Address()) {
             ipAddress = ipAddressesList.at(i).toString();
+            break;
+        }
     }
     // if we did not find one, use IPv4 localhost
     if (ipAddress.isEmpty())
@@ -93,9 +95,9 @@ Client::Client(QWidget *parent)
     tcpSocket = new QTcpSocket(this);
 //! [1]
 
-    connect(hostLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(hostLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
-    connect(portLineEdit, SIGNAL(textChanged(const QString &)),
+    connect(portLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
     connect(getFortuneButton, SIGNAL(clicked()),
             this, SLOT(requestNewFortune()));

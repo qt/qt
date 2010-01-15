@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,6 +97,9 @@ public:
         }
 
         QString fileName;
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+        QString volumeName;
+#endif
 
         inline qint64 size() const { if (info && !info->isDir()) return info->size(); return 0; }
         inline QString type() const { if (info) return info->displayType; return QLatin1String(""); }
@@ -238,15 +241,15 @@ public:
     void sortChildren(int column, const QModelIndex &parent);
 
     inline int translateVisibleLocation(QFileSystemNode *parent, int row) const {
-        if (sortOrder == Qt::AscendingOrder)
-                return row;
-        if (parent->dirtyChildrenIndex == -1 || row < parent->dirtyChildrenIndex)
-            if (parent->dirtyChildrenIndex != -1)
-                return parent->dirtyChildrenIndex - row - 1;
-            else
+        if (sortOrder != Qt::AscendingOrder) {
+            if (parent->dirtyChildrenIndex == -1)
                 return parent->visibleChildren.count() - row - 1;
-        else
-            return row;
+
+            if (row < parent->dirtyChildrenIndex)
+                return parent->dirtyChildrenIndex - row - 1;
+        }
+
+        return row;
     }
 
     inline static QString myComputer() {
@@ -278,6 +281,7 @@ public:
 
     QIcon icon(const QModelIndex &index) const;
     QString name(const QModelIndex &index) const;
+    QString displayName(const QModelIndex &index) const;
     QString filePath(const QModelIndex &index) const;
     QString size(const QModelIndex &index) const;
     static QString size(qint64 bytes);

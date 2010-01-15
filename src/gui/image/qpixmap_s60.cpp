@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -73,27 +73,27 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
     used to lock the global bitmap heap. Only used in
     S60 v3.1 and S60 v3.2.
 */
+_LIT(KFBSERVLargeBitmapAccessName,"FbsLargeBitmapAccess");
 class QSymbianFbsClient
 {
 public:
 
-    QSymbianFbsClient() : heapLock(0), heapLocked(false)
+    QSymbianFbsClient() : heapLocked(false)
     {
-        QT_TRAP_THROWING(heapLock = new(ELeave) CFbsBitmap);
-        heapLock->Create(TSize(0,0), S60->screenDevice()->DisplayMode());
+        heapLock.OpenGlobal(KFBSERVLargeBitmapAccessName);
     }
 
     ~QSymbianFbsClient()
     {
-        delete heapLock;
+        heapLock.Close();
     }
 
     bool lockHeap()
     {
         bool wasLocked = heapLocked;
 
-        if (heapLock && !heapLocked) {
-            heapLock->LockHeap(ETrue);
+        if (heapLock.Handle() && !heapLocked) {
+            heapLock.Wait();
             heapLocked = true;
         }
 
@@ -104,8 +104,8 @@ public:
     {
         bool wasLocked = heapLocked;
 
-        if (heapLock && heapLocked) {
-            heapLock->UnlockHeap(ETrue);
+        if (heapLock.Handle() && heapLocked) {
+            heapLock.Signal();
             heapLocked = false;
         }
 
@@ -115,7 +115,7 @@ public:
 
 private:
 
-    CFbsBitmap *heapLock;
+    RMutex heapLock;
     bool heapLocked;
 };
 
@@ -169,7 +169,7 @@ public:
 
     inline void beginDataAccess(CFbsBitmap *bitmap)
     {
-        if (symbianVersion == QSysInfo::SV_9_2 || symbianVersion == QSysInfo::SV_9_3)
+        if (symbianVersion == QSysInfo::SV_9_2)
             heapWasLocked = qt_symbianFbsClient()->lockHeap();
         else
             bitmap->LockHeap(ETrue);
@@ -177,7 +177,7 @@ public:
 
     inline void endDataAccess(CFbsBitmap *bitmap)
     {
-        if (symbianVersion == QSysInfo::SV_9_2 || symbianVersion == QSysInfo::SV_9_3) {
+        if (symbianVersion == QSysInfo::SV_9_2) {
             if (!heapWasLocked)
                 qt_symbianFbsClient()->unlockHeap();
         } else {
@@ -235,7 +235,7 @@ static CFbsBitmap* uncompress(CFbsBitmap* bitmap)
         QT_TRAP_THROWING(bitmapGc = CFbsBitGc::NewL());
         bitmapGc->Activate(bitmapDevice);
 
-        bitmapGc->DrawBitmap(TPoint(), bitmap);
+        bitmapGc->BitBlt(TPoint(), bitmap);
 
         delete bitmapGc;
         delete bitmapDevice;
@@ -311,7 +311,7 @@ QPixmap QPixmap::grabWindow(WId winId, int x, int y, int w, int h)
 CFbsBitmap *QPixmap::toSymbianCFbsBitmap() const
 {
     QPixmapData *data = pixmapData();
-    if (data->isNull())
+    if (!data || data->isNull())
         return 0;
 
     return reinterpret_cast<CFbsBitmap*>(data->toNativeType(QPixmapData::FbsBitmap));
@@ -337,18 +337,18 @@ QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap)
     if (!bitmap)
         return QPixmap();
 
-    QPixmap pixmap;
-    pixmap.pixmapData()->fromNativeType(reinterpret_cast<void*>(bitmap), QPixmapData::FbsBitmap);
+    QScopedPointer<QS60PixmapData> data(new QS60PixmapData(QPixmapData::PixmapType));
+    data->fromNativeType(reinterpret_cast<void*>(bitmap), QPixmapData::FbsBitmap);
+    QPixmap pixmap(data.take());
     return pixmap;
 }
 
 QS60PixmapData::QS60PixmapData(PixelType type) : QRasterPixmapData(type),
     symbianBitmapDataAccess(new QSymbianBitmapDataAccess),
     cfbsBitmap(0),
-    bitmapDevice(0),
-    bitmapGc(0),
     pengine(0),
-    bytes(0)
+    bytes(0),
+    formatLocked(false)
 {
 
 }
@@ -383,8 +383,6 @@ void QS60PixmapData::resize(int width, int height)
 
         if(cfbsBitmap->SizeInPixels() != newSize) {
             cfbsBitmap->Resize(TSize(width, height));
-            bitmapDevice->Resize(TSize(width, height));
-            bitmapGc->Resized();
             if(pengine) {
                 delete pengine;
                 pengine = 0;
@@ -395,21 +393,10 @@ void QS60PixmapData::resize(int width, int height)
     }
 }
 
-bool QS60PixmapData::initSymbianBitmapContext()
-{
-    QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(cfbsBitmap));
-    QT_TRAP_THROWING(bitmapGc = CFbsBitGc::NewL());
-    bitmapGc->Activate(bitmapDevice);
-
-    return true;
-}
-
 void QS60PixmapData::release()
 {
     if (cfbsBitmap) {
         QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
-        delete bitmapGc;
-        delete bitmapDevice;
         delete cfbsBitmap;
         lock.relock();
     }
@@ -417,50 +404,59 @@ void QS60PixmapData::release()
     delete pengine;
     image = QImage();
     cfbsBitmap = 0;
-    bitmapGc = 0;
-    bitmapDevice = 0;
     pengine = 0;
     bytes = 0;
 }
 
 /*!
- * Takes ownership of bitmap
+ * Takes ownership of bitmap. Used by window surface
  */
-void QS60PixmapData::fromSymbianBitmap(CFbsBitmap* bitmap)
+void QS60PixmapData::fromSymbianBitmap(CFbsBitmap* bitmap, bool lockFormat)
 {
-	cfbsBitmap = bitmap;
+    Q_ASSERT(bitmap);
 
-	 if(!initSymbianBitmapContext()) {
-		qWarning("Could not create CBitmapContext");
-		release();
-		return;
-	}
+    release();
 
-	setSerialNumber(cfbsBitmap->Handle());
+    cfbsBitmap = bitmap;
+    formatLocked = lockFormat;
 
-	UPDATE_BUFFER();
+    setSerialNumber(cfbsBitmap->Handle());
 
-	// Create default palette if needed
-	if (cfbsBitmap->DisplayMode() == EGray2) {
-		image.setNumColors(2);
-		image.setColor(0, QColor(Qt::color0).rgba());
-		image.setColor(1, QColor(Qt::color1).rgba());
+    UPDATE_BUFFER();
+
+    // Create default palette if needed
+    if (cfbsBitmap->DisplayMode() == EGray2) {
+        image.setColorCount(2);
+        image.setColor(0, QColor(Qt::color0).rgba());
+        image.setColor(1, QColor(Qt::color1).rgba());
 
         //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
         //So invert mono bitmaps so that masks work correctly.
         image.invertPixels();
-	} else if (cfbsBitmap->DisplayMode() == EGray256) {
-		for (int i=0; i < 256; ++i)
-			image.setColor(i, qRgb(i, i, i));
-	}else if (cfbsBitmap->DisplayMode() == EColor256) {
-		const TColor256Util *palette = TColor256Util::Default();
-		for (int i=0; i < 256; ++i)
-			image.setColor(i, (QRgb)(palette->Color256(i).Value()));
-	}
+    } else if (cfbsBitmap->DisplayMode() == EGray256) {
+        for (int i=0; i < 256; ++i)
+            image.setColor(i, qRgb(i, i, i));
+    } else if (cfbsBitmap->DisplayMode() == EColor256) {
+        const TColor256Util *palette = TColor256Util::Default();
+        for (int i=0; i < 256; ++i)
+            image.setColor(i, (QRgb)(palette->Color256(i).Value()));
+    }
+}
+
+QImage QS60PixmapData::toImage(const QRect &r) const
+{
+    QS60PixmapData *that = const_cast<QS60PixmapData*>(this);
+    that->beginDataAccess();
+    QImage copy = that->image.copy(r);
+    that->endDataAccess();
+
+    return copy;
 }
 
 void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags)
 {
+    release();
+
     QImage sourceImage;
 
     if (pixelType() == BitmapType) {
@@ -514,8 +510,8 @@ void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags
     }
 
     cfbsBitmap = createSymbianCFbsBitmap(TSize(sourceImage.width(), sourceImage.height()), mode);
-    if (!(cfbsBitmap && initSymbianBitmapContext())) {
-        qWarning("Could not create CFbsBitmap and/or CBitmapContext");
+    if (!cfbsBitmap) {
+        qWarning("Could not create CFbsBitmap");
         release();
         return;
     }
@@ -525,13 +521,13 @@ void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags
     const uchar *sptr = const_cast<const QImage &>(sourceImage).bits();
     symbianBitmapDataAccess->beginDataAccess(cfbsBitmap);
     uchar *dptr = (uchar*)cfbsBitmap->DataAddress();
-    Mem::Copy(dptr, sptr, sourceImage.numBytes());
+    Mem::Copy(dptr, sptr, sourceImage.byteCount());
     symbianBitmapDataAccess->endDataAccess(cfbsBitmap);
 
     UPDATE_BUFFER();
 
     if (destFormat == QImage::Format_MonoLSB) {
-		image.setNumColors(2);
+		image.setColorCount(2);
 		image.setColor(0, QColor(Qt::color0).rgba());
 		image.setColor(1, QColor(Qt::color1).rgba());
 	} else {
@@ -541,17 +537,8 @@ void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags
 
 void QS60PixmapData::copy(const QPixmapData *data, const QRect &rect)
 {
-    if (data->pixelType() == BitmapType) {
-        QBitmap::fromImage(data->toImage().copy(rect));
-        return;
-    }
-
     const QS60PixmapData *s60Data = static_cast<const QS60PixmapData*>(data);
-
-    resize(rect.width(), rect.height());
-    cfbsBitmap->SetDisplayMode(s60Data->cfbsBitmap->DisplayMode());
-
-    bitmapGc->BitBlt(TPoint(0, 0), s60Data->cfbsBitmap, qt_QRect2TRect(rect));
+    fromImage(s60Data->toImage(rect), Qt::AutoColor | Qt::OrderedAlphaDither);
 }
 
 bool QS60PixmapData::scroll(int dx, int dy, const QRect &rect)
@@ -658,12 +645,7 @@ void QS60PixmapData::setAlphaChannel(const QPixmap &alphaChannel)
 
 QImage QS60PixmapData::toImage() const
 {
-    QS60PixmapData *that = const_cast<QS60PixmapData*>(this);
-    that->beginDataAccess();
-    QImage copy = that->image.copy();
-    that->endDataAccess();
-
-    return copy;
+    return toImage(QRect());
 }
 
 QPaintEngine* QS60PixmapData::paintEngine() const
@@ -684,18 +666,19 @@ void QS60PixmapData::beginDataAccess()
 
     uchar* newBytes = (uchar*)cfbsBitmap->DataAddress();
 
-    if (newBytes == bytes)
-        return;
+    TSize size = cfbsBitmap->SizeInPixels();
 
+    if (newBytes == bytes && image.width() == size.iWidth && image.height() == size.iHeight)
+        return;
 
     bytes = newBytes;
     TDisplayMode mode = cfbsBitmap->DisplayMode();
     QImage::Format format = qt_TDisplayMode2Format(mode);
-    //on S60 3.1, premultiplied alpha pixels are stored in a bitmap with 16MA type
-    if (format == QImage::Format_ARGB32)
+    // On S60 3.1, premultiplied alpha pixels are stored in a bitmap with 16MA type.
+    // S60 window surface needs backing store pixmap for transparent window in ARGB32 format.
+    // In that case formatLocked is true.
+    if (!formatLocked && format == QImage::Format_ARGB32)
         format = QImage::Format_ARGB32_Premultiplied; // pixel data is actually in premultiplied format
-
-    TSize size = cfbsBitmap->SizeInPixels();
 
     QVector<QRgb> savedColorTable;
     if (!image.isNull())
@@ -752,9 +735,9 @@ QPixmap QPixmap::fromSymbianRSgImage(RSgImage *sgImage)
     if (!sgImage)
         return QPixmap();
 
-    QPixmap pixmap;
-    pixmap.pixmapData()->fromNativeType(reinterpret_cast<void*>(sgImage), QPixmapData::SgImage);
-
+    QScopedPointer<QS60PixmapData> data(new QS60PixmapData(QPixmapData::PixmapType));
+    data->fromNativeType(reinterpret_cast<void*>(sgImage), QPixmapData::SgImage);
+    QPixmap pixmap(data.take());
     return pixmap;
 }
 
@@ -816,7 +799,9 @@ void* QS60PixmapData::toNativeType(NativeType type)
         if(displayMode == EGray2) {
             //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
             //So invert mono bitmaps so that masks work correctly.
+            beginDataAccess();
             image.invertPixels();
+            endDataAccess();
             needsCopy = true;
         }
 
@@ -824,7 +809,9 @@ void* QS60PixmapData::toNativeType(NativeType type)
             QImage source;
 
             if (convertToArgb32) {
+                beginDataAccess();
                 source = image.convertToFormat(QImage::Format_ARGB32);
+                endDataAccess();
                 displayMode = EColor16MA;
             } else {
                 source = image;
@@ -835,7 +822,7 @@ void* QS60PixmapData::toNativeType(NativeType type)
             symbianBitmapDataAccess->beginDataAccess(newBitmap);
 
             uchar *dptr = (uchar*)newBitmap->DataAddress();
-            Mem::Copy(dptr, sptr, source.numBytes());
+            Mem::Copy(dptr, sptr, source.byteCount());
 
             symbianBitmapDataAccess->endDataAccess(newBitmap);
 
@@ -854,7 +841,9 @@ void* QS60PixmapData::toNativeType(NativeType type)
 
         if(displayMode == EGray2) {
             // restore pixels
+            beginDataAccess();
             image.invertPixels();
+            endDataAccess();
         }
 
         return reinterpret_cast<void*>(bitmap);
@@ -935,18 +924,21 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
             da.beginDataAccess(sourceBitmap);
             uchar *bytes = (uchar*)sourceBitmap->DataAddress();
             QImage img = QImage(bytes, size.iWidth, size.iHeight, format);
+            img = img.copy();
             da.endDataAccess(sourceBitmap);
+
+            if(displayMode == EGray2) {
+                //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
+                //So invert mono bitmaps so that masks work correctly.
+                img.invertPixels();
+            } else if(displayMode == EColor16M) {
+                img = img.rgbSwapped(); // EColor16M is BGR
+            }
 
             fromImage(img, Qt::AutoColor);
 
             if(deleteSourceBitmap)
                 delete sourceBitmap;
-
-            if(displayMode == EGray2) {
-                //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
-                //So invert mono bitmaps so that masks work correctly.
-                image.invertPixels();
-            }
         } else {
             CFbsBitmap* duplicate = 0;
             QT_TRAP_THROWING(duplicate = new (ELeave) CFbsBitmap);
@@ -968,6 +960,11 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
                 delete sourceBitmap;
         }
     }
+}
+
+QPixmapData *QS60PixmapData::createCompatiblePixmapData() const
+{
+    return new QS60PixmapData(pixelType());
 }
 
 QT_END_NAMESPACE

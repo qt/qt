@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     QString basePath;
     bool showHelp = false;
     bool showVersion = false;
+    bool checkLinks = false;
 
     for (int i = 1; i < argc; ++i) {
         arg = QString::fromLocal8Bit(argv[i]);
@@ -72,6 +73,8 @@ int main(int argc, char *argv[])
             showVersion = true;
         } else if (arg == QLatin1String("-h")) {
             showHelp = true;
+        } else if (arg == QLatin1String("-c")) {
+            checkLinks = true;
         } else {
             QFileInfo fi(arg);
             projectFile = fi.absoluteFilePath();
@@ -93,6 +96,8 @@ int main(int argc, char *argv[])
         "                         file called <compressed-file>.\n"
         "                         If this option is not specified\n"
         "                         a default name will be used.\n"
+        "  -c                     Checks whether all links in HTML files\n"
+        "                         point to files in this help project.\n"
         "  -v                     Displays the version of \n"
         "                         qhelpgenerator.\n\n");
 
@@ -111,9 +116,11 @@ int main(int argc, char *argv[])
     }
 
     if (compressedFile.isEmpty()) {
-        QFileInfo fi(projectFile);
-        compressedFile = basePath + QDir::separator()
-            + fi.baseName() + QLatin1String(".qch");
+        if (!checkLinks) {
+            QFileInfo fi(projectFile);
+            compressedFile = basePath + QDir::separator()
+                             + fi.baseName() + QLatin1String(".qch");
+        }
     } else {
         // check if the output dir exists -- create if it doesn't
         QFileInfo fi(compressedFile);
@@ -134,7 +141,11 @@ int main(int argc, char *argv[])
 
     QCoreApplication app(argc, argv);
     HelpGenerator generator;
-    bool success = generator.generate(helpData, compressedFile);
+    bool success = true;
+    if (checkLinks)
+        success = generator.checkLinks(*helpData);
+    if (success && !compressedFile.isEmpty())
+        success = generator.generate(helpData, compressedFile);
     delete helpData;
     if (!success) {
         fprintf(stderr, "%s\n", qPrintable(generator.error()));

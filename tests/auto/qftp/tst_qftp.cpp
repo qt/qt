@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,9 +51,6 @@
 #include <stdlib.h>
 #include <QNetworkProxy>
 
-#ifndef TEST_QNETWORK_PROXY
-#define TEST_QNETWORK_PROXY
-#endif
 #include "../network-settings.h"
 
 //TESTED_CLASS=
@@ -202,11 +199,9 @@ void tst_QFtp::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
     //### doesn't work well yet.
     //QTest::newRow("WithHttpProxy") << true << int(QNetworkProxy::HttpProxy);
-#endif
 }
 
 void tst_QFtp::initTestCase()
@@ -618,7 +613,7 @@ void tst_QFtp::get()
     }
     addCommand( QFtp::Close, ftp->close() );
 
-    QTestEventLoop::instance().enterLoop( 30 );
+    QTestEventLoop::instance().enterLoop( 50 );
     delete ftp;
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
@@ -1020,7 +1015,7 @@ void tst_QFtp::renameInit( const QString &host, const QString &user, const QStri
         addCommand( QFtp::Put, ftp->put( QByteArray(), createFile ) );
         addCommand( QFtp::Close, ftp->close() );
 
-        QTestEventLoop::instance().enterLoop( 30 );
+        QTestEventLoop::instance().enterLoop( 50 );
         delete ftp;
         if ( QTestEventLoop::instance().timeout() )
             QFAIL( "Network operation timed out" );
@@ -1295,14 +1290,18 @@ void tst_QFtp::abort_data()
     // Qt/CE and Symbian test environment has to less memory for this test
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QByteArray bigData( 10*1024*1024, 0 );
-    bigData.fill( 'B' );
-
-    QTest::newRow( "put_fluke01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("qtest/upload/abort_put") << bigData;
+#else
+    QByteArray bigData( 1*1024*1024, 0 );
 #endif
+    bigData.fill( 'B' );
+    QTest::newRow( "put_fluke01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("qtest/upload/abort_put") << bigData;
 }
 
 void tst_QFtp::abort()
 {
+    // In case you wonder where the abort() actually happens, look into
+    // tst_QFtp::dataTransferProgress
+    //
     QFETCH( QString, host );
     QFETCH( uint, port );
     QFETCH( QString, file );
@@ -1324,7 +1323,7 @@ void tst_QFtp::abort()
     addCommand( QFtp::Close, ftp->close() );
 
     for(int time = 0; time <= uploadData.length() / 30000; time += 30) {
-        QTestEventLoop::instance().enterLoop( 30 );
+        QTestEventLoop::instance().enterLoop( 50 );
         if(ftp->currentCommand() == QFtp::None)
             break;
     }
@@ -1404,7 +1403,7 @@ void tst_QFtp::bytesAvailable()
     if ( type != 0 )
         addCommand( QFtp::Close, ftp->close() );
 
-    QTestEventLoop::instance().enterLoop( 30 );
+    QTestEventLoop::instance().enterLoop( 40 );
     if ( QTestEventLoop::instance().timeout() )
         QFAIL( "Network operation timed out" );
 
@@ -1493,7 +1492,7 @@ void tst_QFtp::proxy()
     addCommand( QFtp::Cd, ftp->cd( dir ) );
     addCommand( QFtp::List, ftp->list() );
 
-    QTestEventLoop::instance().enterLoop( 30 );
+    QTestEventLoop::instance().enterLoop( 50 );
 
     delete ftp;
     if ( QTestEventLoop::instance().timeout() ) {
@@ -1921,7 +1920,7 @@ bool tst_QFtp::fileExists( const QString &host, quint16 port, const QString &use
     delete ftp;
     if ( QTestEventLoop::instance().timeout() ) {
         // ### make this test work
-        qWarning("Network operation timed out");
+        qWarning("tst_QFtp::fileExists: Network operation timed out");
         return FALSE;
     }
     inFileDirExistsFunction = FALSE;
@@ -1972,6 +1971,7 @@ bool tst_QFtp::dirExists( const QString &host, quint16 port, const QString &user
     if ( QTestEventLoop::instance().timeout() ) {
         // ### make this test work
         // QFAIL( "Network operation timed out" );
+        qWarning("tst_QFtp::dirExists: Network operation timed out");
         return FALSE;
     }
     inFileDirExistsFunction = FALSE;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,7 +40,8 @@
 ****************************************************************************/
 
 #include "qimagepixmapcleanuphooks_p.h"
-#include "qpixmapdata_p.h"
+#include "private/qpixmapdata_p.h"
+#include "private/qimage_p.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -54,20 +55,11 @@ Q_GUI_EXPORT _qt_pixmap_cleanup_hook_64 qt_pixmap_cleanup_hook_64 = 0;
 Q_GUI_EXPORT _qt_image_cleanup_hook qt_image_cleanup_hook = 0;
 Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64 = 0;
 
-
-QImagePixmapCleanupHooks* qt_image_and_pixmap_cleanup_hooks = 0;
-
-
-QImagePixmapCleanupHooks::QImagePixmapCleanupHooks()
-{
-    qt_image_and_pixmap_cleanup_hooks = this;
-}
+Q_GLOBAL_STATIC(QImagePixmapCleanupHooks, qt_image_and_pixmap_cleanup_hooks)
 
 QImagePixmapCleanupHooks *QImagePixmapCleanupHooks::instance()
 {
-    if (!qt_image_and_pixmap_cleanup_hooks)
-        qt_image_and_pixmap_cleanup_hooks = new QImagePixmapCleanupHooks;
-    return qt_image_and_pixmap_cleanup_hooks;
+    return qt_image_and_pixmap_cleanup_hooks();
 }
 
 void QImagePixmapCleanupHooks::addPixmapModificationHook(_qt_pixmap_cleanup_hook_pm hook)
@@ -101,12 +93,11 @@ void QImagePixmapCleanupHooks::removeImageHook(_qt_image_cleanup_hook_64 hook)
     imageHooks.removeAll(hook);
 }
 
-
 void QImagePixmapCleanupHooks::executePixmapModificationHooks(QPixmap* pm)
 {
-    Q_ASSERT(qt_image_and_pixmap_cleanup_hooks);
-    for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks->pixmapModificationHooks.count(); ++i)
-        qt_image_and_pixmap_cleanup_hooks->pixmapModificationHooks[i](pm);
+    QImagePixmapCleanupHooks *h = qt_image_and_pixmap_cleanup_hooks();
+    for (int i = 0; i < h->pixmapModificationHooks.count(); ++i)
+        h->pixmapModificationHooks[i](pm);
 
     if (qt_pixmap_cleanup_hook_64)
         qt_pixmap_cleanup_hook_64(pm->cacheKey());
@@ -114,9 +105,9 @@ void QImagePixmapCleanupHooks::executePixmapModificationHooks(QPixmap* pm)
 
 void QImagePixmapCleanupHooks::executePixmapDestructionHooks(QPixmap* pm)
 {
-    Q_ASSERT(qt_image_and_pixmap_cleanup_hooks);
-    for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks->pixmapDestructionHooks.count(); ++i)
-        qt_image_and_pixmap_cleanup_hooks->pixmapDestructionHooks[i](pm);
+    QImagePixmapCleanupHooks *h = qt_image_and_pixmap_cleanup_hooks();
+    for (int i = 0; i < h->pixmapDestructionHooks.count(); ++i)
+        h->pixmapDestructionHooks[i](pm);
 
     if (qt_pixmap_cleanup_hook_64)
         qt_pixmap_cleanup_hook_64(pm->cacheKey());
@@ -124,12 +115,26 @@ void QImagePixmapCleanupHooks::executePixmapDestructionHooks(QPixmap* pm)
 
 void QImagePixmapCleanupHooks::executeImageHooks(qint64 key)
 {
-    Q_ASSERT(qt_image_and_pixmap_cleanup_hooks);
-    for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks->imageHooks.count(); ++i)
-        qt_image_and_pixmap_cleanup_hooks->imageHooks[i](key);
+    for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks()->imageHooks.count(); ++i)
+        qt_image_and_pixmap_cleanup_hooks()->imageHooks[i](key);
 
     if (qt_image_cleanup_hook_64)
         qt_image_cleanup_hook_64(key);
+}
+
+void QImagePixmapCleanupHooks::enableCleanupHooks(const QPixmap &pixmap)
+{
+    enableCleanupHooks(const_cast<QPixmap &>(pixmap).data_ptr().data());
+}
+
+void QImagePixmapCleanupHooks::enableCleanupHooks(QPixmapData *pixmapData)
+{
+    pixmapData->is_cached = true;
+}
+
+void QImagePixmapCleanupHooks::enableCleanupHooks(const QImage &image)
+{
+    const_cast<QImage &>(image).data_ptr()->is_cached = true;
 }
 
 QT_END_NAMESPACE

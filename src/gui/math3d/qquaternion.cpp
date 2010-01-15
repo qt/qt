@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -288,7 +288,7 @@ void QQuaternion::normalize()
     in 3D space.  The following code:
 
     \code
-    QVector3D result = q.rotateVector(vector);
+    QVector3D result = q.rotatedVector(vector);
     \endcode
 
     is equivalent to the following:
@@ -297,7 +297,7 @@ void QQuaternion::normalize()
     QVector3D result = (q * QQuaternion(0, vector) * q.conjugate()).vector();
     \endcode
 */
-QVector3D QQuaternion::rotateVector(const QVector3D& vector) const
+QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
 {
     return (*this * QQuaternion(0, vector) * conjugate()).vector();
 }

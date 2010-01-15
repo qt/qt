@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,31 +69,34 @@ private slots:
 
 void tst_QAudioFormat::checkNull()
 {
-    // Default constructed QAudioFormat is null.
+    // Default constructed QAudioFormat is invalid.
     QAudioFormat    audioFormat0;
-    QVERIFY(audioFormat0.isNull());
+    QVERIFY(!audioFormat0.isValid());
 
-    // Null is transferred
+    // validity is transferred
     QAudioFormat    audioFormat1(audioFormat0);
-    QVERIFY(audioFormat1.isNull());
+    QVERIFY(!audioFormat1.isValid());
 
-    // Null is voided on activity
-    audioFormat0.setFrequency(44100);
-    QVERIFY(!audioFormat0.isNull());
+    audioFormat0.setSampleRate(44100);
+    audioFormat0.setChannelCount(2);
+    audioFormat0.setSampleSize(16);
+    audioFormat0.setCodec("audio/pcm");
+    audioFormat0.setSampleType(QAudioFormat::SignedInt);
+    QVERIFY(audioFormat0.isValid());
 }
 
 void tst_QAudioFormat::checkFrequency()
 {
     QAudioFormat    audioFormat;
-    audioFormat.setFrequency(44100);
-    QVERIFY(audioFormat.frequency() == 44100);
+    audioFormat.setSampleRate(44100);
+    QVERIFY(audioFormat.sampleRate() == 44100);
 }
 
 void tst_QAudioFormat::checkChannels()
 {
     QAudioFormat    audioFormat;
     audioFormat.setChannelCount(2);
-    QVERIFY(audioFormat.channels() == 2);
+    QVERIFY(audioFormat.channelCount() == 2);
 }
 
 void tst_QAudioFormat::checkSampleSize()
@@ -134,14 +137,14 @@ void tst_QAudioFormat::checkEquality()
     QVERIFY(!(audioFormat0 != audioFormat1));
 
     // on filled formats
-    audioFormat0.setFrequency(8000);
+    audioFormat0.setSampleRate(8000);
     audioFormat0.setChannelCount(1);
     audioFormat0.setSampleSize(8);
     audioFormat0.setCodec("audio/pcm");
     audioFormat0.setByteOrder(QAudioFormat::LittleEndian);
     audioFormat0.setSampleType(QAudioFormat::UnSignedInt);
 
-    audioFormat1.setFrequency(8000);
+    audioFormat1.setSampleRate(8000);
     audioFormat1.setChannelCount(1);
     audioFormat1.setSampleSize(8);
     audioFormat1.setCodec("audio/pcm");
@@ -161,7 +164,7 @@ void tst_QAudioFormat::checkAssignment()
     QAudioFormat    audioFormat0;
     QAudioFormat    audioFormat1;
 
-    audioFormat0.setFrequency(8000);
+    audioFormat0.setSampleRate(8000);
     audioFormat0.setChannelCount(1);
     audioFormat0.setSampleSize(8);
     audioFormat0.setCodec("audio/pcm");

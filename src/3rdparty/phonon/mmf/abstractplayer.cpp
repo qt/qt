@@ -33,7 +33,7 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AbstractPlayer::AbstractPlayer()
+MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer *player)
         :   m_videoOutput(0)
         ,   m_volume(InitialVolume)
         ,   m_state(GroundState)
@@ -42,19 +42,13 @@ MMF::AbstractPlayer::AbstractPlayer()
         ,   m_transitionTime(0)
         ,   m_prefinishMark(0)
 {
-
-}
-
-MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer& player)
-        :   m_videoOutput(player.m_videoOutput)
-        ,   m_volume(player.m_volume)
-        ,   m_state(GroundState)
-        ,   m_error(NoError)
-        ,   m_tickInterval(player.tickInterval())
-        ,   m_transitionTime(player.transitionTime())
-        ,   m_prefinishMark(player.prefinishMark())
-{
-
+    if(player) {
+        m_videoOutput = player->m_videoOutput;
+        m_volume = player->m_volume;
+        m_tickInterval = player->m_tickInterval;
+        m_transitionTime = player->m_transitionTime;
+        m_prefinishMark = player->m_prefinishMark;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -92,11 +86,6 @@ void MMF::AbstractPlayer::setTransitionTime(qint32 time)
     m_transitionTime = time;
 }
 
-
-//-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
-
 void MMF::AbstractPlayer::volumeChanged(qreal volume)
 {
     m_volume = volume;
@@ -118,29 +107,33 @@ void MMF::AbstractPlayer::videoOutputChanged()
     // Default behaviour is empty - overridden by VideoPlayer
 }
 
-void MMF::AbstractPlayer::setError(Phonon::ErrorType error)
+void MMF::AbstractPlayer::setError(const QString &errorMessage)
 {
     TRACE_CONTEXT(AbstractPlayer::setError, EAudioInternal);
-    TRACE_ENTRY("state %d error %d", m_state, error);
+    TRACE_ENTRY("state %d", m_state);
 
-    m_error = error;
+    m_error = Phonon::NormalError;
+    m_errorString = errorMessage;
     changeState(ErrorState);
 
     TRACE_EXIT_0();
 }
 
+void MMF::AbstractPlayer::setError(const QString &errorMessage, int symbianError)
+{
+    setError(errorMessage + ": " + Utils::symbianErrorToString(symbianError));
+}
+
 Phonon::ErrorType MMF::AbstractPlayer::errorType() const
 {
     const Phonon::ErrorType result = (ErrorState == m_state)
-                                     ? errorType() : NoError;
+                                     ? m_error : NoError;
     return result;
 }
 
 QString MMF::AbstractPlayer::errorString() const
 {
-    // TODO: put in proper error strings
-    QString result;
-    return result;
+    return m_errorString;
 }
 
 Phonon::State MMF::AbstractPlayer::phononState() const
@@ -171,6 +164,30 @@ Phonon::State MMF::AbstractPlayer::state() const
 void MMF::AbstractPlayer::setState(PrivateState newState)
 {
     m_state = newState;
+}
+
+void MMF::AbstractPlayer::changeState(PrivateState newState)
+{
+    TRACE_CONTEXT(AbstractPlayer::changeState, EAudioInternal);
+    TRACE_ENTRY("state %d newState %d", privateState(), newState);
+
+    // TODO: add some invariants to check that the transition is valid
+
+    const Phonon::State oldPhononState = phononState(privateState());
+
+    // We need to change the state before we emit stateChanged(), because
+    // some user code, for instance the mediaplayer, switch on MediaObject's
+    // state.
+    setState(newState);
+
+    const Phonon::State newPhononState = phononState(newState);
+
+    if (oldPhononState != newPhononState) {
+        TRACE("emit stateChanged(%d, %d)", newPhononState, oldPhononState);
+        emit stateChanged(newPhononState, oldPhononState);
+    }
+
+    TRACE_EXIT_0();
 }
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,14 +61,15 @@ typedef void (*_qt_image_cleanup_hook_64)(qint64);
 typedef void (*_qt_pixmap_cleanup_hook_pm)(QPixmap*);
 
 class QImagePixmapCleanupHooks;
-extern QImagePixmapCleanupHooks* qt_image_and_pixmap_cleanup_hooks;
 
 class Q_GUI_EXPORT QImagePixmapCleanupHooks
 {
 public:
-    QImagePixmapCleanupHooks();
-
     static QImagePixmapCleanupHooks *instance();
+
+    static void enableCleanupHooks(const QImage &image);
+    static void enableCleanupHooks(const QPixmap &pixmap);
+    static void enableCleanupHooks(QPixmapData *pixmapData);
 
     // Gets called when a pixmap is about to be modified:
     void addPixmapModificationHook(_qt_pixmap_cleanup_hook_pm);

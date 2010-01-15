@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -199,7 +199,7 @@ void PvrEglWindowSurface::setDirectRegion(const QRegion &r, int id)
 
     if (region.isEmpty()) {
         pvrQwsClearVisibleRegion(drawable);
-    } else if (region.numRects() == 1) {
+    } else if (region.rectCount() == 1) {
         QRect rect = region.boundingRect();
         PvrQwsRect pvrRect;
         pvrRect.x = rect.x();

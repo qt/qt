@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -357,7 +357,7 @@ void tst_QXmlSchema::messageHandler() const
 
         QXmlSchema schema;
         schema.setMessageHandler(&handler);
-        QCOMPARE(schema.messageHandler(), &handler);
+        QCOMPARE(schema.messageHandler(), static_cast<QAbstractMessageHandler *>(&handler));
     }
 }
 
@@ -394,7 +394,7 @@ void tst_QXmlSchema::uriResolver() const
 
         QXmlSchema schema;
         schema.setUriResolver(&resolver);
-        QCOMPARE(schema.uriResolver(), &resolver);
+        QCOMPARE(schema.uriResolver(), static_cast<const QAbstractUriResolver *>(&resolver));
     }
 }
 

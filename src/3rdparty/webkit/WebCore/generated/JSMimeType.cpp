@@ -131,7 +131,7 @@ JSMimeType::JSMimeType(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSMimeType::~JSMimeType()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSMimeType::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

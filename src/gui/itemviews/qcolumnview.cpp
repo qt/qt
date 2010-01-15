@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -672,8 +672,8 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
     QAbstractItemView *view = 0;
     if (model->hasChildren(index)) {
         view = q->createColumn(index);
-        q->connect(view, SIGNAL(clicked(const QModelIndex &)),
-                   q, SLOT(_q_clicked(const QModelIndex &)));
+        q->connect(view, SIGNAL(clicked(QModelIndex)),
+                   q, SLOT(_q_clicked(QModelIndex)));
     } else {
         if (!previewColumn)
             setPreviewWidget(new QWidget(q));
@@ -681,16 +681,16 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
         view->setMinimumWidth(qMax(view->minimumWidth(), previewWidget->minimumWidth()));
     }
 
-    q->connect(view, SIGNAL(activated(const QModelIndex &)),
-            q, SIGNAL(activated(const QModelIndex &)));
-    q->connect(view, SIGNAL(clicked(const QModelIndex &)),
-            q, SIGNAL(clicked(const QModelIndex &)));
-    q->connect(view, SIGNAL(doubleClicked(const QModelIndex &)),
-            q, SIGNAL(doubleClicked(const QModelIndex &)));
-    q->connect(view, SIGNAL(entered(const QModelIndex &)),
-            q, SIGNAL(entered(const QModelIndex &)));
-    q->connect(view, SIGNAL(pressed(const QModelIndex &)),
-            q, SIGNAL(pressed(const QModelIndex &)));
+    q->connect(view, SIGNAL(activated(QModelIndex)),
+            q, SIGNAL(activated(QModelIndex)));
+    q->connect(view, SIGNAL(clicked(QModelIndex)),
+            q, SIGNAL(clicked(QModelIndex)));
+    q->connect(view, SIGNAL(doubleClicked(QModelIndex)),
+            q, SIGNAL(doubleClicked(QModelIndex)));
+    q->connect(view, SIGNAL(entered(QModelIndex)),
+            q, SIGNAL(entered(QModelIndex)));
+    q->connect(view, SIGNAL(pressed(QModelIndex)),
+            q, SIGNAL(pressed(QModelIndex)));
 
     view->setFocusPolicy(Qt::NoFocus);
     view->setParent(viewport);

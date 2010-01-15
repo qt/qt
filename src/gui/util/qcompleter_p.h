@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -98,6 +98,7 @@ public:
     void _q_complete(QModelIndex, bool = false);
     void _q_completionSelected(const QItemSelection&);
     void _q_autoResizePopup();
+    void _q_fileSystemModelDirectoryLoaded(const QString &path);
     void setCurrentIndex(QModelIndex, bool = true);
 };
 

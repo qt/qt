@@ -21,6 +21,7 @@
 #define QGraphicsWebView_h
 
 #include "qwebkitglobal.h"
+#include "qwebpage.h"
 #include <QtCore/qurl.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qgraphicswidget.h>
@@ -39,17 +40,14 @@ class QWEBKIT_EXPORT QGraphicsWebView : public QGraphicsWidget {
 
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(QIcon icon READ icon NOTIFY iconChanged)
-    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
-    Q_PROPERTY(QString status READ status NOTIFY statusChanged)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
 
-    Q_PROPERTY(QString html READ toHtml WRITE setHtml)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
-    Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive NOTIFY interactivityChanged)
+    Q_PROPERTY(bool modified READ isModified)
 
 public:
-    QGraphicsWebView(QGraphicsItem* parent = 0);
+    explicit QGraphicsWebView(QGraphicsItem* parent = 0);
     ~QGraphicsWebView();
 
     QWebPage* page() const;
@@ -64,15 +62,11 @@ public:
     qreal zoomFactor() const;
     void setZoomFactor(qreal);
 
-    bool isInteractive() const;
-    void setInteractive(bool);
-
-    qreal progress() const;
+    bool isModified() const;
 
     void load(const QUrl &url);
     void load(const QNetworkRequest& request, QNetworkAccessManager::Operation operation = QNetworkAccessManager::GetOperation, const QByteArray& body = QByteArray());
 
-    QString toHtml() const;
     void setHtml(const QString& html, const QUrl& baseUrl = QUrl());
     // FIXME: Consider rename to setHtml?
     void setContent(const QByteArray& data, const QString& mimeType = QString(), const QUrl& baseUrl = QUrl());
@@ -80,12 +74,20 @@ public:
     QWebHistory* history() const;
     QWebSettings* settings() const;
 
-    QString status() const;
+    QAction* pageAction(QWebPage::WebAction action) const;
+    void triggerPageAction(QWebPage::WebAction action, bool checked = false);
+
+    bool findText(const QString& subString, QWebPage::FindFlags options = 0);
 
     virtual void setGeometry(const QRectF& rect);
     virtual void updateGeometry();
     virtual void paint(QPainter*, const QStyleOptionGraphicsItem* options, QWidget* widget = 0);
+    virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
     virtual bool event(QEvent*);
+
+    virtual QSizeF sizeHint(Qt::SizeHint which, const QSizeF& constraint) const;
+
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
 public Q_SLOTS:
     void stop();
@@ -97,13 +99,12 @@ Q_SIGNALS:
     void loadStarted();
     void loadFinished(bool);
 
-    void progressChanged(qreal);
-    void interactivityChanged();
+    void loadProgress(int progress);
     void urlChanged(const QUrl&);
     void titleChanged(const QString&);
     void iconChanged();
-    void statusChanged();
-    void zoomFactorChanged();
+    void statusBarMessage(const QString& message);
+    void linkClicked(const QUrl&);
 
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent*);
@@ -132,9 +133,7 @@ protected:
     virtual bool sceneEvent(QEvent*);
 
 private:
-    Q_PRIVATE_SLOT(d, void _q_doLoadProgress(int progress))
     Q_PRIVATE_SLOT(d, void _q_doLoadFinished(bool success))
-    Q_PRIVATE_SLOT(d, void _q_setStatusBarMessage(const QString& message))
 
     QGraphicsWebViewPrivate* const d;
     friend class QGraphicsWebViewPrivate;

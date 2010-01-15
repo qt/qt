@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -128,7 +128,7 @@ public:
 #ifdef QT_KEYPAD_NAVIGATION
     void _q_editFocusChange(bool);
 #endif
-
+    void _q_selectionChanged();
 #ifndef QT_NO_COMPLETER
     void _q_completionHighlighted(QString);
 #endif
@@ -142,6 +142,8 @@ public:
     int topTextMargin;
     int rightTextMargin;
     int bottomTextMargin;
+
+    QString placeholderText;
 };
 
 #endif // QT_NO_LINEEDIT

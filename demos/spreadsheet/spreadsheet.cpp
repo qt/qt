@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,9 +73,9 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
     setCentralWidget(table);
 
     statusBar();
-    connect(table, SIGNAL(currentItemChanged(QTableWidgetItem*, QTableWidgetItem*)),
+    connect(table, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
             this, SLOT(updateStatus(QTableWidgetItem*)));
-    connect(table, SIGNAL(currentItemChanged(QTableWidgetItem*, QTableWidgetItem*)),
+    connect(table, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
             this, SLOT(updateColor(QTableWidgetItem*)));
     connect(table, SIGNAL(currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)),
             this, SLOT(updateLineEdit(QTableWidgetItem*)));
@@ -624,8 +624,8 @@ void SpreadSheet::print()
     QPrintPreviewDialog dlg(&printer);
     PrintView view;
     view.setModel(table->model());
-    connect(&dlg, SIGNAL(paintRequested(QPrinter *)),
-            &view, SLOT(print(QPrinter *)));
+    connect(&dlg, SIGNAL(paintRequested(QPrinter*)),
+            &view, SLOT(print(QPrinter*)));
     dlg.exec();
 #endif
 }

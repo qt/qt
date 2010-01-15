@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -111,7 +111,7 @@ protected:
 };
 #endif // QT_NO_TOOLBUTTON
 
-class QAccessibleDisplay : public QAccessibleWidgetEx
+class QAccessibleDisplay : public QAccessibleWidgetEx, public QAccessibleImageInterface
 {
     Q_ACCESSIBLE_OBJECT
 public:
@@ -122,6 +122,11 @@ public:
 
     Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
     int navigate(RelationFlag, int entry, QAccessibleInterface **target) const;
+
+    // QAccessibleImageInterface
+    QString imageDescription();
+    QSize imageSize();
+    QRect imagePosition(QAccessible2::CoordinateType coordType);
 };
 
 #ifndef QT_NO_LINEEDIT

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,7 +93,7 @@ void TrackBall::move(const QPointF& p, const QQuaternion &transformation)
             QLineF delta(m_lastPos, p);
             m_angularVelocity = 180*delta.length() / (PI*msecs);
             m_axis = QVector3D(-delta.dy(), delta.dx(), 0.0f).normalized();
-            m_axis = transformation.rotateVector(m_axis);
+            m_axis = transformation.rotatedVector(m_axis);
             m_rotation = QQuaternion::fromAxisAndAngle(m_axis, 180 / PI * delta.length()) * m_rotation;
         }
         break;
@@ -118,7 +118,7 @@ void TrackBall::move(const QPointF& p, const QQuaternion &transformation)
 
             m_angularVelocity = angle / msecs;
             m_axis.normalize();
-            m_axis = transformation.rotateVector(m_axis);
+            m_axis = transformation.rotatedVector(m_axis);
             m_rotation = QQuaternion::fromAxisAndAngle(m_axis, angle) * m_rotation;
         }
         break;

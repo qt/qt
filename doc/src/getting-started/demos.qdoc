@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -163,4 +163,31 @@
 
     \note The Phonon demos are currently not available for the MinGW platform.
 
+    \section1 Animation
+
+    \list
+    \o \l{demos/sub-attaq}{Sub-Attaq} demonstrates the features of the
+       \l{The Animation Framework}{animation framework} and
+       \l{The State Machine Framework}{state machine framework} in the production of
+       a simple game.
+    \endlist
+
+    \section1 Embedded Platforms
+
+    \list
+    \o \l{demos/embedded/anomaly}{Anomaly} is a small screen browser with kinetic scrolling.
+    \o \l{demos/embedded/desktopservices}{Embedded Desktop Services} shows how to open
+       documents using the applications associated with their file types.
+    \o \l{demos/embedded/digiflip}{Digiflip} is a digital watch with transition effects.
+    \o \l{demos/embedded/embeddedsvgviewer}{Embedded SVG Viewer} shows how to display SVG
+       drawings on embedded devices.
+    \o \l{demos/embedded/flickable}{Flickable List} shows how to display a list with kinetic scrolling.
+    \o \l{demos/embedded/flightinfo}{Flight Info} fetches information about aircraft flights from the Web.
+    \o \l{demos/embedded/fluidlauncher}{Fluid Launcher} demo application launcher for embedded screens
+    \o \l{demos/embedded/lightmaps}{Light Maps} demonstrates OpenStreetMap integration with WebKit.
+    \o \l{demos/embedded/raycasting}{Ray Casting} demonstrates the use of ray casting with the
+       \l{The Graphics View Framework}{Graphics View} framework.
+    \o \l{demos/embedded/styledemo}{Embedded Styles} demonstrates the use of styles.
+    \o \l{demos/embedded/weatherinfo}{Weather Info} fetches weather information from the Web.
+    \endlist
 */

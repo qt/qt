@@ -6,7 +6,7 @@
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA 
+    successor approved by the membership of KDE e.V.), Nokia Corporation 
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -195,13 +195,6 @@ and existing builds. */
         public:
             Q_OBJECT_CHECK
 
-/* MinGW 3.4.x gives an ICE when trying to instantiate one of the
-   ObjectDescriptionModel<foo> classes because it can't handle
-   half exported classes correct. gcc 4.3.x has a fix for this but
-   we currently there's no official gcc 4.3 on windows available.
-   Because of this we need this little hack
- */
-#if !defined(Q_CC_MINGW) || __MINGW32_MAJOR_VERSION >= 4
             /** \internal */
             static PHONON_TEMPLATE_CLASS_MEMBER_EXPORT const QMetaObject staticMetaObject;
             /** \internal */
@@ -209,7 +202,6 @@ and existing builds. */
             /** \internal */
             PHONON_TEMPLATE_CLASS_MEMBER_EXPORT void *qt_metacast(const char *_clname);
             //int qt_metacall(QMetaObject::Call _c, int _id, void **_a);
-#endif
 
             /**
              * Returns the number of rows in the model. This value corresponds

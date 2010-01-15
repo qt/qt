@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,10 +66,6 @@
 #include <ctype.h>
 #include <limits.h>
 #define SECURITY_WIN32
-#ifdef Q_CC_MINGW
-// A workaround for a certain version of MinGW, the define UNICODE_STRING.
-#include <subauth.h>
-#endif
 #include <security.h>
 
 #ifndef _INTPTR_T_DEFINED
@@ -181,7 +177,7 @@ void QFSFileEnginePrivate::resolveLibs()
 
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE advapiHnd = LoadLibraryW(L"advapi32");
+        HINSTANCE advapiHnd = LoadLibrary(L"advapi32");
         if (advapiHnd) {
             ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
             ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
@@ -213,7 +209,7 @@ void QFSFileEnginePrivate::resolveLibs()
                 ptrFreeSid(pWorld);
             }
         }
-        HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
+        HINSTANCE userenvHnd = LoadLibrary(L"userenv");
         if (userenvHnd)
             ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
 #endif
@@ -221,7 +217,6 @@ void QFSFileEnginePrivate::resolveLibs()
 }
 #endif // QT_NO_LIBRARY
 
-// UNC functions NT
 typedef DWORD (WINAPI *PtrNetShareEnum)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
 static PtrNetShareEnum ptrNetShareEnum = 0;
 typedef DWORD (WINAPI *PtrNetApiBufferFree)(LPVOID);
@@ -245,7 +240,7 @@ bool QFSFileEnginePrivate::resolveUNCLibs()
 #endif
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE hLib = LoadLibraryW(L"Netapi32");
+        HINSTANCE hLib = LoadLibrary(L"netapi32");
         if (hLib) {
             ptrNetShareEnum = (PtrNetShareEnum)GetProcAddress(hLib, "NetShareEnum");
             if (ptrNetShareEnum)
@@ -455,17 +450,10 @@ bool QFSFileEnginePrivate::nativeClose()
 
     // Windows native mode.
     bool ok = true;
-    if ((fileHandle == INVALID_HANDLE_VALUE || !CloseHandle(fileHandle))
-#ifdef Q_USE_DEPRECATED_MAP_API
-            && (fileMapHandle == INVALID_HANDLE_VALUE || !CloseHandle(fileMapHandle))
-#endif
-        ) {
+    if ((fileHandle == INVALID_HANDLE_VALUE || !::CloseHandle(fileHandle))) {
         q->setError(QFile::UnspecifiedError, qt_error_string());
         ok = false;
     }
-#ifdef Q_USE_DEPRECATED_MAP_API
-    fileMapHandle = INVALID_HANDLE_VALUE;
-#endif
     fileHandle = INVALID_HANDLE_VALUE;
     cachedFd = -1;              // gets closed by CloseHandle above
 
@@ -504,14 +492,30 @@ qint64 QFSFileEnginePrivate::nativeSize() const
     // ### Don't flush; for buffered files, we should get away with ftell.
     thatQ->flush();
 
+#if !defined(Q_OS_WINCE)
+    // stdlib/stdio mode.
+    if (fh || fd != -1) {
+        qint64 fileSize = _filelengthi64(fh ? QT_FILENO(fh) : fd);
+        if (fileSize == -1) {
+            fileSize = 0;
+            thatQ->setError(QFile::UnspecifiedError, qt_error_string(errno));
+        }
+        return fileSize;
+    }
+#else // Q_OS_WINCE
     // Buffered stdlib mode.
     if (fh) {
         QT_OFF_T oldPos = QT_FTELL(fh);
         QT_FSEEK(fh, 0, SEEK_END);
-        QT_OFF_T fileSize = QT_FTELL(fh);
+        qint64 fileSize = (qint64)QT_FTELL(fh);
         QT_FSEEK(fh, oldPos, SEEK_SET);
-        return qint64(fileSize);
+        if (fileSize == -1) {
+            fileSize = 0;
+            thatQ->setError(QFile::UnspecifiedError, qt_error_string(errno));
+        }
+        return fileSize;
     }
+#endif
 
     // Not-open mode, where the file name is known: We'll check the
     // file system directly.
@@ -551,23 +555,13 @@ qint64 QFSFileEnginePrivate::nativeSize() const
         return 0;
     }
 
-    // Unbuffed stdio mode.
-    if(fd != -1) {
-#if !defined(Q_OS_WINCE)
-        HANDLE handle = (HANDLE)_get_osfhandle(fd);
-        if (handle != INVALID_HANDLE_VALUE) {
-            BY_HANDLE_FILE_INFORMATION fileInfo;
-            if (GetFileInformationByHandle(handle, &fileInfo)) {
-                qint64 size = fileInfo.nFileSizeHigh;
-                size <<= 32;
-                size += fileInfo.nFileSizeLow;
-                return size;
-            }
-        }
-#endif
-        thatQ->setError(QFile::UnspecifiedError, qt_error_string());
+#if defined(Q_OS_WINCE)
+    // Unbuffed stdio mode
+    if (fd != -1) {
+        thatQ->setError(QFile::UnspecifiedError, QLatin1String("Not implemented!"));
         return 0;
     }
+#endif
 
     // Windows native mode.
     if (fileHandle == INVALID_HANDLE_VALUE)
@@ -799,27 +793,18 @@ int QFSFileEnginePrivate::nativeHandle() const
 bool QFSFileEnginePrivate::nativeIsSequential() const
 {
 #if !defined(Q_OS_WINCE)
-    // stdlib / Windows native mode.
-    if (fh || fileHandle != INVALID_HANDLE_VALUE) {
-        if (fh == stdin || fh == stdout || fh == stderr)
-            return true;
+    HANDLE handle = fileHandle;
+    if (fh || fd != -1)
+        handle = (HANDLE)_get_osfhandle(fh ? QT_FILENO(fh) : fd);
+    if (handle == INVALID_HANDLE_VALUE)
+        return false;
 
-        HANDLE handle = fileHandle;
-        if (fileHandle == INVALID_HANDLE_VALUE) {
-            // Rare case: using QFile::open(FILE*) to open a pipe.
-            handle = (HANDLE)_get_osfhandle(QT_FILENO(fh));
-            return false;
-        }
-
-        DWORD fileType = GetFileType(handle);
-        return fileType == FILE_TYPE_PIPE;
-    }
-
-    // stdio mode.
-    if (fd != -1)
-        return isSequentialFdFh();
-#endif
+    DWORD fileType = GetFileType(handle);
+    return (fileType == FILE_TYPE_CHAR)
+            || (fileType == FILE_TYPE_PIPE);
+#else
     return false;
+#endif
 }
 
 bool QFSFileEngine::remove()
@@ -1052,11 +1037,11 @@ QString QFSFileEngine::homePath()
         if (ok) {
             DWORD dwBufferSize = 0;
             // First call, to determine size of the strings (with '\0').
-            ok = ::ptrGetUserProfileDirectoryW(token, NULL, &dwBufferSize);
+            ok = ptrGetUserProfileDirectoryW(token, NULL, &dwBufferSize);
             if (!ok && dwBufferSize != 0) {        // We got the required buffer size
                 wchar_t *userDirectory = new wchar_t[dwBufferSize];
                 // Second call, now we can fill the allocated buffer.
-                ok = ::ptrGetUserProfileDirectoryW(token, userDirectory, &dwBufferSize);
+                ok = ptrGetUserProfileDirectoryW(token, userDirectory, &dwBufferSize);
                 if (ok)
                     ret = QString::fromWCharArray(userDirectory);
 
@@ -1428,23 +1413,21 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
     QAbstractFileEngine::FileFlags ret = 0;
 
 #if !defined(QT_NO_LIBRARY)
-    if((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
-        PSID pOwner = 0;
-        PSID pGroup = 0;
-        PACL pDacl;
-        PSECURITY_DESCRIPTOR pSD;
-        ACCESS_MASK access_mask;
-
-        enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
+    if((qt_ntfs_permission_lookup > 0) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
         resolveLibs();
         if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
+            enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
 
             QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+            PSID pOwner = 0;
+            PSID pGroup = 0;
+            PACL pDacl;
+            PSECURITY_DESCRIPTOR pSD;
             DWORD res = ptrGetNamedSecurityInfoW((wchar_t*)fname.utf16(), SE_FILE_OBJECT,
                                                  OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
                                                  &pOwner, &pGroup, &pDacl, 0, &pSD);
-
             if(res == ERROR_SUCCESS) {
+                ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
                 { //user
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
@@ -1605,13 +1588,10 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
         ret |= LocalDiskFlag;
         if (d->doStat()) {
             ret |= ExistsFlag;
-            if (d->filePath == QLatin1String("/") || isDriveRoot(d->filePath) || isUncRoot(d->filePath)) {
+            if (d->filePath == QLatin1String("/") || isDriveRoot(d->filePath) || isUncRoot(d->filePath))
                 ret |= RootFlag;
-            } else if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN) {
-                QString baseName = fileName(BaseName);
-                if (baseName != QLatin1String(".") && baseName != QLatin1String(".."))
-                    ret |= HiddenFlag;
-            }
+            else if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN)
+                ret |= HiddenFlag;
         }
     }
     return ret;
@@ -1733,40 +1713,50 @@ uint QFSFileEngine::ownerId(FileOwner /*own*/) const
 
 QString QFSFileEngine::owner(FileOwner own) const
 {
+    QString name;
 #if !defined(QT_NO_LIBRARY)
     Q_D(const QFSFileEngine);
-    if((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
-	PSID pOwner = 0;
-	PSECURITY_DESCRIPTOR pSD;
-	QString name;
-	QFSFileEnginePrivate::resolveLibs();
-
-	if(ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
-	    if(ptrGetNamedSecurityInfoW((wchar_t*)d->filePath.utf16(), SE_FILE_OBJECT,
-					 own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
-					 NULL, &pOwner, NULL, NULL, &pSD) == ERROR_SUCCESS) {
-		DWORD lowner = 0, ldomain = 0;
-		SID_NAME_USE use;
-		// First call, to determine size of the strings (with '\0').
-		ptrLookupAccountSidW(NULL, pOwner, NULL, &lowner, NULL, &ldomain, (SID_NAME_USE*)&use);
-		wchar_t *owner = new wchar_t[lowner];
-		wchar_t *domain = new wchar_t[ldomain];
-		// Second call, size is without '\0'
-		if(ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner, &lowner,
-					 (LPWSTR)domain, &ldomain, (SID_NAME_USE*)&use)) {
-		    name = QString::fromUtf16((ushort*)owner);
-		}
-		LocalFree(pSD);
-		delete [] owner;
-		delete [] domain;
-	    }
-	}
-	return name;
+    if((qt_ntfs_permission_lookup > 0) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
+        QFSFileEnginePrivate::resolveLibs();
+        if (ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
+            PSID pOwner = 0;
+            PSECURITY_DESCRIPTOR pSD;
+            if (ptrGetNamedSecurityInfoW((wchar_t*)d->filePath.utf16(), SE_FILE_OBJECT,
+                                         own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
+                                         own == OwnerUser ? &pOwner : 0, own == OwnerGroup ? &pOwner : 0,
+                                         0, 0, &pSD) == ERROR_SUCCESS) {
+                DWORD lowner = 64;
+                DWORD ldomain = 64;
+                QVarLengthArray<wchar_t, 64> owner(lowner);
+                QVarLengthArray<wchar_t, 64> domain(ldomain);
+                SID_NAME_USE use = SidTypeUnknown;
+                // First call, to determine size of the strings (with '\0').
+                if (!ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
+                                          (LPWSTR)domain.data(), &ldomain, (SID_NAME_USE*)&use)) {
+                    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+                        if (lowner > (DWORD)owner.size())
+                            owner.resize(lowner);
+                        if (ldomain > (DWORD)domain.size())
+                            domain.resize(ldomain);
+                        // Second call, try on resized buf-s
+                        if (!ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
+                                                  (LPWSTR)domain.data(), &ldomain, (SID_NAME_USE*)&use)) {
+                            lowner = 0;
+                        }
+                    } else {
+                        lowner = 0;
+                    }
+                }
+                if (lowner != 0)
+                    name = QString::fromWCharArray(owner.data());
+                LocalFree(pSD);
+            }
+        }
     }
 #else
     Q_UNUSED(own);
 #endif
-    return QString();
+    return name;
 }
 
 bool QFSFileEngine::setPermissions(uint perms)
@@ -1931,42 +1921,42 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
         return 0;
     }
 
+    if (mapHandle == INVALID_HANDLE_VALUE) {
+        // get handle to the file
+        HANDLE handle = fileHandle;
 
-    // get handle to the file
-    HANDLE handle = fileHandle;
 #ifndef Q_OS_WINCE
-    if (handle == INVALID_HANDLE_VALUE && fh)
-        handle = (HANDLE)_get_osfhandle(QT_FILENO(fh));
+        if (handle == INVALID_HANDLE_VALUE && fh)
+            handle = (HANDLE)::_get_osfhandle(QT_FILENO(fh));
 #endif
 
 #ifdef Q_USE_DEPRECATED_MAP_API
-    if (fileMapHandle == INVALID_HANDLE_VALUE) {
         nativeClose();
-        fileMapHandle = CreateFileForMapping((const wchar_t*)nativeFilePath.constData(),
+        // handle automatically closed by kernel with mapHandle (below).
+        handle = ::CreateFileForMapping((const wchar_t*)nativeFilePath.constData(),
                 GENERIC_READ | (openMode & QIODevice::WriteOnly ? GENERIC_WRITE : 0),
                 0,
                 NULL,
                 OPEN_EXISTING,
                 FILE_ATTRIBUTE_NORMAL,
                 NULL);
-    }
-    handle = fileMapHandle;
 #endif
 
-    if (handle == INVALID_HANDLE_VALUE) {
-        q->setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
-        return 0;
-    }
+        if (handle == INVALID_HANDLE_VALUE) {
+            q->setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
+            return 0;
+        }
 
-    // first create the file mapping handle
-    DWORD protection = (openMode & QIODevice::WriteOnly) ? PAGE_READWRITE : PAGE_READONLY;
-    HANDLE mapHandle = ::CreateFileMapping(handle, 0, protection, 0, 0, 0);
-    if (mapHandle == NULL) {
-        q->setError(QFile::PermissionsError, qt_error_string());
+        // first create the file mapping handle
+        DWORD protection = (openMode & QIODevice::WriteOnly) ? PAGE_READWRITE : PAGE_READONLY;
+        mapHandle = ::CreateFileMapping(handle, 0, protection, 0, 0, 0);
+        if (mapHandle == INVALID_HANDLE_VALUE) {
+            q->setError(QFile::PermissionsError, qt_error_string());
 #ifdef Q_USE_DEPRECATED_MAP_API
-        mapHandleClose();
+            ::CloseHandle(handle);
 #endif
-        return 0;
+            return 0;
+        }
     }
 
     // setup args to map
@@ -1978,17 +1968,17 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
     DWORD offsetLo = offset & Q_UINT64_C(0xffffffff);
     SYSTEM_INFO sysinfo;
     ::GetSystemInfo(&sysinfo);
-    int mask = sysinfo.dwAllocationGranularity - 1;
-    int extra = offset & mask;
+    DWORD mask = sysinfo.dwAllocationGranularity - 1;
+    DWORD extra = offset & mask;
     if (extra)
         offsetLo &= ~mask;
 
     // attempt to create the map
-    LPVOID mapAddress = MapViewOfFile(mapHandle, access,
+    LPVOID mapAddress = ::MapViewOfFile(mapHandle, access,
                                       offsetHi, offsetLo, size + extra);
     if (mapAddress) {
         uchar *address = extra + static_cast<uchar*>(mapAddress);
-        maps[address] = QPair<int, HANDLE>(extra, mapHandle);
+        maps[address] = extra;
         return address;
     }
 
@@ -2001,10 +1991,8 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
     default:
         q->setError(QFile::UnspecifiedError, qt_error_string());
     }
-    CloseHandle(mapHandle);
-#ifdef Q_USE_DEPRECATED_MAP_API
-    mapHandleClose();
-#endif
+
+    ::CloseHandle(mapHandle);
     return 0;
 }
 
@@ -2015,32 +2003,19 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
         q->setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
         return false;
     }
-    uchar *start = ptr - maps[ptr].first;
+    uchar *start = ptr - maps[ptr];
     if (!UnmapViewOfFile(start)) {
         q->setError(QFile::PermissionsError, qt_error_string());
         return false;
     }
 
-    if (!CloseHandle((HANDLE)maps[ptr].second)) {
-        q->setError(QFile::UnspecifiedError, qt_error_string());
-        return false;
-    }
     maps.remove(ptr);
+    if (maps.isEmpty()) {
+        ::CloseHandle(mapHandle);
+        mapHandle = INVALID_HANDLE_VALUE;
+    }
 
-#ifdef Q_USE_DEPRECATED_MAP_API
-    mapHandleClose();
-#endif
     return true;
 }
-
-#ifdef Q_USE_DEPRECATED_MAP_API
-void QFSFileEnginePrivate::mapHandleClose()
-{
-    if (maps.isEmpty()) {
-        CloseHandle(fileMapHandle);
-        fileMapHandle = INVALID_HANDLE_VALUE;
-    }
-}
-#endif
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -563,7 +563,7 @@ QString QSqlRelationalTableModel::selectStatement() const
 
             // If there are duplicate field names they must be aliased
             if (fieldNames.value(fieldList[i]) > 1) {
-                QString relTableName = relation.tableName();
+                QString relTableName = relation.tableName().section(QChar::fromLatin1('.'), -1, -1);
                 if (d->db.driver()->isIdentifierEscaped(relTableName, QSqlDriver::TableName))
                     relTableName = d->db.driver()->stripDelimiters(relTableName, QSqlDriver::TableName);
                 QString displayColumn = relation.displayColumn();

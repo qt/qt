@@ -30,6 +30,7 @@
 #include "RenderArena.h"
 #include "RenderBlock.h"
 #include "RenderView.h"
+#include "TransformState.h"
 #include "VisiblePosition.h"
 
 #if ENABLE(DASHBOARD_SUPPORT)
@@ -51,15 +52,18 @@ RenderInline::RenderInline(Node* node)
 
 void RenderInline::destroy()
 {
-    // Detach our continuation first.
-    if (m_continuation)
-        m_continuation->destroy();
-    m_continuation = 0;
-    
     // Make sure to destroy anonymous children first while they are still connected to the rest of the tree, so that they will
     // properly dirty line boxes that they are removed from.  Effects that do :before/:after only on hover could crash otherwise.
     children()->destroyLeftoverChildren();
 
+    // Destroy our continuation before anything other than anonymous children.
+    // The reason we don't destroy it before anonymous children is that they may
+    // have continuations of their own that are anonymous children of our continuation.
+    if (m_continuation) {
+        m_continuation->destroy();
+        m_continuation = 0;
+    }
+    
     if (!documentBeingDestroyed()) {
         if (firstLineBox()) {
             // We can't wait for RenderBoxModelObject::destroy to clear the selection,
@@ -703,6 +707,92 @@ void RenderInline::computeRectForRepaint(RenderBoxModelObject* repaintContainer,
     }
     
     o->computeRectForRepaint(repaintContainer, rect, fixed);
+}
+
+IntSize RenderInline::offsetFromContainer(RenderObject* container) const
+{
+    ASSERT(container == this->container());
+
+    IntSize offset;    
+    if (isRelPositioned())
+        offset += relativePositionOffset();
+
+    if (!isInline() || isReplaced()) {
+        RenderBlock* cb;
+        if (container->isBlockFlow() && (cb = toRenderBlock(container))->hasColumns()) {
+            IntRect rect(0, 0, 1, 1);
+            cb->adjustRectForColumns(rect);
+        }
+    }
+
+    if (container->hasOverflowClip())
+        offset -= toRenderBox(container)->layer()->scrolledContentOffset();
+
+    return offset;
+}
+
+void RenderInline::mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool fixed, bool useTransforms, TransformState& transformState) const
+{
+    if (repaintContainer == this)
+        return;
+
+    if (RenderView *v = view()) {
+        if (v->layoutStateEnabled() && !repaintContainer) {
+            LayoutState* layoutState = v->layoutState();
+            IntSize offset = layoutState->m_offset;
+            if (style()->position() == RelativePosition && layer())
+                offset += layer()->relativePositionOffset();
+            transformState.move(offset);
+            return;
+        }
+    }
+
+    bool containerSkipped;
+    RenderObject* o = container(repaintContainer, &containerSkipped);
+    if (!o)
+        return;
+
+    IntSize containerOffset = offsetFromContainer(o);
+
+    bool preserve3D = useTransforms && (o->style()->preserves3D() || style()->preserves3D());
+    if (useTransforms && shouldUseTransformFromContainer(o)) {
+        TransformationMatrix t;
+        getTransformFromContainer(o, containerOffset, t);
+        transformState.applyTransform(t, preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+    } else
+        transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+
+    if (containerSkipped) {
+        // There can't be a transform between repaintContainer and o, because transforms create containers, so it should be safe
+        // to just subtract the delta between the repaintContainer and o.
+        IntSize containerOffset = repaintContainer->offsetFromAncestorContainer(o);
+        transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+        return;
+    }
+
+    o->mapLocalToContainer(repaintContainer, fixed, useTransforms, transformState);
+}
+
+void RenderInline::mapAbsoluteToLocalPoint(bool fixed, bool useTransforms, TransformState& transformState) const
+{
+    // We don't expect this function to be called during layout.
+    ASSERT(!view() || !view()->layoutStateEnabled());
+
+    RenderObject* o = container();
+    if (!o)
+        return;
+
+    o->mapAbsoluteToLocalPoint(fixed, useTransforms, transformState);
+
+    IntSize containerOffset = offsetFromContainer(o);
+
+    bool preserve3D = useTransforms && (o->style()->preserves3D() || style()->preserves3D());
+    if (useTransforms && shouldUseTransformFromContainer(o)) {
+        TransformationMatrix t;
+        getTransformFromContainer(o, containerOffset, t);
+        transformState.applyTransform(t, preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+    } else
+        transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
 }
 
 void RenderInline::updateDragState(bool dragOn)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,7 +56,7 @@
 #include "qcompleter.h"
 #include <QtGui/qfilesystemmodel.h>
 QT_BEGIN_NAMESPACE
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
 
 /*!
     QCompleter that can deal with QFileSystemModel
@@ -76,7 +76,7 @@ public:
     QAbstractProxyModel *proxyModel;
     QFileSystemModel *sourceModel;
 };
-#endif // QT_NO_COMPLETER
+#endif // QT_NO_FSCOMPLETER
 QT_END_NAMESPACE
 #endif // QFSCOMPLETOR_P_H
 

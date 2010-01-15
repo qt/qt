@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,6 +58,10 @@
 #include <QtCore/qtimer.h>
 #include <private/qobject_p.h>
 
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif
+
 #ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
@@ -109,6 +113,61 @@ private:
     Q_DECLARE_PUBLIC(QAbstractAnimation)
 };
 
+class ElapsedTimer
+{
+public:
+    ElapsedTimer() {
+        invalidate();
+    }
+
+    void invalidate() {
+        m_started = -1;
+    }
+
+    bool isValid() const {
+        return m_started >= 0;
+    }
+
+    void start() {
+        m_started = getTickCount_sys();
+    }
+
+    qint64 elapsed() const {
+        qint64 current = getTickCount_sys();
+        qint64 delta = current - m_started;
+        if (delta < 0)
+            delta += getPeriod_sys();   //we wrapped around
+        return delta;
+    }
+
+private:
+    enum {
+        MSECS_PER_HOUR = 3600000,
+        MSECS_PER_MIN = 60000
+    };
+
+    qint64 m_started;
+
+    quint64 getPeriod_sys() const {
+#ifdef Q_OS_WIN
+        return Q_UINT64_C(0x100000000);
+#else
+        // fallback
+        return 86400 * 1000;
+#endif
+    }
+
+    qint64 getTickCount_sys() const {
+#ifdef Q_OS_WIN
+        return ::GetTickCount();
+#else
+        // fallback
+        const QTime t = QTime::currentTime();
+        return MSECS_PER_HOUR * t.hour() + MSECS_PER_MIN * t.minute() + 1000 * t.second() + t.msec();
+#endif
+    }
+};
+
 
 class QUnifiedTimer : public QObject
 {
@@ -138,11 +197,14 @@ public:
     */
     void setConsistentTiming(bool consistent) { consistentTiming = consistent; }
 
+    //this facilitates fine-tuning of complex animations
+    void setSlowModeEnabled(bool enabled) { slowMode = enabled; }
+
     /*
         this is used for updating the currentTime of all animations in case the pause
         timer is active or, otherwise, only of the animation passed as parameter.
     */
-    void ensureTimerUpdate(QAbstractAnimation *animation);
+    void ensureTimerUpdate();
 
     /*
         this will evaluate the need of restarting the pause timer in case there is still
@@ -159,11 +221,13 @@ private:
     // timer used to delay the check if we should start/stop the animation timer
     QBasicTimer startStopAnimationTimer;
 
-    QTime time;
+    ElapsedTimer time;
+
     int lastTick;
     int timingInterval;
     int currentAnimationIdx;
     bool consistentTiming;
+    bool slowMode;
     // bool to indicate that only pause animations are active
     bool isPauseTimerActive;
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,32 +40,32 @@
 ****************************************************************************/
 
 //! [0]
-QGLShader shader(QGLShader::VertexShader);
-shader.compile(code);
+QGLShader shader(QGLShader::Vertex);
+shader.compileSourceCode(code);
 
 QGLShaderProgram program(context);
 program.addShader(shader);
 program.link();
 
-program.enable();
+program.bind();
 //! [0]
 
 //! [1]
-program.addShader(QGLShader::VertexShader,
+program.addShaderFromSourceCode(QGLShader::Vertex,
     "attribute highp vec4 vertex;\n"
     "attribute mediump mat4 matrix;\n"
     "void main(void)\n"
     "{\n"
     "   gl_Position = matrix * vertex;\n"
     "}");
-program.addShader(QGLShader::FragmentShader,
+program.addShaderFromSourceCode(QGLShader::Fragment,
     "uniform mediump vec4 color;\n"
     "void main(void)\n"
     "{\n"
     "   gl_FragColor = color;\n"
     "}");
 program.link();
-program.enable();
+program.bind();
 
 int vertexLocation = program.attributeLocation("vertex");
 int matrixLocation = program.attributeLocation("matrix");
@@ -84,9 +84,12 @@ QColor color(0, 255, 0, 255);
 QMatrix4x4 pmvMatrix;
 pmvMatrix.ortho(rect());
 
+program.enableAttributeArray(vertexLocation);
 program.setAttributeArray(vertexLocation, triangleVertices, 3);
 program.setUniformValue(matrixLocation, pmvMatrix);
 program.setUniformValue(colorLocation, color);
 
 glDrawArrays(GL_TRIANGLES, 0, 3);
+
+program.disableAttributeArray(vertexLocation);
 //! [2]

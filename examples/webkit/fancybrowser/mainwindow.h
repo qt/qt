@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,7 +52,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(const QUrl& url);
 
 protected slots:
 
@@ -62,8 +62,11 @@ protected slots:
     void setProgress(int p);
     void finishLoading(bool);
 
+    void viewSource();
+    void slotSourceDownloaded();
+
     void highlightAllLinks();
-    void rotateImages(bool toggle);
+    void rotateImages(bool invert);
     void removeGifImages();
     void removeInlineFrames();
     void removeObjectElements();
@@ -73,6 +76,7 @@ private:
     QString jQuery;
     QWebView *view;
     QLineEdit *locationEdit;
+    QAction *rotateAction;
     int progress;
 //! [1]
 };

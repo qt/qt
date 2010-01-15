@@ -136,7 +136,7 @@ JSStyleSheet::JSStyleSheet(NonNullPassRefPtr<Structure> structure, JSDOMGlobalOb
 
 JSStyleSheet::~JSStyleSheet()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSStyleSheet::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

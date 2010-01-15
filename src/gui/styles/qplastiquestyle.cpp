@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1094,8 +1094,6 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     QColor borderColor = option->palette.background().color().darker(178);
     QColor gradientStartColor = option->palette.button().color().lighter(104);
     QColor gradientStopColor = option->palette.button().color().darker(105);
-    QColor baseGradientStartColor = option->palette.base().color().darker(101);
-    QColor baseGradientStopColor = option->palette.base().color().darker(106);
     QColor highlightedGradientStartColor = option->palette.button().color().lighter(101);
     QColor highlightedGradientStopColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 85);
     QColor highlightedBaseGradientStartColor = option->palette.base().color();
@@ -1978,7 +1976,13 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
             QRect gradientRect(adjustedRect.left() + 1, adjustedRect.top() + 1,
                                adjustedRect.right() - adjustedRect.left() - 1,
                                adjustedRect.bottom() - adjustedRect.top() - 1);
-            qt_plastique_draw_gradient(painter, gradientRect, baseGradientStartColor, baseGradientStopColor);
+            if (option->palette.base().style() == Qt::SolidPattern) {
+                QColor baseGradientStartColor = option->palette.base().color().darker(101);
+                QColor baseGradientStopColor = option->palette.base().color().darker(106);
+                qt_plastique_draw_gradient(painter, gradientRect, baseGradientStartColor, baseGradientStopColor);
+            } else {
+                painter->fillRect(gradientRect, option->palette.base());
+            }
             // draw "+" or "-"
             painter->setPen(alphaTextColor);
             painter->drawLine(center.x() - 2, center.y(), center.x() + 2, center.y());
@@ -5513,9 +5517,6 @@ int QPlastiqueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_MenuVMargin:
     case PM_MenuHMargin:
         ret = 0;
-        break;
-    case PM_ToolBarIconSize:
-        ret = 24;
         break;
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:

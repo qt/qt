@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,8 +59,8 @@ public:
 class ThreeFingerSlideGestureRecognizer : public QGestureRecognizer
 {
 private:
-    QGesture* createGesture(QObject *target);
-    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
     void reset(QGesture *state);
 };
 
@@ -70,8 +70,8 @@ public:
     RotateGestureRecognizer();
 
 private:
-    QGesture* createGesture(QObject *target);
-    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
     void reset(QGesture *state);
 };
 

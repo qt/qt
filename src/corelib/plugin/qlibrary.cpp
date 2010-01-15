@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -629,6 +629,22 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
                      .arg((QT_VERSION & 0xff00) >> 8)
                      .arg(QLIBRARY_AS_DEBUG ? QLatin1String("debug") : QLatin1String("false"))
                      .arg(fileName);
+#ifdef Q_WS_MAC    
+    // On Mac, add the application arch to the reg key in order to
+    // cache plugin information separately for each arch. This prevents
+    // Qt from wrongly caching plugin load failures when the archs
+    // don't match.
+#if defined(__x86_64__)
+    regkey += QLatin1String("-x86_64");
+#elif defined(__i386__)
+    regkey += QLatin1String("-i386");
+#elif defined(__ppc64__)
+    regkey += QLatin1String("-ppc64");
+#elif defined(__ppc__)
+    regkey += QLatin1String("-ppc");
+#endif
+#endif // Q_WS_MAC
+    
     QStringList reg;
 #ifndef QT_NO_SETTINGS
     if (!settings) {
@@ -659,7 +675,10 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #endif
             if (!pHnd) {
 #ifdef Q_OS_WIN
+                //avoid 'Bad Image' message box
+                UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
                 hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, DONT_RESOLVE_DLL_REFERENCES);
+                SetErrorMode(oldmode);
 #else
 #  if defined(Q_OS_SYMBIAN)
                 //Guard against accidentally trying to load non-plugin libraries by making sure the stub exists
@@ -741,7 +760,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 
     pluginState = IsNotAPlugin; // be pessimistic
 
-    if ((qt_version > QT_VERSION) || ((QT_VERSION & 0xff0000) > (qt_version & 0xff0000))) {
+    if ((qt_version & 0x00ff00) > (QT_VERSION & 0x00ff00) || (qt_version & 0xff0000) != (QT_VERSION & 0xff0000)) {
         if (qt_debug_component()) {
             qWarning("In %s:\n"
                  "  Plugin uses incompatible Qt library (%d.%d.%d) [%s]",

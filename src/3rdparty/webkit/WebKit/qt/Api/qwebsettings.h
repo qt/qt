@@ -67,7 +67,6 @@ public:
         LocalStorageDatabaseEnabled = LocalStorageEnabled,
 #endif
         LocalContentCanAccessRemoteUrls,
-        SessionStorageEnabled,
         DnsPrefetchEnabled
     };
     enum WebGraphic {
@@ -103,18 +102,12 @@ public:
     void setDefaultTextEncoding(const QString &encoding);
     QString defaultTextEncoding() const;
 
-    void setPrintingMinimumShrinkFactor(float printingMinimumShrinkFactor);
-    float printingMinimumShrinkFactor() const;
-
-    void setPrintingMaximumShrinkFactor(float printingMaximimShrinkFactor);
-    float printingMaximumShrinkFactor() const;
-
     static void setIconDatabasePath(const QString &location);
     static QString iconDatabasePath();
     static void clearIconDatabase();
     static QIcon iconForUrl(const QUrl &url);
 
-    static QWebPluginDatabase *pluginDatabase();
+    //static QWebPluginDatabase *pluginDatabase();
 
     static void setWebGraphic(WebGraphic type, const QPixmap &graphic);
     static QPixmap webGraphic(WebGraphic type);

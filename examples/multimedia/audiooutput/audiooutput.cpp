@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -103,10 +103,10 @@ int Generator::fillData(char *start, int frequency, int seconds)
 qint64 Generator::readData(char *data, qint64 maxlen)
 {
     int len = maxlen;
-    if(len > 16384)
+    if (len > 16384)
         len = 16384;
 
-    if(len < (SECONDS*SYSTEM_FREQ*2)-pos) {
+    if (len < (SECONDS*SYSTEM_FREQ*2)-pos) {
         // Normal
         memcpy(data,t+pos,len);
         pos+=len;
@@ -134,7 +134,7 @@ AudioTest::AudioTest()
     QVBoxLayout* layout = new QVBoxLayout;
 
     deviceBox = new QComboBox(this);
-    foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::deviceList(QAudio::AudioOutput))
+    foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioOutput))
         deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
     connect(deviceBox,SIGNAL(activated(int)),SLOT(deviceChanged(int)));
     layout->addWidget(deviceBox);
@@ -170,6 +170,18 @@ AudioTest::AudioTest()
     settings.setCodec("audio/pcm");
     settings.setByteOrder(QAudioFormat::LittleEndian);
     settings.setSampleType(QAudioFormat::SignedInt);
+
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (!info.isFormatSupported(settings)) {
+        qWarning()<<"default format not supported try to use nearest";
+        settings = info.nearestFormat(settings);
+    }
+
+    if(settings.sampleSize() != 16) {
+        qWarning()<<"audio device doesn't support 16 bit samples, example cannot run";
+        return;
+    }
+
     audioOutput = new QAudioOutput(settings,this);
     connect(audioOutput,SIGNAL(notify()),SLOT(status()));
     connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
@@ -200,15 +212,15 @@ void AudioTest::deviceChanged(int idx)
 
 void AudioTest::status()
 {
-    qWarning()<<"byteFree = "<<audioOutput->bytesFree()<<" bytes, clock = "<<audioOutput->clock()/1000<<"ms, totalTime = "<<audioOutput->totalTime()/1000<<"ms";
+    qWarning() << "byteFree = " << audioOutput->bytesFree() << " bytes, elapsedUSecs = " << audioOutput->elapsedUSecs() << ", processedUSecs = " << audioOutput->processedUSecs();
 }
 
 void AudioTest::writeMore()
 {
-    if(!audioOutput)
+    if (!audioOutput)
         return;
 
-    if(audioOutput->state() == QAudio::StopState)
+    if (audioOutput->state() == QAudio::StoppedState)
         return;
 
     int    l;
@@ -217,9 +229,9 @@ void AudioTest::writeMore()
     int chunks = audioOutput->bytesFree()/audioOutput->periodSize();
     while(chunks) {
        l = gen->read(buffer,audioOutput->periodSize());
-       if(l > 0)
+       if (l > 0)
            out = output->write(buffer,l);
-       if(l != audioOutput->periodSize())
+       if (l != audioOutput->periodSize())
 	   break;
        chunks--;
     }
@@ -234,7 +246,7 @@ void AudioTest::toggle()
 
     if (pullMode) {
         button->setText("Click for Pull Mode");
-        output = audioOutput->start(0);
+        output = audioOutput->start();
         pullMode = false;
         timer->start(20);
     } else {
@@ -247,24 +259,24 @@ void AudioTest::toggle()
 void AudioTest::togglePlay()
 {
     // toggle suspend/resume
-    if(audioOutput->state() == QAudio::SuspendState) {
-        qWarning()<<"status: Suspended, resume()";
+    if (audioOutput->state() == QAudio::SuspendedState) {
+        qWarning() << "status: Suspended, resume()";
         audioOutput->resume();
         button2->setText("Click To Suspend");
     } else if (audioOutput->state() == QAudio::ActiveState) {
-        qWarning()<<"status: Active, suspend()";
+        qWarning() << "status: Active, suspend()";
         audioOutput->suspend();
         button2->setText("Click To Resume");
-    } else if (audioOutput->state() == QAudio::StopState) {
-        qWarning()<<"status: Stopped, resume()";
+    } else if (audioOutput->state() == QAudio::StoppedState) {
+        qWarning() << "status: Stopped, resume()";
         audioOutput->resume();
         button2->setText("Click To Suspend");
     } else if (audioOutput->state() == QAudio::IdleState) {
-        qWarning()<<"status: IdleState";
+        qWarning() << "status: IdleState";
     }
 }
 
 void AudioTest::state(QAudio::State state)
 {
-    qWarning()<<" state="<<state;
+    qWarning() << " state=" << state;
 }

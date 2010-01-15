@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -188,6 +188,9 @@ public:
     bool autoAddOkButton;
     QAbstractButton *detectedEscapeButton;
     QLabel *informativeLabel;
+#ifdef Q_OS_SYMBIAN
+    QTextEdit *textEdit;
+#endif
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
     QByteArray signalToDisconnectOnClose;
@@ -1723,7 +1726,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "to comply with the terms of the GNU GPL version 3.0.</p>"
         "<p>Please see <a href=\"http://qt.nokia.com/products/licensing\">qt.nokia.com/products/licensing</a> "
         "for an overview of Qt licensing.</p>"
-        "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
+        "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://qt.nokia.com/\">qt.nokia.com</a> "
         "for more information.</p>"
         );
@@ -2459,10 +2462,24 @@ void QMessageBox::setInformativeText(const QString &text)
 #endif
         label->setWordWrap(true);
         QGridLayout *grid = static_cast<QGridLayout *>(layout());
+#ifdef Q_OS_SYMBIAN
+        label->hide();
+        QTextEdit *textEdit = new QTextEdit(this);
+        textEdit->setReadOnly(true);
+        grid->addWidget(textEdit, 1, 1, 1, 1);
+        d->textEdit = textEdit;
+#else
         grid->addWidget(label, 1, 1, 1, 1);
+#endif
         d->informativeLabel = label;
     }
     d->informativeLabel->setText(text);
+
+#ifdef Q_OS_SYMBIAN
+    //We need to put the informative label inside textEdit to enable scrolling of long texts.
+    d->textEdit->setText(d->informativeLabel->text());
+#endif
+
     d->updateSize();
 }
 

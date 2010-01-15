@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -79,10 +79,6 @@ public:
 #ifndef Q_NO_USING_KEYWORD
     using QCommonStyle::polish;
 #endif
-
-    void setStyleProperty(const char *name, const QVariant &value);
-    QVariant styleProperty(const char *name) const;
-
     bool event(QEvent *e);
 
 #ifndef Q_WS_S60

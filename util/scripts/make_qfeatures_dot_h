@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #############################################################################
 ##
-## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
@@ -132,7 +132,7 @@ open OUT, ">$qtbase/src/corelib/global/qfeatures.h"
 print OUT
 '/****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -175,6 +175,7 @@ print OUT
  * All features and their dependencies.
  *
  * This list is generated from $QTDIR/src/corelib/global/qfeatures.txt
+ * by $QTSRCDIR/util/scripts/make_qfeatures_dot_h
  */
 
 ';

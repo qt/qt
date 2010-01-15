@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -123,9 +123,6 @@
 #endif
 
 /* Images */
-#ifndef QT_NO_ICON
-#  define QT_NO_ICON
-#endif
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 #  define QT_NO_IMAGEFORMATPLUGIN
 #endif
@@ -257,9 +254,6 @@
 #endif
 #ifndef QT_NO_TEXTHTMLPARSER
 #  define QT_NO_TEXTHTMLPARSER
-#endif
-#ifndef QT_NO_THREAD
-#  define QT_NO_THREAD
 #endif
 #ifndef QT_NO_CONCURRENT
 #  define QT_NO_CONCURRENT

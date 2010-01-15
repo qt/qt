@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,7 @@
 #include "qnetworkaccessfilebackend_p.h"
 #include "qnetworkaccessdatabackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
+#include "qfilenetworkreply_p.h"
 
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
@@ -681,6 +682,17 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
                                                     QIODevice *outgoingData)
 {
     Q_D(QNetworkAccessManager);
+
+    // fast path for GET on file:// URLs
+    // Also if the scheme is empty we consider it a file.
+    // The QNetworkAccessFileBackend will right now only be used
+    // for PUT or qrc://
+    if (op == QNetworkAccessManager::GetOperation
+         && (req.url().scheme() == QLatin1String("file")
+             || req.url().scheme().isEmpty())) {
+        return new QFileNetworkReply(this, req);
+    }
+
     QNetworkRequest request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
         outgoingData && !outgoingData->isSequential()) {
@@ -711,8 +723,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // third step: find a backend
     priv->backend = d->findBackend(op, request);
 
-    // fourth step: setup the reply
-    priv->setup(op, request, outgoingData);
 #ifndef QT_NO_NETWORKPROXY
     QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
     priv->proxyList = proxyList;
@@ -721,6 +731,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         priv->backend->setParent(reply);
         priv->backend->reply = priv;
     }
+    // fourth step: setup the reply
+    priv->setup(op, request, outgoingData);
 
 #ifndef QT_NO_OPENSSL
     reply->setSslConfiguration(request.sslConfiguration());

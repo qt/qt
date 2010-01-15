@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,7 +65,7 @@
     \endlist
     \o
     \list
-        \o \l {Windows CE OpenGL ES}{OpenGL ES}
+        \o \l {Qt for Windows CE Hardware Accelerated Graphics}{Hardware Accelerated Graphics}
         \o \l {Qt Performance Tuning}
         \o \l {Fine-Tuning Features in Qt}
     \endlist

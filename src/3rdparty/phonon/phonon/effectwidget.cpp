@@ -6,7 +6,7 @@
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA
+    successor approved by the membership of KDE e.V.), Nokia Corporation
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -15,7 +15,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public 
+    You should have received a copy of the GNU Lesser General Public
     License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
@@ -97,8 +97,9 @@ void EffectWidgetPrivate::autogenerateUi()
     Q_Q(EffectWidget);
     QVBoxLayout *mainLayout = new QVBoxLayout(q);
     mainLayout->setMargin(0);
-    for (int i = 0; i < effect->parameters().count(); ++i) {
-        const EffectParameter &para = effect->parameters().at(i);
+    const QList<Phonon::EffectParameter> parameters = effect->parameters();
+    for (int i = 0; i < parameters.count(); ++i) {
+        const EffectParameter &para = parameters.at(i);
         QVariant value = effect->parameterValue(para);
         QHBoxLayout *pLayout = new QHBoxLayout;
         mainLayout->addLayout(pLayout);
@@ -150,7 +151,7 @@ void EffectWidgetPrivate::autogenerateUi()
                 bool minValueOk = false;
                 bool maxValueOk = false;
                 const int minValue = para.minimumValue().toInt(&minValueOk);
-                const int maxValue = para.minimumValue().toInt(&maxValueOk);
+                const int maxValue = para.maximumValue().toInt(&maxValueOk);
 
                 sb->setRange(minValueOk ? minValue : DEFAULT_MIN_INT, maxValueOk ? maxValue : DEFAULT_MAX_INT);
                 sb->setValue(value.toInt());

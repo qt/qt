@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -142,40 +142,6 @@ bool TranslatorMessage::needs8Bit() const
         || needs8BitHelper(m_context);
 }
 
-
-bool TranslatorMessage::operator==(const TranslatorMessage& m) const
-{
-    static QString msgIdPlural = QLatin1String("po-msgid_plural");
-
-    // Special treatment for context comments (empty source).
-    return (m_context == m.m_context)
-        && m_sourcetext == m.m_sourcetext
-        && m_extra[msgIdPlural] == m.m_extra[msgIdPlural]
-        && m_id == m.m_id
-        && (m_sourcetext.isEmpty() || m_comment == m.m_comment);
-}
-
-
-bool TranslatorMessage::operator<(const TranslatorMessage& m) const
-{
-    if (m_context != m.m_context)
-        return m_context < m.m_context;
-    if (m_sourcetext != m.m_sourcetext)
-        return m_sourcetext < m.m_sourcetext;
-    if (m_comment != m.m_comment)
-        return m_comment < m.m_comment;
-    return m_id < m.m_id;
-}
-
-int qHash(const TranslatorMessage &msg)
-{
-    return
-        qHash(msg.context()) ^
-        qHash(msg.sourceText()) ^
-        qHash(msg.extra(QLatin1String("po-msgid_plural"))) ^
-        qHash(msg.comment()) ^
-        qHash(msg.id());
-}
 
 bool TranslatorMessage::hasExtra(const QString &key) const
 {

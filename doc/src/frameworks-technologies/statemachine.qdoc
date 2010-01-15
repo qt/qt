@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -74,6 +74,11 @@
   for example, transitions between states can be triggered by signals, and
   states can be configured to set properties and invoke methods on QObjects.
   Qt's event system is used to drive the state machines.
+
+  The state graph in the State Machine framework is hierarchical. States can be nested inside of
+  other states, and the current configuration of the state machine consists of the set of states
+  which are currently active. All the states in a valid configuration of the state machine will
+  have a common ancestor.
 
   \section1 Classes in the State Machine Framework
 
@@ -269,9 +274,17 @@
 
   When a parallel state group is entered, all its child states will be
   simultaneously entered. Transitions within the individual child states
-  operate normally. However, any of the child states may take a transition
-  outside the parent state. When this happens, the parent state and all of its
-  child states are exited.
+  operate normally. However, any of the child states may take a transition which exits the parent
+  state. When this happens, the parent state and all of its child states are exited.
+
+  The parallelism in the State Machine framework follows an interleaved semantics. All parallel
+  operations will be executed in a single, atomic step of the event processing, so no event can
+  interrupt the parallel operations. However, events will still be processed sequentially, since
+  the machine itself is single threaded. As an example: Consider the situation where there are two
+  transitions that exit the same parallel state group, and their conditions become true
+  simultaneously. In this case, the event that is processed last of the two will not have any
+  effect, since the first event will already have caused the machine to exit from the parallel
+  state.
 
   \section1 Detecting that a Composite State has Finished
 
@@ -413,18 +426,8 @@
   value of the property before any property assignments in states were executed.)
 
   Take the following code:
-  \code
-    QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
-    QState *s1 = new QState();
-    s1->assignProperty(object, "fooBar", 1.0);
-    machine.addState(s1);
-    machine.setInitialState(s1);
-
-    QState *s2 = new QState();
-    machine.addState(s2);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main5.cpp 0  
 
   Lets say the property \c fooBar is 0.0 when the machine starts. When the machine is in state
   \c s1, the property will be 1.0, since the state explicitly assigns this value to it. When the
@@ -433,21 +436,8 @@
 
   If we are using nested states, the parent defines a value for the property which is inherited by
   all descendants that do not explicitly assign a value to the property.
-  \code
-    QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
-    QState *s1 = new QState();
-    s1->assignProperty(object, "fooBar", 1.0);
-    machine.addState(s1);
-    machine.setInitialState(s1);
-
-    QState *s2 = new QState(s1);
-    s2->assignProperty(object, "fooBar", 2.0);
-    s1->setInitialState(s2);
-
-    QState *s3 = new QState(s1);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main5.cpp 2
 
   Here \c s1 has two children: \c s2 and \c s3. When \c s2 is entered, the property \c fooBar
   will have the value 2.0, since this is explicitly defined for the state. When the machine is in
@@ -460,15 +450,8 @@
   properties as they are assigned in states.
 
   Say we have the following code:
-  \code
-    QState *s1 = new QState();
-    QState *s2 = new QState();
 
-    s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
-    s2->assignProperty(button, "geometry", QRectF(0, 0, 100, 100));
-
-    s1->addTransition(button, SIGNAL(clicked()), s2);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main5.cpp 3
 
   Here we define two states of a user interface. In \c s1 the \c button is small, and in \c s2
   it is bigger. If we click the button to transition from \c s1 to \c s2, the geometry of the button
@@ -476,16 +459,7 @@
   smooth, however, all we need to do is make a QPropertyAnimation and add this to the transition
   object.
 
-  \code
-    QState *s1 = new QState();
-    QState *s2 = new QState();
-
-    s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
-    s2->assignProperty(button, "geometry", QRectF(0, 0, 100, 100));
-
-    QSignalTransition *transition = s1->addTransition(button, SIGNAL(clicked()), s2);
-    transition->addAnimation(new QPropertyAnimation(button, "geometry"));
-  \endcode
+  \snippet doc/src/snippets/statemachine/main5.cpp 4
 
   Adding an animation for the property in question means that the property assignment will no
   longer take immediate effect when the state has been entered. Instead, the animation will start
@@ -504,33 +478,48 @@
   property can potentially have any value, depending on the animation.
 
   In some cases, it can be useful to be able to detect when the property has actually been assigned
-  the value defined by a state. For this, we can use the state's polished() signal.
-  \code
-    QState *s1 = new QState();
-    s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
+  the value defined by a state.
 
-    QState *s2 = new QState();
+  Say we have the following code:
 
-    s1->addTransition(s1, SIGNAL(polished()), s2);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main5.cpp 5
 
-  The machine will be in state \c s1 until the \c geometry property has been set. Then it will
-  immediately transition into \c s2. If the transition into \c s1 has an animation for the \c
-  geometry property, then the machine will stay in \c s1 until the animation has finished. If there
-  is no animation, it will simply set the property and immediately enter state \c s2.
+  When \c button is clicked, the machine will transition into state \c s2, which will set the
+  geometry of the button, and then pop up a message box to alert the user that the geometry has
+  been changed.
 
-  Either way, when the machine is in state \c s2, the property \c geometry has been assigned the
-  defined value.
+  In the normal case, where animations are not used, this will operate as expected. However, if
+  an animation for the \c geometry of \c button is set on the transition between \c s1 and \c s2,
+  the animation will be started when \c s2 is entered, but the \c geometry property will not
+  actually reach its defined value before the animation is finished running. In this case, the
+  message box will pop up before the geometry of the button has actually been set.
+
+  To ensure that the message box does not pop up until the geometry actually reaches its final
+  value, we can use the state's propertiesAssigned() signal. The propertiesAssigned() signal will be
+  emitted when the property is assigned its final value, whether this is done immediately or
+  after the animation has finished playing.
+
+  \snippet doc/src/snippets/statemachine/main5.cpp 6
+
+  In this example, when \c button is clicked, the machine will enter \c s2. It will remain in state
+  \c s2 until the \c geometry property has been set to \c QRect(0, 0, 50, 50). Then it will
+  transition into \c s3. When \c s3 is entered, the message box will pop up. If the transition into
+  \c s2 has an animation for the \c geometry property, then the machine will stay in \c s2 until the
+  animation has finished playing. If there is no such animation, it will simply set the property and
+  immediately enter state \c s3.
+
+  Either way, when the machine is in state \c s3, you are guaranteed that the property \c geometry
+  has been assigned the defined value.
 
   If the global restore policy is set to QStateMachine::RestoreProperties, the state will not emit
-  the polished() signal until these have been executed as well.
+  the propertiesAssigned() signal until these have been executed as well.
 
-  \section1 What happens if a state is exited before the animation has finished
+  \section1 What Happens If A State Is Exited Before The Animation Has Finished
 
   If a state has property assignments, and the transition into the state has animations for the
   properties, the state can potentially be exited before the properties have been assigned to the
   values defines by the state. This is true in particular when there are transitions out from the
-  state that do not depend on the state being polished, as described in the previous section.
+  state that do not depend on the propertiesAssigned signal, as described in the previous section.
 
   The State Machine API guarantees that a property assigned by the state machine either:
   \list
@@ -545,7 +534,7 @@
 
   If the target state does not assign any value to the property, there are two
   options: By default, the property will be assigned the value defined by the state it is leaving
-  (the value it would have been assigned if the animation had been permitted to finish playing.) If
+  (the value it would have been assigned if the animation had been permitted to finish playing). If
   a global restore policy is set, however, this will take precedence, and the property will be
   restored as usual.
 

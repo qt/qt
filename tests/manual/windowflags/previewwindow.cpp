@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -103,8 +103,18 @@ PreviewWindow::PreviewWindow(QWidget *parent)
     closeButton = new QPushButton(tr("&Close"));
     connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
+    showNormalButton = new QPushButton(tr("Show normal"));
+    connect(showNormalButton, SIGNAL(clicked()), this, SLOT(showNormal()));
+    showMaximizedButton = new QPushButton(tr("Show maximized"));
+    connect(showMaximizedButton, SIGNAL(clicked()), this, SLOT(showMaximized()));
+    showFullScreenButton = new QPushButton(tr("Show fullscreen"));
+    connect(showFullScreenButton, SIGNAL(clicked()), this, SLOT(showFullScreen()));
+
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(textEdit);
+    layout->addWidget(showNormalButton);
+    layout->addWidget(showMaximizedButton);
+    layout->addWidget(showFullScreenButton);
     layout->addWidget(closeButton);
     setLayout(layout);
 
@@ -129,8 +139,18 @@ PreviewDialog::PreviewDialog(QWidget *parent)
     closeButton = new QPushButton(tr("&Close"));
     connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
+    showNormalButton = new QPushButton(tr("Show normal"));
+    connect(showNormalButton, SIGNAL(clicked()), this, SLOT(showNormal()));
+    showMaximizedButton = new QPushButton(tr("Show maximized"));
+    connect(showMaximizedButton, SIGNAL(clicked()), this, SLOT(showMaximized()));
+    showFullScreenButton = new QPushButton(tr("Show fullscreen"));
+    connect(showFullScreenButton, SIGNAL(clicked()), this, SLOT(showFullScreen()));
+
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(textEdit);
+    layout->addWidget(showNormalButton);
+    layout->addWidget(showMaximizedButton);
+    layout->addWidget(showFullScreenButton);
     layout->addWidget(closeButton);
     setLayout(layout);
 

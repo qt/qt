@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -179,7 +179,17 @@ qint64 QHttpNetworkReply::bytesAvailableNextBlock() const
 QByteArray QHttpNetworkReply::readAny()
 {
     Q_D(QHttpNetworkReply);
+    // we'll take the last buffer, so schedule another read from http
+    if (d->downstreamLimited && d->responseData.bufferCount() == 1)
+        d->connection->d_func()->readMoreLater(this);
     return d->responseData.read();
+}
+
+void QHttpNetworkReply::setDownstreamLimited(bool dsl)
+{
+    Q_D(QHttpNetworkReply);
+    d->downstreamLimited = dsl;
+    d->connection->d_func()->readMoreLater(this);
 }
 
 bool QHttpNetworkReply::isFinished() const
@@ -201,7 +211,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       forceConnectionCloseEnabled(false),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
       autoDecompress(false), responseData(), requestIsPrepared(false)
-      ,pipeliningUsed(false)
+      ,pipeliningUsed(false), downstreamLimited(false)
 {
 }
 
@@ -239,7 +249,7 @@ qint64 QHttpNetworkReplyPrivate::bytesAvailable() const
 bool QHttpNetworkReplyPrivate::isGzipped()
 {
     QByteArray encoding = headerField("content-encoding");
-    return encoding.toLower() == "gzip";
+    return qstricmp(encoding.constData(), "gzip") == 0;
 }
 
 void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
@@ -247,11 +257,10 @@ void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
     // The header "Content-Encoding  = gzip" is retained.
     // Content-Length is removed since the actual one send by the server is for compressed data
     QByteArray name("content-length");
-    QByteArray lowerName = name.toLower();
     QList<QPair<QByteArray, QByteArray> >::Iterator it = fields.begin(),
                                                    end = fields.end();
     while (it != end) {
-        if (name == it->first.toLower()) {
+        if (qstricmp(name.constData(), it->first.constData()) == 0) {
             fields.erase(it);
             break;
         }
@@ -269,6 +278,7 @@ bool QHttpNetworkReplyPrivate::findChallenge(bool forProxy, QByteArray &challeng
     QList<QByteArray> challenges = headerFieldValues(header);
     for (int i = 0; i<challenges.size(); i++) {
         QByteArray line = challenges.at(i);
+        // todo use qstrincmp
         if (!line.toLower().startsWith("negotiate"))
             challenge = line;
     }

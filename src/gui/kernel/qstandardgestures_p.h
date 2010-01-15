@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,9 +63,48 @@ class QPanGestureRecognizer : public QGestureRecognizer
 public:
     QPanGestureRecognizer();
 
-    QGesture *createGesture(QObject *target);
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
+};
 
-    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+class QPinchGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QPinchGestureRecognizer();
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
+};
+
+class QSwipeGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QSwipeGestureRecognizer();
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
+};
+
+class QTapGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QTapGestureRecognizer();
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
+};
+
+class QTapAndHoldGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QTapAndHoldGestureRecognizer();
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
     void reset(QGesture *state);
 };
 

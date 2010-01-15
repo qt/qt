@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -608,31 +608,31 @@ void QtGradientStopsController::setUi(Ui::QtGradientEditor *ui)
 
     d_ptr->m_model = new QtGradientStopsModel(this);
     d_ptr->m_ui->gradientStopsWidget->setGradientStopsModel(d_ptr->m_model);
-    connect(d_ptr->m_model, SIGNAL(currentStopChanged(QtGradientStop *)),
-                this, SLOT(slotCurrentStopChanged(QtGradientStop *)));
-    connect(d_ptr->m_model, SIGNAL(stopMoved(QtGradientStop *, qreal)),
-                this, SLOT(slotStopMoved(QtGradientStop *, qreal)));
-    connect(d_ptr->m_model, SIGNAL(stopsSwapped(QtGradientStop *, QtGradientStop *)),
-                this, SLOT(slotStopsSwapped(QtGradientStop *, QtGradientStop *)));
-    connect(d_ptr->m_model, SIGNAL(stopChanged(QtGradientStop *, const QColor &)),
-                this, SLOT(slotStopChanged(QtGradientStop *, const QColor &)));
-    connect(d_ptr->m_model, SIGNAL(stopSelected(QtGradientStop *, bool)),
-                this, SLOT(slotStopSelected(QtGradientStop *, bool)));
-    connect(d_ptr->m_model, SIGNAL(stopAdded(QtGradientStop *)),
-                this, SLOT(slotStopAdded(QtGradientStop *)));
-    connect(d_ptr->m_model, SIGNAL(stopRemoved(QtGradientStop *)),
-                this, SLOT(slotStopRemoved(QtGradientStop *)));
+    connect(d_ptr->m_model, SIGNAL(currentStopChanged(QtGradientStop*)),
+                this, SLOT(slotCurrentStopChanged(QtGradientStop*)));
+    connect(d_ptr->m_model, SIGNAL(stopMoved(QtGradientStop*,qreal)),
+                this, SLOT(slotStopMoved(QtGradientStop*,qreal)));
+    connect(d_ptr->m_model, SIGNAL(stopsSwapped(QtGradientStop*,QtGradientStop*)),
+                this, SLOT(slotStopsSwapped(QtGradientStop*,QtGradientStop*)));
+    connect(d_ptr->m_model, SIGNAL(stopChanged(QtGradientStop*,QColor)),
+                this, SLOT(slotStopChanged(QtGradientStop*,QColor)));
+    connect(d_ptr->m_model, SIGNAL(stopSelected(QtGradientStop*,bool)),
+                this, SLOT(slotStopSelected(QtGradientStop*,bool)));
+    connect(d_ptr->m_model, SIGNAL(stopAdded(QtGradientStop*)),
+                this, SLOT(slotStopAdded(QtGradientStop*)));
+    connect(d_ptr->m_model, SIGNAL(stopRemoved(QtGradientStop*)),
+                this, SLOT(slotStopRemoved(QtGradientStop*)));
 
-    connect(d_ptr->m_ui->hueColorLine, SIGNAL(colorChanged(const QColor &)),
-                this, SLOT(slotChangeHue(const QColor &)));
-    connect(d_ptr->m_ui->saturationColorLine, SIGNAL(colorChanged(const QColor &)),
-                this, SLOT(slotChangeSaturation(const QColor &)));
-    connect(d_ptr->m_ui->valueColorLine, SIGNAL(colorChanged(const QColor &)),
-                this, SLOT(slotChangeValue(const QColor &)));
-    connect(d_ptr->m_ui->alphaColorLine, SIGNAL(colorChanged(const QColor &)),
-                this, SLOT(slotChangeAlpha(const QColor &)));
-    connect(d_ptr->m_ui->colorButton, SIGNAL(colorChanged(const QColor &)),
-                this, SLOT(slotChangeColor(const QColor &)));
+    connect(d_ptr->m_ui->hueColorLine, SIGNAL(colorChanged(QColor)),
+                this, SLOT(slotChangeHue(QColor)));
+    connect(d_ptr->m_ui->saturationColorLine, SIGNAL(colorChanged(QColor)),
+                this, SLOT(slotChangeSaturation(QColor)));
+    connect(d_ptr->m_ui->valueColorLine, SIGNAL(colorChanged(QColor)),
+                this, SLOT(slotChangeValue(QColor)));
+    connect(d_ptr->m_ui->alphaColorLine, SIGNAL(colorChanged(QColor)),
+                this, SLOT(slotChangeAlpha(QColor)));
+    connect(d_ptr->m_ui->colorButton, SIGNAL(colorChanged(QColor)),
+                this, SLOT(slotChangeColor(QColor)));
 
     connect(d_ptr->m_ui->hueSpinBox, SIGNAL(valueChanged(int)),
                 this, SLOT(slotChangeHue(int)));

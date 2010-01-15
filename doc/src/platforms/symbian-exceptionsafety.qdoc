@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,7 +42,7 @@
 /*!
     \page symbianexceptionsafety.html
     \title Exception Safety with Symbian
-    \ingroup qts60
+    \ingroup qtsymbian
     \brief A guide to integrating exception safety in Qt with Symbian.
 
     The following sections describe how Qt code can interoperate with Symbian's

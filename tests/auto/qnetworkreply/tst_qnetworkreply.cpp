@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QHostInfo>
 #include <QtNetwork/QFtp>
+#include <QtNetwork/QAbstractNetworkCache>
 #include <QtNetwork/qauthenticator.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qnetworkrequest.h>
@@ -198,6 +199,8 @@ private Q_SLOTS:
 #endif
     void ioGetFromHttpBrokenServer_data();
     void ioGetFromHttpBrokenServer();
+    void ioGetFromHttpWithCache_data();
+    void ioGetFromHttpWithCache();
 
     void ioGetWithManyProxies_data();
     void ioGetWithManyProxies();
@@ -223,16 +226,13 @@ private Q_SLOTS:
     void ioPostToHttpFromMiddleOfQBufferFiveBytes();
     void ioPostToHttpNoBufferFlag();
     void ioPostToHttpUploadProgress();
-    void ioPostToHttpEmtpyUploadProgress();
+    void ioPostToHttpEmptyUploadProgress();
+
+    void lastModifiedHeaderForFile();
+    void lastModifiedHeaderForHttp();
 
     void rateControl_data();
     void rateControl();
-    void downloadPerformance();
-    void uploadPerformance();
-    void performanceControlRate();
-    void httpUploadPerformance();
-    void httpDownloadPerformance_data();
-    void httpDownloadPerformance();
 
     void downloadProgress_data();
     void downloadProgress();
@@ -321,8 +321,9 @@ public:
     QByteArray dataToTransmit;
     QByteArray receivedData;
     bool doClose;
+    int totalConnections;
 
-    MiniHttpServer(const QByteArray &data) : client(0), dataToTransmit(data), doClose(true)
+    MiniHttpServer(const QByteArray &data) : client(0), dataToTransmit(data), doClose(true), totalConnections(0)
     {
         listen();
         connect(this, SIGNAL(newConnection()), this, SLOT(doAccept()));
@@ -332,6 +333,7 @@ public slots:
     void doAccept()
     {
         client = nextPendingConnection();
+        ++totalConnections;
         connect(client, SIGNAL(readyRead()), this, SLOT(sendData()));
     }
 
@@ -382,6 +384,61 @@ public:
     }
 };
 
+class MyMemoryCache: public QAbstractNetworkCache
+{
+public:
+    typedef QPair<QNetworkCacheMetaData, QByteArray> CachedContent;
+    typedef QHash<QByteArray, CachedContent> CacheData;
+    CacheData cache;
+
+    MyMemoryCache(QObject *parent) : QAbstractNetworkCache(parent) {}
+
+    QNetworkCacheMetaData metaData(const QUrl &url)
+    {
+        return cache.value(url.toEncoded()).first;
+    }
+
+    void updateMetaData(const QNetworkCacheMetaData &metaData)
+    {
+        cache[metaData.url().toEncoded()].first = metaData;
+    }
+
+    QIODevice *data(const QUrl &url)
+    {
+        CacheData::ConstIterator it = cache.find(url.toEncoded());
+        if (it == cache.constEnd())
+            return 0;
+        QBuffer *io = new QBuffer(this);
+        io->setData(it->second);
+        io->open(QIODevice::ReadOnly);
+        io->seek(0);
+        return io;
+    }
+
+    bool remove(const QUrl &url)
+    {
+        cache.remove(url.toEncoded());
+        return true;
+    }
+
+    qint64 cacheSize() const
+    {
+        qint64 total = 0;
+        foreach (const CachedContent &entry, cache)
+            total += entry.second.size();
+        return total;
+    }
+
+    QIODevice *prepare(const QNetworkCacheMetaData &)
+    { Q_ASSERT(0 && "Should not have tried to add to the cache"); return 0; }
+    void insert(QIODevice *)
+    { Q_ASSERT(0 && "Should not have tried to add to the cache"); }
+
+    void clear() { cache.clear(); }
+};
+Q_DECLARE_METATYPE(MyMemoryCache::CachedContent)
+Q_DECLARE_METATYPE(MyMemoryCache::CacheData)
+
 class DataReader: public QObject
 {
     Q_OBJECT
@@ -412,93 +469,6 @@ public slots:
             data += buffer;
     }
 };
-
-class FixedSizeDataGenerator : public QIODevice
-{
-    Q_OBJECT
-    enum { Idle, Started, Stopped } state;
-public:
-    FixedSizeDataGenerator(qint64 size) : state(Idle)
-    { open(ReadOnly | Unbuffered);
-      toBeGeneratedTotalCount = toBeGeneratedCount = size;
-    }
-
-    virtual qint64 bytesAvailable() const
-    {
-        return state == Started ? toBeGeneratedCount + QIODevice::bytesAvailable() : 0;
-    }
-
-    virtual bool isSequential() const{
-        return false;
-    }
-
-    virtual bool reset() const{
-        return false;
-    }
-
-    qint64 size() const {
-        return toBeGeneratedTotalCount;
-    }
-
-public slots:
-    void start() { state = Started; emit readyRead(); }
-
-protected:
-    virtual qint64 readData(char *data, qint64 maxlen)
-    {
-        memset(data, '@', maxlen);
-
-        if (toBeGeneratedCount <= 0) {
-            return -1;
-        }
-
-        qint64 n = qMin(maxlen, toBeGeneratedCount);
-        toBeGeneratedCount -= n;
-
-        if (toBeGeneratedCount <= 0) {
-            // make sure this is a queued connection!
-            emit readChannelFinished();
-        }
-
-        return n;
-    }
-    virtual qint64 writeData(const char *, qint64)
-    { return -1; }
-
-    qint64 toBeGeneratedCount;
-    qint64 toBeGeneratedTotalCount;
-};
-
-
-class DataGenerator: public QIODevice
-{
-    Q_OBJECT
-    enum { Idle, Started, Stopped } state;
-public:
-    DataGenerator() : state(Idle)
-    { open(ReadOnly); }
-
-    virtual bool isSequential() const { return true; }
-    virtual qint64 bytesAvailable() const { return state == Started ? 1024*1024 : 0; }
-
-public slots:
-    void start() { state = Started; emit readyRead(); }
-    void stop() { state = Stopped; emit readyRead(); }
-
-protected:
-    virtual qint64 readData(char *data, qint64 maxlen)
-    {
-        if (state == Stopped)
-            return -1;          // EOF
-
-        // return as many bytes as are wanted
-        memset(data, '@', maxlen);
-        return maxlen;
-    }
-    virtual qint64 writeData(const char *, qint64)
-    { return -1; }
-};
-
 
 
 class SocketPair: public QObject
@@ -692,255 +662,6 @@ protected:
     }
 };
 
-class TimedSender: public QThread
-{
-    Q_OBJECT
-    qint64 totalBytes;
-    QSemaphore ready;
-    QByteArray dataToSend;
-    QTcpSocket *client;
-    int timeout;
-    int port;
-public:
-    int transferRate;
-    TimedSender(int ms)
-        : totalBytes(0), timeout(ms), port(-1), transferRate(-1)
-    {
-        dataToSend = QByteArray(16*1024, '@');
-        start();
-        ready.acquire();
-    }
-
-    inline int serverPort() const { return port; }
-
-private slots:
-    void writeMore()
-    {
-        while (client->bytesToWrite() < 128 * 1024) {
-            writePacket(dataToSend);
-        }
-    }
-
-protected:
-    void run()
-    {
-        QTcpServer server;
-        server.listen();
-        port = server.serverPort();
-        ready.release();
-
-        server.waitForNewConnection(-1);
-        client = server.nextPendingConnection();
-
-        writeMore();
-        connect(client, SIGNAL(bytesWritten(qint64)), SLOT(writeMore()), Qt::DirectConnection);
-
-        QEventLoop eventLoop;
-        QTimer::singleShot(timeout, &eventLoop, SLOT(quit()));
-
-        QTime timer;
-        timer.start();
-        eventLoop.exec();
-        disconnect(client, SIGNAL(bytesWritten(qint64)), this, 0);
-
-        // wait for the connection to shut down
-        client->disconnectFromHost();
-        if (!client->waitForDisconnected(10000))
-            return;
-
-        transferRate = totalBytes * 1000 / timer.elapsed();
-        qDebug() << "TimedSender::run" << "receive rate:" << (transferRate / 1024) << "kB/s in"
-                 << timer.elapsed() << "ms";
-    }
-
-    void writePacket(const QByteArray &array)
-    {
-        client->write(array);
-        totalBytes += array.size();
-    }
-};
-
-class ThreadedDataReader: public QThread
-{
-    Q_OBJECT
-    // used to make the constructor only return after the tcp server started listening
-    QSemaphore ready;
-    QTcpSocket *client;
-    int timeout;
-    int port;
-public:
-    qint64 transferRate;
-    ThreadedDataReader()
-        : port(-1), transferRate(-1)
-    {
-        start();
-        ready.acquire();
-    }
-
-    inline int serverPort() const { return port; }
-
-protected:
-    void run()
-    {
-        QTcpServer server;
-        server.listen();
-        port = server.serverPort();
-        ready.release();
-
-        server.waitForNewConnection(-1);
-        client = server.nextPendingConnection();
-
-        QEventLoop eventLoop;
-        DataReader reader(client, false);
-        QObject::connect(client, SIGNAL(disconnected()), &eventLoop, SLOT(quit()));
-
-        QTime timer;
-        timer.start();
-        eventLoop.exec();
-        qint64 elapsed = timer.elapsed();
-
-        transferRate = reader.totalBytes * 1000 / elapsed;
-        qDebug() << "ThreadedDataReader::run" << "send rate:" << (transferRate / 1024) << "kB/s in" << elapsed << "msec";
-    }
-};
-
-class ThreadedDataReaderHttpServer: public QThread
-{
-    Q_OBJECT
-    // used to make the constructor only return after the tcp server started listening
-    QSemaphore ready;
-    QTcpSocket *client;
-    int timeout;
-    int port;
-public:
-    qint64 transferRate;
-    ThreadedDataReaderHttpServer()
-        : port(-1), transferRate(-1)
-    {
-        start();
-        ready.acquire();
-    }
-
-    inline int serverPort() const { return port; }
-
-protected:
-    void run()
-    {
-        QTcpServer server;
-        server.listen();
-        port = server.serverPort();
-        ready.release();
-
-        server.waitForNewConnection(-1);
-        client = server.nextPendingConnection();
-        client->write("HTTP/1.0 200 OK\r\n");
-        client->write("Content-length: 0\r\n");
-        client->write("\r\n");
-        client->flush();
-
-        QCoreApplication::processEvents();
-
-        QEventLoop eventLoop;
-        DataReader reader(client, false);
-        QObject::connect(client, SIGNAL(disconnected()), &eventLoop, SLOT(quit()));
-
-        QTime timer;
-        timer.start();
-        eventLoop.exec();
-        qint64 elapsed = timer.elapsed();
-
-        transferRate = reader.totalBytes * 1000 / elapsed;
-        qDebug() << "ThreadedDataReaderHttpServer::run" << "send rate:" << (transferRate / 1024) << "kB/s in" << elapsed << "msec";
-    }
-};
-
-class HttpDownloadPerformanceClient : QObject {
-    Q_OBJECT;
-    QIODevice *device;
-    public:
-    HttpDownloadPerformanceClient (QIODevice *dev) : device(dev){
-        connect(dev, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
-    }
-
-    public slots:
-    void readyReadSlot() {
-        device->readAll();
-    }
-
-};
-
-class HttpDownloadPerformanceServer : QObject {
-    Q_OBJECT;
-    qint64 dataSize;
-    qint64 dataSent;
-    QTcpServer server;
-    QTcpSocket *client;
-    bool serverSendsContentLength;
-    bool chunkedEncoding;
-
-public:
-    HttpDownloadPerformanceServer (qint64 ds, bool sscl, bool ce) : dataSize(ds), dataSent(0),
-    client(0), serverSendsContentLength(sscl), chunkedEncoding(ce) {
-        server.listen();
-        connect(&server, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()));
-    }
-
-    int serverPort() {
-        return server.serverPort();
-    }
-
-public slots:
-
-    void newConnectionSlot() {
-        client = server.nextPendingConnection();
-        client->setParent(this);
-        connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
-        connect(client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot(qint64)));
-    }
-
-    void readyReadSlot() {
-        client->readAll();
-        client->write("HTTP/1.0 200 OK\n");
-        if (serverSendsContentLength)
-            client->write(QString("Content-Length: " + QString::number(dataSize) + "\n").toAscii());
-        if (chunkedEncoding)
-            client->write(QString("Transfer-Encoding: chunked\n").toAscii());
-        client->write("Connection: close\n\n");
-    }
-
-    void bytesWrittenSlot(qint64 amount) {
-        Q_UNUSED(amount);
-        if (dataSent == dataSize && client) {
-            // close eventually
-
-            // chunked encoding: we have to send a last "empty" chunk
-            if (chunkedEncoding)
-                client->write(QString("0\r\n\r\n").toAscii());
-
-            client->disconnectFromHost();
-            server.close();
-            client = 0;
-            return;
-        }
-
-        // send data
-        if (client && client->bytesToWrite() < 100*1024 && dataSent < dataSize) {
-            qint64 amount = qMin(qint64(16*1024), dataSize - dataSent);
-            QByteArray data(amount, '@');
-
-            if (chunkedEncoding) {
-                client->write(QString(QString("%1").arg(amount,0,16).toUpper() + "\r\n").toAscii());
-                client->write(data.constData(), amount);
-                client->write(QString("\r\n").toAscii());
-            } else {
-                client->write(data.constData(), amount);
-            }
-
-            dataSent += amount;
-        }
-    }
-};
-
 
 tst_QNetworkReply::tst_QNetworkReply()
 {
@@ -1101,6 +822,7 @@ void tst_QNetworkReply::cleanup()
     // clear the internal cache
     QNetworkAccessManagerPrivate::clearCache(&manager);
     manager.setProxy(QNetworkProxy());
+    manager.setCache(0);
 
     // clear cookies
     cookieJar->setAllCookies(QList<QNetworkCookie>());
@@ -2323,6 +2045,146 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer()
     QVERIFY(reply->error() != QNetworkReply::NoError);
 }
 
+void tst_QNetworkReply::ioGetFromHttpWithCache_data()
+{
+    qRegisterMetaType<MyMemoryCache::CachedContent>();
+    QTest::addColumn<QByteArray>("dataToSend");
+    QTest::addColumn<QString>("body");
+    QTest::addColumn<MyMemoryCache::CachedContent>("cachedReply");
+    QTest::addColumn<int>("cacheMode");
+    QTest::addColumn<bool>("loadedFromCache");
+    QTest::addColumn<bool>("networkUsed");
+
+    QByteArray reply200 =
+            "HTTP/1.0 200\r\n"
+            "Connection: keep-alive\r\n"
+            "Content-Type: text/plain\r\n"
+            "Cache-control: no-cache\r\n"
+            "Content-length: 8\r\n"
+            "\r\n"
+            "Reloaded";
+    QByteArray reply304 =
+            "HTTP/1.0 304 Use Cache\r\n"
+            "Connection: keep-alive\r\n"
+            "\r\n";
+
+    QTest::newRow("not-cached,always-network")
+            << reply200 << "Reloaded" << MyMemoryCache::CachedContent() << int(QNetworkRequest::AlwaysNetwork) << false << true;
+    QTest::newRow("not-cached,prefer-network")
+            << reply200 << "Reloaded" << MyMemoryCache::CachedContent() << int(QNetworkRequest::PreferNetwork) << false << true;
+    QTest::newRow("not-cached,prefer-cache")
+            << reply200 << "Reloaded" << MyMemoryCache::CachedContent() << int(QNetworkRequest::PreferCache) << false << true;
+
+    QDateTime present = QDateTime::currentDateTime().toUTC();
+    QDateTime past = present.addSecs(-3600);
+    QDateTime future = present.addSecs(3600);
+    static const char dateFormat[] = "ddd, dd MMM yyyy hh:mm:ss 'GMT'";
+
+    QNetworkCacheMetaData::RawHeaderList rawHeaders;
+    MyMemoryCache::CachedContent content;
+    content.second = "Not-reloaded";
+    content.first.setLastModified(past);
+
+    //
+    // Set to expired
+    //
+    rawHeaders.clear();
+    rawHeaders << QNetworkCacheMetaData::RawHeader("Date", QLocale::c().toString(past, dateFormat).toLatin1())
+            << QNetworkCacheMetaData::RawHeader("Cache-control", "max-age=0"); // isn't used in cache loading
+    content.first.setRawHeaders(rawHeaders);
+    content.first.setLastModified(past);
+
+    QTest::newRow("expired,200,prefer-network")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferNetwork) << false << true;
+    QTest::newRow("expired,200,prefer-cache")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferCache) << false << true;
+
+    QTest::newRow("expired,304,prefer-network")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferNetwork) << true << true;
+    QTest::newRow("expired,304,prefer-cache")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << true << true;
+
+    //
+    // Set to not-expired
+    //
+    rawHeaders.clear();
+    rawHeaders << QNetworkCacheMetaData::RawHeader("Date", QLocale::c().toString(past, dateFormat).toLatin1())
+            << QNetworkCacheMetaData::RawHeader("Cache-control", "max-age=7200"); // isn't used in cache loading
+    content.first.setRawHeaders(rawHeaders);
+    content.first.setExpirationDate(future);
+
+    QTest::newRow("not-expired,200,always-network")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::AlwaysNetwork) << false << true;
+    QTest::newRow("not-expired,200,prefer-network")
+            << reply200 << "Not-reloaded" << content << int(QNetworkRequest::PreferNetwork) << true << false;
+    QTest::newRow("not-expired,200,prefer-cache")
+            << reply200 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << true << false;
+    QTest::newRow("not-expired,200,always-cache")
+            << reply200 << "Not-reloaded" << content << int(QNetworkRequest::AlwaysCache) << true << false;
+
+    QTest::newRow("not-expired,304,prefer-network")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferNetwork) << true << false;
+    QTest::newRow("not-expired,304,prefer-cache")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << true << false;
+    QTest::newRow("not-expired,304,always-cache")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::AlwaysCache) << true << false;
+
+    //
+    // Set must-revalidate now
+    //
+    rawHeaders.clear();
+    rawHeaders << QNetworkCacheMetaData::RawHeader("Date", QLocale::c().toString(past, dateFormat).toLatin1())
+            << QNetworkCacheMetaData::RawHeader("Cache-control", "max-age=7200, must-revalidate"); // must-revalidate is used
+    content.first.setRawHeaders(rawHeaders);
+
+    QTest::newRow("must-revalidate,200,always-network")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::AlwaysNetwork) << false << true;
+    QTest::newRow("must-revalidate,200,prefer-network")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferNetwork) << false << true;
+    QTest::newRow("must-revalidate,200,prefer-cache")
+            << reply200 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << true << false;
+    QTest::newRow("must-revalidate,200,always-cache")
+            << reply200 << "Not-reloaded" << content << int(QNetworkRequest::AlwaysCache) << true << false;
+
+    QTest::newRow("must-revalidate,304,prefer-network")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferNetwork) << true << true;
+    QTest::newRow("must-revalidate,304,prefer-cache")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << true << false;
+    QTest::newRow("must-revalidate,304,always-cache")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::AlwaysCache) << true << false;
+}
+
+void tst_QNetworkReply::ioGetFromHttpWithCache()
+{
+    QFETCH(QByteArray, dataToSend);
+    MiniHttpServer server(dataToSend);
+    server.doClose = false;
+
+    MyMemoryCache *memoryCache = new MyMemoryCache(&manager);
+    manager.setCache(memoryCache);
+
+    QFETCH(MyMemoryCache::CachedContent, cachedReply);
+    QUrl url = "http://localhost:" + QString::number(server.serverPort());
+    cachedReply.first.setUrl(url);
+    if (!cachedReply.second.isNull())
+        memoryCache->cache.insert(url.toEncoded(), cachedReply);
+
+    QFETCH(int, cacheMode);
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, cacheMode);
+    request.setAttribute(QNetworkRequest::CacheSaveControlAttribute, false);
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QTEST(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), "loadedFromCache");
+    QTEST(server.totalConnections > 0, "networkUsed");
+    QFETCH(QString, body);
+    QCOMPARE(reply->readAll().constData(), qPrintable(body));
+}
+
 void tst_QNetworkReply::ioGetWithManyProxies_data()
 {
     QTest::addColumn<QList<QNetworkProxy> >("proxyList");
@@ -2551,7 +2413,7 @@ void tst_QNetworkReply::ioGetWithManyProxies()
     connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
-    QTestEventLoop::instance().enterLoop(10);
+    QTestEventLoop::instance().enterLoop(15);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
@@ -2961,12 +2823,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QSignalSpy authenticationRequiredSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy proxyAuthenticationRequiredSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-#ifdef Q_OS_SYMBIAN
-    QTestEventLoop::instance().enterLoop(6);
-#else
-    QTestEventLoop::instance().enterLoop(3);
-#endif
-
+    QTestEventLoop::instance().enterLoop(12);
     disconnect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
@@ -3265,7 +3122,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     server.close();
 }
 
-void tst_QNetworkReply::ioPostToHttpEmtpyUploadProgress()
+void tst_QNetworkReply::ioPostToHttpEmptyUploadProgress()
 {
     QByteArray ba;
     ba.resize(0);
@@ -3311,6 +3168,40 @@ void tst_QNetworkReply::ioPostToHttpEmtpyUploadProgress()
     server.close();
 }
 
+void tst_QNetworkReply::lastModifiedHeaderForFile()
+{
+    QFileInfo fileInfo(SRCDIR "./bigfile");
+    QUrl url = QUrl::fromLocalFile(fileInfo.filePath());
+
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.head(request);
+    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+    QCOMPARE(header, fileInfo.lastModified());
+}
+
+void tst_QNetworkReply::lastModifiedHeaderForHttp()
+{
+    // Tue, 22 May 2007 12:04:57 GMT according to webserver
+    QUrl url = "http://" + QtNetworkSettings::serverName() + "/gif/fluke.gif";
+
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.head(request);
+    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+    QDateTime realDate = QDateTime::fromString("2007-05-22T12:04:57", Qt::ISODate);
+    realDate.setTimeSpec(Qt::UTC);
+
+    QCOMPARE(header, realDate);
+}
 
 void tst_QNetworkReply::rateControl_data()
 {
@@ -3363,142 +3254,6 @@ void tst_QNetworkReply::rateControl()
     int maxRate = rate * 1024 * 11 / 10;
     QVERIFY(sender.transferRate >= minRate);
     QVERIFY(sender.transferRate <= maxRate);
-}
-
-void tst_QNetworkReply::downloadPerformance()
-{
-    // unlike the above function, this one tries to send as fast as possible
-    // and measures how fast it was.
-    TimedSender sender(5000);
-    QNetworkRequest request("debugpipe://127.0.0.1:" + QString::number(sender.serverPort()) + "/?bare=1");
-    QNetworkReplyPtr reply = manager.get(request);
-    DataReader reader(reply, false);
-
-    QTime loopTime;
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    loopTime.start();
-    QTestEventLoop::instance().enterLoop(40);
-    int elapsedTime = loopTime.elapsed();
-    sender.wait();
-
-    qint64 receivedBytes = reader.totalBytes;
-    qDebug() << "tst_QNetworkReply::downloadPerformance" << "receive rate:" << (receivedBytes * 1000 / elapsedTime / 1024) << "kB/s and"
-             << elapsedTime << "ms";
-}
-
-void tst_QNetworkReply::uploadPerformance()
-{
-      ThreadedDataReader reader;
-      DataGenerator generator;
-
-
-      QNetworkRequest request("debugpipe://127.0.0.1:" + QString::number(reader.serverPort()) + "/?bare=1");
-      QNetworkReplyPtr reply = manager.put(request, &generator);
-      generator.start();
-      connect(&reader, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-      QTimer::singleShot(5000, &generator, SLOT(stop()));
-
-      QTestEventLoop::instance().enterLoop(30);
-      QCOMPARE(reply->error(), QNetworkReply::NoError);
-      QVERIFY(!QTestEventLoop::instance().timeout());
-}
-
-void tst_QNetworkReply::httpUploadPerformance()
-{
-#ifdef Q_OS_SYMBIAN
-      // SHow some mercy for non-desktop platform/s
-      enum {UploadSize = 4*1024*1024}; // 4 MB
-#else
-      enum {UploadSize = 128*1024*1024}; // 128 MB
-#endif
-      ThreadedDataReaderHttpServer reader;
-      FixedSizeDataGenerator generator(UploadSize);
-
-      QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(reader.serverPort()) + "/?bare=1"));
-      request.setHeader(QNetworkRequest::ContentLengthHeader,UploadSize);
-
-      QNetworkReplyPtr reply = manager.put(request, &generator);
-
-      connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-
-      QTime time;
-      generator.start();
-      time.start();
-      QTestEventLoop::instance().enterLoop(40);
-      QCOMPARE(reply->error(), QNetworkReply::NoError);
-      QVERIFY(!QTestEventLoop::instance().timeout());
-
-      qint64 elapsed = time.elapsed();
-      qDebug() << "tst_QNetworkReply::httpUploadPerformance" << elapsed << "msec, "
-              << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
-
-      reader.exit();
-      reader.wait();
-}
-
-
-void tst_QNetworkReply::performanceControlRate()
-{
-    // this is a control comparison for the other two above
-    // it does the same thing, but instead bypasses the QNetworkAccess system
-    qDebug() << "The following are the maximum transfer rates that we can get in this system"
-        " (bypassing QNetworkAccess)";
-
-    TimedSender sender(5000);
-    QTcpSocket sink;
-    sink.connectToHost("127.0.0.1", sender.serverPort());
-    DataReader reader(&sink, false);
-
-    QTime loopTime;
-    connect(&sink, SIGNAL(disconnected()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    loopTime.start();
-    QTestEventLoop::instance().enterLoop(40);
-    int elapsedTime = loopTime.elapsed();
-    sender.wait();
-
-    qint64 receivedBytes = reader.totalBytes;
-    qDebug() << "tst_QNetworkReply::performanceControlRate" << "receive rate:" << (receivedBytes * 1000 / elapsedTime / 1024) << "kB/s and"
-             << elapsedTime << "ms";
-}
-
-void tst_QNetworkReply::httpDownloadPerformance_data()
-{
-    QTest::addColumn<bool>("serverSendsContentLength");
-    QTest::addColumn<bool>("chunkedEncoding");
-
-    QTest::newRow("Server sends no Content-Length") << false << false;
-    QTest::newRow("Server sends Content-Length")     << true << false;
-    QTest::newRow("Server uses chunked encoding")     << false << true;
-
-}
-
-void tst_QNetworkReply::httpDownloadPerformance()
-{
-    QFETCH(bool, serverSendsContentLength);
-    QFETCH(bool, chunkedEncoding);
-#ifdef Q_OS_SYMBIAN
-    // Show some mercy to non-desktop platform/s
-    enum {UploadSize = 4*1024*1024}; // 4 MB
-#else
-    enum {UploadSize = 128*1024*1024}; // 128 MB
-#endif
-    HttpDownloadPerformanceServer server(UploadSize, serverSendsContentLength, chunkedEncoding);
-
-    QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
-    QNetworkReplyPtr reply = manager.get(request);
-
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-    HttpDownloadPerformanceClient client(reply);
-
-    QTime time;
-    time.start();
-    QTestEventLoop::instance().enterLoop(40);
-    QCOMPARE(reply->error(), QNetworkReply::NoError);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-
-    qint64 elapsed = time.elapsed();
-    qDebug() << "tst_QNetworkReply::httpDownloadPerformance" << elapsed << "msec, "
-            << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
 }
 
 void tst_QNetworkReply::downloadProgress_data()
@@ -3687,8 +3442,11 @@ void tst_QNetworkReply::receiveCookiesFromHttp_data()
     cookie = QNetworkCookie("a", "b");
     cookie.setPath("/not/part-of-path");
     header << cookie;
+    cookie.setDomain(QtNetworkSettings::serverName());
+    jar << cookie;
     QTest::newRow("invalid-cookie-path") << "a=b; path=/not/part-of-path" << header << jar;
 
+    jar.clear();
     cookie = QNetworkCookie("a", "b");
     cookie.setDomain(".example.com");
     header.clear();

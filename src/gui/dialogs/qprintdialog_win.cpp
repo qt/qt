@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,7 +52,7 @@
 #include <private/qprintengine_win_p.h>
 #include <private/qprinter_p.h>
 
-#if defined(Q_CC_MINGW) && !defined(PD_NOCURRENTPAGE)
+#if !defined(PD_NOCURRENTPAGE)
 #define PD_NOCURRENTPAGE    0x00800000
 #define PD_RESULT_PRINT	1
 #define PD_RESULT_APPLY	2
@@ -139,7 +139,7 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
     if (d->ep->printToFile)
         pd->Flags |= PD_PRINTTOFILE;
     Q_ASSERT(parent != 0 && parent->testAttribute(Qt::WA_WState_Created));
-    pd->hwndOwner = parent->winId();
+    pd->hwndOwner = parent->window()->winId();
     pd->lpPageRanges[0].nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
     pd->lpPageRanges[0].nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
     pd->nCopies = d->ep->num_copies;

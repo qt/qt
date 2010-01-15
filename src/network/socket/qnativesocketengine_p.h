@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -134,6 +134,8 @@ public:
                              quint16 port);
     bool hasPendingDatagrams() const;
     qint64 pendingDatagramSize() const;
+
+    qint64 bytesToWrite() const;
 
     qint64 receiveBufferSize() const;
     void setReceiveBufferSize(qint64 bufferSize);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,7 +69,7 @@ public:
     QBasicKeyEventTransition(QState *sourceState = 0);
     QBasicKeyEventTransition(QEvent::Type type, int key, QState *sourceState = 0);
     QBasicKeyEventTransition(QEvent::Type type, int key,
-                             Qt::KeyboardModifiers modifiersMask,
+                             Qt::KeyboardModifiers modifierMask,
                              QState *sourceState = 0);
     ~QBasicKeyEventTransition();
 
@@ -79,8 +79,8 @@ public:
     int key() const;
     void setKey(int key);
 
-    Qt::KeyboardModifiers modifiersMask() const;
-    void setModifiersMask(Qt::KeyboardModifiers modifiers);
+    Qt::KeyboardModifiers modifierMask() const;
+    void setModifierMask(Qt::KeyboardModifiers modifiers);
 
 protected:
     bool eventTest(QEvent *event);

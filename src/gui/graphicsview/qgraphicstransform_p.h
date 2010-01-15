@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,7 +54,7 @@
 //
 
 #include "private/qobject_p.h"
-
+#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
 
 class QGraphicsItem;
@@ -73,5 +73,6 @@ public:
 };
 
 QT_END_NAMESPACE
+#endif //QT_NO_GRAPHCISVIEW
 
 #endif // QGRAPHICSTRANSFORM_P_H

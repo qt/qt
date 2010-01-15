@@ -1,3 +1,718 @@
+2010-01-07  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        RVCT compiler with "-Otime -O3" optimization tries to optimize out 
+        inline new'ed pointers that are passed as arguments.
+        Proposed patch assigns new'ed pointer explicitly outside function call.
+
+        * API/JSClassRef.cpp:
+        (OpaqueJSClass::OpaqueJSClass):
+        (OpaqueJSClassContextData::OpaqueJSClassContextData):
+
+2010-01-07  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        Added time-based optimization and increased optimization level to O3,
+        conditionally for COMPILER(RVCT), 
+        for increasing performance of JavaScript execution.
+        (Default settings are Ospace and O2)
+
+        * runtime/Structure.h:
+
+2009-11-19  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Build fix for 32-bit Sparc machines: these machines are big-endian.
+
+        * wtf/Platform.h:
+
+2009-12-08  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Darin Adler.
+
+        Make WebKit build correctly on FreeBSD, IA64, and Alpha.
+        Based on work by Petr Salinger <Petr.Salinger@seznam.cz>,
+        and Colin Watson <cjwatson@ubuntu.com>.
+
+        * wtf/Platform.h:
+
+2009-12-18  Yongjun Zhang  <yongjun.zhang@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=32713
+        [Qt] make wtf/Assertions.h compile in winscw compiler.
+
+        Add string arg before ellipsis to help winscw compiler resolve variadic
+        macro definitions in wtf/Assertions.h. 
+
+        * wtf/Assertions.h:
+
+2009-11-30  Jan-Arve Sæther  <jan-arve.saether@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation with win32-icc
+
+        The Intel compiler does not support the __has_trivial_constructor type
+        trait.  The Intel Compiler can report itself as _MSC_VER >= 1400. The
+        reason for that is that the Intel Compiler depends on the Microsoft
+        Platform SDK, and in order to try to be "fully" MS compatible it will
+        "pretend" to be the same MS compiler as was shipped with the MS PSDK.
+        (Thus, compiling with win32-icc with VC8 SDK will make the source code
+        "think" the compiler at hand supports this type trait).
+
+        * wtf/TypeTraits.h:
+
+2009-11-28  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        Apply workaround for the limitation of VirtualFree with MEM_RELEASE to all ports running on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=31943
+
+        * runtime/MarkStack.h:
+        (JSC::MarkStack::MarkStackArray::shrinkAllocation):
+
+2009-11-18  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Darin Adler.
+
+        Fix the clobber list of cacheFlush for ARM and Thumb2 on Linux
+        https://bugs.webkit.org/show_bug.cgi?id=31631
+
+        * jit/ExecutableAllocator.h:
+        (JSC::ExecutableAllocator::cacheFlush):
+
+2009-11-23  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Symbian] Fix lastIndexOf() for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=31773
+
+        Symbian soft floating point library has problems with operators
+        comparing NaN to numbers. Without a workaround lastIndexOf() 
+        function does not work.
+
+        Patch developed by David Leong.
+
+        * runtime/StringPrototype.cpp:
+        (JSC::stringProtoFuncLastIndexOf):Add an extra test 
+        to check for NaN for Symbian.
+
+2009-11-18  Harald Fernengel  <harald.fernengel@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix detection of linux-g++
+
+        Never use "linux-g++*" to check for linux-g++, since this will break embedded
+        builds which use linux-arm-g++ and friends. Use 'linux*-g++*' to check for any
+        g++ on linux mkspec.
+
+        * JavaScriptCore.pri:
+
+2009-11-16  Joerg Bornemann  <joerg.bornemann@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix Qt build on Windows CE 6.
+
+        * JavaScriptCore.pri: Add missing include path.
+        * wtf/Platform.h: Include ce_time.h for Windows CE 6.
+
+2009-11-12  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Fix linking on Linux 32-bit.
+
+        It was missing the ".text" directive at the top of the file,
+        indicating that code would follow. Without it, the assembler created
+        "NOTYPE" symbols, which would result in linker errors.
+        https://bugs.webkit.org/show_bug.cgi?id=30863
+
+        * jit/JITStubs.cpp:
+
+2009-11-13  İsmail Dönmez  <ismail@namtrac.org>
+
+        Reviewed by Antti Koivisto.
+
+        Fix typo, ce_time.cpp should be ce_time.c
+
+        * JavaScriptCore.pri:
+
+2009-11-12  Richard Moe Gustavsen  <richard.gustavsen@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Disable pthread_setname_np.
+
+        This allows Qt builds on Mac from 10.6 to run on earlier version
+        where this symbol is not present.
+        https://bugs.webkit.org/show_bug.cgi?id=31403
+
+        * wtf/Platform.h:
+
+2009-11-02  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        REGRESSION (r48573): JSC may incorrectly cache chain lookups with a dictionary at the head of the chain
+        https://bugs.webkit.org/show_bug.cgi?id=31045
+
+        Add guards to prevent caching of prototype chain lookups with dictionaries at the
+        head of the chain.  Also add a few tighter assertions to cached prototype lookups
+        to catch this in future.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::tryCacheGetByID):
+        (JSC::Interpreter::privateExecute):
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::tryCacheGetByID):
+
+2009-10-30  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Qt] Use the default timeout interval for JS as the HTML tokenizer delay for setHtml()
+
+        This ensures that long-running JavaScript (for example due to a modal alert() dialog),
+        will not trigger a deferred load after only 500ms (the default tokenizer delay) while
+        still giving a reasonable timeout (10 seconds) to prevent deadlock.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29381
+
+        * runtime/TimeoutChecker.h: Add getter for the timeout interval
+
+2009-10-29  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        Add cacheFlush support for Thumb-2 on Linux
+        https://bugs.webkit.org/show_bug.cgi?id=30865
+
+        * jit/ExecutableAllocator.h:
+        (JSC::ExecutableAllocator::cacheFlush):
+
+2009-10-28  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by Oliver Hunt.
+
+        JSC JIT on ARMv7 cannot link jumps >16Mb range
+        https://bugs.webkit.org/show_bug.cgi?id=30891
+
+        Start planing all relative jumps as move-32-bit-immediate-to-register-BX.
+        In the cases where the jump would fall within a relative jump range, use a relative jump.
+
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * assembler/ARMv7Assembler.h:
+        (JSC::ARMv7Assembler::~ARMv7Assembler):
+        (JSC::ARMv7Assembler::LinkRecord::LinkRecord):
+        (JSC::ARMv7Assembler::):
+        (JSC::ARMv7Assembler::executableCopy):
+        (JSC::ARMv7Assembler::linkJump):
+        (JSC::ARMv7Assembler::relinkJump):
+        (JSC::ARMv7Assembler::setInt32):
+        (JSC::ARMv7Assembler::isB):
+        (JSC::ARMv7Assembler::isBX):
+        (JSC::ARMv7Assembler::isMOV_imm_T3):
+        (JSC::ARMv7Assembler::isMOVT):
+        (JSC::ARMv7Assembler::isNOP_T1):
+        (JSC::ARMv7Assembler::isNOP_T2):
+        (JSC::ARMv7Assembler::linkJumpAbsolute):
+        (JSC::ARMv7Assembler::twoWordOp5i6Imm4Reg4EncodedImmFirst):
+        (JSC::ARMv7Assembler::twoWordOp5i6Imm4Reg4EncodedImmSecond):
+        (JSC::ARMv7Assembler::ARMInstructionFormatter::twoWordOp5i6Imm4Reg4EncodedImm):
+        * assembler/MacroAssemblerARMv7.h:
+        (JSC::MacroAssemblerARMv7::makeJump):
+        (JSC::MacroAssemblerARMv7::makeBranch):
+        * jit/JIT.h:
+        * wtf/Platform.h:
+
+2009-10-28  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Improve for..in enumeration performance
+        https://bugs.webkit.org/show_bug.cgi?id=30887
+
+        Improve indexing of an object with a for..in iterator by
+        identifying cases where get_by_val is being used with a iterator
+        as the subscript and replace it with a new get_by_pname
+        bytecode.  get_by_pname then optimizes lookups that directly access
+        the base object.
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::dump):
+        * bytecode/Opcode.h:
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::emitGetByVal):
+        * bytecompiler/BytecodeGenerator.h:
+        (JSC::BytecodeGenerator::pushOptimisedForIn):
+        (JSC::BytecodeGenerator::popOptimisedForIn):
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::privateExecute):
+        * jit/JIT.cpp:
+        (JSC::JIT::privateCompileMainPass):
+        (JSC::JIT::privateCompileSlowCases):
+        * jit/JIT.h:
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::compileGetDirectOffset):
+        (JSC::JIT::emit_op_get_by_pname):
+        (JSC::JIT::emitSlow_op_get_by_pname):
+        * parser/Nodes.cpp:
+        (JSC::ForInNode::emitBytecode):
+        * runtime/JSObject.h:
+        * runtime/JSPropertyNameIterator.cpp:
+        (JSC::JSPropertyNameIterator::create):
+        * runtime/JSPropertyNameIterator.h:
+        (JSC::JSPropertyNameIterator::getOffset):
+        (JSC::JSPropertyNameIterator::JSPropertyNameIterator):
+        * runtime/JSValue.h:
+        (JSC::JSValue::):
+        * runtime/Structure.cpp:
+        (JSC::Structure::addPropertyTransition):
+        (JSC::Structure::changePrototypeTransition):
+        (JSC::Structure::despecifyFunctionTransition):
+        (JSC::Structure::addAnonymousSlotsTransition):
+        (JSC::Structure::getterSetterTransition):
+        (JSC::Structure::toDictionaryTransition):
+        (JSC::Structure::addPropertyWithoutTransition):
+          Track the existence (or not) of non-enumerable properties.
+        * runtime/Structure.h:
+        (JSC::Structure::propertyStorageCapacity):
+        (JSC::Structure::propertyStorageSize):
+        (JSC::Structure::hasNonEnumerableProperties):
+        (JSC::Structure::hasAnonymousSlots):
+
+2009-10-28  Dmitry Titov  <dimich@chromium.org>
+
+        Not reviewed, attemp to fix Windows build.
+
+        Touch the cpp file to cause recompile.
+
+        * wtf/Threading.cpp:
+        (WTF::threadEntryPoint):
+
+2009-10-28  Dmitry Titov  <dimich@chromium.org>
+
+        Reviewed by David Levin.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30805
+        Add MessageQueue::removeIf(Predicate&) to remove certain tasks without pulling them from the queue.
+        Existing Database tests cover this since Database removes tasks when it is stopped.
+
+        * wtf/MessageQueue.h:
+        (WTF::::removeIf):
+
+2009-10-28  Afonso R. Costa Jr.  <afonso.costa@openbossa.org>
+
+        Reviewed by Oliver Hunt.
+
+        [Qt] Enable YARR when YARR_JIT is enabled
+        https://bugs.webkit.org/show_bug.cgi?id=30730
+
+        When enabling or disabling JIT using JAVASCRIPTCORE_JIT, the ENABLE_YARR should
+        be toggled also.
+
+        * JavaScriptCore.pri:
+
+2009-10-24  Martin Robinson  <martin.james.robinson@gmail.com>
+
+        Reviewed by Oliver Hunt.
+
+        Fix strict aliasing warning by switching reinterpret_cast to bitwise_cast.
+
+        strict-aliasing warnings in JSFunction.h
+        https://bugs.webkit.org/show_bug.cgi?id=27869
+
+        * runtime/JSFunction.h:
+        (JSC::JSFunction::nativeFunction):
+        (JSC::JSFunction::scopeChain):
+        (JSC::JSFunction::setScopeChain):
+        (JSC::JSFunction::setNativeFunction):
+
+2009-10-28  Jan-Arve Sæther <jan-arve.saether@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Build-fix for 64-bit Windows
+
+        * wtf/Platform.h: Make sure to use WTF_USE_JSVALUE64
+
+2009-10-28  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by NOBODY (build fix!).
+
+        * jit/JIT.h:
+
+2009-10-26  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Rubber-stamped by Darin Adler.
+
+        Export fastMalloc, fastCalloc, fastRealloc and fastFree on GCC/Unix
+        https://bugs.webkit.org/show_bug.cgi?id=30769
+
+        When using -fvisibility=hidden to hide all internal symbols by default
+        the malloc symbols will be hidden as well. For memory instrumentation
+        it is needed to provide an instrumented version of these symbols and
+        override the normal routines and by changing the visibility back to
+        default this becomes possible.
+
+        The only other solution would be to use system malloc instead of the
+        TCmalloc implementation but this will not allow to analyze memory
+        behavior with the default allocator.
+
+        * wtf/FastMalloc.h: Define WTF_FAST_MALLOC_EXPORT for GCC and !darwin
+
+2009-10-27  Gavin Barraclough  <barraclough@apple.com>
+
+        Rubber Stamped by Samuel Q. Weinig.
+
+        Make the asserts protecting the offsets in the JIT more descriptive.
+
+        * jit/JIT.h:
+        * jit/JITCall.cpp:
+        (JSC::JIT::compileOpCall):
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::emit_op_method_check):
+        (JSC::JIT::compileGetByIdHotPath):
+        (JSC::JIT::compileGetByIdSlowCase):
+        (JSC::JIT::emit_op_put_by_id):
+
+2009-10-27  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        A little bit of refactoring in the date code.
+
+        * JavaScriptCore.exp: Don't export this unused symbol.
+
+        * runtime/DateConstructor.cpp:
+        (JSC::constructDate):
+
+        * runtime/DateInstance.cpp:
+        (JSC::DateInstance::DateInstance):
+        * runtime/DateInstance.h: Removed some unused functions. Changed the default
+        constructor to ensure that a DateInstance is always initialized.
+
+        * runtime/DatePrototype.cpp:
+        (JSC::DatePrototype::DatePrototype): Pass an initializer to our constructor,
+        since it now requires one.
+
+        * wtf/DateMath.cpp:
+        (WTF::msToGregorianDateTime): Only compute our offset from UTC if our
+        output will require it. Otherwise, our offset is 0.
+
+2009-10-27  Geoffrey Garen  <ggaren@apple.com>
+
+        Build fix: Mark DateInstaceCache.h private, so other frameworks can see it.
+
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+
+2009-10-27  Geoffrey Garen  <ggaren@apple.com>
+
+        Build fix: re-readded this file.
+
+        * runtime/DateInstanceCache.h: Added.
+        (JSC::DateInstanceData::create):
+        (JSC::DateInstanceData::DateInstanceData):
+        (JSC::DateInstanceCache::DateInstanceCache):
+        (JSC::DateInstanceCache::add):
+        (JSC::DateInstanceCache::lookup):
+
+2009-10-27  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Darin Adler and Oliver Hunt.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30800
+        Cache recently computed date data.
+        
+        SunSpider reports a ~0.5% speedup, mostly from date-format-tofte.js.
+
+        * GNUmakefile.am:
+        * JavaScriptCore.gypi:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj: Added new file.
+
+        * runtime/DateInstance.cpp:
+        (JSC::DateInstance::DateInstance):
+        (JSC::DateInstance::getGregorianDateTime): Use the shared cache.
+
+        * runtime/DateInstance.h: Renamed m_cache to m_data, to avoid the confusion
+        of a "cache cache".
+
+        * runtime/DatePrototype.cpp:
+        (JSC::formatLocaleDate):
+        (JSC::dateProtoFuncToString):
+        (JSC::dateProtoFuncToUTCString):
+        (JSC::dateProtoFuncToISOString):
+        (JSC::dateProtoFuncToDateString):
+        (JSC::dateProtoFuncToTimeString):
+        (JSC::dateProtoFuncGetFullYear):
+        (JSC::dateProtoFuncGetUTCFullYear):
+        (JSC::dateProtoFuncToGMTString):
+        (JSC::dateProtoFuncGetMonth):
+        (JSC::dateProtoFuncGetUTCMonth):
+        (JSC::dateProtoFuncGetDate):
+        (JSC::dateProtoFuncGetUTCDate):
+        (JSC::dateProtoFuncGetDay):
+        (JSC::dateProtoFuncGetUTCDay):
+        (JSC::dateProtoFuncGetHours):
+        (JSC::dateProtoFuncGetUTCHours):
+        (JSC::dateProtoFuncGetMinutes):
+        (JSC::dateProtoFuncGetUTCMinutes):
+        (JSC::dateProtoFuncGetSeconds):
+        (JSC::dateProtoFuncGetUTCSeconds):
+        (JSC::dateProtoFuncGetTimezoneOffset):
+        (JSC::setNewValueFromTimeArgs):
+        (JSC::setNewValueFromDateArgs):
+        (JSC::dateProtoFuncSetYear):
+        (JSC::dateProtoFuncGetYear): Pass an ExecState to these functions, so they
+        can access the DateInstanceCache.
+
+        * runtime/JSGlobalData.h: Keep a DateInstanceCache.
+
+2009-10-27  James Robinson  <jamesr@chromium.org>
+
+        Reviewed by Darin Fisher.
+
+        Ensures that JavaScriptCore/wtf/CurrentTime.cpp is not built in PLATFORM(CHROMIUM) builds.
+
+        Chromium uses a different method to calculate the current time than is used in
+        JavaScriptCore/wtf/CurrentTime.cpp. This can lead to time skew when calls to currentTime() and Chromium's time
+        function are mixed.  In particular, timers can get scheduled in the past which leads to 100% CPU use.
+        See http://code.google.com/p/chromium/issues/detail?id=25892 for an example.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30833
+
+        * JavaScriptCore.gyp/JavaScriptCore.gyp:
+        * wtf/CurrentTime.cpp:
+
+2009-10-27  Peter Varga  <pvarga@inf.u-szeged.hu>
+
+        Rubber-stamped by Tor Arne Vestbø.
+
+        Fix typo in RegexInterpreter.cpp and RegexJIT.cpp alterantive to
+        alternative.
+
+        * yarr/RegexInterpreter.cpp:
+        (JSC::Yarr::ByteCompiler::alternativeBodyDisjunction):
+        (JSC::Yarr::ByteCompiler::alternativeDisjunction):
+        (JSC::Yarr::ByteCompiler::emitDisjunction):
+        * yarr/RegexJIT.cpp:
+        (JSC::Yarr::RegexGenerator::generateDisjunction):
+
+2009-10-26  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Make .rc files compile on Windows without depending on MFC headers
+        https://bugs.webkit.org/show_bug.cgi?id=30750
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.rc: Use
+        winresrc.h because it exists even when MFC is not installed, and is
+        all that's needed here.
+
+2009-10-26  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        The thunkReturnAddress is on JITStackFrame on ARM JIT as well
+        https://bugs.webkit.org/show_bug.cgi?id=30782
+
+        Move the thunkReturnAddress from top of the stack into the JITStackFrame
+        structure. This is a requirement for JSValue32_64 support on ARM.
+
+        * assembler/MacroAssemblerARM.h:
+        (JSC::MacroAssemblerARM::ret): Return with link register
+        (JSC::MacroAssemblerARM::prepareCall): Store the return address in link register
+        * jit/JIT.h: Remove unused ctiReturnRegister
+        * jit/JITInlineMethods.h: Same as ARMv7
+        (JSC::JIT::restoreArgumentReference): Ditto.
+        (JSC::JIT::restoreArgumentReferenceForTrampoline): Ditto.
+        * jit/JITOpcodes.cpp: Remove ctiReturnRegister related instruction
+        * jit/JITStubs.cpp: Store thunkReturnAddress on JITStackFrame. Use
+        small trampoline functions which handle return addresses for each
+        CTI_STUB_FUNCTION.
+        * jit/JITStubs.h: Store thunkReturnAddress on JITStackFrame
+        (JSC::JITStackFrame::returnAddressSlot): Return with the address of thunkReturnAddress
+        * yarr/RegexJIT.cpp:
+        (JSC::Yarr::RegexGenerator::generateEnter): Remove the unnecessary instruction
+
+2009-10-26  Steve Block  <steveblock@google.com>
+
+        Reviewed by Darin Adler.
+
+        Adds ability to disable ReadWriteLock on platforms (eg Android) that use pthreads but do not support pthread_rwlock.
+        https://bugs.webkit.org/show_bug.cgi?id=30713
+
+        * wtf/Platform.h: Modified. Defines HAVE_PTHREAD_RWLOCK for all platforms currently using pthreads.
+        * wtf/Threading.h: Modified. Use pthread_rwlock_t only when HAVE_PTHREAD_RWLOCK is defined.
+        * wtf/ThreadingPthreads.cpp: Modified. Build ReadWriteLock methods only when HAVE_PTHREAD_RWLOCK is defined.
+
+2009-10-24  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] [Symbian] Set the capability and memory required to run QtWebKit for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=30476
+
+        Assign ReadUserData WriteUserData NetworkServices Symbian capabilities
+        to jsc.exe.
+
+        * jsc.pro:
+
+2009-10-23  Steve Block  <steveblock@google.com>
+
+        Reviewed by Dmitry Titov.
+
+        Fixes a leak in createThreadInternal on Android.
+        https://bugs.webkit.org/show_bug.cgi?id=30698
+
+        * wtf/ThreadingPthreads.cpp: Modified.
+        (WTF::createThreadInternal): Avoid leaking a ThreadData object on failure.
+
+2009-10-22  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Fixed ASSERT when opening Safari's Caches window while the Web Inspector
+        is open.
+
+        * runtime/Collector.cpp:
+        (JSC::typeName): Added two new types to the type name list in the Collector.
+        These types have been around for a while, but nobody remembered to consider them here.
+
+        * runtime/JSCell.h:
+        (JSC::JSCell::isPropertyNameIterator):
+        * runtime/JSPropertyNameIterator.h:
+        (JSC::JSPropertyNameIterator::isPropertyNameIterator): Give the Collector
+        a way to tell if a cell is a JSPropertyNameIterator.
+
+2009-10-22  Steve Falkenburg  <sfalken@apple.com>
+
+        Reviewed by Jon Honeycutt.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30686
+        Remove debug-specific def file.
+        Only Debug_All target uses JavaScriptCore_debug.dll naming, and since
+        that target is only used internally, maintaining two files just to
+        suppress a single link warning isn't worthwhile.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreCommon.vsprops:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def: Removed.
+
+2009-10-21  Jon Honeycutt  <jhoneycutt@apple.com>
+
+        <rdar://problem/7270320> Screenshots of off-screen plug-ins are blank
+        <rdar://problem/7270314> After halting a transparent PluginView on
+        Windows, the transparency is applied twice
+
+        Reviewed by Dan Bernstein.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        Export WTF::deleteOwnedPtr(HDC).
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+        Ditto.
+
+2009-10-20  Geoffrey Garen  <ggaren@apple.com>
+
+        Windows build fix: updated variable name.
+
+        * runtime/DatePrototype.cpp:
+        (JSC::formatLocaleDate):
+
+2009-10-20  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Mark Rowe.
+
+        * jit/JITOpcodes.cpp:
+        (JSC::JIT::emit_op_next_pname): Slightly tweaked this #ifdef to match the
+        size of a JSValue because m_jsStrings is an array of JSValues.
+
+2009-10-20  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Mark Rowe.
+
+        Fixed a 64-bit regression caused by the fix for
+        https://bugs.webkit.org/show_bug.cgi?id=30570.
+
+        * jit/JITOpcodes.cpp:
+        (JSC::JIT::emit_op_next_pname): Use TimesEight stepping on 64-bit, since
+        64-bit pointers are eight bytes long.
+
+2009-10-20  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Refactored DateInstance::msToGregorianDateTime so that a DateInstance's
+        caller doesn't need to supply the DateInstance's own internal value to
+        the DateInstance.
+
+        * runtime/DateInstance.cpp:
+        (JSC::DateInstance::getGregorianDateTime): Renamed from "msToGregorianDateTime".
+
+        * runtime/DateInstance.h:
+        * runtime/DatePrototype.cpp:
+        (JSC::formatLocaleDate):
+        (JSC::dateProtoFuncToString):
+        (JSC::dateProtoFuncToUTCString):
+        (JSC::dateProtoFuncToISOString):
+        (JSC::dateProtoFuncToDateString):
+        (JSC::dateProtoFuncToTimeString):
+        (JSC::dateProtoFuncToLocaleString):
+        (JSC::dateProtoFuncToLocaleDateString):
+        (JSC::dateProtoFuncToLocaleTimeString):
+        (JSC::dateProtoFuncGetTime):
+        (JSC::dateProtoFuncGetFullYear):
+        (JSC::dateProtoFuncGetUTCFullYear):
+        (JSC::dateProtoFuncToGMTString):
+        (JSC::dateProtoFuncGetMonth):
+        (JSC::dateProtoFuncGetUTCMonth):
+        (JSC::dateProtoFuncGetDate):
+        (JSC::dateProtoFuncGetUTCDate):
+        (JSC::dateProtoFuncGetDay):
+        (JSC::dateProtoFuncGetUTCDay):
+        (JSC::dateProtoFuncGetHours):
+        (JSC::dateProtoFuncGetUTCHours):
+        (JSC::dateProtoFuncGetMinutes):
+        (JSC::dateProtoFuncGetUTCMinutes):
+        (JSC::dateProtoFuncGetSeconds):
+        (JSC::dateProtoFuncGetUTCSeconds):
+        (JSC::dateProtoFuncGetTimezoneOffset):
+        (JSC::setNewValueFromTimeArgs):
+        (JSC::setNewValueFromDateArgs):
+        (JSC::dateProtoFuncSetYear):
+        (JSC::dateProtoFuncGetYear): Also renamed "utc" to "outputIsUTC", for clarity.
+
+2009-10-20  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Geoffrey Garen.
+
+        The op_next_pname should use 4 bytes addressing mode in case of JSValue32
+        https://bugs.webkit.org/show_bug.cgi?id=30570
+
+        * jit/JITOpcodes.cpp:
+        (JSC::JIT::emit_op_next_pname):
+
+2009-10-20  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Oliver Hunt.
+
+        Move OverridesMarkChildren flag from DatePrototype to its parent class
+        https://bugs.webkit.org/show_bug.cgi?id=30372
+
+        * runtime/DateInstance.h:
+        (JSC::DateInstance::createStructure):
+        * runtime/DatePrototype.h:
+
 2009-10-19  Geoffrey Garen  <ggaren@apple.com>
 
         Reviewed by Oliver Hunt.

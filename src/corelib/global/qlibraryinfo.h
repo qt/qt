@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,7 +60,9 @@ public:
     static QString licensedProducts();
 
     static QString buildKey();
+#ifndef QT_NO_DATESTRING
     static QDate buildDate();
+#endif //QT_NO_DATESTRING
 
     enum LibraryLocation
     {

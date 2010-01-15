@@ -143,8 +143,11 @@ var WebInspector = {
             this.panels.profiles = new WebInspector.ProfilesPanel();
             this.panels.profiles.registerProfileType(new WebInspector.CPUProfileType());
         }
+        if (hiddenPanels.indexOf("timeline") === -1 && hiddenPanels.indexOf("timeline") === -1)
+            this.panels.timeline = new WebInspector.TimelinePanel();
+
         if (hiddenPanels.indexOf("storage") === -1 && hiddenPanels.indexOf("databases") === -1)
-            this.panels.storage = new WebInspector.StoragePanel();      
+            this.panels.storage = new WebInspector.StoragePanel();
     },
 
     _loadPreferences: function()
@@ -367,8 +370,11 @@ WebInspector.loaded = function()
 {
     var platform = InspectorController.platform();
     document.body.addStyleClass("platform-" + platform);
+    var port = InspectorController.port();
+    document.body.addStyleClass("port-" + port);
 
     this._loadPreferences();
+    this.pendingDispatches = 0;
 
     this.drawer = new WebInspector.Drawer();
     this.console = new WebInspector.ConsoleView(this.drawer);
@@ -379,13 +385,13 @@ WebInspector.loaded = function()
     this.domAgent = new WebInspector.DOMAgent();
 
     this.resourceCategories = {
-        documents: new WebInspector.ResourceCategory(WebInspector.UIString("Documents"), "documents"),
-        stylesheets: new WebInspector.ResourceCategory(WebInspector.UIString("Stylesheets"), "stylesheets"),
-        images: new WebInspector.ResourceCategory(WebInspector.UIString("Images"), "images"),
-        scripts: new WebInspector.ResourceCategory(WebInspector.UIString("Scripts"), "scripts"),
-        xhr: new WebInspector.ResourceCategory(WebInspector.UIString("XHR"), "xhr"),
-        fonts: new WebInspector.ResourceCategory(WebInspector.UIString("Fonts"), "fonts"),
-        other: new WebInspector.ResourceCategory(WebInspector.UIString("Other"), "other")
+        documents: new WebInspector.ResourceCategory("documents", WebInspector.UIString("Documents"), "rgb(47,102,236)"),
+        stylesheets: new WebInspector.ResourceCategory("stylesheets", WebInspector.UIString("Stylesheets"), "rgb(157,231,119)"),
+        images: new WebInspector.ResourceCategory("images", WebInspector.UIString("Images"), "rgb(164,60,255)"),
+        scripts: new WebInspector.ResourceCategory("scripts", WebInspector.UIString("Scripts"), "rgb(255,121,0)"),
+        xhr: new WebInspector.ResourceCategory("xhr", WebInspector.UIString("XHR"), "rgb(231,231,10)"),
+        fonts: new WebInspector.ResourceCategory("fonts", WebInspector.UIString("Fonts"), "rgb(255,82,62)"),
+        other: new WebInspector.ResourceCategory("other", WebInspector.UIString("Other"), "rgb(186,186,186)")
     };
 
     this.panels = {};
@@ -456,8 +462,6 @@ WebInspector.loaded = function()
     // this._updateErrorAndWarningCounts();
 
     var searchField = document.getElementById("search");
-    searchField.addEventListener("keydown", this.searchKeyDown.bind(this), false);
-    searchField.addEventListener("keyup", this.searchKeyUp.bind(this), false);
     searchField.addEventListener("search", this.performSearch.bind(this), false); // when the search is emptied
 
     toolbarElement.addEventListener("mousedown", this.toolbarDragStart, true);
@@ -494,7 +498,9 @@ WebInspector.dispatch = function() {
     function delayDispatch()
     {
         WebInspector[methodName].apply(WebInspector, parameters);
+        WebInspector.pendingDispatches--;
     }
+    WebInspector.pendingDispatches++;
     setTimeout(delayDispatch, 0);
 }
 
@@ -511,13 +517,19 @@ WebInspector.windowResize = function(event)
 
 WebInspector.windowFocused = function(event)
 {
-    if (event.target.nodeType === Node.DOCUMENT_NODE)
+    // Fires after blur, so when focusing on either the main inspector
+    // or an <iframe> within the inspector we should always remove the
+    // "inactive" class.
+    if (event.target.document.nodeType === Node.DOCUMENT_NODE)
         document.body.removeStyleClass("inactive");
 }
 
-WebInspector.windowBlured = function(event)
+WebInspector.windowBlurred = function(event)
 {
-    if (event.target.nodeType === Node.DOCUMENT_NODE)
+    // Leaving the main inspector or an <iframe> within the inspector.
+    // We can add "inactive" now, and if we are moving the focus to another
+    // part of the inspector then windowFocused will correct this.
+    if (event.target.document.nodeType === Node.DOCUMENT_NODE)
         document.body.addStyleClass("inactive");
 }
 
@@ -626,7 +638,9 @@ WebInspector.documentKeyDown = function(event)
 
                 break;
 
-            case "U+005B": // [ key
+            // Windows and Mac have two different definitions of [, so accept both.
+            case "U+005B":
+            case "U+00DB": // [ key
                 if (isMac)
                     var isRotateLeft = event.metaKey && !event.shiftKey && !event.ctrlKey && !event.altKey;
                 else
@@ -641,7 +655,9 @@ WebInspector.documentKeyDown = function(event)
 
                 break;
 
-            case "U+005D": // ] key
+            // Windows and Mac have two different definitions of ], so accept both.
+            case "U+005D":
+            case "U+00DD":  // ] key
                 if (isMac)
                     var isRotateRight = event.metaKey && !event.shiftKey && !event.ctrlKey && !event.altKey;
                 else
@@ -807,7 +823,7 @@ WebInspector.toggleAttach = function()
 
 WebInspector.toolbarDragStart = function(event)
 {
-    if ((!WebInspector.attached && InspectorController.platform() !== "mac-leopard") || InspectorController.platform() == "qt")
+    if ((!WebInspector.attached && InspectorController.platform() !== "mac-leopard") || InspectorController.port() == "qt")
         return;
 
     var target = event.target;
@@ -1165,7 +1181,7 @@ WebInspector.didCommitLoad = function()
     WebInspector.setDocument(null);
 }
 
-WebInspector.addMessageToConsole = function(payload)
+WebInspector.addConsoleMessage = function(payload)
 {
     var consoleMessage = new WebInspector.ConsoleMessage(
         payload.source,
@@ -1177,6 +1193,11 @@ WebInspector.addMessageToConsole = function(payload)
         payload.repeatCount);
     consoleMessage.setMessageBody(Array.prototype.slice.call(arguments, 1));
     this.console.addMessage(consoleMessage);
+}
+
+WebInspector.updateConsoleMessageRepeatCount = function(count)
+{
+    this.console.updateMessageRepeatCount(count);
 }
 
 WebInspector.log = function(message)
@@ -1423,26 +1444,15 @@ WebInspector.linkifyURL = function(url, linkText, classes, isExternal)
 
 WebInspector.addMainEventListeners = function(doc)
 {
-    doc.defaultView.addEventListener("focus", this.windowFocused.bind(this), true);
-    doc.defaultView.addEventListener("blur", this.windowBlured.bind(this), true);
+    doc.defaultView.addEventListener("focus", this.windowFocused.bind(this), false);
+    doc.defaultView.addEventListener("blur", this.windowBlurred.bind(this), false);
     doc.addEventListener("click", this.documentClick.bind(this), true);
 }
 
 WebInspector.searchKeyDown = function(event)
 {
-    if (event.keyIdentifier !== "Enter")
-        return;
-
-    // Call preventDefault since this was the Enter key. This prevents a "search" event
-    // from firing for key down. We handle the Enter key on key up in searchKeyUp. This
-    // stops performSearch from being called twice in a row.
-    event.preventDefault();
-}
-
-WebInspector.searchKeyUp = function(event)
-{
-    if (event.keyIdentifier !== "Enter")
-        return;
+    if (!isEnterKey(event))
+        return false;
 
     // Select all of the text so the user can easily type an entirely new query.
     event.target.select();
@@ -1451,14 +1461,33 @@ WebInspector.searchKeyUp = function(event)
     // performance is poor because of searching on every key. The search field has
     // the incremental attribute set, so we still get incremental searches.
     this.performSearch(event);
+
+    // Call preventDefault since this was the Enter key. This prevents a "search" event
+    // from firing for key down. This stops performSearch from being called twice in a row.
+    event.preventDefault();
 }
 
 WebInspector.performSearch = function(event)
 {
     var query = event.target.value;
     var forceSearch = event.keyIdentifier === "Enter";
+    var isShortSearch = (query.length < 3);
 
-    if (!query || !query.length || (!forceSearch && query.length < 3)) {
+    // Clear a leftover short search flag due to a non-conflicting forced search.
+    if (isShortSearch && this.shortSearchWasForcedByKeyEvent && this.currentQuery !== query)
+        delete this.shortSearchWasForcedByKeyEvent;
+
+    // Indicate this was a forced search on a short query.
+    if (isShortSearch && forceSearch)
+        this.shortSearchWasForcedByKeyEvent = true;
+
+    if (!query || !query.length || (!forceSearch && isShortSearch)) {
+        // Prevent clobbering a short search forced by the user.
+        if (this.shortSearchWasForcedByKeyEvent) {
+            delete this.shortSearchWasForcedByKeyEvent;
+            return;
+        }
+
         delete this.currentQuery;
 
         for (var panelName in this.panels) {
@@ -1531,7 +1560,8 @@ WebInspector.UIString = function(string)
         string = window.localizedStrings[string];
     else {
         if (!(string in this.missingLocalizedStrings)) {
-            console.error("Localized string \"" + string + "\" not found.");
+            if (!WebInspector.InspectorControllerStub)
+                console.error("Localized string \"" + string + "\" not found.");
             this.missingLocalizedStrings[string] = true;
         }
 
@@ -1614,7 +1644,7 @@ WebInspector.startEditing = function(element, committedCallback, cancelledCallba
         if (event.handled)
             return;
 
-        if (event.keyIdentifier === "Enter") {
+        if (isEnterKey(event)) {
             editingCommitted.call(element);
             event.preventDefault();
         } else if (event.keyCode === 27) { // Escape key

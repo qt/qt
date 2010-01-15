@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -74,7 +74,7 @@ namespace QPatternist
     class XsdSchemaParser;
     class XsdValidatingInstanceReader;
     class VariableLoader;
-};
+}
 
 class Q_XMLPATTERNS_EXPORT QXmlQuery
 {

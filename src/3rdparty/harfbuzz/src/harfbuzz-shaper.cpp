@@ -637,7 +637,9 @@ const HB_ScriptEngine HB_ScriptEngines[] = {
     // Runic
     { HB_BasicShape, 0 },
     // Khmer
-    { HB_KhmerShape, HB_KhmerAttributes }
+    { HB_KhmerShape, HB_KhmerAttributes },
+    // N'Ko
+    { HB_ArabicShape, 0}
 };
 
 void HB_GetCharAttributes(const HB_UChar16 *string, hb_uint32 stringLength,
@@ -877,7 +879,9 @@ static const OTScripts ot_scripts [] = {
     // Runic
     { HB_MAKE_TAG('r', 'u', 'n', 'r'), 0 },
     // Khmer
-    { HB_MAKE_TAG('k', 'h', 'm', 'r'), 1 }
+    { HB_MAKE_TAG('k', 'h', 'm', 'r'), 1 },
+    // N'Ko
+    { HB_MAKE_TAG('n', 'k', 'o', ' '), 1 }
 };
 enum { NumOTScripts = sizeof(ot_scripts)/sizeof(OTScripts) };
 
@@ -971,11 +975,12 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     face->glyphs_substituted = false;
     face->buffer = 0;
 
-    HB_Error error;
+    HB_Error error = HB_Err_Ok;
     HB_Stream stream;
     HB_Stream gdefStream;
 
     gdefStream = getTableStream(font, tableFunc, TTAG_GDEF);
+    error = HB_Err_Not_Covered;
     if (!gdefStream || (error = HB_Load_GDEF_Table(gdefStream, &face->gdef))) {
         //DEBUG("error loading gdef table: %d", error);
         face->gdef = 0;
@@ -983,6 +988,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
 
     //DEBUG() << "trying to load gsub table";
     stream = getTableStream(font, tableFunc, TTAG_GSUB);
+    error = HB_Err_Not_Covered;
     if (!stream || (error = HB_Load_GSUB_Table(stream, &face->gsub, face->gdef, gdefStream))) {
         face->gsub = 0;
         if (error != HB_Err_Not_Covered) {
@@ -994,6 +1000,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     _hb_close_stream(stream);
 
     stream = getTableStream(font, tableFunc, TTAG_GPOS);
+    error = HB_Err_Not_Covered;
     if (!stream || (error = HB_Load_GPOS_Table(stream, &face->gpos, face->gdef, gdefStream))) {
         face->gpos = 0;
         DEBUG("error loading gpos table: %d", error);

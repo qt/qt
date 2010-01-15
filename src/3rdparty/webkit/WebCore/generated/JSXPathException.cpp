@@ -148,7 +148,7 @@ JSXPathException::JSXPathException(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSXPathException::~JSXPathException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXPathException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

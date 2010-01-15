@@ -83,7 +83,7 @@ JSCoordinates::JSCoordinates(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 
 JSCoordinates::~JSCoordinates()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCoordinates::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

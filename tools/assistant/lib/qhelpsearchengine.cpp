@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -95,12 +95,11 @@ private:
         delete indexWriter;
     }
 
-
-    int hitsCount() const
+    int hitCount() const
     {
         int count = 0;
         if (indexReader)
-            count = indexReader->hitsCount();
+            count = indexReader->hitCount();
 
         return count;
     }
@@ -366,11 +365,22 @@ QHelpSearchResultWidget* QHelpSearchEngine::resultWidget()
 }
 
 /*!
+    \obsolete
     Returns the amount of hits the search engine found.
+    \sa hitCount()
 */
 int QHelpSearchEngine::hitsCount() const
 {
-    return d->hitsCount();
+    return d->hitCount();
+}
+
+/*!
+    \since 4.6
+    Returns the amount of hits the search engine found.
+*/
+int QHelpSearchEngine::hitCount() const
+{
+    return d->hitCount();
 }
 
 /*!

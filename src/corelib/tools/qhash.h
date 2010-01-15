@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,18 +69,18 @@ inline uint qHash(int key) { return uint(key); }
 inline uint qHash(ulong key)
 {
     if (sizeof(ulong) > sizeof(uint)) {
-        return uint((key >> (8 * sizeof(uint) - 1)) ^ key);
+        return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U));
     } else {
-        return uint(key);
+        return uint(key & (~0U));
     }
 }
 inline uint qHash(long key) { return qHash(ulong(key)); }
 inline uint qHash(quint64 key)
 {
     if (sizeof(quint64) > sizeof(uint)) {
-        return uint((key >> (8 * sizeof(uint) - 1)) ^ key);
+        return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U));
     } else {
-        return uint(key);
+        return uint(key & (~0U));
     }
 }
 inline uint qHash(qint64 key) { return qHash(quint64(key)); }
@@ -125,12 +125,15 @@ struct Q_CORE_EXPORT QHashData
     short numBits;
     int numBuckets;
     uint sharable : 1;
+    uint strictAlignment : 1;
+    uint reserved : 30;
 
-    void *allocateNode();
+    void *allocateNode(); // ### Qt5 remove me
+    void *allocateNode(int nodeAlign);
     void freeNode(void *node);
     QHashData *detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize); // ### Qt5 remove me
-    QHashData *detach_helper(void (*node_duplicate)(Node *, void *), void (*node_delete)(Node *),
-            int nodeSize);
+    QHashData *detach_helper2(void (*node_duplicate)(Node *, void *), void (*node_delete)(Node *),
+                              int nodeSize, int nodeAlign);
     void mightGrow();
     bool willGrow();
     void hasShrunk();
@@ -267,6 +270,14 @@ class QHash
         return reinterpret_cast<Node *>(node);
     }
 
+#ifdef Q_ALIGNOF
+    static inline int alignOfNode() { return qMax<int>(sizeof(void*), Q_ALIGNOF(Node)); }
+    static inline int alignOfDummyNode() { return qMax<int>(sizeof(void*), Q_ALIGNOF(DummyNode)); }
+#else
+    static inline int alignOfNode() { return 0; }
+    static inline int alignOfDummyNode() { return 0; }
+#endif
+
 public:
     inline QHash() : d(&QHashData::shared_null) { d->ref.ref(); }
     inline QHash(const QHash<Key, T> &other) : d(other.d) { d->ref.ref(); if (!d->sharable) detach(); }
@@ -288,6 +299,7 @@ public:
     inline void detach() { if (d->ref != 1) detach_helper(); }
     inline bool isDetached() const { return d->ref == 1; }
     inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
+    inline bool isSharedWith(const QHash<Key, T> &other) const { return d == other.d; }
 
     void clear();
 
@@ -483,7 +495,7 @@ private:
     Node **findNode(const Key &key, uint *hp = 0) const;
     Node *createNode(uint h, const Key &key, const T &value, Node **nextNode);
     void deleteNode(Node *node);
-    static void deleteNode(QHashData::Node *node);
+    static void deleteNode2(QHashData::Node *node);
 
     static void duplicateNode(QHashData::Node *originalNode, void *newNode);
 };
@@ -492,12 +504,12 @@ private:
 template <class Key, class T>
 Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode(Node *node)
 {
-    deleteNode(reinterpret_cast<QHashData::Node*>(node));
+    deleteNode2(reinterpret_cast<QHashData::Node*>(node));
+    d->freeNode(node);
 }
 
-
 template <class Key, class T>
-Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode(QHashData::Node *node)
+Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode2(QHashData::Node *node)
 {
 #ifdef Q_CC_BOR
     concrete(node)->~QHashNode<Key, T>();
@@ -506,7 +518,6 @@ Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode(QHashData::Node *node)
 #else
     concrete(node)->~Node();
 #endif
-    qFree(node);
 }
 
 template <class Key, class T>
@@ -527,9 +538,9 @@ QHash<Key, T>::createNode(uint ah, const Key &akey, const T &avalue, Node **anex
     Node *node;
 
     if (QTypeInfo<T>::isDummy) {
-        node = reinterpret_cast<Node *>(new (d->allocateNode()) DummyNode(akey));
+        node = reinterpret_cast<Node *>(new (d->allocateNode(alignOfDummyNode())) DummyNode(akey));
     } else {
-        node = new (d->allocateNode()) Node(akey, avalue);
+        node = new (d->allocateNode(alignOfNode())) Node(akey, avalue);
     }
 
     node->h = ah;
@@ -554,7 +565,7 @@ Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::unite(const QHash<Key, T> &other
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::freeData(QHashData *x)
 {
-    x->free_helper(deleteNode);
+    x->free_helper(deleteNode2);
 }
 
 template <class Key, class T>
@@ -566,8 +577,9 @@ Q_INLINE_TEMPLATE void QHash<Key, T>::clear()
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::detach_helper()
 {
-    QHashData *x = d->detach_helper(duplicateNode, deleteNode,
-        QTypeInfo<T>::isDummy ? sizeof(DummyNode) : sizeof(Node));
+    QHashData *x = d->detach_helper2(duplicateNode, deleteNode2,
+        QTypeInfo<T>::isDummy ? sizeof(DummyNode) : sizeof(Node),
+        QTypeInfo<T>::isDummy ? alignOfDummyNode() : alignOfNode());
     if (!d->ref.deref())
         freeData(d);
     d = x;

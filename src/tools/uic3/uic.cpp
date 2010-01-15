@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -320,6 +320,11 @@ bool Uic::isContainer(const QString &className) const
         || customWidgetsInfo()->extends(className, QLatin1String("QMdiArea"))
         || customWidgetsInfo()->extends(className, QLatin1String("QWizard"))
         || customWidgetsInfo()->extends(className, QLatin1String("QDockWidget"));
+}
+
+bool Uic::isCustomWidgetContainer(const QString &className) const
+{
+    return customWidgetsInfo()->isCustomWidgetContainer(className);
 }
 
 bool Uic::isStatusBar(const QString &className) const

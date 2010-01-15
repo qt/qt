@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,9 +49,11 @@ public:
     void doFoo()
     {
         tr("random ascii only");
-        tr("this contains an umlaut ü &uuml;");
+        tr("this contains an umlaut ü &uuml; literally");
+        tr("this contains an umlaut \xfc &uuml; escaped");
         trUtf8("random ascii only in utf8");
-        trUtf8("umlaut \xfc &uuml; in utf8");
+        trUtf8("umlaut Ã¼ &uuml; in literal utf8");
+        trUtf8("umlaut \303\274 &uuml; in escaped utf8");
     }
 };
 

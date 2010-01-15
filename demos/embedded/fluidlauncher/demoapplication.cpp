@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,8 +60,8 @@ DemoApplication::DemoApplication(QString executableName, QString caption, QStrin
 
     process.setProcessChannelMode(QProcess::ForwardedChannels);
 
-    QObject::connect( &process, SIGNAL(finished(int, QProcess::ExitStatus)), 
-                      this, SLOT(processFinished(int, QProcess::ExitStatus)));
+    QObject::connect( &process, SIGNAL(finished(int,QProcess::ExitStatus)), 
+                      this, SLOT(processFinished(int,QProcess::ExitStatus)));
 
     QObject::connect( &process, SIGNAL(error(QProcess::ProcessError)), 
                       this, SLOT(processError(QProcess::ProcessError)));

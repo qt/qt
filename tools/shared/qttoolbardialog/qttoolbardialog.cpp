@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1807,20 +1807,20 @@ QtToolBarDialog::QtToolBarDialog(QWidget *parent, Qt::WindowFlags flags)
     connect(d_ptr->ui.buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(applyClicked()));
     connect(d_ptr->ui.buttonBox->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(cancelClicked()));
 
-    connect(d_ptr->ui.actionTree, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
-                    this, SLOT(currentActionChanged(QTreeWidgetItem *)));
-    connect(d_ptr->ui.toolBarList, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-                    this, SLOT(currentToolBarChanged(QListWidgetItem *)));
+    connect(d_ptr->ui.actionTree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
+                    this, SLOT(currentActionChanged(QTreeWidgetItem*)));
+    connect(d_ptr->ui.toolBarList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+                    this, SLOT(currentToolBarChanged(QListWidgetItem*)));
     connect(d_ptr->ui.currentToolBarList,
-                    SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-                    this, SLOT(currentToolBarActionChanged(QListWidgetItem *)));
+                    SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+                    this, SLOT(currentToolBarActionChanged(QListWidgetItem*)));
 
-    connect(d_ptr->ui.actionTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)),
+    connect(d_ptr->ui.actionTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),
                     this, SLOT(rightClicked()));
-    connect(d_ptr->ui.currentToolBarList, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
+    connect(d_ptr->ui.currentToolBarList, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
                     this, SLOT(leftClicked()));
-    connect(d_ptr->ui.toolBarList, SIGNAL(itemChanged(QListWidgetItem *)),
-                    this, SLOT(toolBarRenamed(QListWidgetItem *)));
+    connect(d_ptr->ui.toolBarList, SIGNAL(itemChanged(QListWidgetItem*)),
+                    this, SLOT(toolBarRenamed(QListWidgetItem*)));
 }
 
 /*!

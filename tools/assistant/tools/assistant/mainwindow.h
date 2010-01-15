@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 class QAction;
+class QFileSystemWatcher;
 class QLineEdit;
 class QComboBox;
 class QMenu;
@@ -76,10 +77,6 @@ public:
     static QString defaultHelpCollectionFileName();
 
 public:
-    void hideContents();
-    void hideIndex();
-    void hideBookmarks();
-    void hideSearch();
     void setIndexString(const QString &str);
     void expandTOC(int depth);
     bool usesDefaultCollection() const;
@@ -88,15 +85,20 @@ signals:
     void initDone();
 
 public slots:
+    void setContentsVisible(bool visible);
+    void setIndexVisible(bool visible);
+    void setBookmarksVisible(bool visible);
+    void setSearchVisible(bool visible);
+    void showSearchWidget();
+    void syncContents();
+    void activateCurrentCentralWidgetTab();
+    void currentFilterChanged(const QString &filter);
+
+private slots:
     void showContents();
     void showIndex();
     void showBookmarks();
     void showSearch();
-    void showSearchWidget();
-    void syncContents();
-    void activateCurrentCentralWidgetTab();
-
-private slots:
     void insertLastPages();
     void addBookmark();
     void gotoAddress();
@@ -115,9 +117,13 @@ private slots:
     void lookForNewQtDocumentation();
     void indexingStarted();
     void indexingFinished();
-    void displayInstallationError(const QString &errorMessage);
     void qtDocumentationInstalled(bool newDocsInstalled);
+    void registerDocumentation(const QString &component,
+                               const QString &absFileName);
+    void resetQtDocInfo(const QString &component);
     void checkInitState();
+    void documentationRemoved(const QString &namespaceName);
+    void documentationUpdated(const QString &namespaceName);
 
     void updateBookmarkMenu();
     void showBookmark(QAction *action);
@@ -135,8 +141,11 @@ private:
     void setupAddressToolbar();
     QMenu *toolBarMenu();
     QWidget *setupBookmarkWidget();
+    void hideContents();
+    void hideIndex();
+    void hideBookmarks();
+    void hideSearch();
 
-    QHelpEngine *m_helpEngine;
     CentralWidget *m_centralWidget;
     IndexWindow *m_indexWindow;
     ContentWindow *m_contentWindow;

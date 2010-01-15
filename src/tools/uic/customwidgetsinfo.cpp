@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -85,6 +85,14 @@ bool CustomWidgetsInfo::extends(const QString &classNameIn, const QLatin1String 
             return true;
         className = extends;
     }
+    return false;
+}
+
+bool CustomWidgetsInfo::isCustomWidgetContainer(const QString &className) const
+{
+    if (const DomCustomWidget *dcw = m_customWidgets.value(className, 0))
+        if (dcw->hasElementContainer())
+            return dcw->elementContainer() != 0;
     return false;
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -533,7 +533,13 @@ static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
         // Vietnamese,
     { 0, 127 }, // same as latin1
         // Other,
-    { 126, 127 }
+    { 126, 127 },
+        // Ogham,
+    { 78, 127 },
+        // Runic,
+    { 79, 127 },
+        // Nko,
+    { 14, 127 },
 };
 
 #define SimplifiedChineseCsbBit 18
@@ -873,7 +879,8 @@ static const int scriptForWritingSystem[] = {
     QUnicodeTables::Common, // Braille
     QUnicodeTables::Common, // Symbol
     QUnicodeTables::Ogham,  // Ogham
-    QUnicodeTables::Runic // Runic
+    QUnicodeTables::Runic, // Runic
+    QUnicodeTables::Nko // Nko
 };
 
 
@@ -881,12 +888,12 @@ static const int scriptForWritingSystem[] = {
 static inline bool requiresOpenType(int writingSystem)
 {
     return ((writingSystem >= QFontDatabase::Syriac && writingSystem <= QFontDatabase::Sinhala)
-            || writingSystem == QFontDatabase::Khmer);
+            || writingSystem == QFontDatabase::Khmer || writingSystem == QFontDatabase::Nko);
 }
 static inline bool scriptRequiresOpenType(int script)
 {
     return ((script >= QUnicodeTables::Syriac && script <= QUnicodeTables::Sinhala)
-            || script == QUnicodeTables::Khmer);
+            || script == QUnicodeTables::Khmer || script == QUnicodeTables::Nko);
 }
 #endif
 
@@ -1475,13 +1482,13 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
     and style will look attractive.
 
     If the font family is available from two or more foundries the
-    foundry name is included in the family name, e.g. "Helvetica
-    [Adobe]" and "Helvetica [Cronyx]". When you specify a family you
-    can either use the old hyphenated Qt 2.x "foundry-family" format,
-    e.g. "Cronyx-Helvetica", or the new bracketed Qt 3.x "family
-    [foundry]" format e.g. "Helvetica [Cronyx]". If the family has a
-    foundry it is always returned, e.g. by families(), using the
-    bracketed format.
+    foundry name is included in the family name; for example:
+    "Helvetica [Adobe]" and "Helvetica [Cronyx]". When you specify a
+    family, you can either use the old hyphenated "foundry-family"
+    format or the bracketed "family [foundry]" format; for example:
+    "Cronyx-Helvetica" or "Helvetica [Cronyx]". If the family has a
+    foundry it is always returned using the bracketed format, as is
+    the case with the value returned by families().
 
     The font() function returns a QFont given a family, style and
     point size.
@@ -1558,6 +1565,7 @@ QFontDatabase::QFontDatabase()
     \value Other (the same as Symbol)
     \value Ogham
     \value Runic
+    \value Nko
 
     \omitvalue WritingSystemsCount
 */
@@ -2232,6 +2240,9 @@ QString QFontDatabase::writingSystemName(WritingSystem writingSystem)
     case Runic:
         name = QT_TRANSLATE_NOOP("QFontDatabase", "Runic");
         break;
+    case Nko:
+        name = QT_TRANSLATE_NOOP("QFontDatabase", "N'Ko");
+        break;
     default:
         Q_ASSERT_X(false, "QFontDatabase::writingSystemName", "invalid 'writingSystem' parameter");
         break;
@@ -2444,6 +2455,12 @@ QString QFontDatabase::writingSystemSample(WritingSystem writingSystem)
         sample += QChar(0x16a1);
         sample += QChar(0x16a2);
         sample += QChar(0x16a3);
+        break;
+    case Nko:
+        sample += QChar(0x7ca);
+        sample += QChar(0x7cb);
+        sample += QChar(0x7cc);
+        sample += QChar(0x7cd);
         break;
     default:
         break;

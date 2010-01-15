@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#include <QDebug>
 #include <QtMultimedia/qaudioformat.h>
 
 
@@ -120,7 +120,7 @@ public:
         \row
             \o Sample size
             \o How much data is stored in each sample (typically 8
-               or 16)
+               or 16 bits)
         \row
             \o Sample type
             \o Numerical representation of sample (typically signed integer,
@@ -214,16 +214,13 @@ bool QAudioFormat::operator!=(const QAudioFormat& other) const
 }
 
 /*!
-    Returns true if any of the parameters are invalid.
+    Returns true if all of the parameters are valid.
 */
 
-bool QAudioFormat::isNull() const
+bool QAudioFormat::isValid() const
 {
-    return d->frequency == -1 && d->channels == -1 &&
-            d->sampleSize == -1 &&
-            d->byteOrder == QAudioFormat::Endian(QSysInfo::ByteOrder) &&
-            d->sampleType == QAudioFormat::Unknown &&
-            d->codec.isNull();
+    return d->frequency != -1 && d->channels != -1 && d->sampleSize != -1 &&
+            d->sampleType != QAudioFormat::Unknown && !d->codec.isEmpty();
 }
 
 /*!
@@ -315,7 +312,7 @@ int QAudioFormat::channels() const
 }
 
 /*!
-   Sets the sampleSize to \a sampleSize.
+   Sets the sample size to the \a sampleSize specified.
 */
 
 void QAudioFormat::setSampleSize(int sampleSize)
@@ -324,7 +321,7 @@ void QAudioFormat::setSampleSize(int sampleSize)
 }
 
 /*!
-    Returns the current sampleSize value.
+    Returns the current sample size value.
 */
 
 int QAudioFormat::sampleSize() const

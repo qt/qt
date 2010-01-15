@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -73,6 +73,7 @@
 #include <akntitle.h>               // CAknTitlePane
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
+#include <aknpopupfader.h>          // MAknFadedComponent and TAknPopupFader
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -102,6 +103,14 @@ public:
     int defaultDpiY;
     WId curWin;
     int virtualMouseLastKey;
+    enum PressedKeys {
+        Select = 0x1,
+        Right = 0x2,
+        Down = 0x4,
+        Left = 0x8,
+        Up = 0x10
+    };
+    int virtualMousePressedKeys; // of the above type, but avoids casting problems
     int virtualMouseAccel;
     int virtualMouseMaxAccel;
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
@@ -114,7 +123,7 @@ public:
     int supportsPremultipliedAlpha : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
-	static inline RWsSession& wsSession();
+    static inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
     static inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
@@ -140,7 +149,11 @@ public:
 };
 class QLongTapTimer;
 
+
 class QSymbianControl : public CCoeControl, public QAbstractLongTapObserver
+#ifdef Q_WS_S60
+, public MAknFadedComponent
+#endif
 {
 public:
     DECLARE_TYPE_ID(0x51740000) // Fun fact: the two first values are "Qt" in ASCII.
@@ -165,6 +178,17 @@ public:
 
     void setFocusSafely(bool focus);
 
+#ifdef Q_WS_S60
+    void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }
+
+protected: // from MAknFadedComponent
+    TInt CountFadedComponents() {return 1;}
+    CCoeControl* FadedComponent(TInt /*aIndex*/) {return this;}
+#else
+    #warning No fallback implementation for QSymbianControl::FadeBehindPopup
+    void FadeBehindPopup(bool /*fade*/){ }
+#endif
+
 protected:
     void Draw(const TRect& aRect) const;
     void SizeChanged();
@@ -176,6 +200,12 @@ private:
     TKeyResponse OfferKeyEvent(const TKeyEvent& aKeyEvent,TEventCode aType);
     TKeyResponse sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent);
     bool sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
+    void sendMouseEvent(
+            QWidget *receiver,
+            QEvent::Type type,
+            const QPoint &globalPos,
+            Qt::MouseButton button,
+            Qt::KeyboardModifiers modifiers);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
@@ -186,9 +216,14 @@ private:
 
 private:
     QWidget *qwidget;
-    bool m_ignoreFocusChanged;
     QLongTapTimer* m_longTapDetector;
-    bool m_previousEventLongTap;
+    bool m_ignoreFocusChanged : 1;
+    bool m_symbianPopupIsOpen : 1;
+
+#ifdef Q_WS_S60
+    // Fader object used to fade everything except this menu and the CBA.
+    TAknPopupFader popupFader;
+#endif
 };
 
 inline QS60Data::QS60Data()

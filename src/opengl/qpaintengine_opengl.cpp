@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -110,11 +110,7 @@ static bool DEBUG_TEMP_FLAG;
 
 static inline void qt_glColor4ubv(unsigned char *col)
 {
-#ifdef QT_OPENGL_ES
-        glColor4f(col[0]/255.0, col[1]/255.0, col[2]/255.0, col[3]/255.0);
-#else
-        glColor4ubv(col);
-#endif
+    glColor4f(col[0]/255.0f, col[1]/255.0f, col[2]/255.0f, col[3]/255.0f);
 }
 
 struct QT_PointF {
@@ -248,8 +244,8 @@ public:
           bound(false)
     {
         connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
     }
 
     inline void setDevice(QPaintDevice *pdev);
@@ -525,8 +521,8 @@ public:
     QGLProgramCache() {
         // we have to know when a context is deleted so we can free
         // any program handles it holds
-        connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupPrograms(const QGLContext *)));
+        connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupPrograms(const QGLContext*)));
 
     }
     ~QGLProgramCache() {
@@ -639,8 +635,8 @@ public:
         : p(priv)
     {
         connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
     }
 
 public Q_SLOTS:
@@ -1010,8 +1006,8 @@ public:
     QGLGradientCache() : QObject(), buffer_ctx(0)
     {
         connect(QGLSignalProxy::instance(),
-                SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                SLOT(cleanupGLContextRefs(const QGLContext *)));
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
     }
 
     inline GLuint getBuffer(const QGradient &gradient, qreal opacity, QGLContext *ctx) {
@@ -4526,6 +4522,12 @@ typedef QHash<QFontEngine*, QGLGlyphHash*> QGLFontGlyphHash;
 typedef QHash<quint64, QGLFontTexture*> QGLFontTexHash;
 typedef QHash<const QGLContext*, QGLFontGlyphHash*> QGLContextHash;
 
+static inline void qt_delete_glyph_hash(QGLGlyphHash *hash)
+{
+    qDeleteAll(*hash);
+    delete hash;
+}
+
 class QGLGlyphCache : public QObject
 {
     Q_OBJECT
@@ -4566,7 +4568,7 @@ void QGLGlyphCache::fontEngineDestroyed(QObject *o)
         if (font_cache->find(fe) != font_cache->end()) {
             ctx = keys.at(i);
             QGLGlyphHash *cache = font_cache->take(fe);
-            delete cache;
+            qt_delete_glyph_hash(cache);
             break;
         }
     }
@@ -4603,7 +4605,7 @@ void QGLGlyphCache::cleanupContext(const QGLContext *ctx)
         QList<QFontEngine *> keys = font_cache->keys();
         for (int i=0; i < keys.size(); ++i) {
             QFontEngine *fe = keys.at(i);
-            delete font_cache->take(fe);
+            qt_delete_glyph_hash(font_cache->take(fe));
             quint64 font_key = (reinterpret_cast<quint64>(ctx) << 32) | reinterpret_cast<quint64>(fe);
             QGLFontTexture *font_tex = qt_font_textures.take(font_key);
             if (font_tex) {
@@ -4644,7 +4646,9 @@ void QGLGlyphCache::cleanCache()
     QList<const QGLContext *> keys = qt_context_cache.keys();
     for (int i=0; i < keys.size(); ++i) {
         QGLFontGlyphHash *font_cache = qt_context_cache.value(keys.at(i));
-        qDeleteAll(*font_cache);
+        QGLFontGlyphHash::Iterator it = font_cache->begin();
+        for (; it != font_cache->end(); ++it)
+            qt_delete_glyph_hash(it.value());
         font_cache->clear();
     }
     qDeleteAll(qt_context_cache);
@@ -4712,8 +4716,8 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
             QWidget *widget = static_cast<QWidget *>(context->device());
             connect(widget, SIGNAL(destroyed(QObject*)), SLOT(widgetDestroyed(QObject*)));
             connect(QGLSignalProxy::instance(),
-                    SIGNAL(aboutToDestroyContext(const QGLContext *)),
-                    SLOT(cleanupContext(const QGLContext *)));
+                    SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                    SLOT(cleanupContext(const QGLContext*)));
         }
     } else {
         font_cache = dev_it.value();
@@ -4927,7 +4931,8 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    bool antialias = !(ti.fontEngine->fontDef.styleStrategy & QFont::NoAntialias);
+    bool antialias = !(ti.fontEngine->fontDef.styleStrategy & QFont::NoAntialias)
+                   && (d->matrix.type() > QTransform::TxTranslate);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
 

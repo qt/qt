@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,8 @@
 #include <private/qapplication_p.h>
 #include <qcalendarwidget.h>
 #include <qmainwindow.h>
+#include <qdockwidget.h>
+#include <qtoolbar.h>
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
 
@@ -332,6 +334,7 @@ private slots:
     void doubleRepaint();
 #ifndef Q_WS_MAC
     void resizeInPaintEvent();
+    void opaqueChildren();
 #endif
 
     void setMaskInResizeEvent();
@@ -355,6 +358,7 @@ private slots:
     void paintOnScreenPossible();
 #endif
     void reparentStaticWidget();
+    void QTBUG6883_reparentStaticWidget2();
 #ifdef Q_WS_QWS
     void updateOutsideSurfaceClip();
 #endif
@@ -383,9 +387,14 @@ private slots:
 
     void activateWindow();
 
+    void openModal_taskQTBUG_5804();
+
 #ifdef Q_OS_SYMBIAN
     void cbaVisibility();
 #endif
+
+    void focusProxyAndInputMethods();
+    void scrollWithoutBackingStore();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -3327,9 +3336,10 @@ void tst_QWidget::widgetAt()
     w2->lower();
     qApp->processEvents();
     QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
-    QCOMPARE(wr->objectName(), QString("w1"));
-
+    const bool match = (wr->objectName() == QString("w1"));
     w2->raise();
+    QVERIFY(match);
+
     qApp->processEvents();
     QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
     QCOMPARE(wr->objectName(), QString("w2"));
@@ -6319,6 +6329,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         widget.show();
         expected =
             EventRecorder::EventList()
+            << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
@@ -6404,6 +6415,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         widget.show();
         expected =
             EventRecorder::EventList()
+            << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
 #ifdef QT_HAS_QT3SUPPORT
             << qMakePair(&widget, QEvent::ChildInserted)
@@ -6501,6 +6513,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         widget.show();
         expected =
             EventRecorder::EventList()
+            << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
 #ifdef QT_HAS_QT3SUPPORT
             << qMakePair(&widget, QEvent::ChildInserted)
@@ -8272,6 +8285,47 @@ void tst_QWidget::resizeInPaintEvent()
     // Make sure the resize triggers another update.
     QTRY_COMPARE(widget.numPaintEvents, 1);
 }
+
+void tst_QWidget::opaqueChildren()
+{
+    QWidget widget;
+    widget.resize(200, 200);
+
+    QWidget child(&widget);
+    child.setGeometry(-700, -700, 200, 200);
+
+    QWidget grandChild(&child);
+    grandChild.resize(200, 200);
+
+    QWidget greatGrandChild(&grandChild);
+    greatGrandChild.setGeometry(50, 50, 200, 200);
+    greatGrandChild.setPalette(Qt::red);
+    greatGrandChild.setAutoFillBackground(true); // Opaque child widget.
+
+    widget.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&widget);
+#endif
+    QTest::qWait(100);
+
+    // Child, grandChild and greatGrandChild are outside the ancestor clip.
+    QRegion expectedOpaqueRegion(50, 50, 150, 150);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), expectedOpaqueRegion);
+
+    // Now they are all inside the ancestor clip.
+    child.setGeometry(50, 50, 150, 150);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), expectedOpaqueRegion);
+
+    // Set mask on greatGrandChild.
+    const QRegion mask(10, 10, 50, 50);
+    greatGrandChild.setMask(mask);
+    expectedOpaqueRegion &= mask.translated(50, 50);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), expectedOpaqueRegion);
+
+    // Make greatGrandChild "transparent".
+    greatGrandChild.setAutoFillBackground(false);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), QRegion());
+}
 #endif
 
 
@@ -8677,6 +8731,31 @@ void tst_QWidget::reparentStaticWidget()
     // Please don't crash.
     paintOnScreen.resize(paintOnScreen.size() + QSize(2, 2));
     QTest::qWait(20);
+
+}
+
+void tst_QWidget::QTBUG6883_reparentStaticWidget2()
+{
+    QMainWindow mw;
+    QDockWidget *one = new QDockWidget("one", &mw);
+    mw.addDockWidget(Qt::LeftDockWidgetArea, one , Qt::Vertical);
+
+    QWidget *child = new QWidget();
+    child->setPalette(Qt::red);
+    child->setAutoFillBackground(true);
+    child->setAttribute(Qt::WA_StaticContents);
+    child->resize(100, 100);
+    one->setWidget(child);
+
+    QToolBar *mainTools = mw.addToolBar("Main Tools");
+    mainTools->addWidget(new QLineEdit);
+
+    mw.show();
+    QTest::qWaitForWindowShown(&mw);
+
+    one->setFloating(true);
+    QTest::qWait(20);
+    //do not crash
 }
 
 #ifdef Q_WS_QWS
@@ -9498,6 +9577,22 @@ void tst_QWidget::setGraphicsEffect()
     delete widget;
     QVERIFY(!blurEffect);
     delete anotherWidget;
+
+    // Ensure the effect is uninstalled when deleting it
+    widget = new QWidget;
+    blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    delete blurEffect;
+    QVERIFY(!widget->graphicsEffect());
+
+    // Ensure the existing effect is uninstalled and deleted when setting a null effect
+    blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    widget->setGraphicsEffect(0);
+    QVERIFY(!widget->graphicsEffect());
+    QVERIFY(!blurEffect);
+
+    delete widget;
 }
 
 void tst_QWidget::activateWindow()
@@ -9533,6 +9628,29 @@ void tst_QWidget::activateWindow()
 
     QTRY_VERIFY(mainwindow->isActiveWindow());
     QTRY_VERIFY(!mainwindow2->isActiveWindow());
+}
+
+void tst_QWidget::openModal_taskQTBUG_5804()
+{
+    class Widget : public QWidget
+    {
+    public:
+        Widget(QWidget *parent) : QWidget(parent)
+        {
+        }
+        ~Widget()
+        {
+            QMessageBox msgbox;
+            QTimer::singleShot(10, &msgbox, SLOT(accept()));
+            msgbox.exec(); //open a modal dialog
+        }
+    };
+
+    QWidget *win = new QWidget;
+    new Widget(win);
+    win->show();
+    QTest::qWaitForWindowShown(win);
+    delete win;
 }
 
 #ifdef Q_OS_SYMBIAN
@@ -9572,6 +9690,100 @@ void tst_QWidget::cbaVisibility()
     QVERIFY(buttonGroup->IsVisible());
 }
 #endif
+
+class InputContextTester : public QInputContext
+{
+    Q_OBJECT
+public:
+    QString identifierName() { return QString(); }
+    bool isComposing() const { return false; }
+    QString language() { return QString(); }
+    void reset() { ++resets; }
+    int resets;
+};
+
+void tst_QWidget::focusProxyAndInputMethods()
+{
+    InputContextTester *inputContext = new InputContextTester;
+    QWidget *toplevel = new QWidget(0, Qt::X11BypassWindowManagerHint);
+    toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
+    toplevel->setInputContext(inputContext); // ownership is transferred
+
+    QWidget *child = new QWidget(toplevel);
+    child->setFocusProxy(toplevel);
+    child->setAttribute(Qt::WA_InputMethodEnabled, true);
+
+    toplevel->setFocusPolicy(Qt::WheelFocus);
+    child->setFocusPolicy(Qt::WheelFocus);
+
+    QVERIFY(!child->hasFocus());
+    QVERIFY(!toplevel->hasFocus());
+
+    toplevel->show();
+    QTest::qWaitForWindowShown(toplevel);
+    QApplication::setActiveWindow(toplevel);
+    QVERIFY(toplevel->hasFocus());
+    QVERIFY(child->hasFocus());
+
+    // verify that toggling input methods on the child widget
+    // correctly propagate to the focus proxy's input method
+    // and that the input method gets the focus proxy passed
+    // as the focus widget instead of the child widget.
+    // otherwise input method queries go to the wrong widget
+
+    QCOMPARE(inputContext->focusWidget(), toplevel);
+
+    child->setAttribute(Qt::WA_InputMethodEnabled, false);
+    QVERIFY(!inputContext->focusWidget());
+
+    child->setAttribute(Qt::WA_InputMethodEnabled, true);
+    QCOMPARE(inputContext->focusWidget(), toplevel);
+
+    child->setEnabled(false);
+    QVERIFY(!inputContext->focusWidget());
+
+    child->setEnabled(true);
+    QCOMPARE(inputContext->focusWidget(), toplevel);
+
+    delete toplevel;
+}
+
+class scrollWidgetWBS : public QWidget
+{
+public:
+    void deleteBackingStore()
+    {
+        if (static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
+            delete static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore;
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = 0;
+        }
+    }
+    void enableBackingStore()
+    {
+        if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = new QWidgetBackingStore(this);
+            static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBuffer(this->rect());
+            repaint();
+        }
+    }
+};
+
+void tst_QWidget::scrollWithoutBackingStore()
+{
+    scrollWidgetWBS scrollable;
+    scrollable.resize(100,100);
+    QLabel child(QString("@"),&scrollable);
+    child.resize(50,50);
+    scrollable.show();
+    QTest::qWaitForWindowShown(&scrollable);
+    scrollable.scroll(50,50);
+    QCOMPARE(child.pos(),QPoint(50,50));
+    scrollable.deleteBackingStore();
+    scrollable.scroll(-25,-25);
+    QCOMPARE(child.pos(),QPoint(25,25));
+    scrollable.enableBackingStore();
+    QCOMPARE(child.pos(),QPoint(25,25));
+}
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -519,7 +519,7 @@ void QPF::addGlyphs(QFontEngine *fe, const QList<CharacterRange> &ranges)
                 glyph_metrics_t metrics = fe->boundingBox(glyphIndex);
 
                 const quint32 oldSize = glyphs.size();
-                glyphs.resize(glyphs.size() + sizeof(QFontEngineQPF::Glyph) + img.numBytes());
+                glyphs.resize(glyphs.size() + sizeof(QFontEngineQPF::Glyph) + img.byteCount());
                 uchar *data = reinterpret_cast<uchar *>(glyphs.data() + oldSize);
 
                 uchar *gmapPtr = reinterpret_cast<uchar *>(gmap.data() + glyphIndex * sizeof(quint32));
@@ -543,7 +543,7 @@ void QPF::addGlyphs(QFontEngine *fe, const QList<CharacterRange> &ranges)
                         ;
                 }
 
-                qMemCopy(data, img.bits(), img.numBytes());
+                qMemCopy(data, img.bits(), img.byteCount());
             }
         }
     }

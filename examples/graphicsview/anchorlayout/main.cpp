@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,8 +76,8 @@ int main(int argc, char **argv)
     QGraphicsProxyWidget *c = createItem(minSize, prefSize, maxSize, "C");
     QGraphicsProxyWidget *d = createItem(minSize, prefSize, maxSize, "D");
     QGraphicsProxyWidget *e = createItem(minSize, prefSize, maxSize, "E");
-    QGraphicsProxyWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), maxSize, "F");
-    QGraphicsProxyWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), maxSize, "G");
+    QGraphicsProxyWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), maxSize, "F (overflow)");
+    QGraphicsProxyWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), maxSize, "G (overflow)");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setSpacing(0);
@@ -122,8 +122,8 @@ int main(int argc, char **argv)
 
     scene.addItem(w);
     scene.setBackgroundBrush(Qt::darkGreen);
-    QGraphicsView *view = new QGraphicsView(&scene);
-    view->show();
+    QGraphicsView view(&scene);
+    view.show();
 
     return app.exec();
 }

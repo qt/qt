@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,8 +52,8 @@ MainWindow::MainWindow(QWidget *parent)
     completer = new TreeModelCompleter(this);
     completer->setModel(modelFromFile(":/resources/treemodel.txt"));
     completer->setSeparator(QLatin1String("."));
-    QObject::connect(completer, SIGNAL(highlighted(const QModelIndex&)),
-                     this, SLOT(highlight(const QModelIndex&)));
+    QObject::connect(completer, SIGNAL(highlighted(QModelIndex)),
+                     this, SLOT(highlight(QModelIndex)));
 
     QWidget *centralWidget = new QWidget;
 
@@ -82,8 +82,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     QLineEdit *separatorLineEdit = new QLineEdit;
     separatorLineEdit->setText(completer->separator());
-    connect(separatorLineEdit, SIGNAL(textChanged(const QString&)),
-            completer, SLOT(setSeparator(const QString&)));
+    connect(separatorLineEdit, SIGNAL(textChanged(QString)),
+            completer, SLOT(setSeparator(QString)));
 
     QCheckBox *wrapCheckBox = new QCheckBox;
     wrapCheckBox->setText(tr("Wrap around completions"));
@@ -92,8 +92,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     contentsLabel = new QLabel;
     contentsLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    connect(separatorLineEdit, SIGNAL(textChanged(const QString&)),
-            this, SLOT(updateContentsLabel(const QString&)));
+    connect(separatorLineEdit, SIGNAL(textChanged(QString)),
+            this, SLOT(updateContentsLabel(QString)));
 
     treeView = new QTreeView;
     treeView->setModel(completer->model());

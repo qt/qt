@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,8 +52,10 @@
     GUI Programming with Qt 4, Second Edition}}
     by Jasmin Blanchette and Mark
     Summerfield, ISBN 0-13-235416-0. This is the official Qt book written
-    by two veteran Trolls. The first edition, which is based on Qt 4.1, is available
-    \l{http://www.qtrac.eu/C++-GUI-Programming-with-Qt-4-1st-ed.zip}{online}.
+    by two veteran Trolls. The first edition, which is based on Qt 4.1, is
+    \l{http://www.qtrac.eu/C++-GUI-Programming-with-Qt-4-1st-ed.zip}{available online}.
+    The second edition, based on Qt 4.3, is
+    \l{http://www.informit.com/store/product.aspx?isbn=0132354160}{also available online}.
 
     \bold{\l{http://www.amazon.com/exec/obidos/ASIN/0385267746/trolltech/t}{The Design of Everyday Things}}
     by Donald Norman, ISBN 0-38526774-6, is one of the classics of human

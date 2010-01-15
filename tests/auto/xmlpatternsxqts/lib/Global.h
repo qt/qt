@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,7 +47,7 @@
 #include "private/qitem_p.h"
 #include "private/qnamepool_p.h"
 
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
 #   ifdef Q_PATTERNISTSDK_BUILDING
         #define Q_PATTERNISTSDK_EXPORT __declspec(dllexport)
     #else

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,9 +65,17 @@ class QAbstractStatePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QAbstractState)
 
 public:
-    QAbstractStatePrivate();
+    enum StateType {
+        AbstractState,
+        StandardState,
+        FinalState,
+        HistoryState
+    };
+
+    QAbstractStatePrivate(StateType type);
 
     static QAbstractStatePrivate *get(QAbstractState *q);
+    static const QAbstractStatePrivate *get(const QAbstractState *q);
 
     QStateMachine *machine() const;
 
@@ -77,6 +85,8 @@ public:
     void emitEntered();
     void emitExited();
 
+    uint stateType:31;
+    uint isMachine:1;
     mutable QState *parentState;
 };
 

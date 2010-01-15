@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,7 +83,7 @@ void QHelpSearchIndexReader::search(const QString &collectionFile, const QString
     start(QThread::NormalPriority);
 }
 
-int QHelpSearchIndexReader::hitsCount() const
+int QHelpSearchIndexReader::hitCount() const
 {
     QMutexLocker lock(&mutex);
     return hitList.count();

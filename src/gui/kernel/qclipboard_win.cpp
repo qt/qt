@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,7 @@
 #include "qmime.h"
 #include "qt_windows.h"
 #include "qdnd_p.h"
+#include <private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -140,6 +141,9 @@ public:
         clipBoardViewer = new QWidget();
         clipBoardViewer->createWinId();
         clipBoardViewer->setObjectName(QLatin1String("internal clipboard owner"));
+        // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+        if (QWidgetPrivate::allWidgets)
+            QWidgetPrivate::allWidgets->remove(clipBoardViewer);
     }
 
     ~QClipboardData()

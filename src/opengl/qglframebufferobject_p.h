@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -111,9 +111,6 @@ public:
     virtual QSize size() const {return fbo->size();}
     virtual QGLContext* context() const;
     virtual QGLFormat format() const {return fboFormat;}
-    virtual void ensureActiveTarget();
-    virtual void beginPaint();
-    virtual void endPaint();
 
     void setFBO(QGLFramebufferObject* f,
                 QGLFramebufferObject::Attachment attachment);
@@ -127,7 +124,8 @@ private:
 class QGLFramebufferObjectPrivate
 {
 public:
-    QGLFramebufferObjectPrivate() : fbo_guard(0), texture(0), depth_stencil_buffer(0), color_buffer(0), valid(false), previous_fbo(0), engine(0) {}
+    QGLFramebufferObjectPrivate() : fbo_guard(0), texture(0), depth_stencil_buffer(0)
+                                  , color_buffer(0), valid(false), engine(0) {}
     ~QGLFramebufferObjectPrivate() {}
 
     void init(QGLFramebufferObject *q, const QSize& sz,
@@ -143,7 +141,6 @@ public:
     QGLFramebufferObjectFormat format;
     uint valid : 1;
     QGLFramebufferObject::Attachment fbo_attachment;
-    GLuint previous_fbo;
     mutable QPaintEngine *engine;
     QGLFBOGLPaintDevice glDevice;
 

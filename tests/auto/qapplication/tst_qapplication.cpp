@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,9 @@
 #include "private/qstylesheetstyle_p.h"
 #ifdef Q_OS_WINCE
 #include <windows.h>
+#endif
+#ifdef Q_OS_SYMBIAN
+#include <aknenv.h>
 #endif
 
 //TESTED_CLASS=
@@ -129,6 +132,7 @@ private slots:
     void style();
 
     void allWidgets();
+    void topLevelWidgets();
 
     void setAttribute();
 
@@ -136,6 +140,8 @@ private slots:
     void windowsCommandLine();
 
     void touchEventPropagation();
+
+    void symbianNoApplicationPanes();
 
     void symbianNeedForTraps();
     void symbianLeaveThroughMain();
@@ -1795,6 +1801,27 @@ void tst_QApplication::allWidgets()
     QVERIFY(!app.allWidgets().contains(w)); // removal test
 }
 
+void tst_QApplication::topLevelWidgets()
+{
+    int argc = 1;
+    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QWidget *w = new QWidget;
+    w->show();
+#ifndef QT_NO_CLIPBOARD
+    QClipboard *clipboard = QApplication::clipboard();
+    QString originalText = clipboard->text();
+    clipboard->setText(QString("newText"));
+#endif
+    app.processEvents();
+    QVERIFY(QApplication::topLevelWidgets().contains(w));
+    QCOMPARE(QApplication::topLevelWidgets().count(), 1);
+    delete w;
+    w = 0;
+    app.processEvents();
+    QCOMPARE(QApplication::topLevelWidgets().count(), 0);
+}
+
+
 
 void tst_QApplication::setAttribute()
 {
@@ -2012,6 +2039,89 @@ void tst_QApplication::touchEventPropagation()
         QVERIFY(window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
     }
+}
+
+void tst_QApplication::symbianNoApplicationPanes()
+{
+#ifndef Q_OS_SYMBIAN
+    QSKIP("This is a Symbian only test", SkipAll);
+#else
+    QApplication::setAttribute(Qt::AA_S60DontConstructApplicationPanes);
+
+    // Run in a block so that QApplication is destroyed before resetting the attribute.
+    {
+        // Actually I wasn't able to get the forced orientation change to work properly,
+        // but I'll leave the code here for the future in case we manage to test that
+        // later. If someone knows how to force an orientation switch in an autotest, do
+        // feel free to fix this testcase.
+        int argc = 0;
+        QApplication app(argc, 0);
+        QWidget *w;
+
+        w = new QWidget;
+        w->show();
+        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
+                ->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape));
+        app.processEvents();
+        delete w;
+
+        w = new QWidget;
+        w->show();
+        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
+                ->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait));
+        app.processEvents();
+        delete w;
+
+        w = new QWidget;
+        w->showMaximized();
+        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
+                ->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape));
+        app.processEvents();
+        delete w;
+
+        w = new QWidget;
+        w->showMaximized();
+        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
+                ->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait));
+        app.processEvents();
+        delete w;
+
+        w = new QWidget;
+        w->showFullScreen();
+        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
+                ->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape));
+        app.processEvents();
+        delete w;
+
+        w = new QWidget;
+        w->showFullScreen();
+        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
+                ->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait));
+        app.processEvents();
+        delete w;
+
+        // These will have no effect, since there is no status pane, but they shouldn't
+        // crash either.
+        w = new QWidget;
+        w->show();
+        w->setWindowTitle("Testing title");
+        app.processEvents();
+        delete w;
+
+        w = new QWidget;
+        w->show();
+        w->setWindowIcon(QIcon(QPixmap("heart.svg")));
+        app.processEvents();
+        delete w;
+
+        QDesktopWidget desktop;
+        QCOMPARE(desktop.availableGeometry(), desktop.screenGeometry());
+    }
+
+    QApplication::setAttribute(Qt::AA_S60DontConstructApplicationPanes, false);
+
+    // No other error condition. Program will crash if unsuccessful.
+#endif
 }
 
 #ifdef Q_OS_SYMBIAN

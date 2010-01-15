@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -213,6 +213,15 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     if ((q->windowType() == Qt::Desktop))
         return;
+
+    QPoint oldPos(q->pos());
+    QSize oldSize(q->size());
+    QRect oldGeom(data.crect);
+
+    // Lose maximized status if deliberate resize
+    if (w != oldSize.width() || h != oldSize.height())
+        data.window_state &= ~Qt::WindowMaximized;
+
     if (extra) {                                // any size restrictions?
         w = qMin(w,extra->maxw);
         h = qMin(h,extra->maxh);
@@ -228,16 +237,9 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         data.window_state = s;
     }
 
-    QPoint oldPos(q->pos());
-    QSize oldSize(q->size());
-    QRect oldGeom(data.crect);
-
     bool isResize = w != oldSize.width() || h != oldSize.height();
     if (!isMove && !isResize)
         return;
-
-    if (isResize)
-        data.window_state &= ~Qt::WindowMaximized;
 
     if (q->isWindow()) {
         if (w == 0 || h == 0) {
@@ -359,6 +361,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         QScopedPointer<QSymbianControl> control( q_check_ptr(new QSymbianControl(q)) );
         QT_TRAP_THROWING(control->ConstructL(true, desktop));
+        control->SetMopParent(static_cast<CEikAppUi*>(S60->appUi()));
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
@@ -434,8 +437,10 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         drawableWindow->PointerFilter(EPointerFilterEnterExit
             | EPointerFilterMove | EPointerFilterDrag, 0);
 
-        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
+        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped)) {
             activateSymbianWindow(control.data());
+            control->MakeVisible(true);
+        }
 
         // We wait until the control is fully constructed before calling setWinId, because
         // this generates a WinIdChanged event.
@@ -483,12 +488,6 @@ void QWidgetPrivate::show_sys()
 
         if(q->isWindow())
             id->setFocusSafely(true);
-
-        // Force setting of the icon after window is made visible,
-        // this is needed even WA_SetWindowIcon is not set, as in that case we need
-        // to reset to the application level window icon
-        if(q->isWindow())
-            setWindowIcon_sys(true);
     }
 
     invalidateBuffer(q->rect());
@@ -716,62 +715,6 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         window->SetTransparentRegion(TRegionFix<1>());
 }
 
-CFbsBitmap* qt_pixmapToNativeBitmap(QPixmap pixmap, bool invert)
-{
-    CFbsBitmap* fbsBitmap = q_check_ptr(new CFbsBitmap);    // CBase derived object needs check on new
-    TSize size(pixmap.size().width(), pixmap.size().height());
-    TDisplayMode mode(EColor16MU);
-
-    bool isNull = pixmap.isNull();
-    int depth = pixmap.depth();
-
-    // TODO: dummy assumptions from bit amounts for each color
-    // Will fix later on when native pixmap is implemented
-    switch(pixmap.depth()) {
-    case 1:
-        mode = EGray2;
-        break;
-    case 4:
-        mode = EColor16;
-        break;
-    case 8:
-        mode = EColor256;
-        break;
-    case 12:
-        mode = EColor4K;
-        break;
-    case 16:
-        mode = EColor64K;
-        break;
-    case 24:
-        mode = EColor16M;
-        break;
-    case 32:
-        case EColor16MU:
-        break;
-    default:
-        qFatal("Unsupported pixmap depth");
-        break;
-    }
-
-    qt_symbian_throwIfError(fbsBitmap->Create(size, mode));
-    fbsBitmap->LockHeap();
-    QImage image = pixmap.toImage();
-
-    if (invert)
-        image.invertPixels();
-
-    int height = pixmap.size().height();
-    for(int i=0;i<height;i++ )
-        {
-        TPtr8 scanline(image.scanLine(i), image.bytesPerLine(), image.bytesPerLine());
-        fbsBitmap->SetScanLine( scanline, i );
-        }
-
-    fbsBitmap->UnlockHeap();
-    return fbsBitmap;
-}
-
 void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
 {
 #ifdef Q_WS_S60
@@ -800,12 +743,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 mask.fill(Qt::color1);
             }
 
-            // Convert to CFbsBitmp
-            // TODO: When QPixmap is adapted to use native CFbsBitmap,
-            // it could be set directly to context pane
-            CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
-            CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
-
+            CFbsBitmap* nBitmap = pm.toSymbianCFbsBitmap();
+            CFbsBitmap* nMask = mask.toSymbianCFbsBitmap();
             contextPane->SetPicture(nBitmap,nMask);
         } else {
             // Icon set to null -> set context pane picture to default
@@ -836,12 +775,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                     mask.fill(Qt::color1);
                 }
 
-                // Convert to CFbsBitmp
-                // TODO: When QPixmap is adapted to use native CFbsBitmap,
-                // it could be set directly to context pane
-                CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
-                CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
-
+                CFbsBitmap* nBitmap = pm.toSymbianCFbsBitmap();
+                CFbsBitmap* nMask = mask.toSymbianCFbsBitmap();
                 titlePane->SetSmallPicture( nBitmap, nMask, ETrue );
             } else {
                 // Icon set to null -> set context pane picture to default
@@ -946,7 +881,8 @@ void QWidgetPrivate::deleteTLSysExtra()
 void QWidgetPrivate::createSysExtra()
 {
     extra->activated = 0;
-    extra->disableBlit = 0;
+    extra->nativePaintMode = QWExtra::Default;
+    extra->receiveNativePaintEvents = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -1216,7 +1152,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         if (d->ic) {
             delete d->ic;
         } else {
-            QInputContext *ic = inputContext();
+            QInputContext *ic = QApplicationPrivate::inputContext;
             if (ic) {
                 ic->widgetDestroyed(this);
             }
@@ -1239,18 +1175,6 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             if (id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
                 id->setFocusSafely(false);
             id->ControlEnv()->AppUi()->RemoveFromStack(id);
-
-            // Hack to activate window under destroyed one. With this activation
-            // the next visible window will get keyboard focus
-            WId wid = CEikonEnv::Static()->AppUi()->TopFocusedControl();
-            if (wid) {
-                QWidget *widget = QWidget::find(wid);
-                QApplication::setActiveWindow(widget);
-                if (widget) {
-                    // Reset global window title for focusing window
-                    widget->d_func()->setWindowTitle_sys(widget->windowTitle());
-                }
-            }
         }
     }
 
@@ -1297,7 +1221,7 @@ void QWidget::releaseKeyboard()
 
 void QWidget::grabMouse()
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
@@ -1314,7 +1238,7 @@ void QWidget::grabMouse()
 #ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));

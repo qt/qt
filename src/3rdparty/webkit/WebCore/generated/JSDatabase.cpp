@@ -95,7 +95,7 @@ JSDatabase::JSDatabase(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSDatabase::~JSDatabase()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSDatabase::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -207,8 +207,8 @@ QtGradientDialog::QtGradientDialog(QWidget *parent)
     button = d_ptr->m_ui.buttonBox->button(QDialogButtonBox::Cancel);
     if (button)
         button->setAutoDefault(false);
-    connect(d_ptr->m_ui.gradientEditor, SIGNAL(aboutToShowDetails(bool, int)),
-                this, SLOT(slotAboutToShowDetails(bool, int)));
+    connect(d_ptr->m_ui.gradientEditor, SIGNAL(aboutToShowDetails(bool,int)),
+                this, SLOT(slotAboutToShowDetails(bool,int)));
 }
 
 /*!

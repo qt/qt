@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -252,10 +252,10 @@ QString QSslError::errorString() const
         errStr = QSslSocket::tr("One of the CA certificates is invalid");
         break;
     case PathLengthExceeded:
-        errStr = QSslSocket::tr("The basicConstraints pathlength parameter has been exceeded");
+        errStr = QSslSocket::tr("The basicConstraints path length parameter has been exceeded");
         break;
     case InvalidPurpose:
-        errStr = QSslSocket::tr("The supplied certificate is unsuited for this purpose");
+        errStr = QSslSocket::tr("The supplied certificate is unsuitable for this purpose");
         break;
     case CertificateUntrusted:
         errStr = QSslSocket::tr("The root CA certificate is not trusted for this purpose");

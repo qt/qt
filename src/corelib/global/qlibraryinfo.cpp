@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,7 +46,11 @@
 #include "qlibraryinfo.h"
 #include "qscopedpointer.h"
 
-#ifdef QT_BUILD_QMAKE
+#if defined(QT_BUILD_QMAKE) || defined(QT_BOOTSTRAPPED)
+# define BOOTSTRAPPING
+#endif
+
+#ifdef BOOTSTRAPPING
 QT_BEGIN_NAMESPACE
 extern QString qmake_libraryInfoFile();
 QT_END_NAMESPACE
@@ -91,7 +95,7 @@ public:
 QLibrarySettings::QLibrarySettings()
     : settings(QLibraryInfoPrivate::findConfiguration())
 {
-#ifndef QT_BUILD_QMAKE
+#ifndef BOOTSTRAPPING
     qAddPostRoutine(QLibraryInfoPrivate::cleanup);
 #endif
 }
@@ -99,7 +103,7 @@ QLibrarySettings::QLibrarySettings()
 QSettings *QLibraryInfoPrivate::findConfiguration()
 {
     QString qtconfig = QLatin1String(":/qt/etc/qt.conf");
-#ifdef QT_BUILD_QMAKE
+#ifdef BOOTSTRAPPING
     if(!QFile::exists(qtconfig))
         qtconfig = qmake_libraryInfoFile();
 #else
@@ -212,11 +216,13 @@ QLibraryInfo::buildKey()
     Returns the installation date for this build of Qt. The install date will
     usually be the last time that Qt sources were configured.
 */
+#ifndef QT_NO_DATESTRING
 QDate
 QLibraryInfo::buildDate()
 {
     return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
 }
+#endif //QT_NO_DATESTRING
 
 /*!
   Returns the location specified by \a loc.
@@ -423,7 +429,7 @@ QLibraryInfo::location(LibraryLocation loc)
     if (QDir::isRelativePath(ret)) {
         if (loc == PrefixPath) {
             // we make the prefix path absolute to the executable's directory
-#ifdef QT_BUILD_QMAKE
+#ifdef BOOTSTRAPPING
             return QFileInfo(qmake_libraryInfoFile()).absolutePath();
 #else
             if (QCoreApplication::instance()) {
@@ -488,7 +494,7 @@ extern "C" void qt_core_boilerplate();
 void qt_core_boilerplate()
 {
     printf("This is the QtCore library version " QT_VERSION_STR "\n"
-           "Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\n"
+           "Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\n"
            "Contact: Nokia Corporation (qt-info@nokia.com)\n"
            "\n"
            "Build key:           " QT_BUILD_KEY "\n"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -78,7 +78,7 @@ ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
 
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
-    connect(m_hoverPoints, SIGNAL(pointsChanged(const QPolygonF &)), this, SIGNAL(colorsChanged()));
+    connect(m_hoverPoints, SIGNAL(pointsChanged(QPolygonF)), this, SIGNAL(colorsChanged()));
 }
 
 
@@ -355,8 +355,8 @@ GradientWidget::GradientWidget(QWidget *parent)
     defaultsGroupLayout->addWidget(default3Button);
     editorGroupLayout->addWidget(default4Button);
 
-    connect(m_editor, SIGNAL(gradientStopsChanged(const QGradientStops &)),
-            m_renderer, SLOT(setGradientStops(const QGradientStops &)));
+    connect(m_editor, SIGNAL(gradientStopsChanged(QGradientStops)),
+            m_renderer, SLOT(setGradientStops(QGradientStops)));
 
     connect(m_linearButton, SIGNAL(clicked()), m_renderer, SLOT(setLinearGradient()));
     connect(m_radialButton, SIGNAL(clicked()), m_renderer, SLOT(setRadialGradient()));

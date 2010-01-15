@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -106,7 +106,7 @@ Window::Window(QWidget *parent)
     QFileInfoList entries = dir.entryInfoList(QStringList() << "*.js");
     for (int i = 0; i < entries.size(); ++i)
         m_view->addItem(entries.at(i).fileName());
-    connect(m_view, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
+    connect(m_view, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
             this, SLOT(selectScript(QListWidgetItem*)));
 //! [1]
 

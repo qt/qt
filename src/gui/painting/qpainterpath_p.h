@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -81,8 +81,8 @@ class QVectorPathConverter;
 class QVectorPathConverter
 {
 public:
-    QVectorPathConverter(const QVector<QPainterPath::Element> &path, uint fillRule)
-        : pathData(path, fillRule),
+    QVectorPathConverter(const QVector<QPainterPath::Element> &path, uint fillRule, bool convex)
+        : pathData(path, fillRule, convex),
           path(pathData.points.data(), path.size(),
                pathData.elements.data(), pathData.flags) {}
 
@@ -91,25 +91,39 @@ public:
     }
 
     struct QVectorPathData {
-        QVectorPathData(const QVector<QPainterPath::Element> &path, uint fillRule)
+        QVectorPathData(const QVector<QPainterPath::Element> &path, uint fillRule, bool convex)
             : elements(path.size()),
               points(path.size() * 2),
               flags(0)
         {
             int ptsPos = 0;
+            bool isLines = true;
             for (int i=0; i<path.size(); ++i) {
                 const QPainterPath::Element &e = path.at(i);
                 elements[i] = e.type;
                 points[ptsPos++] = e.x;
                 points[ptsPos++] = e.y;
                 if (e.type == QPainterPath::CurveToElement)
-                    flags |= QVectorPath::CurvedShapeHint;
+                    flags |= QVectorPath::CurvedShapeMask;
+
+                // This is to check if the path contains only alternating lineTo/moveTo,
+                // in which case we can set the LinesHint in the path. MoveTo is 0 and
+                // LineTo is 1 so the i%2 gets us what we want cheaply.
+                isLines = isLines && e.type == (QPainterPath::ElementType) (i%2);
             }
 
             if (fillRule == Qt::WindingFill)
                 flags |= QVectorPath::WindingFill;
             else
                 flags |= QVectorPath::OddEvenFill;
+
+            if (isLines)
+                flags |= QVectorPath::LinesShapeMask;
+            else {
+                flags |= QVectorPath::AreaShapeMask;
+                if (!convex)
+                    flags |= QVectorPath::NonConvexShapeMask;
+            }
 
         }
         QVarLengthArray<QPainterPath::ElementType> elements;
@@ -128,19 +142,24 @@ class QPainterPathData : public QPainterPathPrivate
 {
 public:
     QPainterPathData() :
-        cStart(0), fillRule(Qt::OddEvenFill),
-        dirtyBounds(false), dirtyControlBounds(false),
+        cStart(0),
+        fillRule(Qt::OddEvenFill),
+        dirtyBounds(false),
+        dirtyControlBounds(false),
         pathConverter(0)
     {
         ref = 1;
         require_moveTo = false;
+        convex = false;
     }
 
     QPainterPathData(const QPainterPathData &other) :
         QPainterPathPrivate(), cStart(other.cStart), fillRule(other.fillRule),
-        dirtyBounds(other.dirtyBounds), bounds(other.bounds),
-        dirtyControlBounds(other.dirtyControlBounds),
+        bounds(other.bounds),
         controlBounds(other.controlBounds),
+        dirtyBounds(other.dirtyBounds),
+        dirtyControlBounds(other.dirtyControlBounds),
+        convex(other.convex),
         pathConverter(0)
     {
         ref = 1;
@@ -158,19 +177,20 @@ public:
 
     const QVectorPath &vectorPath() {
         if (!pathConverter)
-            pathConverter = new QVectorPathConverter(elements, fillRule);
+            pathConverter = new QVectorPathConverter(elements, fillRule, convex);
         return pathConverter->path;
     }
 
     int cStart;
     Qt::FillRule fillRule;
 
-    bool require_moveTo;
-
-    bool   dirtyBounds;
     QRectF bounds;
-    bool   dirtyControlBounds;
     QRectF controlBounds;
+
+    uint require_moveTo : 1;
+    uint dirtyBounds : 1;
+    uint dirtyControlBounds : 1;
+    uint convex : 1;
 
     QVectorPathConverter *pathConverter;
 };

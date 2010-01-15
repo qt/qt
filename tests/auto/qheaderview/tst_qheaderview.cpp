@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include <QStandardItemModel>
 #include <QStringListModel>
+#include <QSortFilterProxyModel>
 
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
@@ -188,6 +189,7 @@ private slots:
     void task236450_hidden_data();
     void task236450_hidden();
     void task248050_hideRow();
+    void QTBUG6058_reset();
 
 protected:
     QHeaderView *view;
@@ -1944,6 +1946,50 @@ void tst_QHeaderView::task248050_hideRow()
     QTest::qWait(100);
     //the size of the section shouldn't have changed
     QCOMPARE(header.sectionPosition(2), 17);
+}
+
+
+//returns 0 if everything is fine.
+static int checkHeaderViewOrder(QHeaderView *view, const QVector<int> &expected)
+{
+    if (view->count() != expected.count())
+        return 1;
+
+    for (int i = 0; i < expected.count(); i++) {
+        if (view->logicalIndex(i) != expected.at(i))
+            return i + 10;
+        if (view->visualIndex(expected.at(i)) != i)
+            return i + 100;
+    }
+    return 0;
+}
+
+
+void tst_QHeaderView::QTBUG6058_reset()
+{
+    QStringListModel model1( QStringList() << "0" << "1" << "2" << "3" << "4" << "5" );
+    QStringListModel model2( QStringList() << "a" << "b" << "c" );
+    QSortFilterProxyModel proxy;
+
+    QHeaderView view(Qt::Vertical);
+    view.setModel(&proxy);
+    view.show();
+    QTest::qWait(20);
+
+    proxy.setSourceModel(&model1);
+    QApplication::processEvents();
+    view.swapSections(0,2);
+    view.swapSections(1,4);
+    QApplication::processEvents();
+    QCOMPARE(checkHeaderViewOrder(&view, QVector<int>() << 2 << 4 << 0 << 3 << 1 << 5) , 0);
+
+    proxy.setSourceModel(&model2);
+    QApplication::processEvents();
+    QCOMPARE(checkHeaderViewOrder(&view, QVector<int>() << 2 << 0 << 1 ) , 0);
+
+    proxy.setSourceModel(&model1);
+    QApplication::processEvents();
+    QCOMPARE(checkHeaderViewOrder(&view, QVector<int>() << 2 << 0 << 1 << 3 << 4 << 5 ) , 0);
 }
 
 

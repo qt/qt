@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2069,7 +2069,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 // This is mainly to handle cases where someone sets the font on the window
                 // and then the combo inherits it and passes it onward. At that point the resolve mask
                 // is very, very weak. This makes it stonger.
-                font.setPointSizeF(menuItem->font.pointSizeF());
+                font.setPointSizeF(QFontInfo(menuItem->font).pointSizeF());
 
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);
@@ -3817,6 +3817,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
                 newSize.setWidth(80);
             if (!btn->icon.isNull() && btn->iconSize.height() > 16)
                 newSize -= QSize(0, 2);
+            newSize += QSize(0, 1);
         }
         if (const QPushButton *button = qobject_cast<const QPushButton *>(widget)) {
             if (qobject_cast<const QDialogButtonBox *>(button->parentWidget())) {
@@ -3825,6 +3826,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
             }
         }
         break;
+#ifndef QT_NO_GROUPBOX
     case CT_GroupBox:
         // Since we use a bold font we have to recalculate base width
         if (const QGroupBox *gb = qobject_cast<const QGroupBox*>(widget)) {
@@ -3840,6 +3842,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
         }
         newSize += QSize(0, 1);
         break;
+#endif //QT_NO_GROUPBOX
     case CT_RadioButton:
     case CT_CheckBox:
         newSize += QSize(0, 1);

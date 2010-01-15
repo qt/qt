@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,6 +41,7 @@
 
 #include "QtTest/private/qbenchmarkevent_p.h"
 #include "QtTest/private/qbenchmark_p.h"
+#include "QtTest/private/qbenchmarkmetric_p.h"
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -91,14 +92,9 @@ int QBenchmarkEvent::adjustMedianCount(int suggestion)
     return 1;
 }
 
-QString QBenchmarkEvent::unitText()
+QTest::QBenchmarkMetric QBenchmarkEvent::metricType()
 {
-    return QLatin1String("events");
-}
-
-QString QBenchmarkEvent::metricText()
-{
-    return QLatin1String("events");
+    return QTest::Events;
 }
 
 // This could be done in a much better way, this is just the beginning.

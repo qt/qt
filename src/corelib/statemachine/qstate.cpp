@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -124,7 +124,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QStatePrivate::QStatePrivate()
-    : errorState(0), initialState(0), childMode(QState::ExclusiveStates),
+    : QAbstractStatePrivate(StandardState),
+      errorState(0), initialState(0), childMode(QState::ExclusiveStates),
       childStatesListNeedsRefresh(true), transitionsListNeedsRefresh(true)
 {
 }
@@ -139,10 +140,10 @@ void QStatePrivate::emitFinished()
     emit q->finished();
 }
 
-void QStatePrivate::emitPolished()
+void QStatePrivate::emitPropertiesAssigned()
 {
     Q_Q(QState);
-    emit q->polished();
+    emit q->propertiesAssigned();
 }
 
 /*!
@@ -228,7 +229,7 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
   Instructs this state to set the property with the given \a name of the given
   \a object to the given \a value when the state is entered.
 
-  \sa polished()
+  \sa propertiesAssigned()
 */
 void QState::assignProperty(QObject *object, const char *name,
                             const QVariant &value)
@@ -286,15 +287,14 @@ void QState::setErrorState(QAbstractState *state)
 
 /*!
   Adds the given \a transition. The transition has this state as the source.
-  This state takes ownership of the transition. If the transition is successfully
-  added, the function will return the \a transition pointer. Otherwise it will return null.
+  This state takes ownership of the transition. 
 */
-QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
+void QState::addTransition(QAbstractTransition *transition)
 {
     Q_D(QState);
     if (!transition) {
         qWarning("QState::addTransition: cannot add null transition");
-        return 0;
+        return ;
     }
 
     transition->setParent(this);
@@ -303,18 +303,17 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
         QAbstractState *t = targets.at(i).data();
         if (!t) {
             qWarning("QState::addTransition: cannot add transition to null state");
-            return 0;
+            return ;
         }
         if ((QAbstractStatePrivate::get(t)->machine() != d->machine())
             && QAbstractStatePrivate::get(t)->machine() && d->machine()) {
             qWarning("QState::addTransition: cannot add transition "
                      "to a state in a different state machine");
-            return 0;
+            return ;
         }
     }
     if (machine() != 0 && machine()->configuration().contains(this))
         QStateMachinePrivate::get(machine())->registerTransitions(this);
-    return transition;
 }
 
 /*!
@@ -379,7 +378,8 @@ QAbstractTransition *QState::addTransition(QAbstractState *target)
         return 0;
     }
     UnconditionalTransition *trans = new UnconditionalTransition(target);
-    return addTransition(trans);
+    addTransition(trans);
+    return trans;
 }
 
 /*!
@@ -492,9 +492,15 @@ bool QState::event(QEvent *e)
 */
 
 /*!
-  \fn QState::polished()
+  \fn QState::propertiesAssigned()
 
-  This signal is emitted when all properties have been assigned their final value.
+  This signal is emitted when all properties have been assigned their final value. If the state
+  assigns a value to one or more properties for which an animation exists (either set on the
+  transition or as a default animation on the state machine), then the signal will not be emitted
+  until all such animations have finished playing.
+
+  If there are no relevant animations, or no property assignments defined for the state, then
+  the signal will be emitted immediately before the state is entered.
 
   \sa QState::assignProperty(), QAbstractTransition::addAnimation()
 */

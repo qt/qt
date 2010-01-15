@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,7 @@
 #include "QtTest/private/qxmltestlogger_p.h"
 #include "QtTest/private/qtestresult_p.h"
 #include "QtTest/private/qbenchmark_p.h"
+#include "QtTest/private/qbenchmarkmetric_p.h"
 #include "QtTest/qtestcase.h"
 
 QT_BEGIN_NAMESPACE
@@ -243,7 +244,7 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     QTestCharBuffer quotedTag;
 
     xmlQuote(&quotedMetric,
-        QBenchmarkGlobalData::current->measurer->metricText().toAscii().constData());
+        benchmarkMetricUnit(result.metric));
     xmlQuote(&quotedTag, result.context.tag.toAscii().constData());
 
     QTest::qt_asprintf(

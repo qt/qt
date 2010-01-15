@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -100,8 +100,7 @@ void VideoPlayer::openFile()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Movie"));
 
     if (!fileName.isEmpty()) {
-        if (surface->isStarted())
-            surface->stop();
+        surface->stop();
 
         movie.setFileName(fileName);
 

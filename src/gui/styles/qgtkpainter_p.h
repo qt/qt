@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,11 +56,11 @@
 #include <QtCore/qglobal.h>
 #if !defined(QT_NO_STYLE_GTK)
 
-#include "gtksymbols_p.h"
 #include <QtGui/QCleanlooksStyle>
 #include <QtGui/QPainter>
 #include <QtGui/QPalette>
 #include <QtGui/QFont>
+#include <private/qgtkstyle_p.h>
 
 QT_BEGIN_NAMESPACE
 

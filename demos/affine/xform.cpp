@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,8 +68,8 @@ XFormView::XFormView(QWidget *parent)
     pts->setBoundingRect(QRectF(0, 0, 500, 500));
     ctrlPoints << QPointF(250, 250) << QPointF(350, 250);
     pts->setPoints(ctrlPoints);
-    connect(pts, SIGNAL(pointsChanged(const QPolygonF&)),
-            this, SLOT(updateCtrlPoints(const QPolygonF &)));
+    connect(pts, SIGNAL(pointsChanged(QPolygonF)),
+            this, SLOT(updateCtrlPoints(QPolygonF)));
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 

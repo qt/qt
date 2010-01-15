@@ -1,6 +1,6 @@
-HEADERS   = dirmodel.h \
+HEADERS   = fsmodel.h \
             mainwindow.h
-SOURCES   = dirmodel.cpp \
+SOURCES   = fsmodel.cpp \
             main.cpp \
             mainwindow.cpp
 RESOURCES = completer.qrc

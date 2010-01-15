@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
     support for QGraphicsItem.
     \since 4.2
     \ingroup graphicsview-api
+    \deprecated
 
     The QGraphicsItemAnimation class animates a QGraphicsItem. You can
     schedule changes to the item's transformation matrix at

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -250,9 +250,9 @@ public:
 inline uint QVectorPath::polygonFlags(QPaintEngine::PolygonDrawMode mode) {
     switch (mode) {
     case QPaintEngine::ConvexMode: return ConvexPolygonHint | ImplicitClose;
-    case QPaintEngine::OddEvenMode: return NonCurvedShapeHint | OddEvenFill | ImplicitClose;
-    case QPaintEngine::WindingMode: return NonCurvedShapeHint | WindingFill | ImplicitClose;
-    case QPaintEngine::PolylineMode: return NonCurvedShapeHint;
+    case QPaintEngine::OddEvenMode: return PolygonHint | OddEvenFill | ImplicitClose;
+    case QPaintEngine::WindingMode: return PolygonHint | WindingFill | ImplicitClose;
+    case QPaintEngine::PolylineMode: return PolygonHint;
     default: return 0;
     }
 }

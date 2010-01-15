@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -163,7 +163,9 @@ extern "C" {
 #endif // QT_NO_XRENDER
 
 #ifndef QT_NO_XSYNC
+extern "C" {
 #  include "X11/extensions/sync.h"
+}
 #endif
 
 // #define QT_NO_XKB
@@ -428,6 +430,7 @@ struct QX11Data
 
     // true if Qt is compiled w/ MIT-SHM support and MIT-SHM is supported on the connected Display
     bool use_mitshm;
+    bool use_mitshm_pixmaps;
     int mitshm_major;
 
     // true if Qt is compiled w/ Tablet support and we have a tablet.

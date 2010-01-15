@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -335,9 +335,9 @@ void MainWindow::createDockWindows()
     addDockWidget(Qt::RightDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
 
-    connect(customerList, SIGNAL(currentTextChanged(const QString &)),
-            this, SLOT(insertCustomer(const QString &)));
-    connect(paragraphsList, SIGNAL(currentTextChanged(const QString &)),
-            this, SLOT(addParagraph(const QString &)));
+    connect(customerList, SIGNAL(currentTextChanged(QString)),
+            this, SLOT(insertCustomer(QString)));
+    connect(paragraphsList, SIGNAL(currentTextChanged(QString)),
+            this, SLOT(addParagraph(QString)));
 }
 //! [9]

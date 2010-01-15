@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,15 +66,15 @@ NetworkAccessManager::NetworkAccessManager(QObject *parent)
     requestFinishedCount(0), requestFinishedFromCacheCount(0), requestFinishedPipelinedCount(0),
     requestFinishedSecureCount(0)
 {
-    connect(this, SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
+    connect(this, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
-    connect(this, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)),
-            SLOT(proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)));
-    connect(this, SIGNAL(finished(QNetworkReply *)),
-            SLOT(requestFinished(QNetworkReply *)));
+    connect(this, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+    connect(this, SIGNAL(finished(QNetworkReply*)),
+            SLOT(requestFinished(QNetworkReply*)));
 #ifndef QT_NO_OPENSSL
-    connect(this, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)),
-            SLOT(sslErrors(QNetworkReply*, const QList<QSslError>&)));
+    connect(this, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
+            SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
     loadSettings();
 

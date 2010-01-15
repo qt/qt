@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,6 +49,7 @@
 /*!
     \page sql-programming.html
     \title SQL Programming
+    \nextpage Connecting to Databases
 
     \brief Database integration for Qt applications.
 
@@ -95,7 +96,7 @@
     and the SQL API layer. See \l{SQL Database Drivers} for more information.
 
     \section2 SQL API Layer
-    
+
     These classes provide access to databases. Connections
     are made using the QSqlDatabase class. Database
     interaction is achieved by using the QSqlQuery class.
@@ -119,6 +120,7 @@
     \title Connecting to Databases
 
     \contentspage SQL Programming
+    \previouspage SQL Programming
     \nextpage Executing SQL Statements
 
     To access a database with QSqlQuery or QSqlQueryModel, create and

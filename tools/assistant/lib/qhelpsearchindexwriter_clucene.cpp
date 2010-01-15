@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -431,8 +431,8 @@ private:
     QString readData(const QByteArray &data)
     {
         QTextStream textStream(data);
-        QByteArray charSet = QHelpGlobal::charsetFromData(data).toLatin1();
-        textStream.setCodec(QTextCodec::codecForName(charSet.constData()));
+        const QByteArray &codec = QHelpGlobal::codecFromData(data).toLatin1();
+        textStream.setCodec(QTextCodec::codecForName(codec.constData()));
 
         QString stream = textStream.readAll();
         if (stream.isNull() || stream.isEmpty())
@@ -579,6 +579,7 @@ void QHelpSearchIndexWriter::cancelIndexing()
 void QHelpSearchIndexWriter::updateIndex(const QString &collectionFile,
     const QString &indexFilesFolder, bool reindex)
 {
+    wait();
     mutex.lock();
     this->m_cancel = false;
     this->m_reindex = reindex;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -183,6 +183,9 @@ void QToolBarPrivate::setWindowState(bool floating, bool unplug, const QRect &re
 
     if (visible)
         q->show();
+
+    if (floating != wasFloating)
+        emit q->topLevelChanged(floating);
 }
 
 void QToolBarPrivate::initDrag(const QPoint &pos)
@@ -393,10 +396,10 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
 void QToolBarPrivate::unplug(const QRect &_r)
 {
     Q_Q(QToolBar);
-    layout->setExpanded(false, false);
     QRect r = _r;
     r.moveTopLeft(q->mapToGlobal(QPoint(0, 0)));
     setWindowState(true, true, r);
+    layout->setExpanded(false);
 }
 
 void QToolBarPrivate::plug(const QRect &r)
@@ -515,6 +518,27 @@ void QToolBarPrivate::plug(const QRect &r)
     style.
 
     \sa toolButtonStyle QMainWindow::toolButtonStyle
+*/
+
+/*!
+    \since 4.6
+
+    \fn void QToolBar::topLevelChanged(bool topLevel)
+
+    This signal is emitted when the \l floating property changes.
+    The \a topLevel parameter is true if the toolbar is now floating;
+    otherwise it is false.
+
+    \sa isWindow()
+*/
+
+
+/*!
+    \fn void QToolBar::visibilityChanged(bool visible)
+    \since 4.7
+
+    This signal is emitted when the toolbar becomes \a visible (or
+    invisible). This happens when the widget is hidden or shown.
 */
 
 /*!
@@ -1107,6 +1131,7 @@ bool QToolBar::event(QEvent *event)
         // fallthrough intended
     case QEvent::Show:
         d->toggleViewAction->setChecked(event->type() == QEvent::Show);
+        emit visibilityChanged(event->type() == QEvent::Show);
 #if defined(Q_WS_MAC)
         if (toolbarInUnifiedToolBar(this)) {
              // I can static_cast because I did the qobject_cast in the if above, therefore

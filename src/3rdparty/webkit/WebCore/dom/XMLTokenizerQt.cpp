@@ -85,7 +85,6 @@ XMLTokenizer::XMLTokenizer(Document* _doc, FrameView* _view)
     , m_view(_view)
     , m_wroteText(false)
     , m_currentNode(_doc)
-    , m_currentNodeIsReferenced(false)
     , m_sawError(false)
     , m_sawXSLTransform(false)
     , m_sawFirstElement(false)
@@ -114,7 +113,6 @@ XMLTokenizer::XMLTokenizer(DocumentFragment* fragment, Element* parentElement)
     , m_view(0)
     , m_wroteText(false)
     , m_currentNode(fragment)
-    , m_currentNodeIsReferenced(fragment)
     , m_sawError(false)
     , m_sawXSLTransform(false)
     , m_sawFirstElement(false)
@@ -133,8 +131,7 @@ XMLTokenizer::XMLTokenizer(DocumentFragment* fragment, Element* parentElement)
     , m_scriptStartLine(0)
     , m_parsingFragment(true)
 {
-    if (fragment)
-        fragment->ref();
+    fragment->ref();
     if (m_doc)
         m_doc->ref();
           
@@ -188,7 +185,7 @@ XMLTokenizer::XMLTokenizer(DocumentFragment* fragment, Element* parentElement)
 
 XMLTokenizer::~XMLTokenizer()
 {
-    setCurrentNode(0);
+    clearCurrentNodeStack();
     if (m_parsingFragment && m_doc)
         m_doc->deref();
     if (m_pendingScript)
@@ -259,7 +256,7 @@ void XMLTokenizer::doEnd()
 #endif
     
     if (m_stream.error() == QXmlStreamReader::PrematureEndOfDocumentError
-        || (m_wroteText && !m_sawFirstElement && !m_sawXSLTransform))
+        || (m_wroteText && !m_sawFirstElement && !m_sawXSLTransform && !m_sawError))
         handleError(fatal, qPrintable(m_stream.errorString()), lineNumber(), columnNumber());
 }
 
@@ -569,7 +566,7 @@ void XMLTokenizer::parseStartElement()
         return;
     }
 
-    setCurrentNode(newElement.get());
+    pushCurrentNode(newElement.get());
     if (m_view && !newElement->attached())
         newElement->attach();
 
@@ -582,18 +579,26 @@ void XMLTokenizer::parseEndElement()
     exitText();
 
     Node* n = m_currentNode;
-    RefPtr<Node> parent = n->parentNode();
     n->finishParsingChildren();
 
     if (!n->isElementNode() || !m_view) {
-        setCurrentNode(parent.get());
+        if (!m_currentNodeStack.isEmpty())
+            popCurrentNode();
         return;
     }
 
     Element* element = static_cast<Element*>(n);
+
+    // The element's parent may have already been removed from document.
+    // Parsing continues in this case, but scripts aren't executed.
+    if (!element->inDocument()) {
+        popCurrentNode();
+        return;
+    }
+
     ScriptElement* scriptElement = toScriptElement(element);
     if (!scriptElement) {
-        setCurrentNode(parent.get());
+        popCurrentNode();
         return;
     }
 
@@ -625,7 +630,7 @@ void XMLTokenizer::parseEndElement()
             m_view->frame()->script()->executeScript(ScriptSourceCode(scriptElement->scriptContent(), m_doc->url(), m_scriptStartLine));
     }
     m_requestingScript = false;
-    setCurrentNode(parent.get());
+    popCurrentNode();
 }
 
 void XMLTokenizer::parseCharacters()

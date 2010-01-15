@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -125,6 +125,8 @@ public:
     virtual bool hasPendingDatagrams() const = 0;
     virtual qint64 pendingDatagramSize() const = 0;
 #endif
+
+    virtual qint64 bytesToWrite() const = 0;
 
     virtual int option(SocketOption option) const = 0;
     virtual bool setOption(SocketOption option, int value) = 0;

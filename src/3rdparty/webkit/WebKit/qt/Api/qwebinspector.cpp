@@ -50,17 +50,13 @@
 
     \section1 Resources
 
+    This class acts mostly as a container and a controller for the inspector.
     Most of the resources needed by the inspector are owned by the associated
     QWebPage and are allocated the first time that:
     \list
         \o an element is inspected
         \o the QWebInspector is shown.
     \endlist
-
-    This class acts mostly as a container and a controller for the inspector.
-    You can defer the creation and association of the QWebInspector until
-    the first emission of QWebPage::webInspectorTriggered() to save additional
-    resources.
 
     \section1 Inspector configuration persistence
 
@@ -143,6 +139,9 @@ QSize QWebInspector::sizeHint() const
 /*! \reimp */
 bool QWebInspector::event(QEvent* ev)
 {
+    if (ev->type() == QEvent::Close && d->page)
+        d->page->d->inspectorController()->setWindowVisible(false);
+
     return QWidget::event(ev);
 }
 
@@ -163,8 +162,6 @@ void QWebInspector::showEvent(QShowEvent* event)
 /*! \reimp */
 void QWebInspector::hideEvent(QHideEvent* event)
 {
-    if (d->page)
-        d->page->d->inspectorController()->setWindowVisible(false);
 }
 
 /*! \internal */
@@ -187,10 +184,4 @@ void QWebInspectorPrivate::adjustFrontendSize(const QSize& size)
     if (frontend)
         frontend->resize(size);
 }
-
-/*!
-    \fn void QWebInspector::windowTitleChanged(const QString& newTitle);
-
-    This is emitted to signal that this widget's title changed to \a newTitle.
-*/
 

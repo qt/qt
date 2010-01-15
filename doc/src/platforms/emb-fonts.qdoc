@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,9 +60,9 @@
     prerendered fonts and TrueType fonts. For compatibility, it will also read the
     legacy \c lib/fonts/fontdir file.
 
-    Support for other font formats can be added, contact
-    \l{mailto:qt-info@nokia.com}{qt-info@nokia.com} for more
-    information.
+    Support for other font formats can be added. To make a suggestion,
+    please create a task in our bug tracker at \l
+    {http://bugreports.qt.nokia.com}{http://bugreports.qt.nokia.com}.
 
     \tableofcontents
 

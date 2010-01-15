@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -106,6 +106,7 @@ private slots:
     void font_data();
     void font();
     void fontPropagation();
+    void fontChangedEvent();
     void fontPropagationWidgetItemWidget();
     void fontPropagationSceneChange();
     void geometry_data();
@@ -160,11 +161,15 @@ private slots:
     void widgetSendsGeometryChanges();
     void respectHFW();
     void addChildInpolishEvent();
+    void polishEvent();
+    void polishEvent2();
+    void autoFillBackground();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
     void task243004_setStyleCrash();
     void task250119_shortcutContext();
+    void QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems();
 };
 
 
@@ -669,6 +674,40 @@ void tst_QGraphicsWidget::fontPropagation()
     QVERIFY(child2->font().bold());
     QVERIFY(!child2->font().italic());
     QCOMPARE(child2->font().pointSize(), 43);
+}
+
+void tst_QGraphicsWidget::fontChangedEvent()
+{
+    QGraphicsWidget *root = new QGraphicsWidget;
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    // Check that only the application fonts apply.
+    QFont appFont = QApplication::font();
+    QCOMPARE(scene.font(), appFont);
+    QCOMPARE(root->font(), appFont);
+
+    EventSpy rootSpyFont(root, QEvent::FontChange);
+    EventSpy rootSpyPolish(root, QEvent::Polish);
+    QCOMPARE(rootSpyFont.count(), 0);
+    QApplication::processEvents(); //The polish event is sent
+    QCOMPARE(rootSpyPolish.count(), 1);
+    QApplication::processEvents(); //Process events to see if we get the font change event
+    //The font is still the same so no fontChangeEvent
+    QCOMPARE(rootSpyFont.count(), 0);
+
+    QFont font;
+    font.setPointSize(43);
+    root->setFont(font);
+    QApplication::processEvents(); //Process events to get the font change event
+    //The font changed
+    QCOMPARE(rootSpyFont.count(), 1);
+
+    //then roll back to the default one.
+    root->setFont(appFont);
+    QApplication::processEvents(); //Process events to get the font change event
+    //The font changed
+    QCOMPARE(rootSpyFont.count(), 2);
 }
 
 void tst_QGraphicsWidget::fontPropagationWidgetItemWidget()
@@ -2768,6 +2807,112 @@ void tst_QGraphicsWidget::addChildInpolishEvent()
     QCOMPARE(PolishWidget::numberOfPolish, 2);
 }
 
+void tst_QGraphicsWidget::polishEvent()
+{
+    class MyGraphicsWidget : public QGraphicsWidget
+    { public:
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
+        { events << QEvent::Paint; }
+        void polishEvent()
+        { events << QEvent::Polish; }
+        QList<QEvent::Type> events;
+    };
+
+    QGraphicsScene scene;
+
+    MyGraphicsWidget *widget = new MyGraphicsWidget;
+    scene.addItem(widget);
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    // Make sure the item is painted.
+    QTRY_VERIFY(widget->events.contains(QEvent::Paint));
+
+    // Make sure the item got polish before paint.
+    QCOMPARE(widget->events.at(0), QEvent::Polish);
+}
+
+void tst_QGraphicsWidget::polishEvent2()
+{
+    class MyGraphicsWidget : public QGraphicsWidget
+    { public:
+    void polishEvent()
+    { events << QEvent::Polish; }
+    QList<QEvent::Type> events;
+    };
+
+    QGraphicsScene scene;
+
+    MyGraphicsWidget *widget = new MyGraphicsWidget;
+    widget->hide();
+    scene.addItem(widget);
+
+    widget->events.clear();
+
+    QApplication::processEvents();
+
+    // Make sure the item got polish event.
+    QVERIFY(widget->events.contains(QEvent::Polish));
+}
+
+void tst_QGraphicsWidget::autoFillBackground()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QCOMPARE(widget->autoFillBackground(), false);
+    widget->setAutoFillBackground(true);
+    QCOMPARE(widget->autoFillBackground(), true);
+
+    const QColor color(Qt::red);
+    const QRect rect(0, 0, 1, 1);
+
+    QGraphicsScene scene;
+    scene.addItem(widget);
+    widget->setGeometry(rect);
+
+    QPalette palette = widget->palette();
+    palette.setColor(QPalette::Window, color);
+    widget->setPalette(palette);
+
+    QImage image(rect.size(), QImage::Format_RGB32);
+    QPainter painter;
+    painter.begin(&image);
+    scene.render(&painter, rect, rect);
+    painter.end();
+    QCOMPARE(image.pixel(0, 0), color.rgb());
+}
+
+void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()
+{
+    QGraphicsScene scene;
+    QGraphicsWidget* parent1 = new QGraphicsWidget;
+    QGraphicsWidget* child1_0 = new QGraphicsWidget;
+    QGraphicsWidget* child1_1 = new QGraphicsWidget;
+
+    QGraphicsWidget* parent2 = new QGraphicsWidget;
+
+    // Add the parent and child to the scene.
+    scene.addItem(parent1);
+    child1_0->setParentItem(parent1);
+    child1_1->setParentItem(parent1);
+
+    // Hide and show the child.
+    child1_0->setParentItem(NULL);
+    scene.removeItem(child1_0);
+
+    // Remove parent from the scene.
+    scene.removeItem(parent1);
+
+    delete child1_0;
+    delete child1_1;
+    delete parent1;
+
+    // Add an item into the scene.
+    scene.addItem(parent2);
+
+    //This should not crash
+}
 
 QTEST_MAIN(tst_QGraphicsWidget)
 #include "tst_qgraphicswidget.moc"

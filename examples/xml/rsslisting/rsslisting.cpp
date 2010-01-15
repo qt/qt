@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,18 +83,18 @@ RSSListing::RSSListing(QWidget *parent)
     abortButton->setEnabled(false);
 
     treeWidget = new QTreeWidget(this);
-    connect(treeWidget, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
+    connect(treeWidget, SIGNAL(itemActivated(QTreeWidgetItem*,int)),
             this, SLOT(itemActivated(QTreeWidgetItem*)));
     QStringList headerLabels;
     headerLabels << tr("Title") << tr("Link");
     treeWidget->setHeaderLabels(headerLabels);
     treeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
 
-    connect(&http, SIGNAL(readyRead(const QHttpResponseHeader &)),
-             this, SLOT(readData(const QHttpResponseHeader &)));
+    connect(&http, SIGNAL(readyRead(QHttpResponseHeader)),
+             this, SLOT(readData(QHttpResponseHeader)));
 
-    connect(&http, SIGNAL(requestFinished(int, bool)),
-             this, SLOT(finished(int, bool)));
+    connect(&http, SIGNAL(requestFinished(int,bool)),
+             this, SLOT(finished(int,bool)));
 
     connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(fetch()));
     connect(fetchButton, SIGNAL(clicked()), this, SLOT(fetch()));

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -324,7 +324,7 @@ init_context:
 
         // Check if the certificate matches the private key.
         if (!q_SSL_CTX_check_private_key(ctx)) {
-            q->setErrorString(QSslSocket::tr("Private key does not certificate public key, %1").arg(SSL_ERRORSTR()));
+            q->setErrorString(QSslSocket::tr("Private key does not certify public key, %1").arg(SSL_ERRORSTR()));
             emit q->error(QAbstractSocket::UnknownSocketError);
             return false;
         }

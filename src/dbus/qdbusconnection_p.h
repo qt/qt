@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,7 +67,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qvector.h>
 
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 
 #include <qdbusmessage.h>
 
@@ -119,10 +119,11 @@ public:
     struct SignalHook
     {
         inline SignalHook() : obj(0), midx(-1) { }
-        QString owner, service, path, signature;
+        QString service, path, signature;
         QObject* obj;
         int midx;
         QList<int> params;
+        QStringList argumentMatch;
         QByteArray matchRule;
     };
 
@@ -155,6 +156,13 @@ public:
     typedef QHash<QString, QDBusMetaObject* > MetaObjectHash;
     typedef QHash<QByteArray, int> MatchRefCountHash;
 
+    struct WatchedServiceData {
+        WatchedServiceData() : refcount(0) {}
+        QString owner;
+        int refcount;
+    };
+    typedef QHash<QString, WatchedServiceData> WatchedServicesHash;
+
 public:
     // public methods are entry points from other objects
     explicit QDBusConnectionPrivate(QObject *parent = 0);
@@ -175,13 +183,19 @@ public:
     QDBusPendingCallPrivate *sendWithReplyAsync(const QDBusMessage &message, int timeout = -1);
     int sendWithReplyAsync(const QDBusMessage &message, QObject *receiver,
                            const char *returnMethod, const char *errorMethod, int timeout = -1);
+    bool connectSignal(const QString &service, const QString &path, const QString& interface,
+                       const QString &name, const QStringList &argumentMatch, const QString &signature,
+                       QObject *receiver, const char *slot);
     void connectSignal(const QString &key, const SignalHook &hook);
     SignalHookHash::Iterator disconnectSignal(SignalHookHash::Iterator &it);
+    bool disconnectSignal(const QString &service, const QString &path, const QString& interface,
+                          const QString &name, const QStringList &argumentMatch, const QString &signature,
+                          QObject *receiver, const char *slot);
     void registerObject(const ObjectTreeNode *node);
-    void connectRelay(const QString &service, const QString &currentOwner,
+    void connectRelay(const QString &service,
                       const QString &path, const QString &interface,
                       QDBusAbstractInterface *receiver, const char *signal);
-    void disconnectRelay(const QString &service, const QString &currentOwner,
+    void disconnectRelay(const QString &service,
                          const QString &path, const QString &interface,
                          QDBusAbstractInterface *receiver, const char *signal);
 
@@ -190,9 +204,6 @@ public:
 
     QDBusMetaObject *findMetaObject(const QString &service, const QString &path,
                                     const QString &interface, QDBusError &error);
-
-    void registerService(const QString &serviceName);
-    void unregisterService(const QString &serviceName);
 
     void postEventToThread(int action, QObject *target, QEvent *event);
 
@@ -218,6 +229,8 @@ private:
 
     bool isServiceRegisteredByThread(const QString &serviceName) const;
 
+    QString getNameOwnerNoCache(const QString &service);
+
 protected:
     void customEvent(QEvent *e);
     void timerEvent(QTimerEvent *e);
@@ -230,6 +243,8 @@ public slots:
     void objectDestroyed(QObject *o);
     void relaySignal(QObject *obj, const QMetaObject *, int signalId, const QVariantList &args);
     void _q_serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
+    void registerService(const QString &serviceName);
+    void unregisterService(const QString &serviceName);
 
 signals:
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
@@ -264,6 +279,7 @@ public:
     QDBusError lastError;
 
     QStringList serviceNames;
+    WatchedServicesHash watchedServices;
     SignalHookHash signalHooks;
     MatchRefCountHash matchRefCounts;
     ObjectTreeNode rootNode;
@@ -276,8 +292,9 @@ public:
     // static methods
     static int findSlot(QObject *obj, const QByteArray &normalizedName, QList<int>& params);
     static bool prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
-                            const QString &service, const QString &owner,
+                            const QString &service,
                             const QString &path, const QString &interface, const QString &name,
+                            const QStringList &argMatch,
                             QObject *receiver, const char *signal, int minMIdx,
                             bool buildSignature);
     static DBusHandlerResult messageFilter(DBusConnection *, DBusMessage *, void *);

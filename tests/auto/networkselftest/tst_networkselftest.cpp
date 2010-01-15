@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,6 +80,9 @@ private slots:
     void httpProxyNtlmAuth();
     void socks5Proxy();
     void socks5ProxyAuth();
+
+    // ssl supported test
+    void supportsSsl();
 };
 
 class Chat
@@ -153,7 +156,7 @@ static QString prettyByteArray(const QByteArray &array)
     return result;
 }
 
-static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = 2000)
+static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = 4000)
 {
     QTime timer;
     timer.start();
@@ -168,7 +171,7 @@ static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout 
     }
 }
 
-static bool doSocketFlush(QTcpSocket *socket, int timeout = 2000)
+static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
 {
 #ifndef QT_NO_OPENSSL
     QSslSocket *sslSocket = qobject_cast<QSslSocket *>(socket);
@@ -715,6 +718,15 @@ void tst_NetworkSelfTest::socks5ProxyAuth()
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
             );
+}
+
+void tst_NetworkSelfTest::supportsSsl()
+{
+#ifdef QT_NO_OPENSSL
+    QFAIL("SSL not compiled in");
+#else
+    QVERIFY(QSslSocket::supportsSsl());
+#endif
 }
 
 QTEST_MAIN(tst_NetworkSelfTest)

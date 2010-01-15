@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include "qstringbuilder.h"
+
+QT_BEGIN_NAMESPACE
 
 /*!
     \class QLatin1Literal
@@ -143,3 +145,25 @@
  
     Converts the \c QLatin1Literal into a \c QString object.
 */
+
+/*! \internal */
+void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out)
+{
+#ifndef QT_NO_TEXTCODEC
+    if (QString::codecForCStrings) {
+        QString tmp = QString::fromAscii(a);
+        memcpy(out, reinterpret_cast<const char *>(tmp.constData()), sizeof(QChar) * tmp.size());
+        out += tmp.length();
+        return;
+    }
+#endif
+    if (len == -1) {
+        while (*a)
+            *out++ = QLatin1Char(*a++);
+    } else {
+        for (int i = 0; i < len - 1; ++i)
+            *out++ = QLatin1Char(a[i]);
+    }
+}
+
+QT_END_NAMESPACE

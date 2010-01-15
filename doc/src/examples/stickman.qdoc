@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,9 +55,9 @@
     Animations are implemented as composite states. Each child state of the animation state 
     represents a frame in the animation by setting the position of each joint in the stickman's 
     skeleton to the positions defined for the particular frame. The frames are then bound together 
-    with animated transitions that trigger on the source state's polished() signal. Thus, the 
-    machine will enter the state representing the next frame in the animation immediately after it
-    has finished animating into the previous frame.
+    with animated transitions that trigger on the source state's propertiesAssigned() signal. Thus,
+    the machine will enter the state representing the next frame in the animation immediately after
+    it has finished animating into the previous frame.
     
     \image stickman-example1.png
         
@@ -67,7 +67,8 @@
     
     \snippet examples/animation/stickman/lifecycle.cpp 1
     
-    The states are then bound together with signal transitions that listen to the polished() signal.
+    The states are then bound together with signal transitions that listen to the
+    propertiesAssigned() signal.
     
     \snippet examples/animation/stickman/lifecycle.cpp 2
     

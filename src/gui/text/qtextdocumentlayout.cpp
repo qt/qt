@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1448,13 +1448,13 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
         painter->fillRect(r, brush);
         break;
     case QTextListFormat::ListCircle:
-        painter->drawEllipse(r);
+        painter->setPen(QPen(brush, 0));
+        painter->drawEllipse(r.translated(0.5, 0.5)); // pixel align for sharper rendering
         break;
     case QTextListFormat::ListDisc:
         painter->setBrush(brush);
         painter->setPen(Qt::NoPen);
         painter->drawEllipse(r);
-        painter->setBrush(Qt::NoBrush);
         break;
     case QTextListFormat::ListStyleUndefined:
         break;

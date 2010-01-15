@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -115,8 +115,10 @@
 
 #define QT_FOPEN                ::fopen
 #ifdef QT_LARGEFILE_SUPPORT
+// 64-bit versions of fseek/ftell not always available. E.g., when linking
+// dynamically to CRT (/MT)
 #define QT_FSEEK                ::fseek
-#define QT_FTELL                ::ftell
+#define QT_FTELL                (QT_OFF_T)::ftell
 #else
 #define QT_FSEEK                ::fseek
 #define QT_FTELL                ::ftell

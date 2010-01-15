@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,6 +47,7 @@ class PingPong : public QObject
 {
 public:
     void setPeer(QObject *peer);
+    void resetCounter() {m_counter = 100;}
 
 protected:
     bool event(QEvent *e);
@@ -69,7 +70,7 @@ bool PingPong::event(QEvent *)
         QEvent *e = new QEvent(QEvent::User);
         QCoreApplication::postEvent(m_peer, e);
     } else {
-        QCoreApplication::quit();
+        QTestEventLoop::instance().exitLoop();
     }
     return true;
 }
@@ -149,6 +150,10 @@ void EventsBench::sendEvent()
 void EventsBench::postEvent_data()
 {
     QTest::addColumn<bool>("filterEvents");
+    // The first time an eventloop is executed, the case runs radically slower at least
+    // on some platforms, so test the "no eventfilter" case to get a comparable results
+    // with the "eventfilter" case.
+    QTest::newRow("first time, no eventfilter") << false;
     QTest::newRow("no eventfilter") << false;
     QTest::newRow("eventfilter") << true;
 }
@@ -164,8 +169,14 @@ void EventsBench::postEvent()
         ping.installEventFilter(this);
         pong.installEventFilter(this);
     }
-    QEvent *e = new QEvent(QEvent::User);
+
     QBENCHMARK {
+        // In case multiple iterations are done, event needs to be created inside the QBENCHMARK,
+        // or it gets deleted once first iteration exits and can cause a crash. Similarly,
+        // ping and pong need their counters reset.
+        QEvent *e = new QEvent(QEvent::User);
+        ping.resetCounter();
+        pong.resetCounter();
         QCoreApplication::postEvent(&ping, e);
         QTestEventLoop::instance().enterLoop( 61 );
     }

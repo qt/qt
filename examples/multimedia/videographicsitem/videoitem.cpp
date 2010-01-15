@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,7 +104,7 @@ QList<QVideoFrame::PixelFormat> VideoItem::supportedPixelFormats(
 bool VideoItem::start(const QVideoSurfaceFormat &format)
 {
     if (isFormatSupported(format)) {
-        imageFormat = QVideoFrame::equivalentImageFormat(format.pixelFormat());
+        imageFormat = QVideoFrame::imageFormatFromPixelFormat(format.pixelFormat());
         imageSize = format.frameSize();
         framePainted = true;
 
@@ -129,7 +129,7 @@ void VideoItem::stop()
 bool VideoItem::present(const QVideoFrame &frame)
 {
     if (!framePainted) {
-        if (!isStarted())
+        if (!QAbstractVideoSurface::isActive())
             setError(StoppedError);
 
         return false;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -122,6 +122,7 @@ public:
 
     inline void detach();
     inline bool isDetached() const;
+    inline bool isSharedWith(const QString &other) const { return d == other.d; }
     void clear();
 
     inline const QChar at(int i) const;
@@ -631,6 +632,7 @@ private:
     friend class QCharRef;
     friend class QTextCodec;
     friend class QStringRef;
+    friend struct QAbstractConcatenable;
     friend inline bool qStringComparisonHelper(const QString &s1, const char *s2);
     friend inline bool qStringComparisonHelper(const QStringRef &s1, const char *s2);
 public:
@@ -1064,7 +1066,7 @@ inline QChar &QString::ref(uint i)
 }
 #endif
 
-#ifndef QT_NO_DATASTREAM
+#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QString &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QString &);
 #endif

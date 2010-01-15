@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -176,7 +176,7 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
         return QDirectFBScreen::depth(imageFormat);
     case QPaintDevice::PdmNumColors: {
         if (!lockedImage.isNull())
-            return lockedImage.numColors();
+            return lockedImage.colorCount();
 
         DFBResult result;
         IDirectFBPalette *palette = 0;

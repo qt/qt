@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -177,7 +177,7 @@ void Ui3Reader::embed(const char *project, const QStringList &images)
         e->width = img.width();
         e->height = img.height();
         e->depth = img.depth();
-        e->numColors = img.numColors();
+        e->numColors = img.colorCount();
         e->colorTable = new QRgb[e->numColors];
         e->alpha = img.hasAlphaBuffer();
         QVector<QRgb> ct = img.colorTable();
@@ -195,7 +195,7 @@ void Ui3Reader::embed(const char *project, const QStringList &images)
 #ifndef QT_NO_IMAGE_COLLECTION_COMPRESSION
         e->compressed =
 #endif
-            embedData( out, img.bits(), img.numBytes() );
+            embedData( out, img.bits(), img.byteCount() );
         out << "\n};\n\n";
         if ( e->numColors ) {
             out << s.sprintf( "static const QRgb %s_ctable[] = {",

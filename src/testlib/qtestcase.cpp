@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -846,6 +846,9 @@ namespace QTest
     static int mouseDelay = -1;
     static int eventDelay = -1;
     static int keyVerbose = -1;
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    static bool noCrashHandler = false;
+#endif
 
 void filter_unprintable(char *str)
 {
@@ -976,6 +979,9 @@ static void qParseArgs(int argc, char *argv[])
          " -keyevent-verbose : Turn on verbose messages for keyboard simulation\n"
          " -maxwarnings n    : Sets the maximum amount of messages to output.\n"
          "                     0 means unlimited, default: 2000\n"
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+         " -nocrashhandler   : Disables the crash handler\n"
+#endif
          "\n"
          " Benchmark related options:\n"
 #ifdef QTESTLIB_USE_VALGRIND
@@ -1056,6 +1062,10 @@ static void qParseArgs(int argc, char *argv[])
             } else {
                 QTestLog::setMaxWarnings(qToInt(argv[++i]));
             }
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+        } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
+            QTest::noCrashHandler = true;
+#endif
         } else if (strcmp(argv[i], "-keyevent-verbose") == 0) {
             QTest::keyVerbose = 1;
 #ifdef QTESTLIB_USE_VALGRIND
@@ -1661,7 +1671,8 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
     {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-        FatalSignalHandler handler;
+        if (!noCrashHandler)
+            FatalSignalHandler handler;
 #endif
         qInvokeTestMethods(testObject);
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -141,7 +141,7 @@ public:
 
     uchar *bits();
     const uchar *bits() const;
-    int numBytes() const;
+    int mappedBytes() const;
 
     QVariant handle() const;
 
@@ -151,8 +151,8 @@ public:
     qint64 endTime() const;
     void setEndTime(qint64 time);
 
-    static PixelFormat equivalentPixelFormat(QImage::Format format);
-    static QImage::Format equivalentImageFormat(PixelFormat format);
+    static PixelFormat pixelFormatFromImageFormat(QImage::Format format);
+    static QImage::Format imageFormatFromPixelFormat(PixelFormat format);
 
 private:
     QExplicitlySharedDataPointer<QVideoFramePrivate> d;

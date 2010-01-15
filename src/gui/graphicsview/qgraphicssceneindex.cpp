@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -354,8 +354,8 @@ void QGraphicsSceneIndexPrivate::init()
     if (!scene)
         return;
 
-    QObject::connect(scene, SIGNAL(sceneRectChanged(const QRectF&)),
-                     q_func(), SLOT(updateSceneRect(const QRectF&)));
+    QObject::connect(scene, SIGNAL(sceneRectChanged(QRectF)),
+                     q_func(), SLOT(updateSceneRect(QRectF)));
 }
 
 /*!

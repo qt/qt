@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -146,7 +146,7 @@ static inline int qpainterOpToXrender(QPainter::CompositionMode mode)
 
 // hack, so we don't have to make QRegion::clipRectangles() public or include
 // X11 headers in qregion.h
-Q_AUTOTEST_EXPORT void *qt_getClipRects(const QRegion &r, int &num)
+Q_GUI_EXPORT void *qt_getClipRects(const QRegion &r, int &num)
 {
     return r.clipRectangles(num);
 }

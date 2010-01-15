@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -159,6 +159,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_complete(QModelIndex))
     Q_PRIVATE_SLOT(d_func(), void _q_completionSelected(const QItemSelection&))
     Q_PRIVATE_SLOT(d_func(), void _q_autoResizePopup())
+    Q_PRIVATE_SLOT(d_func(), void _q_fileSystemModelDirectoryLoaded(const QString&))
 };
 
 #endif // QT_NO_COMPLETER

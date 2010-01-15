@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,10 +73,10 @@ static const qreal inv_dist_to_plane = 1. / 1024.;
 
     If the matrix has a special type (identity, translate, scale, etc),
     the programmer should follow this constructor with a call to
-    inferSpecialType() if they wish QMatrix4x4 to optimize further
+    optimize() if they wish QMatrix4x4 to optimize further
     calls to translate(), scale(), etc.
 
-    \sa toValueArray(), inferSpecialType()
+    \sa copyDataTo(), optimize()
 */
 QMatrix4x4::QMatrix4x4(const qreal *values)
 {
@@ -96,10 +96,10 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
 
     If the matrix has a special type (identity, translate, scale, etc),
     the programmer should follow this constructor with a call to
-    inferSpecialType() if they wish QMatrix4x4 to optimize further
+    optimize() if they wish QMatrix4x4 to optimize further
     calls to translate(), scale(), etc.
 
-    \sa inferSpecialType()
+    \sa optimize()
 */
 
 #if !defined(QT_NO_MEMBER_TEMPLATES) || defined(Q_QDOC)
@@ -176,10 +176,10 @@ QMatrix4x4::QMatrix4x4(const qreal *values, int cols, int rows)
 
     If \a matrix has a special type (identity, translate, scale, etc),
     the programmer should follow this constructor with a call to
-    inferSpecialType() if they wish QMatrix4x4 to optimize further
+    optimize() if they wish QMatrix4x4 to optimize further
     calls to translate(), scale(), etc.
 
-    \sa toAffine(), inferSpecialType()
+    \sa toAffine(), optimize()
 */
 QMatrix4x4::QMatrix4x4(const QMatrix& matrix)
 {
@@ -208,10 +208,10 @@ QMatrix4x4::QMatrix4x4(const QMatrix& matrix)
 
     If \a transform has a special type (identity, translate, scale, etc),
     the programmer should follow this constructor with a call to
-    inferSpecialType() if they wish QMatrix4x4 to optimize further
+    optimize() if they wish QMatrix4x4 to optimize further
     calls to translate(), scale(), etc.
 
-    \sa toTransform(), inferSpecialType()
+    \sa toTransform(), optimize()
 */
 QMatrix4x4::QMatrix4x4(const QTransform& transform)
 {
@@ -249,7 +249,7 @@ QMatrix4x4::QMatrix4x4(const QTransform& transform)
     Returns a reference to the element at position (\a row, \a column)
     in this matrix so that the element can be assigned to.
 
-    \sa inferSpecialType(), setColumn(), setRow()
+    \sa optimize(), setColumn(), setRow()
 */
 
 /*!
@@ -289,11 +289,11 @@ QMatrix4x4::QMatrix4x4(const QTransform& transform)
 
     Returns true if this matrix is the identity; false otherwise.
 
-    \sa setIdentity()
+    \sa setToIdentity()
 */
 
 /*!
-    \fn void QMatrix4x4::setIdentity()
+    \fn void QMatrix4x4::setToIdentity()
 
     Sets this matrix to the identity.
 
@@ -694,11 +694,11 @@ QMatrix4x4 operator/(const QMatrix4x4& matrix, qreal divisor)
 
 /*!
     Multiplies this matrix by another that scales coordinates by
-    the components of \a vector.  Returns this matrix.
+    the components of \a vector.
 
     \sa translate(), rotate()
 */
-QMatrix4x4& QMatrix4x4::scale(const QVector3D& vector)
+void QMatrix4x4::scale(const QVector3D& vector)
 {
     qreal vx = vector.x();
     qreal vy = vector.y();
@@ -732,7 +732,6 @@ QMatrix4x4& QMatrix4x4::scale(const QVector3D& vector)
         m[2][3] *= vz;
         flagBits = General;
     }
-    return *this;
 }
 #endif
 
@@ -740,11 +739,11 @@ QMatrix4x4& QMatrix4x4::scale(const QVector3D& vector)
     \overload
 
     Multiplies this matrix by another that scales coordinates by the
-    components \a x, and \a y.  Returns this matrix.
+    components \a x, and \a y.
 
     \sa translate(), rotate()
 */
-QMatrix4x4& QMatrix4x4::scale(qreal x, qreal y)
+void QMatrix4x4::scale(qreal x, qreal y)
 {
     if (flagBits == Identity) {
         m[0][0] = x;
@@ -768,18 +767,17 @@ QMatrix4x4& QMatrix4x4::scale(qreal x, qreal y)
         m[1][3] *= y;
         flagBits = General;
     }
-    return *this;
 }
 
 /*!
     \overload
 
     Multiplies this matrix by another that scales coordinates by the
-    components \a x, \a y, and \a z.  Returns this matrix.
+    components \a x, \a y, and \a z.
 
     \sa translate(), rotate()
 */
-QMatrix4x4& QMatrix4x4::scale(qreal x, qreal y, qreal z)
+void QMatrix4x4::scale(qreal x, qreal y, qreal z)
 {
     if (flagBits == Identity) {
         m[0][0] = x;
@@ -810,18 +808,17 @@ QMatrix4x4& QMatrix4x4::scale(qreal x, qreal y, qreal z)
         m[2][3] *= z;
         flagBits = General;
     }
-    return *this;
 }
 
 /*!
     \overload
 
     Multiplies this matrix by another that scales coordinates by the
-    given \a factor.  Returns this matrix.
+    given \a factor.
 
     \sa translate(), rotate()
 */
-QMatrix4x4& QMatrix4x4::scale(qreal factor)
+void QMatrix4x4::scale(qreal factor)
 {
     if (flagBits == Identity) {
         m[0][0] = factor;
@@ -852,17 +849,16 @@ QMatrix4x4& QMatrix4x4::scale(qreal factor)
         m[2][3] *= factor;
         flagBits = General;
     }
-    return *this;
 }
 
 #ifndef QT_NO_VECTOR3D
 /*!
     Multiplies this matrix by another that translates coordinates by
-    the components of \a vector.  Returns this matrix.
+    the components of \a vector.
 
     \sa scale(), rotate()
 */
-QMatrix4x4& QMatrix4x4::translate(const QVector3D& vector)
+void QMatrix4x4::translate(const QVector3D& vector)
 {
     qreal vx = vector.x();
     qreal vy = vector.y();
@@ -895,7 +891,6 @@ QMatrix4x4& QMatrix4x4::translate(const QVector3D& vector)
         else if (flagBits != (Rotation | Translation))
             flagBits = General;
     }
-    return *this;
 }
 
 #endif
@@ -904,11 +899,11 @@ QMatrix4x4& QMatrix4x4::translate(const QVector3D& vector)
     \overload
 
     Multiplies this matrix by another that translates coordinates
-    by the components \a x, and \a y.  Returns this matrix.
+    by the components \a x, and \a y.
 
     \sa scale(), rotate()
 */
-QMatrix4x4& QMatrix4x4::translate(qreal x, qreal y)
+void QMatrix4x4::translate(qreal x, qreal y)
 {
     if (flagBits == Identity) {
         m[3][0] = x;
@@ -935,18 +930,17 @@ QMatrix4x4& QMatrix4x4::translate(qreal x, qreal y)
         else if (flagBits != (Rotation | Translation))
             flagBits = General;
     }
-    return *this;
 }
 
 /*!
     \overload
 
     Multiplies this matrix by another that translates coordinates
-    by the components \a x, \a y, and \a z.  Returns this matrix.
+    by the components \a x, \a y, and \a z.
 
     \sa scale(), rotate()
 */
-QMatrix4x4& QMatrix4x4::translate(qreal x, qreal y, qreal z)
+void QMatrix4x4::translate(qreal x, qreal y, qreal z)
 {
     if (flagBits == Identity) {
         m[3][0] = x;
@@ -976,20 +970,19 @@ QMatrix4x4& QMatrix4x4::translate(qreal x, qreal y, qreal z)
         else if (flagBits != (Rotation | Translation))
             flagBits = General;
     }
-    return *this;
 }
 
 #ifndef QT_NO_VECTOR3D
 
 /*!
     Multiples this matrix by another that rotates coordinates through
-    \a angle degrees about \a vector.  Returns this matrix.
+    \a angle degrees about \a vector.
 
     \sa scale(), translate()
 */
-QMatrix4x4& QMatrix4x4::rotate(qreal angle, const QVector3D& vector)
+void QMatrix4x4::rotate(qreal angle, const QVector3D& vector)
 {
-    return rotate(angle, vector.x(), vector.y(), vector.z());
+    rotate(angle, vector.x(), vector.y(), vector.z());
 }
 
 #endif
@@ -998,14 +991,14 @@ QMatrix4x4& QMatrix4x4::rotate(qreal angle, const QVector3D& vector)
     \overload
 
     Multiplies this matrix by another that rotates coordinates through
-    \a angle degrees about the vector (\a x, \a y, \a z).  Returns this matrix.
+    \a angle degrees about the vector (\a x, \a y, \a z).
 
     \sa scale(), translate()
 */
-QMatrix4x4& QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
+void QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
 {
     if (angle == 0.0f)
-        return *this;
+        return;
     QMatrix4x4 m(1); // The "1" says to not load the identity.
     qreal c, s, ic;
     if (angle == 90.0f || angle == -270.0f) {
@@ -1027,7 +1020,7 @@ QMatrix4x4& QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
         if (y == 0.0f) {
             if (z != 0.0f) {
                 // Rotate around the Z axis.
-                m.setIdentity();
+                m.setToIdentity();
                 m.m[0][0] = c;
                 m.m[1][1] = c;
                 if (z < 0.0f) {
@@ -1042,7 +1035,7 @@ QMatrix4x4& QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
             }
         } else if (z == 0.0f) {
             // Rotate around the Y axis.
-            m.setIdentity();
+            m.setToIdentity();
             m.m[0][0] = c;
             m.m[2][2] = c;
             if (y < 0.0f) {
@@ -1057,7 +1050,7 @@ QMatrix4x4& QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
         }
     } else if (y == 0.0f && z == 0.0f) {
         // Rotate around the X axis.
-        m.setIdentity();
+        m.setToIdentity();
         m.m[1][1] = c;
         m.m[2][2] = c;
         if (x < 0.0f) {
@@ -1102,18 +1095,17 @@ QMatrix4x4& QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
         flagBits = flags | Rotation;
     else
         flagBits = Rotation;
-    return *this;
 }
 
 /*!
     \internal
 */
-QMatrix4x4& QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
+void QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
 {
     // Used by QGraphicsRotation::applyTo() to perform a rotation
     // and projection back to 2D in a single step.
     if (angle == 0.0f)
-        return *this;
+        return;
     QMatrix4x4 m(1); // The "1" says to not load the identity.
     qreal c, s, ic;
     if (angle == 90.0f || angle == -270.0f) {
@@ -1135,7 +1127,7 @@ QMatrix4x4& QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
         if (y == 0.0f) {
             if (z != 0.0f) {
                 // Rotate around the Z axis.
-                m.setIdentity();
+                m.setToIdentity();
                 m.m[0][0] = c;
                 m.m[1][1] = c;
                 if (z < 0.0f) {
@@ -1150,7 +1142,7 @@ QMatrix4x4& QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
             }
         } else if (z == 0.0f) {
             // Rotate around the Y axis.
-            m.setIdentity();
+            m.setToIdentity();
             m.m[0][0] = c;
             m.m[2][2] = 1.0f;
             if (y < 0.0f) {
@@ -1163,7 +1155,7 @@ QMatrix4x4& QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
         }
     } else if (y == 0.0f && z == 0.0f) {
         // Rotate around the X axis.
-        m.setIdentity();
+        m.setToIdentity();
         m.m[1][1] = c;
         m.m[2][2] = 1.0f;
         if (x < 0.0f) {
@@ -1206,7 +1198,6 @@ QMatrix4x4& QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
         flagBits = flags | Rotation;
     else
         flagBits = Rotation;
-    return *this;
 }
 
 #ifndef QT_NO_QUATERNION
@@ -1214,11 +1205,11 @@ QMatrix4x4& QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
 /*!
     Multiples this matrix by another that rotates coordinates according
     to a specified \a quaternion.  The \a quaternion is assumed to have
-    been normalized.  Returns this matrix.
+    been normalized.
 
     \sa scale(), translate(), QQuaternion
 */
-QMatrix4x4& QMatrix4x4::rotate(const QQuaternion& quaternion)
+void QMatrix4x4::rotate(const QQuaternion& quaternion)
 {
     // Algorithm from:
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
@@ -1254,7 +1245,6 @@ QMatrix4x4& QMatrix4x4::rotate(const QQuaternion& quaternion)
         flagBits = flags | Rotation;
     else
         flagBits = Rotation;
-    return *this;
 }
 
 #endif
@@ -1265,17 +1255,16 @@ QMatrix4x4& QMatrix4x4::rotate(const QQuaternion& quaternion)
     Multiplies this matrix by another that applies an orthographic
     projection for a window with boundaries specified by \a rect.
     The near and far clipping planes will be -1 and 1 respectively.
-    Returns this matrix.
 
     \sa frustum(), perspective()
 */
-QMatrix4x4& QMatrix4x4::ortho(const QRect& rect)
+void QMatrix4x4::ortho(const QRect& rect)
 {
     // Note: rect.right() and rect.bottom() subtract 1 in QRect,
     // which gives the location of a pixel within the rectangle,
     // instead of the extent of the rectangle.  We want the extent.
     // QRectF expresses the extent properly.
-    return ortho(rect.x(), rect.x() + rect.width(), rect.y() + rect.height(), rect.y(), -1.0f, 1.0f);
+    ortho(rect.x(), rect.x() + rect.width(), rect.y() + rect.height(), rect.y(), -1.0f, 1.0f);
 }
 
 /*!
@@ -1284,28 +1273,27 @@ QMatrix4x4& QMatrix4x4::ortho(const QRect& rect)
     Multiplies this matrix by another that applies an orthographic
     projection for a window with boundaries specified by \a rect.
     The near and far clipping planes will be -1 and 1 respectively.
-    Returns this matrix.
 
     \sa frustum(), perspective()
 */
-QMatrix4x4& QMatrix4x4::ortho(const QRectF& rect)
+void QMatrix4x4::ortho(const QRectF& rect)
 {
-    return ortho(rect.left(), rect.right(), rect.bottom(), rect.top(), -1.0f, 1.0f);
+    ortho(rect.left(), rect.right(), rect.bottom(), rect.top(), -1.0f, 1.0f);
 }
 
 /*!
     Multiplies this matrix by another that applies an orthographic
     projection for a window with lower-left corner (\a left, \a bottom),
     upper-right corner (\a right, \a top), and the specified \a nearPlane
-    and \a farPlane clipping planes.  Returns this matrix.
+    and \a farPlane clipping planes.
 
     \sa frustum(), perspective()
 */
-QMatrix4x4& QMatrix4x4::ortho(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane)
+void QMatrix4x4::ortho(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane)
 {
     // Bail out if the projection volume is zero-sized.
     if (left == right || bottom == top || nearPlane == farPlane)
-        return *this;
+        return;
 
     // Construct the projection.
     qreal width = right - left;
@@ -1324,7 +1312,7 @@ QMatrix4x4& QMatrix4x4::ortho(qreal left, qreal right, qreal bottom, qreal top, 
             (2.0f / width,
              2.0f / invheight,
              -1.0f));
-        return *this;
+        return;
     }
 #endif
     QMatrix4x4 m(1);
@@ -1347,22 +1335,22 @@ QMatrix4x4& QMatrix4x4::ortho(qreal left, qreal right, qreal bottom, qreal top, 
 
     // Apply the projection.
     *this *= m;
-    return *this;
+    return;
 }
 
 /*!
     Multiplies this matrix by another that applies a perspective
     frustum projection for a window with lower-left corner (\a left, \a bottom),
     upper-right corner (\a right, \a top), and the specified \a nearPlane
-    and \a farPlane clipping planes.  Returns this matrix.
+    and \a farPlane clipping planes.
 
     \sa ortho(), perspective()
 */
-QMatrix4x4& QMatrix4x4::frustum(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane)
+void QMatrix4x4::frustum(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane)
 {
     // Bail out if the projection volume is zero-sized.
     if (left == right || bottom == top || nearPlane == farPlane)
-        return *this;
+        return;
 
     // Construct the projection.
     QMatrix4x4 m(1);
@@ -1388,7 +1376,6 @@ QMatrix4x4& QMatrix4x4::frustum(qreal left, qreal right, qreal bottom, qreal top
 
     // Apply the projection.
     *this *= m;
-    return *this;
 }
 
 /*!
@@ -1396,22 +1383,21 @@ QMatrix4x4& QMatrix4x4::frustum(qreal left, qreal right, qreal bottom, qreal top
     projection.  The field of view will be \a angle degrees within
     a window with a given \a aspect ratio.  The projection will
     have the specified \a nearPlane and \a farPlane clipping planes.
-    Returns this matrix.
 
     \sa ortho(), frustum()
 */
-QMatrix4x4& QMatrix4x4::perspective(qreal angle, qreal aspect, qreal nearPlane, qreal farPlane)
+void QMatrix4x4::perspective(qreal angle, qreal aspect, qreal nearPlane, qreal farPlane)
 {
     // Bail out if the projection volume is zero-sized.
     if (nearPlane == farPlane || aspect == 0.0f)
-        return *this;
+        return;
 
     // Construct the projection.
     QMatrix4x4 m(1);
     qreal radians = (angle / 2.0f) * M_PI / 180.0f;
     qreal sine = qSin(radians);
     if (sine == 0.0f)
-        return *this;
+        return;
     qreal cotan = qCos(radians) / sine;
     qreal clip = farPlane - nearPlane;
     m.m[0][0] = cotan / aspect;
@@ -1433,7 +1419,6 @@ QMatrix4x4& QMatrix4x4::perspective(qreal angle, qreal aspect, qreal nearPlane, 
 
     // Apply the projection.
     *this *= m;
-    return *this;
 }
 
 #ifndef QT_NO_VECTOR3D
@@ -1443,9 +1428,8 @@ QMatrix4x4& QMatrix4x4::perspective(qreal angle, qreal aspect, qreal nearPlane, 
     transformation.  The \a center value indicates the center of the
     view that the \a eye is looking at.  The \a up value indicates
     which direction should be considered up with respect to the \a eye.
-    Returns this matrix.
 */
-QMatrix4x4& QMatrix4x4::lookAt(const QVector3D& eye, const QVector3D& center, const QVector3D& up)
+void QMatrix4x4::lookAt(const QVector3D& eye, const QVector3D& center, const QVector3D& up)
 {
     QVector3D forward = (center - eye).normalized();
     QVector3D side = QVector3D::crossProduct(forward, up).normalized();
@@ -1471,7 +1455,7 @@ QMatrix4x4& QMatrix4x4::lookAt(const QVector3D& eye, const QVector3D& center, co
     m.m[3][3] = 1.0f;
 
     *this *= m;
-    return translate(-eye);
+    translate(-eye);
 }
 
 #endif
@@ -1480,11 +1464,11 @@ QMatrix4x4& QMatrix4x4::lookAt(const QVector3D& eye, const QVector3D& center, co
     Flips between right-handed and left-handed coordinate systems
     by multiplying the y and z co-ordinates by -1.  This is normally
     used to create a left-handed orthographic view without scaling
-    the viewport as ortho() does.  Returns this matrix.
+    the viewport as ortho() does.
 
     \sa ortho()
 */
-QMatrix4x4& QMatrix4x4::flipCoordinates()
+void QMatrix4x4::flipCoordinates()
 {
     if (flagBits == Scale || flagBits == (Scale | Translation)) {
         m[1][1] = -m[1][1];
@@ -1508,14 +1492,13 @@ QMatrix4x4& QMatrix4x4::flipCoordinates()
         m[2][3] = -m[2][3];
         flagBits = General;
     }
-    return *this;
 }
 
 /*!
-    Retrieves the 16 items in this matrix and writes them to \a values
+    Retrieves the 16 items in this matrix and copies them to \a values
     in row-major order.
 */
-void QMatrix4x4::toValueArray(qreal *values) const
+void QMatrix4x4::copyDataTo(qreal *values) const
 {
     for (int row = 0; row < 4; ++row)
         for (int col = 0; col < 4; ++col)
@@ -1739,7 +1722,7 @@ QRectF QMatrix4x4::mapRect(const QRectF& rect) const
 
     Returns a pointer to the raw data of this matrix.
 
-    \sa constData(), inferSpecialType()
+    \sa constData(), optimize()
 */
 
 /*!
@@ -1788,94 +1771,8 @@ QMatrix4x4 QMatrix4x4::orthonormalInverse() const
     return result;
 }
 
-#ifndef QT_NO_VECTOR3D
 /*!
-    Decomposes the current rotation matrix into an \a axis of rotation plus
-    an \a angle.  The result can be used to construct an equivalent rotation
-    matrix using glRotate().  It is assumed that the homogenous coordinate
-    is 1.0.  The returned vector is guaranteed to be normalized.
-
-    \code
-        qreal angle;
-        QVector3D axis;
-
-        matrix.extractAxisAngle(angle, axis);
-        glRotate(angle, axis[0], axis[1], axis[2]);
-    \endcode
-
-    \sa rotate()
-*/
-void QMatrix4x4::extractAxisRotation(qreal &angle, QVector3D &axis) const
-{
-    // Orientation is dependent on the upper 3x3 matrix; subtract the
-    // homogeneous scaling element from the trace of the 4x4 matrix
-    qreal tr = m[0][0] + m[1][1] + m[2][2];
-    qreal cosa = qreal(0.5f * (tr - 1.0f));
-    angle = acos(cosa) * 180.0f / M_PI;
-
-    // Any axis will work if r is zero (means no rotation)
-    if (qFuzzyIsNull(angle)) {
-        axis.setX(1.0f);
-        axis.setY(0.0f);
-        axis.setZ(0.0f);
-        return;
-    }
-
-    if (angle < 180.0f) {
-        axis.setX(m[1][2] - m[2][1]);
-        axis.setY(m[2][0] - m[0][2]);
-        axis.setZ(m[0][1] - m[1][0]);
-        axis.normalize();
-        return;
-    }
-
-    // rads == PI
-    qreal tmp;
-
-    // r00 is maximum
-    if ((m[0][0] >= m[2][2]) && (m[0][0] >= m[1][1])) {
-        axis.setX(0.5f * qSqrt(m[0][0] - m[1][1] - m[2][2] + 1.0f));
-        tmp = 0.5f / axis.x();
-        axis.setY(m[1][0] * tmp);
-        axis.setZ(m[2][0] * tmp);
-    }
-
-    // r11 is maximum
-    if ((m[1][1] >= m[2][2]) && (m[1][1] >= m[0][0])) {
-        axis.setY(0.5f * qSqrt(m[1][1] - m[0][0] - m[2][2] + 1.0f));
-        tmp = 0.5f / axis.y();
-        axis.setX(tmp * m[1][0]);
-        axis.setZ(tmp * m[2][1]);
-    }
-
-    // r22 is maximum
-    if ((m[2][2] >= m[1][1]) && (m[2][2] >= m[0][0])) {
-        axis.setZ(0.5f * qSqrt(m[2][2] - m[0][0] - m[1][1] + 1.0f));
-        tmp = 0.5f / axis.z();
-        axis.setX(m[2][0]*tmp);
-        axis.setY(m[2][1]*tmp);
-    }
-}
-
-/*!
-    If this is an orthonormal transformation matrix (e.g. only rotations and
-    translations have been applied to the matrix, no scaling, or shearing)
-    then the world translational component can be obtained by calling this function.
-
-    This is most useful for camera matrices, where the negation of this vector
-    is effectively the camera world coordinates.
-*/
-QVector3D QMatrix4x4::extractTranslation() const
-{
-    return QVector3D
-        (m[0][0] * m[3][0] + m[0][1] * m[3][1] + m[0][2] * m[3][2],
-         m[1][0] * m[3][0] + m[1][1] * m[3][1] + m[1][2] * m[3][2],
-         m[2][0] * m[3][0] + m[2][1] * m[3][1] + m[2][2] * m[3][2]);
-}
-#endif
-
-/*!
-    Infers the special type of this matrix from its current elements.
+    Optimize the usage of this matrix from its current elements.
 
     Some operations such as translate(), scale(), and rotate() can be
     performed more efficiently if the matrix being modified is already
@@ -1888,13 +1785,13 @@ QVector3D QMatrix4x4::extractTranslation() const
     the special type and will revert to the safest but least efficient
     operations thereafter.
 
-    By calling inferSpecialType() after directly modifying the matrix,
+    By calling optimize() after directly modifying the matrix,
     the programmer can force QMatrix4x4 to recover the special type if
     the elements appear to conform to one of the known optimized types.
 
     \sa operator()(), data(), translate()
 */
-void QMatrix4x4::inferSpecialType()
+void QMatrix4x4::optimize()
 {
     // If the last element is not 1, then it can never be special.
     if (m[3][3] != 1.0f) {
@@ -2011,7 +1908,7 @@ QDataStream &operator>>(QDataStream &stream, QMatrix4x4 &matrix)
             matrix(row, col) = qreal(x);
         }
     }
-    matrix.inferSpecialType();
+    matrix.optimize();
     return stream;
 }
 

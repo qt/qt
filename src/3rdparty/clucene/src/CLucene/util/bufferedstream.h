@@ -28,7 +28,9 @@
 
 #include "streambase.h"
 #include "inputstreambuffer.h"
+
 #include <cassert>
+#include <stdio.h>
 
 namespace jstreams {
 

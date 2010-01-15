@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,6 +70,7 @@ class Q_GUI_EXPORT QFileSystemModel : public QAbstractItemModel
 Q_SIGNALS:
     void rootPathChanged(const QString &newPath);
     void fileRenamed(const QString &path, const QString &oldName, const QString &newName);
+    void directoryLoaded(const QString &path);
 
 public:
     enum Roles {

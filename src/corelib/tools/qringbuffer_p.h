@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -277,6 +277,33 @@ public:
                 start = head;
             if (i == tailBuffer)
                 end = tail;
+            const char *ptr = buffers.at(i).data() + start;
+            for (int j = start; j < end; ++j) {
+                if (*ptr++ == c)
+                    return index;
+                ++index;
+            }
+        }
+        return -1;
+    }
+
+    inline int indexOf(char c, int maxLength) const {
+        int index = 0;
+        int remain = qMin(size(), maxLength);
+        for (int i = 0; remain && i < buffers.size(); ++i) {
+            int start = 0;
+            int end = buffers.at(i).size();
+
+            if (i == 0)
+                start = head;
+            if (i == tailBuffer)
+                end = tail;
+            if (remain < end - start) {
+                end = start + remain;
+                remain = 0;
+            } else {
+                remain -= end - start;
+            }
             const char *ptr = buffers.at(i).data() + start;
             for (int j = start; j < end; ++j) {
                 if (*ptr++ == c)

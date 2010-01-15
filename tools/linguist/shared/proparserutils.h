@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,9 +43,34 @@
 #define PROPARSERUTILS_H
 
 #include <QtCore/QDir>
+#ifndef QT_BOOTSTRAPPED
 #include <QtCore/QLibraryInfo>
+#endif
 
 QT_BEGIN_NAMESPACE
+
+#ifdef QT_BOOTSTRAPPED
+// this is a stripped down version of the one found in QtCore
+class QLibraryInfo
+{
+public:
+    enum LibraryLocation
+    {
+        PrefixPath,
+        DocumentationPath,
+        HeadersPath,
+        LibrariesPath,
+        BinariesPath,
+        PluginsPath,
+        DataPath,
+        TranslationsPath,
+        SettingsPath,
+        DemosPath,
+        ExamplesPath
+    };
+    static QString location(LibraryLocation);
+};
+#endif
 
 // Pre- and postcondition macros
 #define PRE(cond) do {if (!(cond))qt_assert(#cond,__FILE__,__LINE__);} while (0)

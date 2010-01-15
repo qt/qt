@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,7 +72,7 @@
 #include <private/qgraphicssystem_qws_p.h>
 #endif
 #ifdef Q_OS_SYMBIAN
-#include <w32std.h> 
+#include <w32std.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -441,9 +441,6 @@ public:
 #ifdef Q_WS_MAC
     static bool native_modal_dialog_active;
 #endif
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
-    static bool inSizeMove;
-#endif
 
     static void setSystemPalette(const QPalette &pal);
     static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
@@ -460,6 +457,9 @@ public:
     static OSStatus globalEventProcessor(EventHandlerCallRef, EventRef, void *);
     static OSStatus globalAppleEventProcessor(const AppleEvent *, AppleEvent *, long);
     static OSStatus tabletProximityCallback(EventHandlerCallRef, EventRef, void *);
+#ifdef QT_MAC_USE_COCOA
+    static void setupAppleEvents();
+#endif
     static bool qt_mac_apply_settings();
 #endif
 
@@ -514,8 +514,9 @@ public:
 #endif
 
     QGestureManager *gestureManager;
+    QWidget *gestureWidget;
 
-    QMap<int, QWidget *> widgetForTouchPointId;
+    QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();

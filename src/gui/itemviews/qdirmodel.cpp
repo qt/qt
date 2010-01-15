@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -185,12 +185,12 @@ void QDirModelPrivate::invalidate()
 
 /*!
     \class QDirModel
-
+    \obsolete
     \brief The QDirModel class provides a data model for the local filesystem.
 
     \ingroup model-view
 
-    \note The usage of QDirModel is not recommended anymore. The
+    The usage of QDirModel is not recommended anymore. The
     QFileSystemModel class is a more performant alternative.
 
     This class provides access to the local filesystem, providing functions
@@ -1351,7 +1351,7 @@ QString QDirModelPrivate::size(const QModelIndex &index) const
         return QFileSystemModel::tr("%1 MB").arg(QLocale().toString(qreal(bytes) / mb, 'f', 1));
     if (bytes >= kb)
         return QFileSystemModel::tr("%1 KB").arg(QLocale().toString(bytes / kb));
-    return QFileSystemModel::tr("%1 bytes").arg(QLocale().toString(bytes));
+    return QFileSystemModel::tr("%1 byte(s)").arg(QLocale().toString(bytes));
 }
 
 QString QDirModelPrivate::type(const QModelIndex &index) const

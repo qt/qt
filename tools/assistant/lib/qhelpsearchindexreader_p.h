@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -81,7 +81,7 @@ public:
     void search(const QString &collectionFile,
         const QString &indexFilesFolder,
         const QList<QHelpSearchQuery> &queryList);
-    int hitsCount() const;
+    int hitCount() const;
     QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const;
 
 signals:

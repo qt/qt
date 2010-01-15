@@ -6,7 +6,7 @@
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA
+    successor approved by the membership of KDE e.V.), Nokia Corporation
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -26,6 +26,8 @@
 #include <QtCore/QSettings>
 #include <QtCore/QString>
 #include <QtCore/QVariant>
+
+#ifndef QT_NO_PHONON_SETTINGSGROUP
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -87,5 +89,6 @@ class QSettingsGroup
 
 QT_END_NAMESPACE
 QT_END_HEADER
+#endif //QT_NO_PHONON_SETTINGSGROUP
 
 #endif // PHONON_QSETTINGSGROUP_P_H

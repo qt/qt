@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -112,7 +112,7 @@ namespace QPatternist
         {
             return QtXmlPatterns::tr("The target name in a processing instruction "
                                      "cannot be %1 in any combination of upper "
-                                     "and lower case. Therefore, is %2 invalid.")
+                                     "and lower case. Therefore, %2 is invalid.")
                 .arg(formatKeyword("xml"), formatKeyword(lexTarget));
         }
     };

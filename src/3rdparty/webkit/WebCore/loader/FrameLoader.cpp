@@ -2,6 +2,8 @@
  * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008 Alp Toker <alp@atoker.com>
+ * Copyright (C) Research In Motion Limited 2009. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -75,6 +77,7 @@
 #include "PageTransitionEvent.h"
 #include "PlaceholderDocument.h"
 #include "PluginData.h"
+#include "PluginDatabase.h"
 #include "PluginDocument.h"
 #include "ProgressTracker.h"
 #include "RenderPart.h"
@@ -111,10 +114,6 @@
 #include "SVGSVGElement.h"
 #include "SVGViewElement.h"
 #include "SVGViewSpec.h"
-#endif
-
-#if PLATFORM(MAC) || PLATFORM(WIN)
-#define PAGE_CACHE_ACCEPTS_UNLOAD_HANDLERS
 #endif
 
 namespace WebCore {
@@ -337,10 +336,9 @@ void FrameLoader::urlSelected(const ResourceRequest& request, const String& pass
 
     FrameLoadRequest frameRequest(request, target);
 
-    if (referrerPolicy == NoReferrer) {
+    if (referrerPolicy == NoReferrer)
         m_suppressOpenerInNewFrame = true;
-        setOpener(0);
-    } else if (frameRequest.resourceRequest().httpReferrer().isEmpty())
+    else if (frameRequest.resourceRequest().httpReferrer().isEmpty())
         frameRequest.resourceRequest().setHTTPReferrer(m_outgoingReferrer);
     addHTTPOriginIfNeeded(frameRequest.resourceRequest(), outgoingOrigin());
 
@@ -756,6 +754,8 @@ void FrameLoader::receivedFirstData()
     double delay;
     String url;
     if (!m_documentLoader)
+        return;
+    if (m_frame->inViewSourceMode())
         return;
     if (!parseHTTPRefresh(m_documentLoader->response().httpHeaderField("Refresh"), false, delay, url))
         return;
@@ -1288,6 +1288,30 @@ bool FrameLoader::shouldUsePlugin(const KURL& url, const String& mimeType, bool 
     return objectType == ObjectContentNone || objectType == ObjectContentNetscapePlugin || objectType == ObjectContentOtherPlugin;
 }
 
+ObjectContentType FrameLoader::defaultObjectContentType(const KURL& url, const String& mimeTypeIn)
+{
+    String mimeType = mimeTypeIn;
+    // We don't use MIMETypeRegistry::getMIMETypeForPath() because it returns "application/octet-stream" upon failure
+    if (mimeType.isEmpty())
+        mimeType = MIMETypeRegistry::getMIMETypeForExtension(url.path().substring(url.path().reverseFind('.') + 1));
+
+    if (mimeType.isEmpty())
+        return ObjectContentFrame; // Go ahead and hope that we can display the content.
+
+    if (MIMETypeRegistry::isSupportedImageMIMEType(mimeType))
+        return WebCore::ObjectContentImage;
+
+#if !PLATFORM(MAC) && !PLATFORM(CHROMIUM)  // Mac has no PluginDatabase, nor does Chromium 
+    if (PluginDatabase::installedPlugins()->isMIMETypeRegistered(mimeType))
+        return WebCore::ObjectContentNetscapePlugin;
+#endif
+
+    if (MIMETypeRegistry::isSupportedNonImageMIMEType(mimeType))
+        return WebCore::ObjectContentFrame;
+
+    return WebCore::ObjectContentNone;
+}
+
 static HTMLPlugInElement* toPlugInElement(Node* node)
 {
     if (!node)
@@ -1467,9 +1491,7 @@ bool FrameLoader::canCachePageContainingThisFrame()
         // the right NPObjects. See <rdar://problem/5197041> for more information.
         && !m_containsPlugIns
         && !m_URL.protocolIs("https")
-#ifndef PAGE_CACHE_ACCEPTS_UNLOAD_HANDLERS
         && (!m_frame->domWindow() || !m_frame->domWindow()->hasEventListeners(eventNames().unloadEvent))
-#endif
 #if ENABLE(DATABASE)
         && !m_frame->document()->hasOpenDatabases()
 #endif
@@ -1614,10 +1636,8 @@ bool FrameLoader::logCanCacheFrameDecision(int indentLevel)
             { PCLOG("   -Frame contains plugins"); cannotCache = true; }
         if (m_URL.protocolIs("https"))
             { PCLOG("   -Frame is HTTPS"); cannotCache = true; }
-#ifndef PAGE_CACHE_ACCEPTS_UNLOAD_HANDLERS
         if (m_frame->domWindow() && m_frame->domWindow()->hasEventListeners(eventNames().unloadEvent))
             { PCLOG("   -Frame has an unload event listener"); cannotCache = true; }
-#endif
 #if ENABLE(DATABASE)
         if (m_frame->document()->hasOpenDatabases())
             { PCLOG("   -Frame has open database handles"); cannotCache = true; }
@@ -1728,10 +1748,13 @@ bool FrameLoader::isComplete() const
 void FrameLoader::completed()
 {
     RefPtr<Frame> protect(m_frame);
-    for (Frame* child = m_frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
-        child->redirectScheduler()->startTimer();
+
+    for (Frame* descendant = m_frame->tree()->traverseNext(m_frame); descendant; descendant = descendant->tree()->traverseNext(m_frame))
+        descendant->redirectScheduler()->startTimer();
+    
     if (Frame* parent = m_frame->tree()->parent())
         parent->loader()->checkCompleted();
+
     if (m_frame->view())
         m_frame->view()->maintainScrollPositionAtAnchor(0);
 }
@@ -2867,8 +2890,8 @@ void FrameLoader::checkLoadCompleteForThisFrame()
                 // delegate callback.
                 if (pdl == m_provisionalDocumentLoader)
                     clearProvisionalLoad();
-                else if (m_provisionalDocumentLoader) {
-                    KURL unreachableURL = m_provisionalDocumentLoader->unreachableURL();
+                else if (activeDocumentLoader()) {
+                    KURL unreachableURL = activeDocumentLoader()->unreachableURL();
                     if (!unreachableURL.isEmpty() && unreachableURL == pdl->request().url())
                         shouldReset = false;
                 }
@@ -3845,7 +3868,8 @@ void FrameLoader::dispatchDocumentElementAvailable()
 
 void FrameLoader::dispatchWindowObjectAvailable()
 {
-    if (!m_frame->script()->isEnabled() || !m_frame->script()->haveWindowShell())
+    // FIXME: should this be isolated-worlds-aware?
+    if (!m_frame->script()->isEnabled() || !m_frame->script()->existingWindowShell(mainThreadNormalWorld()))
         return;
 
     m_client->windowObjectCleared();

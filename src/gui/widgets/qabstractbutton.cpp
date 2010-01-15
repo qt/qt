@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -165,7 +165,7 @@ QAbstractButtonPrivate::QAbstractButtonPrivate(QSizePolicy::ControlType type)
     shortcutId(0),
 #endif
     checkable(false), checked(false), autoRepeat(false), autoExclusive(false),
-    down(false), blockRefresh(false),
+    down(false), blockRefresh(false), pressed(false),
 #ifndef QT_NO_BUTTONGROUP
     group(0),
 #endif
@@ -1090,6 +1090,7 @@ void QAbstractButton::mousePressEvent(QMouseEvent *e)
     }
     if (hitButton(e->pos())) {
         setDown(true);
+        d->pressed = true;
         repaint(); //flush paint event before invoking potentially expensive operation
         QApplication::flush();
         d->emitPressed();
@@ -1103,6 +1104,8 @@ void QAbstractButton::mousePressEvent(QMouseEvent *e)
 void QAbstractButton::mouseReleaseEvent(QMouseEvent *e)
 {
     Q_D(QAbstractButton);
+    d->pressed = false;
+
     if (e->button() != Qt::LeftButton) {
         e->ignore();
         return;
@@ -1127,7 +1130,7 @@ void QAbstractButton::mouseReleaseEvent(QMouseEvent *e)
 void QAbstractButton::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QAbstractButton);
-    if (!(e->buttons() & Qt::LeftButton)) {
+    if (!(e->buttons() & Qt::LeftButton) || !d->pressed) {
         e->ignore();
         return;
     }

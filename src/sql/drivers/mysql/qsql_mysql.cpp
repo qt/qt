@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -509,15 +509,24 @@ bool QMYSQLResult::fetchNext()
         return false;
     if (d->preparedQuery) {
 #if MYSQL_VERSION_ID >= 40108
-        if (mysql_stmt_fetch(d->stmt))
+        int nRC = mysql_stmt_fetch(d->stmt);
+        if (nRC) {
+#ifdef MYSQL_DATA_TRUNCATED
+            if (nRC == 1 || nRC == MYSQL_DATA_TRUNCATED)
+#else
+            if (nRC == 1)
+#endif // MYSQL_DATA_TRUNCATED
+                setLastError(qMakeStmtError(QCoreApplication::translate("QMYSQLResult",
+                                    "Unable to fetch data"), QSqlError::StatementError, d->stmt));
             return false;
+        }
 #else
         return false;
 #endif
     } else {
-    d->row = mysql_fetch_row(d->result);
-    if (!d->row)
-        return false;
+        d->row = mysql_fetch_row(d->result);
+        if (!d->row)
+            return false;
     }
     setAt(at() + 1);
     return true;
@@ -1365,7 +1374,6 @@ QStringList QMYSQLDriver::tables(QSql::TableType type) const
 QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
 {
     QSqlIndex idx;
-    bool prepQ;
     if (!isOpen())
         return idx;
 

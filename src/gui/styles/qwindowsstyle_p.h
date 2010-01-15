@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -87,7 +87,17 @@ public:
     QColor activeGradientCaptionColor;
     QColor inactiveCaptionColor;
     QColor inactiveGradientCaptionColor;
+
+    enum {
+        windowsItemFrame        =  2, // menu item frame width
+        windowsSepHeight        =  9, // separator item height
+        windowsItemHMargin      =  3, // menu item hor text margin
+        windowsItemVMargin      =  2, // menu item ver text margin
+        windowsArrowHMargin     =  6, // arrow horizontal margin
+        windowsRightBorder      = 15, // right border on windows
+        windowsCheckMarkWidth   = 12  // checkmarks width on windows
     };
+};
 
 QT_END_NAMESPACE
 

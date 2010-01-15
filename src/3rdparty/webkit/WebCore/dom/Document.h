@@ -71,6 +71,7 @@ namespace WebCore {
     class HitTestRequest;
     class HTMLCanvasElement;
     class HTMLCollection;
+    class HTMLAllCollection;
     class HTMLDocument;
     class HTMLElement;
     class HTMLFormElement;
@@ -79,6 +80,7 @@ namespace WebCore {
     class HTMLMapElement;
     class InspectorTimelineAgent;
     class IntPoint;
+    class DOMWrapperWorld;
     class JSNode;
     class MouseEventWithHitTestResults;
     class NodeFilter;
@@ -315,11 +317,12 @@ public:
     PassRefPtr<HTMLCollection> links();
     PassRefPtr<HTMLCollection> forms();
     PassRefPtr<HTMLCollection> anchors();
-    PassRefPtr<HTMLCollection> all();
     PassRefPtr<HTMLCollection> objects();
     PassRefPtr<HTMLCollection> scripts();
     PassRefPtr<HTMLCollection> windowNamedItems(const String& name);
     PassRefPtr<HTMLCollection> documentNamedItems(const String& name);
+
+    PassRefPtr<HTMLAllCollection> all();
 
     // Find first anchor with the given name.
     // First searches for an element with the given ID, but if that fails, then looks
@@ -819,7 +822,15 @@ public:
     virtual void postTask(PassRefPtr<Task>); // Executes the task on context's thread asynchronously.
 
     typedef HashMap<WebCore::Node*, JSNode*> JSWrapperCache;
-    JSWrapperCache& wrapperCache() { return m_wrapperCache; }
+    typedef HashMap<DOMWrapperWorld*, JSWrapperCache*> JSWrapperCacheMap;
+    JSWrapperCacheMap& wrapperCacheMap() { return m_wrapperCacheMap; }
+    JSWrapperCache* getWrapperCache(DOMWrapperWorld* world)
+    {
+        if (JSWrapperCache* wrapperCache = m_wrapperCacheMap.get(world))
+            return wrapperCache;
+        return createWrapperCache(world);
+    }
+    JSWrapperCache* createWrapperCache(DOMWrapperWorld*);
 
     virtual void finishedParsing();
 
@@ -1137,7 +1148,7 @@ private:
 
     unsigned m_numNodeListCaches;
 
-    JSWrapperCache m_wrapperCache;
+    JSWrapperCacheMap m_wrapperCacheMap;
 
 #if ENABLE(DATABASE)
     RefPtr<DatabaseThread> m_databaseThread;

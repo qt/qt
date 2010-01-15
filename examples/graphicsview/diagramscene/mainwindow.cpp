@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,12 +58,12 @@ MainWindow::MainWindow()
 
     scene = new DiagramScene(itemMenu);
     scene->setSceneRect(QRectF(0, 0, 5000, 5000));
-    connect(scene, SIGNAL(itemInserted(DiagramItem *)),
-            this, SLOT(itemInserted(DiagramItem *)));
-    connect(scene, SIGNAL(textInserted(QGraphicsTextItem *)),
-        this, SLOT(textInserted(QGraphicsTextItem *)));
-    connect(scene, SIGNAL(itemSelected(QGraphicsItem *)),
-        this, SLOT(itemSelected(QGraphicsItem *)));
+    connect(scene, SIGNAL(itemInserted(DiagramItem*)),
+            this, SLOT(itemInserted(DiagramItem*)));
+    connect(scene, SIGNAL(textInserted(QGraphicsTextItem*)),
+        this, SLOT(textInserted(QGraphicsTextItem*)));
+    connect(scene, SIGNAL(itemSelected(QGraphicsItem*)),
+        this, SLOT(itemSelected(QGraphicsItem*)));
     createToolbars();
 
     QHBoxLayout *layout = new QHBoxLayout;
@@ -347,8 +347,8 @@ void MainWindow::createToolBox()
     itemWidget->setLayout(layout);
 
     backgroundButtonGroup = new QButtonGroup;
-    connect(backgroundButtonGroup, SIGNAL(buttonClicked(QAbstractButton *)),
-            this, SLOT(backgroundButtonGroupClicked(QAbstractButton *)));
+    connect(backgroundButtonGroup, SIGNAL(buttonClicked(QAbstractButton*)),
+            this, SLOT(backgroundButtonGroupClicked(QAbstractButton*)));
 
     QGridLayout *backgroundLayout = new QGridLayout;
     backgroundLayout->addWidget(createBackgroundCellWidget(tr("Blue Grid"),
@@ -462,8 +462,8 @@ void MainWindow::createToolbars()
 
     fontCombo = new QFontComboBox();
     fontSizeCombo = new QComboBox();
-    connect(fontCombo, SIGNAL(currentFontChanged(const QFont &)),
-            this, SLOT(currentFontChanged(const QFont &)));
+    connect(fontCombo, SIGNAL(currentFontChanged(QFont)),
+            this, SLOT(currentFontChanged(QFont)));
 
     fontSizeCombo = new QComboBox;
     fontSizeCombo->setEditable(true);
@@ -471,8 +471,8 @@ void MainWindow::createToolbars()
         fontSizeCombo->addItem(QString().setNum(i));
     QIntValidator *validator = new QIntValidator(2, 64, this);
     fontSizeCombo->setValidator(validator);
-    connect(fontSizeCombo, SIGNAL(currentIndexChanged(const QString &)),
-            this, SLOT(fontSizeChanged(const QString &)));
+    connect(fontSizeCombo, SIGNAL(currentIndexChanged(QString)),
+            this, SLOT(fontSizeChanged(QString)));
 
     fontColorToolButton = new QToolButton;
     fontColorToolButton->setPopupMode(QToolButton::MenuButtonPopup);
@@ -539,8 +539,8 @@ void MainWindow::createToolbars()
     scales << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%");
     sceneScaleCombo->addItems(scales);
     sceneScaleCombo->setCurrentIndex(2);
-    connect(sceneScaleCombo, SIGNAL(currentIndexChanged(const QString &)),
-            this, SLOT(sceneScaleChanged(const QString &)));
+    connect(sceneScaleCombo, SIGNAL(currentIndexChanged(QString)),
+            this, SLOT(sceneScaleChanged(QString)));
 
     pointerToolbar = addToolBar(tr("Pointer type"));
     pointerToolbar->addWidget(pointerButton);

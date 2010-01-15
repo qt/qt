@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,9 +82,6 @@
 #include <QTime>
 #include <QTimer>
 #include <QDebug>
-#ifndef TEST_QNETWORK_PROXY
-#define TEST_QNETWORK_PROXY
-#endif
 // RVCT compiles also unused inline methods
 # include <QNetworkProxy>
 
@@ -192,12 +189,13 @@ private slots:
     void connectToMultiIP();
     void moveToThread0();
     void increaseReadBufferSize();
-#ifdef TEST_QNETWORK_PROXY
+    void taskQtBug5799ConnectionErrorWaitForConnected();
+    void taskQtBug5799ConnectionErrorEventLoop();
+
     void invalidProxy_data();
     void invalidProxy();
     void proxyFactory_data();
     void proxyFactory();
-#endif
 
 protected slots:
     void nonBlockingIMAP_hostFound();
@@ -268,17 +266,15 @@ void tst_QTcpSocket::initTestCase_data()
 
     qDebug() << QtNetworkSettings::serverName();
     QTest::newRow("WithoutProxy") << false << 0 << false;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy) << false;
     QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic) << false;
 
     QTest::newRow("WithHttpProxy") << true << int(HttpProxy) << false;
     QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic) << false;
 //    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm) << false;
-#endif
+
 #ifndef QT_NO_OPENSSL
     QTest::newRow("WithoutProxy SSL") << false << 0 << true;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy SSL") << true << int(Socks5Proxy) << true;
     QTest::newRow("WithSocks5AuthProxy SSL") << true << int(Socks5Proxy | AuthBasic) << true;
 
@@ -286,14 +282,12 @@ void tst_QTcpSocket::initTestCase_data()
     QTest::newRow("WithHttpProxyBasicAuth SSL") << true << int(HttpProxy | AuthBasic) << true;
 //    QTest::newRow("WithHttpProxyNtlmAuth SSL") << true << int(HttpProxy | AuthNtlm) << true;
 #endif
-#endif
 }
 
 void tst_QTcpSocket::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         QString fluke = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
         QNetworkProxy proxy;
@@ -320,7 +314,6 @@ void tst_QTcpSocket::init()
             break;
         }
         QNetworkProxy::setApplicationProxy(proxy);
-#endif
     }
 }
 
@@ -343,9 +336,7 @@ QTcpSocket *tst_QTcpSocket::newSocket() const
 
 void tst_QTcpSocket::cleanup()
 {
-#ifdef TEST_QNETWORK_PROXY
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
-#endif
 }
 
 void tst_QTcpSocket::proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth)
@@ -369,7 +360,6 @@ void tst_QTcpSocket::constructing()
     QCOMPARE(socket->socketType(), QTcpSocket::TcpSocket);
 
     char c;
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
     QCOMPARE(socket->getChar(&c), false);
     QCOMPARE((int) socket->bytesAvailable(), 0);
     QCOMPARE(socket->canReadLine(), false);
@@ -775,7 +765,7 @@ void tst_QTcpSocket::unget()
 
     for (int i = 0; i < 10; i += 2) {
         while (socket->bytesAvailable() < 2)
-            QVERIFY(socket->waitForReadyRead(5000));
+            QVERIFY(socket->waitForReadyRead(10000));
         int bA = socket->bytesAvailable();
         QVERIFY(socket->read(buf, 2) == 2);
         buf[2] = '\0';
@@ -828,7 +818,6 @@ void tst_QTcpSocket::openCloseOpenClose()
         QVERIFY(socket->socketType() == QTcpSocket::TcpSocket);
 
         char c;
-        QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
         QCOMPARE(socket->getChar(&c), false);
         QCOMPARE((int) socket->bytesAvailable(), 0);
         QCOMPARE(socket->canReadLine(), false);
@@ -1322,9 +1311,7 @@ void tst_QTcpSocket::synchronousApi()
 void tst_QTcpSocket::dontCloseOnTimeout()
 {
     QTcpServer server;
-#ifdef TEST_QNETWORK_PROXY
     server.setProxy(QNetworkProxy(QNetworkProxy::NoProxy));
-#endif
     QVERIFY(server.listen());
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
@@ -1793,9 +1780,6 @@ void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
     QCOMPARE(readyReadSpy.count(), 1);
 
     QString s = socket->readLine();
-#ifdef TEST_QNETWORK_PROXY
-    QNetworkProxy::ProxyType proxyType = QNetworkProxy::applicationProxy().type();
-#endif
     QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData());
     QCOMPARE(socket->bytesAvailable(), qint64(0));
 
@@ -1957,7 +1941,6 @@ void tst_QTcpSocket::zeroAndMinusOneReturns()
     QCOMPARE(socket->write("BLUBBER"), qint64(-1));
     QCOMPARE(socket->read(c, 16), qint64(-1));
     QCOMPARE(socket->readLine(c, 16), qint64(-1));
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::getChar: Closed device");
     QVERIFY(!socket->getChar(c));
     QVERIFY(!socket->putChar('a'));
 
@@ -2116,7 +2099,7 @@ void tst_QTcpSocket::moveToThread0()
         QTcpSocket *socket = newSocket();;
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
         socket->moveToThread(0);
-        QVERIFY(socket->waitForConnected(2000));
+        QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
         QVERIFY(socket->waitForDisconnected());
@@ -2127,7 +2110,7 @@ void tst_QTcpSocket::moveToThread0()
         QTcpSocket *socket = newSocket();
         socket->moveToThread(0);
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
-        QVERIFY(socket->waitForConnected(2000));
+        QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
         QVERIFY(socket->waitForDisconnected());
@@ -2137,7 +2120,7 @@ void tst_QTcpSocket::moveToThread0()
         // Case 3: Moved after writing, while waiting for bytes to be written.
         QTcpSocket *socket = newSocket();
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
-        QVERIFY(socket->waitForConnected(2000));
+        QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         socket->moveToThread(0);
         QVERIFY(socket->waitForBytesWritten(5000));
@@ -2148,7 +2131,7 @@ void tst_QTcpSocket::moveToThread0()
         // Case 4: Moved after writing, while waiting for response.
         QTcpSocket *socket = newSocket();
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
-        QVERIFY(socket->waitForConnected(2000));
+        QVERIFY(socket->waitForConnected(5000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
         socket->moveToThread(0);
@@ -2214,7 +2197,45 @@ void tst_QTcpSocket::increaseReadBufferSize()
     delete active;
 }
 
-#ifdef TEST_QNETWORK_PROXY
+void tst_QTcpSocket::taskQtBug5799ConnectionErrorWaitForConnected()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // check that we get a proper error connecting to port 12346
+    // use waitForConnected, e.g. this should use a synchronous select() on the OS level
+
+    QTcpSocket socket;
+    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+    QTime timer;
+    timer.start();
+    socket.waitForConnected(10000);
+    QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");
+    QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
+    QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
+             QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
+}
+
+void tst_QTcpSocket::taskQtBug5799ConnectionErrorEventLoop()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // check that we get a proper error connecting to port 12346
+    // This testcase uses an event loop
+    QTcpSocket socket;
+    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY2(!QTestEventLoop::instance().timeout(), "Connection to closed port timed out instead of refusing, something is wrong");
+    QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
+    QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
+             QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
+}
+
 void tst_QTcpSocket::invalidProxy_data()
 {
     QTest::addColumn<int>("type");
@@ -2263,7 +2284,7 @@ void tst_QTcpSocket::invalidProxy()
         QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     } else {
         QCOMPARE(socket->state(), QAbstractSocket::ConnectingState);
-        QVERIFY(!socket->waitForConnected(2000));
+        QVERIFY(!socket->waitForConnected(5000));
     }
     QVERIFY(!socket->errorString().isEmpty());
 
@@ -2382,7 +2403,7 @@ void tst_QTcpSocket::proxyFactory()
         QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     } else {
         QCOMPARE(socket->state(), QAbstractSocket::ConnectingState);
-        QVERIFY(socket->waitForConnected(2000));
+        QVERIFY(socket->waitForConnected(5000));
         QCOMPARE(proxyAuthCalled, 1);
     }
     QVERIFY(!socket->errorString().isEmpty());
@@ -2393,7 +2414,6 @@ void tst_QTcpSocket::proxyFactory()
 
     delete socket;
 }
-#endif
 
 
 QTEST_MAIN(tst_QTcpSocket)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,8 +64,8 @@ class QMacSwipeGestureRecognizer : public QGestureRecognizer
 public:
     QMacSwipeGestureRecognizer();
 
-    QGesture *createGesture(QObject *target);
-    QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event);
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
     void reset(QGesture *gesture);
 };
 
@@ -74,8 +74,8 @@ class QMacPinchGestureRecognizer : public QGestureRecognizer
 public:
     QMacPinchGestureRecognizer();
 
-    QGesture *createGesture(QObject *target);
-    QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event);
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
     void reset(QGesture *gesture);
 };
 
@@ -86,12 +86,11 @@ class QMacPanGestureRecognizer : public QObject, public QGestureRecognizer
 public:
     QMacPanGestureRecognizer();
 
-    QGesture *createGesture(QObject *target);
-    QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event);
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
     void reset(QGesture *gesture);
 private:
     QPointF _startPos;
-    QPointF _lastPos;
     QBasicTimer _panTimer;
     bool _panCanceled;
 };

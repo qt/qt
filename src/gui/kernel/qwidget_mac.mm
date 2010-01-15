@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -725,11 +725,29 @@ static OSWindowRef qt_mac_create_window(QWidget *, WindowClass wclass, WindowAtt
     return window;
 }
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+/* We build the release package against the 10.4 SDK.
+   So, to enable gestures for applications running on
+   10.6+, we define the missing constants here: */
+enum {
+    kEventClassGesture              = 'gest',
+    kEventGestureStarted            = 1,
+    kEventGestureEnded              = 2,
+    kEventGestureMagnify            = 4,
+    kEventGestureSwipe              = 5,
+    kEventGestureRotate             = 6,
+    kEventParamRotationAmount       = 'rota',
+    kEventParamSwipeDirection       = 'swip',
+    kEventParamMagnificationAmount  = 'magn'
+};
+#endif
+
 // window events
 static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowClose },
     { kEventClassWindow, kEventWindowExpanded },
     { kEventClassWindow, kEventWindowHidden },
+    { kEventClassWindow, kEventWindowZoom },
     { kEventClassWindow, kEventWindowZoomed },
     { kEventClassWindow, kEventWindowCollapsed },
     { kEventClassWindow, kEventWindowToolbarSwitchMode },
@@ -740,13 +758,11 @@ static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowGetRegion },
     { kEventClassWindow, kEventWindowGetClickModality },
     { kEventClassWindow, kEventWindowTransitionCompleted },
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
     { kEventClassGesture, kEventGestureStarted },
     { kEventClassGesture, kEventGestureEnded },
     { kEventClassGesture, kEventGestureMagnify },
     { kEventClassGesture, kEventGestureSwipe },
     { kEventClassGesture, kEventGestureRotate },
-#endif
     { kEventClassMouse, kEventMouseDown }
 };
 static EventHandlerUPP mac_win_eventUPP = 0;
@@ -812,6 +828,9 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
 
             QShowEvent qse;
             QApplication::sendSpontaneousEvent(widget, &qse);
+        } else if(ekind == kEventWindowZoom) {
+            widget->d_func()->topData()->normalGeometry = widget->geometry();
+            handled_event = false;
         } else if(ekind == kEventWindowZoomed) {
             WindowPartCode windowPart;
             GetEventParameter(event, kEventParamWindowPartCode,
@@ -1032,7 +1051,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
         handled_event = false;
         break; }
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
     case kEventClassGesture: {
         // First, find the widget that was under
         // the mouse when the gesture happened:
@@ -1060,7 +1078,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                 break;
             case kEventGestureRotate: {
                 CGFloat amount;
-                if (GetEventParameter(event, kEventParamRotationAmount, typeCGFloat, 0,
+                if (GetEventParameter(event, kEventParamRotationAmount, 'cgfl', 0,
                             sizeof(amount), 0, &amount) != noErr) {
                     handled_event = false;
                     break;
@@ -1087,7 +1105,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                 break; }
             case kEventGestureMagnify: {
                 CGFloat amount;
-                if (GetEventParameter(event, kEventParamMagnificationAmount, typeCGFloat, 0,
+                if (GetEventParameter(event, kEventParamMagnificationAmount, 'cgfl', 0,
                             sizeof(amount), 0, &amount) != noErr) {
                     handled_event = false;
                     break;
@@ -1099,7 +1117,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
 
         QApplication::sendSpontaneousEvent(widget, &qNGEvent);
     break; }
-#endif // gestures
 
     default:
         handled_event = false;
@@ -1871,13 +1888,15 @@ void QWidgetPrivate::determineWindowClass()
         wclass = kDocumentWindowClass;
     else if(popup || (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5 && type == Qt::SplashScreen))
         wclass = kModalWindowClass;
-    else if(q->testAttribute(Qt::WA_ShowModal) || type == Qt::Dialog)
+    else if(type == Qt::Dialog)
         wclass = kMovableModalWindowClass;
     else if(type == Qt::ToolTip)
         wclass = kHelpWindowClass;
     else if(type == Qt::Tool || (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5
                                  && type == Qt::SplashScreen))
         wclass = kFloatingWindowClass;
+    else if(q->testAttribute(Qt::WA_ShowModal))
+        wclass = kMovableModalWindowClass;
     else
         wclass = kDocumentWindowClass;
 
@@ -1981,8 +2000,6 @@ void QWidgetPrivate::determineWindowClass()
         for(int i = 0; tmp_wattr && known_attribs[i].name; i++) {
             if((tmp_wattr & known_attribs[i].tag) == known_attribs[i].tag) {
                 tmp_wattr ^= known_attribs[i].tag;
-                qDebug("Qt: internal: * %s %s", known_attribs[i].name,
-                        (GetAvailableWindowAttributes(wclass) & known_attribs[i].tag) ? "" : "(*)");
             }
         }
         if(tmp_wattr)
@@ -2600,8 +2617,6 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             releaseMouse();
         if(mac_keyboard_grabber == this)
             releaseKeyboard();
-        if(acceptDrops())
-            setAcceptDrops(false);
 
         if(testAttribute(Qt::WA_ShowModal))          // just be sure we leave modal
             QApplicationPrivate::leaveModal(this);
@@ -2669,7 +2684,10 @@ void QWidgetPrivate::transferChildren()
                     // site disabled until it is part of the new hierarchy.
                     bool oldRegistered = w->testAttribute(Qt::WA_DropSiteRegistered);
                     w->setAttribute(Qt::WA_DropSiteRegistered, false);
+                    [qt_mac_nativeview_for(w) retain];
+                    [qt_mac_nativeview_for(w) removeFromSuperview];
                     [qt_mac_nativeview_for(q) addSubview:qt_mac_nativeview_for(w)];
+                    [qt_mac_nativeview_for(w) release];
                     w->setAttribute(Qt::WA_DropSiteRegistered, oldRegistered);
 #endif
                 }
@@ -3017,10 +3035,17 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
 #else
         QMacCocoaAutoReleasePool pool;
         NSButton *iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
+        if (iconButton == nil) {
+            QCFString string(q->windowTitle());
+            const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
+            [qt_mac_window_for(q) setRepresentedURL:[NSURL fileURLWithPath:tmpString]];
+            iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
+        }
         if (icon.isNull()) {
             [iconButton setImage:nil];
         } else {
-            NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(*pm));
+            QPixmap scaled = pm->scaled(QSize(16,16), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(scaled));
             [iconButton setImage:image];
             [image release];
         }
@@ -3284,13 +3309,23 @@ void QWidgetPrivate::show_sys()
 #else
             // sync the opacity value back (in case of a fade).
             [window setAlphaValue:q->windowOpacity()];
-            [window makeKeyAndOrderFront:window];
 
-            // If this window is app modal, we need to start spinning
-            // a modal session for it. Interrupting
-            // the event dispatcher will make this happend:
-            if (data.window_modality == Qt::ApplicationModal)
-                QEventDispatcherMac::instance()->interrupt();
+            QWidget *top = 0;
+            if (QApplicationPrivate::tryModalHelper(q, &top)) {
+                [window makeKeyAndOrderFront:window];
+                // If this window is app modal, we need to start spinning
+                // a modal session for it. Interrupting
+                // the event dispatcher will make this happend:
+                if (data.window_modality == Qt::ApplicationModal)
+                    QEventDispatcherMac::instance()->interrupt();
+            } else {
+                // The window is modally shaddowed, so we need to make
+                // sure that we don't pop in front of the modal window:
+                [window orderFront:window];
+                if (NSWindow *modalWin = qt_mac_window_for(top))
+                    [modalWin orderFront:window];
+            }
+
 #endif
             if (q->windowType() == Qt::Popup) {
 			    if (q->focusWidget())
@@ -3309,8 +3344,6 @@ void QWidgetPrivate::show_sys()
         } else if (!q->testAttribute(Qt::WA_ShowWithoutActivating)) {
 #ifndef QT_MAC_USE_COCOA
             qt_event_request_activate(q);
-#else
-            [qt_mac_window_for(q) makeKeyWindow];
 #endif
         }
     } else if(topData()->embedded || !q->parentWidget() || q->parentWidget()->isVisible()) {
@@ -3386,12 +3419,15 @@ void QWidgetPrivate::hide_sys()
             }
 #endif
         }
-        if(q->isActiveWindow() && !(q->windowType() == Qt::Popup)) {
+#ifndef QT_MAC_USE_COCOA
+        // If the window we now hide was the active window, we need
+        // to find, and activate another window on screen. NB: Cocoa takes care of this
+        // logic for us (and distinquishes between main windows and key windows)
+        if (q->isActiveWindow() && !(q->windowType() == Qt::Popup)) {
             QWidget *w = 0;
             if(q->parentWidget())
                 w = q->parentWidget()->window();
             if(!w || (!w->isVisible() && !w->isMinimized())) {
-#ifndef QT_MAC_USE_COCOA
                 for (WindowPtr wp = GetFrontWindowOfClass(kMovableModalWindowClass, true);
                     wp; wp = GetNextWindowOfClass(wp, kMovableModalWindowClass, true)) {
                     if((w = qt_mac_find_window(wp)))
@@ -3411,24 +3447,12 @@ void QWidgetPrivate::hide_sys()
                             break;
                     }
                 }
-#else
-                NSArray *windows = [NSApp windows];
-                NSUInteger totalWindows = [windows count];
-                for (NSUInteger i = 0; i < totalWindows; ++i) {
-                    OSWindowRef wp = [windows objectAtIndex:i];
-                    if ((w = qt_mac_find_window(wp)))
-                        break;
-                }
-#endif
             }
             if(w && w->isVisible() && !w->isMinimized()) {
-#ifndef QT_MAC_USE_COCOA
-            qt_event_request_activate(w);
-#else
-            [qt_mac_window_for(w) makeKeyWindow];
-#endif
+                qt_event_request_activate(w);
             }
         }
+#endif
     } else {
          invalidateBuffer(q->rect());
 #ifndef QT_MAC_USE_COCOA
@@ -3480,10 +3504,10 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                     qt_mac_set_fullscreen_mode(true);
             } else {
                 needShow = isVisible();
-                setParent(parentWidget(), d->topData()->savedFlags);
-                setGeometry(d->topData()->normalGeometry);
                 if(!qApp->desktop()->screenNumber(this))
                     qt_mac_set_fullscreen_mode(false);
+                setParent(parentWidget(), d->topData()->savedFlags);
+                setGeometry(d->topData()->normalGeometry);
                 d->topData()->normalGeometry.setRect(0, 0, -1, -1);
             }
         }
@@ -3585,7 +3609,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                 [window zoom:window];
 #endif
                 needSendStateChange = oldstate == windowState(); // Zoom didn't change flags.
-            } else if(oldstate & Qt::WindowMaximized) {
+            } else if(oldstate & Qt::WindowMaximized && !(oldstate & Qt::WindowFullScreen)) {
 #ifndef QT_MAC_USE_COCOA
                 Point idealSize;
                 ZoomWindowIdeal(window, inZoomIn, &idealSize);
@@ -3629,6 +3653,16 @@ void QWidgetPrivate::setFocus_sys()
     }
 }
 
+NSComparisonResult compareViews2Raise(id view1, id view2, void *context)
+{
+    id topView = reinterpret_cast<id>(context);
+    if (view1 == topView)
+        return NSOrderedDescending;
+    if (view2 == topView)
+        return NSOrderedAscending;
+    return NSOrderedSame;
+}
+
 void QWidgetPrivate::raise_sys()
 {
     Q_Q(QWidget);
@@ -3648,16 +3682,9 @@ void QWidgetPrivate::raise_sys()
             SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
         }
     } else {
-        // Cocoa doesn't really have an idea of Z-ordering, but you can
-        // fake it by changing the order of it. But beware, removing an
-        // NSView will also remove it as the first responder. So we re-set
-        // the first responder just in case:
         NSView *view = qt_mac_nativeview_for(q);
         NSView *parentView = [view superview];
-        NSResponder *firstResponder = [[view window] firstResponder];
-        [view removeFromSuperview];
-        [parentView addSubview:view];
-        [[view window] makeFirstResponder:firstResponder];
+        [parentView sortSubviewsUsingFunction:compareViews2Raise context:reinterpret_cast<void *>(view)];
     }
 #else
     if(q->isWindow()) {
@@ -3675,47 +3702,29 @@ void QWidgetPrivate::raise_sys()
 #endif
 }
 
+NSComparisonResult compareViews2Lower(id view1, id view2, void *context)
+{
+    id topView = reinterpret_cast<id>(context);
+    if (view1 == topView)
+        return NSOrderedAscending;
+    if (view2 == topView)
+        return NSOrderedDescending;
+    return NSOrderedSame;
+}
+
 void QWidgetPrivate::lower_sys()
 {
     Q_Q(QWidget);
     if((q->windowType() == Qt::Desktop))
         return;
 #ifdef QT_MAC_USE_COCOA
-    QMacCocoaAutoReleasePool pool;
     if (isRealWindow()) {
         OSWindowRef window = qt_mac_window_for(q);
         [window orderBack:window];
     } else {
-        // Cocoa doesn't really have an idea of Z-ordering, but you can
-        // fake it by changing the order of it. In this case
-        // we put the item at the beginning of the list, but that means
-        // we must re-insert everything since we cannot modify the list directly.
-        NSView *myview = qt_mac_nativeview_for(q);
-        NSView *parentView = [myview superview];
-        NSArray *tmpViews = [parentView subviews];
-        NSMutableArray *subviews = [[NSMutableArray alloc] initWithCapacity:[tmpViews count]];
-        [subviews addObjectsFromArray:tmpViews];
-        NSResponder *firstResponder = [[myview window] firstResponder];
-        // Implicit assumption that myViewIndex is included in subviews, that's why I'm not checking
-        // myViewIndex.
-        NSUInteger index = 0;
-        NSUInteger myViewIndex = 0;
-        bool foundMyView = false;
-        for (NSView *subview in subviews) {
-            [subview removeFromSuperview];
-            if (subview == myview) {
-                foundMyView = true;
-                myViewIndex = index;
-            }
-            ++index;
-        }
-        [parentView addSubview:myview];
-        if (foundMyView)
-            [subviews removeObjectAtIndex:myViewIndex];
-        for (NSView *subview in subviews)
-            [parentView addSubview:subview];
-        [subviews release];
-        [[myview window] makeFirstResponder:firstResponder];
+        NSView *view = qt_mac_nativeview_for(q);
+        NSView *parentView = [view superview];
+        [parentView sortSubviewsUsingFunction:compareViews2Lower context:reinterpret_cast<void *>(view)];
     }
 #else
     if(q->isWindow()) {
@@ -3728,6 +3737,16 @@ void QWidgetPrivate::lower_sys()
 #endif
 }
 
+NSComparisonResult compareViews2StackUnder(id view1, id view2, void *context)
+{
+    const QHash<NSView *, int> &viewOrder = *reinterpret_cast<QHash<NSView *, int> *>(context);
+    if (viewOrder[view1] < viewOrder[view2])
+        return NSOrderedAscending;
+    if (viewOrder[view1] > viewOrder[view2])
+        return NSOrderedDescending;
+    return NSOrderedSame;
+}
+
 void QWidgetPrivate::stackUnder_sys(QWidget *w)
 {
     // stackUnder
@@ -3736,37 +3755,23 @@ void QWidgetPrivate::stackUnder_sys(QWidget *w)
         return;
 #ifdef QT_MAC_USE_COCOA
     // Do the same trick as lower_sys() and put this widget before the widget passed in.
-    QMacCocoaAutoReleasePool pool;
-    NSView *myview = qt_mac_nativeview_for(q);
+    NSView *myView = qt_mac_nativeview_for(q);
     NSView *wView = qt_mac_nativeview_for(w);
-    NSView *parentView = [myview superview];
-    NSArray *tmpViews = [parentView subviews];
-    NSMutableArray *subviews = [[NSMutableArray alloc] initWithCapacity:[tmpViews count]];
-    [subviews addObjectsFromArray:tmpViews];
-    // Implicit assumption that myViewIndex and wViewIndex is included in subviews,
-    // that's why I'm not checking myViewIndex.
-    NSUInteger index = 0;
-    NSUInteger myViewIndex = 0;
-    NSUInteger wViewIndex = 0;
-    for (NSView *subview in subviews) {
-        [subview removeFromSuperview];
-        if (subview == myview)
-            myViewIndex = index;
-        else if (subview == wView)
-            wViewIndex = index;
-        ++index;
-    }
 
-    index = 0;
+    QHash<NSView *, int> viewOrder;
+    NSView *parentView = [myView superview];
+    NSArray *subviews = [parentView subviews];
+    NSUInteger index = 1;
+    // make a hash of view->zorderindex and make sure z-value is always odd,
+    // so that when we modify the order we create a new (even) z-value which
+    // will not interfere with others.
     for (NSView *subview in subviews) {
-        if (index == myViewIndex)
-            continue;
-        if (index == wViewIndex)
-            [parentView addSubview:myview];
-        [parentView addSubview:subview];
+        viewOrder.insert(subview, index * 2);
         ++index;
     }
-    [subviews release];
+    viewOrder[myView] = viewOrder[wView] - 1;
+
+    [parentView sortSubviewsUsingFunction:compareViews2StackUnder context:reinterpret_cast<void *>(&viewOrder)];
 #else
     QWidget *p = q->parentWidget();
     if(!p || p != w->parentWidget())
@@ -3780,7 +3785,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget *w)
 /*
     Modifies the bounds for a widgets backing HIView during moves and resizes. Also updates the
     widget, either by scrolling its contents or repainting, depending on the WA_StaticContents
-    and QWidgetPrivate::isOpaque flags.
+    flag
 */
 static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newRect)
 {
@@ -3797,8 +3802,8 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
 
     // Perform a normal (complete repaint) update in some cases:
     if (
-        // move-by-scroll requires QWidgetPrivate::isOpaque set
-        (isMove && q->testAttribute(Qt::WA_OpaquePaintEvent) == false) ||
+        // always repaint on move.
+        (isMove) ||
 
         // limited update on resize requires WA_StaticContents.
         (isResize && q->testAttribute(Qt::WA_StaticContents) == false) ||
@@ -4488,9 +4493,13 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
 #ifndef QT_MAC_USE_COCOA
-    if(extra->topextra->group) {
+    if (extra->topextra->group) {
         qt_mac_release_window_group(extra->topextra->group);
         extra->topextra->group = 0;
+    }
+    if (extra->topextra->windowIcon) {
+        ReleaseIconRef(extra->topextra->windowIcon);
+        extra->topextra->windowIcon = 0;
     }
 #endif
 }
@@ -4529,9 +4538,12 @@ void QWidgetPrivate::registerDropSite(bool on)
 #ifndef QT_MAC_USE_COCOA
     SetControlDragTrackingEnabled(qt_mac_nativeview_for(q), on);
 #else
-    NSView *view = qt_mac_nativeview_for(q);
-    if (on && [view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
-        [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes];
+    NSWindow *win = qt_mac_window_for(q);
+    if (on) {
+        if ([win isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaWindow) class]])
+            [static_cast<QT_MANGLE_NAMESPACE(QCocoaWindow) *>(win) registerDragTypes];
+        else if ([win isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaPanel) class]])
+            [static_cast<QT_MANGLE_NAMESPACE(QCocoaPanel) *>(win) registerDragTypes];
     }
 #endif
 }

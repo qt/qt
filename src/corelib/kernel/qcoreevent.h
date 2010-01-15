@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -266,7 +266,6 @@ public:
         UngrabMouse = 187,
         GrabKeyboard = 188,
         UngrabKeyboard = 189,
-        CocoaRequestModal = 190,                // Internal for requesting an application modal Cocoa Window
         MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
         StateMachineSignal = 192,

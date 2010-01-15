@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,6 +82,7 @@ QTraceWindowSurface::~QTraceWindowSurface()
         QFile outputFile(QString(QLatin1String("qtgraphics-%0.trace")).arg(winId));
         if (outputFile.open(QIODevice::WriteOnly)) {
             QDataStream out(&outputFile);
+            out.writeBytes("qttrace", 7);
             out << *buffer << updates;
         }
         delete buffer;

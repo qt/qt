@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,7 +73,7 @@ private slots:
 
 void tst_qdiriterator::data()
 {
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QByteArray qtdir = qPrintable(QCoreApplication::applicationDirPath());
     qtdir += "/depot";
 #else
@@ -148,9 +148,9 @@ static int posix_helper(const char *dirpath)
 
     int count = 0;
     while ((entry = ::readdir(dir))) {
-        if (qstrcmp(entry->d_name, ".") == 0)  
+        if (qstrcmp(entry->d_name, ".") == 0)
             continue;
-        if (qstrcmp(entry->d_name, "..") == 0)  
+        if (qstrcmp(entry->d_name, "..") == 0)
             continue;
         ++count;
         QByteArray ba = dirpath;
@@ -198,7 +198,7 @@ void tst_qdiriterator::diriterator()
             //QDir::AllEntries | QDir::Hidden,
             QDir::Files,
             QDirIterator::Subdirectories);
-        
+
         while (dir.hasNext()) {
             dir.next();
             //printf("%s\n", qPrintable(dir.fileName()));
@@ -231,7 +231,7 @@ void tst_qdiriterator::fsiterator()
             //QDir::Files | QDir::NoDotAndDotDot,
             QDir::Files,
             QFileSystemIterator::Subdirectories);
-        
+
         for (; !dir.atEnd(); dir.next()) {
             dump && printf("%d %s\n",
                 dir.fileInfo().isDir(),

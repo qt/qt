@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,8 +40,6 @@
 ****************************************************************************/
 
 #include "qhelpsearchquerywidget.h"
-
-#include <QtCore/QDebug>
 
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QObject>
@@ -101,8 +99,9 @@ private:
     };
 
     QHelpSearchQueryWidgetPrivate()
-        : QObject(), simpleSearch(true),
-          searchCompleter(new CompleterModel(this), this)
+        : QObject()
+        , simpleSearch(true)
+        , searchCompleter(new CompleterModel(this), this)
     {
         searchButton = 0;
         advancedSearchWidget = 0;
@@ -118,33 +117,6 @@ private:
     ~QHelpSearchQueryWidgetPrivate()
     {
         // nothing todo
-    }
-
-    QString escapeString(const QString &text)
-    {
-        QString retValue = text;
-        const QString escape(QLatin1String("\\"));
-        QStringList escapableCharsList;
-        escapableCharsList << QLatin1String("\\") << QLatin1String("+")
-            << QLatin1String("-") << QLatin1String("!") << QLatin1String("(")
-            << QLatin1String(")") << QLatin1String(":") << QLatin1String("^")
-            << QLatin1String("[") << QLatin1String("]") << QLatin1String("{")
-            << QLatin1String("}") << QLatin1String("~");
-
-        // make sure we won't end up with an empty string
-        foreach (const QString escapeChar, escapableCharsList) {
-            if (retValue.contains(escapeChar))
-                retValue.replace(escapeChar, QLatin1String(""));
-        }
-        if (retValue.trimmed().isEmpty())
-            return retValue;
-
-        retValue = text; // now realy escape the string...
-        foreach (const QString escapeChar, escapableCharsList) {
-            if (retValue.contains(escapeChar))
-                retValue.replace(escapeChar, escape + escapeChar);
-        }
-        return retValue;
     }
 
     QStringList buildTermList(const QString query)
@@ -206,8 +178,8 @@ private:
         }
     }
 
-    void nextOrPrevQuery(int maxOrMinIndex, int addend,
-                         QToolButton *thisButton, QToolButton *otherButton)
+    void nextOrPrevQuery(int maxOrMinIndex, int addend, QToolButton *thisButton,
+        QToolButton *otherButton)
     {
         QueryHistory *queryHist;
         QList<QLineEdit *> lineEdits;
@@ -217,7 +189,7 @@ private:
         } else {
             queryHist = &complexQueries;
             lineEdits << allQuery << atLeastQuery << similarQuery
-                    << withoutQuery << exactQuery;
+                << withoutQuery << exactQuery;
         }
         foreach (QLineEdit *lineEdit, lineEdits)
             lineEdit->clear();
@@ -262,11 +234,11 @@ private:
 
     void enableOrDisableToolButtons()
     {
-        const QueryHistory &queryHist =
-                simpleSearch ? simpleQueries : complexQueries;
+        const QueryHistory &queryHist = simpleSearch ? simpleQueries
+            : complexQueries;
         prevQueryButton->setEnabled(queryHist.curQuery > 0);
-        nextQueryButton->setEnabled(queryHist.curQuery <
-                                    queryHist.queries.size() - 1);
+        nextQueryButton->setEnabled(queryHist.curQuery
+            < queryHist.queries.size() - 1);
     }
 
 private slots:
@@ -290,41 +262,45 @@ private slots:
         QList<QHelpSearchQuery> queryList;
 #if !defined(QT_CLUCENE_SUPPORT)
         queryList.append(QHelpSearchQuery(QHelpSearchQuery::DEFAULT,
-                                          QStringList(defaultQuery->text())));
+            QStringList(defaultQuery->text())));
 
 #else
         if (defaultQuery->isEnabled()) {
             queryList.append(QHelpSearchQuery(QHelpSearchQuery::DEFAULT,
-                                              buildTermList(escapeString(defaultQuery->text()))));
+                buildTermList(defaultQuery->text())));
         } else {
             const QRegExp exp(QLatin1String("\\s+"));
-            QStringList lst = similarQuery->text().split(exp, QString::SkipEmptyParts);
+            QStringList lst = similarQuery->text().split(exp,
+                QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList fuzzy;
                 foreach (const QString term, lst)
-                    fuzzy += buildTermList(escapeString(term));
-                queryList.append(QHelpSearchQuery(QHelpSearchQuery::FUZZY, fuzzy));
+                    fuzzy += buildTermList(term);
+                queryList.append(QHelpSearchQuery(QHelpSearchQuery::FUZZY,
+                    fuzzy));
             }
 
             lst = withoutQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList without;
                 foreach (const QString term, lst)
-                    without.append(escapeString(term));
-                queryList.append(QHelpSearchQuery(QHelpSearchQuery::WITHOUT, without));
+                    without.append(term);
+                queryList.append(QHelpSearchQuery(QHelpSearchQuery::WITHOUT,
+                    without));
             }
 
             if (!exactQuery->text().isEmpty()) {
                 QString phrase = exactQuery->text().remove(QLatin1Char('\"'));
-                phrase = escapeString(phrase.simplified());
-                queryList.append(QHelpSearchQuery(QHelpSearchQuery::PHRASE, QStringList(phrase)));
+                phrase = phrase.simplified();
+                queryList.append(QHelpSearchQuery(QHelpSearchQuery::PHRASE,
+                    QStringList(phrase)));
             }
 
             lst = allQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList all;
                 foreach (const QString term, lst)
-                    all.append(escapeString(term));
+                    all.append(term);
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::ALL, all));
             }
 
@@ -332,8 +308,9 @@ private slots:
             if (!lst.isEmpty()) {
                 QStringList atLeast;
                 foreach (const QString term, lst)
-                    atLeast += buildTermList(escapeString(term));
-                queryList.append(QHelpSearchQuery(QHelpSearchQuery::ATLEAST, atLeast));
+                    atLeast += buildTermList(term);
+                queryList.append(QHelpSearchQuery(QHelpSearchQuery::ATLEAST,
+                    atLeast));
             }
         }
 #endif
@@ -347,8 +324,9 @@ private slots:
 
     void nextQuery()
     {
-        nextOrPrevQuery((simpleSearch ? simpleQueries : complexQueries).queries.size() - 1,
-                        1, nextQueryButton, prevQueryButton);
+        nextOrPrevQuery((simpleSearch ? simpleQueries
+            : complexQueries).queries.size() - 1, 1, nextQueryButton,
+                prevQueryButton);
     }
 
     void prevQuery()
@@ -392,8 +370,9 @@ private:
     \fn void QHelpSearchQueryWidget::search()
 
     This signal is emitted when a the user has the search button invoked.
-    After reciving the signal you can ask the QHelpSearchQueryWidget for the build list
-    of QHelpSearchQuery's that you may pass to the QHelpSearchEngine's search() function.
+    After reciving the signal you can ask the QHelpSearchQueryWidget for the
+    build list of QHelpSearchQuery's that you may pass to the QHelpSearchEngine's
+    search() function.
 */
 
 /*!
@@ -521,7 +500,8 @@ QList<QHelpSearchQuery> QHelpSearchQueryWidget::query() const
         QList<QHelpSearchQuery>() : queryHist.queries.last();
 }
 
-/*! \reimp
+/*!
+    \reimp
 */
 void QHelpSearchQueryWidget::focusInEvent(QFocusEvent *focusEvent)
 {

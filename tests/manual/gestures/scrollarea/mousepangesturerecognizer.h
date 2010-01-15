@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,8 +49,8 @@ class MousePanGestureRecognizer : public QGestureRecognizer
 public:
     MousePanGestureRecognizer();
 
-    QGesture* createGesture(QObject *target) const;
-    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+    QGesture* create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
     void reset(QGesture *state);
 };
 

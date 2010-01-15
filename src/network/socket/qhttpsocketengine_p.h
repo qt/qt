@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -110,6 +110,8 @@ public:
     qint64 pendingDatagramSize() const;
 #endif // QT_NO_UDPSOCKET
 
+    qint64 bytesToWrite() const;
+
     int option(SocketOption option) const;
     bool setOption(SocketOption option, int value);
 
@@ -160,7 +162,7 @@ public:
     QNetworkProxy proxy;
     QString peerName;
     QTcpSocket *socket;
-    QByteArray readBuffer;
+    QByteArray readBuffer; // only used for parsing the proxy response
     QHttpSocketEngine::HttpState state;
     QAuthenticator authenticator;
     bool readNotificationEnabled;

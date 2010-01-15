@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,6 +62,7 @@
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
 #endif
+#include "private/qscopedpointer_p.h"
 
 #ifdef Q_OS_WIN
 #include "QtCore/qt_windows.h"

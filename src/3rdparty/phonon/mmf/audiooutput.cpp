@@ -24,7 +24,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "defs.h"
 #include "mediaobject.h"
 #include "utils.h"
-#include "volumeobserver.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -41,7 +40,6 @@ using namespace Phonon::MMF;
 
 MMF::AudioOutput::AudioOutput(Backend *, QObject *parent) : MediaNode(parent)
         , m_volume(InitialVolume)
-        , m_observer(0)
 {
 
 }
@@ -59,12 +57,9 @@ qreal MMF::AudioOutput::volume() const
 void MMF::AudioOutput::setVolume(qreal volume)
 {
     TRACE_CONTEXT(AudioOutput::setVolume, EAudioApi);
-    TRACE_ENTRY("observer 0x%08x volume %f", m_observer, volume);
+    TRACE_ENTRY("volume %f", volume);
 
     if (volume != m_volume) {
-        if (m_observer) {
-            m_observer->volumeChanged(volume);
-        }
 
         m_volume = volume;
         TRACE("emit volumeChanged(%f)", volume)
@@ -86,18 +81,18 @@ bool MMF::AudioOutput::setOutputDevice(int index)
     return true;
 }
 
-void MMF::AudioOutput::setVolumeObserver(VolumeObserver* observer)
+void MMF::AudioOutput::connectMediaObject(MediaObject *mediaObject)
 {
-    m_observer = observer;
-    if (m_observer) {
-        m_observer->volumeChanged(m_volume);
-    }
+    // Ensure that the MediaObject has the correct initial volume
+    mediaObject->volumeChanged(m_volume);
+    // Connect MediaObject to receive future volume changes
+    connect(this, SIGNAL(volumeChanged(qreal)), mediaObject, SLOT(volumeChanged(qreal)));
 }
 
-bool MMF::AudioOutput::activateOnMediaObject(MediaObject *mo)
+void MMF::AudioOutput::disconnectMediaObject(MediaObject *mediaObject)
 {
-    setVolumeObserver(mo);
-    return true;
+    // Disconnect all signal-slot connections
+    disconnect(this, 0, mediaObject, 0);
 }
 
 QHash<QByteArray, QVariant> MMF::AudioOutput::audioOutputDescription(int index)

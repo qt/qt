@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -269,8 +269,11 @@ QStringList QDnotifyFileSystemWatcherEngine::addPaths(const QStringList &paths, 
                 }
             }
 
-            fd = ::dirfd(d);
-            int parentFd = parent?::dirfd(parent):0;
+            fd = qt_safe_dup(::dirfd(d));
+            int parentFd = parent ? qt_safe_dup(::dirfd(parent)) : 0;
+
+            ::closedir(d);
+            if(parent) ::closedir(parent);
 
             Q_ASSERT(fd);
             if(::fcntl(fd, F_SETSIG, SIGIO) ||
@@ -279,10 +282,6 @@ QStringList QDnotifyFileSystemWatcherEngine::addPaths(const QStringList &paths, 
                (parent && ::fcntl(parentFd, F_SETSIG, SIGIO)) ||
                (parent && ::fcntl(parentFd, F_NOTIFY, DN_DELETE | DN_RENAME |
                                             DN_MULTISHOT))) {
-
-                ::closedir(d);
-                if(parent) ::closedir(parent);
-
                 continue; // Could not set appropriate flags
             }
 

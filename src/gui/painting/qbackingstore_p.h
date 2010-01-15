@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -146,9 +146,11 @@ private:
     {
         if (widget && !widget->d_func()->inDirtyList && !widget->data->in_destructor) {
             QWidgetPrivate *widgetPrivate = widget->d_func();
+#ifndef QT_NO_GRAPHICSEFFECT
             if (widgetPrivate->graphicsEffect)
                 widgetPrivate->dirty = widgetPrivate->effectiveRectFor(rgn.boundingRect());
             else
+#endif //QT_NO_GRAPHICSEFFECT
                 widgetPrivate->dirty = rgn;
             dirtyWidgets.append(widget);
             widgetPrivate->inDirtyList = true;

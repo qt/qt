@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -223,11 +223,24 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
-    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
-    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
 
-    quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
-    quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;
+    quint32 basex;
+    quint32 srcy;
+
+    if (sx < 0) {
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        basex = quint32(srcRect.right() * 65536) + dstx;
+    } else {
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        basex = quint32(srcRect.left() * 65536) + dstx;
+    }
+    if (sy < 0) {
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        srcy = quint32(srcRect.bottom() * 65536) + dsty;
+    } else {
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        srcy = quint32(srcRect.top() * 65536) + dsty;
+    }
 
     quint16 *dst = ((quint16 *) (destPixels + ty1 * dbpl)) + tx1;
 
@@ -592,7 +605,7 @@ static void qt_blend_argb32_on_argb32(uchar *destPixels, int dbpl,
 }
 
 
-static void qt_blend_rgb32_on_rgb32(uchar *destPixels, int dbpl,
+void qt_blend_rgb32_on_rgb32(uchar *destPixels, int dbpl,
                              const uchar *srcPixels, int sbpl,
                              int w, int h,
                              int const_alpha)
@@ -723,11 +736,23 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
-    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
-    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
+    quint32 basex;
+    quint32 srcy;
 
-    quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
-    quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;
+    if (sx < 0) {
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        basex = quint32(srcRect.right() * 65536) + dstx;
+    } else {
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        basex = quint32(srcRect.left() * 65536) + dstx;
+    }
+    if (sy < 0) {
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        srcy = quint32(srcRect.bottom() * 65536) + dsty;
+    } else {
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        srcy = quint32(srcRect.top() * 65536) + dsty;
+    }
 
     quint32 *dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -394,6 +394,13 @@ void tst_QFont::compare()
     QCOMPARE(font < font2,!(font2 < font));
 	font.setOverline(false);
 	QVERIFY( font == font2 );
+    QVERIFY(!(font < font2));
+
+        font.setCapitalization(QFont::SmallCaps);
+        QVERIFY( font != font2 );
+    QCOMPARE(font < font2,!(font2 < font));
+        font.setCapitalization(QFont::MixedCase);
+        QVERIFY( font == font2 );
     QVERIFY(!(font < font2));
     }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,19 +79,19 @@ MainWindow::MainWindow()
 //! [3]
 
 //! [4]
-    connect(fontCombo, SIGNAL(currentFontChanged(const QFont &)),
-            this, SLOT(findStyles(const QFont &)));
-    connect(fontCombo, SIGNAL(currentFontChanged(const QFont &)),
-            this, SLOT(findSizes(const QFont &)));
-    connect(fontCombo, SIGNAL(currentFontChanged(const QFont &)),
-            characterWidget, SLOT(updateFont(const QFont &)));
-    connect(sizeCombo, SIGNAL(currentIndexChanged(const QString &)),
-            characterWidget, SLOT(updateSize(const QString &)));
-    connect(styleCombo, SIGNAL(currentIndexChanged(const QString &)),
-            characterWidget, SLOT(updateStyle(const QString &)));
+    connect(fontCombo, SIGNAL(currentFontChanged(QFont)),
+            this, SLOT(findStyles(QFont)));
+    connect(fontCombo, SIGNAL(currentFontChanged(QFont)),
+            this, SLOT(findSizes(QFont)));
+    connect(fontCombo, SIGNAL(currentFontChanged(QFont)),
+            characterWidget, SLOT(updateFont(QFont)));
+    connect(sizeCombo, SIGNAL(currentIndexChanged(QString)),
+            characterWidget, SLOT(updateSize(QString)));
+    connect(styleCombo, SIGNAL(currentIndexChanged(QString)),
+            characterWidget, SLOT(updateStyle(QString)));
 //! [4] //! [5]
-    connect(characterWidget, SIGNAL(characterSelected(const QString &)),
-            this, SLOT(insertCharacter(const QString &)));
+    connect(characterWidget, SIGNAL(characterSelected(QString)),
+            this, SLOT(insertCharacter(QString)));
     connect(clipboardButton, SIGNAL(clicked()), this, SLOT(updateClipboard()));
 //! [5]
     connect(fontMerging, SIGNAL(toggled(bool)), characterWidget, SLOT(updateFontMerging(bool)));

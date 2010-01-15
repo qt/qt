@@ -12,10 +12,10 @@ symbian: {
     DEPLOYMENT += webkitlibs
 
     TARGET.UID3 = 0x200267C2
+    # RO text (code) section in qtwebkit.dll exceeds allocated space for gcce udeb target.
+    # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
+    MMP_RULES += "LINKEROPTION  armcc --rw-base 0xE00000"
 }
-# RO-section in qtwebkit.dll exceeds allocated space in SBSv2. Move RW-section
-# base address to start from 0x800000 instead of the toolchain default 0x400000.
-symbian-sbsv2: MMP_RULES += "LINKEROPTION  armcc --rw-base 0x800000"
 
 include($$PWD/../WebKit.pri)
 
@@ -136,7 +136,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_SHARED_WORKERS=.): DEFINES += ENABLE_SHARED_WORKERS=1
 !contains(DEFINES, ENABLE_WORKERS=.): DEFINES += ENABLE_WORKERS=1
 !contains(DEFINES, ENABLE_XHTMLMP=.): DEFINES += ENABLE_XHTMLMP=0
-!contains(DEFINES, ENABLE_DATAGRID=.): DEFINES += ENABLE_DATAGRID=1
+!contains(DEFINES, ENABLE_DATAGRID=.): DEFINES += ENABLE_DATAGRID=0
 
 # SVG support
 !contains(DEFINES, ENABLE_SVG=0) {
@@ -178,6 +178,15 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_XSLT=.) {
     contains(QT_CONFIG, xmlpatterns):!lessThan(QT_MINOR_VERSION, 5):DEFINES += ENABLE_XSLT=1
     else:DEFINES += ENABLE_XSLT=0
+}
+
+!CONFIG(QTDIR_build):!contains(DEFINES, ENABLE_QT_BEARER=.) {
+    symbian: {
+        exists($${EPOCROOT}epoc32/release/winscw/udeb/QtBearer.lib)| \
+        exists($${EPOCROOT}epoc32/release/armv5/lib/QtBearer.lib) {
+            DEFINES += ENABLE_QT_BEARER=1
+        }
+    }
 }
 
 DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
@@ -394,6 +403,7 @@ IDL_BINDINGS += \
     html/DataGridColumnList.idl \
     html/File.idl \
     html/FileList.idl \
+    html/HTMLAllCollection.idl \
     html/HTMLAudioElement.idl \
     html/HTMLAnchorElement.idl \
     html/HTMLAppletElement.idl \
@@ -703,10 +713,10 @@ SOURCES += \
     bindings/js/JSEventTarget.cpp \
     bindings/js/JSExceptionBase.cpp \
     bindings/js/JSGeolocationCustom.cpp \
-    bindings/js/JSHTMLAllCollection.cpp \
     bindings/js/JSHistoryCustom.cpp \
     bindings/js/JSHTMLAppletElementCustom.cpp \
     bindings/js/JSHTMLCanvasElementCustom.cpp \
+    bindings/js/JSHTMLAllCollectionCustom.cpp \
     bindings/js/JSHTMLCollectionCustom.cpp \
     bindings/js/JSHTMLDataGridElementCustom.cpp \
     bindings/js/JSHTMLDocumentCustom.cpp \
@@ -990,6 +1000,7 @@ SOURCES += \
     html/File.cpp \
     html/FileList.cpp \
     html/FormDataList.cpp \
+    html/HTMLAllCollection.cpp \
     html/HTMLAnchorElement.cpp \
     html/HTMLAppletElement.cpp \
     html/HTMLAreaElement.cpp \
@@ -1075,7 +1086,6 @@ SOURCES += \
     html/PreloadScanner.cpp \
     html/ValidityState.cpp \
     inspector/ConsoleMessage.cpp \
-    inspector/DOMDispatchTimelineItem.cpp \
     inspector/InspectorBackend.cpp \
     inspector/InspectorController.cpp \
     inspector/InspectorDatabaseResource.cpp \
@@ -1084,7 +1094,7 @@ SOURCES += \
     inspector/InspectorFrontend.cpp \
     inspector/InspectorResource.cpp \
     inspector/InspectorTimelineAgent.cpp \
-    inspector/TimelineItem.cpp \
+    inspector/TimelineRecordFactory.cpp \
     loader/archive/ArchiveFactory.cpp \
     loader/archive/ArchiveResource.cpp \
     loader/archive/ArchiveResourceCollection.cpp \
@@ -1187,6 +1197,7 @@ SOURCES += \
     platform/FileChooser.cpp \
     platform/GeolocationService.cpp \
     platform/image-decoders/qt/RGBA32BufferQt.cpp \
+    platform/graphics/filters/FEGaussianBlur.cpp \
     platform/graphics/FontDescription.cpp \
     platform/graphics/FontFamily.cpp \
     platform/graphics/BitmapImage.cpp \
@@ -1402,7 +1413,6 @@ HEADERS += \
     bindings/js/JSEventSourceConstructor.h \
     bindings/js/JSEventTarget.h \
     bindings/js/JSHistoryCustom.h \
-    bindings/js/JSHTMLAllCollection.h \
     bindings/js/JSHTMLAppletElementCustom.h \
     bindings/js/JSHTMLEmbedElementCustom.h \
     bindings/js/JSHTMLInputElementCustom.h \
@@ -1663,6 +1673,7 @@ HEADERS += \
     html/File.h \
     html/FileList.h \
     html/FormDataList.h \
+    html/HTMLAllCollection.h \
     html/HTMLAnchorElement.h \
     html/HTMLAppletElement.h \
     html/HTMLAreaElement.h \
@@ -1752,7 +1763,6 @@ HEADERS += \
     html/TimeRanges.h \
     html/ValidityState.h \
     inspector/ConsoleMessage.h \
-    inspector/DOMDispatchTimelineItem.h \
     inspector/InspectorBackend.h \
     inspector/InspectorController.h \
     inspector/InspectorDatabaseResource.h \
@@ -1764,7 +1774,7 @@ HEADERS += \
     inspector/JavaScriptDebugServer.h \
     inspector/JavaScriptProfile.h \
     inspector/JavaScriptProfileNode.h \
-    inspector/TimelineItem.h \
+    inspector/TimelineRecordFactory.h \
     loader/appcache/ApplicationCacheGroup.h \
     loader/appcache/ApplicationCacheHost.h \
     loader/appcache/ApplicationCache.h \
@@ -1873,6 +1883,7 @@ HEADERS += \
     platform/graphics/filters/FEColorMatrix.h \
     platform/graphics/filters/FEComponentTransfer.h \
     platform/graphics/filters/FEComposite.h \
+    platform/graphics/filters/FEGaussianBlur.h \
     platform/graphics/filters/FilterEffect.h \
     platform/graphics/filters/SourceAlpha.h \
     platform/graphics/filters/SourceGraphic.h \
@@ -2325,6 +2336,7 @@ HEADERS += \
     xml/XSLTExtensions.h \
     xml/XSLTProcessor.h \
     xml/XSLTUnicodeSort.h \
+    $$PWD/../WebKit/qt/Api/qwebplugindatabase_p.h \
     $$PWD/../WebKit/qt/WebCoreSupport/FrameLoaderClientQt.h \
     $$PWD/platform/network/qt/DnsPrefetchHelper.h
 
@@ -2498,13 +2510,15 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
         }
     
         win32-* {
-            INCLUDEPATH += $$PWD/plugins/win
+            INCLUDEPATH += $$PWD/plugins/win \
+                           $$PWD/platform/win
     
             SOURCES += page/win/PageWin.cpp \
                        plugins/win/PluginDatabaseWin.cpp \
                        plugins/win/PluginPackageWin.cpp \
                        plugins/win/PluginMessageThrottlerWin.cpp \
-                       plugins/win/PluginViewWin.cpp
+                       plugins/win/PluginViewWin.cpp \
+                       platform/win/BitmapInfo.cpp
     
             LIBS += \
                 -ladvapi32 \
@@ -2853,6 +2867,17 @@ contains(DEFINES, ENABLE_WML=1) {
 
 contains(DEFINES, ENABLE_XHTMLMP=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_XHTMLMP=1
+}
+
+contains(DEFINES, ENABLE_QT_BEARER=1) {
+    HEADERS += \
+        platform/network/qt/NetworkStateNotifierPrivate.h
+
+    SOURCES += \
+        platform/network/qt/NetworkStateNotifierQt.cpp
+
+    CONFIG += mobility
+    MOBILITY += bearer
 }
 
 contains(DEFINES, ENABLE_SVG=1) {
@@ -3374,5 +3399,19 @@ CONFIG(QTDIR_build):isEqual(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 4
    if(win32-msvc2005|win32-msvc2008):equals(TEMPLATE_PREFIX, "vc") {
         SOURCES += \
             plugins/win/PaintHooks.asm
+    }
+}
+
+symbian {
+    shared {
+        contains(MMP_RULES, defBlock) {
+            MMP_RULES -= defBlock
+
+            MMP_RULES += "$${LITERAL_HASH}ifdef WINSCW" \
+                    "DEFFILE ../WebKit/qt/symbian/bwins/$${TARGET}.def" \
+                    "$${LITERAL_HASH}elif defined EABI" \
+                    "DEFFILE ../WebKit/qt/symbian/eabi/$${TARGET}.def" \
+                    "$${LITERAL_HASH}endif"
+        }
     }
 }

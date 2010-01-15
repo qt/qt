@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -322,7 +322,6 @@ void tst_QDom::toString_01_data()
 */
 void tst_QDom::toString_01()
 {
-    QFAIL("make test fail instead of timing out, will be fixed later (QT-2357)");
     QFETCH(QString, fileName);
 
     QFile f(fileName);
@@ -477,10 +476,6 @@ void tst_QDom::save()
 
 void tst_QDom::initTestCase()
 {
-#ifdef Q_CC_MINGW
-    QSKIP("Our current test machine, arsia, is too slow for this auto test.", SkipAll);
-#endif
-
     QFile file(SRCDIR "testdata/excludedCodecs.txt");
     QVERIFY(file.open(QIODevice::ReadOnly|QIODevice::Text));
 
@@ -1677,7 +1672,7 @@ void tst_QDom::appendDocumentNode() const
 
     doc.appendChild(elem);
 
-    Q_ASSERT(!xml.isNull());
+    QVERIFY(!xml.isNull());
     const QString expected(QLatin1String("<document>\n<test_elem name=\"value\"/>\n</document>\n"));
 
     elem.appendChild(xml);

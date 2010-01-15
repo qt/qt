@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,7 +41,7 @@
 
 #include "qdbusinterface.h"
 
-#include <qdbus_symbols_p.h>
+#include "qdbus_symbols_p.h"
 #include <QtCore/qpointer.h>
 #include <QtCore/qstringlist.h>
 
@@ -157,7 +157,9 @@ QDBusInterfacePrivate::QDBusInterfacePrivate(const QString &serv, const QString 
 
         if (!metaObject) {
             // creation failed, somehow
-            isValid = false;
+            // most common causes are that the service doesn't exist or doesn't support introspection
+            // those are not fatal errors, so we continue working
+
             if (!lastError.isValid())
                 lastError = QDBusError(QDBusError::InternalError, QLatin1String("Unknown error"));
         }
@@ -232,7 +234,7 @@ QDBusInterface::~QDBusInterface()
 */
 const QMetaObject *QDBusInterface::metaObject() const
 {
-    return d_func()->isValid ? d_func()->metaObject : &QDBusAbstractInterface::staticMetaObject;
+    return d_func()->metaObject ? d_func()->metaObject : &QDBusAbstractInterface::staticMetaObject;
 }
 
 /*!

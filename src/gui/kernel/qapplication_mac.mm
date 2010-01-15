@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,6 +104,7 @@
 #include "qdir.h"
 #include "qdebug.h"
 #include "qtimer.h"
+#include "qurl.h"
 #include "private/qmacinputcontext_p.h"
 #include "private/qpaintengine_mac_p.h"
 #include "private/qcursor_p.h"
@@ -966,7 +967,8 @@ struct QMacAppleEventTypeSpec {
     AEEventID mac_id;
 } app_apple_events[] = {
     { kCoreEventClass, kAEQuitApplication },
-    { kCoreEventClass, kAEOpenDocuments }
+    { kCoreEventClass, kAEOpenDocuments },
+    { kInternetEventClass, kAEGetURL },
 };
 
 #ifndef QT_MAC_USE_COCOA
@@ -1201,7 +1203,7 @@ void qt_init(QApplicationPrivate *priv, int)
             app_proc_ae_handlerUPP = AEEventHandlerUPP(QApplicationPrivate::globalAppleEventProcessor);
             for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i)
                 AEInstallEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
-                        app_proc_ae_handlerUPP, SRefCon(qApp), true);
+                        app_proc_ae_handlerUPP, SRefCon(qApp), false);
         }
 
         if (QApplicationPrivate::app_style) {
@@ -1681,7 +1683,10 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             UInt32 mac_buttons = 0;
             GetEventParameter(event, kEventParamMouseChord, typeUInt32, 0,
                               sizeof(mac_buttons), 0, &mac_buttons);
-            buttons = qt_mac_get_buttons(mac_buttons);
+            if (ekind != kEventMouseWheelMoved)
+                buttons = qt_mac_get_buttons(mac_buttons);
+            else
+                buttons = QApplication::mouseButtons();
         }
 
         int wheel_deltaX = 0;
@@ -2426,6 +2431,23 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
 #endif
 }
 
+#ifdef QT_MAC_USE_COCOA
+void QApplicationPrivate::setupAppleEvents()
+{
+    // This function is called from the event dispatcher when NSApplication has
+    // finished initialization, which appears to be just after [NSApplication run] has
+    // started to execute. By setting up our apple events handlers this late, we override
+    // the ones set up by NSApplication.
+    QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
+    NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
+    [eventManager setEventHandler:newDelegate andSelector:@selector(appleEventQuit:withReplyEvent:)
+     forEventClass:kCoreEventClass andEventID:kAEQuitApplication];
+    [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
+      forEventClass:kInternetEventClass andEventID:kAEGetURL];
+
+}
+#endif
+
 // In Carbon this is your one stop for apple events.
 // In Cocoa, it ISN'T. This is the catch-all Apple Event handler that exists
 // for the time between instantiating the NSApplication, but before the
@@ -2443,7 +2465,7 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
         switch(aeID) {
         case kAEQuitApplication: {
             extern bool qt_mac_quit_menu_item_enabled; // qmenu_mac.cpp
-            if(!QApplicationPrivate::modalState() && qt_mac_quit_menu_item_enabled) {
+            if (qt_mac_quit_menu_item_enabled) {
                 QCloseEvent ev;
                 QApplication::sendSpontaneousEvent(app, &ev);
                 if(ev.isAccepted()) {
@@ -2474,6 +2496,22 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
                     free(str_buffer);
             }
             break; }
+        default:
+            break;
+        }
+    } else if (aeClass == kInternetEventClass) {
+        switch (aeID) {
+        case kAEGetURL: {
+            char urlData[1024];
+            Size actualSize;
+            if (AEGetParamPtr(ae, keyDirectObject, typeChar, 0, urlData,
+                    sizeof(urlData) - 1, &actualSize) == noErr) {
+                urlData[actualSize] = 0;
+                QFileOpenEvent ev(QUrl(QString::fromUtf8(urlData)));
+                QApplication::sendSpontaneousEvent(app, &ev);
+            }
+            break;
+        }
         default:
             break;
         }

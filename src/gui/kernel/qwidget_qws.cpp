@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -280,17 +280,18 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             QApplicationPrivate::leaveModal(this);
         else if ((windowType() == Qt::Popup))
             qApp->d_func()->closePopup(this);
-
+#ifndef QT_NO_IM
         if (d->ic) {
             delete d->ic;
             d->ic =0;
         } else {
             // release previous focus information participating with
             // preedit preservation of qic -- while we still have a winId
-            QInputContext *qic = inputContext();
+            QInputContext *qic = QApplicationPrivate::inputContext;
             if (qic)
                 qic->widgetDestroyed(this);
         }
+#endif //QT_NO_IM
 
         if ((windowType() == Qt::Desktop)) {
         } else {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,29 +65,31 @@ public:
 /*!
     \namespace QAudio
     \brief The QAudio namespace contains enums used by the audio classes.
+    \inmodule QtMultimedia
+    \ingroup multimedia
     \since 4.6
 */
 
 /*!
     \enum QAudio::Error
 
-    \value NoError       No errors have occurred
-    \value OpenError     An error opening the audio device
-    \value IOError       An error occurred during read/write of audio device
-    \value UnderrunError Audio data is not being fed to the audio device at a fast enough rate
-    \value FatalError    A non-recoverable error has occurred, the audio device is not usable at this time.
+    \value NoError         No errors have occurred
+    \value OpenError       An error opening the audio device
+    \value IOError         An error occurred during read/write of audio device
+    \value UnderrunError   Audio data is not being fed to the audio device at a fast enough rate
+    \value FatalError      A non-recoverable error has occurred, the audio device is not usable at this time.
 */
 
 /*!
     \enum QAudio::State
 
-    \value ActiveState   Audio data is being processed, this state is set after start() is called
-                         and while audio data is available to be processed.
-    \value SuspendState  The audio device is in a suspended state, this state will only be entered
-                         after suspend() is called.
-    \value StopState     The audio device is closed, not processing any audio data
-    \value IdleState     The QIODevice passed in has no data and audio system's buffer is empty, this state
-                         is set after start() is called and while no audio data is available to be processed.
+    \value ActiveState     Audio data is being processed, this state is set after start() is called
+                           and while audio data is available to be processed.
+    \value SuspendedState  The audio device is in a suspended state, this state will only be entered
+                           after suspend() is called.
+    \value StoppedState    The audio device is closed, not processing any audio data
+    \value IdleState       The QIODevice passed in has no data and audio system's buffer is empty, this state
+                           is set after start() is called and while no audio data is available to be processed.
 */
 
 /*!

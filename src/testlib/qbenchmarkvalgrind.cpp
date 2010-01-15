@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -114,7 +114,7 @@ qint64 QBenchmarkValgrindUtils::extractResult(const QString &fileName)
     while (!file.atEnd()) {
         const QString line(QLatin1String(file.readLine()));
         if (rxValue.indexIn(line) != -1) {
-            Q_ASSERT(rxValue.numCaptures() == 1);
+            Q_ASSERT(rxValue.captureCount() == 1);
             bool ok;
             val = rxValue.cap(1).toLongLong(&ok);
             Q_ASSERT(ok);
@@ -263,14 +263,9 @@ bool QBenchmarkCallgrindMeasurer::needsWarmupIteration()
     return true;
 }
 
-QString QBenchmarkCallgrindMeasurer::unitText()
+QTest::QBenchmarkMetric QBenchmarkCallgrindMeasurer::metricType()
 {
-    return QLatin1String("instr. loads");
-}
-
-QString QBenchmarkCallgrindMeasurer::metricText()
-{
-    return QLatin1String("callgrind");
+    return QTest::InstructionReads;
 }
 
 QT_END_NAMESPACE

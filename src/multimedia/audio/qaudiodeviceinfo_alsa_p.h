@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -92,7 +92,7 @@ public:
     QList<QAudioFormat::SampleType> sampleTypeList();
     static QByteArray defaultInputDevice();
     static QByteArray defaultOutputDevice();
-    static QList<QByteArray> deviceList(QAudio::Mode);
+    static QList<QByteArray> availableDevices(QAudio::Mode);
 
 private:
     bool open();

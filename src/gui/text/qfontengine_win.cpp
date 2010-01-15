@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -208,7 +208,7 @@ void QFontEngineWin::getCMap()
         unitsPerEm = otm->otmEMSquare;
         x_height = (int)otm->otmsXHeight;
         loadKerningPairs(designToDevice);
-        _faceId.filename = (char *)otm + (int)otm->otmpFullName;
+        _faceId.filename = QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpFullName)).toLatin1();
         lineWidth = otm->otmsUnderscoreSize;
         fsType = otm->otmfsType;
         free(otm);
@@ -485,61 +485,80 @@ glyph_metrics_t QFontEngineWin::boundingBox(const QGlyphLayout &glyphs)
     return glyph_metrics_t(0, -tm.tmAscent, w, tm.tmHeight, w, 0);
 }
 
+#ifndef Q_WS_WINCE
+bool QFontEngineWin::getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph_metrics_t *metrics) const
+{
+    Q_ASSERT(metrics != 0);
+
+    HDC hdc = shared_dc();
+
+    GLYPHMETRICS gm;
+    DWORD res = 0;
+    MAT2 mat;
+    mat.eM11.value = mat.eM22.value = 1;
+    mat.eM11.fract = mat.eM22.fract = 0;
+    mat.eM21.value = mat.eM12.value = 0;
+    mat.eM21.fract = mat.eM12.fract = 0;
+
+    if (t.type() > QTransform::TxTranslate) {
+        // We need to set the transform using the HDC's world
+        // matrix rather than using the MAT2 above, because the
+        // results provided when transforming via MAT2 does not
+        // match the glyphs that are drawn using a WorldTransform
+        XFORM xform;
+        xform.eM11 = t.m11();
+        xform.eM12 = t.m12();
+        xform.eM21 = t.m21();
+        xform.eM22 = t.m22();
+        xform.eDx = 0;
+        xform.eDy = 0;
+        SetGraphicsMode(hdc, GM_ADVANCED);
+        SetWorldTransform(hdc, &xform);
+    }
+
+    uint format = GGO_METRICS;
+    if (ttf)
+        format |= GGO_GLYPH_INDEX;
+    res = GetGlyphOutline(hdc, glyph, format, &gm, 0, 0, &mat);
+
+    if (t.type() > QTransform::TxTranslate) {
+        XFORM xform;
+        xform.eM11 = xform.eM22 = 1;
+        xform.eM12 = xform.eM21 = xform.eDx = xform.eDy = 0;
+        SetWorldTransform(hdc, &xform);
+        SetGraphicsMode(hdc, GM_COMPATIBLE);
+    }
+
+    if (res != GDI_ERROR) {
+        *metrics = glyph_metrics_t(gm.gmptGlyphOrigin.x, -gm.gmptGlyphOrigin.y,
+                                  (int)gm.gmBlackBoxX, (int)gm.gmBlackBoxY, gm.gmCellIncX, gm.gmCellIncY);
+        return true;
+    } else {
+        return false;
+    }
+}
+#endif
 
 glyph_metrics_t QFontEngineWin::boundingBox(glyph_t glyph, const QTransform &t)
 {
 #ifndef Q_WS_WINCE
-    GLYPHMETRICS gm;
-
     HDC hdc = shared_dc();
     SelectObject(hdc, hfont);
-    if (!ttf) {
+
+    glyph_metrics_t glyphMetrics;
+    bool success = getOutlineMetrics(glyph, t, &glyphMetrics);
+
+    if (!ttf && !success) {
+        // Bitmap fonts
         wchar_t ch = glyph;
         ABCFLOAT abc;
         GetCharABCWidthsFloat(hdc, ch, ch, &abc);
         int width = qRound(abc.abcfB);
 
-        return glyph_metrics_t(0, -tm.tmAscent, width, tm.tmHeight, width, 0).transformed(t);
-    } else {
-        DWORD res = 0;
-        MAT2 mat;
-        mat.eM11.value = mat.eM22.value = 1;
-        mat.eM11.fract = mat.eM22.fract = 0;
-        mat.eM21.value = mat.eM12.value = 0;
-        mat.eM21.fract = mat.eM12.fract = 0;
-
-        if (t.type() > QTransform::TxTranslate) {
-            // We need to set the transform using the HDC's world
-            // matrix rather than using the MAT2 above, because the
-            // results provided when transforming via MAT2 does not
-            // match the glyphs that are drawn using a WorldTransform
-            XFORM xform;
-            xform.eM11 = t.m11();
-            xform.eM12 = t.m12();
-            xform.eM21 = t.m21();
-            xform.eM22 = t.m22();
-            xform.eDx = 0;
-            xform.eDy = 0;
-            SetGraphicsMode(hdc, GM_ADVANCED);
-            SetWorldTransform(hdc, &xform);
-        }
-
-        res = GetGlyphOutline(hdc, glyph, GGO_METRICS | GGO_GLYPH_INDEX, &gm, 0, 0, &mat);
-
-        if (t.type() > QTransform::TxTranslate) {
-            XFORM xform;
-            xform.eM11 = xform.eM22 = 1;
-            xform.eM12 = xform.eM21 = xform.eDx = xform.eDy = 0;
-            SetWorldTransform(hdc, &xform);
-            SetGraphicsMode(hdc, GM_COMPATIBLE);
-        }
-
-        if (res != GDI_ERROR) {
-            return glyph_metrics_t(gm.gmptGlyphOrigin.x, -gm.gmptGlyphOrigin.y,
-                                  (int)gm.gmBlackBoxX, (int)gm.gmBlackBoxY, gm.gmCellIncX, gm.gmCellIncY);
-        }
+        return glyph_metrics_t(QFixed::fromReal(abc.abcfA), -tm.tmAscent, width, tm.tmHeight, width, 0).transformed(t);
     }
-    return glyph_metrics_t();
+
+    return glyphMetrics;
 #else
     HDC hdc = shared_dc();
     HGDIOBJ oldFont = SelectObject(hdc, hfont);
@@ -987,8 +1006,8 @@ QFontEngine::Properties QFontEngineWin::properties() const
     Properties p;
     p.emSquare = unitsPerEm;
     p.italicAngle = otm->otmItalicAngle;
-    p.postscriptName = (char *)otm + (int)otm->otmpFamilyName;
-    p.postscriptName += (char *)otm + (int)otm->otmpStyleName;
+    p.postscriptName = QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpFamilyName)).toLatin1();
+    p.postscriptName += QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpStyleName)).toLatin1();
 #ifndef QT_NO_PRINTER
     p.postscriptName = QPdf::stripSpecialCharacters(p.postscriptName);
 #endif
@@ -1110,7 +1129,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
                                         ih + 2 * margin + 4,
                                         QNativeImage::systemFormat(), !qt_cleartype_enabled);
 
-    /*If cleartype is enabled we use the standard system format even on Windows CE 
+    /*If cleartype is enabled we use the standard system format even on Windows CE
       and not the special textbuffer format we have to use if cleartype is disabled*/
 
     ni->image.fill(0xffffffff);
@@ -1135,7 +1154,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
     {
         ExtTextOut(hdc, -gx + margin, -gy + margin, options, 0, (LPCWSTR) &glyph, 1, 0);
     }
-
+    
     SelectObject(hdc, old_font);
     return ni;
 }

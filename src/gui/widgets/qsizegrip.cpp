@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -99,6 +99,7 @@ public:
     int dyMax;
     Qt::Corner m_corner;
     bool gotMousePress;
+    QWidget *tlw;
 #ifdef Q_WS_MAC
     void updateMacSizer(bool hide) const;
 #endif
@@ -113,6 +114,19 @@ public:
         return m_corner == Qt::BottomLeftCorner || m_corner == Qt::TopLeftCorner;
     }
 
+    void updateTopLevelWidget()
+    {
+        Q_Q(QSizeGrip);
+        QWidget *w = qt_sizegrip_topLevelWidget(q);
+        if (tlw == w)
+            return;
+        if (tlw)
+            tlw->removeEventFilter(q);
+        tlw = w;
+        if (tlw)
+            tlw->installEventFilter(q);
+    }
+
     // This slot is invoked by QLayout when the size grip is added to
     // a layout or reparented after the tlw is shown. This re-implementation is basically
     // the same as QWidgetPrivate::_q_showIfNotHidden except that it checks
@@ -121,7 +135,7 @@ public:
     {
         Q_Q(QSizeGrip);
         bool showSizeGrip = !(q->isHidden() && q->testAttribute(Qt::WA_WState_ExplicitShowHide));
-        QWidget *tlw = qt_sizegrip_topLevelWidget(q);
+        updateTopLevelWidget();
         if (tlw && showSizeGrip) {
             Qt::WindowStates sizeGripNotVisibleState = Qt::WindowFullScreen;
 #ifndef Q_WS_MAC
@@ -232,6 +246,7 @@ void QSizeGripPrivate::init()
     Q_Q(QSizeGrip);
     dxMax = 0;
     dyMax = 0;
+    tlw = 0;
     m_corner = q->isLeftToRight() ? Qt::BottomRightCorner : Qt::BottomLeftCorner;
     gotMousePress = false;
 
@@ -240,8 +255,7 @@ void QSizeGripPrivate::init()
                  ? Qt::SizeFDiagCursor : Qt::SizeBDiagCursor);
 #endif
     q->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-    QWidget *tlw = qt_sizegrip_topLevelWidget(q);
-    tlw->installEventFilter(q);
+    updateTopLevelWidget();
 }
 
 
@@ -524,19 +538,18 @@ void QSizeGrip::setVisible(bool visible)
 /*! \reimp */
 bool QSizeGrip::eventFilter(QObject *o, QEvent *e)
 {
+    Q_D(QSizeGrip);
     if ((isHidden() && testAttribute(Qt::WA_WState_ExplicitShowHide))
-        || e->type() != QEvent::WindowStateChange) {
+        || e->type() != QEvent::WindowStateChange
+		|| o != d->tlw) {
         return QWidget::eventFilter(o, e);
     }
-    QWidget *tlw = qt_sizegrip_topLevelWidget(this);
-    if (o != tlw)
-        return QWidget::eventFilter(o, e);
     Qt::WindowStates sizeGripNotVisibleState = Qt::WindowFullScreen;
 #ifndef Q_WS_MAC
     sizeGripNotVisibleState |= Qt::WindowMaximized;
 #endif
     // Don't show the size grip if the tlw is maximized or in full screen mode.
-    setVisible(!(tlw->windowState() & sizeGripNotVisibleState));
+    setVisible(!(d->tlw->windowState() & sizeGripNotVisibleState));
     setAttribute(Qt::WA_WState_ExplicitShowHide, false);
     return QWidget::eventFilter(o, e);
 }

@@ -99,7 +99,7 @@ bool JSInspectorBackendConstructor::getOwnPropertyDescriptor(ExecState* exec, co
 
 /* Hash table for prototype */
 
-static const HashTableValue JSInspectorBackendPrototypeTableValues[77] =
+static const HashTableValue JSInspectorBackendPrototypeTableValues[78] =
 {
     { "hideDOMNodeHighlight", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHideDOMNodeHighlight, (intptr_t)0 },
     { "highlightDOMNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHighlightDOMNode, (intptr_t)1 },
@@ -122,6 +122,7 @@ static const HashTableValue JSInspectorBackendPrototypeTableValues[77] =
     { "localizedStringsURL", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionLocalizedStringsURL, (intptr_t)0 },
     { "hiddenPanels", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHiddenPanels, (intptr_t)0 },
     { "platform", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionPlatform, (intptr_t)0 },
+    { "port", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionPort, (intptr_t)0 },
     { "startTimelineProfiler", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionStartTimelineProfiler, (intptr_t)0 },
     { "stopTimelineProfiler", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionStopTimelineProfiler, (intptr_t)0 },
     { "timelineProfilerEnabled", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionTimelineProfilerEnabled, (intptr_t)0 },
@@ -214,7 +215,7 @@ JSInspectorBackend::JSInspectorBackend(NonNullPassRefPtr<Structure> structure, J
 
 JSInspectorBackend::~JSInspectorBackend()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSInspectorBackend::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -490,6 +491,19 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPlatform(ExecState* exe
 
 
     JSC::JSValue result = jsString(exec, imp->platform());
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPort(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = jsString(exec, imp->port());
     return result;
 }
 

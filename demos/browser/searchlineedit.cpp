@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -169,8 +169,8 @@ void SearchButton::paintEvent(QPaintEvent *event)
 SearchLineEdit::SearchLineEdit(QWidget *parent) : ExLineEdit(parent),
     m_searchButton(new SearchButton(this))
 {
-    connect(lineEdit(), SIGNAL(textChanged(const QString &)),
-            this, SIGNAL(textChanged(const QString &)));
+    connect(lineEdit(), SIGNAL(textChanged(QString)),
+            this, SIGNAL(textChanged(QString)));
     setLeftWidget(m_searchButton);
     m_inactiveText = tr("Search");
 

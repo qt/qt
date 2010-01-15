@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -401,18 +401,18 @@ namespace QPatternist
             {
                 return ValidationError::createError(QtXmlPatterns::tr(
                     "Value %1 of type %2 exceeds maximum (%3).")
-                    .arg(formatData(static_cast<xsInteger>(num)))
+                    .arg(QPatternist::formatData(static_cast<xsInteger>(num)))
                     .arg(formatType(np, itemType()))
-                    .arg(formatData(static_cast<xsInteger>(maxInclusive))));
+                    .arg(QPatternist::formatData(static_cast<xsInteger>(maxInclusive))));
             }
             else if((limitsUsage & LimitDownwards) &&
                     lessThan(num, minimum))
             {
                 return ValidationError::createError(QtXmlPatterns::tr(
                     "Value %1 of type %2 is below minimum (%3).")
-                    .arg(formatData(static_cast<xsInteger>(num)))
+                    .arg(QPatternist::formatData(static_cast<xsInteger>(num)))
                     .arg(formatType(np, itemType()))
-                    .arg(formatData(static_cast<xsInteger>(minInclusive))));
+                    .arg(QPatternist::formatData(static_cast<xsInteger>(minInclusive))));
             }
             else
                 return AtomicValue::Ptr(new DerivedInteger(num));

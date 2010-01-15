@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,8 +93,8 @@
 #include <QDebug>
 #include <QtCore/qmath.h>
 
+#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
-
 void QGraphicsTransformPrivate::setItem(QGraphicsItem *i)
 {
     if (item == i)
@@ -565,3 +565,4 @@ void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
 #include "moc_qgraphicstransform.cpp"
 
 QT_END_NAMESPACE
+#endif //QT_NO_GRAPHICSVIEW

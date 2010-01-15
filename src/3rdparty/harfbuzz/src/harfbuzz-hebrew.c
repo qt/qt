@@ -63,7 +63,6 @@ HB_Bool HB_HebrewShape(HB_ShaperItem *shaper_item)
         if (!HB_ConvertStringToGlyphIndices(shaper_item))
             return FALSE;
 
-
         HB_HeuristicSetGlyphAttributes(shaper_item);
         HB_OpenTypeShape(shaper_item, /*properties*/0);
         return HB_OpenTypePosition(shaper_item, availableGlyphs, /*doLogClusters*/TRUE);

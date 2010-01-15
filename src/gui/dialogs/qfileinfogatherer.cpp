@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,8 +75,8 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
 #endif
 #ifndef QT_NO_FILESYSTEMWATCHER
     watcher = new QFileSystemWatcher(this);
-    connect(watcher, SIGNAL(directoryChanged(const QString &)), this, SLOT(list(const QString &)));
-    connect(watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(updateFile(const QString &)));
+    connect(watcher, SIGNAL(directoryChanged(QString)), this, SLOT(list(QString)));
+    connect(watcher, SIGNAL(fileChanged(QString)), this, SLOT(updateFile(QString)));
 #endif
     start(LowPriority);
 }
@@ -354,6 +354,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     }
     if (!updatedFiles.isEmpty())
         emit updates(path, updatedFiles);
+    emit directoryLoaded(path);
 }
 
 void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QTime &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path) {

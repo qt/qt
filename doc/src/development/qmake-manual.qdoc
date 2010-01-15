@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2252,6 +2252,18 @@ For example:
     If the OpenGL implementation uses EGL (most OpenGL/ES systems),
     then QMAKE_INCDIR_EGL may also need to be set.
 
+    \section1 QMAKE_INCDIR_OPENGL_ES1, QMAKE_INCDIR_OPENGL_ES1CL, QMAKE_INCDIR_OPENGL_ES2
+
+    These variables contain the location of OpenGL headers files to be added
+    to INCLUDEPATH when building an application with OpenGL ES 1, OpenGL ES 1 Common
+    Lite or OpenGL ES 2 support respectively.
+
+    The value of this variable is typically handled by \c qmake or
+    \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    If the OpenGL implementation uses EGL (most OpenGL/ES systems),
+    then QMAKE_INCDIR_EGL may also need to be set.
+
     \target QMAKE_INCDIR_OPENVG
     \section1 QMAKE_INCDIR_OPENVG
 
@@ -2342,6 +2354,8 @@ For example:
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
     \section1 QMAKE_LFLAGS_RPATH
+
+    \e {This is used on Unix platforms only.}
     
     Library paths in this definition are added to the executable at link
     time so that the added paths will be preferentially searched at runtime.
@@ -2495,6 +2509,17 @@ For example:
     This variable contains all OpenGL Qt libraries.The value of this
     variable is typically handled by \c qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \section1 QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL, QMAKE_LIBS_OPENGL_ES2
+
+    These variables contain all the OpenGL libraries for OpenGL ES 1,
+    OpenGL ES 1 Common Lite profile and OpenGL ES 2.
+
+    The value of these variables is typically handled by \c qmake or
+    \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    If the OpenGL implementation uses EGL (most OpenGL/ES systems),
+    then QMAKE_LIBS_EGL may also need to be set.
 
     \section1 QMAKE_LIBS_OPENVG
 
@@ -2673,10 +2698,14 @@ For example:
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 45
 
     \section1 QMAKE_RPATH
+    
+    \e {This is used on Unix platforms only.}
 
     Is equivalent to \l QMAKE_LFLAGS_RPATH.
 
     \section1 QMAKE_RPATHDIR
+
+    \e {This is used on Unix platforms only.}
 
     A list of library directory paths, these paths are added to the
     executable at link time so that the paths will be preferentially

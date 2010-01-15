@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -160,10 +160,10 @@ void BrushManagerProxy::setBrushManager(QtBrushManager *manager)
         return;
 
     if (d_ptr->m_Manager) {
-        disconnect(d_ptr->m_Manager, SIGNAL(brushAdded(const QString &, const QBrush &)),
-                    this, SLOT(brushAdded(const QString &, const QBrush &)));
-        disconnect(d_ptr->m_Manager, SIGNAL(brushRemoved(const QString &)),
-                    this, SLOT(brushRemoved(const QString &)));
+        disconnect(d_ptr->m_Manager, SIGNAL(brushAdded(QString,QBrush)),
+                    this, SLOT(brushAdded(QString,QBrush)));
+        disconnect(d_ptr->m_Manager, SIGNAL(brushRemoved(QString)),
+                    this, SLOT(brushRemoved(QString)));
     }
 
     d_ptr->m_Manager = manager;
@@ -256,7 +256,7 @@ void BrushManagerProxy::setBrushManager(QtBrushManager *manager)
     }
 
     connect(d_ptr->m_Manager, SIGNAL(brushAdded(QString,QBrush)),
-            this, SLOT(brushAdded(QString, QBrush)));
+            this, SLOT(brushAdded(QString,QBrush)));
     connect(d_ptr->m_Manager, SIGNAL(brushRemoved(QString)),
             this, SLOT(brushRemoved(QString)));
 

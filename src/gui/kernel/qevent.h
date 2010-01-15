@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -638,9 +638,11 @@ class Q_GUI_EXPORT QFileOpenEvent : public QEvent
 {
 public:
     QFileOpenEvent(const QString &file);
+    QFileOpenEvent(const QUrl &url);
     ~QFileOpenEvent();
 
     inline QString file() const { return f; }
+    QUrl url() const;
 private:
     QString f;
 };
@@ -785,6 +787,8 @@ public:
 
     private:
         QTouchEventTouchPointPrivate *d;
+        friend class QApplication;
+        friend class QApplicationPrivate;
     };
 
     enum DeviceType {
@@ -816,6 +820,7 @@ protected:
     Qt::TouchPointStates _touchPointStates;
     QList<QTouchEvent::TouchPoint> _touchPoints;
 
+    friend class QApplication;
     friend class QApplicationPrivate;
 };
 
@@ -827,7 +832,7 @@ public:
     QGestureEvent(const QList<QGesture *> &gestures);
     ~QGestureEvent();
 
-    QList<QGesture *> allGestures() const;
+    QList<QGesture *> gestures() const;
     QGesture *gesture(Qt::GestureType type) const;
 
     QList<QGesture *> activeGestures() const;
@@ -851,10 +856,17 @@ public:
     void ignore(QGesture *);
     bool isAccepted(QGesture *) const;
 
+    void setAccepted(Qt::GestureType, bool);
+    void accept(Qt::GestureType);
+    void ignore(Qt::GestureType);
+    bool isAccepted(Qt::GestureType) const;
+
     void setWidget(QWidget *widget);
     QWidget *widget() const;
 
-    QPointF mapToScene(const QPointF &gesturePoint) const;
+#ifndef QT_NO_GRAPHICSVIEW
+    QPointF mapToGraphicsScene(const QPointF &gesturePoint) const;
+#endif
 
 private:
     QGestureEventPrivate *d_func();

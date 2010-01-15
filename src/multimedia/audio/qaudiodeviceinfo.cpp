@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -121,7 +121,7 @@ public:
     classes that communicate with the device--such as
     QAudioInput, and QAudioOutput. The static
     functions defaultInputDevice(), defaultOutputDevice(), and
-    deviceList() let you get a list of all available
+    availableDevices() let you get a list of all available
     devices. Devices are fetch according to the value of mode
     this is specified by the QAudio::Mode enum.
     The QAudioDeviceInfo returned are only valid for the QAudio::Mode.
@@ -129,7 +129,7 @@ public:
     For instance:
 
     \code
-    foreach(const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::deviceList(QAudio::AudioOutput))
+    foreach(const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioOutput))
         qDebug() << "Device name: " << deviceInfo.deviceName();
     \endcode
 
@@ -353,9 +353,9 @@ QAudioDeviceInfo QAudioDeviceInfo::defaultOutputDevice()
     Returns a list of audio devices that support \a mode.
 */
 
-QList<QAudioDeviceInfo> QAudioDeviceInfo::deviceList(QAudio::Mode mode)
+QList<QAudioDeviceInfo> QAudioDeviceInfo::availableDevices(QAudio::Mode mode)
 {
-    return QAudioDeviceFactory::deviceList(mode);
+    return QAudioDeviceFactory::availableDevices(mode);
 }
 
 

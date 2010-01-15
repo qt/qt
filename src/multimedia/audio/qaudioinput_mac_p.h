@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -129,8 +129,8 @@ public:
     void setNotifyInterval(int milliSeconds);
     int notifyInterval() const;
 
-    qint64 totalTime() const;
-    qint64 clock() const;
+    qint64 processedUSecs() const;
+    qint64 elapsedUSecs() const;
 
     QAudio::Error error() const;
     QAudio::State state() const;

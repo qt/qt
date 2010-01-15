@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,11 +79,11 @@ public:
     Qt::MouseButton button() const;
     void setButton(Qt::MouseButton button);
 
-    Qt::KeyboardModifiers modifiersMask() const;
-    void setModifiersMask(Qt::KeyboardModifiers modifiers);
+    Qt::KeyboardModifiers modifierMask() const;
+    void setModifierMask(Qt::KeyboardModifiers modifiers);
 
-    QPainterPath path() const;
-    void setPath(const QPainterPath &path);
+    QPainterPath hitTestPath() const;
+    void setHitTestPath(const QPainterPath &path);
 
 protected:
     bool eventTest(QEvent *event);

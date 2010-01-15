@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -380,6 +380,9 @@ bool QSystemTrayIcon::supportsMessages()
     On Windows, the \a millisecondsTimeoutHint is usually ignored by the system
     when the application has focus.
 
+    On Mac OS X, the Growl notification system must be installed for this function to
+    display messages.
+ 
     \sa show() supportsMessages()
   */
 void QSystemTrayIcon::showMessage(const QString& title, const QString& msg,

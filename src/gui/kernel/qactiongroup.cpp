@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,10 +72,16 @@ void QActionGroupPrivate::_q_actionChanged()
     Q_Q(QActionGroup);
     QAction *action = qobject_cast<QAction*>(q->sender());
     Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionChanged", "internal error");
-    if(exclusive && action->isChecked() && action != current) {
-        if(current)
-            current->setChecked(false);
-        current = action;
+    if(exclusive) {
+        if (action->isChecked()) {
+            if (action != current) {
+                if(current)
+                    current->setChecked(false);
+                current = action;
+            }
+        } else if (action == current) {
+            current = 0;
+        }
     }
 }
 

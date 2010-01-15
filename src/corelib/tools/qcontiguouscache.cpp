@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,6 +55,16 @@ void QContiguousCacheData::dump() const
     qDebug() << "offset:" << offset;
 }
 #endif
+
+QContiguousCacheData *QContiguousCacheData::allocate(int size, int alignment)
+{
+    return static_cast<QContiguousCacheData *>(qMallocAligned(size, alignment));
+}
+
+void QContiguousCacheData::free(QContiguousCacheData *data)
+{
+    qFreeAligned(data);
+}
 
 /*! \class QContiguousCache
     \brief The QContiguousCache class is a template class that provides a contiguous cache.
@@ -140,19 +150,44 @@ MyRecord record(int row) const
 */
 
 /*! \fn void QContiguousCache::detach()
-
     \internal
 */
 
 /*! \fn bool QContiguousCache::isDetached() const
-
     \internal
 */
 
 /*! \fn void QContiguousCache::setSharable(bool sharable)
-
     \internal
 */
+
+/*! \typedef QContiguousCache::value_type
+  \internal
+ */
+
+/*! \typedef QContiguousCache::pointer
+  \internal
+ */
+
+/*! \typedef QContiguousCache::const_pointer
+  \internal
+ */
+
+/*! \typedef QContiguousCache::reference
+  \internal
+ */
+
+/*! \typedef QContiguousCache::const_reference
+  \internal
+ */
+
+/*! \typedef QContiguousCache::difference_type
+  \internal
+ */
+
+/*! \typedef QContiguousCache::size_type
+  \internal
+ */
 
 /*! \fn QContiguousCache<T> &QContiguousCache::operator=(const QContiguousCache<T> &other)
 

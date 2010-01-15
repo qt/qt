@@ -6,7 +6,7 @@
     License as published by the Free Software Foundation; either
     version 2.1 of the License, or (at your option) version 3, or any
     later version accepted by the membership of KDE e.V. (or its
-    successor approved by the membership of KDE e.V.), Trolltech ASA 
+    successor approved by the membership of KDE e.V.), Nokia Corporation 
     (or its successors, if any) and the KDE Free Qt Foundation, which shall
     act as a proxy defined in Section 6 of version 3 of the license.
 
@@ -66,8 +66,6 @@ static const char qt_meta_stringdata_Phonon__ObjectDescriptionModel_Visualizatio
 
 namespace Phonon
 {
-
-#if !defined(Q_CC_MINGW) || __MINGW32_MAJOR_VERSION >= 4
 
 template<> const QMetaObject ObjectDescriptionModel<AudioOutputDeviceType>::staticMetaObject = {
     { &QAbstractListModel::staticMetaObject, qt_meta_stringdata_Phonon__ObjectDescriptionModel_AudioOutputDeviceType,
@@ -139,7 +137,6 @@ int ObjectDescriptionModel<type>::qt_metacall(QMetaObject::Call _c, int _id, voi
     return QAbstractListModel::qt_metacall(_c, _id, _a);
 }
 */
-#endif
 
 int ObjectDescriptionModelData::rowCount(const QModelIndex &parent) const
 {
@@ -365,8 +362,6 @@ QStringList ObjectDescriptionModelData::mimeTypes(ObjectDescriptionType type) co
     return QStringList(QLatin1String("application/x-phonon-objectdescription") + QString::number(static_cast<int>(type)));
 }
 
-#if !defined(Q_CC_MINGW) || __MINGW32_MAJOR_VERSION >= 4
-#if !defined(Q_CC_MSVC) || _MSC_VER > 1300 || defined(Q_CC_INTEL)
 #define INSTANTIATE_META_FUNCTIONS(type) \
 template const QMetaObject *ObjectDescriptionModel<type>::metaObject() const; \
 template void *ObjectDescriptionModel<type>::qt_metacast(const char *)
@@ -376,7 +371,6 @@ INSTANTIATE_META_FUNCTIONS(AudioCaptureDeviceType);
 INSTANTIATE_META_FUNCTIONS(EffectType);
 INSTANTIATE_META_FUNCTIONS(AudioChannelType);
 INSTANTIATE_META_FUNCTIONS(SubtitleType);
-#endif
 /*INSTANTIATE_META_FUNCTIONS(VideoOutputDeviceType);
 INSTANTIATE_META_FUNCTIONS(VideoCaptureDeviceType);
 INSTANTIATE_META_FUNCTIONS(AudioCodecType);
@@ -384,7 +378,6 @@ INSTANTIATE_META_FUNCTIONS(VideoCodecType);
 INSTANTIATE_META_FUNCTIONS(ContainerFormatType);
 INSTANTIATE_META_FUNCTIONS(VisualizationType);
 */
-#endif //Q_CC_MINGW
 } // namespace Phonon
 
 #endif //QT_NO_PHONON_OBJECTDESCRIPTIONMODEL

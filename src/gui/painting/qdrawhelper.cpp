@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,7 @@
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
 #include <private/qdrawhelper_armv6_p.h>
+#include <private/qdrawhelper_neon_p.h>
 #include <private/qmath_p.h>
 #include <qmath.h>
 
@@ -1182,7 +1183,7 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
         rx -= data->gradient.conical.center.x;
         ry -= data->gradient.conical.center.y;
         while (buffer < end) {
-            qreal angle = atan2(ry, rx) + data->gradient.conical.angle;
+            qreal angle = qAtan2(ry, rx) + data->gradient.conical.angle;
 
             *buffer = qt_gradient_pixel(&data->gradient, 1 - angle / (2*Q_PI));
 
@@ -1196,7 +1197,7 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
         if (!rw)
             rw = 1;
         while (buffer < end) {
-            qreal angle = atan2(ry/rw - data->gradient.conical.center.x,
+            qreal angle = qAtan2(ry/rw - data->gradient.conical.center.x,
                                 rx/rw - data->gradient.conical.center.y)
                           + data->gradient.conical.angle;
 
@@ -1363,7 +1364,10 @@ static void QT_FASTCALL comp_func_SourceOver(uint *dest, const uint *src, int le
         for (int i = 0; i < length; ++i) {
             PRELOAD_COND2(dest, src)
             uint s = src[i];
-            dest[i] = s + BYTE_MUL(dest[i], qAlpha(~s));
+            if (s >= 0xff000000)
+                dest[i] = s;
+            else if (s != 0)
+                dest[i] = s + BYTE_MUL(dest[i], qAlpha(~s));
         }
     } else {
         for (int i = 0; i < length; ++i) {
@@ -2386,12 +2390,12 @@ static void QT_FASTCALL comp_func_HardLight(uint *dest, const uint *src, int len
 }
 
 /*
-   if 2.Sca < Sa
-       Dca' = Dca.(Sa - (1 - Dca/Da).(2.Sca - Sa)) + Sca.(1 - Da) + Dca.(1 - Sa)
-   otherwise if 8.Dca <= Da
-       Dca' = Dca.(Sa - (1 - Dca/Da).(2.Sca - Sa).(3 - 8.Dca/Da)) + Sca.(1 - Da) + Dca.(1 - Sa)
-   otherwise
-       Dca' = (Dca.Sa + ((Dca/Da)^(0.5).Da - Dca).(2.Sca - Sa)) + Sca.(1 - Da) + Dca.(1 - Sa)
+    if 2.Sca <= Sa
+        Dca' = Dca.(Sa + (2.Sca - Sa).(1 - Dca/Da)) + Sca.(1 - Da) + Dca.(1 - Sa)
+    otherwise if 2.Sca > Sa and 4.Dca <= Da
+        Dca' = Dca.Sa + Da.(2.Sca - Sa).(4.Dca/Da.(4.Dca/Da + 1).(Dca/Da - 1) + 7.Dca/Da) + Sca.(1 - Da) + Dca.(1 - Sa)
+    otherwise if 2.Sca > Sa and 4.Dca > Da
+        Dca' = Dca.Sa + Da.(2.Sca - Sa).((Dca/Da)^0.5 - Dca/Da) + Sca.(1 - Da) + Dca.(1 - Sa)
 */
 static inline int soft_light_op(int dst, int src, int da, int sa)
 {
@@ -2400,13 +2404,11 @@ static inline int soft_light_op(int dst, int src, int da, int sa)
     const int temp = (src * (255 - da) + dst * (255 - sa)) * 255;
 
     if (src2 < sa)
-        return (dst * ((sa * 255) - (255 - dst_np) * (src2 - sa)) + temp) / 65025;
-    else if (8 * dst <= da)
-        return (dst * ((sa * 255) - ((255 - dst_np) * (src2 - sa) * ((3 * 255) - 8 * dst_np)) / 255) + temp) / 65025;
+        return (dst * (sa * 255 + (src2 - sa) * (255 - dst_np)) + temp) / 65025;
+    else if (4 * dst <= da)
+        return (dst * sa * 255 + da * (src2 - sa) * ((((16 * dst_np - 12 * 255) * dst_np + 3 * 65025) * dst_np) / 65025) + temp) / 65025;
     else {
-        // sqrt is too expensive to do three times per pixel, so skipping it for now
-        // a future possibility is to use a LUT
-        return ((dst * sa * 255) + (int(dst_np) * da - (dst * 255)) * (src2 - sa) + temp) / 65025;
+        return (dst * sa * 255 + da * (src2 - sa) * (int(sqrt(qreal(dst_np * 255))) - dst_np) + temp) / 65025;
     }
 }
 
@@ -7142,17 +7144,17 @@ void qt_build_pow_tables() {
     }
 #else
     for (int i=0; i<256; ++i) {
-        qt_pow_rgb_gamma[i] = uchar(qRound(pow(i / qreal(255.0), smoothing) * 255));
-        qt_pow_rgb_invgamma[i] = uchar(qRound(pow(i / qreal(255.), 1 / smoothing) * 255));
+        qt_pow_rgb_gamma[i] = uchar(qRound(qPow(i / qreal(255.0), smoothing) * 255));
+        qt_pow_rgb_invgamma[i] = uchar(qRound(qPow(i / qreal(255.), 1 / smoothing) * 255));
     }
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     const qreal gray_gamma = 2.31;
     for (int i=0; i<256; ++i)
-        qt_pow_gamma[i] = uint(qRound(pow(i / qreal(255.), gray_gamma) * 2047));
+        qt_pow_gamma[i] = uint(qRound(qPow(i / qreal(255.), gray_gamma) * 2047));
     for (int i=0; i<2048; ++i)
-        qt_pow_invgamma[i] = uchar(qRound(pow(i / 2047.0, 1 / gray_gamma) * 255));
+        qt_pow_invgamma[i] = uchar(qRound(qPow(i / 2047.0, 1 / gray_gamma) * 255));
 #endif
 }
 
@@ -7424,6 +7426,14 @@ QT_RECTFILL(qrgb444)
 QT_RECTFILL(qargb4444)
 #undef QT_RECTFILL
 
+inline static void qt_rectfill_nonpremul_quint32(QRasterBuffer *rasterBuffer,
+                                                 int x, int y, int width, int height,
+                                                 quint32 color)
+{
+    qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
+                         INV_PREMUL(color), x, y, width, height, rasterBuffer->bytesPerLine());
+}
+
 
 // Map table for destination image format. Contains function pointers
 // for blends of various types unto the destination
@@ -7466,7 +7476,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         qt_bitmapblit_quint32,
         qt_alphamapblit_quint32,
         qt_alphargbblit_quint32,
-        qt_rectfill_quint32
+        qt_rectfill_nonpremul_quint32
     },
     // Format_ARGB32_Premultiplied
     {
@@ -7719,7 +7729,8 @@ enum CPUFeatures {
     SSE         = 0x10,
     SSE2        = 0x20,
     CMOV        = 0x40,
-    IWMMXT      = 0x80
+    IWMMXT      = 0x80,
+    NEON        = 0x100
 };
 
 static uint detectCPUFeatures()
@@ -7745,6 +7756,9 @@ static uint detectCPUFeatures()
     // runtime detection only available when running as a previlegied process
     static const bool doIWMMXT = !qgetenv("QT_NO_IWMMXT").toInt();
     return doIWMMXT ? IWMMXT : 0;
+#elif defined(QT_HAVE_NEON)
+    static const bool doNEON = !qgetenv("QT_NO_NEON").toInt();
+    return doNEON ? NEON : 0;
 #else
     uint features = 0;
 #if defined(__x86_64__) || defined(Q_OS_WIN64)
@@ -8116,7 +8130,14 @@ void qInitDrawhelperAsm()
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_armv6;
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
-#endif // Q_CC_RVCT && QT_HAVE_ARMV6
+#elif defined(QT_HAVE_NEON)
+        if (features & NEON) {
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
+        }
+#endif
 
     if (functionForModeSolidAsm) {
         const int destinationMode = QPainter::CompositionMode_Destination;

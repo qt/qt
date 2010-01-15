@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,6 +61,7 @@
 #include <private/qgraphicstransform_p.h>
 
 #include <private/qgraphicseffect_p.h>
+#include <qgraphicseffect.h>
 
 #include <QtCore/qpoint.h>
 
@@ -151,8 +152,6 @@ public:
         dirty(0),
         dirtyChildren(0),
         localCollisionHack(0),
-        dirtyClipPath(1),
-        emptyClipPath(0),
         inSetPosHelper(0),
         needSortChildren(1), // ### can be 0 by default?
         allChildrenDirty(0),
@@ -178,6 +177,7 @@ public:
         holesInSiblingIndex(0),
         sequentialOrdering(1),
         updateDueToGraphicsEffect(0),
+        scenePosDescendants(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -219,10 +219,12 @@ public:
     void appendGraphicsTransform(QGraphicsTransform *t);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
-    bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
+    bool discardUpdateRequest(bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     int depth() const;
+#ifndef QT_NO_GRAPHICSEFFECT
     void invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
     void invalidateDepthRecursively();
     void resolveDepth();
     void addChild(QGraphicsItem *child);
@@ -233,6 +235,8 @@ public:
                          const QRegion &exposedRegion, bool allItems = false) const;
     QRectF effectiveBoundingRect() const;
     QRectF sceneEffectiveBoundingRect() const;
+
+    QRectF effectiveBoundingRect(const QRectF &rect) const;
 
     virtual void resolveFont(uint inheritedMask)
     {
@@ -303,26 +307,6 @@ public:
     QGraphicsItemCache *extraItemCache() const;
     void removeExtraItemCache();
 
-    inline void setCachedClipPath(const QPainterPath &path)
-    {
-        cachedClipPath = path;
-        dirtyClipPath = 0;
-        emptyClipPath = 0;
-    }
-
-    inline void setEmptyCachedClipPath()
-    {
-        emptyClipPath = 1;
-        dirtyClipPath = 0;
-    }
-
-    void setEmptyCachedClipPathRecursively(const QRectF &emptyIfOutsideThisRect = QRectF());
-
-    inline void invalidateCachedClipPath()
-    { /*static int count = 0 ;qWarning("%i", ++count);*/ dirtyClipPath = 1; emptyClipPath = 0; }
-
-    void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
-    void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
     inline void ensureSceneTransform()
     {
@@ -405,17 +389,12 @@ public:
         return true;
     }
 
-    inline bool isClippedAway() const
-    { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
-
     inline bool childrenClippedToShape() const
     { return (flags & QGraphicsItem::ItemClipsChildrenToShape) || children.isEmpty(); }
 
     inline bool isInvisible() const
     {
-        return !visible
-               || (childrenClippedToShape() && isClippedAway())
-               || (childrenCombineOpacity() && isFullyTransparent());
+        return !visible || (childrenCombineOpacity() && isFullyTransparent());
     }
 
     void setFocusHelper(Qt::FocusReason focusReason, bool climb);
@@ -428,8 +407,9 @@ public:
     inline void ensureSortedChildren();
     static inline bool insertionOrder(QGraphicsItem *a, QGraphicsItem *b);
     void ensureSequentialSiblingIndex();
+    inline void sendScenePosChange();
+    virtual void siblingOrderChange();
 
-    QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
     QRectF needsRepaint;
     QMap<QWidget *, QRect> paintedViewBoundingRects;
@@ -452,7 +432,7 @@ public:
     QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
     QGraphicsItem::PanelModality panelModality;
-    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
+    QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
     // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
@@ -474,15 +454,13 @@ public:
     quint32 dirty : 1;
     quint32 dirtyChildren : 1;
     quint32 localCollisionHack : 1;
-    quint32 dirtyClipPath : 1;
-    quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
 
     // Packed 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 16;
+    quint32 flags : 17;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -497,14 +475,15 @@ public:
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
-    quint32 mouseSetsFocus : 1;
 
     // New 32 bits
+    quint32 mouseSetsFocus : 1;
     quint32 explicitActivate : 1;
     quint32 wantsActive : 1;
     quint32 holesInSiblingIndex : 1;
     quint32 sequentialOrdering : 1;
     quint32 updateDueToGraphicsEffect : 1;
+    quint32 scenePosDescendants : 1;
 
     // Optional stacking order
     int globalStackingOrder;
@@ -576,6 +555,7 @@ struct QGraphicsItemPaintInfo
     quint32 drawItem : 1;
 };
 
+#ifndef QT_NO_GRAPHICSEFFECT
 class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
@@ -584,7 +564,10 @@ public:
     {}
 
     inline void detach()
-    { item->setGraphicsEffect(0); }
+    {
+        item->d_ptr->graphicsEffect = 0;
+        item->prepareGeometryChange();
+    }
 
     inline const QGraphicsItem *graphicsItem() const
     { return item; }
@@ -603,8 +586,10 @@ public:
 
     inline bool isPixmap() const
     {
-        return (item->type() == QGraphicsPixmapItem::Type);
-            //|| (item->d_ptr->isObject && qobject_cast<QFxImage *>(q_func()));
+        return item->type() == QGraphicsPixmapItem::Type
+               && !(item->flags() & QGraphicsItem::ItemIsSelectable)
+               && item->d_ptr->children.size() == 0;
+            //|| (item->d_ptr->isObject && qobject_cast<QmlGraphicsImage *>(q_func()));
     }
 
     inline const QStyleOption *styleOption() const
@@ -621,13 +606,15 @@ public:
 
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *);
-    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+    QPixmap pixmap(Qt::CoordinateSystem system,
+                   QPoint *offset,
+                   QGraphicsEffect::PixmapPadMode mode) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;
     QTransform lastEffectTransform;
 };
-
+#endif //QT_NO_GRAPHICSEFFECT
 
 /*!
     Returns true if \a item1 is on top of \a item2.

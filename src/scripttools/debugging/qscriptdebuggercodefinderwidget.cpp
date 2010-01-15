@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -143,7 +143,7 @@ QScriptDebuggerCodeFinderWidget::QScriptDebuggerCodeFinderWidget(QWidget *parent
 
     d->editFind = new QLineEdit(this);
     d->editFind->setMinimumSize(QSize(150, 0));
-    connect(d->editFind, SIGNAL(textChanged(const QString&)),
+    connect(d->editFind, SIGNAL(textChanged(QString)),
             this, SLOT(_q_updateButtons()));
     connect(d->editFind, SIGNAL(returnPressed()),
             this, SLOT(_q_next()));

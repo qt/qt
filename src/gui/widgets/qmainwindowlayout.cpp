@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1641,6 +1641,9 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         savedState.clear();
         currentGapPos.clear();
         pluggingWidget = 0;
+        //applying the state will make sure that the currentGap is updated correctly
+        //and all the geometries (especially the one from the central widget) is correct
+        layoutState.apply(false);
     }
 
     if (!widgetAnimator.animating()) {

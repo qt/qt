@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_SCROLLAREA
 
+class QMargins;
 class QScrollBar;
 class QAbstractScrollAreaPrivate;
 
@@ -95,6 +96,7 @@ protected Q_SLOTS:
 protected:
     QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget *parent = 0);
     void setViewportMargins(int left, int top, int right, int bottom);
+    void setViewportMargins(const QMargins &margins);
 
     bool event(QEvent *);
     virtual bool viewportEvent(QEvent *);

@@ -109,10 +109,10 @@ contains( styles, plastique ) {
 contains( styles, gtk ) {
         HEADERS += styles/qgtkstyle.h
         HEADERS += styles/qgtkpainter_p.h
-        HEADERS += styles/gtksymbols_p.h
+        HEADERS += styles/qgtkstyle_p.h
         SOURCES += styles/qgtkstyle.cpp
         SOURCES += styles/qgtkpainter.cpp
-        SOURCES += styles/gtksymbols.cpp
+        SOURCES += styles/qgtkstyle_p.cpp
 	!contains( styles, cleanlooks ) {
 		styles += cleanlooks
 		DEFINES+= QT_STYLE_CLEANLOOKS
@@ -168,7 +168,7 @@ contains( styles, s60 ):contains(QT_CONFIG, s60) {
 	SOURCES += styles/qs60style.cpp
 	symbian {
 		SOURCES += styles/qs60style_s60.cpp
-		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils
+		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils -legul
 	} else {
 		SOURCES += styles/qs60style_simulated.cpp
 		RESOURCES += styles/qstyle_s60_simulated.qrc

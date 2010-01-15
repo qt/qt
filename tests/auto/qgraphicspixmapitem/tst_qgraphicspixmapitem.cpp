@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -165,7 +165,7 @@ void tst_QGraphicsPixmapItem::boundingRect_data()
     QTest::addColumn<QPixmap>("pixmap");
     QTest::addColumn<QRectF>("boundingRect");
     QTest::newRow("null") << QPixmap() << QRectF();
-    QTest::newRow("10x10") << QPixmap(10, 10) << QRectF(-0.5, -0.5, 11, 11);
+    QTest::newRow("10x10") << QPixmap(10, 10) << QRectF(0, 0, 10, 10);
 }
 
 // public QRectF boundingRect() const

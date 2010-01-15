@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,6 +77,7 @@ private slots:
     void insertPermanentWidget();
     void setSizeGripEnabled();
     void task194017_hiddenWidget();
+    void QTBUG4334_hiddenOnMaximizedWindow();
 
 private:
     QStatusBar *testWidget;
@@ -257,6 +258,24 @@ void tst_QStatusBar::task194017_hiddenWidget()
     QVERIFY(!label->isVisible());
 }
 
+void tst_QStatusBar::QTBUG4334_hiddenOnMaximizedWindow()
+{
+    QMainWindow main;
+    QStatusBar statusbar;
+    statusbar.setSizeGripEnabled(true);
+    main.setStatusBar(&statusbar);
+    main.showMaximized();
+    QTest::qWaitForWindowShown(&main);
+#ifndef Q_WS_MAC
+    QVERIFY(!statusbar.findChild<QSizeGrip*>()->isVisible());
+#endif
+    main.showNormal();
+    QTest::qWaitForWindowShown(&main);
+    QVERIFY(statusbar.findChild<QSizeGrip*>()->isVisible());
+    main.showFullScreen();
+    QTest::qWaitForWindowShown(&main);
+    QVERIFY(!statusbar.findChild<QSizeGrip*>()->isVisible());
+}
 
 QTEST_MAIN(tst_QStatusBar)
 #include "tst_qstatusbar.moc"

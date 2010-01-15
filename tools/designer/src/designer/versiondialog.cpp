@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -173,7 +173,7 @@ VersionDialog::VersionDialog(QWidget *parent)
     version.append(tr("<br/>Qt Designer is a graphical user interface designer for Qt applications.<br/>"));
 
     lbl->setText(tr("%1"
-                    "<br/>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
+                    "<br/>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)."
                     ).arg(version));
 
     lbl->setWordWrap(true);

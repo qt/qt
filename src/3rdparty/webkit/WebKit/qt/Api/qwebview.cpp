@@ -32,11 +32,8 @@
 #include "qprinter.h"
 #include "qdir.h"
 #include "qfile.h"
-#if defined(Q_WS_X11)
-#include <QX11Info>
-#endif
 
-class QWebViewPrivate : public QWebPageClient {
+class QWebViewPrivate {
 public:
     QWebViewPrivate(QWebView *view)
         : view(view)
@@ -46,24 +43,6 @@ public:
         Q_ASSERT(view);
     }
 
-    virtual void scroll(int dx, int dy, const QRect&);
-    virtual void update(const QRect& dirtyRect);
-    virtual void setInputMethodEnabled(bool enable);
-#if QT_VERSION >= 0x040600
-    virtual void setInputMethodHint(Qt::InputMethodHint hint, bool enable);
-#endif
-
-#ifndef QT_NO_CURSOR
-    virtual QCursor cursor() const;
-    virtual void updateCursor(const QCursor& cursor);
-#endif
-
-    virtual QPalette palette() const;
-    virtual int screenNumber() const;
-    virtual QWidget* ownerWidget() const;
-
-    virtual QObject* pluginParent() const;
-
     void _q_pageDestroyed();
 
     QWebView *view;
@@ -71,66 +50,6 @@ public:
 
     QPainter::RenderHints renderHints;
 };
-
-void QWebViewPrivate::scroll(int dx, int dy, const QRect& rectToScroll)
-{
-    view->scroll(qreal(dx), qreal(dy), rectToScroll);
-}
-
-void QWebViewPrivate::update(const QRect & dirtyRect)
-{
-    view->update(dirtyRect);
-}
-
-void QWebViewPrivate::setInputMethodEnabled(bool enable)
-{
-    view->setAttribute(Qt::WA_InputMethodEnabled, enable);
-}
-#if QT_VERSION >= 0x040600
-void QWebViewPrivate::setInputMethodHint(Qt::InputMethodHint hint, bool enable)
-{
-    if (enable)
-        view->setInputMethodHints(view->inputMethodHints() | hint);
-    else
-        view->setInputMethodHints(view->inputMethodHints() & ~hint);
-}
-#endif
-#ifndef QT_NO_CURSOR
-QCursor QWebViewPrivate::cursor() const
-{
-    return view->cursor();
-}
-
-void QWebViewPrivate::updateCursor(const QCursor& cursor)
-{
-    view->setCursor(cursor);
-}
-#endif
-
-QPalette QWebViewPrivate::palette() const
-{
-    return view->palette();
-}
-
-int QWebViewPrivate::screenNumber() const
-{
-#if defined(Q_WS_X11)
-    if (view)
-        return view->x11Info().screen();
-#endif
-
-    return 0;
-}
-
-QWidget* QWebViewPrivate::ownerWidget() const
-{
-    return view;
-}
-
-QObject* QWebViewPrivate::pluginParent() const
-{
-    return view;
-}
 
 void QWebViewPrivate::_q_pageDestroyed()
 {
@@ -246,7 +165,12 @@ QWebView::QWebView(QWidget *parent)
 QWebView::~QWebView()
 {
     if (d->page) {
+#if QT_VERSION >= 0x040600
+        d->page->d->view.clear();
+#else
         d->page->d->view = 0;
+#endif
+        delete d->page->d->client;
         d->page->d->client = 0;
     }
 
@@ -292,16 +216,15 @@ void QWebView::setPage(QWebPage* page)
     d->page = page;
     if (d->page) {
         d->page->setView(this);
-        d->page->d->client = d; // set the page client
         d->page->setPalette(palette());
         // #### connect signals
         QWebFrame *mainFrame = d->page->mainFrame();
-        connect(mainFrame, SIGNAL(titleChanged(const QString&)),
-                this, SIGNAL(titleChanged(const QString&)));
+        connect(mainFrame, SIGNAL(titleChanged(QString)),
+                this, SIGNAL(titleChanged(QString)));
         connect(mainFrame, SIGNAL(iconChanged()),
                 this, SIGNAL(iconChanged()));
-        connect(mainFrame, SIGNAL(urlChanged(const QUrl &)),
-                this, SIGNAL(urlChanged(const QUrl &)));
+        connect(mainFrame, SIGNAL(urlChanged(QUrl)),
+                this, SIGNAL(urlChanged(QUrl)));
 
         connect(d->page, SIGNAL(loadStarted()),
                 this, SIGNAL(loadStarted()));
@@ -309,10 +232,10 @@ void QWebView::setPage(QWebPage* page)
                 this, SIGNAL(loadProgress(int)));
         connect(d->page, SIGNAL(loadFinished(bool)),
                 this, SIGNAL(loadFinished(bool)));
-        connect(d->page, SIGNAL(statusBarMessage(const QString &)),
-                this, SIGNAL(statusBarMessage(const QString &)));
-        connect(d->page, SIGNAL(linkClicked(const QUrl &)),
-                this, SIGNAL(linkClicked(const QUrl &)));
+        connect(d->page, SIGNAL(statusBarMessage(QString)),
+                this, SIGNAL(statusBarMessage(QString)));
+        connect(d->page, SIGNAL(linkClicked(QUrl)),
+                this, SIGNAL(linkClicked(QUrl)));
 
         connect(d->page, SIGNAL(microFocusChanged()),
                 this, SLOT(updateMicroFocus()));
@@ -324,84 +247,11 @@ void QWebView::setPage(QWebPage* page)
 }
 
 /*!
-    Returns a valid URL from a user supplied \a string if one can be deducted.
-    In the case that is not possible, an invalid QUrl() is returned.
-
-    \since 4.6
-
-    Most applications that can browse the web, allow the user to input a URL
-    in the form of a plain string. This string can be manually typed into
-    a location bar, obtained from the clipboard, or passed in via command
-    line arguments.
-
-    When the string is not already a valid URL, a best guess is performed,
-    making various web related assumptions.
-
-    In the case the string corresponds to a valid file path on the system,
-    a file:// URL is constructed, using QUrl::fromLocalFile().
-
-    If that is not the case, an attempt is made to turn the string into a
-    http:// or ftp:// URL. The latter in the case the string starts with
-    'ftp'. The result is then passed through QUrl's tolerant parser, and
-    in the case or success, a valid QUrl is returned, or else a QUrl().
-
-    \section1 Examples:
-
-    \list
-    \o webkit.org becomes http://webkit.org
-    \o ftp.webkit.org becomes ftp://ftp.webkit.org
-    \o localhost becomes http://localhost
-    \o /home/user/test.html becomes file:///home/user/test.html (if exists)
-    \endlist
-
-    \section2 Tips when dealing with URLs and strings:
-
-    \list
-    \o When creating a QString from a QByteArray or a char*, always use
-      QString::fromUtf8().
-    \o Do not use QUrl(string), nor QUrl::toString() anywhere where the URL might
-       be used, such as in the location bar, as those functions loose data.
-       Instead use QUrl::fromEncoded() and QUrl::toEncoded(), respectively.
-    \endlist
- */
-QUrl QWebView::guessUrlFromString(const QString &string)
-{
-    QString trimmedString = string.trimmed();
-
-    // Check the most common case of a valid url with scheme and host first
-    QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    if (url.isValid() && !url.scheme().isEmpty() && !url.host().isEmpty())
-        return url;
-
-    // Absolute files that exists
-    if (QDir::isAbsolutePath(trimmedString) && QFile::exists(trimmedString))
-        return QUrl::fromLocalFile(trimmedString);
-
-    // If the string is missing the scheme or the scheme is not valid prepend a scheme
-    QString scheme = url.scheme();
-    if (scheme.isEmpty() || scheme.contains(QLatin1Char('.')) || scheme == QLatin1String("localhost")) {
-        // Do not do anything for strings such as "foo", only "foo.com"
-        int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
-        if (dotIndex != -1 || trimmedString.startsWith(QLatin1String("localhost"))) {
-            const QString hostscheme = trimmedString.left(dotIndex).toLower();
-            QByteArray scheme = (hostscheme == QLatin1String("ftp")) ? "ftp" : "http";
-            trimmedString = QLatin1String(scheme) + QLatin1String("://") + trimmedString;
-        }
-        url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    }
-
-    if (url.isValid())
-        return url;
-
-    return QUrl();
-}
-
-/*!
     Loads the specified \a url and displays it.
 
     \note The view remains the same until enough data has arrived to display the new \a url.
 
-    \sa setUrl(), url(), urlChanged(), guessUrlFromString()
+    \sa setUrl(), url(), urlChanged(), QUrl::fromUserInput()
 */
 void QWebView::load(const QUrl &url)
 {
@@ -684,24 +534,38 @@ qreal QWebView::textSizeMultiplier() const
     return page()->mainFrame()->textSizeMultiplier();
 }
 
-#if !defined(Q_OS_SYMBIAN)
 /*!
     \property QWebView::renderHints
     \since 4.6
     \brief the default render hints for the view
 
-    These hints are used to initialize QPainter before painting the web page.
+    These hints are used to initialize QPainter before painting the Web page.
 
     QPainter::TextAntialiasing is enabled by default.
 
+    \note This property is not available on Symbian. However, the getter and
+    setter functions can still be used directly.
+
     \sa QPainter::renderHints()
 */
-#endif
+
+/*!
+    \since 4.6
+    Returns the render hints used by the view to render content.
+
+    \sa QPainter::renderHints()
+*/
 QPainter::RenderHints QWebView::renderHints() const
 {
     return d->renderHints;
 }
 
+/*!
+    \since 4.6
+    Sets the render hints used by the view to the specified \a hints.
+
+    \sa QPainter::setRenderHints()
+*/
 void QWebView::setRenderHints(QPainter::RenderHints hints)
 {
     if (hints == d->renderHints)
@@ -711,11 +575,11 @@ void QWebView::setRenderHints(QPainter::RenderHints hints)
 }
 
 /*!
-    If \a enabled is true, the render hint \a hint is enabled; otherwise it
-    is disabled.
-
     \since 4.6
-    \sa renderHints
+    If \a enabled is true, enables the specified render \a hint; otherwise
+    disables it.
+
+    \sa renderHints, QPainter::renderHints()
 */
 void QWebView::setRenderHint(QPainter::RenderHint hint, bool enabled)
 {
@@ -783,7 +647,7 @@ bool QWebView::event(QEvent *e)
             // WebCore.
             // FIXME: Add a QEvent::CursorUnset or similar to Qt.
             if (cursor().shape() == Qt::ArrowCursor)
-                d->resetCursor();
+                d->page->d->client->resetCursor();
 #endif
 #endif
         } else if (e->type() == QEvent::Leave)
@@ -895,8 +759,12 @@ void QWebView::paintEvent(QPaintEvent *ev)
 }
 
 /*!
-    This function is called whenever WebKit wants to create a new window of the given \a type, for example as a result of
-    a JavaScript request to open a document in a new window.
+    This function is called from the createWindow() method of the associated QWebPage,
+    each time the page wants to create a new window of the given \a type. This might
+    be the result, for example, of a JavaScript request to open a document in a new window.
+
+    \note If the createWindow() method of the associated page is reimplemented, this
+    method is not called, unless explicitly done so in the reimplementation.
 
     \sa QWebPage::createWindow()
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -277,6 +277,11 @@ bool QSqlCachedResult::cacheNext()
 {
     if (d->atEnd)
         return false;
+
+    if(isForwardOnly()) {
+        d->cache.clear();
+        d->cache.resize(d->colCount);
+    }
 
     if (!gotoNext(d->cache, d->nextIndex())) {
         d->revertLast();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,7 @@
 #include <qtimer.h>
 #include <QDialog>
 #include <QGridLayout>
+#include <QPainter>
 
 Q_DECLARE_METATYPE(QCommandLinkButton*)
 
@@ -83,7 +84,8 @@ private slots:
     void clicked();
     void toggled();
     void defaultAndAutoDefault();
-	void setAutoRepeat();
+    void setAutoRepeat();
+    void heightForWithWithIcon();
 
 protected slots:
     void resetCounters();
@@ -106,17 +108,17 @@ private:
 void tst_QCommandLinkButton::getSetCheck()
 {
     QCommandLinkButton obj1;
-	
+
 	QString text("mytext");
 	QVERIFY(obj1.description().isEmpty());
 	obj1.setDescription(text);
 	QVERIFY(obj1.description() == text);
-	
+
 	QVERIFY(obj1.text().isEmpty());
 	obj1.setText(text);
 	QVERIFY(obj1.text() == text);
-	
-	
+
+
     QMenu *var1 = new QMenu;
     obj1.setMenu(var1);
     QCOMPARE(var1, obj1.menu());
@@ -393,8 +395,8 @@ void tst_QCommandLinkButton::setAccel()
         QTest::qWait(100);
     }
 
-    QVERIFY(testWidget->isActiveWindow());    
-    
+    QVERIFY(testWidget->isActiveWindow());
+
     QTest::keyClick( testWidget, 'A', Qt::AltModifier );
     QTest::qWait( 500 );
     QVERIFY( click_count == 1 );
@@ -554,6 +556,34 @@ void tst_QCommandLinkButton::defaultAndAutoDefault()
     button1.setParent(0);
     QVERIFY(button1.autoDefault());
     }
+}
+
+void tst_QCommandLinkButton::heightForWithWithIcon()
+{
+    QWidget mainWin;
+
+    QPixmap pixmap(64, 64);
+    {
+        pixmap.fill(Qt::white);
+        QPainter painter(&pixmap);
+        painter.setBrush(Qt::black);
+        painter.drawEllipse(0, 0, 63, 63);
+    }
+
+    QCommandLinkButton *largeIconButton = new QCommandLinkButton(QString("Large Icon"),
+                    QString("Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Mauris nibh lectus, adipiscing eu."),
+                    &mainWin);
+    largeIconButton->setIconSize(QSize(64, 64));
+    largeIconButton->setIcon(pixmap);
+
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->addWidget(largeIconButton);
+    layout->addStretch();
+    mainWin.setLayout(layout);
+    mainWin.showMaximized();
+    QTest::qWaitForWindowShown(&mainWin);
+    QVERIFY(largeIconButton->height() > 68);  //enough room for the icon
+
 }
 
 QTEST_MAIN(tst_QCommandLinkButton)

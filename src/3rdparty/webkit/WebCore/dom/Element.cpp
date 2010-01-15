@@ -516,7 +516,11 @@ void Element::setAttribute(const AtomicString& name, const AtomicString& value, 
         return;
     }
 
+#if COMPILER(RVCT)
+    const AtomicString localName = shouldIgnoreAttributeCase(this) ? name.lower() : name;
+#else
     const AtomicString& localName = shouldIgnoreAttributeCase(this) ? name.lower() : name;
+#endif
 
     // allocate attributemap if necessary
     Attribute* old = attributes(false)->getAttributeItem(localName, false);
@@ -752,7 +756,7 @@ void Element::detach()
 
 bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle)
 {
-    ASSERT(currentStyle = renderStyle());
+    ASSERT(currentStyle == renderStyle());
 
     if (!renderer() || !currentStyle)
         return false;
@@ -1414,7 +1418,7 @@ KURL Element::getURLAttribute(const QualifiedName& name) const
             ASSERT(isURLAttribute(attribute));
     }
 #endif
-    return document()->completeURL(getAttribute(name));
+    return document()->completeURL(deprecatedParseURL(getAttribute(name)));
 }
 
 } // namespace WebCore

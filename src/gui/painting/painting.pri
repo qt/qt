@@ -370,7 +370,6 @@ symbian {
         SOURCES += painting/qwindowsurface_s60.cpp
         armccIfdefBlock = \
         "$${LITERAL_HASH}if defined(ARMV6)" \
-        "MACRO QT_HAVE_ARMV6" \
         "SOURCEPATH 	painting" \
         "SOURCE			qblendfunctions_armv6_rvct.s" \
         "SOURCE			qdrawhelper_armv6_rvct.s" \
@@ -378,6 +377,13 @@ symbian {
 
         MMP_RULES += armccIfdefBlock
         QMAKE_CXXFLAGS.ARMCC *= -O3
+}
+
+neon {
+    DEFINES += QT_HAVE_NEON
+    HEADERS += painting/qdrawhelper_neon_p.h
+    SOURCES += painting/qdrawhelper_neon.cpp
+    QMAKE_CXXFLAGS *= -mfpu=neon
 }
 
 contains(QT_CONFIG, zlib) {

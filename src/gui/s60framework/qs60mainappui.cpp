@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,10 +104,16 @@ void QS60MainAppUi::ConstructL()
     // ENoAppResourceFile and ENonStandardResourceFile makes UI to work without
     // resource files in most SDKs. S60 3rd FP1 public seems to require resource file
     // even these flags are defined
-    BaseConstructL(CAknAppUi::EAknEnableSkin);
+    TInt flags = CAknAppUi::EAknEnableSkin;
+    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)) {
+        flags |= CAknAppUi::ENoScreenFurniture | CAknAppUi::ENonStandardResourceFile;
+    }
+    BaseConstructL(flags);
 
-    CEikButtonGroupContainer* nativeContainer = Cba();
-    nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+    if (!QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)) {
+        CEikButtonGroupContainer* nativeContainer = Cba();
+        nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+    }
 }
 
 /*!
@@ -163,7 +169,7 @@ void QS60MainAppUi::HandleResourceChangeL(TInt type)
 /*!
  * \brief Handles raw window server events.
  *
- * The event type and information is passed in \a event, while the receiving control is passed in
+ * The event type and information is passed in \a wsEvent, while the receiving control is passed in
  * \a destination.
  *
  * If you override this function, you should call the base class implementation if you do not

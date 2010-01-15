@@ -1029,6 +1029,11 @@ NEVER_INLINE void Interpreter::tryCacheGetByID(CallFrame* callFrame, CodeBlock* 
         return;
     }
 
+    if (structure->isDictionary()) {
+        vPC[0] = getOpcode(op_get_by_id_generic);
+        return;
+    }
+
     if (slot.slotBase() == structure->prototypeForLookup(callFrame)) {
         ASSERT(slot.slotBase().isObject());
 
@@ -1038,6 +1043,8 @@ NEVER_INLINE void Interpreter::tryCacheGetByID(CallFrame* callFrame, CodeBlock* 
         // should not be treated as a dictionary.
         if (baseObject->structure()->isDictionary())
             baseObject->setStructure(Structure::fromDictionaryTransition(baseObject->structure()));
+
+        ASSERT(!baseObject->structure()->isUncacheableDictionary());
 
         vPC[0] = getOpcode(op_get_by_id_proto);
         vPC[5] = baseObject->structure();
@@ -2134,6 +2141,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                     int offset = vPC[6].u.operand;
 
                     ASSERT(protoObject->get(callFrame, callFrame->codeBlock()->identifier(vPC[3].u.operand)) == protoObject->getDirectOffset(offset));
+                    ASSERT(baseValue.get(callFrame, callFrame->codeBlock()->identifier(vPC[3].u.operand)) == protoObject->getDirectOffset(offset));
                     callFrame->r(dst) = JSValue(protoObject->getDirectOffset(offset));
 
                     vPC += OPCODE_LENGTH(op_get_by_id_proto);
@@ -2189,6 +2197,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                         int offset = vPC[7].u.operand;
 
                         ASSERT(baseObject->get(callFrame, callFrame->codeBlock()->identifier(vPC[3].u.operand)) == baseObject->getDirectOffset(offset));
+                        ASSERT(baseValue.get(callFrame, callFrame->codeBlock()->identifier(vPC[3].u.operand)) == baseObject->getDirectOffset(offset));
                         callFrame->r(dst) = JSValue(baseObject->getDirectOffset(offset));
 
                         vPC += OPCODE_LENGTH(op_get_by_id_chain);
@@ -2415,6 +2424,33 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         CHECK_FOR_EXCEPTION();
         callFrame->r(dst) = result;
         vPC += OPCODE_LENGTH(op_del_by_id);
+        NEXT_INSTRUCTION();
+    }
+    DEFINE_OPCODE(op_get_by_pname) {
+        int dst = vPC[1].u.operand;
+        int base = vPC[2].u.operand;
+        int property = vPC[3].u.operand;
+        int expected = vPC[4].u.operand;
+        int iter = vPC[5].u.operand;
+        int i = vPC[6].u.operand;
+
+        JSValue baseValue = callFrame->r(base).jsValue();
+        JSPropertyNameIterator* it = callFrame->r(iter).propertyNameIterator();
+        JSValue subscript = callFrame->r(property).jsValue();
+        JSValue expectedSubscript = callFrame->r(expected).jsValue();
+        int index = callFrame->r(i).i() - 1;
+        JSValue result;
+        int offset = 0;
+        if (subscript == expectedSubscript && baseValue.isCell() && (baseValue.asCell()->structure() == it->cachedStructure()) && it->getOffset(index, offset)) {
+            callFrame->r(dst) = asObject(baseValue)->getDirectOffset(offset);
+            vPC += OPCODE_LENGTH(op_get_by_pname);
+            NEXT_INSTRUCTION();
+        }
+        Identifier propertyName(callFrame, subscript.toString(callFrame));
+        result = baseValue.get(callFrame, propertyName);
+        CHECK_FOR_EXCEPTION();
+        callFrame->r(dst) = result;
+        vPC += OPCODE_LENGTH(op_get_by_pname);
         NEXT_INSTRUCTION();
     }
     DEFINE_OPCODE(op_get_by_val) {

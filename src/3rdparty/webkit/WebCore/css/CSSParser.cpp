@@ -873,6 +873,7 @@ bool CSSParser::parseValue(int propId, bool important)
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyBackgroundSize:
+    case CSSPropertyWebkitBackgroundSize:
     case CSSPropertyBackgroundRepeat:
     case CSSPropertyBackgroundRepeatX:
     case CSSPropertyBackgroundRepeatY:
@@ -1726,6 +1727,15 @@ void CSSParser::addFillValue(RefPtr<CSSValue>& lval, PassRefPtr<CSSValue> rval)
         lval = rval;
 }
 
+static bool parseBackgroundClip(CSSParserValue* parserValue, RefPtr<CSSValue>& cssValue)
+{
+    if (parserValue->id == CSSValueBorderBox || parserValue->id == CSSValuePaddingBox || parserValue->id == CSSValueWebkitText) {
+        cssValue = CSSPrimitiveValue::createIdentifier(parserValue->id);
+        return true;
+    }
+    return false;
+}
+
 const int cMaxFillProperties = 9;
 
 bool CSSParser::parseFillShorthand(int propId, const int* properties, int numProperties, bool important)
@@ -1777,6 +1787,7 @@ bool CSSParser::parseFillShorthand(int propId, const int* properties, int numPro
                 RefPtr<CSSValue> val1;
                 RefPtr<CSSValue> val2;
                 int propId1, propId2;
+                CSSParserValue* parserValue = m_valueList->current();
                 if (parseFillProperty(properties[i], propId1, propId2, val1, val2)) {
                     parsedProperty[i] = found = true;
                     addFillValue(values[i], val1.release());
@@ -1786,7 +1797,7 @@ bool CSSParser::parseFillShorthand(int propId, const int* properties, int numPro
                         addFillValue(repeatYValue, val2.release());
                     if (properties[i] == CSSPropertyBackgroundOrigin || properties[i] == CSSPropertyWebkitMaskOrigin) {
                         // Reparse the value as a clip, and see if we succeed.
-                        if (parseFillProperty(CSSPropertyBackgroundClip, propId1, propId2, val1, val2))
+                        if (parseBackgroundClip(parserValue, val1))
                             addFillValue(clipValue, val1.release()); // The property parsed successfully.
                         else
                             addFillValue(clipValue, CSSInitialValue::createImplicit()); // Some value was used for origin that is not supported by clip. Just reset clip instead.
@@ -2319,7 +2330,7 @@ void CSSParser::parseFillRepeat(RefPtr<CSSValue>& value1, RefPtr<CSSValue>& valu
     }
 }
 
-PassRefPtr<CSSValue> CSSParser::parseFillSize(bool& allowComma)
+PassRefPtr<CSSValue> CSSParser::parseFillSize(int propId, bool& allowComma)
 {
     allowComma = true;
     CSSParserValue* value = m_valueList->current();
@@ -2328,7 +2339,7 @@ PassRefPtr<CSSValue> CSSParser::parseFillSize(bool& allowComma)
         return CSSPrimitiveValue::createIdentifier(value->id);
 
     RefPtr<CSSPrimitiveValue> parsedValue1;
-    
+
     if (value->id == CSSValueAuto)
         parsedValue1 = CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_UNKNOWN);
     else {
@@ -2336,8 +2347,9 @@ PassRefPtr<CSSValue> CSSParser::parseFillSize(bool& allowComma)
             return 0;
         parsedValue1 = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitTypes)value->unit);
     }
-    
-    RefPtr<CSSPrimitiveValue> parsedValue2 = parsedValue1;
+
+    CSSPropertyID property = static_cast<CSSPropertyID>(propId);
+    RefPtr<CSSPrimitiveValue> parsedValue2;
     if ((value = m_valueList->next())) {
         if (value->id == CSSValueAuto)
             parsedValue2 = CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_UNKNOWN);
@@ -2349,7 +2361,13 @@ PassRefPtr<CSSValue> CSSParser::parseFillSize(bool& allowComma)
             parsedValue2 = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitTypes)value->unit);
         }
     }
-    
+    if (!parsedValue2) {
+        if (property == CSSPropertyWebkitBackgroundSize || property == CSSPropertyWebkitMaskSize)
+            parsedValue2 = parsedValue1;
+        else
+            parsedValue2 = CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_UNKNOWN);
+    }
+
     return CSSPrimitiveValue::create(Pair::create(parsedValue1.release(), parsedValue2.release()));
 }
 
@@ -2425,10 +2443,8 @@ bool CSSParser::parseFillProperty(int propId, int& propId1, int& propId2,
                     }
                     break;
                 case CSSPropertyBackgroundClip:
-                    if (val->id == CSSValueBorderBox || val->id == CSSValuePaddingBox || val->id == CSSValueWebkitText) {
-                        currValue = CSSPrimitiveValue::createIdentifier(val->id);
+                    if (parseBackgroundClip(val, currValue))
                         m_valueList->next();
-                    }
                     break;
                 case CSSPropertyBackgroundOrigin:
                     if (val->id == CSSValueBorderBox || val->id == CSSValuePaddingBox || val->id == CSSValueContentBox) {
@@ -2470,8 +2486,9 @@ bool CSSParser::parseFillProperty(int propId, int& propId1, int& propId2,
                     // parseFillRepeat advances the m_valueList pointer
                     break;
                 case CSSPropertyBackgroundSize:
+                case CSSPropertyWebkitBackgroundSize:
                 case CSSPropertyWebkitMaskSize: {
-                    currValue = parseFillSize(allowComma);
+                    currValue = parseFillSize(propId, allowComma);
                     if (currValue)
                         m_valueList->next();
                     break;
@@ -3736,7 +3753,11 @@ bool CSSParser::parseShadow(int propId, bool important)
                 // Other operators aren't legal or we aren't done with the current shadow
                 // value.  Treat as invalid.
                 return false;
-            
+#if ENABLE(SVG)
+            // -webkit-shadow does not support multiple values.
+            if (static_cast<CSSPropertyID>(propId) == CSSPropertyWebkitShadow)
+                return false;
+#endif            
             // The value is good.  Commit it.
             context.commitValue();
         } else if (validUnit(val, FLength, true)) {
@@ -5182,11 +5203,6 @@ static int cssPropertyID(const UChar* propertyName, unsigned length)
                 const char* const opacity = "opacity";
                 name = opacity;
                 length = strlen(opacity);
-            } else if (strcmp(buffer, "-webkit-background-size") == 0) {
-                // CSS Backgrounds/Borders.  -webkit-background-size worked in Safari 4 and earlier.
-                const char* const backgroundSize = "background-size";
-                name = backgroundSize;
-                length = strlen(backgroundSize);
             } else if (hasPrefix(buffer + 7, length - 7, "-border-")) {
                 // -webkit-border-*-*-radius worked in Safari 4 and earlier. -webkit-border-radius syntax
                 // differs from border-radius, so it is remains as a distinct property.

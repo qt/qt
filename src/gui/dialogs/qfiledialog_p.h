@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -234,9 +234,9 @@ public:
     QStringList watching;
     QFileSystemModel *model;
 
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
     QFSCompleter *completer;
-#endif //QT_NO_COMPLETER
+#endif //QT_NO_FSCOMPLETER
 
     QFileDialog::FileMode fileMode;
     QFileDialog::AcceptMode acceptMode;

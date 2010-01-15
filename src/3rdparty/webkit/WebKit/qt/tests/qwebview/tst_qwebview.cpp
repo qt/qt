@@ -20,6 +20,7 @@
 */
 
 #include <qtest.h>
+#include "../util.h"
 
 #include <qpainter.h>
 #include <qwebview.h>
@@ -41,12 +42,12 @@ public slots:
 
 private slots:
     void renderHints();
-    void guessUrlFromString_data();
-    void guessUrlFromString();
     void getWebKitVersion();
 
     void reusePage_data();
     void reusePage();
+
+    void crashTests();
 };
 
 // This will be called before the first test function is executed.
@@ -105,68 +106,6 @@ void tst_QWebView::renderHints()
     QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
 }
 
-void tst_QWebView::guessUrlFromString_data()
-{
-    QTest::addColumn<QString>("string");
-    QTest::addColumn<QUrl>("guessUrlFromString");
-
-    // Null
-    QTest::newRow("null") << QString() << QUrl();
-
-    // File
-    QDirIterator it(QDir::homePath());
-    QString fileString;
-    int c = 0;
-    while (it.hasNext()) {
-        it.next();
-        QTest::newRow(QString("file-%1").arg(c++).toLatin1()) << it.filePath() << QUrl::fromLocalFile(it.filePath());
-    }
-
-    // basic latin1
-    QTest::newRow("unicode-0") << QString::fromUtf8("å.com/") << QUrl::fromEncoded(QString::fromUtf8("http://å.com/").toUtf8(), QUrl::TolerantMode);
-    // unicode
-    QTest::newRow("unicode-1") << QString::fromUtf8("λ.com/") << QUrl::fromEncoded(QString::fromUtf8("http://λ.com/").toUtf8(), QUrl::TolerantMode);
-
-    // no scheme
-    QTest::newRow("add scheme-0") << "webkit.org" << QUrl("http://webkit.org");
-    QTest::newRow("add scheme-1") << "www.webkit.org" << QUrl("http://www.webkit.org");
-    QTest::newRow("add scheme-2") << "ftp.webkit.org" << QUrl("ftp://ftp.webkit.org");
-    QTest::newRow("add scheme-3") << "webkit" << QUrl("webkit");
-
-    // QUrl's tolerant parser should already handle this
-    QTest::newRow("not-encoded-0") << "http://webkit.org/test page.html" << QUrl("http://webkit.org/test%20page.html");
-
-    // Make sure the :80, i.e. port doesn't screw anything up
-    QUrl portUrl("http://webkit.org");
-    portUrl.setPort(80);
-    QTest::newRow("port-0") << "webkit.org:80" << portUrl;
-    QTest::newRow("port-1") << "http://webkit.org:80" << portUrl;
-
-    // mailto doesn't have a ://, but is valid
-    QUrl mailto("ben@meyerhome.net");
-    mailto.setScheme("mailto");
-    QTest::newRow("mailto") << "mailto:ben@meyerhome.net" << mailto;
-
-    // misc
-    QTest::newRow("localhost-0") << "localhost" << QUrl("http://localhost");
-    QTest::newRow("localhost-1") << "localhost:80" << QUrl("http://localhost:80");
-    QTest::newRow("spaces-0") << "  http://webkit.org/test page.html " << QUrl("http://webkit.org/test%20page.html");
-
-    // FYI: The scheme in the resulting url user
-    QUrl authUrl("user:pass@domain.com");
-    QTest::newRow("misc-1") << "user:pass@domain.com" << authUrl;
-}
-
-// public static QUrl guessUrlFromString(QString const& string)
-void tst_QWebView::guessUrlFromString()
-{
-    QFETCH(QString, string);
-    QFETCH(QUrl, guessUrlFromString);
-
-    QUrl url = QWebView::guessUrlFromString(string);
-    QCOMPARE(url, guessUrlFromString);
-}
-
 void tst_QWebView::getWebKitVersion()
 {
     QVERIFY(qWebKitVersion().toDouble() > 0);
@@ -211,6 +150,46 @@ void tst_QWebView::reusePage()
 
     QDir::setCurrent(QApplication::applicationDirPath());
 }
+
+// Class used in crashTests
+class WebViewCrashTest : public QObject {
+    Q_OBJECT
+    QWebView* m_view;
+public:
+    bool m_executed;
+
+
+    WebViewCrashTest(QWebView* view)
+      : m_view(view)
+      , m_executed(false)
+    {
+        view->connect(view, SIGNAL(loadProgress(int)), this, SLOT(loading(int)));
+    }
+
+private slots:
+    void loading(int progress)
+    {
+        if (progress >= 20 && progress < 90) {
+            QVERIFY(!m_executed);
+            m_view->stop();
+            m_executed = true;
+        }
+    }
+};
+
+
+// Should not crash.
+void tst_QWebView::crashTests()
+{
+    // Test if loading can be stopped in loadProgress handler without crash.
+    // Test page should have frames.
+    QWebView view;
+    WebViewCrashTest tester(&view);
+    QUrl url("qrc:///data/index.html");
+    view.load(url);
+    QTRY_VERIFY(tester.m_executed); // If fail it means that the test wasn't executed.
+}
+
 
 QTEST_MAIN(tst_QWebView)
 #include "tst_qwebview.moc"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -165,21 +165,32 @@ public:
     QRect rect() const;
 
     int depth() const;
-    int numColors() const;
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED int numColors() const;
+#endif
+    int colorCount() const;
 
     QRgb color(int i) const;
     void setColor(int i, QRgb c);
-    void setNumColors(int);
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED void setNumColors(int);
+#endif
+    void setColorCount(int);
 
     bool allGray() const;
     bool isGrayscale() const;
 
     uchar *bits();
     const uchar *bits() const;
-    int numBytes() const;
+    const uchar *constBits() const;
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED int numBytes() const;
+#endif
+    int byteCount() const;
 
     uchar *scanLine(int);
     const uchar *scanLine(int) const;
+    const uchar *constScanLine(int) const;
     int bytesPerLine() const;
 
     bool valid(int x, int y) const;

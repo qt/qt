@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -96,7 +96,7 @@
         \o \l {Qt for Embedded Linux Pointer Handling}{Pointer Handling}
         \o \l {Qt for Embedded Linux Character Input}{Character Input}
         \o \l {Qt for Embedded Linux Display Management}{Display Management}
-        \o \l {Qt for Embedded Linux and OpenGL}{OpenGL}
+        \o \l {Qt for Embedded Linux Hardware Accelerated Graphics}{Hardware Accelerated Graphics}
         \o \l {Qt for Embedded Linux Fonts}{Fonts}
     \endlist
 

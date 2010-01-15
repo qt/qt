@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -134,20 +134,20 @@ void View::showInformation(ImageItem *image)
 #ifndef Q_OS_SYMBIAN
         window->show();
 #else
-        window->showFullScreen();
+        window->showMaximized();
 #endif
     } else {
         InformationWindow *window;
         window = new InformationWindow(id, officeTable, this);
 
-        connect(window, SIGNAL(imageChanged(int, QString)),
-                this, SLOT(updateImage(int, QString)));
+        connect(window, SIGNAL(imageChanged(int,QString)),
+                this, SLOT(updateImage(int,QString)));
 
 #ifndef Q_OS_SYMBIAN
         window->move(pos() + QPoint(20, 40));
         window->show();
 #else
-        window->showFullScreen();
+        window->showMaximized();
 #endif
         informationWindows.append(window);
     }

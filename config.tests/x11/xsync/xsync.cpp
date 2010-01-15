@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,12 +41,16 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+extern "C" {
 #include <X11/extensions/sync.h>
+}
 
 int main(int, char **)
 {
     XSyncValue value;
     (void*)&XSyncIntToValue;
     (void*)&XSyncCreateCounter;
-    return 0;
+    int a, b;
+    Status ret = XSyncInitialize(NULL, &a, &b);
+    return ret;
 }
