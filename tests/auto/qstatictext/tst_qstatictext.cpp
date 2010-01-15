@@ -67,6 +67,7 @@ private slots:
     void translatedPainter();
     void rotatedPainter();
     void scaledPainter();
+    void projectedPainter();
     void rotatedScaledAndTranslatedPainter();
     void transformationChanged();
 };
@@ -304,6 +305,34 @@ void tst_QStaticText::scaledPainter()
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::projectedPainter()
+{
+    QTransform transform;
+    transform.rotate(90, Qt::XAxis);
+
+    QPixmap imageDrawText(1000, 1000);
+    imageDrawText.fill(Qt::white);
+    {
+        QPainter p(&imageDrawText);
+        p.setTransform(transform);
+
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    }
+
+    QPixmap imageDrawStaticText(1000, 1000);
+    imageDrawStaticText.fill(Qt::white);
+    {
+        QPainter p(&imageDrawStaticText);
+        p.setTransform(transform);
+
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawStaticText(11, 12, text);
+    }
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+
 }
 
 void tst_QStaticText::rotatedScaledAndTranslatedPainter()

@@ -5735,7 +5735,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
 
     // If we don't have an extended paint engine, or if the painter is transformed,
     // we go through standard code path
-    if (d->extended == 0) {
+    if (d->extended == 0 || !d->state->matrix.isAffine()) {
         if (staticText_d->size.isValid())
             drawText(QRectF(position, staticText_d->size), staticText_d->text);
         else
