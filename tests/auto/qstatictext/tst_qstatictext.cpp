@@ -69,7 +69,6 @@ private slots:
     void scaledPainter();
     void rotatedScaledAndTranslatedPainter();
     void transformationChanged();
-    void translationDoesntCauseRelayout();
 };
 
 void tst_QStaticText::init()
@@ -350,50 +349,6 @@ void tst_QStaticText::transformationChanged()
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
-
-void tst_QStaticText::translationDoesntCauseRelayout()
-{
-    QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
-    {
-        QPainter p(&imageDrawText);
-        p.scale(2.0, 2.0);
-        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-
-        p.translate(100, 200);
-        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-    }
-
-    QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
-    {
-        QPainter p(&imageDrawStaticText);
-        p.scale(2.0, 2.0);
-        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        p.drawStaticText(0, 0, text);
-
-        QStaticTextPrivate *textd = QStaticTextPrivate::get(&text);
-        glyph_t *glyphPool = textd->glyphPool;
-        QFixedPoint *positionPool = textd->positionPool;
-        QStaticTextItem *items = textd->items;
-
-        p.translate(100, 200);
-        p.drawStaticText(0, 0, text);
-
-        // ###
-        // If the layout is recalculated, the data is reallocated. Not a entirely deterministic
-        // test, since the memory can be reused.
-        QCOMPARE(textd->glyphPool, glyphPool);
-        QCOMPARE(textd->positionPool, positionPool);
-        QCOMPARE(textd->items, items);
-    }
-
-#if defined(DEBUG_SAVE_IMAGE)
-    imageDrawText.save("translationDoesntCauseRelayout_imageDrawText.png");
-    imageDrawStaticText.save("translationDoesntCauseRelayout_imageDrawStaticText.png");
-#endif
-
-    QCOMPARE(imageDrawStaticText, imageDrawText);
-}
-
 
 QTEST_MAIN(tst_QStaticText)
 #include "tst_qstatictext.moc"
