@@ -294,6 +294,17 @@ SUBDIRS += \
            qaudioformat \
            qaudiooutput \
            qaudioinput \
+           qmediacontent \
+           qmediaobject \
+           qmediaplayer \
+           qmediaplaylist \
+           qmediaplaylistnavigator \
+           qmediapluginloader \
+           qmediaresource \
+           qmediaservice \
+           qmediaserviceprovider \
+           qmediatimerange \
+           qvideowidget \
            qspinbox \
            qsplitter \
            qsql \

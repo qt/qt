@@ -276,6 +276,17 @@
         <Test name="qaudioformat" location="tests/auto/qaudioformat/tst_qaudioformat" />
         <Test name="qaudiooutput" location="tests/auto/qaudiooutput/tst_qaudiooutput" />
         <Test name="qaudioinput" location="tests/auto/qaudioinput/tst_qaudioinput" />
+        <Test name="qmediacontent" location="tests/auto/qmediacontent/tst_qmediacontent" />
+        <Test name="qmediaobject" location="tests/auto/qmediaobject/tst_qmediaobject" />
+        <Test name="qmediaplayer" location="tests/auto/qmediaplayer/tst_qmediaplayer" />
+        <Test name="qmediaplaylist" location="tests/auto/qmediaplaylist/tst_qmediaplaylist" />
+        <Test name="qmediaplaylistnavigator" location="tests/auto/qmediaplaylistnavigator/tst_qmediaplaylistnavigator" />
+        <Test name="qmediapluginloader" location="tests/auto/qmediapluginloader/tst_qmediapluginloader" />
+        <Test name="qmediaresource" location="tests/auto/qmediaresource/tst_qmediaresource" />
+        <Test name="qmediaservice" location="tests/auto/qmediaservice/tst_qmediaservice" />
+        <Test name="qmediaserviceprovider" location="tests/auto/qmedia/tst_qmediaserviceprovider" />
+        <Test name="qmediatimerange" location="tests/auto/qmediatimerange/tst_qmediatimerange" />
+        <Test name="qvideowidget" location="tests/auto/qvideowidget/tst_qvideowidget" />
         <Test name="qsourcelocation" location="tests/auto/qsourcelocation/tst_qsourcelocation" />
         <Test name="qspinbox" location="tests/auto/qspinbox/tst_qspinbox" />
         <Test name="qsplitter" location="tests/auto/qsplitter/tst_qsplitter" />
