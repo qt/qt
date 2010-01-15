@@ -68,11 +68,12 @@ public:
                                                  // =================
                                                  // 14 bytes per glyph
 
+                                                 // 12 bytes for pointers
     int numGlyphs;                               // 4 bytes per item
     int numChars;                                // 4 bytes per item
     QFontEngine *fontEngine;                     // 4 bytes per item
                                                  // ================
-                                                 // 12 bytes per item
+                                                 // 24 bytes per item
 };
 
 class QStaticText;
