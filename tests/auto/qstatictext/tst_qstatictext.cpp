@@ -61,6 +61,8 @@ private slots:
     void drawToRect();
     void setFont();
     void setMaximumSize();
+    void prepareToCorrectData();
+    void prepareToWrongData();
 
     void translatedPainter();
     void rotatedPainter();
@@ -116,8 +118,57 @@ void tst_QStaticText::drawToRect()
         p.drawStaticText(11, 12, text);
     }
 
+    QCOMPARE(imageDrawStaticText, imageDrawText);   
+}
+
+void tst_QStaticText::prepareToCorrectData()
+{
+    QTransform transform;
+    transform.scale(2.0, 2.0);
+    transform.rotate(90, Qt::ZAxis);
+
+    QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawText);
+        p.setTransform(transform);
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    }
+
+    QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawStaticText);
+        p.setTransform(transform);
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.prepare(transform, p.font());
+        p.drawStaticText(11, 12, text);
+    }
+
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
+
+void tst_QStaticText::prepareToWrongData()
+{
+    QTransform transform;
+    transform.scale(2.0, 2.0);
+    transform.rotate(90, Qt::ZAxis);
+
+    QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawText);
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    }
+
+    QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawStaticText);
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.prepare(transform, p.font());
+        p.drawStaticText(11, 12, text);
+    }
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
 
 void tst_QStaticText::setFont()
 {
