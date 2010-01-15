@@ -296,7 +296,7 @@ identified through the use of the attacher type name, in the case shown
 \c BirthdayParty, as a suffix to the property name.
 
 In the example shown, \c BirthdayParty is called the attaching type, and the
-Box instance the attachee object instance.
+Boy instance the attachee object instance.
 
 For the attaching type, an attached property block is implemented as a new
 QObject derived type, called the attachment object.  The properties on the
