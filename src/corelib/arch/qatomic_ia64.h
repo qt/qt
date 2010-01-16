@@ -205,7 +205,7 @@ inline bool QBasicAtomicInt::deref()
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 {
-    return (T *)_InterlockedExchangePointer(&_q_value, newValue);
+    return (T *)_InterlockedExchangePointer(reinterpret_cast<void * volatile*>(&_q_value), newValue);
 }
 
 template <typename T>
