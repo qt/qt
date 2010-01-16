@@ -807,6 +807,15 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 
 void QSymbianControl::Draw(const TRect& controlRect) const
 {
+    // Set flag to avoid calling DrawNow in window surface
+    QWExtra *extra = qwidget->d_func()->extraData();
+    if (extra && !extra->inExpose) {
+        extra->inExpose = true;
+        QRect exposeRect = qt_TRect2QRect(controlRect);
+        qwidget->d_func()->syncBackingStore(exposeRect);
+        extra->inExpose = false;
+    }
+
     QWindowSurface *surface = qwidget->windowSurface();
     QPaintEngine *engine = surface ? surface->paintDevice()->paintEngine() : NULL;
 
@@ -855,8 +864,6 @@ void QSymbianControl::Draw(const TRect& controlRect) const
         default:
             Q_ASSERT(false);
         }
-    } else {
-        surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());
     }
 
     if (sendNativePaintEvents) {
