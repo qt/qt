@@ -172,7 +172,7 @@ void QmlConnection::connectIfValid()
         if (lparen >= 0 && d->signal.length() > lparen+2) {
             QStringList l = d->signal.mid(lparen+1,d->signal.length()-lparen-2).split(QLatin1Char(','));
             foreach (const QString &s, l) {
-                sigparams.append(s.toUtf8());
+                sigparams.append(s.trimmed().toUtf8());
             }
         }
         QString signalname = d->signal.left(lparen);
