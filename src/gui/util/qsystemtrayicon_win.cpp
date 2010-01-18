@@ -53,7 +53,6 @@
 
 #include <qt_windows.h>
 #include <commctrl.h>
-#include <shlwapi.h>
 #include <QBitmap>
 #include <QLibrary>
 #include <QApplication>
