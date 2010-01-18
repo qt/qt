@@ -2913,7 +2913,8 @@ void tst_QScriptExtQObject::objectDeleted()
     v.setProperty("intProperty", QScriptValue(&eng, 123));
     QCOMPARE(qobj->intProperty(), 123);
     qobj->resetQtFunctionInvoked();
-    v.property("myInvokable").call(v);
+    QScriptValue invokable = v.property("myInvokable");
+    invokable.call(v);
     QCOMPARE(qobj->qtFunctionInvoked(), 0);
 
     // now delete the object
@@ -2949,6 +2950,14 @@ void tst_QScriptExtQObject::objectDeleted()
         QScriptValue ret = v.property("myInvokableWithIntArg");
         QVERIFY(ret.isError());
         QCOMPARE(ret.toString(), QLatin1String("Error: cannot access member `myInvokableWithIntArg' of deleted QObject"));
+    }
+
+    // Meta-method wrappers are still valid, but throw error when called
+    QVERIFY(invokable.isFunction());
+    {
+        QScriptValue ret = invokable.call(v);
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("Error: cannot call function of deleted QObject"));
     }
 
     // access from script
