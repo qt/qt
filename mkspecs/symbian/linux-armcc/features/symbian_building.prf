@@ -35,38 +35,35 @@ for(libPath, QMAKE_LIBDIR) {
     elf2e32_LIBPATH += "--libpath=$$libPath"
 }
 
+isEmpty(VERSION) {
+    VERSION = $$QT_VERSION
+}
+
 # Check for version validity.
 !isEmpty(VERSION):!contains(VERSION, "[0-9]+"):!contains(VERSION, "[0-9]+\.[0-9]+")!contains(VERSION, "[0-9]+(\.[0-9]+){2}") {
     error("Invalid VERSION for Symbian: $$VERSION")
 }
 
 splitVersion = $$split(VERSION, ".")
-# Default Symbian version if none is specified.
-isEmpty(splitVersion):splitVersion = 10
-hexVersion = "00"
-versionPart = 1
-versionPart1 = 10
-versionPart2 = 0
-versionPart3 = 0
-for(verNumber, splitVersion) {
-    # Poor man's printf
-    hexVersion = $$hexVersion$$system("sh -c 'printf %02x $$verNumber'")
-    contains(versionPart, 3) {
-        versionPart3 = $$verNumber
-        versionPart = 4
-    }
-    contains(versionPart, 2) {
-        versionPart2 = $$verNumber
-        versionPart = 3
-    }
-    contains(versionPart, 1) {
-        versionPart1 = $$verNumber
-        versionPart = 2
+count(splitVersion, 1) {
+    # Default Symbian version if none is specified.
+    hexVersion = "000a0000"
+    decVersion = "10.0"
+} else {
+    count(splitVersion, 3) {
+        hexVersion = $$system("sh -c 'printf %02x $$member(splitVersion, 0)'")
+        hexPart2 = $$system("sh -c 'printf %02x $$member(splitVersion, 1)'")"
+        hexPart2 = $$hexPart2$$system("sh -c 'printf %02x $$member(splitVersion, 2)'")"
+        decVersion = $$system("sh -c 'printf %1d 0x$$hexVersion'").
+        hexVersion = $$hexVersion$$hexPart2
+        decVersion = $$decVersion$$system("sh -c 'printf %d 0x$$hexPart2'")
+        !contains(hexVersion, "[0-9a-f]{8}"):hexVersion = "00$${hexVersion}"
+    } else {  # app code may have different numbering...
+        hexVersion = $$VERSION
+        decVersion = $$VERSION
     }
 }
-!contains(hexVersion, "[0-9a-z]{8}"):hexVersion = "$${hexVersion}00"
-!contains(hexVersion, "[0-9a-z]{8}"):hexVersion = "$${hexVersion}00"
-decVersion = $$sprintf("%1.%2", $$versionPart1, $$system("sh -c 'echo \$[$$versionPart2 * 256 + $$versionPart3]'"))
+#error ("hexVersion: $$hexVersion, decVersion: $$decVersion")
 
 intUid3 = $$lower($$replace(TARGET.UID3, "^0x", ""))
 isEmpty(TARGET.SID):TARGET.SID = $$TARGET.UID3
