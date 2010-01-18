@@ -250,7 +250,7 @@ void QmlGraphicsPathViewPrivate::setOffset(qreal o)
 {
     Q_Q(QmlGraphicsPathView);
     if (_offset != o) {
-        _offset = fmod(o, 100.0);
+        _offset = fmod(o, qreal(100.0));
         if (_offset < 0)
             _offset = 100.0 + _offset;
         q->refill();
@@ -450,8 +450,8 @@ void QmlGraphicsPathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
             velocity = 100;
         else if (velocity < -100)
             velocity = -100;
-        qreal inc = fmod(d->_offset - d->snapPos, 100.0 / d->model->count());
-        qreal dist = qAbs(velocity/2 - fmod(velocity/2, 100.0 / d->model->count()) - inc);
+        qreal inc = fmod(d->_offset - d->snapPos, qreal(100.0 / d->model->count()));
+        qreal dist = qAbs(velocity/2 - fmod(velocity/2, qreal(100.0 / d->model->count()) - inc));
         d->moveOffset.setValue(d->_offset);
         d->tl.accel(d->moveOffset, velocity, 10, dist);
         d->tl.execute(d->fixupOffsetEvent);
@@ -542,7 +542,7 @@ void QmlGraphicsPathView::componentComplete()
 
         itemIndex += d->pathOffset;
         itemIndex %= d->items.count();
-        qreal targetOffset = fmod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), 100);
+        qreal targetOffset = fmod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), qreal(100.0));
 
         if (targetOffset < 0)
             targetOffset = 100.0 + targetOffset;
@@ -609,7 +609,7 @@ void QmlGraphicsPathView::refill()
     for (int i=0; i<d->items.count(); i++){
         qreal percent = i * (100. / d->items.count());
         percent = percent + d->_offset;
-        percent = fmod(percent,100.);
+        percent = fmod(percent, qreal(100.0));
         positions << qAbs(percent/100.0);
     }
 
@@ -696,7 +696,7 @@ void QmlGraphicsPathView::itemsInserted(int modelIndex, int count)
     int itemIndex = (d->currentIndex - d->firstIndex + d->model->count())%d->model->count();
     itemIndex += d->pathOffset;
     itemIndex %= d->items.count();
-    qreal targetOffset = fmod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), 100);
+    qreal targetOffset = fmod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), qreal(100.0));
 
     if (targetOffset < 0)
         targetOffset = 100.0 + targetOffset;
@@ -733,7 +733,7 @@ void QmlGraphicsPathView::itemsRemoved(int modelIndex, int count)
     int itemIndex = (d->currentIndex - d->firstIndex + d->model->count())%d->model->count();
     itemIndex += d->pathOffset;
     itemIndex %= d->items.count();
-    qreal targetOffset = fmod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), 100);
+    qreal targetOffset = fmod(100 + (d->snapPos*100) - 100.0 * itemIndex / d->items.count(), qreal(100.0));
 
     if (targetOffset < 0)
         targetOffset = 100.0 + targetOffset;
@@ -766,12 +766,12 @@ int QmlGraphicsPathViewPrivate::calcCurrentIndex()
 {
     int current = -1;
     if (model && items.count()) {
-        _offset = fmod(_offset, 100.0);
+        _offset = fmod(_offset, qreal(100.0));
         if (_offset < 0)
             _offset += 100.0;
 
         if (pathItems == -1) {
-            qreal delta = fmod(_offset - snapPos, 100.0);
+            qreal delta = fmod(_offset - snapPos, qreal(100.0));
             if (delta < 0)
                 delta = 100.0 + delta;
             int ii = model->count() - qRound(delta * model->count() / 100);
@@ -784,7 +784,7 @@ int QmlGraphicsPathViewPrivate::calcCurrentIndex()
             for (int i=0; i<items.count(); i++){
                 qreal percent = i * (100. / items.count());
                 percent = percent + _offset;
-                percent = fmod(percent,100.);
+                percent = fmod(percent, qreal(100.0));
                 qreal diff = qAbs(snapPos - (percent/100.0));
                 if (diff < bestDiff){
                     bestDiff = diff;
@@ -843,7 +843,7 @@ void QmlGraphicsPathViewPrivate::snapToCurrent()
 
     itemIndex += pathOffset;
     itemIndex %= items.count();
-    qreal targetOffset = fmod(100 + (snapPos*100) - 100.0 * itemIndex / items.count(), 100);
+    qreal targetOffset = fmod(100 + (snapPos*100) - 100.0 * itemIndex / items.count(), qreal(100.0));
 
     if (targetOffset < 0)
         targetOffset = 100.0 + targetOffset;
