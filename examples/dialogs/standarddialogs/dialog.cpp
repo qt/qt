@@ -239,7 +239,12 @@ void Dialog::setText()
 
 void Dialog::setColor()
 {
-    QColor color = QColorDialog::getColor(Qt::green, this);
+    QColor color;
+    if (native->isChecked())
+        color = QColorDialog::getColor(Qt::green, this);
+    else
+        color = QColorDialog::getColor(Qt::green, this, "Select Color", QColorDialog::DontUseNativeDialog);
+
     if (color.isValid()) {
         colorLabel->setText(color.name());
         colorLabel->setPalette(QPalette(color));
