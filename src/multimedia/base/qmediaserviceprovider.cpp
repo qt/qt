@@ -43,7 +43,7 @@
 #include <QtCore/qmap.h>
 
 #include <QtMultimedia/qmediaservice.h>
-#include <QtMUltimedia/qmediaserviceprovider.h>
+#include <QtMultimedia/qmediaserviceprovider.h>
 #include <QtMultimedia/qmediaserviceproviderplugin.h>
 #include "qmediapluginloader_p.h"
 #include <QtMultimedia/qmediaplayer.h>

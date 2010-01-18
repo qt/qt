@@ -65,6 +65,9 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QGLContext;
+
+
 class QVideoSurfacePainter;
 class Q_AUTOTEST_EXPORT QPainterVideoSurface : public QAbstractVideoSurface
 {

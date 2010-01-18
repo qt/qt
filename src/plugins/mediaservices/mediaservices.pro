@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
 
-SUBDIRS += qt7
+mac:SUBDIRS += qt7
 
 
