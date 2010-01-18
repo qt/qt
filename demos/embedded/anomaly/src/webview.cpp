@@ -1,6 +1,7 @@
 #include "webview.h"
 
 #include <QPaintEvent>
+#include <QWebFrame>
 
 WebView::WebView(QWidget *parent)
     : QWebView(parent)
@@ -8,6 +9,7 @@ WebView::WebView(QWidget *parent)
 {
     connect(this, SIGNAL(loadStarted()), this, SLOT(newPageLoading()));
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(pageLoaded(bool)));
+    page()->setPreferredContentsSize(QSize(1024, 768));
 }
 
 void WebView::paintEvent(QPaintEvent *event)
