@@ -112,7 +112,7 @@ MyClass *myinstance = new MyClass;
 QObject *object = myinstance;
 
 myinstance->setPriority(MyClass::VeryHigh);
-object->setProperty("priority", (int)MyClass::VeryHigh);
+object->setProperty("priority", "VeryHigh");
 //! [6]
 
 

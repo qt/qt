@@ -186,8 +186,11 @@ int QStackedWidget::insertWidget(int index, QWidget *widget)
 }
 
 /*!
-    Removes the given \a widget from the QStackedWidget. The widget
-    is \e not deleted.
+    Removes the given \a widget from the QStackedWidget.
+
+    \bold{Note:} The ownership of \a widget remains the same.
+    The widget is \e not deleted, but simply removed from the widget's
+    stacked layout, causing it to be hidden.
 
     \sa addWidget(), insertWidget(), currentWidget()
 */

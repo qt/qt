@@ -2778,8 +2778,9 @@ void Configure::generateCachefile()
         if (!dictionary["QT_LIBINFIX"].isEmpty())
             configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
 
+        configStream << "#Qt for Symbian FPU settings" << endl;
         if(!dictionary["ARM_FPU_TYPE"].isEmpty()) {
-            configStream<<"QMAKE_CXXFLAGS.ARMCC += --fpu "<< dictionary["ARM_FPU_TYPE"];
+            configStream<<"MMP_RULES += \"ARMFPU "<< dictionary["ARM_FPU_TYPE"]<< "\"";
         }
 
         configStream.flush();

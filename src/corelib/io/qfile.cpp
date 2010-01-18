@@ -643,6 +643,7 @@ QFile::remove()
         qWarning("QFile::remove: Empty or null file name");
         return false;
     }
+    unsetError();
     close();
     if(error() == QFile::NoError) {
         if(fileEngine()->remove()) {
