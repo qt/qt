@@ -175,6 +175,7 @@ public:
 
         Cmd_DrawText,
         Cmd_DrawTextItem,
+        Cmd_DrawStaticText,
 
         Cmd_DrawImagePos,
         Cmd_DrawImageRect,
@@ -394,6 +395,7 @@ public:
     virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
 
     virtual void drawTextItem(const QPointF &pos, const QTextItem &ti);
+    virtual void drawStaticTextItem(QStaticTextItem *staticTextItem);
 
     virtual void setState(QPainterState *s);
     virtual uint flags() const {return QPaintEngineEx::DoNotEmulate;}

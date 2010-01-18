@@ -45,6 +45,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qemulationpaintengine_p.h>
 #include <private/qimage_p.h>
+#include <private/qstatictext_p.h>
 
 #include <QDebug>
 
@@ -960,6 +961,30 @@ void QPaintBufferEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         buffer->updateBoundingRect(r);
 }
 
+void QPaintBufferEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
+{
+    QString text = QString(staticTextItem->chars, staticTextItem->numChars);
+
+    QFontDef fontDef = staticTextItem->fontEngine->fontDef;
+    QFont font(fontDef.family, fontDef.pointSize, fontDef.weight, fontDef.style == QFont::StyleItalic);
+
+    QTransform xform;
+    for (int i=buffer->commands.size()-1; i>=0; --i) {
+        const QPaintBufferCommand &cmd = buffer->commands.at(i);
+        if (cmd.id == QPaintBufferPrivate::Cmd_SetTransform) {
+            xform = qVariantValue<QTransform>(buffer->variants.at(cmd.offset));
+            break;
+        }
+    }
+
+    QStaticText staticText(text);
+    staticText.prepare(xform, font);
+
+    QVariantList variants;
+    variants << QVariant(font) << QVariant::fromValue(staticText);
+    buffer->addCommand(QPaintBufferPrivate::Cmd_DrawStaticText, QVariant(variants));
+}
+
 void QPaintBufferEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
 {
 #ifdef QPAINTBUFFER_DEBUG_DRAW
@@ -1424,6 +1449,18 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         qDebug() << " -> Cmd_ClipRegion:" << region.boundingRect() << cmd.extra;
 #endif
         painter->setClipRegion(region, Qt::ClipOperation(cmd.extra));
+        break; }
+        
+    case QPaintBufferPrivate::Cmd_DrawStaticText: {
+            
+            QVariantList variants(d->variants.at(cmd.offset).value<QVariantList>());
+            
+            QFont font(variants.at(0).value<QFont>());
+            QStaticText text(variants.at(0).value<QStaticText>());
+            
+            painter->setFont(font);
+            painter->drawStaticText(QPointF(0, 0), text);
+            
         break; }
 
     case QPaintBufferPrivate::Cmd_DrawText: {

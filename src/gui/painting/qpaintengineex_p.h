@@ -201,7 +201,7 @@ public:
 
     virtual void updateState(const QPaintEngineState &state);
 
-    virtual void drawStaticTextItem(QStaticTextItem *) { /* ### should be pure virtual ### */ };
+    virtual void drawStaticTextItem(QStaticTextItem *) = 0;
 
     virtual void setState(QPainterState *s);
     inline QPainterState *state() { return static_cast<QPainterState *>(QPaintEngine::state); }
