@@ -72,8 +72,6 @@ QStringList QSymbianEnginePlugin::keys() const
 
 QBearerEngine *QSymbianEnginePlugin::create(const QString &key) const
 {
-    qDebug() << Q_FUNC_INFO;
-
     if (key == QLatin1String("symbian"))
         return new SymbianEngine;
     else

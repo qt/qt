@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qgenericengine.h"
+#include "../qnetworksession_impl.h"
 
 #include <QtNetwork/private/qnetworkconfiguration_p.h>
 
@@ -142,8 +143,6 @@ static QString qGetInterfaceType(const QString &interface)
 QGenericEngine::QGenericEngine(QObject *parent)
 :   QNetworkSessionEngine(parent)
 {
-    qDebug() << Q_FUNC_INFO;
-
     connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
     pollTimer.setInterval(10000);
     doRequestUpdate();
@@ -319,6 +318,11 @@ QNetworkSession::State QGenericEngine::sessionStateForId(const QString &id)
 QNetworkConfigurationManager::Capabilities QGenericEngine::capabilities() const
 {
     return QNetworkConfigurationManager::ForcedRoaming;
+}
+
+QNetworkSessionPrivate *QGenericEngine::createSessionBackend()
+{
+    return new QNetworkSessionPrivateImpl;
 }
 
 QT_END_NAMESPACE

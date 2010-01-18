@@ -50,6 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
+class QNetworkSessionPrivate;
 
 class QGenericEngine : public QNetworkSessionEngine
 {
@@ -72,6 +73,8 @@ public:
     QNetworkSession::State sessionStateForId(const QString &id);
 
     QNetworkConfigurationManager::Capabilities capabilities() const;
+
+    QNetworkSessionPrivate *createSessionBackend();
 
 private Q_SLOTS:
     void doRequestUpdate();

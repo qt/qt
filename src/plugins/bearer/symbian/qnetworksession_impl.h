@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKSESSIONPRIVATE_H
-#define QNETWORKSESSIONPRIVATE_H
+#ifndef QNETWORKSESSION_IMPL_H
+#define QNETWORKSESSION_IMPL_H
 
 //
 //  W A R N I N G
@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qnetworksession.h"
+#include <QtNetwork/private/qnetworksession_p.h>
 
 #include <QDateTime>
 
@@ -70,18 +70,19 @@ typedef int(*TOpenCSetdefaultifFunction)(const struct ifreq*);
 QT_BEGIN_NAMESPACE
 
 class ConnectionProgressNotifier;
+class SymbianEngine;
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-class QNetworkSessionPrivate : public QObject, public CActive, public MMobilityProtocolResp, 
-                               public MConnectionMonitorObserver
+class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive, public MMobilityProtocolResp,
+                                     public MConnectionMonitorObserver
 #else
-class QNetworkSessionPrivate : public QObject, public CActive, public MConnectionMonitorObserver
+class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate, public CActive, public MConnectionMonitorObserver
 #endif
 {
     Q_OBJECT
 public:
-    QNetworkSessionPrivate(); 
-    ~QNetworkSessionPrivate();
+    QNetworkSessionPrivateImpl(SymbianEngine *engine);
+    ~QNetworkSessionPrivateImpl();
     
     //called by QNetworkSession constructor and ensures
     //that the state is immediately updated (w/o actually opening
@@ -96,7 +97,8 @@ public:
     void setALREnabled(bool enabled);
 
     void open();
-    void close(bool allowSignals = true);
+    inline void close() { close(true); }
+    void close(bool allowSignals);
     void stop();
     void migrate();
     void accept();
@@ -105,6 +107,7 @@ public:
 
     QString errorString() const; //must return translated string
     QNetworkSession::SessionError error() const;
+
     quint64 bytesWritten() const;
     quint64 bytesReceived() const;
     quint64 activeTime() const;
@@ -121,10 +124,6 @@ public: // From MMobilityProtocolResp
     void Error(TInt aError);
 #endif    
 
-Q_SIGNALS:
-    //releases any pending waitForOpened() calls
-    void quitPendingWaitsForOpened();
-    
 protected: // From CActive
     void RunL();
     void DoCancel();
@@ -142,24 +141,10 @@ private:
     QNetworkInterface interface(TUint iapId) const;
 
 private: // data
-    // The config set on QNetworkSession
-    mutable QNetworkConfiguration publicConfig;
+    SymbianEngine *engine;
 
-    // If publicConfig is a ServiceNetwork this is a copy of publicConfig.
-    // If publicConfig is an UserChoice that is resolved to a ServiceNetwork this is the actual
-    // ServiceNetwork configuration.
-    mutable QNetworkConfiguration serviceConfig;
-
-    // This is the actual active configuration currently in use by the session.
-    // Either a copy of publicConfig or one of serviceConfig.children().
-    mutable QNetworkConfiguration activeConfig;
-    
     mutable QNetworkInterface activeInterface;
 
-    QNetworkSession::State state;
-    bool isOpen;
-
-    QNetworkSession* q;
     QDateTime startTime;
 
     RLibrary iOpenCLibrary;
@@ -182,14 +167,13 @@ private: // data
     TUint32 iOldRoamingIap;
     TUint32 iNewRoamingIap;
 
-    friend class QNetworkSession;
     friend class ConnectionProgressNotifier;
 };
 
 class ConnectionProgressNotifier : public CActive
 {
 public:
-    ConnectionProgressNotifier(QNetworkSessionPrivate& owner, RConnection& connection); 
+    ConnectionProgressNotifier(QNetworkSessionPrivateImpl &owner, RConnection &connection);
     ~ConnectionProgressNotifier();
     
     void StartNotifications();
@@ -200,7 +184,7 @@ protected: // From CActive
     void DoCancel();
 
 private: // Data
-    QNetworkSessionPrivate& iOwner;
+    QNetworkSessionPrivateImpl &iOwner;
     RConnection& iConnection;
     TNifProgressBuf iProgress;
     
@@ -208,5 +192,5 @@ private: // Data
 
 QT_END_NAMESPACE
 
-#endif //QNETWORKSESSIONPRIVATE_H
+#endif //QNETWORKSESSION_IMPL_H
 

@@ -75,12 +75,14 @@ public:
         serviceNetworkMembers.clear(); 
     }
 
-    QString name;
-    QString bearer;
-    inline QString bearerName() const
+    virtual QString bearerName() const
     {
         return bearer;
     }
+
+    QString bearer;
+
+    QString name;
 
     bool isValid;
     QString id;

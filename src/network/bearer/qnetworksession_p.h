@@ -53,28 +53,26 @@
 // We mean it.
 //
 
-#include "qnetworkconfigmanager_p.h"
 #include "qnetworksession.h"
-#include "qnetworksessionengine_p.h"
+#include "qnetworkconfiguration_p.h"
 
-#include "qnetworksession.h"
 #include <QNetworkInterface>
-#include <QDateTime>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkSessionEngine;
-
-class QNetworkSessionPrivate : public QObject
+class Q_NETWORK_EXPORT QNetworkSessionPrivate : public QObject
 {
     Q_OBJECT
+
+    friend class QNetworkSession;
+
 public:
-    QNetworkSessionPrivate() : 
-        tx_data(0), rx_data(0), m_activeTime(0), isOpen(false)
+    QNetworkSessionPrivate()
+    :   state(QNetworkSession::Invalid), isOpen(false)
     {
     }
 
-    ~QNetworkSessionPrivate()
+    virtual ~QNetworkSessionPrivate()
     {
     }
 
@@ -82,49 +80,46 @@ public:
     //that the state is immediately updated (w/o actually opening
     //a session). Also this function should take care of 
     //notification hooks to discover future state changes.
-    void syncStateWithInterface();
+    virtual void syncStateWithInterface() = 0;
 
-    QNetworkInterface currentInterface() const;
-    QVariant sessionProperty(const QString& key) const;
-    void setSessionProperty(const QString& key, const QVariant& value);
-    QString bearerName() const;
+    virtual QNetworkInterface currentInterface() const = 0;
+    virtual QVariant sessionProperty(const QString& key) const = 0;
+    virtual void setSessionProperty(const QString& key, const QVariant& value) = 0;
 
-    void open();
-    void close();
-    void stop();
-    void migrate();
-    void accept();
-    void ignore();
-    void reject();
+    virtual void open() = 0;
+    virtual void close() = 0;
+    virtual void stop() = 0;
 
-    QString errorString() const; //must return translated string
-    QNetworkSession::SessionError error() const;
+    virtual void setALREnabled(bool enabled) { }
+    virtual void migrate() = 0;
+    virtual void accept() = 0;
+    virtual void ignore() = 0;
+    virtual void reject() = 0;
 
-    quint64 bytesWritten() const;
-    quint64 bytesReceived() const;
-    quint64 activeTime() const;
+    virtual QString errorString() const = 0; //must return translated string
+    virtual QNetworkSession::SessionError error() const = 0;
 
-private:
-    void updateStateFromServiceNetwork();
-    void updateStateFromActiveConfig();
+    virtual quint64 bytesWritten() const = 0;
+    virtual quint64 bytesReceived() const = 0;
+    virtual quint64 activeTime() const = 0;
+
+protected:
+    inline QNetworkConfigurationPrivatePointer privateConfiguration(const QNetworkConfiguration &config) const
+    {
+        return config.d;
+    }
 
 Q_SIGNALS:
     //releases any pending waitForOpened() calls
     void quitPendingWaitsForOpened();
 
-private Q_SLOTS:
-    void networkConfigurationsChanged();
-    void configurationChanged(const QNetworkConfiguration &config);
-    void forcedSessionClose(const QNetworkConfiguration &config);
-    void connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error);
+    void error(QNetworkSession::SessionError error);
+    void stateChanged(QNetworkSession::State state);
+    void closed();
+    void newConfigurationActivated();
+    void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
 
-private:
-    QNetworkConfigurationManager manager;
-
-    quint64 tx_data;
-    quint64 rx_data;
-    quint64 m_activeTime;
-
+protected:
     // The config set on QNetworkSession.
     QNetworkConfiguration publicConfig;
 
@@ -140,19 +135,7 @@ private:
     QNetworkSession::State state;
     bool isOpen;
 
-    bool opened;
-
-    QNetworkSessionEngine *engine;
-
-    QNetworkSession::SessionError lastError;
-
-    QNetworkSession* q;
-    friend class QNetworkSession;
-
-#if defined(BACKEND_NM)
-    QDateTime startTime;
-    void setActiveTimeStamp();
-#endif
+    QNetworkSession *q;
 };
 
 QT_END_NAMESPACE

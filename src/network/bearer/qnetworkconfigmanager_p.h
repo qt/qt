@@ -110,7 +110,7 @@ private Q_SLOTS:
     void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
 };
 
-QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();
+Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();
 
 QT_END_NAMESPACE
 

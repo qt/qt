@@ -43,6 +43,8 @@
 #include <QTimer>
 
 #include "qnetworksession.h"
+#include "qnetworksessionengine_p.h"
+#include "qnetworkconfigmanager_p.h"
 
 #if Q_WS_MAEMO_6
 #include "qnetworksession_maemo_p.h"
@@ -224,14 +226,25 @@ QT_BEGIN_NAMESPACE
     \sa QNetworkConfiguration
 */
 QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, QObject* parent)
-    : QObject(parent)
+:   QObject(parent), d(0)
 {
-    d = new QNetworkSessionPrivate;
-    d->q = this;
-    d->publicConfig = connectionConfig;
-    d->syncStateWithInterface();
-    QObject::connect(d, SIGNAL(quitPendingWaitsForOpened()), 
-                this, SIGNAL(opened()));
+    foreach (QNetworkSessionEngine *engine, qNetworkConfigurationManagerPrivate()->sessionEngines) {
+        if (engine->hasIdentifier(connectionConfig.identifier())) {
+            d = engine->createSessionBackend();
+            d->q = this;
+            d->publicConfig = connectionConfig;
+            d->syncStateWithInterface();
+            connect(d, SIGNAL(quitPendingWaitsForOpened()), this, SIGNAL(opened()));
+            connect(d, SIGNAL(error(QNetworkSession::SessionError)),
+                    this, SIGNAL(error(QNetworkSession::SessionError)));
+            connect(d, SIGNAL(stateChanged(QNetworkSession::State)),
+                    this, SIGNAL(stateChanged(QNetworkSession::State)));
+            connect(d, SIGNAL(closed()), this, SIGNAL(closed()));
+            connect(d, SIGNAL(newConfigurationActivated()),
+                    this, SIGNAL(newConfigurationActivated()));
+            break;
+        }
+    }
 }
 
 /*!
@@ -261,7 +274,8 @@ QNetworkSession::~QNetworkSession()
 */
 void QNetworkSession::open()
 {
-    d->open();
+    if (d)
+        d->open();
 }
 
 /*!
@@ -283,6 +297,9 @@ void QNetworkSession::open()
 */
 bool QNetworkSession::waitForOpened(int msecs)
 {
+    if (!d)
+        return false;
+
     if (d->isOpen)
         return true;
 
@@ -320,7 +337,8 @@ bool QNetworkSession::waitForOpened(int msecs)
 */
 void QNetworkSession::close()
 {
-    d->close();
+    if (d)
+        d->close();
 }
 
 /*!
@@ -332,7 +350,8 @@ void QNetworkSession::close()
 */
 void QNetworkSession::stop()
 {
-    d->stop();
+    if (d)
+        d->stop();
 }
 
 /*!
@@ -342,60 +361,8 @@ void QNetworkSession::stop()
 */
 QNetworkConfiguration QNetworkSession::configuration() const
 {
-    return d->publicConfig;
+    return d ? d->publicConfig : QNetworkConfiguration();
 }
-
-/*
-    Returns the type of bearer currently used by this session. The string is not translated and
-    therefore can not be shown to the user. The subsequent table presents the currently known
-    bearer types:
-
-    \table
-        \header 
-            \o Value
-            \o Description
-        \row
-            \o Unknown
-            \o The session is based on an unknown or unspecified bearer type.
-        \row
-            \o Ethernet
-            \o The session is based on Ethernet.
-        \row
-            \o WLAN
-            \o The session is based on Wireless LAN.
-        \row
-            \o 2G
-            \o The session uses CSD, GPRS, HSCSD, EDGE or cdmaOne.
-        \row 
-            \o CDMA2000
-            \o The session uses CDMA.
-        \row
-            \o WCDMA
-            \o The session uses W-CDMA/UMTS.
-        \row
-            \o HSPA
-            \o The session uses High Speed Packet Access.
-        \row
-            \o Bluetooth
-            \o The session uses Bluetooth.
-        \row
-            \o WiMAX
-            \o The session uses WiMAX.
-    \endtable
-
-    If the session is based on a network configuration of type 
-    \l QNetworkConfiguration::ServiceNetwork the type of the preferred or currently 
-    active configuration is returned. Therefore the bearer type may change 
-    over time.
-
-    This function returns an empty string if this session is based on an invalid configuration, or
-    a network configuration of type \l QNetworkConfiguration::ServiceNetwork with no
-    \l {QNetworkConfiguration::children()}{children}.
-*/
-/*QString QNetworkSession::bearerName() const
-{
-    return d->bearerName();
-}*/
 
 /*!
     Returns the network interface that is used by this session.
@@ -408,7 +375,7 @@ QNetworkConfiguration QNetworkSession::configuration() const
 */
 QNetworkInterface QNetworkSession::interface() const
 {
-    return d->currentInterface();
+    return d ? d->currentInterface() : QNetworkInterface();
 }
 
 /*!
@@ -419,7 +386,7 @@ QNetworkInterface QNetworkSession::interface() const
 */
 bool QNetworkSession::isOpen() const
 {
-    return d->isOpen;
+    return d ? d->isOpen : false;
 }
 
 /*!
@@ -441,7 +408,7 @@ bool QNetworkSession::isOpen() const
 */
 QNetworkSession::State QNetworkSession::state() const
 {
-    return d->state;
+    return d ? d->state : QNetworkSession::Invalid;
 }
 
 /*!
@@ -451,7 +418,7 @@ QNetworkSession::State QNetworkSession::state() const
 */
 QNetworkSession::SessionError QNetworkSession::error() const
 {
-    return d->error();
+    return d ? d->error() : InvalidConfigurationError;
 }
 
 /*!
@@ -462,7 +429,7 @@ QNetworkSession::SessionError QNetworkSession::error() const
 */
 QString QNetworkSession::errorString() const
 {
-    return d->errorString();
+    return d ? d->errorString() : tr("Invalid configuration.");
 }
 
 /*!
@@ -520,6 +487,9 @@ QString QNetworkSession::errorString() const
 */
 QVariant QNetworkSession::sessionProperty(const QString& key) const
 {
+    if (!d)
+        return QVariant();
+
     if (!d->publicConfig.isValid())
         return QVariant();
 
@@ -553,6 +523,9 @@ QVariant QNetworkSession::sessionProperty(const QString& key) const
 */
 void QNetworkSession::setSessionProperty(const QString& key, const QVariant& value)
 {
+    if (!d)
+        return;
+
     if (key == QLatin1String("ActiveConfiguration") ||
         key == QLatin1String("UserChoiceConfiguration")) {
         return;
@@ -571,7 +544,8 @@ void QNetworkSession::setSessionProperty(const QString& key, const QVariant& val
 */
 void QNetworkSession::migrate()
 {
-    d->migrate();
+    if (d)
+        d->migrate();
 }
 
 /*!
@@ -583,7 +557,8 @@ void QNetworkSession::ignore()
 {
     // Needed on at least Symbian platform: the roaming must be explicitly 
     // ignore()'d or migrate()'d
-    d->ignore();
+    if (d)
+        d->ignore();
 }
 
 /*!
@@ -596,7 +571,8 @@ void QNetworkSession::ignore()
 */
 void QNetworkSession::accept()
 {
-    d->accept();
+    if (d)
+        d->accept();
 }
 
 /*!
@@ -608,7 +584,8 @@ void QNetworkSession::accept()
 */
 void QNetworkSession::reject()
 {
-    d->reject();
+    if (d)
+        d->reject();
 }
 
 
@@ -626,7 +603,7 @@ void QNetworkSession::reject()
 */
 quint64 QNetworkSession::bytesWritten() const
 {
-    return d->bytesWritten();
+    return d ? d->bytesWritten() : Q_UINT64_C(0);
 }
 
 /*!
@@ -643,7 +620,7 @@ quint64 QNetworkSession::bytesWritten() const
 */
 quint64 QNetworkSession::bytesReceived() const
 {
-    return d->bytesReceived();
+    return d ? d->bytesReceived() : Q_UINT64_C(0);
 }
 
 /*!
@@ -651,7 +628,7 @@ quint64 QNetworkSession::bytesReceived() const
 */
 quint64 QNetworkSession::activeTime() const
 {
-    return d->activeTime();
+    return d ? d->activeTime() : Q_UINT64_C(0);
 }
 
 /*!
@@ -670,11 +647,11 @@ void QNetworkSession::connectNotify(const char *signal)
     QObject::connectNotify(signal);
     //check for preferredConfigurationChanged() signal connect notification
     //This is not required on all platforms
-#ifdef Q_OS_SYMBIAN_disabled
-    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0) {
+    if (!d)
+        return;
+
+    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0)
         d->setALREnabled(true);
-    }
-#endif    
 }
 
 /*!
@@ -690,11 +667,11 @@ void QNetworkSession::disconnectNotify(const char *signal)
     QObject::disconnectNotify(signal);
     //check for preferredConfigurationChanged() signal disconnect notification
     //This is not required on all platforms
-#ifdef Q_OS_SYMBIAN_disabled
-    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0) {
+    if (!d)
+        return;
+
+    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0)
         d->setALREnabled(false);
-    }    
-#endif    
 }
 
 #include "moc_qnetworksession.cpp"

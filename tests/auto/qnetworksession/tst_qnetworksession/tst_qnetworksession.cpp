@@ -82,7 +82,7 @@ private slots:
 private:
     QNetworkConfigurationManager manager;
 
-    uint inProcessSessionManagementCount;
+    int inProcessSessionManagementCount;
 
 #ifdef Q_WS_MAEMO_6
     Maemo::IAPConf *iapconf;
@@ -249,6 +249,9 @@ void tst_QNetworkSession::sessionProperties()
     if (!configuration.isValid()) {
         QVERIFY(configuration.bearerName().isEmpty());
     } else {
+        qDebug() << "Type:" << configuration.type()
+                 << "Bearer:" << configuration.bearerName();
+
         switch (configuration.type())
         {
             case QNetworkConfiguration::ServiceNetwork:
@@ -264,6 +267,8 @@ void tst_QNetworkSession::sessionProperties()
 
     // QNetworkSession::interface() should return an invalid interface unless
     // session is in the connected state.
+    qDebug() << "Session state:" << session.state();
+    qDebug() << "Session iface:" << session.interface().isValid() << session.interface().name();
     QCOMPARE(session.state() == QNetworkSession::Connected, session.interface().isValid());
 
     if (!configuration.isValid()) {
@@ -790,6 +795,8 @@ QDebug operator<<(QDebug debug, const QList<QNetworkConfiguration> &list)
 
 void tst_QNetworkSession::outOfProcessSession()
 {
+    qDebug() << "START";
+
     QNetworkConfigurationManager manager;
 
     QList<QNetworkConfiguration> before = manager.allConfigurations(QNetworkConfiguration::Active);
@@ -805,13 +812,16 @@ void tst_QNetworkSession::outOfProcessSession()
     QLocalServer::removeServer("tst_qnetworksession");
     oopServer.listen("tst_qnetworksession");
 
+    qDebug() << "starting lackey";
     QProcess lackey;
     lackey.start("qnetworksessionlackey");
+    qDebug() << lackey.error() << lackey.errorString();
     QVERIFY(lackey.waitForStarted());
 
+    qDebug() << "waiting for connection";
     QVERIFY(oopServer.waitForNewConnection(-1));
     QLocalSocket *oopSocket = oopServer.nextPendingConnection();
-
+    qDebug() << "got connection";
     do {
         QByteArray output;
 
@@ -875,12 +885,12 @@ void tst_QNetworkSession::outOfProcessSession()
         break;
     case 1:
         QSKIP("No discovered configurations found.", SkipAll);
-        break;
     case 2:
         QSKIP("Lackey could not start session.", SkipAll);
     default:
         QSKIP("Lackey failed", SkipAll);
     }
+    qDebug("STOP");
 }
 
 QTEST_MAIN(tst_QNetworkSession)

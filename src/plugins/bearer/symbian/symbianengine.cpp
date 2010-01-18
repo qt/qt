@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "symbianengine.h"
+#include "qnetworksession_impl.h"
 
 #include <commdb.h>
 #include <cdbcols.h>
@@ -64,7 +65,7 @@ static const int KValueThatWillBeAddedToSNAPId = 1000;
 static const int KUserChoiceIAPId = 0;
 
 SymbianNetworkConfigurationPrivate::SymbianNetworkConfigurationPrivate()
-:   bearer(BearerUnknown), numericId(0), connectionId(0), manager(0)
+:   bearer(BearerUnknown), numericId(0), connectionId(0)
 {
 }
 
@@ -72,16 +73,33 @@ SymbianNetworkConfigurationPrivate::~SymbianNetworkConfigurationPrivate()
 {
 }
 
-inline SymbianNetworkConfigurationPrivate *toSymbianConfig(QNetworkConfigurationPrivatePointer ptr)
+QString SymbianNetworkConfigurationPrivate::bearerName() const
 {
-    return static_cast<SymbianNetworkConfigurationPrivate *>(ptr.data());
+    switch (bearer) {
+    case BearerEthernet:
+        return QLatin1String("Ethernet");
+    case BearerWLAN:
+        return QLatin1String("WLAN");
+    case Bearer2G:
+        return QLatin1String("2G");
+    case BearerCDMA2000:
+        return QLatin1String("CDMA2000");
+    case BearerWCDMA:
+        return QLatin1String("WCDMA");
+    case BearerHSPA:
+        return QLatin1String("HSPA");
+    case BearerBluetooth:
+        return QLatin1String("Bluetooth");
+    case BearerWiMAX:
+        return QLatin1String("WiMAX");
+    default:
+        return QString();
+    }
 }
 
 SymbianEngine::SymbianEngine(QObject *parent)
 :   QNetworkSessionEngine(parent), CActive(CActive::EPriorityIdle), iInitOk(true)
 {
-    qDebug() << Q_FUNC_INFO;
-
     CActiveScheduler::Add(this);
 
     TRAPD(error, ipCommsDB = CCommsDatabase::NewL(EDatabaseTypeIAP));
@@ -112,7 +130,6 @@ SymbianEngine::SymbianEngine(QObject *parent)
     cpPriv->type = QNetworkConfiguration::UserChoice;
     cpPriv->purpose = QNetworkConfiguration::UnknownPurpose;
     cpPriv->roamingSupported = false;
-    cpPriv->manager = this;
 
     QNetworkConfigurationPrivatePointer ptr(cpPriv);
     userChoiceConfigurations.insert(ptr->id, ptr);
@@ -139,6 +156,34 @@ SymbianEngine::~SymbianEngine()
     delete ipCommsDB;
 }
 
+QString SymbianEngine::getInterfaceFromId(const QString &id)
+{
+    qFatal("getInterfaceFromId(%s) not implemented\n", qPrintable(id));
+    return QString();
+}
+
+bool SymbianEngine::hasIdentifier(const QString &id)
+{
+    return accessPointConfigurations.contains(id) ||
+           snapConfigurations.contains(id) ||
+           userChoiceConfigurations.contains(id);
+}
+
+void SymbianEngine::connectToId(const QString &id)
+{
+    qFatal("connectToId(%s) not implemented\n", qPrintable(id));
+}
+
+void SymbianEngine::disconnectFromId(const QString &id)
+{
+    qFatal("disconnectFromId(%s) not implemented\n", qPrintable(id));
+}
+
+QNetworkSession::State SymbianEngine::sessionStateForId(const QString &id)
+{
+    qFatal("sessionStateForId(%s) not implemented\n", qPrintable(id));
+    return QNetworkSession::Invalid;
+}
 
 QNetworkConfigurationManager::Capabilities SymbianEngine::capabilities() const
 {
@@ -155,6 +200,11 @@ QNetworkConfigurationManager::Capabilities SymbianEngine::capabilities() const
 #endif
 
     return capFlags;
+}
+
+QNetworkSessionPrivate *SymbianEngine::createSessionBackend()
+{
+    return new QNetworkSessionPrivateImpl(this);
 }
 
 void SymbianEngine::requestUpdate()
@@ -239,7 +289,6 @@ void SymbianEngine::updateConfigurationsL()
             cpPriv->type = QNetworkConfiguration::ServiceNetwork;
             cpPriv->purpose = QNetworkConfiguration::UnknownPurpose;
             cpPriv->roamingSupported = false;
-            cpPriv->manager = this;
 
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
             snapConfigurations.insert(ident, ptr);
@@ -428,7 +477,6 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
     cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
     cpPriv->purpose = QNetworkConfiguration::UnknownPurpose;
     cpPriv->roamingSupported = false;
-    cpPriv->manager = this;
     
     CleanupStack::Pop(cpPriv);
     return cpPriv;
@@ -498,7 +546,6 @@ void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
         apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
         break;
     }
-    apNetworkConfiguration->manager = this;
     
     CleanupStack::PopAndDestroy(pApUtils);
     CleanupStack::PopAndDestroy(pAPItem);

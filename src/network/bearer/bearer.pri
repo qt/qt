@@ -10,12 +10,7 @@ SOURCES += bearer/qnetworksession.cpp \
            bearer/qnetworkconfigmanager.cpp \
            bearer/qnetworkconfiguration.cpp
 
-symbian_disabled {
-    HEADERS += bearer/qnetworksession_s60_p.h
-
-    SOURCES += bearer/qnetworkconfiguration_s60_p.cpp \
-               bearer/qnetworksession_s60_p.cpp
-} else:maemo {
+maemo {
     QT += dbus
     CONFIG += link_pkgconfig
 
@@ -50,7 +45,6 @@ symbian_disabled {
                bearer/qbearerplugin.h
 
     SOURCES += bearer/qnetworkconfigmanager_p.cpp \
-               bearer/qnetworksession_p.cpp \
                bearer/qnetworksessionengine.cpp \
                bearer/qbearerplugin.cpp
 

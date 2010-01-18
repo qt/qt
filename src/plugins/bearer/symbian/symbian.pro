@@ -3,8 +3,12 @@ include(../../qpluginbase.pri)
 
 QT += network
 
-HEADERS += symbianengine.h
-SOURCES += symbianengine.cpp main.cpp
+HEADERS += symbianengine.h \
+           qnetworksession_impl.h
+
+SOURCES += symbianengine.cpp \
+           qnetworksession_impl.cpp \
+           main.cpp
 
 exists($${EPOCROOT}epoc32/release/winscw/udeb/cmmanager.lib)| \
 exists($${EPOCROOT}epoc32/release/armv5/lib/cmmanager.lib) {

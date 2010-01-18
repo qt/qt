@@ -80,17 +80,22 @@ public:
     SymbianNetworkConfigurationPrivate();
     ~SymbianNetworkConfigurationPrivate();
 
+    QString bearerName() const;
+
     Bearer bearer;
 
     TUint32 numericId;
     TUint connectionId;
 
-    TAny *manager;
-
     QNetworkConfigurationPrivatePointer serviceNetworkPtr;
 
     QString mappingName;
 };
+
+inline SymbianNetworkConfigurationPrivate *toSymbianConfig(QNetworkConfigurationPrivatePointer ptr)
+{
+    return static_cast<SymbianNetworkConfigurationPrivate *>(ptr.data());
+}
 
 class SymbianEngine : public QNetworkSessionEngine, public CActive,
                       public MConnectionMonitorObserver
@@ -101,17 +106,19 @@ public:
     SymbianEngine(QObject *parent = 0);
     virtual ~SymbianEngine();
 
-    QString getInterfaceFromId(const QString &id) { return QString(); }
-    bool hasIdentifier(const QString &id) { return false; }
+    QString getInterfaceFromId(const QString &id);
+    bool hasIdentifier(const QString &id);
 
-    void connectToId(const QString &id) { }
-    void disconnectFromId(const QString &id) { }
+    void connectToId(const QString &id);
+    void disconnectFromId(const QString &id);
 
     void requestUpdate();
 
-    QNetworkSession::State sessionStateForId(const QString &id) { return QNetworkSession::Invalid; }
+    QNetworkSession::State sessionStateForId(const QString &id);
 
     QNetworkConfigurationManager::Capabilities capabilities() const;
+
+    QNetworkSessionPrivate *createSessionBackend();
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qnetworksession_p.h"
-#include "qnetworksession.h"
-#include "qnetworksessionengine_p.h"
-#include "qnetworkconfigmanager_p.h"
+#include "qnetworksession_impl.h"
+
+#include <QtNetwork/qnetworksession.h>
+#include <QtNetwork/private/qnetworksessionengine_p.h>
+#include <QtNetwork/private/qnetworkconfigmanager_p.h>
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
@@ -96,7 +97,7 @@ void QNetworkSessionManagerPrivate::forceSessionClose(const QNetworkConfiguratio
     emit forcedSessionClose(config);
 }
 
-void QNetworkSessionPrivate::syncStateWithInterface()
+void QNetworkSessionPrivateImpl::syncStateWithInterface()
 {
     connect(&manager, SIGNAL(updateCompleted()), this, SLOT(networkConfigurationsChanged()));
     connect(&manager, SIGNAL(configurationChanged(QNetworkConfiguration)),
@@ -136,16 +137,16 @@ void QNetworkSessionPrivate::syncStateWithInterface()
     networkConfigurationsChanged();
 }
 
-void QNetworkSessionPrivate::open()
+void QNetworkSessionPrivateImpl::open()
 {
     if (serviceConfig.isValid()) {
         lastError = QNetworkSession::OperationNotSupportedError;
-        emit q->error(lastError);
+        emit QNetworkSessionPrivate::error(lastError);
     } else if (!isOpen) {
         if ((activeConfig.state() & QNetworkConfiguration::Discovered) !=
             QNetworkConfiguration::Discovered) {
             lastError =QNetworkSession::InvalidConfigurationError;
-            emit q->error(lastError);
+            emit QNetworkSessionPrivate::error(lastError);
             return;
         }
         opened = true;
@@ -153,7 +154,7 @@ void QNetworkSessionPrivate::open()
         if ((activeConfig.state() & QNetworkConfiguration::Active) != QNetworkConfiguration::Active &&
             (activeConfig.state() & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered) {
             state = QNetworkSession::Connecting;
-            emit q->stateChanged(state);
+            emit stateChanged(state);
 
             engine->connectToId(activeConfig.identifier());
         }
@@ -164,27 +165,27 @@ void QNetworkSessionPrivate::open()
     }
 }
 
-void QNetworkSessionPrivate::close()
+void QNetworkSessionPrivateImpl::close()
 {
     if (serviceConfig.isValid()) {
         lastError = QNetworkSession::OperationNotSupportedError;
-        emit q->error(lastError);
+        emit QNetworkSessionPrivate::error(lastError);
     } else if (isOpen) {
         opened = false;
         isOpen = false;
-        emit q->closed();
+        emit closed();
     }
 }
 
-void QNetworkSessionPrivate::stop()
+void QNetworkSessionPrivateImpl::stop()
 {
     if (serviceConfig.isValid()) {
         lastError = QNetworkSession::OperationNotSupportedError;
-        emit q->error(lastError);
+        emit QNetworkSessionPrivate::error(lastError);
     } else {
         if ((activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
             state = QNetworkSession::Closing;
-            emit q->stateChanged(state);
+            emit stateChanged(state);
 
             engine->disconnectFromId(activeConfig.identifier());
 
@@ -193,31 +194,31 @@ void QNetworkSessionPrivate::stop()
 
         opened = false;
         isOpen = false;
-        emit q->closed();
+        emit closed();
     }
 }
 
-void QNetworkSessionPrivate::migrate()
+void QNetworkSessionPrivateImpl::migrate()
 {
     qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
-void QNetworkSessionPrivate::accept()
+void QNetworkSessionPrivateImpl::accept()
 {
     qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
-void QNetworkSessionPrivate::ignore()
+void QNetworkSessionPrivateImpl::ignore()
 {
     qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
-void QNetworkSessionPrivate::reject()
+void QNetworkSessionPrivateImpl::reject()
 {
     qWarning("This platform does not support roaming (%s).", __FUNCTION__);
 }
 
-QNetworkInterface QNetworkSessionPrivate::currentInterface() const
+QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
 {
     if (!publicConfig.isValid() || !engine || state != QNetworkSession::Connected)
         return QNetworkInterface();
@@ -229,16 +230,16 @@ QNetworkInterface QNetworkSessionPrivate::currentInterface() const
     return QNetworkInterface::interfaceFromName(interface);
 }
 
-QVariant QNetworkSessionPrivate::sessionProperty(const QString& /*key*/) const
+QVariant QNetworkSessionPrivateImpl::sessionProperty(const QString& /*key*/) const
 {
     return QVariant();
 }
 
-void QNetworkSessionPrivate::setSessionProperty(const QString& /*key*/, const QVariant& /*value*/)
+void QNetworkSessionPrivateImpl::setSessionProperty(const QString& /*key*/, const QVariant& /*value*/)
 {
 }
 
-/*QString QNetworkSessionPrivate::bearerName() const
+/*QString QNetworkSessionPrivateImpl::bearerName() const
 {
     if (!publicConfig.isValid() || !engine)
         return QString();
@@ -246,7 +247,7 @@ void QNetworkSessionPrivate::setSessionProperty(const QString& /*key*/, const QV
     return engine->bearerName(activeConfig.identifier());
 }*/
 
-QString QNetworkSessionPrivate::errorString() const
+QString QNetworkSessionPrivateImpl::errorString() const
 {
     switch (lastError) {
     case QNetworkSession::UnknownSessionError:
@@ -265,12 +266,12 @@ QString QNetworkSessionPrivate::errorString() const
     return QString();
 }
 
-QNetworkSession::SessionError QNetworkSessionPrivate::error() const
+QNetworkSession::SessionError QNetworkSessionPrivateImpl::error() const
 {
     return lastError;
 }
 
-quint64 QNetworkSessionPrivate::bytesWritten() const
+quint64 QNetworkSessionPrivateImpl::bytesWritten() const
 {
 #if defined(BACKEND_NM) && 0
     if( NetworkManagerAvailable() && state == QNetworkSession::Connected ) {
@@ -288,7 +289,7 @@ quint64 QNetworkSessionPrivate::bytesWritten() const
     return tx_data;
 }
 
-quint64 QNetworkSessionPrivate::bytesReceived() const
+quint64 QNetworkSessionPrivateImpl::bytesReceived() const
 {
 #if defined(BACKEND_NM) && 0
     if( NetworkManagerAvailable() && state == QNetworkSession::Connected ) {
@@ -306,7 +307,7 @@ quint64 QNetworkSessionPrivate::bytesReceived() const
     return rx_data;
 }
 
-quint64 QNetworkSessionPrivate::activeTime() const
+quint64 QNetworkSessionPrivateImpl::activeTime() const
 {
 #if defined(BACKEND_NM)
     if (startTime.isNull()) {
@@ -318,7 +319,7 @@ quint64 QNetworkSessionPrivate::activeTime() const
     return m_activeTime;
 }
 
-void QNetworkSessionPrivate::updateStateFromServiceNetwork()
+void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
 {
     QNetworkSession::State oldState = state;
 
@@ -339,13 +340,13 @@ void QNetworkSessionPrivate::updateStateFromServiceNetwork()
                         this, SLOT(connectionError(QString,QNetworkSessionEngine::ConnectionError)),
                         Qt::QueuedConnection);
             }
-            emit q->newConfigurationActivated();
+            emit newConfigurationActivated();
         }
 
         state = QNetworkSession::Connected;
         qDebug() << oldState << "->" << state;
         if (state != oldState)
-            emit q->stateChanged(state);
+            emit stateChanged(state);
 
         return;
     }
@@ -357,10 +358,10 @@ void QNetworkSessionPrivate::updateStateFromServiceNetwork()
 
     qDebug() << oldState << "->" << state;
     if (state != oldState)
-        emit q->stateChanged(state);
+        emit stateChanged(state);
 }
 
-void QNetworkSessionPrivate::updateStateFromActiveConfig()
+void QNetworkSessionPrivateImpl::updateStateFromActiveConfig()
 {
     if (!engine)
         return;
@@ -375,13 +376,13 @@ void QNetworkSessionPrivate::updateStateFromActiveConfig()
     if (!oldActive && isOpen)
         emit quitPendingWaitsForOpened();
     if (oldActive && !isOpen)
-        emit q->closed();
+        emit closed();
 
     if (oldState != state)
-        emit q->stateChanged(state);
+        emit stateChanged(state);
 }
 
-void QNetworkSessionPrivate::networkConfigurationsChanged()
+void QNetworkSessionPrivateImpl::networkConfigurationsChanged()
 {
     if (serviceConfig.isValid())
         updateStateFromServiceNetwork();
@@ -392,7 +393,7 @@ void QNetworkSessionPrivate::networkConfigurationsChanged()
 #endif
 }
 
-void QNetworkSessionPrivate::configurationChanged(const QNetworkConfiguration &config)
+void QNetworkSessionPrivateImpl::configurationChanged(const QNetworkConfiguration &config)
 {
     if (serviceConfig.isValid() && (config == serviceConfig || config == activeConfig))
         updateStateFromServiceNetwork();
@@ -400,20 +401,20 @@ void QNetworkSessionPrivate::configurationChanged(const QNetworkConfiguration &c
         updateStateFromActiveConfig();
 }
 
-void QNetworkSessionPrivate::forcedSessionClose(const QNetworkConfiguration &config)
+void QNetworkSessionPrivateImpl::forcedSessionClose(const QNetworkConfiguration &config)
 {
     if (activeConfig == config) {
         opened = false;
         isOpen = false;
 
-        emit q->closed();
+        emit closed();
 
         lastError = QNetworkSession::SessionAbortedError;
-        emit q->error(lastError);
+        emit QNetworkSessionPrivate::error(lastError);
     }
 }
 
-void QNetworkSessionPrivate::connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error)
+void QNetworkSessionPrivateImpl::connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error)
 {
     if (activeConfig.identifier() == id) {
         networkConfigurationsChanged();
@@ -430,12 +431,12 @@ void QNetworkSessionPrivate::connectionError(const QString &id, QNetworkSessionE
         }
 
         emit quitPendingWaitsForOpened();
-        emit q->error(lastError);
+        emit QNetworkSessionPrivate::error(lastError);
     }
 }
 
 #if defined(BACKEND_NM) && 0
-void QNetworkSessionPrivate::setActiveTimeStamp()
+void QNetworkSessionPrivateImpl::setActiveTimeStamp()
 {
     if(NetworkManagerAvailable()) {
         startTime = QDateTime();
