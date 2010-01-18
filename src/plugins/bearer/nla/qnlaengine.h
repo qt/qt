@@ -95,6 +95,8 @@ public:
 
     QNetworkConfigurationManager::Capabilities capabilities() const;
 
+    QNetworkSessionPrivate *createSessionBackend();
+
 private Q_SLOTS:
     void networksChanged();
 

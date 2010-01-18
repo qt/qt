@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include "qnlaengine.h"
+#include "../qnetworksession_impl.h"
+
 #include <QtNetwork/private/qnetworkconfiguration_p.h>
 
 #include <QtCore/qthread.h>
@@ -634,6 +636,11 @@ QNetworkSession::State QNlaEngine::sessionStateForId(const QString &id)
 QNetworkConfigurationManager::Capabilities QNlaEngine::capabilities() const
 {
     return QNetworkConfigurationManager::ForcedRoaming;
+}
+
+QNetworkSessionPrivate *QNlaEngine::createSessionBackend()
+{
+    return new QNetworkSessionPrivateImpl;
 }
 
 #include "qnlaengine.moc"

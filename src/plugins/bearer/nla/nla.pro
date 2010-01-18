@@ -10,8 +10,11 @@ QT += network
 }
 
 HEADERS += qnlaengine.h \
-           ../platformdefs_win.h
-SOURCES += qnlaengine.cpp main.cpp
+           ../platformdefs_win.h \
+           ../qnetworksession_impl.h
+SOURCES += main.cpp \
+           qnlaengine.cpp \
+           ../qnetworksession_impl.cpp
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer

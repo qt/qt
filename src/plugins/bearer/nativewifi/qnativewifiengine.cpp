@@ -41,6 +41,7 @@
 
 #include "qnativewifiengine.h"
 #include "platformdefs.h"
+#include "../qnetworksession_impl.h"
 
 #include <QtNetwork/private/qnetworkconfiguration_p.h>
 
@@ -465,6 +466,11 @@ QNetworkConfigurationManager::Capabilities QNativeWifiEngine::capabilities() con
 {
     return QNetworkConfigurationManager::ForcedRoaming |
             QNetworkConfigurationManager::CanStartAndStopInterfaces;
+}
+
+QNetworkSessionPrivate *QNativeWifiEngine::createSessionBackend()
+{
+    return new QNetworkSessionPrivateImpl;
 }
 
 QT_END_NAMESPACE

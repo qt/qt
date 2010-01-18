@@ -3,8 +3,12 @@ include(../../qpluginbase.pri)
 
 QT += network
 
-HEADERS += qnativewifiengine.h platformdefs.h
-SOURCES += qnativewifiengine.cpp main.cpp
+HEADERS += qnativewifiengine.h \
+           platformdefs.h \
+           ../qnetworksession_impl.h
+SOURCES += main.cpp \
+           qnativewifiengine.cpp \
+           ../qnetworksession_impl.cpp
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer
