@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the demos of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,61 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef QFILENETWORKREPLY_P_H
-#define QFILENETWORKREPLY_P_H
+#include "webview.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access API.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QPaintEvent>
+#include <QWebFrame>
 
-#include "qnetworkreply.h"
-#include "qnetworkreply_p.h"
-#include "qnetworkaccessmanager.h"
-#include <QFile>
-
-QT_BEGIN_NAMESPACE
-
-
-class QFileNetworkReplyPrivate;
-class QFileNetworkReply: public QNetworkReply
+WebView::WebView(QWidget *parent)
+    : QWebView(parent)
+    , inLoading(false)
 {
-    Q_OBJECT
-public:
-    QFileNetworkReply(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
-    ~QFileNetworkReply();
-    virtual void abort();
+    connect(this, SIGNAL(loadStarted()), this, SLOT(newPageLoading()));
+    connect(this, SIGNAL(loadFinished(bool)), this, SLOT(pageLoaded(bool)));
+    page()->setPreferredContentsSize(QSize(1024, 768));
+}
 
-    // reimplemented from QNetworkReply
-    virtual void close();
-    virtual qint64 bytesAvailable() const;
-    virtual bool isSequential () const;
-    qint64 size() const;
-
-    virtual qint64 readData(char *data, qint64 maxlen);
-
-    Q_DECLARE_PRIVATE(QFileNetworkReply)
-};
-
-class QFileNetworkReplyPrivate: public QNetworkReplyPrivate
+void WebView::paintEvent(QPaintEvent *event)
 {
-public:
-    QFileNetworkReplyPrivate();
+    if (inLoading && loadingTime.elapsed() < 750) {
+        QPainter painter(this);
+        painter.setBrush(Qt::white);
+        painter.setPen(Qt::NoPen);
+        foreach (const QRect &rect, event->region().rects()) {
+            painter.drawRect(rect);
+        }
+    } else {
+        QWebView::paintEvent(event);
+    }
+}
 
-    QFile realFile;
-    qint64 realFileSize;
+void WebView::newPageLoading()
+{
+    inLoading = true;
+    loadingTime.start();
+}
 
-    virtual bool isFinished() const;
-
-    Q_DECLARE_PUBLIC(QFileNetworkReply)
-};
-
-QT_END_NAMESPACE
-
-#endif // QFILENETWORKREPLY_P_H
+void WebView::pageLoaded(bool)
+{
+    inLoading = false;
+    update();
+}
