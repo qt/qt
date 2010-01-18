@@ -57,6 +57,7 @@ private slots:
     void defaultValues();
     void properties();
     void connection();
+    void trimming();
 
 private:
     QmlEngine engine;
@@ -109,6 +110,26 @@ void tst_qmlconnection::connection()
     emit item->setWidth(100.);
     QCOMPARE(item->width(), 100.);
     QCOMPARE(item->property("tested").toBool(), true);
+
+    delete item;
+}
+
+void tst_qmlconnection::trimming()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/trimming.qml"));
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(c.create());
+
+    QVERIFY(item != 0);
+
+    QCOMPARE(item->property("tested").toString(), QString(""));
+    int index = item->metaObject()->indexOfSignal("testMe(int,QString)");
+    QMetaMethod method = item->metaObject()->method(index);
+    method.invoke(item,
+                  Qt::DirectConnection,
+                  Q_ARG(int, 5),
+                  Q_ARG(QString, "worked"));
+    QCOMPARE(item->property("tested").toString(), QString("worked5"));
 
     delete item;
 }
