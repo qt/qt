@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <shtypes.h>
 #include <objbase.h>
 #ifndef QFILEDIAG_WIN_P_H
 
@@ -150,6 +149,15 @@ typedef struct {
     DWORD pid;
 } PROPERTYKEY;
 #endif
+
+typedef struct {
+	USHORT	cb;
+	BYTE	abID[1];
+} SHITEMID, *LPSHITEMID;
+typedef struct {
+	SHITEMID mkid;
+} ITEMIDLIST, *LPITEMIDLIST;
+typedef const ITEMIDLIST *LPCITEMIDLIST;
 typedef struct {
     HWND          hwndOwner;
     LPCITEMIDLIST pidlRoot;
