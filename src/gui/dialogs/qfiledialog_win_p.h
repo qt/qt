@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include <shlobj.h>
+#include <shtypes.h>
 #include <objbase.h>
-#if !defined(QFILEDIAG_WIN_P_H) && !defined(__shobjidl_h__)
+#ifndef QFILEDIAG_WIN_P_H
 
 //these are the interface declarations needed for the file dialog on Vista and up
 
@@ -50,6 +50,8 @@
 
 //declarations
 typedef DWORD SICHINTF;
+typedef ULONG SFGAOF;
+typedef DWORD SHCONTF;
 #define FOS_OVERWRITEPROMPT	   0x2
 #define FOS_STRICTFILETYPES	   0x4
 #define FOS_NOCHANGEDIR	       0x8
@@ -83,6 +85,31 @@ typedef int GETPROPERTYSTOREFLAGS;
 #define GPS_BESTEFFORT            0x00000040
 #define GPS_MASK_VALID            0x0000007F
 
+typedef int (CALLBACK* BFFCALLBACK)(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
+// message from browser
+#define BFFM_INITIALIZED        1
+#define BFFM_SELCHANGED         2
+#define BFFM_ENABLEOK           (WM_USER + 101)
+#define BFFM_SETSELECTION       (WM_USER + 103)
+#define BFFM_SETSTATUSTEXT      (WM_USER + 104)
+
+// Browsing for directory.
+#define BIF_RETURNONLYFSDIRS   0x0001
+#define BIF_DONTGOBELOWDOMAIN  0x0002
+#define BIF_STATUSTEXT         0x0004
+#define BIF_RETURNFSANCESTORS  0x0008
+#define BIF_EDITBOX            0x0010
+#define BIF_VALIDATE           0x0020
+#define BIF_NEWDIALOGSTYLE     0x0040
+#define BIF_BROWSEINCLUDEURLS  0x0080
+#define BIF_UAHINT             0x0100
+#define BIF_NONEWFOLDERBUTTON  0x0200
+#define BIF_NOTRANSLATETARGETS 0x0400
+#define BIF_BROWSEFORCOMPUTER  0x1000
+#define BIF_BROWSEFORPRINTER   0x2000
+#define BIF_BROWSEINCLUDEFILES 0x4000
+#define BIF_SHAREABLE          0x8000
+
 //the enums
 typedef enum {
     SIATTRIBFLAGS_AND	= 0x1,
@@ -115,11 +142,25 @@ typedef FDE_SHAREVIOLATION_RESPONSE FDE_OVERWRITE_RESPONSE;
 typedef struct {
     LPCWSTR pszName;
     LPCWSTR pszSpec;
-} COMDLG_FILTERSPEC;
+} qt_COMDLG_FILTERSPEC;
+#ifndef PROPERTYKEY_DEFINED
+#define PROPERTYKEY_DEFINED
 typedef struct {
     GUID fmtid;
     DWORD pid;
 } PROPERTYKEY;
+#endif
+typedef struct {
+    HWND          hwndOwner;
+    LPCITEMIDLIST pidlRoot;
+    LPWSTR        pszDisplayName;
+    LPCWSTR       lpszTitle;
+    UINT          ulFlags;
+    BFFCALLBACK   lpfn;
+    LPARAM        lParam;
+    int           iImage;
+} BROWSEINFO;
+
 DECLARE_INTERFACE(IFileDialogEvents);
 DECLARE_INTERFACE_(IShellItem, IUnknown)
 {
@@ -157,7 +198,7 @@ DECLARE_INTERFACE_(IModalWindow, IUnknown)
 };
 DECLARE_INTERFACE_(IFileDialog, IModalWindow)
 {
-    STDMETHOD(SetFileTypes)(THIS_ UINT cFileTypes, const COMDLG_FILTERSPEC *rgFilterSpec) PURE;
+    STDMETHOD(SetFileTypes)(THIS_ UINT cFileTypes, const qt_COMDLG_FILTERSPEC *rgFilterSpec) PURE;
     STDMETHOD(SetFileTypeIndex)(THIS_ UINT iFileType) PURE;
     STDMETHOD(GetFileTypeIndex)(THIS_ UINT *piFileType) PURE;
     STDMETHOD(Advise)(THIS_ IFileDialogEvents *pfde, DWORD *pdwCookie) PURE;

@@ -60,21 +60,6 @@
 
 #ifdef Q_WS_WINCE
 #include <commdlg.h>
-#  ifndef BFFM_SETSELECTION
-#    define BFFM_SETSELECTION (WM_USER + 102)
-#  endif
-// Windows Mobile has a broken definition for BROWSEINFO
-// Only compile fix
-typedef struct qt_priv_browseinfo {
-    HWND          hwndOwner;
-    LPCITEMIDLIST pidlRoot;
-    LPWSTR        pszDisplayName;
-    LPCWSTR       lpszTitle;
-    UINT          ulFlags;
-    BFFCALLBACK   lpfn;
-    LPARAM        lParam;
-    int           iImage;
-} qt_BROWSEINFO;
 bool qt_priv_ptr_valid = false;
 #else
 #include "qfiledialog_win_p.h"
@@ -457,7 +442,7 @@ static bool qt_win_set_IFileDialogOptions(IFileDialog *pfd,
     // Add the filters to the file dialog.
     if (numFilters) {
         wchar_t *szData = (wchar_t*)winfilters.utf16();
-        COMDLG_FILTERSPEC *filterSpec = new COMDLG_FILTERSPEC[numFilters];
+        qt_COMDLG_FILTERSPEC *filterSpec = new qt_COMDLG_FILTERSPEC[numFilters];
         for(int i = 0; i<numFilters; i++) {
             filterSpec[i].pszName = szData+offsets[i*2];
             filterSpec[i].pszSpec = szData+offsets[(i*2)+1];
@@ -713,11 +698,6 @@ static int __stdcall winGetExistDirCallbackProc(HWND hwnd,
     return 0;
 }
 
-#ifndef BIF_NEWDIALOGSTYLE
-#define BIF_NEWDIALOGSTYLE     0x0040   // Use the new dialog layout with the ability to resize
-#endif
-
-
 QString qt_win_get_existing_directory(const QFileDialogArgs &args)
 {
     QString currentDir = QDir::currentPath();
@@ -742,11 +722,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
     path[0] = 0;
     tTitle = args.caption;
 
-#if !defined(Q_WS_WINCE)
     BROWSEINFO bi;
-#else
-    qt_BROWSEINFO bi;
-#endif
 
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
     bi.hwndOwner = (parent ? parent->winId() : 0);
@@ -760,7 +736,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
 
     qt_win_resolve_libs();
     if (ptrSHBrowseForFolder) {
-        LPITEMIDLIST pItemIDList = ptrSHBrowseForFolder((BROWSEINFO*)&bi);
+        LPITEMIDLIST pItemIDList = ptrSHBrowseForFolder(&bi);
         if (pItemIDList) {
             ptrSHGetPathFromIDList(pItemIDList, path);
             IMalloc *pMalloc;
