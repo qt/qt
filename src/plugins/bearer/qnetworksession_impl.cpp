@@ -79,7 +79,7 @@ Q_SIGNALS:
     void forcedSessionClose(const QNetworkConfiguration &config);
 };
 
-#include "qnetworksession_p.moc"
+#include "qnetworksession_impl.moc"
 
 Q_GLOBAL_STATIC(QNetworkSessionManagerPrivate, sessionManager);
 
