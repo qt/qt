@@ -77,9 +77,10 @@ int QBlittablePixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 
 void QBlittablePixmapData::fill(const QColor &color)
 {
-    if (color.alpha() == 255 && blittable()->capabilities() & QBlittable::SolidRectCapability)
-         blittable()->fillRect(QRectF(0,0,w,h),color);
-    else
+    if (color.alpha() == 255 && blittable()->capabilities() & QBlittable::SolidRectCapability) {
+        blittable()->unlock();
+        blittable()->fillRect(QRectF(0,0,w,h),color);
+    }else
         blittable()->lock()->fill(color.rgba());
 }
 

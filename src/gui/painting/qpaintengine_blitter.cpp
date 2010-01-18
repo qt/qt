@@ -174,12 +174,11 @@ public:
     }
 
     void fillRect(const QRectF &rect, const QColor &color) {
-//        lock();
         QRectF targetRect = rect;
         if (hasXForm) {
             targetRect = state->matrix.mapRect(rect);
         }
-        QClipData *clipData = state->clip;
+        const QClipData *clipData = raster->d_func()->clip();;
         if (clipData) {
             if (clipData->hasRectClip) {
                 unlock();
