@@ -49,6 +49,8 @@
 
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
+#include "qnetworksession.h"
+#include "qhostinfo.h"
 
 #include "private/qnoncontiguousbytedevice_p.h"
 
@@ -339,6 +341,34 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 #else
     Q_UNUSED(errors);
 #endif
+}
+
+void QNetworkAccessBackend::start()
+{
+    qDebug() << "Checking for localhost";
+    QHostInfo hostInfo = QHostInfo::fromName(reply->url.host());
+    foreach (const QHostAddress &address, hostInfo.addresses()) {
+        if (address == QHostAddress::LocalHost ||
+            address == QHostAddress::LocalHostIPv6) {
+            // Don't need session for local host access.
+            qDebug() << "Access is to localhost";
+            open();
+            return;
+        }
+    }
+
+    qDebug() << "Connecting session signals";
+    connect(manager->session, SIGNAL(opened()), this, SLOT(sessionOpened()));
+
+    qDebug() << "Open session if required";
+    if (!manager->session->isOpen())
+        manager->session->open();
+}
+
+void QNetworkAccessBackend::sessionOpened()
+{
+    qDebug() << "Session opened, calling open()";
+    open();
 }
 
 QT_END_NAMESPACE

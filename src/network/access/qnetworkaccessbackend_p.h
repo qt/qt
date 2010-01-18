@@ -111,6 +111,7 @@ public:
     //   socket).
 
     virtual void open() = 0;
+    virtual void start();
     virtual void closeDownstreamChannel() = 0;
     virtual bool waitForDownstreamReadyRead(int msecs) = 0;
 
@@ -185,6 +186,9 @@ protected slots:
     void redirectionRequested(const QUrl &destination);
     void sslErrors(const QList<QSslError> &errors);
     void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal);
+
+private slots:
+    void sessionOpened();
 
 private:
     friend class QNetworkAccessManager;

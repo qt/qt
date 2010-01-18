@@ -82,7 +82,9 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
-    backend->open();
+    backend->start();
+
+    //backend->open();
     if (state != Finished) {
         if (operation == QNetworkAccessManager::GetOperation)
             pendingNotifications.append(NotifyDownstreamReadyWrite);

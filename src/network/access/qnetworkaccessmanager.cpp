@@ -59,6 +59,8 @@
 #include "QtCore/qvector.h"
 #include "QtNetwork/qauthenticator.h"
 #include "QtNetwork/qsslconfiguration.h"
+#include "QtNetwork/qnetworkconfigmanager.h"
+#include "QtNetwork/qnetworksession.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -346,6 +348,9 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     : QObject(*new QNetworkAccessManagerPrivate, parent)
 {
     ensureInitialized();
+
+    d_func()->session =
+        new QNetworkSession(QNetworkConfigurationManager().defaultConfiguration(), this);
 }
 
 /*!
@@ -662,6 +667,31 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
 QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &request)
 {
     return d_func()->postProcess(createRequest(QNetworkAccessManager::DeleteOperation, request));
+}
+
+/*!
+    \since 4.7
+
+    Sets the network configuration that will be used to \a config.
+
+    \sa configuration()
+*/
+void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config)
+{
+    delete d_func()->session;
+    d_func()->session = new QNetworkSession(config, this);
+}
+
+/*!
+    \since 4.7
+
+    Returns the network configuration.
+
+    \sa setConfiguration()
+*/
+QNetworkConfiguration QNetworkAccessManager::configuration() const
+{
+    return d_func()->session->configuration();
 }
 
 /*!

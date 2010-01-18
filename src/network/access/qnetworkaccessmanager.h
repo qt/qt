@@ -62,6 +62,7 @@ class QNetworkReply;
 class QNetworkProxy;
 class QNetworkProxyFactory;
 class QSslError;
+class QNetworkConfiguration;
 
 class QNetworkReplyImplPrivate;
 class QNetworkAccessManagerPrivate;
@@ -102,6 +103,9 @@ public:
     QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *deleteResource(const QNetworkRequest &request);
+
+    void setConfiguration(const QNetworkConfiguration &config);
+    QNetworkConfiguration configuration() const;
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY

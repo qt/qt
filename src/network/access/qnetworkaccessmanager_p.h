@@ -65,6 +65,7 @@ class QAuthenticator;
 class QAbstractNetworkCache;
 class QNetworkAuthenticationCredential;
 class QNetworkCookieJar;
+class QNetworkSession;
 
 class QNetworkAccessManagerPrivate: public QObjectPrivate
 {
@@ -74,7 +75,8 @@ public:
 #ifndef QT_NO_NETWORKPROXY
           proxyFactory(0),
 #endif
-          cookieJarCreated(false)
+          cookieJarCreated(false),
+          session(0)
     { }
     ~QNetworkAccessManagerPrivate();
 
@@ -112,6 +114,7 @@ public:
 
     bool cookieJarCreated;
 
+    QNetworkSession *session;
 
     // this cache can be used by individual backends to cache e.g. their TCP connections to a server
     // and use the connections for multiple requests.
