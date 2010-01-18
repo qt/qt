@@ -3186,7 +3186,6 @@ void tst_QNetworkReply::lastModifiedHeaderForFile()
 
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.head(request);
-    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
@@ -3202,7 +3201,6 @@ void tst_QNetworkReply::lastModifiedHeaderForHttp()
 
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.head(request);
-    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
