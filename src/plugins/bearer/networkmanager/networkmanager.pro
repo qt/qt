@@ -7,12 +7,14 @@ DEFINES += BACKEND_NM
 
 HEADERS += qnmdbushelper.h \
            qnetworkmanagerservice.h \
-           qnetworkmanagerengine.h
+           qnetworkmanagerengine.h \
+           ../qnetworksession_impl.h
 
 SOURCES += main.cpp \
            qnmdbushelper.cpp \
            qnetworkmanagerservice.cpp \
-           qnetworkmanagerengine.cpp
+           qnetworkmanagerengine.cpp \
+           ../qnetworksession_impl.cpp
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer

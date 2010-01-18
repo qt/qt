@@ -90,7 +90,7 @@ public:
     virtual void close() = 0;
     virtual void stop() = 0;
 
-    virtual void setALREnabled(bool enabled) { }
+    virtual void setALREnabled(bool /*enabled*/) { }
     virtual void migrate() = 0;
     virtual void accept() = 0;
     virtual void ignore() = 0;

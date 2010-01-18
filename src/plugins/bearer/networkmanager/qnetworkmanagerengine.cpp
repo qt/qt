@@ -41,6 +41,7 @@
 
 #include "qnetworkmanagerengine.h"
 #include "qnetworkmanagerservice.h"
+#include "../qnetworksession_impl.h"
 
 #include <QtNetwork/private/qnetworkconfiguration_p.h>
 
@@ -238,6 +239,8 @@ void QNetworkManagerEngine::requestUpdate()
 void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
                                                        const QMap<QString, QVariant> &properties)
 {
+    Q_UNUSED(path)
+
     QMapIterator<QString, QVariant> i(properties);
     while (i.hasNext()) {
         i.next();
@@ -302,6 +305,8 @@ void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
 void QNetworkManagerEngine::activeConnectionPropertiesChanged(const QString &path,
                                                               const QMap<QString, QVariant> &properties)
 {
+    Q_UNUSED(properties)
+
     QNetworkManagerConnectionActive *activeConnection = activeConnections.value(path);
 
     if (!activeConnection)
@@ -396,6 +401,8 @@ void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
 
 void QNetworkManagerEngine::removeConnection(const QString &path)
 {
+    Q_UNUSED(path)
+
     QNetworkManagerSettingsConnection *connection =
         qobject_cast<QNetworkManagerSettingsConnection *>(sender());
     if (!connection)
@@ -473,6 +480,8 @@ void QNetworkManagerEngine::activationFinished(QDBusPendingCallWatcher *watcher)
 
 void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjectPath &objectPath)
 {
+    Q_UNUSED(path)
+
     QNetworkManagerInterfaceAccessPoint *accessPoint =
         new QNetworkManagerInterfaceAccessPoint(objectPath.path());
     accessPoints.append(accessPoint);
@@ -524,6 +533,8 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
 void QNetworkManagerEngine::removeAccessPoint(const QString &path,
                                               const QDBusObjectPath &objectPath)
 {
+    Q_UNUSED(path)
+
     for (int i = 0; i < accessPoints.count(); ++i) {
         QNetworkManagerInterfaceAccessPoint *accessPoint = accessPoints.at(i);
 
@@ -546,6 +557,8 @@ void QNetworkManagerEngine::removeAccessPoint(const QString &path,
 
 void QNetworkManagerEngine::updateAccessPoint(const QMap<QString, QVariant> &map)
 {
+    Q_UNUSED(map)
+
     QNetworkManagerInterfaceAccessPoint *accessPoint =
         qobject_cast<QNetworkManagerInterfaceAccessPoint *>(sender());
     if (!accessPoint)
@@ -671,6 +684,11 @@ QNetworkConfigurationManager::Capabilities QNetworkManagerEngine::capabilities()
 {
     return QNetworkConfigurationManager::ForcedRoaming |
            QNetworkConfigurationManager::CanStartAndStopInterfaces;
+}
+
+QNetworkSessionPrivate *QNetworkManagerEngine::createSessionBackend()
+{
+    return new QNetworkSessionPrivateImpl;
 }
 
 QT_END_NAMESPACE
