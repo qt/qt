@@ -24,7 +24,7 @@ Compiling:
 
         export RVCT22LIB=<rvct-dir>/lib/armlib
         export EPOCROOT=<s60-root>
-        export PATH=$PATH:<s60-root>/epoc32/tools
+        export PATH=$PATH:<s60-root>/epoc32/tools:<rvctInstallDir>/bin
         export PATH=$PATH:<qt-root>/bin
 
     Replace the s60-root with the installation directory of your SDK,
@@ -38,27 +38,20 @@ Compiling:
             symbian/linux-armcc -little-endian -host-little-endian \
             -arch symbian
 
- 3. Compile the host tools. This unfortunately does not happen
-    automatically.
+ 3. Compile Qt
 
-        cd src/tools
-        for i in bootstrap moc rcc uic; do make -C $i; done
-
- 4. Compile QtCore.dll:
-
-        cd ../corelib
-        qmake -platform symbian/linux-armcc
+        cd src
         make
 
     and then wait for a while.
 
- 5. Compile some helloworld application (I leave the details to you
+ 4. Compile some helloworld application (I leave the details to you
     ;-)
 
-        qmake -platform symbian/linux-armcc
+        qmake
         make
 
- 6. Package and run on the phone. This is unfortunately a bit of a
+ 5. Package and run on the phone. This is unfortunately a bit of a
     manual step at the moment. Your best bet is to look at a Windows
     build of the same application, and manually grab the .rsc files
     that it refers to and put them in the application directory on
@@ -76,3 +69,4 @@ Compiling:
             selfsigned.cer selfsigned.key
 
  7. Enjoy QObjects and "hello world" on the phone!
+
