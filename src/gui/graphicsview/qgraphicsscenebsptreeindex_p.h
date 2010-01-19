@@ -97,7 +97,7 @@ protected:
     void removeItem(QGraphicsItem *item);
     void prepareBoundingRectChange(const QGraphicsItem *item);
 
-    void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value);
+    void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const void *const value);
 
 private :
     Q_DECLARE_PRIVATE(QGraphicsSceneBspTreeIndex)
