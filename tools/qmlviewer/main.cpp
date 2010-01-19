@@ -83,6 +83,7 @@ void usage()
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
     qWarning("                                             \"list\" for a list of built-ins");
     qWarning("  -resizeview .............................. resize the view, not the skin");
+    qWarning("  -qmlbrowser .............................. use a QML-based file browser");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
