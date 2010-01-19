@@ -61,21 +61,6 @@ QGLRect QGL2PEXVertexArray::boundingRect() const
         return QGLRect(minX, minY, maxX, maxY);
 }
 
-void QGL2PEXVertexArray::addRect(const QRectF &rect)
-{
-    qreal top = rect.top();
-    qreal left = rect.left();
-    qreal bottom = rect.bottom();
-    qreal right = rect.right();
-
-    vertexArray << QGLPoint(left, top)
-                << QGLPoint(right, top)
-                << QGLPoint(right, bottom)
-                << QGLPoint(right, bottom)
-                << QGLPoint(left, bottom)
-                << QGLPoint(left, top);
-}
-
 void QGL2PEXVertexArray::addClosingLine(int index)
 {
     if (QPointF(vertexArray.at(index)) != QPointF(vertexArray.last()))
