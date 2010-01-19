@@ -92,7 +92,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     GLenum target = GL_TEXTURE_2D;
 
-    if ((QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
+    if ((QGLExtensions::glExtensions() & QGLExtensions::TextureRectangle)
         && (size.width() != nearest_gl_texture_size(size.width())
             || size.height() != nearest_gl_texture_size(size.height())))
     {
@@ -223,7 +223,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     GLenum target = GL_TEXTURE_2D;
 
-    if ((QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
+    if ((QGLExtensions::glExtensions() & QGLExtensions::TextureRectangle)
         && (size.width() != nearest_gl_texture_size(size.width())
             || size.height() != nearest_gl_texture_size(size.height())))
     {

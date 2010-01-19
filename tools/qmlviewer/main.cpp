@@ -299,7 +299,6 @@ int main(int argc, char ** argv)
         usage();
     }
 
-    viewer.setUseGL(useGL);
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);
     viewer.setNetworkCacheSize(cache);
@@ -338,6 +337,7 @@ int main(int argc, char ** argv)
         if (useNativeFileBrowser)
             viewer.openFile();
     }
+    viewer.setUseGL(useGL);
     viewer.raise();
 
     return app.exec();
