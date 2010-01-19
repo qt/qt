@@ -587,6 +587,12 @@ void QBlitterPaintEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
 #endif
 }
 
+void QBlitterPaintEngine::drawEllipse(const QRectF &r)
+{
+    Q_D(QBlitterPaintEngine);
+    d->lock();
+    d->raster->drawEllipse(r);
+}
 
 void QBlitterPaintEngine::setState(QPainterState *s)
 {

@@ -85,6 +85,8 @@ public:
 
     virtual void drawTextItem(const QPointF &pos, const QTextItem &ti);
 
+    virtual void drawEllipse(const QRectF &r);
+
     virtual void setState(QPainterState *s);
 
     inline QPainterState *state() { return static_cast<QPainterState *>(QPaintEngine::state); }
