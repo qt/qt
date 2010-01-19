@@ -51,6 +51,9 @@
 #include <QtCore/qwaitcondition.h>
 #include <QtScript/qscriptvalueiterator.h>
 #include <QtCore/qfile.h>
+#include <QtDeclarative/qmlinfo.h>
+
+QT_BEGIN_NAMESPACE
 
 class WorkerDataEvent : public QEvent
 {
@@ -143,6 +146,82 @@ private:
     void processMessage(int, const QVariant &);
     void processLoad(int, const QUrl &);
 };
+
+// Currently this will leak as no-one releases it in the worker thread 
+class QmlWorkerListModelAgent : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int count READ count);
+
+public:
+    QmlWorkerListModelAgent(QmlWorkerListModel *);
+    ~QmlWorkerListModelAgent();
+
+    void addref();
+    void release();
+
+    int count() const;
+
+    Q_INVOKABLE void clear();
+    Q_INVOKABLE void remove(int index);
+    Q_INVOKABLE void append(const QScriptValue &);
+    Q_INVOKABLE void insert(int index, const QScriptValue&);
+    Q_INVOKABLE QScriptValue get(int index) const;
+    Q_INVOKABLE void set(int index, const QScriptValue &);
+    Q_INVOKABLE void sync();
+
+    struct VariantRef
+    {
+        VariantRef() : a(0) {}
+        VariantRef(const VariantRef &r) : a(r.a) { if (a) a->addref(); }
+        VariantRef(QmlWorkerListModelAgent *_a) : a(_a) { if (a) a->addref(); }
+        ~VariantRef() { if (a) a->release(); }
+
+        VariantRef &operator=(const VariantRef &o) { 
+            if (o.a) o.a->addref(); 
+            if (a) a->release(); a = o.a; 
+            return *this; 
+        }
+
+        QmlWorkerListModelAgent *a;
+    };
+protected:
+    virtual bool event(QEvent *);
+
+private:
+    friend class QmlWorkerScriptEnginePrivate;
+    friend class QmlWorkerListModel;
+    QScriptEngine *m_engine;
+
+    struct Change {
+        enum { Inserted, Removed, Moved, Changed } type;
+        int index; // Inserted/Removed/Moved/Changed
+        int count; // Inserted/Removed/Moved/Changed
+        int to;    // Moved
+    };
+
+    struct Data {
+        QHash<int, QString> roles;
+        QHash<QString, int> strings;
+        QList<QHash<int, QVariant> > values;
+        QList<Change> changes;
+
+        void clearChange();
+        void insertChange(int index, int count);
+        void removeChange(int index, int count);
+        void changedChange(int index, int count);
+    };
+    Data data;
+
+    struct Sync : public QEvent {
+        Sync() : QEvent(QEvent::User) {}
+        Data data;
+    };
+
+    QAtomicInt m_ref;
+    QmlWorkerListModel *m_model;
+};
+Q_DECLARE_METATYPE(QmlWorkerListModelAgent::VariantRef);
 
 QmlWorkerScriptEnginePrivate::QmlWorkerScriptEnginePrivate()
 : workerEngine(0), m_nextId(0)
@@ -285,6 +364,15 @@ QVariant QmlWorkerScriptEnginePrivate::scriptValueToVariant(const QScriptValue &
         }
 
         return QVariant(list);
+    } else if (value.isQObject()) {
+        QmlWorkerListModel *lm = qobject_cast<QmlWorkerListModel *>(value.toQObject());
+        if (lm) {
+            QmlWorkerListModelAgent::VariantRef v(lm->agent());
+            return qVariantFromValue(v);
+        } else {
+            // No other QObject's are allowed to be sent
+            return QVariant();
+        }
     } else if (value.isObject()) {
         QVariantHash hash;
 
@@ -310,6 +398,15 @@ QScriptValue QmlWorkerScriptEnginePrivate::variantToScriptValue(const QVariant &
         return QScriptValue(value.toString());
     } else if (value.userType() == QMetaType::QReal) {
         return QScriptValue(value.toReal());
+    } else if (value.userType() == qMetaTypeId<QmlWorkerListModelAgent::VariantRef>()) {
+        QmlWorkerListModelAgent::VariantRef vr = qvariant_cast<QmlWorkerListModelAgent::VariantRef>(value);
+        if (vr.a->m_engine == 0)
+            vr.a->m_engine = engine;
+        else if (vr.a->m_engine != engine)
+            return engine->nullValue();
+        QScriptValue o = engine->newQObject(vr.a);
+        o.setData(engine->newVariant(value)); // Keeps the agent ref so that it is cleaned up on gc
+        return o;
     } else if (value.userType() == QMetaType::QVariantList) {
         QVariantList list = qvariant_cast<QVariantList>(value);
         QScriptValue rv = engine->newArray(list.count());
@@ -513,5 +610,411 @@ bool QmlWorkerScript::event(QEvent *event)
     }
 }
 
-
 QML_DEFINE_TYPE(Qt, 4, 6, WorkerScript, QmlWorkerScript);
+
+void QmlWorkerListModelAgent::Data::clearChange() 
+{ 
+    changes.clear(); 
+}
+
+void QmlWorkerListModelAgent::Data::insertChange(int index, int count) 
+{
+    Change c = { Change::Inserted, index, count, 0 };
+    changes << c;
+}
+
+void QmlWorkerListModelAgent::Data::removeChange(int index, int count) 
+{
+    Change c = { Change::Removed, index, count, 0 };
+    changes << c;
+}
+
+void QmlWorkerListModelAgent::Data::changedChange(int index, int count)
+{
+    Change c = { Change::Changed, index, count, 0 };
+    changes << c;
+}
+
+QmlWorkerListModelAgent::QmlWorkerListModelAgent(QmlWorkerListModel *m)
+: m_engine(0), m_ref(1), m_model(m)
+{
+    data.roles = m_model->m_roles;
+    data.strings = m_model->m_strings;
+    data.values = m_model->m_values;
+}
+
+QmlWorkerListModelAgent::~QmlWorkerListModelAgent()
+{
+}
+
+void QmlWorkerListModelAgent::addref()
+{
+    m_ref.ref();
+}
+
+void QmlWorkerListModelAgent::release()
+{
+    bool del = !m_ref.deref();
+
+    if (del)
+        delete this;
+}
+
+int QmlWorkerListModelAgent::count() const
+{
+    return data.values.count();
+}
+
+void QmlWorkerListModelAgent::clear()
+{
+    data.clearChange();
+    data.removeChange(0, data.values.count());
+    data.values.clear();
+}
+
+void QmlWorkerListModelAgent::remove(int index)
+{
+    if (data.values.count() <= index)
+        return;
+
+    data.values.removeAt(index);
+    data.removeChange(index, 1);
+}
+
+void QmlWorkerListModelAgent::append(const QScriptValue &value)
+{
+    QHash<int, QVariant> row;
+
+    QScriptValueIterator it(value);
+    while (it.hasNext()) {
+        it.next();
+        QString name = it.name();
+        QVariant v = it.value().toVariant();
+
+        QHash<QString, int>::Iterator iter = data.strings.find(name);
+        if (iter == data.strings.end()) {
+            int role = data.roles.count();
+            data.roles.insert(role, name);
+            iter = data.strings.insert(name, role);
+        }
+        row.insert(*iter, v);
+    }
+
+    data.values.append(row);
+    data.insertChange(data.values.count() - 1, 1);
+}
+
+void QmlWorkerListModelAgent::insert(int index, const QScriptValue &value)
+{
+    if (index > data.values.count())
+        return;
+
+    QHash<int, QVariant> row;
+
+    QScriptValueIterator it(value);
+    while (it.hasNext()) {
+        it.next();
+        QString name = it.name();
+        QVariant v = it.value().toVariant();
+
+        QHash<QString, int>::Iterator iter = data.strings.find(name);
+        if (iter == data.strings.end()) {
+            int role = data.roles.count();
+            data.roles.insert(role, name);
+            iter = data.strings.insert(name, role);
+        }
+        row.insert(*iter, v);
+    }
+
+    data.values.insert(index, row);
+    data.insertChange(index, 1);
+}
+
+void QmlWorkerListModelAgent::set(int index, const QScriptValue &value)
+{
+    if (data.values.count() <= index)
+        return;
+
+    QHash<int, QVariant> row;
+
+    QScriptValueIterator it(value);
+    while (it.hasNext()) {
+        it.next();
+        QString name = it.name();
+        QVariant v = it.value().toVariant();
+
+        QHash<QString, int>::Iterator iter = data.strings.find(name);
+        if (iter == data.strings.end()) {
+            int role = data.roles.count();
+            data.roles.insert(role, name);
+            iter = data.strings.insert(name, role);
+        }
+        row.insert(*iter, v);
+    }
+
+    if (data.values.at(index) != row) {
+        data.values[index] = row;
+        data.changedChange(index, 1);
+    }
+}
+
+QScriptValue QmlWorkerListModelAgent::get(int index) const
+{
+    if (data.values.count() <= index)
+        return m_engine->undefinedValue();
+
+    QScriptValue rv = m_engine->newObject();
+
+    QHash<int, QVariant> row = data.values.at(index);
+    for (QHash<int, QVariant>::ConstIterator iter = row.begin(); iter != row.end(); ++iter) 
+        rv.setProperty(data.roles.value(iter.key()), qScriptValueFromValue(m_engine, iter.value()));
+
+    return rv;
+}
+
+void QmlWorkerListModelAgent::sync()
+{
+    Sync *s = new Sync;
+    s->data = data;
+    data.changes.clear();
+    QCoreApplication::postEvent(this, s);
+}
+
+bool QmlWorkerListModelAgent::event(QEvent *e)
+{
+    if (e->type() == QEvent::User) {
+        Sync *s = static_cast<Sync *>(e);
+
+        const QList<Change> &changes = s->data.changes;
+
+        if (m_model) {
+            bool cc = m_model->m_values.count() != s->data.values.count();
+
+            m_model->m_roles = s->data.roles;
+            m_model->m_strings = s->data.strings;
+            m_model->m_values = s->data.values;
+
+            for (int ii = 0; ii < changes.count(); ++ii) {
+                const Change &change = changes.at(ii);
+                switch (change.type) {
+                case Change::Inserted:
+                    emit m_model->itemsInserted(change.index, change.count);
+                    break;
+                case Change::Removed:
+                    emit m_model->itemsRemoved(change.index, change.count);
+                    break;
+                case Change::Moved:
+                    emit m_model->itemsMoved(change.index, change.to, change.count);
+                    break;
+                case Change::Changed:
+                    emit m_model->itemsMoved(change.index, change.to, change.count);
+                    break;
+                }
+            }
+
+            if (cc)
+                emit m_model->countChanged();
+        }
+    }
+
+    return QObject::event(e);
+}
+
+QmlWorkerListModel::QmlWorkerListModel(QObject *parent)
+: QListModelInterface(parent), m_agent(0)
+{
+}
+
+QmlWorkerListModel::~QmlWorkerListModel()
+{
+    if (m_agent) {
+        m_agent->m_model = 0;
+        m_agent->release();
+    }
+}
+
+void QmlWorkerListModel::clear()
+{
+    if (m_agent) {
+        qmlInfo(this) << "List can only be modified from a WorkerScript";
+        return;
+    }
+
+    int count = m_values.count();
+    m_values.clear();
+    if (count) {
+        emit itemsRemoved(0, count);
+        emit countChanged();
+    }
+}
+
+void QmlWorkerListModel::remove(int index)
+{
+    if (m_agent) {
+        qmlInfo(this) << "List can only be modified from a WorkerScript";
+        return;
+    }
+
+    if (m_values.count() <= index)
+        return;
+
+    m_values.removeAt(index);
+    emit itemsRemoved(index, 1);
+    emit countChanged();
+}
+
+void QmlWorkerListModel::append(const QScriptValue &value)
+{
+    if (m_agent) {
+        qmlInfo(this) << "List can only be modified from a WorkerScript";
+        return;
+    }
+
+    QHash<int, QVariant> data;
+
+    QScriptValueIterator it(value);
+    while (it.hasNext()) {
+        it.next();
+        QString name = it.name();
+        QVariant v = it.value().toVariant();
+
+        QHash<QString, int>::Iterator iter = m_strings.find(name);
+        if (iter == m_strings.end()) {
+            int role = m_roles.count();
+            m_roles.insert(role, name);
+            iter = m_strings.insert(name, role);
+        }
+        data.insert(*iter, v);
+    }
+
+    m_values.append(data);
+
+    emit itemsInserted(m_values.count() - 1, 1);
+    emit countChanged();
+}
+
+void QmlWorkerListModel::insert(int index, const QScriptValue &value)
+{
+    if (m_agent) {
+        qmlInfo(this) << "List can only be modified from a WorkerScript";
+        return;
+    }
+
+    if (index > m_values.count())
+        return;
+
+    QHash<int, QVariant> data;
+
+    QScriptValueIterator it(value);
+    while (it.hasNext()) {
+        it.next();
+        QString name = it.name();
+        QVariant v = it.value().toVariant();
+
+        QHash<QString, int>::Iterator iter = m_strings.find(name);
+        if (iter == m_strings.end()) {
+            int role = m_roles.count();
+            m_roles.insert(role, name);
+            iter = m_strings.insert(name, role);
+        }
+        data.insert(*iter, v);
+    }
+
+    m_values.insert(index, data);
+    emit itemsInserted(index, 1);
+    emit countChanged();
+}
+
+QScriptValue QmlWorkerListModel::get(int index) const
+{
+    QmlEngine *engine = qmlEngine(this);
+    if (!engine || m_values.count() <= index)
+        return QScriptValue();
+
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+    QScriptValue rv = scriptEngine->newObject();
+
+    QHash<int, QVariant> data = m_values.at(index);
+    for (QHash<int, QVariant>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) 
+        rv.setProperty(m_roles.value(iter.key()), qScriptValueFromValue(scriptEngine, iter.value()));
+
+    return rv;
+}
+
+void QmlWorkerListModel::set(int index, const QScriptValue &value)
+{
+    if (m_agent) {
+        qmlInfo(this) << "List can only be modified from a WorkerScript";
+        return;
+    }
+
+    if (m_values.count() <= index)
+        return;
+
+    QHash<int, QVariant> data;
+
+    QScriptValueIterator it(value);
+    while (it.hasNext()) {
+        it.next();
+        QString name = it.name();
+        QVariant v = it.value().toVariant();
+
+        QHash<QString, int>::Iterator iter = m_strings.find(name);
+        if (iter == m_strings.end()) {
+            int role = m_roles.count();
+            m_roles.insert(role, name);
+            iter = m_strings.insert(name, role);
+        }
+        data.insert(*iter, v);
+    }
+
+    if (m_values.at(index) != data) {
+        m_values[index] = data;
+        emit itemsChanged(index, 1, m_roles.keys());
+    }
+}
+
+QmlWorkerListModelAgent *QmlWorkerListModel::agent()
+{
+    if (!m_agent) 
+        m_agent = new QmlWorkerListModelAgent(this);
+
+    return m_agent;
+}
+
+QList<int> QmlWorkerListModel::roles() const
+{
+    return m_roles.keys();
+}
+
+QString QmlWorkerListModel::toString(int role) const
+{
+    return m_roles.value(role);
+}
+
+int QmlWorkerListModel::count() const
+{
+    return m_values.count();
+}
+
+QHash<int,QVariant> QmlWorkerListModel::data(int index, const QList<int> &) const
+{
+    if (m_values.count() <= index)
+        return QHash<int, QVariant>();
+    else
+        return m_values.at(index);
+}
+
+QVariant QmlWorkerListModel::data(int index, int role) const
+{
+    if (m_values.count() <= index)
+        return QVariant();
+    else
+        return m_values.at(index).value(role);
+}
+
+QML_DEFINE_TYPE(Qt,4,6,WorkerListModel,QmlWorkerListModel)
+
+#include "qmlworkerscript.moc"
+
+QT_END_NAMESPACE

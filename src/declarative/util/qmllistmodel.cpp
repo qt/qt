@@ -265,6 +265,7 @@ struct ModelNode
 
     QmlListModel *modelCache;
     ModelObject *objectCache;
+    bool isArray;
 };
 
 QT_END_NAMESPACE
@@ -280,6 +281,7 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
         ModelNode *value = new ModelNode;
         QScriptValue v = it.value();
         if (v.isArray()) {
+            value->isArray = true;
             value->setListValue(v);
         } else {
             value->values << v.toVariant();
@@ -296,6 +298,7 @@ void ModelNode::setListValue(const QScriptValue& valuelist) {
         ModelNode *value = new ModelNode;
         QScriptValue v = it.value();
         if (v.isArray()) {
+            value->isArray = true;
             value->setListValue(v);
         } else if (v.isObject()) {
             value->setObjectValue(v);
@@ -367,27 +370,29 @@ QVariant QmlListModel::valueForNode(ModelNode *node) const
 {
     QObject *rv = 0;
 
-    if (!node->properties.isEmpty()) {
-        // Object
-        rv = node->object(this);
-    } else if (node->values.count() == 0) {
-        // Invalid
-        return QVariant();
-    } else if (node->values.count() == 1) {
-        // Value
-        QVariant &var = node->values[0];
-        ModelNode *valueNode = qvariant_cast<ModelNode *>(var);
-        if (valueNode) {
-            if (!valueNode->properties.isEmpty())
-                rv = valueNode->object(this);
-            else
-                rv = valueNode->model(this);
-        } else {
-            return var;
-        }
-    } else if (node->values.count() > 1) {
+    if (node->isArray) {
         // List
         rv = node->model(this);
+    } else {
+        if (!node->properties.isEmpty()) {
+            // Object
+            rv = node->object(this);
+        } else if (node->values.count() == 0) {
+            // Invalid
+            return QVariant();
+        } else if (node->values.count() == 1) {
+            // Value
+            QVariant &var = node->values[0];
+            ModelNode *valueNode = qvariant_cast<ModelNode *>(var);
+            if (valueNode) {
+                if (!valueNode->properties.isEmpty())
+                    rv = valueNode->object(this);
+                else
+                    rv = valueNode->model(this);
+            } else {
+                return var;
+            }
+        }
     }
 
     if (rv)
@@ -933,7 +938,7 @@ static void dump(ModelNode *node, int ind)
 }
 
 ModelNode::ModelNode()
-: modelCache(0), objectCache(0)
+: modelCache(0), objectCache(0), isArray(false)
 {
 }
 
