@@ -73,9 +73,7 @@
 
 //#define MYX11_DEBUG
 
-//MIT SHM disabled by default, since we haven't implemented ShmCompletion synchronization yet
-
-#define DONT_USE_MIT_SHM
+//#define DONT_USE_MIT_SHM
 
 static int (*original_x_errhandler)(Display *dpy, XErrorEvent *);
 static bool seen_badwindow;
@@ -506,14 +504,14 @@ void MyWindow::paintEvent()
         //qDebug() << "Here we go" << image_info->image->width << image_info->image->height;
         int x = 0;
         int y = 0;
-        // We should really set send_event to true, and then use the XShmCompletionEvent
-        // to synchronize painting
+
+        // We could set send_event to true, and then use the ShmCompletion to synchronize,
+        // but let's do like Qt/11 and just use XSync
         XShmPutImage (xd->display, window, gc, image_info->image, 0, 0,
                       x, y, image_info->image->width, image_info->image->height,
-                      /*send_event*/ false);
+                      /*send_event*/ False);
 
-        //### This makes output visible, probably not ideal from a performance point of view...
-        XFlush(xd->display);
+        XSync(xd->display, False);
     }
 #endif
 }

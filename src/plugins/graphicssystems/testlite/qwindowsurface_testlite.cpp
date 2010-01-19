@@ -114,10 +114,67 @@ void QTestLiteWindowSurface::setGeometry(const QRect &rect)
     xw->setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
+//### scroll logic copied from QRasterWindowSurface, we should make better API for this
+
+void copied_qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
+{
+    // make sure we don't detach
+    uchar *mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());
+
+    int lineskip = img.bytesPerLine();
+    int depth = img.depth() >> 3;
+
+    const QRect imageRect(0, 0, img.width(), img.height());
+    const QRect r = rect & imageRect & imageRect.translated(-offset);
+    const QPoint p = rect.topLeft() + offset;
+
+    if (r.isEmpty())
+        return;
+
+    const uchar *src;
+    uchar *dest;
+
+    if (r.top() < p.y()) {
+        src = mem + r.bottom() * lineskip + r.left() * depth;
+        dest = mem + (p.y() + r.height() - 1) * lineskip + p.x() * depth;
+        lineskip = -lineskip;
+    } else {
+        src = mem + r.top() * lineskip + r.left() * depth;
+        dest = mem + p.y() * lineskip + p.x() * depth;
+    }
+
+    const int w = r.width();
+    int h = r.height();
+    const int bytes = w * depth;
+
+    // overlapping segments?
+    if (offset.y() == 0 && qAbs(offset.x()) < w) {
+        do {
+            ::memmove(dest, src, bytes);
+            dest += lineskip;
+            src += lineskip;
+        } while (--h);
+    } else {
+        do {
+            ::memcpy(dest, src, bytes);
+            dest += lineskip;
+            src += lineskip;
+        } while (--h);
+    }
+}
+
 bool QTestLiteWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
-    return QWindowSurface::scroll(area, dx, dy);
+    if (!xw->image() || xw->image()->isNull())
+        return false;
+
+    const QVector<QRect> rects = area.rects();
+    for (int i = 0; i < rects.size(); ++i)
+        copied_qt_scrollRectInImage(*xw->image(), rects.at(i), QPoint(dx, dy));
+
+    return true;
 }
+
 
 void QTestLiteWindowSurface::beginPaint(const QRegion &region)
 {
