@@ -21,6 +21,7 @@
 "MyApp.exe"    - "!:\sys\bin\MyApp.exe"
 "QtCore.dll"   - "!:\sys\bin\QtCore.dll"
 "QtGui.dll"    - "!:\sys\bin\QtGui.dll"
-; Currently you need to get this from a Windows build.
+; Currently you need to get this from a Windows build, but there are some
+; precompiled ones in this directory for testing.
 "wiggly.rsc"    - "!:\resource\apps\wiggly.rsc"
 "wiggly_reg.rsc"    - "!:\private\10003a3f\import\apps\wiggly_reg.rsc"
