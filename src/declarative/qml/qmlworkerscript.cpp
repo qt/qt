@@ -177,6 +177,12 @@ public:
         VariantRef(QmlWorkerListModelAgent *_a) : a(_a) { if (a) a->addref(); }
         ~VariantRef() { if (a) a->release(); }
 
+        VariantRef &operator=(const VariantRef &o) { 
+            if (o.a) o.a->addref(); 
+            if (a) a->release(); a = o.a; 
+            return *this; 
+        }
+
         QmlWorkerListModelAgent *a;
     };
 protected:
@@ -630,7 +636,7 @@ void QmlWorkerListModelAgent::Data::changedChange(int index, int count)
 }
 
 QmlWorkerListModelAgent::QmlWorkerListModelAgent(QmlWorkerListModel *m)
-: m_engine(0), m_model(m)
+: m_engine(0), m_ref(1), m_model(m)
 {
     data.roles = m_model->m_roles;
     data.strings = m_model->m_strings;
@@ -648,7 +654,9 @@ void QmlWorkerListModelAgent::addref()
 
 void QmlWorkerListModelAgent::release()
 {
-    if (!m_ref.deref())
+    bool del = !m_ref.deref();
+
+    if (del)
         delete this;
 }
 
@@ -660,7 +668,7 @@ int QmlWorkerListModelAgent::count() const
 void QmlWorkerListModelAgent::clear()
 {
     data.clearChange();
-    data.insertChange(0, data.values.count());
+    data.removeChange(0, data.values.count());
     data.values.clear();
 }
 
@@ -780,6 +788,8 @@ bool QmlWorkerListModelAgent::event(QEvent *e)
         const QList<Change> &changes = s->data.changes;
 
         if (m_model) {
+            bool cc = m_model->m_values.count() != s->data.values.count();
+
             m_model->m_roles = s->data.roles;
             m_model->m_strings = s->data.strings;
             m_model->m_values = s->data.values;
@@ -801,6 +811,9 @@ bool QmlWorkerListModelAgent::event(QEvent *e)
                     break;
                 }
             }
+
+            if (cc)
+                emit m_model->countChanged();
         }
     }
 
@@ -829,8 +842,10 @@ void QmlWorkerListModel::clear()
 
     int count = m_values.count();
     m_values.clear();
-    if (count)
+    if (count) {
         emit itemsRemoved(0, count);
+        emit countChanged();
+    }
 }
 
 void QmlWorkerListModel::remove(int index)
@@ -845,6 +860,7 @@ void QmlWorkerListModel::remove(int index)
 
     m_values.removeAt(index);
     emit itemsRemoved(index, 1);
+    emit countChanged();
 }
 
 void QmlWorkerListModel::append(const QScriptValue &value)
@@ -874,6 +890,7 @@ void QmlWorkerListModel::append(const QScriptValue &value)
     m_values.append(data);
 
     emit itemsInserted(m_values.count() - 1, 1);
+    emit countChanged();
 }
 
 void QmlWorkerListModel::insert(int index, const QScriptValue &value)
@@ -905,6 +922,7 @@ void QmlWorkerListModel::insert(int index, const QScriptValue &value)
 
     m_values.insert(index, data);
     emit itemsInserted(index, 1);
+    emit countChanged();
 }
 
 QScriptValue QmlWorkerListModel::get(int index) const

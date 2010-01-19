@@ -118,6 +118,7 @@ class QmlWorkerListModelAgent;
 class QmlWorkerListModel : public QListModelInterface
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged);
 
 public:
     QmlWorkerListModel(QObject * = 0);
@@ -137,6 +138,9 @@ public:
     virtual int count() const;
     virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
     virtual QVariant data(int index, int role) const;
+
+Q_SIGNALS:
+    void countChanged();
 
 private:
     friend class QmlWorkerListModelAgent;
