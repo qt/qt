@@ -222,6 +222,8 @@ int main(int argc, char ** argv)
             translationFile = argv[++i];
         } else if (arg == "-opengl") {
             useGL = true;
+        } else if (arg == "-qmlbrowser") {
+            useNativeFileBrowser = false;
         } else if (arg == "-L") {
             if (lastArg) usage();
             libraries << QString(argv[++i]);
