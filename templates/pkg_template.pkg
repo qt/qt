@@ -22,4 +22,5 @@
 "QtCore.dll"   - "!:\sys\bin\QtCore.dll"
 "QtGui.dll"    - "!:\sys\bin\QtGui.dll"
 ; Currently you need to get this from a Windows build.
-"MyApp.rsc"    - "!:\resource\apps\MyApp.rsc"
+"wiggly.rsc"    - "!:\resource\apps\wiggly.rsc"
+"wiggly_reg.rsc"    - "!:\private\10003a3f\import\apps\wiggly_reg.rsc"
