@@ -1012,19 +1012,10 @@ QVariant QGraphicsItemPrivate::inputMethodQueryHelper(Qt::InputMethodQuery query
     prepareGeometryChange) if the item is in its destructor, i.e.
     inDestructor is 1.
 */
-void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
+void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const QVariant *newParentVariant,
+                                               const QVariant *thisPointerVariant)
 {
     Q_Q(QGraphicsItem);
-    if (newParent == q) {
-        qWarning("QGraphicsItem::setParentItem: cannot assign %p as a parent of itself", this);
-        return;
-    }
-    if (newParent == parent)
-        return;
-
-    const QVariant newParentVariant(q->itemChange(QGraphicsItem::ItemParentChange,
-                                                  qVariantFromValue<QGraphicsItem *>(newParent)));
-    newParent = qVariantValue<QGraphicsItem *>(newParentVariant);
     if (newParent == parent)
         return;
 
@@ -1049,11 +1040,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     if (!inDestructor)
         q_ptr->prepareGeometryChange();
 
-    const QVariant thisPointerVariant(qVariantFromValue<QGraphicsItem *>(q));
     if (parent) {
         // Remove from current parent
         parent->d_ptr->removeChild(q);
-        parent->itemChange(QGraphicsItem::ItemChildRemovedChange, thisPointerVariant);
+        if (thisPointerVariant)
+            parent->itemChange(QGraphicsItem::ItemChildRemovedChange, *thisPointerVariant);
     }
 
     // Update toplevelitem list. If this item is being deleted, its parent
@@ -1129,7 +1120,8 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         }
 
         parent->d_ptr->addChild(q);
-        parent->itemChange(QGraphicsItem::ItemChildAddedChange, thisPointerVariant);
+        if (thisPointerVariant)
+            parent->itemChange(QGraphicsItem::ItemChildAddedChange, *thisPointerVariant);
         if (scene) {
             if (!implicitUpdate)
                 scene->d_func()->markDirty(q_ptr);
@@ -1184,7 +1176,8 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     }
 
     // Deliver post-change notification
-    q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
+    if (newParentVariant)
+        q->itemChange(QGraphicsItem::ItemParentHasChanged, *newParentVariant);
 
     if (isObject)
         emit static_cast<QGraphicsObject *>(q)->parentChanged();
@@ -1373,7 +1366,7 @@ QGraphicsItem::~QGraphicsItem()
         d_ptr->scene->d_func()->removeItemHelper(this);
     } else {
         d_ptr->resetFocusProxy();
-        d_ptr->setParentItemHelper(0);
+        setParentItem(0);
     }
 
 #ifndef QT_NO_GRAPHICSEFFECT
@@ -1578,9 +1571,23 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
 
     \sa parentItem(), childItems()
 */
-void QGraphicsItem::setParentItem(QGraphicsItem *parent)
+void QGraphicsItem::setParentItem(QGraphicsItem *newParent)
 {
-    d_ptr->setParentItemHelper(parent);
+    if (newParent == this) {
+        qWarning("QGraphicsItem::setParentItem: cannot assign %p as a parent of itself", this);
+        return;
+    }
+    if (newParent == d_ptr->parent)
+        return;
+
+    const QVariant newParentVariant(itemChange(QGraphicsItem::ItemParentChange,
+                                               qVariantFromValue<QGraphicsItem *>(newParent)));
+    newParent = qVariantValue<QGraphicsItem *>(newParentVariant);
+    if (newParent == d_ptr->parent)
+        return;
+
+    const QVariant thisPointerVariant(qVariantFromValue<QGraphicsItem *>(this));
+    d_ptr->setParentItemHelper(newParent, &newParentVariant, &thisPointerVariant);
 }
 
 /*!
