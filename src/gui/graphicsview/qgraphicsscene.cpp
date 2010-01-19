@@ -599,7 +599,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         if (parentItem->scene()) {
             Q_ASSERT_X(parentItem->scene() == q, "QGraphicsScene::removeItem",
                        "Parent item's scene is different from this item's scene");
-            item->d_ptr->setParentItemHelper(0);
+            item->setParentItem(0);
         }
     } else {
         unregisterTopLevelItem(item);
