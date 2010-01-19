@@ -57,6 +57,11 @@
 
 #include <X11/cursorfont.h>
 
+# include <sys/ipc.h>
+# include <sys/shm.h>
+# include <X11/extensions/XShm.h>
+
+
 #include <QBitmap>
 #include <QCursor>
 #include <QDateTime>
@@ -67,6 +72,10 @@
 #undef X11
 
 //#define MYX11_DEBUG
+
+//MIT SHM disabled by default, since we haven't implemented ShmCompletion synchronization yet
+
+#define DONT_USE_MIT_SHM
 
 static int (*original_x_errhandler)(Display *dpy, XErrorEvent *);
 static bool seen_badwindow;
@@ -307,11 +316,14 @@ MyDisplay::MyDisplay()
         exit(1);
     }
 
+#ifndef DONT_USE_MIT_SHM
+    Status MIT_SHM_extension_supported = XShmQueryExtension (display);
+    Q_ASSERT(MIT_SHM_extension_supported == True);
+#endif
     original_x_errhandler = XSetErrorHandler(qt_x_errhandler);
 
     if (qgetenv("DO_X_SYNCHRONIZE").toInt())
         XSynchronize(display, true);
-
 
     screen = DefaultScreen(display);
     width = DisplayWidth(display, screen);
@@ -367,6 +379,16 @@ void MyDisplay::eventDispatcher()
     }
 }
 
+struct MyShmImageInfo {
+    MyShmImageInfo(Display *xdisplay) :  image(0), display(xdisplay) {}
+    ~MyShmImageInfo() { destroy(); }
+
+    void destroy();
+
+    XShmSegmentInfo shminfo;
+    XImage *image;
+    Display *display;
+};
 
 MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
 {
@@ -407,6 +429,9 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
     setWindowTitle(QLatin1String("Qt Lighthouse"));
 
     currentCursor = -1;
+
+    image_info = 0;
+
 }
 
 
@@ -432,6 +457,8 @@ MyWindow::~MyWindow()
     XDestroyWindow(xd->display, window);
 
     xd->windowList.removeAll(this);
+
+    delete image_info;
 }
 
 GC MyWindow::createGC()
@@ -453,9 +480,14 @@ void MyWindow::closeEvent()
 void MyWindow::paintEvent()
 {
     Visual *visual = DefaultVisual(xd->display, xd->screen);
-
-    if (!img.isNull()) {
-        QImage image = img.convertToFormat(QImage::Format_RGB32);
+#ifdef MYX11_DEBUG
+    qDebug() << "MyWindow::paintEvent" << shm_img.size();
+#endif
+#ifdef DONT_USE_MIT_SHM
+    // just convert the image every time...
+    if (!shm_img.isNull()) {
+        QImage image = shm_img;
+        //img.convertToFormat(
         XImage *xi = XCreateImage(xd->display, visual, 24, ZPixmap,
                                   0, (char *) image.scanLine(0), image.width(), image.height(),
                                   32, image.bytesPerLine());
@@ -468,6 +500,65 @@ void MyWindow::paintEvent()
         xi->data = 0; // QImage owns these bits
         XDestroyImage(xi);
     }
+#else
+    // Use MIT_SHM
+    if (image_info->image) {
+        //qDebug() << "Here we go" << image_info->image->width << image_info->image->height;
+        int x = 0;
+        int y = 0;
+        // We should really set send_event to true, and then use the XShmCompletionEvent
+        // to synchronize painting
+        XShmPutImage (xd->display, window, gc, image_info->image, 0, 0,
+                      x, y, image_info->image->width, image_info->image->height,
+                      /*send_event*/ false);
+
+        //### This makes output visible, probably not ideal from a performance point of view...
+        XFlush(xd->display);
+    }
+#endif
+}
+
+#ifndef DONT_USE_MIT_SHM
+void MyShmImageInfo::destroy()
+{
+    XShmDetach (display, &shminfo);
+    XDestroyImage (image);
+    shmdt (shminfo.shmaddr);
+    shmctl (shminfo.shmid, IPC_RMID, 0);
+}
+#endif
+
+void MyWindow::resizeShmImage(int width, int height)
+{
+#ifdef DONT_USE_MIT_SHM
+    shm_img = QImage(width, height, QImage::Format_RGB32);
+#else
+    if (image_info)
+        image_info->destroy();
+    else
+        image_info = new MyShmImageInfo(xd->display);
+
+    Visual *visual = DefaultVisual(xd->display, xd->screen);
+
+
+    XImage *image = XShmCreateImage (xd->display, visual, 24, ZPixmap, 0,
+                                     &image_info->shminfo, width, height);
+
+
+    image_info->shminfo.shmid = shmget (IPC_PRIVATE,
+          image->bytes_per_line * image->height, IPC_CREAT|0777);
+
+    image_info->shminfo.shmaddr = image->data = (char*)shmat (image_info->shminfo.shmid, 0, 0);
+    image_info->shminfo.readOnly = False;
+
+    image_info->image = image;
+
+    Status shm_attach_status = XShmAttach(xd->display, &image_info->shminfo);
+
+    Q_ASSERT(shm_attach_status == True);
+
+    shm_img = QImage( (uchar*) image->data, image->width, image->height, image->bytes_per_line, QImage::Format_RGB32 );
+#endif
 }
 
 void MyWindow::resizeEvent(XConfigureEvent *e)
@@ -484,8 +575,11 @@ void MyWindow::resizeEvent(XConfigureEvent *e)
     height = e->height;
 
 #ifdef MYX11_DEBUG
-    qDebug() << hex << window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height;
+    qDebug() << hex << window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height << "img:" << shm_img.size();
 #endif
+    if (shm_img.size() != QSize(width, height))
+        resizeShmImage(width, height);
+
     windowSurface->handleGeometryChange(xpos, ypos, width, height);
 }
 
@@ -499,9 +593,13 @@ void MyWindow::setSize(int w, int h)
 void MyWindow::setGeometry(int x, int y, int w, int h)
 {
 #ifdef MYX11_DEBUG
-    qDebug() << "MyWindow::setGeometry" << hex << window << dec << x << y << w << h;
+    qDebug() << "MyWindow::setGeometry" << hex << window << dec << x << y << w << h << "img:" << shm_img.size();
 #endif
     XMoveResizeWindow(xd->display, window, x, y, w, h);
+
+    if (shm_img.size() != QSize(w, h)) {
+        resizeShmImage(w, h);
+    }
 }
 
 

@@ -86,6 +86,8 @@ public: //###
 
 class QTestLiteWindowSurface; //### abstract callback interface, anyone?
 
+struct MyShmImageInfo;
+
 class MyWindow : public QObject
 {
     Q_OBJECT;
@@ -120,11 +122,12 @@ public:
 
     void setWindowTitle(const QString &title);
 
+    QImage *image() { return &shm_img; }
+
 public: //###
 
     int xpos, ypos;
     int width, height;
-    QImage img;
     Window window;
     MyDisplay *xd;
     GC gc;
@@ -132,6 +135,12 @@ public: //###
     QTestLiteWindowSurface *windowSurface;
 
     int currentCursor;
+
+private:
+    void resizeShmImage(int width, int height);
+
+    QImage shm_img;
+    MyShmImageInfo *image_info;
 };
 
 class MyX11CursorNode

@@ -75,7 +75,7 @@ QTestLiteWindowSurface::~QTestLiteWindowSurface()
 
 QPaintDevice *QTestLiteWindowSurface::paintDevice()
 {
-    return &xw->img;
+    return xw->image();
 }
 
 void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -92,13 +92,12 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
 void QTestLiteWindowSurface::geometryChanged(const QRect &rect)
 {
+    bool resize = rect.size() != geometry().size();
     QWindowSurface::setGeometry(rect);
 
-    if (xw->img.size() != rect.size()) {
-        xw->img = QImage(rect.size(), mScreen->format());
+    if (resize) {
         window()->update(); //### this is the wrong place for this...
     }
-
 }
 
 

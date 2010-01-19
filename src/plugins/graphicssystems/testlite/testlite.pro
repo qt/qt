@@ -10,7 +10,7 @@ HEADERS = qgraphicssystem_testlite.h qwindowsurface_testlite.h
 HEADERS += x11util.h
 SOURCES += x11util.cpp
 
-LIBS += -lX11
+LIBS += -lX11 -lXext
 
 
 target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
