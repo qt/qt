@@ -72,6 +72,7 @@
 %token T_FEED_JS_STATEMENT
 %token T_FEED_JS_EXPRESSION
 %token T_FEED_JS_SOURCE_ELEMENT
+%token T_FEED_JS_PROGRAM
 
 %nonassoc SHIFT_THERE
 %nonassoc T_IDENTIFIER T_COLON T_SIGNAL T_PROPERTY T_READONLY
@@ -268,6 +269,7 @@ public:
     bool parseExpression() { return parse(T_FEED_JS_EXPRESSION); }
     bool parseSourceElement() { return parse(T_FEED_JS_SOURCE_ELEMENT); }
     bool parseUiObjectMember() { return parse(T_FEED_UI_OBJECT_MEMBER); }
+    bool parseProgram() { return parse(T_FEED_JS_PROGRAM); }
 
     AST::UiProgram *ast() const
     { return AST::cast<AST::UiProgram *>(program); }
@@ -295,6 +297,9 @@ public:
 
         return program->uiObjectMemberCast();
     }
+
+    AST::Node *rootNode() const
+    { return program; }
 
     QList<DiagnosticMessage> diagnosticMessages() const
     { return diagnostic_messages; }
@@ -541,7 +546,7 @@ case $rule_number: {
 } break;
 ./
 
-TopLevel: T_FEED_JS_SOURCE_ELEMENT Expression ;
+TopLevel: T_FEED_JS_SOURCE_ELEMENT SourceElement ;
 /.
 case $rule_number: {
   sym(1).Node = sym(2).Node;
@@ -550,6 +555,14 @@ case $rule_number: {
 ./
 
 TopLevel: T_FEED_UI_OBJECT_MEMBER UiObjectMember ;
+/.
+case $rule_number: {
+  sym(1).Node = sym(2).Node;
+  program = sym(1).Node;
+} break;
+./
+
+TopLevel: T_FEED_JS_PROGRAM Program ;
 /.
 case $rule_number: {
   sym(1).Node = sym(2).Node;
@@ -2873,13 +2886,12 @@ case $rule_number: {
 } break;
 ./
 
---QmlJSProgram: SourceElements ;
---/.
---case $rule_number: {
---  sym(1).Node = makeAstNode<AST::Program> (driver->nodePool(), sym(1).SourceElements->finish ());
---  driver->changeAbstractSyntaxTree(sym(1).Node);
---} break;
---./
+Program: SourceElements ;
+/.
+case $rule_number: {
+  sym(1).Node = makeAstNode<AST::Program> (driver->nodePool(), sym(1).SourceElements->finish ());
+} break;
+./
 
 SourceElements: SourceElement ;
 /.

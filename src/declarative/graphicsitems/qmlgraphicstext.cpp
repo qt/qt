@@ -368,7 +368,7 @@ void QmlGraphicsText::setWrap(bool w)
     will automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 
-    StyledText is an optimized format able supporting some basic text
+    StyledText is an optimized format supporting some basic text
     styling markup, in the style of html 3.2:
 
     \code
@@ -378,6 +378,8 @@ void QmlGraphicsText::setWrap(bool w)
     <br>
     &gt; &lt; &amp;
     \endcode
+
+    \c StyledText parser is strict, requiring tags to be correctly nested.
 
     \table
     \row

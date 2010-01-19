@@ -150,7 +150,12 @@ void tst_QmlListModel::dynamic_data()
 
     QTest::newRow("listprop1a") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});count}" << 1 << "";
     QTest::newRow("listprop1b") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.get(1).a}" << 2 << "";
+    QTest::newRow("listprop1c") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.count}" << 3 << "";
     QTest::newRow("listprop2a") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.append({'a':4});get(0).bars.get(3).a}" << 4 << "";
+
+    QTest::newRow("list-0-items") << "{append({'foo':[]});get(0).foo.count}" << 0 << "";
+    QTest::newRow("list-1-item") << "{append({'foo':[1]});get(0).foo.count}" << 1 << "";
+    QTest::newRow("list-multi-items") << "{append({'foo':[1,2,3]});get(0).foo.count}" << 3 << "";
 }
 
 void tst_QmlListModel::dynamic()
