@@ -66,6 +66,7 @@ count(splitVersion, 1) {
 }
 #error ("hexVersion: $$hexVersion, decVersion: $$decVersion")
 
+isEmpty(TARGET.UID3):TARGET.UID3 = $$generate_uid("$${OUT_PWD}/$${TARGET}")
 intUid3 = $$lower($$replace(TARGET.UID3, "^0x", ""))
 isEmpty(TARGET.SID):TARGET.SID = $$TARGET.UID3
 isEmpty(TARGET.UID2):TARGET.UID2 = 0x00000000
