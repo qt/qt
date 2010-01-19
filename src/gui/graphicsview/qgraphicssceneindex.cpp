@@ -624,7 +624,7 @@ void QGraphicsSceneIndex::deleteItem(QGraphicsItem *item)
 
     \sa QGraphicsItem::GraphicsItemChange
 */
-void QGraphicsSceneIndex::itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+void QGraphicsSceneIndex::itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const void *const value)
 {
     Q_UNUSED(item);
     Q_UNUSED(change);

@@ -1033,7 +1033,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     if (scene) {
         // Deliver the change to the index
         if (scene->d_func()->indexMethod != QGraphicsScene::NoIndex)
-            scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
+            scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParent);
 
         // Disable scene pos notifications for old ancestors
         if (scenePosDescendants || (flags & QGraphicsItem::ItemSendsScenePositionChanges))
@@ -1719,7 +1719,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
     if (d_ptr->scene && d_ptr->scene->d_func()->indexMethod != QGraphicsScene::NoIndex)
-        d_ptr->scene->d_func()->index->itemChange(this, ItemFlagsChange, quint32(flags));
+        d_ptr->scene->d_func()->index->itemChange(this, ItemFlagsChange, &flags);
 
     // Flags that alter the geometry of the item (or its children).
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations | ItemIsSelectable);
@@ -4301,9 +4301,9 @@ void QGraphicsItem::setZValue(qreal z)
     if (newZ == d_ptr->z)
         return;
 
-    if (d_ptr->scene) {
+    if (d_ptr->scene && d_ptr->scene->d_func()->indexMethod != QGraphicsScene::NoIndex) {
         // Z Value has changed, we have to notify the index.
-        d_ptr->scene->d_func()->index->itemChange(this, ItemZValueChange, newZVariant);
+        d_ptr->scene->d_func()->index->itemChange(this, ItemZValueChange, &newZ);
     }
 
     d_ptr->z = newZ;
