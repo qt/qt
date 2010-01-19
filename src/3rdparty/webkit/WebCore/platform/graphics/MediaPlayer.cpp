@@ -46,7 +46,7 @@
 #elif PLATFORM(GTK)
 #include "MediaPlayerPrivateGStreamer.h"
 #elif PLATFORM(QT)
-#include "MediaPlayerPrivatePhonon.h"
+#include "MediaPlayerPrivateQt.h"
 #elif PLATFORM(CHROMIUM)
 #include "MediaPlayerPrivateChromium.h"
 #endif
