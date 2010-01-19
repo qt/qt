@@ -24,7 +24,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QRect>
 #include "defs.h"
 
-#include <Phonon/VideoWidget>
+#include <phonon/videowidget.h>
 
 #include <e32std.h>
 class RWindowBase;

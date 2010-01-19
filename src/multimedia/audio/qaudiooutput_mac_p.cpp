@@ -87,8 +87,8 @@ public:
         m_device(0)
     {
         m_buffer = new QAudioRingBuffer(bufferSize + (bufferSize % maxPeriodSize == 0 ? 0 : maxPeriodSize - (bufferSize % maxPeriodSize)));
-        m_bytesPerFrame = (audioFormat.sampleSize() / 8) * audioFormat.channelCount();
-        m_periodTime = m_maxPeriodSize / m_bytesPerFrame * 1000 / audioFormat.sampleRate();
+        m_bytesPerFrame = (audioFormat.sampleSize() / 8) * audioFormat.channels();
+        m_periodTime = m_maxPeriodSize / m_bytesPerFrame * 1000 / audioFormat.frequency();
 
         m_fillTimer = new QTimer(this);
         connect(m_fillTimer, SIGNAL(timeout()), SLOT(fillBuffer()));
@@ -546,7 +546,7 @@ int QAudioOutputPrivate::notifyInterval() const
 
 qint64 QAudioOutputPrivate::processedUSecs() const
 {
-    return totalFrames * 1000000 / audioFormat.sampleRate();
+    return totalFrames * 1000000 / audioFormat.frequency();
 }
 
 qint64 QAudioOutputPrivate::elapsedUSecs() const

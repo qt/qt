@@ -20,7 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_MEDIANODE_H
 
 #include <QObject>
-#include <Phonon/EffectInterface>
+#include <phonon/effectinterface.h>
 #include "audioplayer.h"
 
 QT_BEGIN_NAMESPACE
