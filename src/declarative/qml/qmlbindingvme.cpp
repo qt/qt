@@ -599,8 +599,6 @@ inline static QString toString(Register *reg, int type, bool *ok = 0)
     } else if (type == QMetaType::Int) {
         return QString::number(reg->getint());
     } else if (type == qMetaTypeId<QVariant>()) {
-        qWarning() << reg->getvariantptr()->toString() <<
-        *reg->getvariantptr();
         return reg->getvariantptr()->toString();
     } else if (type == QMetaType::QString) {
         return *reg->getstringptr();
