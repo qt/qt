@@ -1132,7 +1132,8 @@ QString MainWindow::collectionFileDirectory(bool createDir, const QString &cache
 QString MainWindow::defaultHelpCollectionFileName()
 {
     TRACE_OBJ
-    return collectionFileDirectory() + QDir::separator() +
+    // forces creation of the default collection file path
+    return collectionFileDirectory(true) + QDir::separator() +
         QString(QLatin1String("qthelpcollection_%1.qhc")).
         arg(QLatin1String(QT_VERSION_STR));
 }
