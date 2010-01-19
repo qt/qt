@@ -106,6 +106,7 @@ public:
 
     void setConfiguration(const QNetworkConfiguration &config);
     QNetworkConfiguration configuration() const;
+    QNetworkConfiguration activeConfiguration() const;
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
@@ -116,6 +117,8 @@ Q_SIGNALS:
 #ifndef QT_NO_OPENSSL
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 #endif
+
+    void debugMessage(const QString &message);
 
 protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,

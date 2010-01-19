@@ -363,12 +363,31 @@ void QNetworkAccessBackend::start()
     qDebug() << "Open session if required";
     if (!manager->session->isOpen())
         manager->session->open();
+    else
+        sessionOpened();
 }
 
 void QNetworkAccessBackend::sessionOpened()
 {
+    manager->sendDebugMessage(QLatin1String("Session opened"));
     qDebug() << "Session opened, calling open()";
     open();
+}
+
+void QNetworkAccessBackend::preferredConfigurationChanged(const QNetworkConfiguration &config,
+                                                          bool isSeamless)
+{
+    QString message = QString::fromLatin1("preferredConfiguirationChanged %1 %2")
+                        .arg(config.name()) .arg(isSeamless);
+
+    manager->sendDebugMessage(message);
+    manager->session->ignore();
+}
+
+void QNetworkAccessBackend::newConfigurationActivated()
+{
+    manager->sendDebugMessage(QLatin1String("newConfigurationActivated"));
+    manager->session->reject();
 }
 
 QT_END_NAMESPACE

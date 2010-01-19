@@ -189,6 +189,8 @@ protected slots:
 
 private slots:
     void sessionOpened();
+    void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
+    void newConfigurationActivated();
 
 private:
     friend class QNetworkAccessManager;

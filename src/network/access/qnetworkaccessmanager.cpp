@@ -349,8 +349,8 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
 {
     ensureInitialized();
 
-    d_func()->session =
-        new QNetworkSession(QNetworkConfigurationManager().defaultConfiguration(), this);
+    QNetworkConfigurationManager manager;
+    d_func()->session = new QNetworkSession(manager.defaultConfiguration(), this);
 }
 
 /*!
@@ -672,7 +672,7 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
 /*!
     \since 4.7
 
-    Sets the network configuration that will be used to \a config.
+    Sets the network configuration that will be used when creating a network session to \a config.
 
     \sa configuration()
 */
@@ -692,6 +692,22 @@ void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config
 QNetworkConfiguration QNetworkAccessManager::configuration() const
 {
     return d_func()->session->configuration();
+}
+
+/*!
+    \since 4.7
+
+    Returns the current active network configuration.
+
+    \sa configuration()
+*/
+QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
+{
+    QNetworkConfigurationManager manager;
+
+    return manager.configurationFromIdentifier(
+        d_func()->session->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
+
 }
 
 /*!

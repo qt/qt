@@ -101,6 +101,12 @@ public:
 
     QNetworkAccessBackend *findBackend(QNetworkAccessManager::Operation op, const QNetworkRequest &request);
 
+    void sendDebugMessage(const QString &message)
+    {
+        Q_Q(QNetworkAccessManager);
+        emit q->debugMessage(message);
+    }
+
     // this is the cache for storing downloaded files
     QAbstractNetworkCache *networkCache;
 
