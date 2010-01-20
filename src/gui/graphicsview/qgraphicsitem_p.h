@@ -589,6 +589,7 @@ public:
         return item->type() == QGraphicsPixmapItem::Type
                && !(item->flags() & QGraphicsItem::ItemIsSelectable)
                && item->d_ptr->children.size() == 0;
+            //|| (item->d_ptr->isObject && qobject_cast<QmlGraphicsImage *>(q_func()));
     }
 
     inline const QStyleOption *styleOption() const
@@ -608,6 +609,7 @@ public:
     QPixmap pixmap(Qt::CoordinateSystem system,
                    QPoint *offset,
                    QGraphicsEffect::PixmapPadMode mode) const;
+    QRect paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded = 0) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;

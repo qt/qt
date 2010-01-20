@@ -119,7 +119,9 @@ HEADERS += \
     $$PWD/qmlvaluetypescriptclass_p.h \
     $$PWD/qmltypenamescriptclass_p.h \
     $$PWD/qmllistscriptclass_p.h \
-    $$PWD/qmlworkerscript_p.h
+    $$PWD/qmlworkerscript_p.h \
+    $$PWD/qmlscriptclass_p.h \
+    $$PWD/qmlguard_p.h
 
 QT += sql
 

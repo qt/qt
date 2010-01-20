@@ -54,16 +54,13 @@
 //
 
 #include "qmltypenamecache_p.h"
-
-#include <QtScript/qscriptclass.h>
-
-#include <private/qscriptdeclarativeclass_p.h>
+#include "qmlscriptclass_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QmlEngine;
 class QmlContext;
-class QmlContextScriptClass : public QScriptDeclarativeClass
+class QmlContextScriptClass : public QmlScriptClass
 {
 public:
     QmlContextScriptClass(QmlEngine *);
@@ -77,7 +74,7 @@ public:
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
-    virtual Value property(Object *, const Identifier &);
+    virtual ScriptValue property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
 private:

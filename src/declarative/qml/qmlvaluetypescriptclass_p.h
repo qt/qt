@@ -52,15 +52,15 @@
 //
 // We mean it.
 //
-#include <QtScript/qscriptclass.h>
 
-#include <private/qscriptdeclarativeclass_p.h>
+
+#include <private/qmlscriptclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlEngine;
 class QmlValueType;
-class QmlValueTypeScriptClass : public QScriptDeclarativeClass
+class QmlValueTypeScriptClass : public QmlScriptClass
 {
 public:
     QmlValueTypeScriptClass(QmlEngine *);
@@ -70,7 +70,7 @@ public:
 
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
-    virtual Value property(Object *, const Identifier &);
+    virtual ScriptValue property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
     virtual QVariant toVariant(Object *, bool *ok = 0);

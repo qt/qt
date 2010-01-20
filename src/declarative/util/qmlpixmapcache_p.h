@@ -59,11 +59,13 @@ class Q_DECLARATIVE_EXPORT QmlPixmapReply : public QObject
 {
     Q_OBJECT
 public:
-    QmlPixmapReply(const QString &key, QNetworkReply *reply);
+    QmlPixmapReply(const QUrl &url, QNetworkReply *reply);
     ~QmlPixmapReply();
 
     enum Status { Ready, Error, Unrequested, Loading, Decoding };
     Status status() const;
+
+    const QUrl &url() const;
 
 Q_SIGNALS:
     void finished();

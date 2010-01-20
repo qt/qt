@@ -116,6 +116,68 @@ extern void qt_mac_dispose_rgn(RgnHandle); //qregion_mac.cpp
 extern QRegion qt_mac_convert_mac_region(RgnHandle); //qregion_mac.cpp
 extern void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding=0, int len=-1);  //qglobal.cpp
 
+/*
+    QGLTemporaryContext implementation
+*/
+
+class QGLTemporaryContextPrivate
+{
+public:
+#ifndef QT_MAC_USE_COCOA
+    AGLContext ctx;
+#else
+    NSOpenGLContext *ctx;
+#endif
+};
+
+QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
+    : d(new QGLTemporaryContextPrivate)
+{
+    d->ctx = 0;
+#ifndef QT_MAC_USE_COCOA
+    GLint attribs[] = {AGL_RGBA, AGL_NONE};
+    AGLPixelFormat fmt = aglChoosePixelFormat(0, 0, attribs);
+    if (!fmt) {
+        qDebug("QGLTemporaryContext: Couldn't find any RGB visuals");
+        return;
+    }
+    d->ctx = aglCreateContext(fmt, 0);
+    if (!d->ctx)
+        qDebug("QGLTemporaryContext: Unable to create context");
+    else
+        aglSetCurrentContext(d->ctx);
+    aglDestroyPixelFormat(fmt);
+#else
+    QMacCocoaAutoReleasePool pool;
+    NSOpenGLPixelFormatAttribute attribs[] = { 0 };
+    NSOpenGLPixelFormat *fmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:attribs];
+    if (!fmt) {
+        qWarning("QGLTemporaryContext: Cannot find any visuals");
+        return;
+    }
+
+    d->ctx = [[NSOpenGLContext alloc] initWithFormat:fmt shareContext:0];
+    if (!d->ctx)
+        qWarning("QGLTemporaryContext: Cannot create context");
+    else
+        [d->ctx makeCurrentContext];
+    [fmt release];
+#endif
+}
+
+QGLTemporaryContext::~QGLTemporaryContext()
+{
+    if (d->ctx) {
+#ifndef QT_MAC_USE_COCOA
+        aglSetCurrentContext(0);
+        aglDestroyContext(d->ctx);
+#else
+        [NSOpenGLContext clearCurrentContext];
+        [d->ctx release];
+#endif
+    }
+}
+
 bool QGLFormat::hasOpenGL()
 {
     return true;
@@ -916,54 +978,6 @@ void QGLWidgetPrivate::updatePaintDevice()
     Q_Q(QGLWidget);
     glcx->updatePaintDevice();
     q->update();
-}
-
-
-void QGLExtensions::init()
-{
-    static bool init_done = false;
-
-    if (init_done)
-        return;
-    init_done = true;
-
-#ifndef QT_MAC_USE_COCOA
-    GLint attribs[] = { AGL_RGBA, AGL_NONE };
-    AGLPixelFormat fmt = aglChoosePixelFormat(0, 0, attribs);
-    if (!fmt) {
-        qDebug("QGLExtensions: Couldn't find any RGB visuals");
-        return;
-    }
-    AGLContext ctx = aglCreateContext(fmt, 0);
-    if (!ctx) {
-        qDebug("QGLExtensions: Unable to create context");
-    } else {
-        aglSetCurrentContext(ctx);
-        init_extensions();
-        aglSetCurrentContext(0);
-        aglDestroyContext(ctx);
-    }
-    aglDestroyPixelFormat(fmt);
-#else
-    QMacCocoaAutoReleasePool pool;
-    NSOpenGLPixelFormatAttribute attribs[] = { 0 };
-    NSOpenGLPixelFormat *fmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:attribs];
-    if (!fmt) {
-        qWarning("QGLExtensions: Cannot find any visuals");
-        return;
-    }
-
-    NSOpenGLContext *ctx = [[NSOpenGLContext alloc] initWithFormat:fmt shareContext:0];
-    if (!ctx) {
-        qWarning("QGLExtensions: Cannot create context");
-    } else {
-        [ctx makeCurrentContext];
-        init_extensions();
-        [NSOpenGLContext clearCurrentContext];
-        [ctx release];
-    }
-    [fmt release];
-#endif
 }
 
 #endif
