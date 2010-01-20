@@ -501,9 +501,9 @@ public:
     static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
     QSet<WId> nativeWindows;
 
-    int symbianProcessWsEvent(const TWsEvent *event);
-    int symbianHandleCommand(int command);
-    int symbianResourceChange(int type);
+    int symbianProcessWsEvent(const QSymbianEvent *symbianEvent);
+    int symbianHandleCommand(const QSymbianEvent *symbianEvent);
+    int symbianResourceChange(const QSymbianEvent *symbianEvent);
 
 #endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
