@@ -510,7 +510,7 @@ extern "C" {
     }
 
     // Make sure the opengl context is updated on resize.
-    if (0 && qwidgetprivate->isGLWidget) {
+    if (qwidgetprivate->isGLWidget) {
         qwidgetprivate->needWindowChange = true;
         QEvent event(QEvent::MacGLWindowChange);
         qApp->sendEvent(qwidget, &event);
