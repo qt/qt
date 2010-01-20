@@ -705,7 +705,7 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
 }
 
 /*!
-    \qmlmethod ListModel::set(int index, string property, variant value)
+    \qmlmethod ListModel::setProperty(int index, string property, variant value)
 
     Changes the \a property of the item at \a index in the list model to \a value.
 
@@ -717,7 +717,7 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
 
     \sa append()
 */
-void QmlListModel::set(int index, const QString& property, const QVariant& value)
+void QmlListModel::setProperty(int index, const QString& property, const QVariant& value)
 {
     if ( !_root || index >= _root->values.count()) {
         qmlInfo(this) << tr("set: index %1 out of range").arg(index);
