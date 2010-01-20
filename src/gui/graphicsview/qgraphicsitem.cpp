@@ -2584,7 +2584,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*force=*/false,
-                                          /*ignoreOpacity=*/true);
+                                          /*ignoreOpacity=*/d_ptr->isOpacityNull());
     }
 
     if (d_ptr->isObject)
