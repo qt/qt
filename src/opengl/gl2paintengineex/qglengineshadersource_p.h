@@ -64,23 +64,19 @@ QT_MODULE(OpenGL)
 
 
 static const char* const qglslMainVertexShader = "\
-    uniform   highp float   depth;\
     void setPosition();\
     void main(void)\
     {\
             setPosition();\
-            gl_Position.z = depth * gl_Position.w;\
     }";
 
 static const char* const qglslMainWithTexCoordsVertexShader = "\
     attribute highp  vec2 textureCoordArray; \
     varying   highp  vec2 textureCoords; \
-    uniform   highp float   depth;\
     void setPosition();\
     void main(void) \
     {\
             setPosition();\
-            gl_Position.z = depth * gl_Position.w;\
             textureCoords = textureCoordArray; \
     }";
 
@@ -89,12 +85,10 @@ static const char* const qglslMainWithTexCoordsAndOpacityVertexShader = "\
     attribute lowp  float opacityArray; \
     varying   highp vec2  textureCoords; \
     varying   lowp  float opacity; \
-    uniform   highp float depth; \
     void setPosition(); \
     void main(void) \
     { \
             setPosition(); \
-            gl_Position.z = depth * gl_Position.w; \
             textureCoords = textureCoordArray; \
             opacity = opacityArray; \
     }";
