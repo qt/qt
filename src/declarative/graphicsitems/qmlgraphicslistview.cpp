@@ -2472,7 +2472,7 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
     // Update the indexes of the following visible items.
     for (; index < d->visibleItems.count(); ++index) {
         FxListItem *listItem = d->visibleItems.at(index);
-        if (listItem->item != d->currentItem->item)
+        if (d->currentItem && listItem->item != d->currentItem->item)
             listItem->setPosition(listItem->position() + diff);
         if (listItem->index != -1)
             listItem->index += count;
