@@ -32,9 +32,9 @@ qhp.Qt.extraFiles          = classic.css \
                              images/dynamiclayouts-example.png \
                              images/stylesheet-coffee-plastique.png
 
-qhp.Qt.filterAttributes    = qt 4.6.1 qtrefdoc
-qhp.Qt.customFilters.Qt.name = Qt 4.6.1
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.6.1
+qhp.Qt.filterAttributes    = qt 4.6.2 qtrefdoc
+qhp.Qt.customFilters.Qt.name = Qt 4.6.2
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.6.2
 qhp.Qt.subprojects         = classes overviews examples
 qhp.Qt.subprojects.classes.title = Classes
 qhp.Qt.subprojects.classes.indexTitle = Qt's Classes

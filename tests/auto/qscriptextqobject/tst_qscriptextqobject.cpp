@@ -532,6 +532,7 @@ private slots:
     void prototypes();
     void objectDeleted();
     void connectToDestroyedSignal();
+    void emitAfterReceiverDeleted();
 
 private:
     QScriptEngine *m_engine;
@@ -3018,6 +3019,28 @@ void tst_QScriptExtQObject::connectToDestroyedSignal()
         // the signal handler won't get called -- we don't want to crash
     }
 #endif
+}
+
+void tst_QScriptExtQObject::emitAfterReceiverDeleted()
+{
+    for (int x = 0; x < 2; ++x) {
+        MyQObject *obj = new MyQObject;
+        QScriptValue scriptObj = m_engine->newQObject(obj);
+        if (x == 0) {
+            // Connecting from JS
+            m_engine->globalObject().setProperty("obj", scriptObj);
+            QVERIFY(m_engine->evaluate("myObject.mySignal.connect(obj, 'mySlot()')").isUndefined());
+        } else {
+            // Connecting from C++
+            qScriptConnect(m_myObject, SIGNAL(mySignal()), scriptObj, scriptObj.property("mySlot"));
+        }
+        delete obj;
+        QSignalSpy signalHandlerExceptionSpy(m_engine, SIGNAL(signalHandlerException(QScriptValue)));
+        QVERIFY(!m_engine->hasUncaughtException());
+        m_myObject->emitMySignal();
+        QCOMPARE(signalHandlerExceptionSpy.count(), 0);
+        QVERIFY(!m_engine->hasUncaughtException());
+    }
 }
 
 QTEST_MAIN(tst_QScriptExtQObject)
