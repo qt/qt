@@ -60,12 +60,10 @@
 
 QT_BEGIN_NAMESPACE
 
-#if (QT_VERSION < QT_VERSION_CHECK(4, 6, 2))
-static uint qHash(const QUrl &u)
+inline uint qHash(const QUrl &uri)
 {
-    return qHash(u.toString());
+    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
 }
-#endif
 
 class QmlImageReader : public QThread
 {
@@ -220,11 +218,6 @@ static QString toLocalFileOrQrc(const QUrl& url)
     if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
         r = QLatin1Char(':') + url.path();
     return r;
-}
-
-inline uint qHash(const QUrl &uri)
-{
-    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
 }
 
 typedef QHash<QUrl, QmlPixmapReply *> QmlPixmapReplyHash;
