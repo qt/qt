@@ -215,6 +215,11 @@ static QString toLocalFileOrQrc(const QUrl& url)
     return r;
 }
 
+inline uint qHash(const QUrl &uri)
+{
+    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
+}
+
 typedef QHash<QUrl, QmlPixmapReply *> QmlPixmapReplyHash;
 Q_GLOBAL_STATIC(QmlPixmapReplyHash, qmlActivePixmapReplies);
 
