@@ -80,7 +80,7 @@ public:
 
     typedef QScriptValue ScriptValue;
 #else
-    typedef Value QScriptValue;
+    typedef Value ScriptValue;
 #endif
 };
 
