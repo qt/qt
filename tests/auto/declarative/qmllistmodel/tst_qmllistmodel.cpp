@@ -52,6 +52,8 @@ public:
 
 private slots:
     void static_i18n();
+    void static_nestedElements();
+    void static_nestedElements_data();
     void dynamic_data();
     void dynamic();
     void error_data();
@@ -70,6 +72,50 @@ void tst_QmlListModel::static_i18n()
     QString prop = obj->get(0).property(QLatin1String("prop1")).toString();
     QCOMPARE(prop,expect);
     delete obj;
+}
+
+void tst_QmlListModel::static_nestedElements()
+{
+    QFETCH(int, elementCount);
+
+    QStringList elements;
+    for (int i=0; i<elementCount; i++) 
+        elements.append("ListElement { a: 1; b: 2 }");
+    QString elementsStr = elements.join(",\n") + "\n";
+
+    QString componentStr = 
+        "import Qt 4.6\n"
+        "ListModel {\n"
+        "   ListElement {\n"
+        "       attributes: [\n";
+    componentStr += elementsStr.toUtf8().constData();
+    componentStr += 
+        "       ]\n"
+        "   }\n"
+        "}";
+
+    QmlEngine engine;
+    QmlComponent component(&engine);
+    component.setData(componentStr.toUtf8(), QUrl("file://"));
+
+    QmlListModel *obj = qobject_cast<QmlListModel*>(component.create());
+    QVERIFY(obj != 0);
+
+    QScriptValue prop = obj->get(0).property(QLatin1String("attributes")).property(QLatin1String("count"));
+    QVERIFY(prop.isNumber());
+    QCOMPARE(prop.toInt32(), qint32(elementCount));
+
+    delete obj;
+}
+
+void tst_QmlListModel::static_nestedElements_data()
+{
+    QTest::addColumn<int>("elementCount");
+
+    QTest::newRow("0 items") << 0;
+    QTest::newRow("1 item") << 1;
+    QTest::newRow("2 items") << 2;
+    QTest::newRow("many items") << 5;
 }
 
 void tst_QmlListModel::dynamic_data()

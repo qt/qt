@@ -265,6 +265,7 @@ struct ModelNode
 
     QmlListModel *modelCache;
     ModelObject *objectCache;
+    bool isArray;
 };
 
 QT_END_NAMESPACE
@@ -280,6 +281,7 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
         ModelNode *value = new ModelNode;
         QScriptValue v = it.value();
         if (v.isArray()) {
+            value->isArray = true;
             value->setListValue(v);
         } else {
             value->values << v.toVariant();
@@ -296,6 +298,7 @@ void ModelNode::setListValue(const QScriptValue& valuelist) {
         ModelNode *value = new ModelNode;
         QScriptValue v = it.value();
         if (v.isArray()) {
+            value->isArray = true;
             value->setListValue(v);
         } else if (v.isObject()) {
             value->setObjectValue(v);
@@ -367,27 +370,29 @@ QVariant QmlListModel::valueForNode(ModelNode *node) const
 {
     QObject *rv = 0;
 
-    if (!node->properties.isEmpty()) {
-        // Object
-        rv = node->object(this);
-    } else if (node->values.count() == 0) {
-        // Invalid
-        return QVariant();
-    } else if (node->values.count() == 1) {
-        // Value
-        QVariant &var = node->values[0];
-        ModelNode *valueNode = qvariant_cast<ModelNode *>(var);
-        if (valueNode) {
-            if (!valueNode->properties.isEmpty())
-                rv = valueNode->object(this);
-            else
-                rv = valueNode->model(this);
-        } else {
-            return var;
-        }
-    } else if (node->values.count() > 1) {
+    if (node->isArray) {
         // List
         rv = node->model(this);
+    } else {
+        if (!node->properties.isEmpty()) {
+            // Object
+            rv = node->object(this);
+        } else if (node->values.count() == 0) {
+            // Invalid
+            return QVariant();
+        } else if (node->values.count() == 1) {
+            // Value
+            QVariant &var = node->values[0];
+            ModelNode *valueNode = qvariant_cast<ModelNode *>(var);
+            if (valueNode) {
+                if (!valueNode->properties.isEmpty())
+                    rv = valueNode->object(this);
+                else
+                    rv = valueNode->model(this);
+            } else {
+                return var;
+            }
+        }
     }
 
     if (rv)
@@ -738,6 +743,9 @@ public:
     QByteArray compile(const QList<QmlCustomParserProperty> &);
     bool compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data);
     void setCustomData(QObject *, const QByteArray &);
+
+private:
+    bool definesEmptyList(const QString &);
 };
 
 bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data)
@@ -857,6 +865,8 @@ void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
     QStack<ModelNode *> nodes;
     nodes << root;
 
+    bool processingSet = false;
+
     const ListModelData *lmd = (const ListModelData *)d.constData();
     const char *data = ((const char *)lmd) + lmd->dataOffset;
 
@@ -870,6 +880,8 @@ void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
                 ModelNode *n2 = new ModelNode;
                 n->values << qVariantFromValue(n2);
                 nodes.push(n2);
+                if (processingSet)
+                    n->isArray = true;
             }
             break;
 
@@ -880,7 +892,17 @@ void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
         case ListInstruction::Value:
             {
                 ModelNode *n = nodes.top();
-                n->values.append(QString::fromUtf8(QByteArray(data + instr.dataIdx)));
+                QString s = QString::fromUtf8(QByteArray(data + instr.dataIdx));
+
+                bool isEmptyList = false;
+                if (!n->isArray)
+                    isEmptyList = definesEmptyList(s);
+                if (isEmptyList)
+                    n->isArray = true;
+                else
+                    n->values.append(s);
+
+                processingSet = false;
             }
             break;
 
@@ -890,10 +912,24 @@ void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
                 ModelNode *n2 = new ModelNode;
                 n->properties.insert(QString::fromUtf8(data + instr.dataIdx), n2);
                 nodes.push(n2);
+                processingSet = true;
             }
             break;
         }
     }
+}
+
+bool QmlListModelParser::definesEmptyList(const QString &s)
+{
+    if (s.startsWith(QLatin1Char('[')) && s.endsWith(QLatin1Char(']'))) {
+        bool isEmptyList = true;
+        for (int i=1; i<s.length()-1; i++) {
+            if (!s[i].isSpace())
+                return false;
+        }
+        return true;
+    }
+    return false;
 }
 
 QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, ListModel, QmlListModel, QmlListModelParser)
@@ -933,7 +969,7 @@ static void dump(ModelNode *node, int ind)
 }
 
 ModelNode::ModelNode()
-: modelCache(0), objectCache(0)
+: modelCache(0), objectCache(0), isArray(false)
 {
 }
 
