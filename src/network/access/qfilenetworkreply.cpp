@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,35 +44,32 @@
 #include "QtCore/qdatetime.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
 QFileNetworkReplyPrivate::QFileNetworkReplyPrivate()
-    : QNetworkReplyPrivate(), realFileSize(0), finished(false)
+    : QNetworkReplyPrivate(), realFileSize(0)
 {
-}
-
-QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req)
-    : QNetworkReply(*new QFileNetworkReplyPrivate(), parent)
-{
-    setRequest(req);
-    setUrl(req.url());
-    setOperation(QNetworkAccessManager::GetOperation);
-    QMetaObject::invokeMethod(this, "_q_startOperation", Qt::QueuedConnection);
-    QNetworkReply::open(QIODevice::ReadOnly);
 }
 
 QFileNetworkReply::~QFileNetworkReply()
 {
 }
 
-// This code is mostly inspired by QNetworkAccessFileBackend
-// We also use its translation context for error messages
-void QFileNetworkReplyPrivate::_q_startOperation()
+QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op)
+    : QNetworkReply(*new QFileNetworkReplyPrivate(), parent)
 {
-    Q_Q(QFileNetworkReply);
+    setRequest(req);
+    setUrl(req.url());
+    setOperation(op);
+    QNetworkReply::open(QIODevice::ReadOnly);
 
-    QUrl url = q->url();
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+
+    QFileNetworkReplyPrivate *d = (QFileNetworkReplyPrivate*) d_func();
+
+    QUrl url = req.url();
     if (url.host() == QLatin1String("localhost"))
         url.setHost(QString());
 
@@ -81,81 +78,75 @@ void QFileNetworkReplyPrivate::_q_startOperation()
     if (!url.host().isEmpty()) {
         // we handle only local files
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Request for opening non-local file %1").arg(url.toString());
-        q->setError(QNetworkReply::ProtocolInvalidOperationError, msg);
-        emit q->error(QNetworkReply::ProtocolInvalidOperationError);
-        doFinished();
+        setError(QNetworkReply::ProtocolInvalidOperationError, msg);
+        QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+            Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProtocolInvalidOperationError));
+        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
         return;
     }
 #endif
     if (url.path().isEmpty())
         url.setPath(QLatin1String("/"));
-    q->setUrl(url);
+    setUrl(url);
 
 
     QString fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
         fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);
     }
-    realFile.setFileName(fileName);
+    d->realFile.setFileName(fileName);
 
-    QFileInfo fi(realFile);
+    QFileInfo fi(d->realFile);
     if (fi.isDir()) {
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Cannot open %1: Path is a directory").arg(url.toString());
-        q->setError(QNetworkReply::ContentOperationNotPermittedError, msg);
-        emit q->error(QNetworkReply::ContentOperationNotPermittedError);
-        doFinished();
+        setError(QNetworkReply::ContentOperationNotPermittedError, msg);
+        QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+            Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentOperationNotPermittedError));
+        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
         return;
     }
 
-    bool opened = realFile.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+    bool opened = d->realFile.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
 
     // could we open the file?
     if (!opened) {
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Error opening %1: %2")
-                      .arg(realFile.fileName(), realFile.errorString());
+                      .arg(d->realFile.fileName(), d->realFile.errorString());
 
-        if (realFile.exists()) {
-            q->setError(QNetworkReply::ContentAccessDenied, msg);
-            emit q->error(QNetworkReply::ContentAccessDenied);
+        if (d->realFile.exists()) {
+            setError(QNetworkReply::ContentAccessDenied, msg);
+            QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+                Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentAccessDenied));
         } else {
-            q->setError(QNetworkReply::ContentNotFoundError, msg);
-            emit q->error(QNetworkReply::ContentNotFoundError);
+            setError(QNetworkReply::ContentNotFoundError, msg);
+            QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+                Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentNotFoundError));
         }
-        doFinished();
+        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
         return;
     }
 
-    realFileSize = fi.size();
-    q->setHeader(QNetworkRequest::LastModifiedHeader, fi.lastModified());
-    q->setHeader(QNetworkRequest::ContentLengthHeader, realFileSize);
+    d->realFileSize = fi.size();
+    setHeader(QNetworkRequest::LastModifiedHeader, fi.lastModified());
+    setHeader(QNetworkRequest::ContentLengthHeader, d->realFileSize);
 
-    emit q->metaDataChanged();
-    emit q->downloadProgress(realFileSize, realFileSize);
-    emit q->readyRead();
-    doFinished();
+    QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,
+        Q_ARG(qint64, d->realFileSize), Q_ARG(qint64, d->realFileSize));
+    QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
 }
 
 bool QFileNetworkReplyPrivate::isFinished() const
 {
-    return finished;
+    return true;
 }
-
-void QFileNetworkReplyPrivate::doFinished()
-{
-    Q_Q(QFileNetworkReply);
-    finished = true;
-    emit q->finished();
-}
-
 
 void QFileNetworkReply::close()
 {
     Q_D(QFileNetworkReply);
     QNetworkReply::close();
     d->realFile.close();
-
-    if (!d->finished)
-        d->doFinished();
 }
 
 void QFileNetworkReply::abort()
@@ -163,9 +154,6 @@ void QFileNetworkReply::abort()
     Q_D(QFileNetworkReply);
     QNetworkReply::close();
     d->realFile.close();
-
-    if (!d->finished)
-        d->doFinished();
 }
 
 qint64 QFileNetworkReply::bytesAvailable() const

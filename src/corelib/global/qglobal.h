@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.6.1"
+#define QT_VERSION_STR   "4.6.2"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040601
+#define QT_VERSION 0x040602
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -2419,6 +2419,10 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 //enabling new graphics resources
 #define QT_SYMBIAN_SUPPORTS_SGIMAGE
 #define QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#define Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
+#endif
 #endif
 
 

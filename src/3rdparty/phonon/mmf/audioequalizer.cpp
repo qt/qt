@@ -28,80 +28,79 @@ using namespace Phonon::MMF;
   \internal
 */
 
-AudioEqualizer::AudioEqualizer(QObject *parent) : AbstractAudioEffect::AbstractAudioEffect(parent, createParams())
+// Define functions which depend on concrete native effect class name
+PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(AudioEqualizer)
+
+AudioEqualizer::AudioEqualizer(QObject *parent, const QList<EffectParameter>& parameters)
+    :   AbstractAudioEffect::AbstractAudioEffect(parent, parameters)
 {
+
 }
 
-void AudioEqualizer::parameterChanged(const int pid,
+int AudioEqualizer::effectParameterChanged(const EffectParameter &param,
                                       const QVariant &value)
 {
-    if (m_effect.data()) {
-        const int band = pid;
-        const int level = value.toInt();
-        setBandLevel(band, level);
-    }
+    const int band = param.id() - ParameterBase + 1;
+
+    const qreal externalLevel = value.toReal();
+    const int internalLevel = param.toInternalValue(externalLevel);
+
+    TRAPD(err, concreteEffect()->SetBandLevelL(band, internalLevel));
+    return err;
 }
 
-void AudioEqualizer::connectAudioPlayer(AudioPlayer::NativePlayer *player)
+
+//-----------------------------------------------------------------------------
+// Static functions
+//-----------------------------------------------------------------------------
+
+const char* AudioEqualizer::description()
 {
-    CAudioEqualizer *ptr = 0;
-    QT_TRAP_THROWING(ptr = CAudioEqualizer::NewL(*player));
-    m_effect.reset(ptr);
+    return "Audio equalizer";
 }
 
-void AudioEqualizer::applyParameters()
+bool AudioEqualizer::getParameters(CMdaAudioOutputStream *stream,
+    QList<EffectParameter>& parameters)
 {
-    if (m_effect.data()) {
-        EffectParameter param;
-        foreach (param, parameters()) {
-            const int band = param.id();
-            const int level = parameterValue(param).toInt();
-            setBandLevel(band, level);
+    bool supported = false;
+
+    QScopedPointer<CAudioEqualizer> effect;
+    TRAPD(err, effect.reset(CAudioEqualizer::NewL(*stream)));
+
+    if (KErrNone == err) {
+        supported = true;
+
+        TInt32 dbMin;
+        TInt32 dbMax;
+        effect->DbLevelLimits(dbMin, dbMax);
+
+        const int bandCount = effect->NumberOfBands();
+
+        for (int i = 0; i < bandCount; ++i) {
+            // For some reason, band IDs are 1-based, as opposed to the
+            // 0-based indices used in just about other Symbian API...!
+            const int band = i + 1;
+
+            const qint32 hz = effect->CenterFrequency(band);
+
+            // We pass a floating-point parameter range of -1.0 to +1.0 for
+            // each band in order to work around a limitation in
+            // Phonon::EffectWidget.  See documentation of EffectParameter
+            // for more details.
+            EffectParameter param(
+                 /* parameterId */        ParameterBase + i,
+                 /* name */               tr("%1 Hz").arg(hz),
+                 /* hints */              EffectParameter::LogarithmicHint,
+                 /* defaultValue */       QVariant(qreal(0.0)),
+                 /* minimumValue */       QVariant(qreal(-1.0)),
+                 /* maximumValue */       QVariant(qreal(+1.0)));
+
+            param.setInternalRange(dbMin, dbMax);
+            parameters.append(param);
         }
     }
-}
 
-void AudioEqualizer::setBandLevel(int band, int level)
-{
-    CAudioEqualizer *const effect = static_cast<CAudioEqualizer *>(m_effect.data());
-    // TODO: handle audio effect errors
-    TRAP_IGNORE(effect->SetBandLevelL(band, level));
-}
-
-QList<EffectParameter> AudioEqualizer::createParams()
-{
-    QList<EffectParameter> retval;
-
-    // We temporarily create an AudioPlayer, and run the effect on it, so
-    // we can extract the readonly data we need.
-    AudioPlayer dummyPlayer;
-
-    CAudioEqualizer *eqPtr = 0;
-    QT_TRAP_THROWING(eqPtr = CAudioEqualizer::NewL(*dummyPlayer.nativePlayer()));
-    QScopedPointer<CAudioEqualizer> e(eqPtr);
-
-    TInt32 dbMin;
-    TInt32 dbMax;
-    e->DbLevelLimits(dbMin, dbMax);
-
-    const int bandCount = e->NumberOfBands();
-
-    for (int i = 0; i < bandCount; ++i) {
-        const qint32 hz = e->CenterFrequency(i);
-
-        const qint32 defVol = e->BandLevel(i);
-
-        retval.append(EffectParameter(i,
-                                      tr("Frequency band, %1 Hz").arg(hz),
-                                      EffectParameter::LogarithmicHint,
-                                      QVariant(qint32(defVol)),
-                                      QVariant(qint32(dbMin)),
-                                      QVariant(qint32(dbMax)),
-                                      QVariantList(),
-                                      QString()));
-    }
-
-    return retval;
+    return supported;
 }
 
 QT_END_NAMESPACE

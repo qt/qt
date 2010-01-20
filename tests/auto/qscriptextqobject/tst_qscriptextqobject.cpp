@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -112,6 +112,7 @@ class MyQObject : public QObject
     Q_PROPERTY(QKeySequence shortcut READ shortcut WRITE setShortcut)
     Q_PROPERTY(CustomType propWithCustomType READ propWithCustomType WRITE setPropWithCustomType)
     Q_PROPERTY(Policy enumProperty READ enumProperty WRITE setEnumProperty)
+    Q_PROPERTY(Ability flagsProperty READ flagsProperty WRITE setFlagsProperty)
     Q_ENUMS(Policy Strategy)
     Q_FLAGS(Ability)
 
@@ -150,6 +151,7 @@ public:
           m_writeOnlyValue(789),
           m_readOnlyValue(987),
           m_enumValue(BarPolicy),
+          m_flagsValue(FooAbility),
           m_qtFunctionInvoked(-1)
         { }
 
@@ -215,6 +217,11 @@ public:
         { return m_enumValue; }
     void setEnumProperty(Policy policy)
         { m_enumValue = policy; }
+
+    Ability flagsProperty() const
+        { return m_flagsValue; }
+    void setFlagsProperty(Ability ability)
+        { m_flagsValue = ability; }
 
     int qtFunctionInvoked() const
         { return m_qtFunctionInvoked; }
@@ -316,6 +323,10 @@ public:
         { m_qtFunctionInvoked = 56; return arg; }
     Q_INVOKABLE QObject* myInvokableReturningMyQObjectAsQObject()
         { m_qtFunctionInvoked = 57; return this; }
+    Q_INVOKABLE Ability myInvokableWithFlagsArg(Ability arg)
+        { m_qtFunctionInvoked = 58; m_actuals << int(arg); return arg; }
+    Q_INVOKABLE MyQObject::Ability myInvokableWithQualifiedFlagsArg(MyQObject::Ability arg)
+        { m_qtFunctionInvoked = 59; m_actuals << int(arg); return arg; }
 
     Q_INVOKABLE QObjectList findObjects() const
     {  return findChildren<QObject *>();  }
@@ -433,6 +444,7 @@ protected:
     QKeySequence m_shortcut;
     CustomType m_customType;
     Policy m_enumValue;
+    Ability m_flagsValue;
     int m_qtFunctionInvoked;
     QVariantList m_actuals;
     QByteArray m_connectedSignal;
@@ -520,6 +532,7 @@ private slots:
     void prototypes();
     void objectDeleted();
     void connectToDestroyedSignal();
+    void emitAfterReceiverDeleted();
 
 private:
     QScriptEngine *m_engine;
@@ -826,7 +839,7 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     {
         QScriptValue val = m_engine->evaluate("myObject.enumProperty");
         QVERIFY(val.isNumber());
-        QCOMPARE(val.toInt32(), (int)MyQObject::BarPolicy);
+        QCOMPARE(val.toInt32(), int(MyQObject::BarPolicy));
     }
     m_engine->evaluate("myObject.enumProperty = 2");
     QCOMPARE(m_myObject->enumProperty(), MyQObject::BazPolicy);
@@ -845,6 +858,25 @@ void tst_QScriptExtQObject::getSetStaticProperty()
     QCOMPARE(m_myObject->enumProperty(), MyQObject::BazPolicy);
     m_engine->evaluate("myObject.enumProperty = 'nada'");
     QCOMPARE(m_myObject->enumProperty(), (MyQObject::Policy)-1);
+
+    // flags property
+    QCOMPARE(m_myObject->flagsProperty(), MyQObject::FooAbility);
+    {
+        QScriptValue val = m_engine->evaluate("myObject.flagsProperty");
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), int(MyQObject::FooAbility));
+    }
+    m_engine->evaluate("myObject.flagsProperty = 0x80");
+    QCOMPARE(m_myObject->flagsProperty(), MyQObject::BarAbility);
+    m_engine->evaluate("myObject.flagsProperty = 0x81");
+    QCOMPARE(m_myObject->flagsProperty(), MyQObject::Ability(MyQObject::FooAbility | MyQObject::BarAbility));
+    m_engine->evaluate("myObject.flagsProperty = 123"); // bogus values are accepted
+    QCOMPARE(int(m_myObject->flagsProperty()), 123);
+    m_engine->evaluate("myObject.flagsProperty = 'BazAbility'");
+    QCOMPARE(m_myObject->flagsProperty(),  MyQObject::BazAbility);
+    m_engine->evaluate("myObject.flagsProperty = 'ScoobyDoo'");
+    // ### ouch! Shouldn't QMetaProperty::write() rather not change the value...?
+    QCOMPARE(m_myObject->flagsProperty(), (MyQObject::Ability)-1);
 
     // auto-dereferencing of pointers
     {
@@ -2017,6 +2049,7 @@ void tst_QScriptExtQObject::classEnums()
     QScriptValue myClass = m_engine->newQMetaObject(m_myObject->metaObject(), m_engine->undefinedValue());
     m_engine->globalObject().setProperty("MyQObject", myClass);
 
+    QVERIFY(m_engine->evaluate("MyQObject.FooPolicy").isNumber()); // no strong typing
     QCOMPARE(static_cast<MyQObject::Policy>(m_engine->evaluate("MyQObject.FooPolicy").toInt32()),
              MyQObject::FooPolicy);
     QCOMPARE(static_cast<MyQObject::Policy>(m_engine->evaluate("MyQObject.BarPolicy").toInt32()),
@@ -2031,6 +2064,7 @@ void tst_QScriptExtQObject::classEnums()
     QCOMPARE(static_cast<MyQObject::Strategy>(m_engine->evaluate("MyQObject.BazStrategy").toInt32()),
              MyQObject::BazStrategy);
 
+    QVERIFY(m_engine->evaluate("MyQObject.NoAbility").isNumber()); // no strong typing
     QCOMPARE(MyQObject::Ability(m_engine->evaluate("MyQObject.NoAbility").toInt32()),
              MyQObject::NoAbility);
     QCOMPARE(MyQObject::Ability(m_engine->evaluate("MyQObject.FooAbility").toInt32()),
@@ -2041,6 +2075,9 @@ void tst_QScriptExtQObject::classEnums()
              MyQObject::BazAbility);
     QCOMPARE(MyQObject::Ability(m_engine->evaluate("MyQObject.AllAbility").toInt32()),
              MyQObject::AllAbility);
+
+    // Constructors for flags are not provided
+    QVERIFY(m_engine->evaluate("MyQObject.Ability").isUndefined());
 
     QScriptValue::PropertyFlags expectedEnumFlags = QScriptValue::ReadOnly | QScriptValue::Undeletable;
     QCOMPARE(myClass.propertyFlags("FooPolicy"), expectedEnumFlags);
@@ -2092,6 +2129,25 @@ void tst_QScriptExtQObject::classEnums()
         QCOMPARE(m_myObject->qtFunctionInvoked(), 38);
         QCOMPARE(m_myObject->qtFunctionActuals().size(), 0);
         QCOMPARE(ret.isNumber(), true);
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithFlagsArg(MyQObject.FooAbility)");
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 58);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).toInt(), int(MyQObject::FooAbility));
+        QCOMPARE(ret.isNumber(), true);
+        QCOMPARE(ret.toInt32(), int(MyQObject::FooAbility));
+    }
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithQualifiedFlagsArg(MyQObject.BarAbility)");
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 59);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).toInt(), int(MyQObject::BarAbility));
+        QCOMPARE(ret.isNumber(), true);
+        QCOMPARE(ret.toInt32(), int(MyQObject::BarAbility));
     }
 
     // enum properties are not deletable or writable
@@ -2858,7 +2914,8 @@ void tst_QScriptExtQObject::objectDeleted()
     v.setProperty("intProperty", QScriptValue(&eng, 123));
     QCOMPARE(qobj->intProperty(), 123);
     qobj->resetQtFunctionInvoked();
-    v.property("myInvokable").call(v);
+    QScriptValue invokable = v.property("myInvokable");
+    invokable.call(v);
     QCOMPARE(qobj->qtFunctionInvoked(), 0);
 
     // now delete the object
@@ -2894,6 +2951,14 @@ void tst_QScriptExtQObject::objectDeleted()
         QScriptValue ret = v.property("myInvokableWithIntArg");
         QVERIFY(ret.isError());
         QCOMPARE(ret.toString(), QLatin1String("Error: cannot access member `myInvokableWithIntArg' of deleted QObject"));
+    }
+
+    // Meta-method wrappers are still valid, but throw error when called
+    QVERIFY(invokable.isFunction());
+    {
+        QScriptValue ret = invokable.call(v);
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("Error: cannot call function of deleted QObject"));
     }
 
     // access from script
@@ -2954,6 +3019,28 @@ void tst_QScriptExtQObject::connectToDestroyedSignal()
         // the signal handler won't get called -- we don't want to crash
     }
 #endif
+}
+
+void tst_QScriptExtQObject::emitAfterReceiverDeleted()
+{
+    for (int x = 0; x < 2; ++x) {
+        MyQObject *obj = new MyQObject;
+        QScriptValue scriptObj = m_engine->newQObject(obj);
+        if (x == 0) {
+            // Connecting from JS
+            m_engine->globalObject().setProperty("obj", scriptObj);
+            QVERIFY(m_engine->evaluate("myObject.mySignal.connect(obj, 'mySlot()')").isUndefined());
+        } else {
+            // Connecting from C++
+            qScriptConnect(m_myObject, SIGNAL(mySignal()), scriptObj, scriptObj.property("mySlot"));
+        }
+        delete obj;
+        QSignalSpy signalHandlerExceptionSpy(m_engine, SIGNAL(signalHandlerException(QScriptValue)));
+        QVERIFY(!m_engine->hasUncaughtException());
+        m_myObject->emitMySignal();
+        QCOMPARE(signalHandlerExceptionSpy.count(), 0);
+        QVERIFY(!m_engine->hasUncaughtException());
+    }
 }
 
 QTEST_MAIN(tst_QScriptExtQObject)

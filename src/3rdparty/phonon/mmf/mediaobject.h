@@ -19,8 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_MEDIAOBJECT_H
 #define PHONON_MMF_MEDIAOBJECT_H
 
-#include <Phonon/MediaSource>
-#include <Phonon/MediaObjectInterface>
+#include <phonon/mediasource.h>
+#include <phonon/mediaobjectinterface.h>
 #include <QScopedPointer>
 #include <QTimer>
 
@@ -92,6 +92,7 @@ public Q_SLOTS:
     void switchToNextSource();
 
 Q_SIGNALS:
+    void abstractPlayerChanged(AbstractPlayer *player);
     void totalTimeChanged(qint64 length);
     void hasVideoChanged(bool hasVideo);
     void seekableChanged(bool seekable);
@@ -101,8 +102,8 @@ Q_SIGNALS:
     // TODO: emit metaDataChanged from MediaObject
     void metaDataChanged(const QMultiMap<QString, QString>& metaData);
     void currentSourceChanged(const MediaSource& source);
-    void stateChanged(Phonon::State oldState,
-                      Phonon::State newState);
+    void stateChanged(Phonon::State newState,
+                      Phonon::State oldState);
     void finished();
     void tick(qint64 time);
 

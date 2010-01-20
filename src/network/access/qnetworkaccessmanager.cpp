@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -687,10 +687,10 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // Also if the scheme is empty we consider it a file.
     // The QNetworkAccessFileBackend will right now only be used
     // for PUT or qrc://
-    if (op == QNetworkAccessManager::GetOperation
+    if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
          && (req.url().scheme() == QLatin1String("file")
              || req.url().scheme().isEmpty())) {
-        return new QFileNetworkReply(this, req);
+        return new QFileNetworkReply(this, req, op);
     }
 
     QNetworkRequest request = req;
@@ -723,8 +723,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // third step: find a backend
     priv->backend = d->findBackend(op, request);
 
-    // fourth step: setup the reply
-    priv->setup(op, request, outgoingData);
 #ifndef QT_NO_NETWORKPROXY
     QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
     priv->proxyList = proxyList;
@@ -733,6 +731,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         priv->backend->setParent(reply);
         priv->backend->reply = priv;
     }
+    // fourth step: setup the reply
+    priv->setup(op, request, outgoingData);
 
 #ifndef QT_NO_OPENSSL
     reply->setSslConfiguration(request.sslConfiguration());

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,8 +48,8 @@ QT_BEGIN_NAMESPACE
 QDebug operator<<(QDebug dbg, const QAudioFormat& audioFormat)
 {
     dbg.nospace() << "QAudioFormat(" <<
-            audioFormat.sampleRate() << "," <<
-            audioFormat.channelCount() << "," <<
+            audioFormat.frequency() << "," <<
+            audioFormat.channels() << "," <<
             audioFormat.sampleSize()<< "," <<
             audioFormat.codec() << "," <<
             audioFormat.byteOrder() << "," <<
@@ -64,8 +64,8 @@ QAudioFormat toQAudioFormat(AudioStreamBasicDescription const& sf)
 {
     QAudioFormat    audioFormat;
 
-    audioFormat.setSampleRate(sf.mSampleRate);
-    audioFormat.setChannelCount(sf.mChannelsPerFrame);
+    audioFormat.setFrequency(sf.mSampleRate);
+    audioFormat.setChannels(sf.mChannelsPerFrame);
     audioFormat.setSampleSize(sf.mBitsPerChannel);
     audioFormat.setCodec(QString::fromLatin1("audio/pcm"));
     audioFormat.setByteOrder(sf.mFormatFlags & kLinearPCMFormatFlagIsBigEndian != 0 ? QAudioFormat::BigEndian : QAudioFormat::LittleEndian);
@@ -84,9 +84,9 @@ AudioStreamBasicDescription toAudioStreamBasicDescription(QAudioFormat const& au
     AudioStreamBasicDescription sf;
 
     sf.mFormatFlags         = kAudioFormatFlagIsPacked;
-    sf.mSampleRate          = audioFormat.sampleRate();
+    sf.mSampleRate          = audioFormat.frequency();
     sf.mFramesPerPacket     = 1;
-    sf.mChannelsPerFrame    = audioFormat.channelCount();
+    sf.mChannelsPerFrame    = audioFormat.channels();
     sf.mBitsPerChannel      = audioFormat.sampleSize();
     sf.mBytesPerFrame       = sf.mChannelsPerFrame * (sf.mBitsPerChannel / 8);
     sf.mBytesPerPacket      = sf.mFramesPerPacket * sf.mBytesPerFrame;

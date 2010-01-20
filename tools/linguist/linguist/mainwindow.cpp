@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1358,7 +1358,7 @@ void MainWindow::about()
     box.setText(tr("<center><img src=\":/images/splash.png\"/></img><p>%1</p></center>"
                     "<p>Qt Linguist is a tool for adding translations to Qt "
                     "applications.</p>"
-                    "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
+                    "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)."
                    ).arg(version));
 
     box.setWindowTitle(QApplication::translate("AboutDialog", "Qt Linguist"));

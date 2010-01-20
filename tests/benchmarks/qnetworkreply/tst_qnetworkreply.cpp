@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -262,8 +262,22 @@ protected:
         port = server.serverPort();
         ready.release();
 
-        server.waitForNewConnection(-1);
+        QVERIFY(server.waitForNewConnection(10*1000));
         client = server.nextPendingConnection();
+
+        // read lines until we read the empty line seperating HTTP request from HTTP request body
+        do {
+            if (client->canReadLine()) {
+                QString line = client->readLine();
+                if (line == "\n" || line == "\r\n")
+                    break; // empty line
+            }
+            if (!client->waitForReadyRead(10*1000)) {
+                client->close();
+                return;
+            }
+        } while (client->state() == QAbstractSocket::ConnectedState);
+
         client->write("HTTP/1.0 200 OK\r\n");
         client->write("Content-length: 0\r\n");
         client->write("\r\n");
@@ -561,15 +575,15 @@ void tst_qnetworkreply::httpUploadPerformance()
       generator.start();
       time.start();
       QTestEventLoop::instance().enterLoop(40);
+      qint64 elapsed = time.elapsed();
+      reader.exit();
+      reader.wait();
+      QVERIFY(reply->isFinished());
       QCOMPARE(reply->error(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 
-      qint64 elapsed = time.elapsed();
       qDebug() << "tst_QNetworkReply::httpUploadPerformance" << elapsed << "msec, "
               << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
-
-      reader.exit();
-      reader.wait();
 }
 
 

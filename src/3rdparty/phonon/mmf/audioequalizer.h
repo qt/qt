@@ -21,6 +21,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractaudioeffect.h"
 
+class CAudioEqualizer;
+
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
@@ -39,19 +41,21 @@ class AudioEqualizer : public AbstractAudioEffect
 {
     Q_OBJECT
 public:
-    AudioEqualizer(QObject *parent);
+    AudioEqualizer(QObject *parent, const QList<EffectParameter> &parameters);
+
+    // Static interface required by EffectFactory
+    static const char* description();
+    static bool getParameters(CMdaAudioOutputStream *stream,
+        QList<EffectParameter>& parameters);
 
 protected:
     // AbstractAudioEffect
-    virtual void connectAudioPlayer(AudioPlayer::NativePlayer *player);
-    virtual void applyParameters();
-    virtual void parameterChanged(const int id, const QVariant &value);
+    virtual void createEffect(AudioPlayer::NativePlayer *player);
+    virtual int effectParameterChanged(const EffectParameter &param,
+                                       const QVariant &value);
 
 private:
-    void setBandLevel(int band, int level);
-
-private:
-    static QList<EffectParameter> createParams();
+    CAudioEqualizer *concreteEffect();
 
 };
 }
