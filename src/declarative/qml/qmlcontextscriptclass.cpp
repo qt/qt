@@ -77,7 +77,7 @@ struct ContextData : public QScriptDeclarativeClass::Object {
     via QtScript.
  */
 QmlContextScriptClass::QmlContextScriptClass(QmlEngine *bindEngine)
-: QScriptDeclarativeClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine),
+: QmlScriptClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine),
   lastScopeObject(0), lastContext(0), lastData(0), lastPropertyIndex(-1), lastDefaultObject(-1)
 {
 }
@@ -196,7 +196,7 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
     return 0;
 }
 
-QmlContextScriptClass::Value
+QmlContextScriptClass::ScriptValue
 QmlContextScriptClass::property(Object *object, const Identifier &name)
 {
     Q_UNUSED(object);

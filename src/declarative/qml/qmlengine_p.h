@@ -308,16 +308,6 @@ public:
 };
 
 
-class QmlScriptClass : public QScriptClass
-{
-public:
-    QmlScriptClass(QmlEngine *);
-
-    static QVariant toVariant(QmlEngine *, const QScriptValue &);
-protected:
-    QmlEngine *engine;
-};
-
 QT_END_NAMESPACE
 
 #endif // QMLENGINE_P_H

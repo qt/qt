@@ -53,7 +53,7 @@ struct ListData : public QScriptDeclarativeClass::Object {
 };
 
 QmlListScriptClass::QmlListScriptClass(QmlEngine *e)
-: QScriptDeclarativeClass(QmlEnginePrivate::getScriptEngine(e)), engine(e)
+: QmlScriptClass(QmlEnginePrivate::getScriptEngine(e)), engine(e)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     Q_UNUSED(scriptEngine);
@@ -100,7 +100,7 @@ QmlListScriptClass::queryProperty(Object *object, const Identifier &name,
     }
 }
 
-QmlListScriptClass::Value QmlListScriptClass::property(Object *obj, const Identifier &name)
+QmlListScriptClass::ScriptValue QmlListScriptClass::property(Object *obj, const Identifier &name)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);

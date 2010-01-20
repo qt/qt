@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLVALUETYPESCRIPTCLASS_P_H
-#define QMLVALUETYPESCRIPTCLASS_P_H
+#ifndef QMLSCRIPTCLASS_P_H
+#define QMLSCRIPTCLASS_P_H
 
 //
 //  W A R N I N G
@@ -53,34 +53,37 @@
 // We mean it.
 //
 
-
-#include <private/qmlscriptclass_p.h>
+#include <QtScript/qscriptclass.h>
+#include <private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlEngine;
-class QmlValueType;
-class QmlValueTypeScriptClass : public QmlScriptClass
+class QmlScriptClass : public QScriptDeclarativeClass
 {
 public:
-    QmlValueTypeScriptClass(QmlEngine *);
-    ~QmlValueTypeScriptClass();
+    QmlScriptClass(QScriptEngine *);
 
-    QScriptValue newObject(QObject *object, int coreIndex, QmlValueType *);
+    static QVariant toVariant(QmlEngine *, const QScriptValue &);
 
-    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
-                                                   QScriptClass::QueryFlags flags);
-    virtual ScriptValue property(Object *, const Identifier &);
-    virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
+#if (QT_VERSION < QT_VERSION_CHECK(4, 6, 2))
+    struct Value : public QScriptValue { 
+        Value() : QScriptValue() {}
+        Value(QScriptEngine *engine, int v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, uint v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, bool v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, double v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, float v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, const QString &v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *, const QScriptValue &v) : QScriptValue(v) {}
+    };
 
-    virtual QVariant toVariant(Object *, bool *ok = 0);
-    QVariant toVariant(const QScriptValue &);
-private:
-    QmlEngine *engine;
-    int m_lastIndex;
+    typedef QScriptValue ScriptValue;
+#else
+    typedef Value ScriptValue;
+#endif
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLVALUETYPESCRIPTCLASS_P_H
-
+#endif // QMLSCRIPTCLASS_P_H

@@ -60,6 +60,13 @@
 
 QT_BEGIN_NAMESPACE
 
+#if (QT_VERSION < QT_VERSION_CHECK(4, 6, 2))
+static uint qHash(const QUrl &u)
+{
+    return qHash(u.toString());
+}
+#endif
+
 class QmlImageReader : public QThread
 {
     Q_OBJECT
