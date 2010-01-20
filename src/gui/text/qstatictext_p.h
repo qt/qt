@@ -72,8 +72,9 @@ public:
     int numGlyphs;                               // 4 bytes per item
     int numChars;                                // 4 bytes per item
     QFontEngine *fontEngine;                     // 4 bytes per item
+    QFont font;                                  // 8 bytes per item
                                                  // ================
-                                                 // 24 bytes per item
+                                                 // 32 bytes per item
 };
 
 class QStaticText;
