@@ -965,9 +965,6 @@ void QPaintBufferEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
 {
     QString text = QString(staticTextItem->chars, staticTextItem->numChars);
 
-    QFontDef fontDef = staticTextItem->fontEngine->fontDef;
-    QFont font(fontDef.family, fontDef.pointSize, fontDef.weight, fontDef.style == QFont::StyleItalic);
-
     QTransform xform;
     for (int i=buffer->commands.size()-1; i>=0; --i) {
         const QPaintBufferCommand &cmd = buffer->commands.at(i);
@@ -978,10 +975,10 @@ void QPaintBufferEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
     }
 
     QStaticText staticText(text);
-    staticText.prepare(xform, font);
+    staticText.prepare(xform, staticTextItem->font);
 
     QVariantList variants;
-    variants << QVariant(font) << QVariant::fromValue(staticText);
+    variants << QVariant(staticTextItem->font) << QVariant::fromValue(staticText);
     buffer->addCommand(QPaintBufferPrivate::Cmd_DrawStaticText, QVariant(variants));
 }
 

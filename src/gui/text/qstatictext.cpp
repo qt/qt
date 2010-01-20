@@ -330,7 +330,7 @@ namespace {
 
             QStaticTextItem *currentItem = (m_items + (m_itemCount - 1));
             currentItem->fontEngine = ti.fontEngine;
-            currentItem->font = ti.font;
+            currentItem->font = ti.font();
             currentItem->chars = ti.chars;
             currentItem->numChars = ti.num_chars;
             currentItem->numGlyphs = ti.glyphs.numGlyphs;
