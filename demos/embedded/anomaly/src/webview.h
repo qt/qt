@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the demos of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,61 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QFILENETWORKREPLY_P_H
-#define QFILENETWORKREPLY_P_H
+#ifndef WEBVIEW_H
+#define WEBVIEW_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access API.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QWebView>
+#include <QTime>
 
-#include "qnetworkreply.h"
-#include "qnetworkreply_p.h"
-#include "qnetworkaccessmanager.h"
-#include <QFile>
-
-QT_BEGIN_NAMESPACE
-
-
-class QFileNetworkReplyPrivate;
-class QFileNetworkReply: public QNetworkReply
+class WebView : public QWebView
 {
     Q_OBJECT
 public:
-    QFileNetworkReply(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
-    ~QFileNetworkReply();
-    virtual void abort();
+    WebView(QWidget *parent = 0);
 
-    // reimplemented from QNetworkReply
-    virtual void close();
-    virtual qint64 bytesAvailable() const;
-    virtual bool isSequential () const;
-    qint64 size() const;
+protected:
+    void paintEvent(QPaintEvent *event);
 
-    virtual qint64 readData(char *data, qint64 maxlen);
+private slots:
+    void newPageLoading();
+    void pageLoaded(bool ok);
 
-    Q_DECLARE_PRIVATE(QFileNetworkReply)
+private:
+    QTime loadingTime;
+    bool inLoading;
 };
 
-class QFileNetworkReplyPrivate: public QNetworkReplyPrivate
-{
-public:
-    QFileNetworkReplyPrivate();
-
-    QFile realFile;
-    qint64 realFileSize;
-
-    virtual bool isFinished() const;
-
-    Q_DECLARE_PUBLIC(QFileNetworkReply)
-};
-
-QT_END_NAMESPACE
-
-#endif // QFILENETWORKREPLY_P_H
+#endif // WEBVIEW_H

@@ -19,7 +19,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_EFFECTPARAMETER_H
 #define PHONON_MMF_EFFECTPARAMETER_H
 
-#include <Phonon/EffectParameter>
+#include <phonon/effectparameter.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -1984,9 +1984,14 @@ QPaintEngine *QPainter::paintEngine() const
 /*!
     \since 4.6
 
-    Flushes the painting pipeline and prepares for the user issuing
-    commands directly to the underlying graphics context. Must be
-    followed by a call to endNativePainting().
+    Flushes the painting pipeline and prepares for the user issuing commands
+    directly to the underlying graphics context. Must be followed by a call to
+    endNativePainting().
+
+    Note that only the states the underlying paint engine changes will be reset
+    to their respective default states. If, for example, the OpenGL polygon
+    mode is changed by the user inside a beginNativePaint()/endNativePainting()
+    block, it will not be reset to the default state by endNativePainting().
 
     Here is an example that shows intermixing of painter commands
     and raw OpenGL commands:
@@ -2010,9 +2015,9 @@ void QPainter::beginNativePainting()
 /*!
     \since 4.6
 
-    Restores the painter after manually issuing native painting commands.
-    Lets the painter restore any native state that it relies on before
-    calling any other painter commands.
+    Restores the painter after manually issuing native painting commands. Lets
+    the painter restore any native state that it relies on before calling any
+    other painter commands.
 
     \sa beginNativePainting()
 */
