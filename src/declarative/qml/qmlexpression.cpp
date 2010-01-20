@@ -641,9 +641,16 @@ void QmlExpressionPrivate::clearGuards()
 
     for (int ii = 0; ii < data->guardListLength; ++ii) {
         if (data->guardList[ii].data()) {
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
             QMetaObject::disconnectOne(data->guardList[ii].data(), 
                                        data->guardList[ii].notifyIndex, 
                                        q, notifyIdx);
+#else
+            // QTBUG-6781
+            QMetaObject::disconnect(data->guardList[ii].data(), 
+                                    data->guardList[ii].notifyIndex, 
+                                    q, notifyIdx);
+#endif
         }
     }
 
@@ -684,9 +691,16 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
             }
         } else if(data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
             // Cache miss
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
             QMetaObject::disconnectOne(data->guardList[ii].data(), 
                                        data->guardList[ii].notifyIndex, 
                                        q, notifyIdx);
+#else
+            // QTBUG-6781
+            QMetaObject::disconnect(data->guardList[ii].data(), 
+                                    data->guardList[ii].notifyIndex, 
+                                    q, notifyIdx);
+#endif
         } 
         /* else {
             // Cache miss, but nothing to do
@@ -732,9 +746,16 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
 
     for (int ii = properties.count(); ii < data->guardListLength; ++ii) {
         if (data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
             QMetaObject::disconnectOne(data->guardList[ii].data(), 
                                        data->guardList[ii].notifyIndex, 
                                        q, notifyIdx);
+#else
+            // QTBUG-6781
+            QMetaObject::disconnect(data->guardList[ii].data(), 
+                                    data->guardList[ii].notifyIndex, 
+                                    q, notifyIdx);
+#endif
         }
     }
 

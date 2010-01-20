@@ -383,8 +383,14 @@ inline void subscribe(QObject *o, int notifyIndex,
     QmlBindingVME::Config::Subscription *s = config->subscriptions + subIndex;
     if (o != s->source || notifyIndex != s->notifyIndex)  {
         if (s->source)
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
             QMetaObject::disconnectOne(s->source, s->notifyIndex, 
                                        config->target, config->targetSlot + subIndex);
+#else
+            // QTBUG-6781
+            QMetaObject::disconnect(s->source, s->notifyIndex, 
+                                    config->target, config->targetSlot + subIndex);
+#endif
         s->source = o;
         s->notifyIndex = notifyIndex;
         if (s->source && s->notifyIndex != -1) 
@@ -599,8 +605,6 @@ inline static QString toString(Register *reg, int type, bool *ok = 0)
     } else if (type == QMetaType::Int) {
         return QString::number(reg->getint());
     } else if (type == qMetaTypeId<QVariant>()) {
-        qWarning() << reg->getvariantptr()->toString() <<
-        *reg->getvariantptr();
         return reg->getvariantptr()->toString();
     } else if (type == QMetaType::QString) {
         return *reg->getstringptr();

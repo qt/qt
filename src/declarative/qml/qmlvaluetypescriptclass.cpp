@@ -53,7 +53,7 @@ struct QmlValueTypeReference : public QScriptDeclarativeClass::Object {
 };
 
 QmlValueTypeScriptClass::QmlValueTypeScriptClass(QmlEngine *bindEngine)
-: QScriptDeclarativeClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine)
+: QmlScriptClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine)
 {
 }
 
@@ -98,7 +98,7 @@ QmlValueTypeScriptClass::queryProperty(Object *obj, const Identifier &name,
     return rv;
 }
 
-QmlValueTypeScriptClass::Value QmlValueTypeScriptClass::property(Object *obj, const Identifier &)
+QmlValueTypeScriptClass::ScriptValue QmlValueTypeScriptClass::property(Object *obj, const Identifier &)
 {
     QmlValueTypeReference *ref = static_cast<QmlValueTypeReference *>(obj);
 
