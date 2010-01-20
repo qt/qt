@@ -3992,7 +3992,7 @@ QImage QImage::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Transf
     QSize newSize = size();
     newSize.scale(s, aspectMode);
     if (newSize == size())
-        return copy();
+        return *this;
 
     QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
     QImage img = transformed(wm, mode);

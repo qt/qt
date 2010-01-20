@@ -687,10 +687,10 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // Also if the scheme is empty we consider it a file.
     // The QNetworkAccessFileBackend will right now only be used
     // for PUT or qrc://
-    if (op == QNetworkAccessManager::GetOperation
+    if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
          && (req.url().scheme() == QLatin1String("file")
              || req.url().scheme().isEmpty())) {
-        return new QFileNetworkReply(this, req);
+        return new QFileNetworkReply(this, req, op);
     }
 
     QNetworkRequest request = req;

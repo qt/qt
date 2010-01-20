@@ -802,7 +802,7 @@ void Widget::toLowerFunction()
 {
 //! [75]
     QString str = "Qt by NOKIA";
-    str = str.toLower();        // str == "qy by nokia"
+    str = str.toLower();        // str == "qt by nokia"
 //! [75]
 }
 

@@ -151,7 +151,8 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
         mimeType = QLatin1String("text/html");
     }
 
-    return new HelpNetworkReply(request, helpEngine->fileData(url), mimeType);
+    const QByteArray &ba = helpEngine->fileData(url);
+    return new HelpNetworkReply(request, ba.isEmpty() ? " " : ba, mimeType);
 }
 
 class HelpPage : public QWebPage

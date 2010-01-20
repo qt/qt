@@ -1222,12 +1222,6 @@ QFileDialog::ViewMode QFileDialog::viewMode() const
 void QFileDialog::setFileMode(QFileDialog::FileMode mode)
 {
     Q_D(QFileDialog);
-    if (d->nativeDialogInUse){
-        d->model->setFilter(d->filterForMode(filter()));
-        d->setFilter_sys();
-        return;
-    }
-
     d->fileMode = mode;
     d->retranslateWindowTitle();
 
@@ -1263,6 +1257,11 @@ void QFileDialog::setFileMode(QFileDialog::FileMode mode)
         }
     }
     setLabelText(Accept, buttonText);
+    if (d->nativeDialogInUse){
+        d->setFilter_sys();
+        return;
+    }
+
     d->qFileDialogUi->fileTypeCombo->setEnabled(!testOption(ShowDirsOnly));
     d->_q_updateOkButton();
 }
@@ -1300,6 +1299,10 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
         d->qFileDialogUi->lookInCombo->setEditable(false);
     }
     d->retranslateWindowTitle();
+#if defined(Q_WS_MAC)
+    d->deleteNativeDialog_sys();
+    setAttribute(Qt::WA_DontShowOnScreen, false);
+#endif
 }
 
 /*
@@ -3245,6 +3248,10 @@ QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
     QString currentLocation = dirModel->rootPath();
     QString path = index.data(QFileSystemModel::FilePathRole).toString();
     if (!currentLocation.isEmpty() && path.startsWith(currentLocation)) {
+#if defined(Q_OS_UNIX) || defined(Q_OS_WINCE)
+        if (currentLocation == QDir::separator())
+            return path.mid(currentLocation.length());
+#endif
         return path.mid(currentLocation.length() + 1);
     }
     return index.data(QFileSystemModel::FilePathRole).toString();
@@ -3300,6 +3307,10 @@ QStringList QFSCompleter::splitPath(const QString &path) const
         else
             dirModel = sourceModel;
         QString currentLocation = QDir::toNativeSeparators(dirModel->rootPath());
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+        if (currentLocation.endsWith(QLatin1Char(':')))
+            currentLocation.append(sep);
+#endif
         if (currentLocation.contains(sep) && path != currentLocation) {
             QStringList currentLocationList = splitPath(currentLocation);
             while (!currentLocationList.isEmpty()

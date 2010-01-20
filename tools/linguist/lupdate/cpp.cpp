@@ -1732,7 +1732,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         plural = true;
                     }
                 }
-                if (!pendingContext.isEmpty()) {
+                if (!pendingContext.isEmpty() && !prefix.startsWith(strColons)) {
                     QStringList unresolved;
                     if (!fullyQualify(namespaces, pendingContext, true, &functionContext, &unresolved)) {
                         functionContextUnresolved = unresolved.join(strColons);
