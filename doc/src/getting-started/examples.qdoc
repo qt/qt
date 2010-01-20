@@ -648,10 +648,10 @@
     These examples show the use of graphics widgets and layouts.
 
     \list
-    \o \l{graphicsview/anchorlayouts}{Anchor Layouts}
+    \o \l{graphicsview/anchorlayout}{Anchor Layout}
     \o \l{graphicsview/flowlayout}{Flow Layout}
-    \o \l{graphicsview/simpleanchorlayouts}{Simple Anchor Layouts}
-    \o \l{graphicsview/weatheranchorlayouts}{Weather Anchor Layouts}
+    \o \l{graphicsview/simpleanchorlayout}{Simple Anchor Layout}
+    \o \l{graphicsview/weatheranchorlayout}{Weather Anchor Layout}
     \endlist
 
     Some examples demonstrate the use of graphics effects with canvas items.
