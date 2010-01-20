@@ -223,7 +223,7 @@ static QString toLocalFileOrQrc(const QUrl& url)
 }
 
 typedef QHash<QUrl, QmlPixmapReply *> QmlPixmapReplyHash;
-static QmlPixmapReplyHash qmlActivePixmapReplies;
+Q_GLOBAL_STATIC(QmlPixmapReplyHash, qmlActivePixmapReplies);
 
 class QmlPixmapReplyPrivate : public QObjectPrivate
 {
@@ -343,7 +343,7 @@ bool QmlPixmapReply::release(bool defer)
     Q_ASSERT(d->refCount > 0);
     --d->refCount;
     if (d->refCount == 0) {
-        qmlActivePixmapReplies.remove(d->url);
+        qmlActivePixmapReplies()->remove(d->url);
         if (defer)
             deleteLater();
         else
@@ -392,15 +392,15 @@ QmlPixmapReply::Status QmlPixmapCache::get(const QUrl& url, QPixmap *pixmap)
 
     QByteArray key = url.toEncoded(QUrl::FormattingOption(0x100));
     QString strKey = QString::fromLatin1(key.constData(), key.count());
-    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(url);
+    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
     if (QPixmapCache::find(strKey, pixmap)) {
-        if (iter != qmlActivePixmapReplies.end()) {
+        if (iter != qmlActivePixmapReplies()->end()) {
             status = (*iter)->status();
             (*iter)->release();
         } else {
             status = pixmap->isNull() ? QmlPixmapReply::Error : QmlPixmapReply::Ready;
         }
-    } else if (iter != qmlActivePixmapReplies.end()) {
+    } else if (iter != qmlActivePixmapReplies()->end()) {
         status = QmlPixmapReply::Loading;
     }
 
@@ -418,12 +418,12 @@ QmlPixmapReply::Status QmlPixmapCache::get(const QUrl& url, QPixmap *pixmap)
 */
 QmlPixmapReply *QmlPixmapCache::request(QmlEngine *engine, const QUrl &url)
 {
-    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(url);
-    if (iter == qmlActivePixmapReplies.end()) {
+    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
+    if (iter == qmlActivePixmapReplies()->end()) {
         QNetworkRequest req(url);
         req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
         QmlPixmapReply *item = new QmlPixmapReply(url, engine->networkAccessManager()->get(req));
-        iter = qmlActivePixmapReplies.insert(url, item);
+        iter = qmlActivePixmapReplies()->insert(url, item);
     } else {
         (*iter)->addRef();
     }
@@ -441,8 +441,8 @@ QmlPixmapReply *QmlPixmapCache::request(QmlEngine *engine, const QUrl &url)
 */
 void QmlPixmapCache::cancel(const QUrl& url, QObject *obj)
 {
-    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(url);
-    if (iter == qmlActivePixmapReplies.end())
+    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
+    if (iter == qmlActivePixmapReplies()->end())
         return;
 
     QmlPixmapReply *reply = *iter;
@@ -457,7 +457,7 @@ void QmlPixmapCache::cancel(const QUrl& url, QObject *obj)
 */
 int QmlPixmapCache::pendingRequests()
 {
-    return qmlActivePixmapReplies.count();
+    return qmlActivePixmapReplies()->count();
 }
 
 #include <qmlpixmapcache.moc>
