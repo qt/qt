@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qcorewlanengine.h"
+#include "../qnetworksession_impl.h"
 
 #include <QtNetwork/private/qnetworkconfiguration_p.h>
 
@@ -515,6 +516,11 @@ QNetworkSession::State QCoreWlanEngine::sessionStateForId(const QString &id)
 QNetworkConfigurationManager::Capabilities QCoreWlanEngine::capabilities() const
 {
     return QNetworkConfigurationManager::ForcedRoaming;
+}
+
+QNetworkSessionPrivate *QCoreWlanEngine::createSessionBackend()
+{
+    return new QNetworkSessionPrivateImpl;
 }
 
 QT_END_NAMESPACE
