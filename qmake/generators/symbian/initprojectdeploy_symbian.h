@@ -52,6 +52,8 @@
 
 #include "epocroot.h"
 
+#define PLUGIN_STUB_DIR "qmakepluginstubs"
+
 struct CopyItem
 {
     CopyItem(const QString& f, const QString& t) : from(f) , to(t) { }
