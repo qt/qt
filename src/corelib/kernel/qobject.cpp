@@ -2956,6 +2956,10 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
 }
 
 /*!\internal
+
+Disconnect a single signal connection.  If QMetaObject::connect() has been called 
+multiple times for the same sender, signal_index, receiver and method_index only 
+one of these connections will be removed.
  */
 bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
                                 const QObject *receiver, int method_index)

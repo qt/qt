@@ -2220,7 +2220,14 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     JSC::call(exec, slot, callType, callData, thisObject, jscArgs);
 
     if (exec->hadException()) {
-        engine->emitSignalHandlerException();
+        if (slot.inherits(&QtFunction::info) && !static_cast<QtFunction*>(JSC::asObject(slot))->qobject()) {
+            // The function threw an error because the target QObject has been deleted.
+            // The connections list is stale; remove the signal handler and ignore the exception.
+            removeSignalHandler(sender(), signalIndex, receiver, slot);
+            exec->clearException();
+        } else {
+            engine->emitSignalHandlerException();
+        }
     }
 }
 
