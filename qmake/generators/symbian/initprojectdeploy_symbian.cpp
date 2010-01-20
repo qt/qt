@@ -46,7 +46,6 @@
 #include <qsettings.h>
 #include <qdebug.h>
 
-#define PLUGIN_STUB_DIR "qmakepluginstubs"
 #define SYSBIN_DIR "\\sys\\bin"
 
 #define SUFFIX_DLL "dll"
