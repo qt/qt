@@ -64,6 +64,7 @@
 #include "qmlglobal_p.h"
 #include "qmlworkerscript_p.h"
 #include "qmlcomponent_p.h"
+#include "qmlscriptclass_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -1056,9 +1057,8 @@ QVariant QmlEnginePrivate::scriptValueToVariant(const QScriptValue &val)
     }
 }
 
-QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
-: QScriptClass(QmlEnginePrivate::getScriptEngine(bindengine)),
-  engine(bindengine)
+QmlScriptClass::QmlScriptClass(QScriptEngine *engine)
+: QScriptDeclarativeClass(engine)
 {
 }
 

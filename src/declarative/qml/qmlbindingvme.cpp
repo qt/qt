@@ -383,8 +383,14 @@ inline void subscribe(QObject *o, int notifyIndex,
     QmlBindingVME::Config::Subscription *s = config->subscriptions + subIndex;
     if (o != s->source || notifyIndex != s->notifyIndex)  {
         if (s->source)
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
             QMetaObject::disconnectOne(s->source, s->notifyIndex, 
                                        config->target, config->targetSlot + subIndex);
+#else
+            // QTBUG-6781
+            QMetaObject::disconnect(s->source, s->notifyIndex, 
+                                    config->target, config->targetSlot + subIndex);
+#endif
         s->source = o;
         s->notifyIndex = notifyIndex;
         if (s->source && s->notifyIndex != -1) 

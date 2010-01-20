@@ -51,7 +51,9 @@
 #include <QAbstractAnimation>
 #include "deviceskin.h"
 
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
 #include <private/qzipreader_p.h>
+#endif
 
 #include <QSettings>
 #include <QXmlStreamReader>
@@ -763,16 +765,19 @@ void QmlViewer::reload()
 
 void QmlViewer::open(const QString& doc)
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
     if (doc.endsWith(".wgt",Qt::CaseInsensitive)
      || doc.endsWith(".wgz",Qt::CaseInsensitive)
      || doc.endsWith(".zip",Qt::CaseInsensitive))
         openWgt(doc);
     else
+#endif
         openQml(doc);
 }
 
 void QmlViewer::openWgt(const QString& doc)
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
     // XXX This functionality could be migrated to QmlView once refined
 
     QUrl url(doc);
@@ -782,8 +787,10 @@ void QmlViewer::openWgt(const QString& doc)
     QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
     wgtreply = nam->get(QNetworkRequest(url));
     connect(wgtreply,SIGNAL(finished()),this,SLOT(unpackWgt()));
+#endif
 }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
 static void removeRecursive(const QString& dirname)
 {
     QDir dir(dirname);
@@ -795,9 +802,11 @@ static void removeRecursive(const QString& dirname)
             dir.remove(entries[i].fileName());
     QDir().rmdir(dirname);
 }
+#endif
 
 void QmlViewer::unpackWgt()
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
     QByteArray all = wgtreply->readAll();
     QBuffer buf(&all);
     buf.open(QIODevice::ReadOnly);
@@ -851,6 +860,7 @@ void QmlViewer::unpackWgt()
     }
 
     openQml(rootfile);
+#endif
 }
 
 void QmlViewer::openFile()
