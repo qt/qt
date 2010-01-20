@@ -106,6 +106,15 @@ bool TestHTTPServer::serveDirectory(const QString &dir, Mode mode)
     return true;
 }
 
+/*
+   Add an alias, so that if filename is requested and does not exist,
+   alias may be returned.
+*/
+void TestHTTPServer::addAlias(const QString &filename, const QString &alias)
+{
+    aliases.insert(filename, alias);
+}
+
 bool TestHTTPServer::wait(const QUrl &expect, const QUrl &reply, const QUrl &body)
 {
     m_hasFailed = false;
@@ -226,7 +235,12 @@ bool TestHTTPServer::reply(QTcpSocket *socket, const QByteArray &fileName)
         Mode mode = dirs.at(ii).second;
 
         QString dirFile = dir + QLatin1String("/") + QLatin1String(fileName);
-        
+
+        if (!QFile::exists(dirFile)) {
+            if (aliases.contains(fileName))
+                dirFile = dir + QLatin1String("/") + aliases.value(fileName);
+        }
+
         QFile file(dirFile);
         if (file.open(QIODevice::ReadOnly)) {
 

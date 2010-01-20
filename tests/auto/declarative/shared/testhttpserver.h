@@ -61,6 +61,8 @@ public:
     bool wait(const QUrl &expect, const QUrl &reply, const QUrl &body);
     bool hasFailed() const;
 
+    void addAlias(const QString &filename, const QString &aliasName);
+
 private slots:
     void newConnection();
     void disconnected();
@@ -79,6 +81,8 @@ private:
     QByteArray replyData;
     QByteArray bodyData;
     bool m_hasFailed;
+
+    QHash<QString,QString> aliases;
 
     QTcpServer server;
 };

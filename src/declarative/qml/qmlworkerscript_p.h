@@ -118,7 +118,7 @@ class QmlWorkerListModelAgent;
 class QmlWorkerListModel : public QListModelInterface
 {
     Q_OBJECT
-    Q_PROPERTY(int count READ count NOTIFY countChanged);
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     QmlWorkerListModel(QObject * = 0);
