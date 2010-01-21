@@ -774,6 +774,8 @@ void WidgetFactory::applyStyleTopLevel(const QString &styleName, QWidget *w)
 
 void WidgetFactory::applyStyleToTopLevel(QStyle *style, QWidget *widget)
 {
+    if (!style)
+        return;
     const QPalette standardPalette = style->standardPalette();
     if (widget->style() == style && widget->palette() == standardPalette)
         return;
