@@ -252,8 +252,6 @@ public:
     bool compositionModeDirty;
     bool brushTextureDirty;
     bool brushUniformsDirty;
-    bool simpleShaderMatrixUniformDirty;
-    bool shaderMatrixUniformDirty;
     bool opacityUniformDirty;
 
     bool stencilClean; // Has the stencil not been used for clipping so far?
