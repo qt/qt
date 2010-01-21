@@ -1610,7 +1610,7 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
                 store.assignValueSource.property = genPropertyData(prop);
                 store.assignValueSource.owner = 0;
             }
-            QmlType *valueType = QmlMetaType::qmlType(v->object->metatype);
+            QmlType *valueType = toQmlType(v->object);
             store.assignValueSource.castValue = valueType->propertyValueSourceCast();
             output->bytecode << store;
 
@@ -1627,7 +1627,7 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
                 store.assignValueInterceptor.property = genPropertyData(prop);
                 store.assignValueInterceptor.owner = 0;
             }
-            QmlType *valueType = QmlMetaType::qmlType(v->object->metatype);
+            QmlType *valueType = toQmlType(v->object);
             store.assignValueInterceptor.castValue = valueType->propertyValueInterceptorCast();
             output->bytecode << store;
 
@@ -1995,7 +1995,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
         bool isPropertyValue = false;
         // Will be true if the assigned type inherits QmlPropertyValueInterceptor
         bool isPropertyInterceptor = false;
-        if (QmlType *valueType = QmlMetaType::qmlType(v->object->metatype)) {
+        if (QmlType *valueType = toQmlType(v->object)) {
             isPropertyValue = valueType->propertyValueSourceCast() != -1;
             isPropertyInterceptor = valueType->propertyValueInterceptorCast() != -1;
         }
