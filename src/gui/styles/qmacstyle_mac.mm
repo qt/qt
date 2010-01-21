@@ -3132,7 +3132,6 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         p->drawLine(opt->rect.topLeft(), opt->rect.bottomLeft());
         } break;
     case PE_FrameStatusBarItem:
-        QCommonStyle::drawPrimitive(pe, opt, p, w);
         break;
     case PE_IndicatorTabClose: {
         bool hover = (opt->state & State_MouseOver);
