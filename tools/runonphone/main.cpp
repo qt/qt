@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     QString serialPortFriendlyName;
     QString sisFile;
     QString exeFile;
-    QString cmdLine;
+    QStringList cmdLine;
     QStringList args = QCoreApplication::arguments();
     QTextStream outstream(stdout);
     QTextStream errstream(stderr);
@@ -124,7 +124,6 @@ int main(int argc, char *argv[])
             i++;
             for(;i<args.size();i++) {
                 cmdLine.append(args.at(i));
-                if(i + 1 < args.size()) cmdLine.append(' ');
             }
         }
     }

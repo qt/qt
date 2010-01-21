@@ -76,7 +76,7 @@ struct LauncherPrivate {
 
     CopyState m_copyState;
     QString m_fileName;
-    QString m_commandLineArgs;
+    QStringList m_commandLineArgs;
     QString m_installFileName;
     int m_verbose;
     Launcher::Actions m_startupActions;
@@ -159,7 +159,7 @@ void Launcher::setInstallFileName(const QString &name)
     d->m_installFileName = name;
 }
 
-void Launcher::setCommandLineArgs(const QString &args)
+void Launcher::setCommandLineArgs(const QStringList &args)
 {
     d->m_commandLineArgs = args;
 }
@@ -189,8 +189,10 @@ bool Launcher::startServer(QString *errorMessage)
 {
     errorMessage->clear();
     if (d->m_verbose) {
-        const QString msg = QString::fromLatin1("Port=%1 Executable=%2 Package=%3 Remote Package=%4 Install file=%5")
-                            .arg(d->m_trkServerName, d->m_fileName, d->m_copyState.sourceFileName, d->m_copyState.destinationFileName, d->m_installFileName);
+        const QString msg = QString::fromLatin1("Port=%1 Executable=%2 Arguments=%3 Package=%4 Remote Package=%5 Install file=%6")
+                            .arg(d->m_trkServerName, d->m_fileName,
+                                 d->m_commandLineArgs.join(QString(QLatin1Char(' '))),
+                                 d->m_copyState.sourceFileName, d->m_copyState.destinationFileName, d->m_installFileName);
         logMessage(msg);
     }
     if (d->m_startupActions & ActionCopy) {
@@ -681,6 +683,26 @@ void Launcher::handleInstallPackageFinished(const TrkResult &result)
     }
 }
 
+QByteArray Launcher::startProcessMessage(const QString &executable,
+                                         const QStringList &arguments)
+{
+    // It's not started yet
+    QByteArray ba;
+    appendShort(&ba, 0, TargetByteOrder); // create new process
+    appendByte(&ba, 0); // options - currently unused
+    if(arguments.isEmpty()) {
+        appendString(&ba, executable.toLocal8Bit(), TargetByteOrder);
+        return ba;
+    }
+    // Append full command line as one string (leading length information).
+    QByteArray commandLineBa;
+    commandLineBa.append(executable.toLocal8Bit());
+    commandLineBa.append('\0');
+    commandLineBa.append(arguments.join(QString(QLatin1Char(' '))).toLocal8Bit());
+    appendString(&ba, commandLineBa, TargetByteOrder);
+    return ba;
+}
+
 void Launcher::startInferiorIfNeeded()
 {
     emit startingApplication();
@@ -688,21 +710,8 @@ void Launcher::startInferiorIfNeeded()
         logMessage("Process already 'started'");
         return;
     }
-    // It's not started yet
-    QByteArray ba;
-    appendShort(&ba, 0, TargetByteOrder); // create new process
-    appendByte(&ba, 0); // options - currently unused
-
-    if(d->m_commandLineArgs.isEmpty()) {
-        appendString(&ba, d->m_fileName.toLocal8Bit(), TargetByteOrder);
-    } else {
-        QByteArray ba2;
-        ba2.append(d->m_fileName.toLocal8Bit());
-        ba2.append('\0');
-        ba2.append(d->m_commandLineArgs.toLocal8Bit());
-        appendString(&ba, ba2, TargetByteOrder);
-    }
-    d->m_device->sendTrkMessage(TrkCreateItem, TrkCallback(this, &Launcher::handleCreateProcess), ba); // Create Item
+    d->m_device->sendTrkMessage(TrkCreateItem, TrkCallback(this, &Launcher::handleCreateProcess),
+                                startProcessMessage(d->m_fileName, d->m_commandLineArgs)); // Create Item
 }
 
 void Launcher::resume(uint pid, uint tid)
