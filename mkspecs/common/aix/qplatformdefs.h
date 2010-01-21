@@ -101,6 +101,16 @@
 #define QT_SOCKOPTLEN_T         int
 #endif
 
+#ifdef QT_LARGEFILE_SUPPORT
+#undef QT_DIR
+#undef QT_OPENDIR
+#undef QT_CLOSEDIR
+
+#define QT_DIR                  DIR64
+#define QT_OPENDIR              ::opendir64
+#define QT_CLOSEDIR             ::closedir64
+#endif
+
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE-0 >= 500)
 // AIX 4.3 and better
 #define QT_SNPRINTF             ::snprintf
