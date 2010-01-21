@@ -11629,9 +11629,9 @@ EXPORTS
 	_ZN18QTapAndHoldGestureC1EP7QObject @ 11628 NONAME
 	_ZN18QTapAndHoldGestureC2EP7QObject @ 11629 NONAME
 	_ZN19QAbstractScrollArea18setViewportMarginsERK8QMargins @ 11630 NONAME
-	_ZN19QApplicationPrivate20symbianHandleCommandEi @ 11631 NONAME
-	_ZN19QApplicationPrivate21symbianProcessWsEventEPK8TWsEvent @ 11632 NONAME
-	_ZN19QApplicationPrivate21symbianResourceChangeEi @ 11633 NONAME
+	_ZN19QApplicationPrivate20symbianHandleCommandEi @ 11631 NONAME ABSENT
+	_ZN19QApplicationPrivate21symbianProcessWsEventEPK8TWsEvent @ 11632 NONAME ABSENT
+	_ZN19QApplicationPrivate21symbianResourceChangeEi @ 11633 NONAME ABSENT
 	_ZN19QGraphicsBlurEffect12setBlurHintsE6QFlagsINS_8BlurHintEE @ 11634 NONAME
 	_ZN19QGraphicsBlurEffect13setBlurRadiusEf @ 11635 NONAME
 	_ZN19QGraphicsBlurEffect16blurHintsChangedE6QFlagsINS_8BlurHintEE @ 11636 NONAME
@@ -11784,4 +11784,12 @@ EXPORTS
 	_ZNK14QEglProperties8toStringEv @ 11783 NONAME ABSENT
 	_ZNK11QFontEngine10glyphCacheEPvN21QFontEngineGlyphCache4TypeERK10QTransform @ 11784 NONAME
 	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectERK6QRectF @ 11785 NONAME
+	_Z12qt_blurImageP8QPainterR6QImagefbbi @ 11786 NONAME
+	_Z12qt_blurImageR6QImagefbi @ 11787 NONAME
+	_Z13qt_halfScaledRK6QImage @ 11788 NONAME
+	_Z14qt_memrotate90PKjiiiPji @ 11789 NONAME
+	_Z17qt_memrotate90_glPKjiiiPji @ 11790 NONAME
+	_ZN19QApplicationPrivate20symbianHandleCommandEPK13QSymbianEvent @ 11791 NONAME
+	_ZN19QApplicationPrivate21symbianProcessWsEventEPK13QSymbianEvent @ 11792 NONAME
+	_ZN19QApplicationPrivate21symbianResourceChangeEPK13QSymbianEvent @ 11793 NONAME
 
