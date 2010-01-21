@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,39 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef INITPROJECTDEPLOYSYMBIAN_H
-#define INITPROJECTDEPLOYSYMBIAN_H
+#include "serenum.h"
+#include <QByteArray>
+#include <QString>
+#include <QDebug>
 
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qdatetime.h>
-#include <option.h>
-#include <qdir.h>
-#include <qfile.h>
-#include <stdlib.h>
-
-#include "epocroot.h"
-
-#define PLUGIN_STUB_DIR "qmakepluginstubs"
-
-struct CopyItem
+QList<SerialPortId> enumerateSerialPorts()
 {
-    CopyItem(const QString& f, const QString& t) : from(f) , to(t) { }
-    QString from;
-    QString to;
-};
-typedef QList<CopyItem> DeploymentList;
+    QList<SerialPortId> list;
+    qWarning() << "enumerateSerialPorts not implemented" << endl;
+    return list;
+}
 
-extern QString generate_uid(const QString& target);
-extern QString generate_test_uid(const QString& target);
-
-extern void initProjectDeploySymbian(QMakeProject* project,
-                              DeploymentList &deploymentList,
-                              const QString &testPath,
-                              bool deployBinaries,
-                              const QString &platform,
-                              const QString &build,
-                              QStringList& generatedDirs,
-                              QStringList& generatedFiles);
-
-#endif // INITPROJECTDEPLOYSYMBIAN_H
