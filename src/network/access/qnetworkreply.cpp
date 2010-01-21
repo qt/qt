@@ -239,7 +239,10 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \note Do not delete the object in the slot connected to this
     signal. Use deleteLater().
 
-    \sa QNetworkAccessManager::finished()
+    You can also use isFinished() to check if a QNetworkReply
+    has finished even before you receive the finished() signal.
+
+    \sa QNetworkAccessManager::finished(), isFinished()
 */
 
 /*!

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,61 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef QFILENETWORKREPLY_P_H
-#define QFILENETWORKREPLY_P_H
+#include "serenum.h"
+#include <QByteArray>
+#include <QString>
+#include <QDebug>
+#include <QFileInfo>
+#include <QDir>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access API.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qnetworkreply.h"
-#include "qnetworkreply_p.h"
-#include "qnetworkaccessmanager.h"
-#include <QFile>
-
-QT_BEGIN_NAMESPACE
-
-
-class QFileNetworkReplyPrivate;
-class QFileNetworkReply: public QNetworkReply
+QList<SerialPortId> enumerateSerialPorts()
 {
-    Q_OBJECT
-public:
-    QFileNetworkReply(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
-    ~QFileNetworkReply();
-    virtual void abort();
+    QList<SerialPortId> list;
+    QDir dir("/dev/serial/by-id/");
+    QFileInfoList ports(dir.entryInfoList());
+    foreach(QFileInfo info, ports) {
+        if (!info.isDir()) {
+            SerialPortId id;
+            id.friendlyName = info.fileName();
+            id.portName = info.canonicalFilePath();
+            list << id;
+        }
+    }
+    return list;
+}
 
-    // reimplemented from QNetworkReply
-    virtual void close();
-    virtual qint64 bytesAvailable() const;
-    virtual bool isSequential () const;
-    qint64 size() const;
-
-    virtual qint64 readData(char *data, qint64 maxlen);
-
-    Q_DECLARE_PRIVATE(QFileNetworkReply)
-};
-
-class QFileNetworkReplyPrivate: public QNetworkReplyPrivate
-{
-public:
-    QFileNetworkReplyPrivate();
-
-    QFile realFile;
-    qint64 realFileSize;
-
-    virtual bool isFinished() const;
-
-    Q_DECLARE_PUBLIC(QFileNetworkReply)
-};
-
-QT_END_NAMESPACE
-
-#endif // QFILENETWORKREPLY_P_H

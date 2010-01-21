@@ -8,8 +8,12 @@ defineReplace(prependAll) {
     return ($$result)
 }
 
-LUPDATE = $$QT_BUILD_TREE/bin/lupdate -locations relative -no-ui-lines
-LUPDATE ~= s,/,$$QMAKE_DIR_SEP,
+LUPDATE = $$QT_BUILD_TREE/bin/lupdate
+win32 {
+    LUPDATE ~= s,/,$$QMAKE_DIR_SEP,
+    LUPDATE = $${LUPDATE}.exe
+}
+LUPDATE += -locations relative -no-ui-lines
 
 ###### Qt Libraries
 
