@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -124,14 +124,16 @@ struct QMetaObjectPrivate
 
 #ifndef QT_NO_QOBJECT
     //defined in qobject.cpp
+    enum DisconnectType { DisconnectAll, DisconnectOne };
     static bool connect(const QObject *sender, int signal_index,
                         const QObject *receiver, int method_index,
                         int type = 0, int *types = 0);
     static bool disconnect(const QObject *sender, int signal_index,
-                           const QObject *receiver, int method_index);
+                           const QObject *receiver, int method_index,
+                           DisconnectType = DisconnectAll);
     static inline bool disconnectHelper(QObjectPrivate::Connection *c,
                                         const QObject *receiver, int method_index,
-                                        QMutex *senderMutex);
+                                        QMutex *senderMutex, DisconnectType);
 #endif
 };
 

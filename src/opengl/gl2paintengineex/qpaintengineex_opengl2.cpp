@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -170,7 +170,8 @@ void QGL2PaintEngineExPrivate::useSimpleShader()
         updateMatrix();
 
     if (simpleShaderMatrixUniformDirty) {
-        shaderManager->simpleProgram()->setUniformValue("pmvMatrix", pmvMatrix);
+        const GLuint location = shaderManager->simpleProgram()->uniformLocation("pmvMatrix");
+        glUniformMatrix3fv(location, 1, GL_FALSE, (GLfloat*)pmvMatrix);
         simpleShaderMatrixUniformDirty = false;
     }
 }
@@ -558,6 +559,9 @@ void QGL2PaintEngineExPrivate::resetGLState()
     glDepthMask(true);
     glDepthFunc(GL_LESS);
     glClearDepth(1);
+    glStencilMask(0xff);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    glStencilFunc(GL_ALWAYS, 0, 0xff);
 }
 
 void QGL2PaintEngineEx::endNativePainting()
@@ -576,19 +580,19 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     }
 
     if (newMode == TextDrawingMode) {
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
-        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
+        setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
+        setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
     }
 
     if (newMode == ImageDrawingMode) {
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticVertexCoordinateArray);
-        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticTextureCoordinateArray);
+        setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, staticVertexCoordinateArray);
+        setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, staticTextureCoordinateArray);
     }
 
     if (newMode == ImageArrayDrawingMode) {
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
-        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
-        glVertexAttribPointer(QT_OPACITY_ATTR, 1, GL_FLOAT, GL_FALSE, 0, opacityArray.data());
+        setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
+        setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
+        setVertexAttributePointer(QT_OPACITY_ATTR, (GLfloat*)opacityArray.data());
     }
 
     // This needs to change when we implement high-quality anti-aliasing...
@@ -703,9 +707,9 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             prepareForDraw(currentBrush.isOpaque());
 #ifdef QT_OPENGL_CACHE_AS_VBOS
             glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
-            glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, 0);
+            setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, 0);
 #else
-            glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, cache->vertices);
+            setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, cache->vertices);
 #endif
             glDrawArrays(cache->primitiveType, 0, cache->vertexCount);
 
@@ -825,7 +829,7 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
         glStencilMask(GL_STENCIL_HIGH_BIT);
 #if 0
         glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT); // Simply invert the stencil bit
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
+        setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, data);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
 #else
 
@@ -836,7 +840,7 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
         } else {
             glStencilFunc(GL_ALWAYS, GL_STENCIL_HIGH_BIT, 0xff);
         }
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
+        setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, data);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, count);
 #endif
     }
@@ -936,7 +940,7 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         updateBrushUniforms();
 
     if (shaderMatrixUniformDirty) {
-        shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PmvMatrix), pmvMatrix);
+        glUniformMatrix3fv(location(QGLEngineShaderManager::PmvMatrix), 1, GL_FALSE, (GLfloat*)pmvMatrix);
         shaderMatrixUniformDirty = false;
     }
 
@@ -950,15 +954,8 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
 
 void QGL2PaintEngineExPrivate::composite(const QGLRect& boundingRect)
 {
-    // Setup a vertex array for the bounding rect:
-    GLfloat rectVerts[] = {
-        boundingRect.left, boundingRect.top,
-        boundingRect.left, boundingRect.bottom,
-        boundingRect.right, boundingRect.bottom,
-        boundingRect.right, boundingRect.top
-    };
-
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, rectVerts);
+    setCoords(staticVertexCoordinateArray, boundingRect);
+    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, staticVertexCoordinateArray);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
@@ -967,7 +964,7 @@ void QGL2PaintEngineExPrivate::drawVertexArrays(const float *data, int *stops, i
                                                 GLenum primitive)
 {
     // Now setup the pointer to the vertex array:
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, data);
+    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)data);
 
     int previousStop = 0;
     for (int i=0; i<stopCount; ++i) {
@@ -1066,7 +1063,7 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
 
     if (opaque) {
         prepareForDraw(opaque);
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, stroker.vertices());
+        setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, stroker.vertices());
         glDrawArrays(GL_TRIANGLE_STRIP, 0, stroker.vertexCount() / 2);
 
 //         QBrush b(Qt::green);
@@ -1287,9 +1284,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     GLfloat dx = 1.0 / cache->width();
     GLfloat dy = 1.0 / cache->height();
 
-    QGLPoint *oldVertexCoordinateDataPtr = vertexCoordinateArray.data();
-    QGLPoint *oldTextureCoordinateDataPtr = textureCoordinateArray.data();
-
     vertexCoordinateArray.clear();
     textureCoordinateArray.clear();
 
@@ -1302,10 +1296,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
         textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
     }
 
-    if (vertexCoordinateArray.data() != oldVertexCoordinateDataPtr)
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
-    if (textureCoordinateArray.data() != oldTextureCoordinateDataPtr)
-        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
+    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
+    setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
 
     if (addOffset) {
         addOffset = false;
@@ -1636,6 +1628,8 @@ void QGL2PaintEngineEx::ensureActive()
         d->needsSync = false;
         d->shaderManager->setDirty();
         d->ctx->d_func()->syncGlState();
+        for (int i = 0; i < 3; ++i)
+            d->vertexAttribPointers[i] = (GLfloat*)-1; // Assume the pointers are clobbered
         setState(state());
     }
 }

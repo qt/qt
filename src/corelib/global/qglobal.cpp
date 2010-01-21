@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1226,7 +1226,7 @@ bool qSharedBuild()
 
     Defined on Mac OS X.
 
-    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS
+    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
 */
 
 /*!
@@ -1235,7 +1235,7 @@ bool qSharedBuild()
 
     Defined on Windows.
 
-    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS
+    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_S60
 */
 
 /*!
@@ -1244,7 +1244,7 @@ bool qSharedBuild()
 
     Defined on X11.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_S60
 */
 
 /*!
@@ -1253,7 +1253,7 @@ bool qSharedBuild()
 
     Defined on Qt for Embedded Linux.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_S60
 */
 
 /*!
@@ -1598,6 +1598,29 @@ bool qSharedBuild()
     Defined if the application is compiled using Green Hills
     Optimizing C++ Compilers.
 */
+
+/*!
+  \macro Q_OS_MAC
+  \relates <QtGlobal>
+
+  Defined on MAC OS (synonym for Darwin).
+ */
+
+/*!
+  \macro Q_OS_SYMBIAN
+  \relates <QtGlobal>
+
+  Defined on Symbian.
+ */
+
+/*!
+  \macro Q_WS_S60
+  \relates <QtGlobal>
+
+  Defined on S60.
+
+  \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS
+ */
 
 #if defined(QT_BUILD_QMAKE)
 // needed to bootstrap qmake

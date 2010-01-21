@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -998,6 +998,24 @@ bool QFileDialog::isNameFilterDetailsVisible() const
 }
 
 
+/*
+    Strip the filters by removing the details, e.g. (*.*).
+*/
+QStringList qt_strip_filters(const QStringList &filters)
+{
+    QStringList strippedFilters;
+    QRegExp r(QString::fromLatin1(qt_file_dialog_filter_reg_exp));
+    for (int i = 0; i < filters.count(); ++i) {
+        QString filterName;
+        int index = r.indexIn(filters[i]);
+        if (index >= 0)
+            filterName = r.cap(1);
+        strippedFilters.append(filterName.simplified());
+    }
+    return strippedFilters;
+}
+
+
 /*!
     \since 4.4
 
@@ -1024,20 +1042,11 @@ void QFileDialog::setNameFilters(const QStringList &filters)
     if (cleanedFilters.isEmpty())
         return;
 
-    if (testOption(HideNameFilterDetails)) {
-        QStringList strippedFilters;
-        QRegExp r(QString::fromLatin1(qt_file_dialog_filter_reg_exp));
-        for (int i = 0; i < cleanedFilters.count(); ++i) {
-            QString filterName;
-            int index = r.indexIn(cleanedFilters[i]);
-            if (index >= 0)
-                filterName = r.cap(1);
-            strippedFilters.append(filterName.simplified());
-        }
-        d->qFileDialogUi->fileTypeCombo->addItems(strippedFilters);
-    } else {
+    if (testOption(HideNameFilterDetails))
+        d->qFileDialogUi->fileTypeCombo->addItems(qt_strip_filters(cleanedFilters));
+    else
         d->qFileDialogUi->fileTypeCombo->addItems(cleanedFilters);
-    }
+
     d->_q_useNameFilter(0);
 }
 
@@ -1088,8 +1097,12 @@ void QFileDialog::selectNameFilter(const QString &filter)
         d->selectNameFilter_sys(filter);
         return;
     }
-
-    int i = d->qFileDialogUi->fileTypeCombo->findText(filter);
+    int i;
+    if (testOption(HideNameFilterDetails)) {
+        i = d->qFileDialogUi->fileTypeCombo->findText(qt_strip_filters(qt_make_filter_list(filter)).first());
+    } else {
+        i = d->qFileDialogUi->fileTypeCombo->findText(filter);
+    }
     if (i >= 0) {
         d->qFileDialogUi->fileTypeCombo->setCurrentIndex(i);
         d->_q_useNameFilter(d->qFileDialogUi->fileTypeCombo->currentIndex());
@@ -1209,12 +1222,6 @@ QFileDialog::ViewMode QFileDialog::viewMode() const
 void QFileDialog::setFileMode(QFileDialog::FileMode mode)
 {
     Q_D(QFileDialog);
-    if (d->nativeDialogInUse){
-        d->model->setFilter(d->filterForMode(filter()));
-        d->setFilter_sys();
-        return;
-    }
-
     d->fileMode = mode;
     d->retranslateWindowTitle();
 
@@ -1250,6 +1257,11 @@ void QFileDialog::setFileMode(QFileDialog::FileMode mode)
         }
     }
     setLabelText(Accept, buttonText);
+    if (d->nativeDialogInUse){
+        d->setFilter_sys();
+        return;
+    }
+
     d->qFileDialogUi->fileTypeCombo->setEnabled(!testOption(ShowDirsOnly));
     d->_q_updateOkButton();
 }
@@ -1287,6 +1299,10 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
         d->qFileDialogUi->lookInCombo->setEditable(false);
     }
     d->retranslateWindowTitle();
+#if defined(Q_WS_MAC)
+    d->deleteNativeDialog_sys();
+    setAttribute(Qt::WA_DontShowOnScreen, false);
+#endif
 }
 
 /*
@@ -3232,6 +3248,10 @@ QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
     QString currentLocation = dirModel->rootPath();
     QString path = index.data(QFileSystemModel::FilePathRole).toString();
     if (!currentLocation.isEmpty() && path.startsWith(currentLocation)) {
+#if defined(Q_OS_UNIX) || defined(Q_OS_WINCE)
+        if (currentLocation == QDir::separator())
+            return path.mid(currentLocation.length());
+#endif
         return path.mid(currentLocation.length() + 1);
     }
     return index.data(QFileSystemModel::FilePathRole).toString();
@@ -3287,6 +3307,10 @@ QStringList QFSCompleter::splitPath(const QString &path) const
         else
             dirModel = sourceModel;
         QString currentLocation = QDir::toNativeSeparators(dirModel->rootPath());
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+        if (currentLocation.endsWith(QLatin1Char(':')))
+            currentLocation.append(sep);
+#endif
         if (currentLocation.contains(sep) && path != currentLocation) {
             QStringList currentLocationList = splitPath(currentLocation);
             while (!currentLocationList.isEmpty()

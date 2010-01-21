@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2997,9 +2997,16 @@ void QGraphicsItem::setActive(bool active)
 */
 bool QGraphicsItem::hasFocus() const
 {
+    if (!d_ptr->scene || !d_ptr->scene->isActive())
+        return false;
+
     if (d_ptr->focusProxy)
         return d_ptr->focusProxy->hasFocus();
-    return isActive() && (d_ptr->scene && d_ptr->scene->focusItem() == this);
+
+    if (d_ptr->scene->d_func()->focusItem != this)
+        return false;
+
+    return panel() == d_ptr->scene->d_func()->activePanel;
 }
 
 /*!
@@ -10715,6 +10722,36 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
     }
 }
 
+QRect QGraphicsItemEffectSourcePrivate::paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded) const
+{
+    QRectF effectRectF;
+
+    if (unpadded)
+        *unpadded = false;
+
+    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
+        if (info) {
+            effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
+            if (unpadded)
+                *unpadded = (effectRectF.size() == sourceRect.size());
+            if (info && system == Qt::LogicalCoordinates)
+                effectRectF = info->painter->worldTransform().inverted().mapRect(effectRectF);
+        } else {
+            // no choice but to send a logical coordinate bounding rect to boundingRectFor
+            effectRectF = item->graphicsEffect()->boundingRectFor(sourceRect);
+        }
+    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
+        // adjust by 1.5 to account for cosmetic pens
+        effectRectF = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5);
+    } else {
+        effectRectF = sourceRect;
+        if (unpadded)
+            *unpadded = true;
+    }
+
+    return effectRectF.toAlignedRect();
+}
+
 QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
                                                  QGraphicsEffect::PixmapPadMode mode) const
 {
@@ -10728,29 +10765,9 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         return QPixmap();
     QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
 
+    bool unpadded;
     const QRectF sourceRect = boundingRect(system);
-    QRectF effectRectF;
-
-    bool unpadded = false;
-    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
-        if (info) {
-            effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
-            unpadded = (effectRectF.size() == sourceRect.size());
-            if (info && system == Qt::LogicalCoordinates)
-                effectRectF = info->painter->worldTransform().inverted().mapRect(effectRectF);
-        } else {
-            // no choice but to send a logical coordinate bounding rect to boundingRectFor
-            effectRectF = item->graphicsEffect()->boundingRectFor(sourceRect);
-        }
-    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
-        // adjust by 1.5 to account for cosmetic pens
-        effectRectF = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5);
-    } else {
-        effectRectF = sourceRect;
-        unpadded = true;
-    }
-
-    QRect effectRect = effectRectF.toAlignedRect();
+    QRect effectRect = paddedEffectRect(system, mode, sourceRect, &unpadded);
 
     if (offset)
         *offset = effectRect.topLeft();

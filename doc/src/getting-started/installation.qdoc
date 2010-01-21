@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -511,19 +511,27 @@ in the \l{Qt for the Symbian platform Requirements} document.
         \note Qt must be installed on the same drive as the Symbian SDK you are
         using, and the install path must not contain any spaces.
 
+    \o  Install Qt into a device
+
+        To run Qt applications on a device, \c{qt_installer.sis} found
+        in the Qt installation directory must be first installed into the device.
+        \c{Qt_installer.sis} contains Qt libraries and Open C libraries all in one
+        convenient package.
+        Begin installation by connecting your device via USB cable to a computer that
+        has the \l{http://www.nokia.com/pcsuite}{Nokia PC Suite} installed.
+        On the device, select "PC Suite mode". In Windows Explorer right click
+        on the \c{qt_installer.sis} file, select "Install with Nokia Application
+        Installer" and follow the instructions.
+
     \o  Running Qt demos
 
         We've included a subset of the Qt demos in this package for you
         to try out. An excellent starting point is the "fluidlauncher"
-        demo. To run the demo on a real device, you first have to install
-        \c{qt.sis} and \c{fluidlauncher.sis} found in the Qt installation
-        directory. Also, check if the device needs additional
-        \l{Qt for the Symbian platform Requirements}{requirements}.
-        Begin by connecting your device via USB cable to a computer that has
-        the \l{http://www.nokia.com/pcsuite}{Nokia PC Suite} installed.
-        On the device, select "PC Suite mode". In Windows Explorer right click
-        on the \c{.sis} files, select "Install with Nokia Application Installer"
-        and follow the instructions.
+        demo.
+
+        To run the demo on a real device, install \c{fluidlauncher.sis}
+        found in the Qt installation directory to a device that already has Qt installed.
+        After installation, you can find fluidlauncher in the applications folder of the device.
 
         To run the demos and examples on the emulator, you need to build them first.
         Open the "Qt for the Symbian platform Command Prompt" from the Start menu and type:
@@ -632,17 +640,38 @@ If you are using pre-built binaries, follow the instructions given in the
 
         Congratulations, Qt is now ready to use.
 
-    \o  Running Qt demos
+    \o  Installing Qt libraries on the device
 
-        We've included a subset of the Qt demos in this package for you
-        to try out. An excellent starting point is the "fluidlauncher"
-        demo. To run the demo on a real device, you first have to install
+        To run the demo on a real device, you first have to install
         the Qt libraries on the device:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 29
 
-        \note You will need to supply certificate that allows installation
-        of binaries with "All -Tcb" capability to your device.
+        The Qt libraries are built with "All -Tcb" capability, so that
+        they can support all types of application.
+        If you don't have a suitable certificate, it is possible to patch
+        the binaries as follows:
+
+    \list A
+        \o Installing Qt without a certificate
+
+            If you have no certificate, build a self signed Qt:
+
+            \snippet doc/src/snippets/code/doc_src_installation.qdoc 34
+
+        \o Installing Qt with a Symbian developer certificate
+
+            If you have a symbian-signed developer certificate, specify the
+            capabilities you can sign for, for example:
+
+            \snippet doc/src/snippets/code/doc_src_installation.qdoc 35
+    \endlist
+
+    \o  Running Qt demos
+
+        We've included a subset of the Qt demos in this package for you
+        to try out. An excellent starting point is the "fluidlauncher"
+        demo.
 
         Similarly, install fluidlauncher to the device:
 
@@ -1013,15 +1042,26 @@ If you are using pre-built binaries, follow the instructions given in the
            which is not available free of charge.
     \endlist
 
-    Running Qt on real device requires the following packages to be installed on your device.
-    The packages can be found in the Symbian SDK where you installed Open C/C++:
+    Running Qt on real device requires the Open C to be installed on the device.
+    The Open C installation packages are embedded into \c{qt_installer.sis}, which is included in
+    Qt for Symbian binary package. If you are building Qt from scratch, you can find the
+    required packages in the Symbian SDK where you installed Open C/C++:
     \list
         \o \c{nokia_plugin\openc\s60opencsis\pips_s60_<version>.sis}
         \o \c{nokia_plugin\openc\s60opencsis\openc_ssl_s60_<version>.sis}
         \o \c{nokia_plugin\opencpp\s60opencppsis\stdcpp_s60_<version>.sis}
     \endlist
 
-    We recommend you to take a look of  \l{http://developer.symbian.org/wiki/index.php/Qt_Quick_Start}{Symbian Foundation - Qt Quick Start}
+    If you wish to do hardware debugging with Carbide or run applications in real devices using "make run" command,
+    TRK must be installed to the device. \bold{Note:} TRK is not required if you just want to install and run
+    applications manually on the device.
+    \list
+        \o \l{http://tools.ext.nokia.com/trk/}{Application TRK}. Choose the correct
+           installation package based on the S60 version of your device (S60_<S60-version>_app_trk_<TRK-version>.sisx).
+    \endlist
+
+
+    We recommend you to take a look at \l{http://developer.symbian.org/wiki/index.php/Qt_Quick_Start}{Symbian Foundation - Qt Quick Start}
     to get more information about how to setup the development environment.
 
     \sa {Known Issues in %VERSION%}

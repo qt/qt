@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -146,9 +146,16 @@ void QAbstractItemViewPrivate::setHoverIndex(const QPersistentModelIndex &index)
     if (hover == index)
         return;
 
-    q->update(hover); //update the old one
+    if (selectionBehavior != QAbstractItemView::SelectRows) {
+        q->update(hover); //update the old one
+        q->update(index); //update the new one
+    } else {
+        QRect oldHoverRect = q->visualRect(hover);
+        QRect newHoverRect = q->visualRect(index);
+        viewport->update(QRect(0, newHoverRect.y(), viewport->width(), newHoverRect.height()));
+        viewport->update(QRect(0, oldHoverRect.y(), viewport->width(), oldHoverRect.height()));
+    }
     hover = index;
-    q->update(hover); //update the new one
 }
 
 void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1223,8 +1223,7 @@ bool QFileSystemModel::dropMimeData(const QMimeData *data, Qt::DropAction action
     case Qt::MoveAction:
         for (; it != urls.constEnd(); ++it) {
             QString path = (*it).toLocalFile();
-            success = QFile::copy(path, to + QFileInfo(path).fileName())
-                      && QFile::remove(path) && success;
+            success = QFile::rename(path, to + QFileInfo(path).fileName()) && success;
         }
         break;
     default:

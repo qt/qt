@@ -35,10 +35,8 @@ symbian: {
     qtlibraries.pkg_postrules += qts60plugindeployment
 
     sqlitedeployment = \
-        "; Deploy sqlite onto phone that does not have it (this should be replaced with embedded sis file when available)" \
-        "IF NOT package(0x2002533b) " \
-        "\"$${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)/sqlite3.dll\" - \"c:\\sys\\bin\\sqlite3.dll\"" \
-        "ENDIF"
+        "; Deploy sqlite onto phone that does not have it already" \
+        "@\"$$PWD/sqlite3.sis\", (0x2002af5f)"
     qtlibraries.pkg_postrules += sqlitedeployment
 
     qtlibraries.path = c:/sys/bin
@@ -61,6 +59,7 @@ symbian: {
     contains(CONFIG, stl) {
         qtlibraries.pkg_prerules += "(0x2000F866), 1, 0, 0, {\"Standard C++ Library Common\"}"
     }
+    qtlibraries.pkg_prerules += "(0x2002af5f), 0, 5, 0, {\"sqlite3\"}"
 
     !contains(QT_CONFIG, no-jpeg): imageformats_plugins.sources += qjpeg.dll
     !contains(QT_CONFIG, no-gif):  imageformats_plugins.sources += qgif.dll
@@ -113,9 +112,4 @@ symbian: {
 
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
     BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CORE_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"
-    PLUGIN_STUBS = $$files(qmakepluginstubs/*)
-    for(STUB, PLUGIN_STUBS) {
-        STUB_FILENAME = $$basename(STUB)
-        BLD_INF_RULES.prj_exports += "qmakepluginstubs/$${STUB_FILENAME} /epoc32/data/qt/qtlibspluginstubs/$${STUB_FILENAME}"
-    }
 }

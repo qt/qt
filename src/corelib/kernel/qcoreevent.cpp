@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,13 +107,13 @@ QT_BEGIN_NAMESPACE
     \value ApplicationLayoutDirectionChange The default application layout direction has changed.
     \value ApplicationPaletteChange         The default application palette has changed.
     \value ApplicationWindowIconChange      The application's icon has changed.
-    \value CloseSoftwareInputPanel          A widget wants to close the software input panel (SIP).
     \value ChildAdded                       An object gets a child (QChildEvent).
     \value ChildInserted                    An object gets a child (QChildEvent). Qt3Support only, use ChildAdded instead.
     \value ChildPolished                    A widget child gets polished (QChildEvent).
     \value ChildRemoved                     An object loses a child (QChildEvent).
     \value Clipboard                        The clipboard contents have changed (QClipboardEvent).
     \value Close                            Widget was closed (QCloseEvent).
+    \value CloseSoftwareInputPanel          A widget wants to close the software input panel (SIP).
     \value ContentsRectChange               The margins of the widget's content rect changed.
     \value ContextMenu                      Context popup menu (QContextMenuEvent).
     \value CursorChange                     The widget's cursor has changed.

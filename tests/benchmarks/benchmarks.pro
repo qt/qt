@@ -8,6 +8,7 @@ SUBDIRS = containers-associative \
         qhostinfo \
 	qpainter \
 	qtestlib-simple	events \
+        qtext \
 	qiodevice \
 	qpixmap \
 	blendbench \
@@ -37,6 +38,7 @@ SUBDIRS = containers-associative \
 	qstringbuilder \
 	qstylesheetstyle \
 	qsvgrenderer \
+        qtcpserver \
 	qtableview \
 	qthreadstorage
 

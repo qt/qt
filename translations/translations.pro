@@ -1,7 +1,10 @@
 TRANSLATIONS = $$files(*.ts)
 
 LRELEASE = $$QT_BUILD_TREE/bin/lrelease
-LRELEASE ~= s,/,$$QMAKE_DIR_SEP,
+win32 {
+    LRELEASE ~= s,/,$$QMAKE_DIR_SEP,
+    LRELEASE = $${LRELEASE}.exe
+}
 
 contains(TEMPLATE_PREFIX, vc):vcproj = 1
 
@@ -14,7 +17,8 @@ LIBS =
 updateqm.input = TRANSLATIONS
 updateqm.output = ${QMAKE_FILE_BASE}.qm
 isEmpty(vcproj):updateqm.variable_out = PRE_TARGETDEPS
-updateqm.commands = @echo lrelease ${QMAKE_FILE_IN}; $$LRELEASE ${QMAKE_FILE_IN} -qm ${QMAKE_FILE_OUT}
+updateqm.commands = $$LRELEASE ${QMAKE_FILE_IN} -qm ${QMAKE_FILE_OUT}
+silent:updateqm.commands = @echo lrelease ${QMAKE_FILE_IN} && $$updateqm.commands
 updateqm.name = LRELEASE ${QMAKE_FILE_IN}
 updateqm.CONFIG += no_link
 QMAKE_EXTRA_COMPILERS += updateqm

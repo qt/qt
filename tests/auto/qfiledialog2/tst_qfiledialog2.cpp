@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -116,6 +116,7 @@ private slots:
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void task226366_lowerCaseHardDriveWindows();
 #endif
+    void completionOnLevelAfterRoot();
     void task233037_selectingDirectory();
     void task235069_hideOnEscape();
     void task236402_dontWatchDeletedDir();
@@ -131,6 +132,7 @@ private slots:
 
     void QTBUG4419_lineEditSelectAll();
     void QTBUG6558_showDirsOnly();
+    void QTBUG4842_selectFilterWithHideNameFilterDetails();
 
 private:
     QByteArray userSettings;
@@ -201,7 +203,7 @@ void tst_QFiledialog::heapCorruption()
     qDeleteAll(dialogs);
 }
 
-struct FriendlyQFileDialog : public QFileDialog
+struct FriendlyQFileDialog : public QNonNativeFileDialog
 {
     friend class tst_QFileDialog;
     Q_DECLARE_PRIVATE(QFileDialog)
@@ -550,6 +552,45 @@ void tst_QFiledialog::task226366_lowerCaseHardDriveWindows()
     QCOMPARE(edit->text(), QString("C:"));
 }
 #endif
+
+void tst_QFiledialog::completionOnLevelAfterRoot()
+{
+    QNonNativeFileDialog fd;
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    fd.setDirectory("C:");
+    QDir current = fd.directory();
+    current.mkdir("completionOnLevelAfterRootTest");
+#else
+    fd.setFilter(QDir::Hidden | QDir::AllDirs | QDir::Files | QDir::System);
+    fd.setDirectory("/");
+    QDir etc("/etc");
+    if (!etc.exists())
+        QSKIP("This test requires to have an etc directory under /", SkipAll);
+#endif
+    fd.show();
+    QLineEdit *edit = qFindChild<QLineEdit*>(&fd, "fileNameEdit");
+    QTest::qWait(2000);
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    //I love testlib :D
+    QTest::keyClick(edit, Qt::Key_C);
+    QTest::keyClick(edit, Qt::Key_O);
+    QTest::keyClick(edit, Qt::Key_M);
+    QTest::keyClick(edit, Qt::Key_P);
+    QTest::keyClick(edit, Qt::Key_L);
+#else
+    QTest::keyClick(edit, Qt::Key_E);
+    QTest::keyClick(edit, Qt::Key_T);
+#endif
+    QTest::qWait(200);
+    QTest::keyClick(edit->completer()->popup(), Qt::Key_Down);
+    QTest::qWait(200);
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    QCOMPARE(edit->text(), QString("completionOnLevelAfterRootTest"));
+    current.rmdir("completionOnLevelAfterRootTest");
+#else
+    QCOMPARE(edit->text(), QString("etc"));
+#endif
+}
 
 void tst_QFiledialog::task233037_selectingDirectory()
 {
@@ -1105,6 +1146,46 @@ void tst_QFiledialog::QTBUG6558_showDirsOnly()
 
     dirTemp.cdUp();
     dirTemp.rmdir(tempName);
+}
+
+void tst_QFiledialog::QTBUG4842_selectFilterWithHideNameFilterDetails()
+{
+    QStringList filtersStr;
+    filtersStr << "Images (*.png *.xpm *.jpg)" << "Text files (*.txt)" << "XML files (*.xml)";
+    QString chosenFilterString("Text files (*.txt)");
+
+    QNonNativeFileDialog fd(0, "TestFileDialog");
+    fd.setAcceptMode(QFileDialog::AcceptSave);
+    fd.setOption(QFileDialog::HideNameFilterDetails, true);
+    fd.setNameFilters(filtersStr);
+    fd.selectNameFilter(chosenFilterString);
+    fd.show();
+
+    QApplication::setActiveWindow(&fd);
+    QTest::qWaitForWindowShown(&fd);
+    QTRY_COMPARE(fd.isVisible(), true);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
+
+    QComboBox *filters = qFindChild<QComboBox*>(&fd, "fileTypeCombo");
+    //We compare the current combobox text with the stripped version
+    QCOMPARE(filters->currentText(), QString("Text files"));
+
+    QNonNativeFileDialog fd2(0, "TestFileDialog");
+    fd2.setAcceptMode(QFileDialog::AcceptSave);
+    fd2.setOption(QFileDialog::HideNameFilterDetails, false);
+    fd2.setNameFilters(filtersStr);
+    fd2.selectNameFilter(chosenFilterString);
+    fd2.show();
+
+    QApplication::setActiveWindow(&fd2);
+    QTest::qWaitForWindowShown(&fd2);
+    QTRY_COMPARE(fd2.isVisible(), true);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd2));
+
+    QComboBox *filters2 = qFindChild<QComboBox*>(&fd2, "fileTypeCombo");
+    //We compare the current combobox text with the non stripped version
+    QCOMPARE(filters2->currentText(), chosenFilterString);
+
 }
 
 QTEST_MAIN(tst_QFiledialog)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -855,7 +855,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
         0, 0, 0);
 
-    const uchar *data = image.bits();
+    const uchar *data = (static_cast<const QImage *>(&image))->bits();
     int bpl = image.bytesPerLine();
     row_pointers = new png_bytep[height];
     uint y;

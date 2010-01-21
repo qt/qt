@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,6 +47,7 @@
 #include <QtGui/QCheckBox>
 #include <QtGui/QLineEdit>
 #include <QtGui/QMenu>
+#include <QtCore/QLocale>
 
 QT_BEGIN_NAMESPACE
 
@@ -208,6 +209,26 @@ QString QtPropertyBrowserUtils::fontValueText(const QFont &f)
                                   .arg(f.pointSize());
 }
 
+QString QtPropertyBrowserUtils::dateFormat()
+{
+    QLocale loc;
+    return loc.dateFormat(QLocale::ShortFormat);
+}
+
+QString QtPropertyBrowserUtils::timeFormat()
+{
+    QLocale loc;
+    // ShortFormat is missing seconds on UNIX.
+    return loc.timeFormat(QLocale::LongFormat);    
+}
+
+QString QtPropertyBrowserUtils::dateTimeFormat()
+{
+    QString format = dateFormat();
+    format += QLatin1Char(' ');
+    format += timeFormat();
+    return format;
+}
 
 QtBoolEdit::QtBoolEdit(QWidget *parent) :
     QWidget(parent),

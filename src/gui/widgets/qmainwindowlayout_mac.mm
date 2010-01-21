@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -476,6 +476,17 @@ void QMainWindowLayout::cleanUpMacToolbarItems()
         CFRelease(toolbarItemsCopy.at(i));
     toolbarItemsCopy.clear();
     unifiedToolbarHash.clear();
+
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+
+    OSWindowRef window = qt_mac_window_for(layoutState.mainWindow);
+    NSToolbar *macToolbar = [window toolbar];
+    if (macToolbar) {
+      [[macToolbar delegate] release];
+      [macToolbar setDelegate:nil];
+    }
+#endif
 }
 
 void QMainWindowLayout::fixSizeInUnifiedToolbar(QToolBar *tb) const

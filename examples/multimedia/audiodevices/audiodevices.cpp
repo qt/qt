@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -150,16 +150,16 @@ void AudioTest::deviceChanged(int idx)
 
     frequencyBox->clear();
     QList<int> freqz = deviceInfo.supportedFrequencies();
-    for (int i = 0; i < freqz.size(); ++i)
+    for(int i = 0; i < freqz.size(); ++i)
         frequencyBox->addItem(QString("%1").arg(freqz.at(i)));
-    if (freqz.size())
+    if(freqz.size())
         settings.setFrequency(freqz.at(0));
 
     channelsBox->clear();
     QList<int> chz = deviceInfo.supportedChannels();
-    for (int i = 0; i < chz.size(); ++i)
+    for(int i = 0; i < chz.size(); ++i)
         channelsBox->addItem(QString("%1").arg(chz.at(i)));
-    if (chz.size())
+    if(chz.size())
         settings.setChannels(chz.at(0));
 
     codecsBox->clear();

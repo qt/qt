@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -639,9 +639,16 @@ void QFileDialogPrivate::setFilter_sys()
 {
 #ifndef QT_MAC_USE_COCOA
 #else
+    Q_Q(QFileDialog);
     QMacCocoaAutoReleasePool pool;
     QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     *(delegate->mQDirFilter) = model->filter();
+    delegate->mFileMode = fileMode;
+    [delegate->mSavePanel setTitle:qt_mac_QStringToNSString(q->windowTitle())];
+    [delegate->mSavePanel setPrompt:[delegate strip:acceptLabel]];
+    if (fileNameLabelExplicitlySat)
+        [delegate->mSavePanel setNameFieldLabel:[delegate strip:qFileDialogUi->fileNameLabel->text()]];
+
     [delegate updateProperties];
 #endif
 }

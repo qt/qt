@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -931,14 +931,24 @@ void QPdfEnginePrivate::writeHeader()
 void QPdfEnginePrivate::writeInfo()
 {
     info = addXrefEntry(-1);
-    xprintf("<<\n"
-            "/Title (%s)\n"
-//            "/Author (%s)\n"
-            "/Creator (%s)\n"
-            "/Producer (Qt " QT_VERSION_STR " (C) 2009 Nokia Corporation and/or its subsidiary(-ies))\n",
-            title.toUtf8().constData(),
-//            author.toUtf8().constData(),
-            creator.toUtf8().constData());
+
+    // The 'text string' type in PDF is encoded either as PDFDocEncoding, or
+    // Unicode UTF-16 with a Unicode byte order mark as the first character
+    // (0xfeff), with the high-order byte first.
+    QByteArray array("<<\n/Title (\xfe\xff");
+    const ushort *utf16Title = title.utf16();
+    for (int i=0; i < title.size(); ++i) {
+        array.append((*(utf16Title + i)) >> 8);
+        array.append((*(utf16Title + i)) & 0xff);
+    }
+    array.append(")\n/Creator (\xfe\xff");
+    const ushort *utf16Creator = creator.utf16();
+    for (int i=0; i < creator.size(); ++i) {
+        array.append((*(utf16Creator + i)) >> 8);
+        array.append((*(utf16Creator + i)) & 0xff);
+    }
+    array.append(")\n/Producer (Qt " QT_VERSION_STR " (C) 2010 Nokia Corporation and/or its subsidiary(-ies))\n");
+    write(array);
 
     QDateTime now = QDateTime::currentDateTime().toUTC();
     QTime t = now.time();

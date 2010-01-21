@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include "testlupdate.h"
 #if CHECK_SIMTEXTH
 #include "../shared/simtexth.h"
 #endif
@@ -55,12 +54,11 @@ class tst_lupdate : public QObject
 {
     Q_OBJECT
 public:
-    tst_lupdate() { m_basePath = QDir::currentPath() + QLatin1String("/testdata/"); }
+    tst_lupdate();
 
 private slots:
     void good_data();
     void good();
-    void output_ts();
     void commandline_data();
     void commandline();
 #if CHECK_SIMTEXTH
@@ -69,7 +67,7 @@ private slots:
 #endif
 
 private:
-    TestLUpdate m_lupdate;
+    QString m_cmdLupdate;
     QString m_basePath;
 
     void doCompare(const QStringList &actual, const QString &expectedFn, bool err);
@@ -77,72 +75,149 @@ private:
 };
 
 
+tst_lupdate::tst_lupdate()
+{
+    QString binPath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    m_cmdLupdate = binPath + QLatin1String("/lupdate");
+    m_basePath = QDir::currentPath() + QLatin1String("/testdata/");
+}
+
+static bool prepareMatch(const QString &expect, QString *tmpl, int *require, int *accept)
+{
+    if (expect.startsWith(QLatin1Char('\\'))) {
+        *tmpl = expect.mid(1);
+        *require = *accept = 1;
+    } else if (expect.startsWith(QLatin1Char('?'))) {
+        *tmpl = expect.mid(1);
+        *require = 0;
+        *accept = 1;
+    } else if (expect.startsWith(QLatin1Char('*'))) {
+        *tmpl = expect.mid(1);
+        *require = 0;
+        *accept = INT_MAX;
+    } else if (expect.startsWith(QLatin1Char('+'))) {
+        *tmpl = expect.mid(1);
+        *require = 1;
+        *accept = INT_MAX;
+    } else if (expect.startsWith(QLatin1Char('{'))) {
+        int brc = expect.indexOf(QLatin1Char('}'), 1);
+        if (brc < 0)
+            return false;
+        *tmpl = expect.mid(brc + 1);
+        QString sub = expect.mid(1, brc - 1);
+        int com = sub.indexOf(QLatin1Char(','));
+        bool ok;
+        if (com < 0) {
+            *require = *accept = sub.toInt(&ok);
+            return ok;
+        } else {
+            *require = sub.left(com).toInt();
+            *accept = sub.mid(com + 1).toInt(&ok);
+            if (!ok)
+                *accept = INT_MAX;
+            return *accept >= *require;
+        }
+    } else {
+        *tmpl = expect;
+        *require = *accept = 1;
+    }
+    return true;
+}
+
 void tst_lupdate::doCompare(const QStringList &actual, const QString &expectedFn, bool err)
 {
     QFile file(expectedFn);
-    QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
-    QStringList expected = QString(file.readAll()).trimmed().split('\n');
+    QVERIFY2(file.open(QIODevice::ReadOnly | QIODevice::Text), qPrintable(expectedFn));
+    QStringList expected = QString(file.readAll()).split('\n');
 
-    int i = 0, ei = expected.size(), gi = actual.size();
-    for (; ; i++) {
-        if (i == gi) {
-            if (i == ei)
-                return;
-            gi = 0;
-            break;
-        } else if (i == ei) {
-            ei = 0;
-            break;
-        } else {
-            QString act = actual.at(i);
-            act.remove('\r');
-            if (err ? !QRegExp(expected.at(i)).exactMatch(act) :
-                         (act != expected.at(i))) {
-                bool cond = true;
-                while (cond) {
-                    act = actual.at(gi - 1);
-                    act.remove('\r');
-                    cond = (ei - 1) >= i && (gi - 1) >= i &&
-                         (err ? QRegExp(expected.at(ei - 1)).exactMatch(act) :
-                                (act == expected.at(ei - 1)));
-                    if (cond) {
-                        ei--, gi--;
-                    }
-                }
+    int ei = 0, ai = 0, em = expected.size(), am = actual.size();
+    int oei = 0, oai = 0, oem = em, oam = am;
+    int require = 0, accept = 0;
+    QString tmpl;
+    forever {
+        if (!accept) {
+            oei = ei, oai = ai;
+            if (ei == em) {
+                if (ai == am)
+                    return;
                 break;
             }
+            if (!prepareMatch(expected.at(ei++), &tmpl, &require, &accept))
+                QFAIL(qPrintable(QString("Malformed expected %1 at %3:%2")
+                                 .arg(err ? "output" : "result").arg(ei).arg(expectedFn)));
         }
+        if (ai == am) {
+            if (require <= 0) {
+                accept = 0;
+                continue;
+            }
+            break;
+        }
+        if (err ? !QRegExp(tmpl).exactMatch(actual.at(ai)) : (actual.at(ai) != tmpl)) {
+            if (require <= 0) {
+                accept = 0;
+                continue;
+            }
+            ei--;
+            require = accept = 0;
+            forever {
+                if (!accept) {
+                    oem = em, oam = am;
+                    if (ei == em)
+                        break;
+                    if (!prepareMatch(expected.at(--em), &tmpl, &require, &accept))
+                        QFAIL(qPrintable(QString("Malformed expected %1 at %3:%2")
+                                         .arg(err ? "output" : "result")
+                                         .arg(em + 1).arg(expectedFn)));
+                }
+                if (ai == am || (err ? !QRegExp(tmpl).exactMatch(actual.at(am - 1)) :
+                                       (actual.at(am - 1) != tmpl))) {
+                    if (require <= 0) {
+                        accept = 0;
+                        continue;
+                    }
+                    break;
+                }
+                accept--;
+                require--;
+                am--;
+            }
+            break;
+        }
+        accept--;
+        require--;
+        ai++;
     }
     QByteArray diff;
-    for (int j = qMax(0, i - 3); j < i; j++)
-        diff += expected.at(j) + '\n';
-    diff += "<<<<<<< got\n";
-    for (int j = i; j < gi; j++) {
+    for (int j = qMax(0, oai - 3); j < oai; j++)
         diff += actual.at(j) + '\n';
-        if (j >= i + 5) {
+    diff += "<<<<<<< got\n";
+    for (int j = oai; j < oam; j++) {
+        diff += actual.at(j) + '\n';
+        if (j >= oai + 5) {
             diff += "...\n";
             break;
         }
     }
     diff += "=========\n";
-    for (int j = i; j < ei; j++) {
+    for (int j = oei; j < oem; j++) {
         diff += expected.at(j) + '\n';
-        if (j >= i + 5) {
+        if (j >= oei + 5) {
             diff += "...\n";
             break;
         }
     }
     diff += ">>>>>>> expected\n";
-    for (int j = ei; j < qMin(ei + 3, expected.size()); j++)
-        diff += expected.at(j) + '\n';
+    for (int j = oam; j < qMin(oam + 3, actual.size()); j++)
+        diff += actual.at(j) + '\n';
     QFAIL(qPrintable((err ? "Output for " : "Result for ") + expectedFn + " does not meet expectations:\n" + diff));
 }
 
 void tst_lupdate::doCompare(const QString &actualFn, const QString &expectedFn, bool err)
 {
     QFile afile(actualFn);
-    QVERIFY(afile.open(QIODevice::ReadOnly | QIODevice::Text));
-    QStringList actual = QString(afile.readAll()).trimmed().split('\n');
+    QVERIFY2(afile.open(QIODevice::ReadOnly | QIODevice::Text), qPrintable(actualFn));
+    QStringList actual = QString(afile.readAll()).split('\n');
 
     doCompare(actual, expectedFn, err);
 }
@@ -167,20 +242,16 @@ void tst_lupdate::good()
     QFETCH(QString, directory);
 
     QString dir = m_basePath + "good/" + directory;
-    QString expectedFile = dir + QLatin1String("/project.ts.result");
 
     qDebug() << "Checking...";
 
-    // qmake will delete the previous one, to ensure that we don't do any merging....
-    QString generatedtsfile(QLatin1String("project.ts"));
+    QString generatedtsfile(dir + QLatin1String("/project.ts"));
 
-    m_lupdate.setWorkingDirectory(dir);
-    m_lupdate.qmake();
     // look for a command
     QString lupdatecmd;
     QFile file(dir + "/lupdatecmd");
     if (file.exists()) {
-        QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
+        QVERIFY2(file.open(QIODevice::ReadOnly | QIODevice::Text), qPrintable(file.fileName()));
         while (!file.atEnd()) {
             QByteArray cmdstring = file.readLine().simplified();
             if (cmdstring.startsWith('#'))
@@ -197,72 +268,39 @@ void tst_lupdate::good()
         file.close();
     }
 
-    if (lupdatecmd.isEmpty()) {
-        lupdatecmd = QLatin1String("project.pro -ts project.ts");
-    }
-    lupdatecmd.prepend("-silent ");
-    m_lupdate.updateProFile(lupdatecmd);
-
-    // If the file expectedoutput.txt exists, compare the
-    // console output with the content of that file
-    QFile outfile(dir + "/expectedoutput.txt");
-    if (outfile.exists()) {
-        QString errs = m_lupdate.getErrorMessages().at(1).trimmed();
-        QStringList errslist = errs.split(QLatin1Char('\n'));
-        doCompare(errslist, outfile.fileName(), true);
-        if (QTest::currentTestFailed())
-            return;
-    }
-
-    doCompare(generatedtsfile, expectedFile, false);
-}
-
-void tst_lupdate::output_ts()
-{
-    QString dir = m_basePath + "output_ts";
-    m_lupdate.setWorkingDirectory(dir);
-
-    // look for a command
-    QString lupdatecmd;
-    QFile file(dir + "/lupdatecmd");
-    if (file.exists()) {
-        QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
-        while (!file.atEnd()) {
-        QByteArray cmdstring = file.readLine().simplified();
-            if (cmdstring.startsWith('#'))
-                continue;
-            if (cmdstring.startsWith("lupdate")) {
-                cmdstring.remove(0, 8);
-                lupdatecmd.append(cmdstring);
-                break;
-            }
-        }
-        file.close();
-    }
-
-    QDir parsingDir(m_basePath + "output_ts");
-
-    QString generatedtsfile =
-        dir + QLatin1String("/toplevel/library/tools/translations/project.ts");
-
     QFile::remove(generatedtsfile);
+    QString beforetsfile = generatedtsfile + QLatin1String(".before");
+    if (QFile::exists(beforetsfile))
+        QVERIFY2(QFile::copy(beforetsfile, generatedtsfile), qPrintable(beforetsfile));
 
+    if (lupdatecmd.isEmpty())
+        lupdatecmd = QLatin1String("project.pro");
     lupdatecmd.prepend("-silent ");
-    m_lupdate.qmake();
-    m_lupdate.updateProFile(lupdatecmd);
+
+    QProcess proc;
+    proc.setWorkingDirectory(dir);
+    proc.setProcessChannelMode(QProcess::MergedChannels);
+    proc.start(m_cmdLupdate + ' ' + lupdatecmd, QIODevice::ReadWrite | QIODevice::Text);
+    QVERIFY2(proc.waitForFinished(5000), qPrintable(lupdatecmd));
+    QByteArray output = proc.readAll();
+    QVERIFY2(proc.exitStatus() == QProcess::NormalExit,
+             "\"lupdate " + lupdatecmd.toLatin1() + "\" crashed\n" + output);
+    QVERIFY2(!proc.exitCode(),
+             "\"lupdate " + lupdatecmd.toLatin1() + "\" exited with code " +
+             QByteArray::number(proc.exitCode()) + "\n" + proc.readAll());
 
     // If the file expectedoutput.txt exists, compare the
     // console output with the content of that file
     QFile outfile(dir + "/expectedoutput.txt");
     if (outfile.exists()) {
-        QString errs = m_lupdate.getErrorMessages().at(1).trimmed();
-        QStringList errslist = errs.split(QLatin1Char('\n'));
+        QStringList errslist = QString::fromLatin1(output).split(QLatin1Char('\n'));
         doCompare(errslist, outfile.fileName(), true);
         if (QTest::currentTestFailed())
             return;
     }
 
-    doCompare(generatedtsfile, dir + QLatin1String("/project.ts.result"), false);
+    QString expectedFile = generatedtsfile + QLatin1String(".result");
+    doCompare(generatedtsfile, expectedFile, false);
 }
 
 void tst_lupdate::commandline_data()
@@ -285,14 +323,21 @@ void tst_lupdate::commandline()
     QFETCH(QString, generatedtsfile);
     QFETCH(QString, expectedtsfile);
 
-    m_lupdate.setWorkingDirectory(m_basePath + currentPath);
     QString generated =
         m_basePath + currentPath + QLatin1Char('/') + generatedtsfile;
     QFile gen(generated);
     if (gen.exists())
         QVERIFY(gen.remove());
-    if (!m_lupdate.run("-silent " + commandline))
-        qDebug() << m_lupdate.getErrorMessages().last();
+    QProcess proc;
+    proc.setWorkingDirectory(m_basePath + currentPath);
+    proc.setProcessChannelMode(QProcess::MergedChannels);
+    proc.start(m_cmdLupdate + " -silent " + commandline, QIODevice::ReadWrite | QIODevice::Text);
+    QVERIFY2(proc.waitForFinished(5000), qPrintable(commandline));
+    QVERIFY2(proc.exitStatus() == QProcess::NormalExit,
+             "\"lupdate -silent " + commandline.toLatin1() + "\" crashed\n" + proc.readAll());
+    QVERIFY2(!proc.exitCode(),
+             "\"lupdate -silent " + commandline.toLatin1() + "\" exited with code " +
+             QByteArray::number(proc.exitCode()) + "\n" + proc.readAll());
 
     doCompare(generated, m_basePath + currentPath + QLatin1Char('/') + expectedtsfile, false);
 }

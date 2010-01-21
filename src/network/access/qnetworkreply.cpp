@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -239,7 +239,10 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \note Do not delete the object in the slot connected to this
     signal. Use deleteLater().
 
-    \sa QNetworkAccessManager::finished()
+    You can also use isFinished() to check if a QNetworkReply
+    has finished even before you receive the finished() signal.
+
+    \sa QNetworkAccessManager::finished(), isFinished()
 */
 
 /*!

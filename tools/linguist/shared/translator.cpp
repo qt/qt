@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,10 @@
 #include "simtexth.h"
 
 #include <stdio.h>
+#ifdef Q_OS_WIN
+#include <io.h> // required for _setmode, to avoid _O_TEXT streams...
+#include <fcntl.h> // for _O_BINARY
+#endif
 
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
@@ -207,6 +211,10 @@ bool Translator::load(const QString &filename, ConversionData &cd, const QString
 
     QFile file;
     if (filename.isEmpty() || filename == QLatin1String("-")) {
+#ifdef Q_OS_WIN
+        // QFile is broken for text files
+        ::_setmode(0, _O_BINARY);
+#endif
         if (!file.open(stdin, QIODevice::ReadOnly)) {
             cd.appendError(QString::fromLatin1("Cannot open stdin!? (%1)")
                 .arg(file.errorString()));
@@ -243,6 +251,10 @@ bool Translator::save(const QString &filename, ConversionData &cd, const QString
 {
     QFile file;
     if (filename.isEmpty() || filename == QLatin1String("-")) {
+#ifdef Q_OS_WIN
+        // QFile is broken for text files
+        ::_setmode(1, _O_BINARY);
+#endif
         if (!file.open(stdout, QIODevice::WriteOnly)) {
             cd.appendError(QString::fromLatin1("Cannot open stdout!? (%1)")
                 .arg(file.errorString()));

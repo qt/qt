@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -538,7 +538,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     forever {
         ulong alloc = len;
-        d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + alloc))));
+        d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.take(), sizeof(QByteArray::Data) + alloc))));
         if (!d) {
             // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
             qWarning("qUncompress: could not allocate enough memory to uncompress data");
@@ -551,7 +551,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         switch (res) {
         case Z_OK:
             if (len != alloc) {
-                d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + len))));
+                d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.take(), sizeof(QByteArray::Data) + len))));
                 if (!d) {
                     // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
                     qWarning("qUncompress: could not allocate enough memory to uncompress data");
@@ -903,8 +903,8 @@ QByteArray &QByteArray::operator=(const char *str)
     The last byte in the byte array is at position size() - 1. In
     addition, QByteArray ensures that the byte at position size() is
     always '\\0', so that you can use the return value of data() and
-    constData() as arguments to functions that expect
-    '\\0'-terminated strings.
+    constData() as arguments to functions that expect '\\0'-terminated
+    strings.
 
     Example:
     \snippet doc/src/snippets/code/src_corelib_tools_qbytearray.cpp 6
@@ -997,7 +997,9 @@ QByteArray &QByteArray::operator=(const char *str)
 
     Returns a pointer to the data stored in the byte array. The
     pointer can be used to access and modify the bytes that compose
-    the array. The data is '\\0'-terminated.
+    the array. The data is '\\0'-terminated, i.e. the number of
+    bytes in the returned character string is size() + 1 for the
+    '\\0' terminator.
 
     Example:
     \snippet doc/src/snippets/code/src_corelib_tools_qbytearray.cpp 8
@@ -1008,6 +1010,16 @@ QByteArray &QByteArray::operator=(const char *str)
 
     This function is mostly useful to pass a byte array to a function
     that accepts a \c{const char *}.
+
+    The following example makes a copy of the char* returned by
+    data(), but it will corrupt the heap and cause a crash because it
+    does not allocate a byte for the '\\0' at the end:
+
+    \snippet doc/src/snippets/code/src_corelib_tools_qbytearray.cpp 46
+
+    This one allocates the correct amount of space:
+
+    \snippet doc/src/snippets/code/src_corelib_tools_qbytearray.cpp 47
 
     Note: A QByteArray can store any byte values including '\\0's,
     but most functions that take \c{char *} arguments assume that the
@@ -1591,8 +1603,9 @@ QByteArray& QByteArray::append(const char *str)
     array and returns a reference to this byte array.
 
     If \a len is negative, the length of the string will be determined
-    automatically using qstrlen(). If \a len is zero or the length of the
-    string is zero, nothing will be appended to the byte array.
+    automatically using qstrlen(). If \a len is zero or \a str is
+    null, nothing is appended to the byte array. Ensure that \a len is
+    \e not longer than \a str.
 */
 
 QByteArray &QByteArray::append(const char *str, int len)

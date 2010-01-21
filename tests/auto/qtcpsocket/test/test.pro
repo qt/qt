@@ -13,8 +13,6 @@ vxworks:QT -= gui
 
 symbian: TARGET.EPOCHEAPSIZE="0x100 0x1000000"
 
-#DEFINES += TEST_QNETWORK_PROXY
-
 TARGET = tst_qtcpsocket
 
 win32 {
