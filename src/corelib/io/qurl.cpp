@@ -5932,7 +5932,7 @@ void QUrl::detach()
 */
 bool QUrl::isDetached() const
 {
-    return d && d->ref == 1;
+    return !d || d->ref == 1;
 }
 
 
