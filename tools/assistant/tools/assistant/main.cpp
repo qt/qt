@@ -292,23 +292,26 @@ bool unregisterDocumentation(QHelpEngineCore &collection,
     return true;
 }
 
-void setupTranslations(QApplication &app)
+void setupTranslation(const QString &fileName, const QString &dir)
+{
+    QTranslator *translator = new QTranslator(QCoreApplication::instance());
+    if (translator->load(fileName, dir)) {
+        QCoreApplication::installTranslator(translator);
+    } else {
+        qWarning("Could not load translation file %s in directory %s.",
+                 qPrintable(fileName), qPrintable(dir));
+    }
+}
+
+void setupTranslations()
 {
     TRACE_OBJ
     const QString& locale = QLocale::system().name();
-    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
-
-    QTranslator translator(0);
-    translator.load(QLatin1String("assistant_") + locale, resourceDir);
-    app.installTranslator(&translator);
-
-    QTranslator qtTranslator(0);
-    qtTranslator.load(QLatin1String("qt_") + locale, resourceDir);
-    app.installTranslator(&qtTranslator);
-
-    QTranslator qtHelpTranslator(0);
-    qtHelpTranslator.load(QLatin1String("qt_help_") + locale, resourceDir);
-    app.installTranslator(&qtHelpTranslator);
+    const QString &resourceDir
+        = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    setupTranslation(QLatin1String("assistant_") + locale, resourceDir);
+    setupTranslation(QLatin1String("qt_") + locale, resourceDir);
+    setupTranslation(QLatin1String("qt_help_") + locale, resourceDir);
 }
 
 } // Anonymous namespace.
@@ -413,7 +416,7 @@ int main(int argc, char *argv[])
         cachedCollection.setCurrentFilter(cmd.currentFilter());
     }
 
-    setupTranslations(a);
+    setupTranslations();
 
     /*
      * We need to be careful here: The main window has to be deleted before
