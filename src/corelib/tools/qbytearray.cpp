@@ -561,6 +561,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
             d->ref = 1;
             d->alloc = d->size = len;
             d->data = d->array;
+            d->array[len] = 0;
 
             return QByteArray(d.take(), 0, 0);
 
