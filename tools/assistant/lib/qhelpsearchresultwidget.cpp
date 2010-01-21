@@ -408,6 +408,14 @@ QHelpSearchResultWidget::QHelpSearchResultWidget(QHelpSearchEngine *engine)
     connect(engine, SIGNAL(searchingFinished(int)), d, SLOT(setResults(int)));
 }
 
+/*! \reimp
+*/
+void QHelpSearchResultWidget::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::LanguageChange)
+        d->setResults(d->searchEngine->hitCount());
+}
+
 /*!
     Destroys the search result widget.
 */
