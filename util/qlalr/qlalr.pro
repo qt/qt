@@ -1,6 +1,7 @@
 
 TEMPLATE = app
 QT = core
+CONFIG += console
 TARGET = qlalr
 mac:CONFIG -= app_bundle
 

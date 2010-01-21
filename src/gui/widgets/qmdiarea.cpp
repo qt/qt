@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1853,11 +1853,11 @@ void QMdiArea::closeAllSubWindows()
 }
 
 /*!
-    Gives the keyboard focus to the next window in the list of child
-    windows.  The windows are activated in the order in which they are
-    created (CreationOrder).
+    Gives the keyboard focus to another window in the list of child
+    windows.  The window activated will be the next one determined
+    by the current \l{QMdiArea::WindowOrder} {activation order}.
 
-    \sa activatePreviousSubWindow()
+    \sa activatePreviousSubWindow(), QMdiArea::WindowOrder
 */
 void QMdiArea::activateNextSubWindow()
 {
@@ -1871,11 +1871,11 @@ void QMdiArea::activateNextSubWindow()
 }
 
 /*!
-    Gives the keyboard focus to the previous window in the list of
-    child windows. The windows are activated in the order in which
-    they are created (CreationOrder).
+    Gives the keyboard focus to another window in the list of child
+    windows.  The window activated will be the previous one determined
+    by the current \l{QMdiArea::WindowOrder} {activation order}.
 
-    \sa activateNextSubWindow()
+    \sa activateNextSubWindow(), QMdiArea::WindowOrder
 */
 void QMdiArea::activatePreviousSubWindow()
 {

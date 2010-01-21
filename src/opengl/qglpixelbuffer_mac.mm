@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -92,7 +92,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     GLenum target = GL_TEXTURE_2D;
 
-    if ((QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
+    if ((QGLExtensions::glExtensions() & QGLExtensions::TextureRectangle)
         && (size.width() != nearest_gl_texture_size(size.width())
             || size.height() != nearest_gl_texture_size(size.height())))
     {
@@ -223,7 +223,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     GLenum target = GL_TEXTURE_2D;
 
-    if ((QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
+    if ((QGLExtensions::glExtensions() & QGLExtensions::TextureRectangle)
         && (size.width() != nearest_gl_texture_size(size.width())
             || size.height() != nearest_gl_texture_size(size.height())))
     {

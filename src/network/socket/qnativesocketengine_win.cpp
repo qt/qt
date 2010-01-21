@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -994,9 +994,9 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
 {
     Q_Q(QNativeSocketEngine);
     qint64 ret = 0;
-    // don't send more than 49152 per call to WSASendTo to avoid getting a WSAENOBUFS
+    qint64 bytesToSend = len;
+
     for (;;) {
-        qint64 bytesToSend = qMin<qint64>(49152, len - ret);
         WSABUF buf;
         buf.buf = (char*)data + ret;
         buf.len = bytesToSend;
@@ -1007,15 +1007,21 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
 
         ret += qint64(bytesWritten);
 
+        int err;
         if (socketRet != SOCKET_ERROR) {
             if (ret == len)
                 break;
             else
                 continue;
-        } else if (WSAGetLastError() == WSAEWOULDBLOCK) {
+        } else if ((err = WSAGetLastError()) == WSAEWOULDBLOCK) {
             break;
+        } else if (err == WSAENOBUFS) {
+            // this function used to not send more than 49152 per call to WSASendTo
+            // to avoid getting a WSAENOBUFS. However this is a performance regression
+            // and we think it only appears with old windows versions. We now handle the
+            // WSAENOBUFS and hope it never appears anyway.
+            // just go on, the next loop run we will try a smaller number
         } else {
-            int err = WSAGetLastError();
             WS_ERROR_DEBUG(err);
             switch (err) {
             case WSAECONNRESET:
@@ -1029,6 +1035,9 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
             }
             break;
         }
+
+        // for next send:
+        bytesToSend = qMin<qint64>(49152, len - ret);
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)

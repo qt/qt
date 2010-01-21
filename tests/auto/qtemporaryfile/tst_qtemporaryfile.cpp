@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -95,6 +95,7 @@ private slots:
     void keepOpenMode();
     void resetTemplateAfterError();
     void setTemplateAfterOpen();
+    void autoRemoveAfterFailedRename();
 
 public:
 };
@@ -556,6 +557,41 @@ void tst_QTemporaryFile::setTemplateAfterOpen()
     QVERIFY( temp.open() );
     QCOMPARE( temp.fileName(), fileName );
     QCOMPARE( temp.fileTemplate(), newTemplate );
+}
+
+void tst_QTemporaryFile::autoRemoveAfterFailedRename()
+{
+    struct CleanOnReturn
+    {
+        ~CleanOnReturn()
+        {
+            if (!tempName.isEmpty())
+                QFile::remove(tempName);
+        }
+
+        void reset()
+        {
+            tempName.clear();
+        }
+
+        QString tempName;
+    };
+
+    CleanOnReturn cleaner;
+
+    {
+        QTemporaryFile file;
+        QVERIFY( file.open() );
+        cleaner.tempName = file.fileName();
+
+        QVERIFY( QFile::exists(cleaner.tempName) );
+        QVERIFY( !QFileInfo("i-do-not-exist").isDir() );
+        QVERIFY( !file.rename("i-do-not-exist/file.txt") );
+        QVERIFY( QFile::exists(cleaner.tempName) );
+    }
+
+    QVERIFY( !QFile::exists(cleaner.tempName) );
+    cleaner.reset();
 }
 
 QTEST_MAIN(tst_QTemporaryFile)

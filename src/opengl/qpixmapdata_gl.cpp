@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -252,6 +252,10 @@ QGLPixmapData::QGLPixmapData(PixelType type)
 {
     setSerialNumber(++qt_gl_pixmap_serial);
     m_glDevice.setPixmapData(this);
+
+    // Set InteralBindOptions minus the memory managed, since this
+    // QGLTexture is not managed as part of the internal texture cache
+    m_texture.options = QGLContext::PremultipliedAlphaBindOption;
 }
 
 QGLPixmapData::~QGLPixmapData()
@@ -340,29 +344,18 @@ void QGLPixmapData::ensureCreated() const
     }
 
     if (!m_source.isNull()) {
+        glBindTexture(target, m_texture.id);
         if (external_format == GL_RGB) {
-            QImage tx = m_source.convertToFormat(QImage::Format_RGB32);
-
-            QVector<uchar> pixelData(w * h * 3);
-            uchar *p = &pixelData[0];
-            QRgb *src = (QRgb *)tx.bits();
-
-            for (int i = 0; i < w * h; ++i) {
-                *p++ = qRed(*src);
-                *p++ = qGreen(*src);
-                *p++ = qBlue(*src);
-                ++src;
-            }
-
-            glBindTexture(target, m_texture.id);
-            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
-                            GL_UNSIGNED_BYTE, &pixelData[0]);
-        } else {
-            const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, external_format);
-
-            glBindTexture(target, m_texture.id);
+            const QImage tx = m_source.convertToFormat(QImage::Format_RGB888);
             glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
                             GL_UNSIGNED_BYTE, tx.bits());
+        } else {
+            const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, external_format);
+            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
+                            GL_UNSIGNED_BYTE, tx.bits());
+            // convertToGLFormat will flip the Y axis, so it needs to
+            // be drawn upside down
+            m_texture.options |= QGLContext::InvertedYBindOption;
         }
 
         if (useFramebufferObjects())

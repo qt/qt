@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -344,6 +344,7 @@ public:
 */
 
     QGLEngineSharedShaders(const QGLContext *context);
+    ~QGLEngineSharedShaders();
 
     QGLShaderProgram *simpleProgram() { return simpleShaderProg; }
     QGLShaderProgram *blitProgram() { return blitShaderProg; }
@@ -454,7 +455,7 @@ public:
     // There are optimisations we can do, depending on the brush transform:
     //    1) May not have to apply perspective-correction
     //    2) Can use lower precision for matrix
-    void optimiseForBrushTransform(const QTransform &transform);
+    void optimiseForBrushTransform(QTransform::TransformationType transformType);
     void setSrcPixelType(Qt::BrushStyle);
     void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
     void setOpacityMode(OpacityMode);
@@ -463,10 +464,13 @@ public:
     void setCustomStage(QGLCustomShaderStage* stage);
     void removeCustomStage();
 
-    uint getUniformLocation(Uniform id);
+    GLuint getUniformLocation(Uniform id);
 
     void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
+
+    void useSimpleProgram();
+    void useBlitProgram();
 
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers

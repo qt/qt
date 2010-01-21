@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,15 +50,15 @@
 #include <QtCore/QBasicTimer>
 #include <QtGui/QAction>
 
-#include <Phonon/AudioOutput>
-#include <Phonon/BackendCapabilities>
-#include <Phonon/Effect>
-#include <Phonon/EffectParameter>
-#include <Phonon/EffectWidget>
-#include <Phonon/MediaObject>
-#include <Phonon/SeekSlider>
-#include <Phonon/VideoWidget>
-#include <Phonon/VolumeSlider>
+#include <phonon/audiooutput.h>
+#include <phonon/backendcapabilities.h>
+#include <phonon/effect.h>
+#include <phonon/effectparameter.h>
+#include <phonon/effectwidget.h>
+#include <phonon/mediaobject.h>
+#include <phonon/seekslider.h>
+#include <phonon/videowidget.h>
+#include <phonon/volumeslider.h>
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
@@ -112,6 +112,7 @@ public:
     void dropEvent(QDropEvent *e);
     void handleDrop(QDropEvent *e);
     void setFile(const QString &text);
+    void setLocation(const QString &location);
     void initVideoWindow();
     void initSettingsDialog();
 

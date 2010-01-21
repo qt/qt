@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -171,7 +171,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \value UnknownProxyError            an unknown proxy-related error
     was detected
 
-    \value UnknownContentError          an unknonwn error related to
+    \value UnknownContentError          an unknown error related to
     the remote content was detected
 
     \value ProtocolFailure              a breakdown in protocol was
@@ -239,7 +239,10 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \note Do not delete the object in the slot connected to this
     signal. Use deleteLater().
 
-    \sa QNetworkAccessManager::finished()
+    You can also use isFinished() to check if a QNetworkReply
+    has finished even before you receive the finished() signal.
+
+    \sa QNetworkAccessManager::finished(), isFinished()
 */
 
 /*!

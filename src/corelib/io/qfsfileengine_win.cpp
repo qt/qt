@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1419,22 +1419,20 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
 
 #if !defined(QT_NO_LIBRARY)
     if((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
-        PSID pOwner = 0;
-        PSID pGroup = 0;
-        PACL pDacl;
-        PSECURITY_DESCRIPTOR pSD;
-        ACCESS_MASK access_mask;
-
-        enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
         resolveLibs();
         if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
+            enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
 
             QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+            PSID pOwner = 0;
+            PSID pGroup = 0;
+            PACL pDacl;
+            PSECURITY_DESCRIPTOR pSD;
             DWORD res = ptrGetNamedSecurityInfoW((wchar_t*)fname.utf16(), SE_FILE_OBJECT,
                                                  OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
                                                  &pOwner, &pGroup, &pDacl, 0, &pSD);
-
             if(res == ERROR_SUCCESS) {
+                ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
                 { //user
                     if(ptrGetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
@@ -1595,13 +1593,10 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
         ret |= LocalDiskFlag;
         if (d->doStat()) {
             ret |= ExistsFlag;
-            if (d->filePath == QLatin1String("/") || isDriveRoot(d->filePath) || isUncRoot(d->filePath)) {
+            if (d->filePath == QLatin1String("/") || isDriveRoot(d->filePath) || isUncRoot(d->filePath))
                 ret |= RootFlag;
-            } else if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN) {
-                QString baseName = fileName(BaseName);
-                if (baseName != QLatin1String(".") && baseName != QLatin1String(".."))
-                    ret |= HiddenFlag;
-            }
+            else if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN)
+                ret |= HiddenFlag;
         }
     }
     return ret;
@@ -1723,40 +1718,51 @@ uint QFSFileEngine::ownerId(FileOwner /*own*/) const
 
 QString QFSFileEngine::owner(FileOwner own) const
 {
+    QString name;
 #if !defined(QT_NO_LIBRARY)
     Q_D(const QFSFileEngine);
-    if((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
-	PSID pOwner = 0;
-	PSECURITY_DESCRIPTOR pSD;
-	QString name;
-	QFSFileEnginePrivate::resolveLibs();
 
-	if(ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
-	    if(ptrGetNamedSecurityInfoW((wchar_t*)d->filePath.utf16(), SE_FILE_OBJECT,
-					 own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
-					 NULL, &pOwner, NULL, NULL, &pSD) == ERROR_SUCCESS) {
-		DWORD lowner = 0, ldomain = 0;
-		SID_NAME_USE use;
-		// First call, to determine size of the strings (with '\0').
-		ptrLookupAccountSidW(NULL, pOwner, NULL, &lowner, NULL, &ldomain, (SID_NAME_USE*)&use);
-		wchar_t *owner = new wchar_t[lowner];
-		wchar_t *domain = new wchar_t[ldomain];
-		// Second call, size is without '\0'
-		if(ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner, &lowner,
-					 (LPWSTR)domain, &ldomain, (SID_NAME_USE*)&use)) {
-		    name = QString::fromUtf16((ushort*)owner);
-		}
-		LocalFree(pSD);
-		delete [] owner;
-		delete [] domain;
-	    }
-	}
-	return name;
+    if ((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
+        QFSFileEnginePrivate::resolveLibs();
+        if (ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
+            PSID pOwner = 0;
+            PSECURITY_DESCRIPTOR pSD;
+            if (ptrGetNamedSecurityInfoW((wchar_t*)d->filePath.utf16(), SE_FILE_OBJECT,
+                                         own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
+                                         own == OwnerUser ? &pOwner : 0, own == OwnerGroup ? &pOwner : 0,
+                                         0, 0, &pSD) == ERROR_SUCCESS) {
+                DWORD lowner = 64;
+                DWORD ldomain = 64;
+                QVarLengthArray<wchar_t, 64> owner(lowner);
+                QVarLengthArray<wchar_t, 64> domain(ldomain);
+                SID_NAME_USE use = SidTypeUnknown;
+                // First call, to determine size of the strings (with '\0').
+                if (!ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
+                                          (LPWSTR)domain.data(), &ldomain, (SID_NAME_USE*)&use)) {
+                    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+                        if (lowner > (DWORD)owner.size())
+                            owner.resize(lowner);
+                        if (ldomain > (DWORD)domain.size())
+                            domain.resize(ldomain);
+                        // Second call, try on resized buf-s
+                        if (!ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
+                                                  (LPWSTR)domain.data(), &ldomain, (SID_NAME_USE*)&use)) {
+                            lowner = 0;
+                        }
+                    } else {
+                        lowner = 0;
+                    }
+                }
+                if (lowner != 0)
+                    name = QString::fromWCharArray(owner.data());
+                LocalFree(pSD);
+            }
+        }
     }
 #else
     Q_UNUSED(own);
 #endif
-    return QString();
+    return name;
 }
 
 bool QFSFileEngine::setPermissions(uint perms)

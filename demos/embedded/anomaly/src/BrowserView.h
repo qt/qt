@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,6 +49,7 @@ class QUrl;
 class QWebView;
 class TitleBar;
 class ControlStrip;
+class WebView;
 class ZoomStrip;
 
 class BrowserView : public QWidget
@@ -81,7 +82,7 @@ protected:
 
 private:
     TitleBar *m_titleBar;
-    QWebView *m_webView;
+    WebView *m_webView;
     ZoomStrip *m_zoomStrip;
     ControlStrip *m_controlStrip;
     int m_progress;
@@ -90,3 +91,4 @@ private:
 };
 
 #endif // BROWSERVIEW_H
+

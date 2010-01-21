@@ -3,9 +3,6 @@
 # It also tries to verify the behaviour of combining quoted and non-quoted elements with literals.
 #
 
-TEMPLATE = app
-LANGUAGE = C++
-
 QUOTED = $$quote(variable with spaces)
 VERSIONAB = "a.b"
 VAB = $$split(VERSIONAB, ".")
@@ -33,10 +30,4 @@ SOURCES += $$Q3
 win32: SOURCES += $$system(type files-cc.txt)
 unix: SOURCES += $$system(cat files-cc.txt)
 
-TRANSLATIONS        += project.ts
-
-exists( $$TRANSLATIONS ) {
-    win32: system(del $$TRANSLATIONS)
-    unix:  system(rm $$TRANSLATIONS)
-}
-
+TRANSLATIONS = project.ts

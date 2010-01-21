@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -609,6 +609,7 @@ public:
     QPixmap pixmap(Qt::CoordinateSystem system,
                    QPoint *offset,
                    QGraphicsEffect::PixmapPadMode mode) const;
+    QRect paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded = 0) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;

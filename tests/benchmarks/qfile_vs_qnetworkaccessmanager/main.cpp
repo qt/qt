@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,11 +55,13 @@ class qfile_vs_qnetworkaccessmanager : public QObject
     // but.. this is a manual test anyway, so :)
 protected:
     void qnamFileRead_iteration(QNetworkAccessManager &manager, QNetworkRequest &request);
+    void qnamImmediateFileRead_iteration(QNetworkAccessManager &manager, QNetworkRequest &request);
     void qfileFileRead_iteration();
     static const int iterations = 10;
 
 private slots:
     void qnamFileRead();
+    void qnamImmediateFileRead();
     void qfileFileRead();
 
     void initTestCase();
@@ -115,6 +117,39 @@ void qfile_vs_qnetworkaccessmanager::qnamFileRead()
     QBENCHMARK_ONCE {
         for (int i = 0; i < iterations; i++) {
             qnamFileRead_iteration(manager, request);
+        }
+    }
+
+    qint64 elapsed = t.elapsed();
+    qDebug() << endl << "Finished!";
+    qDebug() << "Bytes:" << size;
+    qDebug() << "Speed:" <<  (qreal(size*iterations) / 1024.0) / (qreal(elapsed) / 1000.0) << "KB/sec";
+}
+
+void qfile_vs_qnetworkaccessmanager::qnamImmediateFileRead_iteration(QNetworkAccessManager &manager, QNetworkRequest &request)
+{
+    QNetworkReply* reply = manager.get(request);
+    QVERIFY(reply->isFinished()); // should be like that!
+    QByteArray qba = reply->readAll();
+    delete reply;
+}
+
+void qfile_vs_qnetworkaccessmanager::qnamImmediateFileRead()
+{
+    QNetworkAccessManager manager;
+    QTime t;
+    QNetworkRequest request(QUrl(testFile.fileName()));
+
+    // do 3 dry runs for cache warmup
+    qnamImmediateFileRead_iteration(manager, request);
+    qnamImmediateFileRead_iteration(manager, request);
+    qnamImmediateFileRead_iteration(manager, request);
+
+    t.start();
+    // 10 real runs
+    QBENCHMARK_ONCE {
+        for (int i = 0; i < iterations; i++) {
+            qnamImmediateFileRead_iteration(manager, request);
         }
     }
 

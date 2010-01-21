@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -673,6 +673,13 @@ void MediaPlayer::setFile(const QString &fileName)
     m_MediaObject.play();
 }
 
+void MediaPlayer::setLocation(const QString& location)
+{
+    setWindowTitle(location.right(location.length() - location.lastIndexOf('/') - 1));
+    m_MediaObject.setCurrentSource(Phonon::MediaSource(QUrl::fromEncoded(location.toUtf8())));
+    m_MediaObject.play();
+}
+
 bool MediaPlayer::playPauseForDialog()
 {
     // If we're running on a small screen, we want to pause the video when
@@ -850,9 +857,7 @@ void MediaPlayer::openUrl()
     bool ok = false;
     sourceURL = QInputDialog::getText(this, tr("Open Location"), tr("Please enter a valid address here:"), QLineEdit::Normal, sourceURL, &ok);
     if (ok && !sourceURL.isEmpty()) {
-        setWindowTitle(sourceURL.right(sourceURL.length() - sourceURL.lastIndexOf('/') - 1));
-        m_MediaObject.setCurrentSource(Phonon::MediaSource(QUrl::fromEncoded(sourceURL.toUtf8())));
-        m_MediaObject.play();
+        setLocation(sourceURL);
         settings.setValue("location", sourceURL);
     }
 }
@@ -892,10 +897,11 @@ void MediaPlayer::openRamFile()
     }
 
     if (!list.isEmpty()) {
-        m_MediaObject.setCurrentSource(Phonon::MediaSource(list[0]));
-        m_MediaObject.play();
+        m_MediaObject.clearQueue();
+        setLocation(list[0].toString());
         for (int i = 1; i < list.count(); i++)
             m_MediaObject.enqueue(Phonon::MediaSource(list[i]));
+        m_MediaObject.play();
     }
 
     forwardButton->setEnabled(!m_MediaObject.queue().isEmpty());

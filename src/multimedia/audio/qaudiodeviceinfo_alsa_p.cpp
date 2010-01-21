@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -403,6 +403,7 @@ void QAudioDeviceInfoInternal::updateLists()
 
 QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
 {
+    QList<QByteArray> allDevices;
     QList<QByteArray> devices;
     QByteArray filter;
 
@@ -430,6 +431,7 @@ QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
         if((name != NULL) && (descr != NULL) && ((io == NULL) || (io == filter))) {
             QString deviceName = QLatin1String(name);
             QString deviceDescription = QLatin1String(descr);
+            allDevices.append(deviceName.toLocal8Bit().constData());
             if(deviceDescription.contains(QLatin1String("Default Audio Device")))
                 devices.append(deviceName.toLocal8Bit().constData());
         }
@@ -457,6 +459,9 @@ QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
     if (idx > 0)
         devices.append("default");
 #endif
+    if (devices.size() == 0 && allDevices.size() > 0)
+        return allDevices;
+
     return devices;
 }
 

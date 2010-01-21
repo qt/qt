@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -178,7 +178,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Constructs a table view with a \a parent to represent a model's
+    Constructs a tree view with a \a parent to represent a model's
     data. Use setModel() to set the model.
 
     \sa QAbstractItemModel
@@ -1239,15 +1239,6 @@ bool QTreeView::viewportEvent(QEvent *event)
                 //moves the mouse over those elements they are updated
                 viewport()->update(oldRect);
                 viewport()->update(newRect);
-            }
-        }
-        if (selectionBehavior() == QAbstractItemView::SelectRows) {
-            QModelIndex newHoverIndex = indexAt(he->pos());
-            if (d->hover != newHoverIndex) {
-                QRect oldHoverRect = visualRect(d->hover);
-                QRect newHoverRect = visualRect(newHoverIndex);
-                viewport()->update(QRect(0, newHoverRect.y(), viewport()->width(), newHoverRect.height()));
-                viewport()->update(QRect(0, oldHoverRect.y(), viewport()->width(), oldHoverRect.height()));
             }
         }
         break; }
@@ -2644,10 +2635,13 @@ void QTreeView::selectAll()
         return;
     SelectionMode mode = d->selectionMode;
     d->executePostedLayout(); //make sure we lay out the items
-    if (mode != SingleSelection && !d->viewItems.isEmpty())
-        d->select(d->viewItems.first().index, d->viewItems.last().index,
+    if (mode != SingleSelection && !d->viewItems.isEmpty()) {
+        const QModelIndex &idx = d->viewItems.last().index;
+        QModelIndex lastItemIndex = idx.sibling(idx.row(), d->model->columnCount(idx.parent()) - 1);
+        d->select(d->viewItems.first().index, lastItemIndex,
                   QItemSelectionModel::ClearAndSelect
                   |QItemSelectionModel::Rows);
+    }
 }
 
 /*!
@@ -3064,6 +3058,8 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
 {
     Q_Q(const QTreeView);
     QPixmap pixmap(rect.size());
+    if (rect.size().isEmpty())
+        return pixmap;
     pixmap.fill(Qt::transparent); //the base might not be opaque, and we don't want uninitialized pixels.
     QPainter painter(&pixmap);
     painter.fillRect(QRect(QPoint(0,0), rect.size()), q->palette().base());

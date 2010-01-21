@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -372,11 +372,29 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "\t-bldmake clean" << endl;
     t << endl;
 
-    // Create execution target
-    if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
-        t << "run:" << endl;
-        t << "\t-call " << epocRoot() << "epoc32\\release\\winscw\\udeb\\" << fixedTarget << ".exe" << endl << endl;
+    t << "clean-debug: $(ABLD)" << endl;
+    foreach(QString item, debugPlatforms) {
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " udeb" << endl;
     }
+    t << endl;
+    t << "clean-release: $(ABLD)" << endl;
+    foreach(QString item, releasePlatforms) {
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
+    }
+    t << endl;
+
+    // For more specific builds, targets are in this form: clean-build-platform, e.g. clean-release-armv5
+    foreach(QString item, debugPlatforms) {
+        t << "clean-debug-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " udeb" << endl;
+    }
+    foreach(QString item, releasePlatforms) {
+        t << "clean-release-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
+    }
+    t << endl;
+
+    generateExecutionTargets(t, debugPlatforms);
 }
 
 void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)

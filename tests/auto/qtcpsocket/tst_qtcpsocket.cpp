@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,9 +82,6 @@
 #include <QTime>
 #include <QTimer>
 #include <QDebug>
-#ifndef TEST_QNETWORK_PROXY
-#define TEST_QNETWORK_PROXY
-#endif
 // RVCT compiles also unused inline methods
 # include <QNetworkProxy>
 
@@ -194,12 +191,11 @@ private slots:
     void increaseReadBufferSize();
     void taskQtBug5799ConnectionErrorWaitForConnected();
     void taskQtBug5799ConnectionErrorEventLoop();
-#ifdef TEST_QNETWORK_PROXY
+
     void invalidProxy_data();
     void invalidProxy();
     void proxyFactory_data();
     void proxyFactory();
-#endif
 
 protected slots:
     void nonBlockingIMAP_hostFound();
@@ -270,17 +266,15 @@ void tst_QTcpSocket::initTestCase_data()
 
     qDebug() << QtNetworkSettings::serverName();
     QTest::newRow("WithoutProxy") << false << 0 << false;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy) << false;
     QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic) << false;
 
     QTest::newRow("WithHttpProxy") << true << int(HttpProxy) << false;
     QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic) << false;
 //    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm) << false;
-#endif
+
 #ifndef QT_NO_OPENSSL
     QTest::newRow("WithoutProxy SSL") << false << 0 << true;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy SSL") << true << int(Socks5Proxy) << true;
     QTest::newRow("WithSocks5AuthProxy SSL") << true << int(Socks5Proxy | AuthBasic) << true;
 
@@ -288,14 +282,12 @@ void tst_QTcpSocket::initTestCase_data()
     QTest::newRow("WithHttpProxyBasicAuth SSL") << true << int(HttpProxy | AuthBasic) << true;
 //    QTest::newRow("WithHttpProxyNtlmAuth SSL") << true << int(HttpProxy | AuthNtlm) << true;
 #endif
-#endif
 }
 
 void tst_QTcpSocket::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         QString fluke = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
         QNetworkProxy proxy;
@@ -322,7 +314,6 @@ void tst_QTcpSocket::init()
             break;
         }
         QNetworkProxy::setApplicationProxy(proxy);
-#endif
     }
 }
 
@@ -345,9 +336,7 @@ QTcpSocket *tst_QTcpSocket::newSocket() const
 
 void tst_QTcpSocket::cleanup()
 {
-#ifdef TEST_QNETWORK_PROXY
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
-#endif
 }
 
 void tst_QTcpSocket::proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth)
@@ -1322,9 +1311,7 @@ void tst_QTcpSocket::synchronousApi()
 void tst_QTcpSocket::dontCloseOnTimeout()
 {
     QTcpServer server;
-#ifdef TEST_QNETWORK_PROXY
     server.setProxy(QNetworkProxy(QNetworkProxy::NoProxy));
-#endif
     QVERIFY(server.listen());
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
@@ -1793,9 +1780,6 @@ void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
     QCOMPARE(readyReadSpy.count(), 1);
 
     QString s = socket->readLine();
-#ifdef TEST_QNETWORK_PROXY
-    QNetworkProxy::ProxyType proxyType = QNetworkProxy::applicationProxy().type();
-#endif
     QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData());
     QCOMPARE(socket->bytesAvailable(), qint64(0));
 
@@ -2252,9 +2236,6 @@ void tst_QTcpSocket::taskQtBug5799ConnectionErrorEventLoop()
              QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
 }
 
-
-
-#ifdef TEST_QNETWORK_PROXY
 void tst_QTcpSocket::invalidProxy_data()
 {
     QTest::addColumn<int>("type");
@@ -2433,7 +2414,6 @@ void tst_QTcpSocket::proxyFactory()
 
     delete socket;
 }
-#endif
 
 
 QTEST_MAIN(tst_QTcpSocket)

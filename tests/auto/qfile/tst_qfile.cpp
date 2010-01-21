@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -129,6 +129,9 @@ private slots:
     void readLine();
     void readLine2();
     void readLineNullInLine();
+    void readAll_data();
+    void readAll();
+    void readAllBuffer();
     void readAllStdin();
     void readLineStdin();
     void readLineStdin_lineByLine();
@@ -388,6 +391,7 @@ void tst_QFile::cleanupTestCase()
     QFile::remove("myLink2.lnk");
     QFile::remove("resources");
     QFile::remove("qfile_map_testfile");
+    QFile::remove("readAllBuffer.txt");
 }
 
 //------------------------------------------
@@ -750,6 +754,77 @@ void tst_QFile::readLineNullInLine()
     QCOMPARE(file.readLine(), QByteArray("\0\n", 2));
     QCOMPARE(file.readLine(), QByteArray("null\0", 5));
     QCOMPARE(file.readLine(), QByteArray());
+}
+
+void tst_QFile::readAll_data()
+{
+    QTest::addColumn<bool>("textMode");
+    QTest::addColumn<QString>("fileName");
+    QTest::newRow( "TextMode unixfile" ) <<  true << SRCDIR "testfile.txt";
+    QTest::newRow( "BinaryMode unixfile" ) <<  false << SRCDIR "testfile.txt";
+    QTest::newRow( "TextMode dosfile" ) <<  true << SRCDIR "dosfile.txt";
+    QTest::newRow( "BinaryMode dosfile" ) <<  false << SRCDIR "dosfile.txt";
+    QTest::newRow( "TextMode bigfile" ) <<  true << SRCDIR "tst_qfile.cpp";
+    QTest::newRow( "BinaryMode  bigfile" ) <<  false << SRCDIR "tst_qfile.cpp";
+    QVERIFY(QFile(SRCDIR "tst_qfile.cpp").size() > 64*1024);
+}
+
+void tst_QFile::readAll()
+{
+    QFETCH( bool, textMode );
+    QFETCH( QString, fileName );
+
+    QFile file(fileName);
+    if (textMode)
+        QVERIFY(file.open(QFile::Text | QFile::ReadOnly));
+    else
+        QVERIFY(file.open(QFile::ReadOnly));
+
+    QByteArray a = file.readAll();
+    file.reset();
+    QVERIFY(file.pos() == 0);
+
+    QVERIFY(file.bytesAvailable() > 7);
+    QByteArray b = file.read(1);
+    char x;
+    file.getChar(&x);
+    b.append(x);
+    b.append(file.read(5));
+    b.append(file.readAll());
+
+    QCOMPARE(a, b);
+}
+
+void tst_QFile::readAllBuffer()
+{
+    QString fileName = QLatin1String("readAllBuffer.txt");
+
+    QFile::remove(fileName);
+
+    QFile writer(fileName);
+    QFile reader(fileName);
+
+    QByteArray data1("This is arguably a very simple text.");
+    QByteArray data2("This is surely not as simple a test.");
+
+    QVERIFY( writer.open(QIODevice::ReadWrite | QIODevice::Unbuffered) );
+    QVERIFY( reader.open(QIODevice::ReadOnly) );
+
+    QCOMPARE( writer.write(data1), qint64(data1.size()) );
+    QVERIFY( writer.seek(0) );
+
+    QByteArray result;
+    result = reader.read(18);
+    QCOMPARE( result.size(), 18 );
+
+    QCOMPARE( writer.write(data2), qint64(data2.size()) ); // new data, old version buffered in reader
+    QCOMPARE( writer.write(data2), qint64(data2.size()) ); // new data, unbuffered in reader
+
+    result += reader.readAll();
+
+    QCOMPARE( result, data1 + data2 );
+
+    QFile::remove(fileName);
 }
 
 void tst_QFile::readAllStdin()
@@ -2044,15 +2119,17 @@ void tst_QFile::fullDisk()
     file.write(&c, 0);
     QVERIFY(!file.flush());
     QCOMPARE(file.error(), QFile::ResourceError);
-    file.write(&c, 1);
+    QCOMPARE(file.write(&c, 1), qint64(1));
     QVERIFY(!file.flush());
     QCOMPARE(file.error(), QFile::ResourceError);
 
     file.close();
     QVERIFY(!file.isOpen());
     QCOMPARE(file.error(), QFile::ResourceError);
+
     file.open(QIODevice::WriteOnly);
     QCOMPARE(file.error(), QFile::NoError);
+    QVERIFY(file.flush()); // Shouldn't inherit write buffer
     file.close();
     QCOMPARE(file.error(), QFile::NoError);
 

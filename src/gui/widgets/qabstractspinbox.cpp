@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1180,12 +1180,10 @@ static int getKeyboardAutoRepeatRate() {
     TTimeIntervalMicroSeconds32 time;
     S60->wsSession().GetKeyboardRepeatRate(initialTime, time);
     ret = time.Int() / 1000; // msecs
-#elif defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     DWORD time;
     if (SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &time, 0) != FALSE)
         ret = static_cast<int>(1000 / static_cast<int>(time)); // msecs
-#else
-#pragma message("Using default guesstimated value for keyboard repeat rate")
 #endif
     return ret; // msecs
 }

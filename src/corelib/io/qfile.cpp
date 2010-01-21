@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -643,13 +643,14 @@ QFile::remove()
         qWarning("QFile::remove: Empty or null file name");
         return false;
     }
+    unsetError();
     close();
     if(error() == QFile::NoError) {
         if(fileEngine()->remove()) {
             unsetError();
             return true;
         }
-        d->setError(QFile::RemoveError, fileEngine()->errorString());
+        d->setError(QFile::RemoveError, d->fileEngine->errorString());
     }
     return false;
 }
@@ -703,7 +704,7 @@ QFile::rename(const QString &newName)
         if (fileEngine()->rename(newName)) {
             unsetError();
             // engine was able to handle the new name so we just reset it
-            fileEngine()->setFileName(newName);
+            d->fileEngine->setFileName(newName);
             d->fileName = newName;
             return true;
         }
@@ -739,7 +740,7 @@ QFile::rename(const QString &newName)
                 if (error) {
                     out.remove();
                 } else {
-                    fileEngine()->setFileName(newName);
+                    d->fileEngine->setFileName(newName);
                     setPermissions(permissions());
                     unsetError();
                     setFileName(newName);
@@ -804,7 +805,7 @@ QFile::link(const QString &linkName)
         unsetError();
         return true;
     }
-    d->setError(QFile::RenameError, fileEngine()->errorString());
+    d->setError(QFile::RenameError, d->fileEngine->errorString());
     return false;
 }
 
@@ -968,9 +969,6 @@ bool QFile::isSequential() const
     mode, if the relevant file does not already exist, this function
     will try to create a new file before opening it.
 
-    \note Because of limitations in the native API, QFile ignores the
-    Unbuffered flag on Windows.
-
     \sa QIODevice::OpenMode, setFileName()
 */
 bool QFile::open(OpenMode mode)
@@ -988,16 +986,18 @@ bool QFile::open(OpenMode mode)
         qWarning("QIODevice::open: File access not specified");
         return false;
     }
-    if (fileEngine()->open(mode)) {
+
+    // QIODevice provides the buffering, so there's no need to request it from the file engine.
+    if (fileEngine()->open(mode | QIODevice::Unbuffered)) {
         QIODevice::open(mode);
         if (mode & Append)
             seek(size());
         return true;
     }
-    QFile::FileError err = fileEngine()->error();
+    QFile::FileError err = d->fileEngine->error();
     if(err == QFile::UnspecifiedError)
         err = QFile::OpenError;
-    d->setError(err, fileEngine()->errorString());
+    d->setError(err, d->fileEngine->errorString());
     return false;
 }
 
@@ -1152,12 +1152,11 @@ bool QFile::open(int fd, OpenMode mode)
 int
 QFile::handle() const
 {
-    if (!isOpen())
+    Q_D(const QFile);
+    if (!isOpen() || !d->fileEngine)
         return -1;
 
-    if (QAbstractFileEngine *engine = fileEngine())
-        return engine->handle();
-    return -1;
+    return d->fileEngine->handle();
 }
 
 /*!
@@ -1189,13 +1188,12 @@ QFile::handle() const
 uchar *QFile::map(qint64 offset, qint64 size, MemoryMapFlags flags)
 {
     Q_D(QFile);
-    QAbstractFileEngine *engine = fileEngine();
-    if (engine
-        && engine->supportsExtension(QAbstractFileEngine::MapExtension)) {
+    if (fileEngine()
+            && d->fileEngine->supportsExtension(QAbstractFileEngine::MapExtension)) {
         unsetError();
-        uchar *address = engine->map(offset, size, flags);
+        uchar *address = d->fileEngine->map(offset, size, flags);
         if (address == 0)
-            d->setError(engine->error(), engine->errorString());
+            d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return address;
     }
     return 0;
@@ -1212,13 +1210,12 @@ uchar *QFile::map(qint64 offset, qint64 size, MemoryMapFlags flags)
 bool QFile::unmap(uchar *address)
 {
     Q_D(QFile);
-    QAbstractFileEngine *engine = fileEngine();
-    if (engine
-        && engine->supportsExtension(QAbstractFileEngine::UnMapExtension)) {
+    if (fileEngine()
+        && d->fileEngine->supportsExtension(QAbstractFileEngine::UnMapExtension)) {
         unsetError();
-        bool success = engine->unmap(address);
+        bool success = d->fileEngine->unmap(address);
         if (!success)
-            d->setError(engine->error(), engine->errorString());
+            d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return success;
     }
     return false;
@@ -1251,13 +1248,14 @@ QFile::resize(qint64 sz)
     Q_D(QFile);
     if (!d->ensureFlushed())
         return false;
-    if (isOpen() && fileEngine()->pos() > sz)
+    fileEngine();
+    if (isOpen() && d->fileEngine->pos() > sz)
         seek(sz);
-    if(fileEngine()->setSize(sz)) {
+    if(d->fileEngine->setSize(sz)) {
         unsetError();
         return true;
     }
-    d->setError(QFile::ResizeError, fileEngine()->errorString());
+    d->setError(QFile::ResizeError, d->fileEngine->errorString());
     return false;
 }
 
@@ -1321,7 +1319,7 @@ QFile::setPermissions(Permissions permissions)
         unsetError();
         return true;
     }
-    d->setError(QFile::PermissionsError, fileEngine()->errorString());
+    d->setError(QFile::PermissionsError, d->fileEngine->errorString());
     return false;
 }
 
@@ -1354,23 +1352,27 @@ bool
 QFile::flush()
 {
     Q_D(QFile);
+    if (!d->fileEngine) {
+        qWarning("QFile::flush: No file engine. Is IODevice open?");
+        return false;
+    }
+
     if (!d->writeBuffer.isEmpty()) {
         qint64 size = d->writeBuffer.size();
-        if (_qfile_writeData(d->fileEngine ? d->fileEngine : fileEngine(),
-                             &d->writeBuffer) != size) {
-            QFile::FileError err = fileEngine()->error();
+        if (_qfile_writeData(d->fileEngine, &d->writeBuffer) != size) {
+            QFile::FileError err = d->fileEngine->error();
             if(err == QFile::UnspecifiedError)
                 err = QFile::WriteError;
-            d->setError(err, fileEngine()->errorString());
+            d->setError(err, d->fileEngine->errorString());
             return false;
         }
     }
 
-    if (!fileEngine()->flush()) {
-        QFile::FileError err = fileEngine()->error();
+    if (!d->fileEngine->flush()) {
+        QFile::FileError err = d->fileEngine->error();
         if(err == QFile::UnspecifiedError)
             err = QFile::WriteError;
-        d->setError(err, fileEngine()->errorString());
+        d->setError(err, d->fileEngine->errorString());
         return false;
     }
     return true;
@@ -1387,12 +1389,18 @@ QFile::close()
     Q_D(QFile);
     if(!isOpen())
         return;
-    flush();
+    bool flushed = flush();
     QIODevice::close();
 
-    unsetError();
-    if(!fileEngine()->close())
-        d->setError(fileEngine()->error(), fileEngine()->errorString());
+    // reset write buffer
+    d->lastWasWrite = false;
+    d->writeBuffer.clear();
+
+    // keep earlier error from flush
+    if (d->fileEngine->close() && flushed)
+        unsetError();
+    else if (flushed)
+        d->setError(d->fileEngine->error(), d->fileEngine->errorString());
 }
 
 /*!
@@ -1445,10 +1453,10 @@ bool QFile::atEnd() const
         return false;
 
     // If the file engine knows best, say what it says.
-    if (fileEngine()->supportsExtension(QAbstractFileEngine::AtEndExtension)) {
+    if (d->fileEngine->supportsExtension(QAbstractFileEngine::AtEndExtension)) {
         // Check if the file engine supports AtEndExtension, and if it does,
         // check if the file engine claims to be at the end.
-        return fileEngine()->atEnd();
+        return d->fileEngine->atEnd();
     }
 
     // Fall back to checking how much is available (will stat files).
@@ -1470,11 +1478,11 @@ bool QFile::seek(qint64 off)
     if (!d->ensureFlushed())
         return false;
 
-    if (!fileEngine()->seek(off) || !QIODevice::seek(off)) {
-        QFile::FileError err = fileEngine()->error();
+    if (!d->fileEngine->seek(off) || !QIODevice::seek(off)) {
+        QFile::FileError err = d->fileEngine->error();
         if(err == QFile::UnspecifiedError)
             err = QFile::PositionError;
-        d->setError(err, fileEngine()->errorString());
+        d->setError(err, d->fileEngine->errorString());
         return false;
     }
     unsetError();
@@ -1490,8 +1498,8 @@ qint64 QFile::readLineData(char *data, qint64 maxlen)
     if (!d->ensureFlushed())
         return -1;
 
-    if (fileEngine()->supportsExtension(QAbstractFileEngine::FastReadLineExtension))
-        return fileEngine()->readLine(data, maxlen);
+    if (d->fileEngine->supportsExtension(QAbstractFileEngine::FastReadLineExtension))
+        return d->fileEngine->readLine(data, maxlen);
 
     // Fall back to QIODevice's readLine implementation if the engine
     // cannot do it faster.
@@ -1509,18 +1517,14 @@ qint64 QFile::readData(char *data, qint64 len)
     if (!d->ensureFlushed())
         return -1;
 
-    qint64 ret = -1;
-    qint64 read = fileEngine()->read(data, len);
-    if (read != -1)
-        ret = read;
-
-    if(ret < 0) {
-        QFile::FileError err = fileEngine()->error();
+    qint64 read = d->fileEngine->read(data, len);
+    if(read < 0) {
+        QFile::FileError err = d->fileEngine->error();
         if(err == QFile::UnspecifiedError)
             err = QFile::ReadError;
-        d->setError(err, fileEngine()->errorString());
+        d->setError(err, d->fileEngine->errorString());
     }
-    return ret;
+    return read;
 }
 
 /*!
@@ -1600,13 +1604,12 @@ QFile::writeData(const char *data, qint64 len)
     // Write directly to the engine if the block size is larger than
     // the write buffer size.
     if (!buffered || len > QFILE_WRITEBUFFER_SIZE) {
-        QAbstractFileEngine *fe = d->fileEngine ? d->fileEngine : fileEngine();
-        qint64 ret = fe->write(data, len);
+        qint64 ret = d->fileEngine->write(data, len);
         if(ret < 0) {
-            QFile::FileError err = fileEngine()->error();
+            QFile::FileError err = d->fileEngine->error();
             if(err == QFile::UnspecifiedError)
                 err = QFile::WriteError;
-            d->setError(err, fileEngine()->errorString());
+            d->setError(err, d->fileEngine->errorString());
         }
         return ret;
     }

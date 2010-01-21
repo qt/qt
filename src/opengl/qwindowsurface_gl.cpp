@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -295,7 +295,6 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     : QWindowSurface(window), d_ptr(new QGLWindowSurfacePrivate)
 {
     Q_ASSERT(window->isTopLevel());
-    QGLExtensions::init();
     d_ptr->pb = 0;
     d_ptr->fbo = 0;
     d_ptr->ctx = 0;
@@ -520,7 +519,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
     glDisable(GL_SCISSOR_TEST);
 
-    if (d_ptr->fbo && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)) {
+    if (d_ptr->fbo && (QGLExtensions::glExtensions() & QGLExtensions::FramebufferBlit)) {
         const int h = d_ptr->fbo->height();
 
         const int sx0 = br.left();
@@ -698,7 +697,7 @@ void QGLWindowSurface::updateGeometry() {
     }
 
     if (d_ptr->destructive_swap_buffers
-        && (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject)
+        && (QGLExtensions::glExtensions() & QGLExtensions::FramebufferObject)
         && (d_ptr->fbo || !d_ptr->tried_fbo)
         && qt_gl_preferGL2Engine())
     {
@@ -712,7 +711,7 @@ void QGLWindowSurface::updateGeometry() {
         format.setInternalTextureFormat(GLenum(GL_RGBA));
         format.setTextureTarget(target);
 
-        if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
+        if (QGLExtensions::glExtensions() & QGLExtensions::FramebufferBlit)
             format.setSamples(8);
 
         d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);

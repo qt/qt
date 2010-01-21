@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,119 @@
 
 
 QT_BEGIN_NAMESPACE
+
+
+bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig config,
+                             const QX11Info &x11Info, bool useArgbVisual);
+
+/*
+    QGLTemporaryContext implementation
+*/
+
+class QGLTemporaryContextPrivate
+{
+public:
+    bool initialized;
+    Window window;
+    EGLContext context;
+    EGLSurface surface;
+    EGLDisplay display;
+};
+
+QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
+    : d(new QGLTemporaryContextPrivate)
+{
+    d->initialized = false;
+    d->window = 0;
+    d->context = 0;
+    d->surface = 0;
+    int screen = 0;
+
+    d->display = eglGetDisplay(EGLNativeDisplayType(X11->display));
+
+    if (!eglInitialize(d->display, NULL, NULL)) {
+        qWarning("QGLTemporaryContext: Unable to initialize EGL display.");
+        return;
+    }
+
+    EGLConfig config;
+    int numConfigs = 0;
+    EGLint attribs[] = {
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+#ifdef QT_OPENGL_ES_2
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+#endif
+        EGL_NONE
+    };
+
+    eglChooseConfig(d->display, attribs, &config, 1, &numConfigs);
+    if (!numConfigs) {
+        qWarning("QGLTemporaryContext: No EGL configurations available.");
+        return;
+    }
+
+    XVisualInfo visualInfo;
+    XVisualInfo *vi;
+    int numVisuals;
+    EGLint id = 0;
+
+    eglGetConfigAttrib(d->display, config, EGL_NATIVE_VISUAL_ID, &id);
+    if (id == 0) {
+        // EGL_NATIVE_VISUAL_ID is optional and might not be supported
+        // on some implementations - we'll have to do it the hard way
+        QX11Info xinfo;
+        qt_egl_setup_x11_visual(visualInfo, d->display, config, xinfo, false);
+    } else {
+        visualInfo.visualid = id;
+    }
+    vi = XGetVisualInfo(X11->display, VisualIDMask, &visualInfo, &numVisuals);
+    if (!vi || numVisuals < 1) {
+        qWarning("QGLTemporaryContext: Unable to get X11 visual info id.");
+        return;
+    }
+
+    d->window = XCreateWindow(X11->display, RootWindow(X11->display, screen),
+                              0, 0, 1, 1, 0,
+                              vi->depth, InputOutput, vi->visual,
+                              0, 0);
+
+    d->surface = eglCreateWindowSurface(d->display, config, (EGLNativeWindowType) d->window, NULL);
+
+    if (d->surface == EGL_NO_SURFACE) {
+        qWarning("QGLTemporaryContext: Error creating EGL surface.");
+        XFree(vi);
+        XDestroyWindow(X11->display, d->window);
+        return;
+    }
+
+    EGLint contextAttribs[] = {
+#ifdef QT_OPENGL_ES_2
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+#endif
+        EGL_NONE
+    };
+    d->context = eglCreateContext(d->display, config, 0, contextAttribs);
+    if (d->context != EGL_NO_CONTEXT
+        && eglMakeCurrent(d->display, d->surface, d->surface, d->context))
+    {
+        d->initialized = true;
+    } else {
+        qWarning("QGLTemporaryContext: Error creating EGL context.");
+        eglDestroySurface(d->display, d->surface);
+        XDestroyWindow(X11->display, d->window);
+    }
+    XFree(vi);
+}
+
+QGLTemporaryContext::~QGLTemporaryContext()
+{
+    if (d->initialized) {
+        eglMakeCurrent(d->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        eglDestroyContext(d->display, d->context);
+        eglDestroySurface(d->display, d->surface);
+        XDestroyWindow(X11->display, d->window);
+    }
+}
 
 bool QGLFormat::hasOpenGLOverlays()
 {
@@ -239,7 +352,7 @@ bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig conf
 
     // If EGL does not know the visual ID, so try to select an appropriate one ourselves, first
     // using XRender if we're supposed to have an alpha, then falling back to XGetVisualInfo
-          
+
 #if !defined(QT_NO_XRENDER)
     if (vi.visualid == 0 && useArgbVisual) {
         // Try to use XRender to find an ARGB visual we can use
@@ -435,23 +548,6 @@ const QGLColormap & QGLWidget::colormap() const
 
 void QGLWidget::setColormap(const QGLColormap &)
 {
-}
-
-void QGLExtensions::init()
-{
-    static bool init_done = false;
-
-    if (init_done)
-        return;
-    init_done = true;
-
-    // We need a context current to initialize the extensions.
-    QGLWidget tmpWidget;
-    tmpWidget.makeCurrent();
-
-    init_extensions();
-
-    tmpWidget.doneCurrent();
 }
 
 // Re-creates the EGL surface if the window ID has changed or if force is true

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1761,7 +1761,11 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
         d->clickCausedFocus = 1;
     }
 #ifdef QT_KEYPAD_NAVIGATION
-    if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && e->reason() == Qt::PopupFocusReason)){
+    if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && ( e->reason() == Qt::PopupFocusReason
+#ifdef Q_OS_SYMBIAN
+            || e->reason() == Qt::ActiveWindowFocusReason
+#endif
+            ))) {
 #endif
     d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
     QStyleOptionFrameV2 opt;

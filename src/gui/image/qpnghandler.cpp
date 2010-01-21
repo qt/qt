@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,9 @@ QT_BEGIN_NAMESPACE
 #else
 #  define Q_INTERNAL_WIN_NO_THROW
 #endif
+
+// avoid going through QImage::scanLine() which calls detach
+#define FAST_SCAN_LINE(data, bpl, y) (data + (y) * bpl)
 
 /*
   All PNG files load to the minimal QImage equivalent.
@@ -510,7 +513,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
         && outImage->format() == QImage::Format_Indexed8) {
         int color_table_size = outImage->colorCount();
         for (int y=0; y<(int)height; ++y) {
-            uchar *p = outImage->scanLine(y);
+            uchar *p = FAST_SCAN_LINE(data, bpl, y);
             uchar *end = p + width;
             while (p < end) {
                 if (*p >= color_table_size)
@@ -852,7 +855,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
         0, 0, 0);
 
-    const uchar *data = image.bits();
+    const uchar *data = (static_cast<const QImage *>(&image))->bits();
     int bpl = image.bytesPerLine();
     row_pointers = new png_bytep[height];
     uint y;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -110,6 +110,7 @@
 #include "qevent_p.h"
 #include "qdnd_p.h"
 #include <QtGui/qgraphicsproxywidget.h>
+#include "qmainwindow.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1721,6 +1722,15 @@ bool QWidgetPrivate::qt_widget_rgn(QWidget *widget, short wcode, RgnHandle rgn, 
 void QWidgetPrivate::determineWindowClass()
 {
     Q_Q(QWidget);
+#if !defined(QT_NO_MAINWINDOW) && !defined(QT_NO_TOOLBAR)
+    // Make sure that QMainWindow has the MacWindowToolBarButtonHint when the
+    // unifiedTitleAndToolBarOnMac property is ON. This is to avoid reentry of
+    // setParent() triggered by the QToolBar::event(QEvent::ParentChange).
+    QMainWindow *mainWindow = qobject_cast<QMainWindow *>(q);
+    if (mainWindow && mainWindow->unifiedTitleAndToolBarOnMac()) {
+        data.window_flags |= Qt::MacWindowToolBarButtonHint;
+    }
+#endif
 #ifndef QT_MAC_USE_COCOA
 // ### COCOA:Interleave these better!
 
@@ -2743,7 +2753,9 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         }
         if (wasWindow) {
             oldToolbar = [oldWindow toolbar];
+            [oldToolbar retain];
             oldToolbarVisible = [oldToolbar isVisible];
+            [oldWindow setToolbar:nil];
         }
 #endif
     }
@@ -2787,6 +2799,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
             if (oldToolbar && !(f & Qt::FramelessWindowHint)) {
                 OSWindowRef newWindow = qt_mac_window_for(q);
                 [newWindow setToolbar:oldToolbar];
+                [oldToolbar release];
                 [oldToolbar setVisible:oldToolbarVisible];
             }
 #endif
@@ -3671,6 +3684,7 @@ void QWidgetPrivate::raise_sys()
         return;
 
 #if QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
     if (isRealWindow()) {
         // Calling orderFront shows the window on Cocoa too.
         if (!q->testAttribute(Qt::WA_DontShowOnScreen) && q->isVisible()) {
@@ -4493,9 +4507,13 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
 #ifndef QT_MAC_USE_COCOA
-    if(extra->topextra->group) {
+    if (extra->topextra->group) {
         qt_mac_release_window_group(extra->topextra->group);
         extra->topextra->group = 0;
+    }
+    if (extra->topextra->windowIcon) {
+        ReleaseIconRef(extra->topextra->windowIcon);
+        extra->topextra->windowIcon = 0;
     }
 #endif
 }

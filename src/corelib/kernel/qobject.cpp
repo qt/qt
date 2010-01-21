@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -578,12 +578,13 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     protected functions connectNotify() and disconnectNotify() make
     it possible to track connections.
 
-    QObjects organize themselves in object trees. When you create a
-    QObject with another object as parent, the object will
-    automatically add itself to the parent's children() list. The
-    parent takes ownership of the object; i.e., it will automatically
-    delete its children in its destructor. You can look for an object
-    by name and optionally type using findChild() or findChildren().
+    QObjects organize themselves in \l {Object Trees and Object
+    Ownership} {object trees}. When you create a QObject with another
+    object as parent, the object will automatically add itself to the
+    parent's children() list. The parent takes ownership of the
+    object; i.e., it will automatically delete its children in its
+    destructor. You can look for an object by name and optionally type
+    using findChild() or findChildren().
 
     Every object has an objectName() and its class name can be found
     via the corresponding metaObject() (see QMetaObject::className()).
@@ -682,7 +683,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     \l{Writing Source Code for Translation} document.
 
     \sa QMetaObject, QPointer, QObjectCleanupHandler, Q_DISABLE_COPY()
-        {Object Trees and Object Ownership}
+    \sa {Object Trees and Object Ownership}
 */
 
 /*!
@@ -2455,7 +2456,7 @@ int QObject::receivers(const char *signal) const
     If you pass the Qt::UniqueConnection \a type, the connection will only
     be made if it is not a duplicate. If there is already a duplicate
     (exact same signal to the exact same slot on the same objects),
-    the connection will fail and connect will return false
+    the connection will fail and connect will return false.
 
     The optional \a type parameter describes the type of connection
     to establish. In particular, it determines whether a particular
@@ -2944,7 +2945,6 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
     return true;
 }
 
-
 /*!\internal
  */
 bool QMetaObject::disconnect(const QObject *sender, int signal_index,
@@ -2955,12 +2955,27 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                                           receiver, method_index);
 }
 
+/*!\internal
+
+Disconnect a single signal connection.  If QMetaObject::connect() has been called 
+multiple times for the same sender, signal_index, receiver and method_index only 
+one of these connections will be removed.
+ */
+bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
+                                const QObject *receiver, int method_index)
+{
+    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
+    return QMetaObjectPrivate::disconnect(sender, signal_index,
+                                          receiver, method_index,
+                                          QMetaObjectPrivate::DisconnectOne);
+}
+
 /*! \internal
     Helper function to remove the connection from the senders list and setting the receivers to 0
  */
 bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
                                           const QObject *receiver, int method_index,
-                                          QMutex *senderMutex)
+                                          QMutex *senderMutex, DisconnectType disconnectType)
 {
     bool success = false;
     while (c) {
@@ -2986,6 +3001,9 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
             c->receiver = 0;
 
             success = true;
+
+            if (disconnectType == DisconnectOne)
+                return success;
         }
         c = c->nextConnectionList;
     }
@@ -2996,7 +3014,8 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
     Same as the QMetaObject::disconnect, but \a signal_index must be the result of QObjectPrivate::signalIndex
  */
 bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
-                                    const QObject *receiver, int method_index)
+                                    const QObject *receiver, int method_index,
+                                    DisconnectType disconnectType)
 {
     if (!sender)
         return false;
@@ -3020,7 +3039,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
         for (signal_index = -1; signal_index < connectionLists->count(); ++signal_index) {
             QObjectPrivate::Connection *c =
                 (*connectionLists)[signal_index].first;
-            if (disconnectHelper(c, receiver, method_index, senderMutex)) {
+            if (disconnectHelper(c, receiver, method_index, senderMutex, disconnectType)) {
                 success = true;
                 connectionLists->dirty = true;
             }
@@ -3028,7 +3047,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
     } else if (signal_index < connectionLists->count()) {
         QObjectPrivate::Connection *c =
             (*connectionLists)[signal_index].first;
-        if (disconnectHelper(c, receiver, method_index, senderMutex)) {
+        if (disconnectHelper(c, receiver, method_index, senderMutex, disconnectType)) {
             success = true;
             connectionLists->dirty = true;
         }

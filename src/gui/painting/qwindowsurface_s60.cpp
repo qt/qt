@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -145,10 +145,12 @@ QImage* QS60WindowSurface::buffer(const QWidget *widget)
 
 void QS60WindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &)
 {
-    const QVector<QRect> subRects = region.rects();
-    for (int i = 0; i < subRects.count(); ++i) {
-        TRect tr = qt_QRect2TRect(subRects[i]);
+    QWExtra *extra = widget->d_func()->extraData();
+    if (extra && !extra->inExpose) {
+        extra->inExpose = true; // Prevent DrawNow() from calling syncBackingStore() again
+        TRect tr = qt_QRect2TRect(region.boundingRect());
         widget->winId()->DrawNow(tr);
+        extra->inExpose = false;
     }
 }
 
