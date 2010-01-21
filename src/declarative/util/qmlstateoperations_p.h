@@ -45,7 +45,7 @@
 #include "qmlstate_p.h"
 
 #include <qmlgraphicsitem.h>
-#include "../graphicsitems/qmlgraphicsanchors_p.h"
+#include "private/qmlgraphicsanchors_p.h"
 #include <qmlscriptstring.h>
 
 QT_BEGIN_HEADER
