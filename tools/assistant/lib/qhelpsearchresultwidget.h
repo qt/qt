@@ -75,6 +75,7 @@ private:
 
     QHelpSearchResultWidgetPrivate *d;
     QHelpSearchResultWidget(QHelpSearchEngine *engine);
+    virtual void changeEvent(QEvent *event);
 };
 
 QT_END_NAMESPACE
