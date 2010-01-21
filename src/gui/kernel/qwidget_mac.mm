@@ -3414,6 +3414,38 @@ void QWidgetPrivate::hide_sys()
             ShowHide(window, false);
 #else
             [window orderOut:window];
+            // Unfortunately it is not as easy as just hiding the window, we need
+            // to find out if we were in full screen mode. If we were and this is
+            // the last window in full screen mode then we need to unset the full screen
+            // mode. If this is not the last visible window in full screen mode then we
+            // don't change the full screen mode.
+            if(q->isFullScreen())
+            {
+                bool keepFullScreen = false;
+                QWidgetList windowList = qApp->topLevelWidgets();
+                int windowCount = windowList.count();
+                for(int i = 0; i < windowCount; i++)
+                {
+                    QWidget *w = windowList[i];
+                    // If it is the same window, we don't need to check :-)
+                    if(q == w)
+                        continue;
+                    // If they are not visible or if they are minimized then
+                    // we just ignore them.
+                    if(!w->isVisible() || w->isMinimized())
+                        continue;
+                    // Is it full screen?
+                    // Notice that if there is one window in full screen mode then we
+                    // cannot switch the full screen mode off, therefore we just abort.
+                    if(w->isFullScreen()) {
+                        keepFullScreen = true;
+                        break;
+                    }
+                }
+                // No windows in full screen mode, so let just unset that flag.
+                if(!keepFullScreen)
+                    qt_mac_set_fullscreen_mode(false);
+            }
 #endif
             toggleDrawers(false);
 #ifndef QT_MAC_USE_COCOA
