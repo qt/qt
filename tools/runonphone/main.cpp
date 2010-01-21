@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     QString serialPortFriendlyName;
     QString sisFile;
     QString exeFile;
-    QString cmdLine;
+    QStringList cmdLine;
     QStringList args = QCoreApplication::arguments();
     QTextStream outstream(stdout);
     QTextStream errstream(stderr);
@@ -124,7 +124,6 @@ int main(int argc, char *argv[])
             i++;
             for(;i<args.size();i++) {
                 cmdLine.append(args.at(i));
-                if(i + 1 < args.size()) cmdLine.append(' ');
             }
         }
     }
@@ -204,8 +203,8 @@ int main(int argc, char *argv[])
     QObject::connect(launcher.data(), SIGNAL(applicationOutputReceived(const QString &)), &handler, SLOT(applicationOutputReceived(const QString &)));
     QObject::connect(launcher.data(), SIGNAL(copyProgress(int)), &handler, SLOT(copyProgress(int)));
     QObject::connect(launcher.data(), SIGNAL(stateChanged(int)), &handler, SLOT(stateChanged(int)));
-    QObject::connect(launcher.data(), SIGNAL(stopped(uint,uint,uint,QString)), &handler, SLOT(stopped(uint,uint,uint,QString)));
-    QObject::connect(&handler, SIGNAL(resume(uint,uint)), launcher.data(), SLOT(resume(uint,uint)));
+    QObject::connect(launcher.data(), SIGNAL(processStopped(uint,uint,uint,QString)), &handler, SLOT(stopped(uint,uint,uint,QString)));
+    QObject::connect(&handler, SIGNAL(resume(uint,uint)), launcher.data(), SLOT(resumeProcess(uint,uint)));
     QObject::connect(&handler, SIGNAL(terminate()), launcher.data(), SLOT(terminate()));
     QObject::connect(launcher.data(), SIGNAL(finished()), &handler, SLOT(finished()));
 
