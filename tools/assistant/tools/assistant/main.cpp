@@ -223,19 +223,6 @@ bool rebuildSearchIndex(QCoreApplication &app, const QString &collectionFile,
     return app.exec() == 0;
 }
 
-bool checkForSqlite(CmdLineParser &cmd)
-{
-    TRACE_OBJ
-    QSqlDatabase db;
-    QStringList sqlDrivers(db.drivers());
-    if (!sqlDrivers.contains(QLatin1String("QSQLITE"))) {
-        cmd.showMessage(QObject::tr("Cannot load sqlite database driver!"),
-                        true);
-        return false;
-    }
-    return true;
-}
-
 bool useGui(int argc, char *argv[])
 {
     TRACE_OBJ
@@ -407,8 +394,11 @@ int main(int argc, char *argv[])
             ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
-    if (!checkForSqlite(cmd))
+    if (!QSqlDatabase::isDriverAvailable(QLatin1String("QSQLITE"))) {
+        cmd.showMessage(QObject::tr("Cannot load sqlite database driver!"),
+                        true);
         return EXIT_FAILURE;
+    }
 
     if (!cmd.currentFilter().isEmpty()) {
         if (collectionFileGiven)
