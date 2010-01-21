@@ -2388,7 +2388,6 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     }
 
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
-        const Object::DynamicSlot &s = obj->dynamicSlots.at(ii);
         const QString &funcScript = funcScripts.at(ii);
         QmlVMEMetaData::MethodData *data =
             ((QmlVMEMetaData *)dynamicData.data())->methodData() + ii;

@@ -116,6 +116,12 @@ public:
       smooth(false), keyHandler(0),
       width(0), height(0), implicitWidth(0), implicitHeight(0)
     {
+        QGraphicsItemPrivate::acceptedMouseButtons = 0;
+        QGraphicsItemPrivate::flags = QGraphicsItem::GraphicsItemFlags(
+                                      QGraphicsItem::ItemHasNoContents
+                                      | QGraphicsItem::ItemIsFocusable
+                                      | QGraphicsItem::ItemNegativeZStacksBehindParent);
+
     }
 
     void init(QmlGraphicsItem *parent)
@@ -125,10 +131,6 @@ public:
         if (parent)
             q->setParentItem(parent);
         _baselineOffset.invalidate();
-        q->setAcceptedMouseButtons(Qt::NoButton);
-        q->setFlags(QGraphicsItem::ItemHasNoContents |
-                    QGraphicsItem::ItemIsFocusable |
-                    QGraphicsItem::ItemNegativeZStacksBehindParent);
         mouseSetsFocus = false;
     }
 
