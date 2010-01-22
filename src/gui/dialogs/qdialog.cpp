@@ -267,7 +267,7 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
 #endif
 
 #ifdef Q_WS_S60
-    if (S60->avkonComponentsSupportTransparency()) {
+    if (S60->avkonComponentsSupportTransparency) {
         bool noSystemBackground = testAttribute(Qt::WA_NoSystemBackground);
         setAttribute(Qt::WA_TranslucentBackground); // also sets WA_NoSystemBackground
         setAttribute(Qt::WA_NoSystemBackground, noSystemBackground); // restore system background attribute
@@ -304,7 +304,7 @@ QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 #endif
 
 #ifdef Q_WS_S60
-    if (S60->avkonComponentsSupportTransparency()) {
+    if (S60->avkonComponentsSupportTransparency) {
         bool noSystemBackground = testAttribute(Qt::WA_NoSystemBackground);
         setAttribute(Qt::WA_TranslucentBackground); // also sets WA_NoSystemBackground
         setAttribute(Qt::WA_NoSystemBackground, noSystemBackground); // restore system background attribute

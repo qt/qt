@@ -2028,7 +2028,7 @@ void QWidgetPrivate::updateIsOpaque()
 
 #ifdef Q_WS_S60
     if (q->windowType() == Qt::Dialog && q->testAttribute(Qt::WA_TranslucentBackground)
-                && S60->avkonComponentsSupportTransparency()) {
+                && S60->avkonComponentsSupportTransparency) {
         setOpaque(false);
         return;
     }
