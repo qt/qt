@@ -369,4 +369,5 @@ EXPORTS
 	?willExecuteProgram@QScriptEngineAgentPrivate@@UAEXABVDebuggerCallFrame@QTJSC@@HH@Z @ 368 NONAME ; void QScriptEngineAgentPrivate::willExecuteProgram(class QTJSC::DebuggerCallFrame const &, int, int)
 	?staticMetaObject@QScriptExtensionPlugin@@2UQMetaObject@@B @ 369 NONAME ; struct QMetaObject const QScriptExtensionPlugin::staticMetaObject
 	?staticMetaObject@QScriptEngine@@2UQMetaObject@@B @ 370 NONAME ; struct QMetaObject const QScriptEngine::staticMetaObject
+	?isQObject@QScriptDeclarativeClass@@UBE_NXZ @ 371 NONAME ; bool QScriptDeclarativeClass::isQObject(void) const
 

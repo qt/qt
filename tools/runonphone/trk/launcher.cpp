@@ -76,7 +76,7 @@ struct LauncherPrivate {
 
     CopyState m_copyState;
     QString m_fileName;
-    QString m_commandLineArgs;
+    QStringList m_commandLineArgs;
     QString m_installFileName;
     int m_verbose;
     Launcher::Actions m_startupActions;
@@ -159,7 +159,7 @@ void Launcher::setInstallFileName(const QString &name)
     d->m_installFileName = name;
 }
 
-void Launcher::setCommandLineArgs(const QString &args)
+void Launcher::setCommandLineArgs(const QStringList &args)
 {
     d->m_commandLineArgs = args;
 }
@@ -189,8 +189,10 @@ bool Launcher::startServer(QString *errorMessage)
 {
     errorMessage->clear();
     if (d->m_verbose) {
-        const QString msg = QString::fromLatin1("Port=%1 Executable=%2 Package=%3 Remote Package=%4 Install file=%5")
-                            .arg(d->m_trkServerName, d->m_fileName, d->m_copyState.sourceFileName, d->m_copyState.destinationFileName, d->m_installFileName);
+        const QString msg = QString::fromLatin1("Port=%1 Executable=%2 Arguments=%3 Package=%4 Remote Package=%5 Install file=%6")
+                            .arg(d->m_trkServerName, d->m_fileName,
+                                 d->m_commandLineArgs.join(QString(QLatin1Char(' '))),
+                                 d->m_copyState.sourceFileName, d->m_copyState.destinationFileName, d->m_installFileName);
         logMessage(msg);
     }
     if (d->m_startupActions & ActionCopy) {
@@ -296,6 +298,34 @@ void Launcher::handleRemoteProcessKilled(const TrkResult &result)
     disconnectTrk();
 }
 
+QString Launcher::msgStopped(uint pid, uint tid, uint address, const QString &why)
+{
+    return QString::fromLatin1("Process %1, thread %2 stopped at 0x%3: %4").
+            arg(pid).arg(tid).arg(address, 0, 16).
+            arg(why.isEmpty() ? QString::fromLatin1("<Unknown reason>") : why);
+}
+
+bool Launcher::parseNotifyStopped(const QByteArray &dataBA,
+                                  uint *pid, uint *tid, uint *address,
+                                  QString *why /* = 0 */)
+{
+    if (why)
+        why->clear();
+    *address = *pid = *tid = 0;
+    if (dataBA.size() < 12)
+        return false;
+    const char *data = dataBA.data();
+    *address = extractInt(data);
+    *pid = extractInt(data + 4);
+    *tid = extractInt(data + 8);
+    if (why && dataBA.size() >= 14) {
+        const unsigned short len = extractShort(data + 12);
+        if (len > 0)
+            *why = QString::fromLatin1(data + 14, len);
+    }
+    return true;
+}
+
 void Launcher::handleResult(const TrkResult &result)
 {
     QByteArray prefix = "READ BUF:                                       ";
@@ -315,25 +345,13 @@ void Launcher::handleResult(const TrkResult &result)
             break;
         }
         case TrkNotifyStopped: { // Notified Stopped
-            logMessage(prefix + "NOTE: STOPPED  " + str);
-            // 90 01   78 6a 40 40   00 00 07 23   00 00 07 24  00 00
             QString reason;
-            if (result.data.size() >= 14) {
-                uint pc = extractInt(result.data.mid(0,4).constData());
-                uint pid = extractInt(result.data.mid(4,4).constData());
-                uint tid = extractInt(result.data.mid(8,4).constData());
-                ushort len = extractShort(result.data.mid(12,2).constData());
-                if(len > 0)
-                    reason = result.data.mid(14, len);
-                emit(stopped(pc, pid, tid, reason));
-            } else {
-                emit(stopped(0, 0, 0, reason));
-            }
-            //const char *data = result.data.data();
-//            uint addr = extractInt(data); //code address: 4 bytes; code base address for the library
-//            uint pid = extractInt(data + 4); // ProcessID: 4 bytes;
-//            uint tid = extractInt(data + 8); // ThreadID: 4 bytes
-            //logMessage(prefix << "      ADDR: " << addr << " PID: " << pid << " TID: " << tid);
+            uint pc;
+            uint pid;
+            uint tid;
+            parseNotifyStopped(result.data, &pid, &tid, &pc, &reason);
+            logMessage(prefix + msgStopped(pid, tid, pc, reason));
+            emit(processStopped(pc, pid, tid, reason));
             d->m_device->sendTrkAck(result.token);
             break;
         }
@@ -681,6 +699,26 @@ void Launcher::handleInstallPackageFinished(const TrkResult &result)
     }
 }
 
+QByteArray Launcher::startProcessMessage(const QString &executable,
+                                         const QStringList &arguments)
+{
+    // It's not started yet
+    QByteArray ba;
+    appendShort(&ba, 0, TargetByteOrder); // create new process
+    appendByte(&ba, 0); // options - currently unused
+    if(arguments.isEmpty()) {
+        appendString(&ba, executable.toLocal8Bit(), TargetByteOrder);
+        return ba;
+    }
+    // Append full command line as one string (leading length information).
+    QByteArray commandLineBa;
+    commandLineBa.append(executable.toLocal8Bit());
+    commandLineBa.append('\0');
+    commandLineBa.append(arguments.join(QString(QLatin1Char(' '))).toLocal8Bit());
+    appendString(&ba, commandLineBa, TargetByteOrder);
+    return ba;
+}
+
 void Launcher::startInferiorIfNeeded()
 {
     emit startingApplication();
@@ -688,24 +726,11 @@ void Launcher::startInferiorIfNeeded()
         logMessage("Process already 'started'");
         return;
     }
-    // It's not started yet
-    QByteArray ba;
-    appendShort(&ba, 0, TargetByteOrder); // create new process
-    appendByte(&ba, 0); // options - currently unused
-
-    if(d->m_commandLineArgs.isEmpty()) {
-        appendString(&ba, d->m_fileName.toLocal8Bit(), TargetByteOrder);
-    } else {
-        QByteArray ba2;
-        ba2.append(d->m_fileName.toLocal8Bit());
-        ba2.append('\0');
-        ba2.append(d->m_commandLineArgs.toLocal8Bit());
-        appendString(&ba, ba2, TargetByteOrder);
-    }
-    d->m_device->sendTrkMessage(TrkCreateItem, TrkCallback(this, &Launcher::handleCreateProcess), ba); // Create Item
+    d->m_device->sendTrkMessage(TrkCreateItem, TrkCallback(this, &Launcher::handleCreateProcess),
+                                startProcessMessage(d->m_fileName, d->m_commandLineArgs)); // Create Item
 }
 
-void Launcher::resume(uint pid, uint tid)
+void Launcher::resumeProcess(uint pid, uint tid)
 {
     QByteArray ba;
     appendInt(&ba, pid, BigEndian);

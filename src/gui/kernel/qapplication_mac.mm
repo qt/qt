@@ -227,8 +227,29 @@ void onApplicationChangedActivation( bool activated );
 
 static void qt_mac_read_fontsmoothing_settings()
 {
-    NSInteger appleFontSmoothing = [[NSUserDefaults standardUserDefaults] integerForKey:@"AppleFontSmoothing"];
-    qt_applefontsmoothing_enabled = (appleFontSmoothing > 0);
+    qt_applefontsmoothing_enabled = true;
+    int w = 10, h = 10;
+    QImage image(w, h, QImage::Format_RGB32);
+    image.fill(0xffffffff);
+    QPainter p(&image);
+    p.drawText(0, h, "X\\");
+    p.end();
+
+    const int *bits = (const int *) ((const QImage &) image).bits();
+    int bpl = image.bytesPerLine() / 4;
+    for (int y=0; y<w; ++y) {
+        for (int x=0; x<h; ++x) {
+            int r = qRed(bits[x]);
+            int g = qGreen(bits[x]);
+            int b = qBlue(bits[x]);
+            if (r != g || r != b) {
+                qt_applefontsmoothing_enabled = true;
+                return;
+            }
+        }
+        bits += bpl;
+    }
+    qt_applefontsmoothing_enabled = false;
 }
 
 Q_GUI_EXPORT bool qt_mac_execute_apple_script(const char *script, long script_len, AEDesc *ret) {
@@ -772,11 +793,11 @@ static void qt_mac_update_intersected_gl_widgets(QWidget *widget)
             qt_post_window_change_event(glWidget);
             it->lastUpdateWidget = widget;
         } else if (it->lastUpdateWidget == widget) {
-            // Update the gl wigets that the widget intersected the last time around, 
-            // and that we are not intersecting now. This prevents paint errors when the 
+            // Update the gl wigets that the widget intersected the last time around,
+            // and that we are not intersecting now. This prevents paint errors when the
             // intersecting widget leaves a gl widget.
             qt_post_window_change_event(glWidget);
-            it->lastUpdateWidget = 0;            
+            it->lastUpdateWidget = 0;
         }
     }
 #else
@@ -808,8 +829,8 @@ Q_GUI_EXPORT void qt_event_request_window_change(QWidget *widget)
     // Post a kEventQtRequestWindowChange event. This event is semi-public,
     // don't remove this line!
     qt_event_request_window_change();
-    
-    // Post update request on gl widgets unconditionally. 
+
+    // Post update request on gl widgets unconditionally.
     if (qt_widget_private(widget)->isGLWidget == true) {
         qt_post_window_change_event(widget);
         return;
@@ -1214,8 +1235,6 @@ void qt_init(QApplicationPrivate *priv, int)
     if (QApplication::desktopSettingsAware())
         QApplicationPrivate::qt_mac_apply_settings();
 
-    qt_mac_read_fontsmoothing_settings();
-
     // Cocoa application delegate
 #ifdef QT_MAC_USE_COCOA
     NSApplication *cocoaApp = [NSApplication sharedApplication];
@@ -1253,6 +1272,7 @@ void qt_init(QApplicationPrivate *priv, int)
     }
    priv->native_modal_dialog_active = false;
 
+   qt_mac_read_fontsmoothing_settings();
 }
 
 void qt_release_apple_event_handler()
@@ -1705,7 +1725,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             // kEventMouseWheelMoved events if we dont eat this event
             // (actually two events; one for horizontal and one for vertical).
             // As a results of this, and to make sure we dont't receive duplicate events,
-            // we try to detect when this happend by checking the 'compatibilityEvent'. 
+            // we try to detect when this happend by checking the 'compatibilityEvent'.
             SInt32 mdelt = 0;
             GetEventParameter(event, kEventParamMouseWheelSmoothHorizontalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
@@ -2576,7 +2596,7 @@ void QApplicationPrivate::closePopup(QWidget *popup)
     if (QApplicationPrivate::popupWidgets->isEmpty()) {  // this was the last popup
         delete QApplicationPrivate::popupWidgets;
         QApplicationPrivate::popupWidgets = 0;
-        
+
         // Special case for Tool windows: since they are activated and deactived together
         // with a normal window they never become the QApplicationPrivate::active_window.
         QWidget *appFocusWidget = QApplication::focusWidget();

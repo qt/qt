@@ -599,7 +599,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         if (parentItem->scene()) {
             Q_ASSERT_X(parentItem->scene() == q, "QGraphicsScene::removeItem",
                        "Parent item's scene is different from this item's scene");
-            item->d_ptr->setParentItemHelper(0);
+            item->setParentItem(0);
         }
     } else {
         unregisterTopLevelItem(item);
@@ -2482,12 +2482,12 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         qWarning("QGraphicsScene::addItem: cannot add null item");
         return;
     }
-    if (item->scene() == this) {
+    if (item->d_ptr->scene == this) {
         qWarning("QGraphicsScene::addItem: item has already been added to this scene");
         return;
     }
     // Remove this item from its existing scene
-    if (QGraphicsScene *oldScene = item->scene())
+    if (QGraphicsScene *oldScene = item->d_ptr->scene)
         oldScene->removeItem(item);
 
     // Notify the item that its scene is changing, and allow the item to
@@ -2496,15 +2496,15 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
                                                     qVariantFromValue<QGraphicsScene *>(this)));
     QGraphicsScene *targetScene = qVariantValue<QGraphicsScene *>(newSceneVariant);
     if (targetScene != this) {
-        if (targetScene && item->scene() != targetScene)
+        if (targetScene && item->d_ptr->scene != targetScene)
             targetScene->addItem(item);
         return;
     }
 
     // Detach this item from its parent if the parent's scene is different
     // from this scene.
-    if (QGraphicsItem *itemParent = item->parentItem()) {
-        if (itemParent->scene() != this)
+    if (QGraphicsItem *itemParent = item->d_ptr->parent) {
+        if (itemParent->d_ptr->scene != this)
             item->setParentItem(0);
     }
 
@@ -2534,7 +2534,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         d->enableMouseTrackingOnViews();
     }
 #ifndef QT_NO_CURSOR
-    if (d->allItemsUseDefaultCursor && item->hasCursor()) {
+    if (d->allItemsUseDefaultCursor && item->d_ptr->hasCursor) {
         d->allItemsUseDefaultCursor = false;
         if (d->allItemsIgnoreHoverEvents) // already enabled otherwise
             d->enableMouseTrackingOnViews();
@@ -2542,7 +2542,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 #endif //QT_NO_CURSOR
 
     // Enable touch events if the item accepts touch events.
-    if (d->allItemsIgnoreTouchEvents && item->acceptTouchEvents()) {
+    if (d->allItemsIgnoreTouchEvents && item->d_ptr->acceptTouchEvents) {
         d->allItemsIgnoreTouchEvents = false;
         d->enableTouchEventsOnViews();
     }
@@ -2575,8 +2575,9 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     }
 
     // Add all children recursively
-    foreach (QGraphicsItem *child, item->children())
-        addItem(child);
+    item->d_ptr->ensureSortedChildren();
+    for (int i = 0; i < item->d_ptr->children.size(); ++i)
+        addItem(item->d_ptr->children.at(i));
 
     // Resolve font and palette.
     item->d_ptr->resolveFont(d->font.resolve());
@@ -2619,7 +2620,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         }
     }
 
-    if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
+    if (item->d_ptr->flags & QGraphicsItem::ItemSendsScenePositionChanges)
         d->registerScenePosItem(item);
 
     // Ensure that newly added items that have subfocus set, gain
@@ -3766,10 +3767,10 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
 
 bool QGraphicsScenePrivate::itemAcceptsHoverEvents_helper(const QGraphicsItem *item) const
 {
-    return (!item->isBlockedByModalPanel() &&
-            (item->acceptHoverEvents()
-             || (item->isWidget()
-                 && static_cast<const QGraphicsWidget *>(item)->d_func()->hasDecoration())));
+    return (item->d_ptr->acceptsHover
+            || (item->d_ptr->isWidget
+                && static_cast<const QGraphicsWidget *>(item)->d_func()->hasDecoration()))
+           && !item->isBlockedByModalPanel();
 }
 
 /*!

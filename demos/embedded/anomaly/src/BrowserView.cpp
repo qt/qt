@@ -48,6 +48,7 @@
 #include "ControlStrip.h"
 #include "TitleBar.h"
 #include "flickcharm.h"
+#include "webview.h"
 #include "ZoomStrip.h"
 
 #if defined (Q_OS_SYMBIAN)
@@ -62,7 +63,7 @@ BrowserView::BrowserView(QWidget *parent)
     , m_currentZoom(100)
 {
     m_titleBar = new TitleBar(this);
-    m_webView = new QWebView(this);
+    m_webView = new WebView(this);
     m_zoomStrip = new ZoomStrip(this);
     m_controlStrip = new ControlStrip(this);
 
@@ -95,7 +96,7 @@ void BrowserView::initialize()
     connect(m_webView, SIGNAL(loadFinished(bool)), SLOT(finish(bool)));
     connect(m_webView, SIGNAL(urlChanged(QUrl)), SLOT(updateTitleBar()));
 
-    m_webView->setHtml("Will try to load page soon!");
+    m_webView->setHtml("about:blank");
     m_webView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_webView->setFocus();
 #ifdef Q_OS_SYMBIAN
