@@ -292,7 +292,6 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       processDirtyItemsEmitted(false),
       selectionChanging(0),
       needSortTopLevelItems(true),
-      unpolishedItemsModified(true),
       holesInTopLevelSiblingIndex(false),
       topLevelSequentialOrdering(true),
       scenePosDescendantsUpdatePending(false),
@@ -429,23 +428,38 @@ void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::_q_polishItems()
 {
-    QVector<QGraphicsItem *>::Iterator it = unpolishedItems.begin();
+    if (unpolishedItems.isEmpty())
+        return;
+
     const QVariant booleanTrueVariant(true);
-    while (!unpolishedItems.isEmpty()) {
-        QGraphicsItem *item = *it;
-        it = unpolishedItems.erase(it);
-        unpolishedItemsModified = false;
-        item->d_ptr->pendingPolish = false;
-        if (!item->d_ptr->explicitlyHidden) {
+    QGraphicsItem *item = 0;
+    QGraphicsItemPrivate *itemd = 0;
+    const int oldUnpolishedCount = unpolishedItems.count();
+
+    for (int i = 0; i < oldUnpolishedCount; ++i) {
+        item = unpolishedItems.at(i);
+        if (!item)
+            continue;
+        itemd = item->d_ptr.data();
+        itemd->pendingPolish = false;
+        if (!itemd->explicitlyHidden) {
             item->itemChange(QGraphicsItem::ItemVisibleChange, booleanTrueVariant);
             item->itemChange(QGraphicsItem::ItemVisibleHasChanged, booleanTrueVariant);
         }
-        if (item->isWidget()) {
+        if (itemd->isWidget) {
             QEvent event(QEvent::Polish);
             QApplication::sendEvent((QGraphicsWidget *)item, &event);
         }
-        if (unpolishedItemsModified)
-            it = unpolishedItems.begin();
+    }
+
+    if (unpolishedItems.count() == oldUnpolishedCount) {
+        // No new items were added to the vector.
+        unpolishedItems.clear();
+    } else {
+        // New items were appended; keep them and remove the old ones.
+        unpolishedItems.remove(0, oldUnpolishedCount);
+        unpolishedItems.squeeze();
+        QMetaObject::invokeMethod(q_ptr, "_q_polishItems", Qt::QueuedConnection);
     }
 }
 
@@ -641,10 +655,8 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     cachedItemsUnderMouse.removeAll(item);
     if (item->d_ptr->pendingPolish) {
         const int unpolishedIndex = unpolishedItems.indexOf(item);
-        if (unpolishedIndex != -1) {
-            unpolishedItems.remove(unpolishedIndex);
-            unpolishedItemsModified = true;
-        }
+        if (unpolishedIndex != -1)
+            unpolishedItems[unpolishedIndex] = 0;
         item->d_ptr->pendingPolish = false;
     }
     resetDirtyItem(item);
