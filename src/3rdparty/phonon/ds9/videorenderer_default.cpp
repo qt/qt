@@ -32,7 +32,7 @@ namespace Phonon
 {
     namespace DS9
     {
-        VideoRendererDefault::~VideoRendererVMR9()
+        VideoRendererDefault::~VideoRendererDefault()
         {
         }
 
