@@ -41,6 +41,7 @@
 
 #include <objbase.h>
 #ifndef QFILEDIAG_WIN_P_H
+#define QFILEDIAG_WIN_P_H
 
 //these are the interface declarations needed for the file dialog on Vista and up
 

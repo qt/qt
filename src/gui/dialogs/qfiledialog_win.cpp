@@ -53,6 +53,7 @@
 #include <qdir.h>
 #include <qstringlist.h>
 #include <qlibrary.h>
+#include "qfiledialog_win_p.h"
 
 #ifndef QT_NO_THREAD
 #  include <private/qmutexpool_p.h>
@@ -62,7 +63,6 @@
 #include <commdlg.h>
 bool qt_priv_ptr_valid = false;
 #else
-#include "qfiledialog_win_p.h"
 //we have to declare them here because they're not present for all SDK/compilers
 static const IID   QT_IID_IFileOpenDialog  = {0xd57c7288, 0xd4ad, 0x4768, {0xbe, 0x02, 0x9d, 0x96, 0x95, 0x32, 0xd9, 0x60} };
 static const IID   QT_IID_IShellItem       = {0x43826d1e, 0xe718, 0x42ee, {0xbc, 0x55, 0xa1, 0xe2, 0x61, 0xc3, 0x7b, 0xfe} };
