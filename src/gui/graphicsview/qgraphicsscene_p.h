@@ -111,7 +111,6 @@ public:
     QVector<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
     bool needSortTopLevelItems;
-    bool unpolishedItemsModified;
     bool holesInTopLevelSiblingIndex;
     bool topLevelSequentialOrdering;
 
