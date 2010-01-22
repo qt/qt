@@ -7503,15 +7503,14 @@ QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
 {
     Q_ASSERT(device != 0);
 
-    if (*globalRedirectionAtomic() == 0)
-        return 0;
-
     if (device->devType() == QInternal::Widget) {
         const QWidgetPrivate *widgetPrivate = static_cast<const QWidget *>(device)->d_func();
         if (widgetPrivate->redirectDev)
             return widgetPrivate->redirected(offset);
     }
 
+    if (*globalRedirectionAtomic() == 0)
+        return 0;
 
     QMutexLocker locker(globalRedirectionsMutex());
     QPaintDeviceRedirectionList *redirections = globalRedirections();
