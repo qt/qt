@@ -429,12 +429,13 @@ void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::_q_polishItems()
 {
-    QSet<QGraphicsItem *>::Iterator it = unpolishedItems.begin();
+    QVector<QGraphicsItem *>::Iterator it = unpolishedItems.begin();
     const QVariant booleanTrueVariant(true);
     while (!unpolishedItems.isEmpty()) {
         QGraphicsItem *item = *it;
         it = unpolishedItems.erase(it);
         unpolishedItemsModified = false;
+        item->d_ptr->pendingPolish = false;
         if (!item->d_ptr->explicitlyHidden) {
             item->itemChange(QGraphicsItem::ItemVisibleChange, booleanTrueVariant);
             item->itemChange(QGraphicsItem::ItemVisibleHasChanged, booleanTrueVariant);
@@ -638,8 +639,14 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     selectedItems.remove(item);
     hoverItems.removeAll(item);
     cachedItemsUnderMouse.removeAll(item);
-    unpolishedItems.remove(item);
-    unpolishedItemsModified = true;
+    if (item->d_ptr->pendingPolish) {
+        const int unpolishedIndex = unpolishedItems.indexOf(item);
+        if (unpolishedIndex != -1) {
+            unpolishedItems.remove(unpolishedIndex);
+            unpolishedItemsModified = true;
+        }
+        item->d_ptr->pendingPolish = false;
+    }
     resetDirtyItem(item);
 
     //We remove all references of item from the sceneEventFilter arrays
@@ -2501,6 +2508,11 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         return;
     }
 
+    if (d->unpolishedItems.isEmpty())
+        QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+    d->unpolishedItems.append(item);
+    item->d_ptr->pendingPolish = true;
+
     // Detach this item from its parent if the parent's scene is different
     // from this scene.
     if (QGraphicsItem *itemParent = item->d_ptr->parent) {
@@ -2583,10 +2595,6 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     item->d_ptr->resolveFont(d->font.resolve());
     item->d_ptr->resolvePalette(d->palette.resolve());
 
-    if (d->unpolishedItems.isEmpty())
-        QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
-    d->unpolishedItems.insert(item);
-    d->unpolishedItemsModified = true;
 
     // Reenable selectionChanged() for individual items
     --d->selectionChanging;
