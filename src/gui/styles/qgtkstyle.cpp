@@ -1106,8 +1106,14 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         // ### Note: Ubuntulooks breaks when the proper widget is passed
         //           Murrine engine requires a widget not to get RGBA check - warnings
         GtkWidget *gtkCheckButton = d->gtkWidget(QLS("GtkCheckButton"));
-        gtkPainter.paintOption(gtkCheckButton , buttonRect, state, shadow, gtkRadioButton->style, QLS("radiobutton"));
-
+        QString key(QLS("radiobutton"));
+        if (option->state & State_HasFocus) { // Themes such as Nodoka check this flag
+            key += QLatin1Char('f');
+            GTK_WIDGET_SET_FLAGS(gtkCheckButton, GTK_HAS_FOCUS);
+        }
+        gtkPainter.paintOption(gtkCheckButton , buttonRect, state, shadow, gtkRadioButton->style, key);
+        if (option->state & State_HasFocus)
+            GTK_WIDGET_UNSET_FLAGS(gtkCheckButton, GTK_HAS_FOCUS);
     }
     break;
 
@@ -1128,6 +1134,11 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         int spacing;
 
         GtkWidget *gtkCheckButton = d->gtkWidget(QLS("GtkCheckButton"));
+        QString key(QLS("checkbutton"));
+        if (option->state & State_HasFocus) { // Themes such as Nodoka checks this flag
+            key += QLatin1Char('f');
+            GTK_WIDGET_SET_FLAGS(gtkCheckButton, GTK_HAS_FOCUS);
+        }
 
         // Some styles such as aero-clone assume they can paint in the spacing area
         gtkPainter.setClipRect(option->rect);
@@ -1137,7 +1148,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         QRect checkRect = option->rect.adjusted(spacing, spacing, -spacing, -spacing);
 
         gtkPainter.paintCheckbox(gtkCheckButton, checkRect, state, shadow, gtkCheckButton->style,
-                                 QLS("checkbutton"));
+                                 key);
+        if (option->state & State_HasFocus)
+            GTK_WIDGET_UNSET_FLAGS(gtkCheckButton, GTK_HAS_FOCUS);
+
     }
     break;
 

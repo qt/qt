@@ -393,4 +393,5 @@ EXPORTS
 	_ZNK23QScriptDeclarativeClass7contextEv @ 392 NONAME
 	_ZTI23QScriptDeclarativeClass @ 393 NONAME
 	_ZTV23QScriptDeclarativeClass @ 394 NONAME
+	_ZNK23QScriptDeclarativeClass9isQObjectEv @ 395 NONAME
 

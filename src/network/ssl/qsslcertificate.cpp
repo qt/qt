@@ -696,11 +696,11 @@ QSslCertificate QSslCertificatePrivate::QSslCertificate_from_X509(X509 *x509)
 
 static bool matchLineFeed(const QByteArray &pem, int *offset)
 {
-    char ch = pem.at(*offset);
+    char ch;
 
     // ignore extra whitespace at the end of the line
-    while (ch == ' ' && *offset < pem.size())
-        ch = pem.at(++*offset);
+    while (*offset < pem.size() && (ch = pem.at(*offset)) == ' ')
+        ++*offset;
 
     if (ch == '\n') {
         *offset += 1;
@@ -732,7 +732,7 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromPem(const QByteAr
             break;
 
         offset = endPos + sizeof(ENDCERTSTRING) - 1;
-        if (!matchLineFeed(pem, &offset))
+        if (offset < pem.size() && !matchLineFeed(pem, &offset))
             break;
 
         QByteArray decoded = QByteArray::fromBase64(

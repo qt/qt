@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "symmake.h"
-#include "initprojectdeploy_symbian.h"
 
 #include <qstring.h>
 #include <qhash.h>
@@ -62,6 +61,7 @@
 #define BLD_INF_TAG_MMPFILES "prj_mmpfiles"
 #define BLD_INF_TAG_TESTMMPFILES "prj_testmmpfiles"
 #define BLD_INF_TAG_EXTENSIONS "prj_extensions"
+#define BLD_INF_TAG_EXPORTS "prj_exports"
 
 #define RSS_RULES "RSS_RULES"
 #define RSS_RULES_BASE "RSS_RULES."
@@ -202,6 +202,8 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
     // Generate pkg files if there are any actual files to deploy
     bool generatePkg = false;
+    DeploymentList depList;
+
     if (targetType == TypeExe) {
         generatePkg = true;
     } else {
@@ -214,10 +216,10 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if (generatePkg) {
-        generatePkgFile(iconFile);
+        generatePkgFile(iconFile, depList);
     }
 
-    writeBldInfContent(t, generatePkg, iconFile);
+    writeBldInfContent(t, generatePkg, iconFile, depList);
 
     // Generate empty wrapper makefile here, because wrapper makefile must exist before writeMkFile,
     // but all required data is not yet available.
@@ -272,7 +274,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     return true;
 }
 
-void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
+void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, DeploymentList &depList)
 {
     QString pkgFilename = QString("%1_template.%2")
                           .arg(fixedTarget)
@@ -396,7 +398,6 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
     }
 
     // deploy any additional DEPLOYMENT  files
-    DeploymentList depList;
     QString remoteTestPath;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
 
@@ -1171,7 +1172,7 @@ void SymbianMakefileGenerator::writeMmpFileRulesPart(QTextStream& t)
     }
 }
 
-void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension, const QString &iconFile)
+void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension, const QString &iconFile, DeploymentList &depList)
 {
     // Read user defined bld inf rules
 
@@ -1299,6 +1300,25 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     foreach(QString item, userItems)
         t << item << endl;
     userBldInfRules.remove(BLD_INF_TAG_EXTENSIONS);
+
+    t << endl << BLD_INF_TAG_EXPORTS << endl << endl;
+
+    // Generate export rules
+
+    // Export any deployed plugin stubs under /epoc32/data/z to support ROM builds
+    for (int i = 0; i < depList.size(); ++i)  {
+        int index = depList.at(i).from.indexOf(PLUGIN_STUB_DIR);
+        if (index != -1) {
+            t << QString("%1 /epoc32/data/z%2")
+                .arg(QString(depList.at(i).from).mid(index).replace('\\','/'))
+                .arg(QString(depList.at(i).to).mid(2).replace('\\','/')) << endl;
+        }
+    }
+
+    userItems = userBldInfRules.value(BLD_INF_TAG_EXPORTS);
+    foreach(QString item, userItems)
+        t << item << endl;
+    userBldInfRules.remove(BLD_INF_TAG_EXPORTS);
 
     // Add rest of the user defined content
 

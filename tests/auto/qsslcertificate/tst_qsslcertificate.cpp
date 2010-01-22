@@ -543,6 +543,9 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"d.*/c.*.pem\" wildcard der") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
 
     QTest::newRow("trailing-whitespace") << QString("more-certificates/trailing-whitespace.pem") << int(QRegExp::FixedString) << true << 1;
+    QTest::newRow("no-ending-newline") << QString("more-certificates/no-ending-newline.pem") << int(QRegExp::FixedString) << true << 1;
+    QTest::newRow("malformed-just-begin") << QString("more-certificates/malformed-just-begin.pem") << int(QRegExp::FixedString) << true << 0;
+    QTest::newRow("malformed-just-begin-no-newline") << QString("more-certificates/malformed-just-begin-no-newline.pem") << int(QRegExp::FixedString) << true << 0;
 }
 
 void tst_QSslCertificate::fromPath()

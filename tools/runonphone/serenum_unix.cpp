@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,50 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef QHELPSEARCHQUERYWIDGET_H
-#define QHELPSEARCHQUERYWIDGET_H
+#include "serenum.h"
+#include <QByteArray>
+#include <QString>
+#include <QDebug>
+#include <QFileInfo>
+#include <QDir>
 
-#include <QtHelp/qhelp_global.h>
-#include <QtHelp/qhelpsearchengine.h>
-
-#include <QtCore/QMap>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-
-#include <QtGui/QWidget>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Help)
-
-class QFocusEvent;
-class QHelpSearchQueryWidgetPrivate;
-
-class QHELP_EXPORT QHelpSearchQueryWidget : public QWidget
+QList<SerialPortId> enumerateSerialPorts()
 {
-    Q_OBJECT
+    QList<SerialPortId> list;
+    QDir dir("/dev/serial/by-id/");
+    QFileInfoList ports(dir.entryInfoList());
+    foreach(QFileInfo info, ports) {
+        if (!info.isDir()) {
+            SerialPortId id;
+            id.friendlyName = info.fileName();
+            id.portName = info.canonicalFilePath();
+            list << id;
+        }
+    }
+    return list;
+}
 
-public:
-    QHelpSearchQueryWidget(QWidget *parent = 0);
-    ~QHelpSearchQueryWidget();
-
-    QList<QHelpSearchQuery> query() const;
-
-Q_SIGNALS:
-    void search();
-
-private:
-    virtual void focusInEvent(QFocusEvent *focusEvent);
-    virtual void changeEvent(QEvent *event);
-
-private:
-    QHelpSearchQueryWidgetPrivate *d;
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif  // QHELPSEARCHQUERYWIDGET_H

@@ -872,7 +872,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         break;
     }
     QPointer<QObject> that = connection;
-    QString errorString = connection->d_func()->errorDetail(errorCode, socket);
+    QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
     if (send2Reply) {
         if (reply) {
             reply->d_func()->errorString = errorString;
