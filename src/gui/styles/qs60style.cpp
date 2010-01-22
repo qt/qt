@@ -3209,11 +3209,13 @@ bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush 
     const QPaintDevice *target = painter->device();
     if (target->devType() == QInternal::Widget) {
         const QWidget *widget = static_cast<const QWidget *>(target);
-        const QVector<QRect> &rects = rgn.rects();
-        for (int i = 0; i < rects.size(); ++i) {
-            const QRect rect(rects.at(i));
-            painter->drawPixmap(rect.topLeft(), backgroundTexture,
-                                rect.translated(qt_s60_fill_background_offset(widget)));
+        if (!widget->testAttribute(Qt::WA_TranslucentBackground)) {
+            const QVector<QRect> &rects = rgn.rects();
+            for (int i = 0; i < rects.size(); ++i) {
+                const QRect rect(rects.at(i));
+                painter->drawPixmap(rect.topLeft(), backgroundTexture,
+                                    rect.translated(qt_s60_fill_background_offset(widget)));
+            }
         }
     }
     return true;
