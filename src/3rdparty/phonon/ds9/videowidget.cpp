@@ -24,10 +24,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mediaobject.h"
 
-#include "videorenderer_vmr9.h"
-
 #ifndef Q_OS_WINCE
 #include "videorenderer_evr.h"
+#include "videorenderer_vmr9.h"
 #else
 #include "videorenderer_default.h"
 #endif
@@ -370,7 +369,7 @@ namespace Phonon
                         }
                     }
 #else
-                    renderer = new VideoRendererVMR9(m_widget);
+                    renderer = new VideoRendererDefault(m_widget);
                     if (renderer->getFilter() == 0) {
                         //instanciating the renderer might fail
                         m_noNativeRendererSupported = true;
