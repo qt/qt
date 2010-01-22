@@ -178,6 +178,7 @@ public:
         sequentialOrdering(1),
         updateDueToGraphicsEffect(0),
         scenePosDescendants(0),
+        pendingPolish(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -486,6 +487,7 @@ public:
     quint32 sequentialOrdering : 1;
     quint32 updateDueToGraphicsEffect : 1;
     quint32 scenePosDescendants : 1;
+    quint32 pendingPolish : 1;
 
     // Optional stacking order
     int globalStackingOrder;

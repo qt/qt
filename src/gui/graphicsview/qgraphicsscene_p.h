@@ -108,7 +108,7 @@ public:
     QPainterPath selectionArea;
     int selectionChanging;
     QSet<QGraphicsItem *> selectedItems;
-    QSet<QGraphicsItem *> unpolishedItems;
+    QVector<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
     bool needSortTopLevelItems;
     bool unpolishedItemsModified;
