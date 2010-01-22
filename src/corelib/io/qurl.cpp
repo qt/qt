@@ -3241,8 +3241,11 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
     while (1) {
         int idx = nextDotDelimiter(domain, lastIdx);
         int labelLength = idx - lastIdx;
-        if (labelLength == 0)
+        if (labelLength == 0) {
+            if (idx == domain.length())
+                break;
             return QString(); // two delimiters in a row -- empty label not allowed
+        }
 
         // RFC 3490 says, about the ToASCII operation:
         //   3. If the UseSTD3ASCIIRules flag is set, then perform these checks:
@@ -5932,7 +5935,7 @@ void QUrl::detach()
 */
 bool QUrl::isDetached() const
 {
-    return d && d->ref == 1;
+    return !d || d->ref == 1;
 }
 
 

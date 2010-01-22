@@ -1374,9 +1374,6 @@ void QPainterPrivate::updateState(QPainterState *newState)
     opacity with non-smooth transformation mode
     (\c QPainter::SmoothPixmapTransform not enabled as a render hint).
 
-    \o Text drawing with regular font sizes with simple
-    transformations with solid colors using no or 8-bit antialiasing.
-
     \o Rectangle fills with solid color, two-color linear gradients
     and simple transforms.
 

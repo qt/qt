@@ -2997,9 +2997,16 @@ void QGraphicsItem::setActive(bool active)
 */
 bool QGraphicsItem::hasFocus() const
 {
+    if (!d_ptr->scene || !d_ptr->scene->isActive())
+        return false;
+
     if (d_ptr->focusProxy)
         return d_ptr->focusProxy->hasFocus();
-    return isActive() && (d_ptr->scene && d_ptr->scene->focusItem() == this);
+
+    if (d_ptr->scene->d_func()->focusItem != this)
+        return false;
+
+    return panel() == d_ptr->scene->d_func()->activePanel;
 }
 
 /*!
