@@ -1121,7 +1121,7 @@ CentralWidget::setSourceFromSearch(const QUrl &url)
     TRACE_OBJ
     setSource(url);
 #if defined(QT_NO_WEBKIT)
-    highlightSearchTerms()
+    highlightSearchTerms();
 #else
     connect(currentHelpViewer(), SIGNAL(loadFinished(bool)), this,
         SLOT(highlightSearchTerms()));
@@ -1134,7 +1134,7 @@ CentralWidget::setSourceFromSearchInNewTab(const QUrl &url)
     TRACE_OBJ
     setSourceInNewTab(url);
 #if defined(QT_NO_WEBKIT)
-    highlightSearchTerms()
+    highlightSearchTerms();
 #else
     connect(currentHelpViewer(), SIGNAL(loadFinished(bool)), this,
         SLOT(highlightSearchTerms()));
