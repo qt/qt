@@ -73,7 +73,7 @@ protected:
     int qt_metacall(QMetaObject::Call, int, void **);
 
 private:
-    struct Binding : public QmlAbstractBinding {
+    struct Binding : public QmlAbstractBinding, public QmlDelayedError {
         Binding() : enabled(false), updating(0), property(0),
                     scope(0), target(0), parent(0) {}
 

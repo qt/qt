@@ -99,7 +99,7 @@ class QmlTypeNameCache;
 class QmlComponentAttached;
 class QmlListScriptClass;
 class QmlCleanup;
-class QmlBindingData;
+class QmlDelayedError;
 class QmlWorkerScriptEngine;
 class QmlGlobalScriptClass;
 
@@ -167,7 +167,7 @@ public:
     QmlCleanup *cleanup;
 
     // Bindings that have had errors during startup
-    QmlBindingData *erroredBindings;
+    QmlDelayedError *erroredBindings;
     int inProgressCreations;
 
     QmlScriptEngine scriptEngine;

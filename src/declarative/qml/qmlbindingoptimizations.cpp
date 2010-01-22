@@ -159,14 +159,14 @@ void QmlOptimizedBindings::run(Binding *binding)
         vt->read(binding->target, binding->property & 0xFFFF);
 
         QObject *target = vt;
-        QmlBindingVME::run(m_program, binding->index, &m_config, cp, 
-                           &binding->scope, &target);
+        QmlBindingVME::run(m_program, binding->index, &m_config, cp, binding,
+                           binding->scope, target);
 
         vt->write(binding->target, binding->property & 0xFFFF, 
                   QmlMetaProperty::DontRemoveBinding);
     } else {
-        QmlBindingVME::run(m_program, binding->index, &m_config, cp, 
-                           &binding->scope, &binding->target);
+        QmlBindingVME::run(m_program, binding->index, &m_config, cp, binding,
+                           binding->scope, binding->target);
     }
 }
 

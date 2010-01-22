@@ -56,6 +56,20 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
+bool QmlDelayedError::addError(QmlEnginePrivate *e)
+{
+    if (!e || prevError) return false;
+
+    if (e->inProgressCreations == 0) return false; // Not in construction
+
+    prevError = &e->erroredBindings;
+    nextError = e->erroredBindings;
+    e->erroredBindings = this;
+    if (nextError) nextError->prevError = &nextError;
+
+    return true;
+}
+
 QmlExpressionData::QmlExpressionData()
 : expressionFunctionValid(false), expressionRewritten(false), me(0), 
   trackChange(true), isShared(false), line(-1), guardList(0), guardListLength(0)

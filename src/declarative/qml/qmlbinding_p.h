@@ -72,10 +72,6 @@ public:
     QmlMetaProperty property;
 
     virtual void refresh();
-    void removeError();
-    bool addError();
-    QmlBindingData  *nextError;
-    QmlBindingData **prevError;
 };
 
 class QmlBindingPrivate : public QmlExpressionPrivate

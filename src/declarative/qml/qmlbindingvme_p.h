@@ -84,8 +84,8 @@ public:
     static void init(const char *program, Config *config, 
                      quint32 **sigTable, quint32 *bindingCount);
     static void run(const char *program, int instr,
-                    Config *config, QmlContextPrivate *context, 
-                    QObject **scopes, QObject **outputs);
+                    Config *config, QmlContextPrivate *context, QmlDelayedError *error, 
+                    QObject *scope, QObject *output);
     static void dump(const char *);
 };
 
