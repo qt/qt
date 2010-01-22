@@ -3242,7 +3242,7 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
         int idx = nextDotDelimiter(domain, lastIdx);
         int labelLength = idx - lastIdx;
         if (labelLength == 0) {
-            if (idx == domain.length() && idx > 0)
+            if (idx == domain.length())
                 break;
             return QString(); // two delimiters in a row -- empty label not allowed
         }
