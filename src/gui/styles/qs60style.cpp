@@ -68,6 +68,7 @@
 #include "qtoolbutton.h"
 #include "qfocusframe.h"
 #include "qformlayout.h"
+#include "qprogressbar.h"
 
 #include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
