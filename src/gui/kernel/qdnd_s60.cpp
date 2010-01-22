@@ -52,7 +52,7 @@
 #include "qdnd_p.h"
 #include "qt_s60_p.h"
 
-#include <COECNTRL.H>
+#include <coecntrl.h>
 // pointer cursor
 #include <w32std.h>
 #include <gdi.h>
