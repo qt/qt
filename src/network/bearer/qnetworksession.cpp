@@ -240,6 +240,8 @@ QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, 
             connect(d, SIGNAL(stateChanged(QNetworkSession::State)),
                     this, SIGNAL(stateChanged(QNetworkSession::State)));
             connect(d, SIGNAL(closed()), this, SIGNAL(closed()));
+            connect(d, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
+                    this, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)));
             connect(d, SIGNAL(newConfigurationActivated()),
                     this, SIGNAL(newConfigurationActivated()));
             break;
