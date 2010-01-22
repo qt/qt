@@ -71,6 +71,7 @@
 #  include <private/qcoefepinputcontext_p.h>
 # endif
 # include <private/qs60mainapplication_p.h>
+# include <centralrepository.h>
 #endif
 
 #include "private/qstylesheetstyle_p.h"
@@ -1203,6 +1204,24 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         S60->hasTouchscreen = true;
         S60->virtualMouseRequired = false;
     }
+
+    S60->avkonComponentsSupportTransparency = false;
+
+#ifdef Q_WS_S60
+    TUid KCRUidAvkon = { 0x101F876E };
+    TUint32 KAknAvkonTransparencyEnabled = 0x0000000D;
+
+    CRepository* repository = 0;
+    TRAP(err, repository = CRepository::NewL(KCRUidAvkon));
+
+    if(err == KErrNone) {
+        TInt value = 0;
+        err = repository->Get(KAknAvkonTransparencyEnabled, value);
+        if(err == KErrNone) {
+            S60->avkonComponentsSupportTransparency = (value==1) ? true : false;
+        }
+    }
+#endif    
 
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;

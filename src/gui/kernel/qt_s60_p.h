@@ -74,7 +74,6 @@
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
 #include <aknpopupfader.h>          // MAknFadedComponent and TAknPopupFader
-#include <centralrepository.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -122,6 +121,7 @@ public:
     int virtualMouseRequired : 1;
     int qtOwnsS60Environment : 1;
     int supportsPremultipliedAlpha : 1;
+    int avkonComponentsSupportTransparency : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
     static inline RWsSession& wsSession();
@@ -134,14 +134,8 @@ public:
     static inline CAknTitlePane* titlePane();
     static inline CAknContextPane* contextPane();
     static inline CEikButtonGroupContainer* buttonGroupContainer();
-    static inline bool avkonComponentsSupportTransparency();
 
     TTrapHandler *s60InstalledTrapHandler;
-
-private:
-
-    bool transparencyChecked;
-    bool transparencyEnabled;
 #endif
 };
 
@@ -311,30 +305,6 @@ inline CAknContextPane* QS60Data::contextPane()
 inline CEikButtonGroupContainer* QS60Data::buttonGroupContainer()
 {
     return CEikonEnv::Static()->AppUiFactory()->Cba();
-}
-
-inline bool QS60Data::avkonComponentsSupportTransparency()
-{
-    if(!S60->transparencyChecked) {
-        S60->transparencyChecked = true;
-        S60->transparencyEnabled = false;
-
-        TUid KCRUidAvkon = { 0x101F876E };
-        TUint32 KAknAvkonTransparencyEnabled = 0x0000000D;
-
-        CRepository* repository = 0;
-        TRAPD(err, repository = CRepository::NewL(KCRUidAvkon));
-
-        if(err == KErrNone) {
-            TInt value = 0;
-            err = repository->Get(KAknAvkonTransparencyEnabled, value);
-            if(err == KErrNone) {
-                S60->transparencyEnabled = (value==1) ? true : false;
-            }
-        }
-    }
-
-    return S60->transparencyEnabled;
 }
 #endif // Q_WS_S60
 
