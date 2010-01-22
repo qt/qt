@@ -59,6 +59,7 @@
 #endif
 
 #ifdef Q_WS_WINCE
+#include <shlobj.h>
 #include <commdlg.h>
 bool qt_priv_ptr_valid = false;
 #else
