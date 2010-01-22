@@ -119,7 +119,8 @@ struct Library
     uint dataseg;
 };
 
-struct TrkAppVersion {
+struct TrkAppVersion
+{
     TrkAppVersion();
     void reset();    
 
@@ -152,6 +153,10 @@ struct Session
 
     typedef QList<Library> Libraries;
     Libraries libraries;
+
+    typedef uint Thread;
+    typedef QList<Thread> Threads;
+    Threads threads;
 
     // Gdb request
     uint currentThread;

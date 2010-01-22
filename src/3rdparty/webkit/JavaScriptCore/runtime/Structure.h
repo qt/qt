@@ -45,12 +45,6 @@
 #define DUMP_PROPERTYMAP_STATS 0
 #endif
 
-#if COMPILER(RVCT)
-#pragma arm
-#pragma Otime
-#pragma O3
-#endif
-
 namespace JSC {
 
     class MarkStack;
