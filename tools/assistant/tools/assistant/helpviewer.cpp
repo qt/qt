@@ -141,12 +141,12 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
     if (mimeType.endsWith(QLatin1String(".svg"))
         || mimeType.endsWith(QLatin1String(".svgz"))) {
             mimeType = QLatin1String("image/svg+xml");
-    }
-    else if (mimeType.endsWith(QLatin1String(".css"))) {
+    } else if (mimeType.endsWith(QLatin1String(".css"))) {
         mimeType = QLatin1String("text/css");
-    }
-    else if (mimeType.endsWith(QLatin1String(".js"))) {
+    } else if (mimeType.endsWith(QLatin1String(".js"))) {
         mimeType = QLatin1String("text/javascript");
+    } else if (mimeType.endsWith(QLatin1String(".txt"))) {
+        mimeType = QLatin1String("text/plain");
     } else {
         mimeType = QLatin1String("text/html");
     }
