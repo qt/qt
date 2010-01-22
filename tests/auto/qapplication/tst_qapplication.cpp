@@ -706,36 +706,6 @@ void tst_QApplication::quitOnLastWindowClosed()
         QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
         QSignalSpy spy2(&timer, SIGNAL(timeout()));
 
-        QPointer<QMainWindow> mainWindow = new QMainWindow;
-        QPointer<QWidget> invisibleTopLevelWidget = new QWidget;
-        invisibleTopLevelWidget->setAttribute(Qt::WA_DontShowOnScreen);
-
-        QVERIFY(app.quitOnLastWindowClosed());
-        QVERIFY(mainWindow->testAttribute(Qt::WA_QuitOnClose));
-        QVERIFY(invisibleTopLevelWidget->testAttribute(Qt::WA_QuitOnClose));
-        QVERIFY(invisibleTopLevelWidget->testAttribute(Qt::WA_DontShowOnScreen));
-
-        mainWindow->show();
-        invisibleTopLevelWidget->show();
-
-        timer.start();
-        QTimer::singleShot(1000, mainWindow, SLOT(close())); // This should quit the application
-        QTimer::singleShot(2000, &app, SLOT(quit()));        // This makes sure we quit even if it didn't
-
-        app.exec();
-
-        QCOMPARE(spy.count(), 1);
-        QVERIFY(spy2.count() < 15);      // Should be around 10 if closing caused the quit
-    }
-    {
-        int argc = 0;
-        QApplication app(argc, 0, QApplication::GuiServer);
-        QTimer timer;
-        timer.setInterval(100);
-
-        QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
-        QSignalSpy spy2(&timer, SIGNAL(timeout()));
-
         QPointer<CloseEventTestWindow> mainWindow = new CloseEventTestWindow;
 
         QVERIFY(app.quitOnLastWindowClosed());
