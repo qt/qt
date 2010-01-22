@@ -30,7 +30,7 @@ contains( CONFIG, no_icon ) {
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
         symbian-abld {
             #Makefile: requires paths with backslash
-            ICON = $$replace( ICON, /, \\)
+            contains(QMAKE_HOST.os, "Windows"):ICON = $$replace(ICON, /, \\)
 
             # Extra compiler rules for mifconv
             mifconv.output = ${ZDIR}$$APP_RESOURCE_DIR/$${baseTarget}.mif
@@ -48,4 +48,3 @@ contains( CONFIG, no_icon ) {
         RSS_RULES.icon_file = $$APP_RESOURCE_DIR/$${baseTarget}.mif
     }
 }
-
