@@ -24,9 +24,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mediaobject.h"
 
+#include "videorenderer_vmr9.h"
+
 #ifndef Q_OS_WINCE
 #include "videorenderer_evr.h"
-#include "videorenderer_vmr9.h"
 #else
 #include "videorenderer_default.h"
 #endif
