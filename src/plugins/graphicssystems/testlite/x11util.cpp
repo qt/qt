@@ -377,6 +377,45 @@ void MyDisplay::eventDispatcher()
     }
 }
 
+
+QImage MyDisplay::grabWindow(Window window, int x, int y, int w, int h)
+{
+    if (w == 0 || h ==0)
+        return QImage();
+
+    //WinId 0 means the desktop widget
+    if (!window)
+        window = rootWindow();
+
+    XWindowAttributes window_attr;
+    if (!XGetWindowAttributes(display, window, &window_attr))
+        return QImage();
+
+    if (w < 0)
+        w = window_attr.width - x;
+    if (h < 0)
+        h = window_attr.height - y;
+
+    // Ideally, we should also limit ourselves to the screen area, but the Qt docs say
+    // that it's "unsafe" to go outside the screen, so we can ignore that problem.
+
+    //We're definitely not optimizing for speed...
+    XImage *xi = XGetImage(display, window, x, y, w, h, AllPlanes, ZPixmap);
+
+    if (!xi)
+        return QImage();
+
+    //taking a copy to make sure we have ownership -- not fast
+    QImage result = QImage( (uchar*) xi->data, xi->width, xi->height, xi->bytes_per_line, QImage::Format_RGB32 ).copy();
+
+    XDestroyImage(xi);
+
+    return result;
+}
+
+
+
+
 struct MyShmImageInfo {
     MyShmImageInfo(Display *xdisplay) :  image(0), display(xdisplay) {}
     ~MyShmImageInfo() { destroy(); }
@@ -477,13 +516,14 @@ void MyWindow::closeEvent()
 
 void MyWindow::paintEvent()
 {
-    Visual *visual = DefaultVisual(xd->display, xd->screen);
 #ifdef MYX11_DEBUG
     qDebug() << "MyWindow::paintEvent" << shm_img.size();
 #endif
 #ifdef DONT_USE_MIT_SHM
     // just convert the image every time...
     if (!shm_img.isNull()) {
+        Visual *visual = DefaultVisual(xd->display, xd->screen);
+
         QImage image = shm_img;
         //img.convertToFormat(
         XImage *xi = XCreateImage(xd->display, visual, 24, ZPixmap,

@@ -112,8 +112,8 @@ QWindowSurface *QTestLiteGraphicsSystem::createWindowSurface(QWidget *widget) co
 
 QPixmap QTestLiteGraphicsSystem::grabWindow(WId window, int x, int y, int width, int height) const
 {
-    qDebug() << "grabWindow" << hex << window << dec<< x << y << width << height;
-    return QPixmap();
+    QImage img = xd->grabWindow(window, x, y, width, height);
+    return QPixmap::fromImage(img);
 }
 
 
