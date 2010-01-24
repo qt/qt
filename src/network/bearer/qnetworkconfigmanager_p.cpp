@@ -212,42 +212,24 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 }
 
 /*!
-    Returns the first active configuration found, if one exists; otherwise returns the first
-    discovered configuration found, if one exists; otherwise returns an empty configuration.
+    Returns the default configuration of the first plugin, if one exists; otherwise returns an
+    invalid configuration.
 
     \internal
 */
 QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration()
 {
-    QNetworkConfigurationPrivatePointer firstActive;
-    QNetworkConfigurationPrivatePointer firstDiscovered;
-
     foreach (QNetworkSessionEngine *engine, sessionEngines) {
-        QHash<QString, QNetworkConfigurationPrivatePointer>::const_iterator i =
-                engine->accessPointConfigurations.constBegin();
+        QNetworkConfigurationPrivatePointer ptr = engine->defaultConfiguration();
 
-        while (i != engine->accessPointConfigurations.constEnd()) {
-            QNetworkConfigurationPrivatePointer priv = i.value();
-
-            if (!firstActive && priv->isValid &&
-                (priv->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active)
-                firstActive = priv;
-            if (!firstDiscovered && priv->isValid &&
-                (priv->state & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered)
-                firstDiscovered = priv;
-
-            ++i;
+        if (ptr) {
+            QNetworkConfiguration config;
+            config.d = ptr;
+            return config;
         }
     }
 
-    QNetworkConfiguration item;
-
-    if (firstActive)
-        item.d = firstActive;
-    else if (firstDiscovered)
-        item.d = firstDiscovered;
-
-    return item;
+    return QNetworkConfiguration();
 }
 
 void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()

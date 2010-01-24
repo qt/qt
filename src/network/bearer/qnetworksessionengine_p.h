@@ -99,6 +99,8 @@ public:
 
     virtual QNetworkSessionPrivate *createSessionBackend() = 0;
 
+    virtual QNetworkConfigurationPrivatePointer defaultConfiguration() = 0;
+
 public:
     //this table contains an up to date list of all configs at any time.
     //it must be updated if configurations change, are added/removed or

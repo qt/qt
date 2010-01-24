@@ -76,6 +76,8 @@ public:
 
     QNetworkSessionPrivate *createSessionBackend();
 
+    QNetworkConfigurationPrivatePointer defaultConfiguration();
+
 private Q_SLOTS:
     void doRequestUpdate();
 
