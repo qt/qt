@@ -1199,8 +1199,10 @@ void QNativeSocketEnginePrivate::nativeClose()
 #if defined (QTCPSOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeClose()");
 #endif
-    linger l = {1, 0};
-    ::setsockopt(socketDescriptor, SOL_SOCKET, SO_DONTLINGER, (char*)&l, sizeof(l));
+    // We were doing a setsockopt here before with SO_DONTLINGER. (However with kind of wrong
+    // usage of parameters, it wants a BOOL but we used a struct and pretended it to be bool).
+    // We don't think setting this option should be done here, if a user wants it she/he can
+     // do it manually with socketDescriptor()/setSocketDescriptor();
     ::closesocket(socketDescriptor);
 }
 
