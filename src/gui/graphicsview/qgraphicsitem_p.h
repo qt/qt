@@ -179,6 +179,7 @@ public:
         updateDueToGraphicsEffect(0),
         scenePosDescendants(0),
         pendingPolish(0),
+        mayHaveChildWithGraphicsEffect(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -196,6 +197,7 @@ public:
         return item->d_ptr.data();
     }
 
+    void updateChildWithGraphicsEffectFlagRecursively();
     void updateAncestorFlag(QGraphicsItem::GraphicsItemFlag childFlag,
                             AncestorFlag flag = NoFlag, bool enabled = false, bool root = true);
     void updateAncestorFlags();
@@ -492,6 +494,7 @@ public:
     quint32 updateDueToGraphicsEffect : 1;
     quint32 scenePosDescendants : 1;
     quint32 pendingPolish : 1;
+    quint32 mayHaveChildWithGraphicsEffect : 1;
 
     // Optional stacking order
     int globalStackingOrder;
