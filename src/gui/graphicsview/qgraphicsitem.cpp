@@ -1075,6 +1075,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         p = p->d_ptr->parent;
     }
 
+    // Update graphics effect optimization flag
+    if (newParent && (graphicsEffect || mayHaveChildWithGraphicsEffect))
+        newParent->d_ptr->updateChildWithGraphicsEffectFlagRecursively();
+
     // Update focus scope item ptr in new scope.
     QGraphicsItem *newFocusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
     if (newFocusScopeItem && newParent) {
@@ -2612,6 +2616,8 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
     if (d_ptr->graphicsEffect) {
         delete d_ptr->graphicsEffect;
         d_ptr->graphicsEffect = 0;
+    } else if (d_ptr->parent) {
+        d_ptr->parent->d_ptr->updateChildWithGraphicsEffectFlagRecursively();
     }
 
     if (effect) {
@@ -2624,6 +2630,19 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
     }
 }
 #endif //QT_NO_GRAPHICSEFFECT
+
+void QGraphicsItemPrivate::updateChildWithGraphicsEffectFlagRecursively()
+{
+#ifndef QT_NO_GRAPHICSEFFECT
+    QGraphicsItemPrivate *itemPrivate = this;
+    do {
+        // parent chain already notified?
+        if (itemPrivate->mayHaveChildWithGraphicsEffect)
+            return;
+        itemPrivate->mayHaveChildWithGraphicsEffect = 1;
+    } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
+#endif
+}
 
 /*!
     \internal
@@ -5092,6 +5111,9 @@ void QGraphicsItemPrivate::invalidateParentGraphicsEffectsRecursively()
 
 void QGraphicsItemPrivate::invalidateChildGraphicsEffectsRecursively(QGraphicsItemPrivate::InvalidateReason reason)
 {
+    if (!mayHaveChildWithGraphicsEffect)
+        return;
+
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItemPrivate *childPrivate = children.at(i)->d_ptr.data();
         if (reason == OpacityChanged && (childPrivate->flags & QGraphicsItem::ItemIgnoresParentOpacity))
