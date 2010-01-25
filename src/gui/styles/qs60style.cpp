@@ -68,6 +68,8 @@
 #include "qtoolbutton.h"
 #include "qfocusframe.h"
 #include "qformlayout.h"
+#include "qradiobutton.h"
+#include "qcheckbox.h"
 #include "qprogressbar.h"
 
 #include "private/qtoolbarextension_p.h"
@@ -780,6 +782,11 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     QApplication::setPalette(widgetPalette, "QComboBox");
     widgetPalette = *palette;
 
+    widgetPalette.setColor(QPalette::WindowText, s60Color(QS60StyleEnums::CL_QsnTextColors, 7, 0));
+    QApplication::setPalette(widgetPalette, "QRadioButton");
+    QApplication::setPalette(widgetPalette, "QCheckBox");
+    widgetPalette = *palette;
+
     widgetPalette.setColor(QPalette::WindowText, mainAreaTextColor);
     widgetPalette.setColor(QPalette::Button, QApplication::palette().color(QPalette::Button));
     widgetPalette.setColor(QPalette::Dark, mainAreaTextColor.darker());
@@ -1254,6 +1261,31 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     Q_D(const QS60Style);
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     switch (element) {
+        case CE_CheckBox:
+        case CE_RadioButton:
+            if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+                bool isRadio = (element == CE_RadioButton);
+                // Highlight needs to be drawn first, as it goes "underneath" the text and indicator.
+                if (btn->state & State_HasFocus) {
+                    QStyleOptionFocusRect fropt;
+                    fropt.QStyleOption::operator=(*btn);
+                    fropt.rect = subElementRect(isRadio ? SE_RadioButtonFocusRect
+                                                        : SE_CheckBoxFocusRect, btn, widget);
+                    drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                }
+                QStyleOptionButton subopt = *btn;
+
+                subopt.rect = subElementRect(isRadio ? SE_RadioButtonIndicator
+                                                     : SE_CheckBoxIndicator, btn, widget);
+                drawPrimitive(isRadio ? PE_IndicatorRadioButton : PE_IndicatorCheckBox,
+                              &subopt, painter, widget);
+                subopt.rect = subElementRect(isRadio ? SE_RadioButtonContents
+                                                     : SE_CheckBoxContents, btn, widget);
+
+                drawControl(isRadio ? CE_RadioButtonLabel : CE_CheckBoxLabel, &subopt, painter, widget);
+            }
+            break;
+
     case CE_PushButton:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
 
@@ -1997,6 +2029,17 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     bool commonStyleDraws = false;
 
     switch (element) {
+        case PE_FrameFocusRect: {
+            //Draw themed highlight to radiobuttons and checkboxes.
+            //For other widgets skip, unless palette has been modified. In that case, draw with commonstyle.
+            if (option->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color())
+                if ((qstyleoption_cast<const QStyleOptionFocusRect *>(option) &&
+                    (qobject_cast<const QRadioButton *>(widget) || qobject_cast<const QCheckBox *>(widget))))
+                        QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
+            else
+                commonStyleDraws = true;
+            }
+        break;
 #ifndef QT_NO_LINEEDIT
     case PE_PanelLineEdit:
         if (const QStyleOptionFrame *lineEdit = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
@@ -2687,6 +2730,9 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
 {
     QRect ret;
     switch (element) {
+        case SE_RadioButtonFocusRect:
+            ret = opt->rect;
+            break;
         case SE_LineEditContents: {
                 // in S60 the input text box doesn't start from line Edit's TL, but
                 // a bit indented.
@@ -2836,6 +2882,25 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     ret.setWidth(ret.width() - QS60StylePrivate::pixelMetric(PM_Custom_ThinLineWidth));
                 }
             ret = visualRect(opt->direction, opt->rect, ret);
+            break;
+        case SE_RadioButtonIndicator: {
+                const int height = pixelMetric(PM_ExclusiveIndicatorHeight, opt, widget);
+                ret.setRect(opt->rect.x(), opt->rect.y() + ((opt->rect.height() - height) >> 1),
+                        pixelMetric(PM_ExclusiveIndicatorWidth, opt, widget), height);
+                ret.translate(2, 0); //move indicator slightly to avoid highlight crossing over it
+                ret = visualRect(opt->direction, opt->rect, ret);
+            }
+            break;
+        case SE_CheckBoxIndicator: {
+                const int height = pixelMetric(PM_IndicatorHeight, opt, widget);
+                ret.setRect(opt->rect.x(), opt->rect.y() + ((opt->rect.height() - height) >> 1),
+                          pixelMetric(PM_IndicatorWidth, opt, widget), height);
+                ret.translate(2, 0); //move indicator slightly to avoid highlight crossing over it
+                ret = visualRect(opt->direction, opt->rect, ret);
+            }
+            break;
+        case SE_CheckBoxFocusRect:
+            ret = opt->rect;
             break;
         default:
             ret = QCommonStyle::subElementRect(element, opt, widget);
