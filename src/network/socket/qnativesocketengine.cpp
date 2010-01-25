@@ -778,6 +778,11 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxSize)
                     QNativeSocketEnginePrivate::RemoteHostClosedErrorString);
         close();
         return -1;
+    } else if (readBytes == -1) {
+        d->setError(QAbstractSocket::NetworkError,
+                    QNativeSocketEnginePrivate::ReadErrorString);
+        close();
+        return -1;
     }
     return readBytes;
 }
