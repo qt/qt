@@ -95,9 +95,8 @@ void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringL
     if (!srccodec.isEmpty())
         codecForSource = srccodec.last();
 
-    sourceFiles.sort();
     sourceFiles.removeDuplicates();
-    tsFileNames.sort();
+    sourceFiles.sort();
     tsFileNames.removeDuplicates();
 
     varMap->insert("SOURCES", sourceFiles);
