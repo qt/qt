@@ -369,7 +369,7 @@ namespace Phonon
                         }
                     }
 #else
-                    renderer = new VideoRendererVMR9(m_widget);
+                    renderer = new VideoRendererDefault(m_widget);
                     if (renderer->getFilter() == 0) {
                         //instanciating the renderer might fail
                         m_noNativeRendererSupported = true;
