@@ -1032,102 +1032,62 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
 #ifndef QT_NO_TOOLBUTTON
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
-            const State bflags = toolBtn->state;
+            State bflags = toolBtn->state & ~State_Sunken;
+
+            if (bflags & State_AutoRaise) {
+                if (!(bflags & State_MouseOver) || !(bflags & State_Enabled)) {
+                    bflags &= ~State_Raised;
+                }
+            }
+            State mflags = bflags;
+            if (toolBtn->state & State_Sunken) {
+                if (toolBtn->activeSubControls & SC_ToolButton)
+                    bflags |= State_Sunken;
+                mflags |= State_Sunken;
+            }
+
             const QRect button(subControlRect(control, toolBtn, SC_ToolButton, widget));
             QRect menuRect = QRect();
             if (toolBtn->subControls & SC_ToolButtonMenu)
                 menuRect = subControlRect(control, toolBtn, SC_ToolButtonMenu, widget);
 
-            QStyleOptionToolButton toolButton = *toolBtn;
-
-            if (sub&SC_ToolButton) {
+            if (toolBtn->subControls & SC_ToolButton) {
                 QStyleOption tool(0);
                 tool.palette = toolBtn->palette;
 
-                // Check if toolbutton is in toolbar.
-                QToolBar *toolBar = 0;
-                if (widget)
-                    toolBar = qobject_cast<QToolBar *>(widget->parentWidget());
-
-                if (bflags & (State_Sunken | State_On | State_Raised)) {
+                if (bflags & (State_Sunken | State_On | State_Raised | State_Enabled)) {
                     tool.rect = button.unite(menuRect);
                     tool.state = bflags;
-
-                    // todo: I'd like to move extension button next to where last button is
-                    // however, the painter seems to want to clip the button rect even if I turn of the clipping.
-                    if (toolBar && (qobject_cast<const QToolBarExtension *>(widget))){
-                        /*QList<QAction *> actionList = toolBar->actions();
-                        const int actionCount = actionList.count();
-                        const int toolbarWidth = toolBar->width();
-                        const int extButtonWidth = pixelMetric(PM_ToolBarExtensionExtent, option, widget);
-                        const int toolBarButtonWidth = pixelMetric(PM_ToolBarIconSize, option, widget);
-                        const int frame = pixelMetric(PM_ToolBarFrameWidth, option, widget);
-                        const int margin = pixelMetric(PM_ToolBarItemMargin, option, widget);
-                        const int border = frame + margin;
-                        const int spacing = pixelMetric(PM_ToolBarItemSpacing, option, widget);
-                        const int toolBarButtonArea = toolbarWidth - extButtonWidth - spacing - 2*border;
-                        const int numberOfVisibleButtons = toolBarButtonArea / toolBarButtonWidth;
-                        // new extension button place is after border and all the other visible buttons (with spacings)
-                        const int newXForExtensionButton = numberOfVisibleButtons * toolBarButtonWidth + (numberOfVisibleButtons-1)*spacing + border;
-                        painter->save();
-                        painter->setClipping(false);
-                        tool.rect.translate(-newXForExtensionButton,0);
-                        painter->restore();*/
-                    }
-
-                    if (toolBar){
-                        /*if (toolBar->orientation() == Qt::Vertical){
-                            // todo: I'd like to make all vertical buttons the same size, but again the painter
-                            // prefers to use clipping for button rects, even though clipping has been set off.
-                            painter->save();
-                            painter->setClipping(false);
-
-                            const int origWidth = tool.rect.width();
-                            const int newWidth = toolBar->width()-2*pixelMetric(PM_ToolBarFrameWidth, option, widget);
-                            painter->translate(origWidth-newWidth,0);
-                            tool.rect.translate(origWidth-tool.rect.width(),0);
-                            tool.rect.setWidth(newWidth);
-
-                            if (option->state & QStyle::State_Sunken)
-                                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBarButtonPressed, painter, tool.rect, flags);
-                            else
-                                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBarButton, painter, tool.rect, flags);
-
-                        }*/
-                        if (option->state & QStyle::State_Sunken)
-                            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBarButtonPressed, painter, tool.rect, flags);
-                        else
-                            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ToolBarButton, painter, tool.rect, flags);
-                        /*
-                        if (toolBar->orientation() == Qt::Vertical)
-                            painter->restore();
-                            */
-                    } else {
-                        drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
-                    }
-
-                    if (toolButton.subControls & SC_ToolButtonMenu) {
-                        tool.rect = menuRect;
-                        tool.state = bflags;
-                        drawPrimitive(PE_IndicatorArrowDown, &tool, painter, widget);
-                    }
+                    const QToolButton *toolButtonWidget = qobject_cast<const QToolButton *>(widget);
+                    QS60StylePrivate::SkinElements element;
+                    if (toolButtonWidget)
+                        element = (toolButtonWidget->isDown()) ? QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
+                    else
+                        element = (option->state & State_Sunken) ? QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
+                    QS60StylePrivate::drawSkinElement(element, painter, tool.rect, flags);
+                    drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
+                }
+                if (toolBtn->subControls & SC_ToolButtonMenu) {
+                    tool.rect = menuRect;
+                    tool.state = mflags;
+                    drawPrimitive(PE_IndicatorArrowDown, &tool, painter, widget);
                 }
             }
-
+            QStyleOptionToolButton toolButton = *toolBtn;
             if (toolBtn->features & QStyleOptionToolButton::Arrow) {
-                QStyle::PrimitiveElement pe;
+                PrimitiveElement pe;
                 switch (toolBtn->arrowType) {
                     case Qt::LeftArrow:
-                        pe = QStyle::PE_IndicatorArrowLeft;
+                        pe = PE_IndicatorArrowLeft;
                         break;
                     case Qt::RightArrow:
-                        pe = QStyle::PE_IndicatorArrowRight;
+                        pe = PE_IndicatorArrowRight;
                         break;
                     case Qt::UpArrow:
-                        pe = QStyle::PE_IndicatorArrowUp;
+                        pe = PE_IndicatorArrowUp;
                         break;
                     case Qt::DownArrow:
-                        pe = QStyle::PE_IndicatorArrowDown;
+                        pe = PE_IndicatorArrowDown;
                         break;
                     default:
                         break; }
