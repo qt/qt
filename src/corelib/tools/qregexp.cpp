@@ -1466,9 +1466,14 @@ void QRegExpMatchState::match(const QChar *str0, int len0, int pos0,
 #ifndef QT_NO_REGEXP_CAPTURE
         for (int i = 0; i < numCaptures; ++i) {
             int j = eng->captureForOfficialCapture.at(i);
-            int len = capEnd[j] - capBegin[j];
-            *c++ = (len > 0) ? pos + capBegin[j] : 0;
-            *c++ = len;
+            if (capBegin[j] != EmptyCapture) {
+                int len = capEnd[j] - capBegin[j];
+                *c++ = (len > 0) ? pos + capBegin[j] : 0;
+                *c++ = len;
+            } else {
+                *c++ = -1;
+                *c++ = -1;
+            }
         }
 #endif
     } else {
