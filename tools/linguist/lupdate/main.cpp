@@ -367,8 +367,6 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        numFiles++;
-
         codecForTr.clear();
         codecForSource.clear();
 
@@ -395,6 +393,7 @@ int main(int argc, char **argv)
         } else if (arg.endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
                 || arg.endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
             proFiles << arg;
+            numFiles++;
         } else {
             QFileInfo fi(arg);
             if (!fi.exists()) {
@@ -439,8 +438,14 @@ int main(int argc, char **argv)
             } else {
                 sourceFiles << QDir::cleanPath(fi.absoluteFilePath());;
             }
+            numFiles++;
         }
     } // for args
+
+    if (numFiles == 0) {
+        printUsage();
+        return 1;
+    }
 
     foreach (const QString &proFile, proFiles)
         projectRoots.insert(QDir::cleanPath(QFileInfo(proFile).absolutePath()) + QLatin1Char('/'));
@@ -531,11 +536,6 @@ int main(int argc, char **argv)
             updateTsFiles(fetchedTor, tsFiles, codecForTr, sourceLanguage, targetLanguage, options, &fail);
 
         firstPass = false;
-    }
-
-    if (numFiles == 0) {
-        printUsage();
-        return 1;
     }
 
     return fail ? 1 : 0;
