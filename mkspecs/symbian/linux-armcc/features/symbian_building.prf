@@ -129,3 +129,13 @@ symbianresources.dependency_type = TYPE_C
 symbianresources.CONFIG = no_link
 
 QMAKE_EXTRA_COMPILERS += symbianresources
+
+# Pre 2.6.23 Linux kernels have a limit on the environment size that can be passed to
+# a forked process. We quite easily overstep this boundary when building big projects
+# on Symbian, and since we depend on running the system() command, this causes the build
+# to fail. Test here that system() can be successfully run. It is important that this
+# check happens as late as possible, otherwise it will not be caught.
+execve_sanity_test = $$system("echo testing")
+!contains(execve_sanity_test, "testing") {
+    error("Running system() failed. Maybe your kernel is too old? (Linux kernels need at least version 2.6.23)")
+}
