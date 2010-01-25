@@ -1068,7 +1068,7 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxLength)
             break;
         case WSAEBADF:
         case WSAEINVAL:
-            setError(QAbstractSocket::NetworkError, ReadErrorString);
+            //error string is now set in read(), not here in nativeRead()
             break;
         case WSAECONNRESET:
         case WSAECONNABORTED:
