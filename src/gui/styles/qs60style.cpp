@@ -675,8 +675,7 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
         s60Color(QS60StyleEnums::CL_QsnHighlightColors, 2, 0));
     // set background image as a texture brush
     palette->setBrush(QPalette::Window, backgroundTexture());
-    // set these as transparent so that styled full screen theme background is visible
-    palette->setColor(QPalette::AlternateBase, Qt::transparent);
+    // set as transparent so that styled full screen theme background is visible
     palette->setBrush(QPalette::Base, Qt::transparent);
     // set button and tooltipbase based on pixel colors
     const QColor buttonColor = colorFromFrameGraphics(SF_ButtonNormal);
@@ -688,6 +687,9 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::Midlight, palette->color(QPalette::Button).lighter(125));
     palette->setColor(QPalette::Mid, palette->color(QPalette::Button).darker(150));
     palette->setColor(QPalette::Shadow, Qt::black);
+    QColor alternateBase = palette->light().color();
+    alternateBase.setAlphaF(0.8);
+    palette->setColor(QPalette::AlternateBase, alternateBase);
 
     QApplication::setPalette(*palette); //calling QApplication::setPalette clears palette hash
     setThemePaletteHash(palette);
@@ -2170,7 +2172,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         break;
 #ifndef QT_NO_ITEMVIEWS
     case PE_PanelItemViewItem:
-    case PE_PanelItemViewRow: // ### Qt 5: remove
         break;
 #endif //QT_NO_ITEMVIEWS
 
@@ -2239,7 +2240,23 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             }
         }
         break;
-
+    case PE_PanelItemViewRow: // ### Qt 5: remove
+#ifndef QT_NO_ITEMVIEWS
+        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
+            if (vopt->palette.base().texture().cacheKey() != QS60StylePrivate::m_themePalette->base().texture().cacheKey()) {
+                //QPalette::Base has been changed, let commonstyle draw the item
+                commonStyleDraws = true;
+            } else {
+                QPalette::ColorGroup cg = vopt->state & QStyle::State_Enabled ? QPalette::Normal : QPalette::Disabled;
+                if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
+                    cg = QPalette::Inactive;
+                if (vopt->features & QStyleOptionViewItemV2::Alternate)
+                    painter->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::AlternateBase));
+                //apart from alternate base, no background for list item is drawn for S60Style
+            }
+        }
+#endif
+        break;
     case PE_PanelScrollAreaCorner:
         break;
 
