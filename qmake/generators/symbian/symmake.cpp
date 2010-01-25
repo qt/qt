@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "symmake.h"
-#include "initprojectdeploy_symbian.h"
 
 #include <qstring.h>
 #include <qhash.h>
@@ -62,6 +61,7 @@
 #define BLD_INF_TAG_MMPFILES "prj_mmpfiles"
 #define BLD_INF_TAG_TESTMMPFILES "prj_testmmpfiles"
 #define BLD_INF_TAG_EXTENSIONS "prj_extensions"
+#define BLD_INF_TAG_EXPORTS "prj_exports"
 
 #define RSS_RULES "RSS_RULES"
 #define RSS_RULES_BASE "RSS_RULES."
@@ -91,7 +91,6 @@
 #define OK_SIS_TARGET "ok_sis"
 #define FAIL_SIS_NOPKG_TARGET "fail_sis_nopkg"
 #define FAIL_SIS_NOCACHE_TARGET "fail_sis_nocache"
-#define RESTORE_BUILD_TARGET "restore_build"
 
 #define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
 
@@ -203,6 +202,8 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
     // Generate pkg files if there are any actual files to deploy
     bool generatePkg = false;
+    DeploymentList depList;
+
     if (targetType == TypeExe) {
         generatePkg = true;
     } else {
@@ -215,10 +216,10 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if (generatePkg) {
-        generatePkgFile(iconFile);
+        generatePkgFile(iconFile, depList);
     }
 
-    writeBldInfContent(t, generatePkg, iconFile);
+    writeBldInfContent(t, generatePkg, iconFile, depList);
 
     // Generate empty wrapper makefile here, because wrapper makefile must exist before writeMkFile,
     // but all required data is not yet available.
@@ -273,7 +274,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     return true;
 }
 
-void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
+void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, DeploymentList &depList)
 {
     QString pkgFilename = QString("%1_template.%2")
                           .arg(fixedTarget)
@@ -397,7 +398,6 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
     }
 
     // deploy any additional DEPLOYMENT  files
-    DeploymentList depList;
     QString remoteTestPath;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
 
@@ -1172,7 +1172,7 @@ void SymbianMakefileGenerator::writeMmpFileRulesPart(QTextStream& t)
     }
 }
 
-void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension, const QString &iconFile)
+void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension, const QString &iconFile, DeploymentList &depList)
 {
     // Read user defined bld inf rules
 
@@ -1300,6 +1300,25 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     foreach(QString item, userItems)
         t << item << endl;
     userBldInfRules.remove(BLD_INF_TAG_EXTENSIONS);
+
+    t << endl << BLD_INF_TAG_EXPORTS << endl << endl;
+
+    // Generate export rules
+
+    // Export any deployed plugin stubs under /epoc32/data/z to support ROM builds
+    for (int i = 0; i < depList.size(); ++i)  {
+        int index = depList.at(i).from.indexOf(PLUGIN_STUB_DIR);
+        if (index != -1) {
+            t << QString("%1 /epoc32/data/z%2")
+                .arg(QString(depList.at(i).from).mid(index).replace('\\','/'))
+                .arg(QString(depList.at(i).to).mid(2).replace('\\','/')) << endl;
+        }
+    }
+
+    userItems = userBldInfRules.value(BLD_INF_TAG_EXPORTS);
+    foreach(QString item, userItems)
+        t << item << endl;
+    userBldInfRules.remove(BLD_INF_TAG_EXPORTS);
 
     // Add rest of the user defined content
 
@@ -1762,7 +1781,10 @@ void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
 
 void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 {
-    t << SIS_TARGET ": " RESTORE_BUILD_TARGET << endl;
+    t << "-include " MAKE_CACHE_NAME << endl;
+    t << endl;
+
+    t << SIS_TARGET ":" << endl;
     QString siscommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
                                   "$(MAKE) -s -f $(MAKEFILE) %4," \
                                   "$(if $(QT_SIS_TARGET),$(MAKE) -s -f $(MAKEFILE) %4," \
@@ -1792,11 +1814,6 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 
     t << FAIL_SIS_NOCACHE_TARGET ":" << endl;
     t << "\t$(error Project has to be built or QT_SIS_TARGET environment variable has to be set before calling 'SIS' target)" << endl;
-    t << endl;
-
-
-    t << RESTORE_BUILD_TARGET ":" << endl;
-    t << "-include " MAKE_CACHE_NAME << endl;
     t << endl;
 }
 
@@ -1860,16 +1877,11 @@ void SymbianMakefileGenerator::generateExecutionTargets(QTextStream& t, const QS
     // create execution targets
     if (targetType == TypeExe) {
         if (platforms.contains("winscw")) {
-            t << "ifeq (\"DEBUG-winscw\", \"$(QT_SIS_TARGET)\")" << endl;
             t << "run:" << endl;
             t << "\t-call " << epocRoot() << "epoc32/release/winscw/udeb/" << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
-            t << "else" << endl;
         }
-        t << "run: sis" << endl;
-        t << "\trunonphone --sis " << fixedTarget << "_$(QT_SIS_TARGET).sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
-        if (platforms.contains("winscw")) {
-            t << "endif" << endl;
-        }
+        t << "runonphone: sis" << endl;
+        t << "\trunonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis " << fixedTarget << "_$(QT_SIS_TARGET).sis " << fixedTarget << ".exe " << "$(QT_RUN_OPTIONS)" << endl;
         t << endl;
     }
 }

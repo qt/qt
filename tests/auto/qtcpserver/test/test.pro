@@ -32,7 +32,5 @@ QT = core network
 
 MOC_DIR=tmp
 
-DEFINES += TEST_QNETWORK_PROXY
-
 
 

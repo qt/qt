@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1329,7 +1329,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     of composition modes, brushes, clipping, transformation, etc, is
     close to an impossible task because of the number of
     permutations. As a compromise we have selected a subset of the
-    QPainter API and backends, were performance is guaranteed to be as
+    QPainter API and backends, where performance is guaranteed to be as
     good as we can sensibly get it for the given combination of
     hardware and software.
 
@@ -1373,9 +1373,6 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \o \c drawPixmap() in combination with simple transformations and
     opacity with non-smooth transformation mode
     (\c QPainter::SmoothPixmapTransform not enabled as a render hint).
-
-    \o Text drawing with regular font sizes with simple
-    transformations with solid colors using no or 8-bit antialiasing.
 
     \o Rectangle fills with solid color, two-color linear gradients
     and simple transforms.
@@ -1984,9 +1981,14 @@ QPaintEngine *QPainter::paintEngine() const
 /*!
     \since 4.6
 
-    Flushes the painting pipeline and prepares for the user issuing
-    commands directly to the underlying graphics context. Must be
-    followed by a call to endNativePainting().
+    Flushes the painting pipeline and prepares for the user issuing commands
+    directly to the underlying graphics context. Must be followed by a call to
+    endNativePainting().
+
+    Note that only the states the underlying paint engine changes will be reset
+    to their respective default states. If, for example, the OpenGL polygon
+    mode is changed by the user inside a beginNativePaint()/endNativePainting()
+    block, it will not be reset to the default state by endNativePainting().
 
     Here is an example that shows intermixing of painter commands
     and raw OpenGL commands:
@@ -2010,9 +2012,9 @@ void QPainter::beginNativePainting()
 /*!
     \since 4.6
 
-    Restores the painter after manually issuing native painting commands.
-    Lets the painter restore any native state that it relies on before
-    calling any other painter commands.
+    Restores the painter after manually issuing native painting commands. Lets
+    the painter restore any native state that it relies on before calling any
+    other painter commands.
 
     \sa beginNativePainting()
 */

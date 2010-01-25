@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
 
     Like QMutex, a QReadWriteLock can be recursively locked by the
     same thread when constructed in
-    \l{QReadWriteLock::RecursionMode}recursive mode}.  In such cases,
+    \l{QReadWriteLock::RecursionMode}. In such cases,
     unlock() must be called the same number of times lockForWrite() or
     lockForRead() was called. Note that the lock type cannot be
     changed when trying to lock recursively, i.e. it is not possible
@@ -266,12 +266,12 @@ bool QReadWriteLock::tryLockForRead(int timeout)
     return true;
 }
 
- /*!
+/*!
     Locks the lock for writing. This function will block the current
     thread if another thread has locked for reading or writing.
 
     \sa unlock() lockForRead() tryLockForWrite()
- */
+*/
 void QReadWriteLock::lockForWrite()
 {
     QMutexLocker lock(&d->mutex);

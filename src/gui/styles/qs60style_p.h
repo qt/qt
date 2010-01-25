@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,6 +93,29 @@ class QS60StyleEnums
 #endif // !Q_WS_S60
 
 public:
+
+    // S60 definitions within theme
+    enum ThemeDefinitions {
+        TD_AnimationData,
+    };
+
+    //Defines which values are contained within animation data (retrieved using TD_AnimationData).
+    //Additionally defines the order in which the items are given out in QList<QVariant>.
+    enum AnimationData {
+        AD_Interval = 0,
+        AD_NumberOfFrames,
+        AD_AnimationPlayMode,  //currently not used as themes seem to contain invalid data
+    };
+
+    // Animation modes
+    enum AnimationMode {
+        AM_PlayOnce = 0, //animation is played exactly once
+        AM_Looping,      //animation is repeated until stopped
+        AM_Bounce        //animation is played repeatedly until stopped,
+                         //but frames are played in reverse order every second time
+                         //(no support yet)
+    };
+
     // S60 look-and-feel font categories
     enum FontCategories {
         FC_Undefined,
@@ -104,7 +127,7 @@ public:
     };
 
     enum SkinParts {
-        SP_QgnGrafBarWait,
+        SP_QgnGrafBarWaitAnim,
         SP_QgnGrafBarFrameCenter,
         SP_QgnGrafBarFrameSideL,
         SP_QgnGrafBarFrameSideR,
@@ -287,7 +310,70 @@ public:
     };
 };
 
+#ifdef Q_WS_S60
+class CAknBitmapAnimation;
+NONSHARABLE_CLASS (AnimationData) : public QObject
+{
+public:
+    AnimationData(const QS60StyleEnums::SkinParts part, int frames, int interval);
+
+    const QS60StyleEnums::SkinParts m_id;
+    int m_frames;
+    int m_interval;
+    QS60StyleEnums::AnimationMode m_mode;
+};
+
+
+NONSHARABLE_CLASS (AnimationDataV2) : public AnimationData
+{
+public:
+    AnimationDataV2(const AnimationData &data);
+    ~AnimationDataV2();
+
+    CAknBitmapAnimation *m_animation;
+    int m_currentFrame;
+    bool m_resourceBased;
+    int m_timerId;
+};
+
+
+class QS60StyleAnimation : public QObject
+{
+public:
+    QS60StyleAnimation(const QS60StyleEnums::SkinParts part, int frames, int interval);
+    ~QS60StyleAnimation();
+
+public:
+    QS60StyleEnums::SkinParts animationId() const {return m_currentData->m_id;}
+    int frameCount() const { return m_currentData->m_frames;}
+    int interval() const {return m_currentData->m_interval;}
+    QS60StyleEnums::AnimationMode playMode() const {return m_currentData->m_mode;}
+    CAknBitmapAnimation* animationObject() const {return m_currentData->m_animation;}
+    bool isResourceBased() const {return m_currentData->m_resourceBased;}
+    int timerId() const {return m_currentData->m_timerId;}
+    int currentFrame() const {return m_currentData->m_currentFrame;}
+
+    void setFrameCount(const int &frameCount) {m_currentData->m_frames = frameCount;}
+    void setInterval(const int &interval) {m_currentData->m_interval = interval;}
+    void setAnimationObject(CAknBitmapAnimation* animation);
+    void setResourceBased(bool resourceBased) {m_currentData->m_resourceBased = resourceBased;}
+    void setTimerId(const int &timerId) {m_currentData->m_timerId = timerId;}
+    void setCurrentFrame(const int &currentFrame) {m_currentData->m_currentFrame = currentFrame;}
+
+    void resetToDefaults();
+
+private: //data members
+    //TODO: consider changing these to non-pointers as the classes are rather small anyway
+    AnimationData *m_defaultData;
+    AnimationDataV2 *m_currentData;
+};
+
+#endif //Q_WS_S60
+
+
 class QFocusFrame;
+class QProgressBar;
+class QS60StyleAnimation;
 
 // Private class
 #ifdef Q_OS_SYMBIAN
@@ -371,6 +457,7 @@ public:
         SF_StateEnabled =     0x0010, // Enabled = the default
         SF_StateDisabled =    0x0020,
         SF_ColorSkinned =     0x0040, // pixmap is colored with foreground pen color
+        SF_Animation =        0x0080,
     };
 
     enum CacheClearReason {
@@ -401,7 +488,7 @@ public:
     static bool drawsOwnThemeBackground(const QWidget *widget);
 
     QFont s60Font(QS60StyleEnums::FontCategories fontCategory,
-        int pointSize = -1) const;
+        int pointSize = -1, bool resolveFontSize = true) const;
     // clears all style caches (fonts, colors, pixmaps)
     void clearCaches(CacheClearReason reason = CC_UndefinedChange);
 
@@ -455,6 +542,16 @@ public:
     //so that theme graphic background can be drawn.
     static bool canDrawThemeBackground(const QBrush &backgroundBrush);
 
+    static int currentAnimationFrame(QS60StyleEnums::SkinParts part);
+#ifdef Q_WS_S60
+
+    //No support for animations on emulated style
+    void startAnimation(QS60StyleEnums::SkinParts animation);
+    void stopAnimation(QS60StyleEnums::SkinParts animation);
+    static QS60StyleAnimation* animationDefinition(QS60StyleEnums::SkinParts part);
+
+#endif
+
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
@@ -484,7 +581,8 @@ private:
     static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
         QPainter *painter, SkinElementFlags flags = KDefaultSkinElementFlags);
 
-    static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize);
+    static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory,
+                                  int pointSize, bool resolveFontSize);
 
     static QSize screenSize();
 
@@ -496,6 +594,12 @@ private:
     QPalette m_originalPalette;
 
     QPointer<QFocusFrame> m_focusFrame;
+
+#ifdef Q_WS_S60
+    //list of progress bars having animation running
+    QList<QProgressBar *> m_bars;
+#endif
+
 };
 
 QT_END_NAMESPACE

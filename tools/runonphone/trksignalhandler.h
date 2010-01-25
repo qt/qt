@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,7 @@
 #include <QObject>
 #include <QString>
 
+class TrkSignalHandlerPrivate;
 class TrkSignalHandler : public QObject
 {
     Q_OBJECT
@@ -63,6 +64,17 @@ public slots:
     void applicationOutputReceived(const QString &output);
     void copyProgress(int percent);
     void stateChanged(int);
+    void stopped(uint pc, uint pid, uint tid, const QString& reason);
+    void timeout();
+signals:
+    void resume(uint pid, uint tid);
+    void terminate();
+public:
+    TrkSignalHandler();
+    ~TrkSignalHandler();
+    void setLogLevel(int);
+private:
+    TrkSignalHandlerPrivate *d;
 };
 
 #endif // TRKSIGNALHANDLER_H

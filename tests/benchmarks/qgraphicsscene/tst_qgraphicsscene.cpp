@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,6 +64,7 @@ private slots:
     void addItem();
     void itemAt_data();
     void itemAt();
+    void initialShow();
 };
 
 tst_QGraphicsScene::tst_QGraphicsScene()
@@ -225,6 +226,22 @@ void tst_QGraphicsScene::itemAt()
 
     //let QGraphicsScene::_q_polishItems be called so ~QGraphicsItem doesn't spend all his time cleaning the unpolished list
     qApp->processEvents();
+}
+
+void tst_QGraphicsScene::initialShow()
+{
+    QGraphicsScene scene;
+
+    QBENCHMARK {
+        for (int y = 0; y < 30000; ++y) {
+            QGraphicsRectItem *item = new QGraphicsRectItem(0, 0, 50, 50);
+            item->setPos((y/2) * item->rect().width(), (y/2) * item->rect().height());
+            scene.addItem(item);
+        }
+        scene.itemAt(0, 0); // triggers indexing
+        //This call polish the items so we bench their processing too.
+        qApp->processEvents();
+    }
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

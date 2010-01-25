@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -106,6 +106,10 @@ static bool DEBUG_TEMP_FLAG;
 #define DEBUG_OVERRIDE(state) { state ? ++DEBUG_OVERRIDE_FLAG : --DEBUG_OVERRIDE_FLAG; }
 #define DEBUG_ONCE if ((DEBUG_TEMP_FLAG = DEBUG_OVERRIDE_FLAG) && 0) ; else for (static int DEBUG_ONCE_FLAG = false; !DEBUG_ONCE_FLAG || DEBUG_TEMP_FLAG; DEBUG_ONCE_FLAG = true, DEBUG_TEMP_FLAG = false)
 #define DEBUG_ONCE_STR(str) DEBUG_ONCE qDebug() << (str);
+#endif
+
+#ifdef Q_WS_X11
+static bool qt_nvidiaFboNeedsFinish = false;
 #endif
 
 static inline void qt_glColor4ubv(unsigned char *col)
@@ -423,7 +427,7 @@ inline void QGLOffscreen::release()
 
 #ifdef Q_WS_X11
     // workaround for bug in nvidia driver versions 9x.xx
-    if (QGLExtensions::nvidiaFboNeedsFinish)
+    if (qt_nvidiaFboNeedsFinish)
         glFinish();
 #endif
 
@@ -477,7 +481,7 @@ inline QGLContext *QGLOffscreen::context() const
 
 bool QGLOffscreen::isSupported()
 {
-    return (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject); // for fbo
+    return (QGLExtensions::glExtensions() & QGLExtensions::FramebufferObject); // for fbo
 }
 
 struct QDrawQueueItem
@@ -1266,7 +1270,7 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
         for (int j = 0; j < 4; ++j)
             d->mv_matrix[i][j] = (i == j ? qreal(1) : qreal(0));
 
-    bool has_frag_program = (QGLExtensions::glExtensions & QGLExtensions::FragmentProgram)
+    bool has_frag_program = (QGLExtensions::glExtensions() & QGLExtensions::FragmentProgram)
                             && (pdev->devType() != QInternal::Pixmap);
 
     QGLContext *ctx = const_cast<QGLContext *>(d->device->context());
@@ -1279,10 +1283,26 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
         has_frag_program = qt_resolve_frag_program_extensions(ctx) && qt_resolve_version_1_3_functions(ctx);
 
     d->use_stencil_method = d->device->format().stencil()
-                            && (QGLExtensions::glExtensions & QGLExtensions::StencilWrap);
+                            && (QGLExtensions::glExtensions() & QGLExtensions::StencilWrap);
     if (d->device->format().directRendering()
-        && (d->use_stencil_method && QGLExtensions::glExtensions & QGLExtensions::StencilTwoSide))
+        && (d->use_stencil_method && QGLExtensions::glExtensions() & QGLExtensions::StencilTwoSide))
         d->has_stencil_face_ext = qt_resolve_stencil_face_extension(ctx);
+
+#ifdef Q_WS_X11
+    static bool nvidia_workaround_needs_init = true;
+    if (nvidia_workaround_needs_init) {
+        // nvidia 9x.xx unix drivers contain a bug which requires us to
+        // call glFinish before releasing an fbo to avoid painting
+        // artifacts
+        const QByteArray versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+        const int pos = versionString.indexOf("NVIDIA");
+        if (pos >= 0) {
+            const float nvidiaDriverVersion = versionString.mid(pos + strlen("NVIDIA")).toFloat();
+            qt_nvidiaFboNeedsFinish = nvidiaDriverVersion >= 90.0 && nvidiaDriverVersion < 100.0;
+        }
+        nvidia_workaround_needs_init = false;
+    }
+#endif
 
 #ifndef QT_OPENGL_ES
     if (!ctx->d_ptr->internal_context) {
@@ -1333,10 +1353,10 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
 
-        if (QGLExtensions::glExtensions & QGLExtensions::SampleBuffers)
+        if (QGLExtensions::glExtensions() & QGLExtensions::SampleBuffers)
             glDisable(GL_MULTISAMPLE);
         glDisable(GL_TEXTURE_2D);
-        if (QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
+        if (QGLExtensions::glExtensions() & QGLExtensions::TextureRectangle)
             glDisable(GL_TEXTURE_RECTANGLE_NV);
         glDisable(GL_STENCIL_TEST);
         glDisable(GL_CULL_FACE);
@@ -1534,7 +1554,7 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
 #ifdef QT_OPENGL_ES
     Q_UNUSED(brush);
 #else
-    bool has_mirrored_repeat = QGLExtensions::glExtensions & QGLExtensions::MirroredRepeat;
+    bool has_mirrored_repeat = QGLExtensions::glExtensions() & QGLExtensions::MirroredRepeat;
     Qt::BrushStyle style = brush.style();
 
     QTransform m = brush.transform();
@@ -2098,7 +2118,7 @@ static inline bool needsEmulation(Qt::BrushStyle style)
 {
     return !(style == Qt::SolidPattern
              || (style == Qt::LinearGradientPattern
-                 && (QGLExtensions::glExtensions & QGLExtensions::MirroredRepeat)));
+                 && (QGLExtensions::glExtensions() & QGLExtensions::MirroredRepeat)));
 }
 
 void QOpenGLPaintEnginePrivate::updateUseEmulation()
@@ -2420,12 +2440,12 @@ void QOpenGLPaintEngine::updateRenderHints(QPainter::RenderHints hints)
             d->high_quality_antialiasing = true;
         } else {
             d->high_quality_antialiasing = false;
-            if (QGLExtensions::glExtensions & QGLExtensions::SampleBuffers)
+            if (QGLExtensions::glExtensions() & QGLExtensions::SampleBuffers)
                 glEnable(GL_MULTISAMPLE);
         }
     } else {
         d->high_quality_antialiasing = false;
-        if (QGLExtensions::glExtensions & QGLExtensions::SampleBuffers)
+        if (QGLExtensions::glExtensions() & QGLExtensions::SampleBuffers)
             glDisable(GL_MULTISAMPLE);
     }
 
@@ -2435,14 +2455,14 @@ void QOpenGLPaintEngine::updateRenderHints(QPainter::RenderHints hints)
         if (!d->offscreen.isValid()) {
             DEBUG_ONCE_STR("Unable to initialize offscreen, disabling high quality antialiasing");
             d->high_quality_antialiasing = false;
-            if (QGLExtensions::glExtensions & QGLExtensions::SampleBuffers)
+            if (QGLExtensions::glExtensions() & QGLExtensions::SampleBuffers)
                 glEnable(GL_MULTISAMPLE);
         }
     }
 
     d->has_antialiasing = d->high_quality_antialiasing
                           || ((hints & QPainter::Antialiasing)
-                              && (QGLExtensions::glExtensions & QGLExtensions::SampleBuffers));
+                              && (QGLExtensions::glExtensions() & QGLExtensions::SampleBuffers));
 }
 
 
@@ -4522,6 +4542,12 @@ typedef QHash<QFontEngine*, QGLGlyphHash*> QGLFontGlyphHash;
 typedef QHash<quint64, QGLFontTexture*> QGLFontTexHash;
 typedef QHash<const QGLContext*, QGLFontGlyphHash*> QGLContextHash;
 
+static inline void qt_delete_glyph_hash(QGLGlyphHash *hash)
+{
+    qDeleteAll(*hash);
+    delete hash;
+}
+
 class QGLGlyphCache : public QObject
 {
     Q_OBJECT
@@ -4562,7 +4588,7 @@ void QGLGlyphCache::fontEngineDestroyed(QObject *o)
         if (font_cache->find(fe) != font_cache->end()) {
             ctx = keys.at(i);
             QGLGlyphHash *cache = font_cache->take(fe);
-            delete cache;
+            qt_delete_glyph_hash(cache);
             break;
         }
     }
@@ -4599,7 +4625,7 @@ void QGLGlyphCache::cleanupContext(const QGLContext *ctx)
         QList<QFontEngine *> keys = font_cache->keys();
         for (int i=0; i < keys.size(); ++i) {
             QFontEngine *fe = keys.at(i);
-            delete font_cache->take(fe);
+            qt_delete_glyph_hash(font_cache->take(fe));
             quint64 font_key = (reinterpret_cast<quint64>(ctx) << 32) | reinterpret_cast<quint64>(fe);
             QGLFontTexture *font_tex = qt_font_textures.take(font_key);
             if (font_tex) {
@@ -4640,7 +4666,9 @@ void QGLGlyphCache::cleanCache()
     QList<const QGLContext *> keys = qt_context_cache.keys();
     for (int i=0; i < keys.size(); ++i) {
         QGLFontGlyphHash *font_cache = qt_context_cache.value(keys.at(i));
-        qDeleteAll(*font_cache);
+        QGLFontGlyphHash::Iterator it = font_cache->begin();
+        for (; it != font_cache->end(); ++it)
+            qt_delete_glyph_hash(it.value());
         font_cache->clear();
     }
     qDeleteAll(qt_context_cache);
@@ -4923,7 +4951,8 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    bool antialias = !(ti.fontEngine->fontDef.styleStrategy & QFont::NoAntialias);
+    bool antialias = !(ti.fontEngine->fontDef.styleStrategy & QFont::NoAntialias)
+                   && (d->matrix.type() > QTransform::TxTranslate);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
 

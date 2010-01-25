@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,6 +97,7 @@ public:
               flags(0)
         {
             int ptsPos = 0;
+            bool isLines = true;
             for (int i=0; i<path.size(); ++i) {
                 const QPainterPath::Element &e = path.at(i);
                 elements[i] = e.type;
@@ -104,6 +105,11 @@ public:
                 points[ptsPos++] = e.y;
                 if (e.type == QPainterPath::CurveToElement)
                     flags |= QVectorPath::CurvedShapeMask;
+
+                // This is to check if the path contains only alternating lineTo/moveTo,
+                // in which case we can set the LinesHint in the path. MoveTo is 0 and
+                // LineTo is 1 so the i%2 gets us what we want cheaply.
+                isLines = isLines && e.type == (QPainterPath::ElementType) (i%2);
             }
 
             if (fillRule == Qt::WindingFill)
@@ -111,8 +117,14 @@ public:
             else
                 flags |= QVectorPath::OddEvenFill;
 
-            if (!convex)
-                flags |= QVectorPath::NonConvexShapeMask;
+            if (isLines)
+                flags |= QVectorPath::LinesShapeMask;
+            else {
+                flags |= QVectorPath::AreaShapeMask;
+                if (!convex)
+                    flags |= QVectorPath::NonConvexShapeMask;
+            }
+
         }
         QVarLengthArray<QPainterPath::ElementType> elements;
         QVarLengthArray<qreal> points;

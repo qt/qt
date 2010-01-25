@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -203,6 +203,8 @@ private slots:
     void QTBUG_6421();
     void QTBUG_6618_data() { generic_data("QODBC"); }
     void QTBUG_6618();
+    void QTBUG_6852_data() { generic_data("QMYSQL"); }
+    void QTBUG_6852();
 
 private:
     // returns all database connections
@@ -2984,6 +2986,42 @@ void tst_QSqlQuery::QTBUG_6618()
     q.exec( "{call " + qTableName( "tst_raiseError" ) + "}" );
     QVERIFY(q.lastError().text().contains(errorString));
 }
+
+void tst_QSqlQuery::QTBUG_6852()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
+        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+
+    QSqlQuery q(db);
+    QString tableName(qTableName(QLatin1String("bug6421"))), procName(qTableName(QLatin1String("bug6421_proc")));
+
+    QVERIFY_SQL(q, exec("DROP PROCEDURE IF EXISTS "+procName));
+    tst_Databases::safeDropTable(db, tableName);
+    QVERIFY_SQL(q, exec("CREATE TABLE "+tableName+"(\n"
+                        "MainKey INT NOT NULL,\n"
+                        "OtherTextCol VARCHAR(45) NOT NULL,\n"
+                        "PRIMARY KEY(`MainKey`))"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES(0, \"Disabled\")"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES(5, \"Error Only\")"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES(10, \"Enabled\")"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES(15, \"Always\")"));
+    QVERIFY_SQL(q, exec("CREATE PROCEDURE "+procName+"()\n"
+                        "READS SQL DATA\n"
+                        "BEGIN\n"
+                        "  SET @st = 'SELECT MainKey, OtherTextCol from "+tableName+"';\n"
+                        "  PREPARE stmt from @st;\n"
+                        "  EXECUTE stmt;\n"
+                        "END;"));
+
+    QVERIFY_SQL(q, exec("CALL "+procName+"()"));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 0);
+    QCOMPARE(q.value(1).toString(), QLatin1String("Disabled"));
+}
+
 
 QTEST_MAIN( tst_QSqlQuery )
 #include "tst_qsqlquery.moc"

@@ -19,19 +19,13 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QObject>
 #include <QCoreApplication>
 
-#include <AudioEqualizerBase.h>
-#include <BassBoostBase.h>
-#include <DistanceAttenuationBase.h>
-#include <DopplerBase.h>
-#include <EnvironmentalReverbBase.h>
-#include <ListenerOrientationBase.h>
-#include <LocationBase.h>
-#include <LoudnessBase.h>
-#include <SourceOrientationBase.h>
-#include <StereoWideningBase.h>
+#include <mdaaudiooutputstream.h>
 
 #include "audioequalizer.h"
 #include "bassboost.h"
+#include "environmentalreverb.h"
+#include "loudness.h"
+#include "stereowidening.h"
 
 #include "effectfactory.h"
 
@@ -44,111 +38,176 @@ using namespace Phonon::MMF;
   \internal
 */
 
-QHash<QByteArray, QVariant> EffectFactory::constructEffectDescription(const QString &name,
-                                                                      const QString &description)
+EffectFactory::EffectFactory(QObject *parent)
+    :   QObject(parent)
+    ,   m_initialized(false)
 {
-    QHash<QByteArray, QVariant> retval;
 
-    retval.insert("name", name);
-    retval.insert("description", description);
-    retval.insert("available", true);
-
-    return retval;
 }
 
-
-QHash<QByteArray, QVariant> EffectFactory::audioEffectDescriptions(AbstractAudioEffect::Type type)
+EffectFactory::~EffectFactory()
 {
-    switch (type)
-    {
-        case AbstractAudioEffect::EffectAudioEqualizer:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Audio Equalizer"), "Audio equalizer.");
-        case AbstractAudioEffect::EffectBassBoost:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Bass Boost"), "Bass boost.");
-        case AbstractAudioEffect::EffectDistanceAttenuation:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Distance Attenuation"), "Distance Attenuation.");
-        case AbstractAudioEffect::EffectEnvironmentalReverb:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Environmental Reverb"), "Environmental Reverb.");
-        case AbstractAudioEffect::EffectListenerOrientation:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Environmental Reverb"), "Environmental Reverb.");
-        case AbstractAudioEffect::EffectLoudness:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Loudness"), "Loudness.");
-        case AbstractAudioEffect::EffectSourceOrientation:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Source Orientation"), "Source Orientation.");
-        case AbstractAudioEffect::EffectStereoWidening:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Stereo Widening"), "Stereo Widening.");
-    }
 
-    Q_ASSERT_X(false, Q_FUNC_INFO, "Unknown effect type.");
-    return QHash<QByteArray, QVariant>();
 }
 
-AbstractAudioEffect *EffectFactory::createAudioEffect(AbstractAudioEffect::Type type,
+//-----------------------------------------------------------------------------
+// Public functions
+//-----------------------------------------------------------------------------
+
+AbstractAudioEffect *EffectFactory::createAudioEffect(Type type,
                                                       QObject *parent)
 {
+    // Lazily initialize
+    if (!m_initialized)
+        initialize();
+
     Q_ASSERT(parent);
+
+    const QList<EffectParameter>& parameters = data(type).m_parameters;
+
+    AbstractAudioEffect *effect = 0;
 
     switch (type)
     {
-        case AbstractAudioEffect::EffectBassBoost:
-            return new BassBoost(parent);
-        case AbstractAudioEffect::EffectAudioEqualizer:
-            return new AudioEqualizer(parent);
-        case AbstractAudioEffect::EffectDistanceAttenuation:
-        case AbstractAudioEffect::EffectEnvironmentalReverb:
-        case AbstractAudioEffect::EffectListenerOrientation:
-        case AbstractAudioEffect::EffectLoudness:
-        case AbstractAudioEffect::EffectSourceOrientation:
-        case AbstractAudioEffect::EffectStereoWidening:
-            ;
+    case TypeBassBoost:
+        effect = new BassBoost(parent, parameters);
+        break;
+    case TypeAudioEqualizer:
+        effect = new AudioEqualizer(parent, parameters);
+        break;
+    case TypeEnvironmentalReverb:
+        effect = new EnvironmentalReverb(parent, parameters);
+        break;
+    case TypeLoudness:
+        effect = new Loudness(parent, parameters);
+        break;
+    case TypeStereoWidening:
+        effect = new StereoWidening(parent, parameters);
+        break;
+
+    // Not implemented
+    case TypeDistanceAttenuation:
+    case TypeListenerOrientation:
+    case TypeSourceOrientation:
+    // Fall through
+    default:
+        Q_ASSERT_X(false, Q_FUNC_INFO, "Unknown effect");
     }
 
-    Q_ASSERT_X(false, Q_FUNC_INFO, "Unknown effect.");
-    return 0;
+    return effect;
 }
 
-template<typename TEffect>
-bool isEffectSupported()
+QHash<QByteArray, QVariant> EffectFactory::audioEffectDescriptions(Type type)
 {
-    AudioPlayer audioPlayer;
+    // Lazily initialize
+    if (!m_initialized)
+        initialize();
 
-    QScopedPointer<TEffect> eff;
-    TRAPD(errorCode, eff.reset(TEffect::NewL(*audioPlayer.player())));
-
-    return errorCode != KErrNone;
+    return data(type).m_descriptions;
 }
 
 QList<int> EffectFactory::effectIndexes()
 {
-    QList<int> retval;
+    // Lazily initialize
+    if (!m_initialized)
+        initialize();
 
-    if (isEffectSupported<CAudioEqualizer>())
-        retval.append(AbstractAudioEffect::EffectAudioEqualizer);
+    QList<int> result;
 
-    if (isEffectSupported<CBassBoost>())
-        retval.append(AbstractAudioEffect::EffectBassBoost);
+    QHash<Type, EffectData>::const_iterator i = m_effectData.begin();
+    for ( ; i != m_effectData.end(); ++i)
+        if (i.value().m_supported)
+            result.append(i.key());
 
-    /* We haven't implemented these yet.
-    if (isEffectSupported<CDistanceAttenuation>())
-        retval.append(AbstractAudioEffect::EffectDistanceAttenuation);
+    return result;
+}
 
-    if (isEffectSupported<CEnvironmentalReverb>())
-        retval.append(AbstractAudioEffect::EffectEnvironmentalReverb);
+//-----------------------------------------------------------------------------
+// Private functions
+//-----------------------------------------------------------------------------
 
-    if (isEffectSupported<CLoudness>())
-        retval.append(AbstractAudioEffect::EffectLoudness);
+#define INITIALIZE_EFFECT(Effect) \
+    { \
+    EffectData data = getData<Effect>(); \
+    m_effectData.insert(Type##Effect, data); \
+    }
 
-    if (isEffectSupported<CListenerOrientation>())
-        retval.append(AbstractAudioEffect::EffectListenerOrientation);
+void EffectFactory::initialize()
+{
+    Q_ASSERT_X(!m_initialized, Q_FUNC_INFO, "Already initialized");
 
-    if (isEffectSupported<CSourceOrientation>())
-        retval.append(AbstractAudioEffect::EffectSourceOrientation);
+    INITIALIZE_EFFECT(AudioEqualizer)
+    INITIALIZE_EFFECT(BassBoost)
+    INITIALIZE_EFFECT(EnvironmentalReverb)
+    INITIALIZE_EFFECT(Loudness)
+    INITIALIZE_EFFECT(StereoWidening)
 
-    if (isEffectSupported<CStereoWidening>())
-        retval.append(AbstractAudioEffect::EffectStereoWidening);
-    */
+    m_initialized = true;
+}
 
-    return retval;
+// This class is just a wrapper which allows us to instantiate a
+// CMdaAudioOutputStream object.  This is done in order to allow the
+// effects API to query the DevSound implementation, to discover
+// which effects are supported and what parameters they take.
+// Ideally, we would use CMMFDevSound directly, but this class is not
+// available in the public S60 SDK.
+class OutputStreamFactory : public MMdaAudioOutputStreamCallback
+{
+public:
+    CMdaAudioOutputStream* create()
+    {
+        CMdaAudioOutputStream* stream = 0;
+        QT_TRAP_THROWING(stream = CMdaAudioOutputStream::NewL(*this));
+        return stream;
+    }
+private:
+    void MaoscOpenComplete(TInt /*aError*/) { }
+    void MaoscBufferCopied(TInt /*aError*/, const TDesC8& /*aBuffer*/) { }
+    void MaoscPlayComplete(TInt /*aError*/) { }
+};
+
+template<typename BackendNode>
+EffectFactory::EffectData EffectFactory::getData()
+{
+    EffectData data;
+
+    // Create a temporary CMdaAudioOutputStream object, so that the effects
+    // API can query DevSound to discover which effects are supported.
+    OutputStreamFactory streamFactory;
+    QScopedPointer<CMdaAudioOutputStream> stream(streamFactory.create());
+
+    EffectParameter param(
+         /* parameterId */        AbstractAudioEffect::ParameterEnable,
+         /* name */               tr("Enabled"),
+         /* hints */              EffectParameter::ToggledHint,
+         /* defaultValue */       QVariant(bool(true)));
+    data.m_parameters.append(param);
+
+    if (data.m_supported = BackendNode::getParameters
+            (stream.data(), data.m_parameters)) {
+        const QString description = QCoreApplication::translate
+            ("Phonon::MMF::EffectFactory", BackendNode::description());
+        data.m_descriptions.insert("name", description);
+        data.m_descriptions.insert("description", description);
+        data.m_descriptions.insert("available", true);
+    }
+
+    // Sanity check to ensure that all parameter IDs are unique
+    QSet<int> ids;
+    foreach (param, data.m_parameters) {
+        Q_ASSERT_X(ids.find(param.id()) == ids.end(), Q_FUNC_INFO,
+            "Parameter list contains duplicates");
+        ids.insert(param.id());
+    }
+
+    return data;
+}
+
+const EffectFactory::EffectData& EffectFactory::data(Type type) const
+{
+    QHash<Type, EffectData>::const_iterator i = m_effectData.find(type);
+    Q_ASSERT_X(i != m_effectData.end(), Q_FUNC_INFO, "Effect data not found");
+    return i.value();
 }
 
 QT_END_NAMESPACE

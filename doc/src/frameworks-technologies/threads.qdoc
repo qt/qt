@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -472,24 +472,37 @@
 
     \section1 Signals and Slots Across Threads
 
-    Qt supports three types of signal-slot connections:
+    Qt supports these signal-slot connection types:
 
     \list
-    \o With \l{Qt::DirectConnection}{direct connections}, the
-       slot gets called immediately when the signal is emitted. The
-       slot is executed in the thread that emitted the signal (which
-       is not necessarily the thread where the receiver object
-       lives).
 
-    \o With \l{Qt::QueuedConnection}{queued connections}, the
-       slot is invoked when control returns to the event loop of the
-       thread to which the object belongs. The slot is executed in
-       the thread where the receiver object lives.
+    \o \l{Qt::AutoConnection}{Auto Connection} (default) The behavior
+       is the same as the Direct Connection, if the emitter and
+       receiver are in the same thread. The behavior is the same as
+       the Queued Connection, if the emitter and receiver are in
+       different threads.
 
-    \o With \l{Qt::AutoConnection}{auto connections} (the default),
-       the behavior is the same as with direct connections if
-       the signal is emitted in the thread where the receiver lives;
-       otherwise, the behavior is that of a queued connection.
+    \o \l{Qt::DirectConnection}{Direct Connection} The slot is invoked
+       immediately, when the signal is emitted. The slot is executed
+       in the emitter's thread, which is not necessarily the
+       receiver's thread.
+
+    \o \l{Qt::QueuedConnection}{Queued Connection} The slot is invoked
+       when control returns to the event loop of the receiver's
+       thread. The slot is executed in the receiver's thread.
+
+    \o \l{Qt::BlockingQueuedConnection}{Blocking Queued Connection}
+       The slot is invoked as for the Queued Connection, except the
+       current thread blocks until the slot returns. \note Using this
+       type to connect objects in the same thread will cause deadlock.
+
+    \o \l{Qt::UniqueConnection}{Unique Connection} The behavior is the
+       same as the Auto Connection, but the connection is made only if
+       it does not duplicate an existing connection. i.e., if the same
+       signal is already connected to the same slot for the same pair
+       of objects, then the connection is not made and connect()
+       returns false.
+
     \endlist
 
     The connection type can be specified by passing an additional

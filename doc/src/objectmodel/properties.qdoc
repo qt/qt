@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -208,17 +208,20 @@
     the property type. The meta-object compiler enforces these
     requirements.
 
-    Given a pointer to an instance of MyClass or a pointer to an
-    instance of QObject that happens to be an instance of MyClass, we
-    have two ways to set its priority property.
+    Given a pointer to an instance of MyClass or a pointer to a
+    QObject that is an instance of MyClass, we have two ways to set
+    its priority property:
 
     \snippet doc/src/snippets/code/doc_src_properties.qdoc 6
 
-    In the example, the enumeration type used for the property type
-    was locally declared in MyClass. Had it been declared in another
-    class, its fully qualified name (i.e., OtherClass::Priority) would
-    be required.  In addition, that other class must also inherit
-    QObject and register the enum type using Q_ENUMS().
+    In the example, the enumeration type that is the property type is
+    declared in MyClass and registered with the \l{Meta-Object System}
+    using the Q_ENUMS() macro. This makes the enumeration values
+    available as strings for use as in the call to setProperty(). Had
+    the enumeration type been declared in another class, its fully
+    qualified name (i.e., OtherClass::Priority) would be required, and
+    that other class would also have to inherit QObject and register
+    the enumeration type there using the Q_ENUMS() macro.
 
     A similar macro, Q_FLAGS(), is also available. Like Q_ENUMS(), it
     registers an enumeration type, but it marks the type as being a

@@ -34,13 +34,9 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AudioPlayer::AudioPlayer()
-{
-    construct();
-}
-
-MMF::AudioPlayer::AudioPlayer(const AbstractPlayer& player)
-        : AbstractMediaPlayer(player)
+MMF::AudioPlayer::AudioPlayer(MediaObject *parent, const AbstractPlayer *player)
+        :   AbstractMediaPlayer(parent, player)
+        ,   m_totalTime(0)
 {
     construct();
 }
@@ -50,10 +46,10 @@ void MMF::AudioPlayer::construct()
     TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
     TRACE_ENTRY_0();
 
-    TRAPD(err, m_player.reset(CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone)));
-    if (KErrNone != err) {
-        changeState(ErrorState);
-    }
+    NativePlayer *player = 0;
+    QT_TRAP_THROWING(player = NativePlayer::NewL(*this, 0, EMdaPriorityPreferenceNone));
+    m_player.reset(player);
+    m_player->RegisterForAudioLoadingNotification(*this);
 
     TRACE_EXIT_0();
 }
@@ -64,6 +60,11 @@ MMF::AudioPlayer::~AudioPlayer()
     TRACE_ENTRY_0();
 
     TRACE_EXIT_0();
+}
+
+MMF::AudioPlayer::NativePlayer *MMF::AudioPlayer::nativePlayer() const
+{
+    return m_player.data();
 }
 
 //-----------------------------------------------------------------------------
@@ -125,6 +126,24 @@ int MMF::AudioPlayer::openFile(RFile& file)
     return err;
 }
 
+int MMF::AudioPlayer::openUrl(const QString& /*url*/)
+{
+    // Streaming playback is generally not supported by the implementation
+    // of the audio player API, so we use CVideoPlayerUtility for both
+    // audio and video streaming.
+    Utils::panic(AudioUtilityUrlNotSupported);
+
+    // Silence warning
+    return 0;
+}
+
+int MMF::AudioPlayer::bufferStatus() const
+{
+    int result = 0;
+    TRAP_IGNORE(m_player->GetAudioLoadingProgressL(result));
+    return result;
+}
+
 void MMF::AudioPlayer::close()
 {
     m_player->Close();
@@ -151,7 +170,7 @@ qint64 MMF::AudioPlayer::currentTime() const
 
         // If we don't cast away constness here, we simply have to ignore
         // the error.
-        const_cast<AudioPlayer*>(this)->setError(NormalError);
+        const_cast<AudioPlayer*>(this)->setError(tr("Getting position failed"), err);
     }
 
     return result;
@@ -159,7 +178,7 @@ qint64 MMF::AudioPlayer::currentTime() const
 
 qint64 MMF::AudioPlayer::totalTime() const
 {
-    return toMilliSeconds(m_player->Duration());
+    return m_totalTime;
 }
 
 
@@ -182,12 +201,12 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
 
     if (KErrNone == aError) {
         maxVolumeChanged(m_player->MaxVolume());
-        emit totalTimeChanged(totalTime());
+        m_totalTime = toMilliSeconds(m_player->Duration());
+        emit totalTimeChanged(m_totalTime);
         updateMetaData();
         changeState(StoppedState);
     } else {
-        // TODO: set different error states according to value of aError?
-        setError(NormalError);
+        setError(tr("Opening clip failed"), aError);
     }
 
     TRACE_EXIT_0();
@@ -202,41 +221,12 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
     TRACE_CONTEXT(AudioPlayer::MapcPlayComplete, EAudioInternal);
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    stopTickTimer();
-
-    if (KErrNone == aError) {
-        changeState(StoppedState);
-        // TODO: move on to m_nextSource
-    } else {
-        // TODO: do something with aError?
-        setError(NormalError);
-    }
-
-    /*
-        if (aError == KErrNone) {
-            if (m_nextSource.type() == MediaSource::Empty) {
-                emit finished();
-            } else {
-                setSource(m_nextSource);
-                m_nextSource = MediaSource();
-            }
-
-            changeState(StoppedState);
-        }
-        else {
-            m_error = NormalError;
-            changeState(ErrorState);
-        }
-    */
+    // Call base class function which handles end of playback for both
+    // audio and video clips.
+    playbackComplete(aError);
 
     TRACE_EXIT_0();
 }
-
-CPlayerType *MMF::AudioPlayer::player() const
-{
-    return m_player.data();
-}
-
 
 #ifdef QT_PHONON_MMF_AUDIO_DRM
 void MMF::AudioPlayer::MaloLoadingStarted()
@@ -249,6 +239,21 @@ void MMF::AudioPlayer::MaloLoadingComplete()
 
 }
 #endif // QT_PHONON_MMF_AUDIO_DRM
+
+
+//-----------------------------------------------------------------------------
+// MAudioLoadingObserver callbacks
+//-----------------------------------------------------------------------------
+
+void MMF::AudioPlayer::MaloLoadingStarted()
+{
+    bufferingStarted();
+}
+
+void MMF::AudioPlayer::MaloLoadingComplete()
+{
+    bufferingComplete();
+}
 
 
 //-----------------------------------------------------------------------------

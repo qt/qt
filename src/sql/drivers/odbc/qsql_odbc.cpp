@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -888,10 +888,15 @@ bool QODBCResult::reset (const QString& query)
                        (SQLCHAR*) query8.constData(),
                        (SQLINTEGER) query8.length());
 #endif
-    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
+    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r!= SQL_NO_DATA) {
         setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                      "Unable to execute statement"), QSqlError::StatementError, d));
         return false;
+    }
+
+    if(r == SQL_NO_DATA) {
+        setSelect(false);
+        return true;
     }
 
     SQLINTEGER isScrollable, bufferLength;

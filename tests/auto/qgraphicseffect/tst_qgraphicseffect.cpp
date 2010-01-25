@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,6 +70,7 @@ private slots:
     void grayscale();
     void colorize();
     void drawPixmapItem();
+    void deviceCoordinateTranslateCaching();
 };
 
 void tst_QGraphicsEffect::initTestCase()
@@ -512,6 +513,51 @@ void tst_QGraphicsEffect::drawPixmapItem()
     QTest::qWait(50);
 
     QTRY_VERIFY(effect->repaints >= 2);
+}
+
+class DeviceEffect : public QGraphicsEffect
+{
+public:
+    QRectF boundingRectFor(const QRectF &rect) const
+    { return rect; }
+
+    void draw(QPainter *painter)
+    {
+        QPoint offset;
+        QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset, QGraphicsEffect::NoPad);
+
+        if (pixmap.isNull())
+            return;
+
+        painter->save();
+        painter->setWorldTransform(QTransform());
+        painter->drawPixmap(offset, pixmap);
+        painter->restore();
+    }
+};
+
+void tst_QGraphicsEffect::deviceCoordinateTranslateCaching()
+{
+    QGraphicsScene scene;
+    CustomItem *item = new CustomItem(0, 0, 10, 10);
+    scene.addItem(item);
+    scene.setSceneRect(0, 0, 50, 0);
+
+    item->setGraphicsEffect(new DeviceEffect);
+    item->setPen(Qt::NoPen);
+    item->setBrush(Qt::red);
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QTRY_VERIFY(item->numRepaints >= 1);
+    int numRepaints = item->numRepaints;
+
+    item->translate(10, 0);
+    QTest::qWait(50);
+
+    QVERIFY(item->numRepaints == numRepaints);
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)

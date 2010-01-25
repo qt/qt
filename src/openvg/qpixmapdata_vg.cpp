@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -232,7 +232,7 @@ QPaintEngine* QVGPixmapData::paintEngine() const
 // This function works around QImage::bits() making a deep copy if the
 // QImage is not const.  We force it to be const and then get the bits.
 // XXX: Should add a QImage::constBits() in the future to replace this.
-static inline const uchar *qt_vg_imageBits(const QImage& image)
+const uchar *qt_vg_imageBits(const QImage& image)
 {
     return image.bits();
 }

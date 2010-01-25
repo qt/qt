@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,6 +64,7 @@ private slots:
     void screenNumberForQWidget();
     void screenNumberForQPoint();
     void availableGeometry();
+    void screenGeometry();
 };
 
 tst_QDesktopWidget::tst_QDesktopWidget()
@@ -98,6 +99,9 @@ void tst_QDesktopWidget::primaryScreen()
 void tst_QDesktopWidget::availableGeometry()
 {
     QDesktopWidget desktop;
+    QTest::ignoreMessage(QtWarningMsg, "QDesktopWidget::availableGeometry(): Attempt "
+                                       "to get the available geometry of a null widget");
+    desktop.availableGeometry((QWidget *)0);
 
     QRect total;
     QRect available;
@@ -156,6 +160,27 @@ void tst_QDesktopWidget::screenNumberForQPoint()
     QVERIFY(screen >= 0 && screen < desktopWidget->numScreens());
     screen = desktopWidget->screenNumber(allScreens.bottomRight() + QPoint(1, 1));
     QVERIFY(screen >= 0 && screen < desktopWidget->numScreens());
+}
+
+void tst_QDesktopWidget::screenGeometry()
+{
+    QDesktopWidget *desktopWidget = QApplication::desktop();
+    QTest::ignoreMessage(QtWarningMsg, "QDesktopWidget::screenGeometry(): Attempt "
+                                       "to get the screen geometry of a null widget");
+    QRect r = desktopWidget->screenGeometry((QWidget *)0);
+    QVERIFY(r.isNull());
+    QWidget widget;
+    widget.show();
+    QTest::qWaitForWindowShown(&widget);
+    r = desktopWidget->screenGeometry(&widget);
+
+    QRect total;
+    QRect available;
+    for (int i = 0; i < desktopWidget->screenCount(); ++i) {
+        total = desktopWidget->screenGeometry(i);
+        available = desktopWidget->availableGeometry(i);
+    }
+    QVERIFY(total.contains(r));
 }
 
 QTEST_MAIN(tst_QDesktopWidget)

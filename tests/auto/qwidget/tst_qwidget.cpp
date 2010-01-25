@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,8 @@
 #include <private/qapplication_p.h>
 #include <qcalendarwidget.h>
 #include <qmainwindow.h>
+#include <qdockwidget.h>
+#include <qtoolbar.h>
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
 
@@ -356,6 +358,7 @@ private slots:
     void paintOnScreenPossible();
 #endif
     void reparentStaticWidget();
+    void QTBUG6883_reparentStaticWidget2();
 #ifdef Q_WS_QWS
     void updateOutsideSurfaceClip();
 #endif
@@ -8728,6 +8731,31 @@ void tst_QWidget::reparentStaticWidget()
     // Please don't crash.
     paintOnScreen.resize(paintOnScreen.size() + QSize(2, 2));
     QTest::qWait(20);
+
+}
+
+void tst_QWidget::QTBUG6883_reparentStaticWidget2()
+{
+    QMainWindow mw;
+    QDockWidget *one = new QDockWidget("one", &mw);
+    mw.addDockWidget(Qt::LeftDockWidgetArea, one , Qt::Vertical);
+
+    QWidget *child = new QWidget();
+    child->setPalette(Qt::red);
+    child->setAutoFillBackground(true);
+    child->setAttribute(Qt::WA_StaticContents);
+    child->resize(100, 100);
+    one->setWidget(child);
+
+    QToolBar *mainTools = mw.addToolBar("Main Tools");
+    mainTools->addWidget(new QLineEdit);
+
+    mw.show();
+    QTest::qWaitForWindowShown(&mw);
+
+    one->setFloating(true);
+    QTest::qWait(20);
+    //do not crash
 }
 
 #ifdef Q_WS_QWS
@@ -9726,7 +9754,7 @@ public:
     void deleteBackingStore()
     {
         if (static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
-            delete static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore;    
+            delete static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore;
             static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = 0;
         }
     }

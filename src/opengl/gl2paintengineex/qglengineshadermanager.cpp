@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -218,6 +218,23 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
 }
 
+QGLEngineSharedShaders::~QGLEngineSharedShaders()
+{
+    QList<QGLEngineShaderProg*>::iterator itr;
+    for (itr = cachedPrograms.begin(); itr != cachedPrograms.end(); ++itr)
+        delete *itr;
+
+    if (blitShaderProg) {
+        delete blitShaderProg;
+        blitShaderProg = 0;
+    }
+
+    if (simpleShaderProg) {
+        delete simpleShaderProg;
+        simpleShaderProg = 0;
+    }
+}
+
 #if defined (QT_DEBUG)
 QByteArray QGLEngineSharedShaders::snippetNameStr(SnippetName name)
 {
@@ -393,7 +410,7 @@ QGLEngineShaderManager::~QGLEngineShaderManager()
     removeCustomStage();
 }
 
-uint QGLEngineShaderManager::getUniformLocation(Uniform id)
+GLuint QGLEngineShaderManager::getUniformLocation(Uniform id)
 {
     if (!currentShaderProg)
         return 0;
@@ -428,9 +445,9 @@ uint QGLEngineShaderManager::getUniformLocation(Uniform id)
 }
 
 
-void QGLEngineShaderManager::optimiseForBrushTransform(const QTransform &transform)
+void QGLEngineShaderManager::optimiseForBrushTransform(QTransform::TransformationType transformType)
 {
-    Q_UNUSED(transform); // Currently ignored
+    Q_UNUSED(transformType); // Currently ignored
 }
 
 void QGLEngineShaderManager::setDirty()
@@ -505,7 +522,27 @@ QGLShaderProgram* QGLEngineShaderManager::currentProgram()
     if (currentShaderProg)
         return currentShaderProg->program;
     else
-        return simpleProgram();
+        return sharedShaders->simpleProgram();
+}
+
+void QGLEngineShaderManager::useSimpleProgram()
+{
+    sharedShaders->simpleProgram()->bind();
+    QGLContextPrivate* ctx_d = ctx->d_func();
+    ctx_d->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
+    ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, false);
+    ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
+    shaderProgNeedsChanging = true;
+}
+
+void QGLEngineShaderManager::useBlitProgram()
+{
+    sharedShaders->blitProgram()->bind();
+    QGLContextPrivate* ctx_d = ctx->d_func();
+    ctx_d->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
+    ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, true);
+    ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
+    shaderProgNeedsChanging = true;
 }
 
 QGLShaderProgram* QGLEngineShaderManager::simpleProgram()
@@ -715,6 +752,13 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
         if (useCustomSrc)
             customSrcStage->setUniforms(currentShaderProg->program);
     }
+
+    // Make sure all the vertex attribute arrays the program uses are enabled (and the ones it
+    // doesn't use are disabled)
+    QGLContextPrivate* ctx_d = ctx->d_func();
+    ctx_d->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
+    ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, currentShaderProg->useTextureCoords);
+    ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, currentShaderProg->useOpacityAttribute);
 
     shaderProgNeedsChanging = false;
     return true;

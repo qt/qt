@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,9 +40,10 @@
 ****************************************************************************/
 
 #include <QCoreApplication>
-#include <QDebug>
+#include <QTextStream>
 #include <QStringList>
 #include <QScopedPointer>
+#include <QTimer>
 #include "trkutils.h"
 #include "trkdevice.h"
 #include "launcher.h"
@@ -50,12 +51,15 @@
 #include "trksignalhandler.h"
 #include "serenum.h"
 
-void printUsage()
+void printUsage(QTextStream& outstream)
 {
-    qDebug() << "runtest [options] <program> [program arguments]" << endl
+    outstream << "runtest [options] <program> [program arguments]" << endl
             << "-s, --sis <file>                     specify sis file to install" << endl
             << "-p, --portname <COMx>                specify COM port to use by device name" << endl
             << "-f, --portfriendlyname <substring>   specify COM port to use by friendly name" << endl
+            << "-t, --timeout <milliseconds>         terminate test if timeout occurs" << endl
+            << "-v, --verbose                        show debugging output" << endl
+            << "-q, --quiet                          hide progress messages" << endl
             << endl
             << "USB COM ports can usually be autodetected" << endl;
 }
@@ -68,59 +72,91 @@ int main(int argc, char *argv[])
     QString serialPortFriendlyName;
     QString sisFile;
     QString exeFile;
-    QString cmdLine;
+    QStringList cmdLine;
     QStringList args = QCoreApplication::arguments();
+    QTextStream outstream(stdout);
+    QTextStream errstream(stderr);
+    int loglevel=1;
+    int timeout=0;
     for (int i=1;i<args.size();i++) {
         QString arg = args.at(i);
         if (arg.startsWith("-")) {
             if (args.size() < i+2) {
-                qWarning("Command line missing argument parameters");
+                errstream << "Command line missing argument parameters" << endl;
                 return 1;
             }
-            i++;
-            QString param = args.at(i);
+            QString param = args.at(i+1);
             if(arg.compare("--portname", Qt::CaseSensitive) == 0
-               || arg.compare("-p", Qt::CaseSensitive) == 0)
+               || arg.compare("-p", Qt::CaseSensitive) == 0) {
                 serialPortName = param;
+                i++;
+            }
             else if(arg.compare("--portfriendlyname", Qt::CaseSensitive) == 0
-                    || arg.compare("-f", Qt::CaseSensitive) == 0)
+                    || arg.compare("-f", Qt::CaseSensitive) == 0) {
                 serialPortFriendlyName = param;
+                i++;
+            }
             else if(arg.compare("--sis", Qt::CaseSensitive) == 0
-                    || arg.compare("-s", Qt::CaseSensitive) == 0)
+                    || arg.compare("-s", Qt::CaseSensitive) == 0) {
                 sisFile = param;
+                i++;
+            }
+            else if(arg.compare("--timeout", Qt::CaseSensitive) == 0
+                    || arg.compare("-t", Qt::CaseSensitive) == 0) {
+                bool ok;
+                timeout = param.toInt(&ok);
+                if (!ok) {
+                    errstream << "Timeout must be specified in milliseconds" << endl;
+                    return 1;
+                }
+                i++;
+            }
+            else if(arg.compare("--verbose", Qt::CaseSensitive) == 0
+                    || arg.compare("-v", Qt::CaseSensitive) == 0)
+                loglevel=2;
+            else if(arg.compare("--quiet", Qt::CaseSensitive) == 0
+                    || arg.compare("-q", Qt::CaseSensitive) == 0)
+                loglevel=0;
             else
-                qWarning() << "unknown command line option " << arg;
+                errstream << "unknown command line option " << arg << endl;
         } else {
             exeFile = arg;
             i++;
             for(;i<args.size();i++) {
                 cmdLine.append(args.at(i));
-                if(i + 1 < args.size()) cmdLine.append(' ');
             }
         }
     }
 
     if(exeFile.isEmpty()) {
-        printUsage();
+        printUsage(outstream);
         return 1;
     }
 
     if(serialPortName.isEmpty()) {
-        qDebug() << "Detecting serial ports" << endl;
+        if(loglevel > 0)
+            outstream << "Detecting serial ports" << endl;
         QList <SerialPortId> ports = enumerateSerialPorts();
         foreach(SerialPortId id, ports) {
-            qDebug() << "Port Name: " << id.portName << ", "
+            if(loglevel > 0)
+                outstream << "Port Name: " << id.portName << ", "
                      << "Friendly Name:" << id.friendlyName << endl;
             if(serialPortName.isEmpty()) {
-                if(id.friendlyName.isEmpty() &&
+                if(!id.friendlyName.isEmpty() &&
+                   serialPortFriendlyName.isEmpty() &&
                     (id.friendlyName.contains("symbian", Qt::CaseInsensitive) ||
                        id.friendlyName.contains("s60", Qt::CaseInsensitive) ||
                        id.friendlyName.contains("nokia", Qt::CaseInsensitive)))
                         serialPortName = id.portName;
                 else if (!id.friendlyName.isEmpty() &&
+                         !serialPortFriendlyName.isEmpty() &&
                          id.friendlyName.contains(serialPortFriendlyName))
                         serialPortName = id.portName;
             }
+        }
+        if(serialPortName.isEmpty()) {
+            errstream << "No phone found, ensure USB cable is connected or specify manually with -p" << endl;
+            return 1;
         }
     }
 
@@ -129,20 +165,29 @@ int main(int argc, char *argv[])
     if(sisFile.isEmpty()) {
         launcher.reset(new trk::Launcher(trk::Launcher::ActionCopyRun));
         launcher->setCopyFileName(exeFile, QString("c:\\sys\\bin\\") + exeFile);
-        qDebug() << "System TRK required to copy EXE, use --sis if using Application TRK" << endl;
+        errstream << "System TRK required to copy EXE, use --sis if using Application TRK" << endl;
     } else {
         launcher.reset(new trk::Launcher(trk::Launcher::ActionCopyInstallRun));
         launcher->addStartupActions(trk::Launcher::ActionInstall);
         launcher->setCopyFileName(sisFile, "c:\\data\\testtemp.sis");
         launcher->setInstallFileName("c:\\data\\testtemp.sis");
     }
-    qDebug() << "Connecting to target via " << serialPortName << endl;
+    if(loglevel > 0)
+        outstream << "Connecting to target via " << serialPortName << endl;
+#ifdef Q_OS_WIN
     launcher->setTrkServerName(QString("\\\\.\\") + serialPortName);
+#else
+    launcher->setTrkServerName(serialPortName);
+#endif
 
     launcher->setFileName(QString("c:\\sys\\bin\\") + exeFile);
     launcher->setCommandLineArgs(cmdLine);
 
+    if(loglevel > 1)
+        launcher->setVerbose(1);
+
     TrkSignalHandler handler;
+    handler.setLogLevel(loglevel);
 
     QObject::connect(launcher.data(), SIGNAL(copyingStarted()), &handler, SLOT(copyingStarted()));
     QObject::connect(launcher.data(), SIGNAL(canNotConnect(const QString &)), &handler, SLOT(canNotConnect(const QString &)));
@@ -158,11 +203,21 @@ int main(int argc, char *argv[])
     QObject::connect(launcher.data(), SIGNAL(applicationOutputReceived(const QString &)), &handler, SLOT(applicationOutputReceived(const QString &)));
     QObject::connect(launcher.data(), SIGNAL(copyProgress(int)), &handler, SLOT(copyProgress(int)));
     QObject::connect(launcher.data(), SIGNAL(stateChanged(int)), &handler, SLOT(stateChanged(int)));
+    QObject::connect(launcher.data(), SIGNAL(processStopped(uint,uint,uint,QString)), &handler, SLOT(stopped(uint,uint,uint,QString)));
+    QObject::connect(&handler, SIGNAL(resume(uint,uint)), launcher.data(), SLOT(resumeProcess(uint,uint)));
+    QObject::connect(&handler, SIGNAL(terminate()), launcher.data(), SLOT(terminate()));
     QObject::connect(launcher.data(), SIGNAL(finished()), &handler, SLOT(finished()));
+
+    QTimer timer;
+    timer.setSingleShot(true);
+    QObject::connect(&timer, SIGNAL(timeout()), &handler, SLOT(timeout()));
+    if (timeout > 0) {
+        timer.start(timeout);
+    }
 
     QString errorMessage;
     if(!launcher->startServer(&errorMessage)) {
-        qWarning() << errorMessage;
+        errstream << errorMessage << endl;
         return 1;
     }
 

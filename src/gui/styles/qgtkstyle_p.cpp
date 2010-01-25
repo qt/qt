@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -151,6 +151,7 @@ Ptr_gtk_menu_item_set_submenu QGtkStylePrivate::gtk_menu_item_set_submenu = 0;
 Ptr_gtk_settings_get_default QGtkStylePrivate::gtk_settings_get_default = 0;
 Ptr_gtk_separator_menu_item_new QGtkStylePrivate::gtk_separator_menu_item_new = 0;
 Ptr_gtk_widget_size_allocate QGtkStylePrivate::gtk_widget_size_allocate = 0;
+Ptr_gtk_widget_size_request QGtkStylePrivate::gtk_widget_size_request = 0;
 Ptr_gtk_widget_set_direction QGtkStylePrivate::gtk_widget_set_direction = 0;
 Ptr_gtk_widget_path QGtkStylePrivate::gtk_widget_path = 0;
 Ptr_gtk_container_get_type QGtkStylePrivate::gtk_container_get_type = 0;
@@ -159,7 +160,6 @@ Ptr_gtk_widget_get_type QGtkStylePrivate::gtk_widget_get_type = 0;
 Ptr_gtk_rc_get_style_by_paths QGtkStylePrivate::gtk_rc_get_style_by_paths = 0;
 Ptr_gtk_check_version QGtkStylePrivate::gtk_check_version = 0;
 Ptr_gtk_border_free QGtkStylePrivate::gtk_border_free = 0;
-
 Ptr_pango_font_description_get_size QGtkStylePrivate::pango_font_description_get_size = 0;
 Ptr_pango_font_description_get_weight QGtkStylePrivate::pango_font_description_get_weight = 0;
 Ptr_pango_font_description_get_family QGtkStylePrivate::pango_font_description_get_family = 0;
@@ -410,11 +410,13 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_combo_box_entry_new = (Ptr_gtk_combo_box_entry_new)libgtk.resolve("gtk_combo_box_entry_new");
     gtk_container_forall = (Ptr_gtk_container_forall)libgtk.resolve("gtk_container_forall");
     gtk_widget_size_allocate =(Ptr_gtk_widget_size_allocate)libgtk.resolve("gtk_widget_size_allocate");
+    gtk_widget_size_request =(Ptr_gtk_widget_size_request)libgtk.resolve("gtk_widget_size_request");
     gtk_widget_set_direction =(Ptr_gtk_widget_set_direction)libgtk.resolve("gtk_widget_set_direction");
     gtk_widget_path =(Ptr_gtk_widget_path)libgtk.resolve("gtk_widget_path");
     gtk_container_get_type =(Ptr_gtk_container_get_type)libgtk.resolve("gtk_container_get_type");
     gtk_window_get_type =(Ptr_gtk_window_get_type)libgtk.resolve("gtk_window_get_type");
     gtk_widget_get_type =(Ptr_gtk_widget_get_type)libgtk.resolve("gtk_widget_get_type");
+
     gtk_rc_get_style_by_paths =(Ptr_gtk_rc_get_style_by_paths)libgtk.resolve("gtk_rc_get_style_by_paths");
     gtk_check_version =(Ptr_gtk_check_version)libgtk.resolve("gtk_check_version");
     gtk_border_free =(Ptr_gtk_border_free)libgtk.resolve("gtk_border_free");
@@ -447,10 +449,13 @@ void QGtkStylePrivate::initGtkMenu() const
     gtk_widget_realize(gtkMenu);
 
     GtkWidget *gtkMenuItem = QGtkStylePrivate::gtk_menu_item_new();
+    g_object_set(gtkMenuItem, "label", "X", NULL);
+
     gtk_menu_shell_append((GtkMenuShell*)gtkMenu, gtkMenuItem);
     gtk_widget_realize(gtkMenuItem);
 
     GtkWidget *gtkCheckMenuItem = QGtkStylePrivate::gtk_check_menu_item_new();
+    g_object_set(gtkCheckMenuItem, "label", "X", NULL);
     gtk_menu_shell_append((GtkMenuShell*)gtkMenu, gtkCheckMenuItem);
     gtk_widget_realize(gtkCheckMenuItem);
 

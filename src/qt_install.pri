@@ -16,7 +16,7 @@ qt_install_headers {
     }
 
     equals(TARGET, phonon) {
-        class_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET/Phonon
+        class_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
     } else {
         flat_headers.files = $$INSTALL_HEADERS
         flat_headers.path = $$[QT_INSTALL_HEADERS]/Qt

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,8 +77,7 @@ QList<SerialPortId> enumerateSerialPorts()
         }
         HKEY key = SetupDiOpenDevRegKey(infoset, &info, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
         if(key != INVALID_HANDLE_VALUE) {
-#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0600
-            //RegGetValue not supported on XP, SHRegGetValue not supported by mingw :(
+            //RegGetValue not supported on XP, SHRegGetValue not supported by mingw, so use the old method of enumerating all the values
             for (DWORD dwi=0;;dwi++) {
                 DWORD vsize = valueName.size();
                 if (ERROR_SUCCESS == RegEnumValue(key, dwi, (WCHAR*)(valueName.data()), &vsize, 0, 0, 0, &size)) {
@@ -93,14 +92,6 @@ QList<SerialPortId> enumerateSerialPorts()
                     break;
                 }
             }
-#else
-            if (ERROR_SUCCESS == SHRegGetValue(key, 0, "PortName", SRRF_RT_REG_SZ, 0, &size)) {
-                QByteArray ba(size, 0);
-                if (ERROR_SUCCESS == RegGetValue(key, 0, "PortName", SRRF_RT_REG_SZ, (BYTE*)(ba.data()), &size)) {
-                    portName = QString((const QChar*)(ba.constData()), ba.size() / 2 - 1);
-                }
-            }
-#endif
             RegCloseKey(key);
         }
         SerialPortId id;

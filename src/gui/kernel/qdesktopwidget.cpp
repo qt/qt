@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,6 +47,11 @@ QT_BEGIN_NAMESPACE
 
 const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 {
+    if (!widget) {
+        qWarning("QDesktopWidget::screenGeometry(): Attempt "
+                 "to get the screen geometry of a null widget");
+        return QRect();
+    }
     QRect rect = QWidgetPrivate::screenGeometry(widget);
     if (rect.isNull())
         return screenGeometry(screenNumber(widget));
@@ -55,6 +60,11 @@ const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 
 const QRect QDesktopWidget::availableGeometry(const QWidget *widget) const
 {
+    if (!widget) {
+        qWarning("QDesktopWidget::availableGeometry(): Attempt "
+                 "to get the available geometry of a null widget");
+        return QRect();
+    }
     QRect rect = QWidgetPrivate::screenGeometry(widget);
     if (rect.isNull())
         return availableGeometry(screenNumber(widget));

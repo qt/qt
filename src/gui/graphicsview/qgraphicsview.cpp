@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -217,7 +217,9 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     common side effect is that items that do draw with antialiasing can leave
     painting traces behind on the scene as they are moved.
 
-    \omitvalue IndirectPainting
+    \value IndirectPainting Since Qt 4.6, restore the old painting algorithm
+    that calls QGraphicsView::drawItems() and QGraphicsScene::drawItems().
+    To be used only for compatibility with old code.
 */
 
 /*!
@@ -3365,7 +3367,8 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 #define X11 qt_x11Data
 #endif
                 backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
-            drawBackground(&backgroundPainter, exposedSceneRect);
+            QRectF backgroundExposedSceneRect = mapToScene(d->backgroundPixmapExposed.boundingRect()).boundingRect();
+            drawBackground(&backgroundPainter, backgroundExposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
 
@@ -3614,6 +3617,10 @@ void QGraphicsView::drawForeground(QPainter *painter, const QRectF &rect)
     custom item drawing for this view.
 
     The default implementation calls the scene's drawItems() function.
+
+    \obsolete Since Qt 4.6, this function is not called anymore unless
+    the QGraphicsView::IndirectPainting flag is given as an Optimization
+    flag.
 
     \sa drawForeground(), drawBackground(), QGraphicsScene::drawItems()
 */

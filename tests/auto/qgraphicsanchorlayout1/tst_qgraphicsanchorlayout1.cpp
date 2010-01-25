@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1525,7 +1525,11 @@ void tst_QGraphicsAnchorLayout1::testMulti_data()
         }
 
 
-        QTest::newRow("Linear multi") << QSizeF(width, height) << theData << theResult;
+        if (sizeof(qreal) == 4) {
+            qDebug("Linear multi: Skipping! (qreal has too little precision, result will be wrong)");
+        } else {
+            QTest::newRow("Linear multi") << QSizeF(width, height) << theData << theResult;
+        }
     }
 
     // Multiple widgets, V shape
@@ -1595,7 +1599,11 @@ void tst_QGraphicsAnchorLayout1::testMulti_data()
             }
 
         }
-        QTest::newRow("V multi") << QSizeF(width, height) << theData << theResult;
+        if (sizeof(qreal) == 4) {
+            qDebug("V multi: Skipping! (qreal has too little precision, result will be wrong)");
+        } else {
+            QTest::newRow("V multi") << QSizeF(width, height) << theData << theResult;
+        }
     }
 
     // Multiple widgets, grid
@@ -1653,7 +1661,11 @@ void tst_QGraphicsAnchorLayout1::testMulti_data()
                 << BasicResult(i, QRectF(((i%d)+1)*horizontalStep, ((i/d)+1)*verticalStep, horizontalStep, verticalStep) );
         }
 
-        QTest::newRow("Grid multi") << QSizeF(200, 100) << theData << theResult;
+        if (sizeof(qreal) == 4) {
+            qDebug("Grid multi: Skipping! (qreal has too little precision, result will be wrong)");
+        } else {
+            QTest::newRow("Grid multi") << QSizeF(200, 100) << theData << theResult;
+        }
     }
 }
 
@@ -1669,16 +1681,16 @@ inline QGraphicsLayoutItem *getItem(
     return widgets[index];
 }
 
-static QRectF truncate(QRectF original)
+static bool fuzzierCompare(qreal a, qreal b)
 {
-    QRectF result;
+    return qAbs(a - b) <= qreal(0.0001);
+}
 
-    result.setX(qRound(original.x() * 1000000) / 1000000.0);
-    result.setY(qRound(original.y() * 1000000) / 1000000.0);
-    result.setWidth(qRound(original.width() * 1000000) / 1000000.0);
-    result.setHeight(qRound(original.height() * 1000000) / 1000000.0);
+static bool fuzzierCompare(const QRectF &r1, const QRectF &r2)
+{
 
-    return result;
+    return fuzzierCompare(r1.x(), r2.x()) && fuzzierCompare(r1.y(), r2.y())
+        && fuzzierCompare(r1.width(), r2.width()) && fuzzierCompare(r1.height(), r2.height());
 }
 
 void tst_QGraphicsAnchorLayout1::testBasicLayout()
@@ -1727,10 +1739,10 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
     // Validate
     for (int i = 0; i < result.count(); ++i) {
         const BasicLayoutTestResult item = result[i];
-        QRectF expected = truncate(item.rect);
-        QRectF actual = truncate(widgets[item.index]->geometry());
+        QRectF expected = item.rect;
+        QRectF actual = widgets[item.index]->geometry();
 
-        QCOMPARE(actual, expected);
+        QVERIFY(fuzzierCompare(actual, expected));
     }
 
     // Test mirrored mode
@@ -1744,10 +1756,10 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         if (mirroredRect.isValid()){
             mirroredRect.moveLeft(size.width()-item.rect.width()-item.rect.left());
         }
-        QRectF expected = truncate(mirroredRect);
-        QRectF actual = truncate(widgets[item.index]->geometry());
+        QRectF expected = mirroredRect;
+        QRectF actual = widgets[item.index]->geometry();
 
-        QCOMPARE(actual, expected);
+        QVERIFY(fuzzierCompare(actual, expected));
     }
 
     qDeleteAll(widgets);

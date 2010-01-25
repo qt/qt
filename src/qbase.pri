@@ -4,7 +4,7 @@ INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.6.1
+   VERSION=4.6.2
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
@@ -94,31 +94,17 @@ symbian {
         DEFINES+=QT_MAKEDLL
         TARGET.CAPABILITY = All -Tcb
 
-        defBlock = \
-        "$${LITERAL_HASH}ifdef WINSCW" \
-        "DEFFILE ../s60installs/bwins/$${TARGET}.def" \
-        "$${LITERAL_HASH}elif defined EABI" \
-        "DEFFILE ../s60installs/eabi/$${TARGET}.def" \
-        "$${LITERAL_HASH}endif"
-
-        contains(QT_CONFIG, private_tests) {
-            #When building autotest configuration, there are extra exports from
-            #the Qt DLLs, which we don't want in the frozen DEF files.
-            MMP_RULES += EXPORTUNFROZEN
-        } else {
-            #When building without autotests, DEF files are used by default.
-            #This is to maintain binary compatibility with previous releases.
-            
-            #with defBlock enabled, removed exported symbols are treated as errors
-            #and there is binary compatibility between successive builds.
-            #with defBlock disabled, binary compatibility is broken every time you build
-            MMP_RULES += defBlock
-
-            #with EXPORTUNFROZEN enabled, new exports are included in the dll without
-            #needing to run abld freeze, however binary compatibility is only maintained
-            #for symbols that are frozen (and only if defBlock is also enabled)
-            #the downside of EXPORTUNFROZEN is that the linker gets run twice
-            #MMP_RULES += EXPORTUNFROZEN
+        # When building without autotests, DEF files are used by default.
+        # This is to maintain binary compatibility with previous releases.
+        # To explicitly disable DEF files usage, eg. when lots of code churn is
+        # going on, and functions may be added and removed before shipping, 
+        # configure with -no-usedeffiles
+        # WARNING - disabling DEF files *will* break BC with previous released versions 
+        # of Qt, and the only compatibility will be between this build of Qt and anything 
+        # built in this exact environment.  *Never* use this when building a version 
+        # for release.
+        contains(QT_CONFIG, def_files) {
+            defFilePath=../s60installs
         }
     }
     load(armcc_warnings)
