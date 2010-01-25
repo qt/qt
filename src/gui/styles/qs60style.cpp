@@ -2376,7 +2376,7 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             retValue = QPalette::Base;
             break;
         case SH_ItemView_ActivateItemOnSingleClick:
-            retValue = true;
+            retValue = QS60StylePrivate::isSingleClickUi();
             break;
         case SH_ProgressDialog_TextLabelAlignment:
             retValue = (QApplication::layoutDirection() == Qt::LeftToRight) ?
