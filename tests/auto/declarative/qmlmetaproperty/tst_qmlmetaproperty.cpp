@@ -56,6 +56,20 @@ public:
 QML_DECLARE_TYPE(MyQmlObject);
 QML_DEFINE_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
 
+class MyAttached : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int foo READ foo WRITE setFoo)
+public:
+    MyAttached(QObject *parent) : QObject(parent), m_foo(13) {}
+
+    int foo() const { return m_foo; }
+    void setFoo(int f) { m_foo = f; }
+
+private:
+    int m_foo;
+};
+
 class MyContainer : public QObject
 {
     Q_OBJECT
@@ -67,6 +81,10 @@ public:
     QList<MyQmlObject*> *children() { return &m_children; }
     QmlConcreteList<MyQmlObject *> *qmlChildren() { return &m_qmlChildren; }
 
+    static MyAttached *qmlAttachedProperties(QObject *o) {
+        return new MyAttached(o);
+    }
+
 private:
     QList<MyQmlObject*> m_children;
     QmlConcreteList<MyQmlObject *> m_qmlChildren;
@@ -74,6 +92,7 @@ private:
 
 QML_DECLARE_TYPE(MyContainer);
 QML_DEFINE_TYPE(Test,1,0,MyContainer,MyContainer);
+QML_DECLARE_TYPEINFO(MyContainer, QML_HAS_ATTACHED_PROPERTIES)
 
 class tst_qmlmetaproperty : public QObject
 {
@@ -798,6 +817,38 @@ void tst_qmlmetaproperty::read()
         delete o;
         QCOMPARE(p.read(), QVariant());
     }
+
+    // Attached property
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0\nMyContainer { }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QCOMPARE(p.read(), QVariant(13));
+        delete object;
+    }
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0\nMyContainer { MyContainer.foo: 10 }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QCOMPARE(p.read(), QVariant(10));
+        delete object;
+    }
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0 as Foo\nFoo.MyContainer { Foo.MyContainer.foo: 10 }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "Foo.MyContainer.foo", qmlContext(object));
+        QCOMPARE(p.read(), QVariant(10));
+        delete object;
+    }
 }
 
 void tst_qmlmetaproperty::write()
@@ -895,6 +946,30 @@ void tst_qmlmetaproperty::write()
 
         QCOMPARE(p2.write(QUrl("main.qml")), true);
         QCOMPARE(o.url(), result);
+    }
+
+    // Attached property
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0\nMyContainer { }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        p.write(QVariant(99));
+        QCOMPARE(p.read(), QVariant(99));
+        delete object;
+    }
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0 as Foo\nFoo.MyContainer { Foo.MyContainer.foo: 10 }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "Foo.MyContainer.foo", qmlContext(object));
+        p.write(QVariant(99));
+        QCOMPARE(p.read(), QVariant(99));
+        delete object;
     }
 }
 

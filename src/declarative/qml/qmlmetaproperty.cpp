@@ -46,6 +46,7 @@
 #include "qml.h"
 #include "qmlbinding.h"
 #include "qmlcontext.h"
+#include "qmlcontext_p.h"
 #include "qmlboundsignal_p.h"
 #include "qmlengine.h"
 #include "qmlengine_p.h"
@@ -160,17 +161,13 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
 
     if (enginePrivate && name.at(0).isUpper()) {
         // Attached property
-        //### needs to be done in a better way
-        QmlCompositeTypeData *typeData =
-            enginePrivate->typeManager.get(context->baseUrl());
-
-        if (typeData) {
-            QmlType *t = 0;
-            enginePrivate->resolveType(typeData->imports, name.toUtf8(), &t, 0, 0, 0, 0);
-            if (t && t->attachedPropertiesFunction()) {
-                attachedFunc = t->index();
+        // ### What about qualified types?
+        QmlTypeNameCache *tnCache = QmlContextPrivate::get(context)->imports;
+        if (tnCache) {
+            QmlTypeNameCache::Data *d = tnCache->data(name);
+            if (d && d->type && d->type->attachedPropertiesFunction()) {
+                attachedFunc = d->type->index();
             }
-            typeData->release();
         }
         return;
 
@@ -676,7 +673,7 @@ QVariant QmlMetaProperty::read() const
 
         return QVariant();
 
-    } else if (type() & Property) {
+    } else if (type() & Property || type() & Attached) {
 
         return d->readValueProperty();
 
@@ -1122,24 +1119,51 @@ QmlMetaPropertyPrivate::restore(const QByteArray &data, QObject *object, QmlCont
 
     Creates a QmlMetaProperty for the property \a name of \a obj. Unlike
     the QmlMetaProperty(QObject*, QString, QmlContext*) constructor, this static function
-    will correctly handle dot properties.
+    will correctly handle dot properties, including value types and attached properties.
 */
 QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj, 
                                                 const QString &name,
                                                 QmlContext *context)
 {
-    QStringList path = name.split(QLatin1Char('.'));
+    QmlTypeNameCache *typeNameCache = context?QmlContextPrivate::get(context)->imports:0;
 
+    QStringList path = name.split(QLatin1Char('.'));
     QObject *object = obj;
 
     for (int jj = 0; jj < path.count() - 1; ++jj) {
         const QString &pathName = path.at(jj);
+
+        if (QmlTypeNameCache::Data *data = typeNameCache?typeNameCache->data(pathName):0) {
+            if (data->type) {
+                QmlAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
+                if (!func) 
+                    return QmlMetaProperty();
+                object = qmlAttachedPropertiesObjectById(data->type->index(), object);
+                if (!object)
+                    return QmlMetaProperty();
+                continue;
+            } else {
+                Q_ASSERT(data->typeNamespace);
+                ++jj;
+                data = data->typeNamespace->data(path.at(jj));
+                if (!data || !data->type)
+                    return QmlMetaProperty();
+                QmlAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
+                if (!func) 
+                    return QmlMetaProperty();
+                object = qmlAttachedPropertiesObjectById(data->type->index(), object);
+                if (!object)
+                    return QmlMetaProperty();
+                continue;
+            }
+        }
+
         QmlMetaProperty prop(object, pathName, context);
 
-        if (jj == path.count() - 2 && 
-            prop.propertyType() < (int)QVariant::UserType &&
+        if (jj == path.count() - 2 && prop.propertyType() < (int)QVariant::UserType &&
             qmlValueTypes()->valueTypes[prop.propertyType()]) {
-            // We're now at a value type property
+            // We're now at a value type property.  We can use a global valuetypes array as we 
+            // never actually use the objects, just look up their properties.
             QObject *typeObject = 
                 qmlValueTypes()->valueTypes[prop.propertyType()];
             int idx = typeObject->metaObject()->indexOfProperty(path.last().toUtf8().constData());
