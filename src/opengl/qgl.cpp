@@ -4393,6 +4393,13 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
    \note This function temporarily disables depth-testing when the
    text is drawn.
 
+   \note This function can only be used inside a
+   QPainter::beginNativePainting()/QPainter::endNativePainting() block
+   if the default OpenGL paint engine is QPaintEngine::OpenGL. To make
+   QPaintEngine::OpenGL the default GL engine, call
+   QGL::setPreferredPaintEngine(QPaintEngine::OpenGL) before the
+   QApplication constructor.
+
    \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 
