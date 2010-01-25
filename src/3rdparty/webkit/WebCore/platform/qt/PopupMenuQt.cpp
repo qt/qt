@@ -58,8 +58,10 @@ PopupMenu::PopupMenu(PopupMenuClient* client)
 
 PopupMenu::~PopupMenu()
 {
-    delete m_popup;
-    delete m_proxy;
+    // If we create a proxy, then the deletion of the proxy and the
+    // combo will be done by the proxy's parent (QGraphicsWebView)
+    if (!m_proxy)
+        delete m_popup;
 }
 
 void PopupMenu::clear()
