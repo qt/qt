@@ -525,7 +525,6 @@ int main(int argc, char **argv)
         if (!cd.error().isEmpty())
             printOut(cd.error());
 
-        tsFiles.sort();
         tsFiles.removeDuplicates();
 
         if (!tsFiles.isEmpty())
