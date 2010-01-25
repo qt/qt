@@ -115,6 +115,7 @@ private slots:
     void shutdownErrors();
     void externalScript();
     void compositePropertyType();
+    void jsObject();
 
     void bug1();
 
@@ -1059,6 +1060,18 @@ void tst_qmlecmascript::compositePropertyType()
     QmlComponent component(&engine, TEST_FILE("compositePropertyType.qml"));
     QTest::ignoreMessage(QtDebugMsg, "hello world");
     QObject *object = qobject_cast<QObject *>(component.create());
+    delete object;
+}
+
+// QTBUG-5759
+void tst_qmlecmascript::jsObject()
+{
+    QmlComponent component(&engine, TEST_FILE("jsObject.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toInt(), 92);
+
     delete object;
 }
 
