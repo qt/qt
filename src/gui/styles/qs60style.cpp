@@ -934,10 +934,10 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 horizontal ? QS60StylePrivate::SE_ScrollBarGrooveHorizontal : QS60StylePrivate::SE_ScrollBarGrooveVertical;
             QS60StylePrivate::drawSkinElement(grooveElement, painter, grooveRect, flags);
 
-            const QStyle::SubControls subControls = optionSlider->subControls;
+            const SubControls subControls = optionSlider->subControls;
 
             // select correct slider (horizontal/vertical/pressed)
-            const bool sliderPressed = ((optionSlider->state & QStyle::State_Sunken) && (subControls & SC_ScrollBarSlider));
+            const bool sliderPressed = ((optionSlider->state & State_Sunken) && (subControls & SC_ScrollBarSlider));
             const QS60StylePrivate::SkinElements handleElement =
                 horizontal ?
                     ( sliderPressed ?
@@ -958,7 +958,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             const bool horizontal = optionSlider->orientation == Qt::Horizontal;
 
             //Highlight
-/*            if (optionSlider->state & QStyle::State_HasFocus)
+/*            if (optionSlider->state & State_HasFocus)
                 drawPrimitive(PE_FrameFocusRect, optionSlider, painter, widget);*/
 
             //Groove graphics
@@ -1171,7 +1171,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             // Draw frame
             const QRect textRect = subControlRect(CC_GroupBox, option, SC_GroupBoxLabel, widget);
             const QRect checkBoxRect = subControlRect(CC_GroupBox, option, SC_GroupBoxCheckBox, widget);
-            if (groupBox->subControls & QStyle::SC_GroupBoxFrame) {
+            if (groupBox->subControls & SC_GroupBoxFrame) {
                 QStyleOptionFrameV2 frame;
                 frame.QStyleOption::operator=(*groupBox);
                 frame.features = groupBox->features;
@@ -1182,14 +1182,14 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             }
 
             // Draw title
-            if ((groupBox->subControls & QStyle::SC_GroupBoxLabel) && !groupBox->text.isEmpty()) {
+            if ((groupBox->subControls & SC_GroupBoxLabel) && !groupBox->text.isEmpty()) {
                 const QColor textColor = groupBox->textColor;
                 painter->save();
 
                 if (textColor.isValid())
                     painter->setPen(textColor);
                 int alignment = int(groupBox->textAlignment);
-                if (!styleHint(QStyle::SH_UnderlineShortcut, option, widget))
+                if (!styleHint(SH_UnderlineShortcut, option, widget))
                     alignment |= Qt::TextHideMnemonic;
 
                 drawItemText(painter, textRect,  Qt::TextShowMnemonic | Qt::AlignHCenter | Qt::AlignVCenter | alignment,
@@ -1258,13 +1258,13 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
     case CE_PushButtonBevel:
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            const bool isDisabled = !(option->state & QStyle::State_Enabled);
+            const bool isDisabled = !(option->state & State_Enabled);
             const bool isFlat = button->features & QStyleOptionButton::Flat;
             QS60StyleEnums::SkinParts skinPart;
             QS60StylePrivate::SkinElements skinElement;
             if (!isDisabled) {
-                const bool isPressed = (option->state & QStyle::State_Sunken) ||
-                                       (option->state & QStyle::State_On);
+                const bool isPressed = (option->state & State_Sunken) ||
+                                       (option->state & State_On);
                 if (isFlat) {
                     skinPart =
                         isPressed ? QS60StyleEnums::SP_QsnFrButtonTbCenterPressed : QS60StyleEnums::SP_QsnFrButtonTbCenter;
@@ -1289,7 +1289,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             QStyleOptionToolButton optionToolButton = *toolBtn;
 
-            if (!optionToolButton.icon.isNull() && (optionToolButton.state & QStyle::State_Sunken)
+            if (!optionToolButton.icon.isNull() && (optionToolButton.state & State_Sunken)
                     && (optionToolButton.state & State_Enabled)) {
 
                     const QIcon::State state = optionToolButton.state & State_On ? QIcon::On : QIcon::Off;
@@ -1348,8 +1348,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->save();
 
             painter->setClipRect(voptAdj.rect);
-            const bool isSelected = (vopt->state & QStyle::State_Selected);
-            const bool hasFocus = (vopt->state & QStyle::State_HasFocus);
+            const bool isSelected = (vopt->state & State_Selected);
+            const bool hasFocus = (vopt->state & State_HasFocus);
 
             bool isScrollBarVisible = false;
             int scrollBarWidth = 0;
@@ -1423,8 +1423,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             }
 
              // draw the icon
-             const QIcon::Mode mode = (voptAdj.state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled;
-             const QIcon::State state = voptAdj.state & QStyle::State_Open ? QIcon::On : QIcon::Off;
+             const QIcon::Mode mode = (voptAdj.state & State_Enabled) ? QIcon::Normal : QIcon::Disabled;
+             const QIcon::State state = voptAdj.state & State_Open ? QIcon::On : QIcon::Off;
              voptAdj.icon.paint(painter, iconRect, voptAdj.decorationAlignment, mode, state);
 
              // Draw selection check mark. Show check mark only in multi selection modes.
@@ -1436,29 +1436,29 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
                  QStyleOptionViewItemV4 checkMarkOption(voptAdj);
                  // Draw selection mark.
-                 if (voptAdj.state & QStyle::State_Selected && !singleSelection) {
+                 if (voptAdj.state & State_Selected && !singleSelection) {
                      checkMarkOption.rect = selectionRect;
-                     drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
+                     drawPrimitive(PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
                      if ( textRect.right() > selectionRect.left() )
                          textRect.setRight(selectionRect.left());
                  } else if (singleSelection &&
                      voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator &&
                      selectionRect.isValid()) {
                      checkMarkOption.rect = selectionRect;
-                     checkMarkOption.state = checkMarkOption.state & ~QStyle::State_HasFocus;
+                     checkMarkOption.state = checkMarkOption.state & ~State_HasFocus;
 
                      switch (vopt->checkState) {
                      case Qt::Unchecked:
-                         checkMarkOption.state |= QStyle::State_Off;
+                         checkMarkOption.state |= State_Off;
                          break;
                      case Qt::PartiallyChecked:
-                         checkMarkOption.state |= QStyle::State_NoChange;
+                         checkMarkOption.state |= State_NoChange;
                          break;
                      case Qt::Checked:
-                         checkMarkOption.state |= QStyle::State_On;
+                         checkMarkOption.state |= State_On;
                          break;
                      }
-                     drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
+                     drawPrimitive(PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
                  }
              }
 
@@ -1483,7 +1483,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_TabBarTabShape:
         if (const QStyleOptionTabV3 *optionTab = qstyleoption_cast<const QStyleOptionTabV3 *>(option)) {
             QStyleOptionTabV3 optionTabAdj = *optionTab;
-            const bool isSelected = optionTab->state & QStyle::State_Selected;
+            const bool isSelected = optionTab->state & State_Selected;
             const bool directionMirrored = (optionTab->direction == Qt::RightToLeft);
             QS60StylePrivate::SkinElements skinElement;
             switch (optionTab->shape) {
@@ -1518,9 +1518,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     skinElement==QS60StylePrivate::SE_TabBarTabSouthActive||
                     skinElement==QS60StylePrivate::SE_TabBarTabWestActive) {
                 const int borderThickness =
-                    QS60StylePrivate::pixelMetric(QStyle::PM_DefaultFrameWidth);
+                    QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
                 const int tabOverlap =
-                    QS60StylePrivate::pixelMetric(QStyle::PM_TabBarTabOverlap) - borderThickness;
+                    QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
                 //todo: draw navi wipe behind tabbar - must be drawn with first draw
 
                 if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
@@ -1543,9 +1543,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QStyleOptionTabV3 optionTab = *tab;
             QRect tr = optionTab.rect;
             const bool directionMirrored = (optionTab.direction == Qt::RightToLeft);
-            const int borderThickness = QS60StylePrivate::pixelMetric(QStyle::PM_DefaultFrameWidth);
+            const int borderThickness = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
             const int tabOverlap =
-                QS60StylePrivate::pixelMetric(QStyle::PM_TabBarTabOverlap) - borderThickness;
+                QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap) - borderThickness;
             const QRect windowRect = painter->window();
 
             switch (tab->shape) {
@@ -1599,12 +1599,12 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 m.rotate(newRotation);
                 painter->setTransform(m, true);
             }
-            tr.adjust(0, 0, pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, tab, widget),
-                            pixelMetric(QStyle::PM_TabBarTabShiftVertical, tab, widget));
+            tr.adjust(0, 0, pixelMetric(PM_TabBarTabShiftHorizontal, tab, widget),
+                            pixelMetric(PM_TabBarTabShiftVertical, tab, widget));
 
             if (selected) {
-                tr.setBottom(tr.bottom() - pixelMetric(QStyle::PM_TabBarTabShiftVertical, tab, widget));
-                tr.setRight(tr.right() - pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, tab, widget));
+                tr.setBottom(tr.bottom() - pixelMetric(PM_TabBarTabShiftVertical, tab, widget));
+                tr.setRight(tr.right() - pixelMetric(PM_TabBarTabShiftHorizontal, tab, widget));
             }
 
             int alignment = Qt::AlignCenter | Qt::TextShowMnemonic;
@@ -1714,9 +1714,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QRect textRect = subElementRect(SE_ItemViewItemText, &optionMenuItem, widget);
 
             //todo: move the vertical spacing stuff into subElementRect
-            const int vSpacing = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutVerticalSpacing);
+            const int vSpacing = QS60StylePrivate::pixelMetric(PM_LayoutVerticalSpacing);
             if (checkable){
-                const int hSpacing = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
+                const int hSpacing = QS60StylePrivate::pixelMetric(PM_LayoutHorizontalSpacing);
                 QStyleOptionMenuItem optionCheckBox;
                 optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
                 optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
@@ -1754,7 +1754,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 QStyleOptionMenuItem arrowOptions;
                 arrowOptions.QStyleOption::operator=(*menuItem);
                 const int indicatorWidth = (pixelMetric(PM_ListViewIconSize, option, widget) >> 1) +
-                    pixelMetric(QStyle::PM_LayoutVerticalSpacing, option, widget);
+                    pixelMetric(PM_LayoutVerticalSpacing, option, widget);
                 if (optionMenuItem.direction == Qt::LeftToRight)
                     arrowOptions.rect.setLeft(textRect.right());
                 arrowOptions.rect.setWidth(indicatorWidth);
@@ -2016,7 +2016,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif // QT_NO_LINEEDIT
     case PE_IndicatorCheckBox: {
             // Draw checkbox indicator as color skinned graphics.
-            const QS60StyleEnums::SkinParts skinPart = (option->state & QStyle::State_On) ?
+            const QS60StyleEnums::SkinParts skinPart = (option->state & State_On) ?
                 QS60StyleEnums::SP_QgnIndiCheckboxOn : QS60StyleEnums::SP_QgnIndiCheckboxOff;
             painter->save();
 
@@ -2041,7 +2041,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 if (checkBoxVisible && singleSelection) {
                     drawPrimitive(PE_IndicatorCheckBox, option, painter, widget);
                 // ... or normal "tick" selection at the end.
-                } else if (option->state & QStyle::State_Selected) {
+                } else if (option->state & State_Selected) {
                     QRect tickRect = option->rect;
                     const int frameBorderWidth = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
                     // adjust tickmark rect to exclude frame border
@@ -2076,7 +2076,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 painter->setPen(themeColor);
 
             // Draw radiobutton indicator as color skinned graphics.
-            QS60StyleEnums::SkinParts skinPart = (option->state & QStyle::State_On) ?
+            QS60StyleEnums::SkinParts skinPart = (option->state & State_On) ?
                 QS60StyleEnums::SP_QgnIndiRadiobuttOn : QS60StyleEnums::SP_QgnIndiRadiobuttOff;
             QS60StylePrivate::drawSkinPart(skinPart, painter, buttonRect,
                 (flags | QS60StylePrivate::SF_ColorSkinned));
@@ -2088,7 +2088,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelButtonBevel:
     case PE_FrameButtonBevel:
         if (QS60StylePrivate::canDrawThemeBackground(option->palette.base())) {
-            const bool isPressed = option->state & QStyle::State_Sunken;
+            const bool isPressed = option->state & State_Sunken;
             const QS60StylePrivate::SkinElements skinElement =
                 isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
             QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
@@ -2290,8 +2290,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 //QPalette::Base has been changed, let commonstyle draw the item
                 commonStyleDraws = true;
             } else {
-                QPalette::ColorGroup cg = vopt->state & QStyle::State_Enabled ? QPalette::Normal : QPalette::Disabled;
-                if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
+                QPalette::ColorGroup cg = vopt->state & State_Enabled ? QPalette::Normal : QPalette::Disabled;
+                if (cg == QPalette::Normal && !(vopt->state & State_Active))
                     cg = QPalette::Inactive;
                 if (vopt->features & QStyleOptionViewItemV2::Alternate)
                     painter->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::AlternateBase));
@@ -2396,7 +2396,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             if (QS60StylePrivate::isTouchSupported())
                 //Make itemview easier to use in touch devices
                 //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
-                sz.setHeight(sz.height() + 2 * pixelMetric(QStyle::PM_FocusFrameVMargin));
+                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
             break;
         default:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
@@ -2548,7 +2548,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             const int frameThickness = spinbox->frame ? pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
             const int buttonMargin = spinbox->frame ? 2 : 0;
-            const int buttonWidth = QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize) + 2 * buttonMargin;
+            const int buttonWidth = QS60StylePrivate::pixelMetric(PM_ButtonIconSize) + 2 * buttonMargin;
             QSize buttonSize;
             buttonSize.setHeight(qMax(8, spinbox->rect.height() - frameThickness));
             //width should at least be equal to height
@@ -2597,7 +2597,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             ret = cmb->rect;
             const int width = cmb->rect.width();
             const int height = cmb->rect.height();
-            const int buttonIconSize = QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize);
+            const int buttonIconSize = QS60StylePrivate::pixelMetric(PM_ButtonIconSize);
             const int buttonMargin = cmb->frame ? 2 : 0;
             // lets use spinbox frame here as well, as no combobox specific value available.
             const int frameThickness = cmb->frame ? pixelMetric(PM_SpinBoxFrameWidth, cmb, widget) : 0;
@@ -2635,7 +2635,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 case SC_GroupBoxLabel: {
                     //slightly indent text and boxes, so that dialog border does not mess with them.
                     const int horizontalSpacing =
-                        QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
+                        QS60StylePrivate::pixelMetric(PM_LayoutHorizontalSpacing);
                     ret.adjust(2, horizontalSpacing - 3, 0, 0);
                     }
                     break;
@@ -2711,9 +2711,9 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
 
                 if (const QStyleOptionTabWidgetFrame *twf = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
                     const int tabOverlapNoBorder =
-                        QS60StylePrivate::pixelMetric(QStyle::PM_TabBarTabOverlap);
+                        QS60StylePrivate::pixelMetric(PM_TabBarTabOverlap);
                     const int tabOverlap =
-                        tabOverlapNoBorder-QS60StylePrivate::pixelMetric(QStyle::PM_DefaultFrameWidth);
+                        tabOverlapNoBorder-QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
                     const QTabWidget *tab = qobject_cast<const QTabWidget *>(widget);
                     int gain = (tab) ? tabOverlap * tab->count() : 0;
                     switch (twf->shape) {
@@ -2762,8 +2762,8 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     multiSelection &&
                     (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator)) {
                     const int verticalSpacing =
-                        QS60StylePrivate::pixelMetric(QStyle::PM_LayoutVerticalSpacing);
-                    //const int horizontalSpacing = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
+                        QS60StylePrivate::pixelMetric(PM_LayoutVerticalSpacing);
+                    //const int horizontalSpacing = QS60StylePrivate::pixelMetric(PM_LayoutHorizontalSpacing);
                     const int checkBoxRectWidth = subElementRect(SE_ItemViewItemCheckIndicator, opt, widget).width();
                     ret.adjust(-checkBoxRectWidth - verticalSpacing, 0, -checkBoxRectWidth - verticalSpacing, 0);
                 }
@@ -2809,9 +2809,9 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     singleSelection;
 
                 // Selection check mark rect.
-                const int indicatorWidth = QS60StylePrivate::pixelMetric(QStyle::PM_IndicatorWidth);
-                const int indicatorHeight = QS60StylePrivate::pixelMetric(QStyle::PM_IndicatorHeight);
-                const int spacing = QS60StylePrivate::pixelMetric(QStyle::PM_CheckBoxLabelSpacing);
+                const int indicatorWidth = QS60StylePrivate::pixelMetric(PM_IndicatorWidth);
+                const int indicatorHeight = QS60StylePrivate::pixelMetric(PM_IndicatorHeight);
+                const int spacing = QS60StylePrivate::pixelMetric(PM_CheckBoxLabelSpacing);
 
                 const int itemHeight = opt->rect.height();
                 int heightOffset = 0;
@@ -3031,7 +3031,7 @@ bool QS60Style::event(QEvent *e)
 QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     const QStyleOption *option, const QWidget *widget) const
 {
-    const int iconDimension = QS60StylePrivate::pixelMetric(QStyle::PM_ToolBarIconSize);
+    const int iconDimension = QS60StylePrivate::pixelMetric(PM_ToolBarIconSize);
     const QRect iconSize = (!option) ? QRect(0, 0, iconDimension, iconDimension) : option->rect;
     QS60StyleEnums::SkinParts part;
     QS60StylePrivate::SkinElementFlags adjustedFlags;
@@ -3041,67 +3041,67 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
             QS60StylePrivate::SF_StateDisabled;
 
     switch(standardIcon) {
-        case QStyle::SP_MessageBoxWarning:
+        case SP_MessageBoxWarning:
             part = QS60StyleEnums::SP_QgnNoteWarning;
             break;
-        case QStyle::SP_MessageBoxInformation:
+        case SP_MessageBoxInformation:
             part = QS60StyleEnums::SP_QgnNoteInfo;
             break;
-        case QStyle::SP_MessageBoxCritical:
+        case SP_MessageBoxCritical:
             part = QS60StyleEnums::SP_QgnNoteError;
             break;
-        case QStyle::SP_MessageBoxQuestion:
+        case SP_MessageBoxQuestion:
             part = QS60StyleEnums::SP_QgnNoteQuery;
             break;
-        case QStyle::SP_ArrowRight:
+        case SP_ArrowRight:
             part = QS60StyleEnums::SP_QgnIndiNaviArrowRight;
             break;
-        case QStyle::SP_ArrowLeft:
+        case SP_ArrowLeft:
             part = QS60StyleEnums::SP_QgnIndiNaviArrowLeft;
             break;
-        case QStyle::SP_ArrowUp:
+        case SP_ArrowUp:
             part = QS60StyleEnums::SP_QgnIndiNaviArrowLeft;
             adjustedFlags |= QS60StylePrivate::SF_PointEast;
             break;
-        case QStyle::SP_ArrowDown:
+        case SP_ArrowDown:
             part = QS60StyleEnums::SP_QgnIndiNaviArrowLeft;
             adjustedFlags |= QS60StylePrivate::SF_PointWest;
             break;
-        case QStyle::SP_ArrowBack:
+        case SP_ArrowBack:
             if (QApplication::layoutDirection() == Qt::RightToLeft)
                 return QS60Style::standardIcon(SP_ArrowRight, option, widget);
             return QS60Style::standardIcon(SP_ArrowLeft, option, widget);
-        case QStyle::SP_ArrowForward:
+        case SP_ArrowForward:
             if (QApplication::layoutDirection() == Qt::RightToLeft)
                 return QS60Style::standardIcon(SP_ArrowLeft, option, widget);
             return QS60Style::standardIcon(SP_ArrowRight, option, widget);
-        case QStyle::SP_ComputerIcon:
+        case SP_ComputerIcon:
             part = QS60StyleEnums::SP_QgnPropPhoneMemcLarge;
             break;
-        case QStyle::SP_DirClosedIcon:
+        case SP_DirClosedIcon:
             part = QS60StyleEnums::SP_QgnPropFolderSmall;
             break;
-        case QStyle::SP_DirOpenIcon:
+        case SP_DirOpenIcon:
             part = QS60StyleEnums::SP_QgnPropFolderCurrent;
             break;
-        case QStyle::SP_DirIcon:
+        case SP_DirIcon:
             part = QS60StyleEnums::SP_QgnPropFolderSmall;
             break;
-        case QStyle::SP_FileDialogNewFolder:
+        case SP_FileDialogNewFolder:
             part = QS60StyleEnums::SP_QgnPropFolderSmallNew;
             break;
-        case QStyle::SP_FileIcon:
+        case SP_FileIcon:
             part = QS60StyleEnums::SP_QgnPropFileSmall;
             break;
-        case QStyle::SP_TrashIcon:
+        case SP_TrashIcon:
             part = QS60StyleEnums::SP_QgnNoteErased;
             break;
-        case QStyle::SP_ToolBarHorizontalExtensionButton:
+        case SP_ToolBarHorizontalExtensionButton:
             part = QS60StyleEnums::SP_QgnIndiSubMenu;
             if (QApplication::layoutDirection() == Qt::RightToLeft)
                 adjustedFlags |= QS60StylePrivate::SF_PointSouth;
             break;
-        case QStyle::SP_ToolBarVerticalExtensionButton:
+        case SP_ToolBarVerticalExtensionButton:
             adjustedFlags |= QS60StylePrivate::SF_PointEast;
             part = QS60StyleEnums::SP_QgnIndiSubMenu;
             break;
