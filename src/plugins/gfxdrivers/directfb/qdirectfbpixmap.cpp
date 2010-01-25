@@ -552,6 +552,34 @@ QImage *QDirectFBPixmapData::buffer()
     return &lockedImage;
 }
 
+
+bool QDirectFBPixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    if (!dfbSurface) {
+        return false;
+    }
+    unlockSurface();
+    DFBResult result = dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBPixmapData::scroll", result);
+        return false;
+    }
+    result = dfbSurface->SetPorterDuff(dfbSurface, DSPD_NONE);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBPixmapData::scroll", result);
+        return false;
+    }
+
+    const DFBRectangle source = { rect.x(), rect.y(), rect.width(), rect.height() };
+    result = dfbSurface->Blit(dfbSurface, dfbSurface, &source, source.x + dx, source.y + dy);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBPixmapData::scroll", result);
+        return false;
+    }
+
+    return true;
+}
+
 void QDirectFBPixmapData::invalidate()
 {
     if (dfbSurface) {
@@ -568,6 +596,3 @@ void QDirectFBPixmapData::invalidate()
 QT_END_NAMESPACE
 
 #endif // QT_NO_QWS_DIRECTFB
-
-
-
