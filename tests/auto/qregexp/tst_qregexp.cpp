@@ -102,6 +102,9 @@ private slots:
 
     void reentrancy();
     void threadsafeEngineCache();
+
+    void QTBUG_7049_data();
+    void QTBUG_7049();
 };
 
 // Testing get/set functions
@@ -1331,6 +1334,96 @@ void tst_QRegExp::operator_eq()
             QCOMPARE(rxtable[i] != rxtable[j], i / ELL != j / ELL);
         }
     }
+}
+
+void tst_QRegExp::QTBUG_7049_data()
+{
+    QTest::addColumn<QString>("reStr");
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<int>("matchIndex");
+
+    QTest::addColumn<int>("pos0");
+    QTest::addColumn<int>("pos1");
+    QTest::addColumn<int>("pos2");
+
+    QTest::addColumn<QString>("cap0");
+    QTest::addColumn<QString>("cap1");
+    QTest::addColumn<QString>("cap2");
+
+    QTest::newRow("no match")
+        << QString("(a) (b)") << QString("b a") << -1
+        << -1 << -1 << -1 << QString() << QString() << QString();
+
+    QTest::newRow("both captures match")
+        << QString("(a) (b)") << QString("a b") << 0
+        << 0 << 0 << 2 << QString("a b") << QString("a") << QString("b");
+
+    QTest::newRow("first capture matches @0")
+        << QString("(a*)|(b*)") << QString("axx") << 0
+        << 0 << 0 << -1 << QString("a") << QString("a") << QString();
+    QTest::newRow("second capture matches @0")
+        << QString("(a*)|(b*)") << QString("bxx") << 0
+        << 0 << -1 << 0 << QString("b") << QString() << QString("b");
+    QTest::newRow("first capture empty match @0")
+        << QString("(a*)|(b*)") << QString("xx") << 0
+        << 0 << -1 << -1 << QString("") << QString() << QString();
+    QTest::newRow("second capture empty match @0")
+        << QString("(a)|(b*)") << QString("xx") << 0
+        << 0 << -1 << -1 << QString("") << QString() << QString();
+
+    QTest::newRow("first capture matches @1")
+        << QString("x(?:(a*)|(b*))") << QString("-xa") << 1
+        << 1 << 2 << -1 << QString("xa") << QString("a") << QString();
+    QTest::newRow("second capture matches @1")
+        << QString("x(?:(a*)|(b*))") << QString("-xb") << 1
+        << 1 << -1 << 2 << QString("xb") << QString() << QString("b");
+    QTest::newRow("first capture empty match @1")
+        << QString("x(?:(a*)|(b*))") << QString("-xx") << 1
+        << 1 << -1 << -1 << QString("x") << QString() << QString();
+    QTest::newRow("second capture empty match @1")
+        << QString("x(?:(a)|(b*))") << QString("-xx") << 1
+        << 1 << -1 << -1 << QString("x") << QString() << QString();
+
+    QTest::newRow("first capture matches @2")
+        << QString("(a)|(b)") << QString("xxa") << 2
+        << 2 << 2 << -1 << QString("a") << QString("a") << QString();
+    QTest::newRow("second capture matches @2")
+        << QString("(a)|(b)") << QString("xxb") << 2
+        << 2 << -1 << 2 << QString("b") << QString() << QString("b");
+    QTest::newRow("no match - with options")
+        << QString("(a)|(b)") << QString("xx") << -1
+        << -1 << -1 << -1 << QString() << QString() << QString();
+
+}
+
+void tst_QRegExp::QTBUG_7049()
+{
+    QFETCH( QString, reStr );
+    QFETCH( QString, text );
+    QFETCH( int, matchIndex );
+    QFETCH( int, pos0 );
+    QFETCH( int, pos1 );
+    QFETCH( int, pos2 );
+    QFETCH( QString, cap0 );
+    QFETCH( QString, cap1 );
+    QFETCH( QString, cap2 );
+
+    QRegExp re(reStr);
+    QCOMPARE(re.numCaptures(), 2);
+    QCOMPARE(re.capturedTexts().size(), 3);
+
+    QCOMPARE(re.indexIn(text), matchIndex);
+
+    QCOMPARE( re.pos(0), pos0 );
+    QCOMPARE( re.pos(1), pos1 );
+    QCOMPARE( re.pos(2), pos2 );
+
+    QCOMPARE( re.cap(0).isNull(), cap0.isNull() );
+    QCOMPARE( re.cap(0), cap0 );
+    QCOMPARE( re.cap(1).isNull(), cap1.isNull() );
+    QCOMPARE( re.cap(1), cap1 );
+    QCOMPARE( re.cap(2).isNull(), cap2.isNull() );
+    QCOMPARE( re.cap(2), cap2 );
 }
 
 QTEST_APPLESS_MAIN(tst_QRegExp)
