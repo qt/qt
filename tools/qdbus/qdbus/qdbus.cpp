@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -248,8 +248,8 @@ static QStringList readList(QStringList &args)
     return retval;
 }
 
-static void placeCall(const QString &service, const QString &path, const QString &interface,
-               const QString &member, QStringList args)
+static int placeCall(const QString &service, const QString &path, const QString &interface,
+               const QString &member, QStringList args, bool try_prop=true)
 {
     QDBusInterface iface(service, path, interface, connection);
 
@@ -273,10 +273,22 @@ static void placeCall(const QString &service, const QString &path, const QString
          }
 
         if (midx == -1) {
+            // Failed to set property after falling back?
+            // Bail out without displaying an error
+            if (!try_prop)
+                return 1;
+            if (try_prop && args.size() == 1) {
+                QStringList proparg;
+                proparg += interface;
+                proparg += member;
+                proparg += args.first();
+                if (!placeCall(service, path, "org.freedesktop.DBus.Properties", "Set", proparg, false))
+                    return 0;
+            }
             fprintf(stderr, "Cannot find '%s.%s' in object %s at %s\n",
                     qPrintable(interface), qPrintable(member), qPrintable(path),
                     qPrintable(service));
-            exit(1);
+            return 1;
         }
 
         QMetaMethod mm = mo->method(midx);
@@ -314,7 +326,7 @@ static void placeCall(const QString &service, const QString &path, const QString
                 if (p.type() == QVariant::Invalid) {
                     fprintf(stderr, "Could not convert '%s' to type '%s'.\n",
                             qPrintable(argument), types.at(i).constData());
-                    exit(1);
+                    return 1 ;
                 }
             } else if (id == qMetaTypeId<QDBusVariant>()) {
                 QDBusVariant tmp(p);
@@ -324,7 +336,7 @@ static void placeCall(const QString &service, const QString &path, const QString
                 if (path.path().isNull()) {
                     fprintf(stderr, "Cannot pass argument '%s' because it is not a valid object path.\n",
                             qPrintable(argument));
-                    exit(1);
+                    return 1;
                 }
                 p = qVariantFromValue(path);
             } else if (id == qMetaTypeId<QDBusSignature>()) {
@@ -332,39 +344,50 @@ static void placeCall(const QString &service, const QString &path, const QString
                 if (sig.signature().isNull()) {
                     fprintf(stderr, "Cannot pass argument '%s' because it is not a valid signature.\n",
                             qPrintable(argument));
-                    exit(1);
+                    return 1;
                 }
                 p = qVariantFromValue(sig);
             } else {
                 fprintf(stderr, "Sorry, can't pass arg of type '%s'.\n",
                         types.at(i).constData());
-                exit(1);
+                return 1;
             }
             params += p;
         }
         if (params.count() != types.count() || !args.isEmpty()) {
             fprintf(stderr, "Invalid number of parameters\n");
-            exit(1);
+            return 1;
         }
     }
 
     QDBusMessage reply = iface.callWithArgumentList(QDBus::Block, member, params);
     if (reply.type() == QDBusMessage::ErrorMessage) {
         QDBusError err = reply;
+        // Failed to retrieve property after falling back?
+        // Bail out without displaying an error
+        if (!try_prop)
+            return 1;
+        if (err.type() == QDBusError::UnknownMethod && try_prop) {
+            QStringList proparg;
+            proparg += interface;
+            proparg += member;
+            if (!placeCall(service, path, "org.freedesktop.DBus.Properties", "Get", proparg, false))
+                return 0;
+        }
         if (err.type() == QDBusError::ServiceUnknown)
             fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
         else
             printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
-        exit(2);
+        return 2;
     } else if (reply.type() != QDBusMessage::ReplyMessage) {
         fprintf(stderr, "Invalid reply type %d\n", int(reply.type()));
-        exit(1);
+        return 1;
     }
 
     foreach (QVariant v, reply.arguments())
         printArg(v);
 
-    exit(0);
+    return 0;
 }
 
 static bool globServices(QDBusConnectionInterface *bus, const QString &glob)
@@ -483,6 +506,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    placeCall(service, path, interface, member, args);
+    int ret = placeCall(service, path, interface, member, args);
+    exit(ret);
 }
 

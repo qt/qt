@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,15 +88,15 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         t << "# ==============================================================================" << "\n" << endl;
 
         t << endl << endl;
-        
+
         t << "MAKE = make" << endl;
         t << endl;
-        
+
         t << "VISUAL_CFG = RELEASE" << endl;
-        t << "ifeq \"$(CFG)\" \"UDEB\"" << endl;        
-        t << "VISUAL_CFG = DEBUG" << endl;        
-        t << "endif" << endl;           
-        t << endl;        
+        t << "ifeq \"$(CFG)\" \"UDEB\"" << endl;
+        t << "VISUAL_CFG = DEBUG" << endl;
+        t << "endif" << endl;
+        t << endl;
 
         t << DO_NOTHING_TARGET " :" << endl;
         t << "\t" << "@rem " DO_NOTHING_TARGET << endl << endl;
@@ -113,8 +113,8 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
             cleanDepsWinscw.append(WINSCW_DEPLOYMENT_CLEAN_TARGET);
             finalDeps.append(DO_NOTHING_TARGET);
             finalDepsWinscw.append(WINSCW_DEPLOYMENT_TARGET);
-            wrapperTargets << WINSCW_DEPLOYMENT_TARGET 
-                << WINSCW_DEPLOYMENT_CLEAN_TARGET 
+            wrapperTargets << WINSCW_DEPLOYMENT_TARGET
+                << WINSCW_DEPLOYMENT_CLEAN_TARGET
                 << STORE_BUILD_TARGET;
         } else {
             buildDeps.append(CREATE_TEMPS_TARGET " " PRE_TARGETDEPS_TARGET " " STORE_BUILD_TARGET);
@@ -153,9 +153,9 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         QString makefile(Option::fixPathToTargetOS(fileInfo(wrapperFileName).canonicalFilePath()));
         foreach(QString target, wrapperTargets) {
             t << target << " : " << makefile << endl;
-            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SIS_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;                    
-        }     
-        
+            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SIS_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;
+        }
+
         t << endl;
     } // if(ft.open(QIODevice::WriteOnly))
 }
@@ -195,16 +195,21 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
     t << "MOVE              = " << var("QMAKE_MOVE") << endl;
+#ifdef Q_OS_WIN32
     t << "XCOPY             = xcopy /d /f /h /r /y /i" << endl;
     t << "ABLD              = ABLD.BAT" << endl;
+#else
+    t << "XCOPY             = cp -u -v" << endl;
+    t << "ABLD              = abld" << endl;
+#endif
     t << "DEBUG_PLATFORMS   = " << debugPlatforms.join(" ") << endl;
     t << "RELEASE_PLATFORMS = " << releasePlatforms.join(" ") << endl;
     t << "MAKE              = make" << endl;
     t << endl;
     t << "ifeq (WINS,$(findstring WINS, $(PLATFORM)))" << endl;
-    t << "ZDIR=$(EPOCROOT)epoc32\\release\\$(PLATFORM)\\$(CFG)\\Z" << endl;
+    t << "ZDIR=$(EPOCROOT)" << QDir::toNativeSeparators("epoc32/release/$(PLATFORM)/$(CFG)/z") << endl;
     t << "else" << endl;
-    t << "ZDIR=$(EPOCROOT)epoc32\\data\\z" << endl;
+    t << "ZDIR=$(EPOCROOT)" << QDir::toNativeSeparators("epoc32/data/z") << endl;
     t << "endif" << endl;
     t << endl;
     t << "DEFINES" << '\t' << " = "
@@ -304,8 +309,13 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
                 if (values.at(i).endsWith("/" QT_EXTRA_INCLUDE_DIR)) {
                     QString fixedValue(QDir::toNativeSeparators(values.at(i)));
                     dirsToClean << fixedValue;
+#ifdef Q_OS_WIN32
                     t << "\t-@ if NOT EXIST \""  << fixedValue << "\" mkdir \""
                       << fixedValue << "\"" << endl;
+#else
+                    t << "\t-@ if test ! -d \""  << fixedValue << "\"; then mkdir \""
+                      << fixedValue << "\"" << "; fi" <<endl;
+#endif
                 }
             }
         }
@@ -314,7 +324,11 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         // Note: EXTENSION_CLEAN will get called many times when doing reallyclean
         //       This is why the "2> NUL" gets appended to generated clean targets in makefile.cpp.
         t << EXTENSION_CLEAN ": " COMPILER_CLEAN_TARGET << endl;
+#ifdef Q_OS_WIN32
         generateCleanCommands(t, dirsToClean, var("QMAKE_DEL_DIR"), " /S /Q ", "", "");
+#else
+        generateCleanCommands(t, dirsToClean, "rm", " -rf ", "", "");
+#endif
         t << endl;
 
         t << PRE_TARGETDEPS_TARGET ":"
@@ -372,11 +386,29 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "\t-bldmake clean" << endl;
     t << endl;
 
-    // Create execution target
-    if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
-        t << "run:" << endl;
-        t << "\t-call " << epocRoot() << "epoc32\\release\\winscw\\udeb\\" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << endl << endl;
+    t << "clean-debug: $(ABLD)" << endl;
+    foreach(QString item, debugPlatforms) {
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " udeb" << endl;
     }
+    t << endl;
+    t << "clean-release: $(ABLD)" << endl;
+    foreach(QString item, releasePlatforms) {
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
+    }
+    t << endl;
+
+    // For more specific builds, targets are in this form: clean-build-platform, e.g. clean-release-armv5
+    foreach(QString item, debugPlatforms) {
+        t << "clean-debug-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " udeb" << endl;
+    }
+    foreach(QString item, releasePlatforms) {
+        t << "clean-release-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
+    }
+    t << endl;
+
+    generateExecutionTargets(t, debugPlatforms);
 }
 
 void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)
@@ -423,21 +455,31 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
 
 void SymbianAbldMakefileGenerator::writeStoreBuildTarget(QTextStream &t)
 {
+#ifdef Q_OS_WIN
+#define HASH "#"
+#define EMPTYECHO "."
+#else
+#define HASH "\\#"
+#define EMPTYECHO
+#endif
+
     t << STORE_BUILD_TARGET ":" << endl;
-    t << "\t@echo # ============================================================================== > " MAKE_CACHE_NAME << endl;
-    t << "\t@echo # This file is generated by make and should not be modified by the user >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #  Name        : " << MAKE_CACHE_NAME << " >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #  Part of     : " << project->values("TARGET").join(" ") << " >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #  Description : This file is used to cache last build target for >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #                make sis target. >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #  Version     :  >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo # >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo # ============================================================================== >> " MAKE_CACHE_NAME <<  endl;
-    t << "\t@echo. >> " MAKE_CACHE_NAME <<  endl;
+    t << "\t@echo " HASH " ============================================================================== > " MAKE_CACHE_NAME << endl;
+    t << "\t@echo " HASH " This file is generated by make and should not be modified by the user >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo " HASH "  Name        : " << MAKE_CACHE_NAME << " >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo " HASH "  Part of     : " << project->values("TARGET").join(" ") << " >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo " HASH "  Description : This file is used to cache last build target for >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo " HASH "                make sis target. >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo " HASH "  Version     :  >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo " HASH " >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo " HASH " ============================================================================== >> " MAKE_CACHE_NAME <<  endl;
+    t << "\t@echo" EMPTYECHO " >> " MAKE_CACHE_NAME <<  endl;
     t << "\t@echo QT_SIS_TARGET ?= $(QT_SIS_TARGET) >> " MAKE_CACHE_NAME << endl;
     t << endl;
 
     generatedFiles << MAKE_CACHE_NAME;
+#undef HASH
+#undef EMPTYECHO
 }
 
 void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool addDeploymentExtension)

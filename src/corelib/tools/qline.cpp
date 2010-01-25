@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -574,7 +574,7 @@ qreal QLineF::angle() const
     const qreal dx = pt2.x() - pt1.x();
     const qreal dy = pt2.y() - pt1.y();
 
-    const qreal theta = atan2(-dy, dx) * 360.0 / M_2PI;
+    const qreal theta = qAtan2(-dy, dx) * 360.0 / M_2PI;
 
     const qreal theta_normalized = theta < 0 ? theta + 360 : theta;
 
@@ -814,7 +814,7 @@ qreal QLineF::angle(const QLineF &l) const
     qreal cos_line = (dx()*l.dx() + dy()*l.dy()) / (length()*l.length());
     qreal rad = 0;
     // only accept cos_line in the range [-1,1], if it is outside, use 0 (we return 0 rather than PI for those cases)
-    if (cos_line >= -1.0 && cos_line <= 1.0) rad = acos( cos_line );
+    if (cos_line >= -1.0 && cos_line <= 1.0) rad = qAcos( cos_line );
     return rad * 360 / M_2PI;
 }
 

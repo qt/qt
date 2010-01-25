@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,7 +68,7 @@ QT_MODULE(Gui)
 
 class QPaintEngineEx;
 
-typedef void (*qvectorpath_cache_cleanup)(void *data);
+typedef void (*qvectorpath_cache_cleanup)(QPaintEngineEx *engine, void *data);
 
 struct QRealRect {
     qreal x1, y1, x2, y2;
@@ -118,6 +118,8 @@ public:
     {
     }
 
+    ~QVectorPath();
+
     QRectF controlPointRect() const;
 
     inline Hint shape() const { return (Hint) (m_hints & ShapeMask); }
@@ -128,6 +130,7 @@ public:
     inline bool hasImplicitClose() const { return m_hints & ImplicitClose; }
     inline bool hasWindingFill() const { return m_hints & WindingFill; }
 
+    inline void makeCacheable() const { m_hints |= ShouldUseCacheHint; m_cache = 0; }
     inline uint hints() const { return m_hints; }
 
     inline const QPainterPath::ElementType *elements() const { return m_elements; }
@@ -146,9 +149,9 @@ public:
         CacheEntry *next;
     };
 
-    CacheEntry *addCacheData(QPaintEngineEx *engine, void *data, qvectorpath_cache_cleanup cleanup);
+    CacheEntry *addCacheData(QPaintEngineEx *engine, void *data, qvectorpath_cache_cleanup cleanup) const;
     inline CacheEntry *lookupCacheData(QPaintEngineEx *engine) const {
-        Q_ASSERT(m_hints & IsCachedHint);
+        Q_ASSERT(m_hints & ShouldUseCacheHint);
         CacheEntry *e = m_cache;
         while (e) {
             if (e->engine == engine)
@@ -162,14 +165,14 @@ public:
 private:
     Q_DISABLE_COPY(QVectorPath)
 
-    CacheEntry *m_cache;
-
     const QPainterPath::ElementType *m_elements;
     const qreal *m_points;
     const int m_count;
 
     mutable uint m_hints;
     mutable QRealRect m_cp_rect;
+
+    mutable CacheEntry *m_cache;
 };
 
 Q_GUI_EXPORT const QVectorPath &qtVectorPathForPath(const QPainterPath &path);

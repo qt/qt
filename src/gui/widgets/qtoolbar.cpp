@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -396,10 +396,10 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
 void QToolBarPrivate::unplug(const QRect &_r)
 {
     Q_Q(QToolBar);
-    layout->setExpanded(false);
     QRect r = _r;
     r.moveTopLeft(q->mapToGlobal(QPoint(0, 0)));
     setWindowState(true, true, r);
+    layout->setExpanded(false);
 }
 
 void QToolBarPrivate::plug(const QRect &r)
@@ -532,6 +532,14 @@ void QToolBarPrivate::plug(const QRect &r)
     \sa isWindow()
 */
 
+
+/*!
+    \fn void QToolBar::visibilityChanged(bool visible)
+    \since 4.7
+
+    This signal is emitted when the toolbar becomes \a visible (or
+    invisible). This happens when the widget is hidden or shown.
+*/
 
 /*!
     Constructs a QToolBar with the given \a parent.
@@ -1123,6 +1131,7 @@ bool QToolBar::event(QEvent *event)
         // fallthrough intended
     case QEvent::Show:
         d->toggleViewAction->setChecked(event->type() == QEvent::Show);
+        emit visibilityChanged(event->type() == QEvent::Show);
 #if defined(Q_WS_MAC)
         if (toolbarInUnifiedToolBar(this)) {
              // I can static_cast because I did the qobject_cast in the if above, therefore

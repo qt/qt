@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -161,7 +161,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_THREAD
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
+#endif
 
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
@@ -173,12 +175,17 @@ QUnifiedTimer::QUnifiedTimer() :
 QUnifiedTimer *QUnifiedTimer::instance()
 {
     QUnifiedTimer *inst;
+#ifndef QT_NO_THREAD
     if (!unifiedTimer()->hasLocalData()) {
         inst = new QUnifiedTimer;
         unifiedTimer()->setLocalData(inst);
     } else {
         inst = unifiedTimer()->localData();
     }
+#else
+    static QUnifiedTimer unifiedTimer;
+    inst = &unifiedTimer;
+#endif
     return inst;
 }
 
@@ -229,7 +236,10 @@ void QUnifiedTimer::restartAnimationTimer()
 
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
-    if (event->timerId() == startStopAnimationTimer.timerId()) {
+    //in the case of consistent timing we make sure the orders in which events come is always the same
+   //for that purpose we do as if the startstoptimer would always fire before the animation timer
+    if ((consistentTiming && startStopAnimationTimer.isActive()) ||
+        event->timerId() == startStopAnimationTimer.timerId()) {
         startStopAnimationTimer.stop();
 
         //we transfer the waiting animations into the "really running" state
@@ -239,7 +249,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
             animationTimer.stop();
             isPauseTimerActive = false;
             // invalidate the start reference time
-            time = QTime();
+            time.invalidate();
         } else {
             restartAnimationTimer();
             if (!time.isValid()) {
@@ -247,7 +257,9 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
                 time.start();
             }
         }
-    } else if (event->timerId() == animationTimer.timerId()) {
+    }
+
+    if (event->timerId() == animationTimer.timerId()) {
         // update current time on all top level animations
         updateAnimationsTime();
         restartAnimationTimer();

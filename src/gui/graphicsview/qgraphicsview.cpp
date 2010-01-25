@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -217,7 +217,9 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     common side effect is that items that do draw with antialiasing can leave
     painting traces behind on the scene as they are moved.
 
-    \omitvalue IndirectPainting
+    \value IndirectPainting Since Qt 4.6, restore the old painting algorithm
+    that calls QGraphicsView::drawItems() and QGraphicsScene::drawItems().
+    To be used only for compatibility with old code.
 */
 
 /*!
@@ -541,6 +543,32 @@ qint64 QGraphicsViewPrivate::verticalScroll() const
     if (dirtyScroll)
         const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
     return scrollY;
+}
+
+/*!
+    \internal
+
+    Maps the given rectangle to the scene using QTransform::mapRect()
+*/
+QRectF QGraphicsViewPrivate::mapRectToScene(const QRect &rect) const
+{
+    if (dirtyScroll)
+        const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
+    QRectF scrolled = QRectF(rect.translated(scrollX, scrollY));
+    return identityMatrix ? scrolled : matrix.inverted().mapRect(scrolled);
+}
+
+
+/*!
+    \internal
+
+    Maps the given rectangle from the scene using QTransform::mapRect()
+*/
+QRectF QGraphicsViewPrivate::mapRectFromScene(const QRectF &rect) const
+{
+    if (dirtyScroll)
+        const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
+    return (identityMatrix ? rect : matrix.mapRect(rect)).translated(-scrollX, -scrollY);
 }
 
 /*!
@@ -1182,6 +1210,11 @@ void QGraphicsView::setTransformationAnchor(ViewportAnchor anchor)
 {
     Q_D(QGraphicsView);
     d->transformationAnchor = anchor;
+
+    // Ensure mouse tracking is enabled in the case we are using AnchorUnderMouse
+    // in order to have up-to-date information for centering the view.
+    if (d->transformationAnchor == AnchorUnderMouse)
+        d->viewport->setMouseTracking(true);
 }
 
 /*!
@@ -1209,6 +1242,11 @@ void QGraphicsView::setResizeAnchor(ViewportAnchor anchor)
 {
     Q_D(QGraphicsView);
     d->resizeAnchor = anchor;
+
+    // Ensure mouse tracking is enabled in the case we are using AnchorUnderMouse
+    // in order to have up-to-date information for centering the view.
+    if (d->resizeAnchor == AnchorUnderMouse)
+        d->viewport->setMouseTracking(true);
 }
 
 /*!
@@ -2571,9 +2609,12 @@ void QGraphicsView::setupViewport(QWidget *widget)
     }
 
     // We are only interested in mouse tracking if items
-    // accept hover events or use non-default cursors.
-    if (d->scene && (!d->scene->d_func()->allItemsIgnoreHoverEvents
-                     || !d->scene->d_func()->allItemsUseDefaultCursor)) {
+    // accept hover events or use non-default cursors or if
+    // AnchorUnderMouse is used as transformation or resize anchor.
+    if ((d->scene && (!d->scene->d_func()->allItemsIgnoreHoverEvents
+                     || !d->scene->d_func()->allItemsUseDefaultCursor))
+        || d->transformationAnchor == AnchorUnderMouse
+        || d->resizeAnchor == AnchorUnderMouse) {
         widget->setMouseTracking(true);
     }
 
@@ -3326,7 +3367,8 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 #define X11 qt_x11Data
 #endif
                 backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
-            drawBackground(&backgroundPainter, exposedSceneRect);
+            QRectF backgroundExposedSceneRect = mapToScene(d->backgroundPixmapExposed.boundingRect()).boundingRect();
+            drawBackground(&backgroundPainter, backgroundExposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
 
@@ -3575,6 +3617,10 @@ void QGraphicsView::drawForeground(QPainter *painter, const QRectF &rect)
     custom item drawing for this view.
 
     The default implementation calls the scene's drawItems() function.
+
+    \obsolete Since Qt 4.6, this function is not called anymore unless
+    the QGraphicsView::IndirectPainting flag is given as an Optimization
+    flag.
 
     \sa drawForeground(), drawBackground(), QGraphicsScene::drawItems()
 */

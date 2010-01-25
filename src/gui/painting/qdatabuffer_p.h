@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -81,13 +81,20 @@ public:
 
     inline Type &at(int i) { Q_ASSERT(i >= 0 && i < siz); return buffer[i]; }
     inline const Type &at(int i) const { Q_ASSERT(i >= 0 && i < siz); return buffer[i]; }
+    inline Type &last() { Q_ASSERT(!isEmpty()); return buffer[siz-1]; }
     inline const Type &last() const { Q_ASSERT(!isEmpty()); return buffer[siz-1]; }
+    inline Type &first() { Q_ASSERT(!isEmpty()); return buffer[0]; }
     inline const Type &first() const { Q_ASSERT(!isEmpty()); return buffer[0]; }
 
     inline void add(const Type &t) {
         reserve(siz + 1);
         buffer[siz] = t;
         ++siz;
+    }
+
+    inline void pop_back() {
+        Q_ASSERT(siz > 0);
+        --siz;
     }
 
     inline void resize(int size) {

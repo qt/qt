@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -458,7 +458,7 @@ inline void qVariantSetValue(QVariant &v, const T &t)
     //if possible we reuse the current QVariant private
     const uint type = qMetaTypeId<T>(reinterpret_cast<T *>(0));
     QVariant::Private &d = v.data_ptr();
-    if (v.isDetached() && (type <= uint(QVariant::Char) || type == d.type)) {
+    if (v.isDetached() && (type == d.type || (type <= uint(QVariant::Char) && d.type <= uint(QVariant::Char)))) {
         d.type = type;
         d.is_null = false;
         T *old = reinterpret_cast<T*>(d.is_shared ? d.data.shared->ptr : &d.data.ptr);

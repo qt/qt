@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -231,7 +231,7 @@ bool qt_mac_activate_action(MenuRef menu, uint command, QAction::ActionEvent act
 
     //now walk up firing for each "caused" widget (like in the platform independent menu)
     QWidget *caused = 0;
-    if (GetMenuItemProperty(menu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), 0, &caused) == noErr) {
+    if (action_e == QAction::Hover && GetMenuItemProperty(menu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), 0, &caused) == noErr) {
         MenuRef caused_menu = 0;
         if (QMenu *qmenu2 = qobject_cast<QMenu*>(caused))
             caused_menu = qmenu2->macMenu();
@@ -244,25 +244,17 @@ bool qt_mac_activate_action(MenuRef menu, uint command, QAction::ActionEvent act
             QWidget *widget = 0;
             GetMenuItemProperty(caused_menu, 0, kMenuCreatorQt, kMenuPropertyQWidget, sizeof(widget), 0, &widget);
             if (QMenu *qmenu = qobject_cast<QMenu*>(widget)) {
-                if (action_e == QAction::Trigger) {
-                    emit qmenu->triggered(action->action);
-                } else if (action_e == QAction::Hover) {
-                    action->action->showStatusText(widget);
-                    emit qmenu->hovered(action->action);
-                }
+                action->action->showStatusText(widget);
+                emit qmenu->hovered(action->action);
             } else if (QMenuBar *qmenubar = qobject_cast<QMenuBar*>(widget)) {
-                if (action_e == QAction::Trigger) {
-                    emit qmenubar->triggered(action->action);
-                } else if (action_e == QAction::Hover) {
-                    action->action->showStatusText(widget);
-                    emit qmenubar->hovered(action->action);
-                }
+                action->action->showStatusText(widget);
+                emit qmenubar->hovered(action->action);
                 break; //nothing more..
             }
 
             //walk up
             if (GetMenuItemProperty(caused_menu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget,
-                                   sizeof(caused), 0, &caused) != noErr)
+                                    sizeof(caused), 0, &caused) != noErr)
                 break;
             if (QMenu *qmenu2 = qobject_cast<QMenu*>(caused))
                 caused_menu = qmenu2->macMenu();
@@ -633,7 +625,7 @@ static NSMenuItem *createNSMenuItem(const QString &title)
     NSMenuItem *item = [[NSMenuItem alloc] 
                          initWithTitle:qt_mac_QStringToNSString(title)
                          action:@selector(qtDispatcherToQAction:) keyEquivalent:@""];
-    [item setTarget:getMenuLoader()];
+    [item setTarget:nil];
     return item;
 }
 #endif
@@ -732,32 +724,6 @@ bool qt_mac_menubar_is_open()
 {
     return qt_mac_menus_open_count > 0;
 }
-
-void qt_mac_clear_menubar()
-{
-    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
-        return;
-
-#ifndef QT_MAC_USE_COCOA
-    MenuRef clear_menu = 0;
-    if (CreateNewMenu(0, 0, &clear_menu) == noErr) {
-        SetRootMenu(clear_menu);
-        ReleaseMenu(clear_menu);
-    } else {
-        qWarning("QMenu: Internal error at %s:%d", __FILE__, __LINE__);
-    }
-    ClearMenuBar();
-    qt_mac_command_set_enabled(0, kHICommandPreferences, false);
-    InvalMenuBar();
-#else
-    QMacCocoaAutoReleasePool pool;
-    QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
-    NSMenu *menu = [loader menu];
-    [loader ensureAppMenuInMenu:menu];
-    [NSApp setMainMenu:menu];
-#endif
-}
-
 
 QMacMenuAction::~QMacMenuAction()
 {
@@ -1114,7 +1080,7 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
                 action->menu = merge;
                 [cmd retain];
                 [cmd setAction:@selector(qtDispatcherToQAction:)];
-                [cmd setTarget:getMenuLoader()];
+                [cmd setTarget:nil];
                 [action->menuItem release];
                 action->menuItem = cmd;
                 QMenuMergeList *list = QMenuPrivate::mergeMenuItemsHash.value(merge);
@@ -1914,23 +1880,90 @@ static bool qt_mac_is_ancestor(QWidget* possibleAncestor, QWidget *child)
     Returns true if the entries of menuBar should be disabled,
     based on the modality type of modalWidget.
 */
-static bool qt_mac_should_disable_menu(QMenuBar *menuBar, QWidget *modalWidget)
+static bool qt_mac_should_disable_menu(QMenuBar *menuBar)
 {
-    if (modalWidget == 0 || menuBar == 0)
+    QWidget *modalWidget = qApp->activeModalWidget();
+    if (!modalWidget)
         return false;
 
-    // If there is an application modal window on
-    // screen, the entries of the menubar should be disabled:
+    if (menuBar && menuBar == menubars()->value(modalWidget))
+        // The menu bar is owned by the modal widget.
+        // In that case we should enable it:
+        return false;
+
+    // When there is an application modal window on screen, the entries of
+    // the menubar should be disabled. The exception in Qt is that if the
+    // modal window is the only window on screen, then we enable the menu bar.
     QWidget *w = modalWidget;
+    QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
     while (w) {
-        if (w->isVisible() && w->windowModality() == Qt::ApplicationModal)
-            return true;
+        if (w->isVisible() && w->windowModality() == Qt::ApplicationModal) {
+            for (int i=0; i<topLevelWidgets.size(); ++i) {
+                QWidget *top = topLevelWidgets.at(i);
+                if (w != top && [qt_mac_window_for(top) isVisible]) {
+                    // INVARIANT: we found another visible window
+                    // on screen other than our modalWidget. We therefore
+                    // disable the menu bar to follow normal modality logic:
+                    return true;
+                }
+            }
+            // INVARIANT: We have only one window on screen that happends
+            // to be application modal. We choose to enable the menu bar
+            // in that case to e.g. enable the quit menu item.
+            return false;
+        }
         w = w->parentWidget();
     }
 
     // INVARIANT: modalWidget is window modal. Disable menu entries
-    // if the menu bar belongs to an ancestor of modalWidget:
-    return qt_mac_is_ancestor(menuBar->parentWidget(), modalWidget);
+    // if the menu bar belongs to an ancestor of modalWidget. If menuBar
+    // is nil, we understand it as the default menu bar set by the nib:
+    return menuBar ? qt_mac_is_ancestor(menuBar->parentWidget(), modalWidget) : false;
+}
+
+static QWidget *findWindowThatShouldDisplayMenubar()
+{
+    QWidget *w = qApp->activeWindow();
+    if (!w) {
+        // We have no active window on screen. Try to
+        // find a window from the list of top levels:
+        QWidgetList tlws = QApplication::topLevelWidgets();
+        for(int i = 0; i < tlws.size(); ++i) {
+            QWidget *tlw = tlws.at(i);
+            if ((tlw->isVisible() && tlw->windowType() != Qt::Tool &&
+                tlw->windowType() != Qt::Popup)) {
+                w = tlw;
+                break;
+            }
+        }
+    }
+    return w;
+}
+
+static QMenuBar *findMenubarForWindow(QWidget *w)
+{
+    QMenuBar *mb = 0;
+    if (w) {
+        mb = menubars()->value(w);
+#ifndef QT_NO_MAINWINDOW
+        QDockWidget *dw = qobject_cast<QDockWidget *>(w);
+        if (!mb && dw) {
+            QMainWindow *mw = qobject_cast<QMainWindow *>(dw->parentWidget());
+            if (mw && (mb = menubars()->value(mw)))
+                w = mw;
+        }
+#endif
+        while(w && !mb)
+            mb = menubars()->value((w = w->parentWidget()));
+    }
+
+    if (!mb) {
+        // We could not find a menu bar for the window. Lets
+        // check if we have a global (parentless) menu bar instead:
+        mb = fallback;
+    }
+
+    return mb;
 }
 
 static void cancelAllMenuTracking()
@@ -1947,6 +1980,36 @@ static void cancelAllMenuTracking()
 #endif
 }
 
+void qt_mac_clear_menubar()
+{
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
+        return;
+
+#ifndef QT_MAC_USE_COCOA
+    MenuRef clear_menu = 0;
+    if (CreateNewMenu(0, 0, &clear_menu) == noErr) {
+        SetRootMenu(clear_menu);
+        ReleaseMenu(clear_menu);
+    } else {
+        qWarning("QMenu: Internal error at %s:%d", __FILE__, __LINE__);
+    }
+    ClearMenuBar();
+    qt_mac_command_set_enabled(0, kHICommandPreferences, false);
+    InvalMenuBar();
+#else
+    QMacCocoaAutoReleasePool pool;
+    QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
+    NSMenu *menu = [loader menu];
+    [loader ensureAppMenuInMenu:menu];
+    [NSApp setMainMenu:menu];
+    const bool modal = qt_mac_should_disable_menu(0);
+    if (qt_mac_current_menubar.qmenubar || modal != qt_mac_current_menubar.modal)
+        qt_mac_set_modal_state(menu, modal);
+    qt_mac_current_menubar.qmenubar = 0;
+    qt_mac_current_menubar.modal = modal;
+#endif
+}
+
 /*!
   \internal
 
@@ -1959,40 +2022,13 @@ static void cancelAllMenuTracking()
 */
 bool QMenuBar::macUpdateMenuBar()
 {
-    cancelAllMenuTracking();
-    QMenuBar *mb = 0;
-    //find a menu bar
-    QWidget *w = qApp->activeWindow();
-
-    if (!w) {
-        QWidgetList tlws = QApplication::topLevelWidgets();
-        for(int i = 0; i < tlws.size(); ++i) {
-            QWidget *tlw = tlws.at(i);
-            if ((tlw->isVisible() && tlw->windowType() != Qt::Tool &&
-                tlw->windowType() != Qt::Popup)) {
-                w = tlw;
-                break;
-            }
-        }
-    }
-    if (w) {
-        mb = menubars()->value(w);
-#ifndef QT_NO_MAINWINDOW
-        QDockWidget *dw = qobject_cast<QDockWidget *>(w);
-        if (!mb && dw) {
-            QMainWindow *mw = qobject_cast<QMainWindow *>(dw->parentWidget());
-            if (mw && (mb = menubars()->value(mw)))
-                w = mw;
-        }
-#endif
-        while(w && !mb)
-            mb = menubars()->value((w = w->parentWidget()));
-    }
-    if (!mb)
-        mb = fallback;
-    //now set it
     bool ret = false;
+    cancelAllMenuTracking();
+    QWidget *w = findWindowThatShouldDisplayMenubar();
+    QMenuBar *mb = findMenubarForWindow(w);
+
     if (mb && mb->isNativeMenuBar()) {
+        bool modal = QApplicationPrivate::modalState();
 #ifdef QT_MAC_USE_COCOA
         QMacCocoaAutoReleasePool pool;
 #endif
@@ -2022,16 +2058,18 @@ bool QMenuBar::macUpdateMenuBar()
                 }
             }
 #endif
-            QWidget *modalWidget = qApp->activeModalWidget();
-            if (mb != menubars()->value(modalWidget)) {
-                qt_mac_set_modal_state(menu, qt_mac_should_disable_menu(mb, modalWidget));
-            }
+            // Check if menu is modally shaddowed and should  be disabled:
+            modal = qt_mac_should_disable_menu(mb);
+            if (mb != qt_mac_current_menubar.qmenubar || modal != qt_mac_current_menubar.modal)
+                qt_mac_set_modal_state(menu, modal);
         }
         qt_mac_current_menubar.qmenubar = mb;
-        qt_mac_current_menubar.modal = QApplicationPrivate::modalState();
+        qt_mac_current_menubar.modal = modal;
         ret = true;
     } else if (qt_mac_current_menubar.qmenubar && qt_mac_current_menubar.qmenubar->isNativeMenuBar()) {
-        const bool modal = QApplicationPrivate::modalState();
+        // INVARIANT: The currently active menu bar (if any) is not native. But we do have a
+        // native menu bar from before. So we need to decide whether or not is should be enabled:
+        const bool modal = qt_mac_should_disable_menu(qt_mac_current_menubar.qmenubar);
         if (modal != qt_mac_current_menubar.modal) {
             ret = true;
             if (OSMenuRef menu = qt_mac_current_menubar.qmenubar->macMenu()) {
@@ -2043,14 +2081,12 @@ bool QMenuBar::macUpdateMenuBar()
                 [NSApp setMainMenu:menu];
                 syncMenuBarItemsVisiblity(qt_mac_current_menubar.qmenubar->d_func()->mac_menubar);
 #endif
-                QWidget *modalWidget = qApp->activeModalWidget();
-                if (qt_mac_current_menubar.qmenubar != menubars()->value(modalWidget)) {
-                    qt_mac_set_modal_state(menu, qt_mac_should_disable_menu(mb, modalWidget));
-                }
+                qt_mac_set_modal_state(menu, modal);
             }
             qt_mac_current_menubar.modal = modal;
         }
     }
+
     if(!ret)
         qt_mac_clear_menubar();
     return ret;

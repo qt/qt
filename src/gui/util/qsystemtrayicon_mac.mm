@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -314,8 +314,22 @@ QT_END_NAMESPACE
 {
     Q_UNUSED(notification);
     down = NO;
+
+    if( ![self icon]->icon().isNull() ) {
+#ifndef QT_MAC_USE_COCOA
+        const short scale = GetMBarHeight()-4;
+#else
+        CGFloat hgt = [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
+        const short scale = hgt - 4;
+#endif
+        NSImage *nsimage = static_cast<NSImage *>(qt_mac_create_nsimage([self icon]->icon().pixmap(QSize(scale, scale))));
+        [self setImage: nsimage];
+        [nsimage release];
+    }
+
     if([self icon]->contextMenu())
         [self icon]->contextMenu()->hide();
+
     [self setNeedsDisplay:YES];
 }
 
@@ -326,6 +340,20 @@ QT_END_NAMESPACE
     if(!down && [self icon]->contextMenu())
         [self icon]->contextMenu()->hide();
     [self setNeedsDisplay:YES];
+
+#ifndef QT_MAC_USE_COCOA
+    const short scale = GetMBarHeight()-4;
+#else
+    CGFloat hgt = [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
+    const short scale = hgt - 4;
+#endif
+
+    if( down && ![self icon]->icon().isNull() ) {
+        NSImage *nsaltimage = static_cast<NSImage *>(qt_mac_create_nsimage([self icon]->icon().pixmap(QSize(scale, scale), QIcon::Selected)));
+        [self setImage: nsaltimage];
+        [nsaltimage release];
+    }
+
 
     if (down)
         [parent triggerSelector:self];

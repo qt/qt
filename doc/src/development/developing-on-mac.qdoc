@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,26 +60,26 @@
 
     \section1 What Versions of Mac OS X are Supported?
 
-    As of Qt 4.6, Qt supports Mac OS X versions 10.4 and up. It is usually in
+    As of Qt 4.7, Qt supports Mac OS X versions 10.4 and up. It is usually in
     the best interest of the developer and user to be running the latest
     updates to any version. We test internally against Mac OS X 10.4.11 as well
     as the updated release of Mac OS X 10.5 and Mac OS X 10.6.
 
     \section2 Carbon or Cocoa?
     
-    Historically, Qt has used the Carbon toolkit, which supports 32-bit
-    applications on Mac OS X 10.4 and up. Qt 4.5 and up has support for the Cocoa
-    toolkit, which requires 10.5 and provides 64-bit support.
+    Qt supports building in two flavors, using either the Carbon or Cocoa APIs.
+    Using the Cocoa toolkit, Qt requires 10.5 and provides 64-bit support. With
+    Carbon Qt can be developed on and deployed to 10.4, but there is no 64-bit
+    support.
 
-    This detail is typically not important to Qt application developers.  Qt is
-    cross-platform across Carbon and Cocoa, and Qt applications behave
-    the same way when configured for either one. Eventually, the Carbon
-    version will be discontinued. This is something to keep in mind when you
-    consider writing code directly against native APIs.
+    With Qt 4.7 we now reccommend using the Cocoa version of Qt for developement,
+    unless you want to target the 10.4 platform. Qt now uses Cocoa by default,
+    both for the binary package and when configuring from source. Download the 
+    Carbon binarypackages or configure with "-carbon" to use that version.
 
-    The current binary for Qt is built in two flavors, 32-bit Carbon and full
-    universal Cocoa (32-bit and 64-bit). If you want a different setup for
-    Qt will use, you must build from scratch. Carbon or Cocoa is chosen when
+    There are two versions of the Qt binary, one with x86 and x86_64
+    Cocoa and another with x86 and ppc Carbon. If you want a different setup
+    you must build from source. Carbon or Cocoa is chosen when
     configuring the package for building. The configure process selects Carbon
     by default, to specify Cocoa use the \c{-cocoa} flag.  configure for a
     64-bit architecture using one of the \c{-arch} flags (see \l{universal
@@ -147,13 +147,11 @@
 
     Carbon and Cocoa both have their advantages and disadvantages. Probably the
     easiest way to determine is to look at the version of Mac OS X you are
-    targetting.  If you are starting a new application and can target 10.5 and
-    up, then please consider Cocoa only. If you have an existing application or
-    need to target earlier versions of the operating system and do not need
-    access to 64-bit or newer Apple technologies, then Carbon is a good fit. If
-    your needs fall in between, you can go with a 64-bit Cocoa and 32-bit
-    Carbon universal application with the appropriate checks in your code to
-    choose the right path based on where you are running the application.
+    targetting. If your application can target 10.5 and up, then we reccomend 
+    using Cocoa. If you need to target earlier versions of the operating system
+    and do not need access to 64-bit or newer Apple technologies, then Carbon 
+    is a good fit. If your needs fall in between, you can go with a 64-bit Cocoa and 32-bit
+    Carbon universal application.
 
     For Mac OS X 10.6, Apple has started recommending developers to build their
     applications 64-bit. The main reason is that there is a small speed

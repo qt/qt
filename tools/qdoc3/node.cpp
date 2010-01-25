@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -767,12 +767,21 @@ FakeNode::FakeNode(InnerNode *parent, const QString& name, SubType subtype)
 }
 
 /*!
+  Returns the fake node's full title, which is usually
+  just title(), but for some SubType values is different
+  from title()
  */
 QString FakeNode::fullTitle() const
 {
     if (sub == File) {
         if (title().isEmpty())
             return name().mid(name().lastIndexOf('/') + 1) + " Example File";
+        else
+            return title();
+    }
+    else if (sub == Image) {
+        if (title().isEmpty())
+            return name().mid(name().lastIndexOf('/') + 1) + " Image File";
         else
             return title();
     }
@@ -788,13 +797,14 @@ QString FakeNode::fullTitle() const
 }
 
 /*!
+  Returns the subtitle.
  */
 QString FakeNode::subTitle() const
 {
     if (!stle.isEmpty())
         return stle;
 
-    if (sub == File) {
+    if ((sub == File) || (sub == Image)) {
         if (title().isEmpty() && name().contains("/"))
             return name();
     }

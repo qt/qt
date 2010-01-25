@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -172,28 +172,39 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
     SQLSMALLINT msgLen = 0;
     SQLRETURN r = SQL_NO_DATA;
     SQLTCHAR state_[SQL_SQLSTATE_SIZE+1];
-    SQLTCHAR description_[SQL_MAX_MESSAGE_LENGTH];
+    QVarLengthArray<SQLTCHAR> description_(SQL_MAX_MESSAGE_LENGTH);
     QString result;
     int i = 1;
 
     description_[0] = 0;
+    r = SQLGetDiagRec(handleType,
+                      handle,
+                      i,
+                      state_,
+                      &nativeCode_,
+                      0,
+                      NULL,
+                      &msgLen);
+    if(r == SQL_NO_DATA)
+        return QString();
+    description_.resize(msgLen+1);
     do {
         r = SQLGetDiagRec(handleType,
                             handle,
                             i,
-                            (SQLTCHAR*)state_,
+                            state_,
                             &nativeCode_,
-                            (SQLTCHAR*)description_,
-                            SQL_MAX_MESSAGE_LENGTH, /* in bytes, not in characters */
+                            description_.data(),
+                            description_.size(),
                             &msgLen);
         if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
             if (nativeCode)
                 *nativeCode = nativeCode_;
             QString tmpstore;
 #ifdef UNICODE
-            tmpstore = QString((const QChar*)description_, msgLen);
+            tmpstore = QString((const QChar*)description_.data(), msgLen);
 #else
-            tmpstore = QString::fromLocal8Bit((const char*)description_, msgLen);
+            tmpstore = QString::fromLocal8Bit((const char*)description_.data(), msgLen);
 #endif
             if(result != tmpstore) {
                 if(!result.isEmpty())
@@ -877,10 +888,15 @@ bool QODBCResult::reset (const QString& query)
                        (SQLCHAR*) query8.constData(),
                        (SQLINTEGER) query8.length());
 #endif
-    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
+    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r!= SQL_NO_DATA) {
         setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                      "Unable to execute statement"), QSqlError::StatementError, d));
         return false;
+    }
+
+    if(r == SQL_NO_DATA) {
+        setSelect(false);
+        return true;
     }
 
     SQLINTEGER isScrollable, bufferLength;

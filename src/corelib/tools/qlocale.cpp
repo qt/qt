@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1187,14 +1187,14 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     }
     case DateFormatLong:
     case DateFormatShort:
-        return macToQtFormat(getMacDateFormat(type == DateFormatShort
+        return getMacDateFormat(type == DateFormatShort
                                 ? kCFDateFormatterShortStyle
-                                : kCFDateFormatterLongStyle));
+                                : kCFDateFormatterLongStyle);
     case TimeFormatLong:
     case TimeFormatShort:
-        return macToQtFormat(getMacTimeFormat(type == TimeFormatShort
+        return getMacTimeFormat(type == TimeFormatShort
                                 ? kCFDateFormatterShortStyle
-                                : kCFDateFormatterLongStyle));
+                                : kCFDateFormatterLongStyle);
     case DayNameLong:
     case DayNameShort:
         return macDayName(in.toInt(), (type == DayNameShort));
@@ -4293,6 +4293,7 @@ bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByte
 
     const bool scientific = numMode == DoubleScientificMode;
     bool lastWasE = false;
+    bool lastWasDigit = false;
     int eCnt = 0;
     int decPointCnt = 0;
     bool dec = false;
@@ -4307,6 +4308,7 @@ bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByte
                 if (dec && decDigits != -1 && decDigits < ++decDigitCnt)
                     return false;
             }
+            lastWasDigit = true;
         } else {
             switch (c) {
                 case '.':
@@ -4344,7 +4346,10 @@ bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByte
                     break;
 
                 case ',':
-                    return false;
+                    //it can only be placed after a digit which is before the decimal point
+                    if (!lastWasDigit || decPointCnt > 0)
+                        return false;
+                    break;
 
                 case 'e':
                     if (scientific) {
@@ -4362,10 +4367,12 @@ bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByte
                     // If it's not a valid digit, it shall be Invalid.
                     return false;
             }
+            lastWasDigit = false;
         }
 
         lastWasE = c == 'e';
-        buff->append(c);
+        if (c != ',')
+            buff->append(c);
     }
 
     return true;

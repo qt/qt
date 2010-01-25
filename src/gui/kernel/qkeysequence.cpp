@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -282,8 +282,8 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \i SelectPreviousPage   \i Shift+PgUp                       \i Shift+PgUp             \i Shift+PgUp     \i Shift+PgUp                            \i Shift+PgUp
     \row    \i SelectStartOfLine    \i Shift+Home                       \i Ctrl+Shift+Left        \i Shift+Home     \i Shift+Home                            \i Shift+Home
     \row    \i SelectEndOfLine      \i Shift+End                        \i Ctrl+Shift+Right       \i Shift+End      \i Shift+End                             \i Shift+End
-    \row    \i SelectStartOfBlock   \i (none)                           \i Alt+Shift+Up           \i (none)         \i (none)                                \i (none)
-    \row    \i SelectEndOfBlock     \i (none)                           \i Alt+Shift+Down         \i (none)         \i (none)                                \i (none)
+    \row    \i SelectStartOfBlock   \i (none)                           \i Alt+Shift+Up, Meta+Shift+A \i (none)     \i (none)                                \i (none)
+    \row    \i SelectEndOfBlock     \i (none)                           \i Alt+Shift+Down, Meta+Shift+E \i (none)   \i (none)                                \i (none)
     \row    \i SelectStartOfDocument\i Ctrl+Shift+Home                  \i Ctrl+Shift+Up, Shift+Home          \i Ctrl+Shift+Home\i Ctrl+Shift+Home           \i Ctrl+Shift+Home
     \row    \i SelectEndOfDocument  \i Ctrl+Shift+End                   \i Ctrl+Shift+Down, Shift+End        \i Ctrl+Shift+End \i Ctrl+Shift+End             \i Ctrl+Shift+End
     \row    \i DeleteStartOfWord    \i Ctrl+Backspace                   \i Alt+Backspace          \i Ctrl+Backspace \i Ctrl+Backspace                        \i (none)
@@ -732,6 +732,8 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_Down,                QApplicationPrivate::KB_Mac},
     {QKeySequence::MoveToPreviousPage,      0,          Qt::META | Qt::Key_PageUp,              QApplicationPrivate::KB_Mac},
     {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_PageDown,            QApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectStartOfBlock,      0,          Qt::META | Qt::SHIFT | Qt::Key_A,       QApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectEndOfBlock,        0,          Qt::META | Qt::SHIFT | Qt::Key_E,       QApplicationPrivate::KB_Mac},
     {QKeySequence::SelectStartOfLine,       0,          Qt::META | Qt::SHIFT | Qt::Key_Left,    QApplicationPrivate::KB_Mac},
     {QKeySequence::SelectEndOfLine,         0,          Qt::META | Qt::SHIFT | Qt::Key_Right,   QApplicationPrivate::KB_Mac}    
 };
@@ -859,6 +861,8 @@ QKeySequence::QKeySequence()
     Up to four key codes may be entered by separating them with
     commas, e.g. "Alt+X,Ctrl+S,Q".
 
+    \a key should be in NativeText format.
+
     This constructor is typically used with \link QObject::tr() tr
     \endlink(), so that shortcut keys can be replaced in
     translations:
@@ -872,6 +876,16 @@ QKeySequence::QKeySequence(const QString &key)
 {
     d = new QKeySequencePrivate();
     assign(key);
+}
+
+/*!
+    \since 4.x
+    Creates a key sequence from the \a key string based on \a format.
+*/
+QKeySequence::QKeySequence(const QString &key, QKeySequence::SequenceFormat format)
+{
+    d = new QKeySequencePrivate();
+    assign(key, format);
 }
 
 /*!
@@ -1053,8 +1067,23 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
     contain up to four key codes, provided they are separated by a
     comma; for example, "Alt+X,Ctrl+S,Z". The return value is the
     number of key codes added.
+    \a keys should be in NativeText format.
 */
 int QKeySequence::assign(const QString &ks)
+{
+    return assign(ks, NativeText);
+}
+
+/*!
+    \fn int QKeySequence::assign(const QString &keys, QKeySequence::SequenceFormat format)
+    \since 4.x
+
+    Adds the given \a keys to the key sequence (based on \a format).
+    \a keys may contain up to four key codes, provided they are
+    separated by a comma; for example, "Alt+X,Ctrl+S,Z". The return
+    value is the number of key codes added.
+*/
+int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
 {
     QString keyseq = ks;
     QString part;
@@ -1084,7 +1113,7 @@ int QKeySequence::assign(const QString &ks)
         }
         part = keyseq.left(-1 == p ? keyseq.length() : p - diff);
         keyseq = keyseq.right(-1 == p ? 0 : keyseq.length() - (p + 1));
-        d->key[n] = decodeString(part);
+        d->key[n] = QKeySequencePrivate::decodeString(part, format);
         ++n;
     }
     return n;
@@ -1555,12 +1584,7 @@ QString QKeySequence::toString(SequenceFormat format) const
 */
 QKeySequence QKeySequence::fromString(const QString &str, SequenceFormat format)
 {
-    QStringList sl = str.split(QLatin1String(", "));
-    int keys[4] = {0, 0, 0, 0};
-    int total = qMin(sl.count(), 4);
-    for (int i = 0; i < total; ++i)
-        keys[i] = QKeySequencePrivate::decodeString(sl[i], format);
-    return QKeySequence(keys[0], keys[1], keys[2], keys[3]);
+    return QKeySequence(str, format);
 }
 
 /*****************************************************************************

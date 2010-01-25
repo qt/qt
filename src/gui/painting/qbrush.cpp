@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -912,7 +912,7 @@ void QBrush::setTransform(const QTransform &matrix)
     otherwise returns false.
 
     Two brushes are different if they have different styles, colors or
-    pixmaps.
+    transforms or different pixmaps or gradients depending on the style.
 
     \sa operator==()
 */
@@ -924,7 +924,7 @@ void QBrush::setTransform(const QTransform &matrix)
     otherwise returns false.
 
     Two brushes are equal if they have equal styles, colors and
-    pixmaps.
+    transforms and equal pixmaps or gradients depending on the style.
 
     \sa operator!=()
 */
@@ -933,26 +933,26 @@ bool QBrush::operator==(const QBrush &b) const
 {
     if (b.d == d)
         return true;
-    if (b.d->style == d->style && b.d->color == d->color) {
-        switch (d->style) {
-        case Qt::TexturePattern: {
-            QPixmap &us = (static_cast<QTexturedBrushData *>(d.data()))->pixmap();
-            QPixmap &them = (static_cast<QTexturedBrushData *>(b.d.data()))->pixmap();
+    if (b.d->style != d->style || b.d->color != d->color || b.d->transform != d->transform)
+        return false;
+    switch (d->style) {
+    case Qt::TexturePattern:
+        {
+            const QPixmap &us = (static_cast<QTexturedBrushData *>(d.data()))->pixmap();
+            const QPixmap &them = (static_cast<QTexturedBrushData *>(b.d.data()))->pixmap();
             return ((us.isNull() && them.isNull()) || us.cacheKey() == them.cacheKey());
         }
-        case Qt::LinearGradientPattern:
-        case Qt::RadialGradientPattern:
-        case Qt::ConicalGradientPattern:
-            {
-                QGradientBrushData *d1 = static_cast<QGradientBrushData *>(d.data());
-                QGradientBrushData *d2 = static_cast<QGradientBrushData *>(b.d.data());
-                return d1->gradient == d2->gradient;
-            }
-        default:
-            return true;
+    case Qt::LinearGradientPattern:
+    case Qt::RadialGradientPattern:
+    case Qt::ConicalGradientPattern:
+        {
+            const QGradientBrushData *d1 = static_cast<QGradientBrushData *>(d.data());
+            const QGradientBrushData *d2 = static_cast<QGradientBrushData *>(b.d.data());
+            return d1->gradient == d2->gradient;
         }
+    default:
+        return true;
     }
-    return false;
 }
 
 /*!

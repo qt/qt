@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,7 @@
 
 #include <QtGui/qimageiohandler.h>
 #include <QtCore/QSize>
+#include <QtCore/QRect>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,8 +67,9 @@ public:
 
 private:
     int quality;
-    QByteArray parameters;
     QSize scaledSize;
+    QRect scaledClipRect;
+    QRect clipRect;
 };
 
 QT_END_NAMESPACE

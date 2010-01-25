@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,6 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "helpviewer.h"
+#include "tracer.h"
 
 #include <QtCore/QBuffer>
 
@@ -56,6 +58,7 @@ QT_BEGIN_NAMESPACE
 AboutLabel::AboutLabel(QWidget *parent)
     : QTextBrowser(parent)
 {
+    TRACE_OBJ
     setFrameStyle(QFrame::NoFrame);
     QPalette p;
     p.setColor(QPalette::Base, p.color(QPalette::Background));
@@ -64,6 +67,7 @@ AboutLabel::AboutLabel(QWidget *parent)
 
 void AboutLabel::setText(const QString &text, const QByteArray &resources)
 {
+    TRACE_OBJ
     QDataStream in(resources);
     in >> m_resourceMap;
     
@@ -72,6 +76,7 @@ void AboutLabel::setText(const QString &text, const QByteArray &resources)
 
 QSize AboutLabel::minimumSizeHint() const
 {
+    TRACE_OBJ
     QTextDocument *doc = document();
     doc->adjustSize();
     return QSize(int(doc->size().width()), int(doc->size().height()));
@@ -79,6 +84,7 @@ QSize AboutLabel::minimumSizeHint() const
 
 QVariant AboutLabel::loadResource(int type, const QUrl &name)
 {
+    TRACE_OBJ
     if (type == 2 || type == 3) {
         if (m_resourceMap.contains(name.toString())) {
             return m_resourceMap.value(name.toString());
@@ -89,9 +95,9 @@ QVariant AboutLabel::loadResource(int type, const QUrl &name)
 
 void AboutLabel::setSource(const QUrl &url)
 {
-    if (url.isValid() 
-        && (url.scheme() == QLatin1String("http") || url.scheme() == QLatin1String("ftp") 
-            || url.scheme() == QLatin1String("mailto") || url.path().endsWith(QLatin1String("pdf")))) {
+    TRACE_OBJ
+    if (url.isValid() && (!HelpViewer::isLocalUrl(url)
+        || !HelpViewer::canOpenPage(url.path()))) {
         if (!QDesktopServices::openUrl(url)) {
             QMessageBox::warning(this, tr("Warning"),
                          tr("Unable to launch external application.\n"),
@@ -103,6 +109,7 @@ void AboutLabel::setSource(const QUrl &url)
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent, Qt::MSWindowsFixedSizeDialogHint|Qt::WindowTitleHint|Qt::WindowSystemMenuHint)
 {
+    TRACE_OBJ
     m_pixmapLabel = 0;
     m_aboutLabel = new AboutLabel();
     
@@ -121,12 +128,14 @@ AboutDialog::AboutDialog(QWidget *parent)
 
 void AboutDialog::setText(const QString &text, const QByteArray &resources)
 {
+    TRACE_OBJ
     m_aboutLabel->setText(text, resources);
     updateSize();
 }
 
 void AboutDialog::setPixmap(const QPixmap &pixmap)
 {
+    TRACE_OBJ
     if (!m_pixmapLabel) {
         m_pixmapLabel = new QLabel();
         m_layout->addWidget(m_pixmapLabel, 0, 0, 1, -1, Qt::AlignCenter);
@@ -137,11 +146,13 @@ void AboutDialog::setPixmap(const QPixmap &pixmap)
 
 QString AboutDialog::documentTitle() const
 {
+    TRACE_OBJ
     return m_aboutLabel->documentTitle();
 }
 
 void AboutDialog::updateSize()
 {
+    TRACE_OBJ
     QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
     int limit = qMin(screenSize.width()/2, 500);
 

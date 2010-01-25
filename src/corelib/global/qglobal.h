@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -275,7 +275,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#ifdef AUTODETECT_COCOA
+#ifdef QT_AUTODETECT_COCOA
 #  ifdef Q_OS_MAC64
 #    define QT_MAC_USE_COCOA 1
 #    define QT_BUILD_KEY QT_BUILD_KEY_COCOA
@@ -672,8 +672,9 @@ namespace QT_NAMESPACE {}
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-// using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
-//#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
+#    if __SUNPRO_CC >= 0x550
+#      define Q_DECL_EXPORT     __global
 #    endif
 #    if __SUNPRO_CC < 0x5a0
 #      define Q_NO_TEMPLATE_FRIENDS
@@ -1540,6 +1541,7 @@ inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
+// ### Qt 5: remove Win9x support macros QT_WA and QT_WA_INLINE.
 #define QT_WA(unicode, ansi) unicode
 #define QT_WA_INLINE(unicode, ansi) (unicode)
 
@@ -2419,6 +2421,10 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 //enabling new graphics resources
 #define QT_SYMBIAN_SUPPORTS_SGIMAGE
 #define QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#define Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
+#endif
 #endif
 
 

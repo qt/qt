@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -156,6 +156,7 @@ private slots:
     void resetModel();
     void keyBoardNavigationWithMouse();
     void task_QTBUG_1071_changingFocusEmitsActivated();
+    void maxVisibleItems();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -2516,16 +2517,47 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
     layout.addWidget(&edit);
 
     w.show();
+    QApplication::setActiveWindow(&w);
     QTest::qWaitForWindowShown(&w);
     cb.clearEditText();
     cb.setFocus();
     QApplication::processEvents();
+    QTRY_VERIFY(cb.hasFocus());
     QTest::keyClick(0, '1');
     QCOMPARE(spy.count(), 0);
     edit.setFocus();
     QTRY_VERIFY(edit.hasFocus());
     QTRY_COMPARE(spy.count(), 1);
 }
+
+void tst_QComboBox::maxVisibleItems()
+{
+    QComboBox comboBox;
+    QCOMPARE(comboBox.maxVisibleItems(), 10); //default value.
+
+    QStringList content;
+    for(int i = 1; i < 50; i++)
+        content += QString::number(i);
+
+    comboBox.addItems(content);
+    comboBox.show();
+    comboBox.resize(200, comboBox.height());
+    QTRY_VERIFY(comboBox.isVisible());
+
+    comboBox.setMaxVisibleItems(5);
+    QCOMPARE(comboBox.maxVisibleItems(), 5);
+
+    comboBox.showPopup();
+    QTRY_VERIFY(comboBox.view());
+    QTRY_VERIFY(comboBox.view()->isVisible());
+
+    QAbstractItemView *v = comboBox.view();
+    int itemHeight = v->visualRect(v->model()->index(0,0)).height();
+    if (v->style()->styleHint(QStyle::SH_ComboBox_Popup))
+        QCOMPARE(v->viewport()->height(), itemHeight * comboBox.maxVisibleItems());
+    // QCombobox without a popup does not work, see QTBUG-760
+}
+
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"

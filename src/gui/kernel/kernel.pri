@@ -201,12 +201,14 @@ embedded {
 
         OBJECTIVE_HEADERS += \
                 qcocoawindow_mac_p.h \
+                qcocoapanel_mac_p.h \
                 qcocoawindowdelegate_mac_p.h \
                 qcocoaview_mac_p.h \
                 qcocoaapplication_mac_p.h \
                 qcocoaapplicationdelegate_mac_p.h \
                 qmacgesturerecognizer_mac_p.h \
-                qmultitouch_mac_p.h
+                qmultitouch_mac_p.h \
+                qcocoasharedwindowmethods_mac_p.h
 
         OBJECTIVE_SOURCES += \
                 kernel/qcursor_mac.mm \

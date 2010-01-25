@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -110,6 +110,7 @@
 #include "qevent_p.h"
 #include "qdnd_p.h"
 #include <QtGui/qgraphicsproxywidget.h>
+#include "qmainwindow.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1721,6 +1722,15 @@ bool QWidgetPrivate::qt_widget_rgn(QWidget *widget, short wcode, RgnHandle rgn, 
 void QWidgetPrivate::determineWindowClass()
 {
     Q_Q(QWidget);
+#if !defined(QT_NO_MAINWINDOW) && !defined(QT_NO_TOOLBAR)
+    // Make sure that QMainWindow has the MacWindowToolBarButtonHint when the
+    // unifiedTitleAndToolBarOnMac property is ON. This is to avoid reentry of
+    // setParent() triggered by the QToolBar::event(QEvent::ParentChange).
+    QMainWindow *mainWindow = qobject_cast<QMainWindow *>(q);
+    if (mainWindow && mainWindow->unifiedTitleAndToolBarOnMac()) {
+        data.window_flags |= Qt::MacWindowToolBarButtonHint;
+    }
+#endif
 #ifndef QT_MAC_USE_COCOA
 // ### COCOA:Interleave these better!
 
@@ -1888,13 +1898,15 @@ void QWidgetPrivate::determineWindowClass()
         wclass = kDocumentWindowClass;
     else if(popup || (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5 && type == Qt::SplashScreen))
         wclass = kModalWindowClass;
-    else if(q->testAttribute(Qt::WA_ShowModal) || type == Qt::Dialog)
+    else if(type == Qt::Dialog)
         wclass = kMovableModalWindowClass;
     else if(type == Qt::ToolTip)
         wclass = kHelpWindowClass;
     else if(type == Qt::Tool || (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5
                                  && type == Qt::SplashScreen))
         wclass = kFloatingWindowClass;
+    else if(q->testAttribute(Qt::WA_ShowModal))
+        wclass = kMovableModalWindowClass;
     else
         wclass = kDocumentWindowClass;
 
@@ -1998,8 +2010,6 @@ void QWidgetPrivate::determineWindowClass()
         for(int i = 0; tmp_wattr && known_attribs[i].name; i++) {
             if((tmp_wattr & known_attribs[i].tag) == known_attribs[i].tag) {
                 tmp_wattr ^= known_attribs[i].tag;
-                qDebug("Qt: internal: * %s %s", known_attribs[i].name,
-                        (GetAvailableWindowAttributes(wclass) & known_attribs[i].tag) ? "" : "(*)");
             }
         }
         if(tmp_wattr)
@@ -2194,6 +2204,41 @@ void QWidgetPrivate::finishCreateWindow_sys_Carbon(OSWindowRef windowRef)
     applyMaxAndMinSizeOnWindow();
 }
 #else  // QT_MAC_USE_COCOA
+
+void QWidgetPrivate::setWindowLevel()
+{
+    Q_Q(QWidget);
+    const QWidget * const windowParent = q->window()->parentWidget();
+    const QWidget * const primaryWindow = windowParent ? windowParent->window() : 0;
+    NSInteger winLevel = -1;
+
+    if (q->windowType() == Qt::Popup) {
+        winLevel = NSPopUpMenuWindowLevel;
+        // Popup should be in at least the same level as its parent.
+        if (primaryWindow) {
+            OSWindowRef parentRef = qt_mac_window_for(primaryWindow);
+            winLevel = qMax([parentRef level], winLevel);
+        }
+    } else if (q->windowType() == Qt::Tool) {
+        winLevel = NSFloatingWindowLevel;
+    } else if (q->windowType() == Qt::Dialog) {
+        // Correct modality level (NSModalPanelWindowLevel) will be
+        // set by cocoa when creating a modal session later.
+        winLevel = NSNormalWindowLevel;
+    }
+
+    // StayOnTop window should appear above Tool windows.
+    if (data.window_flags & Qt::WindowStaysOnTopHint)
+        winLevel = NSPopUpMenuWindowLevel;
+    // Tooltips should appear above StayOnTop windows.
+    if (q->windowType() == Qt::ToolTip)
+        winLevel = NSScreenSaverWindowLevel;
+    // All other types are Normal level.
+    if (winLevel == -1)
+        winLevel = NSNormalWindowLevel;
+    [qt_mac_window_for(q) setLevel:winLevel];
+}
+
 void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWindowRef)
 {
     Q_Q(QWidget);
@@ -2266,6 +2311,7 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
         q->setAttribute(Qt::WA_WState_WindowOpacitySet, false);
     }
 
+    setWindowLevel();
     macUpdateHideOnSuspend();
     macUpdateOpaqueSizeGrip();
     macUpdateIgnoreMouseEvents();
@@ -2617,8 +2663,6 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             releaseMouse();
         if(mac_keyboard_grabber == this)
             releaseKeyboard();
-        if(acceptDrops())
-            setAcceptDrops(false);
 
         if(testAttribute(Qt::WA_ShowModal))          // just be sure we leave modal
             QApplicationPrivate::leaveModal(this);
@@ -2698,6 +2742,35 @@ void QWidgetPrivate::transferChildren()
     }
 }
 
+#ifdef QT_MAC_USE_COCOA
+void QWidgetPrivate::setSubWindowStacking(bool set)
+{
+    Q_Q(QWidget);
+    if (!q->isWindow() || !q->testAttribute(Qt::WA_WState_Created))
+        return;
+
+    if (QWidget *parent = q->parentWidget()) {
+        if (parent->testAttribute(Qt::WA_WState_Created)) {
+            if (set)
+                [qt_mac_window_for(parent) addChildWindow:qt_mac_window_for(q) ordered:NSWindowAbove];
+            else
+                [qt_mac_window_for(parent) removeChildWindow:qt_mac_window_for(q)];
+        }
+    }
+
+    QList<QWidget *> widgets = q->findChildren<QWidget *>();
+    for (int i=0; i<widgets.size(); ++i) {
+        QWidget *child = widgets.at(i);
+        if (child->isWindow() && child->testAttribute(Qt::WA_WState_Created)) {
+            if (set)
+                [qt_mac_window_for(q) addChildWindow:qt_mac_window_for(child) ordered:NSWindowAbove];
+            else
+                [qt_mac_window_for(q) removeChildWindow:qt_mac_window_for(child)];
+        }
+    }
+}
+#endif
+
 void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
@@ -2745,7 +2818,9 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         }
         if (wasWindow) {
             oldToolbar = [oldWindow toolbar];
+            [oldToolbar retain];
             oldToolbarVisible = [oldToolbar isVisible];
+            [oldWindow setToolbar:nil];
         }
 #endif
     }
@@ -2789,6 +2864,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
             if (oldToolbar && !(f & Qt::FramelessWindowHint)) {
                 OSWindowRef newWindow = qt_mac_window_for(q);
                 [newWindow setToolbar:oldToolbar];
+                [oldToolbar release];
                 [oldToolbar setVisible:oldToolbarVisible];
             }
 #endif
@@ -2849,7 +2925,6 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
             current = current->parentWidget();
         }
     }
-
     invalidateBuffer(q->rect());
     qt_event_request_window_change(q);
 }
@@ -3311,13 +3386,23 @@ void QWidgetPrivate::show_sys()
 #else
             // sync the opacity value back (in case of a fade).
             [window setAlphaValue:q->windowOpacity()];
-            [window makeKeyAndOrderFront:window];
+            setSubWindowStacking(true);
 
-            // If this window is app modal, we need to start spinning
-            // a modal session for it. Interrupting
-            // the event dispatcher will make this happend:
-            if (data.window_modality == Qt::ApplicationModal)
-                QEventDispatcherMac::instance()->interrupt();
+            QWidget *top = 0;
+            if (QApplicationPrivate::tryModalHelper(q, &top)) {
+                [window makeKeyAndOrderFront:window];
+                // If this window is app modal, we need to start spinning
+                // a modal session for it. Interrupting
+                // the event dispatcher will make this happend:
+                if (data.window_modality == Qt::ApplicationModal)
+                    QEventDispatcherMac::instance()->interrupt();
+            } else {
+                // The window is modally shaddowed, so we need to make
+                // sure that we don't pop in front of the modal window:
+                [window orderFront:window];
+                if (NSWindow *modalWin = qt_mac_window_for(top))
+                    [modalWin orderFront:window];
+            }
 #endif
             if (q->windowType() == Qt::Popup) {
 			    if (q->focusWidget())
@@ -3336,8 +3421,6 @@ void QWidgetPrivate::show_sys()
         } else if (!q->testAttribute(Qt::WA_ShowWithoutActivating)) {
 #ifndef QT_MAC_USE_COCOA
             qt_event_request_activate(q);
-#else
-            [qt_mac_window_for(q) makeKeyWindow];
 #endif
         }
     } else if(topData()->embedded || !q->parentWidget() || q->parentWidget()->isVisible()) {
@@ -3380,6 +3463,7 @@ void QWidgetPrivate::hide_sys()
 
     QMacCocoaAutoReleasePool pool;
     if(q->isWindow()) {
+        setSubWindowStacking(false);
         OSWindowRef window = qt_mac_window_for(q);
         if(qt_mac_is_macsheet(q)) {
 #ifndef QT_MAC_USE_COCOA
@@ -3403,6 +3487,38 @@ void QWidgetPrivate::hide_sys()
             ShowHide(window, false);
 #else
             [window orderOut:window];
+            // Unfortunately it is not as easy as just hiding the window, we need
+            // to find out if we were in full screen mode. If we were and this is
+            // the last window in full screen mode then we need to unset the full screen
+            // mode. If this is not the last visible window in full screen mode then we
+            // don't change the full screen mode.
+            if(q->isFullScreen())
+            {
+                bool keepFullScreen = false;
+                QWidgetList windowList = qApp->topLevelWidgets();
+                int windowCount = windowList.count();
+                for(int i = 0; i < windowCount; i++)
+                {
+                    QWidget *w = windowList[i];
+                    // If it is the same window, we don't need to check :-)
+                    if(q == w)
+                        continue;
+                    // If they are not visible or if they are minimized then
+                    // we just ignore them.
+                    if(!w->isVisible() || w->isMinimized())
+                        continue;
+                    // Is it full screen?
+                    // Notice that if there is one window in full screen mode then we
+                    // cannot switch the full screen mode off, therefore we just abort.
+                    if(w->isFullScreen()) {
+                        keepFullScreen = true;
+                        break;
+                    }
+                }
+                // No windows in full screen mode, so let just unset that flag.
+                if(!keepFullScreen)
+                    qt_mac_set_fullscreen_mode(false);
+            }
 #endif
             toggleDrawers(false);
 #ifndef QT_MAC_USE_COCOA
@@ -3413,12 +3529,15 @@ void QWidgetPrivate::hide_sys()
             }
 #endif
         }
-        if(q->isActiveWindow() && !(q->windowType() == Qt::Popup)) {
+#ifndef QT_MAC_USE_COCOA
+        // If the window we now hide was the active window, we need
+        // to find, and activate another window on screen. NB: Cocoa takes care of this
+        // logic for us (and distinquishes between main windows and key windows)
+        if (q->isActiveWindow() && !(q->windowType() == Qt::Popup)) {
             QWidget *w = 0;
             if(q->parentWidget())
                 w = q->parentWidget()->window();
             if(!w || (!w->isVisible() && !w->isMinimized())) {
-#ifndef QT_MAC_USE_COCOA
                 for (WindowPtr wp = GetFrontWindowOfClass(kMovableModalWindowClass, true);
                     wp; wp = GetNextWindowOfClass(wp, kMovableModalWindowClass, true)) {
                     if((w = qt_mac_find_window(wp)))
@@ -3438,24 +3557,12 @@ void QWidgetPrivate::hide_sys()
                             break;
                     }
                 }
-#else
-                NSArray *windows = [NSApp windows];
-                NSUInteger totalWindows = [windows count];
-                for (NSUInteger i = 0; i < totalWindows; ++i) {
-                    OSWindowRef wp = [windows objectAtIndex:i];
-                    if ((w = qt_mac_find_window(wp)))
-                        break;
-                }
-#endif
             }
             if(w && w->isVisible() && !w->isMinimized()) {
-#ifndef QT_MAC_USE_COCOA
-            qt_event_request_activate(w);
-#else
-            [qt_mac_window_for(w) makeKeyWindow];
-#endif
+                qt_event_request_activate(w);
             }
         }
+#endif
     } else {
          invalidateBuffer(q->rect());
 #ifndef QT_MAC_USE_COCOA
@@ -3656,6 +3763,16 @@ void QWidgetPrivate::setFocus_sys()
     }
 }
 
+NSComparisonResult compareViews2Raise(id view1, id view2, void *context)
+{
+    id topView = reinterpret_cast<id>(context);
+    if (view1 == topView)
+        return NSOrderedDescending;
+    if (view2 == topView)
+        return NSOrderedAscending;
+    return NSOrderedSame;
+}
+
 void QWidgetPrivate::raise_sys()
 {
     Q_Q(QWidget);
@@ -3675,16 +3792,9 @@ void QWidgetPrivate::raise_sys()
             SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
         }
     } else {
-        // Cocoa doesn't really have an idea of Z-ordering, but you can
-        // fake it by changing the order of it. But beware, removing an
-        // NSView will also remove it as the first responder. So we re-set
-        // the first responder just in case:
         NSView *view = qt_mac_nativeview_for(q);
         NSView *parentView = [view superview];
-        NSResponder *firstResponder = [[view window] firstResponder];
-        [view removeFromSuperview];
-        [parentView addSubview:view];
-        [[view window] makeFirstResponder:firstResponder];
+        [parentView sortSubviewsUsingFunction:compareViews2Raise context:reinterpret_cast<void *>(view)];
     }
 #else
     if(q->isWindow()) {
@@ -3702,47 +3812,29 @@ void QWidgetPrivate::raise_sys()
 #endif
 }
 
+NSComparisonResult compareViews2Lower(id view1, id view2, void *context)
+{
+    id topView = reinterpret_cast<id>(context);
+    if (view1 == topView)
+        return NSOrderedAscending;
+    if (view2 == topView)
+        return NSOrderedDescending;
+    return NSOrderedSame;
+}
+
 void QWidgetPrivate::lower_sys()
 {
     Q_Q(QWidget);
     if((q->windowType() == Qt::Desktop))
         return;
 #ifdef QT_MAC_USE_COCOA
-    QMacCocoaAutoReleasePool pool;
     if (isRealWindow()) {
         OSWindowRef window = qt_mac_window_for(q);
         [window orderBack:window];
     } else {
-        // Cocoa doesn't really have an idea of Z-ordering, but you can
-        // fake it by changing the order of it. In this case
-        // we put the item at the beginning of the list, but that means
-        // we must re-insert everything since we cannot modify the list directly.
-        NSView *myview = qt_mac_nativeview_for(q);
-        NSView *parentView = [myview superview];
-        NSArray *tmpViews = [parentView subviews];
-        NSMutableArray *subviews = [[NSMutableArray alloc] initWithCapacity:[tmpViews count]];
-        [subviews addObjectsFromArray:tmpViews];
-        NSResponder *firstResponder = [[myview window] firstResponder];
-        // Implicit assumption that myViewIndex is included in subviews, that's why I'm not checking
-        // myViewIndex.
-        NSUInteger index = 0;
-        NSUInteger myViewIndex = 0;
-        bool foundMyView = false;
-        for (NSView *subview in subviews) {
-            [subview removeFromSuperview];
-            if (subview == myview) {
-                foundMyView = true;
-                myViewIndex = index;
-            }
-            ++index;
-        }
-        [parentView addSubview:myview];
-        if (foundMyView)
-            [subviews removeObjectAtIndex:myViewIndex];
-        for (NSView *subview in subviews)
-            [parentView addSubview:subview];
-        [subviews release];
-        [[myview window] makeFirstResponder:firstResponder];
+        NSView *view = qt_mac_nativeview_for(q);
+        NSView *parentView = [view superview];
+        [parentView sortSubviewsUsingFunction:compareViews2Lower context:reinterpret_cast<void *>(view)];
     }
 #else
     if(q->isWindow()) {
@@ -3755,6 +3847,16 @@ void QWidgetPrivate::lower_sys()
 #endif
 }
 
+NSComparisonResult compareViews2StackUnder(id view1, id view2, void *context)
+{
+    const QHash<NSView *, int> &viewOrder = *reinterpret_cast<QHash<NSView *, int> *>(context);
+    if (viewOrder[view1] < viewOrder[view2])
+        return NSOrderedAscending;
+    if (viewOrder[view1] > viewOrder[view2])
+        return NSOrderedDescending;
+    return NSOrderedSame;
+}
+
 void QWidgetPrivate::stackUnder_sys(QWidget *w)
 {
     // stackUnder
@@ -3763,37 +3865,23 @@ void QWidgetPrivate::stackUnder_sys(QWidget *w)
         return;
 #ifdef QT_MAC_USE_COCOA
     // Do the same trick as lower_sys() and put this widget before the widget passed in.
-    QMacCocoaAutoReleasePool pool;
-    NSView *myview = qt_mac_nativeview_for(q);
+    NSView *myView = qt_mac_nativeview_for(q);
     NSView *wView = qt_mac_nativeview_for(w);
-    NSView *parentView = [myview superview];
-    NSArray *tmpViews = [parentView subviews];
-    NSMutableArray *subviews = [[NSMutableArray alloc] initWithCapacity:[tmpViews count]];
-    [subviews addObjectsFromArray:tmpViews];
-    // Implicit assumption that myViewIndex and wViewIndex is included in subviews,
-    // that's why I'm not checking myViewIndex.
-    NSUInteger index = 0;
-    NSUInteger myViewIndex = 0;
-    NSUInteger wViewIndex = 0;
-    for (NSView *subview in subviews) {
-        [subview removeFromSuperview];
-        if (subview == myview)
-            myViewIndex = index;
-        else if (subview == wView)
-            wViewIndex = index;
-        ++index;
-    }
 
-    index = 0;
+    QHash<NSView *, int> viewOrder;
+    NSView *parentView = [myView superview];
+    NSArray *subviews = [parentView subviews];
+    NSUInteger index = 1;
+    // make a hash of view->zorderindex and make sure z-value is always odd,
+    // so that when we modify the order we create a new (even) z-value which
+    // will not interfere with others.
     for (NSView *subview in subviews) {
-        if (index == myViewIndex)
-            continue;
-        if (index == wViewIndex)
-            [parentView addSubview:myview];
-        [parentView addSubview:subview];
+        viewOrder.insert(subview, index * 2);
         ++index;
     }
-    [subviews release];
+    viewOrder[myView] = viewOrder[wView] - 1;
+
+    [parentView sortSubviewsUsingFunction:compareViews2StackUnder context:reinterpret_cast<void *>(&viewOrder)];
 #else
     QWidget *p = q->parentWidget();
     if(!p || p != w->parentWidget())
@@ -4515,9 +4603,13 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
 #ifndef QT_MAC_USE_COCOA
-    if(extra->topextra->group) {
+    if (extra->topextra->group) {
         qt_mac_release_window_group(extra->topextra->group);
         extra->topextra->group = 0;
+    }
+    if (extra->topextra->windowIcon) {
+        ReleaseIconRef(extra->topextra->windowIcon);
+        extra->topextra->windowIcon = 0;
     }
 #endif
 }
@@ -4556,9 +4648,12 @@ void QWidgetPrivate::registerDropSite(bool on)
 #ifndef QT_MAC_USE_COCOA
     SetControlDragTrackingEnabled(qt_mac_nativeview_for(q), on);
 #else
-    NSView *view = qt_mac_nativeview_for(q);
-    if (on && [view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
-        [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes];
+    NSWindow *win = qt_mac_window_for(q);
+    if (on) {
+        if ([win isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaWindow) class]])
+            [static_cast<QT_MANGLE_NAMESPACE(QCocoaWindow) *>(win) registerDragTypes];
+        else if ([win isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaPanel) class]])
+            [static_cast<QT_MANGLE_NAMESPACE(QCocoaPanel) *>(win) registerDragTypes];
     }
 #endif
 }
@@ -4712,7 +4807,7 @@ void QWidgetPrivate::setModal_sys()
     bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
     if (windowParent && q->windowModality() == Qt::WindowModal){
-        // Window should be window-modal, which implies a sheet.
+        // INVARIANT: Window should be window-modal (which implies a sheet).
         if (!alreadySheet) {
             // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
@@ -4729,47 +4824,19 @@ void QWidgetPrivate::setModal_sys()
                 [static_cast<NSPanel *>(windowRef) setWorksWhenModal:YES];
         }
     } else {
-        // Window shold not be window-modal, and as such, not a sheet.
+        // INVARIANT: Window shold _not_ be window-modal (and as such, not a sheet).
         if (alreadySheet){
             // NB: the following call will call setModal_sys recursivly:
             recreateMacWindow();
             windowRef = qt_mac_window_for(q);
         }
-        if (q->windowModality() == Qt::ApplicationModal) {
-            [windowRef setLevel:NSModalPanelWindowLevel];
-        } else if (primaryWindow && primaryWindow->windowModality() == Qt::ApplicationModal) {
-            // INVARIANT: Our window is a dialog that has a dialog parent that is
-            // application modal, or . This means that q is supposed to be on top of this
-            // dialog and not be modally shaddowed:
-            [windowRef setLevel:NSModalPanelWindowLevel];
+        if (q->windowModality() == Qt::NonModal
+            && primaryWindow && primaryWindow->windowModality() == Qt::ApplicationModal) {
+            // INVARIANT: Our window has a parent that is application modal.
+            // This means that q is supposed to be on top of this window and
+            // not be modally shaddowed:
             if ([windowRef isKindOfClass:[NSPanel class]])
                 [static_cast<NSPanel *>(windowRef) setWorksWhenModal:YES];
-        } else {
-            // INVARIANT: q should not be modal.
-            NSInteger winLevel = -1;
-            if (q->windowType() == Qt::Popup) {
-                winLevel = NSPopUpMenuWindowLevel;
-                // Popup should be in at least the same level as its parent.
-                if (primaryWindow) {
-                    OSWindowRef parentRef = qt_mac_window_for(primaryWindow);
-                    winLevel = qMax([parentRef level], winLevel);
-                }
-            } else if (q->windowType() == Qt::Tool) {
-                winLevel = NSFloatingWindowLevel;
-            } else if (q->windowType() == Qt::Dialog) {
-                winLevel = NSModalPanelWindowLevel;
-            }
-
-            // StayOnTop window should appear above Tool windows.
-            if (data.window_flags & Qt::WindowStaysOnTopHint)
-                winLevel = NSPopUpMenuWindowLevel;
-            // Tooltips should appear above StayOnTop windows.
-            if (q->windowType() == Qt::ToolTip)
-                winLevel = NSScreenSaverWindowLevel;
-            // All other types are Normal level.
-            if (winLevel == -1)
-                winLevel = NSNormalWindowLevel;
-            [windowRef setLevel:winLevel];
         }
     }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -196,7 +196,7 @@
 
     \list
     \o Windows - Intel(R) C++ Compiler for 32-bit applications,
-       Version 8.1 Build 20050309Z Package ID: W_CC_PC_8.1.026
+       Version 9.1.040.
     \o Altix - Intel(R) C++ Itanium(R) Compiler for Itanium(R)-based
        applications Version 8.1 Build 20050406 Package ID: l_cc_pc_8.1.030
     \endlist

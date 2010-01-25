@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,22 +48,15 @@
 QT_BEGIN_NAMESPACE
 
 class FontPanel;
+class HelpEngineWrapper;
 class QFileSystemWatcher;
-class QHelpEngineCore;
-
-enum {
-    ShowHomePage = 0,
-    ShowBlankPage = 1,
-    ShowLastPages = 2
-};
 
 class PreferencesDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    PreferencesDialog(QHelpEngineCore *helpEngine,
-                      QFileSystemWatcher *qchWatcher, QWidget *parent = 0);
+    PreferencesDialog(QWidget *parent = 0);
     ~PreferencesDialog();
 
     void showDialog();
@@ -95,7 +88,6 @@ private:
     void updateOptionsPage();
 
     Ui::PreferencesDialogClass m_ui;
-    QHelpEngineCore *m_helpEngine;
     bool m_hideFiltersTab;
     bool m_hideDocsTab;
     QMap<QString, QStringList> m_filterMapBackup;
@@ -109,7 +101,7 @@ private:
     FontPanel *m_browserFontPanel;
     bool m_appFontChanged;
     bool m_browserFontChanged;
-    QFileSystemWatcher * const m_qchWatcher;
+    HelpEngineWrapper &helpEngine;
 };
 
 QT_END_NAMESPACE

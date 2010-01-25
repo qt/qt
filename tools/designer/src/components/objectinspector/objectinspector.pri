@@ -1,4 +1,10 @@
-include($$QT_SOURCE_TREE/tools/shared/findwidget/findwidget.pri)
+# --- The Find widget is also linked into the designer_shared library.
+#     Avoid conflict when linking statically
+contains(CONFIG, static) {
+    INCLUDEPATH *= $$QT_SOURCE_TREE/tools/shared/findwidget
+} else {
+    include($$QT_SOURCE_TREE/tools/shared/findwidget/findwidget.pri)
+}
 
 INCLUDEPATH += $$PWD
 

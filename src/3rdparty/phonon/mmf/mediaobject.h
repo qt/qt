@@ -19,8 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_MEDIAOBJECT_H
 #define PHONON_MMF_MEDIAOBJECT_H
 
-#include <Phonon/MediaSource>
-#include <Phonon/MediaObjectInterface>
+#include <phonon/mediasource.h>
+#include <phonon/mediaobjectinterface.h>
 #include <QScopedPointer>
 #include <QTimer>
 
@@ -75,6 +75,10 @@ public:
     virtual qint32 transitionTime() const;
     virtual void setTransitionTime(qint32);
 
+    // MediaNode
+    void connectMediaObject(MediaObject *mediaObject);
+    void disconnectMediaObject(MediaObject *mediaObject);
+
     /**
      * This class owns the AbstractPlayer, and will delete it upon
      * destruction.
@@ -83,30 +87,28 @@ public:
 
     void setVideoOutput(VideoOutput* videoOutput);
 
-    virtual bool activateOnMediaObject(MediaObject *);
-
 public Q_SLOTS:
     void volumeChanged(qreal volume);
+    void switchToNextSource();
 
 Q_SIGNALS:
+    void abstractPlayerChanged(AbstractPlayer *player);
     void totalTimeChanged(qint64 length);
     void hasVideoChanged(bool hasVideo);
     void seekableChanged(bool seekable);
-    // TODO: emit bufferStatus from MediaObject
     void bufferStatus(int);
-    // TODO: emit aboutToFinish from MediaObject
     void aboutToFinish();
-    // TODO: emit prefinishMarkReached from MediaObject
-    void prefinishMarkReached(qint32);
+    void prefinishMarkReached(qint32 remaining);
     // TODO: emit metaDataChanged from MediaObject
     void metaDataChanged(const QMultiMap<QString, QString>& metaData);
     void currentSourceChanged(const MediaSource& source);
-    void stateChanged(Phonon::State oldState,
-                      Phonon::State newState);
+    void stateChanged(Phonon::State newState,
+                      Phonon::State oldState);
     void finished();
     void tick(qint64 time);
 
 private:
+    void switchToSource(const MediaSource &source);
     void createPlayer(const MediaSource &source);
     bool openRecognizer();
 
@@ -122,6 +124,10 @@ private:
     bool                                m_recognizerOpened;
     RApaLsSession                       m_recognizer;
     RFs                                 m_fileServer;
+
+    MediaSource                         m_source;
+    MediaSource                         m_nextSource;
+    bool                                m_nextSourceSet;
 
     // Storing the file handle here to work around KErrInUse error
     // from MMF player utility OpenFileL functions

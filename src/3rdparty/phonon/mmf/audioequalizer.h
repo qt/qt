@@ -19,8 +19,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_AUDIOEQUALIZER_H
 #define PHONON_MMF_AUDIOEQUALIZER_H
 
-#include <AudioEqualizerBase.h>
 #include "abstractaudioeffect.h"
+
+class CAudioEqualizer;
 
 QT_BEGIN_NAMESPACE
 
@@ -40,17 +41,22 @@ class AudioEqualizer : public AbstractAudioEffect
 {
     Q_OBJECT
 public:
-    AudioEqualizer(QObject *parent);
+    AudioEqualizer(QObject *parent, const QList<EffectParameter> &parameters);
+
+    // Static interface required by EffectFactory
+    static const char* description();
+    static bool getParameters(CMdaAudioOutputStream *stream,
+        QList<EffectParameter>& parameters);
 
 protected:
-    virtual void parameterChanged(const int id,
-                                  const QVariant &value);
-
-    virtual bool activateOn(CPlayerType *player);
+    // AbstractAudioEffect
+    virtual void createEffect(AudioPlayer::NativePlayer *player);
+    virtual int effectParameterChanged(const EffectParameter &param,
+                                       const QVariant &value);
 
 private:
-    static QList<EffectParameter> createParams();
-    QScopedPointer<CAudioEqualizer> m_bassBoost;
+    CAudioEqualizer *concreteEffect();
+
 };
 }
 }

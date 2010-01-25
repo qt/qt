@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -176,7 +176,6 @@ void Ui3Reader::init()
 {
     outputFileName.clear();
     trmacro.clear();
-    nofwd = false;
 
     fileName.clear();
     writeFunctImpl = true;
@@ -241,11 +240,10 @@ QDomElement Ui3Reader::parse(const QDomDocument &doc)
     return widget;
 }
 
-Ui3Reader::Ui3Reader(QTextStream &outStream)
-   : out(outStream), trout(&languageChangeBody)
+Ui3Reader::Ui3Reader(QTextStream &outStream, unsigned options) :
+    m_options(options), out(outStream), trout(&languageChangeBody),
+    m_porting(new Porting), m_extractImages(false)
 {
-    m_porting = new Porting();
-    m_extractImages = false;
 }
 
 Ui3Reader::~Ui3Reader()
@@ -255,14 +253,13 @@ Ui3Reader::~Ui3Reader()
 
 void Ui3Reader::generate(const QString &fn, const QString &outputFn,
           QDomDocument doc, bool decl, bool subcl, const QString &trm,
-          const QString& subClass, bool omitForwardDecls, bool implicitIncludes, const QString &convertedUiFile)
+          const QString& subClass, const QString &convertedUiFile)
 {
     init();
 
     fileName = fn;
     outputFileName = outputFn;
     trmacro = trm;
-    nofwd = omitForwardDecls;
 
     QDomElement e = parse(doc);
 
@@ -281,21 +278,21 @@ void Ui3Reader::generate(const QString &fn, const QString &outputFn,
             createSubImpl(e, subClass);
     } else {
         if (decl)
-            createFormDecl(e, implicitIncludes);
+            createFormDecl(e);
         else
             createFormImpl(e);
     }
 
 }
 
-void Ui3Reader::generateUi4(const QString &fn, const QString &outputFn, QDomDocument doc, bool implicitIncludes)
+void Ui3Reader::generateUi4(const QString &fn, const QString &outputFn, QDomDocument doc)
 {
     init();
 
     fileName = fn;
     outputFileName = outputFn;
 
-    DomUI *ui = generateUi4(parse(doc), implicitIncludes);
+    DomUI *ui = generateUi4(parse(doc));
     if (!ui)
         return;
 
@@ -315,11 +312,6 @@ void Ui3Reader::generateUi4(const QString &fn, const QString &outputFn, QDomDocu
 void Ui3Reader::setTrMacro(const QString &trmacro)
 {
     this->trmacro = trmacro;
-}
-
-void Ui3Reader::setForwardDeclarationsEnabled(bool b)
-{
-    nofwd = !b;
 }
 
 void Ui3Reader::setOutputFileName(const QString &fileName)

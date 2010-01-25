@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -123,16 +123,16 @@ struct AnchorData : public QSimplexVariable {
     AnchorData()
         : QSimplexVariable(), from(0), to(0),
           minSize(0), prefSize(0), maxSize(0),
+          minPrefSize(0), maxPrefSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
           sizeAtMaximum(0), item(0), graphicsAnchor(0),
           type(Normal), isLayoutAnchor(false),
           isCenterAnchor(false), orientation(0),
           dependency(Independent) {}
+    virtual ~AnchorData();
 
     virtual void updateChildrenSizes() {}
     void refreshSizeHints(const QLayoutStyleInfo *styleInfo = 0);
-
-    virtual ~AnchorData() {}
 
 #ifdef QT_DEBUG
     void dump(int indent = 2);
@@ -153,6 +153,9 @@ struct AnchorData : public QSimplexVariable {
     qreal minSize;
     qreal prefSize;
     qreal maxSize;
+
+    qreal minPrefSize;
+    qreal maxPrefSize;
 
     // Calculated sizes
     // These attributes define which sizes should that anchor be in when the
@@ -213,7 +216,8 @@ struct ParallelAnchorData : public AnchorData
         Q_ASSERT(((first->from == second->from) && (first->to == second->to)) ||
                  ((first->from == second->to) && (first->to == second->from)));
 
-        // We arbitrarily choose the direction of the first child as "our" direction
+        // Our convention will be that the parallel group anchor will have the same
+        // direction as the first anchor.
         from = first->from;
         to = first->to;
 #ifdef QT_DEBUG
@@ -223,6 +227,13 @@ struct ParallelAnchorData : public AnchorData
 
     virtual void updateChildrenSizes();
     bool calculateSizeHints();
+
+    bool secondForward() const {
+        // We have the convention that the first children will define the direction of the
+        // pararell group. Note that we can't rely on 'this->from' or 'this->to'  because they
+        // might be changed by vertex simplification.
+        return firstEdge->from == secondEdge->from;
+    }
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
@@ -343,7 +354,6 @@ public:
     qreal preferredSize;
 
     uint hasSize : 1;         // if false, get size from style.
-    uint reversed : 1;        // if true, the anchor was inverted to keep its value positive
 };
 
 
@@ -365,8 +375,10 @@ public:
     //
     // Interval represents which interpolation interval are we operating in.
     enum Interval {
-        MinToPreferred = 0,
-        PreferredToMax
+        MinimumToMinPreferred = 0,
+        MinPreferredToPreferred,
+        PreferredToMaxPreferred,
+        MaxPreferredToMaximum
     };
 
     // Several structures internal to the layout are duplicated to handle

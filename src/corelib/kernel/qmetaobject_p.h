@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -115,23 +115,31 @@ struct QMetaObjectPrivate
     int constructorCount, constructorData; //since revision 2
     int flags; //since revision 3
     int signalCount; //since revision 4
+    // revision 5 introduces changes in normalized signatures, no new members
 
     static inline const QMetaObjectPrivate *get(const QMetaObject *metaobject)
     { return reinterpret_cast<const QMetaObjectPrivate*>(metaobject->d.data); }
 
-    static int indexOfSignalRelative(const QMetaObject **baseObject, const char* name);
+    static int indexOfSignalRelative(const QMetaObject **baseObject,
+                                     const char* name,
+                                     bool normalizeStringData);
+    static int indexOfSlot(const QMetaObject *m,
+                           const char *slot,
+                           bool normalizeStringData);
     static int originalClone(const QMetaObject *obj, int local_method_index);
 
 #ifndef QT_NO_QOBJECT
     //defined in qobject.cpp
+    enum DisconnectType { DisconnectAll, DisconnectOne };
     static bool connect(const QObject *sender, int signal_index,
                         const QObject *receiver, int method_index,
                         int type = 0, int *types = 0);
     static bool disconnect(const QObject *sender, int signal_index,
-                           const QObject *receiver, int method_index);
+                           const QObject *receiver, int method_index,
+                           DisconnectType = DisconnectAll);
     static inline bool disconnectHelper(QObjectPrivate::Connection *c,
                                         const QObject *receiver, int method_index,
-                                        QMutex *senderMutex);
+                                        QMutex *senderMutex, DisconnectType);
 #endif
 };
 
@@ -245,6 +253,7 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
         } while (optional[++i].keyword != 0);
     }
 
+    bool star = false;
     while (t != e) {
         char c = *t++;
         if (fixScope && c == ':' && *t == ':' ) {
@@ -255,6 +264,7 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
                 --i;
             result.resize(i + 1);
         }
+        star = star || c == '*';
         result += c;
         if (c == '<') {
             //template recursion
@@ -273,6 +283,23 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
                         result += ' '; // avoid >>
                     break;
                 }
+            }
+        }
+
+        // cv qualifers can appear after the type as well
+        if (t != e && (e - t >= 5 && strncmp("const", t, 5) == 0)) {
+            t += 5;
+            while (t != e && is_space(*t))
+                ++t;
+            if (adjustConst && t != e && *t == '&') {
+                // treat const ref as value
+                ++t;
+            } else if (!star) {
+                // move const to the front (but not if const comes after a *)
+                result.prepend("const ");
+            } else {
+                // keep const after a *
+                result += "const";
             }
         }
     }

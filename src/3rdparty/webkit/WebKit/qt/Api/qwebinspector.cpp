@@ -139,6 +139,9 @@ QSize QWebInspector::sizeHint() const
 /*! \reimp */
 bool QWebInspector::event(QEvent* ev)
 {
+    if (ev->type() == QEvent::Close && d->page)
+        d->page->d->inspectorController()->setWindowVisible(false);
+
     return QWidget::event(ev);
 }
 
@@ -159,8 +162,6 @@ void QWebInspector::showEvent(QShowEvent* event)
 /*! \reimp */
 void QWebInspector::hideEvent(QHideEvent* event)
 {
-    if (d->page)
-        d->page->d->inspectorController()->setWindowVisible(false);
 }
 
 /*! \internal */

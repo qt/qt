@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -186,8 +186,10 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::DeactivateControl:
         return new QEvent(*e);
 
+#ifndef QT_NO_CONTEXTMENU
     case QEvent::ContextMenu:
         return new QContextMenuEvent(*static_cast<QContextMenuEvent*>(e));
+#endif
     case QEvent::InputMethod:
         return new QInputMethodEvent(*static_cast<QInputMethodEvent*>(e));
     case QEvent::AccessibilityPrepare:
@@ -466,12 +468,6 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::GrabKeyboard:
     case QEvent::UngrabKeyboard:
         return new QEvent(*e);
-
-#ifdef QT_MAC_USE_COCOA
-    case QEvent::CocoaRequestModal:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-#endif
 
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:

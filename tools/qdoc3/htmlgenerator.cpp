@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3429,6 +3429,8 @@ QString HtmlGenerator::fileName(const Node *node)
     if (node->type() == Node::Fake) {
         if (static_cast<const FakeNode *>(node)->subType() == Node::ExternalPage)
             return node->name();
+        if (static_cast<const FakeNode *>(node)->subType() == Node::Image)
+            return node->name();
     }
     return PageGenerator::fileName(node);
 }
@@ -4000,6 +4002,8 @@ QString HtmlGenerator::getLink(const Atom *atom,
 
         if (path.isEmpty()) {
             link = linkForNode(*node, relative);
+            if (*node && (*node)->subType() == Node::Image)
+                link = "images/used-in-examples/" + link;
             if (targetAtom)
                 link += "#" + refForAtom(targetAtom, *node);
         }

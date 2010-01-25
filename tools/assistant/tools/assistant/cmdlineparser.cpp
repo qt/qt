@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include <QtCore/QFileInfo>
 #include <QtGui/QMessageBox>
@@ -71,6 +72,7 @@ const QString CmdLineParser::m_helpMessage = QLatin1String(
         "                           file.\n"
         "-setCurrentFilter filter   Set the filter as the active filter.\n"
         "-remove-search-index       Removes the full text search index.\n"
+        "-rebuild-search-index      Re-builds the full text search index (potentially slow).\n"
         "-quiet                     Does not display any error or\n"
         "                           status message.\n"
         "-help                      Displays this help.\n"
@@ -86,8 +88,10 @@ CmdLineParser::CmdLineParser(const QStringList &arguments)
     m_search(Untouched),
     m_register(None),
     m_removeSearchIndex(false),
+    m_rebuildSearchIndex(false),
     m_quiet(false)
 {
+    TRACE_OBJ
     for (int i = 1; i < arguments.count(); ++i) {
         const QString &arg = arguments.at(i);
         if (arg.toLower() == "-quiet")
@@ -99,6 +103,7 @@ CmdLineParser::CmdLineParser(const QStringList &arguments)
 
 CmdLineParser::Result CmdLineParser::parse()
 {
+    TRACE_OBJ
     bool showHelp = false;
 
     while (m_error.isEmpty() && hasMoreArgs()) {
@@ -123,6 +128,8 @@ CmdLineParser::Result CmdLineParser::parse()
             handleSetCurrentFilterOption();
         else if (arg == QLatin1String("-remove-search-index"))
             m_removeSearchIndex = true;
+        else if (arg == QLatin1String("-rebuild-search-index"))
+            m_rebuildSearchIndex = true;
         else if (arg == QLatin1String("-help"))
             showHelp = true;
         else
@@ -141,17 +148,20 @@ CmdLineParser::Result CmdLineParser::parse()
 
 bool CmdLineParser::hasMoreArgs() const
 {
+    TRACE_OBJ
     return m_pos < m_arguments.count();
 }
 
 const QString &CmdLineParser::nextArg()
 {
+    TRACE_OBJ
     Q_ASSERT(hasMoreArgs());
     return m_arguments.at(m_pos++);
 }
 
 void CmdLineParser::handleCollectionFileOption()
 {
+    TRACE_OBJ
     if (hasMoreArgs()) {
         const QString &fileName = nextArg();
         m_collectionFile = getFileName(fileName);
@@ -165,6 +175,7 @@ void CmdLineParser::handleCollectionFileOption()
 
 void CmdLineParser::handleShowUrlOption()
 {
+    TRACE_OBJ
     if (hasMoreArgs()) {
         const QString &urlString = nextArg();
         QUrl url(urlString);
@@ -179,21 +190,25 @@ void CmdLineParser::handleShowUrlOption()
 
 void CmdLineParser::handleShowOption()
 {
+    TRACE_OBJ
     handleShowOrHideOrActivateOption(Show);
 }
 
 void CmdLineParser::handleHideOption()
 {
+    TRACE_OBJ
     handleShowOrHideOrActivateOption(Hide);
 }
 
 void CmdLineParser::handleActivateOption()
 {
+    TRACE_OBJ
     handleShowOrHideOrActivateOption(Activate);
 }
 
 void CmdLineParser::handleShowOrHideOrActivateOption(ShowState state)
 {
+    TRACE_OBJ
     if (hasMoreArgs()) {
         const QString &widget = nextArg().toLower();
         if (widget == QLatin1String("contents"))
@@ -213,16 +228,19 @@ void CmdLineParser::handleShowOrHideOrActivateOption(ShowState state)
 
 void CmdLineParser::handleRegisterOption()
 {
+    TRACE_OBJ
     handleRegisterOrUnregisterOption(Register);
 }
 
 void CmdLineParser::handleUnregisterOption()
 {
+    TRACE_OBJ
     handleRegisterOrUnregisterOption(Unregister);
 }
 
 void CmdLineParser::handleRegisterOrUnregisterOption(RegisterState state)
 {
+    TRACE_OBJ
     if (hasMoreArgs()) {
         const QString &fileName = nextArg();
         m_helpFile = getFileName(fileName);
@@ -237,6 +255,7 @@ void CmdLineParser::handleRegisterOrUnregisterOption(RegisterState state)
 
 void CmdLineParser::handleSetCurrentFilterOption()
 {
+    TRACE_OBJ
     if (hasMoreArgs())
         m_currentFilter = nextArg();
     else
@@ -245,6 +264,7 @@ void CmdLineParser::handleSetCurrentFilterOption()
 
 QString CmdLineParser::getFileName(const QString &fileName)
 {
+    TRACE_OBJ
     QFileInfo fi(fileName);
     if (!fi.exists())
         return QString();
@@ -253,6 +273,7 @@ QString CmdLineParser::getFileName(const QString &fileName)
 
 void CmdLineParser::showMessage(const QString &msg, bool error)
 {
+    TRACE_OBJ
     if (m_quiet)
         return;
 #ifdef Q_OS_WIN
@@ -268,61 +289,79 @@ void CmdLineParser::showMessage(const QString &msg, bool error)
 
 void CmdLineParser::setCollectionFile(const QString &file)
 {
+    TRACE_OBJ
     m_collectionFile = file;
 }
 
 QString CmdLineParser::collectionFile() const
 {
+    TRACE_OBJ
     return m_collectionFile;
 }
 
 QUrl CmdLineParser::url() const
 {
+    TRACE_OBJ
     return m_url;
 }
 
 bool CmdLineParser::enableRemoteControl() const
 {
+    TRACE_OBJ
     return m_enableRemoteControl;
 }
 
 CmdLineParser::ShowState CmdLineParser::contents() const
 {
+    TRACE_OBJ
     return m_contents;
 }
 
 CmdLineParser::ShowState CmdLineParser::index() const
 {
+    TRACE_OBJ
     return m_index;
 }
 
 CmdLineParser::ShowState CmdLineParser::bookmarks() const
 {
+    TRACE_OBJ
     return m_bookmarks;
 }
 
 CmdLineParser::ShowState CmdLineParser::search() const
 {
+    TRACE_OBJ
     return m_search;
 }
 
 QString CmdLineParser::currentFilter() const
 {
+    TRACE_OBJ
     return m_currentFilter;
 }
 
 bool CmdLineParser::removeSearchIndex() const
 {
+    TRACE_OBJ
     return m_removeSearchIndex;
+}
+
+bool CmdLineParser::rebuildSearchIndex() const
+{
+    TRACE_OBJ
+    return m_rebuildSearchIndex;
 }
 
 CmdLineParser::RegisterState CmdLineParser::registerRequest() const
 {
+    TRACE_OBJ
     return m_register;
 }
 
 QString CmdLineParser::helpFile() const
 {
+    TRACE_OBJ
     return m_helpFile;
 }
 

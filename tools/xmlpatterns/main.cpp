@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,6 +49,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>
 #include <QtCore/QVector>
+#include <QtCore/QCoreApplication>
 
 #include <QtXmlPatterns/QXmlFormatter>
 #include <QtXmlPatterns/QXmlItem>
@@ -58,7 +59,6 @@
 #include "private/qautoptr_p.h"
 #include "qapplicationargument_p.h"
 #include "qapplicationargumentparser_p.h"
-#include "qcoloringmessagehandler_p.h"
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 /* Needed for opening stdout with _fdopen & friends. io.h seems to not be
@@ -80,14 +80,14 @@ QT_USE_NAMESPACE
  Represents the name and value found in "-param name=value".
  */
 typedef QPair<QString, QString> Parameter;
-Q_DECLARE_METATYPE(Parameter);
+Q_DECLARE_METATYPE(Parameter)
 
 /*!
  \internal
  \since 4.4
  For the -output switch.
  */
-Q_DECLARE_METATYPE(QIODevice *);
+Q_DECLARE_METATYPE(QIODevice *)
 
 /*!
  \class PatternistApplicationParser

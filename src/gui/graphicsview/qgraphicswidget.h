@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,6 +82,7 @@ class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLay
     Q_PROPERTY(Qt::WindowFlags windowFlags READ windowFlags WRITE setWindowFlags)
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
     Q_PROPERTY(QRectF geometry READ geometry WRITE setGeometry)
+    Q_PROPERTY(bool autoFillBackground READ autoFillBackground WRITE setAutoFillBackground)
 public:
     QGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
     ~QGraphicsWidget();
@@ -102,6 +103,9 @@ public:
 
     QPalette palette() const;
     void setPalette(const QPalette &palette);
+
+    bool autoFillBackground() const;
+    void setAutoFillBackground(bool enabled);
 
     void resize(const QSizeF &size);
     inline void resize(qreal w, qreal h) { resize(QSizeF(w, h)); }

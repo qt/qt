@@ -100,6 +100,7 @@ excludedirs             = $QTDIR/src/3rdparty/clucene \
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"
 examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"
+examples.imageextensions = "*.png"
 
 exampledirs             = $QTDIR/doc/src \
                           $QTDIR/examples \

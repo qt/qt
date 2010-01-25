@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -505,7 +505,7 @@ void Main::about()
 	"<p><b><font size=\"+2\">Qtopia Core build configuration</font></b></p>"
 	"<p></p>"
 	"<p>Version 2.0</p>"
-	"<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
+	"<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>"
 	"<p></p>"
     );
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,10 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "remotecontrol.h"
 #include "mainwindow.h"
 #include "centralwidget.h"
+#include "helpenginewrapper.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -67,16 +69,19 @@ QT_BEGIN_NAMESPACE
 StdInListenerWin::StdInListenerWin(QObject *parent)
     : QThread(parent)
 {
+    TRACE_OBJ
 }
 
 StdInListenerWin::~StdInListenerWin()
 {
+    TRACE_OBJ
     terminate();
     wait();
 }
 
 void StdInListenerWin::run()
 {
+    TRACE_OBJ
     bool ok = true;
     char chBuf[4096];
     DWORD dwRead;
@@ -106,18 +111,17 @@ void StdInListenerWin::run()
 }
 #endif
 
-RemoteControl::RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine,
-                             QFileSystemWatcher *qchWatcher)
+RemoteControl::RemoteControl(MainWindow *mainWindow)
     : QObject(mainWindow)
     , m_mainWindow(mainWindow)
-    , m_helpEngine(helpEngine)
     , m_debug(false)
     , m_caching(true)
     , m_syncContents(false)
     , m_expandTOC(-2)
-    , m_qchWatcher(qchWatcher)
+    , helpEngine(HelpEngineWrapper::instance())
 
 {
+    TRACE_OBJ
     connect(m_mainWindow, SIGNAL(initDone()), this, SLOT(applyCache()));
 #ifdef Q_OS_WIN
     StdInListenerWin *l = new StdInListenerWin(this);
@@ -134,6 +138,7 @@ RemoteControl::RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine,
 
 void RemoteControl::receivedData()
 {
+    TRACE_OBJ
     QByteArray ba;
     while (true) {
         char c = getc(stdin);
@@ -149,6 +154,7 @@ void RemoteControl::receivedData()
 
 void RemoteControl::handleCommandString(const QString &cmdString)
 {
+    TRACE_OBJ
     QStringList cmds = cmdString.split(QLatin1Char(';'));
     QStringList::const_iterator it = cmds.constBegin();
     while (it != cmds.constEnd()) {
@@ -193,6 +199,7 @@ void RemoteControl::handleCommandString(const QString &cmdString)
 void RemoteControl::splitInputString(const QString &input, QString &cmd,
                                      QString &arg)
 {
+    TRACE_OBJ
     QString cmdLine = input.trimmed();
     int i = cmdLine.indexOf(QLatin1Char(' '));
     cmd = cmdLine.left(i);
@@ -202,11 +209,13 @@ void RemoteControl::splitInputString(const QString &input, QString &cmd,
 
 void RemoteControl::handleDebugCommand(const QString &arg)
 {
+    TRACE_OBJ
     m_debug = arg == QLatin1String("on");
 }
 
 void RemoteControl::handleShowOrHideCommand(const QString &arg, bool show)
 {
+    TRACE_OBJ
     if (arg.toLower() == QLatin1String("contents"))
         m_mainWindow->setContentsVisible(show);
     else if (arg.toLower() == QLatin1String("index"))
@@ -219,6 +228,7 @@ void RemoteControl::handleShowOrHideCommand(const QString &arg, bool show)
 
 void RemoteControl::handleSetSourceCommand(const QString &arg)
 {
+    TRACE_OBJ
     QUrl url(arg);
     if (url.isValid()) {
         if (url.isRelative())
@@ -234,6 +244,7 @@ void RemoteControl::handleSetSourceCommand(const QString &arg)
 
 void RemoteControl::handleSyncContentsCommand()
 {
+    TRACE_OBJ
     if (m_caching)
         m_syncContents = true;
     else
@@ -242,24 +253,25 @@ void RemoteControl::handleSyncContentsCommand()
 
 void RemoteControl::handleActivateKeywordCommand(const QString &arg)
 {
+    TRACE_OBJ
     if (m_caching) {
         clearCache();
         m_activateKeyword = arg;
     } else {
         m_mainWindow->setIndexString(arg);
         if (!arg.isEmpty())
-            m_helpEngine->indexWidget()->activateCurrentItem();
+            helpEngine.indexWidget()->activateCurrentItem();
     }
 }
 
 void RemoteControl::handleActivateIdentifierCommand(const QString &arg)
 {
+    TRACE_OBJ
     if (m_caching) {
         clearCache();
         m_activateIdentifier = arg;
     } else {
-        const QMap<QString, QUrl> &links =
-            m_helpEngine->linksForIdentifier(arg);
+        const QMap<QString, QUrl> &links = helpEngine.linksForIdentifier(arg);
         if (!links.isEmpty())
             CentralWidget::instance()->setSource(links.constBegin().value());
     }
@@ -267,6 +279,7 @@ void RemoteControl::handleActivateIdentifierCommand(const QString &arg)
 
 void RemoteControl::handleExpandTocCommand(const QString &arg)
 {
+    TRACE_OBJ
     bool ok = false;
     int depth = -2;
     if (!arg.isEmpty())
@@ -282,59 +295,56 @@ void RemoteControl::handleExpandTocCommand(const QString &arg)
 
 void RemoteControl::handleSetCurrentFilterCommand(const QString &arg)
 {
-    if (m_helpEngine->customFilters().contains(arg)) {
+    TRACE_OBJ
+    if (helpEngine.customFilters().contains(arg)) {
         if (m_caching) {
             clearCache();
             m_currentFilter = arg;
         } else {
-            m_helpEngine->setCurrentFilter(arg);
+            helpEngine.setCurrentFilter(arg);
         }
     }
 }
 
 void RemoteControl::handleRegisterCommand(const QString &arg)
 {
+    TRACE_OBJ
     const QString &absFileName = QFileInfo(arg).absoluteFilePath();
-    if (m_helpEngine->registeredDocumentations().
+    if (helpEngine.registeredDocumentations().
         contains(QHelpEngineCore::namespaceName(absFileName)))
         return;
-    if (m_helpEngine->registerDocumentation(absFileName)) {
-        m_qchWatcher->addPath(absFileName);
-        m_helpEngine->setupData();
-        Q_ASSERT(m_qchWatcher->files().count()
-                 == m_helpEngine->registeredDocumentations().count());
-    }
+    if (helpEngine.registerDocumentation(absFileName))
+        helpEngine.setupData();
 }
 
 void RemoteControl::handleUnregisterCommand(const QString &arg)
 {
+    TRACE_OBJ
     const QString &absFileName = QFileInfo(arg).absoluteFilePath();
     const QString &ns = QHelpEngineCore::namespaceName(absFileName);
-    if (m_helpEngine->registeredDocumentations().contains(ns)) {
+    if (helpEngine.registeredDocumentations().contains(ns)) {
         CentralWidget* widget = CentralWidget::instance();
-        widget->closeTabs(widget->currentSourceFileList().keys(ns));
-        const QString docFile = m_helpEngine->documentationFileName(ns);
-        if (m_helpEngine->unregisterDocumentation(ns)) {
-            m_qchWatcher->removePath(docFile);
-            m_helpEngine->setupData();
-        }
+        widget->closeOrReloadTabs(widget->currentSourceFileList().keys(ns), false);
+        if (helpEngine.unregisterDocumentation(ns))
+            helpEngine.setupData();
     }
 }
 
 void RemoteControl::applyCache()
 {
+    TRACE_OBJ
     if (m_setSource.isValid()) {
         CentralWidget::instance()->setSource(m_setSource);
     } else if (!m_activateKeyword.isEmpty()) {
         m_mainWindow->setIndexString(m_activateKeyword);
-        m_helpEngine->indexWidget()->activateCurrentItem();
+        helpEngine.indexWidget()->activateCurrentItem();
     } else if (!m_activateIdentifier.isEmpty()) {
         QMap<QString, QUrl> links =
-            m_helpEngine->linksForIdentifier(m_activateIdentifier);
-        if (links.count())
+            helpEngine.linksForIdentifier(m_activateIdentifier);
+        if (!links.isEmpty())
             CentralWidget::instance()->setSource(links.constBegin().value());
     } else if (!m_currentFilter.isEmpty()) {
-        m_helpEngine->setCurrentFilter(m_currentFilter);
+        helpEngine.setCurrentFilter(m_currentFilter);
     }
 
     if (m_syncContents)
@@ -349,6 +359,7 @@ void RemoteControl::applyCache()
 
 void RemoteControl::clearCache()
 {
+    TRACE_OBJ
     m_currentFilter.clear();
     m_setSource.clear();
     m_syncContents = false;

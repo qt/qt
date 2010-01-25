@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,19 +97,19 @@ static bool launchWebBrowser(const QUrl &url)
     if (url.scheme() == QLatin1String("mailto")) {
         //Retrieve the commandline for the default mail client
         //the default key used below is the command line for the mailto: shell command
-        DWORD  bufferSize = 2 * MAX_PATH;
+        DWORD  bufferSize = sizeof(wchar_t) * MAX_PATH;
         long  returnValue =  -1;
         QString command;
 
         HKEY handle;
         LONG res;
-        wchar_t keyValue[2 * MAX_PATH] = {0};
+        wchar_t keyValue[MAX_PATH] = {0};
         QString keyName(QLatin1String("mailto"));
 
         //Check if user has set preference, otherwise use default.
-        res = RegOpenKeyExW(HKEY_CURRENT_USER,
-                            L"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\mailto\\UserChoice",
-                            0, KEY_READ, &handle);
+        res = RegOpenKeyEx(HKEY_CURRENT_USER,
+                           L"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\mailto\\UserChoice",
+                           0, KEY_READ, &handle);
         if (res == ERROR_SUCCESS) {
             returnValue = RegQueryValueEx(handle, L"Progid", 0, 0, reinterpret_cast<unsigned char*>(keyValue), &bufferSize);
             if (!returnValue)
@@ -121,8 +121,8 @@ static bool launchWebBrowser(const QUrl &url)
         if (res != ERROR_SUCCESS)
             return false;
 
-        bufferSize = 2 * MAX_PATH;
-        returnValue = RegQueryValueExW(handle, L"", 0, 0, reinterpret_cast<unsigned char*>(keyValue), &bufferSize);
+        bufferSize = sizeof(wchar_t) * MAX_PATH;
+        returnValue = RegQueryValueEx(handle, L"", 0, 0, reinterpret_cast<unsigned char*>(keyValue), &bufferSize);
         if (!returnValue)
             command = QString::fromRawData((QChar*)keyValue, bufferSize);
         RegCloseKey(handle);

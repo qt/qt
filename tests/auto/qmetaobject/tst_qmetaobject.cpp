@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -664,7 +664,7 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("const rettype") << "const QString *foo()" << "const QString*foo()";
     QTest::newRow("const ref") << "const QString &foo()" << "const QString&foo()";
     QTest::newRow("reference") << "QString &foo()" << "QString&foo()";
-    QTest::newRow("const2") << "void foo(QString const *)" << "void foo(const QString*)";
+    QTest::newRow("const1") << "void foo(QString const *)" << "void foo(const QString*)";
     QTest::newRow("const2") << "void foo(QString * const)" << "void foo(QString*const)";
     QTest::newRow("const3") << "void foo(QString const &)" << "void foo(QString)";
     QTest::newRow("const4") << "void foo(const int)" << "void foo(int)";
@@ -672,7 +672,7 @@ void tst_QMetaObject::normalizedSignature_data()
                             << "void foo(int,int,int,int)";
     QTest::newRow("const6") << "void foo(QList<const int>)" << "void foo(QList<const int>)";
     QTest::newRow("const7") << "void foo(QList<const int*>)" << "void foo(QList<const int*>)";
-    QTest::newRow("const7") << "void foo(QList<int const*>)" << "void foo(QList<const int*>)";
+    QTest::newRow("const8") << "void foo(QList<int const*>)" << "void foo(QList<const int*>)";
 }
 
 void tst_QMetaObject::normalizedSignature()

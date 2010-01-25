@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -373,6 +373,13 @@ QVariantAnimation::~QVariantAnimation()
     Another example is QEasingCurve::InOutElastic, which provides an
     elastic effect on the values of the interpolated variant.
 
+    QVariantAnimation will use the QEasingCurve::valueForProgress() to
+    transform the "normalized progress" (currentTime / totalDuration)
+    of the animation into the effective progress actually
+    used by the animation. It is this effective progress that will be
+    the progress when interpolated() is called. Also, the steps in the
+    keyValues are referring to this effective progress.
+
     The easing curve is used with the interpolator, the interpolated()
     virtual function, the animation's duration, and iterationCount, to
     control how the current value changes as the animation progresses.
@@ -424,7 +431,9 @@ void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator fun
 {
     // will override any existing interpolators
     QInterpolatorVector *interpolators = registeredInterpolators();
+#ifndef QT_NO_THREAD
     QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
+#endif
     if (int(interpolationType) >= interpolators->count())
         interpolators->resize(int(interpolationType) + 1);
     interpolators->replace(interpolationType, func);
@@ -439,7 +448,9 @@ template<typename T> static inline QVariantAnimation::Interpolator castToInterpo
 QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int interpolationType)
 {
     QInterpolatorVector *interpolators = registeredInterpolators();
+#ifndef QT_NO_THREAD
     QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
+#endif
     QVariantAnimation::Interpolator ret = 0;
     if (interpolationType < interpolators->count()) {
         ret = interpolators->at(interpolationType);

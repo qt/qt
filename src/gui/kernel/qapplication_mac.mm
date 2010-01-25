@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1239,10 +1239,6 @@ void qt_init(QApplicationPrivate *priv, int)
         [cocoaApp setMenu:[qtMenuLoader menu]];
         [newDelegate setMenuLoader:qtMenuLoader];
         [qtMenuLoader release];
-
-        NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
-        [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
-          forEventClass:kInternetEventClass andEventID:kAEGetURL];
     }
 #endif
     // Register for Carbon tablet proximity events on the event monitor target.
@@ -1687,7 +1683,10 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             UInt32 mac_buttons = 0;
             GetEventParameter(event, kEventParamMouseChord, typeUInt32, 0,
                               sizeof(mac_buttons), 0, &mac_buttons);
-            buttons = qt_mac_get_buttons(mac_buttons);
+            if (ekind != kEventMouseWheelMoved)
+                buttons = qt_mac_get_buttons(mac_buttons);
+            else
+                buttons = QApplication::mouseButtons();
         }
 
         int wheel_deltaX = 0;
@@ -2431,6 +2430,23 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
     return eventNotHandledErr;
 #endif
 }
+
+#ifdef QT_MAC_USE_COCOA
+void QApplicationPrivate::setupAppleEvents()
+{
+    // This function is called from the event dispatcher when NSApplication has
+    // finished initialization, which appears to be just after [NSApplication run] has
+    // started to execute. By setting up our apple events handlers this late, we override
+    // the ones set up by NSApplication.
+    QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
+    NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
+    [eventManager setEventHandler:newDelegate andSelector:@selector(appleEventQuit:withReplyEvent:)
+     forEventClass:kCoreEventClass andEventID:kAEQuitApplication];
+    [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
+      forEventClass:kInternetEventClass andEventID:kAEGetURL];
+
+}
+#endif
 
 // In Carbon this is your one stop for apple events.
 // In Cocoa, it ISN'T. This is the catch-all Apple Event handler that exists

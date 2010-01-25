@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,17 +48,15 @@
 
 QT_BEGIN_NAMESPACE
 
+class HelpEngineWrapper;
 class MainWindow;
-class QFileSystemWatcher;
-class QHelpEngine;
 
 class RemoteControl : public QObject
 {
     Q_OBJECT
 
 public:
-    RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine,
-                  QFileSystemWatcher *qchWatcher);
+    RemoteControl(MainWindow *mainWindow);
 
 private slots:
     void receivedData();
@@ -81,7 +79,6 @@ private:
 
 private:
     MainWindow *m_mainWindow;
-    QHelpEngine *m_helpEngine;
     bool m_debug;
 
     bool m_caching;
@@ -91,7 +88,7 @@ private:
     QString m_activateIdentifier;
     int m_expandTOC;
     QString m_currentFilter;
-    QFileSystemWatcher * const m_qchWatcher;
+    HelpEngineWrapper &helpEngine;
 };
 
 QT_END_NAMESPACE

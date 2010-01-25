@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,6 +70,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         itemDelegate(0),
         selectionModel(0),
         ctrlDragSelectionFlag(QItemSelectionModel::NoUpdate),
+        noSelectionOnMousePress(false),
         selectionMode(QAbstractItemView::ExtendedSelection),
         selectionBehavior(QAbstractItemView::SelectItems),
         currentlyCommittingEditor(0),
@@ -145,9 +146,16 @@ void QAbstractItemViewPrivate::setHoverIndex(const QPersistentModelIndex &index)
     if (hover == index)
         return;
 
-    q->update(hover); //update the old one
+    if (selectionBehavior != QAbstractItemView::SelectRows) {
+        q->update(hover); //update the old one
+        q->update(index); //update the new one
+    } else {
+        QRect oldHoverRect = q->visualRect(hover);
+        QRect newHoverRect = q->visualRect(index);
+        viewport->update(QRect(0, newHoverRect.y(), viewport->width(), newHoverRect.height()));
+        viewport->update(QRect(0, oldHoverRect.y(), viewport->width(), oldHoverRect.height()));
+    }
     hover = index;
-    q->update(hover); //update the new one
 }
 
 void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index)
@@ -1622,10 +1630,11 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     d->pressedIndex = index;
     d->pressedModifiers = event->modifiers();
     QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
+    d->noSelectionOnMousePress = command == QItemSelectionModel::NoUpdate || !index.isValid();
     QPoint offset = d->offset();
     if ((command & QItemSelectionModel::Current) == 0)
         d->pressedPosition = pos + offset;
-    else if (!indexAt(d->pressedPosition).isValid())
+    else if (!indexAt(d->pressedPosition - offset).isValid())
         d->pressedPosition = visualRect(currentIndex()).center() + offset;
 
     if (edit(index, NoEditTriggers, event))
@@ -1760,9 +1769,10 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
 
     d->ctrlDragSelectionFlag = QItemSelectionModel::NoUpdate;
 
-    //in the case the user presses on no item we might decide to clear the selection
-    if (d->selectionModel && !index.isValid())
-        d->selectionModel->select(QModelIndex(), selectionCommand(index, event));
+    if (d->selectionModel && d->noSelectionOnMousePress) {
+        d->noSelectionOnMousePress = false;
+        d->selectionModel->select(index, selectionCommand(index, event));
+    }
 
     setState(NoState);
 
@@ -2065,9 +2075,13 @@ void QAbstractItemView::focusInEvent(QFocusEvent *event)
 {
     Q_D(QAbstractItemView);
     QAbstractScrollArea::focusInEvent(event);
-    if (selectionModel()
+
+    const QItemSelectionModel* model = selectionModel();
+    const bool currentIndexValid = currentIndex().isValid();
+
+    if (model
         && !d->currentIndexSet
-        && !currentIndex().isValid()) {
+        && !currentIndexValid) {
         bool autoScroll = d->autoScroll;
         d->autoScroll = false;
         QModelIndex index = moveCursor(MoveNext, Qt::NoModifier); // first visible index
@@ -2075,6 +2089,17 @@ void QAbstractItemView::focusInEvent(QFocusEvent *event)
             selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
     }
+
+    if (model && currentIndexValid) {
+        if (currentIndex().flags() != Qt::ItemIsEditable)
+            setAttribute(Qt::WA_InputMethodEnabled, false);
+        else
+            setAttribute(Qt::WA_InputMethodEnabled);
+    }
+
+    if (!currentIndexValid)
+        setAttribute(Qt::WA_InputMethodEnabled, false);
+
     d->viewport->update();
 }
 
@@ -2195,7 +2220,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             // note that we don't check if the new current index is enabled because moveCursor() makes sure it is
             if (command & QItemSelectionModel::Current) {
                 d->selectionModel->setCurrentIndex(newCurrent, QItemSelectionModel::NoUpdate);
-                if (!indexAt(d->pressedPosition).isValid())
+                if (!indexAt(d->pressedPosition - d->offset()).isValid())
                     d->pressedPosition = visualRect(oldCurrent).center() + d->offset();
                 QRect rect(d->pressedPosition - d->offset(), visualRect(newCurrent).center());
                 setSelection(rect, command);
@@ -2552,7 +2577,9 @@ void QAbstractItemView::verticalScrollbarValueChanged(int value)
     Q_D(QAbstractItemView);
     if (verticalScrollBar()->maximum() == value && d->model->canFetchMore(d->root))
         d->model->fetchMore(d->root);
-    d->checkMouseMove(viewport()->mapFromGlobal(QCursor::pos()));
+    QPoint posInVp = viewport()->mapFromGlobal(QCursor::pos());
+    if (viewport()->rect().contains(posInVp))
+        d->checkMouseMove(posInVp);
 }
 
 /*!
@@ -2563,7 +2590,9 @@ void QAbstractItemView::horizontalScrollbarValueChanged(int value)
     Q_D(QAbstractItemView);
     if (horizontalScrollBar()->maximum() == value && d->model->canFetchMore(d->root))
         d->model->fetchMore(d->root);
-    d->checkMouseMove(viewport()->mapFromGlobal(QCursor::pos()));
+    QPoint posInVp = viewport()->mapFromGlobal(QCursor::pos());
+    if (viewport()->rect().contains(posInVp))
+        d->checkMouseMove(posInVp);
 }
 
 /*!
@@ -2863,6 +2892,8 @@ int QAbstractItemView::sizeHintForRow(int row) const
     if (row < 0 || row >= d->model->rowCount() || !model())
         return -1;
 
+    ensurePolished();
+
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
     int height = 0;
     int colCount = d->model->columnCount(d->root);
@@ -2891,6 +2922,8 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 
     if (column < 0 || column >= d->model->columnCount() || !model())
         return -1;
+
+    ensurePolished();
 
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
     int width = 0;

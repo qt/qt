@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -337,10 +337,18 @@ bool QS60StylePrivate::isToolBarBackground()
     return true;
 }
 
-QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize)
+bool QS60StylePrivate::hasSliderGrooveGraphic()
+{
+    return false;
+}
+
+QFont QS60StylePrivate::s60Font_specific(
+        QS60StyleEnums::FontCategories fontCategory,
+        int pointSize, bool resolveFontSize)
 {
     QFont result;
-    result.setPointSize(pointSize);
+    if (resolveFontSize)
+        result.setPointSize(pointSize);
     switch (fontCategory) {
         case QS60StyleEnums::FC_Primary:
             result.setBold(true);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,6 +61,7 @@
 #include <qapplication.h>
 #include "qtextcontrol_p.h"
 #include "private/qtextedit_p.h"
+#include "private/qdataurl_p.h"
 
 #include "qtextdocument_p.h"
 #include <private/qprinter_p.h>
@@ -1923,6 +1924,10 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
         r = control->loadResource(type, name);
     }
 #endif
+
+    // handle data: URLs
+    if (r.isNull() && name.scheme() == QLatin1String("data"))
+        r = qDecodeDataUrl(name).second;
 
     // if resource was not loaded try to load it here
     if (!doc && r.isNull() && name.isRelative()) {

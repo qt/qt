@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -89,6 +89,12 @@ void QGLPaintDevice::beginPaint()
         ctx->d_ptr->current_fbo = m_thisFBO;
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_thisFBO);
     }
+
+    // Set the default fbo for the context to m_thisFBO so that
+    // if some raw GL code between beginNativePainting() and
+    // endNativePainting() calls QGLFramebufferObject::release(),
+    // painting will revert to the window surface's fbo.
+    ctx->d_ptr->default_fbo = m_thisFBO;
 }
 
 void QGLPaintDevice::ensureActiveTarget()
@@ -101,6 +107,8 @@ void QGLPaintDevice::ensureActiveTarget()
         ctx->d_ptr->current_fbo = m_thisFBO;
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_thisFBO);
     }
+
+    ctx->d_ptr->default_fbo = m_thisFBO;
 }
 
 void QGLPaintDevice::endPaint()
@@ -111,6 +119,8 @@ void QGLPaintDevice::endPaint()
         ctx->d_ptr->current_fbo = m_previousFBO;
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_previousFBO);
     }
+
+    ctx->d_ptr->default_fbo = 0;
 }
 
 QGLFormat QGLPaintDevice::format() const

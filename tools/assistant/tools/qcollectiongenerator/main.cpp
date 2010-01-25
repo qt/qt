@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,18 +42,18 @@
 #include "../shared/collectionconfiguration.h"
 #include "../shared/helpgenerator.h"
 
+#include <private/qhelpgenerator_p.h>
+#include <private/qhelpprojectdata_p.h>
+
 #include <QtCore/QDir>
 #include <QtCore/QMap>
 #include <QtCore/QFileInfo>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QBuffer>
-
-#include <private/qhelpgenerator_p.h>
-#include <private/qhelpprojectdata_p.h>
 #include <QtHelp/QHelpEngineCore>
-
 #include <QtXml/QXmlStreamReader>
+
 
 QT_USE_NAMESPACE
 
@@ -467,8 +467,7 @@ int main(int argc, char *argv[])
     }
 
     if (!config.currentFilter().isEmpty()) {
-        CollectionConfiguration::setCurrentFilter(helpEngine,
-            config.currentFilter());
+        helpEngine.setCurrentFilter(config.currentFilter());
     }
 
     if (!config.cacheDirectory().isEmpty()) {

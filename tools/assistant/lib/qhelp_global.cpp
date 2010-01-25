@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -89,10 +89,11 @@ QString QHelpGlobal::codecFromHtmlData(const QByteArray &data)
     QString head = QString::fromUtf8(data.constData(), qMin(1000, data.size()));
     int start = head.indexOf(QLatin1String("<meta"), 0, Qt::CaseInsensitive);
     if (start > 0) {
-        int end;
         QRegExp r(QLatin1String("charset=([^\"\\s]+)"));
         while (start != -1) {
-            end = head.indexOf(QLatin1Char('>'), start) + 1;
+            const int end = head.indexOf(QLatin1Char('>'), start) + 1;
+            if (end <= start)
+                break;
             const QString &meta = head.mid(start, end - start).toLower();
             if (r.indexIn(meta) != -1)
                 return r.cap(1);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -513,6 +513,12 @@ void tst_QFileInfo::canonicalFilePath()
     QFileInfo info("/tmp/../../../../../../../../../../../../../../../../../");
     info.canonicalFilePath();
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    // This used to crash on Mac
+    QFileInfo dontCrash(QLatin1String("/"));
+    QCOMPARE(dontCrash.canonicalFilePath(), QLatin1String("/"));
+#endif
+
 #ifndef Q_OS_WIN
     // test symlinks
     QFile::remove("link.lnk");
@@ -822,6 +828,17 @@ void tst_QFileInfo::compare_data()
     QTest::addColumn<QString>("file2");
     QTest::addColumn<bool>("same");
 
+#if defined(Q_OS_MAC)
+    // Since 10.6 we use realpath() in qfsfileengine, and it properly handles
+    // file system case sensitivity. However here in the autotest we don't
+    // check if the file system is case sensitive, so to make it pass in the
+    // default OS X installation we assume we are running on a case insensitive
+    // file system if on 10.6 and on a case sensitive file system if on 10.5
+    bool caseSensitiveOnMac = true;
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
+        caseSensitiveOnMac = false;
+#endif
+
     QTest::newRow("data0")
         << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
         << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
@@ -839,6 +856,8 @@ void tst_QFileInfo::compare_data()
         << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
         << true;
+#elif defined(Q_OS_MAC)
+        << !caseSensitiveOnMac;
 #else
         << false;
 #endif
@@ -850,7 +869,7 @@ void tst_QFileInfo::compare()
     QFETCH(QString, file2);
     QFETCH(bool, same);
     QFileInfo fi1(file1), fi2(file2);
-    QCOMPARE(same, fi1 == fi2);
+    QCOMPARE(fi1 == fi2, same);
 }
 
 void tst_QFileInfo::consistent_data()
@@ -1068,8 +1087,8 @@ void tst_QFileInfo::isHidden_data()
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("C:/RECYCLER") << QString::fromLatin1("C:/RECYCLER") << true;
-    QTest::newRow("C:/RECYCLER/.") << QString::fromLatin1("C:/RECYCLER/.") << false;
-    QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << false;
+    QTest::newRow("C:/RECYCLER/.") << QString::fromLatin1("C:/RECYCLER/.") << true;
+    QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << true;
 #endif
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
 
@@ -1077,13 +1096,9 @@ void tst_QFileInfo::isHidden_data()
             && !QDir().mkdir("./.hidden-directory"))
         qWarning("Unable to create directory './.hidden-directory'. Some tests will fail.");
 
-    QTest::newRow("./.hidden-directory") << QString("./.hidden-directory") << true;
-    QTest::newRow("./.hidden-directory/.") << QString("./.hidden-directory/.") << false;
-    QTest::newRow("./.hidden-directory/..") << QString("./.hidden-directory/..") << false;
-
     QTest::newRow("/path/to/.hidden-directory") << QDir::currentPath() + QString("/.hidden-directory") << true;
-    QTest::newRow("/path/to/.hidden-directory/.") << QDir::currentPath() + QString("/.hidden-directory/.") << false;
-    QTest::newRow("/path/to/.hidden-directory/..") << QDir::currentPath() + QString("/.hidden-directory/..") << false;
+    QTest::newRow("/path/to/.hidden-directory/.") << QDir::currentPath() + QString("/.hidden-directory/.") << true;
+    QTest::newRow("/path/to/.hidden-directory/..") << QDir::currentPath() + QString("/.hidden-directory/..") << true;
 #endif
 
 #if defined(Q_OS_MAC)

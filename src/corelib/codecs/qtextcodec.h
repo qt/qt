@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -85,9 +85,6 @@ public:
     static QTextCodec *codecForUtfText(const QByteArray &ba);
     static QTextCodec *codecForUtfText(const QByteArray &ba, QTextCodec *defaultCodec);
 
-    QTextDecoder* makeDecoder() const;
-    QTextEncoder* makeEncoder() const;
-
     bool canEncode(QChar) const;
     bool canEncode(const QString&) const;
 
@@ -119,6 +116,12 @@ public:
         { return convertToUnicode(in, length, state); }
     QByteArray fromUnicode(const QChar *in, int length, ConverterState *state = 0) const
         { return convertFromUnicode(in, length, state); }
+
+    // ### Qt 5: merge these functions.
+    QTextDecoder* makeDecoder() const;
+    QTextDecoder* makeDecoder(ConversionFlags flags) const;
+    QTextEncoder* makeEncoder() const;
+    QTextEncoder* makeEncoder(ConversionFlags flags) const;
 
     virtual QByteArray name() const = 0;
     virtual QList<QByteArray> aliases() const;
@@ -157,22 +160,29 @@ class Q_CORE_EXPORT QTextEncoder {
     Q_DISABLE_COPY(QTextEncoder)
 public:
     explicit QTextEncoder(const QTextCodec *codec) : c(codec), state() {}
+    QTextEncoder(const QTextCodec *codec, QTextCodec::ConversionFlags flags);
     ~QTextEncoder();
     QByteArray fromUnicode(const QString& str);
     QByteArray fromUnicode(const QChar *uc, int len);
 #ifdef QT3_SUPPORT
-    QByteArray fromUnicode(const QString& uc, int& lenInOut);
+    QT3_SUPPORT QByteArray fromUnicode(const QString& uc, int& lenInOut);
 #endif
     bool hasFailure() const;
 private:
     const QTextCodec *c;
     QTextCodec::ConverterState state;
+
+    friend class QXmlStreamWriter;
+    friend class QXmlStreamWriterPrivate;
+    friend class QCoreXmlStreamWriter;
+    friend class QCoreXmlStreamWriterPrivate;
 };
 
 class Q_CORE_EXPORT QTextDecoder {
     Q_DISABLE_COPY(QTextDecoder)
 public:
     explicit QTextDecoder(const QTextCodec *codec) : c(codec), state() {}
+    QTextDecoder(const QTextCodec *codec, QTextCodec::ConversionFlags flags);
     ~QTextDecoder();
     QString toUnicode(const char* chars, int len);
     QString toUnicode(const QByteArray &ba);

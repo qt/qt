@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -98,10 +98,6 @@
     binary (again using the \l idc tool)
     \o Register the server
     \endlist
-
-    Note that the QAxServer build system is not supported on Windows 98/ME
-    (attaching of resources to a binary is not possible there), but a server 
-    built on Windows NT/2000/XP will work on previous Windows versions as well.
 
     To skip the post-processing step, also set the \c qaxserver_no_postlink
     configuration.
@@ -413,8 +409,7 @@
     \footnote
     OLE needs to marshal user defined types by reference (ByRef), and cannot 
     marshal them by value (ByVal). This is why const-references and object
-    parameters are not supported for QRect, QSize and QPoint. Also note that
-    servers with this datatype require Windows 98 or DCOM 1.2 to be installed.
+    parameters are not supported for QRect, QSize and QPoint.
     \endfootnote
     \o [in, out] struct QRect (user defined)
     \row

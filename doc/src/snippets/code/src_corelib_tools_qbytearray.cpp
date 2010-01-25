@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -401,5 +401,22 @@ QByteArray text = QByteArray::fromHex("517420697320677265617421");
 text.data();            // returns "Qt is great!"
 //! [45]
 
+//! [46]
+QString tmp = "test";
+QByteArray text = tmp.toLocal8Bit();
+char *data = new char[text.size()]
+strcpy(data, text.data());
+delete [] data; 
+//! [46]
+
+//! [47]
+QString tmp = "test";
+QByteArray text = tmp.toLocal8Bit();
+char *data = new char[text.size() + 1]
+strcpy(data, text.data());
+delete [] data;
+//! [47]
+
 }
+
 

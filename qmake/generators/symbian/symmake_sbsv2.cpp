@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -171,18 +171,26 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         t << "\t$(QMAKE)" << endl;
         t << endl;
 
+        QString winscw("winscw");
         t << "debug: " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS)";
         foreach(QString item, debugPlatforms) {
-            t << "\t$(SBS) -c " << item << "_udeb" << testClause << endl;
+            if(QString::compare(item, winscw) == 0)
+                t << " -c " << item << "_udeb.mwccinc" << testClause;
+            else
+                t << " -c " << item << "_udeb" << testClause;
         }
         t << endl;
         t << "release: " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS)";
         foreach(QString item, releasePlatforms) {
-            t << "\t$(SBS) -c " << item << "_urel" << testClause << endl;
+            if(QString::compare(item, winscw) == 0)
+                t << " -c " << item << "_urel.mwccinc" << testClause;
+            else
+                t << " -c " << item << "_urel" << testClause;
         }
         t << endl;
 
-        QString winscw("winscw");
         // For more specific builds, targets are in this form: build-platform, e.g. release-armv5
         foreach(QString item, debugPlatforms) {
             t << "debug-" << item << ": " << BLD_INF_FILENAME << endl;
@@ -231,11 +239,31 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     t << "\t-$(SBS) reallyclean" << endl;
     t << endl;
 
-    // create execution target
-    if (debugPlatforms.contains("winscw") && targetType == TypeExe) {
-        t << "run:" << endl;
-        t << "\t-call " << epocRoot() << "epoc32/release/winscw/udeb/" << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".exe")) << endl << endl;
+    t << "clean-debug: " << BLD_INF_FILENAME << endl;
+    t << "\t$(SBS) reallyclean";
+    foreach(QString item, debugPlatforms) {
+        t << " -c " << item << "_udeb" << testClause;
     }
+    t << endl;
+    t << "clean-release: " << BLD_INF_FILENAME << endl;
+    t << "\t$(SBS) reallyclean";
+    foreach(QString item, releasePlatforms) {
+        t << " -c " << item << "_urel" << testClause;
+    }
+    t << endl;
+
+    // For more specific builds, targets are in this form: clean-build-platform, e.g. clean-release-armv5
+    foreach(QString item, debugPlatforms) {
+        t << "clean-debug-" << item << ": " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS) reallyclean -c " << item << "_udeb" << testClause << endl;
+    }
+    foreach(QString item, releasePlatforms) {
+        t << "clean-release-" << item << ": " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS) reallyclean -c " << item << "_urel" << testClause << endl;
+    }
+    t << endl;
+
+    generateExecutionTargets(t, debugPlatforms);
 }
 
 void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)

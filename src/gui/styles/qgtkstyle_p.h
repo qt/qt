@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -147,8 +147,10 @@ typedef void   (*Ptr_gtk_paint_vline) (GtkStyle *, GdkWindow *, GtkStateType, co
 typedef void (*Ptr_gtk_menu_item_set_submenu) (GtkMenuItem *, GtkWidget *);
 typedef void (*Ptr_gtk_container_forall) (GtkContainer *, GtkCallback, gpointer);
 typedef void (*Ptr_gtk_widget_size_allocate) (GtkWidget *, GtkAllocation*);
+typedef void (*Ptr_gtk_widget_size_request) (GtkWidget *widget, GtkRequisition *requisition);
 typedef void (*Ptr_gtk_widget_set_direction) (GtkWidget *, GtkTextDirection);
 typedef void (*Ptr_gtk_widget_path) (GtkWidget *, guint *, gchar **, gchar**);
+
 typedef void (*Ptr_gtk_toolbar_insert) (GtkToolbar *toolbar, GtkToolItem *item, int pos);
 typedef void (*Ptr_gtk_menu_shell_append)(GtkMenuShell *, GtkWidget *);
 typedef GtkType (*Ptr_gtk_container_get_type) (void);
@@ -176,6 +178,7 @@ typedef GtkWidget* (*Ptr_gtk_file_chooser_dialog_new)(const gchar *title,
 typedef void (*Ptr_gtk_file_chooser_set_current_name) (GtkFileChooser *, const gchar *);
 typedef gboolean (*Ptr_gtk_file_chooser_set_filename) (GtkFileChooser *chooser, const gchar *name);
 typedef gint (*Ptr_gtk_dialog_run) (GtkDialog*);
+typedef void (*Ptr_gtk_border_free)(GtkBorder *);
 
 typedef guchar* (*Ptr_gdk_pixbuf_get_pixels) (const GdkPixbuf *pixbuf);
 typedef int (*Ptr_gdk_pixbuf_get_width) (const GdkPixbuf *pixbuf);
@@ -364,6 +367,7 @@ public:
     static Ptr_gtk_settings_get_default gtk_settings_get_default;
     static Ptr_gtk_separator_menu_item_new gtk_separator_menu_item_new;
     static Ptr_gtk_widget_size_allocate gtk_widget_size_allocate;
+    static Ptr_gtk_widget_size_request gtk_widget_size_request;
     static Ptr_gtk_widget_set_direction gtk_widget_set_direction;
     static Ptr_gtk_widget_path gtk_widget_path;
     static Ptr_gtk_container_get_type gtk_container_get_type;
@@ -371,6 +375,7 @@ public:
     static Ptr_gtk_widget_get_type gtk_widget_get_type;
     static Ptr_gtk_rc_get_style_by_paths gtk_rc_get_style_by_paths;
     static Ptr_gtk_check_version gtk_check_version;
+    static Ptr_gtk_border_free gtk_border_free;
 
     static Ptr_pango_font_description_get_size pango_font_description_get_size;
     static Ptr_pango_font_description_get_weight pango_font_description_get_weight;

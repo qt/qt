@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include <QtGui/QPushButton>
 
@@ -48,6 +49,7 @@ QT_BEGIN_NAMESPACE
 FilterNameDialog::FilterNameDialog(QWidget *parent)
     : QDialog(parent)
 {
+    TRACE_OBJ
     m_ui.setupUi(this);
     connect(m_ui.buttonBox->button(QDialogButtonBox::Ok),
         SIGNAL(clicked()), this, SLOT(accept()));
@@ -61,11 +63,13 @@ FilterNameDialog::FilterNameDialog(QWidget *parent)
 
 QString FilterNameDialog::filterName() const
 {
+    TRACE_OBJ
     return m_ui.lineEdit->text();
 }
 
 void FilterNameDialog::updateOkButton()
 {
+    TRACE_OBJ
     m_ui.buttonBox->button(QDialogButtonBox::Ok)
         ->setDisabled(m_ui.lineEdit->text().isEmpty());
 }

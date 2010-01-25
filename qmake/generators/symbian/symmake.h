@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,6 +42,7 @@
 #ifndef SYMMAKEFILE_H
 #define SYMMAKEFILE_H
 
+#include "initprojectdeploy_symbian.h"
 #include <makefile.h>
 
 QT_BEGIN_NAMESPACE
@@ -86,7 +87,7 @@ protected:
     QString canonizePath(const QString& origPath);
 
     virtual bool writeMakefile(QTextStream &t);
-    void generatePkgFile(const QString &iconFile);
+    void generatePkgFile(const QString &iconFile, DeploymentList &depList);
     bool containsStartWithItem(const QChar &c, const QStringList& src);
 
     virtual void init();
@@ -96,10 +97,17 @@ protected:
     QString generateUID3();
 
     void initMmpVariables();
-    void checkOverridability(QStringList &overridableKeywords, QString &checkString);
+    void handleMmpRulesOverrides(QString &checkString,
+                                 bool &inResourceBlock,
+                                 QStringList &restrictedMmpKeywords,
+                                 const QStringList &restrictableMmpKeywords,
+                                 const QStringList &overridableMmpKeywords);
+    void appendKeywordIfMatchFound(QStringList &list,
+                                   const QStringList &keywordList,
+                                   QString &checkString);
 
     void writeHeader(QTextStream &t);
-    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension, const QString &iconFile);
+    void writeBldInfContent(QTextStream& t, bool addDeploymentExtension, const QString &iconFile, DeploymentList &depList);
 
     static bool removeDuplicatedStrings(QStringList& stringList);
 
@@ -141,6 +149,7 @@ protected:
 
     void writeSisTargets(QTextStream &t);
     void generateDistcleanTargets(QTextStream& t);
+    void generateExecutionTargets(QTextStream& t, const QStringList& platforms);
 
     // Subclass implements
     virtual void writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile) = 0;

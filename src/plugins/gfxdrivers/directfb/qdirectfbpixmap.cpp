@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -470,6 +470,7 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
         return QPixmap();
 
     QDirectFBPixmapData *data = new QDirectFBPixmapData(screen, QPixmapData::PixmapType);
+    data->setSerialNumber(++global_ser_no);
     DFBSurfaceBlittingFlags flags = DSBLIT_NOFX;
     data->alpha = alpha;
     if (alpha) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -614,6 +614,11 @@ static int (*original_xio_errhandler)(Display *dpy);
 
 static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
 {
+    if (X11->display != dpy) {
+        // only handle X errors for our display
+        return 0;
+    }
+
     switch (err->error_code) {
     case BadAtom:
         if (err->request_code == 20 /* X_GetProperty */

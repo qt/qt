@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -262,14 +262,6 @@
     \snippet doc/src/snippets/code/doc_src_platform-notes.qdoc 2
 
     Install Qt into a subdirectory without spaces to avoid this problem.
-
-    \section2 AccelGALAXY graphic card
-
-    When you use a NT 4.0 machine with the driver number
-    4,00,1381,1000,021,4.0.0 there is a problem with drag an drop and icons.
-    The computer freezes, and you have to reset. The problem disappears with
-    the newest version of the driver, available at
-    \l{http://www.es.com/}{www.es.com}.
 
     \section2 Possible GL conflict
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,6 +68,8 @@ public:
     inline int column() const { return c; }
     inline void *internalPointer() const { return p; }
     inline qint64 internalId() const { return reinterpret_cast<qint64>(p); }
+    inline int rowCount() const;
+    inline int columnCount() const;
     inline QModelIndex parent() const;
     inline QModelIndex sibling(int row, int column) const;
     inline QModelIndex child(int row, int column) const;
@@ -384,6 +386,12 @@ private:
 inline QModelIndex::QModelIndex(int arow, int acolumn, void *adata,
                                 const QAbstractItemModel *amodel)
     : r(arow), c(acolumn), p(adata), m(amodel) {}
+
+inline int QModelIndex::rowCount() const
+{ return m ? m->rowCount(*this) : 0; }
+
+inline int QModelIndex::columnCount() const
+{ return m ? m->columnCount(*this) : 0; }
 
 inline QModelIndex QModelIndex::parent() const
 { return m ? m->parent(*this) : QModelIndex(); }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -108,6 +108,15 @@ void tst_QBrush::operator_eq_eq_data()
                                 << false;
 
     QTest::newRow("rad vs con") << QBrush(QRadialGradient(0, 0, 0, 0, 0)) << QBrush(QConicalGradient(0, 0, 0)) << false;
+
+    QBrush b1(lg);
+    QBrush b2(lg);
+    b1.setTransform(QTransform().scale(2, 2));
+    QTest::newRow("lg with transform vs same lg") << b1 << b2 << false;
+
+    b2.setTransform(QTransform().scale(2, 2));
+    QTest::newRow("lg w/transform vs same lg w/same transform") << b1 << b2 << true;
+
 }
 
 void tst_QBrush::operator_eq_eq()

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,9 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtCore/QMap>
-#include <QtCore/QUrl>
+#include "tracer.h"
 
 #include "topicchooser.h"
 
@@ -50,13 +48,15 @@ TopicChooser::TopicChooser(QWidget *parent, const QString &keyword,
                          const QMap<QString, QUrl> &links)
     : QDialog(parent)
 {
+    TRACE_OBJ
     ui.setupUi(this);
     ui.label->setText(tr("Choose a topic for <b>%1</b>:").arg(keyword));
 
-    m_links = links;
-    QMap<QString, QUrl>::const_iterator it = m_links.constBegin();
-    for (; it != m_links.constEnd(); ++it)
+    QMap<QString, QUrl>::const_iterator it = links.constBegin();
+    for (; it != links.constEnd(); ++it) {
         ui.listWidget->addItem(it.key());
+        m_links.append(it.value());
+    }
     
     if (ui.listWidget->count() != 0)
         ui.listWidget->setCurrentRow(0);
@@ -72,15 +72,18 @@ TopicChooser::TopicChooser(QWidget *parent, const QString &keyword,
 
 QUrl TopicChooser::link() const
 {
+    TRACE_OBJ
     QListWidgetItem *item = ui.listWidget->currentItem();
     if (!item)
         return QUrl();
 
     QString title = item->text();
-    if (title.isEmpty() || !m_links.contains(title))
+    if (title.isEmpty())
         return QUrl();
 
-    return m_links.value(title);
+    const int row = ui.listWidget->row(item);
+    Q_ASSERT(row < m_links.count());
+    return m_links.at(row);
 }
 
 QT_END_NAMESPACE

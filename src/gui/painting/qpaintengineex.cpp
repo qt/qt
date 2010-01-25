@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,6 +56,20 @@ QT_BEGIN_NAMESPACE
  * class QVectorPath
  *
  */
+QVectorPath::~QVectorPath()
+{
+    if (m_hints & ShouldUseCacheHint) {
+        CacheEntry *e = m_cache;
+        while (e) {
+            if (e->data)
+                e->cleanup(e->engine, e->data);
+            CacheEntry *n = e->next;
+            delete e;
+            e = n;
+        }
+    }
+}
+
 
 QRectF QVectorPath::controlPointRect() const
 {
@@ -94,7 +108,7 @@ QRectF QVectorPath::controlPointRect() const
 
 
 QVectorPath::CacheEntry *QVectorPath::addCacheData(QPaintEngineEx *engine, void *data,
-                                                   qvectorpath_cache_cleanup cleanup) {
+                                                   qvectorpath_cache_cleanup cleanup) const{
     Q_ASSERT(!lookupCacheData(engine));
     if ((m_hints & IsCachedHint) == 0) {
         m_cache = 0;
@@ -403,13 +417,6 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         } else if (style == Qt::NoPen) {
             d->activeStroker = 0;
         } else {
-            // ### re-enable...
-            if (pen.isCosmetic()) {
-                d->dasher.setClipRect(d->exDeviceRect);
-            } else {
-                QRectF clipRect = state()->matrix.inverted().mapRect(QRectF(d->exDeviceRect));
-                d->dasher.setClipRect(clipRect);
-            }
             d->dasher.setDashPattern(pen.dashPattern());
             d->dasher.setDashOffset(pen.dashOffset());
             d->activeStroker = &d->dasher;
@@ -418,6 +425,15 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
     if (!d->activeStroker) {
         return;
+    }
+
+    if (pen.style() > Qt::SolidLine) {
+        if (pen.isCosmetic()) {
+            d->activeStroker->setClipRect(d->exDeviceRect);
+        } else {
+            QRectF clipRect = state()->matrix.inverted().mapRect(QRectF(d->exDeviceRect));
+            d->activeStroker->setClipRect(clipRect);
+        }
     }
 
     const QPainterPath::ElementType *types = path.elements();
@@ -846,7 +862,7 @@ void QPaintEngineEx::drawPoints(const QPointF *points, int pointCount)
             for (int i=0; i<count; ++i) {
                 pts[++oset] = points[i].x();
                 pts[++oset] = points[i].y();
-                pts[++oset] = points[i].x() + 0.001;
+                pts[++oset] = points[i].x() + 1/63.;
                 pts[++oset] = points[i].y();
             }
             QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::LinesHint);
@@ -856,7 +872,7 @@ void QPaintEngineEx::drawPoints(const QPointF *points, int pointCount)
         }
     } else {
         for (int i=0; i<pointCount; ++i) {
-            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() + 0.001, points[i].y() };
+            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() + 1/63., points[i].y() };
             QVectorPath path(pts, 2, 0);
             stroke(path, pen);
         }
@@ -877,7 +893,7 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
             for (int i=0; i<count; ++i) {
                 pts[++oset] = points[i].x();
                 pts[++oset] = points[i].y();
-                pts[++oset] = points[i].x() + 0.001;
+                pts[++oset] = points[i].x() + 1/63;
                 pts[++oset] = points[i].y();
             }
             QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::LinesHint);
@@ -887,7 +903,7 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
         }
     } else {
         for (int i=0; i<pointCount; ++i) {
-            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() + 0.001, points[i].y() };
+            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() +1/63., points[i].y() };
             QVectorPath path(pts, 2, 0);
             stroke(path, pen);
         }

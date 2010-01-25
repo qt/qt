@@ -1,7 +1,7 @@
 #!/bin/sh
 #############################################################################
 ##
-## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
@@ -106,6 +106,28 @@ QMakeVar()
     echo "$2" "$eq" "$3" >> "$QMAKE_VARS_FILE"
 }
 
+# Helper function for getQMakeConf. It parses include statements in
+# qmake.conf and prints out the expanded file
+getQMakeConf1()
+{
+    while read line; do case "$line" in
+        include*)
+	    inc_file=`echo "$line" | sed -n -e "/^include.*(.*)/s/include.*(\(.*\)).*$/\1/p"`
+	    current_dir=`dirname "$1"`
+	    conf_file="$current_dir/$inc_file"
+	    if [ ! -e  "$conf_file" ]; then
+                echo "WARNING: Unable to find file $conf_file" >&2
+                continue
+            fi
+            getQMakeConf1 "$conf_file"
+        ;;
+        *)
+            echo "$line"
+        ;;
+    esac; done < "$1"
+}
+
+
 # relies on $QMAKESPEC being set correctly. parses include statements in
 # qmake.conf and prints out the expanded file
 getQMakeConf()
@@ -114,15 +136,7 @@ getQMakeConf()
     if [ -n "$1" ]; then
         tmpSPEC="$1"
     fi
-    $AWK -v "QMAKESPEC=$tmpSPEC" '
-/^include\(.+\)$/{
-    fname = QMAKESPEC "/" substr($0, 9, length($0) - 9)
-    while ((getline line < fname) > 0)
-        print line
-    close(fname)
-    next
-}
-{ print }' "$tmpSPEC/qmake.conf"
+    getQMakeConf1 "$tmpSPEC/qmake.conf"
 }
 
 # relies on $TEST_COMPILER being set correctly
@@ -131,7 +145,7 @@ compilerSupportsFlag()
     cat >conftest.cpp <<EOF
 int main() { return 0; }
 EOF
-    "$TEST_COMPILER" "$@" -o /dev/null conftest.cpp
+    "$TEST_COMPILER" "$@" -o conftest.o conftest.cpp
     ret=$?
     rm -f conftest.cpp conftest.o
     return $ret
@@ -662,6 +676,7 @@ CFG_RELEASE_QMAKE=no
 CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=yes
+CFG_AUDIO_BACKEND=yes
 CFG_SVG=yes
 CFG_DECLARATIVE=auto
 CFG_WEBKIT=auto # (yes|no|auto)
@@ -712,6 +727,7 @@ CFG_PTMALLOC=no
 CFG_STL=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=auto
+CFG_SEPARATE_DEBUG_INFO_NOCOPY=no
 CFG_REDUCE_EXPORTS=auto
 CFG_MMX=auto
 CFG_3DNOW=auto
@@ -729,6 +745,7 @@ CFG_HOST_ENDIAN=auto
 CFG_DOUBLEFORMAT=auto
 CFG_ARMFPA=auto
 CFG_IWMMXT=no
+CFG_NEON=auto
 CFG_CLOCK_GETTIME=auto
 CFG_CLOCK_MONOTONIC=auto
 CFG_MREMAP=auto
@@ -742,9 +759,9 @@ CFG_MAC_ARCHS=
 MAC_CONFIG_TEST_COMMANDLINE=  # used to make the configure tests run with the correct arch's and SDK settings
 CFG_MAC_DWARF2=auto
 CFG_MAC_XARCH=auto
-CFG_MAC_CARBON=yes
-CFG_MAC_COCOA=auto
-COMMANDLINE_MAC_COCOA=no
+CFG_MAC_CARBON=no
+CFG_MAC_COCOA=yes
+COMMANDLINE_MAC_CARBON=no
 CFG_SXE=no
 CFG_PREFIX_INSTALL=yes
 CFG_SDK=
@@ -904,7 +921,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1304,13 +1321,17 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     cocoa)
+#       do nothing - Cocoa is the default.
+        ;;
+    carbon)
         if [ "$PLATFORM_MAC" = "yes" ] && [ "$VAL" = "yes" ]; then
-            CFG_MAC_COCOA="$VAL"
-            COMMANDLINE_MAC_COCOA="$VAL"
+            CFG_MAC_CARBON="$VAL"
+            COMMANDLINE_MAC_CARBON="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
         ;;
+
     framework)
         if [ "$PLATFORM_MAC" = "yes" ]; then
             CFG_FRAMEWORK="$VAL"
@@ -1543,6 +1564,9 @@ while [ "$#" -gt 0 ]; do
     separate-debug-info)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SEPARATE_DEBUG_INFO="$VAL"
+        elif [ "$VAL" = "nocopy" ] ; then
+            CFG_SEPARATE_DEBUG_INFO="yes"
+            CFG_SEPARATE_DEBUG_INFO_NOCOPY="yes"
         else
             UNKNOWN_OPT=yes
         fi
@@ -1585,6 +1609,13 @@ while [ "$#" -gt 0 ]; do
     iwmmxt)
 	CFG_IWMMXT="yes"
 	;;
+    neon)
+        if [ "$VAL" = "no" ]; then
+            CFG_NEON="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     reduce-relocations)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_REDUCE_RELOCATIONS="$VAL"
@@ -2068,6 +2099,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    audio-backend)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_AUDIO_BACKEND="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2223,7 +2261,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
         mkdir -p "$outpath/bin"
         echo "#!/bin/sh" >"$outpath/bin/syncqt"
         echo "QTDIR=\"$relpath\"; export QTDIR" >>"$outpath/bin/syncqt"
-        echo "perl \"$relpath/bin/syncqt\" -outdir \"$outpath\" $*" >>"$outpath/bin/syncqt"
+        echo "perl \"$relpath/bin/syncqt\" -outdir \"$outpath\" \"\$@\"" >>"$outpath/bin/syncqt"
         chmod 755 "$outpath/bin/syncqt"
     fi
 
@@ -2894,7 +2932,7 @@ fi
 
 # pass on $CFG_SDK to the configure tests.
 if [ '!' -z "$CFG_SDK" ]; then
-    MAC_CONFIG_TEST_COMMANDLINE="-sdk $CFG_SDK"
+    MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -sdk $CFG_SDK"
 fi
 
 # find the default framework value
@@ -2914,6 +2952,10 @@ fi
 QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
 TEST_COMPILER="$CC"
 [ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER
+if [ -z "$TEST_COMPILER" ]; then
+    echo "ERROR: Cannot set the compiler for the configuration tests"
+    exit 1
+fi
 
 # auto-detect precompiled header support
 if [ "$CFG_PRECOMPILE" = "auto" ]; then
@@ -3259,7 +3301,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
-        [-no-openssl] [-openssl] [-openssl-linked]
+        [-no-audio-backend] [-audio-backend] [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
         [-no-script] [-script] [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
 
@@ -3396,6 +3438,9 @@ fi
 
     -no-multimedia ..... Do not build the QtMultimedia module.
  +  -multimedia ........ Build the QtMultimedia module.
+
+    -no-audio-backend .. Do not build the platform audio backend into QtMultimedia.
+ +  -audio-backend ..... Build the platform audio backend into QtMultimedia if available.
 
     -no-phonon ......... Do not build the Phonon module.
  +  -phonon ............ Build the Phonon module.
@@ -3663,7 +3708,7 @@ Qt/X11 only:
     -no-opengl ......... Do not support OpenGL.
  +  -opengl <api> ...... Enable OpenGL support.
                          With no parameter, this will auto-detect the "best"
-                         OpenGL API to use. If desktop OpenGL is avaliable, it
+                         OpenGL API to use. If desktop OpenGL is available, it
                          will be used. Use desktop, es1, es1cl or es2 for <api>
                          to force the use of the Desktop (OpenGL 1.x or 2.x),
                          OpenGL ES 1.x Common profile, 1.x Common Lite profile
@@ -3743,10 +3788,11 @@ Qt/Mac only:
     -Fstring ........... Add an explicit framework path.
     -fw string ......... Add an explicit framework.
 
-    -cocoa ............. Build the Cocoa version of Qt. Note that -no-framework
-                         and -static is not supported with -cocoa. Specifying
-                         this option creates Qt binaries that requires Mac OS X
-                         10.5 or higher.
+    -cocoa ............. [Deprecated] Cocoa is now enabled by default.
+
+    -carbon .............Build the Carbon version of Qt. 64-bit archs
+                         are not supported by carbon and will be built
+                         with cocoa
 
  *  -framework ......... Build Qt as a series of frameworks and
                          link tools against those frameworks.
@@ -3759,8 +3805,7 @@ Qt/Mac only:
 
     -arch <arch> ....... Build Qt for <arch>
                          Example values for <arch>: x86 ppc x86_64 ppc64
-                         Multiple -arch arguments can be specified, 64-bit archs
-                         will be built with the Cocoa framework.
+                         Multiple -arch arguments can be specified.
 
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. This option requires gcc 4.
                          To use a different SDK with gcc 3.3, set the SDKROOT environment variable.
@@ -3856,6 +3901,7 @@ Qt for Embedded Linux only:
     -iwmmxt ............ Compile using the iWMMXt instruction set
                          (available on some XScale CPUs).
 
+    -no-neon ........... Do not compile with use of NEON instructions.
 EOF
 fi
 
@@ -4476,6 +4522,15 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
     fi
 fi
 
+# detect neon support
+if ([ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]) && [ "${CFG_NEON}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/neon "neon" $L_FLAGS $I_FLAGS $l_FLAGS "-mfpu=neon"; then
+	CFG_NEON=yes
+    else
+	CFG_NEON=no
+    fi
+fi
+
 # detect zlib
 if [ "$CFG_ZLIB" = "no" ]; then
     # Note: Qt no longer support builds without zlib
@@ -5056,7 +5111,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x Common Lite Profile functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " QMAKE_INCDIR_OPENGL_ES1CL, QMAKE_LIBDIR_OPENGL_ES1CL and QMAKE_LIBS_OPENGL_ES1CL in"
             echo " ${XQMAKESPEC}."
             exit 1
         fi
@@ -5066,7 +5121,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " QMAKE_INCDIR_OPENGL_ES1, QMAKE_LIBDIR_OPENGL_ES1 and QMAKE_LIBS_OPENGL_ES1 in"
             echo " ${XQMAKESPEC}."
             exit 1
         fi
@@ -5076,7 +5131,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         if [ $? != "0" ]; then
 	    echo "The OpenGL ES 2.0 functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+            echo " QMAKE_INCDIR_OPENGL_ES2, QMAKE_LIBDIR_OPENGL_ES2 and QMAKE_LIBS_OPENGL_ES2 in"
             echo " ${XQMAKESPEC}."
             exit 1
         fi
@@ -5891,14 +5946,14 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG dwarf2"
 fi
 
-# Set the default arch.
-# Carbon builds: 32 bit x86/ppc.
-# For "-cocoa" builds on snow leopard : compiler default (64-bit).
-# For "-cocoa" builds on leopard : compiler default (32-bit).
+# Set the default arch if there are no "-arch" arguments on the configure line
+# For "-carbon" builds: 32 bit x86/ppc.
+# For builds on snow leopard : compiler default (64-bit).
+# For builds on leopard : compiler default (32-bit).
 if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
 
-	if [ "$CFG_MAC_COCOA" != "yes" ]; then
+	if [ "$CFG_MAC_CARBON" = "yes" ]; then
 		if [ "$QT_MAC_DEFAULT_ARCH" = "x86_64" ]; then
 			CFG_MAC_ARCHS=" x86"
 		elif [ "$QT_MAC_DEFAULT_ARCH" = "ppc64" ]; then
@@ -5913,12 +5968,13 @@ if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     [ "$OPT_VERBOSE" = "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
 fi
 
-# enable cocoa and/or carbon on Mac
-if [ "$CFG_MAC_COCOA" = "yes" ]; then
-#   -cocoa on the command line disables carbon completely (i.e. use cocoa for 32-bit as well)
-    CFG_MAC_CARBON="no"
-else
-#   check which archs are in use, enable cocoa if we find a 64-bit one
+# enable Cocoa and/or Carbon on Mac
+#  -carbon on the command line disables Cocoa, except for 64-bit archs
+if [ "$CFG_MAC_CARBON" = "yes" ]; then
+    CFG_MAC_CARBON="YES"
+    CFG_MAC_COCOA="NO"
+
+#    check which archs are in use, enable cocoa if we find a 64-bit one
     if echo "$CFG_MAC_ARCHS" | grep 64 > /dev/null 2>&1; then
         CFG_MAC_COCOA="yes";
         CFG_MAC_CARBON="no";
@@ -5928,11 +5984,17 @@ else
         if echo "$CFG_MAC_ARCHS" | grep -w x86 > /dev/null 2>&1; then
             CFG_MAC_CARBON="yes";
         fi
-    else
-#       no 64-bit archs found.
-        CFG_MAC_COCOA="no"
     fi
-fi;
+fi
+
+# select Carbon on 10.4 Tiger.
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
+    if [ "$VERSION" == 8 ]; then
+        CFG_MAC_COCOA="no";
+        CFG_MAC_CARBON="yes";
+    fi
+fi
 
 # set the global Mac deployment target. This is overridden on an arch-by-arch basis
 # in some cases, see code further down
@@ -6083,11 +6145,15 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     QMakeVar add QMAKE_CXXFLAGS -g
     QMAKE_CONFIG="$QMAKE_CONFIG separate_debug_info"
 fi
+if [ "$CFG_SEPARATE_DEBUG_INFO_NOCOPY" = "yes" ] ; then
+    QMAKE_CONFIG="$QMAKE_CONFIG separate_debug_info_nocopy"
+fi
 [ "$CFG_MMX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mmx"
 [ "$CFG_3DNOW" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG 3dnow"
 [ "$CFG_SSE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse"
 [ "$CFG_SSE2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse2"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
+[ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 [ "$PLATFORM_MAC" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
 if [ "$CFG_IPV6" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG ipv6"
@@ -6444,6 +6510,10 @@ else
     QT_CONFIG="$QT_CONFIG multimedia"
 fi
 
+if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG audio-backend"
+fi
+
 if [ "$CFG_SVG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG svg"
 else
@@ -6520,9 +6590,8 @@ fi
 # On Mac, set the minimum deployment target for the different architechtures 
 # using the Xarch compiler option when supported (10.5 and up).  On 10.4 the
 # deployment version is set to 10.4 globally using the QMAKE_MACOSX_DEPLOYMENT_TARGET
-# env. variable. "-cocoa" on the command line means Cocoa is used in 32-bit mode also,
-# in this case fall back on QMAKE_MACOSX_DEPLOYMENT_TARGET which will be set to 10.5.
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] && [ "$COMMANDLINE_MAC_COCOA" != "yes" ]; then
+# env. variable. 
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] ; then
     if echo "$CFG_MAC_ARCHS" | grep '\<x86\>' > /dev/null 2>&1; then
         QMakeVar add QMAKE_CFLAGS "-Xarch_i386 -mmacosx-version-min=10.4"
         QMakeVar add QMAKE_CXXFLAGS "-Xarch_i386 -mmacosx-version-min=10.4"
@@ -6842,9 +6911,9 @@ if [ "$CFG_LARGEFILE" = "yes" ]; then
 fi
 
 # if both carbon and cocoa are specified, enable the autodetection code.
-if [ "$CFG_MAC_COCOA" = "yes" -a "$CFG_MAC_CARBON" = "yes" ]; then
-    echo "#define AUTODETECT_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
-elif [ "$CFG_MAC_COCOA" = "yes" ]; then
+if [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" -a "$CFG_MAC_CARBON" = "yes" ]; then
+    echo "#define QT_AUTODETECT_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
+elif [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" ]; then
     echo "#define QT_MAC_USE_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
@@ -7376,8 +7445,9 @@ echo "Declarative module .. $CFG_DECLARATIVE"
 echo "STL support ......... $CFG_STL"
 echo "PCH support ......... $CFG_PRECOMPILE"
 echo "MMX/3DNOW/SSE/SSE2..  ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
-if [ "${CFG_ARCH}" = "arm" ]; then
+if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
     echo "iWMMXt support ...... ${CFG_IWMMXT}"
+    echo "NEON support ........ ${CFG_NEON}"
 fi
 [ "${PLATFORM_QWS}" != "yes" ] && echo "Graphics System ..... $CFG_GRAPHICS_SYSTEM"
 echo "IPv6 support ........ $CFG_IPV6"
@@ -7759,20 +7829,6 @@ EOF
     done
 done
 rm -f .projects .projects.3
-
-#-------------------------------------------------------------------------------
-# XShape is important, DnD in the Designer doens't work without it
-#-------------------------------------------------------------------------------
-if [ "$PLATFORM_X11" = "yes" ] && [ "$CFG_XSHAPE" = "no" ]; then
-    cat <<EOF
-
-	NOTICE: Qt will not be built with XShape support.
-
-	As a result, drag-and-drop in the Qt Designer will NOT
-	work. We recommend that you enable XShape support by passing
-	the -xshape switch to $0.
-EOF
-fi
 
 #-------------------------------------------------------------------------------
 # check for platforms that we don't yet know about

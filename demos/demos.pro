@@ -20,7 +20,24 @@ symbian: SUBDIRS = \
             demos_shared \
             demos_deform \
             demos_pathstroke
-
+            
+wince*:  SUBDIRS = \
+            demos_shared \
+            demos_deform \
+            demos_gradients \
+            demos_pathstroke \
+            demos_affine \
+            demos_composition \
+            demos_books \
+            demos_interview \
+            demos_mainwindow \
+            demos_spreadsheet \
+            demos_textedit \
+            # demos_chip \
+            demos_embeddeddialogs \
+            demos_undo \
+            demos_sub-attaq
+            
 contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles1cl):!contains(QT_CONFIG, opengles2):{
 SUBDIRS += demos_boxes
 }
@@ -33,7 +50,7 @@ wince*|symbian|embedded|x11: SUBDIRS += embedded
 !cross_compile:{
 contains(QT_BUILD_PARTS, tools):{
 !wince*:SUBDIRS += demos_sqlbrowser demos_qtdemo
-wince*: SUBDIRS += demos_sqlbrowser
+wince*:SUBDIRS += demos_sqlbrowser
 }
 }
 contains(QT_CONFIG, phonon):!static:SUBDIRS += demos_mediaplayer

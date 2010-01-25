@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,9 +57,6 @@
 # include <qsslsocket.h>
 #endif
 
-#ifndef TEST_QNETWORK_PROXY
-#define TEST_QNETWORK_PROXY
-#endif
 #include "../network-settings.h"
 
 //TESTED_CLASS=
@@ -117,9 +114,6 @@ private slots:
     void abortInReadyRead();
     void abortInResponseHeaderReceived();
     void nestedEventLoop();
-
-
-    // manual tests
     void connectionClose();
 
 protected slots:
@@ -178,6 +172,23 @@ private:
     bool proxyAuthCalled;
 };
 
+class ClosingServer: public QTcpServer
+{
+    Q_OBJECT
+public:
+    ClosingServer()
+    {
+        connect(this, SIGNAL(newConnection()), SLOT(handleConnection()));
+        listen();
+    }
+
+public slots:
+    void handleConnection()
+    {
+        delete nextPendingConnection();
+    }
+};
+
 //#define DUMP_SIGNALS
 
 const int bytesTotal_init = -10;
@@ -198,9 +209,7 @@ void tst_QHttp::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
-#endif
 }
 
 void tst_QHttp::initTestCase()
@@ -1496,20 +1505,14 @@ void tst_QHttp::abortInResponseHeaderReceived()
 
 void tst_QHttp::connectionClose()
 {
-    // This test tries to connect to a client's server, so it is disabled.
-    // Every now and then, someone please run it to make sure it's not broken.
-    // Note: the servers might change too...
-    //
     // This was added in response to bug 176822
-#ifndef Q_OS_SYMBIAN
-    QSKIP("This test is manual - read comments in the source code", SkipAll);
-#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
 
     QHttp http;
-    http.setHost("www.fon.com", QHttp::ConnectionModeHttps);
+    ClosingServer server;
+    http.setHost("localhost", QHttp::ConnectionModeHttps, server.serverPort());
     http.get("/login/gateway/processLogin");
 
     // another possibility:

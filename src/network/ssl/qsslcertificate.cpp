@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -304,6 +304,7 @@ static QString _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
 */
 QString QSslCertificate::issuerInfo(SubjectInfo info) const
 {
+    // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
                 _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
@@ -320,7 +321,11 @@ QString QSslCertificate::issuerInfo(SubjectInfo info) const
 */
 QString QSslCertificate::issuerInfo(const QByteArray &tag) const
 {
-    // ### Use a QByteArray for the keys in the map
+    // lazy init
+    if (d->issuerInfo.isEmpty() && d->x509)
+        d->issuerInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
+
     return d->issuerInfo.value(QString::fromLatin1(tag));
 }
 
@@ -335,6 +340,7 @@ QString QSslCertificate::issuerInfo(const QByteArray &tag) const
 */
 QString QSslCertificate::subjectInfo(SubjectInfo info) const
 {
+    // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
                 _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
@@ -350,7 +356,11 @@ QString QSslCertificate::subjectInfo(SubjectInfo info) const
 */
 QString QSslCertificate::subjectInfo(const QByteArray &tag) const
 {
-    // ### Use a QByteArray for the keys in the map
+    // lazy init
+    if (d->subjectInfo.isEmpty() && d->x509)
+        d->subjectInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
+
     return d->subjectInfo.value(QString::fromLatin1(tag));
 }
 

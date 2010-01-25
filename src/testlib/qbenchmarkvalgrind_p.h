@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@
 //
 
 #include "QtTest/private/qbenchmarkmeasurement_p.h"
+#include "QtTest/private/qbenchmarkmetric_p.h"
 #include <QtCore/qmap.h>
 #include <QtCore/qstring.h>
 
@@ -84,8 +85,7 @@ public:
     int adjustIterationCount(int);
     int adjustMedianCount(int);
     bool needsWarmupIteration();
-    QString unitText();
-    QString metricText();
+    QTest::QBenchmarkMetric metricType();
 };
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -573,8 +573,13 @@ QString QFileInfo::canonicalFilePath() const
 QString QFileInfo::absolutePath() const
 {
     Q_D(const QFileInfo);
-    if(!d->data->fileEngine)
+
+    if (!d->data->fileEngine) {
         return QLatin1String("");
+    } else if (d->data->fileName.isEmpty()) {
+        qWarning("QFileInfo::absolutePath: Constructed with empty filename");
+        return QLatin1String("");
+    }
     return d->getFileName(QAbstractFileEngine::AbsolutePathName);
 }
 

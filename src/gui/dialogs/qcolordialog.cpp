@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,10 @@
 
 #ifdef Q_WS_S60
 #include "private/qt_s60_p.h"
+#endif
+
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
+#  define QT_SMALL_COLORDIALOG
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1072,14 +1076,17 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->setMargin(gl->spacing());
     lab = new QColorShowLabel(this);
 
-#ifdef Q_WS_S60
+#ifdef QT_SMALL_COLORDIALOG
+#  ifdef Q_WS_S60
     QS60Data s60Data = QS60Data();
     const bool nonTouchUI = !s60Data.hasTouchscreen;
+#  elif defined Q_WS_MAEMO_5
+    const bool nonTouchUI = false;
+#  endif
 #endif
 
-
 #ifndef Q_WS_WINCE
-#ifdef Q_WS_S60
+#ifdef QT_SMALL_COLORDIALOG
     lab->setMinimumHeight(60);
 #endif
     lab->setMinimumWidth(60);
@@ -1090,7 +1097,7 @@ QColorShower::QColorShower(QColorDialog *parent)
 // In S60, due to small screen and different screen layouts need to re-arrange the widgets.
 // For QVGA screens only the comboboxes and color label are visible.
 // For nHD screens only color and luminence pickers and color label are visible.
-#ifndef Q_WS_S60
+#if !defined(QT_SMALL_COLORDIALOG)
     gl->addWidget(lab, 0, 0, -1, 1);
 #else
     if (nonTouchUI)
@@ -1108,7 +1115,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     lblHue->setBuddy(hEd);
 #endif
     lblHue->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-#ifndef Q_WS_S60
+#if !defined(QT_SMALL_COLORDIALOG)
     gl->addWidget(lblHue, 0, 1);
     gl->addWidget(hEd, 0, 2);
 #else
@@ -1127,7 +1134,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     lblSat->setBuddy(sEd);
 #endif
     lblSat->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-#ifndef Q_WS_S60
+#if !defined(QT_SMALL_COLORDIALOG)
     gl->addWidget(lblSat, 1, 1);
     gl->addWidget(sEd, 1, 2);
 #else
@@ -1146,7 +1153,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     lblVal->setBuddy(vEd);
 #endif
     lblVal->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-#ifndef Q_WS_S60
+#if !defined(QT_SMALL_COLORDIALOG)
     gl->addWidget(lblVal, 2, 1);
     gl->addWidget(vEd, 2, 2);
 #else
@@ -1165,7 +1172,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     lblRed->setBuddy(rEd);
 #endif
     lblRed->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-#ifndef Q_WS_S60
+#if !defined(QT_SMALL_COLORDIALOG)
     gl->addWidget(lblRed, 0, 3);
     gl->addWidget(rEd, 0, 4);
 #else
@@ -1184,7 +1191,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     lblGreen->setBuddy(gEd);
 #endif
     lblGreen->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-#ifndef Q_WS_S60
+#if !defined(QT_SMALL_COLORDIALOG)
     gl->addWidget(lblGreen, 1, 3);
     gl->addWidget(gEd, 1, 4);
 #else
@@ -1203,7 +1210,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     lblBlue->setBuddy(bEd);
 #endif
     lblBlue->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-#ifndef Q_WS_S60
+#if !defined(QT_SMALL_COLORDIALOG)
     gl->addWidget(lblBlue, 2, 3);
     gl->addWidget(bEd, 2, 4);
 #else
@@ -1222,7 +1229,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     alphaLab->setBuddy(alphaEd);
 #endif
     alphaLab->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-#ifndef Q_WS_S60
+#if !defined(QT_SMALL_COLORDIALOG)
     gl->addWidget(alphaLab, 3, 1, 1, 3);
     gl->addWidget(alphaEd, 3, 4);
 #else
@@ -1467,7 +1474,7 @@ void QColorDialogPrivate::init(const QColor &initial)
 
     leftLay = 0;
 
-#if (defined(Q_WS_WINCE) || defined(Q_WS_S60))
+#if defined(Q_WS_WINCE) || defined(QT_SMALL_COLORDIALOG)
     smallDisplay = true;
     const int lumSpace = 20;
 #else
@@ -1497,9 +1504,13 @@ void QColorDialogPrivate::init(const QColor &initial)
     }
 #endif
 
-#if defined(Q_WS_S60)
+#if defined(QT_SMALL_COLORDIALOG)
+#  if defined(Q_WS_S60)
     QS60Data s60Data = QS60Data();
     const bool nonTouchUI = !s60Data.hasTouchscreen;
+#  elif defined(Q_WS_MAEMO_5)
+    const bool nonTouchUI = false;
+#  endif
 #endif
 
     if (!smallDisplay) {
@@ -1532,7 +1543,7 @@ void QColorDialogPrivate::init(const QColor &initial)
         leftLay->addWidget(addCusBt);
     } else {
         // better color picker size for small displays
-#ifdef Q_WS_S60
+#if defined(QT_SMALL_COLORDIALOG)
         QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
         pWidth = pHeight = qMin(screenSize.width(), screenSize.height());
         pHeight -= 20;
@@ -1558,7 +1569,7 @@ void QColorDialogPrivate::init(const QColor &initial)
 
     cp->setFrameStyle(QFrame::Panel + QFrame::Sunken);
 
-#if defined(Q_WS_S60)
+#if defined(QT_SMALL_COLORDIALOG)
     if (!nonTouchUI) {
         pickLay->addWidget(cp);
         cLay->addSpacing(lumSpace);
@@ -1572,7 +1583,7 @@ void QColorDialogPrivate::init(const QColor &initial)
     cLay->addSpacing(lumSpace);
 
     lp = new QColorLuminancePicker(q);
-#if defined(Q_WS_S60)
+#if defined(QT_SMALL_COLORDIALOG)
     QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
     const int minDimension = qMin(screenSize.height(), screenSize.width());
     //set picker to be finger-usable
@@ -1596,7 +1607,7 @@ void QColorDialogPrivate::init(const QColor &initial)
     QObject::connect(cs, SIGNAL(newCol(QRgb)), q, SLOT(_q_newColorTypedIn(QRgb)));
     QObject::connect(cs, SIGNAL(currentColorChanged(QColor)),
                      q, SIGNAL(currentColorChanged(QColor)));
-#if defined(Q_WS_S60)
+#if defined(QT_SMALL_COLORDIALOG)
     if (!nonTouchUI)
         pWidth -= cp->size().width();
     topLay->addWidget(cs);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,7 +56,7 @@
 #include "qconfig.h"
 #include "qfontengine_p.h"
 #include "qsize.h"
-#include <OPENFONT.H>
+#include <openfont.h>
 
 class CFbsBitmap;
 class CFbsBitmapDevice;
@@ -126,9 +126,6 @@ private:
 
     QFixed glyphAdvance(HB_Glyph glyph) const;
 
-    CFbsBitmap *m_textRenderBitmap;
-    CFbsBitmapDevice *m_textRenderBitmapDevice;
-    CFbsBitGc *m_textRenderBitmapGc;
     CFont* m_font;
     const QFontEngineS60Extensions *m_extensions;
     qreal m_fontSizeInPixels;

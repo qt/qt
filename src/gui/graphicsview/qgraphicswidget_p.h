@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,6 +80,7 @@ public:
           inSetGeometry(0),
           polished(0),
           inSetPos(0),
+          autoFillBackground(0),
           focusPolicy(Qt::NoFocus),
           focusNext(0),
           focusPrev(0),
@@ -98,7 +99,7 @@ public:
     mutable qreal *margins;
     void ensureMargins() const;
 
-    void fixFocusChainBeforeReparenting(QGraphicsWidget *newParent, QGraphicsScene *newScene = 0);
+    void fixFocusChainBeforeReparenting(QGraphicsWidget *newParent, QGraphicsScene *oldScene, QGraphicsScene *newScene = 0);
     void setLayout_helper(QGraphicsLayout *l);
 
     // Layouts
@@ -172,6 +173,7 @@ public:
     quint32 inSetGeometry : 1;
     quint32 polished: 1;
     quint32 inSetPos : 1;
+    quint32 autoFillBackground : 1;
 
     // Focus
     Qt::FocusPolicy focusPolicy;

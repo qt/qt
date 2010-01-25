@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1163,6 +1163,19 @@ QTextDecoder* QTextCodec::makeDecoder() const
     return new QTextDecoder(this);
 }
 
+/*!
+    Creates a QTextDecoder with a specified \a flags to decode chunks
+    of \c{char *} data to create chunks of Unicode data.
+
+    The caller is responsible for deleting the returned object.
+
+    \since 4.7
+*/
+QTextDecoder* QTextCodec::makeDecoder(QTextCodec::ConversionFlags flags) const
+{
+    return new QTextDecoder(this, flags);
+}
+
 
 /*!
     Creates a QTextEncoder which stores enough state to encode chunks
@@ -1173,6 +1186,19 @@ QTextDecoder* QTextCodec::makeDecoder() const
 QTextEncoder* QTextCodec::makeEncoder() const
 {
     return new QTextEncoder(this);
+}
+
+/*!
+    Creates a QTextEncoder with a specified \a flags to encode chunks
+    of Unicode data as \c{char *} data.
+
+    The caller is responsible for deleting the returned object.
+
+    \since 4.7
+*/
+QTextEncoder* QTextCodec::makeEncoder(QTextCodec::ConversionFlags flags) const
+{
+    return new QTextEncoder(this, flags);
 }
 
 /*!
@@ -1316,6 +1342,17 @@ QString QTextCodec::toUnicode(const char *chars) const
 */
 
 /*!
+    Constructs a text encoder for the given \a codec and conversion \a flags.
+
+    \since 4.7
+*/
+QTextEncoder::QTextEncoder(const QTextCodec *codec, QTextCodec::ConversionFlags flags)
+    : c(codec), state()
+{
+    state.flags = flags;
+}
+
+/*!
     Destroys the encoder.
 */
 QTextEncoder::~QTextEncoder()
@@ -1390,6 +1427,18 @@ QByteArray QTextEncoder::fromUnicode(const QString& uc, int& lenInOut)
 
     Constructs a text decoder for the given \a codec.
 */
+
+/*!
+    Constructs a text decoder for the given \a codec and conversion \a flags.
+
+    \since 4.7
+*/
+
+QTextDecoder::QTextDecoder(const QTextCodec *codec, QTextCodec::ConversionFlags flags)
+    : c(codec), state()
+{
+    state.flags = flags;
+}
 
 /*!
     Destroys the decoder.

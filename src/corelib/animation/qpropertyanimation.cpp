@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -118,7 +118,9 @@ void QPropertyAnimationPrivate::updateMetaProperty()
         propertyType = QVariant::Invalid;
         if (!targetValue->dynamicPropertyNames().contains(propertyName))
             qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
-    }
+    } else if (!targetValue->metaObject()->property(propertyIndex).isWritable()) {
+        qWarning("QPropertyAnimation: you're trying to animate the non-writable property %s of your QObject", propertyName.constData());
+	}
 }
 
 void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
@@ -256,7 +258,8 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
     Q_D(QPropertyAnimation);
 
     if (!d->target && oldState == Stopped) {
-        qWarning("QPropertyAnimation::updateState: Changing state of an animation without target");
+        qWarning("QPropertyAnimation::updateState (%s): Changing state of an animation without target",
+                 d->propertyName.constData());
         return;
     }
 
@@ -264,7 +267,9 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
 
     QPropertyAnimation *animToStop = 0;
     {
+#ifndef QT_NO_THREAD
         QMutexLocker locker(QMutexPool::globalInstanceGet(&staticMetaObject));
+#endif
         typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
         typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
         static QPropertyAnimationHash hash;
@@ -279,10 +284,16 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
             if (oldState == Stopped) {
                 d->setDefaultStartEndValue(d->targetValue->property(d->propertyName.constData()));
                 //let's check if we have a start value and an end value
-                if (!startValue().isValid() && (d->direction == Backward || !d->defaultStartEndValue.isValid()))
-                    qWarning("QPropertyAnimation::updateState: starting an animation without start value");
-                if (!endValue().isValid() && (d->direction == Forward || !d->defaultStartEndValue.isValid()))
-                    qWarning("QPropertyAnimation::updateState: starting an animation without end value");
+                if (!startValue().isValid() && (d->direction == Backward || !d->defaultStartEndValue.isValid())) {
+                    qWarning("QPropertyAnimation::updateState (%s, %s, %s): starting an animation without start value",
+                             d->propertyName.constData(), d->target.data()->metaObject()->className(),
+                             qPrintable(d->target.data()->objectName()));
+                }
+                if (!endValue().isValid() && (d->direction == Forward || !d->defaultStartEndValue.isValid())) {
+                    qWarning("QPropertyAnimation::updateState (%s, %s, %s): starting an animation without end value",
+                             d->propertyName.constData(), d->target.data()->metaObject()->className(),
+                             qPrintable(d->target.data()->objectName()));
+                }
             }
         } else if (hash.value(key) == this) {
             hash.remove(key);

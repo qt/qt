@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1043,12 +1043,32 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 
 
 /*!
+    \since 4.7
+
+    \fn int QModelIndex::rowCount() const
+
+    Returns the number of children of this model index.
+
+    \sa columnCount(), parent(), child(), sibling(), model()
+*/
+
+/*!
+    \since 4.7
+
+    \fn int QModelIndex::columnCount() const
+
+    Returns the number of columns for the children of this model index.
+
+    \sa rowCount(), parent(), child(), sibling(), model()
+*/
+
+/*!
     \fn QModelIndex QModelIndex::parent() const
 
     Returns the parent of the model index, or QModelIndex() if it has no
     parent.
 
-    \sa child(), sibling(), model()
+    \sa child(), sibling(), rowCount(), columnCount(), model()
 */
 
 /*!
@@ -2546,9 +2566,9 @@ bool QAbstractItemModel::beginMoveRows(const QModelIndex &sourceParent, int sour
     int destinationLast = destinationChild + (sourceLast - sourceFirst);
     d->changes.push(QAbstractItemModelPrivate::Change(destinationParent, destinationChild, destinationLast));
 
-    d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Vertical);
     emit rowsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild);
     emit layoutAboutToBeChanged();
+    d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Vertical);
     return true;
 }
 

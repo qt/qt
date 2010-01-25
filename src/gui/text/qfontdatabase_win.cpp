@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1101,7 +1101,6 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
         if (AddFontResource((LPCWSTR)fnt->fileName.utf16()) == 0)
             return;
 #else
-        // supported from 2000 on, so no need to deal with the *A variant
         PtrAddFontResourceExW ptrAddFontResourceExW = (PtrAddFontResourceExW)QLibrary::resolve(QLatin1String("gdi32"),
                                                                                                "AddFontResourceExW");
         if (!ptrAddFontResourceExW

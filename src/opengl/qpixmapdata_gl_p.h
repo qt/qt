@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -106,6 +106,10 @@ public:
     // Re-implemented from QPixmapData:
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    bool fromFile(const QString &filename, const char *format,
+                  Qt::ImageConversionFlags flags);
+    bool fromData(const uchar *buffer, uint len, const char *format,
+                  Qt::ImageConversionFlags flags);
     void copy(const QPixmapData *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);
     void fill(const QColor &color);

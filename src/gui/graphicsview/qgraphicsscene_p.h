@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -78,7 +78,7 @@ class QGraphicsSceneIndex;
 class QGraphicsView;
 class QGraphicsWidget;
 
-class QGraphicsScenePrivate : public QObjectPrivate
+class Q_AUTOTEST_EXPORT QGraphicsScenePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsScene)
 public:
@@ -111,6 +111,7 @@ public:
     QSet<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
     bool needSortTopLevelItems;
+    bool unpolishedItemsModified;
     bool holesInTopLevelSiblingIndex;
     bool topLevelSequentialOrdering;
 
@@ -222,8 +223,7 @@ public:
               QRegion *, QWidget *, qreal, const QTransform *const, bool, bool);
 
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
-                   bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false,
-                   bool removingItemFromScene = false);
+                   bool force = false, bool ignoreOpacity = false, bool removingItemFromScene = false);
     void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false,
                                     qreal parentOpacity = qreal(1.0));
 
@@ -266,6 +266,7 @@ public:
     {
         if (needSortTopLevelItems) {
             qSort(topLevelItems.begin(), topLevelItems.end(), qt_notclosestLeaf);
+            topLevelSequentialOrdering = false;
             needSortTopLevelItems = false;
         }
     }

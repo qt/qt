@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1257,6 +1257,8 @@ Qt::FillRule QPainterPath::fillRule() const
 void QPainterPath::setFillRule(Qt::FillRule fillRule)
 {
     ensureData();
+    if (d_func()->fillRule == fillRule)
+        return;
     detach();
 
     d_func()->fillRule = fillRule;

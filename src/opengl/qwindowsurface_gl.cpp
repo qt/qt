@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -295,7 +295,6 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     : QWindowSurface(window), d_ptr(new QGLWindowSurfacePrivate)
 {
     Q_ASSERT(window->isTopLevel());
-    QGLExtensions::init();
     d_ptr->pb = 0;
     d_ptr->fbo = 0;
     d_ptr->ctx = 0;
@@ -493,7 +492,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
             }
 #endif
             d_ptr->paintedRegion = QRegion();
-
             context()->swapBuffers();
         } else {
             glFlush();
@@ -521,7 +519,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
     glDisable(GL_SCISSOR_TEST);
 
-    if (d_ptr->fbo && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)) {
+    if (d_ptr->fbo && (QGLExtensions::glExtensions() & QGLExtensions::FramebufferBlit)) {
         const int h = d_ptr->fbo->height();
 
         const int sx0 = br.left();
@@ -688,16 +686,18 @@ void QGLWindowSurface::updateGeometry() {
     d_ptr->size = rect.size();
 
     if (d_ptr->ctx) {
+#ifndef QT_OPENGL_ES_2
         if (d_ptr->destructive_swap_buffers) {
             glBindTexture(target, d_ptr->tex_id);
             glTexImage2D(target, 0, GL_RGBA, rect.width(), rect.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
             glBindTexture(target, 0);
         }
+#endif
         return;
     }
 
     if (d_ptr->destructive_swap_buffers
-        && (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject)
+        && (QGLExtensions::glExtensions() & QGLExtensions::FramebufferObject)
         && (d_ptr->fbo || !d_ptr->tried_fbo)
         && qt_gl_preferGL2Engine())
     {
@@ -711,7 +711,7 @@ void QGLWindowSurface::updateGeometry() {
         format.setInternalTextureFormat(GLenum(GL_RGBA));
         format.setTextureTarget(target);
 
-        if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
+        if (QGLExtensions::glExtensions() & QGLExtensions::FramebufferBlit)
             format.setSamples(8);
 
         d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
@@ -756,11 +756,7 @@ void QGLWindowSurface::updateGeometry() {
 
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-#ifndef QT_OPENGL_ES
             glOrtho(0, d_ptr->pb->width(), d_ptr->pb->height(), 0, -999999, 999999);
-#else
-            glOrthof(0, d_ptr->pb->width(), d_ptr->pb->height(), 0, -999999, 999999);
-#endif
 
             d_ptr->pb->d_ptr->qctx->d_func()->internal_context = true;
             return;
@@ -774,6 +770,7 @@ void QGLWindowSurface::updateGeometry() {
 
     ctx->makeCurrent();
 
+#ifndef QT_OPENGL_ES_2
     if (d_ptr->destructive_swap_buffers) {
         glGenTextures(1, &d_ptr->tex_id);
         glBindTexture(target, d_ptr->tex_id);
@@ -783,6 +780,7 @@ void QGLWindowSurface::updateGeometry() {
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glBindTexture(target, 0);
     }
+#endif
 
     qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;;
     d_ptr->ctx = ctx;

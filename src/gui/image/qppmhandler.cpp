@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -264,7 +264,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
     bool gray = format == "pgm";
 
     if (format == "pbm") {
-        image = image.convertToFormat(QImage::Format_MonoLSB);
+        image = image.convertToFormat(QImage::Format_Mono);
     } else if (image.depth() == 1) {
         image = image.convertToFormat(QImage::Format_Indexed8);
     } else {

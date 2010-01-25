@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -394,7 +394,9 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     }
     [mFontPanel setDelegate:nil];
     [[NSFontManager sharedFontManager] setDelegate:nil];
+#ifdef QT_MAC_USE_COCOA
     [[NSFontManager sharedFontManager] setTarget:nil];
+#endif
 }
 @end
 
@@ -518,7 +520,9 @@ void *QFontDialogPrivate::openCocoaFontPanel(const QFont &initial,
                                                    extraHeight:dialogExtraHeight];
     [ourPanel setDelegate:delegate];
     [[NSFontManager sharedFontManager] setDelegate:delegate];
+#ifdef QT_MAC_USE_COCOA
     [[NSFontManager sharedFontManager] setTarget:delegate];
+#endif
     setFont(delegate, initial);
 
     // hack to get correct initial layout
@@ -625,10 +629,11 @@ void QFontDialogPrivate::setFont(void *delegate, const QFont &font)
         }
 
         NSFontManager *mgr = [NSFontManager sharedFontManager];
-        nsFont = [mgr fontWithFamily:qt_mac_QStringToNSString(font.family())
+        QFontInfo fontInfo(font);
+        nsFont = [mgr fontWithFamily:qt_mac_QStringToNSString(fontInfo.family())
             traits:mask
             weight:weight
-            size:QFontInfo(font).pointSize()];
+            size:fontInfo.pointSize()];
     }
 
     [mgr setSelectedFont:nsFont isMultiple:NO];

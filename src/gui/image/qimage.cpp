@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -696,7 +696,9 @@ bool QImageData::checkForAlphaPixels() const
 /*!
     \enum QImage::Format
 
-    The following image formats are available in all versions of Qt:
+    The following image formats are available in Qt. Values greater
+    than QImage::Format_RGB16 were added in Qt 4.4. See the notes
+    after the table.
 
     \value Format_Invalid   The image is invalid.
     \value Format_Mono      The image is stored using 1-bit per pixel. Bytes are
@@ -705,17 +707,12 @@ bool QImageData::checkForAlphaPixels() const
                             packed with the less significant bit (LSB) first.
 
     \value Format_Indexed8  The image is stored using 8-bit indexes
-                            into a colormap. \warning Drawing into a
-                            QImage with Indexed8 format is not
-                            supported.
+                            into a colormap. 
 
     \value Format_RGB32     The image is stored using a 32-bit RGB format (0xffRRGGBB).
 
     \value Format_ARGB32    The image is stored using a 32-bit ARGB
-                            format (0xAARRGGBB). \warning Do not
-                            render into ARGB32 images using
-                            QPainter. Format_ARGB32_Premultiplied is
-                            significantly faster.
+                            format (0xAARRGGBB).
 
     \value Format_ARGB32_Premultiplied  The image is stored using a premultiplied 32-bit
                             ARGB format (0xAARRGGBB), i.e. the red,
@@ -743,6 +740,12 @@ bool QImageData::checkForAlphaPixels() const
                             The unused bits are always zero.
     \value Format_ARGB4444_Premultiplied  The image is stored using a
                             premultiplied 16-bit ARGB format (4-4-4-4).
+
+    \note Drawing into a QImage with QImage::Format_Indexed8 is not
+    supported.
+
+    \note Do not render into ARGB32 images using QPainter.  Using
+    QImage::Format_ARGB32_Premultiplied is significantly faster.
 
     \sa format(), convertToFormat()
 */
@@ -1832,7 +1835,7 @@ void QImage::setColor(int i, QRgb c)
     qAlpha() to access the pixels.
 
     \sa bytesPerLine(), bits(), {QImage#Pixel Manipulation}{Pixel
-    Manipulation}
+    Manipulation}, constScanLine()
 */
 uchar *QImage::scanLine(int i)
 {
@@ -1862,6 +1865,28 @@ const uchar *QImage::scanLine(int i) const
 
 
 /*!
+    Returns a pointer to the pixel data at the scanline with index \a
+    i. The first scanline is at index 0.
+
+    The scanline data is aligned on a 32-bit boundary.
+
+    Note that QImage uses \l{Implicit Data Sharing} {implicit data
+    sharing}, but this function does \e not perform a deep copy of the
+    shared pixel data, because the returned data is const.
+
+    \sa scanLine(), constBits()
+    \since 4.7
+*/
+const uchar *QImage::constScanLine(int i) const
+{
+    if (!d)
+        return 0;
+
+    Q_ASSERT(i >= 0 && i < height());
+    return d->data + i * d->bytes_per_line;
+}
+
+/*!
     Returns a pointer to the first pixel data. This is equivalent to
     scanLine(0).
 
@@ -1870,7 +1895,7 @@ const uchar *QImage::scanLine(int i) const
     data, thus ensuring that this QImage is the only one using the
     current return value.
 
-    \sa scanLine(), byteCount()
+    \sa scanLine(), byteCount(), constBits()
 */
 uchar *QImage::bits()
 {
@@ -1898,6 +1923,20 @@ const uchar *QImage::bits() const
 }
 
 
+/*!
+    Returns a pointer to the first pixel data.
+
+    Note that QImage uses \l{Implicit Data Sharing} {implicit data
+    sharing}, but this function does \e not perform a deep copy of the
+    shared pixel data, because the returned data is const.
+
+    \sa bits(), constScanLine()
+    \since 4.7
+*/
+const uchar *QImage::constBits() const
+{
+    return d ? d->data : 0;
+}
 
 /*!
     \fn void QImage::reset()
@@ -3989,7 +4028,7 @@ QImage QImage::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Transf
     QSize newSize = size();
     newSize.scale(s, aspectMode);
     if (newSize == size())
-        return copy();
+        return *this;
 
     QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
     QImage img = transformed(wm, mode);

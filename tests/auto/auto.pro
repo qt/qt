@@ -8,10 +8,14 @@ TEMPLATE = subdirs
            compiler \
            compilerwarnings \
            linguist \
+           maketestselftest \
            moc \
            uic \
            uic3 \
-           guiapplauncher	   
+           guiapplauncher \
+           #atwrapper \     # These tests need significant updating,
+           #uiloader \      # they have hardcoded machine names etc.
+
 Q3SUBDIRS += \
            q3accel \
            q3action \
@@ -130,6 +134,7 @@ SUBDIRS += \
            qdoublevalidator \
            qdrag \
            qerrormessage \
+           qevent \
            qeventloop \
            qexplicitlyshareddatapointer \
            qfile \
@@ -148,7 +153,6 @@ SUBDIRS += \
            qfontmetrics \
            qftp \
            qgetputenv \
-           qgl \
            qglobal \
            qgraphicseffect \
            qgraphicseffectsource \
@@ -257,6 +261,7 @@ SUBDIRS += \
            qprinter \
            qprinterinfo \
            qprocess \
+	   qprocessenvironment \
            qprogressbar \
            qprogressdialog \
            qpropertyanimation \
@@ -443,7 +448,6 @@ SUBDIRS += \
            qsharedmemory \
            qsidebar \
            qsizegrip \
-           qsoftkeymanager \
            qsqldriver \
            qsystemsemaphore \
            qtconcurrentfilter \
@@ -458,7 +462,9 @@ SUBDIRS += \
            rcc \
            windowsmobile
 
-!wince*:SUBDIRS += $$Q3SUBDIRS
+contains(QT_CONFIG,opengl):SUBDIRS += qgl
+
+contains(QT_CONFIG,qt3support):!wince*:SUBDIRS += $$Q3SUBDIRS
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {
@@ -474,6 +480,11 @@ embedded:!wince* {
 }
 !win32: {
     SUBDIRS += qtextpiecetable
+}
+
+symbian {
+    SUBDIRS += qsoftkeymanager \
+               qs60mainapplication
 }
 
 # Enable the tests specific to QtXmlPatterns. If you add a test, remember to
@@ -558,3 +569,21 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebhistory
 
 contains(QT_CONFIG, declarative): SUBDIRS += declarative
+
+# Following tests depends on private API
+!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+           qcssparser \
+           qgraphicssceneindex \
+           qhttpnetworkconnection \
+           qhttpnetworkreply \
+           qnativesocketengine \
+           qnetworkreply \
+           qpathclipper \
+           qsocketnotifier \
+           qsocks5socketengine \
+           qstylesheetstyle \
+           qtextpiecetable \
+           xmlpatternsdiagnosticsts \
+           xmlpatternsview \
+           xmlpatternsxqts \
+           xmlpatternsxslts

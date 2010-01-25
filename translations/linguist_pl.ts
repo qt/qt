@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1357"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1364"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
@@ -110,11 +110,17 @@
     </message>
     <message>
         <location line="+4"/>
+        <location line="+8"/>
         <source>&lt;p&gt;[more duplicates omitted]</source>
         <translation>&lt;p&gt;[pominięto resztę powtórzeń]</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-5"/>
+        <source>&lt;p&gt;* ID: %1</source>
+        <translation>&lt;p&gt;* identyfikator: %1</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>&lt;p&gt;* Context: %1&lt;br&gt;* Source: %2</source>
         <translation>&lt;p&gt;* Kontekst: %1&lt;br&gt;* Źródło: %2</translation>
     </message>
@@ -124,7 +130,7 @@
         <translation>&lt;br&gt;* Komentarz: %3</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+71"/>
         <source>Linguist does not know the plural rules for &apos;%1&apos;.
 Will assume a single universal form.</source>
         <translation>Linguist nie zna reguł liczby mnogiej dla &quot;%1&quot;.
@@ -312,7 +318,7 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+748"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+763"/>
         <source>Dropped %n message(s) which had no ID.</source>
         <translation>
             <numerusform>Opuszczono %n wyrażenie które nie miało identyfikatora.</numerusform>
@@ -714,7 +720,7 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
         <translation>Zamienia tłumaczenia we wszystkich pasujących do wzorca wpisach.</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2004"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2011"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
@@ -732,27 +738,27 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
     </message>
     <message>
         <location line="-2"/>
-        <location line="+62"/>
+        <location line="+63"/>
         <source>Context</source>
         <translation>Kontekst</translation>
     </message>
     <message>
-        <location line="-61"/>
+        <location line="-62"/>
         <source>Items</source>
         <translation>Elementy</translation>
     </message>
     <message>
-        <location line="+78"/>
+        <location line="+79"/>
         <source>This panel lists the source contexts.</source>
         <translation>Ten panel pokazuje listę kontekstów.</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+13"/>
         <source>Strings</source>
         <translation>Tłumaczenia</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+37"/>
         <source>Phrases and guesses</source>
         <translation>Wyrażenia i podpowiedzi</translation>
     </message>
@@ -773,7 +779,7 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
         <translation> MOD </translation>
     </message>
     <message>
-        <location line="+130"/>
+        <location line="+139"/>
         <source>Loading...</source>
         <translation>Ładowanie...</translation>
     </message>
@@ -811,7 +817,7 @@ Czy chcesz pominąć pierwszy plik?</translation>
         </translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+94"/>
         <source>Related files (%1);;</source>
         <translation>Związane pliki (%1);;</translation>
     </message>
@@ -828,7 +834,7 @@ Czy chcesz pominąć pierwszy plik?</translation>
     </message>
     <message>
         <location line="+526"/>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1176,7 +1182,7 @@ Wszystkie pliki (*)</translation>
         <translation>Czy chcesz zachować książke wyrażeń &apos;%1&apos;?</translation>
     </message>
     <message>
-        <location line="+323"/>
+        <location line="+334"/>
         <source>All</source>
         <translation>Wszystko</translation>
     </message>
@@ -1242,7 +1248,7 @@ Wszystkie pliki (*)</translation>
     </message>
     <message>
         <location/>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-470"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-481"/>
         <source>Translation</source>
         <translation>Tłumaczenie</translation>
     </message>
@@ -1579,7 +1585,7 @@ Wszystkie pliki (*)</translation>
         <translation>Tutaj można wprowadzić komentarze na własny użytek. One nie mają wpływu na przetłumaczoną aplikację.</translation>
     </message>
     <message>
-        <location line="+232"/>
+        <location line="+234"/>
         <source>%1 translation (%2)</source>
         <translation>Tłumaczenie na język %1 (%2)</translation>
     </message>
@@ -1609,7 +1615,7 @@ Linia: %2</translation>
 <context>
     <name>MessageModel</name>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+832"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+825"/>
         <source>Completion status for %1</source>
         <translation>Stan ukończenia dla %1</translation>
     </message>
@@ -1632,7 +1638,7 @@ Linia: %2</translation>
 <context>
     <name>MsgEdit</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-612"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-614"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
         <translation></translation>
@@ -1811,8 +1817,8 @@ Linia: %2</translation>
         <translation>Wszystkie pliki (*)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1118"/>
-        <location line="+18"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1120"/>
+        <location line="+27"/>
         <location line="+67"/>
         <location line="+39"/>
         <location line="+17"/>
@@ -1847,7 +1853,7 @@ Linia: %2</translation>
         <translation>Pliki XLIFF</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/qph.cpp" line="+183"/>
+        <location filename="../tools/linguist/shared/qph.cpp" line="+195"/>
         <source>Qt Linguist &apos;Phrase Book&apos;</source>
         <translation>Qt Linguist &quot;Książka wyrażeń&quot;</translation>
     </message>
@@ -1998,12 +2004,12 @@ Linia: %2</translation>
 <context>
     <name>TranslationSettingsDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+68"/>
+        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+93"/>
         <source>Any Country</source>
         <translation>Dowolny kraj</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-22"/>
         <location line="+8"/>
         <source>Settings for &apos;%1&apos; - Qt Linguist</source>
         <translation>Ustawienia dla &apos;%1&apos; - Qt Linguist</translation>

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -120,7 +120,7 @@ public:
         \row
             \o Sample size
             \o How much data is stored in each sample (typically 8
-               or 16)
+               or 16 bits)
         \row
             \o Sample type
             \o Numerical representation of sample (typically signed integer,
@@ -260,7 +260,7 @@ int QAudioFormat::channels() const
 }
 
 /*!
-   Sets the sampleSize to \a sampleSize.
+   Sets the sample size to the \a sampleSize specified.
 */
 
 void QAudioFormat::setSampleSize(int sampleSize)
@@ -269,7 +269,7 @@ void QAudioFormat::setSampleSize(int sampleSize)
 }
 
 /*!
-    Returns the current sampleSize value.
+    Returns the current sample size value.
 */
 
 int QAudioFormat::sampleSize() const

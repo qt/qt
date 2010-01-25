@@ -11,6 +11,7 @@ PROJECTNAME = Assistant
 DESTDIR = ../../../../bin
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
+DEPENDPATH += ../shared
 
 # ## Work around a qmake issue when statically linking to
 # ## not-yet-installed plugins
@@ -31,7 +32,9 @@ HEADERS += helpviewer.h \
     aboutdialog.h \
     qtdocinstaller.h \
     xbelsupport.h \
-    ../shared/collectionconfiguration.h
+    ../shared/collectionconfiguration.h \
+    helpenginewrapper.h \
+    tracer.h
 win32:HEADERS += remotecontrol_win.h
 SOURCES += helpviewer.cpp \
     main.cpp \
@@ -50,7 +53,8 @@ SOURCES += helpviewer.cpp \
     aboutdialog.cpp \
     qtdocinstaller.cpp \
     xbelsupport.cpp \
-    ../shared/collectionconfiguration.cpp
+    ../shared/collectionconfiguration.cpp \
+    helpenginewrapper.cpp
 FORMS += topicchooser.ui \
     preferencesdialog.ui \
     filternamedialog.ui \

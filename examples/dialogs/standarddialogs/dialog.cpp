@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -239,7 +239,12 @@ void Dialog::setText()
 
 void Dialog::setColor()
 {
-    QColor color = QColorDialog::getColor(Qt::green, this);
+    QColor color;
+    if (native->isChecked())
+        color = QColorDialog::getColor(Qt::green, this);
+    else
+        color = QColorDialog::getColor(Qt::green, this, "Select Color", QColorDialog::DontUseNativeDialog);
+
     if (color.isValid()) {
         colorLabel->setText(color.name());
         colorLabel->setPalette(QPalette(color));

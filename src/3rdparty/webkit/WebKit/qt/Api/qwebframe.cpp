@@ -196,6 +196,22 @@ QString QWEBKIT_EXPORT qt_drt_counterValueForElementById(QWebFrame* qFrame, cons
     return QString();
 }
 
+// Suspend active DOM objects in this frame.
+void QWEBKIT_EXPORT qt_suspendActiveDOMObjects(QWebFrame* qFrame)
+{
+    Frame* frame = QWebFramePrivate::core(qFrame);
+    if (frame->document())
+        frame->document()->suspendActiveDOMObjects();
+}
+            
+// Resume active DOM objects in this frame.
+void QWEBKIT_EXPORT qt_resumeActiveDOMObjects(QWebFrame* qFrame)
+{
+    Frame* frame = QWebFramePrivate::core(qFrame);
+    if (frame->document())
+        frame->document()->resumeActiveDOMObjects();
+}                        
+
 QWebFrameData::QWebFrameData(WebCore::Page* parentPage, WebCore::Frame* parentFrame,
                              WebCore::HTMLFrameOwnerElement* ownerFrameElement,
                              const WebCore::String& frameName)
@@ -306,6 +322,45 @@ void QWebFramePrivate::renderPrivate(QPainter *painter, QWebFrame::RenderLayer l
 
         painter->restore();
     }
+}
+
+static bool webframe_scrollOverflow(WebCore::Frame* frame, int dx, int dy)
+{
+    if (!frame || !frame->document() || !frame->eventHandler())
+        return false;
+
+    Node* node = frame->document()->focusedNode();
+    if (!node)
+        node = frame->document()->elementFromPoint(frame->eventHandler()->currentMousePosition().x(),
+                                                   frame->eventHandler()->currentMousePosition().y());
+    if (!node)
+        return false;
+
+    RenderObject* renderer = node->renderer();
+    if (!renderer)
+        return false;
+
+    if (renderer->isListBox())
+        return false;
+
+    RenderLayer* renderLayer = renderer->enclosingLayer();
+    if (!renderLayer)
+        return false;
+
+    bool scrolledHorizontal = false;
+    bool scrolledVertical = false;
+
+    if (dx > 0)
+        scrolledHorizontal = renderLayer->scroll(ScrollRight, ScrollByPixel, dx);
+    else if (dx < 0)
+        scrolledHorizontal = renderLayer->scroll(ScrollLeft, ScrollByPixel, qAbs(dx));
+
+    if (dy > 0)
+        scrolledVertical = renderLayer->scroll(ScrollDown, ScrollByPixel, dy);
+    else if (dy < 0)
+        scrolledVertical = renderLayer->scroll(ScrollUp, ScrollByPixel, qAbs(dy));
+
+    return (scrolledHorizontal || scrolledVertical);
 }
 
 /*!
@@ -989,6 +1044,51 @@ void QWebFrame::scroll(int dx, int dy)
         return;
 
     d->frame->view()->scrollBy(IntSize(dx, dy));
+}
+
+/*!
+  \since 4.7
+  \internal
+  Scrolls nested frames starting at this frame, \a dx pixels to the right 
+  and \a dy pixels downward. Both \a dx and \a dy may be negative. First attempts
+  to scroll elements with CSS overflow followed by this frame. If this 
+  frame doesn't scroll, attempts to scroll the parent
+
+  \sa QWebFrame::scroll
+*/
+bool QWEBKIT_EXPORT qtwebkit_webframe_scrollRecursively(QWebFrame* qFrame, int dx, int dy)
+{
+    Frame* frame = QWebFramePrivate::core(qFrame);
+    bool scrolledHorizontal = false;
+    bool scrolledVertical = false;
+    bool scrolledOverflow = webframe_scrollOverflow(frame, dx, dy);
+
+    if (!scrolledOverflow) {
+        if (!frame || !frame->view())
+            return false;
+
+        do {
+            IntSize scrollOffset = frame->view()->scrollOffset();
+            IntPoint maxScrollOffset = frame->view()->maximumScrollPosition();
+
+            if (dx > 0) // scroll right
+                scrolledHorizontal = scrollOffset.width() < maxScrollOffset.x();
+            else if (dx < 0) // scroll left
+                scrolledHorizontal = scrollOffset.width() > 0;
+
+            if (dy > 0) // scroll down
+                scrolledVertical = scrollOffset.height() < maxScrollOffset.y();
+            else if (dy < 0) //scroll up
+                scrolledVertical = scrollOffset.height() > 0;
+
+            if (scrolledHorizontal || scrolledVertical) {
+                frame->view()->scrollBy(IntSize(dx, dy));
+                return true;
+            }
+            frame = frame->tree()->parent(); 
+        } while (frame && frame->view());
+    }
+    return (scrolledHorizontal || scrolledVertical || scrolledOverflow);
 }
 
 /*!

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -105,6 +105,7 @@ private slots:
     void fromPath_data();
     void fromPath();
     void certInfo();
+    void certInfoQByteArray();
     void task256066toPem();
     void nulInCN();
     void nulInSan();
@@ -695,6 +696,18 @@ void tst_QSslCertificate::certInfo()
 
     QCOMPARE(cert, QSslCertificate(pem, QSsl::Pem));
     QCOMPARE(cert, QSslCertificate(QByteArray::fromHex(der), QSsl::Der));
+}
+
+void tst_QSslCertificate::certInfoQByteArray()
+{
+    QSslCertificate cert =  QSslCertificate::fromPath("certificates/cert.pem", QSsl::Pem,
+                                                      QRegExp::FixedString).first();
+    QVERIFY(!cert.isNull());
+
+    // in this test, check the bytearray variants before the enum variants to see if
+    // we fixed a bug we had with lazy initialization of the values.
+    QCOMPARE(cert.issuerInfo("CN"), QString("Test CA (1024 bit)"));
+    QCOMPARE(cert.subjectInfo("CN"), QString("name/with/slashes"));
 }
 
 void tst_QSslCertificate::task256066toPem()

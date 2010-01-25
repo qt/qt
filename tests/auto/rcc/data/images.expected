@@ -97,10 +97,10 @@ static const unsigned char qt_resource_struct[] = {
 
 QT_BEGIN_NAMESPACE
 
-extern bool qRegisterResourceData
+extern Q_CORE_EXPORT bool qRegisterResourceData
     (int, const unsigned char *, const unsigned char *, const unsigned char *);
 
-extern bool qUnregisterResourceData
+extern Q_CORE_EXPORT bool qUnregisterResourceData
     (int, const unsigned char *, const unsigned char *, const unsigned char *);
 
 QT_END_NAMESPACE

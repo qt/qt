@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,10 +52,10 @@
 
 #include "qmacdefines_mac.h"
 #ifdef QT_MAC_USE_COCOA
-#include <qpointer.h>
 #import <Cocoa/Cocoa.h>
 
 QT_FORWARD_DECLARE_CLASS(QMenu)
+QT_FORWARD_DECLARE_CLASS(QAction)
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
 
@@ -72,7 +72,7 @@ QT_FORWARD_DECLARE_CLASS(QMenu)
 @interface QT_MANGLE_NAMESPACE(QCocoaMenu) : NSMenu <NSMenuDelegate>
 {
     QMenu *qmenu;
-    QPointer<QAction> previousAction;
+    QAction *previousAction;
 }
 - (id)initWithQMenu:(QMenu*)menu;
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action;

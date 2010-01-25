@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #include <private/qfactoryloader_p.h>
 #include "qaudiodevicefactory_p.h"
 
+#ifndef QT_NO_AUDIO_BACKEND
 #if defined(Q_OS_WIN)
 #include "qaudiodeviceinfo_win32_p.h"
 #include "qaudiooutput_win32_p.h"
@@ -57,6 +58,7 @@
 #include "qaudiodeviceinfo_alsa_p.h"
 #include "qaudiooutput_alsa_p.h"
 #include "qaudioinput_alsa_p.h"
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -125,9 +127,11 @@ public:
 QList<QAudioDeviceInfo> QAudioDeviceFactory::availableDevices(QAudio::Mode mode)
 {
     QList<QAudioDeviceInfo> devices;
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     foreach (const QByteArray &handle, QAudioDeviceInfoInternal::availableDevices(mode))
         devices << QAudioDeviceInfo(QLatin1String("builtin"), handle, mode);
+#endif
 #endif
     QFactoryLoader* l = loader();
 
@@ -153,8 +157,10 @@ QAudioDeviceInfo QAudioDeviceFactory::defaultInputDevice()
         if (list.size() > 0)
             return QAudioDeviceInfo(QLatin1String("default"), list.at(0), QAudio::AudioInput);
     }
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     return QAudioDeviceInfo(QLatin1String("builtin"), QAudioDeviceInfoInternal::defaultInputDevice(), QAudio::AudioInput);
+#endif
 #endif
     return QAudioDeviceInfo();
 }
@@ -168,8 +174,10 @@ QAudioDeviceInfo QAudioDeviceFactory::defaultOutputDevice()
         if (list.size() > 0)
             return QAudioDeviceInfo(QLatin1String("default"), list.at(0), QAudio::AudioOutput);
     }
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     return QAudioDeviceInfo(QLatin1String("builtin"), QAudioDeviceInfoInternal::defaultOutputDevice(), QAudio::AudioOutput);
+#endif
 #endif
     return QAudioDeviceInfo();
 }
@@ -178,9 +186,11 @@ QAbstractAudioDeviceInfo* QAudioDeviceFactory::audioDeviceInfo(const QString &re
 {
     QAbstractAudioDeviceInfo *rc = 0;
 
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     if (realm == QLatin1String("builtin"))
         return new QAudioDeviceInfoInternal(handle, mode);
+#endif
 #endif
     QAudioEngineFactoryInterface* plugin =
         qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(realm));
@@ -205,9 +215,11 @@ QAbstractAudioInput* QAudioDeviceFactory::createInputDevice(QAudioDeviceInfo con
 {
     if (deviceInfo.isNull())
         return new QNullInputDevice();
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     if (deviceInfo.realm() == QLatin1String("builtin"))
         return new QAudioInputPrivate(deviceInfo.handle(), format);
+#endif
 #endif
     QAudioEngineFactoryInterface* plugin =
         qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(deviceInfo.realm()));
@@ -222,9 +234,11 @@ QAbstractAudioOutput* QAudioDeviceFactory::createOutputDevice(QAudioDeviceInfo c
 {
     if (deviceInfo.isNull())
         return new QNullOutputDevice();
+#ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
     if (deviceInfo.realm() == QLatin1String("builtin"))
         return new QAudioOutputPrivate(deviceInfo.handle(), format);
+#endif
 #endif
     QAudioEngineFactoryInterface* plugin =
         qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(deviceInfo.realm()));
