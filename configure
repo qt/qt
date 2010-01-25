@@ -7557,6 +7557,8 @@ elif [ "$CFG_OPENSSL" = "linked" ]; then
     OPENSSL_LINKAGE="(linked)"
 fi
 echo "OpenSSL support ..... $CFG_OPENSSL $OPENSSL_LINKAGE"
+echo "Alsa support ........ $CFG_ALSA"
+echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........ $CFG_PTMALLOC"
 
@@ -7581,8 +7583,6 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG"
     echo "NOTE: Mac OS X frameworks implicitly build debug and release Qt libraries."
     echo
 fi
-echo "alsa support ........ $CFG_ALSA"
-echo
 
 sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`
 PROCS=1
