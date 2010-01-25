@@ -5450,9 +5450,12 @@ public:
             QCOMPARE(pixmap.size(), rect.size());                       \
             QPixmap expectedPixmap(pixmap); /* ensure equal formats */  \
             expectedPixmap.fill(color);                                 \
-            if (pixmap.toImage().pixel(0,0) != QColor(color).rgb() && t < 4 ) \
+            QImage image = pixmap.toImage();                          \
+            uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0; \
+            uint firstPixel = image.pixel(0,0) | alphaCorrection;        \
+            if ( firstPixel != QColor(color).rgb() && t < 4 )          \
             { QTest::qWait(200); continue; }                            \
-            QCOMPARE(pixmap.toImage().pixel(0,0), QColor(color).rgb()); \
+            QCOMPARE(firstPixel, QColor(color).rgb());                  \
             QCOMPARE(pixmap, expectedPixmap);                           \
             break;                                                      \
         }                                                               \
