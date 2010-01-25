@@ -68,6 +68,7 @@
 #include "qtoolbutton.h"
 #include "qfocusframe.h"
 #include "qformlayout.h"
+#include "qprogressbar.h"
 
 #include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
@@ -564,9 +565,11 @@ QPixmap QS60StylePrivate::cachedPart(QS60StyleEnums::SkinParts part,
     const QSize &size, QPainter *painter, SkinElementFlags flags)
 {
     QPixmap result;
+    const int animationFrame = (flags & SF_Animation) ? currentAnimationFrame(part) : 0;
+
     const QString cacheKey =
-        QString::fromLatin1("S60Style: SkinParts=%1 QSize=%2|%3 SkinPartFlags=%4")
-            .arg((int)part).arg(size.width()).arg(size.height()).arg((int)flags);
+        QString::fromLatin1("S60Style: SkinParts=%1 QSize=%2|%3 SkinPartFlags=%4 AnimationFrame=%5")
+            .arg((int)part).arg(size.width()).arg(size.height()).arg((int)flags).arg(animationFrame);
     if (!QPixmapCache::find(cacheKey, result)) {
         result = QS60StylePrivate::part(part, size, painter, flags);
         QPixmapCache::insert(cacheKey, result);
@@ -813,13 +816,13 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
             //ratio of 1:2 for horizontal tab bars (and 2:1 for vertical ones).
             result.setWidth(result.height() >> 1);
             break;
-            
+
         case QS60StyleEnums::SP_QgnGrafNsliderEndLeft:
         case QS60StyleEnums::SP_QgnGrafNsliderEndRight:
         case QS60StyleEnums::SP_QgnGrafNsliderMiddle:
             result.setWidth(result.height() >> 1);
             break;
-            
+
         case QS60StyleEnums::SP_QgnGrafNsliderMarker:
         case QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected:
             result.scale(pixelMetric(QStyle::PM_SliderLength),
@@ -948,11 +951,11 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             //Highlight
 /*            if (optionSlider->state & QStyle::State_HasFocus)
                 drawPrimitive(PE_FrameFocusRect, optionSlider, painter, widget);*/
-            
+
             //Groove graphics
             if (QS60StylePrivate::hasSliderGrooveGraphic()) {
-                const QS60StylePrivate::SkinElements grooveElement = horizontal ? 
-                    QS60StylePrivate::SE_SliderGrooveHorizontal : 
+                const QS60StylePrivate::SkinElements grooveElement = horizontal ?
+                    QS60StylePrivate::SE_SliderGrooveHorizontal :
                     QS60StylePrivate::SE_SliderGrooveVertical;
                 QS60StylePrivate::drawSkinElement(grooveElement, painter, sliderGroove, flags);
             } else {
@@ -975,7 +978,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             if (optionSlider->state & QStyle::State_Sunken)
                 handleElement =
                         horizontal ? QS60StylePrivate::SE_SliderHandleSelectedHorizontal : QS60StylePrivate::SE_SliderHandleSelectedVertical;
-            else    
+            else
                 handleElement =
                     horizontal ? QS60StylePrivate::SE_SliderHandleHorizontal : QS60StylePrivate::SE_SliderHandleVertical;
             QS60StylePrivate::drawSkinElement(handleElement, painter, sliderHandle, flags);
@@ -994,7 +997,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             buttonOption.QStyleOption::operator=(*cmb);
             const int maxHeight = cmbxFrame.height();
             const int maxWidth = cmbxFrame.width() - cmbxEditField.width();
-            const int topLeftPoint = direction ? 
+            const int topLeftPoint = direction ?
                 (cmbxEditField.right() + 1) : (cmbxEditField.left() + 1 - maxWidth);
             const QRect buttonRect(topLeftPoint, cmbxEditField.top(), maxWidth, maxHeight);
             buttonOption.rect = buttonRect;
@@ -1648,17 +1651,20 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 // busy indicator
                 const QS60StylePrivate::SkinElementFlag orientationFlag = optionProgressBar->orientation == Qt::Horizontal ?
                     QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointWest;
-                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect, flags | orientationFlag);
+
+                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWaitAnim,
+                        painter, progressRect, flags | orientationFlag | QS60StylePrivate::SF_Animation );
             } else {
                 const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
                     : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
+                const int frameWidth = pixelMetric(PM_DefaultFrameWidth, option, widget);
                 if (optionProgressBar->orientation == Qt::Horizontal) {
                     progressRect.setWidth(int(progressRect.width() * progressFactor));
                     if(optionProgressBar->direction == Qt::RightToLeft)
-                        progressRect.translate(optionProgressBar->rect.width()-progressRect.width(), 0);
-                    progressRect.adjust(1, 0, -1, 0);
+                        progressRect.translate(optionProgressBar->rect.width() - progressRect.width(), 0);
+                    progressRect.adjust(frameWidth, 0, -frameWidth, 0);
                 } else {
-                    progressRect.adjust(0, 1, 0, -1);
+                    progressRect.adjust(0, frameWidth, 0, -frameWidth);
                     progressRect.setTop(progressRect.bottom() - int(progressRect.height() * progressFactor));
                 }
 
@@ -1925,8 +1931,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
     case CE_MenuScroller:
         break;
-    case CE_FocusFrame:
-        {
+    case CE_FocusFrame: {
             // The pen width should nearly fill the layoutspacings around the widget
             const int penWidth =
                 qMin(pixelMetric(QS60Style::PM_LayoutVerticalSpacing), pixelMetric(QS60Style::PM_LayoutHorizontalSpacing))
@@ -2004,8 +2009,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         }
     break;
 #endif // QT_NO_LINEEDIT
-    case PE_IndicatorCheckBox:
-        {
+    case PE_IndicatorCheckBox: {
             // Draw checkbox indicator as color skinned graphics.
             const QS60StyleEnums::SkinParts skinPart = (option->state & QStyle::State_On) ?
                 QS60StyleEnums::SP_QgnIndiCheckboxOn : QS60StyleEnums::SP_QgnIndiCheckboxOff;
@@ -2077,7 +2081,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelButtonCommand:
     case PE_PanelButtonTool:
     case PE_PanelButtonBevel:
-    case PE_FrameButtonBevel: {
+    case PE_FrameButtonBevel:
         if (QS60StylePrivate::canDrawThemeBackground(option->palette.base())) {
             const bool isPressed = option->state & QStyle::State_Sunken;
             const QS60StylePrivate::SkinElements skinElement =
@@ -2085,7 +2089,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
         } else {
             commonStyleDraws = true;
-            }
         }
         break;
 #ifndef QT_NO_TOOLBUTTON
@@ -2361,8 +2364,7 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))
                 sz += QSize(2 * f->lineWidth, 4 * f->lineWidth);
             break;
-        case CT_TabBarTab:
-            {
+        case CT_TabBarTab: {
                 const QSize naviPaneSize = QS60StylePrivate::naviPaneSize();
                 sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
                 if (naviPaneSize.height() > sz.height())
@@ -2835,6 +2837,12 @@ void QS60Style::polish(QWidget *widget)
     if (!widget)
         return;
 
+    //Currently we only support animations in QProgressBar.
+#ifndef QT_NO_PROGRESSBAR
+    if (qobject_cast<QProgressBar *>(widget))
+        widget->installEventFilter(this);
+#endif
+
     if (false
 #ifndef QT_NO_SCROLLBAR
         || qobject_cast<QScrollBar *>(widget)
@@ -2867,6 +2875,8 @@ void QS60Style::polish(QWidget *widget)
  */
 void QS60Style::unpolish(QWidget *widget)
 {
+    Q_D(QS60Style);
+
     if (false
     #ifndef QT_NO_SCROLLBAR
         || qobject_cast<QScrollBar *>(widget)
@@ -2893,6 +2903,12 @@ void QS60Style::unpolish(QWidget *widget)
     if (widget)
         widget->setPalette(QPalette());
 
+#ifndef QT_NO_PROGRESSBAR
+    if (QProgressBar *bar = qobject_cast<QProgressBar *>(widget)) {
+        widget->removeEventFilter(this);
+        d->m_bars.removeAll(bar);
+    }
+#endif
     QCommonStyle::unpolish(widget);
 }
 
@@ -2923,11 +2939,25 @@ void QS60Style::unpolish(QApplication *application)
  */
 bool QS60Style::event(QEvent *e)
 {
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QS60StylePrivate::isTouchSupported())
-        return false;
     Q_D(QS60Style);
+
+#ifdef QT_KEYPAD_NAVIGATION
+    const QEvent::Type eventType = e->type();
+    if ((eventType == QEvent::FocusIn ||
+         eventType == QEvent::FocusOut ||
+         eventType == QEvent::EnterEditFocus ||
+         eventType == QEvent::LeaveEditFocus) &&
+        QS60StylePrivate::isTouchSupported())
+            return false;
+#endif
+
     switch (e->type()) {
+    case QEvent::Timer: {
+        QTimerEvent *te = static_cast<QTimerEvent*>(e);
+        timerEvent(te);
+        }
+        break;
+#ifdef QT_KEYPAD_NAVIGATION
     case QEvent::FocusIn:
         if (QWidget *focusWidget = QApplication::focusWidget()) {
             if (!d->m_focusFrame)
@@ -2946,12 +2976,10 @@ bool QS60Style::event(QEvent *e)
         if (d->m_focusFrame)
             d->m_focusFrame->update();
         break;
+#endif
     default:
         break;
     }
-#else
-    Q_UNUSED(e)
-#endif
     return false;
 }
 
@@ -3043,6 +3071,68 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     const QPixmap cachedPixMap(QS60StylePrivate::cachedPart(part, iconSize.size(), 0, flags));
     return cachedPixMap.isNull() ?
         QCommonStyle::standardIconImplementation(standardIcon, option, widget) : QIcon(cachedPixMap);
+}
+
+/*!
+    \internal
+    Animate indeterminate progress bars only when visible
+*/
+bool QS60Style::eventFilter(QObject *object, QEvent *event)
+{
+#ifdef Q_WS_S60
+#ifndef QT_NO_PROGRESSBAR
+    Q_D(QS60Style);
+    switch(event->type()) {
+    case QEvent::StyleChange:
+    case QEvent::Show:
+        if (QProgressBar *bar = qobject_cast<QProgressBar *>(object)) {
+            if (!d->m_bars.contains(bar))
+                d->m_bars << bar;
+            if (d->m_bars.size() == 1) //only start with first animated progressbar
+                d->startAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim);
+        }
+        break;
+    case QEvent::Destroy:
+    case QEvent::Hide:
+        d->stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim);
+        d->m_bars.removeAll(reinterpret_cast<QProgressBar *>(object));
+        break;
+    default:
+        break;
+    }
+#endif // QT_NO_PROGRESSBAR
+#endif // Q_WS_S60
+    return QStyle::eventFilter(object, event);
+}
+
+void QS60Style::timerEvent(QTimerEvent *event)
+{
+#ifdef Q_WS_S60
+#ifndef QT_NO_PROGRESSBAR
+    Q_D(QS60Style);
+
+    QS60StyleAnimation *progressBarAnimation =
+        QS60StylePrivate::animationDefinition(QS60StyleEnums::SP_QgnGrafBarWaitAnim);
+
+    if (event->timerId() == progressBarAnimation->timerId()) {
+
+        Q_ASSERT(progressBarAnimation->interval() > 0);
+
+        if (progressBarAnimation->currentFrame() == progressBarAnimation->frameCount() )
+            if (progressBarAnimation->playMode() == QS60StyleEnums::AM_Looping)
+                progressBarAnimation->setCurrentFrame(0);
+            else
+                d->stopAnimation(progressBarAnimation->animationId());
+
+        foreach (QProgressBar *bar, d->m_bars) {
+            if ((bar->minimum() == 0 && bar->maximum() == 0))
+                bar->update();
+        }
+        progressBarAnimation->setCurrentFrame(progressBarAnimation->currentFrame() + 1);
+    }
+#endif // QT_NO_PROGRESSBAR
+#endif // Q_WS_S60
+    event->ignore();
 }
 
 extern QPoint qt_s60_fill_background_offset(const QWidget *targetWidget);

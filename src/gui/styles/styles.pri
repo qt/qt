@@ -168,7 +168,7 @@ contains( styles, s60 ):contains(QT_CONFIG, s60) {
 	SOURCES += styles/qs60style.cpp
 	symbian {
 		SOURCES += styles/qs60style_s60.cpp
-		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils -legul
+		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils -legul -lbmpanim
 	} else {
 		SOURCES += styles/qs60style_simulated.cpp
 		RESOURCES += styles/qstyle_s60_simulated.qrc

@@ -364,6 +364,11 @@ QFont QS60StylePrivate::s60Font_specific(
     return result;
 }
 
+int QS60StylePrivate::currentAnimationFrame(QS60StyleEnums::SkinParts part)
+{
+    return 0;
+}
+
 /*!
   Constructs a QS60Style object.
 */
