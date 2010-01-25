@@ -39,6 +39,7 @@
 #include <QGraphicsProxyWidget>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QGraphicsWebView>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMenu>
@@ -100,9 +101,8 @@ void PopupMenu::show(const IntRect& r, FrameView* v, int index)
 
     if (QGraphicsView* view = qobject_cast<QGraphicsView*>(client->ownerWidget())) {
         if (!m_proxy) {
-            m_proxy = new QGraphicsProxyWidget;
+            m_proxy = new QGraphicsProxyWidget(qobject_cast<QGraphicsWebView*>(client->pluginParent()));
             m_proxy->setWidget(m_popup);
-            view->scene()->addItem(m_proxy);
         } else
             m_proxy->setVisible(true);
         m_proxy->setGeometry(rect);
