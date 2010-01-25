@@ -115,7 +115,7 @@ getQMakeConf1()
 	    inc_file=`echo "$line" | sed -n -e "/^include.*(.*)/s/include.*(\(.*\)).*$/\1/p"`
 	    current_dir=`dirname "$1"`
 	    conf_file="$current_dir/$inc_file"
-	    if [ ! -e  "$conf_file" ]; then
+	    if [ ! -f  "$conf_file" ]; then
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
@@ -2278,7 +2278,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 fi
 
 # symlink fonts to be able to run application from build directory
-if [ "$PLATFORM_QWS" = "yes" ] && [ ! -e "${outpath}/lib/fonts" ]; then
+if [ "$PLATFORM_QWS" = "yes" ] && [ ! -d "${outpath}/lib/fonts" ]; then
     if [ "$PLATFORM" = "$XPLATFORM" ]; then
         mkdir -p "${outpath}/lib"
         ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
