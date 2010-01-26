@@ -245,7 +245,8 @@ void tst_lupdate::good()
 
     qDebug() << "Checking...";
 
-    QStringList generatedtsfiles(dir + QLatin1String("/project.ts"));
+    QString workDir = dir;
+    QStringList generatedtsfiles(QLatin1String("project.ts"));
     QString lupdatecmd;
 
     QFile file(dir + "/lupdatecmd");
@@ -264,17 +265,21 @@ void tst_lupdate::good()
                 generatedtsfiles.clear();
                 foreach (const QByteArray &s, cmdstring.split(' '))
                     if (!s.isEmpty())
-                        generatedtsfiles << dir + QLatin1Char('/') + s;
+                        generatedtsfiles << s;
+            } else if (cmdstring.startsWith("cd ")) {
+                cmdstring.remove(0, 3);
+                workDir = QDir::cleanPath(dir + QLatin1Char('/') + cmdstring);
             }
         }
         file.close();
     }
 
     foreach (const QString &ts, generatedtsfiles) {
-        QFile::remove(ts);
-        QString beforetsfile = ts + QLatin1String(".before");
+        QString genTs = workDir + QLatin1Char('/') + ts;
+        QFile::remove(genTs);
+        QString beforetsfile = dir + QLatin1Char('/') + ts + QLatin1String(".before");
         if (QFile::exists(beforetsfile))
-            QVERIFY2(QFile::copy(beforetsfile, ts), qPrintable(beforetsfile));
+            QVERIFY2(QFile::copy(beforetsfile, genTs), qPrintable(beforetsfile));
     }
 
     if (lupdatecmd.isEmpty())
@@ -282,7 +287,7 @@ void tst_lupdate::good()
     lupdatecmd.prepend("-silent ");
 
     QProcess proc;
-    proc.setWorkingDirectory(dir);
+    proc.setWorkingDirectory(workDir);
     proc.setProcessChannelMode(QProcess::MergedChannels);
     proc.start(m_cmdLupdate + ' ' + lupdatecmd, QIODevice::ReadWrite | QIODevice::Text);
     QVERIFY2(proc.waitForFinished(5000), qPrintable(lupdatecmd));
@@ -304,7 +309,8 @@ void tst_lupdate::good()
     }
 
     foreach (const QString &ts, generatedtsfiles)
-        doCompare(ts, ts + QLatin1String(".result"), false);
+        doCompare(workDir + QLatin1Char('/') + ts,
+                  dir + QLatin1Char('/') + ts + QLatin1String(".result"), false);
 }
 
 void tst_lupdate::commandline_data()
