@@ -132,6 +132,8 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
     if(data->cache_enabled && !data->fileNames[(int)name].isNull())
         return data->fileNames[(int)name];
     QString ret = data->fileEngine->fileName(name);
+    if (ret.isNull())
+        ret = QLatin1String("");
     if(data->cache_enabled)
         data->fileNames[(int)name] = ret;
     return ret;
