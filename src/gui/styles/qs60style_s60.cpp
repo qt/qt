@@ -649,6 +649,11 @@ bool QS60StylePrivate::hasSliderGrooveGraphic()
     return QSysInfo::s60Version() != QSysInfo::SV_S60_3_1;
 }
 
+bool QS60StylePrivate::isSingleClickUi()
+{
+    return (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0);
+}
+
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 {
     CCoeControl *control = targetWidget->effectiveWinId();
