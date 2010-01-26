@@ -81,7 +81,8 @@ void QFileInfoPrivate::initFileEngine(const QString &file)
 
 bool QFileInfoPrivate::hasAccess(Access access) const
 {
-    if (!(getFileFlags(QAbstractFileEngine::FileInfoAll) & QAbstractFileEngine::LocalDiskFlag)) {
+    if (!(getFileFlags(QAbstractFileEngine::PermsMask
+                       | QAbstractFileEngine::LocalDiskFlag) & QAbstractFileEngine::LocalDiskFlag)) {
         switch (access) {
         case ReadAccess:
             return getFileFlags(QAbstractFileEngine::ReadUserPerm);
@@ -141,51 +142,62 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 
 uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) const
 {
-    // We split the testing into tests for for LinkType, BundleType and the rest.
+    // We split the testing into tests for for LinkType, BundleType, PermsMask
+    // and the rest.
+    // Tests for file permissions on Windows can be slow, expecially on network
+    // paths and NTFS drives.
     // In order to determine if a file is a symlink or not, we have to lstat().
     // If we're not interested in that information, we might as well avoid one
     // extra syscall. Bundle detecton on Mac can be slow, expecially on network
     // paths, so we separate out that as well.
 
-    QAbstractFileEngine::FileFlags flags;
-    if (!data->getCachedFlag(CachedFileFlags)) {
-        QAbstractFileEngine::FileFlags req = QAbstractFileEngine::FileInfoAll;
-        req &= (~QAbstractFileEngine::LinkType);
-        req &= (~QAbstractFileEngine::BundleType);
+    QAbstractFileEngine::FileFlags req = 0;
+    uint cachedFlags = 0;
 
-        flags = data->fileEngine->fileFlags(req);
-        data->setCachedFlag(CachedFileFlags);
+    if (request & (QAbstractFileEngine::FlagsMask | QAbstractFileEngine::TypesMask)) {
+        if (!data->getCachedFlag(CachedFileFlags)) {
+            req |= QAbstractFileEngine::FlagsMask;
+            req |= QAbstractFileEngine::TypesMask;
+            req &= (~QAbstractFileEngine::LinkType);
+            req &= (~QAbstractFileEngine::BundleType);
+
+            cachedFlags |= CachedFileFlags;
+
+            if (request & QAbstractFileEngine::LinkType) {
+                if (!data->getCachedFlag(CachedLinkTypeFlag)) {
+                    req |= QAbstractFileEngine::LinkType;
+                    cachedFlags |= CachedLinkTypeFlag;
+                }
+            }
+
+            if (request & QAbstractFileEngine::BundleType) {
+                if (!data->getCachedFlag(CachedBundleTypeFlag)) {
+                    req |= QAbstractFileEngine::BundleType;
+                    cachedFlags |= CachedBundleTypeFlag;
+                }
+            }
+        }
+    }
+
+    if (request & QAbstractFileEngine::PermsMask) {
+        if (!data->getCachedFlag(CachedPerms)) {
+            req |= QAbstractFileEngine::PermsMask;
+            cachedFlags |= CachedPerms;
+        }
+    }
+
+    if (req) {
+        if (data->cache_enabled)
+            req &= (~QAbstractFileEngine::Refresh);
+        else
+            req |= QAbstractFileEngine::Refresh;
+
+        QAbstractFileEngine::FileFlags flags = data->fileEngine->fileFlags(req);
         data->fileFlags |= uint(flags);
-    } else {
-        flags = QAbstractFileEngine::FileFlags(data->fileFlags & request);
+        data->setCachedFlag(cachedFlags);
     }
 
-    if (request & QAbstractFileEngine::LinkType) {
-        if (!data->getCachedFlag(CachedLinkTypeFlag)) {
-            QAbstractFileEngine::FileFlags linkflag;
-            linkflag = data->fileEngine->fileFlags(QAbstractFileEngine::LinkType);
-
-            data->setCachedFlag(CachedLinkTypeFlag);
-            data->fileFlags |= uint(linkflag);
-            flags |= linkflag;
-        }
-    }
-
-    if (request & QAbstractFileEngine::BundleType) {
-        if (!data->getCachedFlag(CachedBundleTypeFlag)) {
-            QAbstractFileEngine::FileFlags bundleflag;
-            bundleflag = data->fileEngine->fileFlags(QAbstractFileEngine::BundleType);
-
-            data->setCachedFlag(CachedBundleTypeFlag);
-            data->fileFlags |= uint(bundleflag);
-            flags |= bundleflag;
-        }
-    }
-
-    // no else branch
-    // if we had it cached, it was caught in the previous else branch
-
-    return flags & request;
+    return data->fileFlags & request;
 }
 
 QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) const
