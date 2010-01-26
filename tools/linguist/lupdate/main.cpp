@@ -43,7 +43,6 @@
 
 #include <translator.h>
 #include <profileevaluator.h>
-#include <proreader.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -212,6 +211,42 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
             *fail = true;
         }
     }
+}
+
+static QStringList getSources(const char *var, const char *vvar, const QStringList &baseVPaths,
+                              const QString &projectDir, const ProFileEvaluator &visitor)
+{
+    QStringList vPaths = visitor.absolutePathValues(QLatin1String(vvar), projectDir);
+    vPaths += baseVPaths;
+    vPaths.removeDuplicates();
+    return visitor.absoluteFileValues(QLatin1String(var), projectDir, vPaths, 0);
+}
+
+static QStringList getSources(const ProFileEvaluator &visitor, const QString &projectDir)
+{
+    QStringList baseVPaths;
+    baseVPaths += visitor.absolutePathValues(QLatin1String("VPATH"), projectDir);
+    baseVPaths << projectDir; // QMAKE_ABSOLUTE_SOURCE_PATH
+    baseVPaths += visitor.absolutePathValues(QLatin1String("DEPENDPATH"), projectDir);
+    baseVPaths.removeDuplicates();
+
+    QStringList sourceFiles;
+
+    // app/lib template
+    sourceFiles += getSources("SOURCES", "VPATH_SOURCES", baseVPaths, projectDir, visitor);
+
+    sourceFiles += getSources("FORMS", "VPATH_FORMS", baseVPaths, projectDir, visitor);
+    sourceFiles += getSources("FORMS3", "VPATH_FORMS3", baseVPaths, projectDir, visitor);
+
+    QStringList vPathsInc = baseVPaths;
+    vPathsInc += visitor.absolutePathValues(QLatin1String("INCLUDEPATH"), projectDir);
+    vPathsInc.removeDuplicates();
+    sourceFiles += visitor.absoluteFileValues(QLatin1String("HEADERS"), projectDir, vPathsInc, 0);
+
+    sourceFiles.removeDuplicates();
+    sourceFiles.sort();
+
+    return sourceFiles;
 }
 
 int main(int argc, char **argv)
@@ -467,7 +502,6 @@ int main(int argc, char **argv)
         QStringList tsFiles = tsFileNames;
         if (proFiles.count() > 0) {
             QFileInfo pfi(proFiles.takeFirst());
-            QHash<QByteArray, QStringList> variables;
 
             ProFileEvaluator visitor;
             visitor.setVerbose(options & Verbose);
@@ -494,19 +528,19 @@ int main(int argc, char **argv)
 
             cd.m_includePath += visitor.values(QLatin1String("INCLUDEPATH"));
 
-            evaluateProFile(visitor, &variables, pfi.absolutePath());
+            sourceFiles = getSources(visitor, pfi.absolutePath());
 
-            sourceFiles = variables.value("SOURCES");
-
-            QStringList tmp = variables.value("CODECFORTR");
-            if (!tmp.isEmpty() && !tmp.first().isEmpty()) {
-                codecForTr = tmp.first().toLatin1();
+            QStringList tmp = visitor.values(QLatin1String("CODEC"))
+                + visitor.values(QLatin1String("DEFAULTCODEC"))
+                + visitor.values(QLatin1String("CODECFORTR"));
+            if (!tmp.isEmpty()) {
+                codecForTr = tmp.last().toLatin1();
                 fetchedTor.setCodecName(codecForTr);
                 cd.m_outputCodec = codecForTr;
             }
-            tmp = variables.value("CODECFORSRC");
-            if (!tmp.isEmpty() && !tmp.first().isEmpty()) {
-                codecForSource = tmp.first().toLatin1();
+            tmp = visitor.values(QLatin1String("CODECFORSRC"));
+            if (!tmp.isEmpty()) {
+                codecForSource = tmp.last().toLatin1();
                 if (!QTextCodec::codecForName(codecForSource))
                     qWarning("lupdate warning: Codec for source '%s' is invalid. Falling back to codec for tr().",
                              codecForSource.constData());
@@ -514,7 +548,9 @@ int main(int argc, char **argv)
                     cd.m_codecForSource = codecForSource;
             }
 
-            tsFiles += variables.value("TRANSLATIONS");
+            QDir proDir(pfi.absolutePath());
+            foreach (const QString &tsFile, visitor.values(QLatin1String("TRANSLATIONS")))
+                tsFiles << QFileInfo(proDir, tsFile).filePath();
         }
 
         QStringList sourceFilesCpp;
