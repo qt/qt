@@ -144,7 +144,7 @@ static QDataStream &operator<<(QDataStream &s, const BMP_INFOHDR &bi)
 static int calc_shift(int mask)
 {
     int result = 0;
-    while (!(mask & 1)) {
+    while (mask && !(mask & 1)) {
         result++;
         mask >>= 1;
     }
