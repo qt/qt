@@ -1660,9 +1660,6 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     }
 
     QString busService = QLatin1String(DBUS_SERVICE_DBUS);
-    WatchedServicesHash::mapped_type &bus = watchedServices[busService];
-    bus.refcount = 1;
-    bus.owner = getNameOwnerNoCache(busService);
     connectSignal(busService, QString(), QString(), QLatin1String("NameAcquired"), QStringList(), QString(),
                   this, SLOT(registerService(QString)));
     connectSignal(busService, QString(), QString(), QLatin1String("NameLost"), QStringList(), QString(),
@@ -2046,10 +2043,7 @@ void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook 
             // Do we need to watch for this name?
             if (shouldWatchService(hook.service)) {
                 WatchedServicesHash::mapped_type &data = watchedServices[hook.service];
-                if (data.refcount) {
-                    // already watching
-                    ++data.refcount;
-                } else {
+                if (++data.refcount == 1) {
                     // we need to watch for this service changing
                     QString dbusServerService = QLatin1String(DBUS_SERVICE_DBUS);
                     connectSignal(dbusServerService, QString(), QLatin1String(DBUS_INTERFACE_DBUS),
@@ -2105,19 +2099,6 @@ QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
 {
     const SignalHook &hook = it.value();
 
-    WatchedServicesHash::Iterator sit = watchedServices.find(hook.service);
-    if (sit != watchedServices.end()) {
-        if (sit.value().refcount == 1) {
-            watchedServices.erase(sit);
-            QString dbusServerService = QLatin1String(DBUS_SERVICE_DBUS);
-            disconnectSignal(dbusServerService, QString(), QLatin1String(DBUS_INTERFACE_DBUS),
-                          QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
-                          this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
-        } else {
-            --sit.value().refcount;
-        }
-    }
-
     bool erase = false;
     MatchRefCountHash::iterator i = matchRefCounts.find(hook.matchRule);
     if (i == matchRefCounts.end()) {
@@ -2136,6 +2117,20 @@ QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
     if (connection && erase) {
         qDBusDebug("Removing rule: %s", hook.matchRule.constData());
         q_dbus_bus_remove_match(connection, hook.matchRule, NULL);
+
+        // Successfully disconnected the signal
+        // Were we watching for this name?
+        WatchedServicesHash::Iterator sit = watchedServices.find(hook.service);
+        if (sit != watchedServices.end()) {
+            if (--sit.value().refcount == 0) {
+                watchedServices.erase(sit);
+                QString dbusServerService = QLatin1String(DBUS_SERVICE_DBUS);
+                disconnectSignal(dbusServerService, QString(), QLatin1String(DBUS_INTERFACE_DBUS),
+                              QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
+                              this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+            }
+        }
+
     }
 
     return signalHooks.erase(it);
