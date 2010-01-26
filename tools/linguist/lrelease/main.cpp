@@ -260,10 +260,7 @@ int main(int argc, char **argv)
                             return 1;
                 }
             } else {
-                qWarning("error: lrelease encountered project file functionality that is currently not supported.\n"
-                    "You might want to consider using TS files as input instead of a project file.\n"
-                    "Try the following syntax:\n"
-                    "    lrelease [options] ts-files [-qm qm-file]\n");
+                qWarning("lrelease error: cannot read project file %s.", qPrintable(inputFile));
             }
         } else {
             if (outputFile.isEmpty()) {
