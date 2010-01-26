@@ -499,6 +499,7 @@ public:
     static bool isTouchSupported();
     static bool isToolBarBackground();
     static bool hasSliderGrooveGraphic();
+    static bool isSingleClickUi();
 
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(SkinFrameElements frame) const;
