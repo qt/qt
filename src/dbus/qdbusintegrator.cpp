@@ -2001,7 +2001,8 @@ bool QDBusConnectionPrivate::connectSignal(const QString &service,
             entry.path == hook.path &&
             entry.signature == hook.signature &&
             entry.obj == hook.obj &&
-            entry.midx == hook.midx) {
+            entry.midx == hook.midx &&
+            entry.argumentMatch == hook.argumentMatch) {
             // no need to compare the parameters if it's the same slot
             return true;        // already there
         }
@@ -2083,7 +2084,8 @@ bool QDBusConnectionPrivate::disconnectSignal(const QString &service,
             entry.path == hook.path &&
             entry.signature == hook.signature &&
             entry.obj == hook.obj &&
-            entry.midx == hook.midx) {
+            entry.midx == hook.midx &&
+            entry.argumentMatch == hook.argumentMatch) {
             // no need to compare the parameters if it's the same slot
             disconnectSignal(it);
             return true;        // it was there
