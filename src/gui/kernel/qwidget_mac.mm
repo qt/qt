@@ -3463,7 +3463,9 @@ void QWidgetPrivate::hide_sys()
 
     QMacCocoaAutoReleasePool pool;
     if(q->isWindow()) {
+#ifdef QT_MAC_USE_COCOA
         setSubWindowStacking(false);
+#endif
         OSWindowRef window = qt_mac_window_for(q);
         if(qt_mac_is_macsheet(q)) {
 #ifndef QT_MAC_USE_COCOA
