@@ -46,7 +46,6 @@
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QPoint>
-#include <QMouseEvent>
 #include <private/qapplication_p.h>
 
 #include <qkbd_qws.h>
@@ -100,6 +99,7 @@ void QLinuxInputMouseHandler::readMouseData()
 {
     struct ::input_event buffer[32];
     int n = 0;
+    bool posChanged = false;
 
     forever {
         n = QT_READ(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
@@ -122,28 +122,34 @@ void QLinuxInputMouseHandler::readMouseData()
 
         bool unknown = false;
         if (data->type == EV_ABS) {
-            if (data->code == ABS_X) {
+            if (data->code == ABS_X && m_x != data->value) {
                 m_x = data->value;
-            } else if (data->code == ABS_Y) {
+                posChanged = true;
+            } else if (data->code == ABS_Y && m_y != data->value) {
                 m_y = data->value;
+                posChanged = true;
             } else {
                 unknown = true;
             }
         } else if (data->type == EV_REL) {
             if (data->code == REL_X) {
                 m_x += data->value;
+                posChanged = true;
             } else if (data->code == REL_Y) {
                 m_y += data->value;
+                posChanged = true;
             } else if (data->code == ABS_WHEEL) { // vertical scroll
                 // data->value: 1 == up, -1 == down
                 int delta = 120 * data->value;
-                QWheelEvent we(QPoint(m_x, m_y), QPoint(m_x, m_y), delta, m_buttons, Qt::NoModifier, Qt::Vertical);
-                QApplicationPrivate::handleWheelEvent(0, we);
+                QApplicationPrivate::handleWheelEvent(0, QPoint(m_x, m_y),
+                                                      QPoint(m_x, m_y),
+                                                      delta, Qt::Vertical);
             } else if (data->code == ABS_THROTTLE) { // horizontal scroll
                 // data->value: 1 == right, -1 == left
                 int delta = 120 * -data->value;
-                QWheelEvent we(QPoint(m_x, m_y), QPoint(m_x, m_y), delta, m_buttons, Qt::NoModifier, Qt::Horizontal);
-                QApplicationPrivate::handleWheelEvent(0, we);
+                QApplicationPrivate::handleWheelEvent(0, QPoint(m_x, m_y),
+                                                      QPoint(m_x, m_y),
+                                                      delta, Qt::Horizontal);
             } else {
                 unknown = true;
             }
@@ -161,17 +167,15 @@ void QLinuxInputMouseHandler::readMouseData()
             else
                 m_buttons &= ~button;
 
-            Qt::KeyboardModifiers modifiers = Qt::NoModifier; //###
-            QMouseEvent m(data->value ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease,
-                          QPoint(m_x, m_y), QPoint(m_x, m_y), button, m_buttons, modifiers);
-            QApplicationPrivate::handleMouseEvent(0, m);
+            QApplicationPrivate::handleMouseEvent(0, QPoint(m_x, m_y),
+                                                  QPoint(m_x, m_y), m_buttons);
         } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
+            if (!posChanged)
+                continue;
+            posChanged = false;
             QPoint pos(m_x, m_y);
 
-            Qt::KeyboardModifiers modifiers = Qt::NoModifier; //###
-            QMouseEvent m(QEvent::MouseMove, QPoint(m_x, m_y), QPoint(m_x, m_y),
-                          Qt::NoButton, m_buttons, modifiers);
-            QApplicationPrivate::handleMouseEvent(0, m);
+            QApplicationPrivate::handleMouseEvent(0, pos, pos, m_buttons);
 
             // pos = m_handler->transform(pos);
             //m_handler->limitToScreen(pos);

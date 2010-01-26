@@ -399,10 +399,6 @@ void QVNCServer::init(uint port)
     qvnc_cursor = 0;
 #endif
     encoder = 0;
-
-    eventTimer.setInterval(0);
-    eventTimer.setSingleShot(true);
-    connect(&eventTimer, SIGNAL(timeout()), this, SLOT(sendInputEvents()));
 }
 
 QVNCServer::~QVNCServer()
@@ -833,35 +829,6 @@ static bool buttonChange(Qt::MouseButtons before, Qt::MouseButtons after, Qt::Mo
     return false;
 }
 
-void QVNCServer::sendInputEvents()
-{
-    EventPair pair;
-    QMouseEvent *me;
-    QKeyEvent *ke;
-    QWheelEvent *we;
-
-    while(!eventList.isEmpty()) {
-        pair = eventList.takeFirst();
-        switch(pair.first) {
-        case MouseEvent:
-            me = static_cast<QMouseEvent *>(pair.second);
-            QApplicationPrivate::handleMouseEvent(0, *me);
-            delete me;
-            break;
-        case KeyboardEvent:
-            ke = static_cast<QKeyEvent *>(pair.second);
-            QApplicationPrivate::handleKeyEvent(0, ke);
-            delete ke;
-            break;
-        case WheelEvent:
-            we = static_cast<QWheelEvent *>(pair.second);
-            QApplicationPrivate::handleWheelEvent(0, *we);
-            delete we;
-            break;
-        }
-    }
-}
-
 void QVNCServer::pointerEvent()
 {
     QRfbPointerEvent ev;
@@ -870,7 +837,6 @@ void QVNCServer::pointerEvent()
 //        QWSServer::sendMouseEvent(offset + QPoint(ev.x, ev.y), ev.buttons);
 
 
-        EventPair pair;
         //qDebug() << "pointerEvent" << ev.x << ev.y << hex << ev.buttons;
         if (ev.wheelDirection == ev.WheelNone) {
             QEvent::Type type = QEvent::MouseMove;
@@ -878,10 +844,7 @@ void QVNCServer::pointerEvent()
             bool isPress;
             if (buttonChange(buttons, ev.buttons, &button, &isPress))
                 type = isPress ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
-            QMouseEvent * me = new QMouseEvent(type, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), button, ev.buttons, keymod);
-            pair.first = MouseEvent;
-            pair.second = me;
-            buttons = ev.buttons;
+            QApplicationPrivate::handleMouseEvent(0, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), ev.buttons);
         } else {
             // No buttons or motion reported at the same time as wheel events
             Qt::Orientation orientation;
@@ -890,13 +853,8 @@ void QVNCServer::pointerEvent()
             else
                 orientation = Qt::Vertical;
             int delta = 120 * ((ev.wheelDirection == ev.WheelLeft || ev.wheelDirection == ev.WheelUp) ? 1 : -1);
-            QWheelEvent *we  = new QWheelEvent(QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), delta, buttons, keymod, orientation);
-            pair.first = WheelEvent;
-            pair.second = we;
+            QApplicationPrivate::handleWheelEvent(0, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), delta, orientation);
         }
-        eventList.append(pair);
-        if (!eventTimer.isActive())
-            eventTimer.start();
         handleMsg = false;
     }
 }
@@ -921,13 +879,7 @@ void QVNCServer::keyEvent()
             QString str;
             if (ev.unicode && ev.unicode != 0xffff)
                 str = QString(ev.unicode);
-            QKeyEvent *keyEvent = new QKeyEvent(type, ev.keycode, keymod, str);
-            EventPair pair;
-            pair.first = KeyboardEvent;
-            pair.second = keyEvent;
-            eventList.append(pair);
-            if (!eventTimer.isActive())
-                eventTimer.start();
+            QApplicationPrivate::handleKeyEvent(0, type, ev.keycode, keymod, str);
         }
         handleMsg = false;
     }

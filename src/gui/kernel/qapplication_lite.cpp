@@ -43,9 +43,9 @@
 #include "qcolormap.h"
 #include "qpixmapcache.h"
 #if !defined(QT_NO_GLIB)
-#include "private/qeventdispatcher_glib_p.h"
+#include "qeventdispatcher_glib_lite_p.h"
 #endif
-#include "private/qeventdispatcher_unix_p.h"
+#include "qeventdispatcher_lite_p.h"
 #ifndef QT_NO_CURSOR
 #include "private/qcursor_p.h"
 #endif
@@ -75,6 +75,32 @@ int qt_last_x = 0;
 int qt_last_y = 0;
 QPointer<QWidget> qt_last_mouse_receiver = 0;
 
+QList<QApplicationPrivate::UserEvent *> QApplicationPrivate::userEventQueue;
+static Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+static Qt::MouseButtons buttons = Qt::NoButton;
+
+void QApplicationPrivate::processUserEvent(UserEvent *e)
+{
+    switch(e->type) {
+    case QEvent::MouseButtonDblClick: // if mouse event, calculate appropriate widget and local coordinates
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseMove:
+        QApplicationPrivate::processMouseEvent(static_cast<MouseEvent *>(e));
+        break;
+    case QEvent::Wheel:
+        QApplicationPrivate::processWheelEvent(static_cast<WheelEvent *>(e));
+        break;
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+        QApplicationPrivate::processKeyEvent(static_cast<KeyEvent *>(e));
+        break;
+    default:
+        qWarning() << "Unknown user input event type:" << e->type;
+        break;
+    }
+}
+
 QString QApplicationPrivate::appName() const
 {
     return QT_PREPEND_NAMESPACE(appName);
@@ -85,13 +111,13 @@ void QApplicationPrivate::createEventDispatcher()
     Q_Q(QApplication);
 #if !defined(QT_NO_GLIB)
     if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
-        eventDispatcher = new QEventDispatcherGlib(q);
+        eventDispatcher = new QLiteEventDispatcherGlib(q);
     else
 #endif
-    eventDispatcher = new QEventDispatcherUNIX(q);
+    eventDispatcher = new QEventDispatcherLite(q);
 }
 
-static bool qt_try_modal(QWidget *widget, const QEvent *event)
+static bool qt_try_modal(QWidget *widget, QEvent::Type type)
 {
     QWidget * top = 0;
 
@@ -101,7 +127,7 @@ static bool qt_try_modal(QWidget *widget, const QEvent *event)
     bool block_event  = false;
     bool paint_event = false;
 
-    switch (event->type()) {
+    switch (type) {
 #if 0
     case QEvent::Focus:
         if (!static_cast<QWSFocusEvent*>(event)->simpleData.get_focus)
@@ -520,22 +546,51 @@ void QApplicationPrivate::handleLeaveEvent(QWidget *tlw)
     qt_last_mouse_receiver = 0;
 }
 
-void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
+void QApplicationPrivate::processMouseEvent(MouseEvent *e)
 {
     // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
-
     static QWidget *implicit_mouse_grabber=0;
 
-    QPointer<QGraphicsSystemCursor> cursor = QGraphicsSystemCursor::getInstance();
-    if (cursor)
-        cursor->pointerEvent(ev);
+    QEvent::Type type;
+    // move first
+    Qt::MouseButtons stateChange = e->buttons ^ buttons;
+    if (e->globalPos != QPoint(qt_last_x, qt_last_y) && (stateChange != Qt::NoButton)) {
+        MouseEvent * newMouseEvent = new MouseEvent(e->tlw, e->localPos, e->globalPos, e->buttons);
+        userEventQueue.prepend(newMouseEvent); // just in case the move triggers a new event loop
+        stateChange = Qt::NoButton;
+    }
 
-    QPoint localPoint = ev.pos();
-    QPoint globalPoint = ev.globalPos();
-    QWidget *mouseWindow = tlw;
+    QPoint localPoint = e->localPos;
+    QPoint globalPoint = e->globalPos;
+    QWidget *mouseWindow = e->tlw;
 
-    qt_last_x = globalPoint.x();
-    qt_last_y = globalPoint.y();
+    Qt::MouseButton button = Qt::NoButton;
+
+
+    if (qt_last_x != globalPoint.x() || qt_last_y != globalPoint.y()) {
+        type = QEvent::MouseMove;
+        qt_last_x = globalPoint.x();
+        qt_last_y = globalPoint.y();
+    }
+    else { // check to see if a new button has been pressed/released
+        for (int check = Qt::LeftButton;
+             check <= Qt::XButton2;
+             check = check << 1) {
+            if (check & stateChange) {
+                button = Qt::MouseButton(check);
+                break;
+            }
+        }
+        if (button == Qt::NoButton) {
+            // Ignore mouse events that don't change the current state
+            return;
+        }
+        buttons = e->buttons;
+        if (button & e->buttons)
+            type = QEvent::MouseButtonPress;
+        else
+            type = QEvent::MouseButtonRelease;
+    }
 
     if (self->inPopupMode()) {
         //popup mouse handling is magical...
@@ -544,11 +599,11 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
         implicit_mouse_grabber = 0;
         //### how should popup mode and implicit mouse grab interact?
 
-    } else if (tlw && app_do_modal && !qt_try_modal(tlw, &ev) ) {
+    } else if (e->tlw && app_do_modal && !qt_try_modal(e->tlw, e->type) ) {
         //even if we're blocked by modality, we should deliver the mouse release event..
         //### this code is not completely correct: multiple buttons can be pressed simultaneously
-        if (!(implicit_mouse_grabber && ev.buttons() == Qt::NoButton)) {
-            qDebug() << "modal blocked mouse event to" << tlw;
+        if (!(implicit_mouse_grabber && buttons == Qt::NoButton)) {
+            qDebug() << "modal blocked mouse event to" << e->tlw;
             return;
         }
     }
@@ -561,7 +616,7 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     if (!mouseWindow && !implicit_mouse_grabber)
         mouseWindow = QApplication::desktop();
 
-    if (mouseWindow && mouseWindow != tlw) {
+    if (mouseWindow && mouseWindow != e->tlw) {
         //we did not get a sensible localPoint from the window system, so let's calculate it
         localPoint = mouseWindow->mapFromGlobal(globalPoint);
     }
@@ -576,7 +631,7 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     }
 
     //handle implicit mouse grab
-    if (ev.type() == QEvent::MouseButtonPress && !implicit_mouse_grabber) {
+    if (type == QEvent::MouseButtonPress && !implicit_mouse_grabber) {
         implicit_mouse_grabber = mouseWidget;
 
         Q_ASSERT(mouseWindow);
@@ -584,7 +639,7 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     } else if (implicit_mouse_grabber) {
         mouseWidget = implicit_mouse_grabber;
         mouseWindow = mouseWidget->window();
-        if (mouseWindow != tlw)
+        if (mouseWindow != e->tlw)
             localPoint = mouseWindow->mapFromGlobal(globalPoint);
     }
 
@@ -593,7 +648,7 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     //localPoint is local to mouseWindow, but it needs to be local to mouseWidget
     localPoint = mouseWidget->mapFrom(mouseWindow, localPoint);
 
-    if (ev.buttons() == Qt::NoButton) {
+    if (buttons == Qt::NoButton) {
         //qDebug() << "resetting mouse grabber";
         implicit_mouse_grabber = 0;
     }
@@ -608,25 +663,29 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
 
     // qDebug() << "sending mouse ev." << ev.type() << localPoint << globalPoint << ev.button() << ev.buttons() << mouseWidget << "mouse grabber" << implicit_mouse_grabber;
 
-    QMouseEvent e(ev.type(), localPoint, globalPoint, ev.button(), ev.buttons(), ev.modifiers());
-    QApplication::sendSpontaneousEvent(mouseWidget, &e);
+    QMouseEvent ev(type, localPoint, globalPoint, button, buttons, modifiers);
 
+    QPointer<QGraphicsSystemCursor> cursor = QGraphicsSystemCursor::getInstance();
+    if (cursor)
+        cursor->pointerEvent(ev);
+
+    QApplication::sendSpontaneousEvent(mouseWidget, &ev);
 }
 
 
 //### there's a lot of duplicated logic here -- refactoring required!
 
-void QApplicationPrivate::handleWheelEvent(QWidget *tlw, QWheelEvent &ev)
+void QApplicationPrivate::processWheelEvent(WheelEvent *e)
 {
 //    QPoint localPoint = ev.pos();
-    QPoint globalPoint = ev.globalPos();
+    QPoint globalPoint = e->globalPos;
 //    bool trustLocalPoint = !!tlw; //is there something the local point can be local to?
     QWidget *mouseWidget;
 
     qt_last_x = globalPoint.x();
     qt_last_y = globalPoint.y();
 
-     QWidget *mouseWindow = tlw;
+     QWidget *mouseWindow = e->tlw;
 
      // find the tlw if we didn't get it from the plugin
      if (!mouseWindow) {
@@ -638,7 +697,7 @@ void QApplicationPrivate::handleWheelEvent(QWidget *tlw, QWheelEvent &ev)
 
      mouseWidget = mouseWindow;
 
-     if (app_do_modal && !qt_try_modal(mouseWindow, &ev) ) {
+     if (app_do_modal && !qt_try_modal(mouseWindow, e->type) ) {
          qDebug() << "modal blocked wheel event" << mouseWindow;
          return;
      }
@@ -649,16 +708,16 @@ void QApplicationPrivate::handleWheelEvent(QWidget *tlw, QWheelEvent &ev)
          p = mouseWidget->mapFromGlobal(globalPoint);
      }
 
-     QWheelEvent e(p, globalPoint, ev.delta(), ev.buttons(), ev.modifiers(),
-                   ev.orientation());
-     QApplication::sendSpontaneousEvent(mouseWidget, &e);
+     QWheelEvent ev(p, globalPoint, e->delta, buttons, modifiers,
+                   e->orient);
+     QApplication::sendSpontaneousEvent(mouseWidget, &ev);
 }
 
 
 
 // Remember, Qt convention is:  keyboard state is state *before*
 
-void QApplicationPrivate::handleKeyEvent(QWidget *tlw, QKeyEvent *e)
+void QApplicationPrivate::processKeyEvent(KeyEvent *e)
 {
     QWidget *focusW = 0;
     if (self->inPopupMode()) {
@@ -668,7 +727,7 @@ void QApplicationPrivate::handleKeyEvent(QWidget *tlw, QKeyEvent *e)
     if (!focusW)
         focusW = QApplication::focusWidget();
     if (!focusW)
-        focusW = tlw;
+        focusW = e->tlw;
     if (!focusW)
         focusW = QApplication::activeWindow();
 
@@ -676,10 +735,12 @@ void QApplicationPrivate::handleKeyEvent(QWidget *tlw, QKeyEvent *e)
 
     if (!focusW)
         return;
-    if (app_do_modal && !qt_try_modal(focusW, e))
+    if (app_do_modal && !qt_try_modal(focusW, e->type))
         return;
 
-    QApplication::sendSpontaneousEvent(focusW, e);
+    modifiers = e->modifiers;
+    QKeyEvent ev(e->type, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
+    QApplication::sendSpontaneousEvent(focusW, &ev);
 }
 
 

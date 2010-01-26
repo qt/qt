@@ -68,7 +68,7 @@ public:
     unsigned long whitePixel() { return WhitePixel(display, screen); }
 
     bool handleEvent(XEvent *xe);
-    QImage grabWindow(Window w, int x, int y, int w, int h);
+    QImage grabWindow(Window window, int x, int y, int w, int h);
 
 public slots:
     void eventDispatcher();

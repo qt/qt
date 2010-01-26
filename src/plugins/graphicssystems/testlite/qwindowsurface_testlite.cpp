@@ -254,9 +254,10 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
                 bool hor = (((e->button == Button4 || e->button == Button5)
                              && (modifiers & Qt::AltModifier))
                             || (e->button == 6 || e->button == 7));
-                QWheelEvent we(QPoint(e->x, e->y), QPoint(e->x_root, e->y_root), delta,
-                               buttons, modifiers, hor ? Qt::Horizontal : Qt::Vertical);
-                QApplicationPrivate::handleWheelEvent(window(),we);
+                QApplicationPrivate::handleWheelEvent(window(),
+                                                      QPoint(e->x, e->y),
+                                                      QPoint(e->x_root, e->y_root),
+                                                      delta, hor ? Qt::Horizontal : Qt::Vertical);
             }
             return;
         }
@@ -264,18 +265,12 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
         }
     }
 
-    if (type == QEvent::MouseButtonPress && mousePoint != QPoint(e->x_root, e->y_root)) {
-        //we've missed a mouse move event somewhere (maybe because we
-        //haven't implemented mouse tracking yet); let's synthesize it.
-        QMouseEvent me(QEvent::MouseMove, QPoint(e->x, e->y), QPoint(e->x_root, e->y_root),
-                       Qt::NoButton, buttons, modifiers);
-        QApplicationPrivate::handleMouseEvent(window(), me);
-    }
-
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
-    QMouseEvent me(type, QPoint(e->x, e->y), QPoint(e->x_root, e->y_root), button, buttons, modifiers);
-    QApplicationPrivate::handleMouseEvent(window(), me);
+    QApplicationPrivate::handleMouseEvent(window(), QPoint(e->x, e->y),
+                                          QPoint(e->x_root, e->y_root),
+                                          buttons);
+
     mousePoint = QPoint(e->x_root, e->y_root);
 }
 
@@ -587,14 +582,12 @@ void QTestLiteWindowSurface::handleKeyEvent(QEvent::Type type, void *ev)
 //    qDebug() << "lookup: " << hex << keySym << qtcode << "mod" << modifiers;
 
     if (qtcode) {
-        QKeyEvent keyEvent(type, qtcode, modifiers);
-        QApplicationPrivate::handleKeyEvent(window(), &keyEvent);
+        QApplicationPrivate::handleKeyEvent(window(), type, qtcode, modifiers);
     } else if (chars[0]) {
         int qtcode = chars.toUpper()[0]; //Not exactly right...
 	if (modifiers & Qt::ControlModifier && qtcode < ' ')
 	  qtcode = chars[0] + '@';
-        QKeyEvent keyEvent(type, qtcode, modifiers, QString::fromLatin1(chars));
-        QApplicationPrivate::handleKeyEvent(window(), &keyEvent);
+        QApplicationPrivate::handleKeyEvent(window(), type, qtcode, modifiers, QString::fromLatin1(chars));
     } else {
         qWarning() << "unknown X keycode" << hex << e->keycode << keySym;
     }

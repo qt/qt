@@ -526,11 +526,6 @@ private:
 
     QRfbEncoder *encoder;
     QVNCCursor *cursor;
-
-    enum EventType { MouseEvent, KeyboardEvent, WheelEvent };
-    QTimer eventTimer;
-    typedef QPair<EventType, QInputEvent *> EventPair;
-    QList<EventPair> eventList;
 };
 
 

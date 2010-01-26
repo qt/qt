@@ -195,7 +195,8 @@ embedded {
 embedded_lite {
 	HEADERS += \
 		kernel/qgenericpluginfactory_lite.h \
-		kernel/qgenericplugin_lite.h
+                kernel/qgenericplugin_lite.h \
+                kernel/qeventdispatcher_lite_p.h
 		
 	SOURCES += \
 		kernel/qapplication_lite.cpp \
@@ -207,7 +208,17 @@ embedded_lite {
 		kernel/qgenericplugin_lite.cpp \
 		kernel/qkeymapper_qws.cpp \
 		kernel/qsound_lite.cpp \
-		kernel/qwidget_lite.cpp
+                kernel/qwidget_lite.cpp \
+                kernel/qeventdispatcher_lite.cpp
+
+        contains(QT_CONFIG, glib) {
+            SOURCES += \
+		kernel/qeventdispatcher_glib_lite.cpp
+            HEADERS += \
+                kernel/qeventdispatcher_glib_lite_p.h
+            QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
+            LIBS_PRIVATE +=$$QT_LIBS_GLIB
+	}
 }
 
 !embedded:!embedded_lite:!x11:mac {
