@@ -59,8 +59,6 @@ public:
 private slots:
     void good_data();
     void good();
-    void commandline_data();
-    void commandline();
 #if CHECK_SIMTEXTH
     void simtexth();
     void simtexth_data();
@@ -301,45 +299,6 @@ void tst_lupdate::good()
 
     QString expectedFile = generatedtsfile + QLatin1String(".result");
     doCompare(generatedtsfile, expectedFile, false);
-}
-
-void tst_lupdate::commandline_data()
-{
-    QTest::addColumn<QString>("currentPath");
-    QTest::addColumn<QString>("commandline");
-    QTest::addColumn<QString>("generatedtsfile");
-    QTest::addColumn<QString>("expectedtsfile");
-
-    QTest::newRow("Recursive scan") << QString("recursivescan")
-       << QString(". -ts foo.ts") << QString("foo.ts") << QString("foo.ts.result");
-    QTest::newRow("Deep path argument") << QString("recursivescan")
-       << QString("sub/finddialog.cpp -ts bar.ts") << QString("bar.ts") << QString("bar.ts.result");
-}
-
-void tst_lupdate::commandline()
-{
-    QFETCH(QString, currentPath);
-    QFETCH(QString, commandline);
-    QFETCH(QString, generatedtsfile);
-    QFETCH(QString, expectedtsfile);
-
-    QString generated =
-        m_basePath + currentPath + QLatin1Char('/') + generatedtsfile;
-    QFile gen(generated);
-    if (gen.exists())
-        QVERIFY(gen.remove());
-    QProcess proc;
-    proc.setWorkingDirectory(m_basePath + currentPath);
-    proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.start(m_cmdLupdate + " -silent " + commandline, QIODevice::ReadWrite | QIODevice::Text);
-    QVERIFY2(proc.waitForFinished(5000), qPrintable(commandline));
-    QVERIFY2(proc.exitStatus() == QProcess::NormalExit,
-             "\"lupdate -silent " + commandline.toLatin1() + "\" crashed\n" + proc.readAll());
-    QVERIFY2(!proc.exitCode(),
-             "\"lupdate -silent " + commandline.toLatin1() + "\" exited with code " +
-             QByteArray::number(proc.exitCode()) + "\n" + proc.readAll());
-
-    doCompare(generated, m_basePath + currentPath + QLatin1Char('/') + expectedtsfile, false);
 }
 
 #if CHECK_SIMTEXTH
