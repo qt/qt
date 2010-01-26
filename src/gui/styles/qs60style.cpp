@@ -2964,11 +2964,13 @@ void QS60Style::unpolish(QWidget *widget)
     if (widget)
         widget->setPalette(QPalette());
 
-#ifndef QT_NO_PROGRESSBAR
+#if defined(Q_WS_S60) && !defined(QT_NO_PROGRESSBAR)
     if (QProgressBar *bar = qobject_cast<QProgressBar *>(widget)) {
         widget->removeEventFilter(this);
         d->m_bars.removeAll(bar);
     }
+#else
+    Q_UNUSED(d)
 #endif
     QCommonStyle::unpolish(widget);
 }
