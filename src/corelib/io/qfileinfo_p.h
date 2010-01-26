@@ -81,12 +81,14 @@ public:
            CachedSize =0x08 };
     struct Data {
         inline Data()
-            : ref(1), fileEngine(0), cache_enabled(1), fileSize(0)
-        { clear(); }
+            : ref(1), fileEngine(0),
+              cachedFlags(0), cache_enabled(1), fileFlags(0), fileSize(0)
+        {}
         inline Data(const Data &copy)
             : ref(1), fileEngine(QAbstractFileEngine::create(copy.fileName)),
-              fileName(copy.fileName), cache_enabled(copy.cache_enabled), fileSize(copy.fileSize)
-        { clear(); }
+              fileName(copy.fileName),
+              cachedFlags(0), cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
+        {}
         inline ~Data() { delete fileEngine; }
         inline void clearFlags() {
             fileFlags = 0;
