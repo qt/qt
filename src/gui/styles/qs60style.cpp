@@ -70,6 +70,7 @@
 #include "qformlayout.h"
 #include "qradiobutton.h"
 #include "qcheckbox.h"
+#include "qdesktopwidget.h"
 #include "qprogressbar.h"
 
 #include "private/qtoolbarextension_p.h"
