@@ -442,6 +442,10 @@ int main(int argc, char **argv)
         }
     } // for args
 
+    if (!proFiles.isEmpty() && !sourceFiles.isEmpty()) {
+        qWarning("lupdate error: Both project and source files specified.\n");
+        return 1;
+    }
     if (numFiles == 0) {
         printUsage();
         return 1;
