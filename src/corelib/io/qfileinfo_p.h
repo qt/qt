@@ -54,6 +54,9 @@
 //
 
 #include "qfileinfo.h"
+#include "qabstractfileengine.h"
+#include "qdatetime.h"
+#include "qatomic.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -94,7 +97,7 @@ public:
             fileFlags = 0;
             cachedFlags = 0;
             if (fileEngine)
-                (void)fileEngine->fileFlags(QFSFileEngine::Refresh);
+                (void)fileEngine->fileFlags(QAbstractFileEngine::Refresh);
         }
         inline void clear() {
             clearFlags();

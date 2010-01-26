@@ -41,11 +41,8 @@
 
 #include "qplatformdefs.h"
 #include "qfileinfo.h"
-#include "qdatetime.h"
-#include "qabstractfileengine.h"
 #include "qfsfileengine_p.h"
 #include "qglobal.h"
-#include "qatomic.h"
 #include "qhash.h"
 #include "qdir.h"
 #include "qfileinfo_p.h"
