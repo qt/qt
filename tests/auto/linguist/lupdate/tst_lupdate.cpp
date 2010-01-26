@@ -245,10 +245,9 @@ void tst_lupdate::good()
 
     qDebug() << "Checking...";
 
-    QString generatedtsfile(dir + QLatin1String("/project.ts"));
-
-    // look for a command
+    QStringList generatedtsfiles(dir + QLatin1String("/project.ts"));
     QString lupdatecmd;
+
     QFile file(dir + "/lupdatecmd");
     if (file.exists()) {
         QVERIFY2(file.open(QIODevice::ReadOnly | QIODevice::Text), qPrintable(file.fileName()));
@@ -262,16 +261,21 @@ void tst_lupdate::good()
                 break;
             } else if (cmdstring.startsWith("TRANSLATION:")) {
                 cmdstring.remove(0, 12);
-                generatedtsfile = dir + QLatin1Char('/') + cmdstring.trimmed();
+                generatedtsfiles.clear();
+                foreach (const QByteArray &s, cmdstring.split(' '))
+                    if (!s.isEmpty())
+                        generatedtsfiles << dir + QLatin1Char('/') + s;
             }
         }
         file.close();
     }
 
-    QFile::remove(generatedtsfile);
-    QString beforetsfile = generatedtsfile + QLatin1String(".before");
-    if (QFile::exists(beforetsfile))
-        QVERIFY2(QFile::copy(beforetsfile, generatedtsfile), qPrintable(beforetsfile));
+    foreach (const QString &ts, generatedtsfiles) {
+        QFile::remove(ts);
+        QString beforetsfile = ts + QLatin1String(".before");
+        if (QFile::exists(beforetsfile))
+            QVERIFY2(QFile::copy(beforetsfile, ts), qPrintable(beforetsfile));
+    }
 
     if (lupdatecmd.isEmpty())
         lupdatecmd = QLatin1String("project.pro");
@@ -299,8 +303,8 @@ void tst_lupdate::good()
             return;
     }
 
-    QString expectedFile = generatedtsfile + QLatin1String(".result");
-    doCompare(generatedtsfile, expectedFile, false);
+    foreach (const QString &ts, generatedtsfiles)
+        doCompare(ts, ts + QLatin1String(".result"), false);
 }
 
 void tst_lupdate::commandline_data()
