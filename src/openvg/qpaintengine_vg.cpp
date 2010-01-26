@@ -50,7 +50,6 @@
 #endif
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qdrawhelper_p.h>
-#include <QtGui/private/qtextureglyphcache_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qpainterpath_p.h>
@@ -87,7 +86,8 @@ public:
     QVGFontGlyphCache();
     ~QVGFontGlyphCache();
 
-    void cacheGlyphs(QVGPaintEnginePrivate *d, QFontEngine *fontEngine, glyph_t *g, int count);
+    void cacheGlyphs(QVGPaintEnginePrivate *d, QFontEngine *fontEngine, const glyph_t *g, int count);
+
     void setScaleFromText(const QFont &font, QFontEngine *fontEngine);
 
     VGFont font;
@@ -3142,9 +3142,9 @@ void QVGFontGlyphCache::setScaleFromText(const QFont &font, QFontEngine *fontEng
     scaleX = scaleY = static_cast<VGfloat>(pixelSize / emSquare);
 }
 
-void QVGFontGlyphCache::cacheGlyphs
-        (QVGPaintEnginePrivate *d, QFontEngine *fontEngine,
-         glyph_t *g, int count);
+void QVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
+                                    QFontEngine *fontEngine,
+                                    const glyph_t *g, int count)
 {
     VGfloat origin[2];
     VGfloat escapement[2];
@@ -3233,7 +3233,8 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     ti.fontEngine->getGlyphPositions
         (ti.glyphs, matrix, ti.flags, glyphs, positions);
 
-    drawCachedGlyphs(glyphs.size(), glyphs.data(), positions.data(), ti.font, ti.fontEngine, p);
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p))
+        QPaintEngineEx::drawTextItem(p, textItem);    
 #else
     // OpenGL 1.0 does not have support for VGFont and glyphs,
     // so fall back to the default Qt path stroking algorithm.
@@ -3241,15 +3242,17 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 #endif
 }
 
-void QVGPaintengine::drawStaticText(QStaticTextItem *textItem)
+void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
     drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine,
                      QPointF(0, 0));
 }
 
- void QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
+ bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
                                        QFontEngine *fontEngine, const QPointF &p)
  {
+    Q_D(QVGPaintEngine);
+
     // Find the glyph cache for this font.
     QVGFontCache::ConstIterator it = d->fontCache.constFind(fontEngine);
     QVGFontGlyphCache *glyphCache;
@@ -3259,9 +3262,8 @@ void QVGPaintengine::drawStaticText(QStaticTextItem *textItem)
         glyphCache = new QVGFontGlyphCache();
         if (glyphCache->font == VG_INVALID_HANDLE) {
             qWarning("QVGPaintEngine::drawTextItem: OpenVG fonts are not supported by the OpenVG engine");
-            delete glyphCache;
-            QPaintEngineEx::drawTextItem(p, textItem);
-            return;
+            delete glyphCache;            
+            return false;
         }
         glyphCache->setScaleFromText(font, fontEngine);
         d->fontCache.insert(fontEngine, glyphCache);
@@ -3280,7 +3282,7 @@ void QVGPaintengine::drawStaticText(QStaticTextItem *textItem)
     d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, glyphTransform);
 
     // Add the glyphs from the text item into the glyph cache.
-    glyphCache->cacheGlyphs(d, fontEngine, glyphs.constData(), glyphs.size());
+    glyphCache->cacheGlyphs(d, fontEngine, glyphs, numGlyphs);
 
     // Set the glyph drawing origin.
     VGfloat origin[2];
@@ -3299,8 +3301,10 @@ void QVGPaintengine::drawStaticText(QStaticTextItem *textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs.data(),
+    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs,
                  NULL, NULL, VG_FILL_PATH, VG_TRUE);
+
+    return true;
 }
 
 void QVGPaintEngine::setState(QPainterState *s)
