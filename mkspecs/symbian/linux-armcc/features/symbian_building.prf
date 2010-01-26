@@ -1,6 +1,10 @@
 QMAKE_CFLAGS += $$QMAKE_CFLAGS.ARMCC
 QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS.ARMCC
 
+symbianObjdir=$$OBJECTS_DIR
+isEmpty(symbianObjdir) {
+    symbianObjdir = .
+}
 symbianDestdir=$$DESTDIR
 isEmpty(symbianDestdir) {
     symbianDestdir = .
@@ -74,10 +78,10 @@ isEmpty(TARGET.UID2):TARGET.UID2 = 0x00000000
 contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     !isEmpty($$QMAKE_POST_LINK):QMAKE_POST_LINK += &&
     QMAKE_POST_LINK += $$QMAKE_MOVE $$symbianDestdir/$${TARGET}.dll $$symbianDestdir/$${TARGET}.sym
-    QMAKE_POST_LINK += && elf2e32  --version=$$decVersion --sid=$$TARGET.SID  --uid1=0x10000079 --uid2=$$TARGET.UID2 --uid3=$$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 --stack=0x00014000 --capability=None --fpu=softvfp --targettype=DLL --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.dll --dso=$$symbianDestdir/$${TARGET}.dso --defoutput=$$OBJECTS_DIR/$${TARGET}.def --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged
+    QMAKE_POST_LINK += && elf2e32  --version=$$decVersion --sid=$$TARGET.SID  --uid1=0x10000079 --uid2=$$TARGET.UID2 --uid3=$$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 --stack=0x00014000 --capability=None --fpu=softvfp --targettype=DLL --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.dll --dso=$$symbianDestdir/$${TARGET}.dso --defoutput=$$symbianObjdir/$${TARGET}.def --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.dso
-    QMAKE_CLEAN += $${OBJECTS_DIR}/$${TARGET}.def
+    QMAKE_CLEAN += $${symbianObjdir}/$${TARGET}.def
 
     QMAKE_LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
 
