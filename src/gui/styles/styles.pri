@@ -23,10 +23,12 @@ SOURCES += \
         styles/qstylesheetstyle.cpp \
         styles/qstylesheetstyle_default.cpp
 
-!wince* {
-        RESOURCES += styles/qstyle.qrc
+wince* {
+    RESOURCES += styles/qstyle_wince.qrc
+} else:symbian {
+    RESOURCES += styles/qstyle_s60.qrc
 } else {
-        RESOURCES += styles/qstyle_wince.qrc
+    RESOURCES += styles/qstyle.qrc
 }
 
 contains( styles, all ) {
