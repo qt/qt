@@ -1985,7 +1985,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 */
 void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    Q_D(const QS60Style);
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     bool commonStyleDraws = false;
 
@@ -2021,8 +2020,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 QS60StyleEnums::SP_QgnIndiCheckboxOn : QS60StyleEnums::SP_QgnIndiCheckboxOff;
             painter->save();
 
-            QColor themeColor = QS60StylePrivate::themePalette()->windowText().color();
-            QColor windowTextColor = option->palette.windowText().color();
+            const QColor themeColor = QS60StylePrivate::themePalette()->windowText().color();
+            const QColor windowTextColor = option->palette.windowText().color();
 
             if (themeColor != windowTextColor)
                 painter->setPen(windowTextColor);
@@ -2069,8 +2068,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             buttonRect.adjust(0, -newY, -1, -newY);
 
             painter->save();
-            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnTextColors, 6, option);
-            QColor buttonTextColor = option->palette.buttonText().color();
+            const QColor themeColor = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, option);
+            const QColor buttonTextColor = option->palette.buttonText().color();
             if (themeColor != buttonTextColor)
                 painter->setPen(buttonTextColor);
             else
@@ -3002,9 +3001,8 @@ void QS60Style::unpolish(QApplication *application)
  */
 bool QS60Style::event(QEvent *e)
 {
-    Q_D(QS60Style);
-
 #ifdef QT_KEYPAD_NAVIGATION
+    Q_D(QS60Style);
     const QEvent::Type eventType = e->type();
     if ((eventType == QEvent::FocusIn ||
          eventType == QEvent::FocusOut ||
