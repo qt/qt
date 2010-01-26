@@ -287,7 +287,7 @@ void tst_lupdate::good()
              "\"lupdate " + lupdatecmd.toLatin1() + "\" crashed\n" + output);
     QVERIFY2(!proc.exitCode(),
              "\"lupdate " + lupdatecmd.toLatin1() + "\" exited with code " +
-             QByteArray::number(proc.exitCode()) + "\n" + proc.readAll());
+             QByteArray::number(proc.exitCode()) + "\n" + output);
 
     // If the file expectedoutput.txt exists, compare the
     // console output with the content of that file
