@@ -78,6 +78,7 @@ public:
     uint getFileFlags(QAbstractFileEngine::FileFlags) const;
     QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
     QString getFileName(QAbstractFileEngine::FileName) const;
+    QString getFileOwner(QAbstractFileEngine::FileOwner own) const;
 
     enum { CachedFileFlags=0x01, CachedLinkTypeFlag=0x02, CachedBundleTypeFlag=0x04,
            CachedMTime=0x10, CachedCTime=0x20, CachedATime=0x40,
@@ -103,12 +104,15 @@ public:
             clearFlags();
             for (int i = QAbstractFileEngine::NFileNames - 1 ; i >= 0 ; --i)
                 fileNames[i].clear();
+            fileOwners[1].clear();
+            fileOwners[0].clear();
         }
         mutable QAtomicInt ref;
 
         QAbstractFileEngine *fileEngine;
         mutable QString fileName;
         mutable QString fileNames[QAbstractFileEngine::NFileNames];
+        mutable QString fileOwners[2];
 
         mutable uint cachedFlags : 31;
         mutable uint cache_enabled : 1;

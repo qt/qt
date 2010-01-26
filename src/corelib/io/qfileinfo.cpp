@@ -137,6 +137,18 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
     return ret;
 }
 
+QString QFileInfoPrivate::getFileOwner(QAbstractFileEngine::FileOwner own) const
+{
+    if (data->cache_enabled && !data->fileOwners[(int)own].isNull())
+        return data->fileOwners[(int)own];
+    QString ret = data->fileEngine->owner(own);
+    if (ret.isNull())
+        ret = QLatin1String("");
+    if (data->cache_enabled)
+        data->fileOwners[(int)own] = ret;
+    return ret;
+}
+
 uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) const
 {
     // We split the testing into tests for for LinkType, BundleType, PermsMask
@@ -1089,7 +1101,7 @@ QString QFileInfo::owner() const
     Q_D(const QFileInfo);
     if(!d->data->fileEngine)
         return QLatin1String("");
-    return d->data->fileEngine->owner(QAbstractFileEngine::OwnerUser);
+    return d->getFileOwner(QAbstractFileEngine::OwnerUser);
 }
 
 /*!
@@ -1125,7 +1137,7 @@ QString QFileInfo::group() const
     Q_D(const QFileInfo);
     if(!d->data->fileEngine)
         return QLatin1String("");
-    return d->data->fileEngine->owner(QAbstractFileEngine::OwnerGroup);
+    return d->getFileOwner(QAbstractFileEngine::OwnerGroup);
 }
 
 /*!
