@@ -270,6 +270,7 @@ private slots:
     void initialFocus_data();
     void initialFocus();
     void polishItems();
+    void polishItems2();
     void isActive();
     void siblingIndexAlwaysValid();
 
@@ -3942,14 +3943,23 @@ void tst_QGraphicsScene::initialFocus()
 class PolishItem : public QGraphicsTextItem
 {
 public:
-    PolishItem(QGraphicsItem *parent = 0) : QGraphicsTextItem(parent) { }
+    PolishItem(QGraphicsItem *parent = 0)
+        : QGraphicsTextItem(parent), polished(false), deleteChildrenInPolish(true), addChildrenInPolish(false) { }
 
+    bool polished;
+    bool deleteChildrenInPolish;
+    bool addChildrenInPolish;
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant& value)
     {
         if (change == ItemVisibleChange) {
-            if (value.toBool())
+            polished = true;
+            if (deleteChildrenInPolish)
                 qDeleteAll(childItems());
+            if (addChildrenInPolish) {
+                for (int i = 0; i < 10; ++i)
+                    new PolishItem(this);
+            }
         }
         return QGraphicsItem::itemChange(change, value);
     }
@@ -3964,6 +3974,35 @@ void tst_QGraphicsScene::polishItems()
     Q_UNUSED(child)
     // test that QGraphicsScenePrivate::_q_polishItems() doesn't crash
     QMetaObject::invokeMethod(&scene,"_q_polishItems");
+}
+
+void tst_QGraphicsScene::polishItems2()
+{
+    QGraphicsScene scene;
+    PolishItem *item = new PolishItem;
+    item->addChildrenInPolish = true;
+    item->deleteChildrenInPolish = true;
+    // These children should be deleted in the polish.
+    for (int i = 0; i < 20; ++i)
+        new PolishItem(item);
+    scene.addItem(item);
+
+    // Wait for the polish event to be delivered.
+    QVERIFY(!item->polished);
+    QApplication::sendPostedEvents(&scene, QEvent::MetaCall);
+    QVERIFY(item->polished);
+
+    // We deleted the children we added above, but we also
+    // added 10 new children. These should be polished in the next
+    // event loop iteration.
+    QList<QGraphicsItem *> children = item->childItems();
+    QCOMPARE(children.count(), 10);
+    foreach (QGraphicsItem *child, children)
+        QVERIFY(!static_cast<PolishItem *>(child)->polished);
+
+    QApplication::sendPostedEvents(&scene, QEvent::MetaCall);
+    foreach (QGraphicsItem *child, children)
+        QVERIFY(static_cast<PolishItem *>(child)->polished);
 }
 
 void tst_QGraphicsScene::isActive()

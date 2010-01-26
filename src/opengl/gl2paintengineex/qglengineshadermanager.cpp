@@ -184,6 +184,9 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
     simpleShaderProg->addShader(vertexShader);
     simpleShaderProg->addShader(fragShader);
     simpleShaderProg->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
+    simpleShaderProg->bindAttributeLocation("pmvMatrix1", QT_PMV_MATRIX_1_ATTR);
+    simpleShaderProg->bindAttributeLocation("pmvMatrix2", QT_PMV_MATRIX_2_ATTR);
+    simpleShaderProg->bindAttributeLocation("pmvMatrix3", QT_PMV_MATRIX_3_ATTR);
     simpleShaderProg->link();
     if (!simpleShaderProg->isLinked()) {
         qCritical() << "Errors linking simple shader:"
@@ -324,6 +327,11 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
             newProg->program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
         if (newProg->useOpacityAttribute)
             newProg->program->bindAttributeLocation("opacityArray", QT_OPACITY_ATTR);
+        if (newProg->usePmvMatrix) {
+            newProg->program->bindAttributeLocation("pmvMatrix1", QT_PMV_MATRIX_1_ATTR);
+            newProg->program->bindAttributeLocation("pmvMatrix2", QT_PMV_MATRIX_2_ATTR);
+            newProg->program->bindAttributeLocation("pmvMatrix3", QT_PMV_MATRIX_3_ATTR);
+        }
 
         newProg->program->link();
         if (!newProg->program->isLinked()) {
@@ -424,7 +432,6 @@ GLuint QGLEngineShaderManager::getUniformLocation(Uniform id)
         "patternColor",
         "globalOpacity",
         "depth",
-        "pmvMatrix",
         "maskTexture",
         "fragmentColor",
         "linearData",
@@ -743,6 +750,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     }
     requiredProgram.useTextureCoords = texCoords;
     requiredProgram.useOpacityAttribute = (opacityMode == AttributeOpacity);
+    requiredProgram.usePmvMatrix = true;
 
     // At this point, requiredProgram is fully populated so try to find the program in the cache
     currentShaderProg = sharedShaders->findProgramInCache(requiredProgram);
