@@ -44,6 +44,7 @@
 
 #include <QtCore/qsize.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qmetatype.h>
 
 #include <QtGui/qtransform.h>
 #include <QtGui/qfont.h>
