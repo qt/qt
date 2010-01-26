@@ -2582,7 +2582,7 @@ For example:
 
     \section1 QMAKE_LIBS_THREAD
 
-    \e {This is used on Unix platforms only.}
+    \e {This is used on Unix and Symbian platforms only.}
 
     This variable contains all libraries that need to be linked against
     when building a multi-threaded application.  The
