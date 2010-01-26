@@ -1088,7 +1088,7 @@ CentralWidget::setSourceFromSearch(const QUrl &url)
 {
     setSource(url);
 #if defined(QT_NO_WEBKIT)
-    highlightSearchTerms()
+    highlightSearchTerms();
 #else
     connect(currentHelpViewer(), SIGNAL(loadFinished(bool)), this,
         SLOT(highlightSearchTerms()));
@@ -1100,7 +1100,7 @@ CentralWidget::setSourceFromSearchInNewTab(const QUrl &url)
 {
     setSourceInNewTab(url);
 #if defined(QT_NO_WEBKIT)
-    highlightSearchTerms()
+    highlightSearchTerms();
 #else
     connect(currentHelpViewer(), SIGNAL(loadFinished(bool)), this,
         SLOT(highlightSearchTerms()));
