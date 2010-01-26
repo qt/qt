@@ -3989,7 +3989,7 @@ void tst_QGraphicsScene::polishItems2()
 
     // Wait for the polish event to be delivered.
     QVERIFY(!item->polished);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(&scene, QEvent::MetaCall);
     QVERIFY(item->polished);
 
     // We deleted the children we added above, but we also
@@ -4000,7 +4000,7 @@ void tst_QGraphicsScene::polishItems2()
     foreach (QGraphicsItem *child, children)
         QVERIFY(!static_cast<PolishItem *>(child)->polished);
 
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(&scene, QEvent::MetaCall);
     foreach (QGraphicsItem *child, children)
         QVERIFY(static_cast<PolishItem *>(child)->polished);
 }
