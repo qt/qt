@@ -2398,6 +2398,24 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
                 sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
             break;
+#ifndef QT_NO_COMBOBOX
+        case CT_ComboBox:
+            if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
+               const int frameWidth = cmb->frame ? pixelMetric(PM_ComboBoxFrameWidth, opt, widget) * 2 : 0;
+               const int textMargins = 2*(pixelMetric(PM_FocusFrameHMargin) + 1);
+               const int smallestExtraWidth = 23;
+               // QItemDelegate::sizeHint expands the textMargins two times, thus the 2*textMargins...
+               const int extra = 
+                   qMax(smallestExtraWidth, 2*textMargins + pixelMetric(PM_ScrollBarExtent, opt, widget));
+               sz = QSize(sz.width() + frameWidth + extra, sz.height() + frameWidth);
+               int maxScreenWidth = QApplication::desktop()->availableGeometry().size().width();
+               if (sz.width() > maxScreenWidth) {
+                   maxScreenWidth = maxScreenWidth - (extra + frameWidth);
+                   sz.setWidth(maxScreenWidth);
+               }
+           }
+           break;
+#endif
         default:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             break;
