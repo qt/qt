@@ -11,8 +11,12 @@ contains(QT_CONFIG, corewlan) {
     }
 }
 
-HEADERS += qcorewlanengine.h
-SOURCES += qcorewlanengine.mm main.cpp
+HEADERS += qcorewlanengine.h \
+           ../qnetworksession_impl.h
+
+SOURCES += main.cpp \
+           qcorewlanengine.mm \
+           ../qnetworksession_impl.cpp
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer

@@ -73,6 +73,8 @@ public:
 
     QNetworkConfigurationManager::Capabilities capabilities() const;
 
+    QNetworkSessionPrivate *createSessionBackend();
+
     static bool getAllScInterfaces();
 
 private Q_SLOTS:
