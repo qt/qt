@@ -18,10 +18,11 @@
 [0x1028315F],0,0,0,{"S60ProductID"}
  
 ; Executable and default resource files
-"MyApp.exe"    - "!:\sys\bin\MyApp.exe"
+"wiggly.exe"    - "!:\sys\bin\wiggly.exe"
 "QtCore.dll"   - "!:\sys\bin\QtCore.dll"
 "QtGui.dll"    - "!:\sys\bin\QtGui.dll"
 ; Currently you need to get this from a Windows build, but there are some
 ; precompiled ones in this directory for testing.
+"../src/gui/.rcc/debug-shared/s60main.rsc"    - "!:\resource\apps\s60main.rsc"
 "wiggly.rsc"    - "!:\resource\apps\wiggly.rsc"
 "wiggly_reg.rsc"    - "!:\private\10003a3f\import\apps\wiggly_reg.rsc"
