@@ -204,25 +204,18 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 {
     if (!data->cache_enabled)
         data->clearFlags();
-    if(request == QAbstractFileEngine::CreationTime) {
-        if(data->getCachedFlag(CachedCTime))
-            return data->fileTimes[request];
-        data->setCachedFlag(CachedCTime);
-        return (data->fileTimes[request] = data->fileEngine->fileTime(request));
+    uint cf;
+    if (request == QAbstractFileEngine::CreationTime)
+        cf = CachedCTime;
+    else if (request == QAbstractFileEngine::ModificationTime)
+        cf = CachedMTime;
+    else
+        cf = CachedATime;
+    if (!data->getCachedFlag(cf)) {
+        data->fileTimes[request] = data->fileEngine->fileTime(request);
+        data->setCachedFlag(cf);
     }
-    if(request == QAbstractFileEngine::ModificationTime) {
-        if(data->getCachedFlag(CachedMTime))
-            return data->fileTimes[request];
-        data->setCachedFlag(CachedMTime);
-        return (data->fileTimes[request] = data->fileEngine->fileTime(request));
-    }
-    if(request == QAbstractFileEngine::AccessTime) {
-        if(data->getCachedFlag(CachedATime))
-            return data->fileTimes[request];
-        data->setCachedFlag(CachedATime);
-        return (data->fileTimes[request] = data->fileEngine->fileTime(request));
-    }
-    return data->fileTimes[0]; //cannot really happen
+    return data->fileTimes[request];
 }
 
 //************* QFileInfo
