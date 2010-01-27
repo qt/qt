@@ -227,6 +227,10 @@ void onApplicationChangedActivation( bool activated );
 
 static void qt_mac_read_fontsmoothing_settings()
 {
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool2;
+#endif
+    
     NSInteger appleFontSmoothing = [[NSUserDefaults standardUserDefaults] integerForKey:@"AppleFontSmoothing"];
     qt_applefontsmoothing_enabled = (appleFontSmoothing > 0);
 }

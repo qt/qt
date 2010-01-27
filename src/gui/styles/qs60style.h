@@ -94,6 +94,9 @@ protected Q_SLOTS:
     QIcon standardIconImplementation(
             StandardPixmap standardIcon, const QStyleOption * option = 0, const QWidget * widget = 0 ) const;
 
+protected:
+    void timerEvent(QTimerEvent *event);
+    bool eventFilter(QObject *o, QEvent *e);
 private:
     Q_DISABLE_COPY(QS60Style)
     friend class QStyleFactory;
