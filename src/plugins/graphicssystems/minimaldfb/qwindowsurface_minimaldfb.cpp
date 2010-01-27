@@ -66,7 +66,7 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *sc
     qDebug() << "WindowSurface format " << QDirectFbConvenience::imageFormatFromSurfaceFormat(format,caps);
 
 
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
+    blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
     m_pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
     m_pmdata->setBlittable(blitter);
     m_pixmap = new QPixmap(m_pmdata);
@@ -88,7 +88,7 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
     Q_UNUSED(widget);
     Q_UNUSED(offset);
 
-    m_dfbSurface->Unlock(m_dfbSurface);
+    blitter->unlock();
     const quint8 windowOpacity = quint8(widget->windowOpacity() * 0xff);
     m_dfbWindow->SetOpacity(m_dfbWindow,windowOpacity);
 
@@ -102,6 +102,7 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
 void QDirectFbWindowSurface::setGeometry(const QRect &rect)
 {
+    blitter->unlock();
     QWindowSurface::setGeometry(rect);
     m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
                            rect.width(), rect.height());
@@ -123,6 +124,7 @@ static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int 
 
 bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
+    blitter->unlock();
     if (!m_dfbSurface || area.isEmpty())
         return false;
     m_dfbSurface->SetBlittingFlags(m_dfbSurface, DSBLIT_NOFX);
@@ -150,6 +152,7 @@ void QDirectFbWindowSurface::endPaint(const QRegion &region)
 
 void QDirectFbWindowSurface::setVisible(bool visible)
 {
+    blitter->unlock();
     if (visible) {
         int x = this->geometry().x();
         int y = this->geometry().y();

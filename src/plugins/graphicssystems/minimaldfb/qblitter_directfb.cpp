@@ -33,6 +33,7 @@ QDirectFbBlitter::QDirectFbBlitter(const QRect &rect, IDirectFBSurface *surface)
 
 QDirectFbBlitter::~QDirectFbBlitter()
 {
+    unlock();
     m_surface->Release(m_surface);
 }
 
@@ -55,6 +56,7 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
     Q_ASSERT(data->classId() == QPixmapData::BlitterClass);
     QBlittablePixmapData *blitPm = static_cast<QBlittablePixmapData*>(data);
     QDirectFbBlitter *dfbBlitter = static_cast<QDirectFbBlitter *>(blitPm->blittable());
+    dfbBlitter->unlock();
 
     IDirectFBSurface *s = dfbBlitter->m_surface;
 

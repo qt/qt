@@ -130,6 +130,8 @@ QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
     }
     delete[] argv;
 
+    //init directfb
+    QDirectFbConvenience::dfbInterface();
 
     mPrimaryScreen = new QDirectFbGraphicsSystemScreen(0);
     mScreens.append(mPrimaryScreen);

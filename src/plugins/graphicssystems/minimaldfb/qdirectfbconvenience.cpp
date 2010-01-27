@@ -5,11 +5,13 @@
 
 IDirectFB *QDirectFbConvenience::dfbInterface()
 {
-    IDirectFB *dfb;
-    DFBResult result = DirectFBCreate(&dfb);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBConvenience: error creating DirectFB interface",result);
-        return 0;
+    static IDirectFB *dfb = 0;
+    if (!dfb) {
+        DFBResult result = DirectFBCreate(&dfb);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBConvenience: error creating DirectFB interface",result);
+            return 0;
+        }
     }
     return dfb;
 }

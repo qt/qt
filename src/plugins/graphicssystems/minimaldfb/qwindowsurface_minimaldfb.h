@@ -50,6 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 class QDirectFbGraphicsSystemScreen;
+class QDirectFbBlitter;
 
 class QDirectFbWindowSurface : public QWindowSurface
 {
@@ -80,6 +81,7 @@ private:
 
     IDirectFBWindow *m_dfbWindow;
     IDirectFBSurface *m_dfbSurface;
+    QDirectFbBlitter *blitter;
 };
 
 QT_END_NAMESPACE

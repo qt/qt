@@ -63,6 +63,8 @@ public:
 
     bool canBlitterDrawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) const
     {
+        if (pm.pixmapData()->classId() != QPixmapData::BlitterClass)
+            return false;
         if ((!drawPixmapState) || drawPixmapState & drawPixmapMask) {
             if (m_capabilities & (QBlittable::SourceOverPixmapCapability
                                   | QBlittable::SourceOverScaledPixmapCapability)) {
