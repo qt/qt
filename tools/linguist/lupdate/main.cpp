@@ -317,9 +317,18 @@ static void processProject(
         cd.m_codecForSource = codecForSource;
         cd.m_includePath = visitor.values(QLatin1String("INCLUDEPATH"));
         QStringList sourceFiles = getSources(visitor, pfi.absolutePath());
-        QSet<QString> projectRoots;
-        projectRoots.insert(QDir::cleanPath(pfi.absolutePath()) + QLatin1Char('/'));
-        cd.m_projectRoots = projectRoots;
+        QSet<QString> sourceDirs;
+        sourceDirs.insert(QDir::cleanPath(pfi.absolutePath()) + QLatin1Char('/'));
+        foreach (const QString &sf, sourceFiles)
+            sourceDirs.insert(sf.left(sf.lastIndexOf(QLatin1Char('/')) + 1));
+        QStringList rootList = sourceDirs.toList();
+        rootList.sort();
+        for (int prev = 0, curr = 1; curr < rootList.length(); )
+            if (rootList.at(curr).startsWith(rootList.at(prev)))
+                rootList.removeAt(curr);
+            else
+                prev = curr++;
+        cd.m_projectRoots = QSet<QString>::fromList(rootList);
         processSources(*fetchedTor, sourceFiles, cd);
     }
 }
