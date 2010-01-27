@@ -251,6 +251,21 @@ public:
     QBrush brush;
 };
 
+class MyGraphicsView : public QGraphicsView
+{
+public:
+    int repaints;
+    QRegion paintedRegion;
+    MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+    void paintEvent(QPaintEvent *e)
+    {
+        paintedRegion += e->region();
+        ++repaints;
+        QGraphicsView::paintEvent(e);
+    }
+    void reset() { repaints = 0; paintedRegion = QRegion(); }
+};
+
 class tst_QGraphicsItem : public QObject
 {
     Q_OBJECT
@@ -3164,7 +3179,6 @@ void tst_QGraphicsItem::childrenBoundingRect()
     childChild->setParentItem(child);
     childChild->setPos(500, 500);
     child->rotate(90);
-
 
     scene.addPolygon(parent->mapToScene(parent->boundingRect() | parent->childrenBoundingRect()))->setPen(QPen(Qt::red));;
 
@@ -6252,13 +6266,6 @@ void tst_QGraphicsItem::opacity2()
     QGraphicsScene scene;
     scene.addItem(parent);
 
-    class MyGraphicsView : public QGraphicsView
-    { public:
-        int repaints;
-        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
-        void paintEvent(QPaintEvent *e) { ++repaints; QGraphicsView::paintEvent(e); }
-    };
-
     MyGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
@@ -6335,20 +6342,6 @@ void tst_QGraphicsItem::opacityZeroUpdates()
 
     QGraphicsScene scene;
     scene.addItem(parent);
-
-    class MyGraphicsView : public QGraphicsView
-    { public:
-        int repaints;
-        QRegion paintedRegion;
-        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
-        void paintEvent(QPaintEvent *e)
-        {
-            ++repaints;
-            paintedRegion += e->region();
-            QGraphicsView::paintEvent(e);
-        }
-        void reset() { repaints = 0; paintedRegion = QRegion(); }
-    };
 
     MyGraphicsView view(&scene);
     view.show();
@@ -7075,21 +7068,6 @@ void tst_QGraphicsItem::deviceTransform()
     QCOMPARE(rect2->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult2);
     QCOMPARE(rect3->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult3);
 }
-
-class MyGraphicsView : public QGraphicsView
-{
-public:
-    int repaints;
-    QRegion paintedRegion;
-    MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
-    void paintEvent(QPaintEvent *e)
-    {
-        paintedRegion += e->region();
-        ++repaints;
-        QGraphicsView::paintEvent(e);
-    }
-    void reset() { repaints = 0; paintedRegion = QRegion(); }
-};
 
 void tst_QGraphicsItem::update()
 {
@@ -9835,7 +9813,7 @@ void tst_QGraphicsItem::scenePosChange()
     QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
 }
 
-void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
+void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
 {
     struct Item : public QGraphicsTextItem
     {
@@ -9913,20 +9891,6 @@ void tst_QGraphicsItem::QTBUG_6738_missingUpdateWithSetParent()
 
     QGraphicsScene scene;
     scene.addItem(parent);
-
-    class MyGraphicsView : public QGraphicsView
-    { public:
-        int repaints;
-        QRegion paintedRegion;
-        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
-        void paintEvent(QPaintEvent *e)
-        {
-            ++repaints;
-            paintedRegion += e->region();
-            QGraphicsView::paintEvent(e);
-        }
-        void reset() { repaints = 0; paintedRegion = QRegion(); }
-    };
 
     MyGraphicsView view(&scene);
     view.show();
