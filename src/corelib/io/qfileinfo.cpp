@@ -170,19 +170,19 @@ uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) cons
             req &= (~QAbstractFileEngine::BundleType);
 
             cachedFlags |= CachedFileFlags;
+        }
 
-            if (request & QAbstractFileEngine::LinkType) {
-                if (!data->getCachedFlag(CachedLinkTypeFlag)) {
-                    req |= QAbstractFileEngine::LinkType;
-                    cachedFlags |= CachedLinkTypeFlag;
-                }
+        if (request & QAbstractFileEngine::LinkType) {
+            if (!data->getCachedFlag(CachedLinkTypeFlag)) {
+                req |= QAbstractFileEngine::LinkType;
+                cachedFlags |= CachedLinkTypeFlag;
             }
+        }
 
-            if (request & QAbstractFileEngine::BundleType) {
-                if (!data->getCachedFlag(CachedBundleTypeFlag)) {
-                    req |= QAbstractFileEngine::BundleType;
-                    cachedFlags |= CachedBundleTypeFlag;
-                }
+        if (request & QAbstractFileEngine::BundleType) {
+            if (!data->getCachedFlag(CachedBundleTypeFlag)) {
+                req |= QAbstractFileEngine::BundleType;
+                cachedFlags |= CachedBundleTypeFlag;
             }
         }
     }
