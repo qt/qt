@@ -74,7 +74,6 @@ typedef struct {
     unsigned short width;
     int major_version;
     int minor_version;
-    bool mirroring; // TODO: (nice to have) Use Qt::LayoutDirection
     const char* layoutName;
 } layoutHeader;
 
@@ -353,12 +352,12 @@ public:
     int timerId() const {return m_currentData->m_timerId;}
     int currentFrame() const {return m_currentData->m_currentFrame;}
 
-    void setFrameCount(const int &frameCount) {m_currentData->m_frames = frameCount;}
-    void setInterval(const int &interval) {m_currentData->m_interval = interval;}
+    void setFrameCount(int frameCount) {m_currentData->m_frames = frameCount;}
+    void setInterval(int interval) {m_currentData->m_interval = interval;}
     void setAnimationObject(CAknBitmapAnimation* animation);
     void setResourceBased(bool resourceBased) {m_currentData->m_resourceBased = resourceBased;}
-    void setTimerId(const int &timerId) {m_currentData->m_timerId = timerId;}
-    void setCurrentFrame(const int &currentFrame) {m_currentData->m_currentFrame = currentFrame;}
+    void setTimerId(int timerId) {m_currentData->m_timerId = timerId;}
+    void setCurrentFrame(int currentFrame) {m_currentData->m_currentFrame = currentFrame;}
 
     void resetToDefaults();
 
