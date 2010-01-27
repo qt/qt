@@ -780,6 +780,8 @@ void QmlGraphicsFlickable::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (d->interactive) {
         d->handleMousePressEvent(event);
         event->accept();
+    } else {
+        QmlGraphicsItem::mousePressEvent(event);
     }
 }
 
@@ -789,6 +791,8 @@ void QmlGraphicsFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if (d->interactive) {
         d->handleMouseMoveEvent(event);
         event->accept();
+    } else {
+        QmlGraphicsItem::mouseMoveEvent(event);
     }
 }
 
@@ -800,6 +804,8 @@ void QmlGraphicsFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         d->handleMouseReleaseEvent(event);
         event->accept();
         ungrabMouse();
+    } else {
+        QmlGraphicsItem::mouseReleaseEvent(event);
     }
 }
 
@@ -1116,6 +1122,7 @@ bool QmlGraphicsFlickable::yflick() const
 bool QmlGraphicsFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsFlickable);
+    qDebug() << " fjdakfl";
     QGraphicsSceneMouseEvent mouseEvent(event->type());
     QRectF myRect = mapToScene(QRectF(0, 0, width(), height())).boundingRect();
 
