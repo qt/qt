@@ -5439,26 +5439,24 @@ public:
     QRegion r;
 };
 
-template<typename R, typename C>
-void verifyColor(R const& region, C const& color)
-{
-    const QRegion r = QRegion(region);
-    for (int i = 0; i < r.rects().size(); ++i) {
-        const QRect rect = r.rects().at(i);
-        for (int t = 0; t < 5; t++) {
-            const QPixmap pixmap = QPixmap::grabWindow(QDesktopWidget().winId(),
-                                                   rect.left(), rect.top(),
-                                                   rect.width(), rect.height());
-            QCOMPARE(pixmap.size(), rect.size());
-            QPixmap expectedPixmap(pixmap); /* ensure equal formats */
-            expectedPixmap.fill(color);
-            if (pixmap.toImage().pixel(0,0) != QColor(color).rgb() && t < 4 )
-            { QTest::qWait(200); continue; }
-            QCOMPARE(pixmap.toImage().pixel(0,0), QColor(color).rgb());
-            QCOMPARE(pixmap, expectedPixmap);
-            break;
-        }
-    }
+#define VERIFY_COLOR(region, color) {                                   \
+    const QRegion r = QRegion(region);                                  \
+    for (int i = 0; i < r.rects().size(); ++i) {                        \
+        const QRect rect = r.rects().at(i);                             \
+        for (int t = 0; t < 5; t++) {                                   \
+            const QPixmap pixmap = QPixmap::grabWindow(QDesktopWidget().winId(), \
+                                                   rect.left(), rect.top(), \
+                                                   rect.width(), rect.height()); \
+            QCOMPARE(pixmap.size(), rect.size());                       \
+            QPixmap expectedPixmap(pixmap); /* ensure equal formats */  \
+            expectedPixmap.fill(color);                                 \
+            if (pixmap.toImage().pixel(0,0) != QColor(color).rgb() && t < 4 ) \
+            { QTest::qWait(200); continue; }                            \
+            QCOMPARE(pixmap.toImage().pixel(0,0), QColor(color).rgb()); \
+            QCOMPARE(pixmap, expectedPixmap);                           \
+            break;                                                      \
+        }                                                               \
+    }                                                                   \
 }
 
 void tst_QWidget::moveChild_data()
@@ -5499,9 +5497,9 @@ void tst_QWidget::moveChild()
 #endif
     QTRY_COMPARE(parent.r, QRegion(parent.rect()) - child.geometry());
     QTRY_COMPARE(child.r, QRegion(child.rect()));
-    verifyColor(child.geometry().translated(tlwOffset),
+    VERIFY_COLOR(child.geometry().translated(tlwOffset),
                  child.color);
-    verifyColor(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
+    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
                  parent.color);
     parent.reset();
     child.reset();
@@ -5520,9 +5518,9 @@ void tst_QWidget::moveChild()
     // should be scrolled in backingstore
     QCOMPARE(child.r, QRegion());
 #endif
-    verifyColor(child.geometry().translated(tlwOffset),
+    VERIFY_COLOR(child.geometry().translated(tlwOffset),
                 child.color);
-    verifyColor(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
+    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
                 parent.color);
 }
 
@@ -5553,8 +5551,8 @@ void tst_QWidget::showAndMoveChild()
     child.move(desktopDimensions.width()/2, desktopDimensions.height()/2);
     qApp->processEvents();
 
-    verifyColor(child.geometry().translated(tlwOffset), Qt::blue);
-    verifyColor(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset), Qt::red);
+    VERIFY_COLOR(child.geometry().translated(tlwOffset), Qt::blue);
+    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset), Qt::red);
 }
 
 void tst_QWidget::subtractOpaqueSiblings()
