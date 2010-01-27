@@ -287,6 +287,8 @@
     and declaring a Type enum value. Example:
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 1
+
+    \note UserType = 65536
 */
 
 /*!
