@@ -123,6 +123,7 @@ public:
     QGraphicsItem *delayedPressTarget;
     QBasicTimer delayedPressTimer;
     int pressDelay;
+    int fixupDuration;
 
     void updateVelocity();
     struct Velocity : public QmlTimeLineValue

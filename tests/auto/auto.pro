@@ -569,3 +569,21 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebhistory
 
 contains(QT_CONFIG, declarative): SUBDIRS += declarative
+
+# Following tests depends on private API
+!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+           qcssparser \
+           qgraphicssceneindex \
+           qhttpnetworkconnection \
+           qhttpnetworkreply \
+           qnativesocketengine \
+           qnetworkreply \
+           qpathclipper \
+           qsocketnotifier \
+           qsocks5socketengine \
+           qstylesheetstyle \
+           qtextpiecetable \
+           xmlpatternsdiagnosticsts \
+           xmlpatternsview \
+           xmlpatternsxqts \
+           xmlpatternsxslts

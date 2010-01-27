@@ -71,6 +71,7 @@ private slots:
     void colorize();
     void drawPixmapItem();
     void deviceCoordinateTranslateCaching();
+    void inheritOpacity();
 };
 
 void tst_QGraphicsEffect::initTestCase()
@@ -79,8 +80,8 @@ void tst_QGraphicsEffect::initTestCase()
 class CustomItem : public QGraphicsRectItem
 {
 public:
-    CustomItem(qreal x, qreal y, qreal width, qreal height)
-        : QGraphicsRectItem(x, y, width, height), numRepaints(0),
+    CustomItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem *parent = 0)
+        : QGraphicsRectItem(x, y, width, height, parent), numRepaints(0),
           m_painter(0), m_styleOption(0)
     {}
 
@@ -558,6 +559,35 @@ void tst_QGraphicsEffect::deviceCoordinateTranslateCaching()
     QTest::qWait(50);
 
     QVERIFY(item->numRepaints == numRepaints);
+}
+
+void tst_QGraphicsEffect::inheritOpacity()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rectItem = new QGraphicsRectItem(0, 0, 10, 10);
+    CustomItem *item = new CustomItem(0, 0, 10, 10, rectItem);
+
+    scene.addItem(rectItem);
+
+    item->setGraphicsEffect(new DeviceEffect);
+    item->setPen(Qt::NoPen);
+    item->setBrush(Qt::red);
+
+    rectItem->setOpacity(0.5);
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QTRY_VERIFY(item->numRepaints >= 1);
+
+    int numRepaints = item->numRepaints;
+
+    rectItem->setOpacity(1);
+    QTest::qWait(50);
+
+    // item should have been rerendered due to opacity changing
+    QTRY_VERIFY(item->numRepaints > numRepaints);
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)
