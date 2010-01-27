@@ -447,8 +447,6 @@ public:
 
     void updateViewport() {
         Q_Q(QmlGraphicsListView);
-        minExtentDirty = true;
-        maxExtentDirty = true;
         if (orient == QmlGraphicsListView::Vertical) {
             q->setViewportHeight(q->minYExtent() - q->maxYExtent());
         } else {
@@ -721,6 +719,8 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         }
     }
     if (changed) {
+        minExtentDirty = true;
+        maxExtentDirty = true;
         if (visibleItems.count())
             visiblePos = (*visibleItems.constBegin())->position();
         updateAverage();
@@ -756,8 +756,11 @@ void QmlGraphicsListViewPrivate::layout()
     if (!isValid())
         return;
     q->refill();
+    minExtentDirty = true;
+    maxExtentDirty = true;
     updateHighlight();
     fixupPosition();
+    q->refill();
     if (header)
         updateHeader();
     if (footer)
@@ -1102,6 +1105,7 @@ void QmlGraphicsListViewPrivate::updateHeader()
 
 void QmlGraphicsListViewPrivate::fixupPosition()
 {
+    moveReason = Other;
     if (orient == QmlGraphicsListView::Vertical)
         fixupY();
     else
@@ -1116,27 +1120,29 @@ void QmlGraphicsListViewPrivate::fixupY()
     if (!q->yflick() || _moveY.timeLine())
         return;
 
+    int oldDuration = fixupDuration;
+    fixupDuration = moveReason == Mouse ? fixupDuration : 0;
+
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
-            moveReason = Mouse;
             timeline.reset(_moveY);
-            timeline.move(_moveY, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.move(_moveY, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
             vTime = timeline.time();
         }
     } else if (snapMode != QmlGraphicsListView::NoSnap) {
-        moveReason = Mouse;
         if (FxListItem *item = snapItemAt(position())) {
             qreal pos = qMin(item->position() - highlightRangeStart, -q->maxYExtent());
             qreal dist = qAbs(_moveY + pos);
             if (dist > 0) {
                 timeline.reset(_moveY);
-                timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), 200);
+                timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
                 vTime = timeline.time();
             }
         }
     } else {
         QmlGraphicsFlickablePrivate::fixupY();
     }
+    fixupDuration = oldDuration;
 }
 
 void QmlGraphicsListViewPrivate::fixupX()
@@ -1147,33 +1153,36 @@ void QmlGraphicsListViewPrivate::fixupX()
     if (!q->xflick() || _moveX.timeLine())
         return;
 
+    int oldDuration = fixupDuration;
+    fixupDuration = moveReason == Mouse ? fixupDuration : 0;
+
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
-            moveReason = Mouse;
             timeline.reset(_moveX);
-            timeline.move(_moveX, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.move(_moveX, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
             vTime = timeline.time();
         }
     } else if (snapMode != QmlGraphicsListView::NoSnap) {
-        moveReason = Mouse;
         if (FxListItem *item = snapItemAt(position())) {
             qreal pos = qMin(item->position() - highlightRangeStart, -q->maxXExtent());
             qreal dist = qAbs(_moveX + pos);
             if (dist > 0) {
                 timeline.reset(_moveX);
-                timeline.move(_moveX, -pos, QEasingCurve(QEasingCurve::InOutQuad), 200);
+                timeline.move(_moveX, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
                 vTime = timeline.time();
             }
         }
     } else {
         QmlGraphicsFlickablePrivate::fixupX();
     }
+    fixupDuration = oldDuration;
 }
 
 void QmlGraphicsListViewPrivate::flickX(qreal velocity)
 {
     Q_Q(QmlGraphicsListView);
 
+    moveReason = Mouse;
     if ((!haveHighlightRange || highlightRange != QmlGraphicsListView::StrictlyEnforceRange) && snapMode == QmlGraphicsListView::NoSnap) {
         QmlGraphicsFlickablePrivate::flickX(velocity);
         return;
@@ -1271,6 +1280,7 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
 {
     Q_Q(QmlGraphicsListView);
 
+    moveReason = Mouse;
     if ((!haveHighlightRange || highlightRange != QmlGraphicsListView::StrictlyEnforceRange) && snapMode == QmlGraphicsListView::NoSnap) {
         QmlGraphicsFlickablePrivate::flickY(velocity);
         return;
@@ -2024,6 +2034,8 @@ void QmlGraphicsListView::setFooter(QmlComponent *footer)
             d->footer = 0;
         }
         d->footerComponent = footer;
+        d->minExtentDirty = true;
+        d->maxExtentDirty = true;
         d->updateFooter();
         d->updateViewport();
     }
@@ -2044,6 +2056,8 @@ void QmlGraphicsListView::setHeader(QmlComponent *header)
             d->header = 0;
         }
         d->headerComponent = header;
+        d->minExtentDirty = true;
+        d->maxExtentDirty = true;
         d->updateHeader();
         d->updateFooter();
         d->updateViewport();
@@ -2217,7 +2231,6 @@ void QmlGraphicsListView::keyPressEvent(QKeyEvent *event)
             }
         }
     }
-    d->moveReason = QmlGraphicsListViewPrivate::Other;
     event->ignore();
 }
 
@@ -2297,6 +2310,7 @@ void QmlGraphicsListView::componentComplete()
     Q_D(QmlGraphicsListView);
     QmlGraphicsFlickable::componentComplete();
     refill();
+    d->moveReason = QmlGraphicsListViewPrivate::SetIndex;
     if (d->currentIndex < 0)
         d->updateCurrent(0);
     else
@@ -2313,9 +2327,9 @@ void QmlGraphicsListView::refill()
 void QmlGraphicsListView::trackedPositionChanged()
 {
     Q_D(QmlGraphicsListView);
-    if (!d->trackedItem)
+    if (!d->trackedItem || !d->currentItem)
         return;
-    if (!isFlicking() && !d->moving && d->moveReason != QmlGraphicsListViewPrivate::Mouse) {
+    if (!isFlicking() && !d->moving && d->moveReason == QmlGraphicsListViewPrivate::SetIndex) {
         const qreal trackedPos = d->trackedItem->position();
         const qreal viewPos = d->position();
         if (d->haveHighlightRange) {
@@ -2368,6 +2382,7 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
 {
     Q_D(QmlGraphicsListView);
     d->updateUnrequestedIndexes();
+    d->moveReason = QmlGraphicsListViewPrivate::Other;
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->layout();
         d->updateCurrent(qMax(0, qMin(d->currentIndex, d->model->count()-1)));
@@ -2375,7 +2390,8 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
         return;
     }
 
-    if (!d->mapRangeFromModel(modelIndex, count)) {
+    int overlapCount = count;
+    if (!d->mapRangeFromModel(modelIndex, overlapCount)) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
@@ -2413,6 +2429,7 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
     int initialPos = pos;
     int diff = 0;
     QList<FxListItem*> added;
+    bool addedVisible = false;
     FxListItem *firstVisible = d->firstVisibleItem();
     if (firstVisible && pos < firstVisible->position()) {
         // Insert items before the visible item.
@@ -2420,6 +2437,7 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
         int i = 0;
         int from = d->position() - d->buffer;
         for (i = count-1; i >= 0 && pos > from; --i) {
+            addedVisible = true;
             FxListItem *item = d->createItem(modelIndex + i);
             d->visibleItems.insert(insertionIdx, item);
             pos -= item->size() + d->spacing;
@@ -2446,6 +2464,7 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
         int i = 0;
         int to = d->buffer+d->position()+d->size()-1;
         for (i = 0; i < count && pos <= to; ++i) {
+            addedVisible = true;
             FxListItem *item = d->createItem(modelIndex + i);
             d->visibleItems.insert(index, item);
             item->setPosition(pos);
@@ -2480,43 +2499,21 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
     // everything is in order now - emit add() signal
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
-    d->layout();
+
+    if (addedVisible)
+        d->layout();
     emit countChanged();
 }
 
 void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QmlGraphicsListView);
+    d->moveReason = QmlGraphicsListViewPrivate::Other;
     d->updateUnrequestedIndexes();
-    bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
-    if (!d->mapRangeFromModel(modelIndex, count)) {
-        if (modelIndex + count - 1 < d->visibleIndex) {
-            // Items removed before our visible items.
-            d->visibleIndex -= count;
-            for (int i = 0; i < d->visibleItems.count(); ++i) {
-                FxListItem *listItem = d->visibleItems.at(i);
-                if (listItem->index != -1)
-                    listItem->index -= count;
-            }
-        }
-        if (d->currentIndex >= modelIndex + count) {
-            d->currentIndex -= count;
-            if (d->currentItem)
-                d->currentItem->index -= count;
-        } else if (currentRemoved) {
-            // current item has been removed.
-            d->releaseItem(d->currentItem);
-            d->currentItem = 0;
-            d->currentIndex = -1;
-            d->updateCurrent(qMin(modelIndex, d->model->count()-1));
-        }
-        d->layout();
-        emit countChanged();
-        return;
-    }
 
     FxListItem *firstVisible = d->firstVisibleItem();
     int preRemovedSize = 0;
+    bool removedVisible = false;
     // Remove the items from the visible list, skipping anything already marked for removal
     QList<FxListItem*>::Iterator it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
@@ -2530,6 +2527,7 @@ void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
             ++it;
         } else {
             // removed item
+            removedVisible = true;
             item->attached->emitRemove();
             if (item->attached->delayRemove()) {
                 item->index = -1;
@@ -2554,7 +2552,7 @@ void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
         d->currentIndex -= count;
         if (d->currentItem)
             d->currentItem->index -= count;
-    } else if (currentRemoved) {
+    } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
         // current item has been removed.
         d->currentItem->attached->setIsCurrentItem(false);
         d->releaseItem(d->currentItem);
@@ -2563,26 +2561,28 @@ void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
         d->updateCurrent(qMin(modelIndex, d->model->count()-1));
     }
 
-    // update visibleIndex
-    for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
-        if ((*it)->index != -1) {
-            d->visibleIndex = (*it)->index;
-            break;
+    if (removedVisible) {
+        // update visibleIndex
+        for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
+            if ((*it)->index != -1) {
+                d->visibleIndex = (*it)->index;
+                break;
+            }
         }
-    }
 
-    if (d->visibleItems.isEmpty()) {
-        d->visibleIndex = 0;
-        d->visiblePos = d->header ? d->header->size() : 0;
-        d->timeline.clear();
-        d->setPosition(0);
-        if (d->model->count() == 0)
-            update();
-        else
-            refill();
-    } else {
-        // Correct the positioning of the items
-        d->layout();
+        if (d->visibleItems.isEmpty()) {
+            d->visibleIndex = 0;
+            d->visiblePos = d->header ? d->header->size() : 0;
+            d->timeline.clear();
+            d->setPosition(0);
+            if (d->model->count() == 0)
+                update();
+            else
+                refill();
+        } else {
+            // Correct the positioning of the items
+            d->layout();
+        }
     }
 
     emit countChanged();
@@ -2615,6 +2615,7 @@ void QmlGraphicsListView::itemsMoved(int from, int to, int count)
         return;
     }
 
+    d->moveReason = QmlGraphicsListViewPrivate::Other;
     FxListItem *firstVisible = d->firstVisibleItem();
     qreal firstItemPos = firstVisible->position();
     QHash<int,FxListItem*> moved;

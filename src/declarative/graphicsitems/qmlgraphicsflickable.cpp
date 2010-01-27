@@ -264,12 +264,19 @@ void QmlGraphicsFlickablePrivate::fixupX()
 
     if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->minXExtent())) {
         timeline.reset(_moveX);
-        if (_moveX.value() != q->minXExtent())
-            timeline.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+        if (_moveX.value() != q->minXExtent()) {
+            if (fixupDuration)
+                timeline.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            else
+                _moveY.setValue(q->minYExtent());
+        }
         //emit flickingChanged();
     } else if (_moveX.value() < q->maxXExtent()) {
         timeline.reset(_moveX);
-        timeline.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+        if (fixupDuration)
+            timeline.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+        else
+            _moveY.setValue(q->maxYExtent());
         //emit flickingChanged();
     } else {
         flicked = false;
@@ -295,7 +302,10 @@ void QmlGraphicsFlickablePrivate::fixupY()
         //emit flickingChanged();
     } else if (_moveY.value() < q->maxYExtent()) {
         timeline.reset(_moveY);
-        timeline.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+        if (fixupDuration)
+            timeline.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+        else
+            _moveY.setValue(q->maxYExtent());
         //emit flickingChanged();
     } else {
         flicked = false;
@@ -1122,7 +1132,6 @@ bool QmlGraphicsFlickable::yflick() const
 bool QmlGraphicsFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsFlickable);
-    qDebug() << " fjdakfl";
     QGraphicsSceneMouseEvent mouseEvent(event->type());
     QRectF myRect = mapToScene(QRectF(0, 0, width(), height())).boundingRect();
 
