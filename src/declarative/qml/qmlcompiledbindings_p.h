@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDINGVME_P_H
-#define QMLBINDINGVME_P_H
+#ifndef QMLBINDINGOPTIMIZATIONS_P_H
+#define QMLBINDINGOPTIMIZATIONS_P_H
 
 //
 //  W A R N I N G
@@ -53,96 +53,12 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
-#include <private/qscriptdeclarativeclass_p.h>
 #include "qmlexpression_p.h"
-#include "qmlguard_p.h"
+#include "qmlbinding.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
-class QObject;
-class QmlContextPrivate;
-class QmlBindingVME 
-{
-public:
-    struct Config {
-        Config() : target(0), targetSlot(-1), subscriptions(0), identifiers(0) {}
-        ~Config() { delete [] subscriptions; delete [] identifiers; }
-        QObject *target;
-        int targetSlot;
-
-        struct Subscription {
-            struct Signal {
-                QmlGuard<QObject> source;
-                int notifyIndex;
-            };
-
-            struct Id {
-                inline Id();
-                inline ~Id();
-                inline void reset();
-                Id *next;
-                Id**prev;
-                QObject *target;
-                int methodIndex;
-            };
-
-            enum { InvalidType, SignalType, IdType } type;
-            inline Subscription();
-            inline ~Subscription();
-            bool isSignal() const { return type == SignalType; }
-            bool isId() const { return type == IdType; }
-            inline Signal *signal();
-            inline Id *id();
-            union {
-                char signalData[sizeof(Signal)];
-                char idData[sizeof(Id)];
-            };
-        };
-        Subscription *subscriptions;
-        QScriptDeclarativeClass::PersistentIdentifier *identifiers;
-    };
-
-    static void init(const char *program, Config *config, 
-                     quint32 **sigTable, quint32 *bindingCount);
-    static void run(const char *program, int instr,
-                    Config *config, QmlContextPrivate *context, QmlDelayedError *error, 
-                    QObject *scope, QObject *output);
-    static void dump(const char *);
-};
-
-QmlBindingVME::Config::Subscription::Subscription()
-: type(InvalidType)
-{
-}
-
-QmlBindingVME::Config::Subscription::~Subscription()
-{
-    if (type == SignalType) ((Signal *)signalData)->~Signal();
-    else if (type == IdType) ((Id *)idData)->~Id();
-}
-
-QmlBindingVME::Config::Subscription::Id::Id()
-: next(0), prev(0), target(0), methodIndex(-1)
-{
-}
-
-QmlBindingVME::Config::Subscription::Id::~Id()
-{
-    reset();
-}
-
-void QmlBindingVME::Config::Subscription::Id::reset()
-{
-    if (next) next->prev = prev;
-    if (prev) *prev = next;
-    next = 0;
-    prev = 0;
-    target = 0;
-    methodIndex = -1;
-}
 
 class QmlBindingCompilerPrivate;
 class QmlBindingCompiler
@@ -170,13 +86,31 @@ public:
     // Returns the compiled program
     QByteArray program() const;
 
+    static void dump(const QByteArray &);
 private:
     QmlBindingCompilerPrivate *d;
+};
+
+class QmlCompiledBindingsPrivate;
+class QmlCompiledBindings : public QObject, public QmlAbstractExpression, public QmlRefCount
+{
+public:
+    QmlCompiledBindings(const char *program, QmlContext *context);
+    virtual ~QmlCompiledBindings();
+
+    QmlAbstractBinding *configBinding(int index, QObject *target, QObject *scope, int property);
+
+protected:
+    int qt_metacall(QMetaObject::Call, int, void **);
+
+private:
+    Q_DISABLE_COPY(QmlCompiledBindings);
+    Q_DECLARE_PRIVATE(QmlCompiledBindings);
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLBINDINGVME_P_H
+#endif // QMLBINDINGOPTIMIZATIONS_P_H
 

@@ -64,7 +64,7 @@
 #include "qmlglobal_p.h"
 #include "qmlscriptparser_p.h"
 #include "qmlbinding.h"
-#include "qmlbindingvme_p.h"
+#include "qmlcompiledbindings_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -2672,7 +2672,7 @@ bool QmlCompiler::completeComponentBuild()
 
     if (bindingCompiler.isValid()) {
         compileState.compiledBindingData = bindingCompiler.program();
-        QmlBindingVME::dump(compileState.compiledBindingData);
+        QmlBindingCompiler::dump(compileState.compiledBindingData);
     }
 
     saveComponentState();

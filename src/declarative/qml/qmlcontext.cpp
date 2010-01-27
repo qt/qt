@@ -45,7 +45,7 @@
 #include "qmlexpression_p.h"
 #include "qmlengine_p.h"
 #include "qmlengine.h"
-#include "qmlbindingoptimizations_p.h"
+#include "qmlcompiledbindings_p.h"
 #include "qmlinfo.h"
 
 #include <qscriptengine.h>
@@ -108,7 +108,7 @@ void QmlContextPrivate::destroyed(ContextGuard *guard)
     while(guard->bindings) {
         QObject *o = guard->bindings->target;
         int mi = guard->bindings->methodIndex;
-        guard->bindings->reset();
+        guard->bindings->clear();
         if (o) o->qt_metacall(QMetaObject::InvokeMetaMethod, mi, 0);
     }
 
