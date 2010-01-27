@@ -1830,6 +1830,10 @@ void QMenuBarPrivate::macDestroyMenuBar()
     mac_menubar = 0;
 
     if (qt_mac_current_menubar.qmenubar == q) {
+#ifdef QT_MAC_USE_COCOA
+        QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
+        [loader removeActionsFromAppMenu];
+#endif
         extern void qt_event_request_menubarupdate(); //qapplication_mac.cpp
         qt_event_request_menubarupdate();
     }
