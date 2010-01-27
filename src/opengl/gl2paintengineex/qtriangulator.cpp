@@ -361,14 +361,14 @@ struct QIntersectionPoint
 
 static inline QIntersectionPoint qIntersectionPoint(const QPodPoint &point)
 {
-    // m_upperLeft = point, m_xOffset = 0/1, m_yOffset = 0/1.
-    QIntersectionPoint p = {point, {0, 1}, {0, 1}};
+    // upperLeft = point, xOffset = 0/1, yOffset = 0/1.
+    QIntersectionPoint p = {{point.x, point.y}, {0, 1}, {0, 1}};
     return p;
 }
 
 static inline QIntersectionPoint qIntersectionPoint(int x, int y)
 {
-    // m_upperLeft = (x, y), m_xOffset = 0/1, m_yOffset = 0/1.
+    // upperLeft = (x, y), xOffset = 0/1, yOffset = 0/1.
     QIntersectionPoint p = {{x, y}, {0, 1}, {0, 1}};
     return p;
 }
@@ -1988,8 +1988,10 @@ void QTriangulator::ComplexToSimple::fillPriorityQueue()
         Q_ASSERT(m_edges.at(i).pointingUp == (m_parent->m_vertices.at(m_edges.at(i).to) < m_parent->m_vertices.at(m_edges.at(i).from)));
         // Ignore zero-length edges.
         if (m_parent->m_vertices.at(m_edges.at(i).to) != m_parent->m_vertices.at(m_edges.at(i).from)) {
-            Event upperEvent = {m_parent->m_vertices.at(m_edges.at(i).upper()), Event::Upper, i};
-            Event lowerEvent = {m_parent->m_vertices.at(m_edges.at(i).lower()), Event::Lower, i};
+            QPodPoint upper = m_parent->m_vertices.at(m_edges.at(i).upper());
+            QPodPoint lower = m_parent->m_vertices.at(m_edges.at(i).lower());
+            Event upperEvent = {{upper.x, upper.y}, Event::Upper, i};
+            Event lowerEvent = {{lower.x, lower.y}, Event::Lower, i};
             m_events.add(upperEvent);
             m_events.add(lowerEvent);
         }
