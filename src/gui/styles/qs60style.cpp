@@ -985,7 +985,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             //Handle graphics
             const QRect sliderHandle = subControlRect(control, optionSlider, SC_SliderHandle, widget);
             QS60StylePrivate::SkinElements handleElement;
-            if (optionSlider->state & QStyle::State_Sunken)
+            if (optionSlider->state & State_Sunken)
                 handleElement =
                         horizontal ? QS60StylePrivate::SE_SliderHandleSelectedHorizontal : QS60StylePrivate::SE_SliderHandleSelectedVertical;
             else
