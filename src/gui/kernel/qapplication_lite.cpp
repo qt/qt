@@ -78,6 +78,12 @@ QPointer<QWidget> qt_last_mouse_receiver = 0;
 QList<QApplicationPrivate::UserEvent *> QApplicationPrivate::userEventQueue;
 static Qt::KeyboardModifiers modifiers = Qt::NoModifier;
 static Qt::MouseButtons buttons = Qt::NoButton;
+static ulong mousePressTime;
+static Qt::MouseButton mousePressButton = Qt::NoButton;
+static int mousePressX;
+static int mousePressY;
+static int mouse_double_click_distance = 5;
+QTime QApplicationPrivate::time;
 
 void QApplicationPrivate::processUserEvent(UserEvent *e)
 {
@@ -555,7 +561,7 @@ void QApplicationPrivate::processMouseEvent(MouseEvent *e)
     // move first
     Qt::MouseButtons stateChange = e->buttons ^ buttons;
     if (e->globalPos != QPoint(qt_last_x, qt_last_y) && (stateChange != Qt::NoButton)) {
-        MouseEvent * newMouseEvent = new MouseEvent(e->tlw, e->localPos, e->globalPos, e->buttons);
+        MouseEvent * newMouseEvent = new MouseEvent(e->tlw, e->timestamp, e->localPos, e->globalPos, e->buttons);
         userEventQueue.prepend(newMouseEvent); // just in case the move triggers a new event loop
         stateChange = Qt::NoButton;
     }
@@ -571,6 +577,9 @@ void QApplicationPrivate::processMouseEvent(MouseEvent *e)
         type = QEvent::MouseMove;
         qt_last_x = globalPoint.x();
         qt_last_y = globalPoint.y();
+        if (qAbs(globalPoint.x() - mousePressX) > mouse_double_click_distance||
+            qAbs(globalPoint.y() - mousePressY) > mouse_double_click_distance)
+            mousePressButton = Qt::NoButton;
     }
     else { // check to see if a new button has been pressed/released
         for (int check = Qt::LeftButton;
@@ -586,8 +595,19 @@ void QApplicationPrivate::processMouseEvent(MouseEvent *e)
             return;
         }
         buttons = e->buttons;
-        if (button & e->buttons)
-            type = QEvent::MouseButtonPress;
+        if (button & e->buttons) {
+            if ((e->timestamp - mousePressTime) < static_cast<ulong>(QApplication::doubleClickInterval()) && button == mousePressButton) {
+                type = QEvent::MouseButtonDblClick;
+                mousePressButton = Qt::NoButton;
+            }
+            else {
+                type = QEvent::MouseButtonPress;
+                mousePressTime = e->timestamp;
+                mousePressButton = button;
+                mousePressX = qt_last_x;
+                mousePressY = qt_last_y;
+            }
+        }
         else
             type = QEvent::MouseButtonRelease;
     }

@@ -68,6 +68,7 @@
 #include "QtGui/private/qshortcutmap_p.h"
 #include <private/qthread_p.h>
 #include "QtCore/qpoint.h"
+#include <QTime>
 #ifdef Q_WS_QWS
 #include "QtGui/qscreen_qws.h"
 #include <private/qgraphicssystem_qws_p.h>
@@ -565,18 +566,20 @@ public:
 #endif
 
 #ifdef Q_WS_LITE
+    static QTime time;
 
     class UserEvent {
     public:
-        UserEvent(QWidget *w) { tlw = w; }
+        UserEvent(QWidget *w, QEvent::Type t, ulong time) { tlw = w; type = t; timestamp = time; }
         QWidget * tlw;
         QEvent::Type type;
+        unsigned long timestamp;
     };
 
     class MouseEvent : public UserEvent {
     public:
-        MouseEvent(QWidget *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b)
-            : UserEvent(w){ localPos = local; globalPos = global; buttons = b; type = QEvent::MouseMove; }
+        MouseEvent(QWidget *w, ulong time, const QPoint & local, const QPoint & global, Qt::MouseButtons b)
+            : UserEvent(w, QEvent::MouseMove, time){ localPos = local; globalPos = global; buttons = b; }
         QPoint localPos;
         QPoint globalPos;
         Qt::MouseButtons buttons;
@@ -584,8 +587,8 @@ public:
 
     class WheelEvent : public UserEvent {
     public:
-        WheelEvent(QWidget *w, const QPoint & local, const QPoint & global, int d, Qt::Orientation o)
-            : UserEvent(w) { localPos = local; globalPos = global; delta = d; orient = o; type = QEvent::Wheel; }
+        WheelEvent(QWidget *w, ulong time, const QPoint & local, const QPoint & global, int d, Qt::Orientation o)
+            : UserEvent(w, QEvent::Wheel, time) { localPos = local; globalPos = global; delta = d; orient = o; }
         int delta;
         QPoint localPos;
         QPoint globalPos;
@@ -594,8 +597,8 @@ public:
 
     class KeyEvent : public UserEvent {
     public:
-        KeyEvent(QWidget *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
-            :UserEvent(w){ type = t; key = k; unicode = text; repeat = autorep; repeatCount = count; modifiers = mods; }
+        KeyEvent(QWidget *w, QEvent::Type t, ulong time, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
+            :UserEvent(w, t, time){ key = k; unicode = text; repeat = autorep; repeatCount = count; modifiers = mods; }
         int key;
         QString unicode;
         bool repeat;
@@ -604,17 +607,29 @@ public:
     };
 
     static void handleMouseEvent(QWidget *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b) {
-        MouseEvent * e = new MouseEvent(w, local, global, b);
+        handleMouseEvent(w, local, global, b, time.elapsed());
+    }
+
+    static void handleMouseEvent(QWidget *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b, ulong timestamp) {
+        MouseEvent * e = new MouseEvent(w, timestamp, local, global, b);
         queueUserEvent(e);
     }
 
     static void handleKeyEvent(QWidget *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1) {
-        KeyEvent * e = new KeyEvent(w, t, k, mods, text, autorep, count);
+        handleKeyEvent(w, t, time.elapsed(), k, mods, text, autorep, count);
+    }
+
+    static void handleKeyEvent(QWidget *w, QEvent::Type t, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1) {
+        KeyEvent * e = new KeyEvent(w, t, timestamp, k, mods, text, autorep, count);
         queueUserEvent(e);
     }
 
     static void handleWheelEvent(QWidget *w, const QPoint & local, const QPoint & global, int d, Qt::Orientation o) {
-        WheelEvent *e = new WheelEvent(w, local, global, d, o);
+        handleWheelEvent(w, time.elapsed(), local, global, d, o);
+    }
+
+    static void handleWheelEvent(QWidget *w, ulong timestamp, const QPoint & local, const QPoint & global, int d, Qt::Orientation o) {
+        WheelEvent *e = new WheelEvent(w, timestamp, local, global, d, o);
         queueUserEvent(e);
     }
 
