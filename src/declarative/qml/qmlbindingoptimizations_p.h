@@ -55,7 +55,6 @@
 
 #include "qmlexpression_p.h"
 #include "qmlbinding.h"
-#include "qmlbasicscript_p.h"
 #include "qmlbindingvme_p.h"
 
 QT_BEGIN_HEADER
@@ -100,32 +99,6 @@ private:
     quint32 *m_signalTable;
 
     static int methodCount;
-};
-
-class QmlBinding_Id : public QmlAbstractExpression, 
-                      public QmlAbstractBinding
-{
-public:
-    QmlBinding_Id(QObject *object, int propertyIdx,
-                  QmlContext *context, int id);
-    virtual ~QmlBinding_Id();
-
-    // Inherited from QmlAbstractBinding
-    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
-    virtual int propertyIndex();
-    virtual void update(QmlMetaProperty::WriteFlags flags);
-
-    void reset();
-
-private:
-    void removeFromContext();
-
-    QmlBinding_Id **m_prev;
-    QmlBinding_Id  *m_next;
-
-    QObject *m_object;
-    int m_propertyIdx;
-    int m_id;
 };
 
 QT_END_NAMESPACE

@@ -54,8 +54,8 @@
 //
 
 #include <QtCore/qglobal.h>
-#include <private/qmlbasicscript_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
+#include "qmlexpression_p.h"
 #include "qmlguard_p.h"
 
 QT_BEGIN_HEADER
@@ -74,8 +74,32 @@ public:
         int targetSlot;
 
         struct Subscription {
-            QmlGuard<QObject> source;
-            int notifyIndex;
+            struct Signal {
+                QmlGuard<QObject> source;
+                int notifyIndex;
+            };
+
+            struct Id {
+                inline Id();
+                inline ~Id();
+                inline void reset();
+                Id *next;
+                Id**prev;
+                QObject *target;
+                int methodIndex;
+            };
+
+            enum { InvalidType, SignalType, IdType } type;
+            inline Subscription();
+            inline ~Subscription();
+            bool isSignal() const { return type == SignalType; }
+            bool isId() const { return type == IdType; }
+            inline Signal *signal();
+            inline Id *id();
+            union {
+                char signalData[sizeof(Signal)];
+                char idData[sizeof(Id)];
+            };
         };
         Subscription *subscriptions;
         QScriptDeclarativeClass::PersistentIdentifier *identifiers;
@@ -89,6 +113,37 @@ public:
     static void dump(const char *);
 };
 
+QmlBindingVME::Config::Subscription::Subscription()
+: type(InvalidType)
+{
+}
+
+QmlBindingVME::Config::Subscription::~Subscription()
+{
+    if (type == SignalType) ((Signal *)signalData)->~Signal();
+    else if (type == IdType) ((Id *)idData)->~Id();
+}
+
+QmlBindingVME::Config::Subscription::Id::Id()
+: next(0), prev(0), target(0), methodIndex(-1)
+{
+}
+
+QmlBindingVME::Config::Subscription::Id::~Id()
+{
+    reset();
+}
+
+void QmlBindingVME::Config::Subscription::Id::reset()
+{
+    if (next) next->prev = prev;
+    if (prev) *prev = next;
+    next = 0;
+    prev = 0;
+    target = 0;
+    methodIndex = -1;
+}
+
 class QmlBindingCompilerPrivate;
 class QmlBindingCompiler
 {
@@ -99,8 +154,18 @@ public:
     // Returns true if bindings were compiled
     bool isValid() const;
 
+    struct Expression
+    {
+        QmlParser::Object *component;
+        QmlParser::Object *context;
+        QmlParser::Property *property;
+        QmlParser::Variant expression;
+        QHash<QString, QmlParser::Object *> ids;
+        QmlEnginePrivate::Imports imports;
+    };
+
     // -1 on failure, otherwise the binding index to use
-    int compile(const QmlBasicScript::Expression &, QmlEnginePrivate *);
+    int compile(const Expression &, QmlEnginePrivate *);
 
     // Returns the compiled program
     QByteArray program() const;

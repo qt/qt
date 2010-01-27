@@ -129,7 +129,6 @@ public:
 
         StoreBinding,             /* assignBinding */
         StoreCompiledBinding,     /* assignBinding */
-        StoreIdOptBinding,        /* assignIdOptBinding */
         StoreValueSource,         /* assignValueSource */
         StoreValueInterceptor,    /* assignValueInterceptor */
 

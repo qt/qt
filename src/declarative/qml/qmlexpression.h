@@ -58,7 +58,6 @@ class QmlRefCount;
 class QmlEngine;
 class QmlContext;
 class QmlExpressionPrivate;
-class QmlBasicScript;
 class Q_DECLARATIVE_EXPORT QmlExpression : public QObject
 {
     Q_OBJECT

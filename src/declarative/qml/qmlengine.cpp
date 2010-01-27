@@ -46,7 +46,6 @@
 #include "qmlcompiler_p.h"
 #include "qmlglobalscriptclass_p.h"
 #include "qml.h"
-#include "qmlbasicscript_p.h"
 #include "qmlcontext.h"
 #include "qmlexpression.h"
 #include "qmlcomponent.h"

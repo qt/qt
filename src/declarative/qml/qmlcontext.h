@@ -88,7 +88,6 @@ private:
     friend class QmlEnginePrivate;
     friend class QmlExpression;
     friend class QmlExpressionPrivate;
-    friend class QmlBasicScript;
     friend class QmlContextScriptClass;
     friend class QmlObjectScriptClass;
     friend class QmlComponent;

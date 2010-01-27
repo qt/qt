@@ -55,7 +55,6 @@
 
 #include "qmlexpression.h"
 
-#include "qmlbasicscript_p.h"
 #include "qmlengine_p.h"
 #include "qmlguard_p.h"
 
@@ -120,7 +119,6 @@ public:
     bool expressionRewritten:1;
     QScriptValue expressionFunction;
 
-    QmlBasicScript sse;
     QObject *me;
     bool trackChange;
 
@@ -160,18 +158,12 @@ public:
     QmlExpressionPrivate(QmlExpressionData *);
     ~QmlExpressionPrivate();
 
-    enum CompiledDataType {
-        BasicScriptEngineData = 1,
-        PreTransformedQtScriptData = 2
-    };
-
     void init(QmlContext *, const QString &, QObject *);
     void init(QmlContext *, void *, QmlRefCount *, QObject *, const QString &, int);
 
     QmlExpressionData *data;
 
     QVariant value(QObject *secondaryScope = 0, bool *isUndefined = 0);
-    QVariant evalSSE();
     QVariant evalQtScript(QObject *secondaryScope, bool *isUndefined = 0);
 
     void updateGuards(const QPODVector<QmlEnginePrivate::CapturedProperty> &properties);

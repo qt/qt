@@ -59,6 +59,7 @@
 #include "qmlengine_p.h"
 #include "qmlintegercache_p.h"
 #include "qmltypenamecache_p.h"
+#include "qmlbindingvme_p.h"
 
 #include <QtCore/qhash.h>
 #include <QtScript/qscriptvalue.h>
@@ -117,7 +118,7 @@ public:
     {
         ContextGuard() : priv(0), bindings(0) {}
         QmlContextPrivate *priv;
-        QmlBinding_Id *bindings;
+        QmlBindingVME::Config::Subscription::Id *bindings;
         ContextGuard &operator=(QObject *obj) {
             (QmlGuard<QObject>&)*this = obj; return *this;
         }

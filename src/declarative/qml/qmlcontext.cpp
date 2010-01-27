@@ -105,8 +105,12 @@ void QmlContextPrivate::destroyed(ContextGuard *guard)
     if (parent && QObjectPrivate::get(parent)->wasDeleted) 
         return;
 
-    while(guard->bindings) 
+    while(guard->bindings) {
+        QObject *o = guard->bindings->target;
+        int mi = guard->bindings->methodIndex;
         guard->bindings->reset();
+        if (o) o->qt_metacall(QMetaObject::InvokeMetaMethod, mi, 0);
+    }
 
     for (int ii = 0; ii < idValueCount; ++ii) {
         if (&idValues[ii] == guard) {

@@ -627,23 +627,6 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
             }
             break;
 
-        case QmlInstruction::StoreIdOptBinding:
-            {
-                int coreIndex = instr.assignIdOptBinding.property;
-                if (stack.count() == 1 && bindingSkipList.testBit(coreIndex)) 
-                    break;
-
-                QObject *target = stack.top();
-
-                QmlBinding_Id *bind = 
-                    new QmlBinding_Id(target, instr.assignIdOptBinding.property,
-                                      ctxt, instr.assignIdOptBinding.id);
-                bindValues.append(bind);
-                bind->m_mePtr = &bindValues.values[bindValues.count - 1];
-                bind->addToObject(target);
-            } 
-            break;
-
         case QmlInstruction::StoreValueSource:
             {
                 QObject *obj = stack.pop();

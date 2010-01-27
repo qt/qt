@@ -52,6 +52,22 @@ QT_BEGIN_NAMESPACE
 
 using namespace QmlJS;
 
+QmlBindingVME::Config::Subscription::Signal *QmlBindingVME::Config::Subscription::signal() 
+{
+    if (type == IdType) ((Id *)idData)->~Id();
+    if (type != SignalType) new (signalData) Signal;
+    type = SignalType;
+    return (Signal *)signalData;
+}
+
+QmlBindingVME::Config::Subscription::Id *QmlBindingVME::Config::Subscription::id()
+{
+    if (type == SignalType) ((Signal *)signalData)->~Signal();
+    if (type != IdType) new (idData) Id;
+    type = IdType;
+    return (Id *)idData;
+}
+
 namespace {
 // Supported types: int, qreal, QString (needs constr/destr), QObject*, bool
 struct Register {
@@ -395,10 +411,53 @@ struct QmlBindingCompilerPrivate
     QByteArray buildExceptionData() const;
 };
 
+inline void unsubscribe(int subIndex, QmlBindingVME::Config *config)
+{
+    QmlBindingVME::Config::Subscription *sub = (config->subscriptions + subIndex);
+    if (sub->isSignal()) {
+        QmlBindingVME::Config::Subscription::Signal *s = sub->signal();
+        if (s->source)
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+            QMetaObject::disconnectOne(s->source, s->notifyIndex, 
+                                       config->target, config->targetSlot + subIndex);
+#else
+            // QTBUG-6781
+            QMetaObject::disconnect(s->source, s->notifyIndex, 
+                                    config->target, config->targetSlot + subIndex);
+#endif
+    } else if (sub->isId()) {
+        sub->id()->reset();
+    }
+}
+
+inline void subscribeId(QmlContextPrivate *p, int idIndex,
+                        int subIndex, QmlBindingVME::Config *config)
+{
+    unsubscribe(subIndex, config);
+
+    if (p->idValues[idIndex]) {
+        QmlBindingVME::Config::Subscription *sub = (config->subscriptions + subIndex);
+        QmlBindingVME::Config::Subscription::Id *i = sub->id();
+
+        i->next = p->idValues[idIndex].bindings;
+        i->prev = &p->idValues[idIndex].bindings;
+        p->idValues[idIndex].bindings = i;
+        if (i->next) i->next->prev = &i->next;
+
+        i->target = config->target;
+        i->methodIndex = config->targetSlot + subIndex;
+    }
+}
+ 
 inline void subscribe(QObject *o, int notifyIndex, 
                       int subIndex, QmlBindingVME::Config *config)
 {
-    QmlBindingVME::Config::Subscription *s = config->subscriptions + subIndex;
+    QmlBindingVME::Config::Subscription *sub = (config->subscriptions + subIndex);
+    
+    if (sub->isId())
+        unsubscribe(subIndex, config);
+
+    QmlBindingVME::Config::Subscription::Signal *s = sub->signal();
     if (o != s->source || notifyIndex != s->notifyIndex)  {
         if (s->source)
 #if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
@@ -690,10 +749,14 @@ void QmlBindingVME::init(const char *programData, Config *config,
 }
 
 static void throwException(int id, QmlDelayedError *error, 
-                           Program *program, QmlContextPrivate *context)
+                           Program *program, QmlContextPrivate *context,
+                           const QString &description = QString())
 {
     error->error.setUrl(context->url);
-    error->error.setDescription("TypeError: Result of expression is not an object");
+    if (description.isEmpty())
+        error->error.setDescription(QLatin1String("TypeError: Result of expression is not an object"));
+    else
+        error->error.setDescription(description);
     if (id != 0xFF) {
         quint64 e = *((quint64 *)(program->data() + program->exceptionDataOffset) + id); 
         error->error.setLine((e >> 32) & 0xFFFFFFFF);
@@ -728,18 +791,16 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         break;
 
     case Instr::SubscribeId:
+        subscribeId(context, instr->subscribe.index, instr->subscribe.offset, config);
+        break;
+
     case Instr::Subscribe:
     {
         QObject *o = 0;
         int notifyIndex = instr->subscribe.index;
 
-        if (instr->common.type == Instr::SubscribeId) {
-            o = QmlContextPrivate::get(context);
-            notifyIndex += context->notifyIndex;
-        } else {
-            const Register &object = registers[instr->subscribe.reg];
-            if (!object.isUndefined()) o = object.getQObject();
-        }
+        const Register &object = registers[instr->subscribe.reg];
+        if (!object.isUndefined()) o = object.getQObject();
         subscribe(o, instr->subscribe.index, instr->subscribe.offset, config);
     }
         break;
@@ -998,7 +1059,8 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
     {
         Register &data = registers[instr->store.reg];
         if (data.isUndefined()) {
-            throwException(instr->store.exceptionId, error, program, context);
+            throwException(instr->store.exceptionId, error, program, context,
+                           QLatin1String("Unable to assign undefined value"));
             return;
         }
 
@@ -1374,7 +1436,7 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
         instr.store.output = 0;
         instr.store.index = destination->index;
         instr.store.reg = convertReg;
-        instr.store.exceptionId = 0xFF;
+        instr.store.exceptionId = exceptionId(node->expressionCast());
         bytecode << instr;
 
         if (destination->type == QVariant::String) {
@@ -1429,6 +1491,7 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
             instr.store.output = 0;
             instr.store.index = destination->index;
             instr.store.reg = type.reg;
+            instr.store.exceptionId = exceptionId(node->expressionCast());
             bytecode << instr;
 
             releaseReg(type.reg);
@@ -2317,7 +2380,7 @@ bool QmlBindingCompilerPrivate::subscriptionNeutral(const QSet<QString> &base,
 quint8 QmlBindingCompilerPrivate::exceptionId(QmlJS::AST::ExpressionNode *n)
 {
     quint8 rv = 0xFF;
-    if (exceptions.count() < 0xFF) {
+    if (n && exceptions.count() < 0xFF) {
         rv = (quint8)exceptions.count();
         QmlJS::AST::SourceLocation l = n->firstSourceLocation();
         quint64 e = l.startLine;
@@ -2349,8 +2412,7 @@ bool QmlBindingCompiler::isValid() const
 /* 
 -1 on failure, otherwise the binding index to use.
 */
-int QmlBindingCompiler::compile(const QmlBasicScript::Expression &expression, 
-                                QmlEnginePrivate *engine)
+int QmlBindingCompiler::compile(const Expression &expression, QmlEnginePrivate *engine)
 {
     if (!expression.expression.asAST()) return false;
 

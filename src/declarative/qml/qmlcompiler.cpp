@@ -47,7 +47,6 @@
 #include "qmlpropertyvaluesource.h"
 #include "qmlcomponent.h"
 #include "qmetaobjectbuilder_p.h"
-#include "qmlbasicscript_p.h"
 #include "qmlstringconverters_p.h"
 #include "qmlengine_p.h"
 #include "qmlengine.h"
@@ -2558,23 +2557,6 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     }
 
     QmlInstruction store;
-
-    QmlBasicScript bs;
-    if (ref.dataType == BindingReference::BasicScript) 
-        bs.load(ref.compiledData.constData() + sizeof(quint32));
-
-    if (bs.isSingleIdFetch()) {
-        int idIndex = bs.singleIdFetchIndex();
-        QmlParser::Object *idObj = compileState.idIndexes.value(idIndex);
-        if (canCoerce(prop->type, idObj)) {
-            store.type = QmlInstruction::StoreIdOptBinding;
-            store.assignIdOptBinding.id = idIndex;
-            store.assignIdOptBinding.property = prop->index;
-            output->bytecode << store;
-            return;
-        }
-    } 
-        
     store.type = QmlInstruction::StoreBinding;
     store.assignBinding.value = output->indexForByteArray(ref.compiledData);
     store.assignBinding.context = ref.bindingContext.stack;
@@ -2628,7 +2610,7 @@ bool QmlCompiler::completeComponentBuild()
         COMPILE_CHECK(buildDynamicMeta(aliasObject, ResolveAliases));
     }
 
-    QmlBasicScript::Expression expr;
+    QmlBindingCompiler::Expression expr;
     expr.component = compileState.root;
     expr.ids = compileState.ids;
 
@@ -2637,15 +2619,12 @@ bool QmlCompiler::completeComponentBuild()
     for (QHash<QmlParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); iter != compileState.bindings.end(); ++iter) {
         BindingReference &binding = *iter;
 
-        QmlBasicScript bs;
         expr.context = binding.bindingContext.object;
         expr.property = binding.property;
         expr.expression = binding.expression;
         expr.imports = unit->imports;
 
-        bs.compile(expr);
-
-        if (qmlExperimental() && (!bs.isValid() || !bs.isSingleIdFetch())) {
+        if (qmlExperimental()) {
             int index = bindingCompiler.compile(expr, QmlEnginePrivate::get(engine));
             if (index != -1) {
                 qWarning() << "Accepted for optimization:" << qPrintable(expr.expression.asScript());
@@ -2658,50 +2637,37 @@ bool QmlCompiler::completeComponentBuild()
             }
         }
 
-        quint32 type;
-        if (bs.isValid()) {
-            binding.compiledData =
-                QByteArray(bs.compileData(), bs.compileDataSize());
-            type = QmlExpressionPrivate::BasicScriptEngineData;
-            binding.dataType = BindingReference::BasicScript;
+        binding.dataType = BindingReference::QtScript;
 
-            componentStat.optimizedBindings++;
+        // Pre-rewrite the expression
+        QString expression = binding.expression.asScript();
+
+        // ### Optimize
+        QmlRewrite::SharedBindingTester sharableTest;
+        bool isSharable = sharableTest.isSharable(expression);
+        
+        QmlRewrite::RewriteBinding rewriteBinding;
+        expression = rewriteBinding(expression);
+
+        quint32 length = expression.length();
+        quint32 pc; 
+        
+        if (isSharable) {
+            pc = output->cachedClosures.count();
+            pc |= 0x80000000;
+            output->cachedClosures.append(0);
         } else {
-            type = QmlExpressionPrivate::PreTransformedQtScriptData;
-            binding.dataType = BindingReference::QtScript;
-
-            // Pre-rewrite the expression
-            QString expression = binding.expression.asScript();
-
-            // ### Optimize
-            QmlRewrite::SharedBindingTester sharableTest;
-            bool isSharable = sharableTest.isSharable(expression);
-            
-            QmlRewrite::RewriteBinding rewriteBinding;
-            expression = rewriteBinding(expression);
-
-            quint32 length = expression.length();
-            quint32 pc; 
-            
-            if (isSharable) {
-                pc = output->cachedClosures.count();
-                pc |= 0x80000000;
-                output->cachedClosures.append(0);
-            } else {
-                pc = output->cachedPrograms.length();
-                output->cachedPrograms.append(0);
-            }
-
-            binding.compiledData =
-                QByteArray((const char *)&pc, sizeof(quint32)) +
-                QByteArray((const char *)&length, sizeof(quint32)) +
-                QByteArray((const char *)expression.constData(), 
-                           expression.length() * sizeof(QChar));
-
-            componentStat.scriptBindings++;
+            pc = output->cachedPrograms.length();
+            output->cachedPrograms.append(0);
         }
-        binding.compiledData.prepend(QByteArray((const char *)&type, 
-                                                sizeof(quint32)));
+
+        binding.compiledData =
+            QByteArray((const char *)&pc, sizeof(quint32)) +
+            QByteArray((const char *)&length, sizeof(quint32)) +
+            QByteArray((const char *)expression.constData(), 
+                       expression.length() * sizeof(QChar));
+
+        componentStat.scriptBindings++;
     }
 
     if (bindingCompiler.isValid()) {

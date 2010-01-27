@@ -114,52 +114,46 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
     data->line = lineNumber;
 
     quint32 *exprData = (quint32 *)expr;
-    Q_ASSERT(*exprData == BasicScriptEngineData || 
-             *exprData == PreTransformedQtScriptData);
-    if (*exprData == BasicScriptEngineData) {
-        data->sse.load((const char *)(exprData + 1), rc);
+    QmlCompiledData *dd = (QmlCompiledData *)rc;
+
+    data->expressionRewritten = true;
+    data->expression = QString::fromRawData((QChar *)(exprData + 2), exprData[1]);
+
+    int progIdx = *(exprData);
+    bool isShared = progIdx & 0x80000000;
+    progIdx &= 0x7FFFFFFF;
+
+    QmlEngine *engine = ctxt->engine();
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+
+    if (isShared) {
+
+        if (!dd->cachedClosures.at(progIdx)) {
+            QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
+            scriptContext->pushScope(ep->contextClass->newSharedContext());
+            dd->cachedClosures[progIdx] = new QScriptValue(scriptEngine->evaluate(data->expression, data->url, data->line));
+            scriptEngine->popContext();
+        }
+
+        data->expressionFunction = *dd->cachedClosures.at(progIdx);
+        data->isShared = true;
+        data->expressionFunctionValid = true;
+
     } else {
-        QmlCompiledData *dd = (QmlCompiledData *)rc;
-
-        data->expressionRewritten = true;
-        data->expression = QString::fromRawData((QChar *)(exprData + 3), exprData[2]);
-
-        int progIdx = *(exprData + 1);
-        bool isShared = progIdx & 0x80000000;
-        progIdx &= 0x7FFFFFFF;
-
-        QmlEngine *engine = ctxt->engine();
-        QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
-        QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-
-        if (isShared) {
-
-            if (!dd->cachedClosures.at(progIdx)) {
-                QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
-                scriptContext->pushScope(ep->contextClass->newSharedContext());
-                dd->cachedClosures[progIdx] = new QScriptValue(scriptEngine->evaluate(data->expression, data->url, data->line));
-                scriptEngine->popContext();
-            }
-
-            data->expressionFunction = *dd->cachedClosures.at(progIdx);
-            data->isShared = true;
-            data->expressionFunctionValid = true;
-
-        } else {
 
 #if !defined(Q_OS_SYMBIAN) //XXX Why doesn't this work?
-            if (!dd->cachedPrograms.at(progIdx)) {
-                dd->cachedPrograms[progIdx] =
-                    new QScriptProgram(data->expression, data->url, data->line);
-            }
+        if (!dd->cachedPrograms.at(progIdx)) {
+            dd->cachedPrograms[progIdx] =
+                new QScriptProgram(data->expression, data->url, data->line);
+        }
 
-            data->expressionFunction = evalInObjectScope(ctxt, me, *dd->cachedPrograms.at(progIdx));
+        data->expressionFunction = evalInObjectScope(ctxt, me, *dd->cachedPrograms.at(progIdx));
 #else
-            data->expressionFunction = evalInObjectScope(ctxt, me, data->expression);
+        data->expressionFunction = evalInObjectScope(ctxt, me, data->expression);
 #endif
 
-            data->expressionFunctionValid = true;
-        }
+        data->expressionFunctionValid = true;
     }
 
     data->QmlAbstractExpression::setContext(ctxt);
@@ -272,10 +266,7 @@ QmlContext *QmlExpression::context() const
 QString QmlExpression::expression() const
 {
     Q_D(const QmlExpression);
-    if (d->data->sse.isValid())
-        return QString::fromUtf8(d->data->sse.expression());
-    else
-        return d->data->expression;
+    return d->data->expression;
 }
 
 /*!
@@ -299,19 +290,6 @@ void QmlExpression::setExpression(const QString &expression)
     d->data->expressionFunctionValid = false;
     d->data->expressionRewritten = false;
     d->data->expressionFunction = QScriptValue();
-
-    d->data->sse.clear();
-}
-
-QVariant QmlExpressionPrivate::evalSSE()
-{
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QmlPerfTimer<QmlPerf::BindValueSSE> perfsse;
-#endif
-
-    QVariant rv = data->sse.run(data->context(), data->me);
-
-    return rv;
 }
 
 void QmlExpressionPrivate::exceptionToError(QScriptEngine *scriptEngine, 
@@ -456,7 +434,7 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
         return rv;
     }
 
-    if (!data->sse.isValid() && data->expression.isEmpty())
+    if (data->expression.isEmpty())
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -477,11 +455,7 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
     QmlExpressionData *localData = data;
     localData->addref();
 
-    if (data->sse.isValid()) {
-        rv = evalSSE();
-    } else {
-        rv = evalQtScript(secondaryScope, isUndefined);
-    }
+    rv = evalQtScript(secondaryScope, isUndefined);
 
     ep->currentExpression = lastCurrentExpression;
     ep->captureProperties = lastCaptureProperties;

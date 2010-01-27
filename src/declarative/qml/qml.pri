@@ -32,7 +32,6 @@ SOURCES += \
     $$PWD/qmlscriptparser.cpp \
     $$PWD/qmlenginedebug.cpp \
     $$PWD/qmlrewrite.cpp \
-    $$PWD/qmlbasicscript.cpp \
     $$PWD/qmlbindingvme.cpp \
     $$PWD/qmlvaluetype.cpp \
     $$PWD/qmlbindingoptimizations.cpp \
@@ -96,7 +95,6 @@ HEADERS += \
     $$PWD/qmldeclarativedata_p.h \
     $$PWD/qmlerror.h \
     $$PWD/qmlscriptparser_p.h \
-    $$PWD/qmlbasicscript_p.h \
     $$PWD/qmlbindingvme_p.h \
     $$PWD/qmlenginedebug_p.h \
     $$PWD/qmlrewrite_p.h \
