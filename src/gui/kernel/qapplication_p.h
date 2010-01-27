@@ -610,7 +610,7 @@ public:
         handleMouseEvent(w, local, global, b, time.elapsed());
     }
 
-    static void handleMouseEvent(QWidget *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b, ulong timestamp) {
+    static void handleMouseEvent(QWidget *w, ulong timestamp, const QPoint & local, const QPoint & global, Qt::MouseButtons b) {
         MouseEvent * e = new MouseEvent(w, timestamp, local, global, b);
         queueUserEvent(e);
     }
