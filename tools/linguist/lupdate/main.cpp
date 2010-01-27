@@ -136,7 +136,7 @@ static void printUsage()
 }
 
 static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFileNames,
-    const QByteArray &codecForTr, const QString &sourceLanguage, const QString &targetLanguage,
+    bool setCodec, const QString &sourceLanguage, const QString &targetLanguage,
     UpdateOptions options, bool *fail)
 {
     QDir dir;
@@ -154,10 +154,10 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
             }
             tor.resolveDuplicates();
             cd.clearErrors();
-            if (!codecForTr.isEmpty() && codecForTr != tor.codecName())
+            if (setCodec && fetchedTor.codec() != tor.codec())
                 qWarning("lupdate warning: Codec for tr() '%s' disagrees with "
                          "existing file's codec '%s'. Expect trouble.",
-                         codecForTr.constData(), tor.codecName().constData());
+                         fetchedTor.codecName().constData(), tor.codecName().constData());
             if (!targetLanguage.isEmpty() && targetLanguage != tor.languageCode())
                 qWarning("lupdate warning: Specified target language '%s' disagrees with "
                          "existing file's language '%s'. Ignoring.",
@@ -167,8 +167,8 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
                          "existing file's language '%s'. Ignoring.",
                          qPrintable(sourceLanguage), qPrintable(tor.sourceLanguageCode()));
         } else {
-            if (!codecForTr.isEmpty())
-                tor.setCodecName(codecForTr);
+            if (setCodec)
+                tor.setCodec(fetchedTor.codec());
             if (!targetLanguage.isEmpty())
                 tor.setLanguageCode(targetLanguage);
             else
@@ -190,8 +190,8 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
         if (tor.locationsType() == Translator::NoLocations) // Could be set from file
             theseOptions |= NoLocations;
         Translator out = merge(tor, fetchedTor, theseOptions, err);
-        if (!codecForTr.isEmpty())
-            out.setCodecName(codecForTr);
+        if (setCodec)
+            out.setCodec(fetchedTor.codec());
 
         if ((options & Verbose) && !err.isEmpty()) {
             printOut(err);
@@ -374,17 +374,17 @@ static void processProjects(
                 continue;
             }
             Translator tor;
-            QByteArray codecForTr;
+            bool setCodec = false;
             QStringList tmp = visitor.values(QLatin1String("CODEC"))
                               + visitor.values(QLatin1String("DEFAULTCODEC"))
                               + visitor.values(QLatin1String("CODECFORTR"));
             if (!tmp.isEmpty()) {
-                codecForTr = tmp.last().toLatin1();
-                tor.setCodecName(codecForTr);
+                tor.setCodecName(tmp.last().toLatin1());
+                setCodec = true;
             }
             processProject(false, pfi, visitor, options, codecForSource,
                            targetLanguage, sourceLanguage, &tor, fail);
-            updateTsFiles(tor, tsFiles, codecForTr, sourceLanguage, targetLanguage, options, fail);
+            updateTsFiles(tor, tsFiles, setCodec, sourceLanguage, targetLanguage, options, fail);
             continue;
         }
       noTrans:
@@ -657,7 +657,7 @@ int main(int argc, char **argv)
         cd.m_allCSources = allCSources;
         fetchedTor.setCodecName(codecForTr);
         processSources(fetchedTor, sourceFiles, cd);
-        updateTsFiles(fetchedTor, tsFileNames, codecForTr,
+        updateTsFiles(fetchedTor, tsFileNames, !codecForTr.isEmpty(),
                       sourceLanguage, targetLanguage, options, &fail);
     } else {
         if (!sourceFiles.isEmpty() || !includePath.isEmpty()) {
@@ -669,7 +669,7 @@ int main(int argc, char **argv)
             fetchedTor.setCodecName(codecForTr);
             processProjects(true, true, proFiles, options, QByteArray(),
                             targetLanguage, sourceLanguage, &fetchedTor, &fail);
-            updateTsFiles(fetchedTor, tsFileNames, codecForTr,
+            updateTsFiles(fetchedTor, tsFileNames, !codecForTr.isEmpty(),
                           sourceLanguage, targetLanguage, options, &fail);
         } else {
             processProjects(true, false, proFiles, options, QByteArray(),
