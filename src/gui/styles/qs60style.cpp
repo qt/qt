@@ -2620,29 +2620,31 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             // lets use spinbox frame here as well, as no combobox specific value available.
             const int frameThickness = cmb->frame ? pixelMetric(PM_SpinBoxFrameWidth, cmb, widget) : 0;
             const int buttonWidth = qMax(cmb->rect.height(), buttonIconSize);
-            const int xposMod = (cmb->rect.x()) + width - buttonMargin - buttonWidth;
-            const int ypos = cmb->rect.y();
 
             QSize buttonSize;
             buttonSize.setWidth(buttonWidth + 2 * buttonMargin);
             buttonSize.setHeight(qMax(8, (cmb->rect.height() >> 1) - frameThickness)); //buttons should be squares
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
             switch (scontrol) {
-                case SC_ComboBoxArrow:
+                case SC_ComboBoxArrow: {
+                    const int xposMod = cmb->rect.x() + width - buttonMargin - buttonWidth;
+                    const int ypos = cmb->rect.y();
                     ret.setRect(xposMod, ypos + buttonMargin, buttonWidth, height - 2 * buttonMargin);
+                    }
                     break;
                 case SC_ComboBoxEditField: {
-                    const int withFrameX = cmb->rect.x() + cmb->rect.width() - frameThickness - buttonSize.width();
+                    const int withFrameX = cmb->rect.x() + width - frameThickness - buttonSize.width();
                     ret = QRect(
                         frameThickness,
                         frameThickness,
                         withFrameX - frameThickness,
-                        cmb->rect.height() - 2 * frameThickness);
+                        height - 2 * frameThickness);
                     }
                 break;
             default:
                 break;
             }
+            ret = visualRect(cmb->direction, cmb->rect, ret);
         }
         break;
     case CC_GroupBox:
