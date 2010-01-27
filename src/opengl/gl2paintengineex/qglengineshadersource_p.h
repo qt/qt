@@ -63,210 +63,229 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(OpenGL)
 
 
-static const char* const qglslMainVertexShader = "\
-    uniform   highp float   depth;\
-    void setPosition();\
-    void main(void)\
-    {\
-            setPosition();\
-            gl_Position.z = depth * gl_Position.w;\
-    }";
+static const char* const qglslMainVertexShader = "\n\
+    void setPosition(); \n\
+    void main(void) \n\
+    { \n\
+        setPosition(); \n\
+    }\n";
 
-static const char* const qglslMainWithTexCoordsVertexShader = "\
-    attribute highp  vec2 textureCoordArray; \
-    varying   highp  vec2 textureCoords; \
-    uniform   highp float   depth;\
-    void setPosition();\
-    void main(void) \
-    {\
-            setPosition();\
-            gl_Position.z = depth * gl_Position.w;\
-            textureCoords = textureCoordArray; \
-    }";
+static const char* const qglslMainWithTexCoordsVertexShader = "\n\
+    attribute highp   vec2      textureCoordArray; \n\
+    varying   highp   vec2      textureCoords; \n\
+    void setPosition(); \n\
+    void main(void) \n\
+    { \n\
+        setPosition(); \n\
+        textureCoords = textureCoordArray; \n\
+    }\n";
 
-static const char* const qglslMainWithTexCoordsAndOpacityVertexShader = "\
-    attribute highp vec2  textureCoordArray; \
-    attribute lowp  float opacityArray; \
-    varying   highp vec2  textureCoords; \
-    varying   lowp  float opacity; \
-    uniform   highp float depth; \
-    void setPosition(); \
-    void main(void) \
-    { \
-            setPosition(); \
-            gl_Position.z = depth * gl_Position.w; \
-            textureCoords = textureCoordArray; \
-            opacity = opacityArray; \
-    }";
+static const char* const qglslMainWithTexCoordsAndOpacityVertexShader = "\n\
+    attribute highp   vec2      textureCoordArray; \n\
+    attribute lowp    float     opacityArray; \n\
+    varying   highp   vec2      textureCoords; \n\
+    varying   lowp    float     opacity; \n\
+    void setPosition(); \n\
+    void main(void) \n\
+    { \n\
+        setPosition(); \n\
+        textureCoords = textureCoordArray; \n\
+        opacity = opacityArray; \n\
+    }\n";
 
 // NOTE: We let GL do the perspective correction so texture lookups in the fragment
 //       shader are also perspective corrected.
-static const char* const qglslPositionOnlyVertexShader = "\
-    attribute highp vec2    vertexCoordsArray;\
-    uniform   highp mat3    pmvMatrix;\
-    void setPosition(void)\
-    {\
-        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \
-        gl_Position = vec4(transformedPos.xy, 0.0, transformedPos.z); \
-    }";
+static const char* const qglslPositionOnlyVertexShader = "\n\
+    attribute highp   vec2      vertexCoordsArray; \n\
+    attribute highp   vec3      pmvMatrix1; \n\
+    attribute highp   vec3      pmvMatrix2; \n\
+    attribute highp   vec3      pmvMatrix3; \n\
+    void setPosition(void) \n\
+    { \n\
+        highp mat3 pmvMatrix = mat3(pmvMatrix1, pmvMatrix2, pmvMatrix3); \n\
+        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \n\
+        gl_Position = vec4(transformedPos.xy, 0.0, transformedPos.z); \n\
+    }\n";
 
-static const char* const qglslUntransformedPositionVertexShader = "\
-    attribute highp vec4    vertexCoordsArray;\
-    void setPosition(void)\
-    {\
-            gl_Position = vertexCoordsArray;\
-    }";
+static const char* const qglslUntransformedPositionVertexShader = "\n\
+    attribute highp   vec4      vertexCoordsArray; \n\
+    void setPosition(void) \n\
+    { \n\
+        gl_Position = vertexCoordsArray; \n\
+    }\n";
 
 // Pattern Brush - This assumes the texture size is 8x8 and thus, the inverted size is 0.125
-static const char* const qglslPositionWithPatternBrushVertexShader = "\
-    attribute highp   vec2  vertexCoordsArray; \
-    uniform   highp   mat3  pmvMatrix; \
-    uniform   mediump vec2  halfViewportSize; \
-    uniform   highp   vec2  invertedTextureSize; \
-    uniform   highp   mat3  brushTransform; \
-    varying   highp   vec2  patternTexCoords; \
-    void setPosition(void) { \
-            vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \
-            gl_Position.xy = transformedPos.xy / transformedPos.z; \
-            mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
-            mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1.0); \
-            mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
-            gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \
-            patternTexCoords.xy = (hTexCoords.xy * 0.125) * invertedHTexCoordsZ; \
-    }";
+static const char* const qglslPositionWithPatternBrushVertexShader = "\n\
+    attribute highp   vec2      vertexCoordsArray; \n\
+    attribute highp   vec3      pmvMatrix1; \n\
+    attribute highp   vec3      pmvMatrix2; \n\
+    attribute highp   vec3      pmvMatrix3; \n\
+    uniform   mediump vec2      halfViewportSize; \n\
+    uniform   highp   vec2      invertedTextureSize; \n\
+    uniform   highp   mat3      brushTransform; \n\
+    varying   highp   vec2      patternTexCoords; \n\
+    void setPosition(void) \n\
+    { \n\
+        highp mat3 pmvMatrix = mat3(pmvMatrix1, pmvMatrix2, pmvMatrix3); \n\
+        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \n\
+        gl_Position.xy = transformedPos.xy / transformedPos.z; \n\
+        mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \n\
+        mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1.0); \n\
+        mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \n\
+        gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \n\
+        patternTexCoords.xy = (hTexCoords.xy * 0.125) * invertedHTexCoordsZ; \n\
+    }\n";
 
 static const char* const qglslAffinePositionWithPatternBrushVertexShader
                  = qglslPositionWithPatternBrushVertexShader;
 
-static const char* const qglslPatternBrushSrcFragmentShader = "\
-    uniform lowp    sampler2D brushTexture;\
-    uniform lowp    vec4      patternColor; \
-    varying highp   vec2      patternTexCoords;\
-    lowp vec4 srcPixel() { \
-        return patternColor * (1.0 - texture2D(brushTexture, patternTexCoords).r); \
+static const char* const qglslPatternBrushSrcFragmentShader = "\n\
+    uniform   lowp    sampler2D brushTexture; \n\
+    uniform   lowp    vec4      patternColor; \n\
+    varying   highp   vec2      patternTexCoords;\n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return patternColor * (1.0 - texture2D(brushTexture, patternTexCoords).r); \n\
     }\n";
 
 
 // Linear Gradient Brush
-static const char* const qglslPositionWithLinearGradientBrushVertexShader = "\
-    attribute highp   vec2  vertexCoordsArray; \
-    uniform   highp   mat3  pmvMatrix; \
-    uniform   mediump vec2  halfViewportSize; \
-    uniform   highp   vec3  linearData; \
-    uniform   highp   mat3  brushTransform; \
-    varying   mediump float index; \
-    void setPosition() { \
-        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \
-        gl_Position.xy = transformedPos.xy / transformedPos.z; \
-        mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
-        mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
-        mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
-        gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \
-        index = (dot(linearData.xy, hTexCoords.xy) * linearData.z) * invertedHTexCoordsZ; \
-    }";
+static const char* const qglslPositionWithLinearGradientBrushVertexShader = "\n\
+    attribute highp   vec2      vertexCoordsArray; \n\
+    attribute highp   vec3      pmvMatrix1; \n\
+    attribute highp   vec3      pmvMatrix2; \n\
+    attribute highp   vec3      pmvMatrix3; \n\
+    uniform   mediump vec2      halfViewportSize; \n\
+    uniform   highp   vec3      linearData; \n\
+    uniform   highp   mat3      brushTransform; \n\
+    varying   mediump float     index; \n\
+    void setPosition() \n\
+    { \n\
+        highp mat3 pmvMatrix = mat3(pmvMatrix1, pmvMatrix2, pmvMatrix3); \n\
+        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \n\
+        gl_Position.xy = transformedPos.xy / transformedPos.z; \n\
+        mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \n\
+        mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \n\
+        mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \n\
+        gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \n\
+        index = (dot(linearData.xy, hTexCoords.xy) * linearData.z) * invertedHTexCoordsZ; \n\
+    }\n";
 
 static const char* const qglslAffinePositionWithLinearGradientBrushVertexShader
                  = qglslPositionWithLinearGradientBrushVertexShader;
 
-static const char* const qglslLinearGradientBrushSrcFragmentShader = "\
-    uniform lowp    sampler2D   brushTexture; \
-    varying mediump float       index; \
-    lowp vec4 srcPixel() { \
-        mediump vec2 val = vec2(index, 0.5); \
-        return texture2D(brushTexture, val); \
+static const char* const qglslLinearGradientBrushSrcFragmentShader = "\n\
+    uniform   lowp    sampler2D brushTexture; \n\
+    varying   mediump float     index; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        mediump vec2 val = vec2(index, 0.5); \n\
+        return texture2D(brushTexture, val); \n\
     }\n";
 
 
 // Conical Gradient Brush
-static const char* const qglslPositionWithConicalGradientBrushVertexShader = "\
-    attribute highp   vec2  vertexCoordsArray;\
-    uniform   highp   mat3  pmvMatrix;\
-    uniform   mediump vec2  halfViewportSize; \
-    uniform   highp   mat3  brushTransform; \
-    varying   highp   vec2  A; \
-    void setPosition(void)\
-    {\
-        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \
-        gl_Position.xy = transformedPos.xy / transformedPos.z; \
-        mediump vec2  viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
-        mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
-        mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
-        gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \
-        A = hTexCoords.xy * invertedHTexCoordsZ; \
-    }";
+static const char* const qglslPositionWithConicalGradientBrushVertexShader = "\n\
+    attribute highp   vec2      vertexCoordsArray; \n\
+    attribute highp   vec3      pmvMatrix1; \n\
+    attribute highp   vec3      pmvMatrix2; \n\
+    attribute highp   vec3      pmvMatrix3; \n\
+    uniform   mediump vec2      halfViewportSize; \n\
+    uniform   highp   mat3      brushTransform; \n\
+    varying   highp   vec2      A; \n\
+    void setPosition(void) \n\
+    { \n\
+        highp mat3 pmvMatrix = mat3(pmvMatrix1, pmvMatrix2, pmvMatrix3); \n\
+        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \n\
+        gl_Position.xy = transformedPos.xy / transformedPos.z; \n\
+        mediump vec2  viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \n\
+        mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \n\
+        mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \n\
+        gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \n\
+        A = hTexCoords.xy * invertedHTexCoordsZ; \n\
+    }\n";
 
 static const char* const qglslAffinePositionWithConicalGradientBrushVertexShader
                  = qglslPositionWithConicalGradientBrushVertexShader;
 
 static const char* const qglslConicalGradientBrushSrcFragmentShader = "\n\
     #define INVERSE_2PI 0.1591549430918953358 \n\
-    uniform lowp    sampler2D   brushTexture; \n\
-    uniform mediump float       angle; \
-    varying highp   vec2        A; \
-    lowp vec4 srcPixel() { \
-        highp float t; \
-        if (abs(A.y) == abs(A.x)) \
-            t = (atan(-A.y + 0.002, A.x) + angle) * INVERSE_2PI; \
-        else \
-            t = (atan(-A.y, A.x) + angle) * INVERSE_2PI; \
-        return texture2D(brushTexture, vec2(t - floor(t), 0.5)); \
-    }";
+    uniform   lowp    sampler2D brushTexture; \n\
+    uniform   mediump float     angle; \n\
+    varying   highp   vec2      A; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        highp float t; \n\
+        if (abs(A.y) == abs(A.x)) \n\
+            t = (atan(-A.y + 0.002, A.x) + angle) * INVERSE_2PI; \n\
+        else \n\
+            t = (atan(-A.y, A.x) + angle) * INVERSE_2PI; \n\
+        return texture2D(brushTexture, vec2(t - floor(t), 0.5)); \n\
+    }\n";
 
 
 // Radial Gradient Brush
-static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\
-    attribute highp   vec2 vertexCoordsArray;\
-    uniform   highp   mat3 pmvMatrix;\
-    uniform   mediump vec2 halfViewportSize; \
-    uniform   highp   mat3 brushTransform; \
-    uniform   highp   vec2 fmp; \
-    varying   highp   float b; \
-    varying   highp   vec2  A; \
-    void setPosition(void) \
-    {\
-        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \
-        gl_Position.xy = transformedPos.xy / transformedPos.z; \
-        mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
-        mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
-        mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
-        gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \
-        A = hTexCoords.xy * invertedHTexCoordsZ; \
-        b = 2.0 * dot(A, fmp); \
-    }";
+static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\n\
+    attribute highp   vec2      vertexCoordsArray;\n\
+    attribute highp   vec3      pmvMatrix1; \n\
+    attribute highp   vec3      pmvMatrix2; \n\
+    attribute highp   vec3      pmvMatrix3; \n\
+    uniform   mediump vec2      halfViewportSize; \n\
+    uniform   highp   mat3      brushTransform; \n\
+    uniform   highp   vec2      fmp; \n\
+    varying   highp   float     b; \n\
+    varying   highp   vec2      A; \n\
+    void setPosition(void) \n\
+    {\n\
+        highp mat3 pmvMatrix = mat3(pmvMatrix1, pmvMatrix2, pmvMatrix3); \n\
+        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \n\
+        gl_Position.xy = transformedPos.xy / transformedPos.z; \n\
+        mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \n\
+        mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \n\
+        mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \n\
+        gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \n\
+        A = hTexCoords.xy * invertedHTexCoordsZ; \n\
+        b = 2.0 * dot(A, fmp); \n\
+    }\n";
 
 static const char* const qglslAffinePositionWithRadialGradientBrushVertexShader
                  = qglslPositionWithRadialGradientBrushVertexShader;
 
-static const char* const qglslRadialGradientBrushSrcFragmentShader = "\
-    uniform lowp    sampler2D   brushTexture; \
-    uniform highp   float       fmp2_m_radius2; \
-    uniform highp   float       inverse_2_fmp2_m_radius2; \
-    varying highp   float       b; \
-    varying highp   vec2        A; \
-    lowp vec4 srcPixel() { \
-        highp float c = -dot(A, A); \
-        highp vec2 val = vec2((-b + sqrt(b*b - 4.0*fmp2_m_radius2*c)) * inverse_2_fmp2_m_radius2, 0.5); \
-        return texture2D(brushTexture, val); \
-    }";
+static const char* const qglslRadialGradientBrushSrcFragmentShader = "\n\
+    uniform   lowp    sampler2D brushTexture; \n\
+    uniform   highp   float     fmp2_m_radius2; \n\
+    uniform   highp   float     inverse_2_fmp2_m_radius2; \n\
+    varying   highp   float     b; \n\
+    varying   highp   vec2      A; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        highp float c = -dot(A, A); \n\
+        highp vec2 val = vec2((-b + sqrt(b*b - 4.0*fmp2_m_radius2*c)) * inverse_2_fmp2_m_radius2, 0.5); \n\
+        return texture2D(brushTexture, val); \n\
+    }\n";
 
 
 // Texture Brush
-static const char* const qglslPositionWithTextureBrushVertexShader = "\
-    attribute highp   vec2 vertexCoordsArray; \
-    uniform   highp   mat3  pmvMatrix; \
-    uniform   mediump vec2  halfViewportSize; \
-    uniform   highp   vec2  invertedTextureSize; \
-    uniform   highp   mat3  brushTransform; \
-    varying   highp   vec2  textureCoords; \
-    void setPosition(void) { \
-            vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \
-            gl_Position.xy = transformedPos.xy / transformedPos.z; \
-            mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \
-            mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \
-            mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
-            gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \
-            textureCoords.xy = (hTexCoords.xy * invertedTextureSize) * gl_Position.w; \
-    }";
+static const char* const qglslPositionWithTextureBrushVertexShader = "\n\
+    attribute highp   vec2      vertexCoordsArray; \n\
+    attribute highp   vec3      pmvMatrix1; \n\
+    attribute highp   vec3      pmvMatrix2; \n\
+    attribute highp   vec3      pmvMatrix3; \n\
+    uniform   mediump vec2      halfViewportSize; \n\
+    uniform   highp   vec2      invertedTextureSize; \n\
+    uniform   highp   mat3      brushTransform; \n\
+    varying   highp   vec2      textureCoords; \n\
+    void setPosition(void) \n\
+    { \n\
+        highp mat3 pmvMatrix = mat3(pmvMatrix1, pmvMatrix2, pmvMatrix3); \n\
+        vec3 transformedPos = pmvMatrix * vec3(vertexCoordsArray.xy, 1.0); \n\
+        gl_Position.xy = transformedPos.xy / transformedPos.z; \n\
+        mediump vec2 viewportCoords = (gl_Position.xy + 1.0) * halfViewportSize; \n\
+        mediump vec3 hTexCoords = brushTransform * vec3(viewportCoords, 1); \n\
+        mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \n\
+        gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \n\
+        textureCoords.xy = (hTexCoords.xy * invertedTextureSize) * gl_Position.w; \n\
+    }\n";
 
 static const char* const qglslAffinePositionWithTextureBrushVertexShader
                  = qglslPositionWithTextureBrushVertexShader;
@@ -275,148 +294,165 @@ static const char* const qglslAffinePositionWithTextureBrushVertexShader
 // OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
 // we emulate GL_REPEAT by only taking the fractional part of the texture coords.
 // TODO: Special case POT textures which don't need this emulation
-static const char* const qglslTextureBrushSrcFragmentShader = "\
-    varying highp   vec2      textureCoords; \
-    uniform lowp    sampler2D brushTexture; \
-    lowp vec4 srcPixel() { \
-        return texture2D(brushTexture, fract(textureCoords)); \
-    }";
+static const char* const qglslTextureBrushSrcFragmentShader = "\n\
+    varying highp   vec2      textureCoords; \n\
+    uniform lowp    sampler2D brushTexture; \n\
+    lowp vec4 srcPixel() { \n\
+        return texture2D(brushTexture, fract(textureCoords)); \n\
+    }\n";
 #else
-static const char* const qglslTextureBrushSrcFragmentShader = "\
-    varying highp   vec2      textureCoords; \
-    uniform lowp    sampler2D brushTexture; \
-    lowp vec4 srcPixel() { \
-        return texture2D(brushTexture, textureCoords); \
-    }";
+static const char* const qglslTextureBrushSrcFragmentShader = "\n\
+    varying   highp   vec2      textureCoords; \n\
+    uniform   lowp    sampler2D brushTexture; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return texture2D(brushTexture, textureCoords); \n\
+    }\n";
 #endif
 
-static const char* const qglslTextureBrushSrcWithPatternFragmentShader = "\
-    varying highp   vec2      textureCoords; \
-    uniform lowp    vec4      patternColor; \
-    uniform lowp    sampler2D brushTexture; \
-    lowp vec4 srcPixel() { \
-        return patternColor * (1.0 - texture2D(brushTexture, textureCoords).r); \
-    }";
-
-// Solid Fill Brush
-static const char* const qglslSolidBrushSrcFragmentShader = "\
-    uniform lowp vec4 fragmentColor; \
-    lowp vec4 srcPixel() { \
-        return fragmentColor; \
-    }";
-
-static const char* const qglslImageSrcFragmentShader = "\
-    varying highp   vec2    textureCoords; \
-    uniform lowp  sampler2D imageTexture; \
-    lowp vec4 srcPixel() { \
-        return texture2D(imageTexture, textureCoords); \
-    }";
-
-static const char* const qglslCustomSrcFragmentShader = "\
-    varying highp vec2      textureCoords; \
-    uniform lowp  sampler2D imageTexture; \
-    lowp vec4 customShader(lowp sampler2D texture, highp vec2 coords); \
-    lowp vec4 srcPixel() { \
-        return customShader(imageTexture, textureCoords); \
-    }";
-
-static const char* const qglslImageSrcWithPatternFragmentShader = "\
-    varying highp vec2      textureCoords; \
-    uniform lowp  vec4      patternColor; \
-    uniform lowp  sampler2D imageTexture; \
-    lowp vec4 srcPixel() { \
-        return patternColor * (1.0 - texture2D(imageTexture, textureCoords).r); \
+static const char* const qglslTextureBrushSrcWithPatternFragmentShader = "\n\
+    varying   highp   vec2      textureCoords; \n\
+    uniform   lowp    vec4      patternColor; \n\
+    uniform   lowp    sampler2D brushTexture; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return patternColor * (1.0 - texture2D(brushTexture, textureCoords).r); \n\
     }\n";
 
-static const char* const qglslNonPremultipliedImageSrcFragmentShader = "\
-    varying highp vec2      textureCoords; \
-    uniform lowp  sampler2D imageTexture; \
-    lowp vec4 srcPixel() { \
-        lowp vec4 sample = texture2D(imageTexture, textureCoords); \
-        sample.rgb = sample.rgb * sample.a; \
-        return sample; \
-    }";
+// Solid Fill Brush
+static const char* const qglslSolidBrushSrcFragmentShader = "\n\
+    uniform   lowp    vec4      fragmentColor; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return fragmentColor; \n\
+    }\n";
 
-static const char* const qglslShockingPinkSrcFragmentShader = "\
-    lowp vec4 srcPixel() { \
-        return vec4(0.98, 0.06, 0.75, 1.0); \
-    }";
+static const char* const qglslImageSrcFragmentShader = "\n\
+    varying   highp   vec2      textureCoords; \n\
+    uniform   lowp    sampler2D imageTexture; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return texture2D(imageTexture, textureCoords); \n\
+    }\n";
 
-static const char* const qglslMainFragmentShader_ImageArrays = "\
-    varying lowp float opacity; \
-    lowp vec4 srcPixel(); \
-    void main() { \
-        gl_FragColor = srcPixel() * opacity; \
-    }";
+static const char* const qglslCustomSrcFragmentShader = "\n\
+    varying   highp   vec2      textureCoords; \n\
+    uniform   lowp    sampler2D imageTexture; \n\
+    lowp vec4 customShader(lowp sampler2D texture, highp vec2 coords); \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return customShader(imageTexture, textureCoords); \n\
+    }\n";
 
-static const char* const qglslMainFragmentShader_CMO = "\
-    uniform lowp float globalOpacity; \
-    lowp vec4 srcPixel(); \
-    lowp vec4 applyMask(lowp vec4); \
-    lowp vec4 compose(lowp vec4); \
-    void main() { \
-        gl_FragColor = applyMask(compose(srcPixel()*globalOpacity))); \
-    }";
+static const char* const qglslImageSrcWithPatternFragmentShader = "\n\
+    varying   highp   vec2      textureCoords; \n\
+    uniform   lowp    vec4      patternColor; \n\
+    uniform   lowp    sampler2D imageTexture; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return patternColor * (1.0 - texture2D(imageTexture, textureCoords).r); \n\
+    }\n";
 
-static const char* const qglslMainFragmentShader_CM = "\
-    lowp vec4 srcPixel(); \
-    lowp vec4 applyMask(lowp vec4); \
-    lowp vec4 compose(lowp vec4); \
-    void main() { \
-        gl_FragColor = applyMask(compose(srcPixel())); \
-    }";
+static const char* const qglslNonPremultipliedImageSrcFragmentShader = "\n\
+    varying   highp   vec2      textureCoords; \n\
+    uniform   lowp    sampler2D imageTexture; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        lowp vec4 sample = texture2D(imageTexture, textureCoords); \n\
+        sample.rgb = sample.rgb * sample.a; \n\
+        return sample; \n\
+    }\n";
 
-static const char* const qglslMainFragmentShader_MO = "\
-    uniform lowp float globalOpacity; \
-    lowp vec4 srcPixel(); \
-    lowp vec4 applyMask(lowp vec4); \
-    void main() { \
-        gl_FragColor = applyMask(srcPixel()*globalOpacity); \
-    }";
+static const char* const qglslShockingPinkSrcFragmentShader = "\n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return vec4(0.98, 0.06, 0.75, 1.0); \n\
+    }\n";
 
-static const char* const qglslMainFragmentShader_M = "\
-    lowp vec4 srcPixel(); \
-    lowp vec4 applyMask(lowp vec4); \
-    void main() { \
-        gl_FragColor = applyMask(srcPixel()); \
-    }";
+static const char* const qglslMainFragmentShader_ImageArrays = "\n\
+    varying   lowp    float     opacity; \n\
+    lowp vec4 srcPixel(); \n\
+    void main() \n\
+    { \n\
+        gl_FragColor = srcPixel() * opacity; \n\
+    }\n";
 
-static const char* const qglslMainFragmentShader_CO = "\
-    uniform lowp float globalOpacity; \
-    lowp vec4 srcPixel(); \
-    lowp vec4 compose(lowp vec4); \
-    void main() { \
-        gl_FragColor = compose(srcPixel()*globalOpacity); \
-    }";
+static const char* const qglslMainFragmentShader_CMO = "\n\
+    uniform   lowp    float     globalOpacity; \n\
+    lowp vec4 srcPixel(); \n\
+    lowp vec4 applyMask(lowp vec4); \n\
+    lowp vec4 compose(lowp vec4); \n\
+    void main() \n\
+    { \n\
+        gl_FragColor = applyMask(compose(srcPixel()*globalOpacity))); \n\
+    }\n";
 
-static const char* const qglslMainFragmentShader_C = "\
-    lowp vec4 srcPixel(); \
-    lowp vec4 compose(lowp vec4); \
-    void main() { \
-        gl_FragColor = compose(srcPixel()); \
-    }";
+static const char* const qglslMainFragmentShader_CM = "\n\
+    lowp vec4 srcPixel(); \n\
+    lowp vec4 applyMask(lowp vec4); \n\
+    lowp vec4 compose(lowp vec4); \n\
+    void main() \n\
+    { \n\
+        gl_FragColor = applyMask(compose(srcPixel())); \n\
+    }\n";
 
-static const char* const qglslMainFragmentShader_O = "\
-    uniform lowp float globalOpacity; \
-    lowp vec4 srcPixel(); \
-    void main() { \
-        gl_FragColor = srcPixel()*globalOpacity; \
-    }";
+static const char* const qglslMainFragmentShader_MO = "\n\
+    uniform   lowp    float     globalOpacity; \n\
+    lowp vec4 srcPixel(); \n\
+    lowp vec4 applyMask(lowp vec4); \n\
+    void main() \n\
+    { \n\
+        gl_FragColor = applyMask(srcPixel()*globalOpacity); \n\
+    }\n";
 
-static const char* const qglslMainFragmentShader = "\
-    lowp vec4 srcPixel(); \
-    void main() { \
-        gl_FragColor = srcPixel(); \
-    }";
+static const char* const qglslMainFragmentShader_M = "\n\
+    lowp vec4 srcPixel(); \n\
+    lowp vec4 applyMask(lowp vec4); \n\
+    void main() \n\
+    { \n\
+        gl_FragColor = applyMask(srcPixel()); \n\
+    }\n";
 
-static const char* const qglslMaskFragmentShader = "\
-    varying highp   vec2      textureCoords;\
-    uniform lowp    sampler2D maskTexture;\
-    lowp vec4 applyMask(lowp vec4 src) \
-    {\
-        lowp vec4 mask = texture2D(maskTexture, textureCoords); \
-        return src * mask.a; \
-    }";
+static const char* const qglslMainFragmentShader_CO = "\n\
+    uniform   lowp    float     globalOpacity; \n\
+    lowp vec4 srcPixel(); \n\
+    lowp vec4 compose(lowp vec4); \n\
+    void main() \n\
+    { \n\
+        gl_FragColor = compose(srcPixel()*globalOpacity); \n\
+    }\n";
+
+static const char* const qglslMainFragmentShader_C = "\n\
+    lowp vec4 srcPixel(); \n\
+    lowp vec4 compose(lowp vec4); \n\
+    void main() \n\
+    { \n\
+        gl_FragColor = compose(srcPixel()); \n\
+    }\n";
+
+static const char* const qglslMainFragmentShader_O = "\n\
+    uniform   lowp    float     globalOpacity; \n\
+    lowp vec4 srcPixel(); \n\
+    void main() \n\
+    { \n\
+        gl_FragColor = srcPixel()*globalOpacity; \n\
+    }\n";
+
+static const char* const qglslMainFragmentShader = "\n\
+    lowp vec4 srcPixel(); \n\
+    void main() \n\
+    { \n\
+        gl_FragColor = srcPixel(); \n\
+    }\n";
+
+static const char* const qglslMaskFragmentShader = "\n\
+    varying   highp   vec2      textureCoords;\n\
+    uniform   lowp    sampler2D maskTexture;\n\
+    lowp vec4 applyMask(lowp vec4 src) \n\
+    {\n\
+        lowp vec4 mask = texture2D(maskTexture, textureCoords); \n\
+        return src * mask.a; \n\
+    }\n";
 
 // For source over with subpixel antialiasing, the final color is calculated per component as follows
 // (.a is alpha component, .c is red, green or blue component):
@@ -433,23 +469,23 @@ static const char* const qglslMaskFragmentShader = "\
 // dest.c = dest.c * (1 - mask.c) + src.c * alpha
 //
 
-static const char* const qglslRgbMaskFragmentShaderPass1 = "\
-    varying highp   vec2      textureCoords;\
-    uniform lowp    sampler2D maskTexture;\
-    lowp vec4 applyMask(lowp vec4 src) \
-    {\
-        lowp vec4 mask = texture2D(maskTexture, textureCoords); \
-        return src.a * mask; \
-    }";
+static const char* const qglslRgbMaskFragmentShaderPass1 = "\n\
+    varying   highp   vec2      textureCoords;\n\
+    uniform   lowp    sampler2D maskTexture;\n\
+    lowp vec4 applyMask(lowp vec4 src) \n\
+    { \n\
+        lowp vec4 mask = texture2D(maskTexture, textureCoords); \n\
+        return src.a * mask; \n\
+    }\n";
 
-static const char* const qglslRgbMaskFragmentShaderPass2 = "\
-    varying highp   vec2      textureCoords;\
-    uniform lowp    sampler2D maskTexture;\
-    lowp vec4 applyMask(lowp vec4 src) \
-    {\
-        lowp vec4 mask = texture2D(maskTexture, textureCoords); \
-        return src * mask; \
-    }";
+static const char* const qglslRgbMaskFragmentShaderPass2 = "\n\
+    varying   highp   vec2      textureCoords;\n\
+    uniform   lowp    sampler2D maskTexture;\n\
+    lowp vec4 applyMask(lowp vec4 src) \n\
+    { \n\
+        lowp vec4 mask = texture2D(maskTexture, textureCoords); \n\
+        return src * mask; \n\
+    }\n";
 
 /*
     Left to implement:

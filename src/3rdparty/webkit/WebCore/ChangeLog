@@ -1,3 +1,48 @@
+2010-01-17  Srinidhi Shreedhara  <srinidhi.shreedhara@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] [Symbian] SetWindow call in npapi plugin does not happen when the cooridnates are negative
+        https://bugs.webkit.org/show_bug.cgi?id=33573
+
+        * plugins/symbian/PluginViewSymbian.cpp:
+        (WebCore::PluginView::setNPWindowIfNeeded): Remove tests for negative
+        coordinates for early return.
+
+2010-01-14  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        Platform Symbian specific:
+        Added time-based optimization (-Otime) and increased optimization level to -O3,
+        conditionally for RVCT compiler (for ARM), for increasing performance
+        (primarily affecting JavaScript execution).
+        Default settings are -Ospace and -O2.
+
+        No new tests needed because no new funtionality is introduced,
+        only potential regression on existing tests needs to be evaluated.
+
+        * WebCore.pro:
+
+2010-01-13  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt/Win] Flash in QGraphicsWebView does not process hover correctly.
+        
+        https://bugs.webkit.org/show_bug.cgi?id=33591
+        
+        Mouse hover does not work as expected with the flash in some sites.
+        - http://www.bbc.co.uk/ Hover over the map
+        - http://www.barbie.com/ Hover over the menu items (Games, Videos)
+        The problem appears to be that Flash queries NPNVnetscapeWindow on every
+        mouse hover. I do not how flash uses this value but returning 0 when flash
+        is in windowless mode solves the problem (When using QGraphicsWebView we
+        inject wmode opaque, thereby putting the plugin in windowless mode).
+
+        * plugins/win/PluginViewWin.cpp:
+        (windowHandleForPageClient):
+
 2010-01-13  Miikka Heikkinen <miikka.heikkinen@digia.com>
 
         Reviewed by Simon Hausmann.

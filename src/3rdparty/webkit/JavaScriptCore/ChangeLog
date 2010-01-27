@@ -10,17 +10,6 @@
         (OpaqueJSClass::OpaqueJSClass):
         (OpaqueJSClassContextData::OpaqueJSClassContextData):
 
-2010-01-07  Norbert Leser  <norbert.leser@nokia.com>
-
-        Reviewed by NOBODY (OOPS!).
-
-        Added time-based optimization and increased optimization level to O3,
-        conditionally for COMPILER(RVCT), 
-        for increasing performance of JavaScript execution.
-        (Default settings are Ospace and O2)
-
-        * runtime/Structure.h:
-
 2009-11-19  Thiago Macieira <thiago.macieira@nokia.com>
 
         Reviewed by Simon Hausmann.
