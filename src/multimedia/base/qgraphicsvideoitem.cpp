@@ -43,14 +43,14 @@
 
 #include <QtMultimedia/qmediaobject.h>
 #include <QtMultimedia/qmediaservice.h>
-#include "qpaintervideosurface_p.h"
+#include <QtMultimedia/private/qpaintervideosurface_p.h>
 #include <QtMultimedia/qvideooutputcontrol.h>
 #include <QtMultimedia/qvideorenderercontrol.h>
-
 #include <QtMultimedia/qvideosurfaceformat.h>
 
 
 QT_BEGIN_NAMESPACE
+
 
 class QGraphicsVideoItemPrivate
 {
@@ -62,6 +62,8 @@ public:
         , service(0)
         , outputControl(0)
         , rendererControl(0)
+        , aspectRatioMode(Qt::KeepAspectRatio)
+        , updatePaintDevice(true)
     {
     }
 
@@ -72,9 +74,14 @@ public:
     QMediaService *service;
     QVideoOutputControl *outputControl;
     QVideoRendererControl *rendererControl;
-    QRect boundingRect;
+    Qt::AspectRatioMode aspectRatioMode;
+    bool updatePaintDevice;
+    QRectF rect;
+    QRectF boundingRect;
+    QSizeF nativeSize;
 
     void clearService();
+    void updateBoundingRect();
 
     void _q_present();
     void _q_formatChanged(const QVideoSurfaceFormat &format);
@@ -99,17 +106,40 @@ void QGraphicsVideoItemPrivate::clearService()
     }
 }
 
+void QGraphicsVideoItemPrivate::updateBoundingRect()
+{
+    q_ptr->prepareGeometryChange();
+
+    if (nativeSize.isEmpty()) {
+        boundingRect = QRectF();
+    } else {
+        if (aspectRatioMode == Qt::IgnoreAspectRatio) {
+            boundingRect = rect;
+        } else {
+            QSizeF size = nativeSize;
+            size.scale(rect.size(), aspectRatioMode);
+
+            boundingRect = QRectF(QPointF(), size);
+            boundingRect.moveCenter(rect.center());
+        }
+    }
+}
+
 void QGraphicsVideoItemPrivate::_q_present()
 {
-    q_ptr->update(boundingRect);
+    if (q_ptr->isObscured()) {
+        q_ptr->update(boundingRect);
+        surface->setReady(true);
+    } else {
+        q_ptr->update(boundingRect);
+    }
 }
 
 void QGraphicsVideoItemPrivate::_q_formatChanged(const QVideoSurfaceFormat &format)
 {
-    q_ptr->prepareGeometryChange();
+    nativeSize = format.sizeHint();
 
-    boundingRect = QRect(QPoint(0, 0), format.sizeHint());
-    boundingRect.moveCenter(QPoint(0, 0));
+    updateBoundingRect();
 }
 
 void QGraphicsVideoItemPrivate::_q_serviceDestroyed()
@@ -152,9 +182,22 @@ void QGraphicsVideoItemPrivate::_q_mediaObjectDestroyed()
     player->play();
     \endcode
 
-    \bold {Note}: Only a single display output can be attached to a media object at one time.
+    \bold {Note}: Only a single display output can be attached to a media
+    object at one time.
 
     \sa QMediaObject, QMediaPlayer, QVideoWidget
+*/
+
+/*!
+    \enum QGraphicsVideoItem::FillMode
+
+    Enumerates the methods of scaling a video to fit a graphics item.
+
+    \value Stretch The video is stretched to fit the item's size.
+    \value PreserveAspectFit The video is uniformly scaled to fix the item's
+    size without cropping.
+    \value PreserveAspectCrop The video is uniformly scaled to fill the item's
+    size, cropping if necessary.
 */
 
 /*!
@@ -163,11 +206,15 @@ void QGraphicsVideoItemPrivate::_q_mediaObjectDestroyed()
     The \a parent is passed to QGraphicsItem.
 */
 QGraphicsVideoItem::QGraphicsVideoItem(QGraphicsItem *parent)
-    : QGraphicsItem(parent)
+    : QGraphicsObject(parent)
     , d_ptr(new QGraphicsVideoItemPrivate)
 {
     d_ptr->q_ptr = this;
     d_ptr->surface = new QPainterVideoSurface;
+
+    connect(d_ptr->surface, SIGNAL(frameChanged()), this, SLOT(_q_present()));
+    connect(d_ptr->surface, SIGNAL(surfaceFormatChanged(QVideoSurfaceFormat)),
+            this, SLOT(_q_formatChanged(QVideoSurfaceFormat)));
 }
 
 /*!
@@ -187,7 +234,8 @@ QGraphicsVideoItem::~QGraphicsVideoItem()
 
 /*!
     \property QGraphicsVideoItem::mediaObject
-    \brief the media object which provides the video displayed by a graphics item.
+    \brief the media object which provides the video displayed by a graphics
+    item.
 */
 
 QMediaObject *QGraphicsVideoItem::mediaObject() const
@@ -227,15 +275,6 @@ void QGraphicsVideoItem::setMediaObject(QMediaObject *object)
                     d->service->control(QVideoRendererControl_iid));
 
             if (d->outputControl != 0 && d->rendererControl != 0) {
-                if (!d->surface) {
-                    d->surface = new QPainterVideoSurface;
-
-                    connect(d->surface, SIGNAL(frameChanged()), this, SLOT(_q_present()));
-                    connect(d->surface, SIGNAL(surfaceFormatChanged(QVideoSurfaceFormat)),
-                            this, SLOT(_q_formatChanged(QVideoSurfaceFormat)));
-                    connect(d->service, SIGNAL(destroyed()), this, SLOT(_q_serviceDestroyed()));
-                }
-
                 d->rendererControl->setSurface(d->surface);
 
                 if (isVisible())
@@ -244,6 +283,82 @@ void QGraphicsVideoItem::setMediaObject(QMediaObject *object)
         }
     }
 }
+
+/*!
+    \property QGraphicsVideoItem::aspectRatioMode
+    \brief how a video is scaled to fit the graphics item's size.
+*/
+
+Qt::AspectRatioMode QGraphicsVideoItem::aspectRatioMode() const
+{
+    return d_func()->aspectRatioMode;
+}
+
+void QGraphicsVideoItem::setAspectRatioMode(Qt::AspectRatioMode mode)
+{
+    Q_D(QGraphicsVideoItem);
+
+    d->aspectRatioMode = mode;
+    d->updateBoundingRect();
+}
+
+/*!
+    \property QGraphicsVideoItem::offset
+    \brief the video item's offset.
+
+    QGraphicsVideoItem will draw video using the offset for its top left
+    corner.
+*/
+
+QPointF QGraphicsVideoItem::offset() const
+{
+    return d_func()->rect.topLeft();
+}
+
+void QGraphicsVideoItem::setOffset(const QPointF &offset)
+{
+    Q_D(QGraphicsVideoItem);
+
+    d->rect.moveTo(offset);
+    d->updateBoundingRect();
+}
+
+/*!
+    \property QGraphicsVideoItem::size
+    \brief the video item's size.
+
+    QGraphicsVideoItem will draw video scaled to fit size according to its
+    fillMode.
+*/
+
+QSizeF QGraphicsVideoItem::size() const
+{
+    return d_func()->rect.size();
+}
+
+void QGraphicsVideoItem::setSize(const QSizeF &size)
+{
+    Q_D(QGraphicsVideoItem);
+
+    d->rect.setSize(size);
+    d->updateBoundingRect();
+}
+
+/*!
+    \property QGraphicsVideoItem::nativeSize
+    \brief the native size of the video.
+*/
+
+QSizeF QGraphicsVideoItem::nativeSize() const
+{
+    return d_func()->nativeSize;
+}
+
+/*!
+    \fn QGraphicsVideoItem::nativeSizeChanged(const QSizeF &size)
+
+    Signals that the native \a size of the video has changed.
+*/
 
 /*!
     \reimp
@@ -264,10 +379,24 @@ void QGraphicsVideoItem::paint(
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    if (d->surface != 0) {
+    if (d->surface && d->surface->isActive()) {
         d->surface->paint(painter, d->boundingRect);
         d->surface->setReady(true);
+#ifndef QGRAPHICSVIDEOITEM_SHADERS    // Flickers
     }
+#else
+    } else if (d->updatePaintDevice && (painter->paintEngine()->type() == QPaintEngine::OpenGL
+            || painter->paintEngine()->type() == QPaintEngine::OpenGL2)) {
+        d->updatePaintDevice = false;
+
+        d->surface->setGLContext(const_cast<QGLContext *>(QGLContext::currentContext()));
+        if (d->surface->supportedShaderTypes() & QPainterVideoSurface::GlslShader) {
+            d->surface->setShaderType(QPainterVideoSurface::GlslShader);
+        } else {
+            d->surface->setShaderType(QPainterVideoSurface::FragmentProgramShader);
+        }
+    }
+#endif
 }
 
 /*!

@@ -73,7 +73,7 @@ public:
     virtual QAbstractVideoSurface::Error setCurrentFrame(const QVideoFrame &frame) = 0;
 
     virtual QAbstractVideoSurface::Error paint(
-            const QRect &target, QPainter *painter, const QRect &source) = 0;
+            const QRectF &target, QPainter *painter, const QRect &source) = 0;
 
     virtual void updateColors(int brightness, int contrast, int hue, int saturation) = 0;
 };
@@ -99,7 +99,7 @@ public:
     QAbstractVideoSurface::Error setCurrentFrame(const QVideoFrame &frame);
 
     QAbstractVideoSurface::Error paint(
-            const QRect &target, QPainter *painter, const QRect &source);
+            const QRectF &target, QPainter *painter, const QRect &source);
 
     void updateColors(int brightness, int contrast, int hue, int saturation);
 
@@ -167,7 +167,7 @@ QAbstractVideoSurface::Error QVideoSurfaceRasterPainter::setCurrentFrame(const Q
 }
 
 QAbstractVideoSurface::Error QVideoSurfaceRasterPainter::paint(
-            const QRect &target, QPainter *painter, const QRect &source)
+            const QRectF &target, QPainter *painter, const QRect &source)
 {
     if (m_frame.map(QAbstractVideoBuffer::ReadOnly)) {
         QImage image(
@@ -540,7 +540,7 @@ public:
     QAbstractVideoSurface::Error start(const QVideoSurfaceFormat &format);
     void stop();
 
-    QAbstractVideoSurface::Error paint(const QRect &target, QPainter *painter, const QRect &source);
+    QAbstractVideoSurface::Error paint(const QRectF &target, QPainter *painter, const QRect &source);
 
 private:
     typedef void (APIENTRY *_glProgramStringARB) (GLenum, GLenum, GLsizei, const GLvoid *);
@@ -700,7 +700,7 @@ void QVideoSurfaceArbFpPainter::stop()
 }
 
 QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::paint(
-        const QRect &target, QPainter *painter, const QRect &source)
+        const QRectF &target, QPainter *painter, const QRect &source)
 {
     if (m_frame.isValid()) {
         painter->beginNativePainting();
@@ -857,7 +857,7 @@ public:
     QAbstractVideoSurface::Error start(const QVideoSurfaceFormat &format);
     void stop();
 
-    QAbstractVideoSurface::Error paint(const QRect &target, QPainter *painter, const QRect &source);
+    QAbstractVideoSurface::Error paint(const QRectF &target, QPainter *painter, const QRect &source);
 
 private:
     QGLShaderProgram m_program;
@@ -975,7 +975,7 @@ void QVideoSurfaceGlslPainter::stop()
 }
 
 QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
-        const QRect &target, QPainter *painter, const QRect &source)
+        const QRectF &target, QPainter *painter, const QRect &source)
 {
     if (m_frame.isValid()) {
         painter->beginNativePainting();
@@ -1289,7 +1289,7 @@ void QPainterVideoSurface::setReady(bool ready)
 
 /*!
 */
-void QPainterVideoSurface::paint(QPainter *painter, const QRect &rect)
+void QPainterVideoSurface::paint(QPainter *painter, const QRectF &rect)
 {
     if (!isActive()) {
         painter->fillRect(rect, QBrush(Qt::black));

@@ -46,31 +46,53 @@
 
 #include <QtMultimedia/qvideowidget.h>
 
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Multimedia)
-
 class QVideoSurfaceFormat;
 
 class QGraphicsVideoItemPrivate;
-class Q_MULTIMEDIA_EXPORT QGraphicsVideoItem : public QObject, public QGraphicsItem
+class Q_MULTIMEDIA_EXPORT QGraphicsVideoItem : public QGraphicsObject
 {
     Q_OBJECT
-    Q_INTERFACES(QGraphicsItem)
     Q_PROPERTY(QMediaObject* mediaObject READ mediaObject WRITE setMediaObject)
-
+    Q_PROPERTY(Qt::AspectRatioMode aspectRatioMode READ aspectRatioMode WRITE setAspectRatioMode)
+    Q_PROPERTY(QPointF offset READ offset WRITE setOffset)
+    Q_PROPERTY(QSizeF size READ size WRITE setSize)
+    Q_PROPERTY(QSizeF nativeSize READ nativeSize NOTIFY nativeSizeChanged)
 public:
+    enum FillMode
+    {
+        Stretch,
+        PreserveAspectFit,
+        PreserveAspectCrop
+    };
+
     QGraphicsVideoItem(QGraphicsItem *parent = 0);
     ~QGraphicsVideoItem();
 
     QMediaObject *mediaObject() const;
     void setMediaObject(QMediaObject *object);
 
+    Qt::AspectRatioMode aspectRatioMode() const;
+    void setAspectRatioMode(Qt::AspectRatioMode mode);
+
+    QPointF offset() const;
+    void setOffset(const QPointF &offset);
+
+    QSizeF size() const;
+    void setSize(const QSizeF &size);
+
+    QSizeF nativeSize() const;
+
     QRectF boundingRect() const;
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+
+Q_SIGNALS:
+    void nativeSizeChanged(const QSizeF &size) const;
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
