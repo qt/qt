@@ -49,7 +49,8 @@ QT_BEGIN_NAMESPACE
 struct ListData : public QScriptDeclarativeClass::Object {
     QmlGuard<QObject> object;
     int propertyIdx;
-    QmlListScriptClass::ListType type;
+    QmlListScriptClass::ListCategory type;
+    int propertyType;
 };
 
 QmlListScriptClass::QmlListScriptClass(QmlEngine *e)
@@ -65,7 +66,7 @@ QmlListScriptClass::~QmlListScriptClass()
 {
 }
 
-QScriptValue QmlListScriptClass::newList(QObject *object, int propId, ListType type)
+QScriptValue QmlListScriptClass::newList(QObject *object, int propId, ListCategory type, int propType)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
@@ -76,6 +77,7 @@ QScriptValue QmlListScriptClass::newList(QObject *object, int propId, ListType t
     data->object = object;
     data->propertyIdx = propId;
     data->type = type;
+    data->propertyType = propType;
 
     return newObject(scriptEngine, this, data);
 }
@@ -142,6 +144,29 @@ QmlListScriptClass::ScriptValue QmlListScriptClass::property(Object *obj, const 
         else
             return Value();
     }
+}
+
+QVariant QmlListScriptClass::toVariant(Object *obj, bool *ok)
+{
+    ListData *data = (ListData *)obj;
+
+    if (!data->object) {
+        if (ok) *ok = false;
+        return QVariant();
+    }
+
+    void *list = 0;
+    void *args[] = { &list, 0 };
+    QMetaObject::metacall(data->object, QMetaObject::ReadProperty, 
+                          data->propertyIdx, args);
+
+    if (!list) {
+        if (ok) *ok = false;
+        return QVariant();
+    }
+
+    if (ok) *ok = true;
+    return QVariant(data->propertyType, &list);
 }
 
 QT_END_NAMESPACE

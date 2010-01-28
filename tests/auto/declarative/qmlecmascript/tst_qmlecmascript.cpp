@@ -118,6 +118,7 @@ private slots:
     void compositePropertyType();
     void jsObject();
     void undefinedResetsProperty();
+    void listToVariant();
 
     void bug1();
 
@@ -1591,6 +1592,25 @@ void tst_qmlecmascript::callQtInvokables()
     QCOMPARE(o.actuals().count(), 2);
     QCOMPARE(o.actuals().at(0), QVariant(10));
     QCOMPARE(o.actuals().at(1), QVariant(11));
+}
+
+// QTBUG-5675
+void tst_qmlecmascript::listToVariant()
+{
+    QmlComponent component(&engine, TEST_FILE("listToVariant.qml"));
+
+    MyQmlContainer container;
+
+    QmlContext context(engine.rootContext());
+    context.addDefaultObject(&container);
+
+    QObject *object = component.create(&context);
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test"), QVariant::fromValue(container.children()));
+
+    delete object;
+
 }
 
 QTEST_MAIN(tst_qmlecmascript)

@@ -162,7 +162,7 @@ QML_DECLARE_TYPE(MyQmlObject);
 class MyQmlContainer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<MyQmlObject*>* children READ children)
+    Q_PROPERTY(QList<MyQmlObject*>* children READ children CONSTANT)
 public:
     MyQmlContainer() {}
 
