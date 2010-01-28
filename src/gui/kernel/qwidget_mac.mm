@@ -2311,6 +2311,9 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
         q->setAttribute(Qt::WA_WState_WindowOpacitySet, false);
     }
 
+    if (qApp->overrideCursor())
+        [windowRef disableCursorRects];
+
     setWindowLevel();
     macUpdateHideOnSuspend();
     macUpdateOpaqueSizeGrip();
