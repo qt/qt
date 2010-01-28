@@ -419,6 +419,7 @@ private slots:
     void QTBUG_4233_updateCachedWithSceneRect();
     void QTBUG_5418_textItemSetDefaultColor();
     void QTBUG_6738_missingUpdateWithSetParent();
+    void QTBUG_7714_fullUpdateDiscardingOpacityUpdate2();
     void QT_2653_fullUpdateDiscardingOpacityUpdate();
 
 private:
@@ -9993,6 +9994,44 @@ void tst_QGraphicsItem::QT_2653_fullUpdateDiscardingOpacityUpdate()
 
     QTRY_COMPARE(view.repaints, 1);
     QTRY_COMPARE(childYellow->repaints, 1);
+}
+
+void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
+{
+    QGraphicsScene scene(0, 0, 200, 200);
+    MyGraphicsView view(&scene);
+    MyGraphicsView origView(&scene);
+
+    EventTester *parentGreen = new EventTester();
+    parentGreen->setGeometry(QRectF(20, 20, 100, 100));
+    parentGreen->brush = Qt::green;
+
+    EventTester *childYellow = new EventTester(parentGreen);
+    childYellow->setGeometry(QRectF(10, 10, 50, 50));
+    childYellow->brush = Qt::yellow;
+
+    scene.addItem(parentGreen);
+
+    origView.show();
+    QTest::qWaitForWindowShown(&origView);
+
+    parentGreen->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+
+    origView.reset();
+    childYellow->setOpacity(0.0);
+
+    QTRY_COMPARE(origView.repaints, 1);
+
+    view.show();
+
+    QTest::qWaitForWindowShown(&view);
+    view.reset();
+    origView.reset();
+
+    childYellow->setOpacity(1.0);
+
+    QTRY_COMPARE(origView.repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
