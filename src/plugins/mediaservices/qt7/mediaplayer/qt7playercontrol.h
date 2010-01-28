@@ -82,12 +82,12 @@ public:
     int volume() const;
     bool isMuted() const;
 
+    bool isAudioAvailable() const;
     bool isVideoAvailable() const;
 
     bool isSeekable() const;
 
     QMediaTimeRange availablePlaybackRanges() const;
-
 
     qreal playbackRate() const;
     void setPlaybackRate(qreal rate);

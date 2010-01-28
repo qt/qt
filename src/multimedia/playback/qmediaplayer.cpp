@@ -282,6 +282,7 @@ QMediaPlayer::QMediaPlayer(QObject *parent, QMediaPlayer::Flags flags, QMediaSer
 
             connect(d->control, SIGNAL(durationChanged(qint64)), SIGNAL(durationChanged(qint64)));
             connect(d->control, SIGNAL(positionChanged(qint64)), SIGNAL(positionChanged(qint64)));
+            connect(d->control, SIGNAL(audioAvailableChanged(bool)), SIGNAL(audioAvailableChanged(bool)));
             connect(d->control, SIGNAL(videoAvailableChanged(bool)), SIGNAL(videoAvailableChanged(bool)));
             connect(d->control, SIGNAL(volumeChanged(int)), SIGNAL(volumeChanged(int)));
             connect(d->control, SIGNAL(mutedChanged(bool)), SIGNAL(mutedChanged(bool)));
@@ -400,6 +401,16 @@ int QMediaPlayer::bufferStatus() const
         return d->control->bufferStatus();
 
     return 0;
+}
+
+bool QMediaPlayer::isAudioAvailable() const
+{
+    Q_D(const QMediaPlayer);
+
+    if (d->control != 0)
+        return d->control->isAudioAvailable();
+
+    return false;
 }
 
 bool QMediaPlayer::isVideoAvailable() const
@@ -841,6 +852,15 @@ QStringList QMediaPlayer::supportedMimeTypes(Flags flags)
 */
 
 /*!
+    \property QMediaPlayer::audioAvailable
+    \brief the audio availabilty status for the current media.
+
+    As the life time of QMediaPlayer can be longer than the playback of one
+    QMediaContent, this property may change over time, the
+    audioAvailableChanged signal can be used to monitor it's status.
+*/
+
+/*!
     \property QMediaPlayer::videoAvailable
     \brief the video availability status for the current media.
 
@@ -899,6 +919,12 @@ QStringList QMediaPlayer::supportedMimeTypes(Flags flags)
     \fn void QMediaPlayer::mutedChanged(bool muted)
 
     Signal the mute state has changed to \a muted.
+*/
+
+/*!
+    \fn void QMediaPlayer::audioAvailableChanged(bool available)
+
+    Signals the availability of audio content has changed to \a available.
 */
 
 /*!

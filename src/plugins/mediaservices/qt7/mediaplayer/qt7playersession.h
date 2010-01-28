@@ -87,6 +87,7 @@ public:
     int volume() const;
     bool isMuted() const;
 
+    bool isAudioAvailable() const;
     bool isVideoAvailable() const;
 
     bool isSeekable() const;
@@ -112,6 +113,7 @@ signals:
     void mediaStatusChanged(QMediaPlayer::MediaStatus status);
     void volumeChanged(int volume);
     void mutedChanged(bool muted);
+    void audioAvailableChanged(bool audioAvailable);
     void videoAvailableChanged(bool videoAvailable);
     void error(int error, const QString &errorString);
 

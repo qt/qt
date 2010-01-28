@@ -220,6 +220,22 @@ QMediaPlayerControl::QMediaPlayerControl(QObject *parent):
 */
 
 /*!
+    \fn QMediaPlayerControl::isAudioAvailable() const
+
+    Identifies if there is audio output available for the current media.
+
+    Returns true if audio output is available and false otherwise.
+*/
+
+/*!
+    \fn QMediaPlayerControl::audioAvailableChanged(bool audio)
+
+    Signals that there has been a change in the availability of \a audio output.
+
+    \sa isAudioAvailable()
+*/
+
+/*!
     \fn QMediaPlayerControl::isVideoAvailable() const
 
     Identifies if there is video output available for the current media.

@@ -373,11 +373,21 @@ void QT7PlayerSession::setMedia(const QMediaContent &content, QIODevice *stream)
         }
 
         emit durationChanged(duration());
+        emit audioAvailableChanged(isAudioAvailable());
         emit videoAvailableChanged(isVideoAvailable());
 
         [(QTMovie*)m_QTMovie setMuted:m_muted];
         setVolume(m_volume);
     }
+}
+
+bool QT7PlayerSession::isAudioAvailable() const
+{
+    if (!m_QTMovie)
+        return false;
+
+    AutoReleasePool pool;
+    return [[(QTMovie*)m_QTMovie attributeForKey:@"QTMovieHasAudioAttribute"] boolValue] == YES;
 }
 
 bool QT7PlayerSession::isVideoAvailable() const

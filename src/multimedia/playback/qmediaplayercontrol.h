@@ -82,6 +82,7 @@ public:
 
     virtual int bufferStatus() const = 0;
 
+    virtual bool isAudioAvailable() const = 0;
     virtual bool isVideoAvailable() const = 0;
 
     virtual bool isSeekable() const = 0;
@@ -107,6 +108,7 @@ Q_SIGNALS:
     void mediaStatusChanged(QMediaPlayer::MediaStatus status);
     void volumeChanged(int volume);
     void mutedChanged(bool muted);
+    void audioAvailableChanged(bool audioAvailable);
     void videoAvailableChanged(bool videoAvailable);
     void bufferStatusChanged(int percentFilled);
     void seekableChanged(bool);

@@ -71,6 +71,7 @@ void QT7PlayerControl::setSession(QT7PlayerSession *session)
             this, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)));
     connect(m_session, SIGNAL(volumeChanged(int)), this, SIGNAL(volumeChanged(int)));
     connect(m_session, SIGNAL(mutedChanged(bool)), this, SIGNAL(mutedChanged(bool)));
+    connect(m_session, SIGNAL(audioAvailableChanged(bool)), this, SIGNAL(audioAvailableChanged(bool)));
     connect(m_session, SIGNAL(videoAvailableChanged(bool)), this, SIGNAL(videoAvailableChanged(bool)));
     connect(m_session, SIGNAL(error(int,QString)), this, SIGNAL(error(int,QString)));
 }
@@ -177,6 +178,10 @@ void QT7PlayerControl::setMedia(const QMediaContent &content, QIODevice *stream)
     emit mediaChanged(content);
 }
 
+bool QT7PlayerControl::isAudioAvailable() const
+{
+    return m_session->isAudioAvailable();
+}
 
 bool QT7PlayerControl::isVideoAvailable() const
 {

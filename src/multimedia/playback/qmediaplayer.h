@@ -66,6 +66,7 @@ class Q_MULTIMEDIA_EXPORT QMediaPlayer : public QMediaObject
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY volumeChanged)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY mutedChanged)
     Q_PROPERTY(int bufferStatus READ bufferStatus NOTIFY bufferStatusChanged)
+    Q_PROPERTY(bool audioAvailable READ isAudioAvailable NOTIFY audioAvailableChanged)
     Q_PROPERTY(bool videoAvailable READ isVideoAvailable NOTIFY videoAvailableChanged)
     Q_PROPERTY(bool seekable READ isSeekable NOTIFY seekableChanged)
     Q_PROPERTY(qreal playbackRate READ playbackRate WRITE setPlaybackRate NOTIFY playbackRateChanged)
@@ -131,6 +132,7 @@ public:
 
     int volume() const;
     bool isMuted() const;
+    bool isAudioAvailable() const;
     bool isVideoAvailable() const;
 
     int bufferStatus() const;
@@ -165,6 +167,7 @@ Q_SIGNALS:
 
     void volumeChanged(int volume);
     void mutedChanged(bool muted);
+    void audioAvailableChanged(bool audioAvailable);
     void videoAvailableChanged(bool videoAvailable);
 
     void bufferStatusChanged(int percentFilled);
