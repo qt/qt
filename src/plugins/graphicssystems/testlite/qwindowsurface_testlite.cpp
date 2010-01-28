@@ -562,6 +562,22 @@ static int lookupCode(unsigned int xkeycode)
 }
 
 
+static Qt::KeyboardModifiers modifierFromKeyCode(int qtcode)
+{
+    switch (qtcode) {
+    case Qt::Key_Control:
+        return Qt::ControlModifier;
+    case Qt::Key_Alt:
+        return Qt::AltModifier;
+    case Qt::Key_Shift:
+        return Qt::ShiftModifier;
+    case Qt::Key_Meta:
+        return Qt::MetaModifier;
+    default:
+        return Qt::NoModifier;
+    }
+}
+
 void QTestLiteWindowSurface::handleKeyEvent(QEvent::Type type, void *ev)
 {
     XKeyEvent *e = static_cast<XKeyEvent*>(ev);
@@ -580,6 +596,10 @@ void QTestLiteWindowSurface::handleKeyEvent(QEvent::Type type, void *ev)
 
     int qtcode = lookupCode(keySym);
 //    qDebug() << "lookup: " << hex << keySym << qtcode << "mod" << modifiers;
+
+    //X11 specifies state *before*, Qt expects state *after* the event
+
+    modifiers ^= modifierFromKeyCode(qtcode);
 
     if (qtcode) {
         QApplicationPrivate::handleKeyEvent(window(), type, qtcode, modifiers);
