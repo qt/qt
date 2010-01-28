@@ -33,15 +33,16 @@ class QDirectFbInput : public QObject
 {
     Q_OBJECT
 public:
-    QDirectFbInput(QObject *parent = 0);
-
+    static QDirectFbInput *instance();
     void addWindow(DFBWindowID id, QWidget *tlw);
+    void removeWindow(QWidget *tlw);
 
 public slots:
     void handleEvents();
     void applicationEnd();
 
 private:
+    QDirectFbInput();
 
     void handleMouseEvents(const DFBEvent &event);
     void handleWheelEvent(const DFBEvent &event);

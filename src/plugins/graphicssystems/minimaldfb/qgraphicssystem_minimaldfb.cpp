@@ -55,7 +55,7 @@
 QT_BEGIN_NAMESPACE
 
 QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(int display)
-    :QGraphicsSystemScreen() , m_input(this)
+    :QGraphicsSystemScreen()
 {
     m_layer = QDirectFbConvenience::dfbDisplayLayer(display);
     m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
@@ -64,55 +64,18 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(int display)
     m_layer->GetConfiguration(m_layer, &config);
 
     m_format = QDirectFbConvenience::imageFormatFromSurfaceFormat(config.pixelformat, config.surface_caps);
-    qDebug() << QDirectFbConvenience::pixelFomatHasAlpha(config.pixelformat);
-    qDebug() << QDirectFbConvenience::colorDepthForSurface(config.pixelformat);
-    qDebug() << "GraphcisSystemScreen has format: " << m_format;
     m_geometry = QRect(0,0,config.width,config.height);
     const int dpi = 72;
     const qreal inch = 25.4;
     m_depth = 32;
     m_physicalSize = QSize(qRound(config.width * inch / dpi), qRound(config.height *inch / dpi));
+
+    cursor = new QDirectFBCursor(this);
 }
 
 QDirectFbGraphicsSystemScreen::~QDirectFbGraphicsSystemScreen()
 {
 }
-
-IDirectFBWindow *QDirectFbGraphicsSystemScreen::createWindow(const QRect &rect, QWidget *tlw)
-{
-    IDirectFBWindow *window;
-
-    DFBWindowDescription description;
-    memset(&description,0,sizeof(DFBWindowDescription));
-    description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_POSX|DWDESC_POSY|DWDESC_SURFACE_CAPS
-#if DIRECTFB_MINOR_VERSION >= 1
-                                                  |DWDESC_OPTIONS
-#endif
-                                                  |DWDESC_CAPS);
-    description.width = rect.width();
-    description.height = rect.height();
-    description.posx = rect.x();
-    description.posy = rect.y();
-#if DIRECTFB_MINOR_VERSION >= 1
-    description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
-#endif
-    description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
-    description.surface_caps = DSCAPS_PREMULTIPLIED;
-
-    DFBResult result = m_layer->CreateWindow(m_layer,&description,&window);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFbGraphicsSystemScreen: failed to create window",result);
-    }
-
-    DFBWindowID id;
-    window->GetID(window, &id);
-    m_input.addWindow(id,tlw);
-
-    cursor = new QDirectFBCursor(this);
-
-    return window;
-}
-
 
 QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
 {
@@ -130,9 +93,6 @@ QDirectFbGraphicsSystem::QDirectFbGraphicsSystem()
     }
     delete[] argv;
 
-    //init directfb
-    QDirectFbConvenience::dfbInterface();
-
     mPrimaryScreen = new QDirectFbGraphicsSystemScreen(0);
     mScreens.append(mPrimaryScreen);
 }
@@ -147,7 +107,7 @@ QPixmapData *QDirectFbGraphicsSystem::createPixmapData(QPixmapData::PixelType ty
 
 QWindowSurface *QDirectFbGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
-    return new QDirectFbWindowSurface (mPrimaryScreen, widget);
+    return new QDirectFbWindowSurface (widget);
 }
 
 QBlittable *QDirectFbGraphicsSystem::createBlittable(const QRect &rect) const

@@ -49,22 +49,42 @@
 
 QT_BEGIN_NAMESPACE
 
-QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *screen, QWidget *window)
-    : QWindowSurface(window), m_screen(screen), m_pixmap(0), m_pmdata(0),
+QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window)
+    : QWindowSurface(window), m_pixmap(0), m_pmdata(0),
       m_dfbWindow(0), m_dfbSurface(0)
 {
     window->setWindowSurface(this);
-    m_dfbWindow = m_screen->createWindow(window->rect(),window);
+
+    DFBWindowDescription description;
+    memset(&description,0,sizeof(DFBWindowDescription));
+    description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_POSX|DWDESC_POSY|DWDESC_SURFACE_CAPS
+#if DIRECTFB_MINOR_VERSION >= 1
+                                                  |DWDESC_OPTIONS
+#endif
+                                                  |DWDESC_CAPS);
+    description.width = window->rect().width();
+    description.height = window->rect().height();
+    description.posx = window->rect().x();
+    description.posy = window->rect().y();
+#if DIRECTFB_MINOR_VERSION >= 1
+    description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
+#endif
+    description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
+    description.surface_caps = DSCAPS_PREMULTIPLIED;
+
+    IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
+    DFBResult result = layer->CreateWindow(layer,&description,&m_dfbWindow);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFbGraphicsSystemScreen: failed to create window",result);
+    }
+
+    DFBWindowID id;
+    m_dfbWindow->GetID(m_dfbWindow, &id);
+    QDirectFbInput::instance()->addWindow(id,window);
+
+
+
     m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
-
-    DFBSurfaceCapabilities caps;
-    m_dfbSurface->GetCapabilities(m_dfbSurface, &caps);
-    DFBSurfacePixelFormat format;
-    m_dfbSurface->GetPixelFormat(m_dfbSurface, &format);
-    qDebug() << QDirectFbConvenience::pixelFomatHasAlpha(format);
-    qDebug() << QDirectFbConvenience::colorDepthForSurface(format);
-    qDebug() << "WindowSurface format " << QDirectFbConvenience::imageFormatFromSurfaceFormat(format,caps);
-
 
     QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
     m_pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
@@ -76,6 +96,7 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *sc
 
 QDirectFbWindowSurface::~QDirectFbWindowSurface()
 {
+    QDirectFbInput::instance()->removeWindow(this->window());
 }
 
 QPaintDevice *QDirectFbWindowSurface::paintDevice()

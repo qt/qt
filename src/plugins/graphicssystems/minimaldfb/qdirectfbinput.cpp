@@ -42,8 +42,17 @@ void InputSocketWaiter::run()
     m_cleanupMutex.unlock();
 }
 
-QDirectFbInput::QDirectFbInput(QObject *parent)
-    : QObject(parent)
+QDirectFbInput *QDirectFbInput::instance()
+{
+    static QDirectFbInput *input = 0;
+    if (!input) {
+        input = new QDirectFbInput();
+    }
+    return input;
+}
+
+QDirectFbInput::QDirectFbInput()
+    : QObject()
 {
     dfbInterface = QDirectFbConvenience::dfbInterface();
 
@@ -66,6 +75,18 @@ void QDirectFbInput::addWindow(DFBWindowID id, QWidget *tlw)
     dfbDisplayLayer->GetWindow(dfbDisplayLayer,id,&window);
 
     window->AttachEventBuffer(window,eventBuffer);
+}
+
+void QDirectFbInput::removeWindow(QWidget *tlw)
+{
+    DFBWindowID id = tlwMap.key(tlw,0);
+    if (id) {
+        IDirectFBWindow *window;
+        dfbDisplayLayer->GetWindow(dfbDisplayLayer,id, &window);
+
+        window->DetachEventBuffer(window,eventBuffer);
+        tlwMap.remove(id);
+    }
 }
 
 void QDirectFbInput::handleEvents()

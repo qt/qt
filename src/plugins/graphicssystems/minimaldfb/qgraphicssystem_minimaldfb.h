@@ -63,15 +63,11 @@ public:
     QImage::Format format() const { return m_format; }
     QSize physicalSize() const { return m_physicalSize; }
 
-    IDirectFBWindow *createWindow(const QRect &,QWidget *tlw);
-
 public:
     QRect m_geometry;
     int m_depth;
     QImage::Format m_format;
     QSize m_physicalSize;
-
-    QDirectFbInput m_input;
 
     IDirectFBDisplayLayer *m_layer;
 
