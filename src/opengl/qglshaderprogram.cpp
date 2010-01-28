@@ -106,6 +106,19 @@ QT_BEGIN_NAMESPACE
 
     \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 2
 
+    \section1 Binary shaders and programs
+
+    Binary shaders may be specified using \c{glShaderBinary()} on
+    the return value from QGLShader::shaderId().  The QGLShader instance
+    containing the binary can then be added to the shader program with
+    addShader() and linked in the usual fashion with link().
+
+    Binary programs may be specified using \c{glProgramBinaryOES()}
+    on the return value from programId().  Then the application should
+    call link(), which will notice that the program has already been
+    specified and linked, allowing other operations to be performed
+    on the shader program.
+
     \sa QGLShader
 */
 
@@ -632,8 +645,6 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
             qWarning("QGLShaderProgram::addShader: Program and shader are not associated with same context.");
             return false;
         }
-        if (!shader->d_func()->compiled)
-            return false;
         if (!shader->d_func()->shaderGuard.id())
             return false;
         glAttachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
@@ -820,8 +831,20 @@ bool QGLShaderProgram::link()
     GLuint program = d->programGuard.id();
     if (!program)
         return false;
+    GLint value;
+    if (d->shaders.isEmpty()) {
+        // If there are no explicit shaders, then it is possible that the
+        // application added a program binary with glProgramBinaryOES(),
+        // or otherwise populated the shaders itself.  Check to see if the
+        // program is already linked and bail out if so.
+        value = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &value);
+        d->linked = (value != 0);
+        if (d->linked)
+            return true;
+    }
     glLinkProgram(program);
-    GLint value = 0;
+    value = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &value);
     d->linked = (value != 0);
     value = 0;
@@ -928,6 +951,15 @@ void QGLShaderProgram::release()
 GLuint QGLShaderProgram::programId() const
 {
     Q_D(const QGLShaderProgram);
+    GLuint id = d->programGuard.id();
+    if (id)
+        return id;
+
+    // Create the identifier if we don't have one yet.  This is for
+    // applications that want to create the attached shader configuration
+    // themselves, particularly those using program binaries.
+    if (!const_cast<QGLShaderProgram *>(this)->init())
+        return 0;
     return d->programGuard.id();
 }
 

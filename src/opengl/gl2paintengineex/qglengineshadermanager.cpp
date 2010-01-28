@@ -184,6 +184,9 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
     simpleShaderProg->addShader(vertexShader);
     simpleShaderProg->addShader(fragShader);
     simpleShaderProg->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
+    simpleShaderProg->bindAttributeLocation("pmvMatrix1", QT_PMV_MATRIX_1_ATTR);
+    simpleShaderProg->bindAttributeLocation("pmvMatrix2", QT_PMV_MATRIX_2_ATTR);
+    simpleShaderProg->bindAttributeLocation("pmvMatrix3", QT_PMV_MATRIX_3_ATTR);
     simpleShaderProg->link();
     if (!simpleShaderProg->isLinked()) {
         qCritical() << "Errors linking simple shader:"

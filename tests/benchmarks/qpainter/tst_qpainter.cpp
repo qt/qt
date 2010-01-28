@@ -45,6 +45,10 @@
 #include <QDialog>
 #include <QImage>
 #include <QPaintEngine>
+#include <math.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 Q_DECLARE_METATYPE(QLine)
 Q_DECLARE_METATYPE(QRect)
@@ -178,12 +182,43 @@ private slots:
     void clipAndFill_data();
     void clipAndFill();
 
+    void drawRoundedRect();
+    void drawScaledRoundedRect();
+    void drawTransformedRoundedRect();
+
+    void drawScaledAntialiasedRoundedRect_data();
+    void drawTransformedAntialiasedRoundedRect_data();
+    void drawAntialiasedRoundedRect();
+    void drawScaledAntialiasedRoundedRect();
+    void drawTransformedAntialiasedRoundedRect();
+
+    void drawScaledImageRoundedRect_data();
+    void drawTransformedImageRoundedRect_data();
+    void drawImageRoundedRect();
+    void drawScaledImageRoundedRect();
+    void drawTransformedImageRoundedRect();
+
+    void drawScaledBorderPixmapRoundedRect_data();
+    void drawTransformedBorderPixmapRoundedRect_data();
+    void drawBorderPixmapRoundedRect();
+    void drawScaledBorderPixmapRoundedRect();
+    void drawTransformedBorderPixmapRoundedRect();
+
+    void drawTransformedTransparentImage_data();
+    void drawTransformedSemiTransparentImage_data();
+    void drawTransformedFilledImage_data();
+    void drawTransformedTransparentImage();
+    void drawTransformedSemiTransparentImage();
+    void drawTransformedFilledImage();
+
 private:
     void setupBrushes();
     void createPrimitives();
 
     void drawPrimitives_data_helper(bool fancypens);
     void fillPrimitives_helper(QPainter *painter, PrimitiveType type, PrimitiveSet *s);
+
+    QTransform transformForAngle(qreal angle);
 
     QPaintDevice *surface()
     {
@@ -1123,6 +1158,474 @@ void tst_QPainter::clipAndFill()
     }
 }
 
+QTransform tst_QPainter::transformForAngle(qreal angle)
+{
+    const qreal inv_dist_to_plane = 1. / 1024.;
+
+    QTransform transform;
+
+    QTransform rotTrans;
+    rotTrans.translate(-40, 0);
+    QTransform rotTrans2;
+    rotTrans2.translate(40, 0);
+
+    qreal rad = angle * 2. * M_PI / 360.;
+    qreal c = ::cos(rad);
+    qreal s = ::sin(rad);
+
+    qreal x = 0;
+    qreal y = 80;
+    qreal z = 0;
+
+    qreal len = x * x + y * y + z * z;
+    if (len != 1.) {
+        len = ::sqrt(len);
+        x /= len;
+        y /= len;
+        z /= len;
+    }
+
+    QTransform rot(x*x*(1-c)+c, x*y*(1-c)-z*s, x*z*(1-c)+y*s*inv_dist_to_plane,
+                   y*x*(1-c)+z*s, y*y*(1-c)+c, y*z*(1-c)-x*s*inv_dist_to_plane,
+                   0, 0, 1);
+
+    transform *= rotTrans;
+    transform *= rot;
+    transform *= rotTrans2;
+
+    return transform;
+}
+
+void tst_QPainter::drawRoundedRect()
+{
+    QImage surface(100, 100, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    p.setPen(QPen(Qt::black, 1));
+    p.setBrush(Qt::red);
+
+    QBENCHMARK {
+        p.drawRoundedRect(QRectF(.5, .5, 80, 80), 10, 10);
+    }
+}
+
+void tst_QPainter::drawScaledRoundedRect()
+{
+    QImage surface(400, 400, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    p.setPen(QPen(Qt::black, 1));
+    p.setBrush(Qt::red);
+    p.scale(3, 3);
+
+    QBENCHMARK {
+        p.drawRoundedRect(10, 10, 80, 80, 10, 10);
+    }
+}
+
+void tst_QPainter::drawTransformedRoundedRect()
+{
+    QImage surface(400, 400, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    p.setPen(QPen(Qt::black, 1));
+    p.setBrush(Qt::red);
+
+    QBENCHMARK {
+        p.setWorldTransform(QTransform(0.956957, 0, 0.000704124, 0, 1, 0, 16.141, 0, 0.735953));
+        p.drawRoundedRect(100, 100, 80, 80, 10, 10);
+    }
+}
+
+void tst_QPainter::drawAntialiasedRoundedRect()
+{
+    QImage surface(100, 100, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setPen(QPen(Qt::black, 1));
+    p.setBrush(Qt::red);
+
+    QBENCHMARK {
+        p.drawRoundedRect(QRectF(.5, .5, 80, 80), 10, 10);
+    }
+}
+
+void tst_QPainter::drawScaledAntialiasedRoundedRect_data()
+{
+    QTest::addColumn<float>("scale");
+
+    for (float i = 0; i < 3; i += .1)
+        QTest::newRow(QString(QLatin1String("scale=%1")).arg(i).toLatin1()) << i;
+}
+
+void tst_QPainter::drawScaledAntialiasedRoundedRect()
+{
+    QFETCH(float, scale);
+
+    QImage surface(400, 400, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setPen(QPen(Qt::black, 1));
+    p.setBrush(Qt::red);
+    p.scale(scale, scale);
+
+    QBENCHMARK {
+        p.drawRoundedRect(10, 10, 80, 80, 10, 10);
+    }
+}
+
+void tst_QPainter::drawTransformedAntialiasedRoundedRect_data()
+{
+    QTest::addColumn<QTransform>("transform");
+
+    for (float angle = 0; angle < 360; angle += 10)
+        QTest::newRow(QString(QLatin1String("angle=%1")).arg(angle).toLatin1()) << transformForAngle(angle);
+}
+
+void tst_QPainter::drawTransformedAntialiasedRoundedRect()
+{
+    QFETCH(QTransform, transform);
+
+    QImage surface(400, 400, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setPen(QPen(Qt::black, 1));
+    p.setBrush(Qt::red);
+
+    QBENCHMARK {
+        p.setWorldTransform(transform);
+        p.drawRoundedRect(100, 100, 80, 80, 10, 10);
+    }
+}
+
+void tst_QPainter::drawImageRoundedRect()
+{
+    //setup image
+    const int radius = 10;
+    QImage rectImage(81, 81, QImage::Format_ARGB32_Premultiplied);
+    rectImage.fill(0);
+    QPainter rp(&rectImage);
+    rp.setRenderHint(QPainter::Antialiasing);
+    rp.setPen(Qt::black);
+    rp.setBrush(Qt::red);
+    rp.drawRoundedRect(QRectF(.5, .5, 80, 80), radius, radius);
+
+    //setup surface
+    QImage surface(100, 100, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    QBENCHMARK {
+        p.drawImage(0,0, rectImage);
+    }
+}
+
+void tst_QPainter::drawScaledImageRoundedRect_data()
+{
+    QTest::addColumn<int>("imageType");
+
+    QTest::newRow("imagetype=ARGB32_Pre") << (int)QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("imagetype=ARGB8565_Pre") << (int)QImage::Format_ARGB8565_Premultiplied;
+}
+
+void tst_QPainter::drawScaledImageRoundedRect()
+{
+    QFETCH(int, imageType);
+
+    //setup image
+    const int radius = 10;
+    QImage rectImage(81, 81, (QImage::Format)imageType);
+    rectImage.fill(0);
+    QPainter rp(&rectImage);
+    rp.setRenderHint(QPainter::Antialiasing);
+    rp.setPen(Qt::black);
+    rp.setBrush(Qt::red);
+    rp.drawRoundedRect(QRectF(.5, .5, 80, 80), radius, radius);
+
+    //setup surface
+    QImage surface(400, 400, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+    p.scale(3, 3);
+
+    QBENCHMARK {
+        p.drawImage(0,0, rectImage);
+    }
+}
+
+void tst_QPainter::drawTransformedImageRoundedRect_data()
+{
+    QTest::addColumn<int>("imageType");
+
+    QTest::newRow("imagetype=ARGB32_Pre") << (int)QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("imagetype=ARGB8565_Pre") << (int)QImage::Format_ARGB8565_Premultiplied;
+}
+
+void tst_QPainter::drawTransformedImageRoundedRect()
+{
+    QFETCH(int, imageType);
+
+    //setup image
+    const int radius = 10;
+    QImage rectImage(81, 81, (QImage::Format)imageType);
+    rectImage.fill(0);
+    QPainter rp(&rectImage);
+    rp.setRenderHint(QPainter::Antialiasing);
+    rp.setPen(Qt::black);
+    rp.setBrush(Qt::red);
+    rp.drawRoundedRect(QRectF(.5, .5, 80, 80), radius, radius);
+
+    //setup surface
+    QImage surface(400, 400, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    QBENCHMARK {
+        p.setWorldTransform(QTransform(0.956957, 0, 0.000704124, 0, 1, 0, 16.141, 0, 0.735953));
+        p.drawImage(100,100, rectImage);
+    }
+}
+
+//code from QmlGraphicsRectangle for drawing rounded rects
+void tst_QPainter::drawBorderPixmapRoundedRect()
+{
+    //setup image
+    const int pw = 1;
+    const int radius = 10;
+    QImage rectImage(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2, QImage::Format_ARGB32_Premultiplied);
+    rectImage.fill(0);
+    QPainter rp(&rectImage);
+    rp.setRenderHint(QPainter::Antialiasing);
+    rp.setPen(Qt::black);
+    rp.setBrush(Qt::red);
+    if (pw%2)
+        rp.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, rectImage.width()-(pw+1), rectImage.height()-(pw+1)), radius, radius);
+    else
+        rp.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, rectImage.width()-pw, rectImage.height()-pw), radius, radius);
+    QPixmap rectPixmap = QPixmap::fromImage(rectImage);
+
+    //setup surface
+    QImage surface(100, 100, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    QBENCHMARK {
+        const int pw = 2;
+        int width = 80;
+        int height = 80;
+
+        int xOffset = (rectPixmap.width()-1)/2;
+        int yOffset = (rectPixmap.height()-1)/2;
+        Q_ASSERT(rectPixmap.width() == 2*xOffset + 1);
+        Q_ASSERT(rectPixmap.height() == 2*yOffset + 1);
+
+        QMargins margins(xOffset, yOffset, xOffset, yOffset);
+        QTileRules rules(Qt::StretchTile, Qt::StretchTile);
+        //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
+        qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width+pw, height+pw), margins, rectPixmap, rectPixmap.rect(), margins, rules);
+    }
+}
+
+void tst_QPainter::drawScaledBorderPixmapRoundedRect_data()
+{
+    QTest::addColumn<float>("scale");
+    QTest::addColumn<int>("imageType");
+
+    for (float i = 0; i < 3; i += .1)
+        QTest::newRow(QString(QLatin1String("scale=%1; imagetype=ARGB32_Pre")).arg(i).toLatin1()) << i << (int)QImage::Format_ARGB32_Premultiplied;
+    //for (float i = 0; i < 3; i += .1)
+    //    QTest::newRow(QString(QLatin1String("scale=%1; imagetype=ARGB8565_Pre")).arg(i).toLatin1()) << i << (int)QImage::Format_ARGB8565_Premultiplied;
+}
+
+//code from QmlGraphicsRectangle for drawing rounded rects
+void tst_QPainter::drawScaledBorderPixmapRoundedRect()
+{
+    QFETCH(float, scale);
+    QFETCH(int, imageType);
+
+    //setup image
+    const int pw = 1;
+    const int radius = 10;
+    QImage rectImage(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2, (QImage::Format)imageType);
+    rectImage.fill(0);
+    QPainter rp(&rectImage);
+    rp.setRenderHint(QPainter::Antialiasing);
+    rp.setPen(Qt::black);
+    rp.setBrush(Qt::red);
+    if (pw%2)
+        rp.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, rectImage.width()-(pw+1), rectImage.height()-(pw+1)), radius, radius);
+    else
+        rp.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, rectImage.width()-pw, rectImage.height()-pw), radius, radius);
+
+    QPixmap rectPixmap = QPixmap::fromImage(rectImage);
+
+    //setup surface
+    QImage surface(400, 400, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+    p.scale(scale, scale);
+
+    QBENCHMARK {
+        const int pw = 2;
+        int width = 80;
+        int height = 80;
+
+        int xOffset = (rectPixmap.width()-1)/2;
+        int yOffset = (rectPixmap.height()-1)/2;
+        Q_ASSERT(rectPixmap.width() == 2*xOffset + 1);
+        Q_ASSERT(rectPixmap.height() == 2*yOffset + 1);
+
+        QMargins margins(xOffset, yOffset, xOffset, yOffset);
+        QTileRules rules(Qt::StretchTile, Qt::StretchTile);
+        qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width+pw, height+pw), margins, rectPixmap, rectPixmap.rect(), margins, rules);
+    }
+}
+
+void tst_QPainter::drawTransformedBorderPixmapRoundedRect_data()
+{
+    QTest::addColumn<QTransform>("transform");
+    QTest::addColumn<int>("imageType");
+
+    for (float angle = 0; angle < 360; angle += 10)
+        QTest::newRow(QString(QLatin1String("angle=%1; imagetype=ARGB32_Pre")).arg(angle).toLatin1()) << transformForAngle(angle) << (int)QImage::Format_ARGB32_Premultiplied;
+    //for (float angle = 0; angle < 360; angle += 10)
+    //    QTest::newRow(QString(QLatin1String("angle=%1; imagetype=ARGB8565_Pre")).arg(angle).toLatin1()) << transformForAngle(angle) << (int)QImage::Format_ARGB8565_Premultiplied;
+
+}
+
+//code from QmlGraphicsRectangle for drawing rounded rects
+void tst_QPainter::drawTransformedBorderPixmapRoundedRect()
+{
+    QFETCH(QTransform, transform);
+    QFETCH(int, imageType);
+
+    //setup image
+    const int pw = 1;
+    const int radius = 10;
+    QImage rectImage(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2, (QImage::Format)imageType);
+    rectImage.fill(0);
+    QPainter rp(&rectImage);
+    rp.setRenderHint(QPainter::Antialiasing);
+    rp.setPen(Qt::black);
+    rp.setBrush(Qt::red);
+    if (pw%2)
+        rp.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, rectImage.width()-(pw+1), rectImage.height()-(pw+1)), radius, radius);
+    else
+        rp.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, rectImage.width()-pw, rectImage.height()-pw), radius, radius);
+
+    QPixmap rectPixmap = QPixmap::fromImage(rectImage);
+
+    //setup surface
+    QImage surface(400, 400, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    QBENCHMARK {
+        p.setWorldTransform(transform);
+        const int pw = 2;
+        int width = 80;
+        int height = 80;
+
+        int xOffset = (rectPixmap.width()-1)/2;
+        int yOffset = (rectPixmap.height()-1)/2;
+        Q_ASSERT(rectPixmap.width() == 2*xOffset + 1);
+        Q_ASSERT(rectPixmap.height() == 2*yOffset + 1);
+
+        QMargins margins(xOffset, yOffset, xOffset, yOffset);
+        QTileRules rules(Qt::StretchTile, Qt::StretchTile);
+        qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width+pw, height+pw), margins, rectPixmap, rectPixmap.rect(), margins, rules);
+    }
+}
+
+void tst_QPainter::drawTransformedTransparentImage_data()
+{
+    QTest::addColumn<int>("imageType");
+
+    QTest::newRow("imagetype=ARGB32_Pre") << (int)QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("imagetype=ARGB8565_Pre") << (int)QImage::Format_ARGB8565_Premultiplied;
+}
+
+void tst_QPainter::drawTransformedTransparentImage()
+{
+    QFETCH(int, imageType);
+
+    //setup image
+    QImage transImage(200, 200, (QImage::Format)imageType);
+    transImage.fill(0);
+
+    //setup surface
+    QImage surface(200, 200, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    QBENCHMARK {
+        p.setWorldTransform(QTransform(0.956957, 0, 0.000704124, 0, 1, 0, 16.141, 0, 0.735953));
+        p.drawImage(0,0, transImage);
+    }
+}
+
+void tst_QPainter::drawTransformedSemiTransparentImage_data()
+{
+    QTest::addColumn<int>("imageType");
+
+    QTest::newRow("imagetype=ARGB32_Pre") << (int)QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("imagetype=ARGB8565_Pre") << (int)QImage::Format_ARGB8565_Premultiplied;
+}
+
+void tst_QPainter::drawTransformedSemiTransparentImage()
+{
+    QFETCH(int, imageType);
+
+    //setup image
+    QImage transImage(200, 200, (QImage::Format)imageType);
+    transImage.fill(QColor(0,0,0, 128).rgba());
+
+    //setup surface
+    QImage surface(200, 200, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    QBENCHMARK {
+        p.setWorldTransform(QTransform(0.956957, 0, 0.000704124, 0, 1, 0, 16.141, 0, 0.735953));
+        p.drawImage(0,0, transImage);
+    }
+}
+
+void tst_QPainter::drawTransformedFilledImage_data()
+{
+    QTest::addColumn<int>("imageType");
+
+    QTest::newRow("imagetype=ARGB32_Pre") << (int)QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("imagetype=ARGB8565_Pre") << (int)QImage::Format_ARGB8565_Premultiplied;
+}
+
+void tst_QPainter::drawTransformedFilledImage()
+{
+    QFETCH(int, imageType);
+
+    //setup image
+    QImage filledImage(200, 200, (QImage::Format)imageType);
+    filledImage.fill(QColor(0,0,0).rgb());
+
+    //setup surface
+    QImage surface(200, 200, QImage::Format_RGB16);
+    surface.fill(QColor(255,255,255).rgb());
+    QPainter p(&surface);
+
+    QBENCHMARK {
+        p.setWorldTransform(QTransform(0.956957, 0, 0.000704124, 0, 1, 0, 16.141, 0, 0.735953));
+        p.drawImage(0,0, filledImage);
+    }
+}
 
 
 QTEST_MAIN(tst_QPainter)
