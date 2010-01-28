@@ -268,6 +268,17 @@
 */
 
 /*!
+    \variable QGraphicsItem::Type
+
+    The type value returned by the virtual type() function in standard
+    graphics item classes in Qt. All such standard graphics item
+    classes in Qt are associated with a unique value for Type,
+    e.g. the value returned by QGraphicsPathItem::type() is 2.
+
+    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 18
+*/
+
+/*!
     \variable QGraphicsItem::UserType
 
     The lowest permitted type value for custom items (subclasses
