@@ -3168,6 +3168,10 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
     return QStyle::eventFilter(object, event);
 }
 
+/*!
+    \internal
+    Handle the timer \a event. 
+*/
 void QS60Style::timerEvent(QTimerEvent *event)
 {
 #ifdef Q_WS_S60
