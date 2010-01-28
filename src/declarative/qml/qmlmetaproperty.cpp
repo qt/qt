@@ -51,6 +51,7 @@
 #include "qmlengine.h"
 #include "qmlengine_p.h"
 #include "qmldeclarativedata_p.h"
+#include "qmlstringconverters_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -962,6 +963,14 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
                 void *a[] = { (void *)v.constData(), 0, &status, &flags};
                 QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
             }
+        } else if (vt == QVariant::String) {
+            bool ok = false;
+            QVariant v = QmlStringConverters::variantFromString(value.toString(), t, &ok);
+            if (!ok)
+                return false;
+
+            void *a[] = { (void *)v.constData(), 0, &status, &flags};
+            QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
         } else {
             return false;
         }

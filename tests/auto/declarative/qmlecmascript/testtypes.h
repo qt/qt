@@ -48,7 +48,13 @@
 #include <QtCore/qsize.h>
 #include <QtDeclarative/qmllist.h>
 #include <QtCore/qrect.h>
+#include <QtGui/qmatrix.h>
+#include <QtGui/qcolor.h>
+#include <QtGui/qvector3d.h>
+#include <QtCore/qdatetime.h>
 #include <QtScript/qscriptvalue.h>
+#include <QtDeclarative/qmlscriptstring.h>
+#include <QtDeclarative/qmlcomponent.h>
 
 class MyQmlAttachedObject : public QObject
 {
@@ -278,15 +284,164 @@ QML_DECLARE_TYPE(MyExtendedObject);
 class MyTypeObject : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(MyEnum)
+    Q_FLAGS(MyFlags)
+
+    Q_PROPERTY(QString id READ id WRITE setId);
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty);
+    Q_PROPERTY(QmlComponent *componentProperty READ componentProperty WRITE setComponentProperty);
+    Q_PROPERTY(MyFlags flagProperty READ flagProperty WRITE setFlagProperty);
+    Q_PROPERTY(MyEnum enumProperty READ enumProperty WRITE setEnumProperty);
+    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty);
+    Q_PROPERTY(uint uintProperty READ uintProperty WRITE setUintProperty);
+    Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty);
+    Q_PROPERTY(qreal realProperty READ realProperty WRITE setRealProperty);
+    Q_PROPERTY(double doubleProperty READ doubleProperty WRITE setDoubleProperty);
+    Q_PROPERTY(float floatProperty READ floatProperty WRITE setFloatProperty);
+    Q_PROPERTY(QColor colorProperty READ colorProperty WRITE setColorProperty);
+    Q_PROPERTY(QDate dateProperty READ dateProperty WRITE setDateProperty);
+    Q_PROPERTY(QTime timeProperty READ timeProperty WRITE setTimeProperty);
+    Q_PROPERTY(QDateTime dateTimeProperty READ dateTimeProperty WRITE setDateTimeProperty);
     Q_PROPERTY(QPoint pointProperty READ pointProperty WRITE setPointProperty);
     Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty);
     Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty);
     Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty);
     Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty NOTIFY rectPropertyChanged);
+    Q_PROPERTY(QRect rectProperty2 READ rectProperty2 WRITE setRectProperty2);
     Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty);
-    
+    Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty);
+    Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty);
+    Q_PROPERTY(QVector3D vectorProperty READ vectorProperty WRITE setVectorProperty);
+    Q_PROPERTY(QUrl urlProperty READ urlProperty WRITE setUrlProperty);
+
+    Q_PROPERTY(QmlScriptString scriptProperty READ scriptProperty WRITE setScriptProperty);
+
 public:
-    MyTypeObject() {}
+    MyTypeObject()
+        : objectPropertyValue(0), componentPropertyValue(0) {}
+
+    QString idValue;
+    QString id() const {
+        return idValue;
+    }
+    void setId(const QString &v) {
+        idValue = v;
+    }
+
+    QObject *objectPropertyValue;
+    QObject *objectProperty() const {
+        return objectPropertyValue;
+    }
+    void setObjectProperty(QObject *v) {
+        objectPropertyValue = v;
+    }
+
+    QmlComponent *componentPropertyValue;
+    QmlComponent *componentProperty() const {
+        return componentPropertyValue;
+    }
+    void setComponentProperty(QmlComponent *v) {
+        componentPropertyValue = v;
+    }
+
+    enum MyFlag { FlagVal1 = 0x01, FlagVal2 = 0x02, FlagVal3 = 0x04 };
+    Q_DECLARE_FLAGS(MyFlags, MyFlag)
+    MyFlags flagPropertyValue;
+    MyFlags flagProperty() const {
+        return flagPropertyValue;
+    }
+    void setFlagProperty(MyFlags v) {
+        flagPropertyValue = v;
+    }
+
+    enum MyEnum { EnumVal1, EnumVal2 };
+    MyEnum enumPropertyValue;
+    MyEnum enumProperty() const {
+        return enumPropertyValue;
+    }
+    void setEnumProperty(MyEnum v) {
+        enumPropertyValue = v;
+    }
+
+    QString stringPropertyValue;
+    QString stringProperty() const {
+       return stringPropertyValue;
+    }
+    void setStringProperty(const QString &v) {
+        stringPropertyValue = v;
+    }
+
+    uint uintPropertyValue;
+    uint uintProperty() const {
+       return uintPropertyValue;
+    }
+    void setUintProperty(const uint &v) {
+        uintPropertyValue = v;
+    }
+
+    int intPropertyValue;
+    int intProperty() const {
+       return intPropertyValue;
+    }
+    void setIntProperty(const int &v) {
+        intPropertyValue = v;
+    }
+
+    qreal realPropertyValue;
+    qreal realProperty() const {
+       return realPropertyValue;
+    }
+    void setRealProperty(const qreal &v) {
+        realPropertyValue = v;
+    }
+
+    double doublePropertyValue;
+    double doubleProperty() const {
+       return doublePropertyValue;
+    }
+    void setDoubleProperty(const double &v) {
+        doublePropertyValue = v;
+    }
+
+    float floatPropertyValue;
+    float floatProperty() const {
+       return floatPropertyValue;
+    }
+    void setFloatProperty(const float &v) {
+        floatPropertyValue = v;
+    }
+
+    QColor colorPropertyValue;
+    QColor colorProperty() const {
+       return colorPropertyValue;
+    }
+    void setColorProperty(const QColor &v) {
+        colorPropertyValue = v;
+    }
+
+    QDate datePropertyValue;
+    QDate dateProperty() const {
+       return datePropertyValue;
+    }
+    void setDateProperty(const QDate &v) {
+        datePropertyValue = v;
+    }
+
+    QTime timePropertyValue;
+    QTime timeProperty() const {
+       return timePropertyValue;
+    }
+    void setTimeProperty(const QTime &v) {
+        timePropertyValue = v;
+    }
+
+    QDateTime dateTimePropertyValue;
+    QDateTime dateTimeProperty() const {
+       return dateTimePropertyValue;
+    }
+    void setDateTimeProperty(const QDateTime &v) {
+        dateTimePropertyValue = v;
+    }
 
     QPoint pointPropertyValue;
     QPoint pointProperty() const {
@@ -326,6 +481,15 @@ public:
     }
     void setRectProperty(const QRect &v) {
         rectPropertyValue = v;
+        emit rectPropertyChanged();
+    }
+
+    QRect rectPropertyValue2;
+    QRect rectProperty2() const {
+       return rectPropertyValue2;
+    }
+    void setRectProperty2(const QRect &v) {
+        rectPropertyValue2 = v;
     }
 
     QRectF rectFPropertyValue;
@@ -336,7 +500,52 @@ public:
         rectFPropertyValue = v;
     }
 
+    bool boolPropertyValue;
+    bool boolProperty() const {
+       return boolPropertyValue;
+    }
+    void setBoolProperty(const bool &v) {
+        boolPropertyValue = v;
+    }
+
+    QVariant variantPropertyValue;
+    QVariant variantProperty() const {
+       return variantPropertyValue;
+    }
+    void setVariantProperty(const QVariant &v) {
+        variantPropertyValue = v;
+    }
+
+    QVector3D vectorPropertyValue;
+    QVector3D vectorProperty() const {
+        return vectorPropertyValue;
+    }
+    void setVectorProperty(const QVector3D &v) {
+        vectorPropertyValue = v;
+    }
+
+    QUrl urlPropertyValue;
+    QUrl urlProperty() const {
+        return urlPropertyValue;
+    }
+    void setUrlProperty(const QUrl &v) {
+        urlPropertyValue = v;
+    }
+
+    QmlScriptString scriptPropertyValue;
+    QmlScriptString scriptProperty() const {
+        return scriptPropertyValue;
+    }
+    void setScriptProperty(const QmlScriptString &v) {
+        scriptPropertyValue = v;
+    }
+
+    void doAction() { emit action(); }
+signals:
+    void action();
+    void rectPropertyChanged();
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(MyTypeObject::MyFlags)
 QML_DECLARE_TYPE(MyTypeObject);
 
 Q_DECLARE_METATYPE(QScriptValue);

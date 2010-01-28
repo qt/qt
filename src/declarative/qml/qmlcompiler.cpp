@@ -257,26 +257,30 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
             break;
         case QVariant::Color:
             {
-            QColor c = QmlStringConverters::colorFromString(string);
-            if (!c.isValid()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: color expected"));
+            bool ok;
+            QmlStringConverters::colorFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: color expected"));
             }
             break;
         case QVariant::Date:
             {
-            QDate d = QDate::fromString(string, Qt::ISODate);
-            if (!d.isValid()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: date expected"));
+            bool ok;
+            QmlStringConverters::dateFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: date expected"));
             }
             break;
         case QVariant::Time:
             {
-            QTime time = QTime::fromString(string, Qt::ISODate);
-            if (!time.isValid()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: time expected"));
+            bool ok;
+            QmlStringConverters::timeFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: time expected"));
             }
             break;
         case QVariant::DateTime:
             {
-            QDateTime dateTime = QDateTime::fromString(string, Qt::ISODate);
-            if (!dateTime.isValid()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: datetime expected"));
+            bool ok;
+            QmlStringConverters::dateTimeFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: datetime expected"));
             }
             break;
         case QVariant::Point:
@@ -311,7 +315,7 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
         case QVariant::Vector3D:
             {
             bool ok;
-            QVector3D point = QmlStringConverters::vector3DFromString(string, &ok);
+            QmlStringConverters::vector3DFromString(string, &ok);
             if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: 3D vector expected"));
             }
             break;
@@ -417,7 +421,7 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             break;
         case QVariant::Date:
             {
-            QDate d = QDate::fromString(string, Qt::ISODate);
+            QDate d = QmlStringConverters::dateFromString(string);
             instr.type = QmlInstruction::StoreDate;
             instr.storeDate.propertyIndex = prop.propertyIndex();
             instr.storeDate.value = d.toJulianDay();
@@ -425,7 +429,7 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             break;
         case QVariant::Time:
             {
-            QTime time = QTime::fromString(string, Qt::ISODate);
+            QTime time = QmlStringConverters::timeFromString(string);
             int data[] = { time.hour(), time.minute(),
                            time.second(), time.msec() };
             int index = output->indexForInt(data, 4);
@@ -436,7 +440,7 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             break;
         case QVariant::DateTime:
             {
-            QDateTime dateTime = QDateTime::fromString(string, Qt::ISODate);
+            QDateTime dateTime = QmlStringConverters::dateTimeFromString(string);
             int data[] = { dateTime.date().toJulianDay(),
                            dateTime.time().hour(),
                            dateTime.time().minute(),
