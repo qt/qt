@@ -404,7 +404,7 @@ inline static void qt_mac_set_fullscreen_mode(bool b)
         return;
     qt_mac_app_fullscreen = b;
     if (b) {
-        SetSystemUIMode(kUIModeAllSuppressed, 0);
+        SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
     } else {
         SetSystemUIMode(kUIModeNormal, 0);
     }
