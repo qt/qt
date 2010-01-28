@@ -589,11 +589,20 @@ Q_OUTOFLINE_TEMPLATE QList<T> QList<T>::mid(int pos, int alength) const
         alength = size() - pos;
     if (pos == 0 && alength == size())
         return *this;
-    QList<T> cpy;
     if (pos + alength > size())
         alength = size() - pos;
-    for (int i = pos; i < pos + alength; ++i)
-        cpy += at(i);
+    QList<T> cpy;
+    cpy.reserve(alength);
+    cpy.d->end = alength;
+    QT_TRY {
+        cpy.node_copy(reinterpret_cast<Node *>(cpy.p.begin()),
+                      reinterpret_cast<Node *>(cpy.p.end()),
+                      reinterpret_cast<Node *>(p.begin() + pos));
+    } QT_CATCH(...) {
+        // restore the old end
+        cpy.d->end = 0;
+        QT_RETHROW;
+    }
     return cpy;
 }
 
