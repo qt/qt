@@ -189,7 +189,7 @@ protected slots:
     void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
 private slots:
-    void sessionOpened();
+    void sessionStateChanged(QNetworkSession::State state);
     void sessionError(QNetworkSession::SessionError error);
 
 private:

@@ -354,19 +354,26 @@ void QNetworkAccessBackend::start()
         }
     }
 
-    connect(manager->session, SIGNAL(opened()), this, SLOT(sessionOpened()));
+    connect(manager->session, SIGNAL(stateChanged(QNetworkSession::State)),
+            this, SLOT(sessionStateChanged(QNetworkSession::State)));
     connect(manager->session, SIGNAL(error(QNetworkSession::SessionError)),
             this, SLOT(sessionError(QNetworkSession::SessionError)));
 
-    if (!manager->session->isOpen())
+    switch (manager->session->state()) {
+    case QNetworkSession::Roaming:
+        break;
+    case QNetworkSession::Connected:
+        open();
+        break;
+    default:
         manager->session->open();
-    else
-        sessionOpened();
+    }
 }
 
-void QNetworkAccessBackend::sessionOpened()
+void QNetworkAccessBackend::sessionStateChanged(QNetworkSession::State state)
 {
-    open();
+    if (state == QNetworkSession::Connected)
+        open();
 }
 
 void QNetworkAccessBackend::sessionError(QNetworkSession::SessionError error)
