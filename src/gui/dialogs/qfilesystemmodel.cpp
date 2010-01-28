@@ -1667,7 +1667,7 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
         //GetVolumeInformation requires to add trailing backslash
         const QString nodeName = fileName + QLatin1String("\\");
         BOOL success = ::GetVolumeInformation((wchar_t *)(nodeName.utf16()),
-                name, ARRAYSIZE(name), NULL, 0, NULL, NULL, 0);
+                name, MAX_PATH + 1, NULL, 0, NULL, NULL, 0);
         if (success && name[0])
             node->volumeName = QString::fromWCharArray(name);
     }

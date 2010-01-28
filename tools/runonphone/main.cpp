@@ -175,7 +175,11 @@ int main(int argc, char *argv[])
     }
     if(loglevel > 0)
         outstream << "Connecting to target via " << serialPortName << endl;
+#ifdef Q_OS_WIN
     launcher->setTrkServerName(QString("\\\\.\\") + serialPortName);
+#else
+    launcher->setTrkServerName(serialPortName);
+#endif
 
     launcher->setFileName(QString("c:\\sys\\bin\\") + exeFile);
     launcher->setCommandLineArgs(cmdLine);

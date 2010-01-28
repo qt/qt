@@ -164,8 +164,8 @@ AudioTest::AudioTest()
 
     gen->start();
 
-    settings.setSampleRate(SYSTEM_FREQ);
-    settings.setChannelCount(1);
+    settings.setFrequency(SYSTEM_FREQ);
+    settings.setChannels(1);
     settings.setSampleSize(16);
     settings.setCodec("audio/pcm");
     settings.setByteOrder(QAudioFormat::LittleEndian);

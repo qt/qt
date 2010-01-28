@@ -672,8 +672,9 @@ namespace QT_NAMESPACE {}
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-// using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
-//#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
+#    if __SUNPRO_CC >= 0x550
+#      define Q_DECL_EXPORT     __global
 #    endif
 #    if __SUNPRO_CC < 0x5a0
 #      define Q_NO_TEMPLATE_FRIENDS
@@ -2420,6 +2421,10 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 //enabling new graphics resources
 #define QT_SYMBIAN_SUPPORTS_SGIMAGE
 #define QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#define Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
+#endif
 #endif
 
 

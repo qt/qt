@@ -814,7 +814,7 @@ int QAudioInputPrivate::notifyInterval() const
 
 qint64 QAudioInputPrivate::processedUSecs() const
 {
-    return totalFrames * 1000000 / audioFormat.sampleRate();
+    return totalFrames * 1000000 / audioFormat.frequency();
 }
 
 qint64 QAudioInputPrivate::elapsedUSecs() const

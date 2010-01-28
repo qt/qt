@@ -229,6 +229,7 @@ struct QWExtra {
 #endif
 #elif defined(Q_OS_SYMBIAN) // <----------------------------------------------------- Symbian
     uint activated : 1; // RWindowBase::Activated has been called
+    uint inExpose : 1; // Prevents drawing recursion
 
     /**
      * Defines the behaviour of QSymbianControl::Draw.
@@ -761,6 +762,8 @@ public:
     void initWindowPtr();
     void finishCreateWindow_sys_Carbon(OSWindowRef windowRef);
 #else
+    void setSubWindowStacking(bool set);
+    void setWindowLevel();
     void finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ windowRef);
     void syncCocoaMask();
     void finishCocoaMaskSetup();

@@ -809,16 +809,15 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             }
 
             prepareForDraw(currentBrush.isOpaque());
-            glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 #ifdef QT_OPENGL_CACHE_AS_VBOS
             glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cache->ibo);
-            glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, 0);
+            setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, 0);
             glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, 0);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 #else
-            glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, false, 0, cache->vertices);
+            setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, cache->vertices);
             glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, cache->indices);
 #endif
 

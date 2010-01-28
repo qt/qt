@@ -236,8 +236,6 @@ void QAudioFormat::setSampleRate(int samplerate)
    \obsolete
 
    Use setSampleRate() instead.
-
-   Sets the frequency to \a frequency Hertz.
 */
 
 void QAudioFormat::setFrequency(int frequency)
@@ -258,8 +256,6 @@ int QAudioFormat::sampleRate() const
    \obsolete
 
    Use sampleRate() instead.
-
-   Returns the current frequency in Hertz.
 */
 
 int QAudioFormat::frequency() const
@@ -280,8 +276,6 @@ void QAudioFormat::setChannelCount(int channels)
    \obsolete
 
    Use setChannelCount() instead.
-
-   Sets the no. of channels to \a channels.
 */
 
 void QAudioFormat::setChannels(int channels)
@@ -302,8 +296,6 @@ int QAudioFormat::channelCount() const
     \obsolete
 
     Use channelCount() instead.
-
-    Returns the no. of channels.
 */
 
 int QAudioFormat::channels() const

@@ -102,8 +102,6 @@ signals:
 private:
     HelpEngineWrapperPrivate(const QString &collectionFile);
 
-    friend class TimeoutForwarder;
-
     void initFileSystemWatchers();
     void assertDocFilesWatched();
     void qchFileChanged(const QString &fileName, bool fromTimeout);
@@ -114,7 +112,6 @@ private:
     QFileSystemWatcher * const m_qchWatcher;
     typedef QPair<QDateTime, QSharedPointer<TimeoutForwarder> > RecentSignal;
     QMap<QString, RecentSignal> m_recentQchUpdates;
-
 };
 
 HelpEngineWrapper *HelpEngineWrapper::helpEngineWrapper = 0;
