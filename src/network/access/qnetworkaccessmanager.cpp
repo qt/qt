@@ -351,6 +351,17 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
 
     QNetworkConfigurationManager manager;
     d_func()->session = new QNetworkSession(manager.defaultConfiguration(), this);
+
+    connect(d_func()->session, SIGNAL(opened()), this, SLOT(_q_sessionOpened()));
+    connect(d_func()->session, SIGNAL(closed()), this, SLOT(_q_sessionClosed()));
+    connect(d_func()->session, SIGNAL(stateChanged(QNetworkSession::State)),
+            this, SLOT(_q_sessionStateChanged(QNetworkSession::State)));
+    connect(d_func()->session, SIGNAL(error(QNetworkSession::SessionError)),
+            this, SLOT(_q_sessionError(QNetworkSession::SessionError)));
+    connect(d_func()->session, SIGNAL(newConfigurationActivated()),
+            this, SLOT(_q_sessionNewConfigurationActivated()));
+    connect(d_func()->session, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
+            this, SLOT(_q_sessionPreferredConfigurationChanged(QNetworkConfiguration,bool)));
 }
 
 /*!
@@ -792,6 +803,20 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
         emit q->finished(reply);
+
+    if (deferredMigration) {
+        bool repliesPending = false;
+        foreach (QObject *child, q->children()) {
+            if (child != reply && child->inherits("QNetworkReply")) {
+                repliesPending = true;
+                break;
+            }
+        }
+        if (!repliesPending) {
+            emit q->debugMessage(QLatin1String("Migrating as there are no pending replies."));
+            session->migrate();
+        }
+    }
 }
 
 void QNetworkAccessManagerPrivate::_q_replySslErrors(const QList<QSslError> &errors)
@@ -1042,6 +1067,60 @@ void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
 
 QNetworkAccessManagerPrivate::~QNetworkAccessManagerPrivate()
 {
+}
+
+void QNetworkAccessManagerPrivate::_q_sessionOpened()
+{
+    Q_Q(QNetworkAccessManager);
+}
+
+void QNetworkAccessManagerPrivate::_q_sessionClosed()
+{
+    Q_Q(QNetworkAccessManager);
+
+    emit q->debugMessage(QLatin1String("Session Closed"));
+}
+
+void QNetworkAccessManagerPrivate::_q_sessionError(QNetworkSession::SessionError error)
+{
+    Q_Q(QNetworkAccessManager);
+
+    emit q->debugMessage(QString::fromLatin1("Session error %1").arg(error));
+}
+
+void QNetworkAccessManagerPrivate::_q_sessionStateChanged(QNetworkSession::State state)
+{
+    Q_Q(QNetworkAccessManager);
+}
+
+void QNetworkAccessManagerPrivate::_q_sessionNewConfigurationActivated()
+{
+    Q_Q(QNetworkAccessManager);
+
+    foreach (QObject *child, q->children()) {
+        QNetworkReply *reply = qobject_cast<QNetworkReply *>(child);
+        if (reply) {
+            emit q->debugMessage(QString::fromLatin1("Unexpected reply for %1").arg(reply->url().toString()));
+        }
+    }
+
+    session->accept();
+}
+
+void QNetworkAccessManagerPrivate::_q_sessionPreferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless)
+{
+    Q_Q(QNetworkAccessManager);
+
+    deferredMigration = false;
+    foreach (QObject *child, q->children()) {
+        if (child->inherits("QNetworkReply")) {
+            deferredMigration = true;
+            break;
+        }
+    }
+
+    if (!deferredMigration)
+        session->migrate();
 }
 
 QT_END_NAMESPACE

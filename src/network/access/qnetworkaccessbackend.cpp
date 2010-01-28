@@ -49,7 +49,6 @@
 
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
-#include "qnetworksession.h"
 #include "qhostinfo.h"
 
 #include "private/qnoncontiguousbytedevice_p.h"
@@ -345,22 +344,20 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 
 void QNetworkAccessBackend::start()
 {
-    qDebug() << "Checking for localhost";
     QHostInfo hostInfo = QHostInfo::fromName(reply->url.host());
     foreach (const QHostAddress &address, hostInfo.addresses()) {
         if (address == QHostAddress::LocalHost ||
             address == QHostAddress::LocalHostIPv6) {
             // Don't need session for local host access.
-            qDebug() << "Access is to localhost";
             open();
             return;
         }
     }
 
-    qDebug() << "Connecting session signals";
     connect(manager->session, SIGNAL(opened()), this, SLOT(sessionOpened()));
+    connect(manager->session, SIGNAL(error(QNetworkSession::SessionError)),
+            this, SLOT(sessionError(QNetworkSession::SessionError)));
 
-    qDebug() << "Open session if required";
     if (!manager->session->isOpen())
         manager->session->open();
     else
@@ -369,25 +366,12 @@ void QNetworkAccessBackend::start()
 
 void QNetworkAccessBackend::sessionOpened()
 {
-    manager->sendDebugMessage(QLatin1String("Session opened"));
-    qDebug() << "Session opened, calling open()";
     open();
 }
 
-void QNetworkAccessBackend::preferredConfigurationChanged(const QNetworkConfiguration &config,
-                                                          bool isSeamless)
+void QNetworkAccessBackend::sessionError(QNetworkSession::SessionError error)
 {
-    QString message = QString::fromLatin1("preferredConfiguirationChanged %1 %2")
-                        .arg(config.name()) .arg(isSeamless);
-
-    manager->sendDebugMessage(message);
-    manager->session->ignore();
-}
-
-void QNetworkAccessBackend::newConfigurationActivated()
-{
-    manager->sendDebugMessage(QLatin1String("newConfigurationActivated"));
-    manager->session->reject();
+    manager->sendDebugMessage(QString::fromLatin1("Session error %1").arg(error));
 }
 
 QT_END_NAMESPACE

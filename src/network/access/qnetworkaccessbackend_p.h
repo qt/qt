@@ -54,6 +54,7 @@
 //
 
 #include "qnetworkreplyimpl_p.h"
+#include "QtNetwork/qnetworksession.h"
 #include "QtCore/qobject.h"
 
 QT_BEGIN_NAMESPACE
@@ -189,8 +190,7 @@ protected slots:
 
 private slots:
     void sessionOpened();
-    void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
-    void newConfigurationActivated();
+    void sessionError(QNetworkSession::SessionError error);
 
 private:
     friend class QNetworkAccessManager;

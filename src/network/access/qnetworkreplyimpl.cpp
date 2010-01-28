@@ -47,6 +47,7 @@
 #include "QtCore/qdatetime.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "qnetworkaccesshttpbackend_p.h"
+#include "qnetworkaccessmanager_p.h"
 
 #include <QtCore/QCoreApplication>
 
@@ -516,7 +517,33 @@ void QNetworkReplyImplPrivate::finished()
         emit q->uploadProgress(0, 0);
     resumeNotificationHandling();
 
-    completeCacheSave();
+    if (manager->d_func()->session->state() == QNetworkSession::Roaming) {
+        // only content with a known size will fail with a temporary network failure error
+        if (!totalSize.isNull()) {
+            qDebug() << "Connection broke during download.";
+            qDebug() << "Don't worry, we've already started roaming :)";
+
+            if (bytesDownloaded == totalSize) {
+                qDebug() << "Luckily download has already finished.";
+            } else {
+                qDebug() << "Download hasn't finished";
+
+                if (q->bytesAvailable() == bytesDownloaded) {
+                    qDebug() << "User hasn't read data from reply, we could continue after reconnect.";
+                    error(QNetworkReply::TemporaryNetworkFailureError, q->tr("Temporary network failure."));
+                } else if (q->bytesAvailable() < bytesDownloaded) {
+                    qDebug() << "User has already read data from reply.";
+                    error(QNetworkReply::TemporaryNetworkFailureError, q->tr("Temporary network failure."));
+                }
+            }
+        }
+    }
+
+    // if we don't know the total size of or we received everything save the cache
+    if (totalSize.isNull() || totalSize == -1 || bytesDownloaded == totalSize)
+        completeCacheSave();
+    else
+        qDebug() << "Not saving cache.";
 
     // note: might not be a good idea, since users could decide to delete us
     // which would delete the backend too...

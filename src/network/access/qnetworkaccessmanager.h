@@ -129,6 +129,12 @@ private:
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
+    Q_PRIVATE_SLOT(d_func(), void _q_sessionOpened())
+    Q_PRIVATE_SLOT(d_func(), void _q_sessionClosed())
+    Q_PRIVATE_SLOT(d_func(), void _q_sessionError(QNetworkSession::SessionError))
+    Q_PRIVATE_SLOT(d_func(), void _q_sessionStateChanged(QNetworkSession::State))
+    Q_PRIVATE_SLOT(d_func(), void _q_sessionNewConfigurationActivated())
+    Q_PRIVATE_SLOT(d_func(), void _q_sessionPreferredConfigurationChanged(QNetworkConfiguration,bool))
 };
 
 QT_END_NAMESPACE

@@ -76,7 +76,8 @@ public:
           proxyFactory(0),
 #endif
           cookieJarCreated(false),
-          session(0)
+          session(0),
+          deferredMigration(false)
     { }
     ~QNetworkAccessManagerPrivate();
 
@@ -107,6 +108,13 @@ public:
         emit q->debugMessage(message);
     }
 
+    void _q_sessionOpened();
+    void _q_sessionClosed();
+    void _q_sessionError(QNetworkSession::SessionError error);
+    void _q_sessionStateChanged(QNetworkSession::State state);
+    void _q_sessionNewConfigurationActivated();
+    void _q_sessionPreferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
+
     // this is the cache for storing downloaded files
     QAbstractNetworkCache *networkCache;
 
@@ -121,6 +129,7 @@ public:
     bool cookieJarCreated;
 
     QNetworkSession *session;
+    bool deferredMigration;
 
     // this cache can be used by individual backends to cache e.g. their TCP connections to a server
     // and use the connections for multiple requests.
