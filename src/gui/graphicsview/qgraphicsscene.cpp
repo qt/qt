@@ -4635,7 +4635,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         return; // Item has neither contents nor children!(?)
 
     const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
-    const bool itemIsFullyTransparent = (opacity < 0.0001);
+    const bool itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
     if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity()))
         return;
 
@@ -4755,7 +4755,7 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                                  qreal opacity, const QTransform *effectTransform,
                                  bool wasDirtyParentSceneTransform, bool drawItem)
 {
-    const bool itemIsFullyTransparent = (opacity < 0.0001);
+    const bool itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
     const bool itemHasChildren = !item->d_ptr->children.isEmpty();
 
@@ -4994,7 +4994,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     }
 
     const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
-    const bool itemIsFullyTransparent = !item->d_ptr->ignoreOpacity && opacity < 0.0001;
+    const bool itemIsFullyTransparent = !item->d_ptr->ignoreOpacity
+                                        && QGraphicsItemPrivate::isOpacityNull(opacity);
     if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity())) {
         resetDirtyItem(item, /*recursive=*/itemHasChildren);
         return;
