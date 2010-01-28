@@ -82,21 +82,18 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window)
     m_dfbWindow->GetID(m_dfbWindow, &id);
     QDirectFbInput::instance()->addWindow(id,window);
 
-
-
     m_dfbWindow->GetSurface(m_dfbWindow,&m_dfbSurface);
 
     QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
     m_pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
     m_pmdata->setBlittable(blitter);
     m_pixmap = new QPixmap(m_pmdata);
-
-
 }
 
 QDirectFbWindowSurface::~QDirectFbWindowSurface()
 {
     QDirectFbInput::instance()->removeWindow(this->window());
+    m_dfbWindow->Destroy(m_dfbWindow);
 }
 
 QPaintDevice *QDirectFbWindowSurface::paintDevice()
@@ -106,9 +103,6 @@ QPaintDevice *QDirectFbWindowSurface::paintDevice()
 
 void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(widget);
-    Q_UNUSED(offset);
-
     m_pmdata->blittable()->unlock();
 
     const quint8 windowOpacity = quint8(widget->windowOpacity() * 0xff);
