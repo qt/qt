@@ -66,7 +66,7 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QDirectFbGraphicsSystemScreen *sc
     qDebug() << "WindowSurface format " << QDirectFbConvenience::imageFormatFromSurfaceFormat(format,caps);
 
 
-    blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect(), m_dfbSurface);
     m_pmdata = new QBlittablePixmapData(QPixmapData::PixmapType);
     m_pmdata->setBlittable(blitter);
     m_pixmap = new QPixmap(m_pmdata);
@@ -88,7 +88,8 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
     Q_UNUSED(widget);
     Q_UNUSED(offset);
 
-    blitter->unlock();
+    m_pmdata->blittable()->unlock();
+
     const quint8 windowOpacity = quint8(widget->windowOpacity() * 0xff);
     m_dfbWindow->SetOpacity(m_dfbWindow,windowOpacity);
 
@@ -102,16 +103,16 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
 void QDirectFbWindowSurface::setGeometry(const QRect &rect)
 {
-    blitter->unlock();
+    m_pmdata->blittable()->unlock();
+
     QWindowSurface::setGeometry(rect);
     m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
                            rect.width(), rect.height());
 
     //Have to add 1 ref ass it will be removed by deleting the old blitter in setBlittable
     m_dfbSurface->AddRef(m_dfbSurface);
-    QBlittable *blittabler = new QDirectFbBlitter(rect,m_dfbSurface);
-    m_pmdata->setBlittable(blittabler);
-
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(rect,m_dfbSurface);
+    m_pmdata->setBlittable(blitter);
 }
 
 static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int dx, int dy)
@@ -124,7 +125,8 @@ static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int 
 
 bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
-    blitter->unlock();
+    m_pmdata->blittable()->unlock();
+
     if (!m_dfbSurface || area.isEmpty())
         return false;
     m_dfbSurface->SetBlittingFlags(m_dfbSurface, DSBLIT_NOFX);
@@ -152,7 +154,8 @@ void QDirectFbWindowSurface::endPaint(const QRegion &region)
 
 void QDirectFbWindowSurface::setVisible(bool visible)
 {
-    blitter->unlock();
+    m_pmdata->blittable()->unlock();
+
     if (visible) {
         int x = this->geometry().x();
         int y = this->geometry().y();
