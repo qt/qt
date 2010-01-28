@@ -52,14 +52,14 @@ QT_BEGIN_NAMESPACE
 QStringList QT7ServicePlugin::keys() const
 {
     return QStringList()
-#ifdef Q_MEDIASERVICE_MEDIAPLAYER_AVAILABLE
+#ifdef QMEDIA_QT7_PLAYER
     << QLatin1String(Q_MEDIASERVICE_MEDIAPLAYER);
 #endif
 }
 
 QMediaService* QT7ServicePlugin::create(QString const& key)
 {
-#ifdef Q_MEDIASERVICE_MEDIAPLAYER_AVAILABLE
+#ifdef QMEDIA_QT7_PLAYER
     if (key == QLatin1String(Q_MEDIASERVICE_MEDIAPLAYER))
         return new QT7PlayerService;
 #endif
