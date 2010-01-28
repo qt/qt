@@ -7254,7 +7254,9 @@ void QGraphicsItem::prepareGeometryChange()
 
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
         scenePrivate->index->prepareBoundingRectChange(this);
-        scenePrivate->markDirty(this, QRectF(), /*invalidateChildren=*/true);
+        scenePrivate->markDirty(this, QRectF(), /*invalidateChildren=*/true, /*force=*/false,
+                                /*ignoreOpacity=*/ false, /*removingItemFromScene=*/ false,
+                                /*updateBoundingRect=*/true);
 
         // For compatibility reasons, we have to update the item's old geometry
         // if someone is connected to the changed signal or the scene has no views.
