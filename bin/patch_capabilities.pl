@@ -108,6 +108,8 @@ if (@ARGV)
         open (NEW_PKG, ">>".$tempPkgFileName);
         open (PKG, "<".$pkgFileName);
 
+        my $manufacturerElseBlock = 0;
+
         # Parse each line.
         while (<PKG>)
         {
@@ -133,7 +135,28 @@ if (@ARGV)
             # from depended packages that are also patched and therefore have different UID.
             if ($line =~ m/^\(0x[0-9|a-f|A-F]*\).*\{.*\}$/)
             {
-                $newLine = ""
+                $newLine = "\n"
+            }
+
+            # Remove manufacturer ifdef
+            if ($line =~ m/^.*\(MANUFACTURER\)\=\(.*\).*$/)
+            {
+                $newLine = "\n";
+            }
+
+            if ($line =~ m/^ELSEIF.*MANUFACTURER$/)
+            {
+                $manufacturerElseBlock = 1;
+            }
+
+            if ($manufacturerElseBlock eq 1)
+            {
+                $newLine = "\n";
+            }
+
+            if ($line =~ m/^ENDIF.*MANUFACTURER$/)
+            {
+                $manufacturerElseBlock = 0;
             }
 
             print NEW_PKG $newLine;
