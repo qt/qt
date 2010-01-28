@@ -328,10 +328,9 @@ QString QUtf16::convertToUnicode(const char *chars, int len, QTextCodec::Convert
             if (!headerdone) {
                 headerdone = true;
                 if (endian == DetectEndianness) {
-                    if (ch == QChar::ByteOrderSwapped && endian != BigEndianness) {
+                    if (ch == QChar::ByteOrderSwapped) {
                         endian = LittleEndianness;
-                    } else if (ch == QChar::ByteOrderMark && endian != LittleEndianness) {
-                        // ignore BOM
+                    } else if (ch == QChar::ByteOrderMark) {
                         endian = BigEndianness;
                     } else {
                         if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
