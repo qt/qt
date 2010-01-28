@@ -76,9 +76,8 @@ static gboolean userEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
 {
     GUserEventSource * source = reinterpret_cast<GUserEventSource *>(s);
 
-    int i = QApplicationPrivate::userEventsQueued();
     QApplicationPrivate::UserEvent * event;
-    while (i--) {
+    while (QApplicationPrivate::userEventsQueued()) {
         event = QApplicationPrivate::getUserEvent();
 
         // send through event filter
