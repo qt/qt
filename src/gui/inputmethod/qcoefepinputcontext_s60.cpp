@@ -101,11 +101,7 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
 void QCoeFepInputContext::reset()
 {
-    commitTemporaryPreeditString();
-
-    CCoeFep* fep = CCoeEnv::Static()->Fep();
-    if (fep)
-        fep->CancelTransaction();
+    commitCurrentString(false);
 }
 
 void QCoeFepInputContext::ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType)
@@ -290,7 +286,6 @@ void QCoeFepInputContext::commitTemporaryPreeditString()
         return;
 
     commitCurrentString(false);
-    m_hasTempPreeditString = false;
 }
 
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
@@ -765,6 +760,7 @@ void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
     m_preeditString.clear();
     sendEvent(event);
 
+    m_hasTempPreeditString = false;
     m_longPress = 0;
 
     if (!triggeredBySymbian) {
