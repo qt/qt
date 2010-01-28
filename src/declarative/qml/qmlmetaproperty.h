@@ -88,6 +88,7 @@ public:
     enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };
     Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
     bool write(const QVariant &, QmlMetaProperty::WriteFlags) const;
+    bool reset() const;
 
     bool hasChangedNotifier() const;
     bool needsChangedNotifier() const;
@@ -108,6 +109,7 @@ public:
     bool isDefault() const;
     bool isWritable() const;
     bool isDesignable() const;
+    bool isResettable() const;
     bool isValid() const;
     QObject *object() const;
 
