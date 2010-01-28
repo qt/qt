@@ -1,5 +1,7 @@
 TEMPLATE = subdirs
 
+win32:!wince:SUBDIRS += directshow
+
 mac:SUBDIRS += qt7
 
 unix:!mac:!symbian {
