@@ -73,9 +73,10 @@ class MyQmlObject : public QObject
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged)
     Q_PROPERTY(QmlList<QObject *> *objectQmlListProperty READ objectQmlListProperty CONSTANT)
     Q_PROPERTY(QList<QObject *> *objectListProperty READ objectListProperty CONSTANT)
+    Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
 
 public:
-    MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0) {}
+    MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0), m_resetProperty(13) {}
 
     enum MyEnum { EnumValue1 = 0, EnumValue2 = 1 };
     enum MyEnum2 { EnumValue3 = 2, EnumValue4 = 3 };
@@ -117,6 +118,11 @@ public:
 
     int value() const { return m_value; }
     void setValue(int v) { m_value = v; }
+
+    int resettableProperty() const { return m_resetProperty; }
+    void setResettableProperty(int v) { m_resetProperty = v; }
+    void resetProperty() { m_resetProperty = 13; }
+
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -141,6 +147,7 @@ private:
     QmlConcreteList<QObject *> m_objectQmlList;
     QList<QObject *> m_objectQList;
     int m_value;
+    int m_resetProperty;
 };
 
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)

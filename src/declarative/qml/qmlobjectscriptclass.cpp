@@ -352,12 +352,18 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
         evalContext = enginePriv->contextClass->contextFromValue(scopeNode);
     }
 
-    // ### Can well known types be optimized?
-    QVariant v = QmlScriptClass::toVariant(engine, value);
     QmlAbstractBinding *delBinding = QmlMetaPropertyPrivate::setBinding(obj, *lastData, 0);
     if (delBinding)
         delBinding->destroy();
-    QmlMetaPropertyPrivate::write(obj, *lastData, v, evalContext);
+
+    if (value.isUndefined() && lastData->flags & QmlPropertyCache::Data::IsResettable) {
+        void *a[] = { 0 };
+        QMetaObject::metacall(obj, QMetaObject::ResetProperty, lastData->coreIndex, a);
+    } else {
+        // ### Can well known types be optimized?
+        QVariant v = QmlScriptClass::toVariant(engine, value);
+        QmlMetaPropertyPrivate::write(obj, *lastData, v, evalContext);
+    }
 }
 
 bool QmlObjectScriptClass::isQObject() const

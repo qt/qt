@@ -116,6 +116,7 @@ private slots:
     void externalScript();
     void compositePropertyType();
     void jsObject();
+    void undefinedResetsProperty();
 
     void bug1();
 
@@ -1073,6 +1074,40 @@ void tst_qmlecmascript::jsObject()
     QCOMPARE(object->property("test").toInt(), 92);
 
     delete object;
+}
+
+void tst_qmlecmascript::undefinedResetsProperty()
+{
+    {
+    QmlComponent component(&engine, TEST_FILE("undefinedResetsProperty.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 92);
+
+    object->setProperty("setUndefined", true);
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 13);
+
+    object->setProperty("setUndefined", false);
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 92);
+
+    delete object;
+    }
+    {
+    QmlComponent component(&engine, TEST_FILE("undefinedResetsProperty.2.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 19);
+
+    QMetaObject::invokeMethod(object, "doReset");
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 13);
+
+    delete object;
+    }
 }
 
 // QTBUG-6781

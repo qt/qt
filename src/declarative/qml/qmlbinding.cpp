@@ -147,7 +147,11 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
             bool isUndefined = false;
             QVariant value = this->value(&isUndefined);
 
-            if (isUndefined && !data->error.isValid()) {
+            if (isUndefined && !data->error.isValid() && data->property.isResettable()) {
+
+                data->property.reset();
+
+            } else if (isUndefined && !data->error.isValid()) {
 
                 QUrl url = QUrl(data->url);
                 int line = data->line;
@@ -159,7 +163,7 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
                 data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
 
             } else if (!isUndefined && data->property.object() && 
-                !data->property.write(value, flags)) {
+                       !data->property.write(value, flags)) {
 
                 QUrl url = QUrl(data->url);
                 int line = data->line;
