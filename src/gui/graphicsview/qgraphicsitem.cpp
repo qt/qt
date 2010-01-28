@@ -1570,17 +1570,18 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
 }
 
 /*!
-    Sets this item's parent item to \a parent. If this item already has a
-    parent, it is first removed from the previous parent. If \a parent is 0,
-    this item will become a top-level item.
+  Sets this item's parent item to \a newParent. If this item already
+  has a parent, it is first removed from the previous parent. If \a
+  newParent is 0, this item will become a top-level item.
 
-    Note that this implicitly adds this graphics item to the scene of
-    the parent. You should not \l{QGraphicsScene::addItem()}{add} the
-    item to the scene yourself.
+  Note that this implicitly adds this graphics item to the scene of
+  the parent. You should not \l{QGraphicsScene::addItem()}{add} the
+  item to the scene yourself.
 
-    Calling this function on an item that is an ancestor of \a parent have undefined behaviour.
+  Calling this function on an item that is an ancestor of \a newParent
+  have undefined behaviour.
 
-    \sa parentItem(), childItems()
+  \sa parentItem(), childItems()
 */
 void QGraphicsItem::setParentItem(QGraphicsItem *newParent)
 {
