@@ -165,23 +165,25 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
     if (lastData)
         return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess; 
 
-    if (!evalContext && context()) {
-        // Global object, QScriptContext activation object, QmlContext object
-        QScriptValue scopeNode = scopeChainValue(context(), -3);         
-        Q_ASSERT(scopeNode.isValid());
-        Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
+    if (!(hints & SkipAttachedProperties)) {
+        if (!evalContext && context()) {
+            // Global object, QScriptContext activation object, QmlContext object
+            QScriptValue scopeNode = scopeChainValue(context(), -3);         
+            Q_ASSERT(scopeNode.isValid());
+            Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
 
-        evalContext = enginePrivate->contextClass->contextFromValue(scopeNode);
-    }
+            evalContext = enginePrivate->contextClass->contextFromValue(scopeNode);
+        }
 
-    if (evalContext) {
-        QmlContextPrivate *cp = QmlContextPrivate::get(evalContext);
+        if (evalContext) {
+            QmlContextPrivate *cp = QmlContextPrivate::get(evalContext);
 
-        if (cp->imports) {
-            QmlTypeNameCache::Data *data = cp->imports->data(name);
-            if (data) {
-                lastTNData = data;
-                return QScriptClass::HandlesReadAccess;
+            if (cp->imports) {
+                QmlTypeNameCache::Data *data = cp->imports->data(name);
+                if (data) {
+                    lastTNData = data;
+                    return QScriptClass::HandlesReadAccess;
+                }
             }
         }
     }
