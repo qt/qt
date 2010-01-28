@@ -105,7 +105,7 @@ AnimationData::AnimationData(const QS60StyleEnums::SkinParts part, int frames, i
 }
 
 AnimationDataV2::AnimationDataV2(const AnimationData &data) : AnimationData(data.m_id, data.m_frames, data.m_interval),
-    m_resourceBased(false), m_animation(0), m_timerId(0)
+    m_animation(0), m_currentFrame(0), m_resourceBased(false), m_timerId(0)
 {
 }
 AnimationDataV2::~AnimationDataV2()
