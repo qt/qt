@@ -326,6 +326,7 @@ QString QUtf16::convertToUnicode(const char *chars, int len, QTextCodec::Convert
                 ch.setCell(*chars++);
             }
             if (!headerdone) {
+                headerdone = true;
                 if (endian == DetectEndianness) {
                     if (ch == QChar::ByteOrderSwapped && endian != BigEndianness) {
                         endian = LittleEndianness;
@@ -344,7 +345,6 @@ QString QUtf16::convertToUnicode(const char *chars, int len, QTextCodec::Convert
                 } else if (ch != QChar::ByteOrderMark) {
                     *qch++ = ch;
                 }
-                headerdone = true;
             } else {
                 *qch++ = ch;
             }
