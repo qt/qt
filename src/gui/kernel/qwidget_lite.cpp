@@ -507,6 +507,8 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         if (isResize) {
             QResizeEvent e(r.size(), olds);
             QApplication::sendEvent(q, &e);
+            if (q->isWindow())
+                q->update();
         }
     } else { // not visible
         if (isMove && q->pos() != oldPos)

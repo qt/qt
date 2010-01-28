@@ -62,7 +62,6 @@ public:
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void setGeometry(const QRect &rect);
-    void geometryChanged(const QRect &rect);
     bool scroll(const QRegion &area, int dx, int dy);
 
     void beginPaint(const QRegion &region);
