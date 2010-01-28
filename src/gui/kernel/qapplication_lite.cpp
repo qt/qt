@@ -555,7 +555,7 @@ void QApplicationPrivate::handleLeaveEvent(QWidget *tlw)
 void QApplicationPrivate::processMouseEvent(MouseEvent *e)
 {
     // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
-    static QWidget *implicit_mouse_grabber=0;
+    static QPointer<QWidget> implicit_mouse_grabber;
 
     QEvent::Type type;
     // move first
