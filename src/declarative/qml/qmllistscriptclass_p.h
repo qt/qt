@@ -64,13 +64,14 @@ public:
     QmlListScriptClass(QmlEngine *);
     ~QmlListScriptClass();
 
-    enum ListType { QListPtr, QmlListPtr };
-    QScriptValue newList(QObject *, int, ListType);
+    enum ListCategory { QListPtr, QmlListPtr };
+    QScriptValue newList(QObject *, int, ListCategory, int);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
     virtual ScriptValue property(Object *, const Identifier &);
+    virtual QVariant toVariant(Object *, bool *ok);
 
 private:
     PersistentIdentifier m_lengthId;

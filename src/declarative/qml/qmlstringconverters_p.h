@@ -70,11 +70,15 @@ QT_BEGIN_NAMESPACE
 namespace QmlStringConverters
 {
     QVariant Q_DECLARATIVE_EXPORT variantFromString(const QString &);
+    QVariant Q_DECLARATIVE_EXPORT variantFromString(const QString &, int preferredType, bool *ok = 0);
+
     QColor Q_DECLARATIVE_EXPORT colorFromString(const QString &, bool *ok = 0);
+    QDate Q_DECLARATIVE_EXPORT dateFromString(const QString &, bool *ok = 0); 
+    QTime Q_DECLARATIVE_EXPORT timeFromString(const QString &, bool *ok = 0);
+    QDateTime Q_DECLARATIVE_EXPORT dateTimeFromString(const QString &, bool *ok = 0);
     QPointF Q_DECLARATIVE_EXPORT pointFFromString(const QString &, bool *ok = 0);
     QSizeF Q_DECLARATIVE_EXPORT sizeFFromString(const QString &, bool *ok = 0);
     QRectF Q_DECLARATIVE_EXPORT rectFFromString(const QString &, bool *ok = 0);
-    bool Q_DECLARATIVE_EXPORT boolFromString(const QString &, bool *ok = 0);
     QVector3D Q_DECLARATIVE_EXPORT vector3DFromString(const QString &, bool *ok = 0);
 };
 

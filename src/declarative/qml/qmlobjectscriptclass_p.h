@@ -136,6 +136,7 @@ private:
 
     QmlEngine *engine;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QmlObjectScriptClass::QueryHints);
 
 QT_END_NAMESPACE
 

@@ -39,7 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qmlbindingvme_p.h"
+#include "qmlcompiledbindings_p.h"
+
+#include <QtDeclarative/qmlinfo.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmljsast_p.h>
 #include <private/qmljsengine_p.h>
@@ -51,22 +53,6 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QmlJS;
-
-QmlBindingVME::Config::Subscription::Signal *QmlBindingVME::Config::Subscription::signal() 
-{
-    if (type == IdType) ((Id *)idData)->~Id();
-    if (type != SignalType) new (signalData) Signal;
-    type = SignalType;
-    return (Signal *)signalData;
-}
-
-QmlBindingVME::Config::Subscription::Id *QmlBindingVME::Config::Subscription::id()
-{
-    if (type == SignalType) ((Signal *)signalData)->~Signal();
-    if (type != IdType) new (idData) Id;
-    type = IdType;
-    return (Id *)idData;
-}
 
 namespace {
 // Supported types: int, qreal, QString (needs constr/destr), QObject*, bool
@@ -106,7 +92,258 @@ struct Register {
     int type;          // Optional type
     void *data[2];     // Object stored here
 };
+}
 
+class QmlCompiledBindingsPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QmlCompiledBindings)
+
+public:
+    QmlCompiledBindingsPrivate();
+    virtual ~QmlCompiledBindingsPrivate();
+
+    struct Binding : public QmlAbstractBinding, public QmlDelayedError {
+        Binding() : enabled(false), updating(0), property(0),
+                    scope(0), target(0), parent(0) {}
+
+        // Inherited from QmlAbstractBinding
+        virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
+        virtual int propertyIndex();
+        virtual void update(QmlMetaProperty::WriteFlags flags);
+        virtual void destroy();
+
+        int index:30;
+        bool enabled:1;
+        bool updating:1;
+        int property;
+        QObject *scope;
+        QObject *target;
+
+        QmlCompiledBindingsPrivate *parent;
+    };
+
+    struct Subscription {
+        struct Signal {
+            QmlGuard<QObject> source;
+            int notifyIndex;
+        };
+
+        enum { InvalidType, SignalType, IdType } type;
+        inline Subscription();
+        inline ~Subscription();
+        bool isSignal() const { return type == SignalType; }
+        bool isId() const { return type == IdType; }
+        inline Signal *signal();
+        inline QmlContextPrivate::IdNotifier *id();
+        union {
+            char signalData[sizeof(Signal)];
+            char idData[sizeof(QmlContextPrivate::IdNotifier)];
+        };
+    };
+    Subscription *subscriptions;
+    QScriptDeclarativeClass::PersistentIdentifier *identifiers;
+
+    void run(Binding *);
+
+    const char *programData;
+    Binding *m_bindings;
+    quint32 *m_signalTable;
+
+    static int methodCount;
+
+    void init();
+    void run(int instr, QmlContextPrivate *context, 
+             QmlDelayedError *error, QObject *scope, QObject *output);
+
+
+    inline void unsubscribe(int subIndex);
+    inline void subscribeId(QmlContextPrivate *p, int idIndex, int subIndex);
+    inline void subscribe(QObject *o, int notifyIndex, int subIndex);
+
+    QmlPropertyCache::Data *findproperty(QObject *obj, 
+                                         const QScriptDeclarativeClass::Identifier &name,
+                                         QmlEnginePrivate *enginePriv, 
+                                         QmlPropertyCache::Data &local);
+    bool findproperty(QObject *obj, 
+                      Register *output, 
+                      QmlEnginePrivate *enginePriv,
+                      int subIdx, 
+                      const QScriptDeclarativeClass::Identifier &name,
+                      bool isTerminal);
+    void findgeneric(Register *output,                                 // value output
+                     int subIdx,                                       // Subscription index in config
+                     QmlContextPrivate *context,                       // Context to search in
+                     const QScriptDeclarativeClass::Identifier &name, 
+                     bool isTerminal);
+};
+
+QmlCompiledBindingsPrivate::QmlCompiledBindingsPrivate()
+: subscriptions(0), identifiers(0)
+{
+}
+
+QmlCompiledBindingsPrivate::~QmlCompiledBindingsPrivate()
+{
+    delete [] subscriptions; subscriptions = 0;
+    delete [] identifiers; identifiers = 0;
+}
+
+QmlCompiledBindingsPrivate::Subscription::Subscription()
+: type(InvalidType)
+{
+}
+
+QmlCompiledBindingsPrivate::Subscription::~Subscription()
+{
+    if (type == SignalType) ((Signal *)signalData)->~Signal();
+    else if (type == IdType) ((QmlContextPrivate::IdNotifier *)idData)->~IdNotifier();
+}
+
+
+int QmlCompiledBindingsPrivate::methodCount = -1;
+
+QmlCompiledBindings::QmlCompiledBindings(const char *program, QmlContext *context)
+: QObject(*(new QmlCompiledBindingsPrivate))
+{
+    Q_D(QmlCompiledBindings);
+
+    if (d->methodCount == -1)
+        d->methodCount = QmlCompiledBindings::staticMetaObject.methodCount();
+
+    d->programData = program;
+
+    d->init();
+
+    QmlAbstractExpression::setContext(context);
+}
+
+QmlCompiledBindings::~QmlCompiledBindings()
+{
+    Q_D(QmlCompiledBindings);
+
+    delete [] d->m_bindings;
+}
+
+QmlAbstractBinding *QmlCompiledBindings::configBinding(int index, QObject *target, 
+                                                        QObject *scope, int property)
+{
+    Q_D(QmlCompiledBindings);
+
+    QmlCompiledBindingsPrivate::Binding *rv = d->m_bindings + index;
+
+    rv->index = index;
+    rv->property = property;
+    rv->target = target;
+    rv->scope = scope;
+    rv->parent = d;
+
+    addref(); // This is decremented in Binding::destroy()
+
+    return rv;
+}
+
+void QmlCompiledBindingsPrivate::Binding::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)
+{
+    if (e) {
+        addToObject(target);
+        update(flags);
+    } else {
+        removeFromObject();
+    }
+
+    QmlAbstractBinding::setEnabled(e, flags);
+
+    if (enabled != e) {
+        enabled = e;
+
+        if (e) update(flags);
+    }
+}
+
+int QmlCompiledBindingsPrivate::Binding::propertyIndex()
+{
+    return property & 0xFFFF;
+}
+
+void QmlCompiledBindingsPrivate::Binding::update(QmlMetaProperty::WriteFlags)
+{
+    parent->run(this);
+}
+
+void QmlCompiledBindingsPrivate::Binding::destroy()
+{
+    enabled = false;
+    removeFromObject();
+    parent->q_func()->release();
+}
+
+int QmlCompiledBindings::qt_metacall(QMetaObject::Call c, int id, void **)
+{
+    Q_D(QmlCompiledBindings);
+
+    if (c == QMetaObject::InvokeMetaMethod && id >= d->methodCount) {
+        id -= d->methodCount;
+
+        quint32 *reeval = d->m_signalTable + d->m_signalTable[id];
+        quint32 count = *reeval;
+        ++reeval;
+        for (quint32 ii = 0; ii < count; ++ii) {
+            d->run(d->m_bindings + reeval[ii]);
+        }
+    }
+    return -1;
+}
+
+void QmlCompiledBindingsPrivate::run(Binding *binding)
+{
+    Q_Q(QmlCompiledBindings);
+
+    if (!binding->enabled)
+        return;
+    if (binding->updating)
+        qWarning("ERROR: Circular binding");
+
+    QmlContext *context = q->QmlAbstractExpression::context();
+    if (!context) {
+        qWarning("QmlCompiledBindings: Attempted to evaluate an expression in an invalid context");
+        return;
+    }
+    QmlContextPrivate *cp = QmlContextPrivate::get(context);
+
+    if (binding->property & 0xFFFF0000) {
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(cp->engine);
+
+        QmlValueType *vt = ep->valueTypes[(binding->property >> 16) & 0xFF];
+        Q_ASSERT(vt);
+        vt->read(binding->target, binding->property & 0xFFFF);
+
+        QObject *target = vt;
+        run(binding->index, cp, binding, binding->scope, target);
+
+        vt->write(binding->target, binding->property & 0xFFFF, 
+                  QmlMetaProperty::DontRemoveBinding);
+    } else {
+        run(binding->index, cp, binding, binding->scope, binding->target);
+    }
+}
+
+QmlCompiledBindingsPrivate::Subscription::Signal *QmlCompiledBindingsPrivate::Subscription::signal() 
+{
+    if (type == IdType) ((QmlContextPrivate::IdNotifier *)idData)->~IdNotifier();
+    if (type != SignalType) new (signalData) Signal;
+    type = SignalType;
+    return (Signal *)signalData;
+}
+
+QmlContextPrivate::IdNotifier *QmlCompiledBindingsPrivate::Subscription::id()
+{
+    if (type == SignalType) ((Signal *)signalData)->~Signal();
+    if (type != IdType) new (idData) QmlContextPrivate::IdNotifier;
+    type = IdType;
+    return (QmlContextPrivate::IdNotifier *)idData;
+}
+
+namespace {
 // This structure is exactly 8-bytes in size
 struct Instr {
     enum {
@@ -411,68 +648,72 @@ struct QmlBindingCompilerPrivate
     QByteArray buildExceptionData() const;
 };
 
-inline void unsubscribe(int subIndex, QmlBindingVME::Config *config)
+void QmlCompiledBindingsPrivate::unsubscribe(int subIndex)
 {
-    QmlBindingVME::Config::Subscription *sub = (config->subscriptions + subIndex);
+    Q_Q(QmlCompiledBindings);
+
+    QmlCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
     if (sub->isSignal()) {
-        QmlBindingVME::Config::Subscription::Signal *s = sub->signal();
+        QmlCompiledBindingsPrivate::Subscription::Signal *s = sub->signal();
         if (s->source)
 #if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
             QMetaObject::disconnectOne(s->source, s->notifyIndex, 
-                                       config->target, config->targetSlot + subIndex);
+                                       q, methodCount + subIndex);
 #else
             // QTBUG-6781
             QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    config->target, config->targetSlot + subIndex);
+                                    q, methodCount + subIndex);
 #endif
     } else if (sub->isId()) {
-        sub->id()->reset();
+        sub->id()->clear();
     }
 }
 
-inline void subscribeId(QmlContextPrivate *p, int idIndex,
-                        int subIndex, QmlBindingVME::Config *config)
+void QmlCompiledBindingsPrivate::subscribeId(QmlContextPrivate *p, int idIndex, int subIndex)
 {
-    unsubscribe(subIndex, config);
+    Q_Q(QmlCompiledBindings);
+
+    unsubscribe(subIndex);
 
     if (p->idValues[idIndex]) {
-        QmlBindingVME::Config::Subscription *sub = (config->subscriptions + subIndex);
-        QmlBindingVME::Config::Subscription::Id *i = sub->id();
+        QmlCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
+        QmlContextPrivate::IdNotifier *i = sub->id();
 
         i->next = p->idValues[idIndex].bindings;
         i->prev = &p->idValues[idIndex].bindings;
         p->idValues[idIndex].bindings = i;
         if (i->next) i->next->prev = &i->next;
 
-        i->target = config->target;
-        i->methodIndex = config->targetSlot + subIndex;
+        i->target = q;
+        i->methodIndex = methodCount + subIndex;
     }
 }
  
-inline void subscribe(QObject *o, int notifyIndex, 
-                      int subIndex, QmlBindingVME::Config *config)
+void QmlCompiledBindingsPrivate::subscribe(QObject *o, int notifyIndex, int subIndex)
 {
-    QmlBindingVME::Config::Subscription *sub = (config->subscriptions + subIndex);
+    Q_Q(QmlCompiledBindings);
+
+    QmlCompiledBindingsPrivate::Subscription *sub = (subscriptions + subIndex);
     
     if (sub->isId())
-        unsubscribe(subIndex, config);
+        unsubscribe(subIndex);
 
-    QmlBindingVME::Config::Subscription::Signal *s = sub->signal();
+    QmlCompiledBindingsPrivate::Subscription::Signal *s = sub->signal();
     if (o != s->source || notifyIndex != s->notifyIndex)  {
         if (s->source)
 #if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
             QMetaObject::disconnectOne(s->source, s->notifyIndex, 
-                                       config->target, config->targetSlot + subIndex);
+                                       q, methodCount + subIndex);
 #else
             // QTBUG-6781
             QMetaObject::disconnect(s->source, s->notifyIndex, 
-                                    config->target, config->targetSlot + subIndex);
+                                    q, methodCount + subIndex);
 #endif
         s->source = o;
         s->notifyIndex = notifyIndex;
         if (s->source && s->notifyIndex != -1) 
-            QMetaObject::connect(s->source, s->notifyIndex, config->target, 
-                                 config->targetSlot + subIndex, Qt::DirectConnection);
+            QMetaObject::connect(s->source, s->notifyIndex, q,
+                                 methodCount + subIndex, Qt::DirectConnection);
     } 
 }
 
@@ -566,10 +807,11 @@ static QObject *variantToQObject(const QVariant &value, bool *ok)
     }
 }
 
-static QmlPropertyCache::Data *findproperty(QObject *obj, 
-                                            const QScriptDeclarativeClass::Identifier &name,
-                                            QmlEnginePrivate *enginePriv,
-                                            QmlPropertyCache::Data &local)
+QmlPropertyCache::Data *
+QmlCompiledBindingsPrivate::findproperty(QObject *obj, 
+                                         const QScriptDeclarativeClass::Identifier &name,
+                                         QmlEnginePrivate *enginePriv,
+                                         QmlPropertyCache::Data &local)
 {
     QmlPropertyCache *cache = 0;
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
@@ -595,11 +837,10 @@ static QmlPropertyCache::Data *findproperty(QObject *obj,
     return property;
 }
 
-static bool findproperty(QObject *obj, Register *output, 
-                         QmlEnginePrivate *enginePriv,
-                         QmlBindingVME::Config *config, int subIdx,
-                         const QScriptDeclarativeClass::Identifier &name,
-                         bool isTerminal)
+bool QmlCompiledBindingsPrivate::findproperty(QObject *obj, Register *output, 
+                                              QmlEnginePrivate *enginePriv,
+                                              int subIdx, const QScriptDeclarativeClass::Identifier &name,
+                                              bool isTerminal)
 {
     if (!obj) {
         output->setUndefined();
@@ -611,7 +852,7 @@ static bool findproperty(QObject *obj, Register *output,
 
     if (property) {
         if (subIdx != -1)
-            subscribe(obj, property->notifyIndex, subIdx, config);
+            subscribe(obj, property->notifyIndex, subIdx);
 
         if (property->flags & QmlPropertyCache::Data::IsQObjectDerived) {
             void *args[] = { output->typeDataPtr(), 0 };
@@ -668,12 +909,11 @@ static bool findproperty(QObject *obj, Register *output,
     }
 }
 
-static void findgeneric(Register *output,                                 // value output
-                        QmlBindingVME::Config *config,           
-                        int subIdx,                                       // Subscription index in config
-                        QmlContextPrivate *context,                       // Context to search in
-                        const QScriptDeclarativeClass::Identifier &name, 
-                        bool isTerminal)
+void QmlCompiledBindingsPrivate::findgeneric(Register *output, 
+                                             int subIdx,      
+                                             QmlContextPrivate *context,
+                                             const QScriptDeclarativeClass::Identifier &name, 
+                                             bool isTerminal)
 {
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(context->engine);
 
@@ -685,8 +925,7 @@ static void findgeneric(Register *output,                                 // val
         if (contextPropertyIndex != -1) {
 
             if (subIdx != -1) 
-                subscribe(QmlContextPrivate::get(context), contextPropertyIndex + context->notifyIndex,
-                          subIdx, config);
+                subscribe(QmlContextPrivate::get(context), contextPropertyIndex + context->notifyIndex, subIdx);
 
             if (contextPropertyIndex < context->idValueCount) {
                 output->setQObject(context->idValues[contextPropertyIndex]);
@@ -717,7 +956,7 @@ static void findgeneric(Register *output,                                 // val
 
         if (QObject *root = context->defaultObjects.isEmpty()?0:context->defaultObjects.first()) {
 
-            if (findproperty(root, output, enginePriv, config, subIdx, name, isTerminal))
+            if (findproperty(root, output, enginePriv, subIdx, name, isTerminal))
                 return;
 
         }
@@ -732,20 +971,16 @@ static void findgeneric(Register *output,                                 // val
     output->setUndefined();
 }
 
-/*!
-Returns the signal/binding table.
-*/ 
-void QmlBindingVME::init(const char *programData, Config *config,
-                         quint32 **sigTable, quint32 *bindingCount)
+void QmlCompiledBindingsPrivate::init()
 {
     Program *program = (Program *)programData;
     if (program->subscriptions)
-        config->subscriptions = new Config::Subscription[program->subscriptions];
+        subscriptions = new QmlCompiledBindingsPrivate::Subscription[program->subscriptions];
     if (program->identifiers)
-        config->identifiers = new QScriptDeclarativeClass::PersistentIdentifier[program->identifiers];
+        identifiers = new QScriptDeclarativeClass::PersistentIdentifier[program->identifiers];
 
-    *sigTable = (quint32 *)(program->data() + program->signalTableOffset);
-    *bindingCount = program->bindings;
+    m_signalTable = (quint32 *)(program->data() + program->signalTableOffset);
+    m_bindings = new QmlCompiledBindingsPrivate::Binding[program->bindings];
 }
 
 static void throwException(int id, QmlDelayedError *error, 
@@ -769,9 +1004,9 @@ static void throwException(int id, QmlDelayedError *error,
         qWarning() << error->error;
 }
 
-void QmlBindingVME::run(const char *programData, int instrIndex,
-                        Config *config, QmlContextPrivate *context, QmlDelayedError *error,
-                        QObject *scope, QObject *output)
+void QmlCompiledBindingsPrivate::run(int instrIndex,
+                                     QmlContextPrivate *context, QmlDelayedError *error,
+                                     QObject *scope, QObject *output)
 {
     error->removeError();
 
@@ -791,17 +1026,15 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         break;
 
     case Instr::SubscribeId:
-        subscribeId(context, instr->subscribe.index, instr->subscribe.offset, config);
+        subscribeId(context, instr->subscribe.index, instr->subscribe.offset);
         break;
 
     case Instr::Subscribe:
     {
         QObject *o = 0;
-        int notifyIndex = instr->subscribe.index;
-
         const Register &object = registers[instr->subscribe.reg];
         if (!object.isUndefined()) o = object.getQObject();
-        subscribe(o, instr->subscribe.index, instr->subscribe.offset, config);
+        subscribe(o, instr->subscribe.index, instr->subscribe.offset);
     }
         break;
 
@@ -1084,14 +1317,13 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         return;
 
     case Instr::InitString:
-        if (!config->identifiers[instr->initstring.offset].identifier) {
+        if (!identifiers[instr->initstring.offset].identifier) {
             quint32 len = *(quint32 *)(data + instr->initstring.dataIdx);
             QChar *strdata = (QChar *)(data + instr->initstring.dataIdx + sizeof(quint32)); 
 
             QString str = QString::fromRawData(strdata, len);
 
-            config->identifiers[instr->initstring.offset] = 
-                engine->objectClass->createPersistentIdentifier(str);
+            identifiers[instr->initstring.offset] = engine->objectClass->createPersistentIdentifier(str);
         }
         break;
 
@@ -1100,9 +1332,9 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         // We start the search in the parent context, as we know that the 
         // name is not present in the current context or it would have been
         // found during the static compile
-        findgeneric(registers + instr->find.reg, config, instr->find.subscribeIndex, 
+        findgeneric(registers + instr->find.reg, instr->find.subscribeIndex, 
                     QmlContextPrivate::get(context->parent),
-                    config->identifiers[instr->find.name].identifier, 
+                    identifiers[instr->find.name].identifier, 
                     instr->common.type == Instr::FindGenericTerminal);
         break;
 
@@ -1116,8 +1348,8 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
         }
 
         findproperty(object.getQObject(), registers + instr->find.reg, 
-                     QmlEnginePrivate::get(context->engine), config, 
-                     instr->find.subscribeIndex, config->identifiers[instr->find.name].identifier, 
+                     QmlEnginePrivate::get(context->engine), 
+                     instr->find.subscribeIndex, identifiers[instr->find.name].identifier, 
                      instr->common.type == Instr::FindPropertyTerminal);
     }
         break;
@@ -1186,9 +1418,9 @@ void QmlBindingVME::run(const char *programData, int instrIndex,
     }
 }
 
-void QmlBindingVME::dump(const char *programData)
+void QmlBindingCompiler::dump(const QByteArray &programData)
 {
-    const Program *program = (const Program *)programData;
+    const Program *program = (const Program *)programData.constData();
 
     qWarning() << "Program.bindings:" << program->bindings;
     qWarning() << "Program.dataLength:" << program->dataLength;
@@ -2513,5 +2745,5 @@ QByteArray QmlBindingCompiler::program() const
 }
 
 
-QT_END_NAMESPACE
 
+QT_END_NAMESPACE

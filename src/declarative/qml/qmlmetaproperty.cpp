@@ -51,6 +51,7 @@
 #include "qmlengine.h"
 #include "qmlengine_p.h"
 #include "qmldeclarativedata_p.h"
+#include "qmlstringconverters_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -430,6 +431,17 @@ bool QmlMetaProperty::isDesignable() const
 {
     if (type() & Property && d->core.isValid() && d->object)
         return d->object->metaObject()->property(d->core.coreIndex).isDesignable();
+    else
+        return false;
+}
+
+/*!
+    Returns true if the property is resettable, otherwise false.
+*/
+bool QmlMetaProperty::isResettable() const
+{
+    if (type() & Property && d->core.isValid() && d->object)
+        return d->core.flags & QmlPropertyCache::Data::IsResettable;
     else
         return false;
 }
@@ -951,6 +963,14 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
                 void *a[] = { (void *)v.constData(), 0, &status, &flags};
                 QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
             }
+        } else if (vt == QVariant::String) {
+            bool ok = false;
+            QVariant v = QmlStringConverters::variantFromString(value.toString(), t, &ok);
+            if (!ok)
+                return false;
+
+            void *a[] = { (void *)v.constData(), 0, &status, &flags};
+            QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
         } else {
             return false;
         }
@@ -965,6 +985,20 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
 bool QmlMetaProperty::write(const QVariant &value) const
 {
     return write(value, 0);
+}
+
+/*!
+    Resets the property value.
+*/
+bool QmlMetaProperty::reset() const
+{
+    if (isResettable()) {
+        void *args[] = { 0 };
+        QMetaObject::metacall(d->object, QMetaObject::ResetProperty, d->core.coreIndex, args);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool QmlMetaProperty::write(const QVariant &value, QmlMetaProperty::WriteFlags flags) const

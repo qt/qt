@@ -165,23 +165,25 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
     if (lastData)
         return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess; 
 
-    if (!evalContext && context()) {
-        // Global object, QScriptContext activation object, QmlContext object
-        QScriptValue scopeNode = scopeChainValue(context(), -3);         
-        Q_ASSERT(scopeNode.isValid());
-        Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
+    if (!(hints & SkipAttachedProperties)) {
+        if (!evalContext && context()) {
+            // Global object, QScriptContext activation object, QmlContext object
+            QScriptValue scopeNode = scopeChainValue(context(), -3);         
+            Q_ASSERT(scopeNode.isValid());
+            Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
 
-        evalContext = enginePrivate->contextClass->contextFromValue(scopeNode);
-    }
+            evalContext = enginePrivate->contextClass->contextFromValue(scopeNode);
+        }
 
-    if (evalContext) {
-        QmlContextPrivate *cp = QmlContextPrivate::get(evalContext);
+        if (evalContext) {
+            QmlContextPrivate *cp = QmlContextPrivate::get(evalContext);
 
-        if (cp->imports) {
-            QmlTypeNameCache::Data *data = cp->imports->data(name);
-            if (data) {
-                lastTNData = data;
-                return QScriptClass::HandlesReadAccess;
+            if (cp->imports) {
+                QmlTypeNameCache::Data *data = cp->imports->data(name);
+                if (data) {
+                    lastTNData = data;
+                    return QScriptClass::HandlesReadAccess;
+                }
             }
         }
     }
@@ -252,9 +254,9 @@ QmlObjectScriptClass::property(QObject *obj, const Identifier &name)
         }
 
         if (lastData->flags & QmlPropertyCache::Data::IsQList) {
-            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::QListPtr));
+            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::QListPtr, lastData->propType));
         } else if (lastData->flags & QmlPropertyCache::Data::IsQmlList) {
-            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::QmlListPtr));
+            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::QmlListPtr, lastData->propType));
         } else if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
             QObject *rv = 0;
             void *args[] = { &rv, 0 };
@@ -352,12 +354,18 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
         evalContext = enginePriv->contextClass->contextFromValue(scopeNode);
     }
 
-    // ### Can well known types be optimized?
-    QVariant v = QmlScriptClass::toVariant(engine, value);
     QmlAbstractBinding *delBinding = QmlMetaPropertyPrivate::setBinding(obj, *lastData, 0);
     if (delBinding)
         delBinding->destroy();
-    QmlMetaPropertyPrivate::write(obj, *lastData, v, evalContext);
+
+    if (value.isUndefined() && lastData->flags & QmlPropertyCache::Data::IsResettable) {
+        void *a[] = { 0 };
+        QMetaObject::metacall(obj, QMetaObject::ResetProperty, lastData->coreIndex, a);
+    } else {
+        // ### Can well known types be optimized?
+        QVariant v = QmlScriptClass::toVariant(engine, value);
+        QmlMetaPropertyPrivate::write(obj, *lastData, v, evalContext);
+    }
 }
 
 bool QmlObjectScriptClass::isQObject() const

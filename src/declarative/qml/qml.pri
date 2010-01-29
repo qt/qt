@@ -32,9 +32,8 @@ SOURCES += \
     $$PWD/qmlscriptparser.cpp \
     $$PWD/qmlenginedebug.cpp \
     $$PWD/qmlrewrite.cpp \
-    $$PWD/qmlbindingvme.cpp \
     $$PWD/qmlvaluetype.cpp \
-    $$PWD/qmlbindingoptimizations.cpp \
+    $$PWD/qmlcompiledbindings.cpp \
     $$PWD/qmlxmlhttprequest.cpp \
     $$PWD/qmlsqldatabase.cpp \
     $$PWD/qmetaobjectbuilder.cpp \
@@ -95,13 +94,12 @@ HEADERS += \
     $$PWD/qmldeclarativedata_p.h \
     $$PWD/qmlerror.h \
     $$PWD/qmlscriptparser_p.h \
-    $$PWD/qmlbindingvme_p.h \
     $$PWD/qmlenginedebug_p.h \
     $$PWD/qmlrewrite_p.h \
     $$PWD/qpodvector_p.h \
     $$PWD/qbitfield_p.h \
     $$PWD/qmlvaluetype_p.h \
-    $$PWD/qmlbindingoptimizations_p.h \
+    $$PWD/qmlcompiledbindings_p.h \
     $$PWD/qmlxmlhttprequest_p.h \
     $$PWD/qmlsqldatabase_p.h \
     $$PWD/qmetaobjectbuilder_p.h \

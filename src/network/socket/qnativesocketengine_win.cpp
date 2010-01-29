@@ -1007,21 +1007,21 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
 
         ret += qint64(bytesWritten);
 
+        int err;
         if (socketRet != SOCKET_ERROR) {
             if (ret == len)
                 break;
             else
                 continue;
-        } else if (WSAGetLastError() == WSAEWOULDBLOCK) {
+        } else if ((err = WSAGetLastError()) == WSAEWOULDBLOCK) {
             break;
-        } else if (WSAGetLastError() == WSAENOBUFS) {
+        } else if (err == WSAENOBUFS) {
             // this function used to not send more than 49152 per call to WSASendTo
             // to avoid getting a WSAENOBUFS. However this is a performance regression
             // and we think it only appears with old windows versions. We now handle the
             // WSAENOBUFS and hope it never appears anyway.
             // just go on, the next loop run we will try a smaller number
         } else {
-            int err = WSAGetLastError();
             WS_ERROR_DEBUG(err);
             switch (err) {
             case WSAECONNRESET:

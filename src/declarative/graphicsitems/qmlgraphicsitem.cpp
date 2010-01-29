@@ -1533,8 +1533,12 @@ void QmlGraphicsItem::setParentItem(QmlGraphicsItem *parent)
     QmlGraphicsItem *oldParent = parentItem();
     if (parent == oldParent || !parent) return;
 
+    Q_D(QmlGraphicsItem);
     QObject::setParent(parent);
-    QGraphicsObject::setParentItem(parent);
+    d->setParentItemHelper(parent, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    if (oldParent)
+        emit oldParent->childrenChanged();
+    emit parentChanged();
 }
 
 /*!

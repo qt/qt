@@ -47,6 +47,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -94,12 +95,41 @@ QVariant QmlStringConverters::variantFromString(const QString &s)
     if (ok) return QVariant(p);
     QSizeF sz = sizeFFromString(s, &ok);
     if (ok) return QVariant(sz);
-    bool b = boolFromString(s, &ok);
-    if (ok) return QVariant(b);
     QVector3D v = vector3DFromString(s, &ok);
     if (ok) return qVariantFromValue(v);
 
     return QVariant(s);
+}
+
+QVariant QmlStringConverters::variantFromString(const QString &s, int preferredType, bool *ok)
+{
+    switch (preferredType) {
+    case QMetaType::QColor:
+        return QVariant::fromValue(colorFromString(s, ok));
+    case QMetaType::QDate:
+        return QVariant::fromValue(dateFromString(s, ok));
+    case QMetaType::QTime:
+        return QVariant::fromValue(timeFromString(s, ok));
+    case QMetaType::QDateTime:
+        return QVariant::fromValue(dateTimeFromString(s, ok));
+    case QMetaType::QPointF:
+        return QVariant::fromValue(pointFFromString(s, ok));
+    case QMetaType::QPoint:
+        return QVariant::fromValue(pointFFromString(s, ok).toPoint());
+    case QMetaType::QSizeF:
+        return QVariant::fromValue(sizeFFromString(s, ok));
+    case QMetaType::QSize:
+        return QVariant::fromValue(sizeFFromString(s, ok).toSize());
+    case QMetaType::QRectF:
+        return QVariant::fromValue(rectFFromString(s, ok));
+    case QMetaType::QRect:
+        return QVariant::fromValue(rectFFromString(s, ok).toRect());
+    case QMetaType::QVector3D:
+        return QVariant::fromValue(vector3DFromString(s, ok));
+    default:
+        if (ok) *ok = false;
+        return QVariant();
+    }
 }
 
 QColor QmlStringConverters::colorFromString(const QString &s, bool *ok)
@@ -118,6 +148,27 @@ QColor QmlStringConverters::colorFromString(const QString &s, bool *ok)
         if (ok) *ok = rv.isValid();
         return rv;
     }
+}
+
+QDate QmlStringConverters::dateFromString(const QString &s, bool *ok)
+{
+    QDate d = QDate::fromString(s, Qt::ISODate);
+    if (ok) *ok =  d.isValid();
+    return d;
+}
+
+QTime QmlStringConverters::timeFromString(const QString &s, bool *ok)
+{
+    QTime t = QTime::fromString(s, Qt::ISODate);
+    if (ok) *ok = t.isValid();
+    return t;
+}
+
+QDateTime QmlStringConverters::dateTimeFromString(const QString &s, bool *ok)
+{
+    QDateTime d = QDateTime::fromString(s, Qt::ISODate);
+    if (ok) *ok =  d.isValid();
+    return d;
 }
 
 //expects input of "x,y"
@@ -194,23 +245,6 @@ QRectF QmlStringConverters::rectFFromString(const QString &s, bool *ok)
     if (ok)
         *ok = true;
     return QRectF(x, y, width, height);
-}
-
-bool QmlStringConverters::boolFromString(const QString &str, bool *ok)
-{
-    if (str.isEmpty() || str == QLatin1String("false") || str == QLatin1String("0")) {
-        if (ok)
-            *ok = true;
-        return false;
-    } else if (str == QLatin1String("true") || str == QLatin1String("1")) {
-        if (ok)
-            *ok = true;
-        return true;
-    }
-
-    if (ok)
-        *ok = false;
-    return true;
 }
 
 //expects input of "x,y,z"

@@ -57,7 +57,7 @@
 #include "qmlvmemetaobject_p.h"
 #include "qmlbinding_p.h"
 #include "qmlcontext_p.h"
-#include "qmlbindingoptimizations_p.h"
+#include "qmlcompiledbindings_p.h"
 #include "qmlglobal_p.h"
 #include "qmlscriptstring.h"
 
@@ -173,7 +173,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 if (instr.init.contextCache != -1) 
                     cp->setIdPropertyData(comp->contextCaches.at(instr.init.contextCache));
                 if (instr.init.compiledBinding != -1) 
-                    cp->optimizedBindings = new QmlOptimizedBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
+                    cp->optimizedBindings = new QmlCompiledBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
             }
             break;
 

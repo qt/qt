@@ -378,9 +378,6 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
         return;
     }
     screen->flipSurface(dfbSurface, flipFlags, region, offset);
-    if (noSystemBackground) {
-        dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
-    }
 #else
     setOpaque(windowOpacity != 0xff);
     if (mode == Offscreen) {

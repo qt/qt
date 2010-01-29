@@ -76,6 +76,7 @@ public:
     tst_qmlecmascript() {}
 
 private slots:
+    void assignBasicTypes();
     void idShortcutInvalidates();
     void boolPropertiesEvaluateAsBool();
     void methods();
@@ -116,6 +117,8 @@ private slots:
     void externalScript();
     void compositePropertyType();
     void jsObject();
+    void undefinedResetsProperty();
+    void listToVariant();
 
     void bug1();
 
@@ -123,6 +126,66 @@ private slots:
 private:
     QmlEngine engine;
 };
+
+void tst_qmlecmascript::assignBasicTypes()
+{
+    {
+    QmlComponent component(&engine, TEST_FILE("assignBasicTypes.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->flagProperty(), MyTypeObject::FlagVal1 | MyTypeObject::FlagVal3);
+    QCOMPARE(object->enumProperty(), MyTypeObject::EnumVal2);
+    QCOMPARE(object->stringProperty(), QString("Hello World!"));
+    QCOMPARE(object->uintProperty(), uint(10));
+    QCOMPARE(object->intProperty(), -19);
+    QCOMPARE((float)object->realProperty(), float(23.2));
+    QCOMPARE((float)object->doubleProperty(), float(-19.7));
+    QCOMPARE((float)object->floatProperty(), float(8.5));
+    QCOMPARE(object->colorProperty(), QColor("red"));
+    QCOMPARE(object->dateProperty(), QDate(1982, 11, 25));
+    QCOMPARE(object->timeProperty(), QTime(11, 11, 32));
+    QCOMPARE(object->dateTimeProperty(), QDateTime(QDate(2009, 5, 12), QTime(13, 22, 1)));
+    QCOMPARE(object->pointProperty(), QPoint(99,13));
+    QCOMPARE(object->pointFProperty(), QPointF(-10.1, 12.3));
+    QCOMPARE(object->sizeProperty(), QSize(99, 13));
+    QCOMPARE(object->sizeFProperty(), QSizeF(0.1, 0.2));
+    QCOMPARE(object->rectProperty(), QRect(9, 7, 100, 200));
+    QCOMPARE(object->rectFProperty(), QRectF(1000.1, -10.9, 400, 90.99));
+    QCOMPARE(object->boolProperty(), true);
+    QCOMPARE(object->variantProperty(), QVariant("Hello World!"));
+    QCOMPARE(object->vectorProperty(), QVector3D(10, 1, 2.2));
+    QCOMPARE(object->urlProperty(), component.url().resolved(QUrl("main.qml")));
+    delete object;
+    }
+    {
+    QmlComponent component(&engine, TEST_FILE("assignBasicTypes.2.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->flagProperty(), MyTypeObject::FlagVal1 | MyTypeObject::FlagVal3);
+    QCOMPARE(object->enumProperty(), MyTypeObject::EnumVal2);
+    QCOMPARE(object->stringProperty(), QString("Hello World!"));
+    QCOMPARE(object->uintProperty(), uint(10));
+    QCOMPARE(object->intProperty(), -19);
+    QCOMPARE((float)object->realProperty(), float(23.2));
+    QCOMPARE((float)object->doubleProperty(), float(-19.7));
+    QCOMPARE((float)object->floatProperty(), float(8.5));
+    QCOMPARE(object->colorProperty(), QColor("red"));
+    QCOMPARE(object->dateProperty(), QDate(1982, 11, 25));
+    QCOMPARE(object->timeProperty(), QTime(11, 11, 32));
+    QCOMPARE(object->dateTimeProperty(), QDateTime(QDate(2009, 5, 12), QTime(13, 22, 1)));
+    QCOMPARE(object->pointProperty(), QPoint(99,13));
+    QCOMPARE(object->pointFProperty(), QPointF(-10.1, 12.3));
+    QCOMPARE(object->sizeProperty(), QSize(99, 13));
+    QCOMPARE(object->sizeFProperty(), QSizeF(0.1, 0.2));
+    QCOMPARE(object->rectProperty(), QRect(9, 7, 100, 200));
+    QCOMPARE(object->rectFProperty(), QRectF(1000.1, -10.9, 400, 90.99));
+    QCOMPARE(object->boolProperty(), true);
+    QCOMPARE(object->variantProperty(), QVariant("Hello World!"));
+    QCOMPARE(object->vectorProperty(), QVector3D(10, 1, 2.2));
+    QCOMPARE(object->urlProperty(), component.url().resolved(QUrl("main.qml")));
+    delete object;
+    }
+}
 
 void tst_qmlecmascript::idShortcutInvalidates()
 {
@@ -1075,6 +1138,40 @@ void tst_qmlecmascript::jsObject()
     delete object;
 }
 
+void tst_qmlecmascript::undefinedResetsProperty()
+{
+    {
+    QmlComponent component(&engine, TEST_FILE("undefinedResetsProperty.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 92);
+
+    object->setProperty("setUndefined", true);
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 13);
+
+    object->setProperty("setUndefined", false);
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 92);
+
+    delete object;
+    }
+    {
+    QmlComponent component(&engine, TEST_FILE("undefinedResetsProperty.2.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 19);
+
+    QMetaObject::invokeMethod(object, "doReset");
+
+    QCOMPARE(object->property("resettableProperty").toInt(), 13);
+
+    delete object;
+    }
+}
+
 // QTBUG-6781
 void tst_qmlecmascript::bug1()
 {
@@ -1495,6 +1592,25 @@ void tst_qmlecmascript::callQtInvokables()
     QCOMPARE(o.actuals().count(), 2);
     QCOMPARE(o.actuals().at(0), QVariant(10));
     QCOMPARE(o.actuals().at(1), QVariant(11));
+}
+
+// QTBUG-5675
+void tst_qmlecmascript::listToVariant()
+{
+    QmlComponent component(&engine, TEST_FILE("listToVariant.qml"));
+
+    MyQmlContainer container;
+
+    QmlContext context(engine.rootContext());
+    context.addDefaultObject(&container);
+
+    QObject *object = component.create(&context);
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test"), QVariant::fromValue(container.children()));
+
+    delete object;
+
 }
 
 QTEST_MAIN(tst_qmlecmascript)

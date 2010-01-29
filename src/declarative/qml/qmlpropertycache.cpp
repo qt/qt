@@ -61,6 +61,8 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
         flags |= Data::IsConstant;
     if (p.isWritable())
         flags |= Data::IsWritable;
+    if (p.isResettable())
+        flags |= Data::IsResettable;
 
     if (propType == qMetaTypeId<QmlBinding *>()) {
         flags |= Data::IsQmlBinding;

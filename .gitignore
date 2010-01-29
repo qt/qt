@@ -64,6 +64,7 @@ bin/qmake*
 bin/qdoc3*
 bin/qt3to4*
 bin/qtdemo*
+bin/qttracereplay*
 bin/rcc*
 bin/uic*
 bin/patternist*

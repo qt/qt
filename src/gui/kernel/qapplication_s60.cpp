@@ -71,6 +71,7 @@
 #  include <private/qcoefepinputcontext_p.h>
 # endif
 # include <private/qs60mainapplication_p.h>
+# include <centralrepository.h>
 #endif
 
 #include "private/qstylesheetstyle_p.h"
@@ -1204,6 +1205,24 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         S60->virtualMouseRequired = false;
     }
 
+    S60->avkonComponentsSupportTransparency = false;
+
+#ifdef Q_WS_S60
+    TUid KCRUidAvkon = { 0x101F876E };
+    TUint32 KAknAvkonTransparencyEnabled = 0x0000000D;
+
+    CRepository* repository = 0;
+    TRAP(err, repository = CRepository::NewL(KCRUidAvkon));
+
+    if(err == KErrNone) {
+        TInt value = 0;
+        err = repository->Get(KAknAvkonTransparencyEnabled, value);
+        if(err == KErrNone) {
+            S60->avkonComponentsSupportTransparency = (value==1) ? true : false;
+        }
+    }
+#endif    
+
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
     } else {
@@ -1528,6 +1547,12 @@ void QApplication::beep()
         qt_S60Beep->Play();
 }
 
+static inline bool callSymbianEventFilters(const QSymbianEvent *event)
+{
+    long unused;
+    return qApp->filterEvent(const_cast<QSymbianEvent *>(event), &unused);
+}
+
 /*!
     \warning This function is only available on Symbian.
     \since 4.6
@@ -1544,6 +1569,9 @@ int QApplication::symbianProcessEvent(const QSymbianEvent *event)
 
     QScopedLoopLevelCounter counter(d->threadData);
 
+    if (d->eventDispatcher->filterEvent(const_cast<QSymbianEvent *>(event)))
+        return 1;
+
     QWidget *w = qApp ? qApp->focusWidget() : 0;
     if (w) {
         QInputContext *ic = w->inputContext();
@@ -1556,29 +1584,34 @@ int QApplication::symbianProcessEvent(const QSymbianEvent *event)
 
     switch (event->type()) {
     case QSymbianEvent::WindowServerEvent:
-        return d->symbianProcessWsEvent(event->windowServerEvent());
+        return d->symbianProcessWsEvent(event);
     case QSymbianEvent::CommandEvent:
-        return d->symbianHandleCommand(event->command());
+        return d->symbianHandleCommand(event);
     case QSymbianEvent::ResourceChangeEvent:
-        return d->symbianResourceChange(event->resourceChangeType());
+        return d->symbianResourceChange(event);
     default:
         return -1;
     }
 }
 
-int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
+int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent)
 {
     // Qt event handling. Handle some events regardless of if the handle is in our
     // widget map or not.
+    const TWsEvent *event = symbianEvent->windowServerEvent();
     CCoeControl* control = reinterpret_cast<CCoeControl*>(event->Handle());
     const bool controlInMap = QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control);
     switch (event->Type()) {
     case EEventPointerEnter:
-        if (controlInMap)
+        if (controlInMap) {
+            callSymbianEventFilters(symbianEvent);
             return 1; // Qt::Enter will be generated in HandlePointerL
+        }
         break;
     case EEventPointerExit:
         if (controlInMap) {
+            if (callSymbianEventFilters(symbianEvent))
+                return 1;
             if (S60) {
                 // mouseEvent outside our window, send leave event to last focused widget
                 QMouseEvent mEvent(QEvent::Leave, S60->lastPointerEventPos, S60->lastCursorPos,
@@ -1591,6 +1624,8 @@ int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
         }
         break;
     case EEventScreenDeviceChanged:
+        if (callSymbianEventFilters(symbianEvent))
+            return 1;
         if (S60)
             S60->updateScreenSize();
         if (qt_desktopWidget) {
@@ -1603,6 +1638,8 @@ int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
         return 0; // Propagate to CONE
     case EEventWindowVisibilityChanged:
         if (controlInMap) {
+            if (callSymbianEventFilters(symbianEvent))
+                return 1;
             const TWsVisibilityChangedEvent *visChangedEvent = event->VisibilityChanged();
             QWidget *w = QWidgetPrivate::mapper->value(control);
             if (!w->d_func()->maybeTopData())
@@ -1620,6 +1657,8 @@ int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
         }
         break;
     case EEventFocusGained:
+        if (callSymbianEventFilters(symbianEvent))
+            return 1;
 #ifndef QT_NO_CURSOR
         //re-enable mouse interaction
         if (S60->mouseInteractionEnabled) {
@@ -1633,6 +1672,8 @@ int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
 #endif
         break;
     case EEventFocusLost:
+        if (callSymbianEventFilters(symbianEvent))
+            return 1;
 #ifndef QT_NO_CURSOR
         //disable mouse as may be moving to application that does not support it
         if (S60->mouseInteractionEnabled) {
@@ -1684,10 +1725,15 @@ bool QApplication::symbianEventFilter(const QSymbianEvent *event)
 
   \sa s60EventFilter(), s60ProcessEvent()
 */
-int QApplicationPrivate::symbianHandleCommand(int command)
+int QApplicationPrivate::symbianHandleCommand(const QSymbianEvent *symbianEvent)
 {
     Q_Q(QApplication);
     int ret = 0;
+
+    if (callSymbianEventFilters(symbianEvent))
+        return 1;
+
+    int command = symbianEvent->command();
 
     switch (command) {
 #ifdef Q_WS_S60
@@ -1728,14 +1774,18 @@ int QApplicationPrivate::symbianHandleCommand(int command)
   Currently, KEikDynamicLayoutVariantSwitch and
   KAknsMessageSkinChange are handled.
  */
-int QApplicationPrivate::symbianResourceChange(int type)
+int QApplicationPrivate::symbianResourceChange(const QSymbianEvent *symbianEvent)
 {
     int ret = 0;
+
+    int type = symbianEvent->resourceChangeType();
 
     switch (type) {
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
         {
+        if (callSymbianEventFilters(symbianEvent))
+            return 1;
         if (S60)
             S60->updateScreenSize();
 
@@ -1760,6 +1810,8 @@ int QApplicationPrivate::symbianResourceChange(int type)
 
 #ifndef QT_NO_STYLE_S60
     case KAknsMessageSkinChange:
+        if (callSymbianEventFilters(symbianEvent))
+            return 1;
         if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style())) {
             s60Style->d_func()->handleSkinChange();
             ret = 1;
