@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,6 +68,10 @@ public:
           defaultButton(false), flat(false), menuOpen(false), lastAutoDefault(false) {}
 
     inline void init() { resetLayoutItemMargins(); }
+    static QPushButtonPrivate* get(QPushButton *b) { return b->d_func(); }
+#ifndef QT_NO_MENU
+    QPoint adjustedMenuPosition();
+#endif
     void resetLayoutItemMargins();
     void _q_popupPressed();
     QDialog *dialogParent() const;

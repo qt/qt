@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -145,22 +145,13 @@ QObjectPrivate::QObjectPrivate(int version)
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;
-    connectedSignals = 0;
+    connectedSignals[0] = connectedSignals[1] = 0;
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
     metaObject = 0;
     hasGuards = false;
 }
-
-#ifdef Q_CC_INTEL
-/* Workaround for a bug in win32-icc where it seems to inline ~QObjectPrivate too aggressive.
-   When icc compiles QtGui, it inlines ~QObjectPrivate so that it would generate a call to
-  ~QObjectData. However, ~QObjectData is not exported from QtCore, so it does not link.
-  See also QTBUG-5145 for info on how this manifested itself.
- */
-# pragma auto_inline(off)
-#endif
 
 QObjectPrivate::~QObjectPrivate()
 {
@@ -173,9 +164,6 @@ QObjectPrivate::~QObjectPrivate()
     delete extraData;
 #endif
 }
-#ifdef Q_CC_INTEL
-# pragma auto_inline(on)
-#endif
 
 
 int *QObjectPrivate::setDeleteWatch(QObjectPrivate *d, int *w) {
@@ -590,12 +578,13 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     protected functions connectNotify() and disconnectNotify() make
     it possible to track connections.
 
-    QObjects organize themselves in object trees. When you create a
-    QObject with another object as parent, the object will
-    automatically add itself to the parent's children() list. The
-    parent takes ownership of the object; i.e., it will automatically
-    delete its children in its destructor. You can look for an object
-    by name and optionally type using findChild() or findChildren().
+    QObjects organize themselves in \l {Object Trees and Object
+    Ownership} {object trees}. When you create a QObject with another
+    object as parent, the object will automatically add itself to the
+    parent's children() list. The parent takes ownership of the
+    object; i.e., it will automatically delete its children in its
+    destructor. You can look for an object by name and optionally type
+    using findChild() or findChildren().
 
     Every object has an objectName() and its class name can be found
     via the corresponding metaObject() (see QMetaObject::className()).
@@ -694,7 +683,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     \l{Writing Source Code for Translation} document.
 
     \sa QMetaObject, QPointer, QObjectCleanupHandler, Q_DISABLE_COPY()
-        {Object Trees and Object Ownership}
+    \sa {Object Trees and Object Ownership}
 */
 
 /*!
@@ -2467,7 +2456,7 @@ int QObject::receivers(const char *signal) const
     If you pass the Qt::UniqueConnection \a type, the connection will only
     be made if it is not a duplicate. If there is already a duplicate
     (exact same signal to the exact same slot on the same objects),
-    the connection will fail and connect will return false
+    the connection will fail and connect will return false.
 
     The optional \a type parameter describes the type of connection
     to establish. In particular, it determines whether a particular
@@ -2862,6 +2851,27 @@ void QObject::disconnectNotify(const char *)
 {
 }
 
+/* \internal
+    convert a signal index from the method range to the signal range
+ */
+static int methodIndexToSignalIndex(const QMetaObject *metaObject, int signal_index)
+{
+    if (signal_index < 0)
+        return signal_index;
+    while (metaObject && metaObject->methodOffset() > signal_index)
+        metaObject = metaObject->superClass();
+
+    if (metaObject) {
+        int signalOffset, methodOffset;
+        computeOffsets(metaObject, &signalOffset, &methodOffset);
+        if (signal_index < metaObject->methodCount())
+            signal_index = QMetaObjectPrivate::originalClone(metaObject, signal_index - methodOffset) + signalOffset;
+        else
+            signal_index = signal_index - methodOffset + signalOffset;
+    }
+    return signal_index;
+}
+
 /*!\internal
    \a types is a 0-terminated vector of meta types for queued
    connections.
@@ -2872,16 +2882,7 @@ void QObject::disconnectNotify(const char *)
 bool QMetaObject::connect(const QObject *sender, int signal_index,
                           const QObject *receiver, int method_index, int type, int *types)
 {
-    if (signal_index > 0) {
-        const QMetaObject *mo = sender->metaObject();
-        while (mo && mo->methodOffset() > signal_index)
-            mo = mo->superClass();
-        if (mo) {
-            int signalOffset, methodOffset;
-            computeOffsets(mo, &signalOffset, &methodOffset);
-            signal_index = QMetaObjectPrivate::originalClone(mo, signal_index - methodOffset) + signalOffset;
-        }
-    }
+    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
     return QMetaObjectPrivate::connect(sender, signal_index,
                                        receiver, method_index, type, types);
 }
@@ -2936,32 +2937,37 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
 
     QObjectPrivate *const sender_d = QObjectPrivate::get(s);
     if (signal_index < 0) {
-        sender_d->connectedSignals = ~ulong(0);
+        sender_d->connectedSignals[0] = sender_d->connectedSignals[1] = ~0;
     } else if (signal_index < (int)sizeof(sender_d->connectedSignals) * 8) {
-        sender_d->connectedSignals |= ulong(1) << signal_index;
+        sender_d->connectedSignals[signal_index >> 5] |= (1 << (signal_index & 0x1f));
     }
 
     return true;
 }
-
 
 /*!\internal
  */
 bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                              const QObject *receiver, int method_index)
 {
-    if (signal_index > 0) {
-        const QMetaObject *mo = sender->metaObject();
-        while (mo && mo->methodOffset() > signal_index)
-            mo = mo->superClass();
-        if (mo) {
-            int signalOffset, methodOffset;
-            computeOffsets(mo, &signalOffset, &methodOffset);
-            signal_index = QMetaObjectPrivate::originalClone(mo, signal_index - methodOffset) + signalOffset;
-        }
-    }
+    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
     return QMetaObjectPrivate::disconnect(sender, signal_index,
                                           receiver, method_index);
+}
+
+/*!\internal
+
+Disconnect a single signal connection.  If QMetaObject::connect() has been called 
+multiple times for the same sender, signal_index, receiver and method_index only 
+one of these connections will be removed.
+ */
+bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
+                                const QObject *receiver, int method_index)
+{
+    signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
+    return QMetaObjectPrivate::disconnect(sender, signal_index,
+                                          receiver, method_index,
+                                          QMetaObjectPrivate::DisconnectOne);
 }
 
 /*! \internal
@@ -2969,7 +2975,7 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
  */
 bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
                                           const QObject *receiver, int method_index,
-                                          QMutex *senderMutex)
+                                          QMutex *senderMutex, DisconnectType disconnectType)
 {
     bool success = false;
     while (c) {
@@ -2995,6 +3001,9 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
             c->receiver = 0;
 
             success = true;
+
+            if (disconnectType == DisconnectOne)
+                return success;
         }
         c = c->nextConnectionList;
     }
@@ -3005,7 +3014,8 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
     Same as the QMetaObject::disconnect, but \a signal_index must be the result of QObjectPrivate::signalIndex
  */
 bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
-                                    const QObject *receiver, int method_index)
+                                    const QObject *receiver, int method_index,
+                                    DisconnectType disconnectType)
 {
     if (!sender)
         return false;
@@ -3029,7 +3039,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
         for (signal_index = -1; signal_index < connectionLists->count(); ++signal_index) {
             QObjectPrivate::Connection *c =
                 (*connectionLists)[signal_index].first;
-            if (disconnectHelper(c, receiver, method_index, senderMutex)) {
+            if (disconnectHelper(c, receiver, method_index, senderMutex, disconnectType)) {
                 success = true;
                 connectionLists->dirty = true;
             }
@@ -3037,7 +3047,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
     } else if (signal_index < connectionLists->count()) {
         QObjectPrivate::Connection *c =
             (*connectionLists)[signal_index].first;
-        if (disconnectHelper(c, receiver, method_index, senderMutex)) {
+        if (disconnectHelper(c, receiver, method_index, senderMutex, disconnectType)) {
             success = true;
             connectionLists->dirty = true;
         }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -144,7 +144,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
         QByteArray key = QByteArray(header.constData() + pos, end - pos).trimmed().toLower();
         pos = end + 1;
 
-        if (equal != -1) {
+        if (uint(equal) < uint(comma)) {
             // case: token "=" (token | quoted-string)
             // skip spaces
             pos = nextNonWhitespace(header, pos);
@@ -393,13 +393,19 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     if (lastModified.isValid())
         httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
 
-    it = cacheHeaders.findRawHeader("Cache-Control");
-    if (it != cacheHeaders.rawHeaders.constEnd()) {
-        QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
-        if (cacheControl.contains("must-revalidate"))
-            return;
+    if (CacheLoadControlAttribute == QNetworkRequest::PreferNetwork) {
+        it = cacheHeaders.findRawHeader("Cache-Control");
+        if (it != cacheHeaders.rawHeaders.constEnd()) {
+            QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
+            if (cacheControl.contains("must-revalidate"))
+                return;
+        }
     }
 
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QDateTime expirationDate = metaData.expirationDate();
+
+#if 0
     /*
      * age_value
      *      is the value of Age: header received by the cache with
@@ -415,21 +421,24 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
      * now
      *      is the current (local) time
      */
-    QDateTime currentDateTime = QDateTime::currentDateTime();
     int age_value = 0;
     it = cacheHeaders.findRawHeader("age");
     if (it != cacheHeaders.rawHeaders.constEnd())
-        age_value = QNetworkHeadersPrivate::fromHttpDate(it->second).toTime_t();
+        age_value = it->second.toInt();
 
+    QDateTime dateHeader;
     int date_value = 0;
     it = cacheHeaders.findRawHeader("date");
-    if (it != cacheHeaders.rawHeaders.constEnd())
-        date_value = QNetworkHeadersPrivate::fromHttpDate(it->second).toTime_t();
+    if (it != cacheHeaders.rawHeaders.constEnd()) {
+        dateHeader = QNetworkHeadersPrivate::fromHttpDate(it->second);
+        date_value = dateHeader.toTime_t();
+    }
 
     int now = currentDateTime.toUTC().toTime_t();
     int request_time = now;
     int response_time = now;
 
+    // Algorithm from RFC 2616 section 13.2.3
     int apparent_age = qMax(0, response_time - date_value);
     int corrected_received_age = qMax(apparent_age, age_value);
     int response_delay = response_time - request_time;
@@ -438,7 +447,6 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     int current_age   = corrected_initial_age + resident_time;
 
     // RFC 2616 13.2.4 Expiration Calculations
-    QDateTime expirationDate = metaData.expirationDate();
     if (!expirationDate.isValid()) {
         if (lastModified.isValid()) {
             int diff = currentDateTime.secsTo(lastModified);
@@ -453,10 +461,15 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
         }
     }
 
-    int freshness_lifetime = currentDateTime.secsTo(expirationDate);
+    // the cache-saving code below sets the expirationDate with date+max_age
+    // if "max-age" is present, or to Expires otherwise
+    int freshness_lifetime = dateHeader.secsTo(expirationDate);
     bool response_is_fresh = (freshness_lifetime > current_age);
+#else
+    bool response_is_fresh = currentDateTime.secsTo(expirationDate) >= 0;
+#endif
 
-    if (!response_is_fresh && CacheLoadControlAttribute == QNetworkRequest::PreferNetwork)
+    if (!response_is_fresh)
         return;
 
     loadedFromCache = true;
@@ -581,9 +594,10 @@ void QNetworkAccessHttpBackend::open()
     if (transparentProxy.type() == QNetworkProxy::DefaultProxy &&
         cacheProxy.type() == QNetworkProxy::DefaultProxy) {
         // unsuitable proxies
-        error(QNetworkReply::ProxyNotFoundError,
-              tr("No suitable proxy found"));
-        finished();
+        QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+                                  Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProxyNotFoundError),
+                                  Q_ARG(QString, tr("No suitable proxy found")));
+        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
         return;
     }
 #endif
@@ -641,6 +655,12 @@ void QNetworkAccessHttpBackend::downstreamReadyWrite()
     readFromHttp();
     if (httpReply && httpReply->bytesAvailable() == 0 && httpReply->isFinished())
         replyFinished();
+}
+
+void QNetworkAccessHttpBackend::setDownstreamLimited(bool b)
+{
+    if (httpReply)
+        httpReply->setDownstreamLimited(b);
 }
 
 void QNetworkAccessHttpBackend::replyReadyRead()

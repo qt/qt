@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,6 +63,7 @@
 #include "qaccessible.h"
 #endif
 
+#include "private/qmenu_p.h"
 #include "private/qpushbutton_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -575,12 +576,33 @@ void QPushButtonPrivate::_q_popupPressed()
         return;
 
     menu->setNoReplayFor(q);
+
+    QPoint menuPos = adjustedMenuPosition();
+
+    QPointer<QPushButton> guard(q);
+    QMenuPrivate::get(menu)->causedPopup.widget = guard;
+
+    //Because of a delay in menu effects, we must keep track of the
+    //menu visibility to avoid flicker on button release
+    menuOpen = true;
+    menu->exec(menuPos);
+    if (guard) {
+        menuOpen = false;
+        q->setDown(false);
+    }
+}
+
+QPoint QPushButtonPrivate::adjustedMenuPosition()
+{
+    Q_Q(QPushButton);
+
     bool horizontal = true;
 #if !defined(QT_NO_TOOLBAR)
     QToolBar *tb = qobject_cast<QToolBar*>(parent);
     if (tb && tb->orientation() == Qt::Vertical)
         horizontal = false;
 #endif
+
     QWidgetItem item(q);
     QRect rect = item.geometry();
     rect.setRect(rect.x() - q->x(), rect.y() - q->y(), rect.width(), rect.height());
@@ -603,17 +625,10 @@ void QPushButtonPrivate::_q_popupPressed()
         else
             x -= menuSize.width();
     }
-    QPointer<QPushButton> guard(q);
 
-    //Because of a delay in menu effects, we must keep track of the
-    //menu visibility to avoid flicker on button release
-    menuOpen = true;
-    menu->exec(QPoint(x, y));
-    if (guard) {
-        menuOpen = false;
-        q->setDown(false);
-    }
+    return QPoint(x,y);
 }
+
 #endif // QT_NO_MENU
 
 void QPushButtonPrivate::resetLayoutItemMargins()

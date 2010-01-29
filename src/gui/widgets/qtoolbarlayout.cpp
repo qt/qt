@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -654,6 +654,7 @@ void QToolBarLayout::setExpanded(bool exp)
     if (!tb)
         return;
     if (QMainWindow *win = qobject_cast<QMainWindow*>(tb->parentWidget())) {
+        animating = !tb->isWindow() && win->isAnimated();
         QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
         if (expanded) {
             tb->raise();
@@ -664,7 +665,7 @@ void QToolBarLayout::setExpanded(bool exp)
                 layoutActions(rect.size());
             }
         }
-        layout->layoutState.toolBarAreaLayout.apply(win->isAnimated());
+        layout->layoutState.toolBarAreaLayout.apply(animating);
     }
 }
 

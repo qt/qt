@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -110,7 +110,7 @@ if (links.count()) {
 //! [7]
 <?xml version="1.0" encoding="UTF-8"?>
 <QtHelpProject version="1.0">
-    <namespace>mycompany.com.myapplication.1_0</namespace>
+    <namespace>mycompany.com.myapplication.1.0</namespace>
     <virtualFolder>doc</virtualFolder>	    
     <customFilter name="My Application 1.0">
         <filterAttribute>myapp</filterAttribute>

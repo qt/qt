@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -205,7 +205,7 @@ inline bool QBasicAtomicInt::deref()
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 {
-    return (T *)_InterlockedExchangePointer(&_q_value, newValue);
+    return (T *)_InterlockedExchangePointer(reinterpret_cast<void * volatile*>(&_q_value), newValue);
 }
 
 template <typename T>

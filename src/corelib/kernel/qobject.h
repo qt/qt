@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -91,7 +91,11 @@ template<typename T> inline QList<T> qFindChildren(const QObject *, const QRegEx
 # endif
 #endif
 
-class QObjectData {
+class
+#if defined(__INTEL_COMPILER) && defined(Q_OS_WIN)
+Q_CORE_EXPORT
+#endif
+QObjectData {
 public:
     virtual ~QObjectData() = 0;
     QObject *q_ptr;

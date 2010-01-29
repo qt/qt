@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,9 +80,8 @@ void GoogleChat::showError(const QString &msg) {
     showStatus(QString("Error: %1").arg(msg));
 }
 
-QString GoogleChat::evalJS(const QString &js) {
-    QWebFrame *frame = form.webView->page()->mainFrame();
-    return frame->evaluateJavaScript(js).toString();
+QWebElement GoogleChat::document() const {
+    return form.webView->page()->mainFrame()->documentElement();
 }
 
 void GoogleChat::adjustLoginButton() {
@@ -112,9 +111,11 @@ void GoogleChat::doLogin() {
     showStatus("Logging in...");
 
     QString userEmail = userName + "@gmail.com";
-    evalJS(QString("document.getElementById('Email').value = \"%1\";").arg(userEmail));
-    evalJS(QString("document.getElementById('Passwd').value = \"%1\";").arg(password));
-    evalJS("document.getElementById('gaia_loginform').submit();");
+
+    document().findFirst("#Email").setAttribute("value", userEmail);
+    document().findFirst("#Passwd").setAttribute("value", password);
+    document().findFirst("#gaia_loginform").evaluateJavaScript("this.submit();");
+
 }
 
 void GoogleChat::initialPage(bool ok) {
@@ -124,11 +125,12 @@ void GoogleChat::initialPage(bool ok) {
     }
 
     if (ok) {
-        QString s1 = evalJS("document.getElementById('Email').name");
-        QString s2 = evalJS("document.getElementById('Passwd').name");
-        QString s3 = evalJS("document.getElementById('gaia_loginform').id");
-        if (s1 == "Email" && s2 == "Passwd" && s3 == "gaia_loginform") {
+        QWebElement email = document().findFirst("#Email");
+        QWebElement passwd = document().findFirst("#Passwd");
+        QWebElement loginForm = document().findFirst("#gaia_loginform");
+        if (!email.isNull() && !passwd.isNull() && !loginForm.isNull()) {
             form.stackedWidget->setCurrentIndex(1);
+            form.userNameEdit->setFocus();
             form.webView->disconnect();
             return;
         }
@@ -139,8 +141,8 @@ void GoogleChat::initialPage(bool ok) {
 
 void GoogleChat::hideElements()
 {
-    evalJS("var e = document.getElementsByClassName('footer-footer')[0]; e.parentElement.removeChild(e)");
-    evalJS("var e = document.getElementsByClassName('title-bar-bg title-bar')[0]; e.parentElement.removeChild(e)");
+    document().findFirst(".footer-footer").removeFromDocument();
+    document().findFirst(".title-bar-bg .title-bar").removeFromDocument();
     QTimer::singleShot(2000, this, SLOT(hideElements()));
 }
 
@@ -152,16 +154,18 @@ void GoogleChat::loginPage(bool ok) {
         showError("Service unavailable");
     } else {
         // check for any error message
-        QString c = evalJS("document.getElementsByClassName('errormsg').length");
-        if (c == "0") {
+
+        QWebElement  e = document().findFirst(".errormsg");
+        if (e.isNull()) {
             form.stackedWidget->setCurrentIndex(2);
             QTimer::singleShot(500, this, SLOT(hideElements()));
             return;
         }
 
-        QString err = "Unknown login failure.";
-        if (c == "1") {
-            err = evalJS("document.getElementsByClassName('errormsg')[0].textContent");
+       QString err = "Unknown login failure.";
+       const QString errorMessage = e.toPlainText();
+        if (!errorMessage.isEmpty()) {
+            err = errorMessage;
             err = err.simplified();
         }
         showError(err);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -173,6 +173,22 @@ static quint32 constructModifierMask(quint32 accel_key)
         ret |= NSShiftKeyMask;
 #endif
     return ret;
+}
+
+static void cancelAllMenuTracking()
+{
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    NSMenu *mainMenu = [NSApp mainMenu];
+    [mainMenu cancelTracking];
+    for (NSMenuItem *item in [mainMenu itemArray]) {
+        if ([item submenu]) {
+            [[item submenu] cancelTracking];
+        }
+    }
+#else
+    CancelMenuTracking(AcquireRootMenu(), true, 0);
+#endif
 }
 
 static bool actualMenuItemVisibility(const QMenuBarPrivate::QMacMenuBarPrivate *mbp,
@@ -1830,6 +1846,12 @@ void QMenuBarPrivate::macDestroyMenuBar()
     mac_menubar = 0;
 
     if (qt_mac_current_menubar.qmenubar == q) {
+#ifdef QT_MAC_USE_COCOA
+        QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
+        [loader removeActionsFromAppMenu];
+#else
+        cancelAllMenuTracking();
+#endif
         extern void qt_event_request_menubarupdate(); //qapplication_mac.cpp
         qt_event_request_menubarupdate();
     }
@@ -1931,20 +1953,6 @@ static bool qt_mac_should_disable_menu(QMenuBar *menuBar, QWidget *modalWidget)
     // INVARIANT: modalWidget is window modal. Disable menu entries
     // if the menu bar belongs to an ancestor of modalWidget:
     return qt_mac_is_ancestor(menuBar->parentWidget(), modalWidget);
-}
-
-static void cancelAllMenuTracking()
-{
-#ifdef QT_MAC_USE_COCOA
-    QMacCocoaAutoReleasePool pool;
-    NSMenu *mainMenu = [NSApp mainMenu];
-    [mainMenu cancelTracking];
-    for (NSMenuItem *item in [mainMenu itemArray]) {
-        if ([item submenu]) {
-            [[item submenu] cancelTracking];
-        }
-    }
-#endif
 }
 
 /*!

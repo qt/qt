@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,6 +93,7 @@ private slots:
     }
 
     void init();
+    void unconnected();
     void simpleTypes();
     void complexTypes();
     void wrongTypes();
@@ -234,6 +235,21 @@ void tst_QDBusReply::init()
 {
     QVERIFY(iface);
     QVERIFY(iface->isValid());
+}
+
+void tst_QDBusReply::unconnected()
+{
+    QDBusConnection con("invalid stored connection");
+    QVERIFY(!con.isConnected());
+    QDBusInterface iface("doesnt.matter", "/", "doesnt.matter", con);
+    QVERIFY(!iface.isValid());
+
+    QDBusReply<void> rvoid = iface.asyncCall("ReloadConfig");
+    QVERIFY(!rvoid.isValid());
+
+    QDBusReply<QString> rstring = iface.asyncCall("GetId");
+    QVERIFY(!rstring.isValid());
+    QVERIFY(rstring.value().isEmpty());
 }
 
 void tst_QDBusReply::simpleTypes()

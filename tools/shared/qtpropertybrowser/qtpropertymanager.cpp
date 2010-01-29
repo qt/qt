@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1553,6 +1553,7 @@ class QtDatePropertyManagerPrivate
     QtDatePropertyManager *q_ptr;
     Q_DECLARE_PUBLIC(QtDatePropertyManager)
 public:
+    explicit QtDatePropertyManagerPrivate(QtDatePropertyManager *q);
 
     struct Data
     {
@@ -1572,6 +1573,12 @@ public:
     typedef QMap<const QtProperty *, Data> PropertyValueMap;
     QMap<const QtProperty *, Data> m_values;
 };
+
+QtDatePropertyManagerPrivate::QtDatePropertyManagerPrivate(QtDatePropertyManager *q) :
+    q_ptr(q),
+    m_format(QtPropertyBrowserUtils::dateFormat())
+{
+}
 
 /*!
     \class QtDatePropertyManager
@@ -1622,12 +1629,8 @@ public:
     Creates a manager with the given \a parent.
 */
 QtDatePropertyManager::QtDatePropertyManager(QObject *parent)
-    : QtAbstractPropertyManager(parent), d_ptr(new QtDatePropertyManagerPrivate)
+    : QtAbstractPropertyManager(parent), d_ptr(new QtDatePropertyManagerPrivate(this))
 {
-    d_ptr->q_ptr = this;
-
-    QLocale loc;
-    d_ptr->m_format = loc.dateFormat(QLocale::ShortFormat);
 }
 
 /*!
@@ -1786,12 +1789,19 @@ class QtTimePropertyManagerPrivate
     QtTimePropertyManager *q_ptr;
     Q_DECLARE_PUBLIC(QtTimePropertyManager)
 public:
+    explicit QtTimePropertyManagerPrivate(QtTimePropertyManager *q);
 
-    QString m_format;
+    const QString m_format;
 
     typedef QMap<const QtProperty *, QTime> PropertyValueMap;
     PropertyValueMap m_values;
 };
+
+QtTimePropertyManagerPrivate::QtTimePropertyManagerPrivate(QtTimePropertyManager *q) :
+    q_ptr(q),
+    m_format(QtPropertyBrowserUtils::timeFormat())
+{
+}
 
 /*!
     \class QtTimePropertyManager
@@ -1825,12 +1835,8 @@ public:
     Creates a manager with the given \a parent.
 */
 QtTimePropertyManager::QtTimePropertyManager(QObject *parent)
-    : QtAbstractPropertyManager(parent), d_ptr(new QtTimePropertyManagerPrivate)
+    : QtAbstractPropertyManager(parent), d_ptr(new QtTimePropertyManagerPrivate(this))
 {
-    d_ptr->q_ptr = this;
-
-    QLocale loc;
-    d_ptr->m_format = loc.timeFormat(QLocale::ShortFormat);
 }
 
 /*!
@@ -1903,12 +1909,19 @@ class QtDateTimePropertyManagerPrivate
     QtDateTimePropertyManager *q_ptr;
     Q_DECLARE_PUBLIC(QtDateTimePropertyManager)
 public:
+    explicit QtDateTimePropertyManagerPrivate(QtDateTimePropertyManager *q);
 
-    QString m_format;
+    const QString m_format;
 
     typedef QMap<const QtProperty *, QDateTime> PropertyValueMap;
     PropertyValueMap m_values;
 };
+
+QtDateTimePropertyManagerPrivate::QtDateTimePropertyManagerPrivate(QtDateTimePropertyManager *q) :
+    q_ptr(q),
+    m_format(QtPropertyBrowserUtils::dateTimeFormat())
+{
+}
 
 /*! \class QtDateTimePropertyManager
     \internal
@@ -1938,14 +1951,8 @@ public:
     Creates a manager with the given \a parent.
 */
 QtDateTimePropertyManager::QtDateTimePropertyManager(QObject *parent)
-    : QtAbstractPropertyManager(parent), d_ptr(new QtDateTimePropertyManagerPrivate)
+    : QtAbstractPropertyManager(parent), d_ptr(new QtDateTimePropertyManagerPrivate(this))
 {
-    d_ptr->q_ptr = this;
-
-    QLocale loc;
-    d_ptr->m_format = loc.dateFormat(QLocale::ShortFormat);
-    d_ptr->m_format += QLatin1Char(' ');
-    d_ptr->m_format += loc.timeFormat(QLocale::ShortFormat);
 }
 
 /*!

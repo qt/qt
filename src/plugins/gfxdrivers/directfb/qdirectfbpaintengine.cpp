@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,6 +102,8 @@ public:
 
     void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap, const QPointF &pos);
     void blit(const QRectF &dest, IDirectFBSurface *surface, const QRectF &src);
+
+    inline bool supportsStretchBlit() const;
 
     inline void updateClip();
     virtual void systemStateChanged();
@@ -526,11 +528,12 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
 #if !defined QT_NO_DIRECTFB_PREALLOCATED || defined QT_DIRECTFB_IMAGECACHE
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
         || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
+        || (d->clipType == QDirectFBPaintEnginePrivate::ComplexClip)
+        || (!d->supportsStretchBlit() && state()->matrix.mapRect(r).size() != sr.size())
 #ifndef QT_DIRECTFB_IMAGECACHE
-        || QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN
+        || (QDirectFBScreen::getSurfacePixelFormat(image.format()) == DSPF_UNKNOWN)
 #elif defined QT_NO_DIRECTFB_PREALLOCATED
-        || QDirectFBPaintEnginePrivate::cacheCost(image) > imageCache.maxCost()
+        || (QDirectFBPaintEnginePrivate::cacheCost(image) > imageCache.maxCost())
 #endif
         )
 #endif
@@ -573,10 +576,9 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
         QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
         if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
-               || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-               || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
-               || (state()->renderHints & QPainter::SmoothPixmapTransform
-                   && state()->matrix.mapRect(r).size() != sr.size())) {
+            || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
+            || (d->clipType == QDirectFBPaintEnginePrivate::ComplexClip)
+            || (!d->supportsStretchBlit() && state()->matrix.mapRect(r).size() != sr.size())) {
             RASTERFALLBACK(DRAW_PIXMAP, r, pixmap.size(), sr);
             const QImage *img = dfbData->buffer();
             d->lock();
@@ -606,8 +608,8 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         QRasterPaintEngine::drawTiledPixmap(r, pixmap, offset);
     } else if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-               || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
-               || (state()->renderHints & QPainter::SmoothPixmapTransform && state()->matrix.isScaling())) {
+               || (d->clipType == QDirectFBPaintEnginePrivate::ComplexClip)
+               || (!d->supportsStretchBlit() && state()->matrix.isScaling())) {
         RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), offset);
         QPixmapData *pixmapData = pixmap.pixmapData();
         Q_ASSERT(pixmapData->classId() == QPixmapData::DirectFBClass);
@@ -732,7 +734,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
         case Qt::TexturePattern: {
             if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
                 || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-                || (state()->renderHints & QPainter::SmoothPixmapTransform && state()->matrix.isScaling())) {
+                || (!d->supportsStretchBlit() && state()->matrix.isScaling())) {
                 break;
             }
 
@@ -757,7 +759,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
         return;
     Q_D(QDirectFBPaintEngine);
     if ((d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
-        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
+        || (d->clipType == QDirectFBPaintEnginePrivate::ComplexClip)
         || !d->testCompositionMode(0, 0, &color)) {
         RASTERFALLBACK(FILL_RECT, rect, color, VOID_ARG());
         d->lock();
@@ -1049,6 +1051,7 @@ void QDirectFBPaintEnginePrivate::blit(const QRectF &dest, IDirectFBSurface *s, 
     if (dr.size() == sr.size()) {
         result = surface->Blit(surface, s, &sRect, dr.x(), dr.y());
     } else {
+        Q_ASSERT(supportsStretchBlit());
         const DFBRectangle dRect = { dr.x(), dr.y(), dr.width(), dr.height() };
         result = surface->StretchBlit(surface, s, &sRect, &dRect);
     }
@@ -1096,6 +1099,7 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
     const QSize pixmapSize = dfbData->size();
     IDirectFBSurface *sourceSurface = dfbData->directFBSurface();
     if (transform.isScaling()) {
+        Q_ASSERT(supportsStretchBlit());
         Q_ASSERT(qMin(transform.m11(), transform.m22()) >= 0);
         offset.rx() *= transform.m11();
         offset.ry() *= transform.m22();
@@ -1183,6 +1187,16 @@ void QDirectFBPaintEnginePrivate::updateClip()
         clipType = ComplexClip;
     }
 }
+
+bool QDirectFBPaintEnginePrivate::supportsStretchBlit() const
+{
+#ifdef QT_DIRECTFB_STRETCHBLIT
+    return !(q->state()->renderHints & QPainter::SmoothPixmapTransform);
+#else
+    return false;
+#endif
+}
+
 
 void QDirectFBPaintEnginePrivate::systemStateChanged()
 {

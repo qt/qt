@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,17 +75,20 @@ QT_BEGIN_NAMESPACE
 class QFontEngineGlyphCache
 {
 public:
-    QFontEngineGlyphCache(const QTransform &matrix) : m_transform(matrix) { }
-
     enum Type {
         Raster_RGBMask,
         Raster_A8,
         Raster_Mono
     };
 
+    QFontEngineGlyphCache(const QTransform &matrix, Type type) : m_transform(matrix), m_type(type) { }
+
     virtual ~QFontEngineGlyphCache() { }
 
+    Type cacheType() const { return m_type; }
+
     QTransform m_transform;
+    QFontEngineGlyphCache::Type m_type;
 };
 typedef QHash<void *, QList<QFontEngineGlyphCache *> > GlyphPointerHash;
 typedef QHash<int, QList<QFontEngineGlyphCache *> > GlyphIntHash;

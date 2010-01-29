@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -269,6 +269,8 @@ private slots:
     void task241436_passwordEchoOnEditRestoreEchoMode();
     void task248948_redoRemovedSelection();
     void taskQTBUG_4401_enterKeyClearsPassword();
+    void taskQTBUG_4679_moveToStartEndOfBlock();
+    void taskQTBUG_4679_selectToStartEndOfBlock();
 
 protected slots:
 #ifdef QT3_SUPPORT
@@ -3360,6 +3362,7 @@ void tst_QLineEdit::task174640_editingFinished()
     QApplication::setActiveWindow(&mw);
     mw.activateWindow();
     QTest::qWaitForWindowShown(&mw);
+    QTRY_COMPARE(&mw, QApplication::activeWindow());
 
     QSignalSpy editingFinishedSpy(le1, SIGNAL(editingFinished()));
 
@@ -3598,6 +3601,41 @@ void tst_QLineEdit::taskQTBUG_4401_enterKeyClearsPassword()
 
     QTest::keyPress(testWidget, Qt::Key_Enter);
     QTRY_COMPARE(testWidget->text(), password);
+}
+
+void tst_QLineEdit::taskQTBUG_4679_moveToStartEndOfBlock()
+{
+#ifdef Q_OS_MAC
+    const QString text("there are no blocks for lineEdit");
+    testWidget->setText(text);
+    testWidget->setCursorPosition(5);
+    QCOMPARE(testWidget->cursorPosition(), 5);
+    testWidget->setFocus();
+    QTest::keyPress(testWidget, Qt::Key_A, Qt::MetaModifier);
+    QCOMPARE(testWidget->cursorPosition(), 0);
+    QTest::keyPress(testWidget, Qt::Key_E, Qt::MetaModifier);
+    QCOMPARE(testWidget->cursorPosition(), text.size());
+#endif // Q_OS_MAC
+}
+
+void tst_QLineEdit::taskQTBUG_4679_selectToStartEndOfBlock()
+{
+#ifdef Q_OS_MAC
+    const QString text("there are no blocks for lineEdit, select all");
+    testWidget->setText(text);
+    testWidget->setCursorPosition(5);
+    QCOMPARE(testWidget->cursorPosition(), 5);
+    testWidget->setFocus();
+    QTest::keyPress(testWidget, Qt::Key_A, Qt::MetaModifier | Qt::ShiftModifier);
+    QCOMPARE(testWidget->cursorPosition(), 0);
+    QVERIFY(testWidget->hasSelectedText());
+    QCOMPARE(testWidget->selectedText(), text.mid(0, 5));
+
+    QTest::keyPress(testWidget, Qt::Key_E, Qt::MetaModifier | Qt::ShiftModifier);
+    QCOMPARE(testWidget->cursorPosition(), text.size());
+    QVERIFY(testWidget->hasSelectedText());
+    QCOMPARE(testWidget->selectedText(), text.mid(5));
+#endif // Q_OS_MAC
 }
 
 QTEST_MAIN(tst_QLineEdit)

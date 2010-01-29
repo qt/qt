@@ -19,8 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_ABSTRACTPLAYER_H
 #define PHONON_MMF_ABSTRACTPLAYER_H
 
-#include <Phonon/phononnamespace.h>
-#include <Phonon/MediaSource.h>
+#include <phonon/phononnamespace.h>
+#include <phonon/mediasource.h>
 
 #include <QObject>
 
@@ -53,8 +53,9 @@ class AbstractPlayer : public QObject
     Q_OBJECT
 
 public:
-    AbstractPlayer();
-    explicit AbstractPlayer(const AbstractPlayer& player);
+    AbstractPlayer(const AbstractPlayer *player);
+
+    virtual void open(const Phonon::MediaSource&, RFile&) = 0;
 
     // MediaObjectInterface (implemented)
     qint32 tickInterval() const;
@@ -75,22 +76,28 @@ public:
     virtual Phonon::ErrorType errorType() const;
     virtual QString errorString() const;
     virtual qint64 totalTime() const = 0;
-    virtual Phonon::MediaSource source() const = 0;
-    // This is a temporary hack to work around KErrInUse from MMF
-    // client utility OpenFileL calls
-    //virtual void setSource(const Phonon::MediaSource &) = 0;
-    virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
-    virtual void setNextSource(const Phonon::MediaSource &) = 0;
 
     virtual void volumeChanged(qreal volume);
 
     void setVideoOutput(VideoOutput* videoOutput);
 
     /**
-     * Records error and changes state to ErrorState
+     * Records error message and changes state to ErrorState
      */
-    void setError(Phonon::ErrorType error,
-                  const QString &errorMessage = QString());
+    void setError(const QString &errorMessage);
+
+    /**
+     * Records error message and changes state to ErrorState
+     *
+     * Appends a human-readable version of symbianErrorCode to the error message,
+     * e.g.
+     * @code
+     *      setError("Opening file failed", KErrPermissionDenied)
+     * @endcode
+     * results in the following error message:
+     *      "Opening file failed: permission denied"
+     */
+    void setError(const QString &errorMessage, int symbianErrorCode);
 
     Phonon::State state() const;
 
@@ -98,9 +105,12 @@ Q_SIGNALS:
     void totalTimeChanged(qint64 length);
     void finished();
     void tick(qint64 time);
-    void stateChanged(Phonon::State oldState,
-                      Phonon::State newState);
+    void bufferStatus(int percentFilled);
+    void stateChanged(Phonon::State newState,
+                      Phonon::State oldState);
     void metaDataChanged(const QMultiMap<QString, QString>& metaData);
+    void aboutToFinish();
+    void prefinishMarkReached(qint32 remaining);
 
 protected:
     /**

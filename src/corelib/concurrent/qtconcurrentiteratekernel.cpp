@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,9 @@
 #include <mach/mach_time.h>
 #include <unistd.h>
 #elif defined(Q_OS_UNIX)
+#if defined(Q_OS_HURD)
+#include <sys/time.h>
+#endif
 #include <time.h>
 #include <unistd.h>
 #elif defined(Q_OS_WIN)

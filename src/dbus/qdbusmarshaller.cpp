@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusargument_p.h"
+#include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -167,7 +168,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
 
     QByteArray tmpSignature;
     const char *signature = 0;
-    if (int(id) == qMetaTypeId<QDBusArgument>()) {
+    if (int(id) == QDBusMetaTypeId::argument) {
         // take the signature from the QDBusArgument object we're marshalling
         tmpSignature =
             qvariant_cast<QDBusArgument>(value).currentSignature().toLatin1();
@@ -353,7 +354,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     }
 
     // intercept QDBusArgument parameters here
-    if (id == qMetaTypeId<QDBusArgument>()) {
+    if (id == QDBusMetaTypeId::argument) {
         QDBusArgument dbusargument = qvariant_cast<QDBusArgument>(arg);
         QDBusArgumentPrivate *d = QDBusArgumentPrivate::d(dbusargument);
         if (!d->message)
@@ -387,7 +388,6 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     switch (*signature) {
 #ifdef __OPTIMIZE__
     case DBUS_TYPE_BYTE:
-    case DBUS_TYPE_BOOLEAN:
     case DBUS_TYPE_INT16:
     case DBUS_TYPE_UINT16:
     case DBUS_TYPE_INT32:
@@ -396,6 +396,9 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     case DBUS_TYPE_UINT64:
     case DBUS_TYPE_DOUBLE:
         qIterAppend(&iterator, ba, *signature, arg.constData());
+        return true;
+    case DBUS_TYPE_BOOLEAN:
+        append( arg.toBool() );
         return true;
 #else
     case DBUS_TYPE_BYTE:

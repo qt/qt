@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,7 +130,7 @@
     multiple- or virtual-inheritance (that is, in cases where two different
     pointer addresses can refer to the same object). In that case, if a
     pointer is cast to a different type and its value changes,
-    QSharedPointer's pointer tracking mechanism mail fail to detect that the
+    QSharedPointer's pointer tracking mechanism may fail to detect that the
     object being tracked is the same.
 
     \omit

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,6 +75,7 @@ private slots:
     void graphicsViewClipping();
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
+    void glWidgetWithAlpha();
     void glWidgetRendering();
     void glFBOSimpleRendering();
     void glFBORendering();
@@ -251,15 +252,10 @@ void tst_QGL::getSetCheck()
 
     // bool QGLFormat::sampleBuffers()
     // void QGLFormat::setSampleBuffers(bool)
-#if !defined(QT_OPENGL_ES_2)
     QCOMPARE(false, obj1.sampleBuffers());
     QVERIFY(!obj1.testOption(QGL::SampleBuffers));
     QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
-#else
-    QCOMPARE(true, obj1.sampleBuffers());
-    QVERIFY(obj1.testOption(QGL::SampleBuffers));
-    QVERIFY(!obj1.testOption(QGL::NoSampleBuffers));
-#endif
+
     obj1.setSampleBuffers(false);
     QCOMPARE(false, obj1.sampleBuffers());
     QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
@@ -925,6 +921,17 @@ void tst_QGL::glPBufferRendering()
     p.end();
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
+}
+
+void tst_QGL::glWidgetWithAlpha()
+{
+    QGLWidget* w = new QGLWidget(QGLFormat(QGL::AlphaChannel));
+    w->show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(w);
+#endif
+
+    delete w;
 }
 
 class GLWidget : public QGLWidget
@@ -1817,17 +1824,12 @@ Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_shared_test, (qt_shared_test_fr
 void tst_QGL::shareRegister()
 {
 #ifdef QT_BUILD_INTERNAL
-    QGLShareRegister *shareReg = qgl_share_reg();
-    QVERIFY(shareReg != 0);
-
     // Create a context.
     QGLWidget *glw1 = new QGLWidget();
     glw1->makeCurrent();
 
     // Nothing should be sharing with glw1's context yet.
-    QList<const QGLContext *> list;
-    list = shareReg->shares(glw1->context());
-    QCOMPARE(list.size(), 0);
+    QVERIFY(!glw1->isSharing());
 
     // Create a guard for the first context.
     QGLSharedResourceGuard guard(glw1->context());
@@ -1860,16 +1862,6 @@ void tst_QGL::shareRegister()
     QVERIFY(guard.context() == glw1->context());
     QVERIFY(guard.id() == 3);
 
-    // Now there are two items in the share lists.
-    list = shareReg->shares(glw1->context());
-    QCOMPARE(list.size(), 2);
-    QVERIFY(list.contains(glw1->context()));
-    QVERIFY(list.contains(glw2->context()));
-    list = shareReg->shares(glw2->context());
-    QCOMPARE(list.size(), 2);
-    QVERIFY(list.contains(glw1->context()));
-    QVERIFY(list.contains(glw2->context()));
-
     // Check the sharing relationships.
     QVERIFY(QGLContext::areSharing(glw1->context(), glw1->context()));
     QVERIFY(QGLContext::areSharing(glw2->context(), glw2->context()));
@@ -1894,18 +1886,6 @@ void tst_QGL::shareRegister()
     QVERIFY(qt_shared_test()->value(glw1->context()) == res1);
     QVERIFY(qt_shared_test()->value(glw2->context()) == res1);
     QVERIFY(qt_shared_test()->value(glw3->context()) == res3);
-
-    // First two should still be sharing, but third is in its own list.
-    list = shareReg->shares(glw1->context());
-    QCOMPARE(list.size(), 2);
-    QVERIFY(list.contains(glw1->context()));
-    QVERIFY(list.contains(glw2->context()));
-    list = shareReg->shares(glw2->context());
-    QCOMPARE(list.size(), 2);
-    QVERIFY(list.contains(glw1->context()));
-    QVERIFY(list.contains(glw2->context()));
-    list = shareReg->shares(glw3->context());
-    QCOMPARE(list.size(), 0);
 
     // Check the sharing relationships again.
     QVERIFY(QGLContext::areSharing(glw1->context(), glw1->context()));
@@ -1943,10 +1923,6 @@ void tst_QGL::shareRegister()
     QVERIFY(guard.id() == 3);
     QVERIFY(guard3.context() == glw3->context());
     QVERIFY(guard3.id() == 5);
-
-    // Re-check the share list for the second context (should be empty now).
-    list = shareReg->shares(glw2->context());
-    QCOMPARE(list.size(), 0);
 
     // Clean up and check that the resources are properly deleted.
     delete glw2;

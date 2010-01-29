@@ -33,6 +33,7 @@ namespace Phonon
 namespace MMF
 {
 class AudioOutput;
+class MediaObject;
 
 /**
  * Interface via which MMF client APIs for both audio and video can be
@@ -43,19 +44,17 @@ class AbstractMediaPlayer : public AbstractPlayer
     Q_OBJECT
 
 protected:
-    AbstractMediaPlayer();
-    explicit AbstractMediaPlayer(const AbstractPlayer& player);
+    AbstractMediaPlayer(MediaObject *parent, const AbstractPlayer *player);
 
 public:
+    virtual void open(const Phonon::MediaSource&, RFile&);
+
     // MediaObjectInterface
     virtual void play();
     virtual void pause();
     virtual void stop();
     virtual void seek(qint64 milliseconds);
     virtual bool isSeekable() const;
-    virtual MediaSource source() const;
-    virtual void setFileSource(const Phonon::MediaSource&, RFile&);
-    virtual void setNextSource(const MediaSource &source);
     virtual void volumeChanged(qreal volume);
 
 protected:
@@ -68,6 +67,8 @@ protected:
     virtual void doSeek(qint64 pos) = 0;
     virtual int setDeviceVolume(int mmfVolume) = 0;
     virtual int openFile(RFile& file) = 0;
+    virtual int openUrl(const QString& url) = 0;
+    virtual int bufferStatus() const = 0;
     virtual void close() = 0;
     virtual void changeState(PrivateState newState);
 
@@ -76,23 +77,30 @@ protected:
     virtual QPair<QString, QString> metaDataEntry(int index) const = 0;
 
 protected:
-    bool tickTimerRunning() const;
-    void startTickTimer();
-    void stopTickTimer();
+    void bufferingStarted();
+    void bufferingComplete();
     void maxVolumeChanged(int maxVolume);
+    void playbackComplete(int error);
 
     static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
 
 private:
+    void startPositionTimer();
+    void stopPositionTimer();
+    void startBufferStatusTimer();
+    void stopBufferStatusTimer();
+    void stopTimers();
     void doVolumeChanged();
+    void emitMarksIfReached();
+    void resetMarksIfRewound();
 
 private Q_SLOTS:
-    /**
-     * Receives signal from m_tickTimer
-     */
-    void tick();
+    void positionTick();
+    void bufferStatusTick();
 
 private:
+    MediaObject *const          m_parent;
+
     /**
      * This flag is set to true if play is called when the object is
      * in a Loading state.  Once loading is complete, playback will
@@ -100,12 +108,15 @@ private:
      */
     bool                        m_playPending;
 
-    QScopedPointer<QTimer>      m_tickTimer;
+    QScopedPointer<QTimer>      m_positionTimer;
+
+    QScopedPointer<QTimer>      m_bufferStatusTimer;
+    PrivateState                m_stateBeforeBuffering;
 
     int                         m_mmfMaxVolume;
 
-    MediaSource                 m_source;
-    MediaSource                 m_nextSource;
+    bool                        m_prefinishMarkSent;
+    bool                        m_aboutToFinishSent;
 
     QMultiMap<QString, QString> m_metaData;
 

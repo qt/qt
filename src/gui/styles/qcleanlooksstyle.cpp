@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2069,7 +2069,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 // This is mainly to handle cases where someone sets the font on the window
                 // and then the combo inherits it and passes it onward. At that point the resolve mask
                 // is very, very weak. This makes it stonger.
-                font.setPointSizeF(menuItem->font.pointSizeF());
+                font.setPointSizeF(QFontInfo(menuItem->font).pointSizeF());
 
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);

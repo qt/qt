@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,6 +72,8 @@ private slots:
     void toStringHandle();
     void castValueToQreal();
     void nativeCall();
+    void translation_data();
+    void translation();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -256,6 +258,25 @@ void tst_QScriptEngine::nativeCall()
     QBENCHMARK{
         eng.evaluate("var w = 0; for (i = 0; i < 100000; ++i) {\n"
                      "  w += fun() + fun(); w -= fun(); fun(); w -= fun(); }");
+    }
+}
+
+void tst_QScriptEngine::translation_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::newRow("no translation") << "\"hello world\"";
+    QTest::newRow("qsTr") << "qsTr(\"hello world\")";
+    QTest::newRow("qsTranslate") << "qsTranslate(\"\", \"hello world\")";
+}
+
+void tst_QScriptEngine::translation()
+{
+    QFETCH(QString, text);
+    QScriptEngine engine;
+    engine.installTranslatorFunctions();
+
+    QBENCHMARK {
+        (void)engine.evaluate(text);
     }
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -233,6 +233,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     {
         hints = painter->renderHints();
+        painter->setBrush(brush);
         painter->drawRect(boundingRect());
         ++repaints;
     }
@@ -247,6 +248,7 @@ public:
     QPainter::RenderHints hints;
     int repaints;
     QRectF br;
+    QBrush brush;
 };
 
 class tst_QGraphicsItem : public QObject
@@ -314,8 +316,10 @@ private slots:
     void childrenBoundingRectTransformed();
     void childrenBoundingRect2();
     void childrenBoundingRect3();
+    void childrenBoundingRect4();
     void group();
     void setGroup();
+    void setGroup2();
     void nestedGroups();
     void warpChildrenIntoGroup();
     void removeFromGroup();
@@ -414,6 +418,7 @@ private slots:
     void task197802_childrenVisibility();
     void QTBUG_4233_updateCachedWithSceneRect();
     void QTBUG_5418_textItemSetDefaultColor();
+    void QTBUG_6738_missingUpdateWithSetParent();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -1351,6 +1356,7 @@ void tst_QGraphicsItem::selected()
     view.setFixedSize(250, 250);
     view.show();
 
+    QTest::qWaitForWindowShown(&view);
     qApp->processEvents();
     qApp->processEvents();
 
@@ -3253,6 +3259,32 @@ void tst_QGraphicsItem::childrenBoundingRect3()
     QCOMPARE(subTreeRect.height(), qreal(251.7766952966369));
 }
 
+void tst_QGraphicsItem::childrenBoundingRect4()
+{
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *rect = scene.addRect(QRectF(0, 0, 10, 10));
+    QGraphicsRectItem *rect2 = scene.addRect(QRectF(0, 0, 20, 20));
+    QGraphicsRectItem *rect3 = scene.addRect(QRectF(0, 0, 30, 30));
+    rect2->setParentItem(rect);
+    rect3->setParentItem(rect);
+
+    QGraphicsView view(&scene);
+    view.show();
+
+    QTest::qWaitForWindowShown(&view);
+
+    // Try to mess up the cached bounding rect.
+    rect->childrenBoundingRect();
+    rect2->childrenBoundingRect();
+
+    rect3->setOpacity(0.0);
+    rect3->setParentItem(rect2);
+
+    QCOMPARE(rect->childrenBoundingRect(), rect3->boundingRect());
+    QCOMPARE(rect2->childrenBoundingRect(), rect3->boundingRect());
+}
+
 void tst_QGraphicsItem::group()
 {
     QGraphicsScene scene;
@@ -3341,6 +3373,35 @@ void tst_QGraphicsItem::setGroup()
     rect->setGroup(0);
     QCOMPARE(rect->group(), (QGraphicsItemGroup *)0);
     QCOMPARE(rect->parentItem(), (QGraphicsItem *)0);
+}
+
+void tst_QGraphicsItem::setGroup2()
+{
+    QGraphicsScene scene;
+    QGraphicsItemGroup group;
+    scene.addItem(&group);
+
+    QGraphicsRectItem *rect = scene.addRect(50,50,50,50,Qt::NoPen,Qt::black);
+    rect->setTransformOriginPoint(50,50);
+    rect->setRotation(45);
+    rect->setScale(1.5);
+    rect->translate(20,20);
+    group.translate(-30,-40);
+    group.setRotation(180);
+    group.setScale(0.5);
+
+    QTransform oldSceneTransform = rect->sceneTransform();
+    rect->setGroup(&group);
+    QCOMPARE(rect->sceneTransform(), oldSceneTransform);
+
+    group.setRotation(20);
+    group.setScale(2);
+    rect->setRotation(90);
+    rect->setScale(0.8);
+
+    oldSceneTransform = rect->sceneTransform();
+    rect->setGroup(0);
+    QCOMPARE(rect->sceneTransform(), oldSceneTransform);
 }
 
 void tst_QGraphicsItem::nestedGroups()
@@ -7646,17 +7707,20 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     EventTester *item1 = new EventTester;
     item1->br = itemBoundingRect;
     item1->setPos(-200, -200);
+    item1->brush = Qt::red;
 
     EventTester *item2 = new EventTester;
     item2->br = itemBoundingRect;
     item2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     item2->setParentItem(item1);
     item2->setPos(200, 200);
+    item2->brush = Qt::green;
 
     EventTester *item3 = new EventTester;
     item3->br = itemBoundingRect;
     item3->setParentItem(item2);
     item3->setPos(80, 80);
+    item3->brush = Qt::blue;
 
     scene.addItem(item1);
     QTest::qWait(100);
@@ -7671,8 +7735,8 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     item1->setGraphicsEffect(shadow);
     QTest::qWait(50);
 
-    // Make sure all items are repainted.
-    QCOMPARE(item1->repaints, 1);
+    // Make sure all visible items are repainted.
+    QCOMPARE(item1->repaints, 0);
     QCOMPARE(item2->repaints, 1);
     QCOMPARE(item3->repaints, 1);
 
@@ -7962,6 +8026,22 @@ void tst_QGraphicsItem::setGraphicsEffect()
     delete item;
     QVERIFY(!blurEffect);
     delete anotherItem;
+
+    // Ensure the effect is uninstalled when deleting it
+    item = new QGraphicsRectItem(0, 0, 10, 10);
+    blurEffect = new QGraphicsBlurEffect;
+    item->setGraphicsEffect(blurEffect);
+    delete blurEffect;
+    QVERIFY(!item->graphicsEffect());
+
+    // Ensure the existing effect is uninstalled and deleted when setting a null effect
+    blurEffect = new QGraphicsBlurEffect;
+    item->setGraphicsEffect(blurEffect);
+    item->setGraphicsEffect(0);
+    QVERIFY(!item->graphicsEffect());
+    QVERIFY(!blurEffect);
+
+    delete item;
 }
 
 void tst_QGraphicsItem::panel()
@@ -9815,6 +9895,64 @@ void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
     i->setDefaultTextColor(col);
     QApplication::processEvents();
     QCOMPARE(i->painted, 0); //same color as before should not trigger an update (QTBUG-6242)
+}
+
+void tst_QGraphicsItem::QTBUG_6738_missingUpdateWithSetParent()
+{
+    // In all 3 test cases below the reparented item should disappear
+    EventTester *parent = new EventTester;
+    EventTester *child = new EventTester(parent);
+    EventTester *child2 = new EventTester(parent);
+    EventTester *child3 = new EventTester(parent);
+    EventTester *child4 = new EventTester(parent);
+
+    child->setPos(10, 10);
+    child2->setPos(20, 20);
+    child3->setPos(30, 30);
+    child4->setPos(40, 40);
+
+    QGraphicsScene scene;
+    scene.addItem(parent);
+
+    class MyGraphicsView : public QGraphicsView
+    { public:
+        int repaints;
+        QRegion paintedRegion;
+        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+        void paintEvent(QPaintEvent *e)
+        {
+            ++repaints;
+            paintedRegion += e->region();
+            QGraphicsView::paintEvent(e);
+        }
+        void reset() { repaints = 0; paintedRegion = QRegion(); }
+    };
+
+    MyGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.repaints > 0);
+
+    // test case #1
+    view.reset();
+    child2->setVisible(false);
+    child2->setParentItem(child);
+
+    QTRY_VERIFY(view.repaints == 1);
+
+    // test case #2
+    view.reset();
+    child3->setOpacity(0.0);
+    child3->setParentItem(child);
+
+    QTRY_VERIFY(view.repaints == 1);
+
+    // test case #3
+    view.reset();
+    child4->setParentItem(child);
+    child4->setVisible(false);
+
+    QTRY_VERIFY(view.repaints == 1);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

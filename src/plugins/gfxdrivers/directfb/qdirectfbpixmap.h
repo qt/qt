@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -81,6 +81,7 @@ public:
     virtual QImage toImage() const;
     virtual QPaintEngine *paintEngine() const;
     virtual QImage *buffer();
+    virtual bool scroll(int dx, int dy, const QRect &rect);
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
     virtual int metric(QPaintDevice::PaintDeviceMetric m) const { return QDirectFBPaintDevice::metric(m); }
 

@@ -9,12 +9,26 @@ symbian: {
 
     webkitlibs.sources = QtWebKit.dll
     webkitlibs.path = /sys/bin
-    DEPLOYMENT += webkitlibs
+    vendorinfo = \
+        "; Localised Vendor name" \
+        "%{\"Nokia, Qt\"}" \
+        " " \
+        "; Unique Vendor name" \
+        ":\"Nokia, Qt\"" \
+        " "
+    webkitlibs.pkg_prerules = vendorinfo
+
+    webkitbackup.sources = ../WebKit/qt/symbian/backup_registration.xml
+    webkitbackup.path = /private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
+
+    DEPLOYMENT += webkitlibs webkitbackup
 
     TARGET.UID3 = 0x200267C2
     # RO text (code) section in qtwebkit.dll exceeds allocated space for gcce udeb target.
     # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
     MMP_RULES += "LINKEROPTION  armcc --rw-base 0xE00000"
+    MMP_RULES += ALWAYS_BUILD_AS_ARM
+    QMAKE_CXXFLAGS.ARMCC += -OTime -O3
 }
 
 include($$PWD/../WebKit.pri)
@@ -136,7 +150,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_SHARED_WORKERS=.): DEFINES += ENABLE_SHARED_WORKERS=1
 !contains(DEFINES, ENABLE_WORKERS=.): DEFINES += ENABLE_WORKERS=1
 !contains(DEFINES, ENABLE_XHTMLMP=.): DEFINES += ENABLE_XHTMLMP=0
-!contains(DEFINES, ENABLE_DATAGRID=.): DEFINES += ENABLE_DATAGRID=1
+!contains(DEFINES, ENABLE_DATAGRID=.): DEFINES += ENABLE_DATAGRID=0
 
 # SVG support
 !contains(DEFINES, ENABLE_SVG=0) {
@@ -178,6 +192,15 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_XSLT=.) {
     contains(QT_CONFIG, xmlpatterns):!lessThan(QT_MINOR_VERSION, 5):DEFINES += ENABLE_XSLT=1
     else:DEFINES += ENABLE_XSLT=0
+}
+
+!CONFIG(QTDIR_build):!contains(DEFINES, ENABLE_QT_BEARER=.) {
+    symbian: {
+        exists($${EPOCROOT}epoc32/release/winscw/udeb/QtBearer.lib)| \
+        exists($${EPOCROOT}epoc32/release/armv5/lib/QtBearer.lib) {
+            DEFINES += ENABLE_QT_BEARER=1
+        }
+    }
 }
 
 DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
@@ -2760,7 +2783,7 @@ unix:!mac:CONFIG += link_pkgconfig
 contains(DEFINES, ENABLE_XSLT=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_XSLT=1
 
-    QT += xmlpatterns
+    tobe|!tobe: QT += xmlpatterns
 
     SOURCES += \
         bindings/js/JSXSLTProcessorConstructor.cpp \
@@ -2858,6 +2881,17 @@ contains(DEFINES, ENABLE_WML=1) {
 
 contains(DEFINES, ENABLE_XHTMLMP=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_XHTMLMP=1
+}
+
+contains(DEFINES, ENABLE_QT_BEARER=1) {
+    HEADERS += \
+        platform/network/qt/NetworkStateNotifierPrivate.h
+
+    SOURCES += \
+        platform/network/qt/NetworkStateNotifierQt.cpp
+
+    CONFIG += mobility
+    MOBILITY += bearer
 }
 
 contains(DEFINES, ENABLE_SVG=1) {
@@ -3382,17 +3416,10 @@ CONFIG(QTDIR_build):isEqual(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 4
     }
 }
 
-# Temporary workaround to pick up the DEF file from the same place as all the others
 symbian {
     shared {
-        contains(MMP_RULES, defBlock) {
-            MMP_RULES -= defBlock
-
-            MMP_RULES += "$${LITERAL_HASH}ifdef WINSCW" \
-                    "DEFFILE ../../../s60installs/bwins/$${TARGET}.def" \
-                    "$${LITERAL_HASH}elif defined EABI" \
-                    "DEFFILE ../../../s60installs/eabi/$${TARGET}.def" \
-                    "$${LITERAL_HASH}endif"
+        contains(CONFIG, def_files) {
+            defFilePath=../WebKit/qt/symbian
         }
     }
 }

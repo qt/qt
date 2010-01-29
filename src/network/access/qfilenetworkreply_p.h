@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,6 +57,7 @@
 #include "qnetworkreply_p.h"
 #include "qnetworkaccessmanager.h"
 #include <QFile>
+#include <QAbstractFileEngine>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +67,7 @@ class QFileNetworkReply: public QNetworkReply
 {
     Q_OBJECT
 public:
-    QFileNetworkReply(QObject *parent, const QNetworkRequest &req);
+    QFileNetworkReply(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
     ~QFileNetworkReply();
     virtual void abort();
 
@@ -76,28 +77,22 @@ public:
     virtual bool isSequential () const;
     qint64 size() const;
 
-
     virtual qint64 readData(char *data, qint64 maxlen);
 
     Q_DECLARE_PRIVATE(QFileNetworkReply)
-    Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
-
 };
 
 class QFileNetworkReplyPrivate: public QNetworkReplyPrivate
 {
 public:
     QFileNetworkReplyPrivate();
+    ~QFileNetworkReplyPrivate();
 
-    QFile realFile;
-    qint64 realFileSize;
-
-    void _q_startOperation();
+    QAbstractFileEngine *fileEngine;
+    qint64 fileSize;
+    qint64 filePos;
 
     virtual bool isFinished() const;
-    void doFinished();
-    bool finished;
-
 
     Q_DECLARE_PUBLIC(QFileNetworkReply)
 };

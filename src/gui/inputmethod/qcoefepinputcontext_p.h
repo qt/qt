@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,6 +57,7 @@
 
 #include "qinputcontext.h"
 #include <qhash.h>
+#include <qtimer.h>
 #include <private/qcore_symbian_p.h>
 #include <private/qt_s60_p.h>
 
@@ -91,6 +92,9 @@ public:
 
     TCoeInputCapabilities inputCapabilities();
 
+protected:
+    void timerEvent(QTimerEvent *timerEvent);
+
 private:
     void commitCurrentString(bool triggeredBySymbian);
     void updateHints(bool mustUpdateInputCapabilities);
@@ -98,6 +102,7 @@ private:
     void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
     void queueInputCapabilitiesChanged();
     bool needsInputPanel();
+    void commitTemporaryPreeditString();
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();
@@ -148,6 +153,8 @@ private:
     MFepPointerEventHandlerDuringInlineEdit *m_pointerHandler;
     int m_longPress;
     int m_cursorPos;
+    QBasicTimer m_tempPreeditStringTimeout;
+    bool m_hasTempPreeditString;
 };
 
 QT_END_NAMESPACE

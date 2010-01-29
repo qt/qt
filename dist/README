@@ -26,6 +26,10 @@ For Mac OS X Cocoa, the binary package requires Mac OS X 10.5 (Leopard) or
 later and GCC 4.0.1 to develop applications.  Its applications will run
 on Mac OS X 10.5 and above.
 
+If you want to install the precompiled binary package for Symbian,
+follow these instructions:
+http://qt.nokia.com/doc/%SHORTVERSION%/install-symbian-installer.html
+
 
 DEMOS AND EXAMPLES
 

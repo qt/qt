@@ -10,4 +10,7 @@ sources.files = $$SOURCES $$HEADERS $$FORMS *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/webkit/googlechat
 INSTALLS += target sources
 
-symbian:TARGET.UID3 = 0xA000CF6E
+symbian {
+    TARGET.UID3 = 0xA000CF6E
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+}

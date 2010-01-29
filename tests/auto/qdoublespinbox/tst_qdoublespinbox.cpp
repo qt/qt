@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -148,6 +148,8 @@ private slots:
     void task255471_decimalsValidation();
 
     void taskQTBUG_5008_textFromValueAndValidate();
+    void taskQTBUG_6670_selectAllWithPrefix();
+    void taskQTBUG_6496_fiddlingWithPrecision();
 
 public slots:
     void valueChangedHelper(const QString &);
@@ -1058,24 +1060,53 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
             setValue(1000);
         }
 
-        //we use the French delimiters here
-        QString textFromValue (double value) const
-        { 
-            return locale().toString(value);
+        QLineEdit *lineEdit() const
+        {
+            return QDoubleSpinBox::lineEdit();
         }
 
-        using QDoubleSpinBox::lineEdit;
+        //we use the French delimiters here
+        QString textFromValue (double value) const
+        {
+            return locale().toString(value);
+        }
     } spinbox;
     spinbox.show();
     spinbox.activateWindow();
     spinbox.setFocus();
+    QApplication::setActiveWindow(&spinbox);
     QTest::qWaitForWindowShown(&spinbox);
-    QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));    
+    QTRY_VERIFY(spinbox.hasFocus());
+    QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
+    QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
     spinbox.lineEdit()->setCursorPosition(2); //just after the first thousand separator
-    QTest::keyClick(0, Qt::Key_0); // let's insert a 0    
+    QTest::keyClick(0, Qt::Key_0); // let's insert a 0
     QCOMPARE(spinbox.value(), 10000.);
     spinbox.clearFocus(); //make sure the value is correctly formatted
     QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
+}
+
+void tst_QDoubleSpinBox::taskQTBUG_6670_selectAllWithPrefix()
+{
+    DoubleSpinBox spin;
+    spin.setPrefix("$ ");
+    spin.lineEdit()->selectAll();
+    QTest::keyClick(spin.lineEdit(), Qt::Key_1);
+    QCOMPARE(spin.value(), 1.);
+    QTest::keyClick(spin.lineEdit(), Qt::Key_2);
+    QCOMPARE(spin.value(), 12.);
+}
+
+void tst_QDoubleSpinBox::taskQTBUG_6496_fiddlingWithPrecision()
+{
+    QDoubleSpinBox dsb;
+    dsb.setRange(0, 0.991);
+    dsb.setDecimals(1);
+    QCOMPARE(dsb.maximum(), 1.0);
+    dsb.setDecimals(2);
+    QCOMPARE(dsb.maximum(), 0.99);
+    dsb.setDecimals(3);
+    QCOMPARE(dsb.maximum(), 0.991);
 }
 
 QTEST_MAIN(tst_QDoubleSpinBox)

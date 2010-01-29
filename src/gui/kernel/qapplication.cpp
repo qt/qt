@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -121,8 +121,10 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 static void initResources()
 {
-#ifdef Q_WS_WINCE
+#if defined(Q_WS_WINCE)
     Q_INIT_RESOURCE(qstyle_wince);
+#elif defined(Q_OS_SYMBIAN)
+    Q_INIT_RESOURCE(qstyle_s60);
 #else
     Q_INIT_RESOURCE(qstyle);
 #endif
@@ -177,6 +179,7 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
     directPainters = 0;
 #endif
 
+    gestureManager = 0;
     gestureWidget = 0;
 
     if (!self)
@@ -2096,7 +2099,11 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
             if (prev) {
 #ifdef QT_KEYPAD_NAVIGATION
                 if (QApplication::keypadNavigationEnabled()) {
-                    if (prev->hasEditFocus() && reason != Qt::PopupFocusReason)
+                    if (prev->hasEditFocus() && reason != Qt::PopupFocusReason
+#ifdef Q_OS_SYMBIAN
+                            && reason != Qt::ActiveWindowFocusReason
+#endif
+                            )
                         prev->setEditFocus(false);
                 }
 #endif
@@ -3628,13 +3635,47 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     }
 
     // walk through parents and check for gestures
-    if (qt_gestureManager) {
-        if (receiver->isWidgetType()) {
-            if (qt_gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
-                return true;
-        } else if (QGesture *gesture = qobject_cast<QGesture *>(receiver)) {
-            if (qt_gestureManager->filterEvent(gesture, e))
-                return true;
+    if (d->gestureManager) {
+        switch (e->type()) {
+        case QEvent::Paint:
+        case QEvent::MetaCall:
+        case QEvent::DeferredDelete:
+        case QEvent::DragEnter: case QEvent::DragMove: case QEvent::DragLeave:
+        case QEvent::Drop: case QEvent::DragResponse:
+        case QEvent::ChildAdded: case QEvent::ChildPolished:
+#ifdef QT3_SUPPORT
+        case QEvent::ChildInsertedRequest:
+        case QEvent::ChildInserted:
+        case QEvent::LayoutHint:
+#endif
+        case QEvent::ChildRemoved:
+        case QEvent::UpdateRequest:
+        case QEvent::UpdateLater:
+        case QEvent::AccessibilityPrepare:
+        case QEvent::LocaleChange:
+        case QEvent::Style:
+        case QEvent::IconDrag:
+        case QEvent::StyleChange:
+        case QEvent::AccessibilityHelp:
+        case QEvent::AccessibilityDescription:
+        case QEvent::GraphicsSceneDragEnter:
+        case QEvent::GraphicsSceneDragMove:
+        case QEvent::GraphicsSceneDragLeave:
+        case QEvent::GraphicsSceneDrop:
+        case QEvent::DynamicPropertyChange:
+        case QEvent::NetworkReplyUpdated:
+            break;
+        default:
+            if (receiver->isWidgetType()) {
+                if (d->gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
+                    return true;
+            } else {
+                // a special case for events that go to QGesture objects.
+                // We pass the object to the gesture manager and it'll figure
+                // out if it's QGesture or not.
+                if (d->gestureManager->filterEvent(receiver, e))
+                    return true;
+            }
         }
     }
 
@@ -4092,9 +4133,15 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
             touchEvent->setWidget(widget);
             touchEvent->setAccepted(acceptTouchEvents);
+            QWeakPointer<QWidget> p = widget;
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
             eventAccepted = touchEvent->isAccepted();
-            widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
+            if (p.isNull()) {
+                // widget was deleted
+                widget = 0;
+            } else {
+                widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
+            }
             touchEvent->spont = false;
             if (res && eventAccepted) {
                 // the first widget to accept the TouchBegin gets an implicit grab.
@@ -4103,7 +4150,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     d->widgetForTouchPointId[touchPoint.id()] = widget;
                 }
                 break;
-            } else if (widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
+            } else if (p.isNull() || widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
                 break;
             }
             QPoint offset = widget->pos();
@@ -5186,6 +5233,8 @@ QInputContext *QApplication::inputContext() const
 {
     Q_D(const QApplication);
     Q_UNUSED(d);// only static members being used.
+    if (QApplicationPrivate::is_app_closing)
+        return d->inputContext;
 #ifdef Q_WS_X11
     if (!X11)
         return 0;
@@ -5630,6 +5679,14 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
                                             const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
     QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints);
+}
+
+QGestureManager* QGestureManager::instance()
+{
+    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+    if (!qAppPriv->gestureManager)
+        qAppPriv->gestureManager = new QGestureManager(qApp);
+    return qAppPriv->gestureManager;
 }
 
 QT_END_NAMESPACE

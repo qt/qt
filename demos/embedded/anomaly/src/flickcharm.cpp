@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,20 +49,112 @@
 #include <QList>
 #include <QMouseEvent>
 #include <QScrollBar>
+#include <QTime>
 #include <QWebFrame>
 #include <QWebView>
 
 #include <QDebug>
 
+const int fingerAccuracyThreshold = 3;
+
 struct FlickData {
-    typedef enum { Steady, Pressed, ManualScroll, AutoScroll, Stop } State;
+    typedef enum {
+        Steady, // Interaction without scrolling
+        ManualScroll, // Scrolling manually with the finger on the screen
+        AutoScroll, // Scrolling automatically
+        AutoScrollAcceleration // Scrolling automatically but a finger is on the screen
+    } State;
     State state;
     QWidget *widget;
     QPoint pressPos;
-    QPoint offset;
-    QPoint dragPos;
+    QPoint lastPos;
     QPoint speed;
+    QTime speedTimer;
     QList<QEvent*> ignored;
+    QTime accelerationTimer;
+    bool lastPosValid:1;
+    bool waitingAcceleration:1;
+
+    FlickData()
+        : lastPosValid(false)
+        , waitingAcceleration(false)
+    {}
+
+    void resetSpeed()
+    {
+        speed = QPoint();
+        lastPosValid = false;
+    }
+    void updateSpeed(const QPoint &newPosition)
+    {
+        if (lastPosValid) {
+            const int timeElapsed = speedTimer.elapsed();
+            if (timeElapsed) {
+                const QPoint newPixelDiff = (newPosition - lastPos);
+                const QPoint pixelsPerSecond = newPixelDiff * (1000 / timeElapsed);
+                // fingers are inacurates, we ignore small changes to avoid stopping the autoscroll because
+                // of a small horizontal offset when scrolling vertically
+                const int newSpeedY = (qAbs(pixelsPerSecond.y()) > fingerAccuracyThreshold) ? pixelsPerSecond.y() : 0;
+                const int newSpeedX = (qAbs(pixelsPerSecond.x()) > fingerAccuracyThreshold) ? pixelsPerSecond.x() : 0;
+                if (state == AutoScrollAcceleration) {
+                    const int max = 4000; // px by seconds
+                    const int oldSpeedY = speed.y();
+                    const int oldSpeedX = speed.x();
+                    if ((oldSpeedY <= 0 && newSpeedY <= 0) ||  (oldSpeedY >= 0 && newSpeedY >= 0)
+                        && (oldSpeedX <= 0 && newSpeedX <= 0) ||  (oldSpeedX >= 0 && newSpeedX >= 0)) {
+                        speed.setY(qBound(-max, (oldSpeedY + (newSpeedY / 4)), max));
+                        speed.setX(qBound(-max, (oldSpeedX + (newSpeedX / 4)), max));
+                    } else {
+                        speed = QPoint();
+                    }
+                } else {
+                    const int max = 2500; // px by seconds
+                    // we average the speed to avoid strange effects with the last delta
+                    if (!speed.isNull()) {
+                        speed.setX(qBound(-max, (speed.x() / 4) + (newSpeedX * 3 / 4), max));
+                        speed.setY(qBound(-max, (speed.y() / 4) + (newSpeedY * 3 / 4), max));
+                    } else {
+                        speed = QPoint(newSpeedX, newSpeedY);
+                    }
+                }
+            }
+        } else {
+            lastPosValid = true;
+        }
+        speedTimer.start();
+        lastPos = newPosition;
+    }
+
+    // scroll by dx, dy
+    // return true if the widget was scrolled
+    bool scrollWidget(const int dx, const int dy)
+    {
+        QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget);
+        if (scrollArea) {
+            const int x = scrollArea->horizontalScrollBar()->value();
+            const int y = scrollArea->verticalScrollBar()->value();
+            scrollArea->horizontalScrollBar()->setValue(x - dx);
+            scrollArea->verticalScrollBar()->setValue(y - dy);
+            return (scrollArea->horizontalScrollBar()->value() != x
+                    || scrollArea->verticalScrollBar()->value() != y);
+        }
+
+        QWebView *webView = qobject_cast<QWebView*>(widget);
+        if (webView) {
+            QWebFrame *frame = webView->page()->mainFrame();
+            const QPoint position = frame->scrollPosition();
+            frame->setScrollPosition(position - QPoint(dx, dy));
+            return frame->scrollPosition() != position;
+        }
+        return false;
+    }
+
+    bool scrollTo(const QPoint &newPosition)
+    {
+        const QPoint delta = newPosition - lastPos;
+        updateSpeed(newPosition);
+        return scrollWidget(delta.x(), delta.y());
+    }
 };
 
 class FlickCharmPrivate
@@ -70,6 +162,13 @@ class FlickCharmPrivate
 public:
     QHash<QWidget*, FlickData*> flickData;
     QBasicTimer ticker;
+    QTime timeCounter;
+    void startTicker(QObject *object)
+    {
+        if (!ticker.isActive())
+            ticker.start(15, object);
+        timeCounter.start();
+    }
 };
 
 FlickCharm::FlickCharm(QObject *parent): QObject(parent)
@@ -148,46 +247,14 @@ void FlickCharm::deactivateFrom(QWidget *widget)
     }
 }
 
-static QPoint scrollOffset(QWidget *widget)
+static QPoint deaccelerate(const QPoint &speed, const int deltatime)
 {
-    int x = 0, y = 0;
+    const int deltaSpeed = deltatime;
 
-    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget);
-    if (scrollArea) {
-        x = scrollArea->horizontalScrollBar()->value();
-        y = scrollArea->verticalScrollBar()->value();
-    }
-
-    QWebView *webView = qobject_cast<QWebView*>(widget);
-    if (webView) {
-        QWebFrame *frame = webView->page()->mainFrame();
-        x = frame->evaluateJavaScript("window.scrollX").toInt();
-        y = frame->evaluateJavaScript("window.scrollY").toInt();
-    }
-
-    return QPoint(x, y);
-}
-
-static void setScrollOffset(QWidget *widget, const QPoint &p)
-{
-    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget);
-    if (scrollArea) {
-        scrollArea->horizontalScrollBar()->setValue(p.x());
-        scrollArea->verticalScrollBar()->setValue(p.y());
-    }
-
-    QWebView *webView = qobject_cast<QWebView*>(widget);
-    QWebFrame *frame = webView ? webView->page()->mainFrame() : 0;
-    if (frame)
-        frame->evaluateJavaScript(QString("window.scrollTo(%1,%2);").arg(p.x()).arg(p.y()));
-}
-
-static QPoint deaccelerate(const QPoint &speed, int a = 1, int max = 64)
-{
-    int x = qBound(-max, speed.x(), max);
-    int y = qBound(-max, speed.y(), max);
-    x = (x == 0) ? x : (x > 0) ? qMax(0, x - a) : qMin(0, x + a);
-    y = (y == 0) ? y : (y > 0) ? qMax(0, y - a) : qMin(0, y + a);
+    int x = speed.x();
+    int y = speed.y();
+    x = (x == 0) ? x : (x > 0) ? qMax(0, x - deltaSpeed) : qMin(0, x + deltaSpeed);
+    y = (y == 0) ? y : (y > 0) ? qMax(0, y - deltaSpeed) : qMin(0, y + deltaSpeed);
     return QPoint(x, y);
 }
 
@@ -196,22 +263,24 @@ bool FlickCharm::eventFilter(QObject *object, QEvent *event)
     if (!object->isWidgetType())
         return false;
 
-    QEvent::Type type = event->type();
-    if (type != QEvent::MouseButtonPress &&
-            type != QEvent::MouseButtonRelease &&
-            type != QEvent::MouseMove)
-        return false;
+    const QEvent::Type type = event->type();
 
-    QMouseEvent *mouseEvent = 0;
-    switch (event->type()) {
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseMove:
-            mouseEvent = static_cast<QMouseEvent*>(event);
-            break;
+    switch (type) {
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonRelease:
+        break;
+    case QEvent::MouseButtonDblClick: // skip double click
+        return true;
+    default:
+        return false;
     }
 
-    if (!mouseEvent || mouseEvent->modifiers() != Qt::NoModifier)
+    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+    if (type == QEvent::MouseMove && mouseEvent->buttons() != Qt::LeftButton)
+        return false;
+
+    if (mouseEvent->modifiers() != Qt::NoModifier)
         return false;
 
     QWidget *viewport = qobject_cast<QWidget*>(object);
@@ -219,89 +288,83 @@ bool FlickCharm::eventFilter(QObject *object, QEvent *event)
     if (!viewport || !data || data->ignored.removeAll(event))
         return false;
 
+    const QPoint mousePos = mouseEvent->pos();
     bool consumed = false;
     switch (data->state) {
 
     case FlickData::Steady:
-        if (mouseEvent->type() == QEvent::MouseButtonPress)
-            if (mouseEvent->buttons() == Qt::LeftButton) {
-                consumed = true;
-                data->state = FlickData::Pressed;
-                data->pressPos = mouseEvent->pos();
-                data->offset = scrollOffset(data->widget);
-            }
-        break;
-
-    case FlickData::Pressed:
-        if (mouseEvent->type() == QEvent::MouseButtonRelease) {
+        if (type == QEvent::MouseButtonPress) {
             consumed = true;
-            data->state = FlickData::Steady;
-
+            data->pressPos = mousePos;
+        } else if (type == QEvent::MouseButtonRelease) {
+            consumed = true;
             QMouseEvent *event1 = new QMouseEvent(QEvent::MouseButtonPress,
                                                   data->pressPos, Qt::LeftButton,
                                                   Qt::LeftButton, Qt::NoModifier);
-            QMouseEvent *event2 = new QMouseEvent(*mouseEvent);
+            QMouseEvent *event2 = new QMouseEvent(QEvent::MouseButtonRelease,
+                                                  data->pressPos, Qt::LeftButton,
+                                                  Qt::LeftButton, Qt::NoModifier);
 
             data->ignored << event1;
             data->ignored << event2;
             QApplication::postEvent(object, event1);
             QApplication::postEvent(object, event2);
-        }
-        if (mouseEvent->type() == QEvent::MouseMove) {
+        } else if (type == QEvent::MouseMove) {
             consumed = true;
-            data->state = FlickData::ManualScroll;
-            data->dragPos = QCursor::pos();
-            if (!d->ticker.isActive())
-                d->ticker.start(20, this);
+            data->scrollTo(mousePos);
+
+            const QPoint delta = mousePos - data->pressPos;
+            if (delta.x() > fingerAccuracyThreshold || delta.y() > fingerAccuracyThreshold)
+                data->state = FlickData::ManualScroll;
         }
         break;
 
     case FlickData::ManualScroll:
-        if (mouseEvent->type() == QEvent::MouseMove) {
+        if (type == QEvent::MouseMove) {
             consumed = true;
-            QPoint delta = mouseEvent->pos() - data->pressPos;
-            setScrollOffset(data->widget, data->offset - delta);
-        }
-        if (mouseEvent->type() == QEvent::MouseButtonRelease) {
+            data->scrollTo(mousePos);
+        } else if (type == QEvent::MouseButtonRelease) {
             consumed = true;
             data->state = FlickData::AutoScroll;
+            data->lastPosValid = false;
+            d->startTicker(this);
         }
         break;
 
     case FlickData::AutoScroll:
-        if (mouseEvent->type() == QEvent::MouseButtonPress) {
+        if (type == QEvent::MouseButtonPress) {
             consumed = true;
-            data->state = FlickData::Stop;
-            data->speed = QPoint(0, 0);
-            data->pressPos = mouseEvent->pos();
-            data->offset = scrollOffset(data->widget);
-        }
-        if (mouseEvent->type() == QEvent::MouseButtonRelease) {
+            data->state = FlickData::AutoScrollAcceleration;
+            data->waitingAcceleration = true;
+            data->accelerationTimer.start();
+            data->updateSpeed(mousePos);
+            data->pressPos = mousePos;
+        } else if (type == QEvent::MouseButtonRelease) {
             consumed = true;
             data->state = FlickData::Steady;
-            data->speed = QPoint(0, 0);
+            data->resetSpeed();
         }
         break;
 
-    case FlickData::Stop:
-        if (mouseEvent->type() == QEvent::MouseButtonRelease) {
+    case FlickData::AutoScrollAcceleration:
+        if (type == QEvent::MouseMove) {
             consumed = true;
-            data->state = FlickData::Steady;
-        }
-        if (mouseEvent->type() == QEvent::MouseMove) {
+            data->updateSpeed(mousePos);
+            data->accelerationTimer.start();
+            if (data->speed.isNull())
+                data->state = FlickData::ManualScroll;
+        } else if (type == QEvent::MouseButtonRelease) {
             consumed = true;
-            data->state = FlickData::ManualScroll;
-            data->dragPos = QCursor::pos();
-            if (!d->ticker.isActive())
-                d->ticker.start(20, this);
+            data->state = FlickData::AutoScroll;
+            data->waitingAcceleration = false;
+            data->lastPosValid = false;
         }
         break;
-
     default:
         break;
     }
-
-    return consumed;
+    data->lastPos = mousePos;
+    return true;
 }
 
 void FlickCharm::timerEvent(QTimerEvent *event)
@@ -311,25 +374,29 @@ void FlickCharm::timerEvent(QTimerEvent *event)
     while (item.hasNext()) {
         item.next();
         FlickData *data = item.value();
-
-        if (data->state == FlickData::ManualScroll) {
-            count++;
-            data->speed = QCursor::pos() - data->dragPos;
-            data->dragPos = QCursor::pos();
+        if (data->state == FlickData::AutoScrollAcceleration
+            && data->waitingAcceleration
+            && data->accelerationTimer.elapsed() > 40) {
+            data->state = FlickData::ManualScroll;
+            data->resetSpeed();
         }
+        if (data->state == FlickData::AutoScroll || data->state == FlickData::AutoScrollAcceleration) {
+            const int timeElapsed = d->timeCounter.elapsed();
+            const QPoint delta = (data->speed) * timeElapsed / 1000;
+            bool hasScrolled = data->scrollWidget(delta.x(), delta.y());
 
-        if (data->state == FlickData::AutoScroll) {
-            count++;
-            data->speed = deaccelerate(data->speed);
-            QPoint p = scrollOffset(data->widget);
-            setScrollOffset(data->widget, p - data->speed);
-            if (data->speed == QPoint(0, 0))
+            if (data->speed.isNull() || !hasScrolled)
                 data->state = FlickData::Steady;
+            else
+                count++;
+            data->speed = deaccelerate(data->speed, timeElapsed);
         }
     }
 
     if (!count)
         d->ticker.stop();
+    else
+        d->timeCounter.start();
 
     QObject::timerEvent(event);
 }

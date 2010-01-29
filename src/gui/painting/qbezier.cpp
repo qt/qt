@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -497,7 +497,7 @@ static bool addCircle(const QBezier *b, qreal offset, QBezier *o)
             cos_a = 1.;
         if (cos_a < -1.)
             cos_a = -1;
-        angles[i] = acos(cos_a)/Q_PI;
+        angles[i] = qAcos(cos_a)/Q_PI;
     }
 
     if (angles[0] + angles[1] > 1.) {
@@ -816,17 +816,17 @@ bool QBezier::findIntersections(const QBezier &a, const QBezier &b,
                                 QVector<QPair<qreal, qreal> > *t)
 {
     if (IntersectBB(a, b)) {
-        QPointF la1(fabs((a.x3 - a.x2) - (a.x2 - a.x1)),
-                    fabs((a.y3 - a.y2) - (a.y2 - a.y1)));
-	QPointF la2(fabs((a.x4 - a.x3) - (a.x3 - a.x2)),
-                    fabs((a.y4 - a.y3) - (a.y3 - a.y2)));
+        QPointF la1(qFabs((a.x3 - a.x2) - (a.x2 - a.x1)),
+                    qFabs((a.y3 - a.y2) - (a.y2 - a.y1)));
+	QPointF la2(qFabs((a.x4 - a.x3) - (a.x3 - a.x2)),
+                    qFabs((a.y4 - a.y3) - (a.y3 - a.y2)));
 	QPointF la;
 	if (la1.x() > la2.x()) la.setX(la1.x()); else la.setX(la2.x());
 	if (la1.y() > la2.y()) la.setY(la1.y()); else la.setY(la2.y());
-	QPointF lb1(fabs((b.x3 - b.x2) - (b.x2 - b.x1)),
-                    fabs((b.y3 - b.y2) - (b.y2 - b.y1)));
-	QPointF lb2(fabs((b.x4 - b.x3) - (b.x3 - b.x2)),
-                    fabs((b.y4 - b.y3) - (b.y3 - b.y2)));
+	QPointF lb1(qFabs((b.x3 - b.x2) - (b.x2 - b.x1)),
+                    qFabs((b.y3 - b.y2) - (b.y2 - b.y1)));
+	QPointF lb2(qFabs((b.x4 - b.x3) - (b.x3 - b.x2)),
+                    qFabs((b.y4 - b.y3) - (b.y3 - b.y2)));
 	QPointF lb;
 	if (lb1.x() > lb2.x()) lb.setX(lb1.x()); else lb.setX(lb2.x());
 	if (lb1.y() > lb2.y()) lb.setY(lb1.y()); else lb.setY(lb2.y());
@@ -1120,7 +1120,7 @@ static inline void bindInflectionPoint(const QBezier &bez, const qreal t,
     qreal ey = 3 * (right.y2 - right.y3);
 
     qreal s4 = qAbs(6 * (ey * ax - ex * ay) / qSqrt(ex * ex + ey * ey)) + 0.00001f;
-    qreal tf = pow(qreal(9 * flatness / s4), qreal(1./3.));
+    qreal tf = qPow(qreal(9 * flatness / s4), qreal(1./3.));
     *tMinus = t - (1 - t) * tf;
     *tPlus  = t + (1 - t) * tf;
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -134,7 +134,6 @@
     \value AA_DontShowIconsInMenus Actions with the Icon property won't be
            shown in any menus unless specifically set by the
            QAction::iconVisibleInMenu property.
-
            Menus that are currently open or menus already created in the native
            Mac OS X menubar \e{may not} pick up a change in this attribute. Changes
            in the QAction::iconVisibleInMenu property will always be picked up.
@@ -163,6 +162,12 @@
            will also flip accordingly (i.e., QKeySequence::Copy will be
            Command+C on the keyboard regardless of the value set, though what is output for
            QKeySequence::toString(QKeySequence::PortableText) will be different).
+
+    \value AA_S60DontConstructApplicationPanes Stops Qt from initializing the S60 status
+           pane and softkey pane on Symbian. This is useful to save memory and reduce
+           startup time for applications that will run in fullscreen mode during their
+           whole lifetime. This attribute must be set before QApplication is
+           constructed.
 
     \omitvalue AA_AttributeCount
 */
@@ -509,44 +514,57 @@
 /*!
     \enum Qt::ConnectionType
 
-    This enum describes the types of connection that can be used between signals and
-    slots. In particular, it determines whether a particular signal is delivered to a
-    slot immediately or queued for delivery at a later time.
+    This enum describes the types of connection that can be used
+    between signals and slots. In particular, it determines whether a
+    particular signal is delivered to a slot immediately or queued for
+    delivery at a later time.
 
-    \value DirectConnection  When emitted, the signal is immediately delivered to the slot.
-    \value QueuedConnection  When emitted, the signal is queued until the event loop is
-                             able to deliver it to the slot.
+    \value AutoConnection
+    	   (default) Same as DirectConnection, if the emitter and
+       	   receiver are in the same thread. Same as QueuedConnection,
+       	   if the emitter and receiver are in different threads.
+
+    \value DirectConnection  
+	   The slot is invoked immediately, when the signal is
+       	   emitted.
+
+    \value QueuedConnection  
+    	   The slot is invoked when control returns to the event loop
+       	   of the receiver's thread. The slot is executed in the
+       	   receiver's thread.
+
     \value BlockingQueuedConnection
-                             Same as QueuedConnection, except that the current thread blocks
-                             until the slot has been delivered. This connection type should
-                             only be used for receivers in a different thread. Note that misuse
-                             of this type can lead to deadlocks in your application.
-    \value AutoConnection    If the signal is emitted from the thread
-                             in which the receiving object lives, the
-                             slot is invoked directly, as with
-                             Qt::DirectConnection; otherwise the
-                             signal is queued, as with
-                             Qt::QueuedConnection.
-    \value UniqueConnection  Same as AutoConnection, but there will be a check that the signal is
-                             not already connected to the same slot before connecting, otherwise,
-                             the connection will fail.
-                             This value was introduced in Qt 4.6.
-    \value AutoCompatConnection
-           The default connection type for signals and slots when Qt 3 support
-           is enabled. Equivalent to AutoConnection for connections but will cause warnings
-           to be output under certain circumstances. See
-           \l{Porting to Qt 4#Compatibility Signals and Slots}{Compatibility Signals and Slots}
-           for further information.
+           Same as QueuedConnection, except the current thread blocks
+           until the slot returns. This connection type should only be
+           used where the emitter and receiver are in different
+           threads.  \note Violating this rule can cause your
+           application to deadlock.
 
-    With queued connections, the parameters must be of types that are known to
-    Qt's meta-object system, because Qt needs to copy the arguments to store them
-    in an event behind the scenes. If you try to use a queued connection and
-    get the error message
+    \value UniqueConnection
+           Same as AutoConnection, but the connection is made only if
+    	   it does not duplicate an existing connection. i.e., if the
+    	   same signal is already connected to the same slot for the
+    	   same pair of objects, then the connection will fail. This
+    	   connection type was introduced in Qt 4.6.
+
+    \value AutoCompatConnection
+    	   The default type when Qt 3 support is enabled. Same as
+	   AutoConnection but will also cause warnings to be output in
+	   certain situations. See \l{Porting to Qt 4#Compatibility
+	   Signals and Slots}{Compatibility Signals and Slots} for
+	   further information.
+
+    With queued connections, the parameters must be of types that are
+    known to Qt's meta-object system, because Qt needs to copy the
+    arguments to store them in an event behind the scenes. If you try
+    to use a queued connection and get the error message:
 
     \snippet doc/src/snippets/code/doc_src_qnamespace.qdoc 0
 
-    call qRegisterMetaType() to register the data type before you
+    Call qRegisterMetaType() to register the data type before you
     establish the connection.
+
+    When using signals and slots with multiple threads, see \l{Signals and Slots Across Threads}.
 
     \sa {Thread Support in Qt}, QObject::connect(), qRegisterMetaType()
 */

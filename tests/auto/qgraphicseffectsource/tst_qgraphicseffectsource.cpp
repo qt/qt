@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -352,7 +352,7 @@ void tst_QGraphicsEffectSource::pixmapPadding_data()
 
     QTest::newRow("log,effectrect") << int(Qt::LogicalCoordinates)
                                     << int(QGraphicsEffect::PadToEffectiveBoundingRect)
-                                    << QSize(30, 30) << QPoint(-10, -10)
+                                    << QSize(20, 20) << QPoint(-5, -5)
                                     << 0x00000000u;
 
     QTest::newRow("dev,nopad") << int(Qt::DeviceCoordinates)

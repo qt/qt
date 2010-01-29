@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,6 +73,7 @@ private slots:
     void updateSoftKeysCompressed();
     void handleCommand();
     void checkSoftkeyEnableStates();
+    void noMergingOverWindowBoundary();
 
 private: // utils
     inline void simulateSymbianCommand(int command)
@@ -233,6 +234,67 @@ void tst_QSoftKeyManager::checkSoftkeyEnableStates()
     QApplication::processEvents();
     QCOMPARE(spy0.count(), 5);
     QCOMPARE(spy1.count(), 5);
+}
+
+/*
+    This tests that the softkeys are not merged over window boundaries. I.e. dialogs
+    don't get softkeys of base widget by default - QTBUG-6163.
+*/
+void tst_QSoftKeyManager::noMergingOverWindowBoundary()
+{
+    // Create base window against which the dialog softkeys will ve verified
+    QWidget base;
+
+    QAction* baseLeft = new QAction(tr("BaseLeft"), &base);
+    baseLeft->setSoftKeyRole(QAction::PositiveSoftKey);
+    base.addAction(baseLeft);
+
+    QAction* baseRight = new QAction(tr("BaseRight"), &base);
+    baseRight->setSoftKeyRole(QAction::NegativeSoftKey);
+    base.addAction(baseRight);
+
+    base.showMaximized();
+    QApplication::processEvents();
+
+    QSignalSpy baseLeftSpy(baseLeft, SIGNAL(triggered()));
+    QSignalSpy baseRightSpy(baseRight, SIGNAL(triggered()));
+
+    //Verify that both base softkeys emit triggered signals
+    simulateSymbianCommand(s60CommandStart);
+    simulateSymbianCommand(s60CommandStart + 1);
+
+    QCOMPARE(baseLeftSpy.count(), 1);
+    QCOMPARE(baseRightSpy.count(), 1);
+    baseLeftSpy.clear();
+    baseRightSpy.clear();
+
+    // Verify that no softkey merging when using dialog without parent
+    QDialog dlg;
+    dlg.show();
+
+    QApplication::processEvents();
+
+    simulateSymbianCommand(s60CommandStart);
+    simulateSymbianCommand(s60CommandStart + 1);
+
+    QCOMPARE(baseLeftSpy.count(), 0);
+    QCOMPARE(baseRightSpy.count(), 0);
+
+    // Ensure base view has focus again
+    dlg.hide();
+    base.showMaximized();
+
+    // Verify that no softkey merging when using dialog with parent
+    QDialog dlg2(&base);
+    dlg2.show();
+
+    QApplication::processEvents();
+
+    simulateSymbianCommand(s60CommandStart);
+    simulateSymbianCommand(s60CommandStart + 1);
+
+    QCOMPARE(baseLeftSpy.count(), 0);
+    QCOMPARE(baseRightSpy.count(), 0);
 }
 
 QTEST_MAIN(tst_QSoftKeyManager)

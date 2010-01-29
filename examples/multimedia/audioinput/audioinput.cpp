@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,8 +52,8 @@
 
 #define BUFFER_SIZE 4096
 
-AudioInfo::AudioInfo(QObject* parent, QAudioInput* device)
-    :QIODevice( parent )
+AudioInfo::AudioInfo(QObject *parent, QAudioInput *device)
+    :QIODevice(parent)
 {
     input = device;
 
@@ -90,21 +90,24 @@ qint64 AudioInfo::writeData(const char *data, qint64 len)
 
     m_maxValue = 0;
 
-    qint16* s = (qint16*)data;
+    qint16 *s = (qint16*)data;
 
     // sample format is S16LE, only!
 
-    for(int i=0;i<samples;i++) {
+    for (int i = 0; i < samples; ++i) {
         qint16 sample = *s;
         s++;
-        if(abs(sample) > m_maxValue) m_maxValue = abs(sample);
+        if (abs(sample) > m_maxValue) m_maxValue = abs(sample);
     }
     // check for clipping
-    if(m_maxValue>=(maxAmp-1)) clipping = true;
+    if (m_maxValue >= (maxAmp - 1))
+        clipping = true;
 
     float value = ((float)m_maxValue/(float)maxAmp);
-    if(clipping) m_maxValue = 100;
-    else m_maxValue = (int)(value*100);
+    if (clipping)
+        m_maxValue = 100;
+    else
+        m_maxValue = (int)(value*100);
 
     emit update();
 
@@ -132,25 +135,25 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
     QPainter painter(this);
 
     painter.setPen(Qt::black);
-    painter.drawRect(QRect(painter.viewport().left()+10, painter.viewport().top()+10,
-                painter.viewport().right()-20, painter.viewport().bottom()-20));
-
-    if(level == 0)
+    painter.drawRect(QRect(painter.viewport().left()+10,
+                           painter.viewport().top()+10,
+                           painter.viewport().right()-20,
+                           painter.viewport().bottom()-20));
+    if (level == 0)
         return;
 
     painter.setPen(Qt::red);
 
     int pos = ((painter.viewport().right()-20)-(painter.viewport().left()+11))*level/100;
-    int x1,y1,x2,y2;
-    for(int i=0;i<10;i++) {
-        x1 = painter.viewport().left()+11;
-        y1 = painter.viewport().top()+10+i;
-        x2 = painter.viewport().left()+20+pos;
-        y2 = painter.viewport().top()+10+i;
-        if(x2 < painter.viewport().left()+10)
+    for (int i = 0; i < 10; ++i) {
+        int x1 = painter.viewport().left()+11;
+        int y1 = painter.viewport().top()+10+i;
+        int x2 = painter.viewport().left()+20+pos;
+        int y2 = painter.viewport().top()+10+i;
+        if (x2 < painter.viewport().left()+10)
             x2 = painter.viewport().left()+10;
 
-        painter.drawLine(QPoint(x1,y1),QPoint(x2,y2));
+        painter.drawLine(QPoint(x1, y1),QPoint(x2, y2));
     }
 }
 
@@ -171,20 +174,20 @@ InputTest::InputTest()
 
     deviceBox = new QComboBox(this);
     QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-    for(int i = 0; i < devices.size(); ++i) {
+    for(int i = 0; i < devices.size(); ++i)
         deviceBox->addItem(devices.at(i).deviceName(), qVariantFromValue(devices.at(i)));
-    }
-    connect(deviceBox,SIGNAL(activated(int)),SLOT(deviceChanged(int)));
+
+    connect(deviceBox, SIGNAL(activated(int)), SLOT(deviceChanged(int)));
     layout->addWidget(deviceBox);
 
     button = new QPushButton(this);
     button->setText(tr("Click for Push Mode"));
-    connect(button,SIGNAL(clicked()),SLOT(toggleMode()));
+    connect(button, SIGNAL(clicked()), SLOT(toggleMode()));
     layout->addWidget(button);
 
     button2 = new QPushButton(this);
     button2->setText(tr("Click To Suspend"));
-    connect(button2,SIGNAL(clicked()),SLOT(toggleSuspend()));
+    connect(button2, SIGNAL(clicked()), SLOT(toggleSuspend()));
     layout->addWidget(button2);
 
     window->setLayout(layout);
@@ -195,7 +198,6 @@ InputTest::InputTest()
 
     pullMode = true;
 
-    // AudioInfo class only supports mono S16LE samples!
     format.setFrequency(8000);
     format.setChannels(1);
     format.setSampleSize(16);
@@ -203,11 +205,22 @@ InputTest::InputTest()
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setCodec("audio/pcm");
 
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultInputDevice());
+    if (!info.isFormatSupported(format)) {
+        qWarning()<<"default format not supported try to use nearest";
+        format = info.nearestFormat(format);
+    }
+
+    if(format.sampleSize() != 16) {
+        qWarning()<<"audio device doesn't support 16 bit samples, example cannot run";
+        return;
+    }
+
     audioInput = new QAudioInput(format,this);
-    connect(audioInput,SIGNAL(notify()),SLOT(status()));
-    connect(audioInput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
+    connect(audioInput, SIGNAL(notify()), SLOT(status()));
+    connect(audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(state(QAudio::State)));
     audioinfo  = new AudioInfo(this,audioInput);
-    connect(audioinfo,SIGNAL(update()),SLOT(refreshDisplay()));
+    connect(audioinfo, SIGNAL(update()), SLOT(refreshDisplay()));
     audioinfo->start();
     audioInput->start(audioinfo);
 }
@@ -240,7 +253,7 @@ void InputTest::toggleMode()
     if (pullMode) {
         button->setText(tr("Click for Pull Mode"));
         input = audioInput->start();
-        connect(input,SIGNAL(readyRead()),SLOT(readMore()));
+        connect(input, SIGNAL(readyRead()), SLOT(readMore()));
         pullMode = false;
     } else {
         button->setText(tr("Click for Push Mode"));
@@ -253,25 +266,25 @@ void InputTest::toggleSuspend()
 {
     // toggle suspend/resume
     if(audioInput->state() == QAudio::SuspendedState) {
-        qWarning()<<"status: Suspended, resume()";
+        qWarning() << "status: Suspended, resume()";
         audioInput->resume();
         button2->setText("Click To Suspend");
     } else if (audioInput->state() == QAudio::ActiveState) {
-        qWarning()<<"status: Active, suspend()";
+        qWarning() << "status: Active, suspend()";
         audioInput->suspend();
         button2->setText("Click To Resume");
     } else if (audioInput->state() == QAudio::StoppedState) {
-        qWarning()<<"status: Stopped, resume()";
+        qWarning() << "status: Stopped, resume()";
         audioInput->resume();
         button2->setText("Click To Suspend");
     } else if (audioInput->state() == QAudio::IdleState) {
-        qWarning()<<"status: IdleState";
+        qWarning() << "status: IdleState";
     }
 }
 
 void InputTest::state(QAudio::State state)
 {
-    qWarning()<<" state="<<state;
+    qWarning() << " state=" << state;
 }
 
 void InputTest::refreshDisplay()
@@ -289,8 +302,8 @@ void InputTest::deviceChanged(int idx)
 
     device = deviceBox->itemData(idx).value<QAudioDeviceInfo>();
     audioInput = new QAudioInput(device, format, this);
-    connect(audioInput,SIGNAL(notify()),SLOT(status()));
-    connect(audioInput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
+    connect(audioInput, SIGNAL(notify()), SLOT(status()));
+    connect(audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(state(QAudio::State)));
     audioinfo->start();
     audioInput->start(audioinfo);
 }

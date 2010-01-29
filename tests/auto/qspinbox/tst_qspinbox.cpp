@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -758,7 +758,7 @@ void tst_QSpinBox::editingFinished()
     box->activateWindow();
     box->setFocus();
 
-    QTRY_COMPARE(qApp->focusWidget(), box);
+    QTRY_COMPARE(qApp->focusWidget(), (QWidget *)box);
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
     QSignalSpy editingFinishedSpy2(box2, SIGNAL(editingFinished()));
@@ -1018,18 +1018,25 @@ void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
             setValue(1000000);
         }
 
+        QLineEdit *lineEdit() const
+        {
+            return QSpinBox::lineEdit();
+        }
+
         //we use the French delimiters here
         QString textFromValue (int value) const
-        { 
+        {
             return locale().toString(value);
         }
 
-        using QSpinBox::lineEdit;
     } spinbox;
     spinbox.show();
     spinbox.activateWindow();
     spinbox.setFocus();
+    QApplication::setActiveWindow(&spinbox);
     QTest::qWaitForWindowShown(&spinbox);
+    QTRY_VERIFY(spinbox.hasFocus());
+    QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
     QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
     spinbox.lineEdit()->setCursorPosition(2); //just after the first thousand separator
     QTest::keyClick(0, Qt::Key_0); // let's insert a 0

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -84,7 +84,9 @@
     Before building the \l{Qt for Embedded Linux} library, run the \c
     ./configure script to configure the library for your development
     architecture. You can list all of the configuration system's
-    options by typing \c {./configure -help}.
+    options by typing
+
+    \snippet doc/src/snippets/code/doc_src_emb-install.qdoc embedded help
 
     Note that by default, \l{Qt for Embedded Linux} is configured for
     installation in the \c{/usr/local/Trolltech/QtEmbedded-%VERSION%}

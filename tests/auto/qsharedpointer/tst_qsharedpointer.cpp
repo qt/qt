@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,6 +73,7 @@ private slots:
     void forwardDeclaration2();
     void memoryManagement();
     void downCast();
+    void functionCallDownCast();
     void upCast();
     void qobjectWeakManagement();
     void noSharedPointerFromWeakQObject();
@@ -501,6 +502,15 @@ void tst_QSharedPointer::downCast()
         QVERIFY(baseweakptr == ptr);
     }
     QCOMPARE(DerivedData::derivedDestructorCounter, destructorCount + 1);
+}
+
+void functionDataByValue(QSharedPointer<Data> p) { Q_UNUSED(p); };
+void functionDataByRef(const QSharedPointer<Data> &p) { Q_UNUSED(p); };
+void tst_QSharedPointer::functionCallDownCast()
+{
+    QSharedPointer<DerivedData> p(new DerivedData());
+    functionDataByValue(p);
+    functionDataByRef(p);
 }
 
 void tst_QSharedPointer::upCast()

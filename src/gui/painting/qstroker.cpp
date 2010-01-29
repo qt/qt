@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -910,8 +910,8 @@ QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLengt
         }
     }
 
-    int startSegment = int(floor(startAngle / 90));
-    int endSegment = int(floor((startAngle + sweepLength) / 90));
+    int startSegment = int(qFloor(startAngle / 90));
+    int endSegment = int(qFloor((startAngle + sweepLength) / 90));
 
     qreal startT = (startAngle - startSegment * 90) / 90;
     qreal endT = (startAngle + sweepLength - endSegment * 90) / 90;

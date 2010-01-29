@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -396,7 +396,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     fbo_guard.setContext(ctx);
 
-    bool ext_detected = (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
+    bool ext_detected = (QGLExtensions::glExtensions() & QGLExtensions::FramebufferObject);
     if (!ext_detected || (ext_detected && !qt_resolve_framebufferobject_extensions(ctx)))
         return;
 
@@ -466,7 +466,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     }
 
     if (attachment == QGLFramebufferObject::CombinedDepthStencil
-        && (QGLExtensions::glExtensions & QGLExtensions::PackedDepthStencil)) {
+        && (QGLExtensions::glExtensions() & QGLExtensions::PackedDepthStencil)) {
         // depth and stencil buffer needs another extension
         glGenRenderbuffers(1, &depth_stencil_buffer);
         Q_ASSERT(!glIsRenderbuffer(depth_stencil_buffer));
@@ -596,6 +596,12 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     QPainter. To create a multisample framebuffer object you should use one of
     the constructors that take a QGLFramebufferObject parameter, and set the
     QGLFramebufferObject::samples() property to a non-zero value.
+
+    When painting to a QGLFramebufferObject using QPainter, the state of
+    the current GL context will be altered by the paint engine to reflect
+    its needs.  Applications should not rely upon the GL state being reset
+    to its original conditions, particularly the current shader program,
+    GL viewport, texture units, and drawing modes.
 
     For multisample framebuffer objects a color render buffer is created,
     otherwise a texture with the specified texture target is created.
@@ -899,8 +905,8 @@ bool QGLFramebufferObject::release()
 #endif
 
     if (current) {
-        current->d_ptr->current_fbo = 0;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+        current->d_ptr->current_fbo = current->d_ptr->default_fbo;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, current->d_ptr->default_fbo);
     }
 
     return true;
@@ -1022,8 +1028,7 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
 */
 bool QGLFramebufferObject::hasOpenGLFramebufferObjects()
 {
-    QGLExtensions::init();
-    return (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
+    return (QGLExtensions::glExtensions() & QGLExtensions::FramebufferObject);
 }
 
 /*!
@@ -1182,8 +1187,7 @@ bool QGLFramebufferObject::isBound() const
 */
 bool QGLFramebufferObject::hasOpenGLFramebufferBlit()
 {
-    QGLExtensions::init();
-    return (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit);
+    return (QGLExtensions::glExtensions() & QGLExtensions::FramebufferBlit);
 }
 
 /*!
@@ -1223,7 +1227,7 @@ void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const Q
                                            GLbitfield buffers,
                                            GLenum filter)
 {
-    if (!(QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit))
+    if (!(QGLExtensions::glExtensions() & QGLExtensions::FramebufferBlit))
         return;
 
     const QGLContext *ctx = QGLContext::currentContext();

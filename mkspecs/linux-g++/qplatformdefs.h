@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,7 +67,6 @@
 #include <grp.h>
 #include <pwd.h>
 #include <signal.h>
-#include <dlfcn.h>
 
 #include <sys/types.h>
 #include <sys/ioctl.h>

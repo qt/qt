@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,8 +62,14 @@ void QTriangulatingStroker::endCapOrJoinClosed(const qreal *start, const qreal *
         endCap(cur);
     }
     int count = m_vertices.size();
-    m_vertices.add(m_vertices.at(count-2));
-    m_vertices.add(m_vertices.at(count-1));
+
+    // Copy the (x, y) values because QDataBuffer::add(const float& t)
+    // may resize the buffer, which will leave t pointing at the
+    // previous buffer's memory region if we don't copy first.
+    float x = m_vertices.at(count-2);
+    float y = m_vertices.at(count-1);
+    m_vertices.add(x);
+    m_vertices.add(y);
 }
 
 
@@ -313,6 +319,7 @@ void QTriangulatingStroker::join(const qreal *pts)
     switch (m_join_style) {
     case Qt::BevelJoin:
         break;
+    case Qt::SvgMiterJoin:
     case Qt::MiterJoin: {
         // Find out on which side the join should be.
         int count = m_vertices.size();

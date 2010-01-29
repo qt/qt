@@ -4834,8 +4834,8 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <location line="+5"/>
-        <source>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
-        <translation>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies). 全ての権利は保護されています。&lt;br/&gt;&lt;br/&gt;プログラムは「設計」、「市場性」および「特定の目的への適合性」も含む、あらゆる種類の「保証がなく」、「そのままで」提供されます。&lt;br/&gt;</translation>
+        <source>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
+        <translation>%1&lt;br/&gt;%2&lt;br/&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies). 全ての権利は保護されています。&lt;br/&gt;&lt;br/&gt;プログラムは「設計」、「市場性」および「特定の目的への適合性」も含む、あらゆる種類の「保証がなく」、「そのままで」提供されます。&lt;br/&gt;</translation>
     </message>
 </context>
 <context>

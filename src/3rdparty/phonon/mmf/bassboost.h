@@ -19,8 +19,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_BASSBOOST_H
 #define PHONON_MMF_BASSBOOST_H
 
-#include <BassBoostBase.h>
 #include "abstractaudioeffect.h"
+
+class CBassBoost;
 
 QT_BEGIN_NAMESPACE
 
@@ -29,25 +30,26 @@ namespace Phonon
 namespace MMF
 {
 /**
- * @short An "bass boost" effect.
- *
- * The documentation does not say what "bass boost" is, neither has it anykind
- * of setting. It's an on or off thing.
+ * @short A "bass boost" effect.
  */
 class BassBoost : public AbstractAudioEffect
 {
     Q_OBJECT
 public:
-    BassBoost(QObject *parent);
+    BassBoost(QObject *parent, const QList<EffectParameter> &parameters);
+
+    // Static interface required by EffectFactory
+    static const char* description();
+    static bool getParameters(CMdaAudioOutputStream *stream,
+        QList<EffectParameter>& parameters);
 
 protected:
-    virtual void parameterChanged(const int id,
-                                  const QVariant &value);
-
-    virtual bool activateOn(CPlayerType *player);
+    // AbstractAudioEffect
+    virtual void createEffect(AudioPlayer::NativePlayer *player);
 
 private:
-    QScopedPointer<CBassBoost> m_bassBoost;
+    CBassBoost *concreteEffect();
+
 };
 }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,6 +58,7 @@
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qapplication.h>
 #include <QtGui/qtextedit.h>
+#include <QtGui/qtextbrowser.h>
 #include <QtGui/qmenu.h>
 #include "qdialog_p.h"
 #include <QtGui/qfont.h>
@@ -188,6 +189,9 @@ public:
     bool autoAddOkButton;
     QAbstractButton *detectedEscapeButton;
     QLabel *informativeLabel;
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+    QTextBrowser *textBrowser;
+#endif
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
     QByteArray signalToDisconnectOnClose;
@@ -1723,7 +1727,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "to comply with the terms of the GNU GPL version 3.0.</p>"
         "<p>Please see <a href=\"http://qt.nokia.com/products/licensing\">qt.nokia.com/products/licensing</a> "
         "for an overview of Qt licensing.</p>"
-        "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
+        "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://qt.nokia.com/\">qt.nokia.com</a> "
         "for more information.</p>"
         );
@@ -2459,10 +2463,24 @@ void QMessageBox::setInformativeText(const QString &text)
 #endif
         label->setWordWrap(true);
         QGridLayout *grid = static_cast<QGridLayout *>(layout());
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+        label->hide();
+        QTextBrowser *textBrowser = new QTextBrowser(this);
+        textBrowser->setOpenExternalLinks(true);
+        grid->addWidget(textBrowser, 1, 1, 1, 1);
+        d->textBrowser = textBrowser;
+#else
         grid->addWidget(label, 1, 1, 1, 1);
+#endif
         d->informativeLabel = label;
     }
     d->informativeLabel->setText(text);
+
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+    //We need to put the informative label inside textBrowser to enable scrolling of long texts.
+    d->textBrowser->setText(d->informativeLabel->text());
+#endif
+
     d->updateSize();
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -172,7 +172,7 @@ public:
     }
 
     int signalIndex(const char *signalName) const;
-    inline bool isSignalConnected(int signalIdx) const;
+    inline bool isSignalConnected(uint signalIdx) const;
 
 public:
     QString objectName;
@@ -183,7 +183,7 @@ public:
 
     Connection *senders;     // linked list of connections connected to this object
     Sender *currentSender;   // object currently activating the object
-    mutable ulong connectedSignals;
+    mutable quint32 connectedSignals[2];
 
 #ifdef QT3_SUPPORT
     QList<QObject *> pendingChildInsertedEvents;
@@ -205,6 +205,7 @@ public:
     int *deleteWatch;
 };
 
+
 /*! \internal
 
   Returns true if the signal with index \a signal_index from object \a sender is connected.
@@ -213,12 +214,12 @@ public:
 
   \a signal_index must be the index returned by QObjectPrivate::signalIndex;
 */
-inline bool QObjectPrivate::isSignalConnected(int signal_index) const
+inline bool QObjectPrivate::isSignalConnected(uint signal_index) const
 {
-    return signal_index >= (int)sizeof(connectedSignals) * 8
+    return signal_index >= sizeof(connectedSignals) * 8
         || qt_signal_spy_callback_set.signal_begin_callback
         || qt_signal_spy_callback_set.signal_end_callback
-        || (connectedSignals & (ulong(1) << signal_index));
+        || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f)));
 }
 
 

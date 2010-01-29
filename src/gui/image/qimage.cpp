@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -696,7 +696,9 @@ bool QImageData::checkForAlphaPixels() const
 /*!
     \enum QImage::Format
 
-    The following image formats are available in all versions of Qt:
+    The following image formats are available in Qt. Values greater
+    than QImage::Format_RGB16 were added in Qt 4.4. See the notes
+    after the table.
 
     \value Format_Invalid   The image is invalid.
     \value Format_Mono      The image is stored using 1-bit per pixel. Bytes are
@@ -705,17 +707,12 @@ bool QImageData::checkForAlphaPixels() const
                             packed with the less significant bit (LSB) first.
 
     \value Format_Indexed8  The image is stored using 8-bit indexes
-                            into a colormap. \warning Drawing into a
-                            QImage with Indexed8 format is not
-                            supported.
+                            into a colormap. 
 
     \value Format_RGB32     The image is stored using a 32-bit RGB format (0xffRRGGBB).
 
     \value Format_ARGB32    The image is stored using a 32-bit ARGB
-                            format (0xAARRGGBB). \warning Do not
-                            render into ARGB32 images using
-                            QPainter. Format_ARGB32_Premultiplied is
-                            significantly faster.
+                            format (0xAARRGGBB).
 
     \value Format_ARGB32_Premultiplied  The image is stored using a premultiplied 32-bit
                             ARGB format (0xAARRGGBB), i.e. the red,
@@ -743,6 +740,12 @@ bool QImageData::checkForAlphaPixels() const
                             The unused bits are always zero.
     \value Format_ARGB4444_Premultiplied  The image is stored using a
                             premultiplied 16-bit ARGB format (4-4-4-4).
+
+    \note Drawing into a QImage with QImage::Format_Indexed8 is not
+    supported.
+
+    \note Do not render into ARGB32 images using QPainter.  Using
+    QImage::Format_ARGB32_Premultiplied is significantly faster.
 
     \sa format(), convertToFormat()
 */
@@ -3989,7 +3992,7 @@ QImage QImage::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Transf
     QSize newSize = size();
     newSize.scale(s, aspectMode);
     if (newSize == size())
-        return copy();
+        return *this;
 
     QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
     QImage img = transformed(wm, mode);

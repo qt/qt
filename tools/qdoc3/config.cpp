@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -399,6 +399,13 @@ QStringList Config::getAllFiles(const QString &filesVar,
 }
 
 /*!
+  \a fileName is the path of the file to find.
+
+  \a files and \a dirs are the lists where we must find the
+  components of \a fileName.
+  
+  \a location is used for obtaining the file and line numbers
+  for report qdoc errors.
  */
 QString Config::findFile(const Location& location,
                          const QStringList& files,
@@ -527,6 +534,11 @@ QString Config::findFile(const Location& location,
 }
 
 /*!
+  Copies the \a sourceFilePath to the file name constructed by
+  concatenating \a targetDirPath and \a userFriendlySourceFilePath.
+  \a location is for identifying the file and line number where
+  a qdoc error occurred. The constructed output file name is
+  returned.
  */
 QString Config::copyFile(const Location& location,
                          const QString& sourceFilePath,

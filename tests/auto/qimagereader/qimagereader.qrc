@@ -57,5 +57,7 @@
         <file>images/qt6.gif</file>
         <file>images/qt7.gif</file>
         <file>images/qt8.gif</file>
+        <file>images/endless-anim.gif</file>
+        <file>images/four-frames.gif</file>
     </qresource>
 </RCC>

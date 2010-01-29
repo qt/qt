@@ -20,7 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_MEDIANODE_H
 
 #include <QObject>
-#include <Phonon/EffectInterface>
+#include <phonon/effectinterface.h>
 #include "audioplayer.h"
 
 QT_BEGIN_NAMESPACE
@@ -43,54 +43,62 @@ class MediaObject;
 /**
  * @short Base class for all nodes in the MMF backend.
  *
- * MediaNode is the base class for all nodes in the chain for MMF. Currently
- * they are:
+ * MediaNode is the base class for all nodes created by the MMF
+ * backend.
  *
- * - MediaObject: a source of media
- * - AbstractEffect: supplying audio effects
- * - AudioOutput: pretty much a dummy interface, but is also MediaNode in order
- *   to simplify connection/disconnection.
+ * These nodes may be one of the following types:
  *
- * MediaNode provides spectatability into the chain, and also allows the
- * connection code to be written in a polymorphic manner, instead of putting it
- * all in the Backend class. Due to that MMF has no concept of chaining, the
- * order of the nodes in the graph has no meaning.
+ * - MediaObject
+ *      This represents the source of media data.  It encapsulates the
+ *      appropriate MMF client API for playing audio or video.
+ * - AudioOutput
+ *      This represents the audio output device.  Since the MMF client API
+ *      does not expose the output device directly, this backend node
+ *      simply forwards volume control commands to the MediaObject.
+ * - VideoWidget
+ *      A native widget on which video will be rendered.
+ * - An audio effect, derived form AbstractAudioEffect
+ *
+ * Because the MMF API does not support the concept of a media filter graph,
+ * this class must ensure the following:
+ *
+ * - Each media graph contains at most one MediaObject instance.
+ * - Every non-MediaObject node holds a reference to the MediaObject.  This
+ * allows commands to be sent through the graph to the encapsulated MMF client
+ * API.
  */
 class MediaNode : public QObject
 {
     Q_OBJECT
 public:
     MediaNode(QObject *parent);
+    ~MediaNode();
 
-    virtual bool connectMediaNode(MediaNode *target);
-    virtual bool disconnectMediaNode(MediaNode *target);
-    void setSource(MediaNode *source);
+    bool connectOutput(MediaNode *output);
+    bool disconnectOutput(MediaNode *output);
 
-    MediaNode *source() const;
-    MediaNode *target() const;
-
-protected:
-    /**
-     * When connectMediaNode() is called and a MediaObject is part of
-     * the its graph, this function will be called for each MediaNode in the
-     * graph for which it hasn't been called yet.
-     *
-     * The caller guarantees that @p mo is always non-null.
-     */
-    virtual bool activateOnMediaObject(MediaObject *mo) = 0;
+    virtual void connectMediaObject(MediaObject *mediaObject) = 0;
+    virtual void disconnectMediaObject(MediaObject *mediaObject) = 0;
 
 private:
-    /**
-     * Finds a MediaObject anywhere in the graph @p target is apart of, and
-     * calls activateOnMediaObject() for all MediaNodes in the graph for which
-     * it hasn't been applied to already.
-     */
-    bool applyNodesOnMediaObject(MediaNode *target);
+    bool isMediaObject() const;
 
-    MediaNode * m_source;
-    MediaNode * m_target;
-    bool        m_isApplied;
+    void updateMediaObject();
+    void setMediaObject(MediaObject *mediaObject);
+
+    typedef QList<const MediaNode *> NodeList;
+    void visit(QList<MediaNode *>& visited, MediaObject*& mediaObject);
+
+private:
+    MediaObject *       m_mediaObject;
+
+    // All nodes except MediaObject may have an input
+    MediaNode *         m_input;
+
+    // Only MediaObject can have more than one output
+    QList<MediaNode *>  m_outputs;
 };
+
 }
 }
 

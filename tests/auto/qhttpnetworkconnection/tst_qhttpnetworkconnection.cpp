@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -866,8 +866,11 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
     QList<QHttpNetworkReply*> replies;
 
     for (int i = 0; i < requestCount; i++) {
-
-        QHttpNetworkRequest *request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+        QHttpNetworkRequest *request = 0;
+        if (i % 3)
+            request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Get);
+        else
+            request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Head);
         
         if (i % 2 || i % 3)
             request->setPipeliningAllowed(true);
@@ -939,7 +942,7 @@ public Q_SLOTS:
         else
             QFAIL("Wrong priority!?");
 
-        QVERIFY(highPrioReceived >= lowPrioReceived);
+        QVERIFY(highPrioReceived + 7 >= lowPrioReceived);
 
         if (highPrioReceived + lowPrioReceived == requestCount)
             QTestEventLoop::instance().exitLoop();
@@ -957,7 +960,11 @@ void tst_QHttpNetworkConnection::getMultipleWithPriorities()
     QList<QHttpNetworkReply*> replies;
 
     for (int i = 0; i < requestCount; i++) {
-        QHttpNetworkRequest *request = new QHttpNetworkRequest(url);;
+        QHttpNetworkRequest *request = 0;
+        if (i % 3)
+            request = new QHttpNetworkRequest(url, QHttpNetworkRequest::Get);
+        else
+            request = new QHttpNetworkRequest(url, QHttpNetworkRequest::Head);
 
         if (i % 2)
             request->setPriority(QHttpNetworkRequest::HighPriority);

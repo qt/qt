@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -125,7 +125,7 @@
     \value OutCubic     \inlineimage qeasingcurve-outcubic.png
                         \br
                         Easing curve for a cubic (t^3) function:
-                        decelerating from zero velocity.
+                        decelerating to zero velocity.
     \value InOutCubic   \inlineimage qeasingcurve-inoutcubic.png
                         \br
                         Easing curve for a cubic (t^3) function:
@@ -141,7 +141,7 @@
     \value OutQuart     \inlineimage qeasingcurve-outquart.png
                         \br
                         Easing curve for a cubic (t^4) function:
-                        decelerating from zero velocity.
+                        decelerating to zero velocity.
     \value InOutQuart   \inlineimage qeasingcurve-inoutquart.png
                         \br
                         Easing curve for a cubic (t^4) function:
@@ -157,7 +157,7 @@
     \value OutQuint     \inlineimage qeasingcurve-outquint.png
                         \br
                         Easing curve for a cubic (t^5) function:
-                        decelerating from zero velocity.
+                        decelerating to zero velocity.
     \value InOutQuint   \inlineimage qeasingcurve-inoutquint.png
                         \br
                         Easing curve for a cubic (t^5) function:

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -253,6 +253,9 @@ struct QGLEngineCachedShaderProg
 static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 static const GLuint QT_OPACITY_ATTR = 2;
+static const GLuint QT_PMV_MATRIX_1_ATTR = 3;
+static const GLuint QT_PMV_MATRIX_2_ATTR = 4;
+static const GLuint QT_PMV_MATRIX_3_ATTR = 5;
 
 class QGLEngineShaderProg;
 
@@ -344,6 +347,7 @@ public:
 */
 
     QGLEngineSharedShaders(const QGLContext *context);
+    ~QGLEngineSharedShaders();
 
     QGLShaderProgram *simpleProgram() { return simpleShaderProg; }
     QGLShaderProgram *blitProgram() { return blitShaderProg; }
@@ -396,6 +400,7 @@ public:
 
     bool                useTextureCoords;
     bool                useOpacityAttribute;
+    bool                usePmvMatrix;
 
     bool operator==(const QGLEngineShaderProg& other) {
         // We don't care about the program
@@ -430,7 +435,6 @@ public:
         PatternColor,
         GlobalOpacity,
         Depth,
-        PmvMatrix,
         MaskTexture,
         FragmentColor,
         LinearData,
@@ -454,7 +458,7 @@ public:
     // There are optimisations we can do, depending on the brush transform:
     //    1) May not have to apply perspective-correction
     //    2) Can use lower precision for matrix
-    void optimiseForBrushTransform(const QTransform &transform);
+    void optimiseForBrushTransform(QTransform::TransformationType transformType);
     void setSrcPixelType(Qt::BrushStyle);
     void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
     void setOpacityMode(OpacityMode);
@@ -463,10 +467,13 @@ public:
     void setCustomStage(QGLCustomShaderStage* stage);
     void removeCustomStage();
 
-    uint getUniformLocation(Uniform id);
+    GLuint getUniformLocation(Uniform id);
 
     void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
+
+    void useSimpleProgram();
+    void useBlitProgram();
 
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers

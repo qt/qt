@@ -1,7 +1,7 @@
 HEADERS       = audiodevices.h
 SOURCES       = audiodevices.cpp \
                 main.cpp
-FORMS         += audiodevicesbase.ui
+FORMS        += audiodevicesbase.ui
 
 QT           += multimedia
 

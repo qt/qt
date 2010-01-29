@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -108,23 +108,23 @@ public:
     void clear();
 
     QGLPoint*        data() {return vertexArray.data();}
-    QVector<int>&   stops() {return vertexArrayStops;}
+    int *stops() const { return vertexArrayStops.data(); }
+    int stopCount() const { return vertexArrayStops.size(); }
     QGLRect         boundingRect() const;
+
+    int vertexCount() const { return vertexArray.size(); }
 
     void lineToArray(const GLfloat x, const GLfloat y);
 
 private:
     QDataBuffer<QGLPoint> vertexArray;
-    QVector<int>          vertexArrayStops;
+    QDataBuffer<int>      vertexArrayStops;
 
     GLfloat     maxX;
     GLfloat     maxY;
     GLfloat     minX;
     GLfloat     minY;
     bool        boundingRectDirty;
-
-    inline void curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, const QGLPoint &ep, GLfloat inverseScale);
-
     void addClosingLine(int index);
     void addCentroid(const QVectorPath &path, int subPathIndex);
 };

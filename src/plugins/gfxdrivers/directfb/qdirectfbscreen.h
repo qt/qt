@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,6 +68,9 @@ QT_MODULE(Gui)
 #endif
 #if !defined QT_NO_DIRECTFB_IMAGEPROVIDER && !defined QT_DIRECTFB_IMAGEPROVIDER
 #define QT_DIRECTFB_IMAGEPROVIDER
+#endif
+#if !defined QT_NO_DIRECTFB_STRETCHBLIT && !defined QT_DIRECTFB_STRETCHBLIT
+#define QT_DIRECTFB_STRETCHBLIT
 #endif
 #if !defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE && !defined QT_NO_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
 #define QT_NO_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
