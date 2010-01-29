@@ -83,12 +83,10 @@ static QString driveSpec(const QString &path)
 //************* QDirPrivate
 class QDirPrivate
 {
-    QDir *q_ptr;
-    Q_DECLARE_PUBLIC(QDir)
-
     friend struct QScopedPointerDeleter<QDirPrivate>;
-protected:
-    QDirPrivate(QDir*, const QDir *copy=0);
+
+public:
+    QDirPrivate(const QDir *copy = 0);
     ~QDirPrivate();
 
     QString initFileEngine(const QString &file);
@@ -96,7 +94,6 @@ protected:
     void updateFileLists() const;
     void sortFileList(QDir::SortFlags, QFileInfoList &, QStringList *, QFileInfoList *) const;
 
-private:
 #ifdef QT3_SUPPORT
     QChar filterSepChar;
     bool matchAllDirs;
@@ -168,10 +165,9 @@ private:
     void detach(bool createFileEngine = true);
 };
 
-QDirPrivate::QDirPrivate(QDir *qq, const QDir *copy) : q_ptr(qq)
+QDirPrivate::QDirPrivate(const QDir *copy)
 #ifdef QT3_SUPPORT
-                                                     , filterSepChar(0)
-                                                     , matchAllDirs(false)
+    : filterSepChar(0), matchAllDirs(false)
 #endif
 {
     if(copy) {
@@ -187,7 +183,6 @@ QDirPrivate::~QDirPrivate()
     if (!data->ref.deref())
         delete data;
     data = 0;
-    q_ptr = 0;
 }
 
 /* For sorting */
@@ -514,7 +509,7 @@ void QDirPrivate::detach(bool createFileEngine)
     \sa currentPath()
 */
 
-QDir::QDir(const QString &path) : d_ptr(new QDirPrivate(this))
+QDir::QDir(const QString &path) : d_ptr(new QDirPrivate)
 {
     Q_D(QDir);
     d->setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
@@ -543,7 +538,7 @@ QDir::QDir(const QString &path) : d_ptr(new QDirPrivate(this))
 */
 
 QDir::QDir(const QString &path, const QString &nameFilter,
-           SortFlags sort, Filters filters)  : d_ptr(new QDirPrivate(this))
+           SortFlags sort, Filters filters) : d_ptr(new QDirPrivate)
 {
     Q_D(QDir);
     d->setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
@@ -571,7 +566,7 @@ QDir::QDir(const QString &path, const QString &nameFilter,
     \sa operator=()
 */
 
-QDir::QDir(const QDir &dir)  : d_ptr(new QDirPrivate(this, &dir))
+QDir::QDir(const QDir &dir) : d_ptr(new QDirPrivate(&dir))
 {
 }
 
