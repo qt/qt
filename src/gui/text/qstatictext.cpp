@@ -276,6 +276,7 @@ QStaticTextPrivate::QStaticTextPrivate()
 }
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
+        : items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false)
 {
     ref = 1;
     text = other.text;
