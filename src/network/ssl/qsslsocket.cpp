@@ -1109,7 +1109,7 @@ void QSslSocket::setCiphers(const QString &ciphers)
 {
     Q_D(QSslSocket);
     d->configuration.ciphers.clear();
-    foreach (QString cipherName, ciphers.split(QLatin1String(":"),QString::SkipEmptyParts)) {
+    foreach (const QString &cipherName, ciphers.split(QLatin1String(":"),QString::SkipEmptyParts)) {
         for (int i = 0; i < 3; ++i) {
             // ### Crude
             QSslCipher cipher(cipherName, QSsl::SslProtocol(i));

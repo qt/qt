@@ -244,7 +244,7 @@ QMimeData *ActionModel::mimeData(const QModelIndexList &indexes ) const
     ActionRepositoryMimeData::ActionList actionList;
 
     QSet<QAction*> actions;
-    foreach (const  QModelIndex &index, indexes)
+    foreach (const QModelIndex &index, indexes)
         if (QStandardItem *item = itemFromIndex(index))
             if (QAction *action = actionOfItem(item))
                 actions.insert(action);
