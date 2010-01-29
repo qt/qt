@@ -885,7 +885,7 @@ int QString::grow(int size)
 QString QString::fromWCharArray(const wchar_t *string, int size)
 {
     if (sizeof(wchar_t) == sizeof(QChar)) {
-        return fromUtf16((ushort *)string, size);
+        return QString((const QChar *)string, size);
     } else {
         return fromUcs4((uint *)string, size);
     }
@@ -7751,7 +7751,7 @@ QString QStringRef::toString() const {
         return QString();
     if (m_size && m_position == 0 && m_size == m_string->size())
         return *m_string;
-    return QString::fromUtf16(reinterpret_cast<const ushort*>(m_string->unicode() + m_position), m_size);
+    return QString(m_string->unicode() + m_position, m_size);
 }
 
 
