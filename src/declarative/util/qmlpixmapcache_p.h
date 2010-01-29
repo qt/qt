@@ -59,10 +59,10 @@ class Q_DECLARATIVE_EXPORT QmlPixmapReply : public QObject
 {
     Q_OBJECT
 public:
-    QmlPixmapReply(const QUrl &url, QNetworkReply *reply);
+    QmlPixmapReply(QmlEngine *engine, const QUrl &url);
     ~QmlPixmapReply();
 
-    enum Status { Ready, Error, Unrequested, Loading, Decoding };
+    enum Status { Ready, Error, Unrequested, Loading };
     Status status() const;
 
     const QUrl &url() const;
@@ -75,12 +75,10 @@ protected:
     bool event(QEvent *event);
 
 private:
-    QIODevice *device();
     void addRef();
     bool release(bool defer=false);
-
-private Q_SLOTS:
-    void networkRequestDone();
+    bool isLoading() const;
+    void setLoading();
 
 private:
     Q_DISABLE_COPY(QmlPixmapReply)

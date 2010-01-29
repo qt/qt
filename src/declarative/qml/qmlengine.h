@@ -63,6 +63,7 @@ class QUrl;
 class QScriptEngine;
 class QScriptContext;
 class QNetworkAccessManager;
+class QmlNetworkAccessManagerFactory;
 class Q_DECLARATIVE_EXPORT QmlEngine : public QObject
 {
     Q_PROPERTY(QString offlineStoragePath READ offlineStoragePath WRITE setOfflineStoragePath)
@@ -77,7 +78,9 @@ public:
 
     void addImportPath(const QString& dir);
 
-    void setNetworkAccessManager(QNetworkAccessManager *);
+    void setNetworkAccessManagerFactory(QmlNetworkAccessManagerFactory *);
+    QmlNetworkAccessManagerFactory *networkAccessManagerFactory() const;
+
     QNetworkAccessManager *networkAccessManager() const;
 
     void setOfflineStoragePath(const QString& dir);
@@ -91,6 +94,9 @@ public:
 
 Q_SIGNALS:
     void quit ();
+
+private Q_SLOTS:
+    void namInvalidated();
 
 private:
     Q_DECLARE_PRIVATE(QmlEngine)
