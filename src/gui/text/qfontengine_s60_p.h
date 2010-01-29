@@ -58,9 +58,6 @@
 #include "qsize.h"
 #include <OPENFONT.H>
 
-class CFbsBitmap;
-class CFbsBitmapDevice;
-class CFbsBitGc;
 class CFont;
 
 QT_BEGIN_NAMESPACE

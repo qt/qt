@@ -1091,30 +1091,23 @@ static inline int pathHashKey(QSettings::Format format, QSettings::Scope scope)
     return int((uint(format) << 1) | uint(scope == QSettings::SystemScope));
 }
 
-static QString getPath(QSettings::Format format, QSettings::Scope scope)
+static void initDefaultPaths(QMutexLocker *locker)
 {
-    Q_ASSERT((int)QSettings::NativeFormat == 0);
-    Q_ASSERT((int)QSettings::IniFormat == 1);
-
+    PathHash *pathHash = pathHashFunc();
     QString homePath = QDir::homePath();
     QString systemPath;
 
-    QMutexLocker locker(globalMutex());
-    PathHash *pathHash = pathHashFunc();
-    bool loadSystemPath = pathHash->isEmpty();
-    locker.unlock();
+    locker->unlock();
+	
+    /*
+       QLibraryInfo::location() uses QSettings, so in order to
+       avoid a dead-lock, we can't hold the global mutex while
+       calling it.
+    */
+    systemPath = QLibraryInfo::location(QLibraryInfo::SettingsPath);
+    systemPath += QLatin1Char('/');
 
-    if (loadSystemPath) {
-        /*
-           QLibraryInfo::location() uses QSettings, so in order to
-           avoid a dead-lock, we can't hold the global mutex while
-           calling it.
-       */
-        systemPath = QLibraryInfo::location(QLibraryInfo::SettingsPath);
-        systemPath += QLatin1Char('/');
-    }
-
-    locker.relock();
+    locker->relock();
     if (pathHash->isEmpty()) {
         /*
            Lazy initialization of pathHash. We initialize the
@@ -1155,6 +1148,17 @@ static QString getPath(QSettings::Format format, QSettings::Scope scope)
 #endif
 #endif
     }
+}
+
+static QString getPath(QSettings::Format format, QSettings::Scope scope)
+{
+    Q_ASSERT((int)QSettings::NativeFormat == 0);
+    Q_ASSERT((int)QSettings::IniFormat == 1);
+
+    QMutexLocker locker(globalMutex());
+    PathHash *pathHash = pathHashFunc();
+    if (pathHash->isEmpty())
+        initDefaultPaths(&locker);
 
     QString result = pathHash->value(pathHashKey(format, scope));
     if (!result.isEmpty())
@@ -3455,6 +3459,8 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
 {
     QMutexLocker locker(globalMutex());
     PathHash *pathHash = pathHashFunc();
+    if (pathHash->isEmpty())
+        initDefaultPaths(&locker);
     pathHash->insert(pathHashKey(format, scope), path + QDir::separator());
 }
 

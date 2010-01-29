@@ -103,7 +103,7 @@ symbian {
         # of Qt, and the only compatibility will be between this build of Qt and anything 
         # built in this exact environment.  *Never* use this when building a version 
         # for release.
-        contains(QT_CONFIG, def_files) {
+        contains(CONFIG, def_files) {
             defFilePath=../s60installs
         }
     }
