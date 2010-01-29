@@ -2193,9 +2193,12 @@ QString QDir::cleanPath(const QString &path)
 	ret = QString(out, used);
 
     // Strip away last slash except for root directories
-    if (ret.endsWith(QLatin1Char('/'))
-        && !(ret.size() == 1 || (ret.size() == 3 && ret.at(1) == QLatin1Char(':'))))
-        ret = ret.left(ret.length() - 1);
+    if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {
+#ifdef Q_OS_WIN
+        if (!(ret.length() == 3 && ret.at(1) == QLatin1Char(':')))
+#endif
+            ret.chop(1);
+    }
 
     return ret;
 }
