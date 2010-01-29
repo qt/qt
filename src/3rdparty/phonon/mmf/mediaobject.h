@@ -19,8 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_MEDIAOBJECT_H
 #define PHONON_MMF_MEDIAOBJECT_H
 
-#include <Phonon/MediaSource>
-#include <Phonon/MediaObjectInterface>
+#include <phonon/mediasource.h>
+#include <phonon/mediaobjectinterface.h>
 #include <QScopedPointer>
 #include <QTimer>
 

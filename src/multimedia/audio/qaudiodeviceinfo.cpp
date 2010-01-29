@@ -100,7 +100,7 @@ public:
 
     You can also query each device for the formats it supports. A
     format in this context is a set consisting of a specific byte
-    order, channel, codec, sample rate, sample size and sample type.  A
+    order, channel, codec, frequency, sample rate, and sample type.  A
     format is represented by the QAudioFormat class.
 
     The values supported by the the device for each of these
@@ -271,8 +271,6 @@ QList<int> QAudioDeviceInfo::supportedSampleRates() const
     \obsolete
 
     Use supportedSampleRates() instead.
-
-    Returns a list of supported frequencies.
 */
 
 QList<int> QAudioDeviceInfo::supportedFrequencies() const
@@ -293,8 +291,6 @@ QList<int> QAudioDeviceInfo::supportedChannelCounts() const
     \obsolete
 
     Use supportedChannelCount() instead.
-
-    Returns a list of supported channels.
 */
 
 QList<int> QAudioDeviceInfo::supportedChannels() const

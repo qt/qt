@@ -129,8 +129,10 @@ public:
                            QGraphicsEffect::PixmapPadMode mode = QGraphicsEffect::PadToTransparentBorder) const = 0;
     virtual void effectBoundingRectChanged() = 0;
 
+    void setCachedOffset(const QPoint &offset);
     void invalidateCache(InvalidateReason reason = SourceChanged) const;
     Qt::CoordinateSystem currentCachedSystem() const { return m_cachedSystem; }
+    QGraphicsEffect::PixmapPadMode currentCachedMode() const { return m_cachedMode; }
 
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;

@@ -1671,8 +1671,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
     {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+        QScopedPointer<FatalSignalHandler> handler;
         if (!noCrashHandler)
-            FatalSignalHandler handler;
+            handler.reset(new FatalSignalHandler);
 #endif
         qInvokeTestMethods(testObject);
     }

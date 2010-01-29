@@ -172,6 +172,8 @@ private slots:
 
     void preserveDepth();
     void splash_crash();
+
+    void loadAsBitmapOrPixmap();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -1528,6 +1530,42 @@ void tst_QPixmap::preserveDepth()
 
     QCOMPARE(depth, source.depth());
 }
+
+void tst_QPixmap::loadAsBitmapOrPixmap()
+{
+    QImage tmp(10, 10, QImage::Format_RGB32);
+    tmp.save("tmp.png");
+
+    bool ok;
+
+    // Check that we can load the pixmap as a pixmap and that it then turns into a pixmap
+    QPixmap pixmap("tmp.png");
+    QVERIFY(!pixmap.isNull());
+    QVERIFY(pixmap.depth() > 1);
+    QVERIFY(!pixmap.isQBitmap());
+
+    pixmap = QPixmap();
+    ok = pixmap.load("tmp.png");
+    QVERIFY(ok);
+    QVERIFY(!pixmap.isNull());
+    QVERIFY(pixmap.depth() > 1);
+    QVERIFY(!pixmap.isQBitmap());
+
+    // The do the same check for bitmaps..
+    QBitmap bitmap("tmp.png");
+    QVERIFY(!bitmap.isNull());
+    QVERIFY(bitmap.depth() == 1);
+    QVERIFY(bitmap.isQBitmap());
+
+    bitmap = QBitmap();
+    ok = bitmap.load("tmp.png");
+    QVERIFY(ok);
+    QVERIFY(!bitmap.isNull());
+    QVERIFY(bitmap.depth() == 1);
+    QVERIFY(bitmap.isQBitmap());
+}
+
+
 
 QTEST_MAIN(tst_QPixmap)
 #include "tst_qpixmap.moc"

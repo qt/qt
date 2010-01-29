@@ -83,6 +83,28 @@ static QGLScreen *glScreenForDevice(QPaintDevice *device)
         return 0;
 }
 
+/*
+    QGLTemporaryContext implementation
+*/
+
+class QGLTemporaryContextPrivate
+{
+public:
+    QGLWidget *widget;
+};
+
+QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
+    : d(new QGLTemporaryContextPrivate)
+{
+    d->widget = new QGLWidget;
+    d->widget->makeCurrent();
+}
+
+QGLTemporaryContext::~QGLTemporaryContext()
+{
+    delete d->widget;
+}
+
 /*****************************************************************************
   QOpenGL debug facilities
  *****************************************************************************/
@@ -309,38 +331,6 @@ const QGLColormap & QGLWidget::colormap() const
 
 void QGLWidget::setColormap(const QGLColormap &)
 {
-}
-
-void QGLExtensions::init()
-{
-    static bool init_done = false;
-
-    if (init_done)
-        return;
-    init_done = true;
-
-    // We need a context current to initialize the extensions,
-    // but getting a valid EGLNativeWindowType this early can be
-    // problematic under QWS.  So use a pbuffer instead.
-    //
-    // Unfortunately OpenGL/ES 2.0 systems don't normally
-    // support pbuffers, so we have no choice but to try
-    // our luck with a window on those systems.
-#if defined(QT_OPENGL_ES_2)
-    QGLWidget tmpWidget;
-    tmpWidget.makeCurrent();
-
-    init_extensions();
-
-    tmpWidget.doneCurrent();
-#else
-    QGLPixelBuffer pbuffer(16, 16);
-    pbuffer.makeCurrent();
-
-    init_extensions();
-
-    pbuffer.doneCurrent();
-#endif
 }
 
 QT_END_NAMESPACE

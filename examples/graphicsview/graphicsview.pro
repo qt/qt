@@ -10,6 +10,7 @@ SUBDIRS       = \
               dragdroprobot \
               flowlayout \
               anchorlayout \
+              simpleanchorlayout \
               weatheranchorlayout
 
 contains(QT_CONFIG, qt3support):SUBDIRS += portedcanvas portedasteroids

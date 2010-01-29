@@ -362,9 +362,10 @@ namespace QTest {
 
         char buf3[1024];
         Q_ASSERT(result.iterations > 0);
+        formatResult(resultBuffer, 100, result.value, countSignificantDigits(result.value));
         QTest::qt_snprintf(
             buf3, sizeof(buf3), " (total: %s, iterations: %d)",
-            QByteArray::number(result.value).constData(), // no 64-bit qt_snprintf support
+            resultBuffer,
             result.iterations);
 
         char buf[1024];

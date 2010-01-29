@@ -223,19 +223,6 @@ bool rebuildSearchIndex(QCoreApplication &app, const QString &collectionFile,
     return app.exec() == 0;
 }
 
-bool checkForSqlite(CmdLineParser &cmd)
-{
-    TRACE_OBJ
-    QSqlDatabase db;
-    QStringList sqlDrivers(db.drivers());
-    if (!sqlDrivers.contains(QLatin1String("QSQLITE"))) {
-        cmd.showMessage(QObject::tr("Cannot load sqlite database driver!"),
-                        true);
-        return false;
-    }
-    return true;
-}
-
 bool useGui(int argc, char *argv[])
 {
     TRACE_OBJ
@@ -292,23 +279,26 @@ bool unregisterDocumentation(QHelpEngineCore &collection,
     return true;
 }
 
-void setupTranslations(QApplication &app)
+void setupTranslation(const QString &fileName, const QString &dir)
+{
+    QTranslator *translator = new QTranslator(QCoreApplication::instance());
+    if (translator->load(fileName, dir)) {
+        QCoreApplication::installTranslator(translator);
+    } else {
+        qWarning("Could not load translation file %s in directory %s.",
+                 qPrintable(fileName), qPrintable(dir));
+    }
+}
+
+void setupTranslations()
 {
     TRACE_OBJ
     const QString& locale = QLocale::system().name();
-    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
-
-    QTranslator translator(0);
-    translator.load(QLatin1String("assistant_") + locale, resourceDir);
-    app.installTranslator(&translator);
-
-    QTranslator qtTranslator(0);
-    qtTranslator.load(QLatin1String("qt_") + locale, resourceDir);
-    app.installTranslator(&qtTranslator);
-
-    QTranslator qtHelpTranslator(0);
-    qtHelpTranslator.load(QLatin1String("qt_help_") + locale, resourceDir);
-    app.installTranslator(&qtHelpTranslator);
+    const QString &resourceDir
+        = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    setupTranslation(QLatin1String("assistant_") + locale, resourceDir);
+    setupTranslation(QLatin1String("qt_") + locale, resourceDir);
+    setupTranslation(QLatin1String("qt_help_") + locale, resourceDir);
 }
 
 } // Anonymous namespace.
@@ -404,8 +394,11 @@ int main(int argc, char *argv[])
             ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
-    if (!checkForSqlite(cmd))
+    if (!QSqlDatabase::isDriverAvailable(QLatin1String("QSQLITE"))) {
+        cmd.showMessage(QObject::tr("Cannot load sqlite database driver!"),
+                        true);
         return EXIT_FAILURE;
+    }
 
     if (!cmd.currentFilter().isEmpty()) {
         if (collectionFileGiven)
@@ -413,7 +406,7 @@ int main(int argc, char *argv[])
         cachedCollection.setCurrentFilter(cmd.currentFilter());
     }
 
-    setupTranslations(a);
+    setupTranslations();
 
     /*
      * We need to be careful here: The main window has to be deleted before

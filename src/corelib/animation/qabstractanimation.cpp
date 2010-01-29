@@ -161,7 +161,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_THREAD
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
+#endif
 
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
@@ -173,12 +175,17 @@ QUnifiedTimer::QUnifiedTimer() :
 QUnifiedTimer *QUnifiedTimer::instance()
 {
     QUnifiedTimer *inst;
+#ifndef QT_NO_THREAD
     if (!unifiedTimer()->hasLocalData()) {
         inst = new QUnifiedTimer;
         unifiedTimer()->setLocalData(inst);
     } else {
         inst = unifiedTimer()->localData();
     }
+#else
+    static QUnifiedTimer unifiedTimer;
+    inst = &unifiedTimer;
+#endif
     return inst;
 }
 

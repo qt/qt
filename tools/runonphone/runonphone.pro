@@ -18,3 +18,9 @@ windows {
         -luuid \
         -ladvapi32
 }
+unix:!symbian {
+    SOURCES += serenum_unix.cpp
+}
+else {
+    SOURCES += serenum_stub.cpp
+}

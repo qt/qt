@@ -331,7 +331,7 @@ struct QXdndDropTransaction
 class QMimeData;
 
 struct QX11Data;
-extern QX11Data *qt_x11Data;
+extern Q_GUI_EXPORT QX11Data *qt_x11Data;
 
 enum DesktopEnvironment {
     DE_UNKNOWN,

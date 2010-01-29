@@ -458,7 +458,10 @@ public:
     static OSStatus globalAppleEventProcessor(const AppleEvent *, AppleEvent *, long);
     static OSStatus tabletProximityCallback(EventHandlerCallRef, EventRef, void *);
 #ifdef QT_MAC_USE_COCOA
+    static void qt_initAfterNSAppStarted();
     static void setupAppleEvents();
+    static void updateOverrideCursor();
+    static void disableUsageOfCursorRects(bool disable);
 #endif
     static bool qt_mac_apply_settings();
 #endif
@@ -504,9 +507,9 @@ public:
     static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
     QSet<WId> nativeWindows;
 
-    int symbianProcessWsEvent(const TWsEvent *event);
-    int symbianHandleCommand(int command);
-    int symbianResourceChange(int type);
+    int symbianProcessWsEvent(const QSymbianEvent *symbianEvent);
+    int symbianHandleCommand(const QSymbianEvent *symbianEvent);
+    int symbianResourceChange(const QSymbianEvent *symbianEvent);
 
 #endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)

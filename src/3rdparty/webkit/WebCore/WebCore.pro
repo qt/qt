@@ -9,12 +9,23 @@ symbian: {
 
     webkitlibs.sources = QtWebKit.dll
     webkitlibs.path = /sys/bin
+    vendorinfo = \
+        "; Localised Vendor name" \
+        "%{\"Nokia, Qt\"}" \
+        " " \
+        "; Unique Vendor name" \
+        ":\"Nokia, Qt\"" \
+        " "
+    webkitlibs.pkg_prerules = vendorinfo
+
     DEPLOYMENT += webkitlibs
 
     TARGET.UID3 = 0x200267C2
     # RO text (code) section in qtwebkit.dll exceeds allocated space for gcce udeb target.
     # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
     MMP_RULES += "LINKEROPTION  armcc --rw-base 0xE00000"
+    MMP_RULES += ALWAYS_BUILD_AS_ARM
+    QMAKE_CXXFLAGS.ARMCC += -OTime -O3
 }
 
 include($$PWD/../WebKit.pri)

@@ -65,6 +65,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef Q_OS_WIN32
+#define NO_STDERR "2> NUL"
+#else
+#define NO_STDERR "2>/dev/null"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // Well, Windows doesn't have this, so here's the macro
@@ -1796,7 +1802,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             if(tmp_clean.indexOf("${QMAKE_") == -1) {
                 t << "\n\t" << "-$(DEL_FILE) " << tmp_clean;
                 if (isForSymbian())
-                    t << " 2> NUL"; // Eliminate unnecessary warnings
+                    t << " " << NO_STDERR; // Eliminate unnecessary warnings
                 wrote_clean = true;
             }
             if(!wrote_clean_cmds || !wrote_clean) {
@@ -1826,7 +1832,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 }
                 if(!cleans.isEmpty())
                     if (isForSymbian())
-                        t << valGlue(cleans, "\n\t" + del_statement, " 2> NUL\n\t" + del_statement, " 2> NUL");
+                        t << valGlue(cleans, "\n\t" + del_statement, " " NO_STDERR "\n\t" + del_statement, " " NO_STDERR);
                     else
                         t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
                 if(!wrote_clean_cmds) {
@@ -2411,16 +2417,14 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
 
         //qmake it
         if(!subtarget->profile.isEmpty()) {
-            QString out = out_directory + subtarget->makefile,
-                     in = fileFixify(in_directory + subtarget->profile, in_directory);
-            if(in.startsWith(in_directory))
-                in = in.mid(in_directory.length());
+            QString out = subtarget->makefile;
+            QString in = fileFixify(in_directory + subtarget->profile, out_directory, QString(), FileFixifyAbsolute);
             if(out.startsWith(in_directory))
                 out = out.mid(in_directory.length());
             t << mkfile << ": " << "\n\t";
             if(!in_directory.isEmpty()) {
-                t << mkdir_p_asstring(in_directory)
-                  << in_directory_cdin
+                t << mkdir_p_asstring(out_directory)
+                  << out_directory_cdin
                   << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
                   << in_directory_cdout << endl;
             } else {
@@ -2431,8 +2435,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 t <<  " FORCE";
             t << "\n\t";
             if(!in_directory.isEmpty()) {
-                t << mkdir_p_asstring(in_directory)
-                  << in_directory_cdin
+                t << mkdir_p_asstring(out_directory)
+                  << out_directory_cdin
                   << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
                   << in_directory_cdout << endl;
             } else {

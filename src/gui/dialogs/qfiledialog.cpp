@@ -1222,12 +1222,6 @@ QFileDialog::ViewMode QFileDialog::viewMode() const
 void QFileDialog::setFileMode(QFileDialog::FileMode mode)
 {
     Q_D(QFileDialog);
-    if (d->nativeDialogInUse){
-        d->model->setFilter(d->filterForMode(filter()));
-        d->setFilter_sys();
-        return;
-    }
-
     d->fileMode = mode;
     d->retranslateWindowTitle();
 
@@ -1263,6 +1257,11 @@ void QFileDialog::setFileMode(QFileDialog::FileMode mode)
         }
     }
     setLabelText(Accept, buttonText);
+    if (d->nativeDialogInUse){
+        d->setFilter_sys();
+        return;
+    }
+
     d->qFileDialogUi->fileTypeCombo->setEnabled(!testOption(ShowDirsOnly));
     d->_q_updateOkButton();
 }
@@ -1300,6 +1299,10 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
         d->qFileDialogUi->lookInCombo->setEditable(false);
     }
     d->retranslateWindowTitle();
+#if defined(Q_WS_MAC)
+    d->deleteNativeDialog_sys();
+    setAttribute(Qt::WA_DontShowOnScreen, false);
+#endif
 }
 
 /*

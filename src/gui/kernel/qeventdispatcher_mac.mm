@@ -1049,7 +1049,7 @@ void QEventDispatcherMacPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
     Q_UNUSED(ref);
     Q_UNUSED(activity);
 #ifdef QT_MAC_USE_COCOA
-    QApplicationPrivate::setupAppleEvents();
+    QApplicationPrivate::qt_initAfterNSAppStarted();
 #endif
     processPostedEvents(static_cast<QEventDispatcherMacPrivate *>(info), blockSendPostedEvents);
 }

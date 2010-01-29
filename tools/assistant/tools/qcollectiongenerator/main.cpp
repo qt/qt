@@ -42,18 +42,18 @@
 #include "../shared/collectionconfiguration.h"
 #include "../shared/helpgenerator.h"
 
+#include <private/qhelpgenerator_p.h>
+#include <private/qhelpprojectdata_p.h>
+
 #include <QtCore/QDir>
 #include <QtCore/QMap>
 #include <QtCore/QFileInfo>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QBuffer>
-
-#include <private/qhelpgenerator_p.h>
-#include <private/qhelpprojectdata_p.h>
 #include <QtHelp/QHelpEngineCore>
-
 #include <QtXml/QXmlStreamReader>
+
 
 QT_USE_NAMESPACE
 
