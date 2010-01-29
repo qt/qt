@@ -43,8 +43,7 @@
 #define CONTROLLER_H
 
 #include "ui_controller.h"
-
-class CarInterface;
+#include "car_interface.h"
 
 class Controller : public QWidget
 {
@@ -64,7 +63,7 @@ private slots:
 
 private:
     Ui::Controller ui;
-    CarInterface *car;
+    com::trolltech::Examples::CarInterface *car;
 };
 
 #endif
