@@ -186,7 +186,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 }
 
 # Web Socket support.
-!contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=1
+!contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=0
 
 # XSLT support with QtXmlPatterns
 !contains(DEFINES, ENABLE_XSLT=.) {
