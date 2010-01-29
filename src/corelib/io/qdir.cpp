@@ -1353,10 +1353,12 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
 #endif
     if (sort == NoSort)
         sort = d->data->sort;
-    if (filters == NoFilter && sort == NoSort && nameFilters == d->data->nameFilters) {
+
+    if (filters == d->data->filters && sort == d->data->sort && nameFilters == d->data->nameFilters) {
         d->updateFileLists();
         return d->data->files;
     }
+
     QFileInfoList l;
     QDirIterator it(d->data->path, nameFilters, filters);
     while (it.hasNext()) {
@@ -1398,10 +1400,12 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 #endif
     if (sort == NoSort)
         sort = d->data->sort;
-    if (filters == NoFilter && sort == NoSort && nameFilters == d->data->nameFilters) {
+
+    if (filters == d->data->filters && sort == d->data->sort && nameFilters == d->data->nameFilters) {
         d->updateFileLists();
         return d->data->fileInfos;
     }
+
     QFileInfoList l;
     QDirIterator it(d->data->path, nameFilters, filters);
     while (it.hasNext()) {
