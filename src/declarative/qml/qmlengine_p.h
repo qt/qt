@@ -92,6 +92,7 @@ class QmlValueTypeScriptClass;
 class QScriptEngineDebugger;
 class QNetworkReply;
 class QNetworkAccessManager;
+class QmlNetworkAccessManagerFactory;
 class QmlAbstractBinding;
 class QScriptDeclarativeClass;
 class QmlTypeNameScriptClass;
@@ -209,6 +210,8 @@ public:
 
     bool inBeginCreate;
     mutable QNetworkAccessManager *networkAccessManager;
+    mutable QmlNetworkAccessManagerFactory *networkAccessManagerFactory;
+    mutable bool accessManagerValid;
 
     QmlCompositeTypeManager typeManager;
     QStringList fileImportPath;

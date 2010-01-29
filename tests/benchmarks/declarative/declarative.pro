@@ -6,7 +6,5 @@ SUBDIRS += \
            qmlcomponent \
            qmlgraphicsimage \
            qmlmetaproperty \
-           qmlpainting \
            script \
-           text
 #           qmltime

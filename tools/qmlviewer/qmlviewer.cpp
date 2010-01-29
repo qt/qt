@@ -45,6 +45,7 @@
 #include "qmlviewer.h"
 #include <qmlcontext.h>
 #include <qmlengine.h>
+#include <qmlnetworkaccessmanagerfactory.h>
 #include "qml.h"
 #include <private/qperformancelog_p_p.h>
 #include <private/qabstractanimation_p.h>
@@ -80,6 +81,8 @@
 #include <QTimer>
 #include <QNetworkProxyFactory>
 #include <QKeyEvent>
+#include <QMutex>
+#include <QMutexLocker>
 #include "proxysettings.h"
 #include "deviceorientation.h"
 
@@ -298,9 +301,22 @@ public:
     PersistentCookieJar(QObject *parent) : QNetworkCookieJar(parent) { load(); }
     ~PersistentCookieJar() { save(); }
 
+    virtual QList<QNetworkCookie> cookiesForUrl(const QUrl &url) const
+    {
+        QMutexLocker lock(&mutex);
+        return QNetworkCookieJar::cookiesForUrl(url);
+    }
+
+    virtual bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url)
+    {
+        QMutexLocker lock(&mutex);
+        return QNetworkCookieJar::setCookiesFromUrl(cookieList, url);
+    }
+
 private:
     void save()
     {
+        QMutexLocker lock(&mutex);
         QList<QNetworkCookie> list = allCookies();
         QByteArray data;
         foreach (QNetworkCookie cookie, list) {
@@ -315,11 +331,89 @@ private:
 
     void load()
     {
+        QMutexLocker lock(&mutex);
         QSettings settings("Nokia", "QtQmlViewer");
         QByteArray data = settings.value("Cookies").toByteArray();
         setAllCookies(QNetworkCookie::parseCookies(data));
     }
+
+    mutable QMutex mutex;
 };
+
+class NetworkAccessManagerFactory : public QmlNetworkAccessManagerFactory
+{
+public:
+    NetworkAccessManagerFactory() : cookieJar(0), cacheSize(0) {}
+
+    QNetworkAccessManager *create(QObject *parent) {
+        QMutexLocker lock(&mutex);
+        QNetworkAccessManager *manager = new QNetworkAccessManager(parent);
+        if (!cookieJar)
+            cookieJar = new PersistentCookieJar(this);
+        manager->setCookieJar(cookieJar);
+        cookieJar->setParent(this);
+        setupProxy(manager);
+        if (cacheSize > 0) {
+            QNetworkDiskCache *cache = new QNetworkDiskCache;
+            cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-duiviewer-network-cache"));
+            cache->setMaximumCacheSize(cacheSize);
+            manager->setCache(cache);
+        } else {
+            manager->setCache(0);
+        }
+        qDebug() << "created new manager for" << parent;
+        return manager;
+    }
+
+    void setupProxy(QNetworkAccessManager *nam)
+    {
+        class SystemProxyFactory : public QNetworkProxyFactory
+        {
+        public:
+            virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
+            {
+                QString protocolTag = query.protocolTag();
+                if (httpProxyInUse && (protocolTag == "http" || protocolTag == "https")) {
+                    QList<QNetworkProxy> ret;
+                    ret << httpProxy;
+                    return ret;
+                }
+                return QNetworkProxyFactory::systemProxyForQuery(query);
+            }
+            void setHttpProxy (QNetworkProxy proxy)
+            {
+                httpProxy = proxy;
+                httpProxyInUse = true;
+            }
+            void unsetHttpProxy ()
+            {
+                httpProxyInUse = false;
+            }
+        private:
+            bool httpProxyInUse;
+            QNetworkProxy httpProxy;
+        };
+
+        SystemProxyFactory *proxyFactory = new SystemProxyFactory;
+        if (ProxySettings::httpProxyInUse())
+            proxyFactory->setHttpProxy(ProxySettings::httpProxy());
+        else
+            proxyFactory->unsetHttpProxy();
+        nam->setProxyFactory(proxyFactory);
+    }
+
+    void setCacheSize(int size) {
+        if (size != cacheSize) {
+            cacheSize = size;
+            invalidate();
+        }
+    }
+
+    PersistentCookieJar *cookieJar;
+    QMutex mutex;
+    int cacheSize;
+};
+
 
 QString QmlViewer::getVideoFileName()
 {
@@ -397,8 +491,8 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     setCentralWidget(canvas);
 #endif
 
-    setupProxy();
-    canvas->engine()->networkAccessManager()->setCookieJar(new PersistentCookieJar(this));
+    namFactory = new NetworkAccessManagerFactory;
+    canvas->engine()->setNetworkAccessManagerFactory(namFactory);
 
     connect(&autoStartTimer, SIGNAL(triggered()), this, SLOT(autoStartRecording()));
     connect(&autoStopTimer, SIGNAL(triggered()), this, SLOT(autoStopRecording()));
@@ -407,6 +501,12 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     autoStopTimer.setRunning(false);
     recordTimer.setRunning(false);
     recordTimer.setRepeating(true);
+}
+
+QmlViewer::~QmlViewer()
+{
+    canvas->engine()->setNetworkAccessManagerFactory(0);
+    delete namFactory;
 }
 
 void QmlViewer::adjustSizeSlot()
@@ -591,7 +691,7 @@ void QmlViewer::showProxySettings()
 
 void QmlViewer::proxySettingsChanged()
 {
-    setupProxy ();
+    namFactory->invalidate();
     reload ();
 }
 
@@ -1325,63 +1425,9 @@ void QmlViewer::setDeviceKeys(bool on)
     devicemode = on;
 }
 
-void QmlViewer::setupProxy()
-{
-    class SystemProxyFactory : public QNetworkProxyFactory
-    {
-    public:
-        virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
-        {
-            QString protocolTag = query.protocolTag();
-            if (httpProxyInUse && (protocolTag == "http" || protocolTag == "https")) {
-                QList<QNetworkProxy> ret;
-                ret << httpProxy;
-                return ret;
-            }
-            return QNetworkProxyFactory::systemProxyForQuery(query);
-        }
-        void setHttpProxy (QNetworkProxy proxy)
-        {
-            httpProxy = proxy;
-            httpProxyInUse = true;
-        }
-        void unsetHttpProxy ()
-        {
-            httpProxyInUse = false;
-        }
-    private:
-        bool httpProxyInUse;
-        QNetworkProxy httpProxy;
-    };
-
-    QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
-    SystemProxyFactory *proxyFactory = new SystemProxyFactory;
-    if (ProxySettings::httpProxyInUse())
-        proxyFactory->setHttpProxy(ProxySettings::httpProxy());
-    else
-        proxyFactory->unsetHttpProxy();
-    nam->setProxyFactory(proxyFactory);
-}
-
 void QmlViewer::setNetworkCacheSize(int size)
 {
-    QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
-    QNetworkDiskCache *cache = qobject_cast<QNetworkDiskCache*>(nam->cache());
-    if (!cache) {
-        if (size==0)
-            return;
-        cache = new QNetworkDiskCache;
-        cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-duiviewer-network-cache"));
-        nam->setCache(cache);
-    }
-    if (size == cache->maximumCacheSize())
-        return;
-    if (size>0) {
-        // Setup a caching network manager
-        cache->setMaximumCacheSize(size);
-    } else {
-        nam->setCache(0);
-    }
+    namFactory->setCacheSize(size);
 }
 
 void QmlViewer::setUseGL(bool useGL)

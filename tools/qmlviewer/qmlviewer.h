@@ -57,6 +57,8 @@ class QProcess;
 class RecordingDialog;
 class QmlGraphicsTester;
 class QNetworkReply;
+class QNetworkCookieJar;
+class NetworkAccessManagerFactory;
 
 class QmlViewer
 #if defined(Q_OS_SYMBIAN)
@@ -68,6 +70,7 @@ class QmlViewer
 Q_OBJECT
 public:
     QmlViewer(QWidget *parent=0, Qt::WindowFlags flags=0);
+    ~QmlViewer();
 
     enum ScriptOption {
         Play = 0x00000001,
@@ -138,7 +141,6 @@ private slots:
     void unpackWgt();
 
 private:
-    void setupProxy();
     QString getVideoFileName();
 
     PreviewDeviceSkin *skin;
@@ -180,6 +182,8 @@ private:
 
     QNetworkReply *wgtreply;
     QString wgtdir;
+
+    NetworkAccessManagerFactory *namFactory;
 
     bool useQmlFileBrowser;
 };

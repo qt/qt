@@ -1,5 +1,4 @@
 INCLUDEPATH += $$PWD
-
 SOURCES += \
     $$PWD/qmlparser.cpp \
     $$PWD/qmlinstruction.cpp \
@@ -50,8 +49,8 @@ SOURCES += \
     $$PWD/qmlvaluetypescriptclass.cpp \
     $$PWD/qmltypenamescriptclass.cpp \
     $$PWD/qmllistscriptclass.cpp \
-    $$PWD/qmlworkerscript.cpp
-
+    $$PWD/qmlworkerscript.cpp \
+    $$PWD/qmlnetworkaccessmanagerfactory.cpp
 HEADERS += \
     $$PWD/qmlparser_p.h \
     $$PWD/qmlglobal_p.h \
@@ -117,10 +116,8 @@ HEADERS += \
     $$PWD/qmllistscriptclass_p.h \
     $$PWD/qmlworkerscript_p.h \
     $$PWD/qmlscriptclass_p.h \
-    $$PWD/qmlguard_p.h
-
+    $$PWD/qmlguard_p.h \
+    $$PWD/qmlnetworkaccessmanagerfactory.h
 QT += sql
-
 include(parser/parser.pri)
 include(rewriter/rewriter.pri)
-

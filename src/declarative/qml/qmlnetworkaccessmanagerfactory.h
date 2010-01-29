@@ -39,67 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPIXMAPCACHE_H
-#define QMLPIXMAPCACHE_H
+#ifndef QMLNETWORKACCESSMANAGERFACTORY_H
+#define QMLNETWORKACCESSMANAGERFACTORY_H
 
-#include <QtCore/QString>
-#include <QtGui/QPixmap>
-#include <QtCore/qurl.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QmlEngine;
-class QNetworkReply;
 
-class QmlPixmapReplyPrivate;
-class Q_DECLARATIVE_EXPORT QmlPixmapReply : public QObject
+class QNetworkAccessManager;
+class Q_DECLARATIVE_EXPORT QmlNetworkAccessManagerFactory : public QObject
 {
     Q_OBJECT
 public:
-    QmlPixmapReply(QmlEngine *engine, const QUrl &url);
-    ~QmlPixmapReply();
-
-    enum Status { Ready, Error, Unrequested, Loading };
-    Status status() const;
-
-    const QUrl &url() const;
+    virtual ~QmlNetworkAccessManagerFactory();
+    void invalidate();
+    virtual QNetworkAccessManager *create(QObject *parent) = 0;
 
 Q_SIGNALS:
-    void finished();
-    void downloadProgress(qint64, qint64);
-
-protected:
-    bool event(QEvent *event);
-
-private:
-    void addRef();
-    bool release(bool defer=false);
-    bool isLoading() const;
-    void setLoading();
-
-private:
-    Q_DISABLE_COPY(QmlPixmapReply)
-    Q_DECLARE_PRIVATE(QmlPixmapReply)
-    friend class QmlImageReader;
-    friend class QmlPixmapCache;
+    void invalidated();
 };
-
-class Q_DECLARATIVE_EXPORT QmlPixmapCache
-{
-public:
-    static QmlPixmapReply::Status get(const QUrl& url, QPixmap *pixmap);
-    static QmlPixmapReply *request(QmlEngine *, const QUrl& url);
-    static void cancel(const QUrl& url, QObject *obj);
-    static int pendingRequests();
-};
-
-
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLPIXMAPCACHE_H
+#endif // QMLNETWORKACCESSMANAGERFACTORY_H
