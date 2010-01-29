@@ -739,8 +739,6 @@ void tst_QGL::openGLVersionCheck()
 
 #if defined(QT_OPENGL_ES_1)
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Common_Version_1_0);
-#elif defined(QT_OPENGL_ES_1_CL)
-    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_CommonLite_Version_1_0);
 #elif defined(QT_OPENGL_ES_2)
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
 #else

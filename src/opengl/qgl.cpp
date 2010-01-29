@@ -67,7 +67,7 @@
 #include "qimage.h"
 #include "qgl_p.h"
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
 #endif
 
@@ -94,11 +94,6 @@
 
 
 QT_BEGIN_NAMESPACE
-
-#ifdef QT_OPENGL_ES_1_CL
-#include "qgl_cl_p.h"
-#endif
-
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
@@ -1655,7 +1650,7 @@ QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alp
     QImage img(size, alpha_format ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
     int w = size.width();
     int h = size.height();
-#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_ES_1)
     //### glGetTexImage not in GL ES 2.0, need to do something else here!
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
 #endif
@@ -2433,7 +2428,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 {
     Q_Q(QGLContext);
     QPixmapData *pd = pixmap.pixmapData();
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
     if (target == GL_TEXTURE_2D && pd->classId() == QPixmapData::OpenGLClass) {
         const QGLPixmapData *data = static_cast<const QGLPixmapData *>(pd);
 
@@ -2680,41 +2675,41 @@ void QGLContext::deleteTexture(QMacCompatGLuint id)
 }
 #endif
 
-void qt_add_rect_to_array(const QRectF &r, q_vertexType *array)
+void qt_add_rect_to_array(const QRectF &r, GLfloat *array)
 {
     qreal left = r.left();
     qreal right = r.right();
     qreal top = r.top();
     qreal bottom = r.bottom();
 
-    array[0] = f2vt(left);
-    array[1] = f2vt(top);
-    array[2] = f2vt(right);
-    array[3] = f2vt(top);
-    array[4] = f2vt(right);
-    array[5] = f2vt(bottom);
-    array[6] = f2vt(left);
-    array[7] = f2vt(bottom);
+    array[0] = left;
+    array[1] = top;
+    array[2] = right;
+    array[3] = top;
+    array[4] = right;
+    array[5] = bottom;
+    array[6] = left;
+    array[7] = bottom;
 }
 
-void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array)
+void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, GLfloat *array)
 {
-    array[0] = f2vt(x1);
-    array[1] = f2vt(y1);
-    array[2] = f2vt(x2);
-    array[3] = f2vt(y1);
-    array[4] = f2vt(x2);
-    array[5] = f2vt(y2);
-    array[6] = f2vt(x1);
-    array[7] = f2vt(y2);
+    array[0] = x1;
+    array[1] = y1;
+    array[2] = x2;
+    array[3] = y1;
+    array[4] = x2;
+    array[5] = y2;
+    array[6] = x1;
+    array[7] = y2;
 }
 
 #if !defined(QT_OPENGL_ES_2)
 
 static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint textureHeight, GLenum textureTarget)
 {
-    q_vertexType tx = f2vt(1);
-    q_vertexType ty = f2vt(1);
+    GLfloat tx = 1.0f;
+    GLfloat ty = 1.0f;
 
 #ifdef QT_OPENGL_ES
     Q_UNUSED(textureWidth);
@@ -2727,20 +2722,20 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
             glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
         }
 
-        tx = f2vt(textureWidth);
-        ty = f2vt(textureHeight);
+        tx = GLfloat(textureWidth);
+        ty = GLfloat(textureHeight);
     }
 #endif
 
-    q_vertexType texCoordArray[4*2] = {
+    GLfloat texCoordArray[4*2] = {
         0, ty, tx, ty, tx, 0, 0, 0
     };
 
-    q_vertexType vertexArray[4*2];
+    GLfloat vertexArray[4*2];
     qt_add_rect_to_array(target, vertexArray);
 
-    glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
-    glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
+    glVertexPointer(2, GL_FLOAT, 0, vertexArray);
+    glTexCoordPointer(2, GL_FLOAT, 0, texCoordArray);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -4902,7 +4897,7 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 }
 #endif
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
 #endif
 
@@ -4912,7 +4907,7 @@ Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
 
 Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1)
     return qt_gl_engine();
 #elif defined(QT_OPENGL_ES_2)
     return qt_gl_2_engine();
@@ -5035,7 +5030,7 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     glExtensions |= GenerateMipmap;
     glExtensions |= FragmentShader;
 #endif
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1)
     if (extensions.match("GL_OES_framebuffer_object"))
         glExtensions |= FramebufferObject;
 #endif

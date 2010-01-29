@@ -47,10 +47,6 @@
 #include <qimage.h>
 #include <private/qgl_p.h>
 
-#ifdef QT_OPENGL_ES_1_CL
-#include "qgl_cl_p.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifdef EGL_BIND_TO_TEXTURE_RGBA
