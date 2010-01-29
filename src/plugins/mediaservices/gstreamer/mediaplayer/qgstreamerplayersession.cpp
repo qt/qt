@@ -659,7 +659,7 @@ void QGstreamerPlayerSession::getStreamsInfo()
         if (type == GST_STREAM_TYPE_VIDEO)
             haveVideo = true;
         else if (type == GST_STREAM_TYPE_AUDIO)
-            hasAudio = true;
+            haveAudio = true;
 
 //        QMediaStreamsControl::StreamType streamType = QMediaStreamsControl::UnknownStream;
 //
