@@ -119,7 +119,7 @@ bool QHelpEngineCorePrivate::setup()
         QHelpDBReader *reader = new QHelpDBReader(absFileName,
             QHelpGlobal::uniquifyConnectionName(info.fileName, this), this);
         if (!reader->init()) {
-            emit q->warning(tr("Cannot open documentation file %1: %2!")
+            emit q->warning(QHelpEngineCore::tr("Cannot open documentation file %1: %2!")
                 .arg(absFileName, reader->errorMessage()));
             continue;
         }
