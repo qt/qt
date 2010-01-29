@@ -3857,6 +3857,12 @@ QString QString::fromUtf8(const char *str, int size)
     If \a size is -1 (default), \a unicode must be terminated
     with a 0.
 
+    This function checks for a Byte Order Mark (BOM). If it is missing,
+    host byte order is assumed.
+
+    This function is comparatively slow.
+    Use QString(const ushort *, int) if possible.
+
     QString makes a deep copy of the Unicode data.
 
     \sa utf16(), setUtf16()
@@ -3922,6 +3928,9 @@ QString& QString::setUnicode(const QChar *unicode, int size)
 
     If \a unicode is 0, nothing is copied, but the string is still
     resized to \a size.
+
+    Note that unlike fromUtf16(), this function does not consider BOMs and
+    possibly differing byte ordering.
 
     \sa utf16(), setUnicode()
 */
@@ -4668,6 +4677,8 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
 
     Returns the QString as a '\\0\'-terminated array of unsigned
     shorts. The result remains valid until the string is modified.
+
+    The returned string is in host byte order.
 
     \sa unicode()
 */
