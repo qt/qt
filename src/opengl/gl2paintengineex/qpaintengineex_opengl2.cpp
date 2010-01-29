@@ -1284,6 +1284,29 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     QPaintEngineEx::drawTextItem(p, ti);
 }
 
+namespace {
+
+    class QOpenGLStaticTextUserData: public QStaticTextUserData
+    {
+    public:
+        QOpenGLStaticTextUserData(QGLContext *glContext)
+            : QStaticTextUserData(OpenGLUserData),
+              vertexCoordVBOId(0), textureCoordVBOId(0), ctx(glContext) {}
+        ~QOpenGLStaticTextUserData()
+        {
+            if (vertexCoordVBOId != 0)
+                glDeleteBuffers(1, &vertexCoordVBOId);
+
+            if (textureCoordVBOId != 0)
+                glDeleteBuffers(1, &textureCoordVBOId);
+        }
+
+        QGLContext *ctx;
+        GLuint vertexCoordVBOId;
+        GLuint textureCoordVBOId;
+    };
+}
+
 void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem)
 {
     Q_Q(QGL2PaintEngineEx);
@@ -1309,20 +1332,66 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     GLfloat dx = 1.0 / cache->width();
     GLfloat dy = 1.0 / cache->height();
 
-    vertexCoordinateArray.clear();
-    textureCoordinateArray.clear();
+    if (staticTextItem->userData == 0
+        || staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData
+        || staticTextItem->userDataNeedsUpdate) {
+        vertexCoordinateArray.clear();
+        textureCoordinateArray.clear();
 
-    for (int i=0; i<staticTextItem->numGlyphs; ++i) {
-        const QTextureGlyphCache::Coord &c = cache->coords.value(staticTextItem->glyphs[i]);
-        int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
-        int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
+        for (int i=0; i<staticTextItem->numGlyphs; ++i) {
+            const QTextureGlyphCache::Coord &c = cache->coords.value(staticTextItem->glyphs[i]);
+            int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
+            int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
 
-        vertexCoordinateArray.addRect(QRectF(x, y, c.w, c.h));
-        textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
+            vertexCoordinateArray.addRect(QRectF(x, y, c.w, c.h));
+            textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
+        }
+
+
+        if (staticTextItem->useBackendOptimizations) {
+            QOpenGLStaticTextUserData *userData =
+                    staticTextItem->userData != 0 && staticTextItem->userData->type == QStaticTextUserData::OpenGLUserData
+                        ? static_cast<QOpenGLStaticTextUserData *>(staticTextItem->userData)
+                        : new QOpenGLStaticTextUserData(ctx);
+
+            int vertexCoordinateArraySize = vertexCoordinateArray.vertexCount() * sizeof(QGLPoint);
+            if (userData->vertexCoordVBOId == 0)
+                glGenBuffers(1, &userData->vertexCoordVBOId);
+
+            int textureCoordinateArraySize = textureCoordinateArray.vertexCount() * sizeof(QGLPoint);
+            if (userData->textureCoordVBOId == 0)
+                glGenBuffers(1, &userData->textureCoordVBOId);
+
+            glBindBuffer(GL_ARRAY_BUFFER_ARB, userData->vertexCoordVBOId);
+            glBufferData(GL_ARRAY_BUFFER_ARB, vertexCoordinateArraySize,
+                         vertexCoordinateArray.data(), GL_STATIC_DRAW_ARB);
+
+            glBindBuffer(GL_ARRAY_BUFFER_ARB, userData->textureCoordVBOId);
+            glBufferData(GL_ARRAY_BUFFER_ARB, textureCoordinateArraySize,
+                         textureCoordinateArray.data(), GL_STATIC_DRAW_ARB);
+
+            // If a new user data has been created, make sure we delete the old
+            staticTextItem->setUserData(userData);
+            staticTextItem->userDataNeedsUpdate = false;
+
+        } else {
+            setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
+            setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
+        }
     }
 
-    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
-    setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
+    if (staticTextItem->useBackendOptimizations) {
+        Q_ASSERT(staticTextItem->userData != 0);
+        Q_ASSERT(staticTextItem->userData->type == QStaticTextUserData::OpenGLUserData);
+
+        QOpenGLStaticTextUserData *userData = static_cast<QOpenGLStaticTextUserData *>(staticTextItem->userData);
+
+        glBindBuffer(GL_ARRAY_BUFFER_ARB, userData->vertexCoordVBOId);
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+        glBindBuffer(GL_ARRAY_BUFFER_ARB, userData->textureCoordVBOId);
+        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    }
 
     if (addOffset) {
         addOffset = false;
@@ -1420,6 +1489,9 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
     glDrawArrays(GL_TRIANGLES, 0, 6 * staticTextItem->numGlyphs);
+
+    // Reset bindings
+    glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)

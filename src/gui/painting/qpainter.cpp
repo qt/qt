@@ -5800,6 +5800,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
                 textItem->glyphPositions[i].x += fx - oldX;
                 textItem->glyphPositions[i].y += fy - oldY;
             }
+            textItem->userDataNeedsUpdate = true;
         }
 
         staticText_d->position = transformedPosition;

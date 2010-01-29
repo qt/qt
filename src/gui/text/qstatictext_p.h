@@ -57,10 +57,35 @@
 
 QT_BEGIN_NAMESPACE
 
+class QStaticTextUserData
+{
+public:
+    enum Type {
+        NoUserData,
+        OpenGLUserData
+    };
+
+    QStaticTextUserData(Type t) : type(t) {}
+    virtual ~QStaticTextUserData() {}
+
+    Type type;
+};
+
 class Q_GUI_EXPORT QStaticTextItem
 {
 public:    
-    QStaticTextItem() : chars(0), numChars(0), fontEngine(0) {}
+    QStaticTextItem() : chars(0), numChars(0), fontEngine(0), userData(0),
+                        useBackendOptimizations(false), userDataNeedsUpdate(0) {}
+    ~QStaticTextItem() { delete userData; }
+
+    void setUserData(QStaticTextUserData *newUserData)
+    {
+        if (userData == newUserData)
+            return;
+
+        delete userData;
+        userData = newUserData;
+    }
 
     QFixedPoint *glyphPositions;                 // 8 bytes per glyph
     glyph_t *glyphs;                             // 4 bytes per glyph
@@ -73,8 +98,11 @@ public:
     int numChars;                                // 4 bytes per item
     QFontEngine *fontEngine;                     // 4 bytes per item
     QFont font;                                  // 8 bytes per item
+    QStaticTextUserData *userData;               // 8 bytes per item
+    char useBackendOptimizations : 1;            // 1 byte per item
+    char userDataNeedsUpdate : 1;                //
                                                  // ================
-                                                 // 32 bytes per item
+                                                 // 41 bytes per item
 };
 
 class QStaticText;
@@ -86,22 +114,23 @@ public:
 
     void init();
 
-    QAtomicInt ref;            // 4 bytes per text
+    QAtomicInt ref;                      // 4 bytes per text
 
-    QString text;              // 4 bytes per text
-    QFont font;                // 8 bytes per text
-    QSizeF size;               // 16 bytes per text
-    QPointF position;          // 16 bytes per text
+    QString text;                        // 4 bytes per text
+    QFont font;                          // 8 bytes per text
+    QSizeF size;                         // 16 bytes per text
+    QPointF position;                    // 16 bytes per text
 
-    QTransform matrix;         // 80 bytes per text
-    QStaticTextItem *items;    // 4 bytes per text
-    int itemCount;             // 4 bytes per text
-    glyph_t *glyphPool;        // 4 bytes per text
-    QFixedPoint *positionPool; // 4 bytes per text
+    QTransform matrix;                   // 80 bytes per text
+    QStaticTextItem *items;              // 4 bytes per text
+    int itemCount;                       // 4 bytes per text
+    glyph_t *glyphPool;                  // 4 bytes per text
+    QFixedPoint *positionPool;           // 4 bytes per text
 
-    char needsClipRect : 1;    // 1 byte per text
-                               // ================
-                               // 145 bytes per text
+    char needsClipRect           : 1;    // 1 byte per text
+    char useBackendOptimizations : 1;
+                                         // ================
+                                         // 145 bytes per text
 
     static QStaticTextPrivate *get(const QStaticText *q);
 };

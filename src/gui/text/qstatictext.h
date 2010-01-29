@@ -73,6 +73,9 @@ public:
 
     void prepare(const QTransform &matrix, const QFont &font);
 
+    void setUseBackendOptimizations(bool on);
+    bool useBackendOptimizations() const;
+
     QStaticText &operator=(const QStaticText &);
     bool operator==(const QStaticText &) const;
     bool operator!=(const QStaticText &) const;

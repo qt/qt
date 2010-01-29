@@ -236,6 +236,43 @@ QString QStaticText::text() const
 }
 
 /*!
+  Sets whether the QStaticText object should use optimizations specific to the paint engine
+  backend if they are available. If \a on is set to true, backend optimizations will be turned
+  on, otherwise they will be turned off. The default value is false.
+
+  If backend optimizations are on, the paint engine used to draw the static text is allowed to
+  store data in the object which will assist it in future calls to drawStaticText. In particular,
+  when using the opengl graphics system, or when painting on a QGLWidget, turning this flag on will
+  improve performance, but increase the memory footprint of the QStaticText object.
+
+  The default value is false.
+
+  \note This function will cause the layout of the text to be recalculated.
+
+  \sa useBackendOptimizations()
+*/
+void QStaticText::setUseBackendOptimizations(bool on)
+{
+    if (on == d_ptr->useBackendOptimizations)
+        return;
+
+    detach();
+    d_ptr->useBackendOptimizations = on;
+    d_ptr->init();
+}
+
+/*!
+  Returns whether the QStaticText object should use optimizations specific to the paint engine
+  backend when possible. By default this setting is false.
+
+  \sa setUseBackendOptimizations()
+*/
+bool QStaticText::useBackendOptimizations() const
+{
+    return d_ptr->useBackendOptimizations;
+}
+
+/*!
     Sets the maximum size of the QStaticText to \a maximumSize.
 
     \note This function will cause the layout of the text to be recalculated.
@@ -469,6 +506,12 @@ void QStaticTextPrivate::init()
 
     itemCount = counterDevice.itemCount();    
     items = new QStaticTextItem[itemCount];
+
+    if (useBackendOptimizations) {
+        for (int i=0; i<itemCount; ++i)
+            items[i].useBackendOptimizations = true;
+    }
+
 
     int glyphCount = counterDevice.glyphCount();
     glyphPool = new glyph_t[glyphCount];
