@@ -44,7 +44,6 @@
 #include "qnetworkconfigmanager_maemo_p.h"
 
 #include <QDebug>
-#include <QtDBus>
 #include <QHash>
 
 #include <wlancond.h>

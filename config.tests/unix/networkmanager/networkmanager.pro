@@ -9,3 +9,6 @@ INCLUDEPATH += .
 
 # Input
 SOURCES += main.cpp
+!contains(QT_CONFIG,dbus): {
+    DEFINES += QT_NO_DBUS
+}

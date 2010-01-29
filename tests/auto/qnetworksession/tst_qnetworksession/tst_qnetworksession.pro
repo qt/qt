@@ -20,3 +20,9 @@ wince* {
 symbian {
     TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData
 }
+
+maemo6 {
+    CONFIG += link_pkgconfig
+
+    PKGCONFIG += conninet
+}

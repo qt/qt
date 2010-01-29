@@ -52,7 +52,6 @@
 //
 // We mean it.
 //
-
 #include "qnetworkconfigmanager_maemo_p.h"
 #include "qnetworksession.h"
 
@@ -60,7 +59,9 @@
 #include <QNetworkInterface>
 #include <QDateTime>
 
+#ifdef Q_WS_MAEMO_6
 #include <icd/dbus_api.h>
+#endif
 
 QTM_BEGIN_NAMESPACE
 
@@ -69,8 +70,12 @@ class QNetworkSessionPrivate : public QObject
     Q_OBJECT
 public:
     QNetworkSessionPrivate() : 
-	    tx_data(0), rx_data(0), m_activeTime(0), isOpen(false),
-	    connectFlags(ICD_CONNECTION_FLAG_USER_EVENT)
+        tx_data(0), rx_data(0), m_activeTime(0), isOpen(false),
+#ifdef Q_WS_MAEMO_6
+        connectFlags(ICD_CONNECTION_FLAG_USER_EVENT)
+#else
+        connectFlags(0)
+#endif
     {
     }
 

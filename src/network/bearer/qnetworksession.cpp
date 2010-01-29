@@ -141,7 +141,7 @@ QTM_BEGIN_NAMESPACE
 
     \value UnknownSessionError          An unidentified error occurred.
     \value SessionAbortedError          The session was aborted by the user or system.
-    \value RoamingError                 The session cannot roam to the new configuration.
+    \value RoamingError                 The session cannot roam to a new configuration.
     \value OperationNotSupportedError   The operation is not supported for current configuration.
     \value InvalidConfigurationError    The operation cannot currently be performed for the
                                         current configuration.
@@ -328,7 +328,10 @@ void QNetworkSession::close()
 /*!
     Invalidates all open sessions against the network interface and therefore stops the 
     underlying network interface. This function always changes the session's state() flag to
-    \l Disconnected.
+    \l Disconnected. 
+    
+    On Symbian platform, a 'NetworkControl' capability is required for
+    full interface-level stop (without the capability, only the current session is stopped).
 
     \sa open(), close()
 */
