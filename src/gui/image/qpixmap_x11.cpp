@@ -1236,8 +1236,13 @@ void QX11PixmapData::release()
     delete pengine;
     pengine = 0;
 
-    if (!X11)
+    if (!X11) {
+#ifndef QT_NO_DEBUG
+        qWarning("~QX11PixmapData(): QPixmap objects must be destroyed before the QApplication"
+                 " object, otherwise the native pixmap object will be leaked.");
+#endif
         return;
+    }
 
     if (x11_mask) {
 #ifndef QT_NO_XRENDER

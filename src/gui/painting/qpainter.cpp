@@ -7509,7 +7509,7 @@ QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
             return widgetPrivate->redirected(offset);
     }
 
-    if (*globalRedirectionAtomic() == 0)
+    if (!globalRedirectionAtomic() || *globalRedirectionAtomic() == 0)
         return 0;
 
     QMutexLocker locker(globalRedirectionsMutex());
@@ -7529,7 +7529,7 @@ QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
 
 void qt_painter_removePaintDevice(QPaintDevice *dev)
 {
-    if (*globalRedirectionAtomic() == 0)
+    if (!globalRedirectionAtomic() || *globalRedirectionAtomic() == 0)
         return;
 
     QMutex *mutex = 0;
