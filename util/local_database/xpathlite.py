@@ -52,6 +52,11 @@ class DraftResolution:
     provisional = 'provisional'
     contributed = 'contributed'
     approved = 'approved'
+    _values = { unconfirmed : 1, provisional : 2, contributed : 3, approved : 4 }
+    def __init__(self, resolution):
+        self.resolution = resolution
+    def toInt(self):
+        return DraftResolution._values[self.resolution]
 
 class Error:
     def __init__(self, msg):
@@ -71,10 +76,13 @@ def findChild(parent, tag_name, arg_value, draft=None):
             if node.attributes['type'].nodeValue != arg_value:
                 continue
         if draft:
-            if node.attributes.has_key('draft'):
-                if node.attributes['draft'].nodeValue != draft:
-                    continue
-            elif draft != DraftResolution.approved:
+            if not node.attributes.has_key('draft'):
+                # if draft is not specified then it's approved
+                return node
+            value = node.attributes['draft'].nodeValue
+            value = DraftResolution(value).toInt()
+            exemplar = DraftResolution(draft).toInt()
+            if exemplar > value:
                 continue
         return node
     return False
@@ -90,9 +98,6 @@ def _findEntryInFile(file, path, draft=None, attribute=None):
     elt = doc.documentElement
     tag_spec_list = path.split("/")
     last_entry = None
-    if draft is not None:
-        last_entry = tag_spec_list[-1]
-        tag_spec_list = tag_spec_list[:-1]
     for i in range(len(tag_spec_list)):
         tag_spec = tag_spec_list[i]
         tag_name = tag_spec
@@ -118,11 +123,7 @@ def _findEntryInFile(file, path, draft=None, attribute=None):
             aliaspath = "/".join(aliaspath)
             # "locale" aliases are special - we need to start lookup from scratch
             return (None, aliaspath)
-        elt = findChild(elt, tag_name, arg_value)
-        if not elt:
-            return ("", None)
-    if last_entry is not None:
-        elt = findChild(elt, last_entry, '', draft)
+        elt = findChild(elt, tag_name, arg_value, draft)
         if not elt:
             return ("", None)
     if attribute is not None:
@@ -145,7 +146,7 @@ def findAlias(file):
 def _findEntry(base, path, draft=None, attribute=None):
     file = base
     if base.endswith(".xml"):
-        file = base
+        filename = base
         base = base[:-4]
     else:
         file = base + ".xml"

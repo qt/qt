@@ -99,16 +99,23 @@ def generateLocaleInfo(path):
     language = enumdata.language_list[language_id][0]
 
     country_id = enumdata.countryCodeToId(country_code)
-    if country_id == -1:
-        sys.stderr.write("unnknown country code \"" + country_code + "\"\n")
-        return {}
-    country = enumdata.country_list[country_id][0]
+    country = ""
+    if country_id != -1:
+        country = enumdata.country_list[country_id][0]
+
+    # So we say we accept only those values that have "contributed" or
+    # "approved" resolution. see http://www.unicode.org/cldr/process.html
+    # But we only respect the resolution for new datas for backward
+    # compatibility.
+    draft = DraftResolution.contributed
 
     result = {}
     result['language'] = language
     result['country'] = country
     result['language_code'] = language_code
     result['country_code'] = country_code
+    result['script_code'] = script_code
+    result['variant_code'] = variant_code
     result['language_id'] = language_id
     result['country_id'] = country_id
     result['decimal'] = findEntry(path, "numbers/symbols/decimal")
@@ -119,8 +126,8 @@ def generateLocaleInfo(path):
     result['minus'] = findEntry(path, "numbers/symbols/minusSign")
     result['plus'] = findEntry(path, "numbers/symbols/plusSign")
     result['exp'] = findEntry(path, "numbers/symbols/exponential").lower()
-    result['am'] = findEntry(path, "dates/calendars/calendar[gregorian]/am", draft=DraftResolution.approved)
-    result['pm'] = findEntry(path, "dates/calendars/calendar[gregorian]/pm", draft=DraftResolution.approved)
+    result['am'] = findEntry(path, "dates/calendars/calendar[gregorian]/am", draft)
+    result['pm'] = findEntry(path, "dates/calendars/calendar[gregorian]/pm", draft)
     result['longDateFormat'] = findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[full]/dateFormat/pattern")
     result['shortDateFormat'] = findEntry(path, "dates/calendars/calendar[gregorian]/dateFormats/dateFormatLength[short]/dateFormat/pattern")
     result['longTimeFormat'] = findEntry(path, "dates/calendars/calendar[gregorian]/timeFormats/timeFormatLength[full]/timeFormat/pattern")
@@ -315,7 +322,7 @@ for file in cldr_files:
         sys.stderr.write("skipping file \"" + file + "\"\n")
         continue
 
-    locale_database[(l['language_id'], l['country_id'])] = l
+    locale_database[(l['language_id'], l['country_id'], l['script_code'], l['variant_code'])] = l
 
 locale_keys = locale_database.keys()
 locale_keys.sort()
