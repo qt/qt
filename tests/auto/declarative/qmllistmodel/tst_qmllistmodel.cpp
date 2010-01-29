@@ -129,6 +129,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("count") << "count" << 0 << "";
 
     QTest::newRow("get1") << "{get(0)}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
+    QTest::newRow("get2") << "{get(-1)}" << 0 << "QML ListModel (unknown location) get: index -1 out of range";
 
     QTest::newRow("append1") << "{append({'foo':123});count}" << 1 << "";
     QTest::newRow("append2") << "{append({'foo':123,'bar':456});count}" << 1 << "";
@@ -146,6 +147,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("remove2b") << "{append({'foo':123});append({'foo':456});remove(0);get(0).foo}" << 456 << "";
     QTest::newRow("remove2c") << "{append({'foo':123});append({'foo':456});remove(1);get(0).foo}" << 123 << "";
     QTest::newRow("remove3") << "{append({'foo':123});remove(0);get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
+    QTest::newRow("remove3a") << "{append({'foo':123});remove(-1)}" << 0 << "QML ListModel (unknown location) remove: index -1 out of range";
     QTest::newRow("remove4a") << "{remove(0)}" << 0 << "QML ListModel (unknown location) remove: index 0 out of range";
     QTest::newRow("remove4b") << "{append({'foo':123});remove(0);remove(0)}" << 0 << "QML ListModel (unknown location) remove: index 0 out of range";
     QTest::newRow("remove4c") << "{append({'foo':123});remove(1)}" << 0 << "QML ListModel (unknown location) remove: index 1 out of range";
@@ -166,6 +168,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("set3a") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).foo}" << 999 << "";
     QTest::newRow("set3b") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).bar}" << 456 << "";
     QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "QML ListModel (unknown location) set: index 0 out of range";
+    QTest::newRow("set4c") << "{set(-1,{'foo':456})}" << 0 << "QML ListModel (unknown location) set: index -1 out of range";
     QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123)}" << 0 << "QML ListModel (unknown location) set: value is not an object";
     QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3])}" << 0 << "QML ListModel (unknown location) set: value is not an object";
     QTest::newRow("set6") << "{append({'foo':123});set(1,{'foo':456});count}" << 2 << "";
@@ -175,7 +178,8 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("setprop3a") << "{append({'foo':123,'bar':456});setProperty(0,'foo',999);get(0).foo}" << 999 << "";
     QTest::newRow("setprop3b") << "{append({'foo':123,'bar':456});setProperty(0,'foo',999);get(0).bar}" << 456 << "";
     QTest::newRow("setprop4a") << "{setProperty(0,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 0 out of range";
-    QTest::newRow("setprop4a") << "{append({'foo':123,'bar':456});setProperty(1,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 1 out of range";
+    QTest::newRow("setprop4b") << "{setProperty(-1,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index -1 out of range";
+    QTest::newRow("setprop4c") << "{append({'foo':123,'bar':456});setProperty(1,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 1 out of range";
     QTest::newRow("setprop5") << "{append({'foo':123,'bar':456});append({'foo':111});setProperty(1,'bar',222);get(1).bar}" << 222 << "";
 
     QTest::newRow("move1a") << "{append({'foo':123});append({'foo':456});move(0,1,1);count}" << 2 << "";

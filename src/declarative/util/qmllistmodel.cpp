@@ -405,7 +405,7 @@ QHash<int,QVariant> QmlListModel::data(int index, const QList<int> &roles) const
 {
     checkRoles();
     QHash<int, QVariant> rv;
-    if (index >= count())
+    if (index >= count() || index < 0)
         return rv;
 
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
@@ -430,7 +430,7 @@ QVariant QmlListModel::data(int index, int role) const
 {
     checkRoles();
     QVariant rv;
-    if (index >= count())
+    if (index >= count() || index < 0)
         return rv;
 
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
@@ -643,7 +643,7 @@ void QmlListModel::append(const QScriptValue& valuemap)
 */
 QScriptValue QmlListModel::get(int index) const
 {
-    if (index >= count()) {
+    if (index >= count() || index < 0) {
         qmlInfo(this) << tr("get: index %1 out of range").arg(index);
         return 0;
     }
@@ -680,7 +680,7 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
         qmlInfo(this) << tr("set: value is not an object");
         return;
     }
-    if ( !_root || index > _root->values.count()) {
+    if ( !_root || index > _root->values.count() || index < 0) {
         qmlInfo(this) << tr("set: index %1 out of range").arg(index);
         return;
     }
@@ -719,7 +719,7 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
 */
 void QmlListModel::setProperty(int index, const QString& property, const QVariant& value)
 {
-    if ( !_root || index >= _root->values.count()) {
+    if ( !_root || index >= _root->values.count() || index < 0) {
         qmlInfo(this) << tr("set: index %1 out of range").arg(index);
         return;
     }
