@@ -120,12 +120,12 @@ private:
 
     struct Data {
         inline Data()
-            : ref(1), fileEngine(0)
-        { clear(); }
+            : ref(1), fileEngine(0), listsDirty(1)
+        {}
         inline Data(const Data &copy)
             : ref(1), path(copy.path), nameFilters(copy.nameFilters), sort(copy.sort),
-              filters(copy.filters), fileEngine(0)
-        { clear(); }
+              filters(copy.filters), fileEngine(0), listsDirty(1)
+        {}
         inline ~Data()
         { delete fileEngine; }
 
@@ -181,7 +181,6 @@ QDirPrivate::QDirPrivate(QDir *qq, const QDir *copy) : q_ptr(qq)
         data = copy->d_func()->data;
     } else {
         data = new QDirPrivate::Data;
-        data->clear();
     }
 }
 
