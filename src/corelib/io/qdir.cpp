@@ -1692,8 +1692,7 @@ bool QDir::remove(const QString &fileName)
         qWarning("QDir::remove: Empty or null file name");
         return false;
     }
-    QString p = filePath(fileName);
-    return QFile::remove(p);
+    return QFile::remove(filePath(fileName));
 }
 
 /*!
@@ -1740,8 +1739,7 @@ bool QDir::exists(const QString &name) const
         qWarning("QDir::exists: Empty or null file name");
         return false;
     }
-    QString tmp = filePath(name);
-    return QFile::exists(tmp);
+    return QFile::exists(filePath(name));
 }
 
 /*!
@@ -1984,7 +1982,7 @@ QString QDir::rootPath()
 */
 bool QDir::match(const QStringList &filters, const QString &fileName)
 {
-    for (QStringList::ConstIterator sit = filters.begin(); sit != filters.end(); ++sit) {
+    for (QStringList::ConstIterator sit = filters.constBegin(); sit != filters.constEnd(); ++sit) {
         QRegExp rx(*sit, Qt::CaseInsensitive, QRegExp::Wildcard);
         if (rx.exactMatch(fileName))
             return true;
@@ -2126,12 +2124,8 @@ QString QDir::cleanPath(const QString &path)
         out[iwrite++] = p[i];
         used++;
     }
-    QString ret;
-    if(used == len)
-        ret = name;
-    else
-	ret = QString(out, used);
 
+    QString ret = (used == len ? name : QString(out, used));
     // Strip away last slash except for root directories
     if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {
 #ifdef Q_OS_WIN
