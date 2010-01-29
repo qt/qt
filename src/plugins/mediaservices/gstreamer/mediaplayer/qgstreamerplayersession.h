@@ -121,7 +121,7 @@ signals:
     void mediaStatusChanged(QMediaPlayer::MediaStatus mediaStatus);
     void volumeChanged(int volume);
     void mutedStateChanged(bool muted);
-    void audioAvailalbeChanged(bool audioAvailable);
+    void audioAvailableChanged(bool audioAvailable);
     void videoAvailableChanged(bool videoAvailable);
     void bufferingChanged(bool buffering);
     void bufferingProgressChanged(int percentFilled);
