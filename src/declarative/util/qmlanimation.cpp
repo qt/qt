@@ -1660,10 +1660,12 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
     \inherits Animation
     \brief The PropertyAnimation element allows you to animate property changes.
 
-    Animate a size property over 200ms, from its current size to 20-by-20:
+    Animate theObject's size property over 200ms, from its current size to 20-by-20:
     \code
-    PropertyAnimation { property: "size"; to: "20x20"; duration: 200 }
+    PropertyAnimation { target: theObject; property: "size"; to: "20x20"; duration: 200 }
     \endcode
+
+    For an introduction to animation in QML, see \l{QML Animation}.
 */
 
 QmlPropertyAnimation::QmlPropertyAnimation(QObject *parent)
