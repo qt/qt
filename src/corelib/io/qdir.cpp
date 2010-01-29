@@ -131,6 +131,8 @@ private:
 
         inline void clear() {
             listsDirty = 1;
+            files.clear();
+            fileInfos.clear();
         }
         mutable QAtomicInt ref;
 
@@ -269,10 +271,7 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
 inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
                                       QStringList *names, QFileInfoList *infos) const
 {
-    if(names)
-        names->clear();
-    if(infos)
-        infos->clear();
+    // names and infos are always empty lists or 0 here
     int n = l.size();
     if(n > 0) {
         if (n == 1 || (sort & QDir::SortByMask) == QDir::Unsorted) {
