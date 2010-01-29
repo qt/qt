@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#if defined(QT_NO_DBUS)
+sjkp //error is no QtDBus
+#endif
 #include <NetworkManager/NetworkManager.h>
 
 int main(int argc, char** argv)

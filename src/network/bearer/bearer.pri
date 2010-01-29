@@ -11,7 +11,6 @@ SOURCES += bearer/qnetworksession.cpp \
            bearer/qnetworkconfiguration.cpp
 
 maemo {
-    QT += dbus
     CONFIG += link_pkgconfig
 
     exists(../debug) {
