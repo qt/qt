@@ -1260,13 +1260,10 @@ uint QDir::count() const
 /*!
     Returns the file name at position \a pos in the list of file
     names. Equivalent to entryList().at(index).
-
-    Returns an empty string if \a pos is out of range or if the
-    entryList() function failed.
+    \a pos must be a valid index position in the list (i.e., 0 <= pos < count()).
 
     \sa count(), entryList()
 */
-
 QString QDir::operator[](int pos) const
 {
     Q_D(const QDir);
