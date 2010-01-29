@@ -929,14 +929,13 @@ bool QDir::cd(const QString &dirName)
             }
         }
     }
-    {
-        QFileInfo fi(newPath);
-        if (!(fi.exists() && fi.isDir()))
-            return false;
-    }
 
-    d->setPath(newPath);
-    refresh();
+    QDir dir(*this);
+    dir.setPath(newPath);
+    if (!dir.exists())
+        return false;
+
+    *this = dir;
     return true;
 }
 
