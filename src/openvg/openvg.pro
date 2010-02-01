@@ -17,7 +17,8 @@ HEADERS += \
     qpixmapdata_vg_p.h \
     qpixmapfilter_vg_p.h \
     qvgcompositionhelper_p.h \
-    qvgimagepool_p.h
+    qvgimagepool_p.h \
+    qvgfontglyphcache_p.h
 SOURCES += \
     qpaintengine_vg.cpp \
     qpixmapdata_vg.cpp \

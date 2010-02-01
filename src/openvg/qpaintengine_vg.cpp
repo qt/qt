@@ -44,6 +44,7 @@
 #include "qpixmapfilter_vg_p.h"
 #include "qvgcompositionhelper_p.h"
 #include "qvgimagepool_p.h"
+#include "qvgfontglyphcache_p.h"
 #if !defined(QT_NO_EGL)
 #include <QtGui/private/qeglcontext_p.h>
 #include "qwindowsurface_vgegl_p.h"
@@ -79,24 +80,6 @@ Q_DECL_IMPORT extern int qt_defaultDpiX();
 Q_DECL_IMPORT extern int qt_defaultDpiY();
 
 class QVGPaintEnginePrivate;
-
-class QVGFontGlyphCache
-{
-public:
-    QVGFontGlyphCache();
-    virtual ~QVGFontGlyphCache();
-
-    virtual void cacheGlyphs(QVGPaintEnginePrivate *d, QFontEngine *fontEngine, const glyph_t *g, int count);
-
-    void setScaleFromText(const QFont &font, QFontEngine *fontEngine);
-
-    VGFont font;
-    VGfloat scaleX;
-    VGfloat scaleY;
-
-    uint cachedGlyphsMask[256 / 32];
-    QSet<glyph_t> cachedGlyphs;
-};
 
 typedef QHash<QFontEngine*, QVGFontGlyphCache*> QVGFontCache;
 
