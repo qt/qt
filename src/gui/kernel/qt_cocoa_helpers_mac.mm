@@ -1281,6 +1281,7 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
 }
 #endif
 
+
 @implementation DebugNSApplication {
 }
 - (void)sendEvent:(NSEvent *)event
@@ -1295,5 +1296,19 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
     return [super sendAction:anAction to:aTarget from:sender];
 }
 @end
+
+
+QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
+{
+#ifndef QT_MAC_USE_COCOA
+    NSApplicationLoad();
+#endif
+    pool = (void*)[[NSAutoreleasePool alloc] init];
+}
+
+QMacCocoaAutoReleasePool::~QMacCocoaAutoReleasePool()
+{
+    [(NSAutoreleasePool*)pool release];
+}
 
 QT_END_NAMESPACE

@@ -175,6 +175,22 @@ static quint32 constructModifierMask(quint32 accel_key)
     return ret;
 }
 
+static void cancelAllMenuTracking()
+{
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    NSMenu *mainMenu = [NSApp mainMenu];
+    [mainMenu cancelTracking];
+    for (NSMenuItem *item in [mainMenu itemArray]) {
+        if ([item submenu]) {
+            [[item submenu] cancelTracking];
+        }
+    }
+#else
+    CancelMenuTracking(AcquireRootMenu(), true, 0);
+#endif
+}
+
 static bool actualMenuItemVisibility(const QMenuBarPrivate::QMacMenuBarPrivate *mbp,
                                      const QMacMenuAction *action)
 {
@@ -1796,6 +1812,12 @@ void QMenuBarPrivate::macDestroyMenuBar()
     mac_menubar = 0;
 
     if (qt_mac_current_menubar.qmenubar == q) {
+#ifdef QT_MAC_USE_COCOA
+        QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
+        [loader removeActionsFromAppMenu];
+#else
+        cancelAllMenuTracking();
+#endif
         extern void qt_event_request_menubarupdate(); //qapplication_mac.cpp
         qt_event_request_menubarupdate();
     }
@@ -1964,20 +1986,6 @@ static QMenuBar *findMenubarForWindow(QWidget *w)
     }
 
     return mb;
-}
-
-static void cancelAllMenuTracking()
-{
-#ifdef QT_MAC_USE_COCOA
-    QMacCocoaAutoReleasePool pool;
-    NSMenu *mainMenu = [NSApp mainMenu];
-    [mainMenu cancelTracking];
-    for (NSMenuItem *item in [mainMenu itemArray]) {
-        if ([item submenu]) {
-            [[item submenu] cancelTracking];
-        }
-    }
-#endif
 }
 
 void qt_mac_clear_menubar()

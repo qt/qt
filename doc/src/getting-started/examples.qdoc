@@ -406,7 +406,7 @@
     \clearfloat
     \section1 \l{D-Bus Examples}{D-Bus}
     \beginfloatleft
-    \l{D-Bus Examples}{\inlineimage qt-embedded-examples.png
+    \l{D-Bus Examples}{\inlineimage dbus-examples.png
     }
 
     \endfloat
@@ -416,7 +416,7 @@
     \clearfloat
     \section1 \l{Qt for Embedded Linux Examples}{Qt for Embedded Linux}
     \beginfloatleft
-    \l{Qt for Embedded Linux Examples}{\inlineimage dbus-examples.png
+    \l{Qt for Embedded Linux Examples}{\inlineimage qt-embedded-examples.png
     }
 
     \endfloat

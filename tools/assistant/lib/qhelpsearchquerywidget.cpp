@@ -121,17 +121,17 @@ private:
 
     void retranslate()
     {
-        simpleSearchLabel->setText(tr("Search for:"));
-        prevQueryButton->setToolTip(tr("Previous search"));
-        nextQueryButton->setToolTip(tr("Next search"));
-        searchButton->setText(tr("Search"));
+        simpleSearchLabel->setText(QHelpSearchQueryWidget::tr("Search for:"));
+        prevQueryButton->setToolTip(QHelpSearchQueryWidget::tr("Previous search"));
+        nextQueryButton->setToolTip(QHelpSearchQueryWidget::tr("Next search"));
+        searchButton->setText(QHelpSearchQueryWidget::tr("Search"));
 #ifdef QT_CLUCENE_SUPPORT
-        advancedSearchLabel->setText(tr("Advanced search"));
-        similarLabel->setText(tr("words <B>similar</B> to:"));
-        withoutLabel->setText(tr("<B>without</B> the words:"));
-        exactLabel->setText(tr("with <B>exact phrase</B>:"));
-        allLabel->setText(tr("with <B>all</B> of the words:"));
-        atLeastLabel->setText(tr("with <B>at least one</B> of the words:"));
+        advancedSearchLabel->setText(QHelpSearchQueryWidget::tr("Advanced search"));
+        similarLabel->setText(QHelpSearchQueryWidget::tr("words <B>similar</B> to:"));
+        withoutLabel->setText(QHelpSearchQueryWidget::tr("<B>without</B> the words:"));
+        exactLabel->setText(QHelpSearchQueryWidget::tr("with <B>exact phrase</B>:"));
+        allLabel->setText(QHelpSearchQueryWidget::tr("with <B>all</B> of the words:"));
+        atLeastLabel->setText(QHelpSearchQueryWidget::tr("with <B>at least one</B> of the words:"));
 #endif
     }
 

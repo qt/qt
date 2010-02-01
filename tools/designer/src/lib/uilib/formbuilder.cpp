@@ -494,7 +494,7 @@ void QFormBuilder::updateCustomWidgets()
 {
     m_customWidgets.clear();
 
-    foreach (QString path, m_pluginPaths) {
+    foreach (const QString &path, m_pluginPaths) {
         const QDir dir(path);
         const QStringList candidates = dir.entryList(QDir::Files);
 
