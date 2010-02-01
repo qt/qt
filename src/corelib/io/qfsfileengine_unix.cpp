@@ -98,7 +98,7 @@ static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QS
             if (!fileName.isEmpty()
                 && QT_STAT(QFile::encodeName(fileName), &statBuf) == 0
                 && (statBuf.st_mode & S_IFMT) == S_IFREG) {
-                mode += "+";
+                mode += '+';
             } else {
                 mode = "wb+";
             }

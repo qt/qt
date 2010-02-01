@@ -4341,8 +4341,6 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 rect.setY(0);
                 rect.setHeight(widget->height());
             }
-            if (opt->direction == Qt::RightToLeft)
-                rect.adjust(15, 0, -20, 0);
         }
         break;
     case SE_ProgressBarGroove:
