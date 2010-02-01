@@ -396,6 +396,8 @@ private slots:
     void focusProxyAndInputMethods();
     void scrollWithoutBackingStore();
 
+    void taskQTBUG_7532_tabOrderWithFocusProxy();
+
 private:
     bool ensureScreenSize(int width, int height);
     QWidget *testWidget;
@@ -9781,6 +9783,18 @@ void tst_QWidget::scrollWithoutBackingStore()
     QCOMPARE(child.pos(),QPoint(25,25));
     scrollable.enableBackingStore();
     QCOMPARE(child.pos(),QPoint(25,25));
+}
+
+void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
+{
+    QWidget w;
+    w.setFocusPolicy(Qt::TabFocus);
+    QWidget *fp = new QWidget(&w);
+    fp->setFocusPolicy(Qt::TabFocus);
+    w.setFocusProxy(fp);
+    QWidget::setTabOrder(&w, fp);
+
+    // No Q_ASSERT, then it's allright.
 }
 
 QTEST_MAIN(tst_QWidget)

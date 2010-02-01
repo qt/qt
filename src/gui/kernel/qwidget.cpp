@@ -6414,6 +6414,8 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
         first = fp;
     }
 
+    if (fp == second)
+        return;
 
     if (QWidget *sp = second->focusProxy())
         second = sp;
