@@ -84,9 +84,9 @@ class QVGFontGlyphCache
 {
 public:
     QVGFontGlyphCache();
-    ~QVGFontGlyphCache();
+    virtual ~QVGFontGlyphCache();
 
-    void cacheGlyphs(QVGPaintEnginePrivate *d, QFontEngine *fontEngine, const glyph_t *g, int count);
+    virtual void cacheGlyphs(QVGPaintEnginePrivate *d, QFontEngine *fontEngine, const glyph_t *g, int count);
 
     void setScaleFromText(const QFont &font, QFontEngine *fontEngine);
 
