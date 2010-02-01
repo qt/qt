@@ -132,6 +132,22 @@
 // Posix extensions to C89
 #define QT_FILENO               fileno
 
+// Directory iteration
+#define QT_DIR                  DIR
+
+#define QT_OPENDIR              ::opendir
+#define QT_CLOSEDIR             ::closedir
+
+#if defined(QT_USE_XOPEN_LFS_EXTENSIONS) && defined(QT_LARGEFILE_SUPPORT)
+#define QT_DIRENT               struct dirent64
+#define QT_READDIR              ::readdir64
+#define QT_READDIR_R            ::readdir64_r
+#else
+#define QT_DIRENT               struct dirent
+#define QT_READDIR              ::readdir
+#define QT_READDIR_R            ::readdir_r
+#endif
+
 #define QT_SOCKLEN_T            socklen_t
 
 #define QT_SOCKET_CONNECT       ::connect

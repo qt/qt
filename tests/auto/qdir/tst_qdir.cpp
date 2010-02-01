@@ -982,6 +982,13 @@ tst_QDir::cleanPath_data()
     QTest::newRow("data7") << ".//file1.txt" << "file1.txt";
     QTest::newRow("data8") << "/foo/bar/..//file1.txt" << "/foo/file1.txt";
     QTest::newRow("data9") << "//" << "/";
+#if !defined(Q_OS_WINCE)
+#if defined Q_OS_WIN
+    QTest::newRow("data10") << "c:\\" << "c:/";
+#else
+    QTest::newRow("data10") << "/:/" << "/:";
+#endif
+#endif
 }
 
 

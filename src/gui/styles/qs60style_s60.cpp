@@ -731,7 +731,6 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
     QPixmap result;
 
-//        QS60WindowSurface::unlockBitmapHeap();
     static const TDisplayMode displayMode = S60->supportsPremultipliedAlpha ? Q_SYMBIAN_ECOLOR16MAP : EColor16MA;
     static const TInt drawParam = S60->supportsPremultipliedAlpha ? KAknsDrawParamDefault : KAknsDrawParamNoClearUnderImage|KAknsDrawParamRGBOnly;
 
