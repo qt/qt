@@ -203,6 +203,8 @@ public:
     void clip(const QRect &rect, Qt::ClipOperation op);
     void clip(const QRegion &region, Qt::ClipOperation op);
 
+    void drawStaticTextItem(QStaticTextItem *textItem);
+
     enum ClipType {
         RectClip,
         ComplexClip
@@ -259,8 +261,6 @@ private:
 
     void drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions,
                           QFontEngine *fontEngine);
-
-    void drawStaticTextItem(QStaticTextItem *textItem);
 
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
     void drawGlyphsS60(const QPointF &p, const QTextItemInt &ti);
