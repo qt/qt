@@ -75,7 +75,6 @@ public:
     VGfloat scaleX;
     VGfloat scaleY;
     bool invertedGlyphs;
-
     uint cachedGlyphsMask[256 / 32];
     QSet<glyph_t> cachedGlyphs;
 };
