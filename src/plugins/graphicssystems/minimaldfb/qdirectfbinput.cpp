@@ -192,7 +192,11 @@ void QDirectFbInput::handleKeyEvents(const DFBEvent &event)
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
     timestamp /= 1000;
 
-    QApplicationPrivate::handleKeyEvent(event.window.window_id, timestamp, type, key, modifiers, QChar(event.window.key_symbol));
+    QChar character;
+    if (DFB_KEY_TYPE(event.window.key_symbol) == DIKT_UNICODE)
+        character = QChar(event.window.key_symbol);
+
+    QApplicationPrivate::handleKeyEvent(event.window.window_id, timestamp, type, key, modifiers, character);
 }
 
 void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
