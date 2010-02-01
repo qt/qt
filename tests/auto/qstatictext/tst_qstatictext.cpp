@@ -57,7 +57,9 @@ private slots:
     void cleanup();
 
     void constructionAndDestruction();
+    void drawToPoint_data();
     void drawToPoint();
+    void drawToRect_data();
     void drawToRect();
     void setFont();
     void setMaximumSize();
@@ -69,7 +71,7 @@ private slots:
     void scaledPainter();
     void projectedPainter();
     void rotatedScaledAndTranslatedPainter();
-    void transformationChanged();
+    void transformationChanged();    
 };
 
 void tst_QStaticText::init()
@@ -85,8 +87,18 @@ void tst_QStaticText::constructionAndDestruction()
     QStaticText text("My text");
 }
 
+void tst_QStaticText::drawToPoint_data()
+{
+    QTest::addColumn<bool>("useBackendOptimizations");
+
+    QTest::newRow("Without backend optimizations") << false;
+    QTest::newRow("With backend optimizations") << true;
+}
+
 void tst_QStaticText::drawToPoint()
 {
+    QFETCH(bool, useBackendOptimizations);
+
     QPixmap imageDrawText(1000, 1000);
     imageDrawText.fill(Qt::white);
     {
@@ -99,14 +111,25 @@ void tst_QStaticText::drawToPoint()
     {
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setUseBackendOptimizations(useBackendOptimizations);
         p.drawStaticText(11, 12, text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
+void tst_QStaticText::drawToRect_data()
+{
+    QTest::addColumn<bool>("useBackendOptimizations");
+
+    QTest::newRow("Without backend optimizations") << false;
+    QTest::newRow("With backend optimizations") << true;
+}
+
 void tst_QStaticText::drawToRect()
 {
+    QFETCH(bool, useBackendOptimizations);
+
     QPixmap imageDrawText(1000, 1000);
     imageDrawText.fill(Qt::white);
     {
@@ -119,6 +142,7 @@ void tst_QStaticText::drawToRect()
     {
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.", QSizeF(10, 500));
+        text.setUseBackendOptimizations(useBackendOptimizations);
         p.drawStaticText(11, 12, text);
     }
 
@@ -342,7 +366,7 @@ void tst_QStaticText::rotatedScaledAndTranslatedPainter()
     {
         QPainter p(&imageDrawText);
         p.rotate(45.0);
-        p.scale(0.2, 2.0);
+        p.scale(2.0, 2.0);
         p.translate(100, 200);
 
         p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
@@ -353,12 +377,17 @@ void tst_QStaticText::rotatedScaledAndTranslatedPainter()
     {
         QPainter p(&imageDrawStaticText);
         p.rotate(45.0);
-        p.scale(0.2, 2.0);
+        p.scale(2.0, 2.0);
         p.translate(100, 200);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         p.drawStaticText(11, 12, text);
     }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("rotatedScaledAndPainter_imageDrawText.png");
+    imageDrawStaticText.save("rotatedScaledAndPainter_imageDrawStaticText.png");
+#endif
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
