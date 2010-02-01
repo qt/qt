@@ -2790,6 +2790,7 @@ void QmlGraphicsItem::setTransformOrigin(TransformOrigin origin)
     if (origin != d->origin) {
         d->origin = origin;
         QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
+        emit transformOriginChanged(d->origin);
     }
 }
 

@@ -91,7 +91,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsItem : public QGraphicsObject, public QmlP
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
     Q_PROPERTY(bool wantsFocus READ wantsFocus NOTIFY wantsFocusChanged)
     Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
-    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
+    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged)
     Q_PROPERTY(bool smooth READ smooth WRITE setSmooth)
     Q_PROPERTY(QGraphicsEffect *effect READ graphicsEffect WRITE setGraphicsEffect)
     Q_ENUMS(TransformOrigin)
@@ -176,6 +176,7 @@ Q_SIGNALS:
     void focusChanged();
     void wantsFocusChanged();
     void parentChanged();
+    void transformOriginChanged(TransformOrigin);
 
 protected:
     bool isComponentComplete() const;
