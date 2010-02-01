@@ -52,7 +52,7 @@
     on the Qt website.
 
     An overview of known issues may also be found at:
-    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues}
+    \l{http://qt.gitorious.org/qt/pages/QtKnownIssues}
     {Known Issues Wiki}.
 
     \section1 Installation Issues
@@ -160,6 +160,6 @@
 
     \list
     \o  Check known issues for Symbian at
-    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues} {Known Issues Wiki}.
+    \l{http://qt.gitorious.org/qt/pages/QtKnownIssues} {Known Issues Wiki}.
     \endlist
 */
