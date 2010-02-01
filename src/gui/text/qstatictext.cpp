@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     \class QStaticText
     \brief The QStaticText class enables optimized drawing of text when the text and its layout
     is updated rarely.
+    \since 4.7
 
     \ingroup multimedia
     \ingroup text
