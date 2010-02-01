@@ -164,7 +164,8 @@ void readFromStreamLX(QMimeData* aData,RReadStream& aStream)
         TCardinality mimeTypeSize;
         aStream >> mimeTypeSize;
         HBufC* mimeTypeBuf = HBufC::NewLC(aStream,mimeTypeSize);
-        QString mimeType = QString::fromUtf16(mimeTypeBuf->Des().Ptr(),mimeTypeBuf->Length());
+        QString mimeType = QString(reinterpret_cast<const QChar *>(mimeTypeBuf->Des().Ptr()),
+                                   mimeTypeBuf->Length());
         CleanupStack::PopAndDestroy(mimeTypeBuf);
         // mime data
         TCardinality dataSize;

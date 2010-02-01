@@ -338,10 +338,10 @@ int runUic3(int argc, char * argv[])
         QStringList globalIncludes, localIncludes;
         ui3.computeDeps(e, globalIncludes, localIncludes, impl);
 
-        foreach (QString i, globalIncludes)
+        foreach (const QString &i, globalIncludes)
             printf("%s\n", i.toLatin1().constData());
 
-        foreach (QString i, localIncludes)
+        foreach (const QString &i, localIncludes)
             printf("%s\n", i.toLatin1().constData());
 
         if (impl)

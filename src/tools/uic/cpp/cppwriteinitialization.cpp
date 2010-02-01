@@ -2787,8 +2787,8 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
         return;
 
     QMap<QString, bool> map; // bool is dummy. The idea is to sort that (always generate in the same order) by putting a set into a map
-    foreach (QString str, directives)
-        map[str] = true;
+    foreach (const QString &str, directives)
+        map.insert(str, true);
 
     if (map.size() == 1) {
         outputStream << "#ifndef " << map.constBegin().key() << endl;
@@ -2797,7 +2797,7 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
 
     outputStream << "#if";
     bool doOr = false;
-    foreach (QString str, map.keys()) {
+    foreach (const QString &str, map.keys()) {
         if (doOr)
             outputStream << " ||";
         outputStream << " !defined(" << str << ')';

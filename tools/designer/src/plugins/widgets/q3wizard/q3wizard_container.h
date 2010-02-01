@@ -71,7 +71,7 @@ class Q3WizardExtraInfo: public QObject, public QDesignerExtraInfoExtension
     Q_OBJECT
     Q_INTERFACES(QDesignerExtraInfoExtension)
 public:
-    Q3WizardExtraInfo(Q3Wizard *wizard, QDesignerFormEditorInterface *core, QObject *parent);
+    explicit Q3WizardExtraInfo(Q3Wizard *wizard, QDesignerFormEditorInterface *core, QObject *parent);
 
     virtual QWidget *widget() const;
     virtual Q3Wizard *wizard() const;
