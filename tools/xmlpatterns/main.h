@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,21 +54,13 @@
 
 #include <QCoreApplication>
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
 class QXmlPatternistCLI
 {
 public:
-        Q_DECLARE_TR_FUNCTIONS(QXmlPatternistCLI)
+    Q_DECLARE_TR_FUNCTIONS(QXmlPatternistCLI)
 private:
     inline QXmlPatternistCLI();
     Q_DISABLE_COPY(QXmlPatternistCLI)
 };
-
-QT_END_NAMESPACE
-
-QT_END_HEADER 
 
 #endif

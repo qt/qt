@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -197,8 +197,14 @@ CppCodeParser::CppCodeParser()
  */
 CppCodeParser::~CppCodeParser()
 {
+    // nothing.
 }
 
+/*!
+  The constructor initializes a map of special node types
+  for identifying important nodes. And it initializes
+  some filters for identifying certain kinds of files.
+ */
 void CppCodeParser::initializeParser(const Config &config)
 {
     CodeParser::initializeParser(config);
@@ -220,24 +226,46 @@ void CppCodeParser::initializeParser(const Config &config)
         exampleNameFilter = exampleFilePatterns.join(" ");
     else
         exampleNameFilter = "*.cpp *.h *.js *.xq *.svg *.xml *.ui";
+
+    QStringList exampleImagePatterns = config.getStringList(
+        CONFIG_EXAMPLES + Config::dot + CONFIG_IMAGEEXTENSIONS);
+
+    if (!exampleImagePatterns.isEmpty())
+        exampleImageFilter = exampleImagePatterns.join(" ");
+    else
+        exampleImageFilter = "*.png";
 }
 
+/*!
+  Clear the map of common node types and call
+  the same function in the base class.
+ */
 void CppCodeParser::terminateParser()
 {
     nodeTypeMap.clear();
     CodeParser::terminateParser();
 }
 
+/*!
+  Returns "Cpp".
+ */
 QString CppCodeParser::language()
 {
     return "Cpp";
 }
 
+/*!
+  Returns a list of extensions for header files.
+ */
 QString CppCodeParser::headerFileNameFilter()
 {
     return "*.ch *.h *.h++ *.hh *.hpp *.hxx";
 }
 
+/*!
+  Returns a list of extensions for source files, i.e. not
+  header files.
+ */
 QString CppCodeParser::sourceFileNameFilter()
 {
     return "*.c++ *.cc *.cpp *.cxx";
@@ -299,6 +327,12 @@ void CppCodeParser::parseSourceFile(const Location& location,
     fclose(in);
 }
 
+/*!
+  This is called after all the header files have been parsed.
+  I think the most important thing it does is resolve class
+  inheritance links in the tree. But it also initializes a
+  bunch of stuff.
+ */
 void CppCodeParser::doneParsingHeaderFiles(Tree *tree)
 {
     tree->resolveInheritance();
@@ -345,6 +379,12 @@ void CppCodeParser::doneParsingHeaderFiles(Tree *tree)
     mutableAssociativeIteratorClasses.clear();
 }
 
+/*!
+  This is called after all the source files (i.e., not the
+  header files) have been parsed. It traverses the tree to
+  resolve property links, normalize overload signatures, and
+  do other housekeeping of the tree.
+ */
 void CppCodeParser::doneParsingSourceFiles(Tree *tree)
 {
     tree->root()->makeUndocumentedChildrenInternal();
@@ -353,6 +393,13 @@ void CppCodeParser::doneParsingSourceFiles(Tree *tree)
     tree->resolveProperties();
 }
 
+/*!
+  This function searches the \a tree to find a FunctionNode
+  for a function with the signature \a synopsis. If the
+  \a relative node is provided, the search begins there. If
+  \a fuzzy is true, base classes are searched. The function
+  node is returned, if found.
+ */
 const FunctionNode *CppCodeParser::findFunctionNode(const QString& synopsis,
                                                     Tree *tree,
                                                     Node *relative,
@@ -2212,6 +2259,7 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
                                         exampleDirs,
                                         proFileName,
                                         userFriendlyFilePath);
+    
     if (fullPath.isEmpty()) {
         QString tmp = proFileName;
         proFileName = examplePath + "/" + "qbuild.pro";
@@ -2231,8 +2279,18 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
     int sizeOfBoringPartOfName = fullPath.size() - proFileName.size();
     fullPath.truncate(fullPath.lastIndexOf('/'));
 
-    QStringList exampleFiles = Config::getFilesHere(fullPath,
-                                                    exampleNameFilter);
+    QStringList exampleFiles = Config::getFilesHere(fullPath,exampleNameFilter);
+    QString imagesPath = fullPath + "/images";
+    QStringList imageFiles = Config::getFilesHere(imagesPath,exampleImageFilter);
+
+#if 0    
+    qDebug() << "examplePath:" << examplePath;
+    qDebug() << " exampleFiles" <<  exampleFiles;
+    qDebug() << "imagesPath:" << imagesPath;
+    qDebug() << "fullPath:" << fullPath;
+    qDebug() << " imageFiles" <<  imageFiles;
+#endif    
+
     if (!exampleFiles.isEmpty()) {
         // move main.cpp and to the end, if it exists
         QString mainCpp;
@@ -2259,6 +2317,11 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
         (void) new FakeNode(fake,
                             exampleFile.mid(sizeOfBoringPartOfName),
                             Node::File);
+    foreach (const QString &imageFile, imageFiles) {
+        new FakeNode(fake,
+                     imageFile.mid(sizeOfBoringPartOfName),
+                     Node::Image);
+    }
 }
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,6 +70,7 @@ private slots:
     void remove();
     void clear();
     void pixmapKey();
+    void noLeak();
 };
 
 static QPixmapCache::KeyData* getPrivate(QPixmapCache::Key &key)
@@ -480,6 +481,24 @@ void tst_QPixmapCache::pixmapKey()
     QVERIFY(!getPrivate(key7));
     QPixmapCache::Key key8(key7);
     QVERIFY(!getPrivate(key8));
+}
+
+extern int q_QPixmapCache_keyHashSize();
+
+void tst_QPixmapCache::noLeak()
+{
+    QPixmapCache::Key key;
+
+    int oldSize = q_QPixmapCache_keyHashSize();
+    for (int i = 0; i < 100; ++i) {
+        QPixmap pm(128, 128);
+        pm.fill(Qt::transparent);
+        key = QPixmapCache::insert(pm);
+        QPixmapCache::remove(key);
+    }
+    int newSize = q_QPixmapCache_keyHashSize();
+
+    QCOMPARE(oldSize, newSize);
 }
 
 QTEST_MAIN(tst_QPixmapCache)

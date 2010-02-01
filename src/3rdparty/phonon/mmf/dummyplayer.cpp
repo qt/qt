@@ -31,12 +31,7 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::DummyPlayer::DummyPlayer()
-{
-
-}
-
-MMF::DummyPlayer::DummyPlayer(const AbstractPlayer& player)
+MMF::DummyPlayer::DummyPlayer(const AbstractPlayer *player)
         :   AbstractPlayer(player)
 {
 
@@ -97,17 +92,7 @@ qint64 MMF::DummyPlayer::totalTime() const
     return 0;
 }
 
-MediaSource MMF::DummyPlayer::source() const
-{
-    return MediaSource();
-}
-
-void MMF::DummyPlayer::setFileSource(const Phonon::MediaSource &, RFile &)
-{
-
-}
-
-void MMF::DummyPlayer::setNextSource(const MediaSource &)
+void MMF::DummyPlayer::open(const Phonon::MediaSource &, RFile &)
 {
 
 }

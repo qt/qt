@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -229,7 +229,10 @@ void QUnifiedTimer::restartAnimationTimer()
 
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
-    if (event->timerId() == startStopAnimationTimer.timerId()) {
+    //in the case of consistent timing we make sure the orders in which events come is always the same
+   //for that purpose we do as if the startstoptimer would always fire before the animation timer
+    if ((consistentTiming && startStopAnimationTimer.isActive()) ||
+        event->timerId() == startStopAnimationTimer.timerId()) {
         startStopAnimationTimer.stop();
 
         //we transfer the waiting animations into the "really running" state
@@ -247,7 +250,9 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
                 time.start();
             }
         }
-    } else if (event->timerId() == animationTimer.timerId()) {
+    }
+
+    if (event->timerId() == animationTimer.timerId()) {
         // update current time on all top level animations
         updateAnimationsTime();
         restartAnimationTimer();

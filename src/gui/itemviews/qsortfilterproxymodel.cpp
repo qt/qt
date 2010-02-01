@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -734,6 +734,33 @@ void QSortFilterProxyModelPrivate::source_items_inserted(
         }
     }
 
+    if (model->rowCount(source_parent) == delta_item_count) {
+        // Items were inserted where there were none before.
+        // If it was new rows make sure to create mappings for columns so that a
+        // valid mapping can be retreived later and vice-versa.
+
+        QVector<int> &orthogonal_proxy_to_source = (orient == Qt::Horizontal) ? m->source_rows : m->source_columns;
+        QVector<int> &orthogonal_source_to_proxy = (orient == Qt::Horizontal) ? m->proxy_rows : m->proxy_columns;
+
+        if (orthogonal_source_to_proxy.isEmpty()) {
+            const int ortho_end = (orient == Qt::Horizontal) ? model->rowCount(source_parent) : model->columnCount(source_parent);
+
+            for (int ortho_item = 0; ortho_item < ortho_end; ++ortho_item) {
+                if ((orient == Qt::Horizontal) ? q->filterAcceptsRow(ortho_item, source_parent)
+                        : q->filterAcceptsColumn(ortho_item, source_parent)) {
+                    orthogonal_proxy_to_source.append(ortho_item);
+                }
+            }
+            orthogonal_source_to_proxy.resize(orthogonal_proxy_to_source.size());
+
+            if (orient == Qt::Horizontal) {
+                // We're reacting to columnsInserted, but we've just inserted new rows. Sort them.
+                sort_source_rows(orthogonal_proxy_to_source, source_parent);
+            }
+            build_source_to_proxy_mapping(orthogonal_proxy_to_source, orthogonal_source_to_proxy);
+        }
+    }
+
     // Sort and insert the items
     if (orient == Qt::Vertical) // Only sort rows
         sort_source_rows(source_items, source_parent);
@@ -1153,6 +1180,8 @@ void QSortFilterProxyModelPrivate::_q_sourceAboutToBeReset()
 {
     Q_Q(QSortFilterProxyModel);
     q->beginResetModel();
+    invalidatePersistentIndexes();
+    clear_mapping();
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceReset()
@@ -1169,9 +1198,10 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged()
 {
     Q_Q(QSortFilterProxyModel);
     saved_persistent_indexes.clear();
+    emit q->layoutAboutToBeChanged();
     if (persistent.indexes.isEmpty())
         return;
-    emit q->layoutAboutToBeChanged();
+
     saved_persistent_indexes = store_persistent_indexes();
 }
 
@@ -1179,7 +1209,8 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged()
 {
     Q_Q(QSortFilterProxyModel);
     if (saved_persistent_indexes.isEmpty()) {
-        q->invalidate();
+        clear_mapping();
+        emit q->layoutChanged();
         return;
     }
 
@@ -1470,6 +1501,8 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
     Q_D(QSortFilterProxyModel);
 
+    beginResetModel();
+
     disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
 
@@ -1551,7 +1584,7 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     connect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
     d->clear_mapping();
-    reset();
+    endResetModel();
     if (d->update_source_sort_column() && d->dynamic_sortfilter)
         d->sort();
 }

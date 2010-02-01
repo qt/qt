@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -127,7 +127,7 @@ void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &form
         qctx = new QGLContext(format);
         qctx->d_func()->sharing = (shareWidget != 0);
         if (shareWidget != 0 && shareWidget->d_func()->glcx) {
-            qgl_share_reg()->addShare(qctx, shareWidget->d_func()->glcx);
+            QGLContextGroup::addShare(qctx, shareWidget->d_func()->glcx);
             shareWidget->d_func()->glcx->d_func()->sharing = true;
         }
 

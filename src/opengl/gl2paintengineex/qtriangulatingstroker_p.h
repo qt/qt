@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,7 @@
 #define QTRIANGULATINGSTROKER_P_H
 
 #include <private/qdatabuffer_p.h>
+#include <qvarlengtharray.h>
 #include <private/qvectorpath_p.h>
 #include <private/qbezier_p.h>
 #include <private/qnumeric_p.h>
@@ -62,13 +63,13 @@ public:
 
 private:
     inline void emitLineSegment(float x, float y, float nx, float ny);
-    inline void moveTo(const qreal *pts);
+    void moveTo(const qreal *pts);
     inline void lineTo(const qreal *pts);
     void cubicTo(const qreal *pts);
-    inline void join(const qreal *pts);
+    void join(const qreal *pts);
     inline void normalVector(float x1, float y1, float x2, float y2, float *nx, float *ny);
-    inline void endCap(const qreal *pts);
-    inline void arc(float x, float y);
+    void endCap(const qreal *pts);
+    void arcPoints(float cx, float cy, float fromX, float fromY, float toX, float toY, QVarLengthArray<float> &points);
     void endCapOrJoinClosed(const qreal *start, const qreal *cur, bool implicitClose, bool endsAtStart);
 
 
@@ -116,10 +117,6 @@ private:
     qreal m_inv_scale;
 };
 
-
-
-
-
 inline void QTriangulatingStroker::normalVector(float x1, float y1, float x2, float y2,
                                                 float *nx, float *ny)
 {
@@ -139,8 +136,6 @@ inline void QTriangulatingStroker::normalVector(float x1, float y1, float x2, fl
     *ny = dx * pw;
 }
 
-
-
 inline void QTriangulatingStroker::emitLineSegment(float x, float y, float vx, float vy)
 {
     m_vertices.add(x + vx);
@@ -149,154 +144,11 @@ inline void QTriangulatingStroker::emitLineSegment(float x, float y, float vx, f
     m_vertices.add(y - vy);
 }
 
-
-
-// We draw a full circle for any round join or round cap which is a
-// bit of overkill...
-inline void QTriangulatingStroker::arc(float x, float y)
-{
-    float dx = m_width;
-    float dy = 0;
-    for (int i=0; i<=m_roundness; ++i) {
-        float tmpx = dx * m_cos_theta - dy * m_sin_theta;
-        float tmpy = dx * m_sin_theta + dy * m_cos_theta;
-        dx = tmpx;
-        dy = tmpy;
-        emitLineSegment(x, y, dx, dy);
-    }
-}
-
-
-
-inline void QTriangulatingStroker::endCap(const qreal *pts)
-{
-    switch (m_cap_style) {
-    case Qt::FlatCap:
-        break;
-    case Qt::SquareCap: {
-        float dx = m_cx - *(pts - 2);
-        float dy = m_cy - *(pts - 1);
-
-        float len = m_width / sqrt(dx * dx + dy * dy);
-        dx = dx * len;
-        dy = dy * len;
-
-        emitLineSegment(m_cx + dx, m_cy + dy, m_nvx, m_nvy);
-        break; }
-    case Qt::RoundCap:
-        arc(m_cx, m_cy);
-        break;
-    default: break; // to shut gcc up...
-    }
-}
-
-
-void QTriangulatingStroker::moveTo(const qreal *pts)
-{
-    m_cx = pts[0];
-    m_cy = pts[1];
-
-    float x2 = pts[2];
-    float y2 = pts[3];
-    normalVector(m_cx, m_cy, x2, y2, &m_nvx, &m_nvy);
-
-
-    // To acheive jumps we insert zero-area tringles. This is done by
-    // adding two identical points in both the end of previous strip
-    // and beginning of next strip
-    bool invisibleJump = m_vertices.size();
-
-    switch (m_cap_style) {
-    case Qt::FlatCap:
-        if (invisibleJump) {
-            m_vertices.add(m_cx + m_nvx);
-            m_vertices.add(m_cy + m_nvy);
-        }
-        break;
-    case Qt::SquareCap: {
-        float dx = x2 - m_cx;
-        float dy = y2 - m_cy;
-        float len = m_width / sqrt(dx * dx + dy * dy);
-        dx = dx * len;
-        dy = dy * len;
-        float sx = m_cx - dx;
-        float sy = m_cy - dy;
-        if (invisibleJump) {
-            m_vertices.add(sx + m_nvx);
-            m_vertices.add(sy + m_nvy);
-        }
-        emitLineSegment(sx, sy, m_nvx, m_nvy);
-        break; }
-    case Qt::RoundCap:
-        if (invisibleJump) {
-            m_vertices.add(m_cx + m_nvx);
-            m_vertices.add(m_cy + m_nvy);
-        }
-
-        // This emitLineSegment is not needed for the arc, but we need
-        // to start where we put the invisibleJump vertex, otherwise
-        // we'll have visible triangles between subpaths.
-        emitLineSegment(m_cx, m_cy, m_nvx, m_nvy);
-        arc(m_cx, m_cy);
-        break;
-    default: break; // ssssh gcc...
-    }
-    emitLineSegment(m_cx, m_cy, m_nvx, m_nvy);
-}
-
-
-
 void QTriangulatingStroker::lineTo(const qreal *pts)
 {
     emitLineSegment(pts[0], pts[1], m_nvx, m_nvy);
     m_cx = pts[0];
     m_cy = pts[1];
-}
-
-
-
-void QTriangulatingStroker::join(const qreal *pts)
-{
-    // Creates a join to the next segment (m_cx, m_cy) -> (pts[0], pts[1])
-    normalVector(m_cx, m_cy, pts[0], pts[1], &m_nvx, &m_nvy);
-
-    switch (m_join_style) {
-    case Qt::BevelJoin:
-        break;
-    case Qt::MiterJoin: {
-        int p1 = m_vertices.size() - 6;
-        int p2 = m_vertices.size() - 2;
-        QLineF line(m_vertices.at(p1), m_vertices.at(p1+1),
-                    m_vertices.at(p2), m_vertices.at(p2+1));
-        QLineF nextLine(m_cx - m_nvx, m_cy - m_nvy,
-                        pts[0] - m_nvx, pts[1] - m_nvy);
-
-        QPointF isect;
-        if (line.intersect(nextLine, &isect) != QLineF::NoIntersection
-            && QLineF(line.p2(), isect).length() <= m_miter_limit) {
-            // The intersection point mirrored over the m_cx, m_cy point
-            m_vertices.add(m_cx - (isect.x() - m_cx));
-            m_vertices.add(m_cy - (isect.y() - m_cy));
-
-            // The intersection point
-            m_vertices.add(isect.x());
-            m_vertices.add(isect.y());
-        }
-        // else
-        // Do a plain bevel join if the miter limit is exceeded or if
-        // the lines are parallel. This is not what the raster
-        // engine's stroker does, but it is both faster and similar to
-        // what some other graphics API's do.
-
-        break; }
-    case Qt::RoundJoin:
-        arc(m_cx, m_cy);
-        break;
-
-    default: break; // gcc warn--
-    }
-
-    emitLineSegment(m_cx, m_cy, m_nvx, m_nvy);
 }
 
 QT_END_NAMESPACE

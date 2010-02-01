@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,6 +53,8 @@
 #include <private/qpaintengineex_opengl2_p.h>
 
 #include <qdesktopwidget.h>
+#include <qfile.h>
+#include <qimagereader.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -250,6 +252,10 @@ QGLPixmapData::QGLPixmapData(PixelType type)
 {
     setSerialNumber(++qt_gl_pixmap_serial);
     m_glDevice.setPixmapData(this);
+
+    // Set InteralBindOptions minus the memory managed, since this
+    // QGLTexture is not managed as part of the internal texture cache
+    m_texture.options = QGLContext::PremultipliedAlphaBindOption;
 }
 
 QGLPixmapData::~QGLPixmapData()
@@ -321,25 +327,36 @@ void QGLPixmapData::ensureCreated() const
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     m_ctx = ctx;
 
-    const GLenum format = qt_gl_preferredTextureFormat();
+    const GLenum internal_format = m_hasAlpha ? GL_RGBA : GL_RGB;
+#ifdef QT_OPENGL_ES_2
+    const GLenum external_format = internal_format;
+#else
+    const GLenum external_format = qt_gl_preferredTextureFormat();
+#endif
     const GLenum target = GL_TEXTURE_2D;
 
     if (!m_texture.id) {
         glGenTextures(1, &m_texture.id);
         glBindTexture(target, m_texture.id);
-        GLenum format = m_hasAlpha ? GL_RGBA : GL_RGB;
-        glTexImage2D(target, 0, format, w, h, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(target, 0, internal_format, w, h, 0, external_format, GL_UNSIGNED_BYTE, 0);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
     if (!m_source.isNull()) {
-        const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, format);
-
         glBindTexture(target, m_texture.id);
-        glTexSubImage2D(target, 0, 0, 0, w, h, format,
-                        GL_UNSIGNED_BYTE, tx.bits());
+        if (external_format == GL_RGB) {
+            const QImage tx = m_source.convertToFormat(QImage::Format_RGB888);
+            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
+                            GL_UNSIGNED_BYTE, tx.bits());
+        } else {
+            const QImage tx = ctx->d_func()->convertToGLFormat(m_source, true, external_format);
+            glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
+                            GL_UNSIGNED_BYTE, tx.bits());
+            // convertToGLFormat will flip the Y axis, so it needs to
+            // be drawn upside down
+            m_texture.options |= QGLContext::InvertedYBindOption;
+        }
 
         if (useFramebufferObjects())
             m_source = QImage();
@@ -383,6 +400,63 @@ void QGLPixmapData::fromImage(const QImage &image,
         glDeleteTextures(1, &m_texture.id);
         m_texture.id = 0;
     }
+}
+
+bool QGLPixmapData::fromFile(const QString &filename, const char *format,
+                             Qt::ImageConversionFlags flags)
+{
+    if (pixelType() == QPixmapData::BitmapType)
+        return QPixmapData::fromFile(filename, format, flags);
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+    QByteArray data = file.peek(64);
+    bool alpha;
+    if (m_texture.canBindCompressedTexture
+            (data.constData(), data.size(), format, &alpha)) {
+        resize(0, 0);
+        data = file.readAll();
+        file.close();
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QSize size = m_texture.bindCompressedTexture
+            (data.constData(), data.size(), format);
+        if (!size.isEmpty()) {
+            w = size.width();
+            h = size.height();
+            is_null = false;
+            d = 32;
+            m_hasAlpha = alpha;
+            m_source = QImage();
+            m_dirty = isValid();
+            return true;
+        }
+        return false;
+    }
+    fromImage(QImageReader(&file, format).read(), flags);
+    return !isNull();
+}
+
+bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
+                             Qt::ImageConversionFlags flags)
+{
+    bool alpha;
+    const char *buf = reinterpret_cast<const char *>(buffer);
+    if (m_texture.canBindCompressedTexture(buf, int(len), format, &alpha)) {
+        resize(0, 0);
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QSize size = m_texture.bindCompressedTexture(buf, int(len), format);
+        if (!size.isEmpty()) {
+            w = size.width();
+            h = size.height();
+            is_null = false;
+            d = 32;
+            m_hasAlpha = alpha;
+            m_source = QImage();
+            m_dirty = isValid();
+            return true;
+        }
+    }
+    return QPixmapData::fromData(buffer, len, format, flags);
 }
 
 bool QGLPixmapData::scroll(int dx, int dy, const QRect &rect)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -586,7 +586,15 @@ void tst_QListView::indexAt()
     index = view.indexAt(QPoint(20,2 * sz.height()));
     QVERIFY(!index.isValid());
 
-
+    // Check when peeking out of the viewport bounds
+    index = view.indexAt(QPoint(view.viewport()->rect().width(), 0));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(-1, 0));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(20, view.viewport()->rect().height()));
+    QVERIFY(!index.isValid());
+    index = view.indexAt(QPoint(20, -1));
+    QVERIFY(!index.isValid());
 
     model.rCount = 30;
     QListViewShowEventListener view2;
@@ -1779,8 +1787,10 @@ void tst_QListView::task262152_setModelColumnNavigate()
     view.setModelColumn(1);
 
     view.show();
+    QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(120);
+    QTest::qWait(30);
+    QTRY_COMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
     QTest::keyClick(&view, Qt::Key_Down);
     QTest::qWait(30);
     QTRY_COMPARE(view.currentIndex(), model.index(1,1));

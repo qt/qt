@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -185,22 +185,11 @@ QFontEngine::QFontEngine()
 
 QFontEngine::~QFontEngine()
 {
-    for (GlyphPointerHash::const_iterator it = m_glyphPointerHash.constBegin(),
-            end = m_glyphPointerHash.constEnd(); it != end; ++it) {
-        for (QList<QFontEngineGlyphCache*>::const_iterator it2 = it.value().constBegin(),
-                end2 = it.value().constEnd(); it2 != end2; ++it2) {
-            delete *it2;
-        }
+    for (QLinkedList<GlyphCacheEntry>::const_iterator it = m_glyphCaches.constBegin(),
+            end = m_glyphCaches.constEnd(); it != end; ++it) {
+        delete it->cache;
     }
-    m_glyphPointerHash.clear();
-    for (GlyphIntHash::const_iterator it = m_glyphIntHash.constBegin(),
-            end = m_glyphIntHash.constEnd(); it != end; ++it) {
-        for (QList<QFontEngineGlyphCache*>::const_iterator it2 = it.value().constBegin(),
-                end2 = it.value().constEnd(); it2 != end2; ++it2) {
-            delete *it2;
-        }
-    }
-    m_glyphIntHash.clear();
+    m_glyphCaches.clear();
     qHBFreeFace(hbFace);
 }
 
@@ -713,103 +702,30 @@ QByteArray QFontEngine::getSfntTable(uint tag) const
     return table;
 }
 
-void QFontEngine::expireGlyphCache()
-{
-    if (m_glyphCacheQueue.count() > 10) { // hold only 10 caches in memory.
-        QFontEngineGlyphCache *old = m_glyphCacheQueue.takeFirst();
-        // remove the value from either of our hashes
-        for (GlyphPointerHash::iterator i = m_glyphPointerHash.begin(); i != m_glyphPointerHash.end(); ++i) {
-            QList<QFontEngineGlyphCache *> list = i.value();
-            if (list.removeAll(old)) {
-                if (list.isEmpty())
-                    m_glyphPointerHash.remove(i.key());
-                else
-                    m_glyphPointerHash.insert(i.key(), list);
-                break;
-            }
-        }
-        for (GlyphIntHash::iterator i = m_glyphIntHash.begin(); i != m_glyphIntHash.end(); ++i) {
-            QList<QFontEngineGlyphCache *> list = i.value();
-            if (list.removeAll(old)) {
-                if (list.isEmpty())
-                    m_glyphIntHash.remove(i.key());
-                else
-                    m_glyphIntHash.insert(i.key(), list);
-                break;
-            }
-        }
-        delete old;
-    }
-}
-
 void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
 {
     Q_ASSERT(data);
-    QList<QFontEngineGlyphCache*> items = m_glyphPointerHash.value(key);
 
-    for (QList<QFontEngineGlyphCache*>::iterator it = items.begin(), end = items.end(); it != end; ++it) {
-        QFontEngineGlyphCache *c = *it;
-        if (qtransform_equals_no_translate(c->m_transform, data->m_transform)) {
-            if (c == data)
-                return;
-            items.removeAll(c);
-            delete c;
-            break;
-        }
-    }
-    items.append(data);
-    m_glyphPointerHash.insert(key, items);
+    GlyphCacheEntry entry = { key, data };
+    if (m_glyphCaches.contains(entry))
+        return;
 
-    m_glyphCacheQueue.append(data);
-    expireGlyphCache();
+    // Limit the glyph caches to 4. This covers all 90 degree rotations and limits
+    // memory use when there is continous or random rotation
+    if (m_glyphCaches.size() == 4)
+        delete m_glyphCaches.takeLast().cache;
+
+    m_glyphCaches.push_front(entry);
+
 }
 
-void QFontEngine::setGlyphCache(QFontEngineGlyphCache::Type key, QFontEngineGlyphCache *data)
+QFontEngineGlyphCache *QFontEngine::glyphCache(void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const
 {
-    Q_ASSERT(data);
-    QList<QFontEngineGlyphCache*> items = m_glyphIntHash.value(key);
-
-    for (QList<QFontEngineGlyphCache*>::iterator it = items.begin(), end = items.end(); it != end; ++it) {
-        QFontEngineGlyphCache *c = *it;
-        if (qtransform_equals_no_translate(c->m_transform, data->m_transform)) {
-            if (c == data)
-                return;
-            items.removeAll(c);
-            delete c;
-            break;
-        }
-    }
-    items.append(data);
-    m_glyphIntHash.insert(key, items);
-
-    m_glyphCacheQueue.append(data);
-    expireGlyphCache();
-}
-
-QFontEngineGlyphCache *QFontEngine::glyphCache(void *key, const QTransform &transform) const
-{
-    QList<QFontEngineGlyphCache*> items = m_glyphPointerHash.value(key);
-
-    for (QList<QFontEngineGlyphCache*>::iterator it = items.begin(), end = items.end(); it != end; ++it) {
-        QFontEngineGlyphCache *c = *it;
-        if (qtransform_equals_no_translate(c->m_transform, transform)) {
-            m_glyphCacheQueue.removeAll(c); // last used, move it up
-            m_glyphCacheQueue.append(c);
-            return c;
-        }
-    }
-    return 0;
-}
-
-QFontEngineGlyphCache *QFontEngine::glyphCache(QFontEngineGlyphCache::Type key, const QTransform &transform) const
-{
-    QList<QFontEngineGlyphCache*> items = m_glyphIntHash.value(key);
-
-    for (QList<QFontEngineGlyphCache*>::iterator it = items.begin(), end = items.end(); it != end; ++it) {
-        QFontEngineGlyphCache *c = *it;
-        if (qtransform_equals_no_translate(c->m_transform, transform)) {
-            m_glyphCacheQueue.removeAll(c); // last used, move it up
-            m_glyphCacheQueue.append(c);
+    for (QLinkedList<GlyphCacheEntry>::const_iterator it = m_glyphCaches.constBegin(), end = m_glyphCaches.constEnd(); it != end; ++it) {
+        QFontEngineGlyphCache *c = it->cache;
+        if (key == it->context
+            && type == c->cacheType()
+            && qtransform_equals_no_translate(c->m_transform, transform)) {
             return c;
         }
     }
@@ -1370,8 +1286,8 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
     for (int i = 0; i < len; ++i) {
         bool surrogate = (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00 && i < len-1
                           && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
-        if (glyphs->glyphs[glyph_pos] == 0) {
 
+        if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
             QGlyphLayoutInstance tmp = glyphs->instance(glyph_pos);
             for (int x = 1; x < engines.size(); ++x) {
                 QFontEngine *engine = engines.at(x);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,6 +73,12 @@ enum EngineMode {
 
 QT_BEGIN_NAMESPACE
 
+#define GL_STENCIL_HIGH_BIT         GLuint(0x80)
+#define QT_BRUSH_TEXTURE_UNIT       GLuint(0)
+#define QT_IMAGE_TEXTURE_UNIT       GLuint(0) //Can be the same as brush texture unit
+#define QT_MASK_TEXTURE_UNIT        GLuint(1)
+#define QT_BACKGROUND_TEXTURE_UNIT  GLuint(2)
+
 class QGL2PaintEngineExPrivate;
 
 
@@ -105,13 +111,8 @@ public:
     ~QGL2PaintEngineEx();
 
     bool begin(QPaintDevice *device);
-    bool end();
-
     void ensureActive();
-
-    virtual void fill(const QVectorPath &path, const QBrush &brush);
-    virtual void stroke(const QVectorPath &path, const QPen &pen);
-    virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
+    bool end();
 
     virtual void clipEnabledChanged();
     virtual void penChanged();
@@ -122,20 +123,21 @@ public:
     virtual void renderHintsChanged();
     virtual void transformChanged();
 
-
+    virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
     virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
+    virtual void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
-    virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
-
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
+    virtual void fill(const QVectorPath &path, const QBrush &brush);
+    virtual void stroke(const QVectorPath &path, const QPen &pen);
+    virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
 
-    virtual void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
 
     Type type() const { return OpenGL2; }
 
-    void setState(QPainterState *s);
-    QPainterState *createState(QPainterState *orig) const;
+    virtual void setState(QPainterState *s);
+    virtual QPainterState *createState(QPainterState *orig) const;
     inline QOpenGL2PaintEngineState *state() {
         return static_cast<QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
@@ -145,8 +147,6 @@ public:
 
     void beginNativePainting();
     void endNativePainting();
-
-    const QGLContext* context();
 
     QPixmapFilter *pixmapFilter(int type, const QPixmapFilter *prototype);
 
@@ -169,12 +169,13 @@ public:
 
     QGL2PaintEngineExPrivate(QGL2PaintEngineEx *q_ptr) :
             q(q_ptr),
+            shaderManager(0),
             width(0), height(0),
             ctx(0),
-            currentBrush(0),
-            inverseScale(1),
-            shaderManager(0),
-            inRenderText(false)
+            useSystemClip(true),
+            snapToPixelGrid(false),
+            addOffset(false),
+            inverseScale(1)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -185,44 +186,61 @@ public:
     void updateCompositionMode();
     void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id = -1);
 
-    void setBrush(const QBrush* brush);
-
-    void transferMode(EngineMode newMode);
     void resetGLState();
 
-    // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
+    // fill, stroke, drawTexture, drawPixmaps & drawCachedGlyphs are the main rendering entry-points,
+    // however writeClip can also be thought of as en entry point as it does similar things.
     void fill(const QVectorPath &path);
+    void stroke(const QVectorPath &path, const QPen &pen);
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
+    void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
     void drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType, const QTextItemInt &ti);
 
-    void drawVertexArrays(const float *data, const QVector<int> *stops, GLenum primitive);
+    // Calls glVertexAttributePointer if the pointer has changed
+    inline void setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer);
+
+    // draws whatever is in the vertex array:
+    void drawVertexArrays(const float *data, int *stops, int stopCount, GLenum primitive);
     void drawVertexArrays(QGL2PEXVertexArray &vertexArray, GLenum primitive) {
-        drawVertexArrays((const float *) vertexArray.data(), &vertexArray.stops(), primitive);
+        drawVertexArrays((const float *) vertexArray.data(), vertexArray.stops(), vertexArray.stopCount(), primitive);
     }
 
-        // ^ draws whatever is in the vertex array
+    // Composites the bounding rect onto dest buffer:
     void composite(const QGLRect& boundingRect);
-        // ^ Composites the bounding rect onto dest buffer
 
-    void fillStencilWithVertexArray(const float *data, int count, const QVector<int> *stops, const QGLRect &bounds, StencilFillMode mode);
+    // Calls drawVertexArrays to render into stencil buffer:
+    void fillStencilWithVertexArray(const float *data, int count, int *stops, int stopCount, const QGLRect &bounds, StencilFillMode mode);
     void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill) {
-        fillStencilWithVertexArray((const float *) vertexArray.data(), 0, &vertexArray.stops(),
+        fillStencilWithVertexArray((const float *) vertexArray.data(), 0, vertexArray.stops(), vertexArray.stopCount(),
                                    vertexArray.boundingRect(),
                                    useWindingFill ? WindingFillMode : OddEvenFillMode);
     }
-        // ^ Calls drawVertexArrays to render into stencil buffer
 
-    bool prepareForDraw(bool srcPixelsAreOpaque);
-        // ^ returns whether the current program changed or not
-
+    void setBrush(const QBrush& brush);
+    void transferMode(EngineMode newMode);
+    bool prepareForDraw(bool srcPixelsAreOpaque); // returns true if the program has changed
     inline void useSimpleShader();
+    inline GLuint location(const QGLEngineShaderManager::Uniform uniform) {
+        return shaderManager->getUniformLocation(uniform);
+    }
 
-    void prepareDepthRangeForRenderText();
-    void restoreDepthRangeForRenderText();
+    void clearClip(uint value);
+    void writeClip(const QVectorPath &path, uint value);
+    void resetClipIfNeeded();
+
+    void updateClipScissorTest();
+    void setScissor(const QRect &rect);
+    void regenerateClip();
+    void systemStateChanged();
+
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
+    static QGL2PaintEngineExPrivate *getData(QGL2PaintEngineEx *engine) { return engine->d_func(); }
+    static void cleanupVectorPath(QPaintEngineEx *engine, void *data);
+
 
     QGL2PaintEngineEx* q;
+    QGLEngineShaderManager* shaderManager;
     QGLPaintDevice* device;
     int width, height;
     QGLContext *ctx;
@@ -239,44 +257,28 @@ public:
     bool opacityUniformDirty;
 
     bool stencilClean; // Has the stencil not been used for clipping so far?
+    bool useSystemClip;
     QRegion dirtyStencilRegion;
     QRect currentScissorBounds;
     uint maxClip;
 
-    const QBrush*    currentBrush; // May not be the state's brush!
-
-    GLfloat     inverseScale;
+    QBrush currentBrush; // May not be the state's brush!
+    const QBrush noBrush;
 
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
     QDataBuffer<GLfloat> opacityArray;
-
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
 
-    GLfloat pmvMatrix[4][4];
+    bool snapToPixelGrid;
+    bool addOffset; // When enabled, adds a 0.49,0.49 offset to matrix in updateMatrix
+    GLfloat pmvMatrix[3][3];
+    GLfloat inverseScale;
 
-    QGLEngineShaderManager* shaderManager;
-
-    void clearClip(uint value);
-    void writeClip(const QVectorPath &path, uint value);
-    void resetClipIfNeeded();
-
-    void updateClipScissorTest();
-    void setScissor(const QRect &rect);
-    void regenerateClip();
-    void systemStateChanged();
-    uint use_system_clip : 1;
-
-    uint location(QGLEngineShaderManager::Uniform uniform)
-    {
-        return shaderManager->getUniformLocation(uniform);
-    }
-
-    GLuint lastTexture;
+    GLuint lastTextureUsed;
 
     bool needsSync;
-    bool inRenderText;
     bool multisamplingAlwaysEnabled;
 
     GLfloat depthRange[2];
@@ -285,16 +287,31 @@ public:
 
     QTriangulatingStroker stroker;
     QDashedStrokeProcessor dasher;
-    QTransform temporaryTransform;
 
     QScopedPointer<QPixmapFilter> convolutionFilter;
     QScopedPointer<QPixmapFilter> colorizeFilter;
     QScopedPointer<QPixmapFilter> blurFilter;
-    QScopedPointer<QPixmapFilter> animationBlurFilter;
-    QScopedPointer<QPixmapFilter> fastBlurFilter;
     QScopedPointer<QPixmapFilter> dropShadowFilter;
-    QScopedPointer<QPixmapFilter> fastDropShadowFilter;
+
+    QSet<QVectorPath::CacheEntry *> pathCaches;
+    QVector<GLuint> unusedVBOSToClean;
+
+    const GLfloat *vertexAttribPointers[3];
 };
+
+
+void QGL2PaintEngineExPrivate::setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer)
+{
+    Q_ASSERT(arrayIndex < 3);
+    if (pointer == vertexAttribPointers[arrayIndex])
+        return;
+
+    vertexAttribPointers[arrayIndex] = pointer;
+    if (arrayIndex == QT_OPACITY_ATTR)
+        glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, pointer);
+    else
+        glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, pointer);
+}
 
 QT_END_NAMESPACE
 

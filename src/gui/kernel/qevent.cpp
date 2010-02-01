@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -409,7 +409,7 @@ QMouseEventEx::~QMouseEventEx()
     consider a top-level window A containing a child B which in turn contains a
     child C (all with mouse tracking enabled):
 
-    \image hoverEvents.png
+    \image hoverevents.png
 
     Now, if you move the cursor from the top to the bottom in the middle of A,
     you will get the following QEvent::MouseMove events:
@@ -432,7 +432,7 @@ QMouseEventEx::~QMouseEventEx()
         \o A::HoverMove, B::HoverMove
         \o A::HoverMove, B::HoverMove, C::HoverMove
     \endlist
-    
+
 */
 
 /*!
@@ -3023,7 +3023,7 @@ QShowEvent::~QShowEvent()
     This event is only used to notify the application of a request.
     It may be safely ignored.
 
-    \note This class is currently supported for Mac Os X only.
+    \note This class is currently supported for Mac OS X only.
 */
 
 /*!
@@ -3066,6 +3066,8 @@ QFileOpenEvent::~QFileOpenEvent()
     \fn QUrl QFileOpenEvent::url() const
 
     Returns the url that is being opened.
+
+    \since 4.6
 */
 QUrl QFileOpenEvent::url() const
 {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -485,6 +485,7 @@ glyph_metrics_t QFontEngineWin::boundingBox(const QGlyphLayout &glyphs)
     return glyph_metrics_t(0, -tm.tmAscent, w, tm.tmHeight, w, 0);
 }
 
+#ifndef Q_WS_WINCE
 bool QFontEngineWin::getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph_metrics_t *metrics) const
 {
     Q_ASSERT(metrics != 0);
@@ -536,6 +537,7 @@ bool QFontEngineWin::getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph
         return false;
     }
 }
+#endif
 
 glyph_metrics_t QFontEngineWin::boundingBox(glyph_t glyph, const QTransform &t)
 {

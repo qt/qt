@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -224,6 +224,7 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
     QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 
     vboxLayout->setMargin(0);
+    tabWidget = new QTabWidget(this);
 #ifndef Q_OS_MAC
     resourcePath.append(QLatin1String("win"));
 #else
@@ -231,7 +232,6 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
     tabWidget->setDocumentMode(true);
 #endif
 
-    tabWidget = new QTabWidget(this);
     connect(tabWidget, SIGNAL(currentChanged(int)), this,
         SLOT(currentPageChanged(int)));
 

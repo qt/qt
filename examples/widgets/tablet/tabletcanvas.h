@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,7 @@
 #define TABLETCANVAS_H
 
 #include <QWidget>
-#include <QImage>
+#include <QPixmap>
 #include <QPoint>
 #include <QTabletEvent>
 #include <QColor>
@@ -92,8 +92,8 @@ protected:
     void resizeEvent(QResizeEvent *event);
 
 private:
-    void initImage();
-    void paintImage(QPainter &painter, QTabletEvent *event);
+    void initPixmap();
+    void paintPixmap(QPainter &painter, QTabletEvent *event);
     Qt::BrushStyle brushPattern(qreal value);
     void updateBrush(QTabletEvent *event);
 
@@ -104,7 +104,7 @@ private:
     QTabletEvent::TabletDevice myTabletDevice;
     QColor myColor;
 
-    QImage image;
+    QPixmap pixmap;
     QBrush myBrush;
     QPen myPen;
     bool deviceDown;

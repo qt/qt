@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,6 +72,9 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     }
     state = Working;
 
+    // note: if that method is called directly, it cannot happen that the backend is 0,
+    // because we just checked via a qobject_cast that we got a http backend (see
+    // QNetworkReplyImplPrivate::setup())
     if (!backend) {
         error(QNetworkReplyImpl::ProtocolUnknownError,
               QCoreApplication::translate("QNetworkReply", "Protocol \"%1\" is unknown").arg(url.scheme())); // not really true!;
@@ -203,7 +206,6 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
     }
 }
 
-
 void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const QNetworkRequest &req,
                                      QIODevice *data)
 {
@@ -246,7 +248,14 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
         // No outgoing data (e.g. HTTP GET request)
         // or no backend
         // if no backend, _q_startOperation will handle the error of this
-        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+
+        // for HTTP, we want to send out the request as fast as possible to the network, without
+        // invoking methods in a QueuedConnection
+        if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
+            _q_startOperation();
+        } else {
+            QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+        }
     }
 
     q->QIODevice::open(QIODevice::ReadOnly);
@@ -273,7 +282,7 @@ void QNetworkReplyImplPrivate::handleNotifications()
     if (state != Working)
         return;
 
-    while (!current.isEmpty()) {
+    while (state == Working && !current.isEmpty()) {
         InternalNotifications notification = current.dequeue();
         switch (notification) {
         case NotifyDownstreamReadyWrite:
@@ -580,7 +589,7 @@ QNetworkReplyImpl::~QNetworkReplyImpl()
 void QNetworkReplyImpl::abort()
 {
     Q_D(QNetworkReplyImpl);
-    if (d->state == QNetworkReplyImplPrivate::Aborted)
+    if (d->state == QNetworkReplyImplPrivate::Finished || d->state == QNetworkReplyImplPrivate::Aborted)
         return;
 
     // stop both upload and download
@@ -643,6 +652,9 @@ void QNetworkReplyImpl::setReadBufferSize(qint64 size)
         d->backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
 
     QNetworkReply::setReadBufferSize(size);
+
+    if (d->backend)
+        d->backend->setDownstreamLimited(d->readBufferMaxSize > 0);
 }
 
 #ifndef QT_NO_OPENSSL

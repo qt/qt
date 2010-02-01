@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -339,6 +339,11 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     g_source_set_can_recurse(&idleTimerSource->source, true);
     g_source_set_priority(&idleTimerSource->source, G_PRIORITY_DEFAULT_IDLE);
     g_source_attach(&idleTimerSource->source, mainContext);
+}
+
+void QEventDispatcherGlibPrivate::runTimersOnceWithNormalPriority()
+{
+    timerSource->runWithIdlePriority = false;
 }
 
 QEventDispatcherGlib::QEventDispatcherGlib(QObject *parent)

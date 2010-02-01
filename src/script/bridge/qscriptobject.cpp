@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,6 +59,15 @@ bool QScriptObject::getOwnPropertySlot(JSC::ExecState* exec,
     if (!d || !d->delegate)
         return JSC::JSObject::getOwnPropertySlot(exec, propertyName, slot);
     return d->delegate->getOwnPropertySlot(this, exec, propertyName, slot);
+}
+
+bool QScriptObject::getOwnPropertyDescriptor(JSC::ExecState* exec,
+                                             const JSC::Identifier& propertyName,
+                                             JSC::PropertyDescriptor& descriptor)
+{
+    if (!d || !d->delegate)
+        return JSC::JSObject::getOwnPropertyDescriptor(exec, propertyName, descriptor);
+    return d->delegate->getOwnPropertyDescriptor(this, exec, propertyName, descriptor);
 }
 
 void QScriptObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
@@ -163,6 +172,14 @@ bool QScriptObjectDelegate::getOwnPropertySlot(QScriptObject* object, JSC::ExecS
 {
     return object->JSC::JSObject::getOwnPropertySlot(exec, propertyName, slot);
 }
+
+bool QScriptObjectDelegate::getOwnPropertyDescriptor(QScriptObject* object, JSC::ExecState* exec,
+                                               const JSC::Identifier& propertyName,
+                                               JSC::PropertyDescriptor& descriptor)
+{
+    return object->JSC::JSObject::getOwnPropertyDescriptor(exec, propertyName, descriptor);
+}
+
 
 void QScriptObjectDelegate::put(QScriptObject* object, JSC::ExecState* exec,
                                 const JSC::Identifier& propertyName,

@@ -17,16 +17,12 @@ CONFIG -= app_bundle
 # in libQtXmlPatterns. See src/xmlpatterns/api/api.pri.
 SOURCES = main.cpp                          \
           qapplicationargument.cpp          \
-          qapplicationargumentparser.cpp    \
-          qcoloringmessagehandler.cpp       \
-          qcoloroutput.cpp
+          qapplicationargumentparser.cpp    
 
 
 HEADERS = main.h                            \
           qapplicationargument.cpp          \
-          qapplicationargumentparser.cpp    \
-          qcoloringmessagehandler_p.h       \
-          qcoloroutput_p.h
+          qapplicationargumentparser.cpp    
 
 symbian: TARGET.UID3 = 0xA000D7C9
 

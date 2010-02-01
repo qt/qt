@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,7 +41,7 @@
 
 // This flag changes the implementation to use S60 CDcoumentHandler
 // instead of apparch when opening the files
-#undef USE_DOCUMENTHANDLER
+#define USE_DOCUMENTHANDLER
 
 #include <qcoreapplication.h>
 #include <qdir.h>
@@ -58,12 +58,14 @@
 #include <rsendasmessage.h>         // RSendAsMessage
 
 #ifdef Q_WS_S60
-#  include <pathinfo.h>               // PathInfo
+#  include <pathinfo.h>             // PathInfo
 #  ifdef USE_DOCUMENTHANDLER
-#    include <documenthandler.h>        // CDocumentHandler
+#    include <documenthandler.h>    // CDocumentHandler
+#    include <aknserverapp.h>
 #  endif
-#elif defined(USE_DOCUMENTHANDLER)
-#  error CDocumentHandler requires support for S60
+#else
+#  warning CDocumentHandler requires support for S60
+#  undef USE_DOCUMENTHANDLER        // Fallback to RApaLsSession based implementation
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -94,6 +96,42 @@ private:
 private:
     R* mPtr;
 };
+
+#ifdef USE_DOCUMENTHANDLER
+class QS60DocumentHandler : public MAknServerAppExitObserver
+{
+public:
+    QS60DocumentHandler() :docHandler(0) {}
+
+    ~QS60DocumentHandler() {
+        delete docHandler;
+    }
+
+    CDocumentHandler& documentHandler() {
+        // In case user calls openUrl twice subsequently, before the first embedded app is closed
+        // we use the same CDocumentHandler instance. Using same instance makes sure the first
+        // launched embedded app is closed and latter one gets embedded to our app.
+        // Using different instance would help only theoretically since user cannot interact with
+        // several embedded apps at the same time.
+        if(!docHandler) {
+            QT_TRAP_THROWING(docHandler = CDocumentHandler::NewL());
+            docHandler->SetExitObserver(this);
+        }
+        return *docHandler;
+    }
+
+private: // From MAknServerAppExitObserver
+    void HandleServerAppExit(TInt /*aReason*/) {
+        delete docHandler;
+        docHandler = 0;
+    }
+
+private:
+    CDocumentHandler* docHandler;
+};
+Q_GLOBAL_STATIC(QS60DocumentHandler, qt_s60_documenthandler);
+#endif
+
 
 static void handleMailtoSchemeLX(const QUrl &url)
 {
@@ -264,21 +302,9 @@ static void openDocumentL(const TDesC& aUrl)
     CleanupStack::PopAndDestroy(); // appArcSession
 #else
     // This is an alternative way to launch app associated to MIME type
-    // CDocumentHandler would support opening apps in embedded mode,
-    // but our Qt application window group seems to always get switched on top of embedded one
-    // -> Cannot use menus etc of embedded app -> used
-
-    CDocumentHandler* docHandler = CDocumentHandler::NewLC();
+    // CDocumentHandler also supports opening apps in embedded mode.
     TDataType temp;
-    //Standalone file opening fails for some file-types at least in S60 3.1 emulator
-    //For example .txt file fails with KErrAlreadyInUse and music files with KERN-EXEC 0
-    //Workaround is to use OpenFileEmbeddedL
-    //docHandler->OpenFileL(aUrl, temp);
-
-    // Opening file with CDocumentHandler will leave if file does not exist
-    // Leave is trapped in openDocument and false returned to user.
-    docHandler->OpenFileEmbeddedL(aUrl, temp);
-    CleanupStack::PopAndDestroy(docHandler);
+    qt_s60_documenthandler()->documentHandler().OpenFileEmbeddedL(aUrl, temp);
 #endif
 }
 
@@ -349,7 +375,7 @@ QString QDesktopServices::storageLocation(StandardLocation type)
     case DesktopLocation:
         qWarning("No desktop concept in Symbian OS");
         // But lets still use some feasible default
-        path.Append(writableDataRoot());           
+        path.Append(writableDataRoot());
         break;
     case DocumentsLocation:
         path.Append(writableDataRoot());
@@ -380,7 +406,7 @@ QString QDesktopServices::storageLocation(StandardLocation type)
 #endif
         break;
     case TempLocation:
-        return QDir::tempPath(); 
+        return QDir::tempPath();
         break;
     case HomeLocation:
         path.Append(writableDataRoot());
@@ -394,10 +420,10 @@ QString QDesktopServices::storageLocation(StandardLocation type)
         CEikonEnv::Static()->FsSession().PrivatePath(path);
         path.Insert(0, writableExeDrive().Name());
         path.Append(KCacheSubDir);
-        break;        
+        break;
     default:
         // Lets use feasible default
-        path.Append(writableDataRoot());    
+        path.Append(writableDataRoot());
         break;
     }
 

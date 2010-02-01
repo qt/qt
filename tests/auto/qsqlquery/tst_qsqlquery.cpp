@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -199,6 +199,12 @@ private slots:
 
     void QTBUG_5251_data() { generic_data("QPSQL"); }
     void QTBUG_5251();
+    void QTBUG_6421_data() { generic_data("QOCI"); }
+    void QTBUG_6421();
+    void QTBUG_6618_data() { generic_data("QODBC"); }
+    void QTBUG_6618();
+    void QTBUG_6852_data() { generic_data("QMYSQL"); }
+    void QTBUG_6852();
 
 private:
     // returns all database connections
@@ -302,7 +308,8 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "more_results" )
                << qTableName( "blobstest" )
                << qTableName( "oraRowId" )
-               << qTableName( "qtest_batch" );
+               << qTableName( "qtest_batch" )
+               << qTableName(QLatin1String("bug6421")).toUpper();
 
     if ( db.driverName().startsWith("QPSQL") )
         tablenames << qTableName("task_233829");
@@ -2934,6 +2941,87 @@ void tst_QSqlQuery::QTBUG_5251()
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:11:22.330"));
 
 }
+
+void tst_QSqlQuery::QTBUG_6421()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+
+    QSqlQuery q(db);
+    QString tableName=qTableName(QLatin1String("bug6421")).toUpper();
+
+    QVERIFY_SQL(q, exec("create table "+tableName+"(COL1 char(10), COL2 char(10), COL3 char(10))"));
+    QVERIFY_SQL(q, exec("create index INDEX1 on "+tableName+" (COL1 desc)"));
+    QVERIFY_SQL(q, exec("create index INDEX2 on "+tableName+" (COL2 desc)"));
+    QVERIFY_SQL(q, exec("create index INDEX3 on "+tableName+" (COL3 desc)"));
+    q.setForwardOnly(true);
+    QVERIFY_SQL(q, exec("select COLUMN_EXPRESSION from ALL_IND_EXPRESSIONS where TABLE_NAME='"+tableName+"'"));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toString(), QLatin1String("\"COL1\""));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toString(), QLatin1String("\"COL2\""));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toString(), QLatin1String("\"COL3\""));
+}
+
+void tst_QSqlQuery::QTBUG_6618()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    if (!tst_Databases::isSqlServer( db ))
+        QSKIP("SQL Server specific test", SkipSingle);
+
+    QSqlQuery q(db);
+    q.exec( "drop procedure " + qTableName( "tst_raiseError" ) );  //non-fatal
+    QString errorString;
+    for (int i=0;i<110;i++)
+        errorString+="reallylong";
+    errorString+=" error";
+    QVERIFY_SQL( q, exec("create procedure " + qTableName( "tst_raiseError" ) + " as\n"
+                         "begin\n"
+                         "    raiserror('" + errorString + "', 16, 1)\n"
+                         "end\n" ));
+    q.exec( "{call " + qTableName( "tst_raiseError" ) + "}" );
+    QVERIFY(q.lastError().text().contains(errorString));
+}
+
+void tst_QSqlQuery::QTBUG_6852()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
+        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+
+    QSqlQuery q(db);
+    QString tableName(qTableName(QLatin1String("bug6421"))), procName(qTableName(QLatin1String("bug6421_proc")));
+
+    QVERIFY_SQL(q, exec("DROP PROCEDURE IF EXISTS "+procName));
+    tst_Databases::safeDropTable(db, tableName);
+    QVERIFY_SQL(q, exec("CREATE TABLE "+tableName+"(\n"
+                        "MainKey INT NOT NULL,\n"
+                        "OtherTextCol VARCHAR(45) NOT NULL,\n"
+                        "PRIMARY KEY(`MainKey`))"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES(0, \"Disabled\")"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES(5, \"Error Only\")"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES(10, \"Enabled\")"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES(15, \"Always\")"));
+    QVERIFY_SQL(q, exec("CREATE PROCEDURE "+procName+"()\n"
+                        "READS SQL DATA\n"
+                        "BEGIN\n"
+                        "  SET @st = 'SELECT MainKey, OtherTextCol from "+tableName+"';\n"
+                        "  PREPARE stmt from @st;\n"
+                        "  EXECUTE stmt;\n"
+                        "END;"));
+
+    QVERIFY_SQL(q, exec("CALL "+procName+"()"));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 0);
+    QCOMPARE(q.value(1).toString(), QLatin1String("Disabled"));
+}
+
 
 QTEST_MAIN( tst_QSqlQuery )
 #include "tst_qsqlquery.moc"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2884,8 +2884,6 @@ QStringRef QXmlStreamReader::documentEncoding() const
   \brief The QXmlStreamWriter class provides an XML writer with a
   simple streaming API.
 
-
-  \inmodule QtXml
   \ingroup xml-tools
 
   QXmlStreamWriter is the counterpart to QXmlStreamReader for writing
@@ -3006,7 +3004,7 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
 #ifndef QT_NO_TEXTCODEC
     codec = QTextCodec::codecForMib(106); // utf8
     encoder = codec->makeEncoder();
-    encoder->fromUnicode(QLatin1String("")); // no byte order mark for utf8
+    encoder->state.flags |= QTextCodec::IgnoreHeader; // no byte order mark for utf8
 #endif
     inStartElement = inEmptyElement = false;
     wroteSomething = false;
@@ -3282,7 +3280,7 @@ void QXmlStreamWriter::setCodec(QTextCodec *codec)
         delete d->encoder;
         d->encoder = codec->makeEncoder();
         if (codec->mibEnum() == 106)
-            d->encoder->fromUnicode(QLatin1String("")); // no byte order mark for utf8
+            d->encoder->state.flags |= QTextCodec::IgnoreHeader; // no byte order mark for utf8
     }
 }
 

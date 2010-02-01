@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1682,6 +1682,12 @@ void tst_QUrl::toString_constructed_data()
 			<< QByteArray("//qt.nokia.com/index.html");
     QTest::newRow("data2") << QString::fromLatin1("file") << n << n << n << -1 << QString::fromLatin1("/root") << QByteArray()
                         << n << QString::fromLatin1("file:///root") << QByteArray("file:///root");
+    QTest::newRow("userAndPass") << QString::fromLatin1("http") << QString::fromLatin1("dfaure") << QString::fromLatin1("kde")
+                                 << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
+                                 << QString::fromLatin1("http://dfaure:kde@kde.org:443/") << QByteArray("http://dfaure:kde@kde.org:443/");
+    QTest::newRow("PassWithoutUser") << QString::fromLatin1("http") << n << QString::fromLatin1("kde")
+                                     << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
+                                     << QString::fromLatin1("http://:kde@kde.org:443/") << QByteArray("http://:kde@kde.org:443/");
 }
 
 void tst_QUrl::toString_constructed()
@@ -1717,6 +1723,7 @@ void tst_QUrl::toString_constructed()
 
     QVERIFY(url.isValid());
     QCOMPARE(url.toString(), asString);
+    QCOMPARE(QString::fromLatin1(url.toEncoded()), QString::fromLatin1(asEncoded)); // readable in case of differences
     QCOMPARE(url.toEncoded(), asEncoded);
 }
 

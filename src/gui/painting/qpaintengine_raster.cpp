@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -475,8 +475,10 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     QRasterPaintEngineState *s = state();
     ensureOutlineMapper();
     d->outlineMapper->m_clip_rect = d->deviceRect.adjusted(-10, -10, 10, 10);
+
+    // This is the upp
     QRect bounds(-QT_RASTER_COORD_LIMIT, -QT_RASTER_COORD_LIMIT,
-                 2*QT_RASTER_COORD_LIMIT, 2*QT_RASTER_COORD_LIMIT);
+                 QT_RASTER_COORD_LIMIT*2 - 1, QT_RASTER_COORD_LIMIT * 2 - 1);
     d->outlineMapper->m_clip_rect = bounds.intersected(d->outlineMapper->m_clip_rect);
 
 
@@ -3018,10 +3020,10 @@ void QRasterPaintEngine::drawCachedGlyphs(const QPointF &p, const QTextItemInt &
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat) : d->glyphCacheType;
 
     QImageTextureGlyphCache *cache =
-        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(glyphType, s->matrix);
+        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(0, glyphType, s->matrix);
     if (!cache) {
         cache = new QImageTextureGlyphCache(glyphType, s->matrix);
-        ti.fontEngine->setGlyphCache(glyphType, cache);
+        ti.fontEngine->setGlyphCache(0, cache);
     }
 
     cache->populate(ti, glyphs, positions);
@@ -3240,7 +3242,8 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         drawCached = false;
 
     // don't try to cache huge fonts
-    if (ti.fontEngine->fontDef.pixelSize * qSqrt(s->matrix.determinant()) >= 64)
+    const qreal pixelSize = ti.fontEngine->fontDef.pixelSize;
+    if (pixelSize * pixelSize * qAbs(s->matrix.determinant()) >= 64 * 64)
         drawCached = false;
 
     // ### Remove the TestFontEngine and Box engine crap, in these

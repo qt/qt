@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,18 +69,18 @@ inline uint qHash(int key) { return uint(key); }
 inline uint qHash(ulong key)
 {
     if (sizeof(ulong) > sizeof(uint)) {
-        return uint((key >> (8 * sizeof(uint) - 1)) ^ key);
+        return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U));
     } else {
-        return uint(key);
+        return uint(key & (~0U));
     }
 }
 inline uint qHash(long key) { return qHash(ulong(key)); }
 inline uint qHash(quint64 key)
 {
     if (sizeof(quint64) > sizeof(uint)) {
-        return uint((key >> (8 * sizeof(uint) - 1)) ^ key);
+        return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U));
     } else {
-        return uint(key);
+        return uint(key & (~0U));
     }
 }
 inline uint qHash(qint64 key) { return qHash(quint64(key)); }

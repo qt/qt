@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -802,7 +802,7 @@ void Widget::toLowerFunction()
 {
 //! [75]
     QString str = "Qt by NOKIA";
-    str = str.toLower();        // str == "qy by nokia"
+    str = str.toLower();        // str == "qt by nokia"
 //! [75]
 }
 

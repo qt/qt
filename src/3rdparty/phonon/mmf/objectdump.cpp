@@ -390,7 +390,7 @@ void QVisitorPrivate::dumpNode
         // No annotations - just dump the object pointer
         const bool isNodeLine = true;
         QByteArray buffer = branchBuffer(branches, isNodeLine, isLastChild);
-        qDebug() << 0; // TODO
+        qDebug() << 0;
     }
     else {
         // Dump annotations

@@ -16,11 +16,13 @@ HEADERS += \
     qpaintengine_vg_p.h \
     qpixmapdata_vg_p.h \
     qpixmapfilter_vg_p.h \
-    qvgcompositionhelper_p.h
+    qvgcompositionhelper_p.h \
+    qvgimagepool_p.h
 SOURCES += \
     qpaintengine_vg.cpp \
     qpixmapdata_vg.cpp \
-    qpixmapfilter_vg.cpp
+    qpixmapfilter_vg.cpp \
+    qvgimagepool.cpp
 
 contains(QT_CONFIG, egl) {
     HEADERS += \
@@ -34,6 +36,7 @@ contains(QT_CONFIG, egl) {
 include(../qbase.pri)
 
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
+symbian:TARGET.UID3 = 0x2001E62F
 
 !isEmpty(QMAKE_INCDIR_OPENVG): INCLUDEPATH += $$QMAKE_INCDIR_OPENVG
 !isEmpty(QMAKE_LIBDIR_OPENVG): LIBS_PRIVATE += -L$$QMAKE_LIBDIR_OPENVG

@@ -16,7 +16,7 @@ include(../../../src/tools/bootstrap/bootstrap.pri)
 include(../shared/formats.pri)
 include(../shared/proparser.pri)
 
-win32-msvc*:LIBS += advapi32.lib   # for qsettings_win.cpp
+win32:LIBS += -ladvapi32   # for qsettings_win.cpp
 
 target.path=$$[QT_INSTALL_BINS]
 INSTALLS        += target

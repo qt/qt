@@ -218,6 +218,16 @@
 #define WTF_PLATFORM_BIG_ENDIAN 1
 #endif
 
+/* PLATFORM(SPARC32) */
+#if defined(__sparc) && !defined(__arch64__) || defined(__sparcv8)
+#define WTF_PLATFORM_SPARC32 1
+#define WTF_PLATFORM_BIG_ENDIAN 1
+#endif
+
+#if PLATFORM(SPARC32) || PLATFORM(SPARC64)
+#define WTF_PLATFORM_SPARC
+#endif
+
 /* PLATFORM(PPC64) */
 #if   defined(__ppc64__) \
    || defined(__PPC64__)
@@ -345,6 +355,16 @@
 #if   defined(__x86_64__) \
    || defined(_M_X64)
 #define WTF_PLATFORM_X86_64 1
+#endif
+
+/* PLATFORM(IA64) */
+#if defined(__ia64__)
+#define WTF_PLATFORM_IA64 1
+#endif
+
+/* PLATFORM(ALPHA) */
+#if defined(__alpha__)
+#define WTF_PLATFORM_ALPHA 1
 #endif
 
 /* PLATFORM(SH4) */
@@ -709,7 +729,7 @@
 #endif
 
 #if !defined(WTF_USE_JSVALUE64) && !defined(WTF_USE_JSVALUE32) && !defined(WTF_USE_JSVALUE32_64)
-#if PLATFORM(X86_64) && (PLATFORM(DARWIN) || PLATFORM(LINUX) || PLATFORM(WIN_OS))
+#if (PLATFORM(X86_64) && (PLATFORM(UNIX) || PLATFORM(WIN_OS))) || PLATFORM(IA64) || PLATFORM(ALPHA)
 #define WTF_USE_JSVALUE64 1
 #elif PLATFORM(ARM) || PLATFORM(PPC64)
 #define WTF_USE_JSVALUE32 1

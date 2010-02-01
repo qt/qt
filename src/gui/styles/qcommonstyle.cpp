@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -770,8 +770,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 p->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::Highlight));
             else if (vopt->features & QStyleOptionViewItemV2::Alternate)
                 p->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::AlternateBase));
-            else if (!(vopt->state & QStyle::State_Enabled))
-                p->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::Base));
         }
         break;
     case PE_PanelItemViewItem:
@@ -2777,7 +2775,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             QSize size = (sr == SE_TabBarTabLeftButton) ? tab->leftButtonSize : tab->rightButtonSize;
             int w = size.width();
             int h = size.height();
-            int midHeight = static_cast<int>(ceil(float(tr.height() - h) / 2));
+            int midHeight = static_cast<int>(qCeil(float(tr.height() - h) / 2));
             int midWidth = ((tr.width() - w) / 2);
 
             bool atTheTop = true;

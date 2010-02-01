@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3995,7 +3995,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // This is mainly to handle cases where someone sets the font on the window
                 // and then the combo inherits it and passes it onward. At that point the resolve mask
                 // is very, very weak. This makes it stonger.
-                myFont.setPointSizeF(mi->font.pointSizeF());
+                myFont.setPointSizeF(QFontInfo(mi->font).pointSizeF());
                 p->setFont(myFont);
                 p->drawText(xpos, yPos, contentRect.width() - xm - tabwidth + 1,
                             contentRect.height(), text_flags ^ Qt::AlignRight, s);
@@ -4842,9 +4842,11 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 uint sc = SC_TitleBarMinButton;
                 ThemeTitleBarWidget tbw = kThemeWidgetCollapseBox;
                 bool active = titlebar->state & State_Active;
-                int border = 2;
-                titleBarRect.origin.x += border;
-                titleBarRect.origin.y -= border;
+                if (qMacVersion() < QSysInfo::MV_10_6) {
+                    int border = 2;
+                    titleBarRect.origin.x += border;
+                    titleBarRect.origin.y -= border;
+                }
 
                 while (sc <= SC_TitleBarCloseButton) {
                     if (sc & titlebar->subControls) {

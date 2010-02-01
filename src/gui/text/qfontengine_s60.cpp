@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,12 +45,11 @@
 #include <private/qapplication_p.h>
 #include "qimage.h"
 #include "qt_s60_p.h"
-#include "qpixmap_s60_p.h"
 
 #include <e32base.h>
 #include <e32std.h>
-#include <EIKENV.H>
-#include <GDI.H>
+#include <eikenv.h>
+#include <gdi.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -135,42 +134,21 @@ QFontEngineS60::QFontEngineS60(const QFontDef &request, const QFontEngineS60Exte
 {
     QFontEngine::fontDef = request;
     m_fontSizeInPixels = (request.pixelSize >= 0)?
-        request.pixelSize:pointsToPixels(request.pointSize);
-        
-    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
-    
-    m_textRenderBitmap = q_check_ptr(new CFbsBitmap());	// CBase derived object needs check on new
-    const TSize bitmapSize(1, 1); // It is just a dummy bitmap that I need to keep the font alive (or maybe not)
-    qt_symbian_throwIfError(m_textRenderBitmap->Create(bitmapSize, EGray256));
-    QT_TRAP_THROWING(m_textRenderBitmapDevice = CFbsBitmapDevice::NewL(m_textRenderBitmap));
-    qt_symbian_throwIfError(m_textRenderBitmapDevice->CreateContext(m_textRenderBitmapGc));
-    cache_cost = sizeof(QFontEngineS60) + bitmapSize.iHeight * bitmapSize.iWidth * 4;
+            request.pixelSize:pointsToPixels(request.pointSize);
 
     TFontSpec fontSpec(qt_QString2TPtrC(request.family), m_fontSizeInPixels);
     fontSpec.iFontStyle.SetBitmapType(EAntiAliasedGlyphBitmap);
     fontSpec.iFontStyle.SetPosture(request.style == QFont::StyleNormal?EPostureUpright:EPostureItalic);
     fontSpec.iFontStyle.SetStrokeWeight(request.weight > QFont::Normal?EStrokeWeightBold:EStrokeWeightNormal);
-    const TInt errorCode = m_textRenderBitmapDevice->GetNearestFontInPixels(m_font, fontSpec);
+    const TInt errorCode = S60->screenDevice()->GetNearestFontToDesignHeightInPixels(m_font, fontSpec);
     Q_ASSERT(errorCode == 0);
-    m_textRenderBitmapGc->UseFont(m_font);
-    
-    lock.relock();
+
+    cache_cost = sizeof(QFontEngineS60);
 }
 
 QFontEngineS60::~QFontEngineS60()
 {
-    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
-    
-    m_textRenderBitmapGc->DiscardFont();
-    delete m_textRenderBitmapGc;
-    m_textRenderBitmapGc = NULL;
-    m_textRenderBitmapDevice->ReleaseFont(m_font);
-    delete m_textRenderBitmapDevice;
-    m_textRenderBitmapDevice = NULL;
-    delete m_textRenderBitmap;
-    m_textRenderBitmap = NULL;
-    
-    lock.relock();
+    S60->screenDevice()->ReleaseFont(m_font);
 }
 
 bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const

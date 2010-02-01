@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -378,7 +378,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     }
 
     int invalidCount = 0;
-    do {
+    while (inBytesLeft != 0) {
         if (iconv(state->cd, inBytesPtr, &inBytesLeft, &outBytes, &outBytesLeft) == (size_t) -1) {
             if (errno == EINVAL && convState) {
                 // buffer ends in a surrogate
@@ -418,7 +418,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
                 }
             }
         }
-    } while (inBytesLeft != 0);
+    }
 
     // reset to initial state
     iconv(state->cd, 0, &inBytesLeft, 0, &outBytesLeft);

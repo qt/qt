@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -265,6 +265,14 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
     if (!qt_wince_is_smartphone())
         setWindowFlags(windowFlags() | Qt::WindowOkButtonHint | QFlag(qt_wince_is_mobile() ? 0 : Qt::WindowCancelButtonHint));
 #endif
+
+#ifdef Q_WS_S60
+    if (S60->avkonComponentsSupportTransparency) {
+        bool noSystemBackground = testAttribute(Qt::WA_NoSystemBackground);
+        setAttribute(Qt::WA_TranslucentBackground); // also sets WA_NoSystemBackground
+        setAttribute(Qt::WA_NoSystemBackground, noSystemBackground); // restore system background attribute
+    }
+#endif
 }
 
 #ifdef QT3_SUPPORT
@@ -293,6 +301,14 @@ QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 #ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
         setWindowFlags(windowFlags() | Qt::WindowOkButtonHint | QFlag(qt_wince_is_mobile() ? 0 : Qt::WindowCancelButtonHint));
+#endif
+
+#ifdef Q_WS_S60
+    if (S60->avkonComponentsSupportTransparency) {
+        bool noSystemBackground = testAttribute(Qt::WA_NoSystemBackground);
+        setAttribute(Qt::WA_TranslucentBackground); // also sets WA_NoSystemBackground
+        setAttribute(Qt::WA_NoSystemBackground, noSystemBackground); // restore system background attribute
+    }
 #endif
 }
 
@@ -888,7 +904,14 @@ bool QDialog::s60AdjustedPosition()
     if (doS60Positioning) {
         // naive way to deduce screen orientation
         if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
-            p.setY(S60->screenHeightInPixels-height()-qt_TSize2QSize(S60->buttonGroupContainer()->Size()).height());
+            int cbaHeight;
+            const CEikButtonGroupContainer* bgContainer = S60->buttonGroupContainer();
+            if (!bgContainer) {
+                cbaHeight = 0;
+            } else {
+                cbaHeight = qt_TSize2QSize(bgContainer->Size()).height();
+            }
+            p.setY(S60->screenHeightInPixels-height()-cbaHeight);
             p.setX(0);
         } else {
             const int scrollbarWidth = style()->pixelMetric(QStyle::PM_ScrollBarExtent);

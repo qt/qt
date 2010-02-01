@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -139,8 +139,7 @@ void QCoeFepInputContext::widgetDestroyed(QWidget *w)
     // Make sure that the input capabilities of whatever new widget got focused are queried.
     CCoeControl *ctrl = w->effectiveWinId();
     if (ctrl->IsFocused()) {
-        ctrl->SetFocus(false);
-        ctrl->SetFocus(true);
+        queueInputCapabilitiesChanged();
     }
 }
 
@@ -437,6 +436,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attributes)
 {
     TCharFormat cFormat;
+    QColor styleTextColor = QApplication::palette("QLineEdit").text().color();
+    TLogicalRgb tontColor(TRgb(styleTextColor.red(), styleTextColor.green(), styleTextColor.blue(), styleTextColor.alpha()));
+    cFormat.iFontPresentation.iTextColor = tontColor;
+
     TInt numChars = 0;
     TInt charPos = 0;
     int oldSize = attributes->size();

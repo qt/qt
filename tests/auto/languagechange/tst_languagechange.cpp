@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -193,7 +193,7 @@ void tst_languageChange::retranslatability_data()
 #else
                     << "QFileSystemModel::Type::All other platforms"
 #endif
-                    << "QFileSystemModel::%1 KB"
+//                    << "QFileSystemModel::%1 KB"
                     << "QDialogButtonBox::Cancel"
                     << "QDialogButtonBox::Open"
                     << "QFileDialog::File &name:");
@@ -232,6 +232,7 @@ void tst_languageChange::retranslatability()
         QSKIP("The native file dialog is used on Mac OS", SkipSingle);
 #endif
         QFileDialog dlg;
+        dlg.setOption(QFileDialog::DontUseNativeDialog);
         QString tmpParentDir = QDir::tempPath() + "/languagechangetestdir";
         QString tmpDir = tmpParentDir + "/finaldir";
         QString fooName = tmpParentDir + "/foo";

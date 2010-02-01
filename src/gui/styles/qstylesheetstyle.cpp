@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -5611,9 +5611,6 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
     case SE_ItemViewItemFocusRect:
         if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_ViewItem);
-            QStyleOptionViewItemV4 optCopy(*vopt);
-            optCopy.rect = subRule.contentsRect(vopt->rect);
-            QRect rect = ParentStyle::subElementRect(se, &optCopy, w);
             PseudoElement pe = PseudoElement_None;
             if (se == SE_ItemViewItemText || se == SE_ItemViewItemFocusRect)
                 pe = PseudoElement_ViewItemText;
@@ -5623,8 +5620,13 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
                 pe = PseudoElement_ViewItemIndicator;
             else
                 break;
-            QRenderRule subRule2 = renderRule(w, opt, pe);
-            return positionRect(w, subRule2, pe, rect, opt->direction);
+            if (subRule.hasGeometry() || subRule.hasBox() || !subRule.hasNativeBorder() || hasStyleRule(w, pe)) {
+                QRenderRule subRule2 = renderRule(w, opt, pe);
+                QStyleOptionViewItemV4 optCopy(*vopt);
+                optCopy.rect = subRule.contentsRect(vopt->rect);
+                QRect rect = ParentStyle::subElementRect(se, &optCopy, w);
+                return positionRect(w, subRule2, pe, rect, opt->direction);
+            }
          }
         break;
 #endif // QT_NO_ITEMVIEWS

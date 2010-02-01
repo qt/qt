@@ -19,15 +19,18 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_ABSTRACTEFFECT_H
 #define PHONON_MMF_ABSTRACTEFFECT_H
 
-#include "mmf_medianode.h"
-
 #include <QScopedPointer>
 
 #include <AudioEffectBase.h>
 
-#include <Phonon/EffectInterface>
-#include <Phonon/EffectParameter>
+#include <phonon/effectinterface.h>
+
 #include "audioplayer.h"
+#include "effectparameter.h"
+#include "mmf_medianode.h"
+#include "mmf_videoplayer.h"
+
+class CMdaAudioOutputStream;
 
 QT_BEGIN_NAMESPACE
 
@@ -35,6 +38,8 @@ namespace Phonon
 {
 namespace MMF
 {
+class AbstractPlayer;
+class AbstractMediaPlayer;
 
 /**
  * @short Base class for all effects for MMF.
@@ -61,42 +66,71 @@ public:
     AbstractAudioEffect(QObject *parent,
                         const QList<EffectParameter> &params);
 
-    virtual QList<EffectParameter> parameters() const;
-    virtual QVariant parameterValue(const EffectParameter &param) const;
-    virtual void setParameterValue(const EffectParameter &,
+    // Phonon::EffectInterface
+    virtual QList<Phonon::EffectParameter> parameters() const;
+    virtual QVariant parameterValue(const Phonon::EffectParameter &param) const;
+    virtual void setParameterValue(const Phonon::EffectParameter &,
                                    const QVariant &newValue);
 
-    virtual bool disconnectMediaNode(MediaNode *target);
-
-    enum Type
+    // Parameters which are shared by all effects
+    enum CommonParameters
     {
-        EffectAudioEqualizer = 1,
-        EffectBassBoost,
-        EffectDistanceAttenuation,
-        EffectEnvironmentalReverb,
-        EffectListenerOrientation,
-        EffectLoudness,
-        EffectSourceOrientation,
-        EffectStereoWidening
+        ParameterEnable = 0,
+        ParameterBase // must be last entry in enum
     };
 
+public Q_SLOTS:
+    void abstractPlayerChanged(AbstractPlayer *player);
+    void stateChanged(Phonon::State newState,
+                      Phonon::State oldState);
+
 protected:
-    virtual bool activateOn(CPlayerType *player) = 0;
-    virtual void parameterChanged(const int id,
-                                  const QVariant &value) = 0;
+    // MediaNode
+    void connectMediaObject(MediaObject *mediaObject);
+    void disconnectMediaObject(MediaObject *mediaObject);
 
-    /**
-     * Part of the implementation of AbstractAudioEffect. Forwards the call to
-     * activateOn(), essentially.
-     */
-    virtual bool activateOnMediaObject(MediaObject *mo);
+    virtual void createEffect(AudioPlayer::NativePlayer *player) = 0;
 
+    // Effect-specific parameter changed
+    virtual int effectParameterChanged(const EffectParameter &param,
+                                  const QVariant &value);
+
+private:
+    void createEffect();
+    void setEnabled(bool enabled);
+    const EffectParameter& internalParameter(int id) const;
+    int parameterChanged(const EffectParameter &param,
+            const QVariant &value);
+
+protected:
     QScopedPointer<CAudioEffect>    m_effect;
+
 private:
     const QList<EffectParameter>    m_params;
+    AbstractMediaPlayer *           m_player;
     QHash<int, QVariant>            m_values;
 };
+
 }
+}
+
+
+// Macro for defining functions which depend on the native class name
+// for each of the effects.  Using this reduces repetition of boilerplate
+// in the implementations of the backend effect nodes.
+
+#define PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(Effect)                      \
+                                                                        \
+void Effect##::createEffect(AudioPlayer::NativePlayer *player)          \
+{                                                                       \
+    C##Effect *ptr = 0;                                                 \
+    QT_TRAP_THROWING(ptr = C##Effect::NewL(*player));                   \
+    m_effect.reset(ptr);                                                \
+}                                                                       \
+                                                                        \
+C##Effect* Effect::concreteEffect()                                     \
+{                                                                       \
+    return static_cast<C##Effect *>(m_effect.data());                   \
 }
 
 QT_END_NAMESPACE
