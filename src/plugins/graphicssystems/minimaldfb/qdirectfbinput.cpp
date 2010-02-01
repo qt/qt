@@ -137,13 +137,14 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
     IDirectFBWindow *window;
     layer->GetWindow(layer,event.window.window_id,&window);
 
+    long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
+    timestamp /= 1000;
+
     if (event.window.type == DWET_BUTTONDOWN) {
         static long prevTime = 0;
         static QWidget *prevWindow;
         static int prevX = -999;
         static int prevY = -999;
-        long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
-        timestamp /= 1000;
 
         if (tlw == prevWindow && timestamp - prevTime < QApplication::doubleClickInterval()
             && qAbs(event.window.cx - prevX) < 5 && qAbs(event.window.cy - prevY) < 5) {
@@ -161,7 +162,7 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
         window->UngrabPointer(window);
     }
 
-    QApplicationPrivate::handleMouseEvent(tlw, p, globalPos, buttons);
+    QApplicationPrivate::handleMouseEvent(event.window.window_id, timestamp, p, globalPos, buttons);
 }
 
 void QDirectFbInput::applicationEnd()
@@ -174,9 +175,10 @@ void QDirectFbInput::handleWheelEvent(const DFBEvent &event)
 {
     QPoint p(event.window.cx, event.window.cy);
     QPoint globalPos = globalPoint(event);
-    QWidget *tlw = tlwMap.value(event.window.window_id);
+    long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
+    timestamp /= 1000;
 
-    QApplicationPrivate::handleWheelEvent(tlw, p, globalPos,
+    QApplicationPrivate::handleWheelEvent(event.window.window_id, timestamp, p, globalPos,
                                           event.window.step*120,
                                           Qt::Vertical);
 }
@@ -187,8 +189,10 @@ void QDirectFbInput::handleKeyEvents(const DFBEvent &event)
     Qt::Key key = QDirectFbConvenience::keyMap()->value(event.window.key_symbol);
     Qt::KeyboardModifiers modifiers = QDirectFbConvenience::keyboardModifiers(event.window.modifiers);
 
-    QWidget *tlw = tlwMap.value(event.window.window_id);
-    QApplicationPrivate::handleKeyEvent(tlw, type, key, modifiers, QChar(event.window.key_symbol));
+    long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
+    timestamp /= 1000;
+
+    QApplicationPrivate::handleKeyEvent(event.window.window_id, timestamp, type, key, modifiers, QChar(event.window.key_symbol));
 }
 
 void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)

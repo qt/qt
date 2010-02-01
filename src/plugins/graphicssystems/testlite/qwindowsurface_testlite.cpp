@@ -243,7 +243,7 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
                 bool hor = (((e->button == Button4 || e->button == Button5)
                              && (modifiers & Qt::AltModifier))
                             || (e->button == 6 || e->button == 7));
-                QApplicationPrivate::handleWheelEvent(window(),
+                QApplicationPrivate::handleWheelEvent(winId(), e->time,
                                                       QPoint(e->x, e->y),
                                                       QPoint(e->x_root, e->y_root),
                                                       delta, hor ? Qt::Horizontal : Qt::Vertical);
@@ -256,7 +256,7 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
 
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
-    QApplicationPrivate::handleMouseEvent(window(), QPoint(e->x, e->y),
+    QApplicationPrivate::handleMouseEvent(winId(), e->time, QPoint(e->x, e->y),
                                           QPoint(e->x_root, e->y_root),
                                           buttons);
 
@@ -590,12 +590,12 @@ void QTestLiteWindowSurface::handleKeyEvent(QEvent::Type type, void *ev)
     modifiers ^= modifierFromKeyCode(qtcode);
 
     if (qtcode) {
-        QApplicationPrivate::handleKeyEvent(window(), type, qtcode, modifiers);
+        QApplicationPrivate::handleKeyEvent(winId(), e->time, type, qtcode, modifiers);
     } else if (chars[0]) {
         int qtcode = chars.toUpper()[0]; //Not exactly right...
 	if (modifiers & Qt::ControlModifier && qtcode < ' ')
 	  qtcode = chars[0] + '@';
-        QApplicationPrivate::handleKeyEvent(window(), type, qtcode, modifiers, QString::fromLatin1(chars));
+        QApplicationPrivate::handleKeyEvent(winId(), e->time, type, qtcode, modifiers, QString::fromLatin1(chars));
     } else {
         qWarning() << "unknown X keycode" << hex << e->keycode << keySym;
     }
