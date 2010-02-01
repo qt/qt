@@ -75,6 +75,7 @@ private slots:
     void deletingState();
     void tempState();
     void illegalTempState();
+    void nonExistantProperty();
 };
 
 void tst_states::basicChanges()
@@ -855,6 +856,19 @@ void tst_states::illegalTempState()
     QTest::ignoreMessage(QtWarningMsg, "Can't apply a state change as part of a state definition. ");
     rect->setState("placed");
     QCOMPARE(rect->state(), QLatin1String("placed"));
+}
+
+void tst_states::nonExistantProperty()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/nonExistantProp.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "QML PropertyChanges (file://" SRCDIR "/data/nonExistantProp.qml:9:9) Cannot assign to non-existant property \"colr\"");
+    rect->setState("blue");
+    QCOMPARE(rect->state(), QLatin1String("blue"));
 }
 
 QTEST_MAIN(tst_states)

@@ -99,14 +99,14 @@ void tst_qmlfontloader::namedFont()
 
 void tst_qmlfontloader::localFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" SRCDIR  "/data/FreeMono.ttf\" }";
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" SRCDIR  "/data/tarzeau_ocr_a.ttf\" }";
     QmlComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl("file://"));
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
     QVERIFY(fontObject != 0);
     QVERIFY(fontObject->source() != QUrl(""));
-    QTRY_COMPARE(fontObject->name(), QString("FreeMono"));
+    QTRY_COMPARE(fontObject->name(), QString("OCRA"));
     QTRY_VERIFY(fontObject->status() == QmlFontLoader::Ready);
 }
 

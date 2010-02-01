@@ -84,9 +84,7 @@ public:
 
     QStringList supportedCodecs() const;
     QList<int> supportedFrequencies() const;
-    QList<int> supportedSampleRates() const;
     QList<int> supportedChannels() const;
-    QList<int> supportedChannelCounts() const;
     QList<int> supportedSampleSizes() const;
     QList<QAudioFormat::Endian> supportedByteOrders() const;
     QList<QAudioFormat::SampleType> supportedSampleTypes() const;

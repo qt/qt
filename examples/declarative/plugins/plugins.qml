@@ -1,4 +1,5 @@
-import com.nokia.TimeExample 1.0
+import com.nokia.TimeExample 1.0 // import types from the plugin
+import 'files' // import types from the 'files' directory
 
 Clock { // this class is defined in QML (files/Clock.qml)
 

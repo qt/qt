@@ -80,16 +80,21 @@ public:
                     // Can apply to all properties, except IsFunction
                     IsConstant        = 0x00000001,
                     IsWritable        = 0x00000002,
+                    IsResettable      = 0x00000004,
 
-                    // These are mutually exclusive
-                    IsFunction        = 0x00000004,
-                    IsVMEFunction     = 0x00000008,
+                    // These are mutualy exclusive
+                    IsFunction        = 0x00000008,
                     IsQObjectDerived  = 0x00000010,
                     IsEnumType        = 0x00000020,
                     IsQmlList         = 0x00000040,
                     IsQList           = 0x00000080,
                     IsQmlBinding      = 0x00000100,
-                    IsQScriptValue    = 0x00000200
+                    IsQScriptValue    = 0x00000200,
+
+                    // Apply only to IsFunctions
+                    IsVMEFunction     = 0x00000400,
+                    HasArguments      = 0x00000800
+
         };
         Q_DECLARE_FLAGS(Flags, Flag)
                         

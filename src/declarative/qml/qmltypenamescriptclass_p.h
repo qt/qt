@@ -56,14 +56,14 @@
 
 #include <QtScript/qscriptclass.h>
 
-#include <private/qscriptdeclarativeclass_p.h>
+#include <private/qmlscriptclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlEngine;
 class QmlType;
 class QmlTypeNameCache;
-class QmlTypeNameScriptClass : public QScriptDeclarativeClass
+class QmlTypeNameScriptClass : public QmlScriptClass
 {
 public:
     QmlTypeNameScriptClass(QmlEngine *);
@@ -77,7 +77,7 @@ protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual Value property(Object *, const Identifier &);
+    virtual ScriptValue property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
 private:

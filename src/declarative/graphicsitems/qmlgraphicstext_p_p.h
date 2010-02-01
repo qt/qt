@@ -72,9 +72,12 @@ public:
     QmlGraphicsTextPrivate()
       : color((QRgb)0), style(QmlGraphicsText::Normal), imgDirty(true),
         hAlign(QmlGraphicsText::AlignLeft), vAlign(QmlGraphicsText::AlignTop), elideMode(QmlGraphicsText::ElideNone),
-        dirty(true), wrap(false), richText(false), singleline(false), doc(0),
+        dirty(true), wrap(false), richText(false), singleline(false), cache(true), doc(0),
         format(QmlGraphicsText::AutoText)
     {
+#ifdef QML_NO_TEXT_CACHE
+        cache = false;
+#endif
     }
 
     ~QmlGraphicsTextPrivate();
@@ -93,6 +96,7 @@ public:
     void drawOutline(int yOffset);
 
     QPixmap wrappedTextImage(bool drawStyle);
+    void drawWrappedText(QPainter *p, const QPointF &pos, bool drawStyle);
     QPixmap richTextImage(bool drawStyle);
     QSize setupTextLayout(QTextLayout *layout);
 
@@ -112,6 +116,7 @@ public:
     bool wrap:1;
     bool richText:1;
     bool singleline:1;
+    bool cache:1;
     QTextDocument *doc;
     QTextLayout layout;
     QSize cachedLayoutSize;

@@ -451,7 +451,8 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
                 qWarning() << "    Action event:" << action.event->typeName();
             else
                 qWarning() << "    Action:" << action.property.object()
-                           << action.property.name() << action.fromValue << action.toValue;
+                           << action.property.name() << "From:" << action.fromValue 
+                           << "To:" << action.toValue;
         }
     }
 

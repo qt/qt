@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qmlpixmapcache_p.h"
+#include "qmlnetworkaccessmanagerfactory.h"
 
 #include "qfxperf_p_p.h"
 
@@ -57,112 +58,252 @@
 #include <QWaitCondition>
 #include <QtCore/qdebug.h>
 #include <private/qobject_p.h>
+#include <QSslError>
+
+#ifdef Q_OS_LINUX
+#include <pthread.h>
+#include <linux/sched.h>
+#endif
+
+// Maximum number of simultaneous image requests to send.
+static const int maxImageRequestCount = 8;
 
 QT_BEGIN_NAMESPACE
+
+inline uint qHash(const QUrl &uri)
+{
+    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
+}
 
 class QmlImageReader : public QThread
 {
     Q_OBJECT
 public:
-    QmlImageReader(QObject *parent=0);
+    QmlImageReader(QmlEngine *eng);
     ~QmlImageReader();
 
-    void read(QmlPixmapReply *rep);
+    QmlPixmapReply *getImage(const QUrl &url);
     void cancel(QmlPixmapReply *rep);
+
+    static QmlImageReader *instance(QmlEngine *engine);
 
 protected:
     void run();
+    bool event(QEvent *event);
+
+private slots:
+    void networkRequestDone();
+    void namInvalidated() {
+        accessManagerValid = false;
+    }
 
 private:
-    struct Job {
-        Job() : reply(0), error(false) {}
-        QmlPixmapReply *reply;
-        QImage img;
-        bool error;
-    };
+    QNetworkAccessManager *networkAccessManager() {
+        if (!accessManagerValid) {
+            delete accessManager;
+            accessManager = 0;
+        }
+        if (!accessManager) {
+            if (engine && engine->networkAccessManagerFactory()) {
+                connect(engine->networkAccessManagerFactory(), SIGNAL(invalidated())
+                        , this, SLOT(namInvalidated()), Qt::UniqueConnection);
+                accessManager = engine->networkAccessManagerFactory()->create(this);
+            } else {
+                accessManager = new QNetworkAccessManager(this);
+            }
+            accessManagerValid = true;
+        }
+        return accessManager;
+    }
 
-    void loadImage(Job &job);
-
-    QList<Job> jobs;
+    QList<QmlPixmapReply*> jobs;
+    QList<QmlPixmapReply*> cancelled;
+    QHash<QNetworkReply*,QmlPixmapReply*> replies;
+    QNetworkAccessManager *accessManager;
+    bool accessManagerValid;
+    QmlEngine *engine;
     QMutex mutex;
-    QWaitCondition haveJob;
-    bool quit;
+    static QHash<QmlEngine *,QmlImageReader*> readers;
 };
 
-class QmlImageDecodeEvent : public QEvent
+QHash<QmlEngine *,QmlImageReader*> QmlImageReader::readers;
+
+class QmlImageReaderEvent : public QEvent
 {
 public:
-    QmlImageDecodeEvent(bool err, QImage &img) : QEvent(QEvent::User), error(err), image(img) {}
+    enum ReadError { NoError, Loading, Decoding };
 
-    bool error;
+    QmlImageReaderEvent(QmlImageReaderEvent::ReadError err, QImage &img)
+        : QEvent(QEvent::User), error(err), image(img) {}
+
+    ReadError error;
     QImage image;
 };
 
-Q_GLOBAL_STATIC(QmlImageReader, qmlImageReader)
 
-
-QmlImageReader::QmlImageReader(QObject *parent) : QThread(parent), quit(false)
+QmlImageReader::QmlImageReader(QmlEngine *eng)
+    : QThread(eng), accessManager(0), accessManagerValid(false), engine(eng)
 {
     start(QThread::LowPriority);
 }
 
 QmlImageReader::~QmlImageReader()
 {
-    quit = true;
-    haveJob.wakeOne();
 }
 
-void QmlImageReader::read(QmlPixmapReply *reply)
+QmlImageReader *QmlImageReader::instance(QmlEngine *engine)
+{
+    QmlImageReader *reader = readers.value(engine);
+    if (!reader) {
+        static QMutex rmutex;
+        rmutex.lock();
+        reader = new QmlImageReader(engine);
+        readers.insert(engine, reader);
+        rmutex.unlock();
+    }
+
+    return reader;
+}
+
+QmlPixmapReply *QmlImageReader::getImage(const QUrl &url)
 {
     mutex.lock();
-    Job job;
-    job.reply = reply;
-    jobs.append(job);
+    QmlPixmapReply *reply = new QmlPixmapReply(engine, url);
+    jobs.append(reply);
     if (jobs.count() == 1)
-        haveJob.wakeOne();
+        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     mutex.unlock();
+    return reply;
 }
 
 void QmlImageReader::cancel(QmlPixmapReply *reply)
 {
     mutex.lock();
-    QList<Job>::iterator it = jobs.begin();
-    while (it != jobs.end()) {
-        if ((*it).reply == reply) {
-            jobs.erase(it);
-            break;
+    if (reply->isLoading()) {
+        // Already requested.  Add to cancel list to be cancelled in reader thread.
+        cancelled.append(reply);
+        if (cancelled.count() == 1)
+            QCoreApplication::postEvent(this, new QEvent(QEvent::User));
+    } else {
+        // Not yet processed - just remove from waiting list
+        QList<QmlPixmapReply*>::iterator it = jobs.begin();
+        while (it != jobs.end()) {
+            QmlPixmapReply *job = *it;
+            if (job == reply) {
+                jobs.erase(it);
+                break;
+            }
+            ++it;
         }
-        ++it;
     }
     mutex.unlock();
 }
 
-void QmlImageReader::loadImage(Job &job)
-{
-    QImageReader imgio(job.reply->device());
-    if (imgio.read(&job.img)) {
-        job.error = false;
-    } else {
-        job.error = true;
-        qWarning() << imgio.errorString();
-    }
-}
-
 void QmlImageReader::run()
 {
-    while (1) {
-        mutex.lock();
-        if (!jobs.count())
-            haveJob.wait(&mutex);
-        if (quit)
-            break;
-        Job runningJob = jobs.takeFirst();
-        runningJob.reply->addRef();
-        mutex.unlock();
+#ifdef Q_OS_LINUX
+    struct sched_param param;
+    int policy;
 
-        loadImage(runningJob);
-        QCoreApplication::postEvent(runningJob.reply, new QmlImageDecodeEvent(runningJob.error, runningJob.img));
+    pthread_getschedparam(pthread_self(), &policy, &param);
+    pthread_setschedparam(pthread_self(), SCHED_IDLE, &param);
+#endif
+
+    exec();
+}
+
+bool QmlImageReader::event(QEvent *event)
+{
+    if (event->type() == QEvent::User) {
+        static int replyDownloadProgress = -1;
+        static int replyFinished = -1;
+        static int downloadProgress = -1;
+        static int thisNetworkRequestDone = -1;
+
+        if (replyDownloadProgress == -1) {
+            replyDownloadProgress = QNetworkReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
+            replyFinished = QNetworkReply::staticMetaObject.indexOfSignal("finished()");
+            downloadProgress = QmlPixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
+            thisNetworkRequestDone = QmlImageReader::staticMetaObject.indexOfSlot("networkRequestDone()");
+        }
+
+        while (1) {
+            mutex.lock();
+
+            if (cancelled.count()) {
+                for (int i = 0; i < cancelled.count(); ++i) {
+                    QmlPixmapReply *job = cancelled.at(i);
+                    QNetworkReply *reply = replies.key(job, 0);
+                    if (reply && reply->isRunning()) {
+                        replies.remove(reply);
+                        reply->close();
+                        job->release(true);
+                    }
+                }
+                cancelled.clear();
+            }
+
+            if (!accessManagerValid) {
+                // throw away existing requests and reschedule.
+                QHash<QNetworkReply*,QmlPixmapReply*>::iterator it = replies.begin();
+                for (; it != replies.end(); ++it) {
+                    delete it.key();
+                    jobs.prepend(*it);
+                }
+                replies.clear();
+            }
+
+            if (!jobs.count() || replies.count() > maxImageRequestCount) {
+                mutex.unlock();
+                break;
+            }
+
+            QmlPixmapReply *runningJob = jobs.takeFirst();
+            runningJob->addRef();
+            runningJob->setLoading();
+            QUrl url = runningJob->url();
+            mutex.unlock();
+
+            // fetch
+            QNetworkRequest req(url);
+            req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+            QNetworkReply *reply = networkAccessManager()->get(req);
+
+            QMetaObject::connect(reply, replyDownloadProgress, runningJob, downloadProgress);
+            QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+
+            replies.insert(reply, runningJob);
+        }
+        return true;
     }
+
+    return QObject::event(event);
+}
+
+void QmlImageReader::networkRequestDone()
+{
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    QmlPixmapReply *job = replies.take(reply);
+    if (job) {
+        QImage image;
+        QmlImageReaderEvent::ReadError error;
+        if (reply->error()) {
+            error = QmlImageReaderEvent::Loading;
+        } else {
+            QImageReader imgio(reply);
+            if (imgio.read(&image)) {
+                error = QmlImageReaderEvent::NoError;
+            } else {
+                error = QmlImageReaderEvent::Decoding;
+            }
+        }
+        // send completion event to the QmlPixmapReply
+        QCoreApplication::postEvent(job, new QmlImageReaderEvent(error, image));
+    }
+    // kick off event loop again if we have dropped below max request count
+    if (replies.count() == maxImageRequestCount)
+        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
+    reply->deleteLater();
 }
 
 static bool readImage(QIODevice *dev, QPixmap *pixmap)
@@ -215,85 +356,55 @@ static QString toLocalFileOrQrc(const QUrl& url)
     return r;
 }
 
-typedef QHash<QString, QmlPixmapReply *> QmlPixmapReplyHash;
-static QmlPixmapReplyHash qmlActivePixmapReplies;
+typedef QHash<QUrl, QmlPixmapReply *> QmlPixmapReplyHash;
+Q_GLOBAL_STATIC(QmlPixmapReplyHash, qmlActivePixmapReplies);
 
 class QmlPixmapReplyPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlPixmapReply)
 
 public:
-    QmlPixmapReplyPrivate(const QString &url, QNetworkReply *r)
-        : QObjectPrivate(), refCount(1), urlKey(url), reply(r), status(QmlPixmapReply::Loading) {
+    QmlPixmapReplyPrivate(QmlEngine *e, const QUrl &u)
+        : QObjectPrivate(), refCount(1), url(u), status(QmlPixmapReply::Loading), loading(false), engine(e) {
     }
 
     int refCount;
-    QString urlKey;
-    QNetworkReply *reply;
+    QUrl url;
     QPixmap pixmap; // ensure reference to pixmap so QPixmapCache does not discard
-    QImage image;
     QmlPixmapReply::Status status;
+    bool loading;
+    QmlEngine *engine;
 };
 
 
-QmlPixmapReply::QmlPixmapReply(const QString &key, QNetworkReply *reply)
-  : QObject(*new QmlPixmapReplyPrivate(key, reply), 0)
+QmlPixmapReply::QmlPixmapReply(QmlEngine *engine, const QUrl &url)
+  : QObject(*new QmlPixmapReplyPrivate(engine, url), 0)
 {
-    Q_D(QmlPixmapReply);
-
-    static int replyDownloadProgress = -1;
-    static int replyFinished = -1;
-    static int thisDownloadProgress = -1;
-    static int thisNetworkRequestDone = -1;
-
-    if (replyDownloadProgress == -1) {
-        replyDownloadProgress = QNetworkReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
-        replyFinished = QNetworkReply::staticMetaObject.indexOfSignal("finished()");
-        thisDownloadProgress = QmlPixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
-        thisNetworkRequestDone = QmlPixmapReply::staticMetaObject.indexOfSlot("networkRequestDone()");
-    }
-
-    QMetaObject::connect(d->reply, replyDownloadProgress, this, thisDownloadProgress, Qt::DirectConnection);
-    QMetaObject::connect(d->reply, replyFinished, this, thisNetworkRequestDone);
 }
 
 QmlPixmapReply::~QmlPixmapReply()
 {
-    Q_D(QmlPixmapReply);
-    if (d->status == Decoding)
-        qmlImageReader()->cancel(this);
-    delete d->reply;
 }
 
-void QmlPixmapReply::networkRequestDone()
+const QUrl &QmlPixmapReply::url() const
 {
-    Q_D(QmlPixmapReply);
-    if (d->reply->error()) {
-        d->pixmap = QPixmap();
-        d->status = Error;
-        QPixmapCache::insert(d->urlKey, d->pixmap);
-        qWarning() << "Network error loading" << d->urlKey << d->reply->errorString();
-        emit finished();
-    } else {
-        qmlImageReader()->read(this);
-        d->status = Decoding;
-    }
+    Q_D(const QmlPixmapReply);
+    return d->url;
 }
 
 bool QmlPixmapReply::event(QEvent *event)
 {
     Q_D(QmlPixmapReply);
     if (event->type() == QEvent::User) {
+        d->loading = false;
         if (!release(true)) {
-            QmlImageDecodeEvent *de = static_cast<QmlImageDecodeEvent*>(event);
-            d->status = de->error ? Error : Ready;
-            if (d->status == Ready) {
+            QmlImageReaderEvent *de = static_cast<QmlImageReaderEvent*>(event);
+            d->status = (de->error == QmlImageReaderEvent::NoError) ? Ready : Error;
+            if (d->status == Ready)
                 d->pixmap = QPixmap::fromImage(de->image);
-                d->image = QImage();
-            } else {
-                qWarning() << "Error decoding" << d->urlKey;
-            }
-            QPixmapCache::insert(d->urlKey, d->pixmap); // note: may fail (returns false)
+            QByteArray key = d->url.toEncoded(QUrl::FormattingOption(0x100));
+            QString strKey = QString::fromLatin1(key.constData(), key.count());
+            QPixmapCache::insert(strKey, d->pixmap); // note: may fail (returns false)
             emit finished();
         }
         return true;
@@ -308,10 +419,16 @@ QmlPixmapReply::Status QmlPixmapReply::status() const
     return d->status;
 }
 
-QIODevice *QmlPixmapReply::device()
+bool QmlPixmapReply::isLoading() const
+{
+    Q_D(const QmlPixmapReply);
+    return d->loading;
+}
+
+void QmlPixmapReply::setLoading()
 {
     Q_D(QmlPixmapReply);
-    return d->reply;
+    d->loading = true;
 }
 
 void QmlPixmapReply::addRef()
@@ -326,12 +443,18 @@ bool QmlPixmapReply::release(bool defer)
     Q_ASSERT(d->refCount > 0);
     --d->refCount;
     if (d->refCount == 0) {
-        qmlActivePixmapReplies.remove(d->urlKey);
+        qmlActivePixmapReplies()->remove(d->url);
+        if (d->status == Loading && !d->loading)
+            QmlImageReader::instance(d->engine)->cancel(this);
         if (defer)
             deleteLater();
         else
             delete this;
         return true;
+    } else if (d->refCount == 1 && d->loading) {
+        // The only reference left is the reader thread.
+        qmlActivePixmapReplies()->remove(d->url);
+        QmlImageReader::instance(d->engine)->cancel(this);
     }
 
     return false;
@@ -373,22 +496,22 @@ QmlPixmapReply::Status QmlPixmapCache::get(const QUrl& url, QPixmap *pixmap)
     }
 #endif
 
-    QString key = url.toString();
-
-    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(key);
-    if (iter != qmlActivePixmapReplies.end() && (*iter)->status() == QmlPixmapReply::Ready) {
+    QByteArray key = url.toEncoded(QUrl::FormattingOption(0x100));
+    QString strKey = QString::fromLatin1(key.constData(), key.count());
+    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
+    if (iter != qmlActivePixmapReplies()->end() && (*iter)->status() == QmlPixmapReply::Ready) {
         // Must check this, since QPixmapCache::insert may have failed.
         *pixmap = (*iter)->d_func()->pixmap;
         status = (*iter)->status();
         (*iter)->release();
-    } else if (QPixmapCache::find(key, pixmap)) {
-        if (iter != qmlActivePixmapReplies.end()) {
+    } else if (QPixmapCache::find(strKey, pixmap)) {
+        if (iter != qmlActivePixmapReplies()->end()) {
             status = (*iter)->status();
             (*iter)->release();
         } else {
             status = pixmap->isNull() ? QmlPixmapReply::Error : QmlPixmapReply::Ready;
         }
-    } else if (iter != qmlActivePixmapReplies.end()) {
+    } else if (iter != qmlActivePixmapReplies()->end()) {
         status = QmlPixmapReply::Loading;
     }
 
@@ -406,13 +529,11 @@ QmlPixmapReply::Status QmlPixmapCache::get(const QUrl& url, QPixmap *pixmap)
 */
 QmlPixmapReply *QmlPixmapCache::request(QmlEngine *engine, const QUrl &url)
 {
-    QString key = url.toString();
-    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(key);
-    if (iter == qmlActivePixmapReplies.end()) {
-        QNetworkRequest req(url);
-        req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-        QmlPixmapReply *item = new QmlPixmapReply(key, engine->networkAccessManager()->get(req));
-        iter = qmlActivePixmapReplies.insert(key, item);
+    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
+    if (iter == qmlActivePixmapReplies()->end()) {
+        QmlImageReader *reader = QmlImageReader::instance(engine);
+        QmlPixmapReply *item = reader->getImage(url);
+        iter = qmlActivePixmapReplies()->insert(url, item);
     } else {
         (*iter)->addRef();
     }
@@ -430,9 +551,8 @@ QmlPixmapReply *QmlPixmapCache::request(QmlEngine *engine, const QUrl &url)
 */
 void QmlPixmapCache::cancel(const QUrl& url, QObject *obj)
 {
-    QString key = url.toString();
-    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(key);
-    if (iter == qmlActivePixmapReplies.end())
+    QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
+    if (iter == qmlActivePixmapReplies()->end())
         return;
 
     QmlPixmapReply *reply = *iter;
@@ -447,7 +567,7 @@ void QmlPixmapCache::cancel(const QUrl& url, QObject *obj)
 */
 int QmlPixmapCache::pendingRequests()
 {
-    return qmlActivePixmapReplies.count();
+    return qmlActivePixmapReplies()->count();
 }
 
 #include <qmlpixmapcache.moc>

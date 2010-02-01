@@ -362,11 +362,24 @@ void QmlGraphicsText::setWrap(bool w)
 
     The way the text property should be displayed.
 
-    Supported text formats are \c AutoText, \c PlainText and \c RichText.
+    Supported text formats are \c AutoText, \c PlainText, \c RichText and \c StyledText
 
     The default is AutoText.  If the text format is AutoText the text element
     will automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
+
+    StyledText is an optimized format supporting some basic text
+    styling markup, in the style of html 3.2:
+
+    \code
+    <font size="4" color="#ff0000">font size and color</font>
+    <b>bold</b>
+    <i>italic</i>
+    <br>
+    &gt; &lt; &amp;
+    \endcode
+
+    \c StyledText parser is strict, requiring tags to be correctly nested.
 
     \table
     \row
@@ -622,12 +635,25 @@ QSize QmlGraphicsTextPrivate::setupTextLayout(QTextLayout *layout)
     }
     layout->endLayout();
 
+    int x = 0;
     for (int i = 0; i < layout->lineCount(); ++i) {
         QTextLine line = layout->lineAt(i);
         widthUsed = qMax(widthUsed, line.naturalTextWidth());
         line.setPosition(QPointF(0, height));
         height += int(line.height());
+
+        if (!cache) {
+            if (hAlign == QmlGraphicsText::AlignLeft) {
+                x = 0;
+            } else if (hAlign == QmlGraphicsText::AlignRight) {
+                x = q->width() - (int)line.naturalTextWidth();
+            } else if (hAlign == QmlGraphicsText::AlignHCenter) {
+                x = (q->width() - (int)line.naturalTextWidth()) / 2;
+            }
+            line.setPosition(QPoint(x, (int)line.y()));
+        }
     }
+
     return QSize(qCeil(widthUsed), height);
 }
 
@@ -654,15 +680,19 @@ QPixmap QmlGraphicsTextPrivate::wrappedTextImage(bool drawStyle)
     if (!size.isEmpty()) {
         img.fill(Qt::transparent);
         QPainter p(&img);
-        if (drawStyle) {
-            p.setPen(styleColor);
-        }
-        else
-            p.setPen(color);
-        p.setFont(font);
-        layout.draw(&p, QPointF(0, 0));
+        drawWrappedText(&p, QPointF(0,0), drawStyle);
     }
     return img;
+}
+
+void QmlGraphicsTextPrivate::drawWrappedText(QPainter *p, const QPointF &pos, bool drawStyle)
+{
+    if (drawStyle)
+        p->setPen(styleColor);
+    else
+        p->setPen(color);
+    p->setFont(font);
+    layout.draw(p, pos);
 }
 
 QPixmap QmlGraphicsTextPrivate::richTextImage(bool drawStyle)
@@ -730,59 +760,87 @@ void QmlGraphicsTextPrivate::checkImgCache()
 void QmlGraphicsText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QmlGraphicsText);
-    d->checkImgCache();
-    if (d->imgCache.isNull())
-        return;
 
-    bool oldAA = p->testRenderHint(QPainter::Antialiasing);
-    bool oldSmooth = p->testRenderHint(QPainter::SmoothPixmapTransform);
-    if (d->smooth)
-        p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+    if (d->cache || d->richText || d->style != Normal) {
+        d->checkImgCache();
+        if (d->imgCache.isNull())
+            return;
 
-    int w = width();
-    int h = height();
+        bool oldAA = p->testRenderHint(QPainter::Antialiasing);
+        bool oldSmooth = p->testRenderHint(QPainter::SmoothPixmapTransform);
+        if (d->smooth)
+            p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
-    int x = 0;
-    int y = 0;
+        int w = width();
+        int h = height();
 
-    switch (d->hAlign) {
-    case AlignLeft:
-        x = 0;
-        break;
-    case AlignRight:
-        x = w - d->imgCache.width();
-        break;
-    case AlignHCenter:
-        x = (w - d->imgCache.width()) / 2;
-        break;
-    }
+        int x = 0;
+        int y = 0;
 
-    switch (d->vAlign) {
-    case AlignTop:
-        y = 0;
-        break;
-    case AlignBottom:
-        y = h - d->imgCache.height();
-        break;
-    case AlignVCenter:
-        y = (h - d->imgCache.height()) / 2;
-        break;
-    }
+        switch (d->hAlign) {
+        case AlignLeft:
+            x = 0;
+            break;
+        case AlignRight:
+            x = w - d->imgCache.width();
+            break;
+        case AlignHCenter:
+            x = (w - d->imgCache.width()) / 2;
+            break;
+        }
 
-    bool needClip = !clip() && (d->imgCache.width() > width() ||
-                                d->imgCache.height() > height());
+        switch (d->vAlign) {
+        case AlignTop:
+            y = 0;
+            break;
+        case AlignBottom:
+            y = h - d->imgCache.height();
+            break;
+        case AlignVCenter:
+            y = (h - d->imgCache.height()) / 2;
+            break;
+        }
 
-    if (needClip) {
-        p->save();
-        p->setClipRect(boundingRect(), Qt::IntersectClip);
-    }
-    p->drawPixmap(x, y, d->imgCache);
-    if (needClip)
-        p->restore();
+        bool needClip = !clip() && (d->imgCache.width() > width() ||
+                                    d->imgCache.height() > height());
 
-    if (d->smooth) {
-        p->setRenderHint(QPainter::Antialiasing, oldAA);
-        p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
+        if (needClip) {
+            p->save();
+            p->setClipRect(boundingRect(), Qt::IntersectClip);
+        }
+        p->drawPixmap(x, y, d->imgCache);
+        if (needClip)
+            p->restore();
+
+        if (d->smooth) {
+            p->setRenderHint(QPainter::Antialiasing, oldAA);
+            p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
+        }
+    } else {
+        int h = height();
+        int y = 0;
+
+        switch (d->vAlign) {
+        case AlignTop:
+            y = 0;
+            break;
+        case AlignBottom:
+            y = h - d->cachedLayoutSize.height();
+            break;
+        case AlignVCenter:
+            y = (h - d->cachedLayoutSize.height()) / 2;
+            break;
+        }
+        bool needClip = !clip() && (d->cachedLayoutSize.width() > width() ||
+                                    d->cachedLayoutSize.height() > height());
+
+        if (needClip) {
+            p->save();
+            p->setClipRect(boundingRect(), Qt::IntersectClip);
+        }
+        d->drawWrappedText(p, QPointF(0,y), false);
+        if (needClip)
+            p->restore();
     }
 }
 

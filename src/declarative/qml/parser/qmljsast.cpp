@@ -798,7 +798,6 @@ void DebuggerStatement::accept0(Visitor *visitor)
     visitor->endVisit(this);
 }
 
-
 void UiProgram::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {

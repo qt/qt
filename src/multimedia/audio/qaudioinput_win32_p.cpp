@@ -225,16 +225,16 @@ bool QAudioInputPrivate::open()
     header = 0;
     if(buffer_size == 0) {
         // Default buffer size, 100ms, default period size is 20ms
-        buffer_size = settings.sampleRate()*settings.channelCount()*(settings.sampleSize()/8)*0.1;
+        buffer_size = settings.frequency()*settings.channels()*(settings.sampleSize()/8)*0.1;
 	period_size = buffer_size/5;
     } else {
         period_size = buffer_size/5;
     }
     timeStamp.restart();
     elapsedTimeOffset = 0;
-    wfx.nSamplesPerSec = settings.sampleRate();
+    wfx.nSamplesPerSec = settings.frequency();
     wfx.wBitsPerSample = settings.sampleSize();
-    wfx.nChannels = settings.channelCount();
+    wfx.nChannels = settings.channels();
     wfx.cbSize = 0;
 
     wfx.wFormatTag = WAVE_FORMAT_PCM;
@@ -374,8 +374,8 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
 
                 } else {
                     totalTimeValue += waveBlocks[header].dwBytesRecorded
-                        /((settings.channelCount()*settings.sampleSize()/8))
-                        *10000/settings.sampleRate()*100;
+                        /((settings.channels()*settings.sampleSize()/8))
+                        *10000/settings.frequency()*100;
                     errorState = QAudio::NoError;
                     deviceState = QAudio::ActiveState;
 		    resuming = false;
@@ -388,8 +388,8 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
                 qDebug()<<"IN: "<<waveBlocks[header].dwBytesRecorded<<", OUT: "<<l;
 #endif
                 totalTimeValue += waveBlocks[header].dwBytesRecorded
-                    /((settings.channelCount()*settings.sampleSize()/8))
-                    *10000/settings.sampleRate()*100;
+                    /((settings.channels()*settings.sampleSize()/8))
+                    *10000/settings.frequency()*100;
                 errorState = QAudio::NoError;
                 deviceState = QAudio::ActiveState;
 		resuming = false;

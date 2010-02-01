@@ -549,7 +549,10 @@ inline qreal QLineControl::cursorToX(int cursor) const
 
 inline qreal QLineControl::cursorToX() const
 {
-    return cursorToX(m_cursor);
+    int cursor = m_cursor;
+    if (m_preeditCursor != -1)
+        cursor += m_preeditCursor;
+    return cursorToX(cursor);
 }
 
 inline bool QLineControl::isReadOnly() const

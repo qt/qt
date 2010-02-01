@@ -52,6 +52,8 @@ public:
 
 private slots:
     void static_i18n();
+    void static_nestedElements();
+    void static_nestedElements_data();
     void dynamic_data();
     void dynamic();
     void error_data();
@@ -72,6 +74,50 @@ void tst_QmlListModel::static_i18n()
     delete obj;
 }
 
+void tst_QmlListModel::static_nestedElements()
+{
+    QFETCH(int, elementCount);
+
+    QStringList elements;
+    for (int i=0; i<elementCount; i++) 
+        elements.append("ListElement { a: 1; b: 2 }");
+    QString elementsStr = elements.join(",\n") + "\n";
+
+    QString componentStr = 
+        "import Qt 4.6\n"
+        "ListModel {\n"
+        "   ListElement {\n"
+        "       attributes: [\n";
+    componentStr += elementsStr.toUtf8().constData();
+    componentStr += 
+        "       ]\n"
+        "   }\n"
+        "}";
+
+    QmlEngine engine;
+    QmlComponent component(&engine);
+    component.setData(componentStr.toUtf8(), QUrl("file://"));
+
+    QmlListModel *obj = qobject_cast<QmlListModel*>(component.create());
+    QVERIFY(obj != 0);
+
+    QScriptValue prop = obj->get(0).property(QLatin1String("attributes")).property(QLatin1String("count"));
+    QVERIFY(prop.isNumber());
+    QCOMPARE(prop.toInt32(), qint32(elementCount));
+
+    delete obj;
+}
+
+void tst_QmlListModel::static_nestedElements_data()
+{
+    QTest::addColumn<int>("elementCount");
+
+    QTest::newRow("0 items") << 0;
+    QTest::newRow("1 item") << 1;
+    QTest::newRow("2 items") << 2;
+    QTest::newRow("many items") << 5;
+}
+
 void tst_QmlListModel::dynamic_data()
 {
     QTest::addColumn<QString>("script");
@@ -83,6 +129,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("count") << "count" << 0 << "";
 
     QTest::newRow("get1") << "{get(0)}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
+    QTest::newRow("get2") << "{get(-1)}" << 0 << "QML ListModel (unknown location) get: index -1 out of range";
 
     QTest::newRow("append1") << "{append({'foo':123});count}" << 1 << "";
     QTest::newRow("append2") << "{append({'foo':123,'bar':456});count}" << 1 << "";
@@ -100,6 +147,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("remove2b") << "{append({'foo':123});append({'foo':456});remove(0);get(0).foo}" << 456 << "";
     QTest::newRow("remove2c") << "{append({'foo':123});append({'foo':456});remove(1);get(0).foo}" << 123 << "";
     QTest::newRow("remove3") << "{append({'foo':123});remove(0);get(0).foo}" << 0 << "QML ListModel (unknown location) get: index 0 out of range";
+    QTest::newRow("remove3a") << "{append({'foo':123});remove(-1)}" << 0 << "QML ListModel (unknown location) remove: index -1 out of range";
     QTest::newRow("remove4a") << "{remove(0)}" << 0 << "QML ListModel (unknown location) remove: index 0 out of range";
     QTest::newRow("remove4b") << "{append({'foo':123});remove(0);remove(0)}" << 0 << "QML ListModel (unknown location) remove: index 0 out of range";
     QTest::newRow("remove4c") << "{append({'foo':123});remove(1)}" << 0 << "QML ListModel (unknown location) remove: index 1 out of range";
@@ -120,17 +168,19 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("set3a") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).foo}" << 999 << "";
     QTest::newRow("set3b") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).bar}" << 456 << "";
     QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "QML ListModel (unknown location) set: index 0 out of range";
+    QTest::newRow("set4c") << "{set(-1,{'foo':456})}" << 0 << "QML ListModel (unknown location) set: index -1 out of range";
     QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123)}" << 0 << "QML ListModel (unknown location) set: value is not an object";
     QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3])}" << 0 << "QML ListModel (unknown location) set: value is not an object";
     QTest::newRow("set6") << "{append({'foo':123});set(1,{'foo':456});count}" << 2 << "";
 
-    QTest::newRow("setprop1") << "{append({'foo':123});set(0,'foo',456);count}" << 1 << "";
-    QTest::newRow("setprop2") << "{append({'foo':123});set(0,'foo',456);get(0).foo}" << 456 << "";
-    QTest::newRow("setprop3a") << "{append({'foo':123,'bar':456});set(0,'foo',999);get(0).foo}" << 999 << "";
-    QTest::newRow("setprop3b") << "{append({'foo':123,'bar':456});set(0,'foo',999);get(0).bar}" << 456 << "";
-    QTest::newRow("setprop4a") << "{set(0,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 0 out of range";
-    QTest::newRow("setprop4a") << "{append({'foo':123,'bar':456});set(1,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 1 out of range";
-    QTest::newRow("setprop5") << "{append({'foo':123,'bar':456});append({'foo':111});set(1,'bar',222);get(1).bar}" << 222 << "";
+    QTest::newRow("setprop1") << "{append({'foo':123});setProperty(0,'foo',456);count}" << 1 << "";
+    QTest::newRow("setprop2") << "{append({'foo':123});setProperty(0,'foo',456);get(0).foo}" << 456 << "";
+    QTest::newRow("setprop3a") << "{append({'foo':123,'bar':456});setProperty(0,'foo',999);get(0).foo}" << 999 << "";
+    QTest::newRow("setprop3b") << "{append({'foo':123,'bar':456});setProperty(0,'foo',999);get(0).bar}" << 456 << "";
+    QTest::newRow("setprop4a") << "{setProperty(0,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 0 out of range";
+    QTest::newRow("setprop4b") << "{setProperty(-1,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index -1 out of range";
+    QTest::newRow("setprop4c") << "{append({'foo':123,'bar':456});setProperty(1,'foo',456)}" << 0 << "QML ListModel (unknown location) set: index 1 out of range";
+    QTest::newRow("setprop5") << "{append({'foo':123,'bar':456});append({'foo':111});setProperty(1,'bar',222);get(1).bar}" << 222 << "";
 
     QTest::newRow("move1a") << "{append({'foo':123});append({'foo':456});move(0,1,1);count}" << 2 << "";
     QTest::newRow("move1b") << "{append({'foo':123});append({'foo':456});move(0,1,1);get(0).foo}" << 456 << "";

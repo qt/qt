@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <QXmlStreamReader>
 #include <QStack>
 #include <QVector>
 #include <QPainter>
@@ -52,20 +51,22 @@
     QmlStyledText supports few tags:
 
     <b></b> - bold
+    <i></i> - italic
     <br> - new line
-    <font color="color_name"></font>
+    <font color="color_name" size="1-7"></font>
 
-    The opening and closing tags may be correctly nested.
+    The opening and closing tags must be correctly nested.
 */
 
 class QmlStyledTextPrivate
 {
 public:
-    QmlStyledTextPrivate(const QString &t, QTextLayout &l) : text(t), layout(l) {}
+    QmlStyledTextPrivate(const QString &t, QTextLayout &l) : text(t), layout(l), baseFont(layout.font()) {}
 
     void parse();
     bool parseTag(const QChar *&ch, const QString &textIn, QString &textOut, QTextCharFormat &format);
     bool parseCloseTag(const QChar *&ch, const QString &textIn);
+    void parseEntity(const QChar *&ch, const QString &textIn, QString &textOut);
     bool parseFontAttributes(const QChar *&ch, const QString &textIn, QTextCharFormat &format);
     QPair<QStringRef,QStringRef> parseAttribute(const QChar *&ch, const QString &textIn);
     QStringRef parseValue(const QChar *&ch, const QString &textIn);
@@ -77,6 +78,7 @@ public:
 
     QString text;
     QTextLayout &layout;
+    QFont baseFont;
 
     static const QChar lessThan;
     static const QChar greaterThan;
@@ -84,6 +86,7 @@ public:
     static const QChar singleQuote;
     static const QChar doubleQuote;
     static const QChar slash;
+    static const QChar ampersand;
 };
 
 const QChar QmlStyledTextPrivate::lessThan(QLatin1Char('<'));
@@ -92,6 +95,7 @@ const QChar QmlStyledTextPrivate::equals(QLatin1Char('='));
 const QChar QmlStyledTextPrivate::singleQuote(QLatin1Char('\''));
 const QChar QmlStyledTextPrivate::doubleQuote(QLatin1Char('\"'));
 const QChar QmlStyledTextPrivate::slash(QLatin1Char('/'));
+const QChar QmlStyledTextPrivate::ampersand(QLatin1Char('&'));
 
 QmlStyledText::QmlStyledText(const QString &string, QTextLayout &layout)
 : d(new QmlStyledTextPrivate(string, layout))
@@ -109,66 +113,6 @@ void QmlStyledText::parse(const QString &string, QTextLayout &layout)
     styledText.d->parse();
 }
 
-#define CUSTOM_PARSER
-
-#ifndef CUSTOM_PARSER
-void QmlStyledTextPrivate::parse()
-{
-    QList<QTextLayout::FormatRange> ranges;
-    QStack<QTextCharFormat> formatStack;
-
-    QString drawText;
-    drawText.reserve(text.count());
-
-    QXmlStreamReader xml("<html>" + text + "</html>");
-    while (!xml.atEnd()) {
-        xml.readNext();
-        if (xml.tokenType() == QXmlStreamReader::StartElement) {
-            QStringRef name = xml.name();
-            if (name == "b") {
-                QTextCharFormat format;
-                if (formatStack.count())
-                    format = formatStack.top();
-                else
-                    format.setFont(layout.font());
-                format.setFontWeight(QFont::Bold);
-                formatStack.push(format);
-            } else if (name == "br") {
-                drawText.append(QChar(QChar::LineSeparator));
-            } else if (name == "font") {
-                QTextCharFormat format;
-                if (formatStack.count())
-                    format = formatStack.top();
-                else
-                    format.setFont(layout.font());
-                QStringRef col = xml.attributes().value("color");
-                if (!col.isEmpty()) {
-                    format.setForeground(QColor(col.toString()));
-                    formatStack.push(format);
-                }
-            }
-        } else if (xml.tokenType() == QXmlStreamReader::EndElement) {
-            if (formatStack.count() > 1) {
-                QStringRef name = xml.name();
-                if (name == "b" || name == "font" || name == "br")
-                    formatStack.pop();
-            }
-        } else if (xml.tokenType() == QXmlStreamReader::Characters) {
-            if (formatStack.count() > 1) {
-                QTextLayout::FormatRange formatRange;
-                formatRange.format = formatStack.top();
-                formatRange.start = drawText.length();
-                formatRange.length = xml.text().length();
-                ranges.append(formatRange);
-            }
-            drawText.append(xml.text());
-        }
-    }
-
-    layout.setText(drawText);
-    layout.setAdditionalFormats(ranges);
-}
-#else
 void QmlStyledTextPrivate::parse()
 {
     QList<QTextLayout::FormatRange> ranges;
@@ -179,19 +123,20 @@ void QmlStyledTextPrivate::parse()
 
     int textStart = 0;
     int textLength = 0;
+    int rangeStart = 0;
     const QChar *ch = text.constData();
     while (!ch->isNull()) {
         if (*ch == lessThan) {
-            if (textLength) {
-                if (formatStack.count()) {
-                    QTextLayout::FormatRange formatRange;
-                    formatRange.format = formatStack.top();
-                    formatRange.start = drawText.length();
-                    formatRange.length = textLength;
-                    ranges.append(formatRange);
-                }
+            if (textLength)
                 drawText.append(QStringRef(&text, textStart, textLength));
+            if (rangeStart != drawText.length() && formatStack.count()) {
+                QTextLayout::FormatRange formatRange;
+                formatRange.format = formatStack.top();
+                formatRange.start = rangeStart;
+                formatRange.length = drawText.length() - rangeStart;
+                ranges.append(formatRange);
             }
+            rangeStart = drawText.length();
             ++ch;
             if (*ch == slash) {
                 ++ch;
@@ -202,10 +147,16 @@ void QmlStyledTextPrivate::parse()
                 if (formatStack.count())
                     format = formatStack.top();
                 else
-                    format.setFont(layout.font());
+                    format.setFont(baseFont);
                 if (parseTag(ch, text, drawText, format))
                     formatStack.push(format);
             }
+            textStart = ch - text.constData() + 1;
+            textLength = 0;
+        } else if (*ch == ampersand) {
+            ++ch;
+            drawText.append(QStringRef(&text, textStart, textLength));
+            parseEntity(ch, text, drawText);
             textStart = ch - text.constData() + 1;
             textLength = 0;
         } else {
@@ -213,22 +164,19 @@ void QmlStyledTextPrivate::parse()
         }
         ++ch;
     }
-    if (textLength) {
-        if (formatStack.count()) {
-            QTextLayout::FormatRange formatRange;
-            formatRange.format = formatStack.top();
-            formatRange.start = drawText.length();
-            formatRange.length = textLength;
-            ranges.append(formatRange);
-        }
+    if (textLength)
         drawText.append(QStringRef(&text, textStart, textLength));
+    if (rangeStart != drawText.length() && formatStack.count()) {
+        QTextLayout::FormatRange formatRange;
+        formatRange.format = formatStack.top();
+        formatRange.start = rangeStart;
+        formatRange.length = drawText.length() - rangeStart;
+        ranges.append(formatRange);
     }
 
     layout.setText(drawText);
     layout.setAdditionalFormats(ranges);
 }
-#endif
-
 
 bool QmlStyledTextPrivate::parseTag(const QChar *&ch, const QString &textIn, QString &textOut, QTextCharFormat &format)
 {
@@ -239,12 +187,18 @@ bool QmlStyledTextPrivate::parseTag(const QChar *&ch, const QString &textIn, QSt
     while (!ch->isNull()) {
         if (*ch == greaterThan) {
             QStringRef tag(&textIn, tagStart, tagLength);
-            if (tag.at(0) == QLatin1Char('b')) {
+            const QChar char0 = tag.at(0);
+            if (char0 == QLatin1Char('b')) {
                 if (tagLength == 1) {
                     format.setFontWeight(QFont::Bold);
                     return true;
                 } else if (tagLength == 2 && tag.at(1) == QLatin1Char('r')) {
                     textOut.append(QChar(QChar::LineSeparator));
+                    return true;
+                }
+            } else if (char0 == QLatin1Char('i')) {
+                if (tagLength == 1) {
+                    format.setFontItalic(true);
                     return true;
                 }
             }
@@ -274,10 +228,14 @@ bool QmlStyledTextPrivate::parseCloseTag(const QChar *&ch, const QString &textIn
     while (!ch->isNull()) {
         if (*ch == greaterThan) {
             QStringRef tag(&textIn, tagStart, tagLength);
-            if (tag.at(0) == QLatin1Char('b')) {
+            const QChar char0 = tag.at(0);
+            if (char0 == QLatin1Char('b')) {
                 if (tagLength == 1)
                     return true;
                 else if (tag.at(1) == QLatin1Char('r') && tagLength == 2)
+                    return true;
+            } else if (char0 == QLatin1Char('i')) {
+                if (tagLength == 1)
                     return true;
             } else if (tag == QLatin1String("font")) {
                 return true;
@@ -292,6 +250,26 @@ bool QmlStyledTextPrivate::parseCloseTag(const QChar *&ch, const QString &textIn
     return false;
 }
 
+void QmlStyledTextPrivate::parseEntity(const QChar *&ch, const QString &textIn, QString &textOut)
+{
+    int entityStart = ch - textIn.constData();
+    int entityLength = 0;
+    while (!ch->isNull()) {
+        if (*ch == QLatin1Char(';')) {
+            QStringRef entity(&textIn, entityStart, entityLength);
+            if (entity == QLatin1String("gt"))
+                textOut += QChar(62);
+            else if (entity == QLatin1String("lt"))
+                textOut += QChar(60);
+            else if (entity == QLatin1String("amp"))
+                textOut += QChar(38);
+            return;
+        }
+        ++entityLength;
+        ++ch;
+    }
+}
+
 bool QmlStyledTextPrivate::parseFontAttributes(const QChar *&ch, const QString &textIn, QTextCharFormat &format)
 {
     bool valid = false;
@@ -301,6 +279,15 @@ bool QmlStyledTextPrivate::parseFontAttributes(const QChar *&ch, const QString &
         if (attr.first == QLatin1String("color")) {
             valid = true;
             format.setForeground(QColor(attr.second.toString()));
+        } else if (attr.first == QLatin1String("size")) {
+            valid = true;
+            int size = attr.second.toString().toInt();
+            if (attr.second.at(0) == QLatin1Char('-') || attr.second.at(0) == QLatin1Char('+'))
+                size += 3;
+            if (size >= 1 && size <= 7) {
+                static const qreal scaling[] = { 0.7, 0.8, 1.0, 1.2, 1.5, 2.0, 2.4 };
+                format.setFontPointSize(baseFont.pointSize() * scaling[size-1]);
+            }
         }
     } while (!ch->isNull() && !attr.first.isEmpty());
 

@@ -1374,9 +1374,6 @@ void QPainterPrivate::updateState(QPainterState *newState)
     opacity with non-smooth transformation mode
     (\c QPainter::SmoothPixmapTransform not enabled as a render hint).
 
-    \o Text drawing with regular font sizes with simple
-    transformations with solid colors using no or 8-bit antialiasing.
-
     \o Rectangle fills with solid color, two-color linear gradients
     and simple transforms.
 
@@ -1984,9 +1981,14 @@ QPaintEngine *QPainter::paintEngine() const
 /*!
     \since 4.6
 
-    Flushes the painting pipeline and prepares for the user issuing
-    commands directly to the underlying graphics context. Must be
-    followed by a call to endNativePainting().
+    Flushes the painting pipeline and prepares for the user issuing commands
+    directly to the underlying graphics context. Must be followed by a call to
+    endNativePainting().
+
+    Note that only the states the underlying paint engine changes will be reset
+    to their respective default states. If, for example, the OpenGL polygon
+    mode is changed by the user inside a beginNativePaint()/endNativePainting()
+    block, it will not be reset to the default state by endNativePainting().
 
     Here is an example that shows intermixing of painter commands
     and raw OpenGL commands:
@@ -2010,9 +2012,9 @@ void QPainter::beginNativePainting()
 /*!
     \since 4.6
 
-    Restores the painter after manually issuing native painting commands.
-    Lets the painter restore any native state that it relies on before
-    calling any other painter commands.
+    Restores the painter after manually issuing native painting commands. Lets
+    the painter restore any native state that it relies on before calling any
+    other painter commands.
 
     \sa beginNativePainting()
 */
@@ -7380,9 +7382,14 @@ struct QPaintDeviceRedirection
 typedef QList<QPaintDeviceRedirection> QPaintDeviceRedirectionList;
 Q_GLOBAL_STATIC(QPaintDeviceRedirectionList, globalRedirections)
 Q_GLOBAL_STATIC(QMutex, globalRedirectionsMutex)
+Q_GLOBAL_STATIC(QAtomicInt, globalRedirectionAtomic)
 
 /*!
     \threadsafe
+
+    \obsolete
+
+    Please use QWidget::render() instead.
 
     Redirects all paint commands for the given paint \a device, to the
     \a replacement device. The optional point \a offset defines an
@@ -7393,9 +7400,10 @@ Q_GLOBAL_STATIC(QMutex, globalRedirectionsMutex)
     device's painter (if any) before redirecting. Call
     restoreRedirected() to restore the previous redirection.
 
-    In general, you'll probably find that calling
-    QPixmap::grabWidget() or QPixmap::grabWindow() is an easier
-    solution.
+    \warning Making use of redirections in the QPainter API implies
+    that QPainter::begin() and QPaintDevice destructors need to hold
+    a mutex for a short period. This can impact performance. Use of
+    QWidget::render is strongly encouraged.
 
     \sa redirected(), restoreRedirected()
 */
@@ -7427,13 +7435,23 @@ void QPainter::setRedirected(const QPaintDevice *device,
     Q_ASSERT(redirections != 0);
     *redirections += QPaintDeviceRedirection(device, rdev ? rdev : replacement, offset + roffset,
                                              hadInternalWidgetRedirection ? redirections->size() - 1 : -1);
+    globalRedirectionAtomic()->ref();
 }
 
 /*!
     \threadsafe
 
+    \obsolete
+
+    Using QWidget::render() obsoletes the use of this function.
+
     Restores the previous redirection for the given \a device after a
     call to setRedirected().
+
+    \warning Making use of redirections in the QPainter API implies
+    that QPainter::begin() and QPaintDevice destructors need to hold
+    a mutex for a short period. This can impact performance. Use of
+    QWidget::render is strongly encouraged.
 
     \sa redirected()
  */
@@ -7445,6 +7463,7 @@ void QPainter::restoreRedirected(const QPaintDevice *device)
     Q_ASSERT(redirections != 0);
     for (int i = redirections->size()-1; i >= 0; --i) {
         if (redirections->at(i) == device) {
+            globalRedirectionAtomic()->deref();
             const int internalWidgetRedirectionIndex = redirections->at(i).internalWidgetRedirectionIndex;
             redirections->removeAt(i);
             // Restore the internal widget redirection, i.e. remove it from the global
@@ -7466,8 +7485,17 @@ void QPainter::restoreRedirected(const QPaintDevice *device)
 /*!
     \threadsafe
 
+    \obsolete
+
+    Using QWidget::render() obsoletes the use of this function.
+
     Returns the replacement for given \a device. The optional out
     parameter \a offset returns the offset within the replaced device.
+
+    \warning Making use of redirections in the QPainter API implies
+    that QPainter::begin() and QPaintDevice destructors need to hold
+    a mutex for a short period. This can impact performance. Use of
+    QWidget::render is strongly encouraged.
 
     \sa setRedirected(), restoreRedirected()
 */
@@ -7480,6 +7508,9 @@ QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
         if (widgetPrivate->redirectDev)
             return widgetPrivate->redirected(offset);
     }
+
+    if (*globalRedirectionAtomic() == 0)
+        return 0;
 
     QMutexLocker locker(globalRedirectionsMutex());
     QPaintDeviceRedirectionList *redirections = globalRedirections();
@@ -7498,6 +7529,9 @@ QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
 
 void qt_painter_removePaintDevice(QPaintDevice *dev)
 {
+    if (*globalRedirectionAtomic() == 0)
+        return;
+
     QMutex *mutex = 0;
     QT_TRY {
         mutex = globalRedirectionsMutex();

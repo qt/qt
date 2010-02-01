@@ -279,7 +279,7 @@ private:
         QmlParser::Property *property;
         QmlParser::Value *value;
 
-        enum DataType { QtScript, BasicScript, Experimental };
+        enum DataType { QtScript, Experimental };
         DataType dataType;
 
         int compiledIndex;

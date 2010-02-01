@@ -1032,15 +1032,26 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
 
     QmlSetPropertyAnimationAction *data = new QmlSetPropertyAnimationAction;
 
+    bool hasExplicit = false;
     if (hasTarget && d->value.isValid()) {
         Action myAction;
         myAction.property = d->createProperty(target(), d->propertyName, this);
         if (myAction.property.isValid()) {
             myAction.toValue = d->value;
             data->actions << myAction;
+            hasExplicit = true;
+            for (int ii = 0; ii < actions.count(); ++ii) {
+                Action &action = actions[ii];
+                if (action.property.object() == myAction.property.object() &&
+                    myAction.property.name() == action.property.name()) {
+                    modified << action.property;
+                    break;  //### any chance there could be multiples?
+                }
+            }
         }
     }
 
+    if (!hasExplicit)
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
@@ -1649,10 +1660,12 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
     \inherits Animation
     \brief The PropertyAnimation element allows you to animate property changes.
 
-    Animate a size property over 200ms, from its current size to 20-by-20:
+    Animate theObject's size property over 200ms, from its current size to 20-by-20:
     \code
-    PropertyAnimation { property: "size"; to: "20x20"; duration: 200 }
+    PropertyAnimation { target: theObject; property: "size"; to: "20x20"; duration: 200 }
     \endcode
+
+    For an introduction to animation in QML, see \l{QML Animation}.
 */
 
 QmlPropertyAnimation::QmlPropertyAnimation(QObject *parent)
@@ -2219,6 +2232,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     data->interpolator = d->interpolator;
     data->reverse = direction == Backward ? true : false;
 
+    bool hasExplicit = false;
     //an explicit animation has been specified
     if (hasTarget && d->toIsDefined) {
         Action myAction;
@@ -2231,9 +2245,19 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
             d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
             myAction.toValue = d->to;
             data->actions << myAction;
+            hasExplicit = true;
+            for (int ii = 0; ii < actions.count(); ++ii) {
+                Action &action = actions[ii];
+                if (action.property.object() == myAction.property.object() &&
+                    myAction.property.name() == action.property.name()) {
+                    modified << action.property;
+                    break;  //### any chance there could be multiples?
+                }
+            }
         }
     }
 
+    if (!hasExplicit)
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 

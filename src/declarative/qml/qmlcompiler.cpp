@@ -47,7 +47,6 @@
 #include "qmlpropertyvaluesource.h"
 #include "qmlcomponent.h"
 #include "qmetaobjectbuilder_p.h"
-#include "qmlbasicscript_p.h"
 #include "qmlstringconverters_p.h"
 #include "qmlengine_p.h"
 #include "qmlengine.h"
@@ -65,7 +64,7 @@
 #include "qmlglobal_p.h"
 #include "qmlscriptparser_p.h"
 #include "qmlbinding.h"
-#include "qmlbindingvme_p.h"
+#include "qmlcompiledbindings_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -258,26 +257,30 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
             break;
         case QVariant::Color:
             {
-            QColor c = QmlStringConverters::colorFromString(string);
-            if (!c.isValid()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: color expected"));
+            bool ok;
+            QmlStringConverters::colorFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: color expected"));
             }
             break;
         case QVariant::Date:
             {
-            QDate d = QDate::fromString(string, Qt::ISODate);
-            if (!d.isValid()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: date expected"));
+            bool ok;
+            QmlStringConverters::dateFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: date expected"));
             }
             break;
         case QVariant::Time:
             {
-            QTime time = QTime::fromString(string, Qt::ISODate);
-            if (!time.isValid()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: time expected"));
+            bool ok;
+            QmlStringConverters::timeFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: time expected"));
             }
             break;
         case QVariant::DateTime:
             {
-            QDateTime dateTime = QDateTime::fromString(string, Qt::ISODate);
-            if (!dateTime.isValid()) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: datetime expected"));
+            bool ok;
+            QmlStringConverters::dateTimeFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: datetime expected"));
             }
             break;
         case QVariant::Point:
@@ -312,7 +315,7 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
         case QVariant::Vector3D:
             {
             bool ok;
-            QVector3D point = QmlStringConverters::vector3DFromString(string, &ok);
+            QmlStringConverters::vector3DFromString(string, &ok);
             if (!ok) COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Invalid property assignment: 3D vector expected"));
             }
             break;
@@ -418,7 +421,7 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             break;
         case QVariant::Date:
             {
-            QDate d = QDate::fromString(string, Qt::ISODate);
+            QDate d = QmlStringConverters::dateFromString(string);
             instr.type = QmlInstruction::StoreDate;
             instr.storeDate.propertyIndex = prop.propertyIndex();
             instr.storeDate.value = d.toJulianDay();
@@ -426,7 +429,7 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             break;
         case QVariant::Time:
             {
-            QTime time = QTime::fromString(string, Qt::ISODate);
+            QTime time = QmlStringConverters::timeFromString(string);
             int data[] = { time.hour(), time.minute(),
                            time.second(), time.msec() };
             int index = output->indexForInt(data, 4);
@@ -437,7 +440,7 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             break;
         case QVariant::DateTime:
             {
-            QDateTime dateTime = QDateTime::fromString(string, Qt::ISODate);
+            QDateTime dateTime = QmlStringConverters::dateTimeFromString(string);
             int data[] = { dateTime.date().toJulianDay(),
                            dateTime.time().hour(),
                            dateTime.time().minute(),
@@ -1610,7 +1613,7 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
                 store.assignValueSource.property = genPropertyData(prop);
                 store.assignValueSource.owner = 0;
             }
-            QmlType *valueType = QmlMetaType::qmlType(v->object->metatype);
+            QmlType *valueType = toQmlType(v->object);
             store.assignValueSource.castValue = valueType->propertyValueSourceCast();
             output->bytecode << store;
 
@@ -1627,7 +1630,7 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
                 store.assignValueInterceptor.property = genPropertyData(prop);
                 store.assignValueInterceptor.owner = 0;
             }
-            QmlType *valueType = QmlMetaType::qmlType(v->object->metatype);
+            QmlType *valueType = toQmlType(v->object);
             store.assignValueInterceptor.castValue = valueType->propertyValueInterceptorCast();
             output->bytecode << store;
 
@@ -1995,7 +1998,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
         bool isPropertyValue = false;
         // Will be true if the assigned type inherits QmlPropertyValueInterceptor
         bool isPropertyInterceptor = false;
-        if (QmlType *valueType = QmlMetaType::qmlType(v->object->metatype)) {
+        if (QmlType *valueType = toQmlType(v->object)) {
             isPropertyValue = valueType->propertyValueSourceCast() != -1;
             isPropertyInterceptor = valueType->propertyValueInterceptorCast() != -1;
         }
@@ -2388,7 +2391,6 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     }
 
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
-        const Object::DynamicSlot &s = obj->dynamicSlots.at(ii);
         const QString &funcScript = funcScripts.at(ii);
         QmlVMEMetaData::MethodData *data =
             ((QmlVMEMetaData *)dynamicData.data())->methodData() + ii;
@@ -2559,23 +2561,6 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     }
 
     QmlInstruction store;
-
-    QmlBasicScript bs;
-    if (ref.dataType == BindingReference::BasicScript) 
-        bs.load(ref.compiledData.constData() + sizeof(quint32));
-
-    if (bs.isSingleIdFetch()) {
-        int idIndex = bs.singleIdFetchIndex();
-        QmlParser::Object *idObj = compileState.idIndexes.value(idIndex);
-        if (canCoerce(prop->type, idObj)) {
-            store.type = QmlInstruction::StoreIdOptBinding;
-            store.assignIdOptBinding.id = idIndex;
-            store.assignIdOptBinding.property = prop->index;
-            output->bytecode << store;
-            return;
-        }
-    } 
-        
     store.type = QmlInstruction::StoreBinding;
     store.assignBinding.value = output->indexForByteArray(ref.compiledData);
     store.assignBinding.context = ref.bindingContext.stack;
@@ -2629,7 +2614,7 @@ bool QmlCompiler::completeComponentBuild()
         COMPILE_CHECK(buildDynamicMeta(aliasObject, ResolveAliases));
     }
 
-    QmlBasicScript::Expression expr;
+    QmlBindingCompiler::Expression expr;
     expr.component = compileState.root;
     expr.ids = compileState.ids;
 
@@ -2638,15 +2623,12 @@ bool QmlCompiler::completeComponentBuild()
     for (QHash<QmlParser::Value*,BindingReference>::Iterator iter = compileState.bindings.begin(); iter != compileState.bindings.end(); ++iter) {
         BindingReference &binding = *iter;
 
-        QmlBasicScript bs;
         expr.context = binding.bindingContext.object;
         expr.property = binding.property;
         expr.expression = binding.expression;
         expr.imports = unit->imports;
 
-        bs.compile(expr);
-
-        if (qmlExperimental() && (!bs.isValid() || !bs.isSingleIdFetch())) {
+        if (qmlExperimental()) {
             int index = bindingCompiler.compile(expr, QmlEnginePrivate::get(engine));
             if (index != -1) {
                 qWarning() << "Accepted for optimization:" << qPrintable(expr.expression.asScript());
@@ -2659,55 +2641,42 @@ bool QmlCompiler::completeComponentBuild()
             }
         }
 
-        quint32 type;
-        if (bs.isValid()) {
-            binding.compiledData =
-                QByteArray(bs.compileData(), bs.compileDataSize());
-            type = QmlExpressionPrivate::BasicScriptEngineData;
-            binding.dataType = BindingReference::BasicScript;
+        binding.dataType = BindingReference::QtScript;
 
-            componentStat.optimizedBindings++;
+        // Pre-rewrite the expression
+        QString expression = binding.expression.asScript();
+
+        // ### Optimize
+        QmlRewrite::SharedBindingTester sharableTest;
+        bool isSharable = sharableTest.isSharable(expression);
+        
+        QmlRewrite::RewriteBinding rewriteBinding;
+        expression = rewriteBinding(expression);
+
+        quint32 length = expression.length();
+        quint32 pc; 
+        
+        if (isSharable) {
+            pc = output->cachedClosures.count();
+            pc |= 0x80000000;
+            output->cachedClosures.append(0);
         } else {
-            type = QmlExpressionPrivate::PreTransformedQtScriptData;
-            binding.dataType = BindingReference::QtScript;
-
-            // Pre-rewrite the expression
-            QString expression = binding.expression.asScript();
-
-            // ### Optimize
-            QmlRewrite::SharedBindingTester sharableTest;
-            bool isSharable = sharableTest.isSharable(expression);
-            
-            QmlRewrite::RewriteBinding rewriteBinding;
-            expression = rewriteBinding(expression);
-
-            quint32 length = expression.length();
-            quint32 pc; 
-            
-            if (isSharable) {
-                pc = output->cachedClosures.count();
-                pc |= 0x80000000;
-                output->cachedClosures.append(0);
-            } else {
-                pc = output->cachedPrograms.length();
-                output->cachedPrograms.append(0);
-            }
-
-            binding.compiledData =
-                QByteArray((const char *)&pc, sizeof(quint32)) +
-                QByteArray((const char *)&length, sizeof(quint32)) +
-                QByteArray((const char *)expression.constData(), 
-                           expression.length() * sizeof(QChar));
-
-            componentStat.scriptBindings++;
+            pc = output->cachedPrograms.length();
+            output->cachedPrograms.append(0);
         }
-        binding.compiledData.prepend(QByteArray((const char *)&type, 
-                                                sizeof(quint32)));
+
+        binding.compiledData =
+            QByteArray((const char *)&pc, sizeof(quint32)) +
+            QByteArray((const char *)&length, sizeof(quint32)) +
+            QByteArray((const char *)expression.constData(), 
+                       expression.length() * sizeof(QChar));
+
+        componentStat.scriptBindings++;
     }
 
     if (bindingCompiler.isValid()) {
         compileState.compiledBindingData = bindingCompiler.program();
-        QmlBindingVME::dump(compileState.compiledBindingData);
+        QmlBindingCompiler::dump(compileState.compiledBindingData);
     }
 
     saveComponentState();

@@ -92,6 +92,7 @@ class QmlValueTypeScriptClass;
 class QScriptEngineDebugger;
 class QNetworkReply;
 class QNetworkAccessManager;
+class QmlNetworkAccessManagerFactory;
 class QmlAbstractBinding;
 class QScriptDeclarativeClass;
 class QmlTypeNameScriptClass;
@@ -99,8 +100,9 @@ class QmlTypeNameCache;
 class QmlComponentAttached;
 class QmlListScriptClass;
 class QmlCleanup;
-class QmlBindingData;
+class QmlDelayedError;
 class QmlWorkerScriptEngine;
+class QmlGlobalScriptClass;
 
 class QmlScriptEngine : public QScriptEngine
 {
@@ -160,13 +162,13 @@ public:
     QmlTypeNameScriptClass *typeNameClass;
     QmlListScriptClass *listClass;
     // Global script class
-    QScriptClass *globalClass;
+    QmlGlobalScriptClass *globalClass;
 
     // Registered cleanup handlers
     QmlCleanup *cleanup;
 
     // Bindings that have had errors during startup
-    QmlBindingData *erroredBindings;
+    QmlDelayedError *erroredBindings;
     int inProgressCreations;
 
     QmlScriptEngine scriptEngine;
@@ -208,6 +210,8 @@ public:
 
     bool inBeginCreate;
     mutable QNetworkAccessManager *networkAccessManager;
+    mutable QmlNetworkAccessManagerFactory *networkAccessManagerFactory;
+    mutable bool accessManagerValid;
 
     QmlCompositeTypeManager typeManager;
     QStringList fileImportPath;
@@ -306,16 +310,6 @@ public:
     QmlContext *getContext(QScriptContext *);
 };
 
-
-class QmlScriptClass : public QScriptClass
-{
-public:
-    QmlScriptClass(QmlEngine *);
-
-    static QVariant toVariant(QmlEngine *, const QScriptValue &);
-protected:
-    QmlEngine *engine;
-};
 
 QT_END_NAMESPACE
 

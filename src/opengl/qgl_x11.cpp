@@ -549,7 +549,7 @@ void *QGLContext::chooseVisual()
     bool triedDouble = false;
     bool triedSample = false;
     if (fmt.sampleBuffers())
-        fmt.setSampleBuffers(QGLExtensions::glExtensions & QGLExtensions::SampleBuffers);
+        fmt.setSampleBuffers(QGLExtensions::glExtensions() & QGLExtensions::SampleBuffers);
     while(!fail && !(vis = tryVisual(fmt, bufDepths[i]))) {
         if (!fmt.rgba() && bufDepths[i] > 1) {
             i++;
@@ -1132,71 +1132,70 @@ void *QGLContext::getProcAddress(const QString &proc) const
     return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(proc.toLatin1().data()));
 }
 
-//
-// This class is used to create a temporary, minimal GL context, which is used
-// to retrive GL version and extension info. It's significantly faster to
-// construct than a QGLWidget, and it doesn't have the recursive creation
-// problem that QGLWidget would have. E.g. creating a temporary QGLWidget to
-// retrieve GL info as part of the QGLWidget initialization.
-//
-class QGLTempContext
-{
+/*
+    QGLTemporaryContext implementation
+*/
+
+class QGLTemporaryContextPrivate {
 public:
-    QGLTempContext(int screen = 0) :
-            initialized(false),
-            old_drawable(0),
-            old_context(0)
-    {
-        int attribs[] = {GLX_RGBA, XNone};
-        XVisualInfo *vi = glXChooseVisual(X11->display, screen, attribs);
-        if (!vi) {
-            qWarning("QGLTempContext: No GL capable X visuals available.");
-            return;
-        }
-
-        int useGL;
-        glXGetConfig(X11->display, vi, GLX_USE_GL, &useGL);
-        if (!useGL) {
-            XFree(vi);
-            return;
-        }
-
-        old_drawable = glXGetCurrentDrawable();
-        old_context = glXGetCurrentContext();
-
-        XSetWindowAttributes a;
-        a.colormap = qt_gl_choose_cmap(X11->display, vi);
-        drawable = XCreateWindow(X11->display, RootWindow(X11->display, screen),
-                                 0, 0, 1, 1, 0,
-                                 vi->depth, InputOutput, vi->visual,
-                                 CWColormap, &a);
-        context = glXCreateContext(X11->display, vi, 0, True);
-        if (context && glXMakeCurrent(X11->display, drawable, context)) {
-            initialized = true;
-        } else {
-            qWarning("QGLTempContext: Unable to create GL context.");
-            XDestroyWindow(X11->display, drawable);
-        }
-        XFree(vi);
-    }
-
-    ~QGLTempContext() {
-        if (initialized) {
-            glXMakeCurrent(X11->display, 0, 0);
-            glXDestroyContext(X11->display, context);
-            XDestroyWindow(X11->display, drawable);
-        }
-        if (old_drawable && old_context)
-            glXMakeCurrent(X11->display, old_drawable, old_context);
-    }
-
-private:
     bool initialized;
     Window drawable;
     GLXContext context;
-    GLXDrawable old_drawable;
-    GLXContext old_context;
+    GLXDrawable oldDrawable;
+    GLXContext oldContext;
 };
+
+QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
+    : d(new QGLTemporaryContextPrivate)
+{
+    d->initialized = false;
+    d->oldDrawable = 0;
+    d->oldContext = 0;
+    int screen = 0;
+
+    int attribs[] = {GLX_RGBA, XNone};
+    XVisualInfo *vi = glXChooseVisual(X11->display, screen, attribs);
+    if (!vi) {
+        qWarning("QGLTempContext: No GL capable X visuals available.");
+        return;
+    }
+
+    int useGL;
+    glXGetConfig(X11->display, vi, GLX_USE_GL, &useGL);
+    if (!useGL) {
+        XFree(vi);
+        return;
+    }
+
+    d->oldDrawable = glXGetCurrentDrawable();
+    d->oldContext = glXGetCurrentContext();
+
+    XSetWindowAttributes a;
+    a.colormap = qt_gl_choose_cmap(X11->display, vi);
+    d->drawable = XCreateWindow(X11->display, RootWindow(X11->display, screen),
+                                0, 0, 1, 1, 0,
+                                vi->depth, InputOutput, vi->visual,
+                                CWColormap, &a);
+    d->context = glXCreateContext(X11->display, vi, 0, True);
+    if (d->context && glXMakeCurrent(X11->display, d->drawable, d->context)) {
+        d->initialized = true;
+    } else {
+        qWarning("QGLTempContext: Unable to create GL context.");
+        XDestroyWindow(X11->display, d->drawable);
+    }
+    XFree(vi);
+}
+
+QGLTemporaryContext::~QGLTemporaryContext()
+{
+    if (d->initialized) {
+        glXMakeCurrent(X11->display, 0, 0);
+        glXDestroyContext(X11->display, d->context);
+        XDestroyWindow(X11->display, d->drawable);
+    }
+    if (d->oldDrawable && d->oldContext)
+        glXMakeCurrent(X11->display, d->oldDrawable, d->oldContext);
+}
 
 /*****************************************************************************
   QGLOverlayWidget (Internal overlay class for X11)
@@ -1632,27 +1631,6 @@ void QGLWidget::setColormap(const QGLColormap & c)
     delete [] cmw;
 }
 
-void QGLExtensions::init()
-{
-    static bool init_done = false;
-
-    if (init_done)
-        return;
-    init_done = true;
-
-    QGLTempContext context;
-    init_extensions();
-
-    // nvidia 9x.xx unix drivers contain a bug which requires us to call glFinish before releasing an fbo
-    // to avoid painting artifacts
-    const QByteArray versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-    const int pos = versionString.indexOf("NVIDIA");
-    if (pos >= 0) {
-        const float nvidiaDriverVersion = versionString.mid(pos + strlen("NVIDIA")).toFloat();
-        nvidiaFboNeedsFinish = nvidiaDriverVersion >= 90.0 && nvidiaDriverVersion < 100.0;
-    }
-}
-
 // Solaris defines glXBindTexImageEXT as part of the GL library
 #if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
 typedef void (*qt_glXBindTexImageEXT)(Display*, GLXDrawable, int, const int*);
@@ -1668,13 +1646,17 @@ static bool qt_resolveTextureFromPixmap(QPaintDevice *paintDevice)
         resolvedTextureFromPixmap = true;
 
         // Check to see if we have NPOT texture support
-        if ( !(QGLExtensions::glExtensions & QGLExtensions::NPOTTextures) &&
+        if ( !(QGLExtensions::glExtensions() & QGLExtensions::NPOTTextures) &&
              !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0))
         {
             return false; // Can't use TFP without NPOT
         }
+
         const QX11Info *xinfo = qt_x11Info(paintDevice);
-        QGLExtensionMatcher extensions(glXQueryExtensionsString(xinfo->display(), xinfo->screen()));
+        Display *display = xinfo ? xinfo->display() : X11->display;
+        int screen = xinfo ? xinfo->screen() : X11->defaultScreen;
+
+        QGLExtensionMatcher extensions(glXQueryExtensionsString(display, screen));
         if (extensions.match("GLX_EXT_texture_from_pixmap")) {
             glXBindTexImageEXT = (qt_glXBindTexImageEXT) qglx_getProcAddress("glXBindTexImageEXT");
             glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) qglx_getProcAddress("glXReleaseTexImageEXT");

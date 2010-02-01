@@ -52,7 +52,6 @@ public:
     public:
         Value();
         Value(const Value &);
-        Value(const QScriptValue &);
 
         Value(QScriptContext *, int);
         Value(QScriptContext *, uint);
@@ -60,12 +59,14 @@ public:
         Value(QScriptContext *, double);
         Value(QScriptContext *, float);
         Value(QScriptContext *, const QString &);
+        Value(QScriptContext *, const QScriptValue &);
         Value(QScriptEngine *, int);
         Value(QScriptEngine *, uint);
         Value(QScriptEngine *, bool);
         Value(QScriptEngine *, double);
         Value(QScriptEngine *, float);
         Value(QScriptEngine *, const QString &);
+        Value(QScriptEngine *, const QScriptValue &);
         ~Value();
 
         QScriptValue toScriptValue(QScriptEngine *) const;

@@ -101,5 +101,21 @@ void QmlGlobalScriptClass::setProperty(QScriptValue &object,
     engine()->currentContext()->throwError(error);
 }
 
+void QmlGlobalScriptClass::explicitSetProperty(const QString &name, const QScriptValue &value)
+{
+    QScriptValue v = engine()->newObject();
+    globalObject = engine()->globalObject();
+
+    QScriptValueIterator iter(globalObject);
+    while (iter.hasNext()) {
+        iter.next();
+        v.setProperty(iter.scriptName(), iter.value());
+    }
+
+    v.setProperty(name, value);
+    v.setScriptClass(this);
+    engine()->setGlobalObject(v);
+}
+
 QT_END_NAMESPACE
 

@@ -55,7 +55,6 @@
 
 #include "qmlexpression.h"
 
-#include "qmlbasicscript_p.h"
 #include "qmlengine_p.h"
 #include "qmlguard_p.h"
 
@@ -84,7 +83,30 @@ private:
     QmlAbstractExpression  *m_nextExpression;
 };
 
-class QmlExpressionData : public QmlAbstractExpression, public QmlRefCount
+class QmlDelayedError 
+{
+public:
+    inline QmlDelayedError() : nextError(0), prevError(0) {}
+    inline ~QmlDelayedError() { removeError(); }
+
+    QmlError error;
+
+    bool addError(QmlEnginePrivate *);
+
+    inline void removeError() {
+        if (!prevError) return;
+        if (nextError) nextError->prevError = prevError;
+        *prevError = nextError;
+        nextError = 0;
+        prevError = 0;
+    }
+
+private:
+    QmlDelayedError  *nextError;
+    QmlDelayedError **prevError;
+};
+
+class QmlExpressionData : public QmlAbstractExpression, public QmlDelayedError, public QmlRefCount
 {
 public:
     QmlExpressionData();
@@ -97,9 +119,6 @@ public:
     bool expressionRewritten:1;
     QScriptValue expressionFunction;
 
-    QmlError error;
-
-    QmlBasicScript sse;
     QObject *me;
     bool trackChange;
 
@@ -139,18 +158,12 @@ public:
     QmlExpressionPrivate(QmlExpressionData *);
     ~QmlExpressionPrivate();
 
-    enum CompiledDataType {
-        BasicScriptEngineData = 1,
-        PreTransformedQtScriptData = 2
-    };
-
     void init(QmlContext *, const QString &, QObject *);
     void init(QmlContext *, void *, QmlRefCount *, QObject *, const QString &, int);
 
     QmlExpressionData *data;
 
     QVariant value(QObject *secondaryScope = 0, bool *isUndefined = 0);
-    QVariant evalSSE();
     QVariant evalQtScript(QObject *secondaryScope, bool *isUndefined = 0);
 
     void updateGuards(const QPODVector<QmlEnginePrivate::CapturedProperty> &properties);

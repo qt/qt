@@ -541,7 +541,7 @@ void tst_qmllanguage::assignSignal()
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
     emit object->basicSignal();
-    QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot(9)");
+    QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlotWithArgs(9)");
     emit object->basicParameterizedSignal(9);
 }
 
@@ -650,6 +650,7 @@ void tst_qmllanguage::autoComponentCreation()
 
 void tst_qmllanguage::propertyValueSource()
 {
+    {
     QmlComponent component(&engine, TEST_FILE("propertyValueSource.qml"));
     VERIFY_ERRORS(0);
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -658,8 +659,7 @@ void tst_qmllanguage::propertyValueSource()
     QList<QObject *> valueSources;
     QObjectList allChildren = object->findChildren<QObject*>();
     foreach (QObject *child, allChildren) {
-        QmlType *type = QmlMetaType::qmlType(child->metaObject());
-        if (type && type->propertyValueSourceCast() != -1)
+        if (qobject_cast<QmlPropertyValueSource *>(child)) 
             valueSources.append(child);
     }
 
@@ -669,6 +669,28 @@ void tst_qmllanguage::propertyValueSource()
     QVERIFY(valueSource != 0);
     QCOMPARE(valueSource->prop.object(), object);
     QCOMPARE(valueSource->prop.name(), QString(QLatin1String("intProperty")));
+    }
+
+    {
+    QmlComponent component(&engine, TEST_FILE("propertyValueSource.2.qml"));
+    VERIFY_ERRORS(0);
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QList<QObject *> valueSources;
+    QObjectList allChildren = object->findChildren<QObject*>();
+    foreach (QObject *child, allChildren) {
+        if (qobject_cast<QmlPropertyValueSource *>(child)) 
+            valueSources.append(child);
+    }
+
+    QCOMPARE(valueSources.count(), 1);
+    MyPropertyValueSource *valueSource = 
+        qobject_cast<MyPropertyValueSource *>(valueSources.at(0));
+    QVERIFY(valueSource != 0);
+    QCOMPARE(valueSource->prop.object(), object);
+    QCOMPARE(valueSource->prop.name(), QString(QLatin1String("intProperty")));
+    }
 }
 
 void tst_qmllanguage::attachedProperties()

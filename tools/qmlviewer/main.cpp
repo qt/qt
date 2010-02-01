@@ -83,6 +83,7 @@ void usage()
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
     qWarning("                                             \"list\" for a list of built-ins");
     qWarning("  -resizeview .............................. resize the view, not the skin");
+    qWarning("  -qmlbrowser .............................. use a QML-based file browser");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
@@ -222,6 +223,8 @@ int main(int argc, char ** argv)
             translationFile = argv[++i];
         } else if (arg == "-opengl") {
             useGL = true;
+        } else if (arg == "-qmlbrowser") {
+            useNativeFileBrowser = false;
         } else if (arg == "-L") {
             if (lastArg) usage();
             libraries << QString(argv[++i]);
@@ -296,7 +299,6 @@ int main(int argc, char ** argv)
         usage();
     }
 
-    viewer.setUseGL(useGL);
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);
     viewer.setNetworkCacheSize(cache);
@@ -335,6 +337,7 @@ int main(int argc, char ** argv)
         if (useNativeFileBrowser)
             viewer.openFile();
     }
+    viewer.setUseGL(useGL);
     viewer.raise();
 
     return app.exec();

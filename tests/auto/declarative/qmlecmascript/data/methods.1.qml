@@ -2,5 +2,5 @@ import Qt.test 1.0
 
 MyQmlObject { 
     id: MyObject
-    onBasicSignal: MyObject.method() 
+    onBasicSignal: MyObject.methodNoArgs() 
 }

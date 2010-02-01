@@ -44,6 +44,7 @@
 #include <QmlComponent>
 #include <private/qmlengine_p.h>
 #include <private/qmlobjectscriptclass_p.h>
+#include <private/qmlgraphicsrectangle_p.h>
 #include <QScriptEngine>
 #include <QScriptValue>
 
@@ -81,6 +82,9 @@ private slots:
     void slot_simple_js();
     void slot_complex();
     void slot_complex_js();
+
+    void block_data();
+    void block();
 private:
 };
 
@@ -580,6 +584,33 @@ void tst_script::slot_complex_js()
     }
 
     delete object;
+}
+
+void tst_script::block_data()
+{
+    QTest::addColumn<QString>("methodName");
+    QTest::newRow("direct") << "doSomethingDirect()";
+    QTest::newRow("localObj") << "doSomethingLocalObj()";
+    QTest::newRow("local") << "doSomethingLocal()";
+}
+
+void tst_script::block()
+{
+    QFETCH(QString, methodName);
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("block.qml"));
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle *>(component.create());
+    QVERIFY(rect != 0);
+
+    int index = rect->metaObject()->indexOfMethod(methodName.toUtf8());
+    QVERIFY(index != -1);
+    QMetaMethod method = rect->metaObject()->method(index);
+
+    QBENCHMARK {
+        method.invoke(rect, Qt::DirectConnection);
+    }
+
+    delete rect;
 }
 
 QTEST_MAIN(tst_script)

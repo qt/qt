@@ -58,6 +58,13 @@ property in the delegate, the roles are usually accessed unqualified.
 A special \e index role containing the index of the item in the model
 is also available.
 
+\e Note: the index role will be set to -1 if the item is removed from
+the model.  If you bind to the index role, be sure that the logic
+accounts for the possibility of index being -1, i.e. that the item
+is no longer valid.  Usually the item will shortly be destroyed, but
+it is possible to delay delegate destruction in some views via a delayRemove
+attached property.
+
 Models that do not have named roles will have the data provided via
 the \e modelData role.  The \e modelData role is also provided for
 Models that have only one role.  In this case the \e modelData role

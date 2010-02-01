@@ -34,9 +34,9 @@ qhp.Qt.extraFiles          = classic.css \
                              images/dynamiclayouts-example.png \
                              images/stylesheet-coffee-plastique.png
 
-qhp.Qt.filterAttributes    = qt 4.6.1 qtrefdoc
-qhp.Qt.customFilters.Qt.name = Qt 4.6.1
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.6.1
+qhp.Qt.filterAttributes    = qt 4.6.2 qtrefdoc
+qhp.Qt.customFilters.Qt.name = Qt 4.6.2
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.6.2
 qhp.Qt.subprojects         = classes overviews examples
 qhp.Qt.subprojects.classes.title = Classes
 qhp.Qt.subprojects.classes.indexTitle = Qt's Classes
@@ -99,7 +99,7 @@ excludedirs             = $QTDIR/src/3rdparty/clucene \
                           $QTDIR/src/3rdparty/phonon/waveout
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"
-examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml"
 examples.imageextensions = "*.png"
 
 exampledirs             = $QTDIR/doc/src \
@@ -110,7 +110,7 @@ exampledirs             = $QTDIR/doc/src \
                           $QTDIR/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QTDIR/doc/src/images \
                           $QTDIR/examples \
-			  $QTDIR/doc/src/declarative/pics
+                          $QTDIR/doc/src/declarative/pics
 outputdir               = $QTDIR/doc/html
 tagfile                 = $QTDIR/doc/html/qt.tags
 base                    = file:$QTDIR/doc/html

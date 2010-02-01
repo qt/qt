@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_NOCREATE_TYPE(QmlBinding);
 
 QmlBindingData::QmlBindingData()
-: updating(false), enabled(false), nextError(0), prevError(0)
+: updating(false), enabled(false)
 {
 }
 
@@ -76,37 +76,6 @@ void QmlBindingData::refresh()
         QmlBinding *b = static_cast<QmlBinding *>(QmlExpressionPrivate::get(q));
         b->update();
     }
-}
-
-void QmlBindingData::removeError()
-{
-    if (!prevError) return;
-
-    if (nextError) nextError->prevError = prevError;
-    *prevError = nextError;
-    nextError = 0;
-    prevError = 0;
-}
-
-bool QmlBindingData::addError()
-{
-    if (prevError) return false;
-
-    QmlContext *c = context();
-    if (!c) return false;
-    QmlEngine *e = c->engine();
-    if (!e) return false;
-
-    QmlEnginePrivate *p = QmlEnginePrivate::get(e);
-
-    if (p->inProgressCreations == 0) return false; // Not in construction
-
-    prevError = &p->erroredBindings;
-    nextError = p->erroredBindings;
-    p->erroredBindings = this;
-    if (nextError) nextError->prevError = &nextError;
-
-    return true;
 }
 
 QmlBindingPrivate::QmlBindingPrivate()
@@ -178,7 +147,11 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
             bool isUndefined = false;
             QVariant value = this->value(&isUndefined);
 
-            if (isUndefined && !data->error.isValid()) {
+            if (isUndefined && !data->error.isValid() && data->property.isResettable()) {
+
+                data->property.reset();
+
+            } else if (isUndefined && !data->error.isValid()) {
 
                 QUrl url = QUrl(data->url);
                 int line = data->line;
@@ -190,7 +163,7 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
                 data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
 
             } else if (!isUndefined && data->property.object() && 
-                !data->property.write(value, flags)) {
+                       !data->property.write(value, flags)) {
 
                 QUrl url = QUrl(data->url);
                 int line = data->line;
@@ -210,7 +183,9 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
             }
 
             if (data->error.isValid()) {
-               if (!data->addError()) 
+                QmlEnginePrivate *p = (data->context() && data->context()->engine())?
+                    QmlEnginePrivate::get(data->context()->engine()):0;
+               if (!data->addError(p)) 
                    qWarning().nospace() << qPrintable(this->error().toString());
             } else {
                 data->removeError();

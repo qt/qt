@@ -43,8 +43,6 @@
 #include <QmlEngine>
 #include <QmlComponent>
 #include <QDebug>
-#include <QWebPage>
-#include <QWebFrame>
 #include <QNetworkCookieJar>
 #include "testhttpserver.h"
 
@@ -116,14 +114,6 @@ private slots:
 
 private:
     QmlEngine engine;
-};
-
-class QWebPageWithJavaScriptConsoleMessages : public QWebPage {
-public:
-    void javaScriptConsoleMessage(const QString& message, int lineNumber, const QString& sourceID)
-    {
-        qWarning() << sourceID << ":" << lineNumber << ":" << message;
-    }
 };
 
 inline QUrl TEST_FILE(const QString &filename)

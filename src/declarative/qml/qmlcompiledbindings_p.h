@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDINGVME_P_H
-#define QMLBINDINGVME_P_H
+#ifndef QMLBINDINGOPTIMIZATIONS_P_H
+#define QMLBINDINGOPTIMIZATIONS_P_H
 
 //
 //  W A R N I N G
@@ -53,41 +53,12 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
-#include <private/qmlbasicscript_p.h>
-#include <private/qscriptdeclarativeclass_p.h>
-#include "qmlguard_p.h"
+#include "qmlexpression_p.h"
+#include "qmlbinding.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
-class QObject;
-class QmlContextPrivate;
-class QmlBindingVME 
-{
-public:
-    struct Config {
-        Config() : target(0), targetSlot(-1), subscriptions(0), identifiers(0) {}
-        ~Config() { delete [] subscriptions; delete [] identifiers; }
-        QObject *target;
-        int targetSlot;
-
-        struct Subscription {
-            QmlGuard<QObject> source;
-            int notifyIndex;
-        };
-        Subscription *subscriptions;
-        QScriptDeclarativeClass::PersistentIdentifier *identifiers;
-    };
-
-    static void init(const char *program, Config *config, 
-                     quint32 **sigTable, quint32 *bindingCount);
-    static void run(const char *program, int instr,
-                    Config *config, QmlContextPrivate *context, 
-                    QObject **scopes, QObject **outputs);
-    static void dump(const char *);
-};
 
 class QmlBindingCompilerPrivate;
 class QmlBindingCompiler
@@ -99,19 +70,47 @@ public:
     // Returns true if bindings were compiled
     bool isValid() const;
 
+    struct Expression
+    {
+        QmlParser::Object *component;
+        QmlParser::Object *context;
+        QmlParser::Property *property;
+        QmlParser::Variant expression;
+        QHash<QString, QmlParser::Object *> ids;
+        QmlEnginePrivate::Imports imports;
+    };
+
     // -1 on failure, otherwise the binding index to use
-    int compile(const QmlBasicScript::Expression &, QmlEnginePrivate *);
+    int compile(const Expression &, QmlEnginePrivate *);
 
     // Returns the compiled program
     QByteArray program() const;
 
+    static void dump(const QByteArray &);
 private:
     QmlBindingCompilerPrivate *d;
+};
+
+class QmlCompiledBindingsPrivate;
+class QmlCompiledBindings : public QObject, public QmlAbstractExpression, public QmlRefCount
+{
+public:
+    QmlCompiledBindings(const char *program, QmlContext *context);
+    virtual ~QmlCompiledBindings();
+
+    QmlAbstractBinding *configBinding(int index, QObject *target, QObject *scope, int property);
+
+protected:
+    int qt_metacall(QMetaObject::Call, int, void **);
+
+private:
+    Q_DISABLE_COPY(QmlCompiledBindings);
+    Q_DECLARE_PRIVATE(QmlCompiledBindings);
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLBINDINGVME_P_H
+#endif // QMLBINDINGOPTIMIZATIONS_P_H
 

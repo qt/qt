@@ -247,7 +247,8 @@ void QmlTransitionManager::transition(const QList<Action> &list,
                 qWarning() << "    No transition for event:" << action.event->typeName();
             else
                 qWarning() << "    No transition for:" << action.property.object()
-                           << action.property.name() << action.fromValue << action.toValue;
+                           << action.property.name() << "From:" << action.fromValue 
+                           << "To:" << action.toValue;
         }
     }
     if (!transition)

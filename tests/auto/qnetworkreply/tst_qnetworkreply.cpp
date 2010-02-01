@@ -838,13 +838,20 @@ void tst_QNetworkReply::stateChecking()
     QVERIFY(reply->isOpen());
     QVERIFY(reply->isReadable());
     QVERIFY(!reply->isWritable());
-    QCOMPARE(reply->errorString(), QString("Unknown error"));
+
+    // both behaviours are OK since we might change underlying behaviour again
+    if (!reply->isFinished())
+        QCOMPARE(reply->errorString(), QString("Unknown error"));
+    else
+        QVERIFY(!reply->errorString().isEmpty());
+
 
     QCOMPARE(reply->manager(), &manager);
     QCOMPARE(reply->request(), req);
     QCOMPARE(int(reply->operation()), int(QNetworkAccessManager::GetOperation));
-    QCOMPARE(reply->error(), QNetworkReply::NoError);
-    QCOMPARE(reply->isFinished(), false);
+    // error and not error are OK since we might change underlying behaviour again
+    if (!reply->isFinished())
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->url(), url);
 
     reply->abort();
@@ -1151,7 +1158,8 @@ void tst_QNetworkReply::getErrors()
     QNetworkReplyPtr reply = manager.get(request);
     reply->setParent(this);     // we have expect-fails
 
-    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    if (!reply->isFinished())
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     // now run the request:
     connect(reply, SIGNAL(finished()),
@@ -1512,6 +1520,7 @@ void tst_QNetworkReply::ioGetFromFile()
 
     QNetworkRequest request(QUrl::fromLocalFile(file.fileName()));
     QNetworkReplyPtr reply = manager.get(request);
+    QVERIFY(reply->isFinished()); // a file should immediatly be done
     DataReader reader(reply);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -3170,12 +3179,13 @@ void tst_QNetworkReply::ioPostToHttpEmptyUploadProgress()
 
 void tst_QNetworkReply::lastModifiedHeaderForFile()
 {
-    QFileInfo fileInfo(SRCDIR "./bigfile");
+    QFileInfo fileInfo(SRCDIR "/bigfile");
+    QVERIFY(fileInfo.exists());
+
     QUrl url = QUrl::fromLocalFile(fileInfo.filePath());
 
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.head(request);
-    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
@@ -3191,7 +3201,6 @@ void tst_QNetworkReply::lastModifiedHeaderForHttp()
 
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.head(request);
-    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());

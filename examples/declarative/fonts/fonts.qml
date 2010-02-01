@@ -8,7 +8,7 @@ Rectangle {
 
     FontLoader { id: fixedFont; name: "Courier" }
 
-    FontLoader { id: localFont; source: "fonts/FreeMono.ttf" }
+    FontLoader { id: localFont; source: "fonts/tarzenau-ocr-a.ttf" }
 
     FontLoader { id: webFont; source: "http://www.princexml.com/fonts/steffmann/Starburst.ttf" }
     FontLoader { id: webFont2; source: "http://wrong.address.org" }

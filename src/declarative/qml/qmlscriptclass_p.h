@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBASICSCRIPT_P_H
-#define QMLBASICSCRIPT_P_H
+#ifndef QMLSCRIPTCLASS_P_H
+#define QMLSCRIPTCLASS_P_H
 
 //
 //  W A R N I N G
@@ -53,65 +53,37 @@
 // We mean it.
 //
 
-#include "qmlparser_p.h"
-#include "qmlengine_p.h"
-
-#include <QtCore/QList>
-#include <QtCore/QByteArray>
-#include <QtCore/QVariant>
-
-QT_BEGIN_HEADER
+#include <QtScript/qscriptclass.h>
+#include <private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlRefCount;
-class QmlContext;
-class QmlBasicScriptPrivate;
-class QmlBasicScriptNodeCache;
-class QmlBasicScript
+class QmlEngine;
+class QmlScriptClass : public QScriptDeclarativeClass
 {
 public:
-    QmlBasicScript();
-    ~QmlBasicScript();
+    QmlScriptClass(QScriptEngine *);
 
-    void load(const char *, QmlRefCount * = 0);
+    static QVariant toVariant(QmlEngine *, const QScriptValue &);
 
-    // Always 4-byte aligned
-    const char *compileData() const;
-    unsigned int compileDataSize() const;
-
-    QByteArray expression() const;
-
-    struct Expression
-    {
-        QmlParser::Object *component;
-        QmlParser::Object *context;
-        QmlParser::Property *property;
-        QmlParser::Variant expression;
-        QHash<QString, QmlParser::Object *> ids;
-        QmlEnginePrivate::Imports imports;
+#if (QT_VERSION < QT_VERSION_CHECK(4, 6, 2))
+    struct Value : public QScriptValue { 
+        Value() : QScriptValue() {}
+        Value(QScriptEngine *engine, int v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, uint v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, bool v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, double v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, float v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *engine, const QString &v) : QScriptValue(engine, v) {}
+        Value(QScriptEngine *, const QScriptValue &v) : QScriptValue(v) {}
     };
 
-    bool compile(const Expression &);
-    bool isValid() const;
-
-    void clear();
-
-    void dump();
-
-    QVariant run(QmlContext *, QObject *);
-
-    bool isSingleIdFetch() const;
-    int singleIdFetchIndex() const;
-
-private:
-    int flags;
-    QmlBasicScriptPrivate *d;
-    QmlRefCount *rc;
+    typedef QScriptValue ScriptValue;
+#else
+    typedef Value ScriptValue;
+#endif
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLBASICSCRIPT_P_H
+#endif // QMLSCRIPTCLASS_P_H

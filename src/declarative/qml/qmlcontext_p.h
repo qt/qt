@@ -76,7 +76,7 @@ class QmlExpression;
 class QmlExpressionPrivate;
 class QmlAbstractExpression;
 class QmlBinding_Id;
-class QmlOptimizedBindings;
+class QmlCompiledBindings;
 
 class Q_DECLARATIVE_EXPORT QmlContextPrivate : public QObjectPrivate
 {
@@ -113,15 +113,27 @@ public:
 
     QmlDeclarativeData *contextObjects;
 
+    struct IdNotifier 
+    {
+        inline IdNotifier();
+        inline ~IdNotifier();
+        
+        inline void clear();
+
+        IdNotifier *next;
+        IdNotifier**prev;
+        QObject *target;
+        int methodIndex;
+    };
+
     struct ContextGuard : public QmlGuard<QObject>
     {
-        ContextGuard() : priv(0), bindings(0) {}
+        inline ContextGuard();
+        inline ContextGuard &operator=(QObject *obj);
+        inline virtual void objectDestroyed(QObject *);
+
         QmlContextPrivate *priv;
-        QmlBinding_Id *bindings;
-        ContextGuard &operator=(QObject *obj) {
-            (QmlGuard<QObject>&)*this = obj; return *this;
-        }
-        void objectDestroyed(QObject *) { priv->destroyed(this); }
+        IdNotifier *bindings;
     };
     ContextGuard *idValues;
     int idValueCount;
@@ -136,11 +148,44 @@ public:
         return static_cast<QmlContext *>(context->q_func());
     }
 
-    QmlOptimizedBindings *optimizedBindings;
+    QmlCompiledBindings *optimizedBindings;
 
     // Only used for debugging
     QList<QPointer<QObject> > instances;
 };
+
+QmlContextPrivate::IdNotifier::IdNotifier()
+: next(0), prev(0), target(0), methodIndex(-1)
+{
+}
+
+QmlContextPrivate::IdNotifier::~IdNotifier()
+{
+    clear();
+}
+
+void QmlContextPrivate::IdNotifier::clear()
+{
+    if (next) next->prev = prev;
+    if (prev) *prev = next;
+    next = 0; prev = 0; target = 0;
+    methodIndex = -1;
+}
+
+QmlContextPrivate::ContextGuard::ContextGuard() 
+: priv(0), bindings(0) 
+{
+}
+
+QmlContextPrivate::ContextGuard &QmlContextPrivate::ContextGuard::operator=(QObject *obj) 
+{
+    (QmlGuard<QObject>&)*this = obj; return *this;
+}
+
+void QmlContextPrivate::ContextGuard::objectDestroyed(QObject *) 
+{ 
+    priv->destroyed(this); 
+}
 
 QT_END_NAMESPACE
 

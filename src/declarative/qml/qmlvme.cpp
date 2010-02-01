@@ -57,7 +57,7 @@
 #include "qmlvmemetaobject_p.h"
 #include "qmlbinding_p.h"
 #include "qmlcontext_p.h"
-#include "qmlbindingoptimizations_p.h"
+#include "qmlcompiledbindings_p.h"
 #include "qmlglobal_p.h"
 #include "qmlscriptstring.h"
 
@@ -173,7 +173,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 if (instr.init.contextCache != -1) 
                     cp->setIdPropertyData(comp->contextCaches.at(instr.init.contextCache));
                 if (instr.init.compiledBinding != -1) 
-                    cp->optimizedBindings = new QmlOptimizedBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
+                    cp->optimizedBindings = new QmlCompiledBindings(datas.at(instr.init.compiledBinding).constData(), ctxt);
             }
             break;
 
@@ -625,23 +625,6 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 binding->m_mePtr = &bindValues.values[bindValues.count - 1];
                 binding->addToObject(target);
             }
-            break;
-
-        case QmlInstruction::StoreIdOptBinding:
-            {
-                int coreIndex = instr.assignIdOptBinding.property;
-                if (stack.count() == 1 && bindingSkipList.testBit(coreIndex)) 
-                    break;
-
-                QObject *target = stack.top();
-
-                QmlBinding_Id *bind = 
-                    new QmlBinding_Id(target, instr.assignIdOptBinding.property,
-                                      ctxt, instr.assignIdOptBinding.id);
-                bindValues.append(bind);
-                bind->m_mePtr = &bindValues.values[bindValues.count - 1];
-                bind->addToObject(target);
-            } 
             break;
 
         case QmlInstruction::StoreValueSource:

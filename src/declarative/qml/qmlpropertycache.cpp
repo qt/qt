@@ -61,6 +61,8 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
         flags |= Data::IsConstant;
     if (p.isWritable())
         flags |= Data::IsWritable;
+    if (p.isResettable())
+        flags |= Data::IsResettable;
 
     if (propType == qMetaTypeId<QmlBinding *>()) {
         flags |= Data::IsQmlBinding;
@@ -84,6 +86,15 @@ void QmlPropertyCache::Data::load(const QMetaMethod &m)
 {
     coreIndex = m.methodIndex();
     flags |= Data::IsFunction;
+    propType = QVariant::Invalid;
+
+    const char *returnType = m.typeName();
+    if (returnType) 
+        propType = QMetaType::type(returnType);
+
+    QList<QByteArray> params = m.parameterTypes();
+    if (!params.isEmpty())
+        flags |= Data::HasArguments;
 }
 
 

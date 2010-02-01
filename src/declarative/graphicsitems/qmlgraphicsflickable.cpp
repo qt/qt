@@ -158,7 +158,7 @@ QmlGraphicsFlickablePrivate::QmlGraphicsFlickablePrivate()
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true)
     , interactive(true), deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
-    , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0)
+    , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0), fixupDuration(200)
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
     , flickDirection(QmlGraphicsFlickable::AutoFlickDirection)
 {
@@ -264,12 +264,19 @@ void QmlGraphicsFlickablePrivate::fixupX()
 
     if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->minXExtent())) {
         timeline.reset(_moveX);
-        if (_moveX.value() != q->minXExtent())
-            timeline.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
+        if (_moveX.value() != q->minXExtent()) {
+            if (fixupDuration)
+                timeline.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            else
+                _moveY.setValue(q->minYExtent());
+        }
         //emit flickingChanged();
     } else if (_moveX.value() < q->maxXExtent()) {
         timeline.reset(_moveX);
-        timeline.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
+        if (fixupDuration)
+            timeline.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+        else
+            _moveY.setValue(q->maxYExtent());
         //emit flickingChanged();
     } else {
         flicked = false;
@@ -286,12 +293,19 @@ void QmlGraphicsFlickablePrivate::fixupY()
 
     if (_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
         timeline.reset(_moveY);
-        if (_moveY.value() != q->minYExtent())
-            timeline.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
+        if (_moveY.value() != q->minYExtent()) {
+            if (fixupDuration)
+                timeline.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            else
+                _moveY.setValue(q->minYExtent());
+        }
         //emit flickingChanged();
     } else if (_moveY.value() < q->maxYExtent()) {
         timeline.reset(_moveY);
-        timeline.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
+        if (fixupDuration)
+            timeline.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+        else
+            _moveY.setValue(q->maxYExtent());
         //emit flickingChanged();
     } else {
         flicked = false;
@@ -773,24 +787,36 @@ void QmlGraphicsFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEve
 void QmlGraphicsFlickable::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsFlickable);
-    d->handleMousePressEvent(event);
-    event->accept();
+    if (d->interactive) {
+        d->handleMousePressEvent(event);
+        event->accept();
+    } else {
+        QmlGraphicsItem::mousePressEvent(event);
+    }
 }
 
 void QmlGraphicsFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsFlickable);
-    d->handleMouseMoveEvent(event);
-    event->accept();
+    if (d->interactive) {
+        d->handleMouseMoveEvent(event);
+        event->accept();
+    } else {
+        QmlGraphicsItem::mouseMoveEvent(event);
+    }
 }
 
 void QmlGraphicsFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsFlickable);
-    d->clearDelayedPress();
-    d->handleMouseReleaseEvent(event);
-    event->accept();
-    ungrabMouse();
+    if (d->interactive) {
+        d->clearDelayedPress();
+        d->handleMouseReleaseEvent(event);
+        event->accept();
+        ungrabMouse();
+    } else {
+        QmlGraphicsItem::mouseReleaseEvent(event);
+    }
 }
 
 void QmlGraphicsFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)

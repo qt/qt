@@ -77,7 +77,7 @@ struct ContextData : public QScriptDeclarativeClass::Object {
     via QtScript.
  */
 QmlContextScriptClass::QmlContextScriptClass(QmlEngine *bindEngine)
-: QScriptDeclarativeClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine),
+: QmlScriptClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine),
   lastScopeObject(0), lastContext(0), lastData(0), lastPropertyIndex(-1), lastDefaultObject(-1)
 {
 }
@@ -174,7 +174,8 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
 
     if (scopeObject) {
         QScriptClass::QueryFlags rv = 
-            ep->objectClass->queryProperty(scopeObject, name, flags, bindContext, QmlObjectScriptClass::ImplicitObject);
+            ep->objectClass->queryProperty(scopeObject, name, flags, bindContext, 
+                                           QmlObjectScriptClass::ImplicitObject | QmlObjectScriptClass::SkipAttachedProperties);
         if (rv) {
             lastScopeObject = scopeObject;
             lastContext = bindContext;
@@ -184,7 +185,8 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
 
     for (int ii = cp->defaultObjects.count() - 1; ii >= 0; --ii) {
         QScriptClass::QueryFlags rv = 
-            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, bindContext, QmlObjectScriptClass::ImplicitObject);
+            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, bindContext, 
+                                           QmlObjectScriptClass::ImplicitObject | QmlObjectScriptClass::SkipAttachedProperties);
 
         if (rv) {
             lastDefaultObject = ii;
@@ -196,7 +198,7 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
     return 0;
 }
 
-QmlContextScriptClass::Value
+QmlContextScriptClass::ScriptValue
 QmlContextScriptClass::property(Object *object, const Identifier &name)
 {
     Q_UNUSED(object);
@@ -206,6 +208,7 @@ QmlContextScriptClass::property(Object *object, const Identifier &name)
 
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     QmlContextPrivate *cp = QmlContextPrivate::get(bindContext);
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
     if (lastScopeObject) {
 
@@ -214,9 +217,9 @@ QmlContextScriptClass::property(Object *object, const Identifier &name)
     } else if (lastData) {
 
         if (lastData->type)
-            return ep->typeNameClass->newObject(cp->defaultObjects.at(0), lastData->type);
+            return Value(scriptEngine, ep->typeNameClass->newObject(cp->defaultObjects.at(0), lastData->type));
         else
-            return ep->typeNameClass->newObject(cp->defaultObjects.at(0), lastData->typeNamespace);
+            return Value(scriptEngine, ep->typeNameClass->newObject(cp->defaultObjects.at(0), lastData->typeNamespace));
 
     } else if (lastPropertyIndex != -1) {
 
@@ -231,7 +234,7 @@ QmlContextScriptClass::property(Object *object, const Identifier &name)
         ep->capturedProperties << 
             QmlEnginePrivate::CapturedProperty(bindContext, -1, lastPropertyIndex + cp->notifyIndex);
 
-        return rv;
+        return Value(scriptEngine, rv);
     } else if(lastDefaultObject != -1) {
 
         // Default object property
@@ -239,7 +242,7 @@ QmlContextScriptClass::property(Object *object, const Identifier &name)
 
     } else {
 
-        return lastFunction;
+        return Value(scriptEngine, lastFunction);
 
     }
 }

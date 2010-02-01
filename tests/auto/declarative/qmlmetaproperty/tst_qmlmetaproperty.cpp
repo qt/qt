@@ -56,6 +56,20 @@ public:
 QML_DECLARE_TYPE(MyQmlObject);
 QML_DEFINE_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
 
+class MyAttached : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int foo READ foo WRITE setFoo)
+public:
+    MyAttached(QObject *parent) : QObject(parent), m_foo(13) {}
+
+    int foo() const { return m_foo; }
+    void setFoo(int f) { m_foo = f; }
+
+private:
+    int m_foo;
+};
+
 class MyContainer : public QObject
 {
     Q_OBJECT
@@ -67,6 +81,10 @@ public:
     QList<MyQmlObject*> *children() { return &m_children; }
     QmlConcreteList<MyQmlObject *> *qmlChildren() { return &m_qmlChildren; }
 
+    static MyAttached *qmlAttachedProperties(QObject *o) {
+        return new MyAttached(o);
+    }
+
 private:
     QList<MyQmlObject*> m_children;
     QmlConcreteList<MyQmlObject *> m_qmlChildren;
@@ -74,6 +92,7 @@ private:
 
 QML_DECLARE_TYPE(MyContainer);
 QML_DEFINE_TYPE(Test,1,0,MyContainer,MyContainer);
+QML_DECLARE_TYPEINFO(MyContainer, QML_HAS_ATTACHED_PROPERTIES)
 
 class tst_qmlmetaproperty : public QObject
 {
@@ -94,6 +113,7 @@ private slots:
     void name();
     void read();
     void write();
+    void reset();
 
     // Functionality
     void writeObjectToList();
@@ -134,6 +154,7 @@ void tst_qmlmetaproperty::qmlmetaproperty()
     QCOMPARE(prop.isDefault(), false);
     QCOMPARE(prop.isWritable(), false);
     QCOMPARE(prop.isDesignable(), false);
+    QCOMPARE(prop.isResettable(), false);
     QCOMPARE(prop.isValid(), false);
     QCOMPARE(prop.object(), (QObject *)0);
     QCOMPARE(prop.propertyCategory(), QmlMetaProperty::InvalidProperty);
@@ -159,9 +180,12 @@ class PropertyObject : public QObject
     Q_PROPERTY(QRect rectProperty READ rectProperty);
     Q_PROPERTY(QRect wrectProperty READ wrectProperty WRITE setWRectProperty);
     Q_PROPERTY(QUrl url READ url WRITE setUrl);
+    Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty);
 
     Q_CLASSINFO("DefaultProperty", "defaultProperty");
 public:
+    PropertyObject() : m_resetProperty(9) {}
+
     int defaultProperty() { return 10; }
     QRect rectProperty() { return QRect(10, 10, 1, 209); }
 
@@ -171,10 +195,15 @@ public:
     QUrl url() { return m_url; }
     void setUrl(const QUrl &u) { m_url = u; }
 
+    int resettableProperty() const { return m_resetProperty; }
+    void setResettableProperty(int r) { m_resetProperty = r; }
+    void resetProperty() { m_resetProperty = 9; }
+
 signals:
     void clicked();
 
 private:
+    int m_resetProperty;
     QRect m_rect;
     QUrl m_url;
 };
@@ -211,6 +240,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object()
         QCOMPARE(prop.isDefault(), false);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::InvalidProperty);
@@ -257,6 +287,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object()
         QCOMPARE(prop.isDefault(), true);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), true);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::Normal);
@@ -310,6 +341,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isDefault(), false);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::InvalidProperty);
@@ -356,6 +388,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isDefault(), false);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), true);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::Normal);
@@ -404,6 +437,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isDefault(), false);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::InvalidProperty);
@@ -456,6 +490,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.isDefault(), false);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::InvalidProperty);
@@ -502,6 +537,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.isDefault(), true);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), true);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::Normal);
@@ -555,6 +591,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isDefault(), false);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::InvalidProperty);
@@ -601,6 +638,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isDefault(), false);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), true);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::Normal);
@@ -649,6 +687,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isDefault(), false);
         QCOMPARE(prop.isWritable(), false);
         QCOMPARE(prop.isDesignable(), false);
+        QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
         QCOMPARE(prop.propertyCategory(), QmlMetaProperty::InvalidProperty);
@@ -798,6 +837,38 @@ void tst_qmlmetaproperty::read()
         delete o;
         QCOMPARE(p.read(), QVariant());
     }
+
+    // Attached property
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0\nMyContainer { }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QCOMPARE(p.read(), QVariant(13));
+        delete object;
+    }
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0\nMyContainer { MyContainer.foo: 10 }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QCOMPARE(p.read(), QVariant(10));
+        delete object;
+    }
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0 as Foo\nFoo.MyContainer { Foo.MyContainer.foo: 10 }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "Foo.MyContainer.foo", qmlContext(object));
+        QCOMPARE(p.read(), QVariant(10));
+        delete object;
+    }
 }
 
 void tst_qmlmetaproperty::write()
@@ -895,6 +966,103 @@ void tst_qmlmetaproperty::write()
 
         QCOMPARE(p2.write(QUrl("main.qml")), true);
         QCOMPARE(o.url(), result);
+    }
+
+    // Attached property
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0\nMyContainer { }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        p.write(QVariant(99));
+        QCOMPARE(p.read(), QVariant(99));
+        delete object;
+    }
+    {
+        QmlComponent component(&engine);
+        component.setData("import Test 1.0 as Foo\nFoo.MyContainer { Foo.MyContainer.foo: 10 }", QUrl());
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QmlMetaProperty p = QmlMetaProperty::createProperty(object, "Foo.MyContainer.foo", qmlContext(object));
+        p.write(QVariant(99));
+        QCOMPARE(p.read(), QVariant(99));
+        delete object;
+    }
+}
+
+void tst_qmlmetaproperty::reset()
+{
+    // Invalid
+    {
+        QmlMetaProperty p;
+        QCOMPARE(p.isResettable(), false);
+        QCOMPARE(p.reset(), false);
+    }
+
+    // Read-only default prop
+    {
+        PropertyObject o;
+        QmlMetaProperty p(&o);
+        QCOMPARE(p.isResettable(), false);
+        QCOMPARE(p.reset(), false);
+    }
+
+    // Invalid default prop
+    {
+        QObject o;
+        QmlMetaProperty p(&o);
+        QCOMPARE(p.isResettable(), false);
+        QCOMPARE(p.reset(), false);
+    }
+
+    // Non-resettable-only prop by name
+    {
+        PropertyObject o;
+        QmlMetaProperty p(&o, QString("defaultProperty"));
+        QCOMPARE(p.isResettable(), false);
+        QCOMPARE(p.reset(), false);
+    }
+
+    // Resettable prop by name
+    {
+        PropertyObject o;
+        QmlMetaProperty p(&o, QString("resettableProperty"));
+
+        QCOMPARE(p.read(), QVariant(9));
+        QCOMPARE(p.write(QVariant(11)), true);
+        QCOMPARE(p.read(), QVariant(11));
+
+        QCOMPARE(p.isResettable(), true);
+        QCOMPARE(p.reset(), true);
+
+        QCOMPARE(p.read(), QVariant(9));
+    }
+
+    // Deleted object
+    {
+        PropertyObject *o = new PropertyObject;
+
+        QmlMetaProperty p(o, QString("resettableProperty"));
+
+        QCOMPARE(p.isResettable(), true);
+        QCOMPARE(p.reset(), true);
+
+        delete o;
+
+        QCOMPARE(p.isResettable(), false);
+        QCOMPARE(p.reset(), false);
+    }
+
+    // Signal property
+    {
+        PropertyObject o;
+        QmlMetaProperty p(&o, "onClicked");
+
+        QCOMPARE(p.isResettable(), false);
+        QCOMPARE(p.reset(), false);
     }
 }
 

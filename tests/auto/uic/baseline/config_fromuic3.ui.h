@@ -1,7 +1,7 @@
 /*
 *********************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,7 @@
 ** Form generated from reading UI file 'config_fromuic3.ui'
 **
 ** Created: Thu Dec 17 12:48:42 2009
-**      by: Qt User Interface Compiler version 4.6.1
+**      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/

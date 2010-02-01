@@ -46,7 +46,6 @@
 #include "qmlcompiler_p.h"
 #include "qmlglobalscriptclass_p.h"
 #include "qml.h"
-#include "qmlbasicscript_p.h"
 #include "qmlcontext.h"
 #include "qmlexpression.h"
 #include "qmlcomponent.h"
@@ -64,6 +63,8 @@
 #include "qmlglobal_p.h"
 #include "qmlworkerscript_p.h"
 #include "qmlcomponent_p.h"
+#include "qmlscriptclass_p.h"
+#include "qmlnetworkaccessmanagerfactory.h"
 
 #include <qfxperf_p_p.h>
 
@@ -121,7 +122,8 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
   contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), 
   globalClass(0), cleanup(0), erroredBindings(0), inProgressCreations(0), 
   scriptEngine(this), workerScriptEngine(0), componentAttacheds(0), inBeginCreate(false), 
-  networkAccessManager(0), typeManager(e), uniqueId(1)
+  networkAccessManager(0), networkAccessManagerFactory(0), accessManagerValid(false),
+  typeManager(e), uniqueId(1)
 {
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
     fileImportPath.append(QLibraryInfo::location(QLibraryInfo::DataPath)+QDir::separator()+QLatin1String("qml"));
@@ -386,34 +388,64 @@ QmlContext *QmlEngine::rootContext()
 }
 
 /*!
-    Sets the common QNetworkAccessManager, \a network, used by all QML elements
-    instantiated by this engine.
+    Sets the \a factory to use for creating QNetworkAccessManager(s).
 
-    If the parent of \a network is this engine, the engine takes ownership and
-    will delete it as needed. Otherwise, ownership remains with the caller.
-
-    This method should only be called before any QmlComponents are instantiated.
+    QNetworkAccessManager is used for all network access by QML.
+    By implementing a factory it is possible to create custom
+    QNetworkAccessManager with specialized caching, proxy and
+    cookie support.
 */
-void QmlEngine::setNetworkAccessManager(QNetworkAccessManager *network)
+void QmlEngine::setNetworkAccessManagerFactory(QmlNetworkAccessManagerFactory *factory)
 {
     Q_D(QmlEngine);
-    if (d->networkAccessManager && d->networkAccessManager->parent() == this)
-        delete d->networkAccessManager;
-    d->networkAccessManager = network;
+    d->networkAccessManagerFactory = factory;
 }
 
 /*!
-    Returns the common QNetworkAccessManager used by all QML elements
+    Returns the current QmlNetworkAccessManagerFactory.
+
+    \sa setNetworkAccessManagerFactory()
+*/
+QmlNetworkAccessManagerFactory *QmlEngine::networkAccessManagerFactory() const
+{
+    Q_D(const QmlEngine);
+    return d->networkAccessManagerFactory;
+}
+
+void QmlEngine::namInvalidated()
+{
+    Q_D(QmlEngine);
+    d->accessManagerValid = false;
+}
+
+/*!
+    Returns a common QNetworkAccessManager which can be used by any QML element
     instantiated by this engine.
 
-    The default implements no caching, cookiejar, etc., just a default
-    QNetworkAccessManager.
+    If a QmlNetworkAccessManagerFactory has been set and a QNetworkAccessManager
+    has not yet been created, the QmlNetworkAccessManagerFactory will be used
+    to create the QNetworkAccessManager; otherwise the returned QNetworkAccessManager
+    will have no proxy or cache set.
+
+    \sa setNetworkAccessManagerFactory()
 */
 QNetworkAccessManager *QmlEngine::networkAccessManager() const
 {
     Q_D(const QmlEngine);
-    if (!d->networkAccessManager)
-        d->networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(this));
+    if (!d->accessManagerValid) {
+        delete d->networkAccessManagerFactory;
+        d->networkAccessManagerFactory = 0;
+    }
+    if (!d->networkAccessManager) {
+        if (d->networkAccessManagerFactory) {
+            connect(d->networkAccessManagerFactory, SIGNAL(invalidated())
+                    , this, SLOT(namInvalidated()), Qt::UniqueConnection);
+            d->networkAccessManager = d->networkAccessManagerFactory->create(const_cast<QmlEngine*>(this));
+        } else {
+            d->networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(this));
+        }
+        d->accessManagerValid = true;
+    }
     return d->networkAccessManager;
 }
 
@@ -1056,9 +1088,8 @@ QVariant QmlEnginePrivate::scriptValueToVariant(const QScriptValue &val)
     }
 }
 
-QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
-: QScriptClass(QmlEnginePrivate::getScriptEngine(bindengine)),
-  engine(bindengine)
+QmlScriptClass::QmlScriptClass(QScriptEngine *engine)
+: QScriptDeclarativeClass(engine)
 {
 }
 

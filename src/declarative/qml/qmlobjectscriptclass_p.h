@@ -56,9 +56,7 @@
 #include "qmlpropertycache_p.h"
 #include "qmltypenamecache_p.h"
 
-#include <QtScript/qscriptclass.h>
-
-#include <private/qscriptdeclarativeclass_p.h>
+#include <private/qmlscriptclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +64,24 @@ class QmlEngine;
 class QScriptContext;
 class QScriptEngine;
 class QmlContext;
-class Q_AUTOTEST_EXPORT QmlObjectScriptClass : public QScriptDeclarativeClass
+
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+class Q_AUTOTEST_EXPORT QmlObjectMethodScriptClass : public QScriptDeclarativeClass
+{
+public:
+    QmlObjectMethodScriptClass(QmlEngine *);
+    ~QmlObjectMethodScriptClass();
+
+    QScriptValue newMethod(QObject *, const QmlPropertyCache::Data *);
+protected:
+    virtual Value call(Object *, QScriptContext *);
+
+private:
+    QmlEngine *engine;
+};
+#endif
+
+class Q_AUTOTEST_EXPORT QmlObjectScriptClass : public QmlScriptClass
 {
 public:
     QmlObjectScriptClass(QmlEngine *);
@@ -86,7 +101,9 @@ public:
                                            QScriptClass::QueryFlags flags, 
                                            QmlContext *evalContext,
                                            QueryHints hints = 0);
-    Value property(QObject *, const Identifier &);
+
+    ScriptValue property(QObject *, const Identifier &);
+
     void setProperty(QObject *, const Identifier &name, const QScriptValue &,
                      QmlContext *evalContext = 0);
     virtual QStringList propertyNames(Object *);
@@ -95,12 +112,16 @@ protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual Value property(Object *, const Identifier &);
+    virtual ScriptValue property(Object *, const Identifier &);
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
     virtual bool isQObject() const;
     virtual QObject *toQObject(Object *, bool *ok = 0);
 
 private:
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+    QmlObjectMethodScriptClass methods;
+#endif
+
     QmlTypeNameCache::Data *lastTNData;
     QmlPropertyCache::Data *lastData;
     QmlPropertyCache::Data local;
@@ -115,6 +136,7 @@ private:
 
     QmlEngine *engine;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QmlObjectScriptClass::QueryHints);
 
 QT_END_NAMESPACE
 

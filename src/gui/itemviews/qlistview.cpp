@@ -2621,6 +2621,13 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     const QSize contents = contentsSize;
     QPoint offset(horizontalOffset(), verticalOffset());
     QPoint end = e->pos() + offset;
+    if (qq->acceptDrops()) {
+        const Qt::ItemFlags dropableFlags = Qt::ItemIsDropEnabled|Qt::ItemIsEnabled;
+        const QVector<QModelIndex> &dropIndices = intersectingSet(QRect(end, QSize(1, 1)));
+        foreach (const QModelIndex &index, dropIndices)
+            if ((index.flags() & dropableFlags) == dropableFlags)
+                return false;
+    }
     QPoint start = dd->pressedPosition;
     QPoint delta = (dd->movement == QListView::Snap ? snapToGrid(end) - snapToGrid(start) : end - start);
     QList<QModelIndex> indexes = dd->selectionModel->selectedIndexes();

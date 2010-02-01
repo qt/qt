@@ -59,6 +59,8 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsImage : public QmlGraphicsImageBase
 
     Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap NOTIFY pixmapChanged DESIGNABLE false)
     Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged)
+    Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedGeometryChanged)
+    Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedGeometryChanged)
 
 public:
     QmlGraphicsImage(QmlGraphicsItem *parent=0);
@@ -71,13 +73,20 @@ public:
     QPixmap pixmap() const;
     void setPixmap(const QPixmap &);
 
+    qreal paintedWidth() const;
+    qreal paintedHeight() const;
+
+    void setSource(const QUrl &url);
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 Q_SIGNALS:
     void fillModeChanged();
+    void paintedGeometryChanged();
 
 protected:
     QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent);
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void updatePaintedGeometry();
 
 private:
     Q_DISABLE_COPY(QmlGraphicsImage)

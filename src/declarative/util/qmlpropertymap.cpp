@@ -118,7 +118,7 @@ void QmlPropertyMapMetaObject::propertyWrite(int index)
     key will be updated as well.
 
     To detect value changes made in the UI layer you can connect to the valueChanged() signal.
-    However, note that valueChanged() is \b NOT emitted when changes are made by calling insert()
+    However, note that valueChanged() is \bold NOT emitted when changes are made by calling insert()
     or clear() - it is only emitted when a value is updated from QML.
 
     \note It is not possible to remove keys from the map; once a key has been added, you can only
@@ -270,6 +270,9 @@ const QVariant QmlPropertyMap::operator[](const QString &key) const
     \fn void QmlPropertyMap::valueChanged(const QString &key)
     This signal is emitted whenever one of the values in the map is changed. \a key
     is the key corresponding to the value that was changed.
+
+    \note valueChanged() is \bold NOT emitted when changes are made by calling insert()
+    or clear() - it is only emitted when a value is updated from QML.
 */
 
 QT_END_NAMESPACE
