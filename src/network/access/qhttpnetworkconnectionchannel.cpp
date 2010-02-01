@@ -260,7 +260,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         // ensure we try to receive a reply in all cases, even if _q_readyRead_ hat not been called
         // this is needed if the sends an reply before we have finished sending the request. In that
         // case receiveReply had been called before but ignored the server reply
-        QMetaObject::invokeMethod(connection, "_q_receiveReply", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "_q_receiveReply", Qt::QueuedConnection);
         break;
     }
     case QHttpNetworkConnectionChannel::ReadingState:
@@ -872,7 +872,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         break;
     }
     QPointer<QObject> that = connection;
-    QString errorString = connection->d_func()->errorDetail(errorCode, socket);
+    QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
     if (send2Reply) {
         if (reply) {
             reply->d_func()->errorString = errorString;

@@ -1590,10 +1590,8 @@ QGLTextureCache::QGLTextureCache()
     Q_ASSERT(qt_gl_texture_cache == 0);
     qt_gl_texture_cache = this;
 
-    QImagePixmapCleanupHooks::instance()->addPixmapModificationHook(cleanupTextures);
-#ifdef Q_WS_X11
-    QImagePixmapCleanupHooks::instance()->addPixmapDestructionHook(cleanupPixmapSurfaces);
-#endif
+    QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(cleanupTextures);
+    QImagePixmapCleanupHooks::instance()->addPixmapDataDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->addImageHook(imageCleanupHook);
 }
 
@@ -1601,10 +1599,8 @@ QGLTextureCache::~QGLTextureCache()
 {
     qt_gl_texture_cache = 0;
 
-    QImagePixmapCleanupHooks::instance()->removePixmapModificationHook(cleanupTextures);
-#ifdef Q_WS_X11
-    QImagePixmapCleanupHooks::instance()->removePixmapDestructionHook(cleanupPixmapSurfaces);
-#endif
+    QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTextures);
+    QImagePixmapCleanupHooks::instance()->removePixmapDataDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->removeImageHook(imageCleanupHook);
 }
 
@@ -1672,30 +1668,30 @@ void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
 }
 
 
-void QGLTextureCache::cleanupTextures(QPixmap* pixmap)
+void QGLTextureCache::cleanupTextures(QPixmapData* pmd)
 {
     // ### remove when the GL texture cache becomes thread-safe
     if (qApp->thread() == QThread::currentThread()) {
-        const qint64 cacheKey = pixmap->cacheKey();
+        const qint64 cacheKey = pmd->cacheKey();
         QGLTexture *texture = instance()->getTexture(cacheKey);
         if (texture && texture->options & QGLContext::MemoryManagedBindOption)
             instance()->remove(cacheKey);
     }
 }
 
-#if defined(Q_WS_X11)
-void QGLTextureCache::cleanupPixmapSurfaces(QPixmap* pixmap)
+void QGLTextureCache::cleanupBeforePixmapDestruction(QPixmapData* pmd)
 {
     // Remove any bound textures first:
-    cleanupTextures(pixmap);
+    cleanupTextures(pmd);
+    Q_ASSERT(instance()->getTexture(pmd->cacheKey()) == 0);
 
-    QPixmapData *pd = pixmap->data_ptr().data();
-    if (pd->classId() == QPixmapData::X11Class) {
-        Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
-        QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
+#if defined(Q_WS_X11)
+    if (pmd->classId() == QPixmapData::X11Class) {
+        Q_ASSERT(pmd->ref == 0); // Make sure reference counting isn't broken
+        QGLContextPrivate::destroyGlSurfaceForPixmap(pmd);
     }
-}
 #endif
+}
 
 void QGLTextureCache::deleteIfEmpty()
 {
@@ -4393,6 +4389,13 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
    \note This function temporarily disables depth-testing when the
    text is drawn.
 
+   \note This function can only be used inside a
+   QPainter::beginNativePainting()/QPainter::endNativePainting() block
+   if the default OpenGL paint engine is QPaintEngine::OpenGL. To make
+   QPaintEngine::OpenGL the default GL engine, call
+   QGL::setPreferredPaintEngine(QPaintEngine::OpenGL) before the
+   QApplication constructor.
+
    \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 
@@ -4412,8 +4415,17 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     bool auto_swap = autoBufferSwap();
 
     QPaintEngine::Type oldEngineType = qgl_engine_selector()->preferredPaintEngine();
-    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
+
     QPaintEngine *engine = paintEngine();
+    if (engine && (oldEngineType == QPaintEngine::OpenGL2) && engine->isActive()) {
+        qWarning("QGLWidget::renderText(): Calling renderText() while a GL 2 paint engine is"
+                 " active on the same device is not allowed.");
+        return;
+    }
+
+    // this changes what paintEngine() returns
+    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
+    engine = paintEngine();
     QPainter *p;
     bool reuse_painter = false;
     if (engine->isActive()) {
@@ -4506,8 +4518,17 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     win_y = height - win_y; // y is inverted
 
     QPaintEngine::Type oldEngineType = qgl_engine_selector()->preferredPaintEngine();
-    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
     QPaintEngine *engine = paintEngine();
+
+    if (engine && (oldEngineType == QPaintEngine::OpenGL2) && engine->isActive()) {
+        qWarning("QGLWidget::renderText(): Calling renderText() while a GL 2 paint engine is"
+                 " active on the same device is not allowed.");
+        return;
+    }
+
+    // this changes what paintEngine() returns
+    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
+    engine = paintEngine();
     QPainter *p;
     bool reuse_painter = false;
     bool use_depth_testing = glIsEnabled(GL_DEPTH_TEST);

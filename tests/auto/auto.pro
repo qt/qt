@@ -8,10 +8,14 @@ TEMPLATE = subdirs
            compiler \
            compilerwarnings \
            linguist \
+           maketestselftest \
            moc \
            uic \
            uic3 \
-           guiapplauncher	   
+           guiapplauncher \
+           #atwrapper \     # These tests need significant updating,
+           #uiloader \      # they have hardcoded machine names etc.
+
 Q3SUBDIRS += \
            q3accel \
            q3action \
@@ -130,6 +134,7 @@ SUBDIRS += \
            qdoublevalidator \
            qdrag \
            qerrormessage \
+           qevent \
            qeventloop \
            qexplicitlyshareddatapointer \
            qfile \
@@ -478,7 +483,8 @@ embedded:!wince* {
 }
 
 symbian {
-    SUBDIRS += qsoftkeymanager
+    SUBDIRS += qsoftkeymanager \
+               qs60mainapplication
 }
 
 # Enable the tests specific to QtXmlPatterns. If you add a test, remember to
@@ -563,3 +569,21 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebhistory
 
 contains(QT_CONFIG, declarative): SUBDIRS += declarative
+
+# Following tests depends on private API
+!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+           qcssparser \
+           qgraphicssceneindex \
+           qhttpnetworkconnection \
+           qhttpnetworkreply \
+           qnativesocketengine \
+           qnetworkreply \
+           qpathclipper \
+           qsocketnotifier \
+           qsocks5socketengine \
+           qstylesheetstyle \
+           qtextpiecetable \
+           xmlpatternsdiagnosticsts \
+           xmlpatternsview \
+           xmlpatternsxqts \
+           xmlpatternsxslts

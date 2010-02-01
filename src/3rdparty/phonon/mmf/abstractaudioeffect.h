@@ -23,7 +23,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <AudioEffectBase.h>
 
-#include <Phonon/EffectInterface>
+#include <phonon/effectinterface.h>
 
 #include "audioplayer.h"
 #include "effectparameter.h"

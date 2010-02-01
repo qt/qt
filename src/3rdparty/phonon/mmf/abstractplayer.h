@@ -19,8 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_ABSTRACTPLAYER_H
 #define PHONON_MMF_ABSTRACTPLAYER_H
 
-#include <Phonon/phononnamespace.h>
-#include <Phonon/MediaSource.h>
+#include <phonon/phononnamespace.h>
+#include <phonon/mediasource.h>
 
 #include <QObject>
 

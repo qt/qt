@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Linguist of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,19 +39,9 @@
 **
 ****************************************************************************/
 
-#ifndef PROREADER_H
-#define PROREADER_H
+/*!
+    \example widgets/validators
+    \title Validators Example
 
-#include <QtCore/QHash>
-
-QT_BEGIN_NAMESPACE
-
-class ProFileEvaluator;
-
-void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringList> *varMap,
-                     const QString &projectDir);
-bool evaluateProFile(const QString &fileName, bool verbose, QHash<QByteArray, QStringList> *varMap);
-
-QT_END_NAMESPACE
-
-#endif // PROREADER_H
+    The Validators example shows the signal emission behavior of input validators.
+*/

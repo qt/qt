@@ -262,8 +262,22 @@ protected:
         port = server.serverPort();
         ready.release();
 
-        server.waitForNewConnection(-1);
+        QVERIFY(server.waitForNewConnection(10*1000));
         client = server.nextPendingConnection();
+
+        // read lines until we read the empty line seperating HTTP request from HTTP request body
+        do {
+            if (client->canReadLine()) {
+                QString line = client->readLine();
+                if (line == "\n" || line == "\r\n")
+                    break; // empty line
+            }
+            if (!client->waitForReadyRead(10*1000)) {
+                client->close();
+                return;
+            }
+        } while (client->state() == QAbstractSocket::ConnectedState);
+
         client->write("HTTP/1.0 200 OK\r\n");
         client->write("Content-length: 0\r\n");
         client->write("\r\n");

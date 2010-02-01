@@ -1651,8 +1651,12 @@ static bool qt_resolveTextureFromPixmap(QPaintDevice *paintDevice)
         {
             return false; // Can't use TFP without NPOT
         }
+
         const QX11Info *xinfo = qt_x11Info(paintDevice);
-        QGLExtensionMatcher extensions(glXQueryExtensionsString(xinfo->display(), xinfo->screen()));
+        Display *display = xinfo ? xinfo->display() : X11->display;
+        int screen = xinfo ? xinfo->screen() : X11->defaultScreen;
+
+        QGLExtensionMatcher extensions(glXQueryExtensionsString(display, screen));
         if (extensions.match("GLX_EXT_texture_from_pixmap")) {
             glXBindTexImageEXT = (qt_glXBindTexImageEXT) qglx_getProcAddress("glXBindTexImageEXT");
             glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) qglx_getProcAddress("glXReleaseTexImageEXT");

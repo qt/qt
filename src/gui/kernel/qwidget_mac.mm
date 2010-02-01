@@ -110,6 +110,7 @@
 #include "qevent_p.h"
 #include "qdnd_p.h"
 #include <QtGui/qgraphicsproxywidget.h>
+#include "qmainwindow.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -403,7 +404,7 @@ inline static void qt_mac_set_fullscreen_mode(bool b)
         return;
     qt_mac_app_fullscreen = b;
     if (b) {
-        SetSystemUIMode(kUIModeAllSuppressed, 0);
+        SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
     } else {
         SetSystemUIMode(kUIModeNormal, 0);
     }
@@ -1721,6 +1722,15 @@ bool QWidgetPrivate::qt_widget_rgn(QWidget *widget, short wcode, RgnHandle rgn, 
 void QWidgetPrivate::determineWindowClass()
 {
     Q_Q(QWidget);
+#if !defined(QT_NO_MAINWINDOW) && !defined(QT_NO_TOOLBAR)
+    // Make sure that QMainWindow has the MacWindowToolBarButtonHint when the
+    // unifiedTitleAndToolBarOnMac property is ON. This is to avoid reentry of
+    // setParent() triggered by the QToolBar::event(QEvent::ParentChange).
+    QMainWindow *mainWindow = qobject_cast<QMainWindow *>(q);
+    if (mainWindow && mainWindow->unifiedTitleAndToolBarOnMac()) {
+        data.window_flags |= Qt::MacWindowToolBarButtonHint;
+    }
+#endif
 #ifndef QT_MAC_USE_COCOA
 // ### COCOA:Interleave these better!
 
@@ -2743,7 +2753,9 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         }
         if (wasWindow) {
             oldToolbar = [oldWindow toolbar];
+            [oldToolbar retain];
             oldToolbarVisible = [oldToolbar isVisible];
+            [oldWindow setToolbar:nil];
         }
 #endif
     }
@@ -2787,6 +2799,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
             if (oldToolbar && !(f & Qt::FramelessWindowHint)) {
                 OSWindowRef newWindow = qt_mac_window_for(q);
                 [newWindow setToolbar:oldToolbar];
+                [oldToolbar release];
                 [oldToolbar setVisible:oldToolbarVisible];
             }
 #endif
@@ -3401,6 +3414,38 @@ void QWidgetPrivate::hide_sys()
             ShowHide(window, false);
 #else
             [window orderOut:window];
+            // Unfortunately it is not as easy as just hiding the window, we need
+            // to find out if we were in full screen mode. If we were and this is
+            // the last window in full screen mode then we need to unset the full screen
+            // mode. If this is not the last visible window in full screen mode then we
+            // don't change the full screen mode.
+            if(q->isFullScreen())
+            {
+                bool keepFullScreen = false;
+                QWidgetList windowList = qApp->topLevelWidgets();
+                int windowCount = windowList.count();
+                for(int i = 0; i < windowCount; i++)
+                {
+                    QWidget *w = windowList[i];
+                    // If it is the same window, we don't need to check :-)
+                    if(q == w)
+                        continue;
+                    // If they are not visible or if they are minimized then
+                    // we just ignore them.
+                    if(!w->isVisible() || w->isMinimized())
+                        continue;
+                    // Is it full screen?
+                    // Notice that if there is one window in full screen mode then we
+                    // cannot switch the full screen mode off, therefore we just abort.
+                    if(w->isFullScreen()) {
+                        keepFullScreen = true;
+                        break;
+                    }
+                }
+                // No windows in full screen mode, so let just unset that flag.
+                if(!keepFullScreen)
+                    qt_mac_set_fullscreen_mode(false);
+            }
 #endif
             toggleDrawers(false);
 #ifndef QT_MAC_USE_COCOA
@@ -3465,6 +3510,8 @@ void QWidgetPrivate::hide_sys()
 
     if (!QWidget::mouseGrabber()){
         QWidget *enterWidget = QApplication::widgetAt(QCursor::pos());
+        if (enterWidget && enterWidget->data->in_destructor)
+            enterWidget = 0;
         QApplicationPrivate::dispatchEnterLeave(enterWidget, qt_mouseover);
         qt_mouseover = enterWidget;
     }

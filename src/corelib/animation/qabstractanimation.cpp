@@ -299,8 +299,6 @@ void QUnifiedTimer::registerRunningAnimation(QAbstractAnimation *animation)
         return;
 
     if (QAbstractAnimationPrivate::get(animation)->isPause) {
-        if (animation->duration() == -1)
-            qDebug() << "toto";
         runningPauseAnimations << animation;
     } else
         runningLeafAnimations++;

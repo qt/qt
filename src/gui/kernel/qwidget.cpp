@@ -2026,6 +2026,14 @@ void QWidgetPrivate::updateIsOpaque()
     }
 #endif
 
+#ifdef Q_WS_S60
+    if (q->windowType() == Qt::Dialog && q->testAttribute(Qt::WA_TranslucentBackground)
+                && S60->avkonComponentsSupportTransparency) {
+        setOpaque(false);
+        return;
+    }
+#endif
+
     if (q->testAttribute(Qt::WA_OpaquePaintEvent) || q->testAttribute(Qt::WA_PaintOnScreen)) {
         setOpaque(true);
         return;
@@ -3344,7 +3352,7 @@ QPoint QWidget::pos() const
     \note Setting the size to \c{QSize(0, 0)} will cause the widget to not
     appear on screen. This also applies to windows.
 
-    \sa pos, geometry, minimumSize, maximumSize, resizeEvent()
+    \sa pos, geometry, minimumSize, maximumSize, resizeEvent(), adjustSize()
 */
 
 /*!

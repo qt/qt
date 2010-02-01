@@ -934,8 +934,7 @@ void QColor::setRgb(int r, int g, int b, int a)
 /*!
     \fn QRgb QColor::rgba() const
 
-    Returns the RGB value of the color. Unlike rgb(), the alpha is not
-    stripped.
+    Returns the RGB value of the color, including its alpha.
 
     For an invalid color, the alpha value of the returned color is unspecified.
 
@@ -950,8 +949,7 @@ QRgb QColor::rgba() const
 }
 
 /*!
-    Sets the RGBA value to \a rgba. Unlike setRgb(QRgb rgb), this function does
-    not ignore the alpha.
+    Sets the RGB value to \a rgba, including its alpha.
 
     \sa rgba(), rgb()
 */
@@ -968,8 +966,7 @@ void QColor::setRgba(QRgb rgba)
 /*!
     \fn QRgb QColor::rgb() const
 
-    Returns the RGB value of the color. The alpha is stripped for
-    compatibility.
+    Returns the RGB value of the color. The alpha value is opaque.
 
     \sa getRgb(), rgba()
 */
@@ -983,7 +980,7 @@ QRgb QColor::rgb() const
 /*!
     \overload
 
-    Sets the RGB value to \a rgb, ignoring the alpha.
+    Sets the RGB value to \a rgb. The alpha value is set to opaque.
 */
 void QColor::setRgb(QRgb rgb)
 {

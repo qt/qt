@@ -510,7 +510,7 @@ extern "C" {
     }
 
     // Make sure the opengl context is updated on resize.
-    if (0 && qwidgetprivate->isGLWidget) {
+    if (qwidgetprivate->isGLWidget) {
         qwidgetprivate->needWindowChange = true;
         QEvent event(QEvent::MacGLWindowChange);
         qApp->sendEvent(qwidget, &event);
@@ -644,6 +644,8 @@ extern "C" {
 
 - (void)mouseEntered:(NSEvent *)event
 {
+    if (qwidgetprivate->data.in_destructor)
+        return;
     QEvent enterEvent(QEvent::Enter);
     NSPoint windowPoint = [event locationInWindow];
     NSPoint globalPoint = [[event window] convertBaseToScreen:windowPoint];
