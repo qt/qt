@@ -69,7 +69,7 @@ class QGLContext;
 
 
 class QVideoSurfacePainter;
-class Q_AUTOTEST_EXPORT QPainterVideoSurface : public QAbstractVideoSurface
+class Q_MULTIMEDIA_EXPORT QPainterVideoSurface : public QAbstractVideoSurface
 {
     Q_OBJECT
 public:
