@@ -558,6 +558,9 @@ void QGL2PaintEngineExPrivate::resetGLState()
     glStencilMask(0xff);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     glStencilFunc(GL_ALWAYS, 0, 0xff);
+    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+    glDisableVertexAttribArray(QT_OPACITY_ATTR);
 }
 
 void QGL2PaintEngineEx::endNativePainting()
