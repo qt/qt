@@ -1234,8 +1234,10 @@ public:
             QFactoryLoader *l = loader();
             QmlModuleFactoryInterface *factory =
                 qobject_cast<QmlModuleFactoryInterface*>(l->instance(uri));
-            if (factory)
+            if (factory) {
+                factory->defineModuleOnce(uri);
                 isbuiltin = true;
+            }
         } else {
             url = base.resolved(QUrl(url)).toString();
         }
