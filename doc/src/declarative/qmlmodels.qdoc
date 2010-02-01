@@ -169,11 +169,58 @@ will be positioned by the view.
 
 \section1 C++ Data Models
 
-\list
-\o QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNames() method.
-\o QStringList provides the contents of the list via the \e modelData role.
-\o QList<QObject*> provides the properties of the objects in the list as roles.
-\endlist
+\section2 QAbstractItemModel
+
+QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNames() method.
+
+
+\section2 QStringList
+
+QStringList provides the contents of the list via the \e modelData role.
+
+
+\section2 QList<QObject*>
+
+QList<QObject*> provides the properties of the objects in the list as roles.
+
+\code
+class DataObject : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString color READ color WRITE setColor)
+...
+};
+
+QList<QObject*> dataList;
+dataList.append(new DataObject("Item 1", "red"));
+dataList.append(new DataObject("Item 2", "green"));
+dataList.append(new DataObject("Item 3", "blue"));
+dataList.append(new DataObject("Item 4", "yellow"));
+
+QmlContext *ctxt = view.rootContext();
+ctxt->setContextProperty("myModel", QVariant::fromValue(&dataList));
+\endcode
+
+The properties of the object may then be accessed in the delegate:
+
+\code
+ListView {
+   width: 100
+   height: 100
+   anchors.fill: parent
+   model: myModel
+   delegate: Component {
+       Rectangle {
+            height: 25
+            width: 100
+            color: model.color
+            Text { text: name }
+       }
+   }
+}
+\endcode
 
 
 \section1 Other Data Models

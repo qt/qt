@@ -462,7 +462,8 @@ int QmlGraphicsVisualDataModelDataMetaObject::createProperty(const char *name, c
     QmlGraphicsVisualDataModelPrivate *model = QmlGraphicsVisualDataModelPrivate::get(data->m_model);
 
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
-        if (model->m_listAccessor->type() == QmlListAccessor::QmlList) {
+        if (model->m_listAccessor->type() == QmlListAccessor::QmlList
+            || model->m_listAccessor->type() == QmlListAccessor::QListPtr) {
             model->ensureRoles();
             QObject *object = model->m_listAccessor->at(data->m_index).value<QObject*>();
             if (object && object->property(name).isValid())
@@ -724,7 +725,7 @@ void QmlGraphicsVisualDataModel::setModel(const QVariant &model)
     }
     d->m_listAccessor = new QmlListAccessor;
     d->m_listAccessor->setList(model, d->m_context?d->m_context->engine():qmlEngine(this));
-    if (d->m_listAccessor->type() != QmlListAccessor::QmlList)
+    if (d->m_listAccessor->type() != QmlListAccessor::QmlList && d->m_listAccessor->type() != QmlListAccessor::QListPtr)
         d->m_metaDataCacheable = true;
     if (d->m_delegate && d->modelCount()) {
         emit itemsInserted(0, d->modelCount());
