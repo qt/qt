@@ -5740,7 +5740,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     QStaticTextPrivate *staticText_d =
             const_cast<QStaticTextPrivate *>(QStaticTextPrivate::get(&staticText));
 
-    // If we don't have an extended paint engine, or if the painter is transformed,
+    // If we don't have an extended paint engine, or if the painter is projected,
     // we go through standard code path
     if (d->extended == 0 || !d->state->matrix.isAffine()) {
         if (staticText_d->size.isValid())
