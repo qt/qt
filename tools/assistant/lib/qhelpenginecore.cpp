@@ -168,7 +168,7 @@ void QHelpEngineCorePrivate::errorReceived(const QString &msg)
     it is removed by calling removeCustomFilter(). customFilters() returns
     all defined filters.
 
-    The help engine also offers the possiblity to set and read values
+    The help engine also offers the possibility to set and read values
     in a persistant way comparable to ini files or Windows registry
     entries. For more information see setValue() or value().
 

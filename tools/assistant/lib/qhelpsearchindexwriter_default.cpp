@@ -126,9 +126,9 @@ void Writer::removeIndex() const
 
 void Writer::setIndexFile(const QString &namespaceName, const QString &attributes)
 {
-    QString extention = namespaceName + QLatin1String("@") + attributes;
-    indexFile = indexPath + QLatin1String("/indexdb40.") + extention;
-    documentFile = indexPath + QLatin1String("/indexdoc40.") + extention;
+    QString extension = namespaceName + QLatin1String("@") + attributes;
+    indexFile = indexPath + QLatin1String("/indexdb40.") + extension;
+    documentFile = indexPath + QLatin1String("/indexdoc40.") + extension;
 }
 
 void Writer::insertInIndex(const QString &string, int docNum)

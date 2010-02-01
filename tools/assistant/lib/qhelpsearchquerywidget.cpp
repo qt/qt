@@ -155,7 +155,7 @@ private:
         if (retValue.trimmed().isEmpty())
             return retValue;
 
-        retValue = text; // now realy escape the string...
+        retValue = text; // now really escape the string...
         foreach (const QString &escapeChar, escapableCharsList) {
             if (retValue.contains(escapeChar))
                 retValue.replace(escapeChar, escape + escapeChar);
@@ -533,7 +533,7 @@ QHelpSearchQueryWidget::~QHelpSearchQueryWidget()
 }
 
 /*!
-    Returns a list of querys to use in combination with the search engines
+    Returns a list of queries to use in combination with the search engines
     search(QList<QHelpSearchQuery> &query) function.
 */
 QList<QHelpSearchQuery> QHelpSearchQueryWidget::query() const

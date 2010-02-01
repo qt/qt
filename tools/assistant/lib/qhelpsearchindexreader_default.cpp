@@ -180,9 +180,9 @@ void Reader::filterFilesForAttributes(const QStringList &attributes)
 
 void Reader::setIndexFile(const QString &namespaceName, const QString &attributes)
 {
-    QString extention = namespaceName + QLatin1String("@") + attributes;
-    indexFile = indexPath + QLatin1String("/indexdb40.") + extention;
-    documentFile = indexPath + QLatin1String("/indexdoc40.") + extention;
+    QString extension = namespaceName + QLatin1String("@") + attributes;
+    indexFile = indexPath + QLatin1String("/indexdb40.") + extension;
+    documentFile = indexPath + QLatin1String("/indexdoc40.") + extension;
 }
 
 bool Reader::splitSearchTerm(const QString &searchTerm, QStringList *terms,

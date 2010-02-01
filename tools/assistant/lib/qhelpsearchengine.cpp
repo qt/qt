@@ -214,7 +214,7 @@ private:
     search term
 
     The QHelpSearchQuery class contains the field name and the associated search
-    term. Depending on the field the search term might get split up into seperate
+    term. Depending on the field the search term might get split up into separate
     terms to be parsed differently by the search engine.
 
     \sa QHelpSearchQueryWidget
@@ -238,15 +238,15 @@ private:
 
     \value DEFAULT  the default field provided by the search widget, several terms should be
                     split and stored in the word list except search terms enclosed in quotes.
-    \value FUZZY    a field only provided in use with clucene. Terms should be split in seperate
+    \value FUZZY    a field only provided in use with clucene. Terms should be split in separate
                     words and passed to the search engine.
-    \value WITHOUT  a field only provided in use with clucene. Terms should be split in seperate
+    \value WITHOUT  a field only provided in use with clucene. Terms should be split in separate
                     words and passed to the search engine.
-    \value PHRASE   a field only provided in use with clucene. Terms should not be split in seperate
+    \value PHRASE   a field only provided in use with clucene. Terms should not be split in separate
                     words.
-    \value ALL      a field only provided in use with clucene. Terms should be split in seperate
+    \value ALL      a field only provided in use with clucene. Terms should be split in separate
                     words and passed to the search engine
-    \value ATLEAST  a field only provided in use with clucene. Terms should be split in seperate
+    \value ATLEAST  a field only provided in use with clucene. Terms should be split in separate
                     words and passed to the search engine
 */
 
