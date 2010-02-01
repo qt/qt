@@ -42,10 +42,10 @@
 #include <QtTest/QtTest>
 #include <QtGui/QApplication>
 #include <QtGui/QPainter>
-#include <QtGui/QStaticText>
 #include <QtGui/QImage>
 
 #include <private/qstatictext_p.h>
+#include <private/qstatictext_p_p.h>
 
 // #define DEBUG_SAVE_IMAGE
 

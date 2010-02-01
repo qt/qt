@@ -44,7 +44,7 @@
 #include "qstroker_p.h"
 #include "qbezier_p.h"
 #include <private/qpainterpath_p.h>
-#include <private/qstatictext_p.h>
+#include <private/qstatictext_p_p.h>
 
 #include <qvarlengtharray.h>
 #include <qdebug.h>

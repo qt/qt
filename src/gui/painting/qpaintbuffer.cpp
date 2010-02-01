@@ -46,6 +46,7 @@
 #include <private/qemulationpaintengine_p.h>
 #include <private/qimage_p.h>
 #include <private/qstatictext_p.h>
+#include <private/qstatictext_p_p.h>
 
 #include <QDebug>
 

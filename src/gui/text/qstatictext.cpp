@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qstatictext.h"
 #include "qstatictext_p.h"
+#include "qstatictext_p_p.h"
 #include <private/qtextengine_p.h>
 #include <private/qfontengine_p.h>
 
@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QStaticText
+    \internal
     \brief The QStaticText class enables optimized drawing of text when the text and its layout
     is updated rarely.
     \since 4.7

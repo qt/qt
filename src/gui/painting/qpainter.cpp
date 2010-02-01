@@ -70,6 +70,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qmath_p.h>
 #include <private/qstatictext_p.h>
+#include <private/qstatictext_p_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -5707,17 +5708,23 @@ void QPainter::drawText(const QPointF &p, const QString &str)
 /*!    
     \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
 
+    \internal
+
     \overload
 */
 
 /*!    
     \fn void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
 
+    \internal
+
     \overload
 */
 
 /*!
     Draws the given \a staticText beginning at the given \a position. 
+
+    \internal
 
     This function can be used to optimize drawing text if the text and its layout is updated     
     seldomly.

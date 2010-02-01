@@ -60,7 +60,7 @@
 #include <private/qglpixelbuffer_p.h>
 #include <private/qbezier_p.h>
 #include <qglframebufferobject.h>
-#include <private/qstatictext_p.h>
+#include <private/qstatictext_p_p.h>
 
 #include "private/qtessellator_p.h"
 
