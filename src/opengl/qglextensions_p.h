@@ -415,6 +415,14 @@ struct QGLExtensionFuncs
 
 // OpenGL constants
 
+#ifndef GL_ARRAY_BUFFER
+#define GL_ARRAY_BUFFER                   0x8892
+#endif
+
+#ifndef GL_STATIC_DRAW
+#define GL_STATIC_DRAW                    0x88E4
+#endif
+
 /* NV_texture_rectangle */
 #ifndef GL_NV_texture_rectangle
 #define GL_TEXTURE_RECTANGLE_NV           0x84F5
