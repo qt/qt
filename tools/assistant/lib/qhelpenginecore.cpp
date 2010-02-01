@@ -362,7 +362,7 @@ QString QHelpEngineCore::documentationFileName(const QString &namespaceName)
     if (d->setup()) {
         const QHelpCollectionHandler::DocInfoList docList =
             d->collectionHandler->registeredDocumentations();
-        foreach(const QHelpCollectionHandler::DocInfo info, docList) {
+        foreach(const QHelpCollectionHandler::DocInfo &info, docList) {
             if (info.namespaceName == namespaceName) {
                 if (QDir::isAbsolutePath(info.fileName))
                     return QDir::cleanPath(info.fileName);
@@ -386,7 +386,7 @@ QStringList QHelpEngineCore::registeredDocumentations() const
     if (!d->setup())
         return list;
     const QHelpCollectionHandler::DocInfoList docList = d->collectionHandler->registeredDocumentations();
-    foreach(const QHelpCollectionHandler::DocInfo info, docList) {
+    foreach(const QHelpCollectionHandler::DocInfo &info, docList) {
         list.append(info.namespaceName);
     }
     return list;
@@ -531,7 +531,7 @@ QList<QUrl> QHelpEngineCore::files(const QString namespaceName,
     url.setAuthority(namespaceName);
 
     const QStringList files = reader->files(filterAttributes, extensionFilter);
-    foreach (const QString file, files) {
+    foreach (const QString &file, files) {
         url.setPath(QLatin1String("/") + file);
         res.append(url);
     }

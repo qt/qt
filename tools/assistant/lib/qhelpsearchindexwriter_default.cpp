@@ -104,7 +104,7 @@ bool Writer::writeIndex() const
         return status;
 
     QDataStream docStream(&docFile);
-    foreach(const QStringList list, documentList) {
+    foreach(const QStringList &list, documentList) {
         docStream << list.at(0);
         docStream << list.at(1);
     }
@@ -226,7 +226,7 @@ void QHelpSearchIndexWriter::run()
 
     QStringList namespaces;
     Writer writer(indexPath);
-    foreach(const QString namespaceName, registeredDocs) {
+    foreach(const QString &namespaceName, registeredDocs) {
         mutex.lock();
         if (m_cancel) {
             mutex.unlock();
@@ -242,7 +242,7 @@ void QHelpSearchIndexWriter::run()
         const QList<QStringList> attributeSets =
             engine.filterAttributeSets(namespaceName);
 
-        foreach (QStringList attributes, attributeSets) {
+        foreach (const QStringList &attributes, attributeSets) {
             // cleanup maybe old or unfinished files
             writer.setIndexFile(namespaceName, attributes.join(QLatin1String("@")));
             writer.removeIndex();
@@ -266,7 +266,7 @@ void QHelpSearchIndexWriter::run()
 
             int docNum = 0;
             const QStringList documentsList(documentsSet.toList());
-            foreach(const QString url, documentsList) {
+            foreach(const QString &url, documentsList) {
                 if (m_cancel)
                     return;
 
@@ -347,7 +347,7 @@ void QHelpSearchIndexWriter::run()
         const QList<QStringList> attributeSets =
             engine.filterAttributeSets(namespaceName);
 
-        foreach (QStringList attributes, attributeSets) {
+        foreach (const QStringList &attributes, attributeSets) {
             writer.setIndexFile(namespaceName, attributes.join(QLatin1String("@")));
             writer.removeIndex();
         }

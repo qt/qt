@@ -148,7 +148,7 @@ private:
             << QLatin1String("}") << QLatin1String("~");
 
         // make sure we won't end up with an empty string
-        foreach (const QString escapeChar, escapableCharsList) {
+        foreach (const QString &escapeChar, escapableCharsList) {
             if (retValue.contains(escapeChar))
                 retValue.replace(escapeChar, QLatin1String(""));
         }
@@ -156,7 +156,7 @@ private:
             return retValue;
 
         retValue = text; // now realy escape the string...
-        foreach (const QString escapeChar, escapableCharsList) {
+        foreach (const QString &escapeChar, escapableCharsList) {
             if (retValue.contains(escapeChar))
                 retValue.replace(escapeChar, escape + escapeChar);
         }
@@ -317,7 +317,7 @@ private slots:
             QStringList lst = similarQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList fuzzy;
-                foreach (const QString term, lst)
+                foreach (const QString &term, lst)
                     fuzzy += buildTermList(escapeString(term));
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::FUZZY, fuzzy));
             }
@@ -325,7 +325,7 @@ private slots:
             lst = withoutQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList without;
-                foreach (const QString term, lst)
+                foreach (const QString &term, lst)
                     without.append(escapeString(term));
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::WITHOUT, without));
             }
@@ -339,7 +339,7 @@ private slots:
             lst = allQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList all;
-                foreach (const QString term, lst)
+                foreach (const QString &term, lst)
                     all.append(escapeString(term));
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::ALL, all));
             }
@@ -347,7 +347,7 @@ private slots:
             lst = atLeastQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList atLeast;
-                foreach (const QString term, lst)
+                foreach (const QString &term, lst)
                     atLeast += buildTermList(escapeString(term));
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::ATLEAST, atLeast));
             }

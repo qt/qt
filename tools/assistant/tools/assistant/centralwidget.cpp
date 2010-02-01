@@ -1118,7 +1118,7 @@ CentralWidget::highlightSearchTerms()
     QList<QHelpSearchQuery> queryList = searchEngine->query();
 
     QStringList terms;
-    foreach (QHelpSearchQuery query, queryList) {
+    foreach (const QHelpSearchQuery &query, queryList) {
         switch (query.fieldName) {
             default: break;
             case QHelpSearchQuery::ALL: {
