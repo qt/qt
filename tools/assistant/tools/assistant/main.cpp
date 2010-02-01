@@ -243,6 +243,9 @@ bool useGui(int argc, char *argv[])
             }
         }
     }
+#else
+    Q_UNUSED(argc)
+    Q_UNUSED(argv)
 #endif
     return gui;
 }
