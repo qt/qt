@@ -229,11 +229,10 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
     \value ReadOnly Indicates that the model is readonly.
 
     \value HideNameFilterDetails Indicates if the is hidden or not.
-    This value is obsolete and does nothing since Qt 4.5:
 
     \value DontUseSheet In previous versions of Qt, the static
     functions would create a sheet by default if the static function
-    was given a parent. This is no longer supported in Qt 4.5, The
+    was given a parent. This is no longer supported and does nothing in Qt 4.5, The
     static functions will always be an application modal dialog. If
     you want to use sheets, use QFileDialog::open() instead.
 
