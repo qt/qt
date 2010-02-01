@@ -555,7 +555,7 @@ void QApplicationPrivate::handleLeaveEvent(QWidget *tlw)
 void QApplicationPrivate::processMouseEvent(MouseEvent *e)
 {
     // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
-    static QPointer<QWidget> implicit_mouse_grabber;
+    static QWeakPointer<QWidget> implicit_mouse_grabber;
 
     QEvent::Type type;
     // move first
@@ -616,7 +616,7 @@ void QApplicationPrivate::processMouseEvent(MouseEvent *e)
         //popup mouse handling is magical...
         mouseWindow = qApp->activePopupWidget();
 
-        implicit_mouse_grabber = 0;
+        implicit_mouse_grabber.clear();
         //### how should popup mode and implicit mouse grab interact?
 
     } else if (e->tlw && app_do_modal && !qt_try_modal(e->tlw, e->type) ) {
@@ -657,7 +657,7 @@ void QApplicationPrivate::processMouseEvent(MouseEvent *e)
         Q_ASSERT(mouseWindow);
         mouseWindow->activateWindow(); //focus
     } else if (implicit_mouse_grabber) {
-        mouseWidget = implicit_mouse_grabber;
+        mouseWidget = implicit_mouse_grabber.data();
         mouseWindow = mouseWidget->window();
         if (mouseWindow != e->tlw)
             localPoint = mouseWindow->mapFromGlobal(globalPoint);
@@ -670,7 +670,7 @@ void QApplicationPrivate::processMouseEvent(MouseEvent *e)
 
     if (buttons == Qt::NoButton) {
         //qDebug() << "resetting mouse grabber";
-        implicit_mouse_grabber = 0;
+        implicit_mouse_grabber.clear();
     }
 
     if (mouseWidget != qt_last_mouse_receiver) {
