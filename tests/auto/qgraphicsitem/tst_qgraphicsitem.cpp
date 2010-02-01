@@ -9978,6 +9978,8 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
 
     origView.show();
     QTest::qWaitForWindowShown(&origView);
+    origView.setGeometry(origView.width() + 20, 20,
+                         origView.width(), origView.height());
 
     parentGreen->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
