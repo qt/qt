@@ -201,7 +201,7 @@ void QmlImageReader::cancel(QmlPixmapReply *reply)
 
 void QmlImageReader::run()
 {
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && defined(SCHED_IDLE)
     struct sched_param param;
     int policy;
 
