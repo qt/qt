@@ -212,4 +212,12 @@ void QDirectFbWindowSurface::lower()
     m_dfbWindow->LowerToBottom(m_dfbWindow);
 }
 
+WId QDirectFbWindowSurface::winId() const
+{
+    DFBWindowID id;
+    m_dfbWindow->GetID(m_dfbWindow, &id);
+    return WId(id);
+}
+
+
 QT_END_NAMESPACE

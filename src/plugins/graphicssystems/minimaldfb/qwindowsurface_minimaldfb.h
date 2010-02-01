@@ -70,6 +70,9 @@ public:
 
     void raise();
     void lower();
+
+    WId winId() const;
+
 private:
     void lockSurfaceToImage();
 
