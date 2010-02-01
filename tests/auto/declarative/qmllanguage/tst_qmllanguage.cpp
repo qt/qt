@@ -109,6 +109,7 @@ private slots:
     void i18n_data();
     void onCompleted();
     void scriptString();
+    void defaultPropertyListOrder();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -1017,6 +1018,25 @@ void tst_qmllanguage::scriptString()
     QCOMPARE(object->grouped()->script().script(), QString("console.log(1921)"));
     QCOMPARE(object->grouped()->script().scopeObject(), object);
     QCOMPARE(object->grouped()->script().context(), qmlContext(object));
+}
+
+// Check that default property assignments are correctly spliced into explicit 
+// property assignments
+void tst_qmllanguage::defaultPropertyListOrder()
+{
+    QmlComponent component(&engine, TEST_FILE("defaultPropertyListOrder.qml"));
+    VERIFY_ERRORS(0);
+
+    MyContainer *container = qobject_cast<MyContainer *>(component.create());
+    QVERIFY(container  != 0);
+
+    QCOMPARE(container->children()->count(), 6);
+    QCOMPARE(container->children()->at(0)->property("index"), QVariant(0));
+    QCOMPARE(container->children()->at(1)->property("index"), QVariant(1));
+    QCOMPARE(container->children()->at(2)->property("index"), QVariant(2));
+    QCOMPARE(container->children()->at(3)->property("index"), QVariant(3));
+    QCOMPARE(container->children()->at(4)->property("index"), QVariant(4));
+    QCOMPARE(container->children()->at(5)->property("index"), QVariant(5));
 }
 
 // Check that first child of qml is of given type. Empty type insists on error.
