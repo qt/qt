@@ -254,7 +254,8 @@ QString QStaticText::text() const
 */
 void QStaticText::setUseBackendOptimizations(bool on)
 {
-    if (on == d_ptr->useBackendOptimizations)
+    if ((!on && !d_ptr->useBackendOptimizations)
+        || (on && d_ptr->useBackendOptimizations))
         return;
 
     detach();
