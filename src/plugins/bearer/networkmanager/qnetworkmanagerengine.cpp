@@ -691,5 +691,10 @@ QNetworkSessionPrivate *QNetworkManagerEngine::createSessionBackend()
     return new QNetworkSessionPrivateImpl;
 }
 
+QNetworkConfigurationPrivatePointer QNetworkManagerEngine::defaultConfiguration()
+{
+    return QNetworkConfigurationPrivatePointer();
+}
+
 QT_END_NAMESPACE
 

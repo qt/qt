@@ -86,6 +86,8 @@ public:
 
     QNetworkSessionPrivate *createSessionBackend();
 
+    QNetworkConfigurationPrivatePointer defaultConfiguration();
+
     inline bool available() const { return handle != 0; }
 
 public Q_SLOTS:

@@ -75,6 +75,8 @@ public:
 
     QNetworkSessionPrivate *createSessionBackend();
 
+    QNetworkConfigurationPrivatePointer defaultConfiguration();
+
     static bool getAllScInterfaces();
 
 private Q_SLOTS:

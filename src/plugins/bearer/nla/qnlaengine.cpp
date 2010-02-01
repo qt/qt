@@ -643,6 +643,11 @@ QNetworkSessionPrivate *QNlaEngine::createSessionBackend()
     return new QNetworkSessionPrivateImpl;
 }
 
+QNetworkConfigurationPrivatePointer QNlaEngine::defaultConfiguration()
+{
+    return QNetworkConfigurationPrivatePointer();
+}
+
 #include "qnlaengine.moc"
 QT_END_NAMESPACE
 

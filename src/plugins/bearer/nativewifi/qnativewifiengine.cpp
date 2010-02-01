@@ -473,4 +473,9 @@ QNetworkSessionPrivate *QNativeWifiEngine::createSessionBackend()
     return new QNetworkSessionPrivateImpl;
 }
 
+QNetworkConfigurationPrivatePointer QNativeWifiEngine::defaultConfiguration()
+{
+    return QNetworkConfigurationPrivatePointer();
+}
+
 QT_END_NAMESPACE

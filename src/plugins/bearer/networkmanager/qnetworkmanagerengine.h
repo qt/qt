@@ -86,6 +86,8 @@ public:
 
     QNetworkSessionPrivate *createSessionBackend();
 
+    QNetworkConfigurationPrivatePointer defaultConfiguration();
+
 private Q_SLOTS:
     void interfacePropertiesChanged(const QString &path,
                                     const QMap<QString, QVariant> &properties);
