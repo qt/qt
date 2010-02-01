@@ -293,7 +293,7 @@ bool QmlPixmapReply::event(QEvent *event)
             } else {
                 qWarning() << "Error decoding" << d->urlKey;
             }
-            QPixmapCache::insert(d->urlKey, d->pixmap);
+            QPixmapCache::insert(d->urlKey, d->pixmap); // note: may fail (returns false)
             emit finished();
         }
         return true;
@@ -374,8 +374,14 @@ QmlPixmapReply::Status QmlPixmapCache::get(const QUrl& url, QPixmap *pixmap)
 #endif
 
     QString key = url.toString();
+
     QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies.find(key);
-    if (QPixmapCache::find(key, pixmap)) {
+    if (iter != qmlActivePixmapReplies.end() && (*iter)->status() == QmlPixmapReply::Ready) {
+        // Must check this, since QPixmapCache::insert may have failed.
+        *pixmap = (*iter)->d_func()->pixmap;
+        status = (*iter)->status();
+        (*iter)->release();
+    } else if (QPixmapCache::find(key, pixmap)) {
         if (iter != qmlActivePixmapReplies.end()) {
             status = (*iter)->status();
             (*iter)->release();
