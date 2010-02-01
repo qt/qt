@@ -1362,13 +1362,13 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             if (userData->textureCoordVBOId == 0)
                 glGenBuffers(1, &userData->textureCoordVBOId);
 
-            glBindBuffer(GL_ARRAY_BUFFER_ARB, userData->vertexCoordVBOId);
-            glBufferData(GL_ARRAY_BUFFER_ARB, vertexCoordinateArraySize,
-                         vertexCoordinateArray.data(), GL_STATIC_DRAW_ARB);
+            glBindBuffer(GL_ARRAY_BUFFER, userData->vertexCoordVBOId);
+            glBufferData(GL_ARRAY_BUFFER, vertexCoordinateArraySize,
+                         vertexCoordinateArray.data(), GL_STATIC_DRAW);
 
-            glBindBuffer(GL_ARRAY_BUFFER_ARB, userData->textureCoordVBOId);
-            glBufferData(GL_ARRAY_BUFFER_ARB, textureCoordinateArraySize,
-                         textureCoordinateArray.data(), GL_STATIC_DRAW_ARB);
+            glBindBuffer(GL_ARRAY_BUFFER, userData->textureCoordVBOId);
+            glBufferData(GL_ARRAY_BUFFER, textureCoordinateArraySize,
+                         textureCoordinateArray.data(), GL_STATIC_DRAW);
 
             // If a new user data has been created, make sure we delete the old
             staticTextItem->setUserData(userData);
@@ -1386,10 +1386,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
         QOpenGLStaticTextUserData *userData = static_cast<QOpenGLStaticTextUserData *>(staticTextItem->userData);
 
-        glBindBuffer(GL_ARRAY_BUFFER_ARB, userData->vertexCoordVBOId);
+        glBindBuffer(GL_ARRAY_BUFFER, userData->vertexCoordVBOId);
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-        glBindBuffer(GL_ARRAY_BUFFER_ARB, userData->textureCoordVBOId);
+        glBindBuffer(GL_ARRAY_BUFFER, userData->textureCoordVBOId);
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, 0);
     }
 
@@ -1491,7 +1491,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     glDrawArrays(GL_TRIANGLES, 0, 6 * staticTextItem->numGlyphs);
 
     // Reset bindings
-    glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)
