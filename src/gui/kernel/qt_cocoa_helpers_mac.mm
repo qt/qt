@@ -1296,4 +1296,17 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
 }
 @end
 
+QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
+{
+#ifndef QT_MAC_USE_COCOA
+    NSApplicationLoad();
+#endif
+    pool = (void*)[[NSAutoreleasePool alloc] init];
+}
+
+QMacCocoaAutoReleasePool::~QMacCocoaAutoReleasePool()
+{
+    [(NSAutoreleasePool*)pool release];
+}
+
 QT_END_NAMESPACE

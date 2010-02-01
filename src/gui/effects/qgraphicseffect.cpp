@@ -383,9 +383,9 @@ void QGraphicsEffectSourcePrivate::invalidateCache(InvalidateReason reason) cons
 {
     if (m_cachedMode != QGraphicsEffect::PadToEffectiveBoundingRect
         && (reason == EffectRectChanged
-            || reason == TransformChanged
-               && m_cachedSystem == Qt::LogicalCoordinates))
+            || (reason == TransformChanged && m_cachedSystem == Qt::LogicalCoordinates))) {
         return;
+    }
 
     QPixmapCache::remove(m_cacheKey);
 }
