@@ -134,6 +134,7 @@ public:
 
 private:
     friend class QFontPrivate;
+    friend class QSymbianVGFontGlyphCache;
 
     QFixed glyphAdvance(HB_Glyph glyph) const;
     CFont *fontWithSize(qreal size) const;
