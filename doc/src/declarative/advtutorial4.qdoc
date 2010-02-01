@@ -113,9 +113,11 @@ like this:
 \snippet declarative/tutorials/samegame/samegame4/content/BoomBlock.qml 4
 
 And now the game should be beautifully animated and smooth, with a subtle (or not-so-subtle) animation added for all of the
-player's actions. The end result is shown below:
+player's actions. The end result is shown below, with a different set of images to demonstrate basic themeing:
 
 \image declarative-adv-tutorial4.gif
+
+The basic theme change there is the result of simply replacing the images. This can be done at run time by setting the source property, so a further advanced feature to try on your own is to add a button which toggles between two different themes.
 
 \section2 Offline High Scores
 Another extension we might want for the game is some way of storing and retrieving high scores. This tutorial contains both online and offline high score storage. 
