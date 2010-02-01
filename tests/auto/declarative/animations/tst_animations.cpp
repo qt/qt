@@ -67,6 +67,7 @@ private slots:
     void propertiesTransition();
     void easingStringConversion();
     void invalidDuration();
+    void attached();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -561,6 +562,17 @@ void tst_animations::invalidDuration()
     QTest::ignoreMessage(QtWarningMsg, "QML PauseAnimation (unknown location) Cannot set a duration of < 0");
     pauseAnimation->setDuration(-1);
     QCOMPARE(pauseAnimation->duration(), 250);
+}
+
+void tst_animations::attached()
+{
+    QmlEngine engine;
+
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/attached.qml"));
+    QTest::ignoreMessage(QtDebugMsg, "off");
+    QTest::ignoreMessage(QtDebugMsg, "on");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+    QVERIFY(rect);
 }
 
 QTEST_MAIN(tst_animations)
