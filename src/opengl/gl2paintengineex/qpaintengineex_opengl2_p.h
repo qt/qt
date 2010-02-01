@@ -195,7 +195,8 @@ public:
     void stroke(const QVectorPath &path, const QPen &pen);
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
     void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
-    void drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem);
+    void drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem,
+                          bool includeMatrixInCache);
 
     // Calls glVertexAttributePointer if the pointer has changed
     inline void setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer);
