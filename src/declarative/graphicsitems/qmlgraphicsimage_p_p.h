@@ -64,11 +64,13 @@ class QmlGraphicsImagePrivate : public QmlGraphicsImageBasePrivate
 
 public:
     QmlGraphicsImagePrivate()
-      : fillMode(QmlGraphicsImage::Stretch)
+      : fillMode(QmlGraphicsImage::Stretch), paintedWidth(0), paintedHeight(0)
     {
     }
 
     QmlGraphicsImage::FillMode fillMode;
+    qreal paintedWidth;
+    qreal paintedHeight;
     void setPixmap(const QPixmap &pix);
 };
 

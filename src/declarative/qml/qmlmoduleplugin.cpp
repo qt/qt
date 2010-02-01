@@ -59,10 +59,11 @@ QT_BEGIN_NAMESPACE
     exporting the class with the Q_EXPORT_PLUGIN2() macro. See \l{How
     to Create Qt Plugins} for details.
 
-    The plugin should register QML types with QML_DEFINE_TYPE.
-
-    The strings returned by keys() should be the list of URIs of module
+    The strings returned by keys() should be the list of URIs of modules
     that the plugin registers.
+
+    The plugin should register QML types with qmlRegisterType() when the
+    defineModule() method is called.
 
     \sa examples/declarative/plugins
 */
@@ -84,6 +85,27 @@ QmlModulePlugin::QmlModulePlugin(QObject *parent)
 */
 QmlModulePlugin::~QmlModulePlugin()
 {
+}
+
+/*!
+    \fn void QmlModulePlugin::defineModule(const QString& uri)
+
+    Subclasses must override this function to register types
+    of the module \a uri, which will be one of the strings returned by keys().
+
+    The plugin registers QML types with qmlRegisterType():
+
+    \code
+        qmlRegisterType<MyClass>("com.nokia.MyModule", 1, 0, "MyType", "MyClass");
+    \endcode
+*/
+
+void QmlModulePlugin::defineModuleOnce(const QString& uri)
+{ 
+    if (!defined.contains(uri)) {
+        defined += uri;
+        defineModule(uri);
+    }
 }
 
 QT_END_NAMESPACE

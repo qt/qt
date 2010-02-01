@@ -404,7 +404,7 @@ bool QmlPixmapReply::event(QEvent *event)
                 d->pixmap = QPixmap::fromImage(de->image);
             QByteArray key = d->url.toEncoded(QUrl::FormattingOption(0x100));
             QString strKey = QString::fromLatin1(key.constData(), key.count());
-            QPixmapCache::insert(strKey, d->pixmap);
+            QPixmapCache::insert(strKey, d->pixmap); // note: may fail (returns false)
             emit finished();
         }
         return true;
@@ -499,7 +499,12 @@ QmlPixmapReply::Status QmlPixmapCache::get(const QUrl& url, QPixmap *pixmap)
     QByteArray key = url.toEncoded(QUrl::FormattingOption(0x100));
     QString strKey = QString::fromLatin1(key.constData(), key.count());
     QmlPixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
-    if (QPixmapCache::find(strKey, pixmap)) {
+    if (iter != qmlActivePixmapReplies()->end() && (*iter)->status() == QmlPixmapReply::Ready) {
+        // Must check this, since QPixmapCache::insert may have failed.
+        *pixmap = (*iter)->d_func()->pixmap;
+        status = (*iter)->status();
+        (*iter)->release();
+    } else if (QPixmapCache::find(strKey, pixmap)) {
         if (iter != qmlActivePixmapReplies()->end()) {
             status = (*iter)->status();
             (*iter)->release();

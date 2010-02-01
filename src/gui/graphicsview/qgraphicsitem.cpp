@@ -3425,6 +3425,9 @@ void QGraphicsItem::setX(qreal x)
     if (d_ptr->inDestructor)
         return;
 
+    if (isnan(x))
+        return;
+
     d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
 }
 
@@ -3447,6 +3450,9 @@ void QGraphicsItem::setX(qreal x)
 void QGraphicsItem::setY(qreal y)
 {
     if (d_ptr->inDestructor)
+        return;
+
+    if (isnan(y))
         return;
 
     d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));

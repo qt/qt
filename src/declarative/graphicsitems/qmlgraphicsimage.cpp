@@ -139,6 +139,12 @@ QmlGraphicsImage::~QmlGraphicsImage()
 {
 }
 
+void QmlGraphicsImage::setSource(const QUrl &url)
+{
+    QmlGraphicsImageBase::setSource(url);
+    updatePaintedGeometry();
+}
+
 /*!
     \qmlproperty QPixmap Image::pixmap
 
@@ -205,7 +211,20 @@ void QmlGraphicsImage::setFillMode(FillMode mode)
         return;
     d->fillMode = mode;
     update();
+    updatePaintedGeometry();
     emit fillModeChanged();
+}
+
+qreal QmlGraphicsImage::paintedWidth() const
+{
+    Q_D(const QmlGraphicsImage);
+    return d->paintedWidth;
+}
+
+qreal QmlGraphicsImage::paintedHeight() const
+{
+    Q_D(const QmlGraphicsImage);
+    return d->paintedHeight;
 }
 
 /*!
@@ -244,6 +263,33 @@ void QmlGraphicsImage::setFillMode(FillMode mode)
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
+void QmlGraphicsImage::updatePaintedGeometry()
+{
+    Q_D(QmlGraphicsImage);
+
+    if (d->fillMode == PreserveAspectFit) {
+        qreal widthScale = width() / qreal(d->pix.width());
+        qreal heightScale = height() / qreal(d->pix.height());
+        if (widthScale <= heightScale) {
+            d->paintedWidth = width();
+            d->paintedHeight = widthScale * qreal(d->pix.height());
+        } else if(heightScale < widthScale) {
+            d->paintedWidth = heightScale * qreal(d->pix.width());
+            d->paintedHeight = height();
+        }
+    } else {
+        d->paintedWidth = width();
+        d->paintedHeight = height();
+    }
+    emit paintedGeometryChanged();
+}
+
+void QmlGraphicsImage::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    QmlGraphicsImageBase::geometryChanged(newGeometry, oldGeometry);
+    updatePaintedGeometry();
+}
+
 /*!
     \qmlproperty url Image::source
 
@@ -278,7 +324,7 @@ void QmlGraphicsImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
             QTransform scale;
 
             if (d->fillMode == PreserveAspectFit) {
-                if (widthScale < heightScale) {
+                if (widthScale <= heightScale) {
                     heightScale = widthScale;
                     scale.translate(0, (height() - heightScale * d->pix.height()) / 2);
                 } else if(heightScale < widthScale) {

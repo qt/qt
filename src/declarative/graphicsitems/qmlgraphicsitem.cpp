@@ -62,6 +62,8 @@
 #include <QtGui/qgraphicseffect.h>
 #include <qlistmodelinterface_p.h>
 
+#include <math.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef FLT_MAX
@@ -2790,6 +2792,7 @@ void QmlGraphicsItem::setTransformOrigin(TransformOrigin origin)
     if (origin != d->origin) {
         d->origin = origin;
         QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
+        emit transformOriginChanged(d->origin);
     }
 }
 
@@ -2842,6 +2845,9 @@ qreal QmlGraphicsItem::width() const
 void QmlGraphicsItem::setWidth(qreal w)
 {
     Q_D(QmlGraphicsItem);
+    if (isnan(w))
+        return;
+
     d->widthValid = true;
     if (d->width == w)
         return;
@@ -2911,6 +2917,9 @@ qreal QmlGraphicsItem::height() const
 void QmlGraphicsItem::setHeight(qreal h)
 {
     Q_D(QmlGraphicsItem);
+    if (isnan(h))
+        return;
+
     d->heightValid = true;
     if (d->height == h)
         return;
