@@ -105,8 +105,8 @@ public:
 
     The values supported by the the device for each of these
     parameters can be fetched with
-    supportedByteOrders(), supportedChannels(), supportedCodecs(),
-    supportedFrequencies(), supportedSampleSizes(), and
+    supportedByteOrders(), supportedChannelCounts(), supportedCodecs(),
+    supportedSampleRates(), supportedSampleSizes(), and
     supportedSampleTypes(). The combinations supported are dependent on the platform,
     audio plugins installed and the audio device capabilities. If you need a specific format, you can check if
     the device supports it with isFormatSupported(), or fetch a
@@ -259,7 +259,18 @@ QStringList QAudioDeviceInfo::supportedCodecs() const
 }
 
 /*!
-    Returns a list of supported frequencies.
+    Returns a list of supported sample rates.
+*/
+
+QList<int> QAudioDeviceInfo::supportedSampleRates() const
+{
+    return supportedFrequencies();
+}
+
+/*!
+    \obsolete
+
+    Use supportedSampleRates() instead.
 */
 
 QList<int> QAudioDeviceInfo::supportedFrequencies() const
@@ -268,7 +279,18 @@ QList<int> QAudioDeviceInfo::supportedFrequencies() const
 }
 
 /*!
-    Returns a list of supported channels.
+    Returns a list of supported channel counts.
+*/
+
+QList<int> QAudioDeviceInfo::supportedChannelCounts() const
+{
+    return supportedChannels();
+}
+
+/*!
+    \obsolete
+
+    Use supportedChannelCount() instead.
 */
 
 QList<int> QAudioDeviceInfo::supportedChannels() const

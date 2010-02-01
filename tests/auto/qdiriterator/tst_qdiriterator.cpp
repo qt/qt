@@ -71,6 +71,39 @@ public:
     tst_QDirIterator();
     virtual ~tst_QDirIterator();
 
+private: // convenience functions
+    QStringList createdDirectories;
+    QStringList createdFiles;
+
+    QDir currentDir;
+    bool createDirectory(const QString &dirName)
+    {
+        if (currentDir.mkdir(dirName)) {
+            createdDirectories.prepend(dirName);
+            return true;
+        }
+        return false;
+    }
+
+    bool createFile(const QString &fileName)
+    {
+        QFile file(fileName);
+        if (file.open(QIODevice::WriteOnly)) {
+            createdFiles << fileName;
+            return true;
+        }
+        return false;
+    }
+
+    bool createLink(const QString &destination, const QString &linkName)
+    {
+        if (QFile::link(destination, linkName)) {
+            createdFiles << linkName;
+            return true;
+        }
+        return false;
+    }
+
 private slots:
     void iterateRelativeDirectory_data();
     void iterateRelativeDirectory();
@@ -96,41 +129,47 @@ tst_QDirIterator::tst_QDirIterator()
     QFile::remove("entrylist/directory/entrylist3.lnk");
     QFile::remove("entrylist/directory/entrylist4.lnk");
 
+    createDirectory("entrylist");
+    createDirectory("entrylist/directory");
+    createFile("entrylist/file");
+    createFile("entrylist/writable");
+    createFile("entrylist/directory/dummy");
+
+    createDirectory("recursiveDirs");
+    createDirectory("recursiveDirs/dir1");
+    createFile("recursiveDirs/textFileA.txt");
+    createFile("recursiveDirs/dir1/aPage.html");
+    createFile("recursiveDirs/dir1/textFileB.txt");
+
+    createDirectory("foo");
+    createDirectory("foo/bar");
+    createFile("foo/bar/readme.txt");
+
 #ifndef Q_NO_SYMLINKS
 #  if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     // ### Sadly, this is a platform difference right now.
-    QFile::link("entrylist/file", "entrylist/linktofile.lnk");
+    createLink("entrylist/file", "entrylist/linktofile.lnk");
 #    ifndef Q_NO_SYMLINKS_TO_DIRS
-    QFile::link("entrylist/directory", "entrylist/linktodirectory.lnk");
+    createLink("entrylist/directory", "entrylist/linktodirectory.lnk");
 #    endif
-    QFile::link("entrylist/nothing", "entrylist/brokenlink.lnk");
+    createLink("entrylist/nothing", "entrylist/brokenlink.lnk");
 #  else
-    QFile::link("file", "entrylist/linktofile.lnk");
+    createLink("file", "entrylist/linktofile.lnk");
 #    ifndef Q_NO_SYMLINKS_TO_DIRS
-    QFile::link("directory", "entrylist/linktodirectory.lnk");
+    createLink("directory", "entrylist/linktodirectory.lnk");
 #    endif
-    QFile::link("nothing", "entrylist/brokenlink.lnk");
+    createLink("nothing", "entrylist/brokenlink.lnk");
 #  endif
 #endif
-    QFile("entrylist/writable").open(QIODevice::ReadWrite);
 }
 
 tst_QDirIterator::~tst_QDirIterator()
 {
-    QFile::remove("entrylist/directory");
-    QFile::remove("entrylist/linktofile.lnk");
-    QFile::remove("entrylist/linktodirectory.lnk");
-    QFile::remove("entrylist/brokenlink.lnk");
-    QFile::remove("entrylist/brokenlink");
-    QFile::remove("entrylist/writable");
-    QFile::remove("entrylist/entrylist1.lnk");
-    QFile::remove("entrylist/entrylist2.lnk");
-    QFile::remove("entrylist/entrylist3.lnk");
-    QFile::remove("entrylist/entrylist4.lnk");
-    QFile::remove("entrylist/directory/entrylist1.lnk");
-    QFile::remove("entrylist/directory/entrylist2.lnk");
-    QFile::remove("entrylist/directory/entrylist3.lnk");
-    QFile::remove("entrylist/directory/entrylist4.lnk");
+    Q_FOREACH(QString fileName, createdFiles)
+        QFile::remove(fileName);
+
+    Q_FOREACH(QString dirName, createdDirectories)
+        currentDir.rmdir(dirName);
 }
 
 void tst_QDirIterator::iterateRelativeDirectory_data()
@@ -298,23 +337,23 @@ void tst_QDirIterator::stopLinkLoop()
 {
 #ifdef Q_OS_WIN
     // ### Sadly, this is a platform difference right now.
-    QFile::link(QDir::currentPath() + QLatin1String("/entrylist"), "entrylist/entrylist1.lnk");
-    QFile::link("entrylist/.", "entrylist/entrylist2.lnk");
-    QFile::link("entrylist/../entrylist/.", "entrylist/entrylist3.lnk");
-    QFile::link("entrylist/..", "entrylist/entrylist4.lnk");
-    QFile::link(QDir::currentPath() + QLatin1String("/entrylist"), "entrylist/directory/entrylist1.lnk");
-    QFile::link("entrylist/.", "entrylist/directory/entrylist2.lnk");
-    QFile::link("entrylist/../directory/.", "entrylist/directory/entrylist3.lnk");
-    QFile::link("entrylist/..", "entrylist/directory/entrylist4.lnk");
+    createLink(QDir::currentPath() + QLatin1String("/entrylist"), "entrylist/entrylist1.lnk");
+    createLink("entrylist/.", "entrylist/entrylist2.lnk");
+    createLink("entrylist/../entrylist/.", "entrylist/entrylist3.lnk");
+    createLink("entrylist/..", "entrylist/entrylist4.lnk");
+    createLink(QDir::currentPath() + QLatin1String("/entrylist"), "entrylist/directory/entrylist1.lnk");
+    createLink("entrylist/.", "entrylist/directory/entrylist2.lnk");
+    createLink("entrylist/../directory/.", "entrylist/directory/entrylist3.lnk");
+    createLink("entrylist/..", "entrylist/directory/entrylist4.lnk");
 #else
-    QFile::link(QDir::currentPath() + QLatin1String("/entrylist"), "entrylist/entrylist1.lnk");
-    QFile::link(".", "entrylist/entrylist2.lnk");
-    QFile::link("../entrylist/.", "entrylist/entrylist3.lnk");
-    QFile::link("..", "entrylist/entrylist4.lnk");
-    QFile::link(QDir::currentPath() + QLatin1String("/entrylist"), "entrylist/directory/entrylist1.lnk");
-    QFile::link(".", "entrylist/directory/entrylist2.lnk");
-    QFile::link("../directory/.", "entrylist/directory/entrylist3.lnk");
-    QFile::link("..", "entrylist/directory/entrylist4.lnk");
+    createLink(QDir::currentPath() + QLatin1String("/entrylist"), "entrylist/entrylist1.lnk");
+    createLink(".", "entrylist/entrylist2.lnk");
+    createLink("../entrylist/.", "entrylist/entrylist3.lnk");
+    createLink("..", "entrylist/entrylist4.lnk");
+    createLink(QDir::currentPath() + QLatin1String("/entrylist"), "entrylist/directory/entrylist1.lnk");
+    createLink(".", "entrylist/directory/entrylist2.lnk");
+    createLink("../directory/.", "entrylist/directory/entrylist3.lnk");
+    createLink("..", "entrylist/directory/entrylist4.lnk");
 #endif
 
     QDirIterator it(QLatin1String("entrylist"), QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
@@ -325,22 +364,6 @@ void tst_QDirIterator::stopLinkLoop()
     QVERIFY(max);
 
     // The goal of this test is only to ensure that the test above don't malfunction
-
-#ifdef Q_OS_WIN
-    // ### Sadly, this is a platform difference right now.
-    QFile::link(QDir::currentPath() + QLatin1String("/entrylist"), "entrylist/entrylist1.lnk");
-    QFile::link("../../entrylist/.", "entrylist/entrylist2.lnk");
-    QFile::link("entrylist/..", "entrylist/entrylist3.lnk");
-#else
-    QFile::remove("entrylist/entrylist1.lnk");
-    QFile::remove("entrylist/entrylist2.lnk");
-    QFile::remove("entrylist/entrylist3.lnk");
-    QFile::remove("entrylist/entrylist4.lnk");
-    QFile::remove("entrylist/directory/entrylist1.lnk");
-    QFile::remove("entrylist/directory/entrylist2.lnk");
-    QFile::remove("entrylist/directory/entrylist3.lnk");
-    QFile::remove("entrylist/directory/entrylist4.lnk");
-#endif
 }
 
 class EngineWithNoIterator : public QFSFileEngine

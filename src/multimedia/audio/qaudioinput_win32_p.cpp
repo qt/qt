@@ -230,6 +230,11 @@ bool QAudioInputPrivate::open()
     } else {
         period_size = buffer_size/5;
     }
+#ifdef Q_OS_WINCE
+    // For wince reduce size to 40ms for buffer size and 20ms period
+    buffer_size = settings.sampleRate()*settings.channelCount()*(settings.sampleSize()/8)*0.04;
+    period_size = buffer_size/2;
+#endif
     timeStamp.restart();
     elapsedTimeOffset = 0;
     wfx.nSamplesPerSec = settings.frequency();

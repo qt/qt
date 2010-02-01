@@ -2311,6 +2311,9 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
         q->setAttribute(Qt::WA_WState_WindowOpacitySet, false);
     }
 
+    if (qApp->overrideCursor())
+        [windowRef disableCursorRects];
+
     setWindowLevel();
     macUpdateHideOnSuspend();
     macUpdateOpaqueSizeGrip();
@@ -3576,6 +3579,8 @@ void QWidgetPrivate::hide_sys()
 
     if (!QWidget::mouseGrabber()){
         QWidget *enterWidget = QApplication::widgetAt(QCursor::pos());
+        if (enterWidget && enterWidget->data->in_destructor)
+            enterWidget = 0;
         QApplicationPrivate::dispatchEnterLeave(enterWidget, qt_mouseover);
         qt_mouseover = enterWidget;
     }

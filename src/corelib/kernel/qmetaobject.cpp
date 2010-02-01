@@ -492,10 +492,14 @@ static inline int indexOfMethodRelative(const QMetaObject **baseObject,
                                         const char *method,
                                         bool normalizeStringData)
 {
-    while (*baseObject) {
+    const QMetaObject *m;
+    for (m = *baseObject; m; m = *baseObject = m->d.superdata) {
         const QMetaObject *const m = *baseObject;
         int i = (MethodType == MethodSignal && priv(m->d.data)->revision >= 4)
                 ? (priv(m->d.data)->signalCount - 1) : (priv(m->d.data)->methodCount - 1);
+        if (i < 0)
+            continue;
+
         const int end = (MethodType == MethodSlot && priv(m->d.data)->revision >= 4)
                         ? (priv(m->d.data)->signalCount) : 0;
         if (!normalizeStringData) {
@@ -513,7 +517,6 @@ static inline int indexOfMethodRelative(const QMetaObject **baseObject,
                     return i;
             }
         }
-        *baseObject = m->d.superdata;
     }
     return -1;
 }
