@@ -184,6 +184,15 @@ typedef void (APIENTRY *_glBlitFramebufferEXT) (int srcX0, int srcY0, int srcX1,
 typedef void (APIENTRY *_glRenderbufferStorageMultisampleEXT) (GLenum target, GLsizei samples,
                                                                GLenum internalformat, GLsizei width, GLsizei height);
 
+// GL_EXT_geometry_shader4
+typedef void (APIENTRY *_glProgramParameteriEXT)(GLuint program, GLenum pname, GLint value);
+typedef void (APIENTRY *_glFramebufferTextureEXT)(GLenum target, GLenum attachment,
+                                                  GLuint texture, GLint level);
+typedef void (APIENTRY *_glFramebufferTextureLayerEXT)(GLenum target, GLenum attachment,
+                                                       GLuint texture, GLint level, GLint layer);
+typedef void (APIENTRY *_glFramebufferTextureFaceEXT)(GLenum target, GLenum attachment,
+                                                      GLuint texture, GLint level, GLenum face);
+
 // ARB_texture_compression
 typedef void (APIENTRY *_glCompressedTexImage2DARB) (GLenum, GLint, GLenum, GLsizei,
                                                      GLsizei, GLint, GLsizei, const GLvoid *);
@@ -294,6 +303,10 @@ struct QGLExtensionFuncs
         qt_glMapBufferARB = 0;
         qt_glUnmapBufferARB = 0;
 
+        qt_glProgramParameteriEXT = 0;
+        qt_glFramebufferTextureEXT = 0;
+        qt_glFramebufferTextureLayerEXT = 0;
+        qt_glFramebufferTextureFaceEXT = 0;
 #if !defined(QT_OPENGL_ES)
         // Texture compression
         qt_glCompressedTexImage2DARB = 0;
@@ -406,6 +419,11 @@ struct QGLExtensionFuncs
     _glMapBufferARB qt_glMapBufferARB;
     _glUnmapBufferARB qt_glUnmapBufferARB;
 
+    // Geometry shaders...
+    _glProgramParameteriEXT qt_glProgramParameteriEXT;
+    _glFramebufferTextureEXT qt_glFramebufferTextureEXT;
+    _glFramebufferTextureLayerEXT qt_glFramebufferTextureLayerEXT;
+    _glFramebufferTextureFaceEXT qt_glFramebufferTextureFaceEXT;
 #if !defined(QT_OPENGL_ES)
     // Texture compression
     _glCompressedTexImage2DARB qt_glCompressedTexImage2DARB;
@@ -642,6 +660,29 @@ struct QGLExtensionFuncs
 #define GL_ACTIVE_ATTRIBUTE_MAX_LENGTH 0x8B8A
 #endif
 
+// Geometry shader defines
+#ifndef GL_GEOMETRY_SHADER_EXT
+#  define GL_GEOMETRY_SHADER_EXT 0x8DD9
+#  define GL_GEOMETRY_VERTICES_OUT_EXT 0x8DDA
+#  define GL_GEOMETRY_INPUT_TYPE_EXT 0x8DDB
+#  define GL_GEOMETRY_OUTPUT_TYPE_EXT 0x8DDC
+#  define GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS_EXT 0x8C29
+#  define GL_MAX_GEOMETRY_VARYING_COMPONENTS_EXT 0x8DDD
+#  define GL_MAX_VERTEX_VARYING_COMPONENTS_EXT 0x8DDE
+#  define GL_MAX_VARYING_COMPONENTS_EXT 0x8B4B
+#  define GL_MAX_GEOMETRY_UNIFORM_COMPONENTS_EXT 0x8DDF
+#  define GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT 0x8DE0
+#  define GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS_EXT 0x8DE1
+#  define GL_LINES_ADJACENCY_EXT 0xA
+#  define GL_LINE_STRIP_ADJACENCY_EXT 0xB
+#  define GL_TRIANGLES_ADJACENCY_EXT 0xC
+#  define GL_TRIANGLE_STRIP_ADJACENCY_EXT 0xD
+#  define GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS_EXT 0x8DA8
+#  define GL_FRAMEBUFFER_INCOMPLETE_LAYER_COUNT_EXT 0x8DA9
+#  define GL_FRAMEBUFFER_ATTACHMENT_LAYERED_EXT 0x8DA7
+#  define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER_EXT 0x8CD4
+#  define GL_PROGRAM_POINT_SIZE_EXT 0x8642
+#endif
 
 #if !defined(QT_OPENGL_ES_2)
 #define glProgramStringARB QGLContextPrivate::extensionFuncs(ctx).qt_glProgramStringARB
@@ -758,6 +799,11 @@ struct QGLExtensionFuncs
 #if defined(QT_OPENGL_ES_2)
 #define glClearDepth glClearDepthf
 #endif
+
+#define glProgramParameteriEXT QGLContextPrivate::extensionFuncs(ctx).qt_glProgramParameteriEXT
+#define glFramebufferTextureEXT QGLContextPrivate::extensionFuncs(ctx).qt_glFramebufferTextureEXT
+#define glFramebufferTextureLayerEXT QGLContextPrivate::extensionFuncs(ctx).qt_glFramebufferTextureLayerEXT
+#define glFramebufferTextureFaceEXT QGLContextPrivate::extensionFuncs(ctx).qt_glFramebufferTextureFaceEXT
 
 #if !defined(QT_OPENGL_ES)
 #define glCompressedTexImage2D QGLContextPrivate::extensionFuncs(ctx).qt_glCompressedTexImage2DARB

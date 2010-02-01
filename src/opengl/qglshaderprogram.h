@@ -66,7 +66,8 @@ public:
     enum ShaderTypeBit
     {
         Vertex          = 0x0001,
-        Fragment        = 0x0002
+        Fragment        = 0x0002,
+        Geometry        = 0x0004
     };
     Q_DECLARE_FLAGS(ShaderType, ShaderTypeBit)
 
@@ -88,6 +89,8 @@ public:
 
     GLuint shaderId() const;
 
+    static bool hasShaders(ShaderType type, const QGLContext *context = 0);
+
 private:
     friend class QGLShaderProgram;
 
@@ -104,6 +107,14 @@ class Q_OPENGL_EXPORT QGLShaderProgram : public QObject
 {
     Q_OBJECT
 public:
+    enum GeometryTypes
+    {
+        LinesWithAdjacencyGeometryType          = 0xa,
+        LineStripWithAdjacencyGeometryType      = 0xb,
+        TrianglesWithAdjacencyGeometryType      = 0xc,
+        TriangleStripWithAdjacencyGeometryType  = 0xd
+    };
+
     explicit QGLShaderProgram(QObject *parent = 0);
     explicit QGLShaderProgram(const QGLContext *context, QObject *parent = 0);
     virtual ~QGLShaderProgram();
@@ -127,6 +138,17 @@ public:
     void release();
 
     GLuint programId() const;
+
+    int maxGeometryOutputVertices() const;
+
+    void setGeometryOutputVertexCount(int count);
+    int geometryOutputVertexCount() const;
+
+    void setGeometryInputType(GLenum inputType);
+    GLenum geometryInputType() const;
+
+    void setGeometryOutputType(GLenum outputType);
+    GLenum geometryOutputType() const;
 
     void bindAttributeLocation(const char *name, int location);
     void bindAttributeLocation(const QByteArray& name, int location);
